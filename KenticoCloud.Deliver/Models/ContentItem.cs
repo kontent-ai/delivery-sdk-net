@@ -52,11 +52,11 @@ namespace KenticoCloud.Deliver
         }
 
 
-        public Dictionary<string, ContentItem> GetModularContent(string element)
+        public IEnumerable<ContentItem> GetModularContent(string element)
         {
             var codenames = ((JArray)elements[element]["value"]).ToObject<List<string>>();
 
-            return codenames.ToDictionary(c => c, c => new ContentItem(relatedItems[c], relatedItems));
+            return codenames.Select(c => new ContentItem(relatedItems[c], relatedItems));
         }
 
 
