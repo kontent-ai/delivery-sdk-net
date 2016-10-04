@@ -12,17 +12,23 @@ namespace KenticoCloud.Deliver
         private JObject elements;
         private JObject relatedItems;
 
+        /// <summary>
+        /// System elements.
+        /// </summary>
         public SystemElements System { get; set; }
 
 
-        public ContentItem()
-        {
-        }
+        /// <summary>
+        /// Elements in its raw form.
+        /// </summary>
+        public dynamic Elements { get; set; }
 
 
         public ContentItem(JToken item, JToken relatedItems)
         {
             System = new SystemElements(item["system"]);
+            Elements = JObject.Parse(item["elements"].ToString());
+
             elements = (JObject)item["elements"];
             this.relatedItems = (JObject)relatedItems;
         }
