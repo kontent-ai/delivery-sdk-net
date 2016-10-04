@@ -7,7 +7,7 @@ using System.Net.Http;
 using System.Text;
 using System.Threading.Tasks;
 
-namespace DeliverSDK
+namespace KenticoCloud.Deliver
 {
     public class DeliverClient
     {
@@ -82,6 +82,20 @@ namespace DeliverSDK
         {
             var url = urlBuilder.ComposeDeliverUrl(filters: parameters);
             return await GetDeliverResponseAsync(url);
+        }
+
+
+        /// <summary>
+        /// Gets one content item by its codename.
+        /// </summary>
+        /// <param name="itemCodename">Item codename.</param>
+        /// <param name="parameters">Query parameters.</param>
+        public async Task<ContentItem> GetItemAsync(string itemCodename, IEnumerable<IFilter> parameters = null)
+        {
+            var url = urlBuilder.ComposeDeliverUrl(itemCodename, parameters);
+            var response = await GetDeliverResponseAsync(url);
+
+            return new ContentItem(response["item"], response["related_items"]);
         }
 
 

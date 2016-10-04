@@ -4,7 +4,7 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 
-namespace DeliverSDK
+namespace KenticoCloud.Deliver
 {
     public class BaseFilter : IFilter
     {

@@ -7,8 +7,8 @@
     <ProjectGuid>{103C7376-D90C-4207-9933-C9E55A16D902}</ProjectGuid>
     <OutputType>Library</OutputType>
     <AppDesignerFolder>Properties</AppDesignerFolder>
-    <RootNamespace>DeliverSDK</RootNamespace>
-    <AssemblyName>DeliverSDK</AssemblyName>
+    <RootNamespace>KenticoCloud.Deliver</RootNamespace>
+    <AssemblyName>KenticoCloud.Deliver</AssemblyName>
     <TargetFrameworkVersion>v4.6.1</TargetFrameworkVersion>
     <FileAlignment>512</FileAlignment>
   </PropertyGroup>
@@ -63,6 +63,9 @@
     <Compile Include="Filters\Special\SkipFilter.cs" />
     <Compile Include="Filters\Special\LimitFilter.cs" />
     <Compile Include="Filters\Special\OrderFilter.cs" />
+    <Compile Include="Models\Asset.cs" />
+    <Compile Include="Models\ContentItem.cs" />
+    <Compile Include="Models\SystemElements.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
   </ItemGroup>
   <ItemGroup>

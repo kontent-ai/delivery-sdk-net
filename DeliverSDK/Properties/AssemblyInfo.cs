@@ -2,11 +2,11 @@
 using System.Runtime.CompilerServices;
 using System.Runtime.InteropServices;
 
-[assembly: AssemblyTitle("DeliverSDK")]
+[assembly: AssemblyTitle("KenticoCloud.Deliver")]
 [assembly: AssemblyDescription("SDK for Kentico Deliver")]
 [assembly: AssemblyConfiguration("")]
 [assembly: AssemblyCompany("Kentico Software")]
-[assembly: AssemblyProduct("DeliverSDK")]
+[assembly: AssemblyProduct("Kentico Cloud Deliver .NET SDK")]
 [assembly: AssemblyCopyright("© 2016 Kentico Software. All rights reserved.")]
 [assembly: AssemblyTrademark("")]
 [assembly: AssemblyCulture("")]

@@ -3,7 +3,9 @@ Microsoft Visual Studio Solution File, Format Version 12.00
 # Visual Studio 14
 VisualStudioVersion = 14.0.25420.1
 MinimumVisualStudioVersion = 10.0.40219.1
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "DeliverSDK", "DeliverSDK\DeliverSDK.csproj", "{103C7376-D90C-4207-9933-C9E55A16D902}"
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "KenticoCloud.Deliver", "DeliverSDK\KenticoCloud.Deliver.csproj", "{103C7376-D90C-4207-9933-C9E55A16D902}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "KenticoCloud.Deliver.Tests", "DeliverSDK.Tests\KenticoCloud.Deliver.Tests.csproj", "{EB5970DE-F2A5-492A-AB3C-87A9212584E1}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
@@ -15,6 +17,10 @@ Global
 		{103C7376-D90C-4207-9933-C9E55A16D902}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{103C7376-D90C-4207-9933-C9E55A16D902}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{103C7376-D90C-4207-9933-C9E55A16D902}.Release|Any CPU.Build.0 = Release|Any CPU
+		{EB5970DE-F2A5-492A-AB3C-87A9212584E1}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{EB5970DE-F2A5-492A-AB3C-87A9212584E1}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{EB5970DE-F2A5-492A-AB3C-87A9212584E1}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{EB5970DE-F2A5-492A-AB3C-87A9212584E1}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
