@@ -2,6 +2,7 @@
 using NUnit.Framework;
 using System.Threading.Tasks;
 using System.Collections.Generic;
+using System.Linq;
 
 namespace KenticoCloud.Deliver.Tests
 {
@@ -31,7 +32,7 @@ namespace KenticoCloud.Deliver.Tests
             Assert.AreEqual(21.63, numberElement);
             Assert.AreEqual(DateTime.Parse("21.10.2016 0:00:00"), datetimeElement);
             Assert.AreEqual(2, assetElement.Count);
-            Assert.AreEqual(4, modularContentElement.Count);
+            Assert.AreEqual(4, modularContentElement.Count());
         }
 
 
