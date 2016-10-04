@@ -99,6 +99,19 @@ namespace KenticoCloud.Deliver
         }
 
 
+        /// <summary>
+        /// Searches the content repository for items that match the filter criteria.
+        /// </summary>
+        /// <param name="parameters">Query parameters.</param>
+        public async Task<DeliverListingResponse> GetItemsAsync(IEnumerable<IFilter> parameters = null)
+        {
+            var url = urlBuilder.ComposeDeliverUrl(filters: parameters);
+            var response = await GetDeliverResponseAsync(url);
+
+            return new DeliverListingResponse(response);
+        }
+
+
         private async Task<JObject> GetDeliverResponseAsync(string url)
         {
             var response = await httpClient.GetAsync(url);

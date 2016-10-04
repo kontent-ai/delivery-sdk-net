@@ -1,6 +1,7 @@
 ﻿using System;
 using NUnit.Framework;
 using System.Threading.Tasks;
+using System.Collections.Generic;
 
 namespace KenticoCloud.Deliver.Tests
 {
@@ -31,6 +32,19 @@ namespace KenticoCloud.Deliver.Tests
             Assert.AreEqual(DateTime.Parse("21.10.2016 0:00:00"), datetimeElement);
             Assert.AreEqual(2, assetElement.Count);
             Assert.AreEqual(4, modularContentElement.Count);
+        }
+
+
+        [Test]
+        public void GetItemsAsync()
+        {
+            var client = new DeliverClient(PROJECT_ID);
+
+            var filters = new List<IFilter> { new EqualsFilter("system.type", "sdk_test_type") };
+
+            var items = Task.Run(() => client.GetItemsAsync(filters)).Result;
+
+            Assert.IsNotNull(items);
         }
     }
 }
