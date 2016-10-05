@@ -67,6 +67,7 @@ namespace KenticoCloud.Deliver
         /// </summary>
         /// <param name="itemCodename">Item codename.</param>
         /// <param name="parameters">Query parameters.</param>
+        /// <remarks>This method returns the raw JObject as a result.</remarks>
         public async Task<JObject> GetContentItemAsync(string itemCodename, IEnumerable<IFilter> parameters = null)
         {
             var url = urlBuilder.ComposeDeliverUrl(itemCodename, parameters);
@@ -78,6 +79,7 @@ namespace KenticoCloud.Deliver
         /// Searches the content repository for items that match the filter criteria.
         /// </summary>
         /// <param name="parameters">Query parameters.</param>
+        /// <remarks>This method returns the raw JObject as a result.</remarks>
         public async Task<JObject> GetContentItemsAsync(IEnumerable<IFilter> parameters = null)
         {
             var url = urlBuilder.ComposeDeliverUrl(filters: parameters);
@@ -90,12 +92,12 @@ namespace KenticoCloud.Deliver
         /// </summary>
         /// <param name="itemCodename">Item codename.</param>
         /// <param name="parameters">Query parameters.</param>
-        public async Task<ContentItem> GetItemAsync(string itemCodename, IEnumerable<IFilter> parameters = null)
+        public async Task<DeliverResponse> GetItemAsync(string itemCodename, IEnumerable<IFilter> parameters = null)
         {
             var url = urlBuilder.ComposeDeliverUrl(itemCodename, parameters);
             var response = await GetDeliverResponseAsync(url);
 
-            return new ContentItem(response["item"], response["related_items"]);
+            return new DeliverResponse(response);
         }
 
 

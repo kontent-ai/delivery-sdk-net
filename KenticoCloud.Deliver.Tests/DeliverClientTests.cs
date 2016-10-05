@@ -16,7 +16,7 @@ namespace KenticoCloud.Deliver.Tests
         {
             var client = new DeliverClient(PROJECT_ID);
 
-            var item = Task.Run(() => client.GetItemAsync("sdk_test_item")).Result;
+            var item = Task.Run(() => client.GetItemAsync("sdk_test_item")).Result.Item;
 
             Assert.AreEqual("sdk_test_item", item.System.Codename);
 

@@ -47,6 +47,7 @@
   <ItemGroup>
     <Compile Include="DeliverClient.cs" />
     <Compile Include="DeliverException.cs" />
+    <Compile Include="DeliverListingResponse.cs" />
     <Compile Include="DeliverResponse.cs" />
     <Compile Include="DeliverUrlBuilder.cs" />
     <Compile Include="Filters\Enums\OrderDirectionEnum.cs" />
