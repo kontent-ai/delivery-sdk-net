@@ -31,6 +31,7 @@ namespace KenticoCloud.Deliver
         /// </summary>
         public string GetQueryStringParameter()
         {
+            return String.Format("limit={0}", Uri.EscapeDataString(Limit));
         }
     }
 }
