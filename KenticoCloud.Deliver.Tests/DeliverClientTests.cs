@@ -37,6 +37,17 @@ namespace KenticoCloud.Deliver.Tests
 
 
         [Test]
+        public void GetItemAsync_NonExistentCodename()
+        {
+            var client = new DeliverClient(PROJECT_ID);
+
+            var response = Task.Run(() => client.GetItemAsync("sdk_test_item_non_existent")).Result;
+
+            Assert.IsNotNull(response);
+        }
+
+
+        [Test]
         public void GetItemsAsync()
         {
             var client = new DeliverClient(PROJECT_ID);

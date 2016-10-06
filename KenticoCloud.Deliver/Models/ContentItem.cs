@@ -28,7 +28,7 @@ namespace KenticoCloud.Deliver
         
         public ContentItem(JToken item, JToken relatedItems)
         {
-            if (item == null)
+            if (item == null || !item.HasValues)
             {
                 return;
             }
