@@ -43,9 +43,9 @@ namespace KenticoCloud.Deliver.Tests
 
             var filters = new List<IFilter> { new EqualsFilter("system.type", "sdk_test_type") };
 
-            var items = Task.Run(() => client.GetItemsAsync(filters)).Result;
+            var response = Task.Run(() => client.GetItemsAsync(filters)).Result;
 
-            Assert.IsNotNull(items);
+            Assert.IsNotNull(response);
         }
     }
 }

@@ -7,21 +7,31 @@ using System.Threading.Tasks;
 
 namespace KenticoCloud.Deliver
 {
+    /// <summary>
+    /// Represents "depth" query parameter.
+    /// </summary>
     public class DepthFilter : IFilter
     {
-        public string Element { get; }
-        public string Operator { get; }
-        public string Value { get; }
+        /// <summary>
+        /// Depth.
+        /// </summary>
+        public string Depth { get; }
 
-        public DepthFilter(int value)
+        /// <summary>
+        /// Constructs the depth filter.
+        /// </summary>
+        /// <param name="depth">Depth.</param>
+        public DepthFilter(int depth)
         {
-            Element = "depth";
-            Value = value.ToString(CultureInfo.InvariantCulture);
+            Depth = depth.ToString(CultureInfo.InvariantCulture);
         }
 
+        /// <summary>
+        /// Returns the query string represention of the filter.
+        /// </summary>
         public string GetQueryStringParameter()
         {
-            return String.Format("{0}={1}", Uri.EscapeDataString(Element), Uri.EscapeDataString(Value));
+            return String.Format("depth={0}", Uri.EscapeDataString(Depth));
         }
     }
 }

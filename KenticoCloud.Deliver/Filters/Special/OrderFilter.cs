@@ -6,22 +6,38 @@ using System.Threading.Tasks;
 
 namespace KenticoCloud.Deliver
 {
+    /// <summary>
+    /// Represents "order" query parameter.
+    /// </summary>
     public class OrderFilter : IFilter
     {
-        public string Element { get; }
-        public string Operator { get; }
-        public string Value { get; }
+        /// <summary>
+        /// Order direction.
+        /// </summary>
+        public string OrderDirection { get; }
 
-        public OrderFilter(string element, OrderDirection orderDirection = OrderDirection.Ascending)
+        /// <summary>
+        /// Codename of the element for order.
+        /// </summary>
+        public string OrderElement { get; }
+
+        /// <summary>
+        /// Constructs the order filter.
+        /// </summary>
+        /// <param name="element">Element codename.</param>
+        /// <param name="orderDirection">Order direction.</param>
+        public OrderFilter(string element, OrderDirection orderDirection = Deliver.OrderDirection.Ascending)
         {
-            Element = "order";
-            Value = element;
-            Operator = orderDirection == OrderDirection.Ascending ? "[asc]" : "[desc]";
+            OrderElement = element;
+            OrderDirection = orderDirection == Deliver.OrderDirection.Ascending ? "[asc]" : "[desc]";
         }
 
+        /// <summary>
+        /// Returns the query string represention of the filter.
+        /// </summary>
         public string GetQueryStringParameter()
         {
-            return String.Format("{0}={1}{2}", Uri.EscapeDataString(Element), Uri.EscapeDataString(Value), Operator);
+            return String.Format("order={0}{1}", Uri.EscapeDataString(OrderElement), OrderDirection);
         }
     }
 }

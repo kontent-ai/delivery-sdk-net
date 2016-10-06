@@ -6,12 +6,14 @@ using System.Threading.Tasks;
 
 namespace KenticoCloud.Deliver
 {
+    /// <summary>
+    /// Represents a query parameter filter.
+    /// </summary>
     public interface IFilter
     {
-        string Element { get; }
-        string Value { get; }
-        string Operator { get; }
-
+        /// <summary>
+        /// Returns the query string represention of the filter.
+        /// </summary>
         string GetQueryStringParameter();
     }
 }

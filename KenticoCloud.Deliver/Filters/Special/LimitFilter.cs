@@ -7,21 +7,30 @@ using System.Threading.Tasks;
 
 namespace KenticoCloud.Deliver
 {
+    /// <summary>
+    /// Represents "limit" query parameter.
+    /// </summary>
     public class LimitFilter
     {
-        public string Element { get; }
-        public string Operator { get; }
-        public string Value { get; }
+        /// <summary>
+        /// Maximal number of content items.
+        /// </summary>
+        public string Limit { get; }
 
-        public LimitFilter(int value)
+        /// <summary>
+        /// Constructs the limit filter.
+        /// </summary>
+        /// <param name="limit">Maximal number of content items.</param>
+        public LimitFilter(int limit)
         {
-            Element = "limit";
-            Value = value.ToString(CultureInfo.InvariantCulture);
+            Limit = limit.ToString(CultureInfo.InvariantCulture);
         }
 
+        /// <summary>
+        /// Returns the query string represention of the filter.
+        /// </summary>
         public string GetQueryStringParameter()
         {
-            return String.Format("{0}={1}", Uri.EscapeDataString(Element), Uri.EscapeDataString(Value));
         }
     }
 }

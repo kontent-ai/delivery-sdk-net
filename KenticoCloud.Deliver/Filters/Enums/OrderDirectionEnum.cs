@@ -6,6 +6,9 @@ using System.Threading.Tasks;
 
 namespace KenticoCloud.Deliver
 {
+    /// <summary>
+    /// Order direction enumeration.
+    /// </summary>
     public enum OrderDirection
     {
         Ascending,

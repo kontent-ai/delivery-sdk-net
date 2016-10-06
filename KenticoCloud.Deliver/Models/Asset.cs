@@ -1,20 +1,38 @@
-﻿using Newtonsoft.Json.Linq;
-using System;
+﻿using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 
+using Newtonsoft.Json.Linq;
+
 namespace KenticoCloud.Deliver
 {
+    /// <summary>
+    /// Represents an asset. 
+    /// </summary>
     public class Asset
     {
+        /// <summary>
+        /// Asset name.
+        /// </summary>
         public string Name { get; set; }
+
+        /// <summary>
+        /// Asset type. For example: "image/jpeg".
+        /// </summary>
         public string Type { get; set; }
+
+        /// <summary>
+        /// Asset size in bytes.
+        /// </summary>
         public int Size { get; set; }
+
+        /// <summary>
+        /// URL where you can download the asset.
+        /// </summary>
         public string Url { get; set; }
-
-
+        
         public Asset(JToken asset)
         {
             Name = asset["name"].ToString();

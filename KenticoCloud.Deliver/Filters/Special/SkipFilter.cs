@@ -7,21 +7,31 @@ using System.Threading.Tasks;
 
 namespace KenticoCloud.Deliver
 {
+    /// <summary>
+    /// Represents "skip" query parameter.
+    /// </summary>
     public class SkipFilter
     {
-        public string Element { get; }
-        public string Operator { get; }
-        public string Value { get; }
+        /// <summary>
+        /// How many content items to skip.
+        /// </summary>
+        public string Skip { get; }
 
-        public SkipFilter(int value)
+        /// <summary>
+        /// Constructs the skip filter.
+        /// </summary>
+        /// <param name="skip">How many content items to skip.</param>
+        public SkipFilter(int skip)
         {
-            Element = "skip";
-            Value = value.ToString(CultureInfo.InvariantCulture);
+            Skip = skip.ToString(CultureInfo.InvariantCulture);
         }
 
+        /// <summary>
+        /// Returns the query string represention of the filter.
+        /// </summary>
         public string GetQueryStringParameter()
         {
-            return String.Format("{0}={1}", Uri.EscapeDataString(Element), Uri.EscapeDataString(Value));
+            return String.Format("skip={0}", Uri.EscapeDataString(Skip));
         }
     }
 }

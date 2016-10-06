@@ -6,21 +6,31 @@ using System.Threading.Tasks;
 
 namespace KenticoCloud.Deliver
 {
+    /// <summary>
+    /// Represents "elements" query parameter.
+    /// </summary>
     public class ElementsFilter : IFilter
     {
-        public string Element { get; }
-        public string Operator { get; }
-        public string Value { get; }
+        /// <summary>
+        /// Element codenames.
+        /// </summary>
+        public string Elements { get; }
 
-        public ElementsFilter(params string[] values)
+        /// <summary>
+        /// Constructs the elements filter.
+        /// </summary>
+        /// <param name="elements">Codenames of elements.</param>
+        public ElementsFilter(params string[] elements)
         {
-            Element = "elements";
-            Value = String.Join(",", values);
+            Elements = String.Join(",", elements);
         }
 
+        /// <summary>
+        /// Returns the query string represention of the filter.
+        /// </summary>
         public string GetQueryStringParameter()
         {
-            return String.Format("{0}={1}", Uri.EscapeDataString(Element), Uri.EscapeDataString(Value));
+            return String.Format("elements={0}", Uri.EscapeDataString(Elements));
         }
     }
 }
