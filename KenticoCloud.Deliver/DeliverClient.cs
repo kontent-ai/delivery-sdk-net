@@ -72,6 +72,10 @@ namespace KenticoCloud.Deliver
         /// <param name="parameters">Query parameters.</param>
         public async Task<DeliverResponse> GetItemAsync(string itemCodename, IEnumerable<IFilter> parameters = null)
         {
+            {
+                throw new ArgumentException("Entered item codename is not valid.", "itemCodename");
+            }
+
             var url = urlBuilder.ComposeDeliverUrl(itemCodename, parameters);
             var response = await GetDeliverResponseAsync(url);
 

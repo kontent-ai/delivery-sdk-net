@@ -76,6 +76,11 @@ namespace KenticoCloud.Deliver
         /// content items.</remarks>
         public IEnumerable<ContentItem> GetModularContent(string element)
         {
+            if (elements.Property(element) == null)
+            {
+                throw new ArgumentException("Given element doesn't exist.");
+            }
+
             var codenames = ((JArray)elements[element]["value"]).ToObject<List<string>>();
 
             return codenames.Select(c => new ContentItem(relatedItems[c], relatedItems));
@@ -87,6 +92,11 @@ namespace KenticoCloud.Deliver
         /// <param name="element">Element name.</param>
         public List<Asset> GetAssets(string element)
         {
+            if (elements.Property(element) == null)
+            {
+                throw new ArgumentException("Given element doesn't exist.");
+            }
+
             return ((JArray)elements[element]["value"]).Select(x => new Asset(x)).ToList();
         }
 

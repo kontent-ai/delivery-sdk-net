@@ -36,7 +36,7 @@ namespace KenticoCloud.Deliver
 
         public string GetUrlEndpoint(string codename = "", params string[] queryParams)
         {
-            return GetBaseUrl(codename) + codename + "?" + String.Join("&", queryParams);
+            return GetBaseUrl(codename) + "?" + String.Join("&", queryParams);
         }
 
 
@@ -57,7 +57,7 @@ namespace KenticoCloud.Deliver
         {
             var endpoint = String.IsNullOrEmpty(accessToken) ? PRODUCTION_ENDPOINT : PREVIEW_ENDPOINT;
 
-            return String.Format(endpoint, projectId) + codename;
+            return String.Format(endpoint, projectId) + Uri.EscapeDataString(codename);
         }
     }
 }
