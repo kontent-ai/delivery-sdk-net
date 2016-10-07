@@ -108,7 +108,7 @@ namespace KenticoCloud.Deliver
                 return JObject.Parse(responseBody);
             }
 
-            throw new DeliverException((int)response.StatusCode, await response.Content.ReadAsStringAsync());
+            throw new DeliverException(response.StatusCode, await response.Content.ReadAsStringAsync());
         }
     }
 }
