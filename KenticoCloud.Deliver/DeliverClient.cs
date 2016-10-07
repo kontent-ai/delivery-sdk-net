@@ -47,7 +47,7 @@ namespace KenticoCloud.Deliver
         /// </summary>
         /// <param name="itemCodename">Content item codename.</param>
         /// <param name="queryParams">Query parameters. For example: "elements=title" or "depth=0"."</param>
-        public async Task<JObject> GetContentItemAsync(string itemCodename, params string[] queryParams)
+        public async Task<JObject> GetItemJsonAsync(string itemCodename, params string[] queryParams)
         {
             var url = urlBuilder.GetUrlEndpoint(itemCodename, queryParams);
             return await GetDeliverResponseAsync(url);
@@ -58,7 +58,7 @@ namespace KenticoCloud.Deliver
         /// Searches the content repository for items that match the criteria. This method returns the whole response as JObject.
         /// </summary>
         /// <param name="queryParams">Query parameters. For example: "elements=title" or "depth=0"."</param>
-        public async Task<JObject> GetContentItemsAsync(params string[] queryParams)
+        public async Task<JObject> GetItemsJsonAsync(params string[] queryParams)
         {
             var url = urlBuilder.GetUrlEndpoint(null, queryParams);
             return await GetDeliverResponseAsync(url);

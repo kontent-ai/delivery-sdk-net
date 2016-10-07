@@ -17,7 +17,7 @@ namespace KenticoCloud.Deliver
         private JObject relatedItems;
 
         /// <summary>
-        /// System elements.
+        /// <see cref="SystemElements"/> 
         /// </summary>
         public SystemElements System { get; set; }
         
@@ -59,7 +59,7 @@ namespace KenticoCloud.Deliver
         }
 
         /// <summary>
-        /// Gets a datetime value from an element.
+        /// Gets a <see cref="DateTime"/> value from an element.
         /// </summary>
         /// <param name="element">Element name.</param>
         public DateTime GetDatetime(string element)
@@ -82,12 +82,11 @@ namespace KenticoCloud.Deliver
             }
 
             var codenames = ((JArray)elements[element]["value"]).ToObject<List<string>>();
-
             return codenames.Select(c => new ContentItem(relatedItems[c], relatedItems));
         }
 
         /// <summary>
-        /// Get assets from an element.
+        /// Get <see cref="Asset"/>s from an element.
         /// </summary>
         /// <param name="element">Element name.</param>
         public List<Asset> GetAssets(string element)
@@ -102,8 +101,12 @@ namespace KenticoCloud.Deliver
 
         private T GetElementValue<T>(string element)
         {
-            JToken token;
-            return elements.TryGetValue(element, StringComparison.OrdinalIgnoreCase, out token) ? token["value"].ToObject<T>() : default(T);
+            if (elements.Property(element) == null)
+            {
+                throw new ArgumentException("Given element doesn't exist.");
+            }
+
+            return elements[element]["value"].ToObject<T>();
         }
     }
 }

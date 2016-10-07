@@ -16,8 +16,8 @@ namespace KenticoCloud.Deliver
         /// </summary>
         /// <param name="element">Element codename.</param>
         /// <param name="value">Parameter value.</param>
-        public InFilter(string element, string value)
-            : base(element, value)
+        public InFilter(string element, params string[] value)
+            : base(element, string.Join(",", value))
         {
             Operator = "[in]";
         }
