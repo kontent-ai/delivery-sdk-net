@@ -69,6 +69,7 @@
     <Compile Include="Filters\Special\OrderFilter.cs" />
     <Compile Include="Models\Asset.cs" />
     <Compile Include="Models\ContentItem.cs" />
+    <Compile Include="Pagination.cs" />
     <Compile Include="Models\SystemElements.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
   </ItemGroup>

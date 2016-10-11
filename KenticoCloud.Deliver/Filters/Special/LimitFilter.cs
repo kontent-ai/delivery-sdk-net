@@ -10,7 +10,7 @@ namespace KenticoCloud.Deliver
     /// <summary>
     /// Represents "limit" query parameter.
     /// </summary>
-    public class LimitFilter
+    public class LimitFilter : IFilter
     {
         /// <summary>
         /// Maximal number of content items.

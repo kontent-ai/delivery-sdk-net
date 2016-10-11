@@ -14,7 +14,7 @@ namespace KenticoCloud.Deliver
     public class ContentItem
     {
         private JObject elements;
-        private JObject relatedItems;
+        private JObject modularContent;
 
         /// <summary>
         /// System elements.
@@ -26,7 +26,7 @@ namespace KenticoCloud.Deliver
         /// </summary>
         public dynamic Elements { get; set; }
         
-        public ContentItem(JToken item, JToken relatedItems)
+        public ContentItem(JToken item, JToken modularContent)
         {
             if (item == null || !item.HasValues)
             {
@@ -37,7 +37,7 @@ namespace KenticoCloud.Deliver
             Elements = JObject.Parse(item["elements"].ToString());
 
             elements = (JObject)item["elements"];
-            this.relatedItems = (JObject)relatedItems;
+            this.modularContent = (JObject)modularContent;
         }
 
         /// <summary>
@@ -78,7 +78,7 @@ namespace KenticoCloud.Deliver
         {
             var codenames = ((JArray)elements[element]["value"]).ToObject<List<string>>();
 
-            return codenames.Select(c => new ContentItem(relatedItems[c], relatedItems));
+            return codenames.Select(c => new ContentItem(modularContent[c], modularContent));
         }
 
         /// <summary>

@@ -19,14 +19,14 @@ namespace KenticoCloud.Deliver
         public ContentItem Item { get; set; }
 
         /// <summary>
-        /// Related items.
+        /// Modular content.
         /// </summary>
-        public dynamic RelatedItems { get; set; }
+        public dynamic ModularContent { get; set; }
 
         public DeliverResponse(JToken response)
         {
-            RelatedItems = JObject.Parse(response["related_items"].ToString());
-            Item = new ContentItem(response["item"], response["related_items"]);
+            ModularContent = JObject.Parse(response["modular_content"].ToString());
+            Item = new ContentItem(response["item"], response["modular_content"]);
         }
     }
 }

@@ -10,7 +10,7 @@ namespace KenticoCloud.Deliver
     /// <summary>
     /// Represents "skip" query parameter.
     /// </summary>
-    public class SkipFilter
+    public class SkipFilter : IFilter
     {
         /// <summary>
         /// How many content items to skip.
