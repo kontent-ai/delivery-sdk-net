@@ -62,11 +62,11 @@
     <Compile Include="Filters\Elements\LessThanFilter.cs" />
     <Compile Include="Filters\Elements\EqualsFilter.cs" />
     <Compile Include="Filters\IFilter.cs" />
-    <Compile Include="Filters\Special\DepthFilter.cs" />
-    <Compile Include="Filters\Special\ElementsFilter.cs" />
-    <Compile Include="Filters\Special\SkipFilter.cs" />
-    <Compile Include="Filters\Special\LimitFilter.cs" />
-    <Compile Include="Filters\Special\OrderFilter.cs" />
+    <Compile Include="Filters\Parameters\DepthFilter.cs" />
+    <Compile Include="Filters\Parameters\ElementsFilter.cs" />
+    <Compile Include="Filters\Parameters\SkipFilter.cs" />
+    <Compile Include="Filters\Parameters\LimitFilter.cs" />
+    <Compile Include="Filters\Parameters\Order.cs" />
     <Compile Include="Models\Asset.cs" />
     <Compile Include="Models\ContentItem.cs" />
     <Compile Include="Pagination.cs" />

@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Net;
 using System.Text;
 using System.Threading.Tasks;
 
@@ -16,14 +17,14 @@ namespace KenticoCloud.Deliver
         /// <summary>
         /// HTTP status code.
         /// </summary>
-        public int StatusCode { get; }
+        public HttpStatusCode StatusCode { get; }
 
         /// <summary>
         /// Detailed message from the API.
         /// </summary>
         public override string Message { get; }
 
-        public DeliverException(int statusCode, string message)
+        public DeliverException(HttpStatusCode statusCode, string message)
         {
             var errorMessage = JObject.Parse(message);
 

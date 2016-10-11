@@ -9,7 +9,7 @@ namespace KenticoCloud.Deliver
     /// <summary>
     /// Represents "order" query parameter.
     /// </summary>
-    public class OrderFilter : IFilter
+    public class Order : IFilter
     {
         /// <summary>
         /// Order direction.
@@ -26,7 +26,7 @@ namespace KenticoCloud.Deliver
         /// </summary>
         /// <param name="element">Element codename.</param>
         /// <param name="orderDirection">Order direction.</param>
-        public OrderFilter(string element, OrderDirection orderDirection = Deliver.OrderDirection.Ascending)
+        public Order(string element, OrderDirection orderDirection = Deliver.OrderDirection.Ascending)
         {
             OrderElement = element;
             OrderDirection = orderDirection == Deliver.OrderDirection.Ascending ? "[asc]" : "[desc]";

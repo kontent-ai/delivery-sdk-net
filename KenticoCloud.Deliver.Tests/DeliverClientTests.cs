@@ -1,8 +1,9 @@
 ﻿using System;
-using NUnit.Framework;
 using System.Threading.Tasks;
 using System.Collections.Generic;
 using System.Linq;
+
+using NUnit.Framework;
 
 namespace KenticoCloud.Deliver.Tests
 {

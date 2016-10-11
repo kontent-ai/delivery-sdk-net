@@ -17,7 +17,7 @@ namespace KenticoCloud.Deliver
         private JObject modularContent;
 
         /// <summary>
-        /// System elements.
+        /// <see cref="SystemElements"/> 
         /// </summary>
         public SystemElements System { get; set; }
         
@@ -59,7 +59,7 @@ namespace KenticoCloud.Deliver
         }
 
         /// <summary>
-        /// Gets a datetime value from an element.
+        /// Gets a <see cref="DateTime"/> value from an element.
         /// </summary>
         /// <param name="element">Element name.</param>
         public DateTime GetDatetime(string element)
@@ -76,24 +76,38 @@ namespace KenticoCloud.Deliver
         /// content items.</remarks>
         public IEnumerable<ContentItem> GetModularContent(string element)
         {
+            if (elements.Property(element) == null)
+            {
+                throw new ArgumentException("Given element doesn't exist.");
+            }
+
             var codenames = ((JArray)elements[element]["value"]).ToObject<List<string>>();
 
             return codenames.Select(c => new ContentItem(modularContent[c], modularContent));
         }
 
         /// <summary>
-        /// Get assets from an element.
+        /// Get <see cref="Asset"/>s from an element.
         /// </summary>
         /// <param name="element">Element name.</param>
         public List<Asset> GetAssets(string element)
         {
+            if (elements.Property(element) == null)
+            {
+                throw new ArgumentException("Given element doesn't exist.");
+            }
+
             return ((JArray)elements[element]["value"]).Select(x => new Asset(x)).ToList();
         }
 
         private T GetElementValue<T>(string element)
         {
-            JToken token;
-            return elements.TryGetValue(element, StringComparison.OrdinalIgnoreCase, out token) ? token["value"].ToObject<T>() : default(T);
+            if (elements.Property(element) == null)
+            {
+                throw new ArgumentException("Given element doesn't exist.");
+            }
+
+            return elements[element]["value"].ToObject<T>();
         }
     }
 }
