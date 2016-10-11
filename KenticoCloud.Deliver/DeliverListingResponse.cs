@@ -27,7 +27,7 @@ namespace KenticoCloud.Deliver
 
         public DeliverListingResponse(JToken response)
         {
-            Pagination = new Pagination(response);
+            Pagination = new Pagination(response["pagination"]);
             ModularContent = JObject.Parse(response["modular_content"].ToString());
             Items = ((JArray)response["items"]).Select(x => new ContentItem(x, response["modular_content"])).ToList();
         }
