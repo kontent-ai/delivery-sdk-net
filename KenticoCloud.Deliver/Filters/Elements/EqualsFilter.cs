@@ -9,7 +9,7 @@ namespace KenticoCloud.Deliver
     /// <summary>
     /// Represents "equals" operation.
     /// </summary>
-    public class EqualsFilter : BaseFilter, IElementsFilter
+    public class EqualsFilter : AbstractFilter
     {
         /// <summary>
         /// Constructs the Equals filter.

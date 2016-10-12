@@ -15,7 +15,7 @@ namespace KenticoCloud.Deliver
         /// <summary>
         /// Maximal number of content items.
         /// </summary>
-        public string Limit { get; }
+        public int Limit { get; }
 
         /// <summary>
         /// Constructs the limit filter.
@@ -23,15 +23,15 @@ namespace KenticoCloud.Deliver
         /// <param name="limit">Maximal number of content items.</param>
         public LimitFilter(int limit)
         {
-            Limit = limit.ToString(CultureInfo.InvariantCulture);
+            Limit = limit;
         }
 
         /// <summary>
-        /// Returns the query string represention of the filter.
+        /// Returns the query string representation of the filter.
         /// </summary>
         public string GetQueryStringParameter()
         {
-            return String.Format("limit={0}", Uri.EscapeDataString(Limit));
+            return $"limit={Limit}";
         }
     }
 }

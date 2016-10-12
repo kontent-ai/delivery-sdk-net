@@ -24,6 +24,11 @@ namespace KenticoCloud.Deliver
         /// </summary>
         public override string Message { get; }
 
+        /// <summary>
+        /// Initializes exception.
+        /// </summary>
+        /// <param name="statusCode">Status code of response.</param>
+        /// <param name="message">Exception message.</param>
         public DeliverException(HttpStatusCode statusCode, string message)
         {
             var errorMessage = JObject.Parse(message);

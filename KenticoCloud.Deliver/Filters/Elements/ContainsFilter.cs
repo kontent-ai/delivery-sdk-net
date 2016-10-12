@@ -9,7 +9,7 @@ namespace KenticoCloud.Deliver
     /// <summary>
     /// Represents "contains" operation.
     /// </summary>
-    public class ContainsFilter : BaseFilter, IElementsFilter
+    public class ContainsFilter : AbstractFilter
     {
         /// <summary>
         /// Constructs the Contains filter.

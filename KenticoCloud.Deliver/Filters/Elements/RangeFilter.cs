@@ -9,7 +9,7 @@ namespace KenticoCloud.Deliver
     /// <summary>
     /// Represents "range" operation.
     /// </summary>
-    public class RangeFilter : BaseFilter, IElementsFilter
+    public class RangeFilter : AbstractFilter
     {
         /// <summary>
         /// Constructs the Range filter.

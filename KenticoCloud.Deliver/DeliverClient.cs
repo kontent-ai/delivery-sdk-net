@@ -10,11 +10,13 @@ using Newtonsoft.Json.Linq;
 
 namespace KenticoCloud.Deliver
 {
+    /// <summary>
+    /// Class for querying Deliver API.
+    /// </summary>
     public class DeliverClient
     {
         private readonly HttpClient httpClient;
         private readonly DeliverUrlBuilder urlBuilder;
-
 
         /// <summary>
         /// Constructor for production API.

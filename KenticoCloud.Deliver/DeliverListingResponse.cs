@@ -13,6 +13,9 @@ namespace KenticoCloud.Deliver
     /// </summary>
     public class DeliverListingResponse
     {
+        /// <summary>
+        /// Contains paging information.
+        /// </summary>
         public Pagination Pagination { get; set; }
 
         /// <summary>
@@ -25,6 +28,10 @@ namespace KenticoCloud.Deliver
         /// </summary>
         public dynamic ModularContent { get; set; }
 
+        /// <summary>
+        /// Initializes response object.
+        /// </summary>
+        /// <param name="response">JSON returned from API.</param>
         public DeliverListingResponse(JToken response)
         {
             Pagination = new Pagination(response["pagination"]);

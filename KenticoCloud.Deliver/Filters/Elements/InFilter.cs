@@ -7,9 +7,9 @@ using System.Threading.Tasks;
 namespace KenticoCloud.Deliver
 {
     /// <summary>
-    /// Represents "in" operation.
+    /// Represents "in" operator.
     /// </summary>
-    public class InFilter : BaseFilter, IElementsFilter
+    public class InFilter : AbstractFilter
     {
         /// <summary>
         /// Constructs the In filter.

@@ -9,7 +9,7 @@ using Newtonsoft.Json.Linq;
 namespace KenticoCloud.Deliver
 {
     /// <summary>
-    /// Represents a reeponse from the API when requesting content item by its codename.
+    /// Represents a response from the API when requesting content item by its codename.
     /// </summary>
     public class DeliverResponse
     {
@@ -23,6 +23,10 @@ namespace KenticoCloud.Deliver
         /// </summary>
         public dynamic ModularContent { get; set; }
 
+        /// <summary>
+        /// Initializes response object.
+        /// </summary>
+        /// <param name="response">JSON returned from API.</param>
         public DeliverResponse(JToken response)
         {
             ModularContent = JObject.Parse(response["modular_content"].ToString());

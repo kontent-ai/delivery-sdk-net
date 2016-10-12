@@ -9,30 +9,35 @@ using Newtonsoft.Json.Linq;
 namespace KenticoCloud.Deliver
 {
     /// <summary>
-    /// Represents pagination information from Deliver response
+    /// Represents pagination information from Deliver response.
     /// </summary>
     public class Pagination
     {
         /// <summary>
-        /// How many content items were skipped.
+        /// Number of items skipped.
         /// </summary>
         public int Skip { get; set; }
 
         /// <summary>
-        /// Maximum number of items in a responce.
+        /// Maximal number of items that might have been returned.
         /// </summary>
         public int Limit { get; set; }
 
         /// <summary>
-        /// How many items the response contains.
+        /// Number of items actually returned.
         /// </summary>
         public int Count { get; set; }
 
         /// <summary>
-        /// URL to the next page of items. If empty, there is no next page.
+        /// URL to the next page.
         /// </summary>
+        /// <remarks>Contains <see cref="string.Empty"/> if current response returned last page.</remarks>
         public string NextPageUrl { get; set; }
 
+        /// <summary>
+        /// Initializes pagination object.
+        /// </summary>
+        /// <param name="response">JSON returned from API.</param>
         public Pagination(JToken response)
         {
             Skip = response["skip"].ToObject<int>();

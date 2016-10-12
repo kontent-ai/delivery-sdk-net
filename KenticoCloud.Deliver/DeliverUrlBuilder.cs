@@ -3,17 +3,18 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
+using System.Configuration;
 
 namespace KenticoCloud.Deliver
 {
     internal class DeliverUrlBuilder
     {
 #if DEBUG
-        private string PRODUCTION_ENDPOINT = System.Configuration.ConfigurationManager.AppSettings["ProductionEndpoint"] ?? "http://deliver.kenticocloud.com/{0}/items/";
-        private string PREVIEW_ENDPOINT = System.Configuration.ConfigurationManager.AppSettings["PreviewEndpoint"] ?? "http://preview.deliver.kenticocloud.com/{0}/items/";
+        private string PRODUCTION_ENDPOINT = ConfigurationManager.AppSettings["ProductionEndpoint"] ?? "https://deliver.kenticocloud.com/{0}/items/";
+        private string PREVIEW_ENDPOINT = ConfigurationManager.AppSettings["PreviewEndpoint"] ?? "https://preview.deliver.kenticocloud.com/{0}/items/";
 #else
-        private const string PRODUCTION_ENDPOINT = "http://deliver.kenticocloud.com/{0}/items/";
-        private const string PREVIEW_ENDPOINT = "http://preview.deliver.kenticocloud.com/{0}/items/";
+        private const string PRODUCTION_ENDPOINT = "https://deliver.kenticocloud.com/{0}/items/";
+        private const string PREVIEW_ENDPOINT = "https://preview.deliver.kenticocloud.com/{0}/items/";
 #endif
 
 

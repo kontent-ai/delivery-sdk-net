@@ -9,7 +9,7 @@ namespace KenticoCloud.Deliver
     /// <summary>
     /// Represents "less than" operation.
     /// </summary>
-    public class LessThanFilter : BaseFilter, IElementsFilter
+    public class LessThanFilter : AbstractFilter
     {
         /// <summary>
         /// Constructs the LessThan filter.

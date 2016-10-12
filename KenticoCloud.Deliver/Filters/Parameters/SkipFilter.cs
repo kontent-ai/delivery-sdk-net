@@ -15,7 +15,7 @@ namespace KenticoCloud.Deliver
         /// <summary>
         /// How many content items to skip.
         /// </summary>
-        public string Skip { get; }
+        public int Skip { get; }
 
         /// <summary>
         /// Constructs the skip filter.
@@ -23,15 +23,15 @@ namespace KenticoCloud.Deliver
         /// <param name="skip">How many content items to skip.</param>
         public SkipFilter(int skip)
         {
-            Skip = skip.ToString(CultureInfo.InvariantCulture);
+            Skip = skip;
         }
 
         /// <summary>
-        /// Returns the query string represention of the filter.
+        /// Returns the query string representation of the filter.
         /// </summary>
         public string GetQueryStringParameter()
         {
-            return String.Format("skip={0}", Uri.EscapeDataString(Skip));
+            return $"skip={Skip}";
         }
     }
 }

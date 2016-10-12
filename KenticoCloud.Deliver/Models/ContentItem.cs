@@ -17,15 +17,20 @@ namespace KenticoCloud.Deliver
         private JObject modularContent;
 
         /// <summary>
-        /// <see cref="SystemElements"/> 
+        /// <see cref="Deliver.System"/> 
         /// </summary>
-        public SystemElements System { get; set; }
+        public System System { get; set; }
         
         /// <summary>
         /// Elements in its raw form.
         /// </summary>
         public dynamic Elements { get; set; }
-        
+
+        /// <summary>
+        /// Initializes content item from response JSONs.
+        /// </summary>
+        /// <param name="item">JSON with item data.</param>
+        /// <param name="modularContent">JSON with modular content.</param>
         public ContentItem(JToken item, JToken modularContent)
         {
             if (item == null || !item.HasValues)
@@ -33,7 +38,7 @@ namespace KenticoCloud.Deliver
                 return;
             }
 
-            System = new SystemElements(item["system"]);
+            System = new System(item["system"]);
             Elements = JObject.Parse(item["elements"].ToString());
 
             elements = (JObject)item["elements"];

@@ -11,7 +11,7 @@ namespace KenticoCloud.Deliver
     /// <summary>
     /// Represents the system elements in a content item.
     /// </summary>
-    public class SystemElements
+    public class System
     {
         /// <summary>
         /// Unique content item ID.
@@ -42,8 +42,12 @@ namespace KenticoCloud.Deliver
         /// Date and time when the content item was last modified.
         /// </summary>
         public DateTime LastModified { get; set; }
-        
-        public SystemElements(JToken system)
+
+        /// <summary>
+        /// Initializes system information 
+        /// </summary>
+        /// <param name="system"></param>
+        public System(JToken system)
         {
             Id = system["id"].ToString();
             Name = system["name"].ToString();

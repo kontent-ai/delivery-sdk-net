@@ -9,7 +9,7 @@ namespace KenticoCloud.Deliver
     /// <summary>
     /// Base class for the elements filters.
     /// </summary>
-    public class BaseFilter : IElementsFilter
+    public abstract class AbstractFilter : IFilter
 
     {
         /// <summary>
@@ -28,18 +28,18 @@ namespace KenticoCloud.Deliver
         public string Operator { get; protected set; }
 
         /// <summary>
-        /// 
+        /// Abstract constructor.
         /// </summary>
         /// <param name="element">Element codename.</param>
         /// <param name="value">Parameter value.</param>
-        public BaseFilter(string element, string value)
+        public AbstractFilter(string element, string value)
         {
             Element = element;
             Value = value;
         }
 
         /// <summary>
-        /// Returns the query string represention of the filter.
+        /// Returns the query string representation of the filter.
         /// </summary>
         public string GetQueryStringParameter()
         {

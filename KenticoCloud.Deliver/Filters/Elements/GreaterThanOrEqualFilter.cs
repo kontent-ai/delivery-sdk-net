@@ -9,7 +9,7 @@ namespace KenticoCloud.Deliver
     /// <summary>
     /// Represents "greater than or equal" operation.
     /// </summary>
-    public class GreaterThanOrEqualFilter : BaseFilter, IElementsFilter
+    public class GreaterThanOrEqualFilter : AbstractFilter
     {
         /// <summary>
         /// Constructs the GreaterThanOrEqual filter.

@@ -12,7 +12,7 @@ namespace KenticoCloud.Deliver
     public interface IFilter
     {
         /// <summary>
-        /// Returns the query string represention of the filter.
+        /// Returns the query string representation of the filter.
         /// </summary>
         string GetQueryStringParameter();
     }

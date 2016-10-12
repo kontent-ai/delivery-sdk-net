@@ -15,7 +15,7 @@ namespace KenticoCloud.Deliver
         /// <summary>
         /// Depth.
         /// </summary>
-        public string Depth { get; }
+        public int Depth { get; }
 
         /// <summary>
         /// Constructs the depth filter.
@@ -23,15 +23,15 @@ namespace KenticoCloud.Deliver
         /// <param name="depth">Depth.</param>
         public DepthFilter(int depth)
         {
-            Depth = depth.ToString(CultureInfo.InvariantCulture);
+            Depth = depth;
         }
 
         /// <summary>
-        /// Returns the query string represention of the filter.
+        /// Returns the query string representation of the filter.
         /// </summary>
         public string GetQueryStringParameter()
         {
-            return String.Format("depth={0}", Uri.EscapeDataString(Depth));
+            return $"depth={Depth}";
         }
     }
 }
