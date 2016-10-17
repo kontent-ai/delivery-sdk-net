@@ -35,13 +35,13 @@ namespace KenticoCloud.Deliver
         }
 
 
-        public string GetUrlEndpoint(string codename = "", params string[] queryParams)
+        public string GetEndpointUrl(string codename = "", params string[] queryParams)
         {
             return GetBaseUrl(codename) + "?" + String.Join("&", queryParams);
         }
 
 
-        public string ComposeDeliverUrl(string codename = "", IEnumerable<IFilter> filters = null)
+        public string GetEndpointUrl(string codename = "", IEnumerable<IFilter> filters = null)
         {
             var url = GetBaseUrl(codename);
 

@@ -67,7 +67,7 @@ namespace KenticoCloud.Deliver
         /// Gets a <see cref="DateTime"/> value from an element.
         /// </summary>
         /// <param name="element">Element name.</param>
-        public DateTime GetDatetime(string element)
+        public DateTime GetDateTime(string element)
         {
             return GetElementValue<DateTime>(element);
         }

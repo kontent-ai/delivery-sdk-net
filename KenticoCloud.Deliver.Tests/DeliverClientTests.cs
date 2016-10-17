@@ -24,7 +24,7 @@ namespace KenticoCloud.Deliver.Tests
             var textElement = item.GetString("text");
             var richTextElement = item.GetString("rich_text");
             var numberElement = item.GetNumber("number");
-            var datetimeElement = item.GetDatetime("datetime");
+            var datetimeElement = item.GetDateTime("datetime");
             var assetElement = item.GetAssets("assets");
             var modularContentElement = item.GetModularContent("modular_content");
 

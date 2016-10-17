@@ -51,7 +51,7 @@ namespace KenticoCloud.Deliver
         /// <param name="queryParams">Query parameters. For example: "elements=title" or "depth=0"."</param>
         public async Task<JObject> GetItemJsonAsync(string itemCodename, params string[] queryParams)
         {
-            var url = urlBuilder.GetUrlEndpoint(itemCodename, queryParams);
+            var url = urlBuilder.GetEndpointUrl(itemCodename, queryParams);
             return await GetDeliverResponseAsync(url);
         }
 
@@ -62,7 +62,7 @@ namespace KenticoCloud.Deliver
         /// <param name="queryParams">Query parameters. For example: "elements=title" or "depth=0"."</param>
         public async Task<JObject> GetItemsJsonAsync(params string[] queryParams)
         {
-            var url = urlBuilder.GetUrlEndpoint(null, queryParams);
+            var url = urlBuilder.GetEndpointUrl(null, queryParams);
             return await GetDeliverResponseAsync(url);
         }
 
@@ -79,7 +79,7 @@ namespace KenticoCloud.Deliver
                 throw new ArgumentException("Entered item codename is not valid.", "itemCodename");
             }
 
-            var url = urlBuilder.ComposeDeliverUrl(itemCodename, parameters);
+            var url = urlBuilder.GetEndpointUrl(itemCodename, parameters);
             var response = await GetDeliverResponseAsync(url);
 
             return new DeliverResponse(response);
@@ -92,7 +92,7 @@ namespace KenticoCloud.Deliver
         /// <param name="parameters">Query parameters.</param>
         public async Task<DeliverListingResponse> GetItemsAsync(IEnumerable<IFilter> parameters = null)
         {
-            var url = urlBuilder.ComposeDeliverUrl(filters: parameters);
+            var url = urlBuilder.GetEndpointUrl(filters: parameters);
             var response = await GetDeliverResponseAsync(url);
 
             return new DeliverListingResponse(response);
