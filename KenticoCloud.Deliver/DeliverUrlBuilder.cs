@@ -11,10 +11,10 @@ namespace KenticoCloud.Deliver
     {
 #if DEBUG
         private string PRODUCTION_ENDPOINT = ConfigurationManager.AppSettings["ProductionEndpoint"] ?? "https://deliver.kenticocloud.com/{0}/items/";
-        private string PREVIEW_ENDPOINT = ConfigurationManager.AppSettings["PreviewEndpoint"] ?? "https://preview.deliver.kenticocloud.com/{0}/items/";
+        private string PREVIEW_ENDPOINT = ConfigurationManager.AppSettings["PreviewEndpoint"] ?? "https://preview-deliver.kenticocloud.com/{0}/items/";
 #else
         private const string PRODUCTION_ENDPOINT = "https://deliver.kenticocloud.com/{0}/items/";
-        private const string PREVIEW_ENDPOINT = "https://preview.deliver.kenticocloud.com/{0}/items/";
+        private const string PREVIEW_ENDPOINT = "https://preview-deliver.kenticocloud.com/{0}/items/";
 #endif
 
 
