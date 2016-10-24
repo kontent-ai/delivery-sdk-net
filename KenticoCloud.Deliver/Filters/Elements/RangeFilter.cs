@@ -15,7 +15,8 @@ namespace KenticoCloud.Deliver
         /// Constructs the Range filter.
         /// </summary>
         /// <param name="element">Element codename.</param>
-        /// <param name="value">Parameter value.</param>
+        /// <param name="lowerEndpoint">Lower parameter value.</param>
+        /// <param name="upperEndpoint">Upper parameter value.</param>
         public RangeFilter(string element, string lowerEndpoint, string upperEndpoint)
             : base(element, lowerEndpoint + "," + upperEndpoint)
         {

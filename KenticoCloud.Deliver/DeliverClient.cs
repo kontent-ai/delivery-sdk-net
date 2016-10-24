@@ -51,6 +51,11 @@ namespace KenticoCloud.Deliver
         /// <param name="queryParams">Query parameters. For example: "elements=title" or "depth=0"."</param>
         public async Task<JObject> GetItemJsonAsync(string itemCodename, params string[] queryParams)
         {
+            if (String.IsNullOrEmpty(itemCodename))
+            {
+                throw new ArgumentException("Entered item codename is not valid.", "itemCodename");
+            }
+
             var url = urlBuilder.GetEndpointUrl(itemCodename, queryParams);
             return await GetDeliverResponseAsync(url);
         }
@@ -62,7 +67,7 @@ namespace KenticoCloud.Deliver
         /// <param name="queryParams">Query parameters. For example: "elements=title" or "depth=0"."</param>
         public async Task<JObject> GetItemsJsonAsync(params string[] queryParams)
         {
-            var url = urlBuilder.GetEndpointUrl(null, queryParams);
+            var url = urlBuilder.GetEndpointUrl(queryParams: queryParams);
             return await GetDeliverResponseAsync(url);
         }
 
