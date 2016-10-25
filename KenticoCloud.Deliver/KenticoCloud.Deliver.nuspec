@@ -4,6 +4,7 @@
         <id>$id$</id>
         <version>$version$</version>
         <authors>$author$</authors>
+		<projectUrl>https://github.com/Kentico/Deliver-.NET-SDK</projectUrl>
         <licenseUrl>https://raw.githubusercontent.com/Kentico/Deliver-.NET-SDK/master/LICENSE</licenseUrl>
         <iconUrl>http://kentico.com/favicon.ico</iconUrl>
         <requireLicenseAcceptance>true</requireLicenseAcceptance>
@@ -13,7 +14,7 @@
         <language>en-US</language>
         <releaseNotes></releaseNotes>
         <dependencies>
-          <group targetFramework=".NETFramework4.6.1">
+          <group targetFramework=".NETFramework4.5">
             <dependency id="Newtonsoft.Json" version="9.0.1" />
           </group>
         </dependencies>
