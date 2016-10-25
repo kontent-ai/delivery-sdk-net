@@ -2,18 +2,18 @@
 
 ## SUMMARY
 
-Kentico Deliver .NET SDK is a library used for retrieving content from Kentico Deliver API from your .NET applications.
+Kentico Deliver .NET SDK is a library used for retrieving content from Kentico Deliver API.
 
 ## PREREQUISITIES
 
-In order to retrieve the content from the Kentico Deliver API, you need to have a subscription for the service at https://app.kenticocloud.com . Please read https://kenticocloud.com/docs for more information.
+In order to retrieve the content from the Kentico Deliver API, you need to have a Deliver subscription at https://app.kenticocloud.com . Please read https://kenticocloud.com/docs for more information.
 
 ## BASICS
 
 ### Creating a DeliverClient instance & basic querying
 
-**DeliverClient** of the SDK that enables you to query your content. To create instance you need to provide at least your Project ID. Here is how you can find it: https://kenticocloud.com/docs#getting-project-id
-Once you have the DeliverClient instance, you can start querying your project repository by calling methods from the client class.
+**DeliverClient** is the main class of the SDK that enables you to query your content. To create instance you need to provide the ID of your project. More details about getting Project ID: https://kenticocloud.com/docs#getting-project-id
+Once you have the DeliverClient instance, you can start querying your project repository by calling methods on the instance.
 
 #### Retrieving single content item
 
@@ -31,7 +31,7 @@ new DeliverClient("44cb81b2-20c0-4288-81c7-ac541bf0eb48").GetItemsAsync();
 
 The SDK supports full scale of the API querying capabilities that you can find here: http://docs.kenticodeliver.apiary.io
 
-Here is an example of query that returns only first 10 content items of certain type with certain elements, ordered by the name:
+Here is an example of query that returns only first 10 content items of the brewer type with only the selected elements and ordered by the name:
 ```C#
 var response = await client.GetItemsAsync(new List<IFilter> {
     new LimitFilter(10),
@@ -41,29 +41,33 @@ var response = await client.GetItemsAsync(new List<IFilter> {
 });
 ```
 
+#### Retrieving unpublished content
+
+To preview the unpublished content, you need to create DeliverClient instance with both Project ID and Preview API key. The Preview API key is part of your Kentico Deliver project. For more details, please read: https://kenticocloud.com/docs#previewing-unpublished-content-using-deliver-api
+
 ### Response structure
 
 #### Single content item response
 
-The **DeliverResponse** is a typed wrapper of the JSON response from Kentico Deliver API endpoint for retrieving single content item that is described here: http://docs.kenticodeliver.apiary.io/#reference/0/one-content-item/get-specific-content-item
+The **DeliverResponse** is a class representing the JSON response from Kentico Deliver API endpoint for retrieving single content item. Full description of the response format is described here: http://docs.kenticodeliver.apiary.io/#reference/0/one-content-item/get-specific-content-item
 
-* If you query a single item, you will receive a DeliverResponse instance that contains the **ContentItem** you requested and Modular content as a dynamic.
+* If you query a single item, you will receive a DeliverResponse instance that contains the **ContentItem** you requested and Modular content in a dynamically typed property.
 
-#### Single content item response
+#### Listing response
 
-The **DeliverListingResponse** is a typed wrapper of the JSON response from Kentico Deliver API endpoint for retrieving multiple content items that is described here: http://docs.kenticodeliver.apiary.io/#reference/0/all-content-items/get-all-content-items
+The **DeliverListingResponse** is a class representing the JSON response from Kentico Deliver API endpoint for retrieving multiple content items. Full description of the response is described here: http://docs.kenticodeliver.apiary.io/#reference/0/all-content-items/get-all-content-items
 
 * If you query a multiple items, you will receive a DeliverListingResponse instance that contains:
  * **Pagination** property containing information about current page, number of items, next page URL etc.
- * List of Content Items that contains the items you requested
- * Modular content as dynamic
+ * List of content items that contains the items you requested.
+ * Modular content items in dynamically typed property.
  
 #### ContentItem structure
  
- * ContentItem then contains:
-  * System with metadata such as code name, display name, type, or site map locations.
-  * Elements as a dynamic object containing all the elements of your content structured by code names.
-  * Methods for easier access to certain types of content elements such as modular content, or assets
+ * ContentItem class provides the following properties:
+  * System property with metadata such as code name, display name, type, or site map locations.
+  * Elements as a dynamically typed property containing all the elements included in the response structured by code names.
+  * Methods for easier access to certain types of content elements such as modular content, or assets.
   
 ##### Examples:
 * Retrieving name of article:
