@@ -2,7 +2,7 @@
 
 ## SUMMARY
 
-Kentico Deliver .NET SDK is a library used for retrieving content from Kentico Deliver API.
+Kentico Deliver .NET SDK is a library used for retrieving content from Kentico Deliver API. The SDK is distributed as a NuGet package https://www.nuget.org/packages/KenticoCloud.Deliver .
 
 ## PREREQUISITIES
 
