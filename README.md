@@ -86,4 +86,8 @@ ArticleItem.GetAssets("teaser_image")[0].Url
 ```C#
 ArticleItem.GetModularContent("related_articles")
 ```
+* Retrieving content using accessor methods:
+```C
+ArticleItem.GetDateTime("publication_date")
+```
 
