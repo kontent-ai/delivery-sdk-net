@@ -82,7 +82,7 @@ ArticleItem.Elements.text.value
 ```C#
 ArticleItem.GetAssets("teaser_image")[0].Url
 ```
-* Retrieving ContentItems or related articles:
+* Retrieving related articles:
 ```C#
 ArticleItem.GetModularContent("related_articles")
 ```
