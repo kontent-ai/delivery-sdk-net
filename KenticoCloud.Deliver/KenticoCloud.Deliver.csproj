@@ -51,6 +51,8 @@
     <Compile Include="DeliverListingResponse.cs" />
     <Compile Include="DeliverResponse.cs" />
     <Compile Include="DeliverUrlBuilder.cs" />
+    <Compile Include="Filters\Elements\AnyFilter.cs" />
+    <Compile Include="Filters\Elements\AllFilter.cs" />
     <Compile Include="Filters\Enums\OrderDirectionEnum.cs" />
     <Compile Include="Filters\Elements\BaseFilter.cs" />
     <Compile Include="Filters\Elements\ContainsFilter.cs" />
