@@ -56,7 +56,7 @@ namespace KenticoCloud.Deliver
                 throw new ArgumentException("Entered item codename is not valid.", "itemCodename");
             }
 
-            var url = urlBuilder.GetEndpointUrl(itemCodename, queryParams);
+            var url = urlBuilder.GetEndpointUrl("items", itemCodename, queryParams);
             return await GetDeliverResponseAsync(url);
         }
 
@@ -64,10 +64,10 @@ namespace KenticoCloud.Deliver
         /// <summary>
         /// Searches the content repository for items that match the criteria. This method returns the whole response as JObject.
         /// </summary>
-        /// <param name="queryParams">Query parameters. For example: "elements=title" or "depth=0"."</param>
+        /// <param name="queryParams">Query parameters. For example: "elements=title" or "depth=0".</param>
         public async Task<JObject> GetItemsJsonAsync(params string[] queryParams)
         {
-            var url = urlBuilder.GetEndpointUrl(queryParams: queryParams);
+            var url = urlBuilder.GetEndpointUrl("items", queryParams: queryParams);
             return await GetDeliverResponseAsync(url);
         }
 
@@ -77,17 +77,17 @@ namespace KenticoCloud.Deliver
         /// </summary>
         /// <param name="itemCodename">Content item codename.</param>
         /// <param name="parameters">Query parameters.</param>
-        public async Task<DeliverResponse> GetItemAsync(string itemCodename, IEnumerable<IFilter> parameters = null)
+        public async Task<DeliverItemResponse> GetItemAsync(string itemCodename, IEnumerable<IFilter> parameters = null)
         {
             if (String.IsNullOrEmpty(itemCodename))
             {
                 throw new ArgumentException("Entered item codename is not valid.", "itemCodename");
             }
 
-            var url = urlBuilder.GetEndpointUrl(itemCodename, parameters);
+            var url = urlBuilder.GetEndpointUrl("items", itemCodename, parameters);
             var response = await GetDeliverResponseAsync(url);
 
-            return new DeliverResponse(response);
+            return new DeliverItemResponse(response);
         }
 
 
@@ -95,12 +95,72 @@ namespace KenticoCloud.Deliver
         /// Searches the content repository for items that match the filter criteria.
         /// </summary>
         /// <param name="parameters">Query parameters.</param>
-        public async Task<DeliverListingResponse> GetItemsAsync(IEnumerable<IFilter> parameters = null)
+        public async Task<DeliverItemListingResponse> GetItemsAsync(IEnumerable<IFilter> parameters = null)
         {
-            var url = urlBuilder.GetEndpointUrl(filters: parameters);
+            var url = urlBuilder.GetEndpointUrl("items", filters: parameters);
             var response = await GetDeliverResponseAsync(url);
 
-            return new DeliverListingResponse(response);
+            return new DeliverItemListingResponse(response);
+        }
+
+
+        /// <summary>
+        /// Gets one content type by its codename. This method returns the whole response as JObject.
+        /// </summary>
+        /// <param name="itemCodename">Content type codename.</param>
+        /// <param name="queryParams">Query parameters.</param>
+        public async Task<JObject> GetTypeJsonAsync(string typeCodename, params string[] queryParams)
+        {
+            if (String.IsNullOrEmpty(typeCodename))
+            {
+                throw new ArgumentException("Entered type codename is not valid.", "typeCodename");
+            }
+
+            var url = urlBuilder.GetEndpointUrl("types", typeCodename, queryParams);
+            return await GetDeliverResponseAsync(url);
+        }
+
+
+        /// <summary>
+        /// Searches the content repository for types that match the criteria. This method returns the whole response as JObject.
+        /// </summary>
+        /// <param name="queryParams">Query parameters.</param>
+        public async Task<JObject> GetTypesJsonAsync(params string[] queryParams)
+        {
+            var url = urlBuilder.GetEndpointUrl("types", queryParams: queryParams);
+            return await GetDeliverResponseAsync(url);
+        }
+
+
+        /// <summary>
+        /// Gets one content type by its codename.
+        /// </summary>
+        /// <param name="itemCodename">Content type codename.</param>
+        /// <param name="parameters">Query parameters.</param>
+        public async Task<ContentType> GetTypeAsync(string typeCodename, IEnumerable<IFilter> parameters = null)
+        {
+            if (String.IsNullOrEmpty(typeCodename))
+            {
+                throw new ArgumentException("Entered type codename is not valid.", "typeCodename");
+            }
+
+            var url = urlBuilder.GetEndpointUrl("types", typeCodename, parameters);
+            var response = await GetDeliverResponseAsync(url);
+
+            return new ContentType(response);
+        }
+
+
+        /// <summary>
+        /// Searches the content repository for types that match the filter criteria.
+        /// </summary>
+        /// <param name="parameters">Query parameters.</param>
+        public async Task<DeliverTypeListingResponse> GetTypesAsync(IEnumerable<IFilter> parameters = null)
+        {
+            var url = urlBuilder.GetEndpointUrl("types", filters: parameters);
+            var response = await GetDeliverResponseAsync(url);
+
+            return new DeliverTypeListingResponse(response);
         }
 
 

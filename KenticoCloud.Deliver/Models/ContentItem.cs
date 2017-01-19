@@ -17,9 +17,9 @@ namespace KenticoCloud.Deliver
         private JObject modularContent;
 
         /// <summary>
-        /// <see cref="Deliver.System"/> 
+        /// <see cref="Deliver.ItemSystem"/> 
         /// </summary>
-        public System System { get; set; }
+        public ItemSystem System { get; set; }
         
         /// <summary>
         /// Elements in its raw form.
@@ -38,7 +38,7 @@ namespace KenticoCloud.Deliver
                 return;
             }
 
-            System = new System(item["system"]);
+            System = new ItemSystem(item["system"]);
             Elements = JObject.Parse(item["elements"].ToString());
 
             elements = (JObject)item["elements"];

@@ -48,8 +48,9 @@
   <ItemGroup>
     <Compile Include="DeliverClient.cs" />
     <Compile Include="DeliverException.cs" />
-    <Compile Include="DeliverListingResponse.cs" />
-    <Compile Include="DeliverResponse.cs" />
+    <Compile Include="DeliverTypeListingResponse.cs" />
+    <Compile Include="DeliverItemListingResponse.cs" />
+    <Compile Include="DeliverItemResponse.cs" />
     <Compile Include="DeliverUrlBuilder.cs" />
     <Compile Include="Filters\Elements\AnyFilter.cs" />
     <Compile Include="Filters\Elements\AllFilter.cs" />
@@ -70,9 +71,11 @@
     <Compile Include="Filters\Parameters\LimitFilter.cs" />
     <Compile Include="Filters\Parameters\Order.cs" />
     <Compile Include="Models\Asset.cs" />
+    <Compile Include="Models\ContentType.cs" />
     <Compile Include="Models\ContentItem.cs" />
+    <Compile Include="Models\TypeSystem.cs" />
     <Compile Include="Pagination.cs" />
-    <Compile Include="Models\System.cs" />
+    <Compile Include="Models\ItemSystem.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
   </ItemGroup>
   <ItemGroup>

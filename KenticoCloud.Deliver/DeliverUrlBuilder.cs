@@ -10,11 +10,11 @@ namespace KenticoCloud.Deliver
     internal class DeliverUrlBuilder
     {
 #if DEBUG
-        private string PRODUCTION_ENDPOINT = ConfigurationManager.AppSettings["ProductionEndpoint"] ?? "https://deliver.kenticocloud.com/{0}/items/";
-        private string PREVIEW_ENDPOINT = ConfigurationManager.AppSettings["PreviewEndpoint"] ?? "https://preview-deliver.kenticocloud.com/{0}/items/";
+        private string PRODUCTION_ENDPOINT = ConfigurationManager.AppSettings["ProductionEndpoint"] ?? "https://deliver.kenticocloud.com/{0}/{1}/";
+        private string PREVIEW_ENDPOINT = ConfigurationManager.AppSettings["PreviewEndpoint"] ?? "https://preview-deliver.kenticocloud.com/{0}/{1}/";
 #else
-        private const string PRODUCTION_ENDPOINT = "https://deliver.kenticocloud.com/{0}/items/";
-        private const string PREVIEW_ENDPOINT = "https://preview-deliver.kenticocloud.com/{0}/items/";
+        private const string PRODUCTION_ENDPOINT = "https://deliver.kenticocloud.com/{0}/{1}/";
+        private const string PREVIEW_ENDPOINT = "https://preview-deliver.kenticocloud.com/{0}/{1}/";
 #endif
 
 
@@ -35,15 +35,15 @@ namespace KenticoCloud.Deliver
         }
 
 
-        public string GetEndpointUrl(string codename = "", params string[] queryParams)
+        public string GetEndpointUrl(string endpoint, string codename = "", params string[] queryParams)
         {
-            return GetBaseUrl(codename) + "?" + String.Join("&", queryParams);
+            return GetBaseUrl(endpoint, codename) + "?" + String.Join("&", queryParams);
         }
 
 
-        public string GetEndpointUrl(string codename = "", IEnumerable<IFilter> filters = null)
+        public string GetEndpointUrl(string endpoint, string codename = "", IEnumerable<IFilter> filters = null)
         {
-            var url = GetBaseUrl(codename);
+            var url = GetBaseUrl(codename, endpoint);
 
             if (filters != null && filters.Any())
             {
@@ -54,11 +54,11 @@ namespace KenticoCloud.Deliver
         }
 
 
-        private string GetBaseUrl(string codename)
+        private string GetBaseUrl(string codename, string endpoint)
         {
-            var endpoint = String.IsNullOrEmpty(accessToken) ? PRODUCTION_ENDPOINT : PREVIEW_ENDPOINT;
+            var url = String.IsNullOrEmpty(accessToken) ? PRODUCTION_ENDPOINT : PREVIEW_ENDPOINT;
 
-            return String.Format(endpoint, projectId) + Uri.EscapeDataString(codename);
+            return String.Format(url, projectId, endpoint) + Uri.EscapeDataString(codename);
         }
     }
 }
