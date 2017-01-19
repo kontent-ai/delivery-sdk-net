@@ -56,7 +56,7 @@ namespace KenticoCloud.Deliver
                 throw new ArgumentException("Entered item codename is not valid.", "itemCodename");
             }
 
-            var url = urlBuilder.GetEndpointUrl("items", itemCodename, queryParams);
+            var url = urlBuilder.GetItemsUrl(itemCodename, queryParams);
             return await GetDeliverResponseAsync(url);
         }
 
@@ -67,7 +67,7 @@ namespace KenticoCloud.Deliver
         /// <param name="queryParams">Query parameters. For example: "elements=title" or "depth=0".</param>
         public async Task<JObject> GetItemsJsonAsync(params string[] queryParams)
         {
-            var url = urlBuilder.GetEndpointUrl("items", queryParams: queryParams);
+            var url = urlBuilder.GetItemsUrl(queryParams: queryParams);
             return await GetDeliverResponseAsync(url);
         }
 
@@ -84,7 +84,7 @@ namespace KenticoCloud.Deliver
                 throw new ArgumentException("Entered item codename is not valid.", "itemCodename");
             }
 
-            var url = urlBuilder.GetEndpointUrl("items", itemCodename, parameters);
+            var url = urlBuilder.GetItemsUrl(itemCodename, parameters);
             var response = await GetDeliverResponseAsync(url);
 
             return new DeliverItemResponse(response);
@@ -97,7 +97,7 @@ namespace KenticoCloud.Deliver
         /// <param name="parameters">Query parameters.</param>
         public async Task<DeliverItemListingResponse> GetItemsAsync(IEnumerable<IFilter> parameters = null)
         {
-            var url = urlBuilder.GetEndpointUrl("items", filters: parameters);
+            var url = urlBuilder.GetItemsUrl(filters: parameters);
             var response = await GetDeliverResponseAsync(url);
 
             return new DeliverItemListingResponse(response);
@@ -116,7 +116,7 @@ namespace KenticoCloud.Deliver
                 throw new ArgumentException("Entered type codename is not valid.", "typeCodename");
             }
 
-            var url = urlBuilder.GetEndpointUrl("types", typeCodename, queryParams);
+            var url = urlBuilder.GetTypesUrl(typeCodename, queryParams);
             return await GetDeliverResponseAsync(url);
         }
 
@@ -127,7 +127,7 @@ namespace KenticoCloud.Deliver
         /// <param name="queryParams">Query parameters.</param>
         public async Task<JObject> GetTypesJsonAsync(params string[] queryParams)
         {
-            var url = urlBuilder.GetEndpointUrl("types", queryParams: queryParams);
+            var url = urlBuilder.GetTypesUrl(queryParams: queryParams);
             return await GetDeliverResponseAsync(url);
         }
 
@@ -144,7 +144,7 @@ namespace KenticoCloud.Deliver
                 throw new ArgumentException("Entered type codename is not valid.", "typeCodename");
             }
 
-            var url = urlBuilder.GetEndpointUrl("types", typeCodename, parameters);
+            var url = urlBuilder.GetTypesUrl(typeCodename, parameters);
             var response = await GetDeliverResponseAsync(url);
 
             return new ContentType(response);
@@ -157,10 +157,36 @@ namespace KenticoCloud.Deliver
         /// <param name="parameters">Query parameters.</param>
         public async Task<DeliverTypeListingResponse> GetTypesAsync(IEnumerable<IFilter> parameters = null)
         {
-            var url = urlBuilder.GetEndpointUrl("types", filters: parameters);
+            var url = urlBuilder.GetTypesUrl(filters: parameters);
             var response = await GetDeliverResponseAsync(url);
 
             return new DeliverTypeListingResponse(response);
+        }
+
+
+        /// <summary>
+        /// Gets the type element definition.
+        /// </summary>
+        /// <param name="typeCodename">Content type codename.</param>
+        /// <param name="elementCodename">Content type element codename.</param>
+        public async Task<ITypeElement> GetTypeElementAsync(string typeCodename, string elementCodename)
+        {
+            var url = urlBuilder.GetTypeElementUrl(typeCodename, elementCodename);
+            var response = await GetDeliverResponseAsync(url);
+
+            var elementType = response["type"].ToString();
+
+            switch (elementType)
+            {
+                case "multiple_choice":
+                    return new MultipleChoiceElement(response);
+
+                case "taxonomy":
+                    return new TaxonomyElement(response);
+
+                default:
+                    return new TypeElement(response);
+            }
         }
 
 

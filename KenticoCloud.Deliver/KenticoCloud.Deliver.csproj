@@ -71,11 +71,16 @@
     <Compile Include="Filters\Parameters\LimitFilter.cs" />
     <Compile Include="Filters\Parameters\Order.cs" />
     <Compile Include="Models\Asset.cs" />
-    <Compile Include="Models\ContentType.cs" />
-    <Compile Include="Models\ContentItem.cs" />
-    <Compile Include="Models\TypeSystem.cs" />
+    <Compile Include="Models\Type\ContentType.cs" />
+    <Compile Include="Models\Item\ContentItem.cs" />
+    <Compile Include="Models\Type\Element\ITypeElement.cs" />
+    <Compile Include="Models\Type\Element\MultipleChoiceElement.cs" />
+    <Compile Include="Models\Type\Element\MultipleChoiceOption.cs" />
+    <Compile Include="Models\Type\Element\TaxonomyElement.cs" />
+    <Compile Include="Models\Type\Element\TypeElement.cs" />
+    <Compile Include="Models\Type\TypeSystem.cs" />
     <Compile Include="Pagination.cs" />
-    <Compile Include="Models\ItemSystem.cs" />
+    <Compile Include="Models\Item\ItemSystem.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
   </ItemGroup>
   <ItemGroup>

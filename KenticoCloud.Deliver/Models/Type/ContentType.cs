@@ -13,8 +13,6 @@ namespace KenticoCloud.Deliver
     /// </summary>
     public class ContentType
     {
-        private JObject elements;
-
         /// <summary>
         /// <see cref="Deliver.TypeSystem"/> 
         /// </summary>
@@ -38,8 +36,6 @@ namespace KenticoCloud.Deliver
 
             System = new TypeSystem(item["system"]);
             Elements = JObject.Parse(item["elements"].ToString());
-
-            elements = (JObject)item["elements"];
         }
     }
 }
