@@ -12,8 +12,8 @@ namespace KenticoCloud.Deliver
     {
         public List<MultipleChoiceOption> Options { get; set; }
 
-        public MultipleChoiceElement(JToken element)
-            :base(element)
+        public MultipleChoiceElement(JToken element, string codename = "")
+            :base(element, codename)
         {
             Options = element["options"].ToObject<List<MultipleChoiceOption>>();
         }

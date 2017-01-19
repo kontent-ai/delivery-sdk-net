@@ -21,10 +21,10 @@ namespace KenticoCloud.Deliver
         /// <summary>
         /// Elements in its raw form.
         /// </summary>
-        public dynamic Elements { get; set; }
+        public Dictionary<string, ITypeElement> Elements { get; set; }
 
         /// <summary>
-        /// Initializes content type from response JSONs.
+        /// Initializes content type from response JSON.
         /// </summary>
         /// <param name="item">JSON with type data.</param>
         public ContentType(JToken item)
@@ -35,7 +35,29 @@ namespace KenticoCloud.Deliver
             }
 
             System = new TypeSystem(item["system"]);
-            Elements = JObject.Parse(item["elements"].ToString());
+            Elements = new Dictionary<string, ITypeElement>();
+
+            foreach (JProperty element in item["elements"])
+            {
+                var elementDefinition = element.First;
+                var elementType = elementDefinition["type"].ToString();
+                var elementCodename = element.Name;
+
+                switch (elementType)
+                {
+                    case "multiple_choice":
+                        Elements.Add(elementCodename, new MultipleChoiceElement(elementDefinition, elementCodename));
+                        break;
+
+                    case "taxonomy":
+                        Elements.Add(elementCodename, new TaxonomyElement(elementDefinition, elementCodename));
+                        break;
+
+                    default:
+                        Elements.Add(elementCodename, new TypeElement(elementDefinition, elementCodename));
+                        break;
+                }
+            }
         }
     }
 }

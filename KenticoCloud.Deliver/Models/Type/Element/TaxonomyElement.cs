@@ -15,8 +15,8 @@ namespace KenticoCloud.Deliver
         /// </summary>
         public string TaxonomyGroup { get; set; }
 
-        public TaxonomyElement(JToken element)
-            : base(element)
+        public TaxonomyElement(JToken element, string codename = "")
+            : base(element, codename)
         {
             TaxonomyGroup = element["taxonomy_group"].ToString();
         }

@@ -18,11 +18,11 @@ namespace KenticoCloud.Deliver
         /// Initializes type element information.
         /// </summary>
         /// <param name="element">JSON with element data.</param>
-        public TypeElement(JToken element)
+        public TypeElement(JToken element, string codename = "")
         {
             Type = element["type"].ToString();
             Name = element["name"].ToString();
-            Codename = element["codename"].ToString();
+            Codename = String.IsNullOrEmpty(codename) ? element["codename"].ToString() : codename;
         }
     }
 }
