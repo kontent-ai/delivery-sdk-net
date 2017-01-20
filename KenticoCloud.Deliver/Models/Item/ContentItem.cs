@@ -58,9 +58,9 @@ namespace KenticoCloud.Deliver
         /// Gets a number value from an element.
         /// </summary>
         /// <param name="element">Element name.</param>
-        public double GetNumber(string element)
+        public decimal GetNumber(string element)
         {
-            return GetElementValue<double>(element);
+            return GetElementValue<decimal>(element);
         }
 
         /// <summary>
