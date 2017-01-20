@@ -49,6 +49,7 @@ namespace KenticoCloud.Deliver
         /// Gets a string value from an element.
         /// </summary>
         /// <param name="element">Element name.</param>
+        /// <returns>Returns null if element has no value.</returns>
         public string GetString(string element)
         {
             return GetElementValue<string>(element);
@@ -58,18 +59,20 @@ namespace KenticoCloud.Deliver
         /// Gets a number value from an element.
         /// </summary>
         /// <param name="element">Element name.</param>
-        public decimal GetNumber(string element)
+        /// <returns>Returns null if element has no value.</returns>
+        public decimal? GetNumber(string element)
         {
-            return GetElementValue<decimal>(element);
+            return GetElementValue<decimal?>(element);
         }
 
         /// <summary>
         /// Gets a <see cref="DateTime"/> value from an element.
         /// </summary>
         /// <param name="element">Element name.</param>
-        public DateTime GetDateTime(string element)
+        /// <returns>Returns null if element has no value.</returns>
+        public DateTime? GetDateTime(string element)
         {
-            return GetElementValue<DateTime>(element);
+            return GetElementValue<DateTime?>(element);
         }
 
         /// <summary>
