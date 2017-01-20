@@ -25,6 +25,12 @@ namespace KenticoCloud.Deliver
         /// <remarks>Production API connects to your published content.</remarks>
         public DeliverClient(string projectId)
         {
+            Guid guid;
+            if (!Guid.TryParse(projectId, out guid))
+            {
+                throw new ArgumentException($"The project ID provided seems to be corrupted. Provided value: {projectId}", "projectId");
+            }
+
             urlBuilder = new DeliverUrlBuilder(projectId);
             httpClient = new HttpClient();
         }
@@ -35,9 +41,15 @@ namespace KenticoCloud.Deliver
         /// </summary>
         /// <param name="projectId">Project ID.</param>
         /// <param name="accessToken">Preview access token.</param>
-        /// <remarks>Production API connects to your unpublished content.</remarks>
+        /// <remarks>Preview API connects to your unpublished content.</remarks>
         public DeliverClient(string projectId, string accessToken)
         {
+            Guid guid;
+            if (!Guid.TryParse(projectId, out guid))
+            {
+                throw new ArgumentException($"The project ID provided seems to be corrupted. Provided value: {projectId}", "projectId");
+            }
+
             urlBuilder = new DeliverUrlBuilder(projectId, accessToken);
             httpClient = new HttpClient();
             httpClient.DefaultRequestHeaders.Add("Authorization", string.Format("Bearer {0}", accessToken));
