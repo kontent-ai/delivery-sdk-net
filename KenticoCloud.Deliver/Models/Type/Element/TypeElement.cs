@@ -8,10 +8,24 @@ using Newtonsoft.Json.Linq;
 
 namespace KenticoCloud.Deliver
 {
+    /// <summary>
+    /// Represents an element in content type.
+    /// </summary>
     public class TypeElement : ITypeElement
     {
+        /// <summary>
+        /// Element's type.
+        /// </summary>
         public string Type { get; set; }
+
+        /// <summary>
+        /// Element's name
+        /// </summary>
         public string Name { get; set; }
+
+        /// <summary>
+        /// Element's codename
+        /// </summary>
         public string Codename { get; set; }
 
         /// <summary>

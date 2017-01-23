@@ -8,6 +8,9 @@ using Newtonsoft.Json.Linq;
 
 namespace KenticoCloud.Deliver
 {
+    /// <summary>
+    /// Represents the taxonomy element
+    /// </summary>
     public class TaxonomyElement : TypeElement, ITypeElement
     {
         /// <summary>
@@ -15,6 +18,10 @@ namespace KenticoCloud.Deliver
         /// </summary>
         public string TaxonomyGroup { get; set; }
 
+        /// <summary>
+        /// Initializes taxonomy element.
+        /// </summary>
+        /// <param name="system">JSON with element's data.</param>
         public TaxonomyElement(JToken element, string codename = "")
             : base(element, codename)
         {
