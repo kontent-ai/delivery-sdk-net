@@ -15,6 +15,7 @@ namespace KenticoCloud.Deliver
     /// </summary>
     public class DeliverClient
     {
+        private const int PROJECT_ID_MAX_LENGTH = 36;
         private readonly HttpClient httpClient;
         private readonly DeliverUrlBuilder urlBuilder;
 
@@ -25,10 +26,9 @@ namespace KenticoCloud.Deliver
         /// <remarks>Production API connects to your published content.</remarks>
         public DeliverClient(string projectId)
         {
-            Guid guid;
-            if (!Guid.TryParse(projectId, out guid))
+            if (projectId.Length > PROJECT_ID_MAX_LENGTH)
             {
-                throw new ArgumentException($"The project ID provided seems to be corrupted. Provided value: {projectId}", "projectId");
+                throw new ArgumentException($"The project ID provided seems to be corrupted. Provided value: {projectId}", nameof(projectId));
             }
 
             urlBuilder = new DeliverUrlBuilder(projectId);
@@ -44,10 +44,9 @@ namespace KenticoCloud.Deliver
         /// <remarks>Preview API connects to your unpublished content.</remarks>
         public DeliverClient(string projectId, string accessToken)
         {
-            Guid guid;
-            if (!Guid.TryParse(projectId, out guid))
+            if (projectId.Length > PROJECT_ID_MAX_LENGTH)
             {
-                throw new ArgumentException($"The project ID provided seems to be corrupted. Provided value: {projectId}", "projectId");
+                throw new ArgumentException($"The project ID provided seems to be corrupted. Provided value: {projectId}", nameof(projectId));
             }
 
             urlBuilder = new DeliverUrlBuilder(projectId, accessToken);
@@ -65,7 +64,7 @@ namespace KenticoCloud.Deliver
         {
             if (String.IsNullOrEmpty(itemCodename))
             {
-                throw new ArgumentException("Entered item codename is not valid.", "itemCodename");
+                throw new ArgumentException("Entered item codename is not valid.", nameof(itemCodename));
             }
 
             var url = urlBuilder.GetItemsUrl(itemCodename, queryParams);
@@ -93,7 +92,7 @@ namespace KenticoCloud.Deliver
         {
             if (String.IsNullOrEmpty(itemCodename))
             {
-                throw new ArgumentException("Entered item codename is not valid.", "itemCodename");
+                throw new ArgumentException("Entered item codename is not valid.", nameof(itemCodename));
             }
 
             var url = urlBuilder.GetItemsUrl(itemCodename, parameters);
@@ -125,7 +124,7 @@ namespace KenticoCloud.Deliver
         {
             if (String.IsNullOrEmpty(typeCodename))
             {
-                throw new ArgumentException("Entered type codename is not valid.", "typeCodename");
+                throw new ArgumentException("Entered type codename is not valid.", nameof(typeCodename));
             }
 
             var url = urlBuilder.GetTypesUrl(typeCodename, queryParams);
@@ -153,7 +152,7 @@ namespace KenticoCloud.Deliver
         {
             if (String.IsNullOrEmpty(typeCodename))
             {
-                throw new ArgumentException("Entered type codename is not valid.", "typeCodename");
+                throw new ArgumentException("Entered type codename is not valid.", nameof(typeCodename));
             }
 
             var url = urlBuilder.GetTypesUrl(typeCodename, parameters);
