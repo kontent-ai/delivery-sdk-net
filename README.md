@@ -1,5 +1,6 @@
 # Deliver .NET SDK
-
+[![Build status](https://ci.appveyor.com/api/projects/status/3m3q2ads2y43bh9o/branch/master?svg=true)](https://ci.appveyor.com/project/kentico/deliver-net-sdk/branch/master)
+[![NuGet](https://img.shields.io/nuget/v/KenticoCloud.Deliver.svg)](https://www.nuget.org/packages/KenticoCloud.Deliver)
 ## SUMMARY
 
 Kentico Deliver .NET SDK is a library used for retrieving content from Kentico Deliver API. The SDK is distributed as a NuGet package https://www.nuget.org/packages/KenticoCloud.Deliver .
