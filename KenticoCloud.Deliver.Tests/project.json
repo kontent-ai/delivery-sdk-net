@@ -1,7 +1,7 @@
 {
 	"authors": [ "Kentico" ],
 	"dependencies": {
-		"KenticoCloud.Deliver": "1.0.*",
+		"KenticoCloud.Deliver": "1.1.*",
 		"Microsoft.NETCore.App": {
 			"type": "platform",
 			"version": "1.0.1"
@@ -23,5 +23,5 @@
 		}
 	},
 	"testRunner": "nunit",
-	"version": "1.0.0-*"
+	"version": "1.1.0-*"
 }

@@ -29,5 +29,5 @@
 		"summary": "Kentico Cloud Deliver SDK for .NET",
 		"tags": [ "kentico", "mvc", "aspnet", "aspnetmvc" ]
 	},
-	"version": "1.0.2-*"
+	"version": "1.1.0-*"
 }

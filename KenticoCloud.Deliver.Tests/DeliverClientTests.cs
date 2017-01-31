@@ -31,7 +31,7 @@ namespace KenticoCloud.Deliver.Tests
 			Assert.AreEqual("article", item.System.Type);
 			Assert.AreEqual("Coffee Beverages Explained", textElement);
 			Assert.That(() => richTextElement.Contains("Caffeine: &lt; 100 mg/cup<br/>"));
-			Assert.AreEqual(DateTime.Parse("18.11.2014 0:00:00"), datetimeElement);
+			Assert.AreEqual(DateTime.Parse("2014-11-18"), datetimeElement);
 			Assert.AreEqual(1, assetElement.Count);
 			Assert.AreEqual(0, modularContentElement.Count());
 		}
