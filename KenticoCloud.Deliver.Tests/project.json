@@ -1,21 +1,27 @@
 {
-	"version": "1.0.0-*",
-	"description": "Kentico Cloud Deliver SDK",
 	"authors": [ "Kentico" ],
-	"packOptions": {
-		"licenseUrl": "https://github.com/Kentico/Deliver-.NET-SDK/blob/master/LICENSE",
-			"repository": {
-				"type": "git",
-				"url": "https://github.com/Kentico/Deliver-.NET-SDK.git"
-			}
-	},
-	"frameworks": {
-		"netstandard1.6": {
-		}
-	},
 	"dependencies": {
 		"KenticoCloud.Deliver": "1.0.*",
+		"Microsoft.NETCore.App": {
+			"type": "platform",
+			"version": "1.0.1"
+		},
+		"dotnet-test-nunit": "3.4.0-beta-3",
 		"NETStandard.Library": "1.6.1",
 		"NUnit": "3.6.0"
-	}
+	},
+	"description": "Kentico Cloud Deliver SDK",
+	"frameworks": {
+		"netcoreapp1.0": {
+		}
+	},
+	"packOptions": {
+		"licenseUrl": "https://github.com/Kentico/Deliver-.NET-SDK/blob/master/LICENSE",
+		"repository": {
+			"type": "git",
+			"url": "https://github.com/Kentico/Deliver-.NET-SDK.git"
+		}
+	},
+	"testRunner": "nunit",
+	"version": "1.0.0-*"
 }
