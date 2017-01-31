@@ -14,9 +14,9 @@ namespace KenticoCloud.Deliver
         private JObject modularContent;
 
         /// <summary>
-        /// <see cref="Deliver.System"/> 
+        /// <see cref="Deliver.ItemSystem"/> 
         /// </summary>
-        public System System { get; set; }
+        public ItemSystem System { get; set; }
         
         /// <summary>
         /// Elements in its raw form.
@@ -35,7 +35,7 @@ namespace KenticoCloud.Deliver
                 return;
             }
 
-            System = new System(item["system"]);
+            System = new ItemSystem(item["system"]);
             Elements = JObject.Parse(item["elements"].ToString());
 
             elements = (JObject)item["elements"];
@@ -46,6 +46,7 @@ namespace KenticoCloud.Deliver
         /// Gets a string value from an element.
         /// </summary>
         /// <param name="element">Element name.</param>
+        /// <returns>Returns null if element has no value.</returns>
         public string GetString(string element)
         {
             return GetElementValue<string>(element);
@@ -55,18 +56,20 @@ namespace KenticoCloud.Deliver
         /// Gets a number value from an element.
         /// </summary>
         /// <param name="element">Element name.</param>
-        public double GetNumber(string element)
+        /// <returns>Returns null if element has no value.</returns>
+        public decimal? GetNumber(string element)
         {
-            return GetElementValue<double>(element);
+            return GetElementValue<decimal?>(element);
         }
 
         /// <summary>
         /// Gets a <see cref="DateTime"/> value from an element.
         /// </summary>
         /// <param name="element">Element name.</param>
-        public DateTime GetDateTime(string element)
+        /// <returns>Returns null if element has no value.</returns>
+        public DateTime? GetDateTime(string element)
         {
-            return GetElementValue<DateTime>(element);
+            return GetElementValue<DateTime?>(element);
         }
 
         /// <summary>

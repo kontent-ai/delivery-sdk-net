@@ -5,9 +5,9 @@ using Newtonsoft.Json.Linq;
 namespace KenticoCloud.Deliver
 {
     /// <summary>
-    /// Represents a listing response from the API.
+    /// Represents item listing response from the API.
     /// </summary>
-    public class DeliverListingResponse
+    public class DeliverItemListingResponse
     {
         /// <summary>
         /// Contains paging information.
@@ -28,7 +28,7 @@ namespace KenticoCloud.Deliver
         /// Initializes response object.
         /// </summary>
         /// <param name="response">JSON returned from API.</param>
-        public DeliverListingResponse(JToken response)
+        public DeliverItemListingResponse(JToken response)
         {
             Pagination = new Pagination(response["pagination"]);
             ModularContent = JObject.Parse(response["modular_content"].ToString());

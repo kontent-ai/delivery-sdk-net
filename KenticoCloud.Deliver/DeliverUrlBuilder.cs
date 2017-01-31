@@ -3,40 +3,77 @@ using System.Collections.Generic;
 #if (DEBUG && NET45)
 using System.Configuration;
 #endif
-
 using System.Linq;
 
 namespace KenticoCloud.Deliver
 {
 	internal class DeliverUrlBuilder
 	{
-		private readonly string projectId;
-		private readonly string accessToken;
-
 #if (DEBUG && NET45)
-		private string PRODUCTION_ENDPOINT = ConfigurationManager.AppSettings["ProductionEndpoint"] ?? "https://deliver.kenticocloud.com/{0}/items/";
-		private string PREVIEW_ENDPOINT = ConfigurationManager.AppSettings["PreviewEndpoint"] ?? "https://preview-deliver.kenticocloud.com/{0}/items/";
+        private string PRODUCTION_ENDPOINT = ConfigurationManager.AppSettings["ProductionEndpoint"] ?? "https://deliver.kenticocloud.com/{0}";
+        private string PREVIEW_ENDPOINT = ConfigurationManager.AppSettings["PreviewEndpoint"] ?? "https://preview-deliver.kenticocloud.com/{0}";
 #else
-		private const string PRODUCTION_ENDPOINT = "https://deliver.kenticocloud.com/{0}/items/";
-		private const string PREVIEW_ENDPOINT = "https://preview-deliver.kenticocloud.com/{0}/items/";
+        private const string PRODUCTION_ENDPOINT = "https://deliver.kenticocloud.com/{0}";
+        private const string PREVIEW_ENDPOINT = "https://preview-deliver.kenticocloud.com/{0}";
 #endif
 
-		public DeliverUrlBuilder(string projectId, string accessToken = null)
-		{
-			this.projectId = projectId;
-			this.accessToken = accessToken;
-		}
+        private const string URL_TEMPLATE_ITEMS = "/items/{0}";
+        private const string URL_TEMPLATE_TYPES = "/types/{0}";
+        private const string URL_TEMPLATE_TYPE_ELEMENT = "/types/{0}/elements/{1}";
+
+        private readonly string projectId;
+        private readonly string accessToken;
 
 
-		public string GetEndpointUrl(string codename = "", params string[] queryParams)
-		{
-			return GetBaseUrl(codename) + "?" + String.Join("&", queryParams);
-		}
+        public DeliverUrlBuilder(string projectId)
+        {
+            this.projectId = projectId;
+        }
 
 
-		public string GetEndpointUrl(string codename = "", IEnumerable<IFilter> filters = null)
-		{
-			var url = GetBaseUrl(codename);
+        public DeliverUrlBuilder(string projectId, string accessToken)
+        {
+            this.projectId = projectId;
+            this.accessToken = accessToken;
+        }
+
+
+        public string GetItemsUrl(string itemCodename = "", params string[] queryParams)
+        {
+            var baseUrl = GetBaseUrl();
+            var urlPath = String.Format(URL_TEMPLATE_ITEMS, Uri.EscapeDataString(itemCodename));
+
+            return baseUrl + urlPath + "?" + String.Join("&", queryParams);
+        }
+
+
+        public string GetItemsUrl(string itemCodename = "", IEnumerable<IFilter> filters = null)
+        {
+            var url = GetBaseUrl();
+            url += String.Format(URL_TEMPLATE_ITEMS, Uri.EscapeDataString(itemCodename));
+
+            if (filters != null && filters.Any())
+            {
+                url += "?" + String.Join("&", filters.Select(f => f.GetQueryStringParameter()));
+            }
+
+            return url;
+        }
+
+
+        public string GetTypesUrl(string typeCodename = "", params string[] queryParams)
+        {
+            var baseUrl = GetBaseUrl();
+            var urlPath = String.Format(URL_TEMPLATE_TYPES, Uri.EscapeDataString(typeCodename));
+
+            return baseUrl + urlPath + "?" + String.Join("&", queryParams);
+        }
+
+
+        public string GetTypesUrl(string typeCodename = "", IEnumerable<IFilter> filters = null)
+        {
+            var url = GetBaseUrl();
+            url += String.Format(URL_TEMPLATE_TYPES, Uri.EscapeDataString(typeCodename));
 
 			if (filters != null && filters.Any())
 			{
@@ -47,11 +84,20 @@ namespace KenticoCloud.Deliver
 		}
 
 
-		private string GetBaseUrl(string codename)
-		{
-			var endpoint = String.IsNullOrEmpty(accessToken) ? PRODUCTION_ENDPOINT : PREVIEW_ENDPOINT;
+        public string GetTypeElementUrl(string typeCodename, string elementCodename)
+        {
+            var baseUrl = GetBaseUrl();
+            var urlPath = String.Format(URL_TEMPLATE_TYPE_ELEMENT, Uri.EscapeDataString(typeCodename), Uri.EscapeDataString(elementCodename));
 
-			return String.Format(endpoint, projectId) + Uri.EscapeDataString(codename);
-		}
-	}
+            return baseUrl + urlPath;
+        }
+
+
+        private string GetBaseUrl()
+        {
+            var url = String.IsNullOrEmpty(accessToken) ? PRODUCTION_ENDPOINT : PREVIEW_ENDPOINT;
+
+            return String.Format(url, projectId);
+        }
+    }
 }
