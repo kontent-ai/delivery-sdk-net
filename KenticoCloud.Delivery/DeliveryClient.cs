@@ -81,13 +81,18 @@ namespace KenticoCloud.Delivery
         /// </summary>
         /// <param name="itemCodename">Content item codename.</param>
         /// <param name="parameters">Query parameters.</param>
-        [Obsolete("Use GetItemAsync<T> instead.")]
         public async Task<DeliveryItemResponse> GetItemAsync(string itemCodename, IEnumerable<IFilter> parameters = null)
         {
-            var itemResponse = await GetItemAsync<ContentItem>(itemCodename, parameters);
-            return new DeliveryItemResponse(itemResponse);
-        }
+            if (String.IsNullOrEmpty(itemCodename))
+            {
+                throw new ArgumentException("Entered item codename is not valid.", nameof(itemCodename));
+            }
 
+            var url = urlBuilder.GetItemsUrl(itemCodename, parameters);
+            var response = await GetDeliverResponseAsync(url);
+
+            return new DeliveryItemResponse(response);
+        }
 
         /// <summary>
         /// Gets one strongly typed content item by its codename.
@@ -95,7 +100,7 @@ namespace KenticoCloud.Delivery
         /// <param name="itemCodename">Content item codename.</param>
         /// <param name="parameters">Query parameters.</param>
         public async Task<DeliveryItemResponse<T>> GetItemAsync<T>(string itemCodename, IEnumerable<IFilter> parameters = null) 
-            where T : ContentItem, new()
+            where T : IContentItemBased, new()
         {
             if (String.IsNullOrEmpty(itemCodename))
             {

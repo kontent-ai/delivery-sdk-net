@@ -5,7 +5,7 @@ using Newtonsoft.Json.Linq;
 
 namespace KenticoCloud.Delivery.Tests
 {
-    public class CompleteContentItemModel : ContentItem
+    public class CompleteContentItemModel : IContentItemBased
     {
         public string TextField { get; set; }
         public string RichTextField { get; set; }
@@ -16,20 +16,20 @@ namespace KenticoCloud.Delivery.Tests
         public List<Asset> AssetField { get; set; }
         public IEnumerable<ContentItem> ModularContentField { get; set; }
         public List<TaxonomyTerm> CompleteTypeTaxonomy { get; set; }
+        public ItemSystem System { get; set; }
 
-        public override void MapElementsFromJson(JToken item, JToken modularContent)
+        public void LoadFromContentItem(ContentItem contentItem)
         {
-            base.MapElementsFromJson(item, modularContent);
-
-            TextField = GetString("text_field");
-            RichTextField = GetString("rich_text_field");
-            NumberField = GetNumber("number_field");
-            MultipleChoiceFieldAsRadioButtons = GetOptions("multiple_choice_field_as_radio_buttons");
-            MultipleChoiceFieldAsCheckboxes = GetOptions("multiple_choice_field_as_checkboxes");
-            DateTimeField = GetDateTime("date___time_field");
-            AssetField = GetAssets("asset_field");
-            ModularContentField = GetModularContent("modular_content_field");
-            CompleteTypeTaxonomy = GetTaxonomyTerms("complete_type_taxonomy");
+            TextField = contentItem.GetString("text_field");
+            RichTextField = contentItem.GetString("rich_text_field");
+            NumberField = contentItem.GetNumber("number_field");
+            MultipleChoiceFieldAsRadioButtons = contentItem.GetOptions("multiple_choice_field_as_radio_buttons");
+            MultipleChoiceFieldAsCheckboxes = contentItem.GetOptions("multiple_choice_field_as_checkboxes");
+            DateTimeField = contentItem.GetDateTime("date___time_field");
+            AssetField = contentItem.GetAssets("asset_field");
+            ModularContentField = contentItem.GetModularContent("modular_content_field");
+            CompleteTypeTaxonomy = contentItem.GetTaxonomyTerms("complete_type_taxonomy");
+            System = contentItem.System;
         }
     }
 }

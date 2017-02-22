@@ -6,7 +6,6 @@ namespace KenticoCloud.Delivery
     /// <summary>
     /// Represents a response from the API when requesting content item by its codename.
     /// </summary>
-    [Obsolete("Use DeliveryItemResponse<T> instead.")]
     public class DeliveryItemResponse
     {
         /// <summary>
@@ -28,19 +27,13 @@ namespace KenticoCloud.Delivery
             ModularContent = JObject.Parse(response["modular_content"].ToString());
             Item = new ContentItem(response["item"], response["modular_content"]);
         }
-
-        public DeliveryItemResponse(DeliveryItemResponse<ContentItem> d)
-        {
-            Item = d.Item;
-            ModularContent = d.ModularContent;
-        }
     }
 
 
     /// <summary>
     /// Represents a response from the API when requesting content item by its codename.
     /// </summary>
-    public class DeliveryItemResponse<T> where T : ContentItem, new()
+    public class DeliveryItemResponse<T> where T : IContentItemBased, new()
     {
         /// <summary>
         /// Content item.
@@ -59,8 +52,7 @@ namespace KenticoCloud.Delivery
         public DeliveryItemResponse(JToken response)
         {
             ModularContent = JObject.Parse(response["modular_content"].ToString());
-            Item = new T();
-            Item.MapElementsFromJson(response["item"], response["modular_content"]);
+            Item = new ContentItem(response["item"], response["modular_content"]).CastTo<T>();
         }
     }
 }

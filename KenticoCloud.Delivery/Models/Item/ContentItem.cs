@@ -5,6 +5,12 @@ using System.Linq;
 
 namespace KenticoCloud.Delivery
 {
+    // TODO: add comment
+    public interface IContentItemBased
+    {
+        void LoadFromContentItem(ContentItem contentItem);
+    }
+
     /// <summary>
     /// Represent a content item.
     /// </summary>
@@ -39,16 +45,6 @@ namespace KenticoCloud.Delivery
         /// <param name="modularContent">JSON with modular content.</param>
         public ContentItem(JToken item, JToken modularContent)
         {
-            MapElementsFromJson(item, modularContent);
-        }
-
-        /// <summary>
-        /// Maps elements from JSON response to properties.
-        /// </summary>
-        /// <param name="item">JSON with item data.</param>
-        /// <param name="modularContent">JSON with modular content.</param>
-        public virtual void MapElementsFromJson(JToken item, JToken modularContent)
-        {
             if (item == null || !item.HasValues)
             {
                 return;
@@ -59,6 +55,14 @@ namespace KenticoCloud.Delivery
 
             elements = (JObject)item["elements"];
             this.modularContent = (JObject)modularContent;
+        }
+
+        // TODO: add comment
+        public T CastTo<T>() where T : IContentItemBased, new()
+        {
+            var stronglyTypedModel = new T();
+            stronglyTypedModel.LoadFromContentItem(this);
+            return stronglyTypedModel;
         }
 
         /// <summary>
