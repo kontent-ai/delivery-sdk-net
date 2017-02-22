@@ -81,7 +81,21 @@ namespace KenticoCloud.Delivery
         /// </summary>
         /// <param name="itemCodename">Content item codename.</param>
         /// <param name="parameters">Query parameters.</param>
+        [Obsolete("Use GetItemAsync<T> instead.")]
         public async Task<DeliveryItemResponse> GetItemAsync(string itemCodename, IEnumerable<IFilter> parameters = null)
+        {
+            var itemResponse = await GetItemAsync<ContentItem>(itemCodename, parameters);
+            return new DeliveryItemResponse(itemResponse);
+        }
+
+
+        /// <summary>
+        /// Gets one strongly typed content item by its codename.
+        /// </summary>
+        /// <param name="itemCodename">Content item codename.</param>
+        /// <param name="parameters">Query parameters.</param>
+        public async Task<DeliveryItemResponse<T>> GetItemAsync<T>(string itemCodename, IEnumerable<IFilter> parameters = null) 
+            where T : ContentItem, new()
         {
             if (String.IsNullOrEmpty(itemCodename))
             {
@@ -91,7 +105,7 @@ namespace KenticoCloud.Delivery
             var url = urlBuilder.GetItemsUrl(itemCodename, parameters);
             var response = await GetDeliverResponseAsync(url);
 
-            return new DeliveryItemResponse(response);
+            return new DeliveryItemResponse<T>(response);
         }
 
         /// <summary>
@@ -109,7 +123,7 @@ namespace KenticoCloud.Delivery
         /// <summary>
         /// Gets one content type by its codename. This method returns the whole response as JObject.
         /// </summary>
-        /// <param name="itemCodename">Content type codename.</param>
+        /// <param name="typeCodename">Content type codename.</param>
         /// <param name="queryParams">Query parameters.</param>
         public async Task<JObject> GetTypeJsonAsync(string typeCodename, params string[] queryParams)
         {
@@ -135,7 +149,7 @@ namespace KenticoCloud.Delivery
         /// <summary>
         /// Gets one content type by its codename.
         /// </summary>
-        /// <param name="itemCodename">Content type codename.</param>
+        /// <param name="typeCodename">Content type codename.</param>
         /// <param name="parameters">Query parameters.</param>
         public async Task<ContentType> GetTypeAsync(string typeCodename, IEnumerable<IFilter> parameters = null)
         {

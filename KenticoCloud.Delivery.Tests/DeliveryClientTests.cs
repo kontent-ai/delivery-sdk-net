@@ -19,7 +19,7 @@ namespace KenticoCloud.Delivery.Tests
 			var client = new DeliveryClient(PROJECT_ID);
 
 			// Act
-			var item = Task.Run(() => client.GetItemAsync("coffee_beverages_explained")).Result.Item;
+			var item = Task.Run(() => client.GetItemAsync<ContentItem>("coffee_beverages_explained")).Result.Item;
 
 			var textElement = item.GetString("title");
 			var richTextElement = item.GetString("body_copy");
@@ -44,7 +44,7 @@ namespace KenticoCloud.Delivery.Tests
 			var client = new DeliveryClient(PROJECT_ID);
 
 			// Act
-			AsyncTestDelegate d = async () => await client.GetItemAsync("sdk_test_item_non_existent");
+			AsyncTestDelegate d = async () => await client.GetItemAsync<ContentItem>("sdk_test_item_non_existent");
 
 			// Assert
 			Assert.ThrowsAsync<DeliveryException>(d);
@@ -65,5 +65,41 @@ namespace KenticoCloud.Delivery.Tests
 			Assert.IsNotNull(response);
 			Assert.GreaterOrEqual(response.Items.Count, 1);
 		}
-	}
+
+
+        [Test]
+		public void GetStronglyTypedResponse()
+		{
+            const string SANDBOX_PROJECT_ID = "e1167a11-75af-4a08-ad84-0582b463b010";
+
+            // Arrange
+            var client = new DeliveryClient(SANDBOX_PROJECT_ID);
+
+			// Act
+    		CompleteContentItemModel item = Task.Run(() => client.GetItemAsync<CompleteContentItemModel>("complete_content_item")).Result.Item;
+
+            // Assert
+            Assert.AreEqual("Text field value", item.TextField);
+
+            Assert.AreEqual("<p>Rich text field value</p>", item.RichTextField);
+
+            Assert.AreEqual(99, item.NumberField);
+
+            Assert.AreEqual(1, item.MultipleChoiceFieldAsRadioButtons.Count);
+            Assert.AreEqual("Radio button 1", item.MultipleChoiceFieldAsRadioButtons[0].Name);
+
+            Assert.AreEqual(2, item.MultipleChoiceFieldAsCheckboxes.Count);
+            Assert.AreEqual("Checkbox 1", item.MultipleChoiceFieldAsCheckboxes[0].Name);
+            Assert.AreEqual("Checkbox 2", item.MultipleChoiceFieldAsCheckboxes[1].Name);
+
+            Assert.AreEqual(new DateTime(2017, 2, 23), item.DateTimeField);
+
+            Assert.AreEqual(1, item.AssetField.Count);
+            Assert.AreEqual("Fire.jpg", item.AssetField[0].Name);
+
+            Assert.AreEqual(1, item.ModularContentField.Count());
+
+            Assert.AreEqual(2, item.CompleteTypeTaxonomy.Count);
+        }
+    }
 }

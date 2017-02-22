@@ -24,11 +24,30 @@ namespace KenticoCloud.Delivery
         public dynamic Elements { get; set; }
 
         /// <summary>
+        /// Initializes new <see cref="ContentItem"/> class instance.
+        /// </summary>
+        public ContentItem()
+        {
+            elements = new JObject();
+            modularContent = new JObject();
+        }
+
+        /// <summary>
         /// Initializes content item from response JSONs.
         /// </summary>
         /// <param name="item">JSON with item data.</param>
         /// <param name="modularContent">JSON with modular content.</param>
         public ContentItem(JToken item, JToken modularContent)
+        {
+            MapElementsFromJson(item, modularContent);
+        }
+
+        /// <summary>
+        /// Maps elements from JSON response to properties.
+        /// </summary>
+        /// <param name="item">JSON with item data.</param>
+        /// <param name="modularContent">JSON with modular content.</param>
+        public virtual void MapElementsFromJson(JToken item, JToken modularContent)
         {
             if (item == null || !item.HasValues)
             {
