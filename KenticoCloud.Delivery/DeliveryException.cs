@@ -1,35 +1,33 @@
-﻿using System;
+﻿using Newtonsoft.Json.Linq;
+using System;
 using System.Net;
-using Newtonsoft.Json.Linq;
 
 namespace KenticoCloud.Delivery
 {
     /// <summary>
-    /// Represents an error response from the API.
+    /// Represents an error response from the Kentico Cloud Delivery API.
     /// </summary>
-    public class DeliveryException : Exception
+    public sealed class DeliveryException : Exception
     {
         /// <summary>
-        /// HTTP status code.
+        /// Gets the HTTP status code of the response.
         /// </summary>
         public HttpStatusCode StatusCode { get; }
 
         /// <summary>
-        /// Detailed message from the API.
+        /// Gets the error message from the response.
         /// </summary>
         public override string Message { get; }
 
         /// <summary>
-        /// Initializes exception.
+        /// Initializes a new instance of the <see cref="DeliveryException"/> class with information from an error response.
         /// </summary>
-        /// <param name="statusCode">Status code of response.</param>
-        /// <param name="message">Exception message.</param>
+        /// <param name="statusCode">The HTTP status code of the response.</param>
+        /// <param name="message">The error message from the response.</param>
         public DeliveryException(HttpStatusCode statusCode, string message)
         {
-            var errorMessage = JObject.Parse(message);
-
             StatusCode = statusCode;
-            Message = errorMessage["message"].ToString();
+            Message = JObject.Parse(message)["message"].ToString();
         }
     }
 }

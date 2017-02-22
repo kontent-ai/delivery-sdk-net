@@ -1,12 +1,12 @@
 ﻿namespace KenticoCloud.Delivery
 {
     /// <summary>
-    /// Represents a query parameter filter.
+    /// Represents a query parameter.
     /// </summary>
-    public interface IFilter
+    public interface IQueryParameter
     {
         /// <summary>
-        /// Returns the query string representation of the filter.
+        /// Returns the query string representation of the query parameter.
         /// </summary>
         string GetQueryStringParameter();
     }

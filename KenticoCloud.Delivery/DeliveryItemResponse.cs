@@ -3,28 +3,28 @@
 namespace KenticoCloud.Delivery
 {
     /// <summary>
-    /// Represents a response from the API when requesting content item by its codename.
+    /// Represents a response from Kentico Cloud Delivery API that contains a content item.
     /// </summary>
-    public class DeliveryItemResponse
+    public sealed class DeliveryItemResponse
     {
         /// <summary>
-        /// Content item.
+        /// Gets the content item from the response.
         /// </summary>
-        public ContentItem Item { get; set; }
+        public ContentItem Item { get; }
 
         /// <summary>
-        /// Modular content.
+        /// Gets the dynamic view of the JSON response where modular content items and their properties can be retrieved by name, for example <c>ModularContent.about_us.elements.description.value</c>.
         /// </summary>
-        public dynamic ModularContent { get; set; }
+        public dynamic ModularContent { get; }
 
         /// <summary>
-        /// Initializes response object.
+        /// Initializes a new instance of the <see cref="DeliveryItemResponse"/> class with information from a response.
         /// </summary>
-        /// <param name="response">JSON returned from API.</param>
-        public DeliveryItemResponse(JToken response)
+        /// <param name="response">A response from Kentico Cloud Delivery API that contains a content item.</param>
+        internal DeliveryItemResponse(JToken response)
         {
-            ModularContent = JObject.Parse(response["modular_content"].ToString());
             Item = new ContentItem(response["item"], response["modular_content"]);
+            ModularContent = JObject.Parse(response["modular_content"].ToString());
         }
     }
 }
