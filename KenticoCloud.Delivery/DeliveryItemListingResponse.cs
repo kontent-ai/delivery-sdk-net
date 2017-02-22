@@ -1,38 +1,38 @@
-﻿using System.Collections.Generic;
+﻿using Newtonsoft.Json.Linq;
+using System.Collections.Generic;
 using System.Linq;
-using Newtonsoft.Json.Linq;
 
 namespace KenticoCloud.Delivery
 {
     /// <summary>
-    /// Represents item listing response from the API.
+    /// Represents a response from Kentico Cloud Delivery API that contains a list of content items.
     /// </summary>
-    public class DeliveryItemListingResponse
+    public sealed class DeliveryItemListingResponse
     {
         /// <summary>
-        /// Contains paging information.
+        /// Gets paging information.
         /// </summary>
-        public Pagination Pagination { get; set; }
+        public Pagination Pagination { get; }
 
         /// <summary>
-        /// Content items.
+        /// Gets a list of content items.
         /// </summary>
-        public List<ContentItem> Items { get; set; }
+        public IReadOnlyList<ContentItem> Items { get; }
 
         /// <summary>
-        /// Modular content.
+        /// Gets the dynamic view of the JSON response where modular content items and their properties can be retrieved by name, for example <c>ModularContent.about_us.elements.description.value</c>.
         /// </summary>
-        public dynamic ModularContent { get; set; }
+        public dynamic ModularContent { get; }
 
         /// <summary>
-        /// Initializes response object.
+        /// Initializes a new instance of the <see cref="DeliveryItemListingResponse"/> class with information from a response.
         /// </summary>
-        /// <param name="response">JSON returned from API.</param>
-        public DeliveryItemListingResponse(JToken response)
+        /// <param name="response">A response from Kentico Cloud Delivery API that contains a list of content items.</param>
+        internal DeliveryItemListingResponse(JToken response)
         {
             Pagination = new Pagination(response["pagination"]);
             ModularContent = JObject.Parse(response["modular_content"].ToString());
-            Items = ((JArray)response["items"]).Select(x => new ContentItem(x, response["modular_content"])).ToList();
+            Items = ((JArray)response["items"]).Select(source => new ContentItem(source, response["modular_content"])).ToList().AsReadOnly();
         }
     }
 }

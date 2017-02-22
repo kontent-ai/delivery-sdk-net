@@ -3,36 +3,40 @@
 namespace KenticoCloud.Delivery
 {
     /// <summary>
-    /// Represents an asset.
+    /// Represents a digital asset, such as a document or image.
     /// </summary>
-    public class Asset
+    public sealed class Asset
     {
         /// <summary>
-        /// Asset name.
+        /// Gets the name of the asset.
         /// </summary>
-        public string Name { get; set; }
+        public string Name { get; }
 
         /// <summary>
-        /// Asset type. For example: "image/jpeg".
+        /// Gets the media type of the asset, for example "image/jpeg".
         /// </summary>
-        public string Type { get; set; }
+        public string Type { get; }
 
         /// <summary>
-        /// Asset size in bytes.
+        /// Gets the asset size in bytes.
         /// </summary>
-        public int Size { get; set; }
+        public int Size { get; }
 
         /// <summary>
-        /// URL where you can download the asset.
+        /// Gets the URL of the asset.
         /// </summary>
-        public string Url { get; set; }
+        public string Url { get; }
 
-        public Asset(JToken asset)
+        /// <summary>
+        /// Initializes a new instance of the <see cref="Asset"/> class with the specified JSON data.
+        /// </summary>
+        /// <param name="source">The JSON data to deserialize.</param>
+        internal Asset(JToken source)
         {
-            Name = asset["name"].ToString();
-            Type = asset["type"].ToString();
-            Size = asset["size"].ToObject<int>();
-            Url = asset["url"].ToString();
+            Name = source["name"].ToString();
+            Type = source["type"].ToString();
+            Size = source["size"].Value<int>();
+            Url = source["url"].ToString();
         }
     }
 }

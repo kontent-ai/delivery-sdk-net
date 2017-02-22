@@ -16,38 +16,43 @@ namespace KenticoCloud.Delivery
     /// <summary>
     /// Represent a content item.
     /// </summary>
-    public class ContentItem
+    public sealed class ContentItem
     {
-        private JObject elements;
-        private JObject modularContent;
+        private readonly JObject elements;
+        private readonly JObject modularContent;
 
         /// <summary>
-        /// <see cref="Delivery.ItemSystem"/>
+        /// Gets the system attributes of the content item.
         /// </summary>
-        public ItemSystem System { get; set; }
+        public ContentItemSystemAttributes System { get; }
 
         /// <summary>
-        /// Elements in its raw form.
+        /// Gets the dynamic view of the JSON response where elements and their properties can be retrieved by name, for example <c>item.Elements.description.value</c>;
         /// </summary>
-        public dynamic Elements { get; set; }
+        public dynamic Elements { get; }
 
         /// <summary>
-        /// Initializes content item from response JSONs.
+        /// Initializes a new instance of the <see cref="ContentItem"/> class with the specified JSON data.
         /// </summary>
-        /// <param name="item">JSON with item data.</param>
-        /// <param name="modularContent">JSON with modular content.</param>
-        public ContentItem(JToken item, JToken modularContent)
+        /// <param name="source">The JSON data of the content item to deserialize.</param>
+        /// <param name="modularContentSource">The JSON data of modular content to deserialize.</param>
+        internal ContentItem(JToken source, JToken modularContentSource)
         {
-            if (item == null || !item.HasValues)
+            if (source == null)
             {
-                return;
+                throw new ArgumentNullException(nameof(source));
             }
 
-            System = new ItemSystem(item["system"]);
-            Elements = JObject.Parse(item["elements"].ToString());
+            if (modularContentSource == null)
+            {
+                throw new ArgumentNullException(nameof(modularContentSource));
+            }
 
-            elements = (JObject)item["elements"];
-            this.modularContent = (JObject)modularContent;
+            System = new ContentItemSystemAttributes(source["system"]);
+            Elements = JObject.Parse(source["elements"].ToString());
+
+            elements = (JObject)source["elements"];
+            modularContent = (JObject)modularContentSource;
         }
 
         /// <summary>
@@ -63,104 +68,125 @@ namespace KenticoCloud.Delivery
         /// <summary>
         /// Gets a string value from an element.
         /// </summary>
-        /// <param name="element">Element name.</param>
-        /// <returns>Returns null if element has no value.</returns>
-        public string GetString(string element)
+        /// <param name="elementCodename">The codename of the element.</param>
+        /// <returns>The <see cref="string"/> value of the element with the specified codename, if available; otherwise, <c>null</c>.</returns>
+        public string GetString(string elementCodename)
         {
-            return GetElementValue<string>(element);
+            return GetElementValue<string>(elementCodename);
         }
 
         /// <summary>
-        /// Gets a number value from an element.
+        /// Returns the <see cref="decimal"/> value of the specified Number element.
         /// </summary>
-        /// <param name="element">Element name.</param>
-        /// <returns>Returns null if element has no value.</returns>
-        public decimal? GetNumber(string element)
+        /// <param name="elementCodename">The codename of the element.</param>
+        /// <returns>The <see cref="decimal"/> value of the element with the specified codename, if available; otherwise, <c>null</c>.</returns>
+        public decimal? GetNumber(string elementCodename)
         {
-            return GetElementValue<decimal?>(element);
+            return GetElementValue<decimal?>(elementCodename);
         }
 
         /// <summary>
-        /// Gets a <see cref="DateTime"/> value from an element.
+        /// Returns the <see cref="DateTime"/> value of the specified Date & time element.
         /// </summary>
-        /// <param name="element">Element name.</param>
-        /// <returns>Returns null if element has no value.</returns>
-        public DateTime? GetDateTime(string element)
+        /// <param name="elementCodename">The codename of the element.</param>
+        /// <returns>The <see cref="DateTime"/> value of the element with the specified codename, if available; otherwise, <c>null</c>.</returns>
+        public DateTime? GetDateTime(string elementCodename)
         {
-            return GetElementValue<DateTime?>(element);
+            return GetElementValue<DateTime?>(elementCodename);
         }
 
         /// <summary>
-        /// Gets modular content from an element.
+        /// Returns a collection of content items that are assigned to the specified Modular content element.
         /// </summary>
-        /// <param name="element">Element name.</param>
-        /// <remarks>If the modular content items are contained
-        /// in the response, they will be present in this list. If not, there will be "empty"
-        /// content items.</remarks>
-        public IEnumerable<ContentItem> GetModularContent(string element)
+        /// <param name="elementCodename">The codename of the element.</param>
+        /// <returns>A collection of content items that are assigned to the element with the specified codename.</returns>
+        /// <remarks>
+        /// The collection contains only content items that are included in the response from the Delivery API as modular content.
+        /// For more information see the <c>Modular content</c> topic in the Delivery API documentation.
+        /// </remarks>
+        public IEnumerable<ContentItem> GetModularContent(string elementCodename)
         {
-            if (elements.Property(element) == null)
+            var element = GetElement(elementCodename);
+            var contentItemCodenames = ((JArray)element["value"]).Values<string>();
+
+            return contentItemCodenames.Where(codename => modularContent.Property(codename) != null).Select(codename => new ContentItem(modularContent[codename], modularContent));
+        }
+
+        /// <summary>
+        /// Returns a collection of assets that were uploaded to the specified Asset element.
+        /// </summary>
+        /// <param name="elementCodename">The codename of the element.</param>
+        /// <returns>A collection of assets that were uploaded to the element with the specified codename.</returns>
+        public IEnumerable<Asset> GetAssets(string elementCodename)
+        {
+            var element = GetElement(elementCodename);
+
+            return ((JArray)element["value"]).Select(source => new Asset(source));
+        }
+
+        /// <summary>
+        /// Returns a collection of options that were selected in the specified Multiple choice element.
+        /// </summary>
+        /// <param name="elementCodename">The codename of the element.</param>
+        /// <returns>A list of selected options of the element with the specified codename.</returns>
+        public IEnumerable<MultipleChoiceOption> GetOptions(string elementCodename)
+        {
+            var element = GetElement(elementCodename);
+
+            return ((JArray)element["value"]).Select(source => new MultipleChoiceOption(source));
+        }
+
+        /// <summary>
+        /// Returns a collection of taxonomy terms that are assigned to the specified Taxonomy element.
+        /// </summary>
+        /// <param name="elementCodename">The codename of the element.</param>
+        /// <returns>A collection of taxonomy terms that are assigned to the element with the specified codename.</returns>
+        public IEnumerable<TaxonomyTerm> GetTaxonomyTerms(string elementCodename)
+        {
+            var element = GetElement(elementCodename);
+
+            return ((JArray)element["value"]).Select(source => new TaxonomyTerm(source));
+        }
+
+        /// <summary>
+        /// Returns a value of the specified element.
+        /// </summary>
+        /// <typeparam name="T">The type of the element value.</typeparam>
+        /// <param name="elementCodename">The codename of the element.</param>
+        /// <returns>A value of the element with the specified codename.</returns>
+        private T GetElementValue<T>(string elementCodename)
+        {
+            if (elementCodename == null)
             {
-                throw new ArgumentException("Given element doesn't exist.");
+                throw new ArgumentNullException(nameof(elementCodename));
             }
 
-            var codenames = ((JArray)elements[element]["value"]).ToObject<List<string>>();
+            if (elements.Property(elementCodename) == null)
+            {
+                throw new ArgumentException($"Element with the specified codename does not exist: {elementCodename}", nameof(elementCodename));
+            }
 
-            return codenames.Select(c => new ContentItem(modularContent[c], modularContent));
+            return elements[elementCodename]["value"].ToObject<T>();
         }
 
         /// <summary>
-        /// Get <see cref="Asset"/>s from an element.
+        /// Returns the specified element.
         /// </summary>
-        /// <param name="element">Element name.</param>
-        public List<Asset> GetAssets(string element)
+        /// <param name="elementCodename">The codename of the element.</param>
+        /// <returns>The element with the specified codename.</returns>
+        private JToken GetElement(string elementCodename)
         {
-            if (elements.Property(element) == null)
+            if (elementCodename == null)
             {
-                throw new ArgumentException("Given element doesn't exist.");
+                throw new ArgumentNullException(nameof(elementCodename));
             }
 
-            return ((JArray)elements[element]["value"]).Select(x => new Asset(x)).ToList();
-        }
-
-        /// <summary>
-        /// Returns the selected options of the specified multiple choice element.
-        /// </summary>
-        /// <param name="element">The codename of the multiple choice element.</param>
-        /// <returns>A list of selected options of the specified multiple choice element.</returns>
-        public List<Option> GetOptions(string element)
-        {
-            if (elements.Property(element) == null)
+            if (elements.Property(elementCodename) == null)
             {
-                throw new ArgumentException("Given element doesn't exist.");
+                throw new ArgumentException($"Element with the specified codename does not exist: {elementCodename}", nameof(elementCodename));
             }
 
-            return ((JArray)elements[element]["value"]).Select(x => new Option(x)).ToList();
-        }
-
-        /// <summary>
-        /// Returns the taxonomy terms assigned to the specified taxonomy element.
-        /// </summary>
-        /// <param name="element">The codename of the taxonomy element.</param>
-        /// <returns>A list of taxonomy terms assigned to the specified taxonomy element.</returns>
-        public List<TaxonomyTerm> GetTaxonomyTerms(string element)
-        {
-            if (elements.Property(element) == null)
-            {
-                throw new ArgumentException("Given element doesn't exist.");
-            }
-
-            return ((JArray)elements[element]["value"]).Select(x => new TaxonomyTerm(x)).ToList();
-        }
-
-        private T GetElementValue<T>(string element)
-        {
-            if (elements.Property(element) == null)
-            {
-                throw new ArgumentException("Given element doesn't exist.");
-            }
-
-            return elements[element]["value"].ToObject<T>();
+            return elements[elementCodename];
         }
     }
 }

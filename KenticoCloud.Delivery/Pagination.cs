@@ -3,41 +3,41 @@
 namespace KenticoCloud.Delivery
 {
     /// <summary>
-    /// Represents pagination information from Deliver response.
+    /// Represents information about a page.
     /// </summary>
-    public class Pagination
+    public sealed class Pagination
     {
         /// <summary>
-        /// Number of items skipped.
+        /// Gets the requested number of items to skip.
         /// </summary>
-        public int Skip { get; set; }
+        public int Skip { get; }
 
         /// <summary>
-        /// Maximal number of items that might have been returned.
+        /// Gets the requested page size.
         /// </summary>
-        public int Limit { get; set; }
+        public int Limit { get; }
 
         /// <summary>
-        /// Number of items actually returned.
+        /// Gets the number of retrieved items.
         /// </summary>
-        public int Count { get; set; }
+        public int Count { get; }
 
         /// <summary>
-        /// URL to the next page.
+        /// Gets the URL of the next page.
         /// </summary>
-        /// <remarks>Contains <see cref="string.Empty"/> if current response returned last page.</remarks>
-        public string NextPageUrl { get; set; }
+        /// <remarks>The URL of the next page, if available; otherwise, <see cref="string.Empty"/>.</remarks>
+        public string NextPageUrl { get; }
 
         /// <summary>
-        /// Initializes pagination object.
+        /// Initializes a new instance of the <see cref="Pagination"/> class with information from a response.
         /// </summary>
-        /// <param name="response">JSON returned from API.</param>
-        public Pagination(JToken response)
+        /// <param name="source">JSON data to deserialize.</param>
+        internal Pagination(JToken source)
         {
-            Skip = response["skip"].ToObject<int>();
-            Limit = response["limit"].ToObject<int>();
-            Count = response["count"].ToObject<int>();
-            NextPageUrl = response["next_page"].ToString();
+            Skip = source["skip"].Value<int>();
+            Limit = source["limit"].Value<int>();
+            Count = source["count"].Value<int>();
+            NextPageUrl = source["next_page"].ToString();
         }
     }
 }

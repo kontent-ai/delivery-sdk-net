@@ -4,52 +4,47 @@ using System.Collections.Generic;
 namespace KenticoCloud.Delivery
 {
     /// <summary>
-    /// Represent a content type.
+    /// Represents a content type.
     /// </summary>
-    public class ContentType
+    public sealed class ContentType
     {
         /// <summary>
-        /// <see cref="Delivery.TypeSystem"/>
+        /// Gets the system attributes of the content type.
         /// </summary>
-        public TypeSystem System { get; set; }
+        public ContentTypeSystemAttributes System { get; }
 
         /// <summary>
-        /// Elements in its raw form.
+        /// Gets a dictionary that contains elements of the content type index by their codename.
         /// </summary>
-        public Dictionary<string, ITypeElement> Elements { get; set; }
+        public Dictionary<string, ContentElement> Elements { get; }
 
         /// <summary>
-        /// Initializes content type from response JSON.
+        /// Initializes a new instance of the <see cref="ContentType"/> class with the specified JSON data.
         /// </summary>
-        /// <param name="item">JSON with type data.</param>
-        public ContentType(JToken item)
+        /// <param name="source">The JSON data to deserialize.</param>
+        internal ContentType(JToken source)
         {
-            if (item == null || !item.HasValues)
-            {
-                return;
-            }
+            System = new ContentTypeSystemAttributes(source["system"]);
+            Elements = new Dictionary<string, ContentElement>();
 
-            System = new TypeSystem(item["system"]);
-            Elements = new Dictionary<string, ITypeElement>();
-
-            foreach (JProperty element in item["elements"])
+            foreach (JProperty property in source["elements"])
             {
-                var elementDefinition = element.First;
-                var elementType = elementDefinition["type"].ToString();
-                var elementCodename = element.Name;
+                var element = property.Value;
+                var elementType = element["type"].ToString();
+                var elementCodename = property.Name;
 
                 switch (elementType)
                 {
                     case "multiple_choice":
-                        Elements.Add(elementCodename, new MultipleChoiceElement(elementDefinition, elementCodename));
+                        Elements.Add(elementCodename, new MultipleChoiceContentElement(element, elementCodename));
                         break;
 
                     case "taxonomy":
-                        Elements.Add(elementCodename, new TaxonomyElement(elementDefinition, elementCodename));
+                        Elements.Add(elementCodename, new TaxonomyContentElement(element, elementCodename));
                         break;
 
                     default:
-                        Elements.Add(elementCodename, new TypeElement(elementDefinition, elementCodename));
+                        Elements.Add(elementCodename, new ContentElement(element, elementCodename));
                         break;
                 }
             }

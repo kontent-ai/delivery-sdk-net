@@ -10,13 +10,13 @@ namespace KenticoCloud.Delivery.Tests
         public string TextField { get; set; }
         public string RichTextField { get; set; }
         public decimal? NumberField { get; set; }
-        public List<Option> MultipleChoiceFieldAsRadioButtons { get; set; }
-        public List<Option> MultipleChoiceFieldAsCheckboxes { get; set; }
+        public IEnumerable<MultipleChoiceOption> MultipleChoiceFieldAsRadioButtons { get; set; }
+        public IEnumerable<MultipleChoiceOption> MultipleChoiceFieldAsCheckboxes { get; set; }
         public DateTime? DateTimeField { get; set; }
-        public List<Asset> AssetField { get; set; }
+        public IEnumerable<Asset> AssetField { get; set; }
         public IEnumerable<ContentItem> ModularContentField { get; set; }
-        public List<TaxonomyTerm> CompleteTypeTaxonomy { get; set; }
-        public ItemSystem System { get; set; }
+        public IEnumerable<TaxonomyTerm> CompleteTypeTaxonomy { get; set; }
+        public ContentItemSystemAttributes System { get; set; }
 
         public void LoadFromContentItem(ContentItem contentItem)
         {

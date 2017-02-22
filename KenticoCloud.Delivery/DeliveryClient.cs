@@ -1,31 +1,40 @@
-﻿using System;
+﻿using Newtonsoft.Json.Linq;
+using System;
 using System.Collections.Generic;
+using System.Net;
 using System.Net.Http;
 using System.Threading.Tasks;
-
-using Newtonsoft.Json.Linq;
 
 namespace KenticoCloud.Delivery
 {
     /// <summary>
-    /// Class for querying Deliver API.
+    /// Executes requests against the Kentico Cloud Delivery API.
     /// </summary>
-    public class DeliveryClient
+    public sealed class DeliveryClient
     {
         private const int PROJECT_ID_MAX_LENGTH = 36;
         private readonly HttpClient httpClient;
         private readonly DeliveryEndpointUrlBuilder urlBuilder;
 
         /// <summary>
-        /// Constructor for production API.
+        /// Initializes a new instance of the <see cref="DeliveryClient"/> class for the published content of the specified project.
         /// </summary>
-        /// <param name="projectId">Project ID.</param>
-        /// <remarks>Production API connects to your published content.</remarks>
+        /// <param name="projectId">The identifier of the Kentico Cloud project.</param>
         public DeliveryClient(string projectId)
         {
+            if (projectId == null)
+            {
+                throw new ArgumentNullException(nameof(projectId), "Kentico Cloud project identifier is not specified.");
+            }
+
+            if (projectId == string.Empty)
+            {
+                throw new ArgumentException("Kentico Cloud project identifier is not specified.", nameof(projectId));
+            }
+
             if (projectId.Length > PROJECT_ID_MAX_LENGTH)
             {
-                throw new ArgumentException($"The project ID provided seems to be corrupted. Provided value: {projectId}", nameof(projectId));
+                throw new ArgumentException($"The specified Kentico cloud project identifier ({projectId}) is too long. Haven't you accidentally passed the Preview API key instead of the project identifier?", nameof(projectId));
             }
 
             urlBuilder = new DeliveryEndpointUrlBuilder(projectId);
@@ -33,63 +42,108 @@ namespace KenticoCloud.Delivery
         }
 
         /// <summary>
-        /// Constructor for preview API.
+        /// Initializes a new instance of the <see cref="DeliveryClient"/> class for the unpublished content of the specified project.
         /// </summary>
-        /// <param name="projectId">Project ID.</param>
-        /// <param name="accessToken">Preview access token.</param>
-        /// <remarks>Preview API connects to your unpublished content.</remarks>
-        public DeliveryClient(string projectId, string accessToken)
+        /// <param name="projectId">The identifier of the Kentico Cloud project.</param>
+        /// <param name="previewApiKey">The Preview API key.</param>
+        public DeliveryClient(string projectId, string previewApiKey)
         {
+            if (projectId == null)
+            {
+                throw new ArgumentNullException(nameof(projectId), "Kentico Cloud project identifier is not specified.");
+            }
+
+            if (projectId == string.Empty)
+            {
+                throw new ArgumentException("Kentico Cloud project identifier is not specified.", nameof(projectId));
+            }
+
             if (projectId.Length > PROJECT_ID_MAX_LENGTH)
             {
-                throw new ArgumentException($"The project ID provided seems to be corrupted. Provided value: {projectId}", nameof(projectId));
+                throw new ArgumentException($"The specified Kentico cloud project identifier ({projectId}) is too long. Haven't you accidentally passed the Preview API key instead of the project identifier?", nameof(projectId));
             }
 
-            urlBuilder = new DeliveryEndpointUrlBuilder(projectId, accessToken);
+            if (previewApiKey == null)
+            {
+                throw new ArgumentNullException(nameof(projectId), "The Preview API key is not specified.");
+            }
+
+            if (previewApiKey == string.Empty)
+            {
+                throw new ArgumentException("The Preview API key is not specified.", nameof(projectId));
+            }
+
+            urlBuilder = new DeliveryEndpointUrlBuilder(projectId, previewApiKey);
             httpClient = new HttpClient();
-            httpClient.DefaultRequestHeaders.Add("Authorization", string.Format("Bearer {0}", accessToken));
+            httpClient.DefaultRequestHeaders.Add("Authorization", string.Format("Bearer {0}", previewApiKey));
         }
 
         /// <summary>
-        /// Gets one content item by its codename. This method returns the whole response as JObject.
+        /// Returns a content item as JSON data.
         /// </summary>
-        /// <param name="itemCodename">Content item codename.</param>
-        /// <param name="queryParams">Query parameters. For example: "elements=title" or "depth=0"."</param>
-        public async Task<JObject> GetItemJsonAsync(string itemCodename, params string[] queryParams)
+        /// <param name="codename">The codename of a content item.</param>
+        /// <param name="parameters">An array that contains zero or more query parameters, for example for projection or depth of modular content.</param>
+        /// <returns>The <see cref="JObject"/> instance that represents the content item with the specified codename.</returns>
+        public async Task<JObject> GetItemJsonAsync(string codename, params string[] parameters)
         {
-            if (String.IsNullOrEmpty(itemCodename))
+            if (codename == null)
             {
-                throw new ArgumentException("Entered item codename is not valid.", nameof(itemCodename));
+                throw new ArgumentNullException(nameof(codename), "The codename of a content item is not specified.");
             }
 
-            var url = urlBuilder.GetItemsUrl(itemCodename, queryParams);
-            return await GetDeliverResponseAsync(url);
-        }
-
-        /// <summary>
-        /// Searches the content repository for items that match the criteria. This method returns the whole response as JObject.
-        /// </summary>
-        /// <param name="queryParams">Query parameters. For example: "elements=title" or "depth=0".</param>
-        public async Task<JObject> GetItemsJsonAsync(params string[] queryParams)
-        {
-            var url = urlBuilder.GetItemsUrl(queryParams: queryParams);
-            return await GetDeliverResponseAsync(url);
-        }
-
-        /// <summary>
-        /// Gets one content item by its codename.
-        /// </summary>
-        /// <param name="itemCodename">Content item codename.</param>
-        /// <param name="parameters">Query parameters.</param>
-        public async Task<DeliveryItemResponse> GetItemAsync(string itemCodename, IEnumerable<IFilter> parameters = null)
-        {
-            if (String.IsNullOrEmpty(itemCodename))
+            if (codename == string.Empty)
             {
-                throw new ArgumentException("Entered item codename is not valid.", nameof(itemCodename));
+                throw new ArgumentException("The codename of a content item is not specified.", nameof(codename));
             }
 
-            var url = urlBuilder.GetItemsUrl(itemCodename, parameters);
-            var response = await GetDeliverResponseAsync(url);
+            var endpointUrl = urlBuilder.GetItemUrl(codename, parameters);
+
+            return await GetDeliverResponseAsync(endpointUrl);
+        }
+
+        /// <summary>
+        /// Returns content items as JSON data.
+        /// </summary>
+        /// <param name="parameters">An array that contains zero or more query parameters, for example for filtering, ordering or depth of modular content.</param>
+        /// <returns>The <see cref="JObject"/> instance that represents the content items. If no query parameters are specified, all content items are returned.</returns>
+        public async Task<JObject> GetItemsJsonAsync(params string[] parameters)
+        {
+            var endpointUrl = urlBuilder.GetItemsUrl(parameters);
+
+            return await GetDeliverResponseAsync(endpointUrl);
+        }
+
+        /// <summary>
+        /// Returns a content item.
+        /// </summary>
+        /// <param name="codename">The codename of a content item.</param>
+        /// <param name="parameters">An array that contains zero or more query parameters, for example for projection or depth of modular content.</param>
+        /// <returns>The <see cref="DeliveryItemResponse"/> instance that contains the content item with the specified codename.</returns>
+        public async Task<DeliveryItemResponse> GetItemAsync(string codename, params IQueryParameter[] parameters)
+        {
+            return await GetItemAsync(codename, (IEnumerable<IQueryParameter>)parameters);
+        }
+
+        /// <summary>
+        /// Returns a content item.
+        /// </summary>
+        /// <param name="codename">The codename of a content item.</param>
+        /// <param name="parameters">A collection of query parameters, for example for projection or depth of modular content.</param>
+        /// <returns>The <see cref="DeliveryItemResponse"/> instance that contains the content item with the specified codename.</returns>
+        public async Task<DeliveryItemResponse> GetItemAsync(string codename, IEnumerable<IQueryParameter> parameters)
+        {
+            if (codename == null)
+            {
+                throw new ArgumentNullException(nameof(codename), "The codename of a content item is not specified.");
+            }
+
+            if (codename == string.Empty)
+            {
+                throw new ArgumentException("The codename of a content item is not specified.", nameof(codename));
+            }
+
+            var endpointUrl = urlBuilder.GetItemUrl(codename, parameters);
+            var response = await GetDeliverResponseAsync(endpointUrl);
 
             return new DeliveryItemResponse(response);
         }
@@ -97,17 +151,17 @@ namespace KenticoCloud.Delivery
         /// <summary>
         /// Gets one strongly typed content item by its codename.
         /// </summary>
-        /// <param name="itemCodename">Content item codename.</param>
+        /// <param name="codename">Content item codename.</param>
         /// <param name="parameters">Query parameters.</param>
-        public async Task<DeliveryItemResponse<T>> GetItemAsync<T>(string itemCodename, IEnumerable<IFilter> parameters = null) 
+        public async Task<DeliveryItemResponse<T>> GetItemAsync<T>(string codename, IEnumerable<IQueryParameter> parameters = null) 
             where T : IContentItemBased, new()
         {
-            if (String.IsNullOrEmpty(itemCodename))
+            if (String.IsNullOrEmpty(codename))
             {
-                throw new ArgumentException("Entered item codename is not valid.", nameof(itemCodename));
+                throw new ArgumentException("Entered item codename is not valid.", nameof(codename));
             }
 
-            var url = urlBuilder.GetItemsUrl(itemCodename, parameters);
+            var url = urlBuilder.GetItemUrl(codename, parameters);
             var response = await GetDeliverResponseAsync(url);
 
             return new DeliveryItemResponse<T>(response);
@@ -115,106 +169,164 @@ namespace KenticoCloud.Delivery
 
         /// <summary>
         /// Searches the content repository for items that match the filter criteria.
+        /// Returns content items.
         /// </summary>
-        /// <param name="parameters">Query parameters.</param>
-        public async Task<DeliveryItemListingResponse> GetItemsAsync(IEnumerable<IFilter> parameters = null)
+        /// <param name="parameters">An array that contains zero or more query parameters, for example for filtering, ordering or depth of modular content.</param>
+        /// <returns>The <see cref="DeliveryItemListingResponset"/> instance that contains the content items. If no query parameters are specified, all content items are returned.</returns>
+        public async Task<DeliveryItemListingResponse> GetItemsAsync(params IQueryParameter[] parameters)
         {
-            var url = urlBuilder.GetItemsUrl(filters: parameters);
-            var response = await GetDeliverResponseAsync(url);
+            return await GetItemsAsync((IEnumerable<IQueryParameter>)parameters);
+        }
+
+        /// <summary>
+        /// Returns content items.
+        /// </summary>
+        /// <param name="parameters">A collection of query parameters, for example for filtering, ordering or depth of modular content.</param>
+        /// <returns>The <see cref="DeliveryItemListingResponset"/> instance that contains the content items. If no query parameters are specified, all content items are returned.</returns>
+        public async Task<DeliveryItemListingResponse> GetItemsAsync(IEnumerable<IQueryParameter> parameters)
+        {
+            var endpointUrl = urlBuilder.GetItemsUrl(parameters);
+            var response = await GetDeliverResponseAsync(endpointUrl);
 
             return new DeliveryItemListingResponse(response);
         }
 
         /// <summary>
-        /// Gets one content type by its codename. This method returns the whole response as JObject.
+        /// Returns a content type as JSON data.
         /// </summary>
-        /// <param name="typeCodename">Content type codename.</param>
-        /// <param name="queryParams">Query parameters.</param>
-        public async Task<JObject> GetTypeJsonAsync(string typeCodename, params string[] queryParams)
+        /// <param name="codename">The codename of a content type.</param>
+        /// <returns>The <see cref="JObject"/> instance that represents the content type with the specified codename.</returns>
+        public async Task<JObject> GetTypeJsonAsync(string codename)
         {
-            if (String.IsNullOrEmpty(typeCodename))
+            if (codename == null)
             {
-                throw new ArgumentException("Entered type codename is not valid.", nameof(typeCodename));
+                throw new ArgumentNullException(nameof(codename), "The codename of a content type is not specified.");
             }
 
-            var url = urlBuilder.GetTypesUrl(typeCodename, queryParams);
-            return await GetDeliverResponseAsync(url);
+            if (codename == string.Empty)
+            {
+                throw new ArgumentException("The codename of a content type is not specified.", nameof(codename));
+            }
+
+            var endpointUrl = urlBuilder.GetTypeUrl(codename);
+
+            return await GetDeliverResponseAsync(endpointUrl);
         }
 
         /// <summary>
-        /// Searches the content repository for types that match the criteria. This method returns the whole response as JObject.
+        /// Returns content types as JSON data.
         /// </summary>
-        /// <param name="queryParams">Query parameters.</param>
-        public async Task<JObject> GetTypesJsonAsync(params string[] queryParams)
+        /// <param name="parameters">An array that contains zero or more query parameters, for example for paging.</param>
+        /// <returns>The <see cref="JObject"/> instance that represents the content types. If no query parameters are specified, all content types are returned.</returns>
+        public async Task<JObject> GetTypesJsonAsync(params string[] parameters)
         {
-            var url = urlBuilder.GetTypesUrl(queryParams: queryParams);
-            return await GetDeliverResponseAsync(url);
+            var endpointUrl = urlBuilder.GetTypesUrl(parameters);
+
+            return await GetDeliverResponseAsync(endpointUrl);
         }
 
         /// <summary>
-        /// Gets one content type by its codename.
+        /// Returns a content type.
         /// </summary>
-        /// <param name="typeCodename">Content type codename.</param>
-        /// <param name="parameters">Query parameters.</param>
-        public async Task<ContentType> GetTypeAsync(string typeCodename, IEnumerable<IFilter> parameters = null)
+        /// <param name="codename">The codename of a content type.</param>
+        /// <returns>The content type with the specified codename.</returns>
+        public async Task<ContentType> GetTypeAsync(string codename)
         {
-            if (String.IsNullOrEmpty(typeCodename))
+            if (codename == null)
             {
-                throw new ArgumentException("Entered type codename is not valid.", nameof(typeCodename));
+                throw new ArgumentNullException(nameof(codename), "The codename of a content type is not specified.");
             }
 
-            var url = urlBuilder.GetTypesUrl(typeCodename, parameters);
-            var response = await GetDeliverResponseAsync(url);
+            if (codename == string.Empty)
+            {
+                throw new ArgumentException("The codename of a content type is not specified.", nameof(codename));
+            }
+
+            var endpointUrl = urlBuilder.GetTypeUrl(codename);
+            var response = await GetDeliverResponseAsync(endpointUrl);
 
             return new ContentType(response);
         }
 
         /// <summary>
-        /// Searches the content repository for types that match the filter criteria.
+        /// Returns content types.
         /// </summary>
-        /// <param name="parameters">Query parameters.</param>
-        public async Task<DeliveryTypeListingResponse> GetTypesAsync(IEnumerable<IFilter> parameters = null)
+        /// <param name="parameters">An array that contains zero or more query parameters, for example for paging.</param>
+        /// <returns>The <see cref="DeliveryTypeListingResponse"/> instance that represents the content types. If no query parameters are specified, all content types are returned.</returns>
+        public async Task<DeliveryTypeListingResponse> GetTypesAsync(params IQueryParameter[] parameters)
         {
-            var url = urlBuilder.GetTypesUrl(filters: parameters);
-            var response = await GetDeliverResponseAsync(url);
+            return await GetTypesAsync((IEnumerable<IQueryParameter>)parameters);
+        }
+
+        /// <summary>
+        /// Returns content types.
+        /// </summary>
+        /// <param name="parameters">A collection of query parameters, for example for paging.</param>
+        /// <returns>The <see cref="DeliveryTypeListingResponse"/> instance that represents the content types. If no query parameters are specified, all content types are returned.</returns>
+        public async Task<DeliveryTypeListingResponse> GetTypesAsync(IEnumerable<IQueryParameter> parameters)
+        {
+            var endpointUrl = urlBuilder.GetTypesUrl(parameters: parameters);
+            var response = await GetDeliverResponseAsync(endpointUrl);
 
             return new DeliveryTypeListingResponse(response);
         }
 
         /// <summary>
-        /// Gets the type element definition.
+        /// Returns a content element.
         /// </summary>
-        /// <param name="typeCodename">Content type codename.</param>
-        /// <param name="elementCodename">Content type element codename.</param>
-        public async Task<ITypeElement> GetTypeElementAsync(string typeCodename, string elementCodename)
+        /// <param name="contentTypeCodename">The codename of the content type.</param>
+        /// <param name="contentElementCodename">The codename of the content element.</param>
+        /// <returns>A content element with the specified codename that is a part of a content type with the specified codename.</returns>
+        public async Task<ContentElement> GetContentElementAsync(string contentTypeCodename, string contentElementCodename)
         {
-            var url = urlBuilder.GetTypeElementUrl(typeCodename, elementCodename);
-            var response = await GetDeliverResponseAsync(url);
+            if (contentTypeCodename == null)
+            {
+                throw new ArgumentNullException(nameof(contentTypeCodename), "The codename of a content type is not specified.");
+            }
+
+            if (contentTypeCodename == string.Empty)
+            {
+                throw new ArgumentException("The codename of a content type is not specified.", nameof(contentTypeCodename));
+            }
+
+            if (contentElementCodename == null)
+            {
+                throw new ArgumentNullException(nameof(contentElementCodename), "The codename of a content element is not specified.");
+            }
+
+            if (contentElementCodename == string.Empty)
+            {
+                throw new ArgumentException("The codename of a content element is not specified.", nameof(contentElementCodename));
+            }
+
+            var endpointUrl = urlBuilder.GetContentElementUrl(contentTypeCodename, contentElementCodename);
+            var response = await GetDeliverResponseAsync(endpointUrl);
 
             var elementType = response["type"].ToString();
+            var elementCodename = response["codename"].ToString();
 
             switch (elementType)
             {
                 case "multiple_choice":
-                    return new MultipleChoiceElement(response);
+                    return new MultipleChoiceContentElement(response, elementCodename);
 
                 case "taxonomy":
-                    return new TaxonomyElement(response);
+                    return new TaxonomyContentElement(response, elementCodename);
 
                 default:
-                    return new TypeElement(response);
+                    return new ContentElement(response, elementCodename);
             }
         }
 
-        private async Task<JObject> GetDeliverResponseAsync(string url)
+        private async Task<JObject> GetDeliverResponseAsync(string endpointUrl)
         {
-            var response = await httpClient.GetAsync(url);
+            var response = await httpClient.GetAsync(endpointUrl);
 
-            if (response.IsSuccessStatusCode)
+            if (response.StatusCode == HttpStatusCode.OK)
             {
-                var responseBody = await response.Content.ReadAsStringAsync();
+                var content = await response.Content.ReadAsStringAsync();
 
-                return JObject.Parse(responseBody);
+                return JObject.Parse(content);
             }
 
             throw new DeliveryException(response.StatusCode, await response.Content.ReadAsStringAsync());

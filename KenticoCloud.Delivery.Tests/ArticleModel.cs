@@ -7,7 +7,7 @@ namespace KenticoCloud.Delivery.Tests
     {
         public string Title { get; set; }
         public IEnumerable<ContentItem> RelatedArticles { get; set; }
-        public ItemSystem System { get; set; }
+        public ContentItemSystemAttributes System { get; set; }
 
         public void LoadFromContentItem(ContentItem contentItem)
         {

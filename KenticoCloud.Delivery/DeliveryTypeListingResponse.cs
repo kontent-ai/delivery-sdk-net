@@ -1,36 +1,32 @@
-﻿using System;
+﻿using Newtonsoft.Json.Linq;
 using System.Collections.Generic;
 using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
-
-using Newtonsoft.Json.Linq;
 
 namespace KenticoCloud.Delivery
 {
     /// <summary>
-    /// Represents type listing response from the API.
+    /// Represents a response from Kentico Cloud Delivery API that contains a list of content types.
     /// </summary>
-    public class DeliveryTypeListingResponse
+    public sealed class DeliveryTypeListingResponse
     {
         /// <summary>
-        /// Content items.
+        /// Gets paging information.
         /// </summary>
-        public List<ContentType> Types { get; set; }
+        public Pagination Pagination { get; }
 
         /// <summary>
-        /// Contains paging information.
+        /// Gets a list of content types.
         /// </summary>
-        public Pagination Pagination { get; set; }
+        public IReadOnlyList<ContentType> Types { get; }
 
         /// <summary>
-        /// Initializes response object.
+        /// Initializes a new instance of the <see cref="DeliveryTypeListingResponse"/> class with information from a response.
         /// </summary>
-        /// <param name="response">JSON returned from API.</param>
-        public DeliveryTypeListingResponse(JToken response)
+        /// <param name="response">A response from Kentico Cloud Delivery API that contains a list of content types.</param>
+        internal DeliveryTypeListingResponse(JToken response)
         {
-            Types = ((JArray)response["types"]).Select(x => new ContentType(x)).ToList();
             Pagination = new Pagination(response["pagination"]);
+            Types = ((JArray)response["types"]).Select(type => new ContentType(type)).ToList().AsReadOnly();
         }
     }
 }
