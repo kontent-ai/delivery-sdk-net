@@ -30,15 +30,6 @@ namespace KenticoCloud.Delivery
         public dynamic Elements { get; set; }
 
         /// <summary>
-        /// Initializes new <see cref="ContentItem"/> class instance.
-        /// </summary>
-        public ContentItem()
-        {
-            elements = new JObject();
-            modularContent = new JObject();
-        }
-
-        /// <summary>
         /// Initializes content item from response JSONs.
         /// </summary>
         /// <param name="item">JSON with item data.</param>
