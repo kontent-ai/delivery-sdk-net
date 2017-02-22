@@ -9,10 +9,6 @@ namespace KenticoCloud.Delivery.Tests
         public IEnumerable<ContentItem> RelatedArticles { get; set; }
         public ItemSystem System { get; set; }
 
-        public ArticleModel()
-        {
-        }
-
         public void LoadFromContentItem(ContentItem contentItem)
         {
             Title = contentItem.GetString("title");
