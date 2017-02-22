@@ -5,7 +5,9 @@ using System.Linq;
 
 namespace KenticoCloud.Delivery
 {
-    // TODO: add comment
+    /// <summary>
+    /// Defines a method which is called during casting from <see cref="ContentItem"/> to more specific type.
+    /// </summary>
     public interface IContentItemBased
     {
         void LoadFromContentItem(ContentItem contentItem);
@@ -48,7 +50,9 @@ namespace KenticoCloud.Delivery
             this.modularContent = (JObject)modularContent;
         }
 
-        // TODO: add comment
+        /// <summary>
+        /// Casts current instance to a strongly typed model implementing <see cref="IContentItemBased"/> interface. 
+        /// </summary>
         public T CastTo<T>() where T : IContentItemBased, new()
         {
             var stronglyTypedModel = new T();
