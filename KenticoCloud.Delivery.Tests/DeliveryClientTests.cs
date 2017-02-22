@@ -18,13 +18,14 @@ namespace KenticoCloud.Delivery.Tests
 			var client = new DeliveryClient(PROJECT_ID);
 			var beveragesItem = Task.Run(() => client.GetItemAsync("coffee_beverages_explained")).Result.Item;
             var barraItem = Task.Run(() => client.GetItemAsync("brazil_natural_barra_grande")).Result.Item;
-			Assert.AreEqual("article", beveragesItem.System.Type);
+            var roastsItem = Task.Run(() => client.GetItemAsync("on_roasts")).Result.Item;
+            Assert.AreEqual("article", beveragesItem.System.Type);
             Assert.GreaterOrEqual(beveragesItem.System.SitemapLocation.Count, 1);
+            Assert.GreaterOrEqual(roastsItem.GetModularContent("related_articles").Count(), 1);
             Assert.AreEqual(beveragesItem.Elements.title.value.ToString(), beveragesItem.GetString("title"));
             Assert.AreEqual(beveragesItem.Elements.body_copy.value.ToString(), beveragesItem.GetString("body_copy"));
             Assert.AreEqual(DateTime.Parse(beveragesItem.Elements.post_date.value.ToString()), beveragesItem.GetDateTime("post_date"));
             Assert.AreEqual(beveragesItem.Elements.teaser_image.value.Count, beveragesItem.GetAssets("teaser_image").Count());
-            Assert.AreEqual(beveragesItem.Elements.related_articles.value.Count, beveragesItem.GetAssets("related_articles").Count());
             Assert.AreEqual(beveragesItem.Elements.personas.value.Count, beveragesItem.GetTaxonomyTerms("personas").Count());
             Assert.AreEqual(decimal.Parse(barraItem.Elements.price.value.ToString()), barraItem.GetNumber("price"));
             Assert.AreEqual(barraItem.Elements.processing.value.Count, barraItem.GetOptions("processing").Count());

@@ -91,7 +91,7 @@ namespace KenticoCloud.Delivery
             var element = GetElement(elementCodename);
             var contentItemCodenames = ((JArray)element["value"]).Values<string>();
 
-            return contentItemCodenames.Where(codename => modularContent.Property("codename") != null).Select(codename => new ContentItem(modularContent[codename], modularContent));
+            return contentItemCodenames.Where(codename => modularContent.Property(codename) != null).Select(codename => new ContentItem(modularContent[codename], modularContent));
         }
 
         /// <summary>
