@@ -1,5 +1,6 @@
 ﻿using NUnit.Framework;
 using System;
+using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
 
@@ -174,6 +175,54 @@ namespace KenticoCloud.Delivery.Tests
 
             Assert.AreEqual(2, item.CompleteTypeTaxonomy.Count());
             Assert.AreEqual("Option 1", item.CompleteTypeTaxonomy.First().Name);
+        }
+
+        [Test]
+        public void CastResponse()
+        {
+            const string SANDBOX_PROJECT_ID = "e1167a11-75af-4a08-ad84-0582b463b010";
+
+            // Arrange
+            var client = new DeliveryClient(SANDBOX_PROJECT_ID);
+
+            // Act
+            var response = client.GetItemAsync("complete_content_item").Result;
+            var stronglyTypedResponse = response.CastTo<CompleteContentItemModel>();
+
+            // Assert
+            Assert.AreEqual("Text field value", stronglyTypedResponse.Item.TextField);
+        }
+
+        [Test]
+        public void CastContentItem()
+        {
+            const string SANDBOX_PROJECT_ID = "e1167a11-75af-4a08-ad84-0582b463b010";
+
+            // Arrange
+            var client = new DeliveryClient(SANDBOX_PROJECT_ID);
+
+            // Act
+            var item = client.GetItemAsync("complete_content_item").Result.Item;
+            var stronglyTypedResponse = item.CastTo<CompleteContentItemModel>();
+
+            // Assert
+            Assert.AreEqual("Text field value", stronglyTypedResponse.TextField);
+        }
+
+        [Test]
+        public void CastContentItems()
+        {
+            const string SANDBOX_PROJECT_ID = "e1167a11-75af-4a08-ad84-0582b463b010";
+
+            // Arrange
+            var client = new DeliveryClient(SANDBOX_PROJECT_ID);
+
+            // Act
+            DeliveryItemListingResponse response = client.GetItemsAsync().Result;
+            IEnumerable<CompleteContentItemModel> list = response.Items.Where(i => i.System.Type == "complete_content_type").Select(a => a.CastTo<CompleteContentItemModel>());
+
+            // Assert
+            Assert.True(list.Any());
         }
     }
 }

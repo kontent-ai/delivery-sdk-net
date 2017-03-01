@@ -2,6 +2,7 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using Newtonsoft.Json;
 
 namespace KenticoCloud.Delivery
 {
@@ -45,13 +46,19 @@ namespace KenticoCloud.Delivery
         /// </summary>
         /// <param name="source">The JSON data to deserialize.</param>
         internal ContentItemSystemAttributes(JToken source)
+            : this(source["id"].ToString(), source["name"].ToString(), source["codename"].ToString(), source["type"].ToString(), ((JArray)source["sitemap_locations"]).Values<string>().ToList().AsReadOnly(), source["last_modified"].Value<DateTime>())
         {
-            Id = source["id"].ToString();
-            Name = source["name"].ToString();
-            Codename = source["codename"].ToString();
-            Type = source["type"].ToString();
-            SitemapLocation = ((JArray)source["sitemap_locations"]).Values<string>().ToList().AsReadOnly();
-            LastModified = source["last_modified"].Value<DateTime>();
+        }
+
+        [JsonConstructor]
+        internal ContentItemSystemAttributes(string id, string name, string codename, string type, IReadOnlyList<string> sitemapLocation, DateTime lastModified)
+        {
+            Id = id;
+            Name = name;
+            Codename = codename;
+            Type = type;
+            SitemapLocation = sitemapLocation;
+            LastModified = lastModified;
         }
     }
 }

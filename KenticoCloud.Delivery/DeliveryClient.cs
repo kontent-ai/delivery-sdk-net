@@ -171,7 +171,7 @@ namespace KenticoCloud.Delivery
         /// Returns content items.
         /// </summary>
         /// <param name="parameters">An array that contains zero or more query parameters, for example for filtering, ordering or depth of modular content.</param>
-        /// <returns>The <see cref="DeliveryItemListingResponset"/> instance that contains the content items. If no query parameters are specified, all content items are returned.</returns>
+        /// <returns>The <see cref="DeliveryItemListingResponse"/> instance that contains the content items. If no query parameters are specified, all content items are returned.</returns>
         public async Task<DeliveryItemListingResponse> GetItemsAsync(params IQueryParameter[] parameters)
         {
             return await GetItemsAsync((IEnumerable<IQueryParameter>)parameters);
@@ -181,7 +181,7 @@ namespace KenticoCloud.Delivery
         /// Returns content items.
         /// </summary>
         /// <param name="parameters">A collection of query parameters, for example for filtering, ordering or depth of modular content.</param>
-        /// <returns>The <see cref="DeliveryItemListingResponset"/> instance that contains the content items. If no query parameters are specified, all content items are returned.</returns>
+        /// <returns>The <see cref="DeliveryItemListingResponse"/> instance that contains the content items. If no query parameters are specified, all content items are returned.</returns>
         public async Task<DeliveryItemListingResponse> GetItemsAsync(IEnumerable<IQueryParameter> parameters)
         {
             var endpointUrl = urlBuilder.GetItemsUrl(parameters);

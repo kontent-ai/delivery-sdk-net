@@ -14,5 +14,6 @@ namespace KenticoCloud.Delivery.Tests
         public IEnumerable<Asset> AssetField { get; set; }
         public IEnumerable<ContentItem> ModularContentField { get; set; }
         public IEnumerable<TaxonomyTerm> CompleteTypeTaxonomy { get; set; }
+        public ContentItemSystemAttributes System { get; set; }
     }
 }
