@@ -9,7 +9,8 @@
   "frameworks": {
     "netstandard1.3": {
       "dependencies": {
-        "NETStandard.Library": "1.6.1"
+        "NETStandard.Library": "1.6.1",
+        "System.Reflection.TypeExtensions": "4.3.0"
       }
     },
     "net45": {

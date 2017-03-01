@@ -1,4 +1,4 @@
-﻿using Newtonsoft.Json.Linq;
+﻿using Newtonsoft.Json;
 
 namespace KenticoCloud.Delivery
 {
@@ -30,13 +30,13 @@ namespace KenticoCloud.Delivery
         /// <summary>
         /// Initializes a new instance of the <see cref="Asset"/> class with the specified JSON data.
         /// </summary>
-        /// <param name="source">The JSON data to deserialize.</param>
-        internal Asset(JToken source)
+        [JsonConstructor]
+        internal Asset(string name, string type, int size, string url)
         {
-            Name = source["name"].ToString();
-            Type = source["type"].ToString();
-            Size = source["size"].Value<int>();
-            Url = source["url"].ToString();
+            Name = name;
+            Type = type;
+            Size = size;
+            Url = url;
         }
     }
 }

@@ -149,10 +149,29 @@ namespace KenticoCloud.Delivery
         }
 
         /// <summary>
+        /// Gets one strongly typed content item by its codename.
+        /// </summary>
+        /// <param name="codename">Content item codename.</param>
+        /// <param name="parameters">Query parameters.</param>
+        public async Task<DeliveryItemResponse<T>> GetItemAsync<T>(string codename, IEnumerable<IQueryParameter> parameters = null)
+        {
+            if (String.IsNullOrEmpty(codename))
+            {
+                throw new ArgumentException("Entered item codename is not valid.", nameof(codename));
+            }
+
+            var url = urlBuilder.GetItemUrl(codename, parameters);
+            var response = await GetDeliverResponseAsync(url);
+
+            return new DeliveryItemResponse<T>(response);
+        }
+
+        /// <summary>
+        /// Searches the content repository for items that match the filter criteria.
         /// Returns content items.
         /// </summary>
         /// <param name="parameters">An array that contains zero or more query parameters, for example for filtering, ordering or depth of modular content.</param>
-        /// <returns>The <see cref="DeliveryItemListingResponset"/> instance that contains the content items. If no query parameters are specified, all content items are returned.</returns>
+        /// <returns>The <see cref="DeliveryItemListingResponse"/> instance that contains the content items. If no query parameters are specified, all content items are returned.</returns>
         public async Task<DeliveryItemListingResponse> GetItemsAsync(params IQueryParameter[] parameters)
         {
             return await GetItemsAsync((IEnumerable<IQueryParameter>)parameters);
@@ -162,7 +181,7 @@ namespace KenticoCloud.Delivery
         /// Returns content items.
         /// </summary>
         /// <param name="parameters">A collection of query parameters, for example for filtering, ordering or depth of modular content.</param>
-        /// <returns>The <see cref="DeliveryItemListingResponset"/> instance that contains the content items. If no query parameters are specified, all content items are returned.</returns>
+        /// <returns>The <see cref="DeliveryItemListingResponse"/> instance that contains the content items. If no query parameters are specified, all content items are returned.</returns>
         public async Task<DeliveryItemListingResponse> GetItemsAsync(IEnumerable<IQueryParameter> parameters)
         {
             var endpointUrl = urlBuilder.GetItemsUrl(parameters);
