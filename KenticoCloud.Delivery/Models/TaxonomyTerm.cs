@@ -7,7 +7,6 @@ namespace KenticoCloud.Delivery
     /// <summary>
     /// Represents a taxonomy term assigned to a Taxonomy element.
     /// </summary>
-    [JsonConverter(typeof(TaxonomyTermConverter))]
     public sealed class TaxonomyTerm
     {
         /// <summary>
@@ -23,36 +22,11 @@ namespace KenticoCloud.Delivery
         /// <summary>
         /// Initializes a new instance of the <see cref="TaxonomyTerm"/> class with the specified JSON data.
         /// </summary>
-        /// <param name="source">The JSON data to deserialize.</param>
-        internal TaxonomyTerm(JToken source)
+        [JsonConstructor]
+        internal TaxonomyTerm(string name, string codename)
         {
-            Name = source["name"].ToString();
-            Codename = source["codename"].ToString();
-        }
-    }
-
-    internal class TaxonomyTermConverter : JsonConverter
-    {
-        public override bool CanConvert(Type objectType)
-        {
-            return (objectType == typeof(Asset));
-        }
-
-        public override bool CanWrite
-        {
-            get { return false; }
-        }
-
-        public override object ReadJson(JsonReader reader, Type objectType, object existingValue, JsonSerializer serializer)
-        {
-            var taxonomyTermJson = JObject.Load(reader);
-
-            return new TaxonomyTerm(taxonomyTermJson);
-        }
-
-        public override void WriteJson(JsonWriter writer, object value, JsonSerializer serializer)
-        {
-            throw new NotImplementedException();
+            Name = name;
+            Codename = codename;
         }
     }
 }

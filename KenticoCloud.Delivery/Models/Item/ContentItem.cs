@@ -103,7 +103,7 @@ namespace KenticoCloud.Delivery
         {
             var element = GetElement(elementCodename);
 
-            return ((JArray)element["value"]).Select(source => new Asset(source));
+            return ((JArray)element["value"]).Select(source => source.ToObject<Asset>());
         }
 
         /// <summary>
@@ -115,7 +115,7 @@ namespace KenticoCloud.Delivery
         {
             var element = GetElement(elementCodename);
 
-            return ((JArray)element["value"]).Select(source => new MultipleChoiceOption(source));
+            return ((JArray)element["value"]).Select(source => source.ToObject<MultipleChoiceOption>());
         }
 
         /// <summary>

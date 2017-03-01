@@ -7,6 +7,6 @@ namespace KenticoCloud.Delivery.Tests
     public class ArticleModel
     {
         public string Title { get; set; }
-        //public IEnumerable<ArticleModel> RelatedArticles { get; set; }
+        public IEnumerable<ContentItem> RelatedArticles { get; set; }
     }
 }
