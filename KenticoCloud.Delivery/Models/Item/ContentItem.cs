@@ -40,7 +40,7 @@ namespace KenticoCloud.Delivery
                 throw new ArgumentNullException(nameof(modularContentSource));
             }
 
-            System = source["system"].ToObject<ContentItemSystemAttributes>();
+            System = new ContentItemSystemAttributes(source["system"]);
             Elements = JObject.Parse(source["elements"].ToString());
 
             elements = (JObject)source["elements"];
@@ -127,7 +127,7 @@ namespace KenticoCloud.Delivery
         {
             var element = GetElement(elementCodename);
 
-            return ((JArray)element["value"]).Select(source => new TaxonomyTerm(source));
+            return ((JArray)element["value"]).Select(source => source.ToObject<TaxonomyTerm>());
         }
 
         /// <summary>

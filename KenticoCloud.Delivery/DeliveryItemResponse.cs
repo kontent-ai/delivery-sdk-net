@@ -3,6 +3,8 @@ using Newtonsoft.Json.Linq;
 using System;
 using System.Collections;
 using System.Collections.Generic;
+using System.Linq;
+using System.Reflection;
 
 namespace KenticoCloud.Delivery
 {
@@ -58,38 +60,83 @@ namespace KenticoCloud.Delivery
             ModularContent = JObject.Parse(response["modular_content"].ToString());
         }
 
-        private T Parse(JToken response)
-        {
-            var settings = new JsonSerializerSettings();
-            settings.Converters.Add(new ElementValueConverter<string>());
-            settings.Converters.Add(new ElementValueConverter<decimal?>());
-            settings.Converters.Add(new ElementValueConverter<DateTime?>());
-            settings.Converters.Add(new ElementValueConverter<IEnumerable>());
+        //private T Parse(JToken response)
+        //{
+        //    JObject fields = new JObject();
+        //    foreach (var property in ((JObject)response.SelectToken("$.item.elements")).Properties())
+        //    {
+        //        // Remove underscore characters to support loading into PascalCase property names in CSharp code
+        //        string propertyName = property.Name.Replace("_", "");
+        //        fields.Add(propertyName, property.First["value"]);
+        //    }
 
-            return response.SelectToken("$.item.elements").ToObject<T>(JsonSerializer.Create(settings));
-        }
-    }
+        //    return fields.ToObject<T>();
+        //}
 
-    public class ElementValueConverter<T> : JsonConverter
-    {
-        public override bool CanConvert(Type objectType)
+        private T Parse(JToken rootObject)
         {
-            return (objectType == typeof(T));
-        }
+            T instance = (T)Activator.CreateInstance(typeof(T));
 
-        public override bool CanWrite
-        {
-            get { return false; }
-        }
+            foreach (var property in instance.GetType().GetProperties())
+            {
+                if (property.SetMethod == null)
+                {
+                    continue;
+                }
 
-        public override object ReadJson(JsonReader reader, Type objectType, object existingValue, JsonSerializer serializer)
-        {
-            return JObject.Load(reader).SelectToken("value").ToObject<T>();
-        }
+                if (property.PropertyType == typeof(IEnumerable<ContentItem>))
+                {
+                    var contentItemCodenames = ((JObject)rootObject["item"]["elements"])
+                        .Properties()
+                        .First(p => p.Name.Replace("_", "").ToLower() == property.Name.ToLower())
+                        .First["value"].ToObject<IEnumerable<string>>();
 
-        public override void WriteJson(JsonWriter writer, object value, JsonSerializer serializer)
-        {
-            throw new NotImplementedException();
+                    if (contentItemCodenames == null || contentItemCodenames.Count() <= 0)
+                    {
+                        continue;
+                    }
+
+                    var modularContentNode = ((JObject)rootObject["modular_content"]);
+
+                    var contentItems = new List<ContentItem>();
+                    foreach (string codename in contentItemCodenames)
+                    {
+                        var modularContentItemNode = modularContentNode.Properties()
+                            .First(p => p.Name == codename).First;
+
+                        if (modularContentItemNode == null)
+                        {
+                            continue;
+                        }
+
+                        contentItems.Add(new ContentItem(modularContentItemNode, modularContentNode));
+                    }
+
+                    property.SetValue(instance, contentItems);
+                }
+
+                if (property.PropertyType == typeof(IEnumerable<MultipleChoiceOption>) 
+                    || property.PropertyType == typeof(IEnumerable<Asset>)
+                    || property.PropertyType == typeof(IEnumerable<TaxonomyTerm>)
+                    || property.PropertyType == typeof(DateTime?)
+                    || property.PropertyType == typeof(decimal?)
+                    || property.PropertyType == typeof(string))
+                {
+                    object value = ((JObject)rootObject["item"]["elements"])
+                        .Properties()
+                        .First(child => child.Name.Replace("_", "").ToLower() == property.Name.ToLower())
+                        .First["value"].ToObject(property.PropertyType);
+
+                    if (value == null)
+                    {
+                        continue;
+                    }
+
+                    property.SetValue(instance, value);
+                }
+            }
+
+            return instance;
         }
     }
 }

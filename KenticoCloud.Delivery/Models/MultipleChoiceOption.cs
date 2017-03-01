@@ -1,10 +1,13 @@
-﻿using Newtonsoft.Json.Linq;
+﻿using Newtonsoft.Json;
+using Newtonsoft.Json.Linq;
+using System;
 
 namespace KenticoCloud.Delivery
 {
     /// <summary>
     /// Represents a selected option of a Multiple choice element.
     /// </summary>
+    [JsonConverter(typeof(MultipleChoiceOptionConverter))]
     public sealed class MultipleChoiceOption
     {
         /// <summary>
@@ -25,6 +28,31 @@ namespace KenticoCloud.Delivery
         {
             Name = source["name"].ToString();
             Codename = source["codename"].ToString();
+        }
+    }
+
+    internal class MultipleChoiceOptionConverter : JsonConverter
+    {
+        public override bool CanConvert(Type objectType)
+        {
+            return (objectType == typeof(Asset));
+        }
+
+        public override bool CanWrite
+        {
+            get { return false; }
+        }
+
+        public override object ReadJson(JsonReader reader, Type objectType, object existingValue, JsonSerializer serializer)
+        {
+            var multipleChoiceOptionJson = JObject.Load(reader);
+
+            return new MultipleChoiceOption(multipleChoiceOptionJson);
+        }
+
+        public override void WriteJson(JsonWriter writer, object value, JsonSerializer serializer)
+        {
+            throw new NotImplementedException();
         }
     }
 }

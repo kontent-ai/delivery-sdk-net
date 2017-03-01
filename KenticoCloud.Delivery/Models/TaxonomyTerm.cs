@@ -1,10 +1,13 @@
-﻿using Newtonsoft.Json.Linq;
+﻿using Newtonsoft.Json;
+using Newtonsoft.Json.Linq;
+using System;
 
 namespace KenticoCloud.Delivery
 {
     /// <summary>
     /// Represents a taxonomy term assigned to a Taxonomy element.
     /// </summary>
+    [JsonConverter(typeof(TaxonomyTermConverter))]
     public sealed class TaxonomyTerm
     {
         /// <summary>
@@ -25,6 +28,31 @@ namespace KenticoCloud.Delivery
         {
             Name = source["name"].ToString();
             Codename = source["codename"].ToString();
+        }
+    }
+
+    internal class TaxonomyTermConverter : JsonConverter
+    {
+        public override bool CanConvert(Type objectType)
+        {
+            return (objectType == typeof(Asset));
+        }
+
+        public override bool CanWrite
+        {
+            get { return false; }
+        }
+
+        public override object ReadJson(JsonReader reader, Type objectType, object existingValue, JsonSerializer serializer)
+        {
+            var taxonomyTermJson = JObject.Load(reader);
+
+            return new TaxonomyTerm(taxonomyTermJson);
+        }
+
+        public override void WriteJson(JsonWriter writer, object value, JsonSerializer serializer)
+        {
+            throw new NotImplementedException();
         }
     }
 }

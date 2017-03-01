@@ -1,14 +1,7 @@
-﻿using System;
-using System.Threading.Tasks;
-using System.Collections.Generic;
+﻿using NUnit.Framework;
+using System;
 using System.Linq;
-
-using NUnit.Framework;
-using Newtonsoft.Json.Linq;
-using Newtonsoft.Json;
-using Newtonsoft.Json.Serialization;
-using System.Reflection;
-using Newtonsoft.Json.Converters;
+using System.Threading.Tasks;
 
 namespace KenticoCloud.Delivery.Tests
 {
@@ -162,12 +155,12 @@ namespace KenticoCloud.Delivery.Tests
 
             Assert.AreEqual(99, item.NumberField);
 
-            //Assert.AreEqual(1, item.MultipleChoiceFieldAsRadioButtons.Count());
-            //Assert.AreEqual("Radio button 1", item.MultipleChoiceFieldAsRadioButtons.First().Name);
+            Assert.AreEqual(1, item.MultipleChoiceFieldAsRadioButtons.Count());
+            Assert.AreEqual("Radio button 1", item.MultipleChoiceFieldAsRadioButtons.First().Name);
 
-            //Assert.AreEqual(2, item.MultipleChoiceFieldAsCheckboxes.Count());
-            //Assert.AreEqual("Checkbox 1", item.MultipleChoiceFieldAsCheckboxes.First().Name);
-            //Assert.AreEqual("Checkbox 2", item.MultipleChoiceFieldAsCheckboxes.ElementAt(1).Name);
+            Assert.AreEqual(2, item.MultipleChoiceFieldAsCheckboxes.Count());
+            Assert.AreEqual("Checkbox 1", item.MultipleChoiceFieldAsCheckboxes.First().Name);
+            Assert.AreEqual("Checkbox 2", item.MultipleChoiceFieldAsCheckboxes.ElementAt(1).Name);
 
             Assert.AreEqual(new DateTime(2017, 2, 23), item.DateTimeField);
 
@@ -176,9 +169,11 @@ namespace KenticoCloud.Delivery.Tests
             Assert.AreEqual(129170, item.AssetField.First().Size);
             Assert.AreEqual("https://assets.kenticocloud.com:443/e1167a11-75af-4a08-ad84-0582b463b010/64096741-b658-46ee-b148-b287fe03ea16/Fire.jpg", item.AssetField.First().Url);
 
-            //Assert.AreEqual(1, item.ModularContentField.Count());
+            Assert.AreEqual(1, item.ModularContentField.Count());
+            Assert.AreEqual("Homepage", item.ModularContentField.First().System.Name);
 
-            //Assert.AreEqual(2, item.CompleteTypeTaxonomy.Count());
+            Assert.AreEqual(2, item.CompleteTypeTaxonomy.Count());
+            Assert.AreEqual("Option 1", item.CompleteTypeTaxonomy.First().Name);
         }
     }
 }
