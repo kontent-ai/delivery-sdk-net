@@ -1,19 +1,12 @@
-﻿using System;
+﻿using Newtonsoft.Json;
+using System;
 using System.Collections.Generic;
 
 namespace KenticoCloud.Delivery.Tests
 {
-    public class ArticleModel : IContentItemBased
+    public class ArticleModel
     {
         public string Title { get; set; }
-        public IEnumerable<ContentItem> RelatedArticles { get; set; }
-        public ContentItemSystemAttributes System { get; set; }
-
-        public void LoadFromContentItem(ContentItem contentItem)
-        {
-            Title = contentItem.GetString("title");
-            RelatedArticles = contentItem.GetModularContent("related_articles");
-            System = contentItem.System;
-        }
+        //public IEnumerable<ArticleModel> RelatedArticles { get; set; }
     }
 }

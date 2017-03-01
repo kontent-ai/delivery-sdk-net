@@ -6,14 +6,6 @@ using System.Linq;
 namespace KenticoCloud.Delivery
 {
     /// <summary>
-    /// Defines a method which is called during casting from <see cref="ContentItem"/> to more specific type.
-    /// </summary>
-    public interface IContentItemBased
-    {
-        void LoadFromContentItem(ContentItem contentItem);
-    }
-
-    /// <summary>
     /// Represent a content item.
     /// </summary>
     public sealed class ContentItem
@@ -48,21 +40,11 @@ namespace KenticoCloud.Delivery
                 throw new ArgumentNullException(nameof(modularContentSource));
             }
 
-            System = new ContentItemSystemAttributes(source["system"]);
+            System = source["system"].ToObject<ContentItemSystemAttributes>();
             Elements = JObject.Parse(source["elements"].ToString());
 
             elements = (JObject)source["elements"];
             modularContent = (JObject)modularContentSource;
-        }
-
-        /// <summary>
-        /// Casts current instance to a strongly typed model implementing <see cref="IContentItemBased"/> interface. 
-        /// </summary>
-        public T CastTo<T>() where T : IContentItemBased, new()
-        {
-            var stronglyTypedModel = new T();
-            stronglyTypedModel.LoadFromContentItem(this);
-            return stronglyTypedModel;
         }
 
         /// <summary>

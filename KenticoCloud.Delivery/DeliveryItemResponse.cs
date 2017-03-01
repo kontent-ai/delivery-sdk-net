@@ -1,5 +1,8 @@
-﻿using System;
+﻿using Newtonsoft.Json;
 using Newtonsoft.Json.Linq;
+using System;
+using System.Collections;
+using System.Collections.Generic;
 
 namespace KenticoCloud.Delivery
 {
@@ -33,7 +36,7 @@ namespace KenticoCloud.Delivery
     /// <summary>
     /// Represents a response from the API when requesting content item by its codename.
     /// </summary>
-    public class DeliveryItemResponse<T> where T : IContentItemBased, new()
+    public class DeliveryItemResponse<T>
     {
         /// <summary>
         /// Content item.
@@ -51,8 +54,42 @@ namespace KenticoCloud.Delivery
         /// <param name="response">JSON returned from API.</param>
         public DeliveryItemResponse(JToken response)
         {
+            Item = Parse(response);
             ModularContent = JObject.Parse(response["modular_content"].ToString());
-            Item = new ContentItem(response["item"], response["modular_content"]).CastTo<T>();
+        }
+
+        private T Parse(JToken response)
+        {
+            var settings = new JsonSerializerSettings();
+            settings.Converters.Add(new ElementValueConverter<string>());
+            settings.Converters.Add(new ElementValueConverter<decimal?>());
+            settings.Converters.Add(new ElementValueConverter<DateTime?>());
+            settings.Converters.Add(new ElementValueConverter<IEnumerable>());
+
+            return response.SelectToken("$.item.elements").ToObject<T>(JsonSerializer.Create(settings));
+        }
+    }
+
+    public class ElementValueConverter<T> : JsonConverter
+    {
+        public override bool CanConvert(Type objectType)
+        {
+            return (objectType == typeof(T));
+        }
+
+        public override bool CanWrite
+        {
+            get { return false; }
+        }
+
+        public override object ReadJson(JsonReader reader, Type objectType, object existingValue, JsonSerializer serializer)
+        {
+            return JObject.Load(reader).SelectToken("value").ToObject<T>();
+        }
+
+        public override void WriteJson(JsonWriter writer, object value, JsonSerializer serializer)
+        {
+            throw new NotImplementedException();
         }
     }
 }

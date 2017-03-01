@@ -153,8 +153,7 @@ namespace KenticoCloud.Delivery
         /// </summary>
         /// <param name="codename">Content item codename.</param>
         /// <param name="parameters">Query parameters.</param>
-        public async Task<DeliveryItemResponse<T>> GetItemAsync<T>(string codename, IEnumerable<IQueryParameter> parameters = null) 
-            where T : IContentItemBased, new()
+        public async Task<DeliveryItemResponse<T>> GetItemAsync<T>(string codename, IEnumerable<IQueryParameter> parameters = null)
         {
             if (String.IsNullOrEmpty(codename))
             {
