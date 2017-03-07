@@ -2,20 +2,20 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
-using System.Reflection;
 
 namespace KenticoCloud.Delivery
 {
     /// <summary>
-    /// Represent a content item.
+    /// Represents a content item.
     /// </summary>
     public sealed class ContentItem
     {
         private readonly JToken _source;
-        private JObject elements => (JObject)_source["elements"];
-        private readonly JObject _modularContent;
+        private readonly JToken _modularContentSource;
+        private readonly DeliveryClient _client;
+
         private ContentItemSystemAttributes _system;
-        private dynamic _elements;
+        private JToken _elements;
 
         /// <summary>
         /// Gets the system attributes of the content item.
@@ -30,7 +30,7 @@ namespace KenticoCloud.Delivery
         /// </summary>
         public dynamic Elements
         {
-            get { return _elements?? (_elements = JObject.Parse(_source["elements"].ToString())); }
+            get { return _elements ?? (_elements = _source["elements"].DeepClone()); }
         }
 
         /// <summary>
@@ -38,7 +38,8 @@ namespace KenticoCloud.Delivery
         /// </summary>
         /// <param name="source">The JSON data of the content item to deserialize.</param>
         /// <param name="modularContentSource">The JSON data of modular content to deserialize.</param>
-        internal ContentItem(JToken source, JToken modularContentSource)
+        /// <param name="client">The client that retrieved the content item.</param>
+        internal ContentItem(JToken source, JToken modularContentSource, DeliveryClient client)
         {
             if (source == null)
             {
@@ -49,18 +50,42 @@ namespace KenticoCloud.Delivery
             {
                 throw new ArgumentNullException(nameof(modularContentSource));
             }
+
+            if (client == null)
+            {
+                throw new ArgumentNullException(nameof(client));
+            }
+
             _source = source;
-            _modularContent = (JObject)modularContentSource;
+            _modularContentSource = modularContentSource;
+            _client = client;
         }
 
         /// <summary>
-        /// Gets a string value from an element.
+        /// Gets a string value from an element and resolves content links in Rich text element values.
+        /// To resolve content links the <see cref="DeliveryClient.ContentLinkUrlResolver"/> property must be set.
         /// </summary>
         /// <param name="elementCodename">The codename of the element.</param>
         /// <returns>The <see cref="string"/> value of the element with the specified codename, if available; otherwise, <c>null</c>.</returns>
         public string GetString(string elementCodename)
         {
-            return GetElementValue<string>(elementCodename);
+            var element = GetElement(elementCodename);
+            var value = element.Value<string>("value");
+            var elementType = element.Value<string>("type");
+            var contentLinkResolver = _client.ContentLinkResolver;
+
+            if (!StringComparer.Ordinal.Equals(elementType, "rich_text") || contentLinkResolver == null || string.IsNullOrEmpty(value) || !value.Contains("data-item-id"))
+            {
+                return value;
+            }
+
+            var links = (JObject)element["links"];
+
+            return contentLinkResolver.ResolveContentLinks(value, links, new ContentLinkUrlResolverContext
+            {
+                ContentItem = this,
+                ProjectId = _client.ProjectId
+            });
         }
 
         /// <summary>
@@ -97,7 +122,7 @@ namespace KenticoCloud.Delivery
             var element = GetElement(elementCodename);
             var contentItemCodenames = ((JArray)element["value"]).Values<string>();
 
-            return contentItemCodenames.Where(codename => _modularContent.Property(codename) != null).Select(codename => new ContentItem(_modularContent[codename], _modularContent));
+            return contentItemCodenames.Where(codename => _modularContentSource[codename] != null).Select(codename => new ContentItem(_modularContentSource[codename], _modularContentSource, _client));
         }
 
         /// <summary>
@@ -137,16 +162,6 @@ namespace KenticoCloud.Delivery
         }
 
         /// <summary>
-        /// Casts <see cref="ContentItem"/> to a strongly-typed model.
-        /// </summary>
-        /// <typeparam name="T">POCO type</typeparam>
-        /// <returns>POCO model</returns>
-        public T CastTo<T>()
-        {
-            return Parse<T>(_source, _modularContent);
-        }
-
-        /// <summary>
         /// Returns a value of the specified element.
         /// </summary>
         /// <typeparam name="T">The type of the element value.</typeparam>
@@ -159,12 +174,12 @@ namespace KenticoCloud.Delivery
                 throw new ArgumentNullException(nameof(elementCodename));
             }
 
-            if (elements.Property(elementCodename) == null)
+            if (_source["elements"][elementCodename] == null)
             {
                 throw new ArgumentException($"Element with the specified codename does not exist: {elementCodename}", nameof(elementCodename));
             }
 
-            return elements[elementCodename]["value"].ToObject<T>();
+            return _source["elements"][elementCodename]["value"].ToObject<T>();
         }
 
         /// <summary>
@@ -179,77 +194,17 @@ namespace KenticoCloud.Delivery
                 throw new ArgumentNullException(nameof(elementCodename));
             }
 
-            if (elements.Property(elementCodename) == null)
+            if (_source["elements"][elementCodename] == null)
             {
                 throw new ArgumentException($"Element with the specified codename does not exist: {elementCodename}", nameof(elementCodename));
             }
 
-            return elements[elementCodename];
+            return _source["elements"][elementCodename];
         }
 
-
-        internal static T Parse<T>(JToken item, JToken modularContent)
+        internal T CastTo<T>()
         {
-            T instance = (T)Activator.CreateInstance(typeof(T));
-
-            foreach (var property in instance.GetType().GetProperties())
-            {
-                if (property.SetMethod != null)
-                {
-                    if (property.PropertyType == typeof(IEnumerable<ContentItem>))
-                    {
-                        var contentItemCodenames = ((JObject)item["elements"])
-                            .Properties()
-                            ?.FirstOrDefault(p => p.Name.Replace("_", "").ToLower() == property.Name.ToLower())
-                            ?.FirstOrDefault()["value"].ToObject<IEnumerable<string>>();
-
-                        if (contentItemCodenames != null && contentItemCodenames.Any())
-                        {
-                            var modularContentNode = (JObject)modularContent;
-                            var contentItems = new List<ContentItem>();
-                            foreach (string codename in contentItemCodenames)
-                            {
-                                var modularContentItemNode = modularContentNode.Properties()
-                                    .First(p => p.Name == codename).First;
-
-                                if (modularContentItemNode != null)
-                                {
-                                    contentItems.Add(new ContentItem(modularContentItemNode, modularContentNode));
-                                }
-                            }
-
-                            property.SetValue(instance, contentItems);
-                        }
-                    }
-                    else if (property.PropertyType == typeof(IEnumerable<MultipleChoiceOption>)
-                             || property.PropertyType == typeof(IEnumerable<Asset>)
-                             || property.PropertyType == typeof(IEnumerable<TaxonomyTerm>)
-                             || property.PropertyType == typeof(string)
-                             || property.PropertyType.GetTypeInfo().IsValueType)
-                    {
-                        object value = ((JObject)item["elements"])
-                            .Properties()
-                            ?.FirstOrDefault(child => child.Name.Replace("_", "").ToLower() == property.Name.ToLower())
-                            ?.First["value"].ToObject(property.PropertyType);
-
-                        if (value != null)
-                        {
-                            property.SetValue(instance, value);
-                        }
-                    }
-                    else if (property.PropertyType == typeof(ContentItemSystemAttributes))
-                    {
-                        object value = ((JObject)item["system"]).ToObject(typeof(ContentItemSystemAttributes));
-
-                        if (value != null)
-                        {
-                            property.SetValue(instance, value);
-                        }
-                    }
-                }
-            }
-
-            return instance;
+            return CodeFirstModelProvider.GetContentItemModel<T>(_source, _modularContentSource, _client);
         }
     }
 }

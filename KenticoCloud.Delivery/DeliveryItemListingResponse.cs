@@ -28,11 +28,11 @@ namespace KenticoCloud.Delivery
         /// Initializes a new instance of the <see cref="DeliveryItemListingResponse"/> class with information from a response.
         /// </summary>
         /// <param name="response">A response from Kentico Cloud Delivery API that contains a list of content items.</param>
-        internal DeliveryItemListingResponse(JToken response)
+        internal DeliveryItemListingResponse(JToken response, DeliveryClient client)
         {
             Pagination = new Pagination(response["pagination"]);
             ModularContent = JObject.Parse(response["modular_content"].ToString());
-            Items = ((JArray)response["items"]).Select(source => new ContentItem(source, response["modular_content"])).ToList().AsReadOnly();
+            Items = ((JArray)response["items"]).Select(source => new ContentItem(source, response["modular_content"], client)).ToList().AsReadOnly();
         }
     }
 }

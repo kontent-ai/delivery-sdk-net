@@ -8,6 +8,7 @@ namespace KenticoCloud.Delivery
     public sealed class DeliveryItemResponse
     {
         private readonly JToken _response;
+        private readonly DeliveryClient _client;
         private dynamic _modularContent;
         private ContentItem _item;
 
@@ -16,7 +17,7 @@ namespace KenticoCloud.Delivery
         /// </summary>
         public ContentItem Item
         {
-            get { return _item ?? (_item = new ContentItem(_response["item"], _response["modular_content"])); }
+            get { return _item ?? (_item = new ContentItem(_response["item"], _response["modular_content"], _client)); }
         }
 
         /// <summary>
@@ -31,62 +32,15 @@ namespace KenticoCloud.Delivery
         /// Initializes a new instance of the <see cref="DeliveryItemResponse"/> class with information from a response.
         /// </summary>
         /// <param name="response">A response from Kentico Cloud Delivery API that contains a content item.</param>
-        internal DeliveryItemResponse(JToken response)
+        internal DeliveryItemResponse(JToken response, DeliveryClient client)
         {
             _response = response;
+            _client = client;
         }
 
-        /// <summary>
-        /// Casts the response to a response with a strongly-typed model
-        /// </summary>
-        /// <typeparam name="T"></typeparam>
-        /// <returns></returns>
         public DeliveryItemResponse<T> CastTo<T>()
         {
-            return new DeliveryItemResponse<T>(_response);
-        }
-    }
-
-
-    /// <summary>
-    /// Represents a response from the API when requesting content item by its codename.
-    /// </summary>
-    public sealed class DeliveryItemResponse<T>
-    {
-        private readonly JToken _response;
-        private dynamic _modularContent;
-        private T _item;
-
-        /// <summary>
-        /// Content item.
-        /// </summary>
-        public T Item
-        {
-            get
-            {
-                if (_item == null)
-                {
-                    _item = ContentItem.Parse<T>(_response["item"], _response["modular_content"]);
-                }
-                return _item;
-            }
-        }
-
-        /// <summary>
-        /// Modular content.
-        /// </summary>
-        public dynamic ModularContent
-        {
-            get { return _modularContent ?? (_modularContent = JObject.Parse(_response["modular_content"].ToString())); }
-        }
-
-        /// <summary>
-        /// Initializes response object with a JSON response.
-        /// </summary>
-        /// <param name="response">JSON returned from API.</param>
-        internal DeliveryItemResponse(JToken response)
-        {
-            _response = response;
+            return new DeliveryItemResponse<T>(_response, _client);
         }
     }
 }
