@@ -72,14 +72,13 @@ namespace KenticoCloud.Delivery
             var element = GetElement(elementCodename);
             var value = element.Value<string>("value");
             var elementType = element.Value<string>("type");
+            var links = element["links"];
             var contentLinkResolver = _client.ContentLinkResolver;
 
-            if (!StringComparer.Ordinal.Equals(elementType, "rich_text") || contentLinkResolver == null || string.IsNullOrEmpty(value) || !value.Contains("data-item-id"))
+            if (!StringComparer.Ordinal.Equals(elementType, "rich_text") || links == null || contentLinkResolver == null || string.IsNullOrEmpty(value) || !value.Contains("data-item-id"))
             {
                 return value;
             }
-
-            var links = (JObject)element["links"];
 
             return contentLinkResolver.ResolveContentLinks(value, links, new ContentLinkUrlResolverContext
             {

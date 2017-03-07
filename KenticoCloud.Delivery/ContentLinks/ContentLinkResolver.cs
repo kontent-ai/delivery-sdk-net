@@ -20,7 +20,7 @@ namespace KenticoCloud.Delivery
             _linkUrlResolver = linkUrlResolver;
         }
 
-        public string ResolveContentLinks(string text, JObject links, ContentLinkUrlResolverContext context)
+        public string ResolveContentLinks(string text, JToken links, ContentLinkUrlResolverContext context)
         {
             if (text == null)
             {
