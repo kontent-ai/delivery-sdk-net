@@ -54,8 +54,8 @@ namespace KenticoCloud.Delivery.Tests
             var client = new DeliveryClient(PROJECT_ID);
             var articleType = Task.Run(() => client.GetTypeAsync("article")).Result;
             var coffeeType = Task.Run(() => client.GetTypeAsync("coffee")).Result;
-            var taxonomyElement = articleType.Elements["personas"] as TaxonomyContentElement;
-            var multipleChoiceElement = coffeeType.Elements["processing"] as MultipleChoiceContentElement;
+            var taxonomyElement = articleType.Elements["personas"];
+            var multipleChoiceElement = coffeeType.Elements["processing"];
 
             Assert.AreEqual("article", articleType.System.Codename);
             Assert.AreEqual("text", articleType.Elements["title"].Type);
@@ -94,8 +94,8 @@ namespace KenticoCloud.Delivery.Tests
         {
             var client = new DeliveryClient(PROJECT_ID);
             var element = Task.Run(() => client.GetContentElementAsync("article", "title")).Result;
-            var taxonomyElement = Task.Run(() => client.GetContentElementAsync("article", "personas")).Result as TaxonomyContentElement;
-            var multipleChoiceElement = Task.Run(() => client.GetContentElementAsync("coffee", "processing")).Result as MultipleChoiceContentElement;
+            var taxonomyElement = Task.Run(() => client.GetContentElementAsync("article", "personas")).Result;
+            var multipleChoiceElement = Task.Run(() => client.GetContentElementAsync("coffee", "processing")).Result;
 
             Assert.AreEqual("title", element.Codename);
             Assert.AreEqual("personas", taxonomyElement.TaxonomyGroup);

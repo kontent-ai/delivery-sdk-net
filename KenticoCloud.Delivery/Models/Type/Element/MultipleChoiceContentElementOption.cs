@@ -1,4 +1,4 @@
-﻿using Newtonsoft.Json.Linq;
+﻿using Newtonsoft.Json;
 
 namespace KenticoCloud.Delivery
 {
@@ -10,21 +10,28 @@ namespace KenticoCloud.Delivery
         /// <summary>
         /// Gets the name of the option.
         /// </summary>
-        public string Name { get; }
+        public string Name
+        {
+            get;
+        }
 
         /// <summary>
         /// Gets the codename of the option.
         /// </summary>
-        public string Codename { get; }
+        public string Codename
+        {
+            get;
+        }
 
         /// <summary>
         /// Initializes a new instance of the <see cref="MultipleChoiceContentElementOption"/> class with the specified JSON data.
         /// </summary>
         /// <param name="source">The JSON data to deserialize.</param>
-        internal MultipleChoiceContentElementOption(JToken source)
+        [JsonConstructor]
+        internal MultipleChoiceContentElementOption(string name, string codename)
         {
-            Name = source["name"].ToString();
-            Codename = source["codename"].ToString();
+            Name = name;
+            Codename = codename;
         }
     }
 }
