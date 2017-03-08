@@ -1,5 +1,6 @@
 ﻿using Newtonsoft.Json.Linq;
 using System.Collections.Generic;
+using System.Collections.ObjectModel;
 
 namespace KenticoCloud.Delivery
 {
@@ -8,15 +9,51 @@ namespace KenticoCloud.Delivery
     /// </summary>
     public sealed class ContentType
     {
+        private readonly JToken _source;
+        private ContentTypeSystemAttributes _system;
+        private IReadOnlyDictionary<string, ContentElement> _elements;
+
         /// <summary>
         /// Gets the system attributes of the content type.
         /// </summary>
-        public ContentTypeSystemAttributes System { get; }
+        public ContentTypeSystemAttributes System
+        {
+            get
+            {
+                if (_system == null)
+                {
+                    _system = _source["system"].ToObject<ContentTypeSystemAttributes>();
+                }
+
+                return _system;
+            }
+        }
 
         /// <summary>
         /// Gets a dictionary that contains elements of the content type index by their codename.
         /// </summary>
-        public Dictionary<string, ContentElement> Elements { get; }
+        public IReadOnlyDictionary<string, ContentElement> Elements
+        {
+            get
+            {
+                if (_elements == null)
+                {
+                    var elements = new Dictionary<string, ContentElement>();
+
+                    foreach (JProperty property in _source["elements"])
+                    {
+                        var element = property.Value;
+                        var elementCodename = property.Name;
+
+                        elements.Add(elementCodename, new ContentElement(element, elementCodename));
+                    }
+
+                    _elements = new ReadOnlyDictionary<string, ContentElement>(elements);
+                }
+
+                return _elements;
+            }
+        }
 
         /// <summary>
         /// Initializes a new instance of the <see cref="ContentType"/> class with the specified JSON data.
@@ -24,30 +61,7 @@ namespace KenticoCloud.Delivery
         /// <param name="source">The JSON data to deserialize.</param>
         internal ContentType(JToken source)
         {
-            System = new ContentTypeSystemAttributes(source["system"]);
-            Elements = new Dictionary<string, ContentElement>();
-
-            foreach (JProperty property in source["elements"])
-            {
-                var element = property.Value;
-                var elementType = element["type"].ToString();
-                var elementCodename = property.Name;
-
-                switch (elementType)
-                {
-                    case "multiple_choice":
-                        Elements.Add(elementCodename, new MultipleChoiceContentElement(element, elementCodename));
-                        break;
-
-                    case "taxonomy":
-                        Elements.Add(elementCodename, new TaxonomyContentElement(element, elementCodename));
-                        break;
-
-                    default:
-                        Elements.Add(elementCodename, new ContentElement(element, elementCodename));
-                        break;
-                }
-            }
+            _source = source;
         }
     }
 }

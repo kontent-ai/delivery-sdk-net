@@ -83,7 +83,6 @@ namespace KenticoCloud.Delivery
             return contentLinkResolver.ResolveContentLinks(value, links, new ContentLinkUrlResolverContext
             {
                 ContentItem = this,
-                ProjectId = _client.ProjectId
             });
         }
 

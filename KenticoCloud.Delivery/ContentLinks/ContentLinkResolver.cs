@@ -49,7 +49,7 @@ namespace KenticoCloud.Delivery
 
                 if (linkSource == null)
                 {
-                    return ResolveMatch(match, _linkUrlResolver.ResolveBrokenLinkUrl(context));
+                    return match.Value;
                 }
 
                 var link = new ContentLink(contentItemId, linkSource);

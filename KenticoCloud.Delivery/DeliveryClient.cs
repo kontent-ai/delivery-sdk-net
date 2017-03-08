@@ -344,17 +344,7 @@ namespace KenticoCloud.Delivery
             var elementType = response["type"].ToString();
             var elementCodename = response["codename"].ToString();
 
-            switch (elementType)
-            {
-                case "multiple_choice":
-                    return new MultipleChoiceContentElement(response, elementCodename);
-
-                case "taxonomy":
-                    return new TaxonomyContentElement(response, elementCodename);
-
-                default:
-                    return new ContentElement(response, elementCodename);
-            }
+            return new ContentElement(response, elementCodename);
         }
 
         private async Task<JObject> GetDeliverResponseAsync(string endpointUrl)

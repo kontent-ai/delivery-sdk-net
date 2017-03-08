@@ -12,13 +12,5 @@
         {
             get; internal set;
         }
-
-        /// <summary>
-        /// Gets the identifier of the Kentico Cloud project with the content link that is being resolved.
-        /// </summary>
-        public string ProjectId
-        {
-            get; internal set;
-        }
     }
 }

@@ -12,12 +12,5 @@
         /// <param name="context">The context in which the content link is resolved.</param>
         /// <returns>The URL of the linked content item, if possible; otherwise, <c>null</c>.</returns>
         string ResolveLinkUrl(ContentLink link, ContentLinkUrlResolverContext context);
-
-        /// <summary>
-        /// Returns a URL of the linked content item that is not available.
-        /// </summary>
-        /// <param name="context">The context in which the content link is resolved.</param>
-        /// <returns>The URL of the linked content item that is not available, if possible; otherwise, <c>null</c>.</returns>
-        string ResolveBrokenLinkUrl(ContentLinkUrlResolverContext context);
     }
 }

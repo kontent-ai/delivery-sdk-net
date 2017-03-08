@@ -1,4 +1,5 @@
-﻿using Newtonsoft.Json.Linq;
+﻿using Newtonsoft.Json;
+using Newtonsoft.Json.Linq;
 using System;
 
 namespace KenticoCloud.Delivery
@@ -32,12 +33,13 @@ namespace KenticoCloud.Delivery
         /// Initializes a new instance of the <see cref="ContentTypeSystemAttributes"/> class with the specified JSON data.
         /// </summary>
         /// <param name="source">The JSON data to deserialize.</param>
-        internal ContentTypeSystemAttributes(JToken source)
+        [JsonConstructor]
+        internal ContentTypeSystemAttributes(string id, string name, string codename, DateTime last_modified)
         {
-            Id = source["id"].ToString();
-            Name = source["name"].ToString();
-            Codename = source["codename"].ToString();
-            LastModified = source["last_modified"].Value<DateTime>();
+            Id = id;
+            Name = name;
+            Codename = codename;
+            LastModified = last_modified;
         }
     }
 }
