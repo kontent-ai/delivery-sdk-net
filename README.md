@@ -2,6 +2,7 @@
 
 [![Build status](https://ci.appveyor.com/api/projects/status/3m3q2ads2y43bh9o/branch/master?svg=true)](https://ci.appveyor.com/project/kentico/deliver-net-sdk/branch/master)
 [![NuGet](https://img.shields.io/nuget/v/KenticoCloud.Delivery.svg)](https://www.nuget.org/packages/KenticoCloud.Delivery)
+[![Forums](https://img.shields.io/badge/chat-on%20forums-orange.svg)](https://forums.kenticocloud.com)
 
 ## Summary
 
@@ -98,3 +99,6 @@ articleItem.GetAssets("teaser_image").First().Url
 ```C#
 articleItem.GetModularContent("related_articles")
 ```
+
+## Feedback & Contributing
+Check out the [contributing](https://github.com/Kentico/delivery-sdk-net/blob/master/README.md) page to see the best places to file issues, start discussions and begin contributing.
