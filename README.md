@@ -101,4 +101,4 @@ articleItem.GetModularContent("related_articles")
 ```
 
 ## Feedback & Contributing
-Check out the [contributing](https://github.com/Kentico/delivery-sdk-net/blob/master/README.md) page to see the best places to file issues, start discussions and begin contributing.
+Check out the [contributing](https://github.com/Kentico/delivery-sdk-net/blob/master/CONTRIBUTING.md) page to see the best places to file issues, start discussions and begin contributing.
