@@ -16,7 +16,6 @@ namespace KenticoCloud.Delivery
 
         private readonly HttpClient _httpClient;
         private readonly DeliveryEndpointUrlBuilder _urlBuilder;
-        private readonly string _projectId;
 
         private IContentLinkUrlResolver _linkUrlResolver;
         private ContentLinkResolver _linkResolver;
@@ -34,14 +33,6 @@ namespace KenticoCloud.Delivery
             {
                 _linkUrlResolver = value;
                 _linkResolver = new ContentLinkResolver(_linkUrlResolver);
-            }
-        }
-
-        internal string ProjectId
-        {
-            get
-            {
-                return _projectId;
             }
         }
 
@@ -75,7 +66,6 @@ namespace KenticoCloud.Delivery
                 throw new ArgumentException($"The specified Kentico cloud project identifier ({projectId}) is too long. Haven't you accidentally passed the Preview API key instead of the project identifier?", nameof(projectId));
             }
 
-            _projectId = projectId;
             _urlBuilder = new DeliveryEndpointUrlBuilder(projectId);
             _httpClient = new HttpClient();
         }
@@ -112,7 +102,6 @@ namespace KenticoCloud.Delivery
                 throw new ArgumentException("The Preview API key is not specified.", nameof(projectId));
             }
 
-            _projectId = projectId;
             _urlBuilder = new DeliveryEndpointUrlBuilder(projectId, previewApiKey);
             _httpClient = new HttpClient();
             _httpClient.DefaultRequestHeaders.Add("Authorization", string.Format("Bearer {0}", previewApiKey));

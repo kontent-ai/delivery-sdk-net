@@ -2,7 +2,9 @@
 
 namespace KenticoCloud.Delivery
 {
-    // Represents a link to a content item in a Rich text element.
+    /// <summary>
+    /// Represents a link to a content item in a Rich text element.
+    /// </summary>
     public sealed class ContentLink
     {
         /// <summary>
