@@ -20,7 +20,7 @@ namespace KenticoCloud.Delivery
             _linkUrlResolver = linkUrlResolver;
         }
 
-        public string ResolveContentLinks(string text, JToken links, ContentLinkUrlResolverContext context)
+        public string ResolveContentLinks(string text, JToken links)
         {
             if (text == null)
             {
@@ -30,11 +30,6 @@ namespace KenticoCloud.Delivery
             if (links == null)
             {
                 throw new ArgumentNullException(nameof(links));
-            }
-
-            if (context == null)
-            {
-                throw new ArgumentNullException(nameof(context));
             }
 
             if (text == string.Empty)
@@ -54,7 +49,7 @@ namespace KenticoCloud.Delivery
 
                 var link = new ContentLink(contentItemId, linkSource);
 
-                return ResolveMatch(match, _linkUrlResolver.ResolveLinkUrl(link, context));
+                return ResolveMatch(match, _linkUrlResolver.ResolveLinkUrl(link));
             });
         }
 

@@ -80,10 +80,7 @@ namespace KenticoCloud.Delivery
                 return value;
             }
 
-            return contentLinkResolver.ResolveContentLinks(value, links, new ContentLinkUrlResolverContext
-            {
-                ContentItem = this,
-            });
+            return contentLinkResolver.ResolveContentLinks(value, links);
         }
 
         /// <summary>

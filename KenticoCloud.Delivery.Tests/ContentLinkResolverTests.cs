@@ -36,7 +36,7 @@ namespace KenticoCloud.Delivery.Tests
         {
             var linkUrlResolver = new CustomContentLinkUrlResolver
             {
-                GetLinkUrl = (link, context) => null
+                GetLinkUrl = (link) => null
             };
             var result = ResolveContentLinks("Learn <a href=\"\" data-item-id=\"CID\">more</a>.", linkUrlResolver);
 
@@ -64,7 +64,7 @@ namespace KenticoCloud.Delivery.Tests
         {
             var linkUrlResolver = new CustomContentLinkUrlResolver
             {
-                GetLinkUrl = (link, context) => "http://example.org?q=bits&bolts"
+                GetLinkUrl = (link) => "http://example.org?q=bits&bolts"
             };
             var result = ResolveContentLinks("Learn <a href=\"\" data-item-id=\"CID\">more</a>.", linkUrlResolver);
 
@@ -76,7 +76,7 @@ namespace KenticoCloud.Delivery.Tests
         {
             var linkUrlResolver = new CustomContentLinkUrlResolver
             {
-                GetLinkUrl = (link, context) => $"http://example.org/{link.ContentTypeCodename}/{link.Codename}/{link.Id}-{link.UrlSlug}"
+                GetLinkUrl = (link) => $"http://example.org/{link.ContentTypeCodename}/{link.Codename}/{link.Id}-{link.UrlSlug}"
             };
             var result = ResolveContentLinks("Learn <a href=\"\" data-item-id=\"CID\">more</a>.", linkUrlResolver);
 
@@ -103,16 +103,16 @@ namespace KenticoCloud.Delivery.Tests
                 }
             });
 
-            return linkResolver.ResolveContentLinks(text, links, new ContentLinkUrlResolverContext());
+            return linkResolver.ResolveContentLinks(text, links);
         }
 
         private sealed class CustomContentLinkUrlResolver : IContentLinkUrlResolver
         {
-            public Func<ContentLink, ContentLinkUrlResolverContext, string> GetLinkUrl = (link, context) => $"http://example.org/{link.UrlSlug}";
+            public Func<ContentLink, string> GetLinkUrl = (link) => $"http://example.org/{link.UrlSlug}";
 
-            public string ResolveLinkUrl(ContentLink link, ContentLinkUrlResolverContext context)
+            public string ResolveLinkUrl(ContentLink link)
             {
-                return GetLinkUrl(link, context);
+                return GetLinkUrl(link);
             }
         }
     }
