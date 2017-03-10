@@ -24,11 +24,11 @@ namespace KenticoCloud.Delivery.Tests
         }
 
         [Test]
-        public void BrokenContentLinkIsNotResolved()
+        public void BrokenContentLinkIsResolved()
         {
             var result = ResolveContentLinks("Learn <a href=\"\" data-item-id=\"OTHER\">more</a>.");
 
-            Assert.AreEqual("Learn <a href=\"\" data-item-id=\"OTHER\">more</a>.", result);
+            Assert.AreEqual("Learn <a href=\"http://example.org/broken\" data-item-id=\"OTHER\">more</a>.", result);
         }
 
         [Test]
@@ -41,6 +41,18 @@ namespace KenticoCloud.Delivery.Tests
             var result = ResolveContentLinks("Learn <a href=\"\" data-item-id=\"CID\">more</a>.", linkUrlResolver);
 
             Assert.AreEqual("Learn <a href=\"\" data-item-id=\"CID\">more</a>.", result);
+        }
+
+        [Test]
+        public void ResolveBrokenLinkUrlIsOptional()
+        {
+            var linkUrlResolver = new CustomContentLinkUrlResolver
+            {
+                GetBrokenLinkUrl = () => null
+            };
+            var result = ResolveContentLinks("Learn <a href=\"\" data-item-id=\"OTHER\">more</a>.", linkUrlResolver);
+
+            Assert.AreEqual("Learn <a href=\"\" data-item-id=\"OTHER\">more</a>.", result);
         }
 
         [Test]
@@ -69,6 +81,18 @@ namespace KenticoCloud.Delivery.Tests
             var result = ResolveContentLinks("Learn <a href=\"\" data-item-id=\"CID\">more</a>.", linkUrlResolver);
 
             Assert.AreEqual("Learn <a href=\"http://example.org?q=bits&amp;bolts\" data-item-id=\"CID\">more</a>.", result);
+        }
+
+        [Test]
+        public void BrokenUrlLinkIsEncoded()
+        {
+            var linkUrlResolver = new CustomContentLinkUrlResolver
+            {
+                GetBrokenLinkUrl = () => "http://example.org/<broken>"
+            };
+            var result = ResolveContentLinks("Learn <a href=\"\" data-item-id=\"OTHER\">more</a>.", linkUrlResolver);
+
+            Assert.AreEqual("Learn <a href=\"http://example.org/&lt;broken&gt;\" data-item-id=\"OTHER\">more</a>.", result);
         }
 
         [Test]
@@ -109,10 +133,16 @@ namespace KenticoCloud.Delivery.Tests
         private sealed class CustomContentLinkUrlResolver : IContentLinkUrlResolver
         {
             public Func<ContentLink, string> GetLinkUrl = (link) => $"http://example.org/{link.UrlSlug}";
+            public Func<string> GetBrokenLinkUrl = () => $"http://example.org/broken";
 
             public string ResolveLinkUrl(ContentLink link)
             {
                 return GetLinkUrl(link);
+            }
+
+            public string ResolveBrokenLinkUrl()
+            {
+                return GetBrokenLinkUrl();
             }
         }
     }
