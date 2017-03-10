@@ -62,6 +62,15 @@ namespace KenticoCloud.Delivery
         }
 
         /// <summary>
+        /// Casts the item to a code-first model.
+        /// </summary>
+        /// <typeparam name="T">Type of the code-first model.</typeparam>
+        public T CastTo<T>()
+        {
+            return _client.CodeFirstModelProvider.GetContentItemModel<T>(_source, _modularContentSource);
+        }
+
+        /// <summary>
         /// Gets a string value from an element and resolves content links in Rich text element values.
         /// To resolve content links the <see cref="DeliveryClient.ContentLinkUrlResolver"/> property must be set.
         /// </summary>
@@ -195,11 +204,6 @@ namespace KenticoCloud.Delivery
             }
 
             return _source["elements"][elementCodename];
-        }
-
-        internal T CastTo<T>()
-        {
-            return CodeFirstModelProvider.GetContentItemModel<T>(_source, _modularContentSource, _client);
         }
     }
 }

@@ -19,6 +19,7 @@ namespace KenticoCloud.Delivery
 
         private IContentLinkUrlResolver _linkUrlResolver;
         private ContentLinkResolver _linkResolver;
+        private ICodeFirstModelProvider _codeFirstModelProvider;
 
         /// <summary>
         /// Gets or sets an object that resolves links to content items in Rich text element values.
@@ -34,6 +35,15 @@ namespace KenticoCloud.Delivery
                 _linkUrlResolver = value;
                 _linkResolver = new ContentLinkResolver(_linkUrlResolver);
             }
+        }
+
+        /// <summary>
+        /// Gets or sets an object that performs conversion of content items to code-first models.
+        /// </summary>
+        public ICodeFirstModelProvider CodeFirstModelProvider
+        {
+            get { return _codeFirstModelProvider ?? (_codeFirstModelProvider = new CodeFirstModelProvider(this)); }
+            set { _codeFirstModelProvider = value; }
         }
 
         internal ContentLinkResolver ContentLinkResolver
@@ -154,6 +164,18 @@ namespace KenticoCloud.Delivery
         }
 
         /// <summary>
+        /// Gets one strongly typed content item by its codename.
+        /// </summary>
+        /// <typeparam name="T">Type of the code-first model. (Or <see cref="object"/> if the return type is not yet known.)</typeparam>
+        /// <param name="codename">The codename of a content item.</param>
+        /// <param name="parameters">An array that contains zero or more query parameters, for example for projection or depth of modular content.</param>
+        /// <returns>The <see cref="DeliveryItemResponse{T}"/> instance that contains the content item with the specified codename.</returns>
+        public async Task<DeliveryItemResponse<T>> GetItemAsync<T>(string codename, params IQueryParameter[] parameters)
+        {
+            return await GetItemAsync<T>(codename, (IEnumerable<IQueryParameter>)parameters);
+        }
+
+        /// <summary>
         /// Returns a content item.
         /// </summary>
         /// <param name="codename">The codename of a content item.</param>
@@ -180,8 +202,10 @@ namespace KenticoCloud.Delivery
         /// <summary>
         /// Gets one strongly typed content item by its codename.
         /// </summary>
-        /// <param name="codename">Content item codename.</param>
-        /// <param name="parameters">Query parameters.</param>
+        /// <typeparam name="T">Type of the code-first model. (Or <see cref="object"/> if the return type is not yet known.)</typeparam>
+        /// <param name="codename">The codename of a content item.</param>
+        /// <param name="parameters">A collection of query parameters, for example for projection or depth of modular content.</param>
+        /// <returns>The <see cref="DeliveryItemResponse{T}"/> instance that contains the content item with the specified codename.</returns>
         public async Task<DeliveryItemResponse<T>> GetItemAsync<T>(string codename, IEnumerable<IQueryParameter> parameters = null)
         {
             if (string.IsNullOrEmpty(codename))
@@ -217,6 +241,33 @@ namespace KenticoCloud.Delivery
             var response = await GetDeliverResponseAsync(endpointUrl);
 
             return new DeliveryItemListingResponse(response, this);
+        }
+
+        /// <summary>
+        /// Searches the content repository for items that match the filter criteria.
+        /// Returns strongly typed content items.
+        /// </summary>
+        /// <typeparam name="T">Type of the code-first model. (Or <see cref="object"/> if the return type is not yet known.)</typeparam>
+        /// <param name="parameters">An array that contains zero or more query parameters, for example for filtering, ordering or depth of modular content.</param>
+        /// <returns>The <see cref="DeliveryItemListingResponse{T}"/> instance that contains the content items. If no query parameters are specified, all content items are returned.</returns>
+        public async Task<DeliveryItemListingResponse<T>> GetItemsAsync<T>(params IQueryParameter[] parameters)
+        {
+            return await GetItemsAsync<T>((IEnumerable<IQueryParameter>)parameters);
+        }
+
+        /// <summary>
+        /// Searches the content repository for items that match the filter criteria.
+        /// Returns strongly typed content items.
+        /// </summary>
+        /// <typeparam name="T">Type of the code-first model. (Or <see cref="object"/> if the return type is not yet known.)</typeparam>
+        /// <param name="parameters">A collection of query parameters, for example for filtering, ordering or depth of modular content.</param>
+        /// <returns>The <see cref="DeliveryItemListingResponse{T}"/> instance that contains the content items. If no query parameters are specified, all content items are returned.</returns>
+        public async Task<DeliveryItemListingResponse<T>> GetItemsAsync<T>(IEnumerable<IQueryParameter> parameters)
+        {
+            var endpointUrl = _urlBuilder.GetItemsUrl(parameters);
+            var response = await GetDeliverResponseAsync(endpointUrl);
+
+            return new DeliveryItemListingResponse<T>(response, this);
         }
 
         /// <summary>

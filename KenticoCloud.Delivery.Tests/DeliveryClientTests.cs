@@ -3,6 +3,7 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
+using FakeItEasy;
 
 namespace KenticoCloud.Delivery.Tests
 {
@@ -145,7 +146,7 @@ namespace KenticoCloud.Delivery.Tests
 
             // Arrange
             var client = new DeliveryClient(SANDBOX_PROJECT_ID);
-
+            
             // Act
             CompleteContentItemModel item = client.GetItemAsync<CompleteContentItemModel>("complete_content_item").Result.Item;
 
@@ -175,6 +176,66 @@ namespace KenticoCloud.Delivery.Tests
 
             Assert.AreEqual(2, item.CompleteTypeTaxonomy.Count());
             Assert.AreEqual("Option 1", item.CompleteTypeTaxonomy.First().Name);
+        }
+
+        [Test]
+        public void GetStronglyTypedGenericWithAttributesResponse()
+        {
+            const string SANDBOX_PROJECT_ID = "e1167a11-75af-4a08-ad84-0582b463b010";
+
+            // Arrange
+            var client = new DeliveryClient(SANDBOX_PROJECT_ID);
+            client.CodeFirstModelProvider.TypeProvider = A.Fake<ICodeFirstTypeProvider>();
+            A.CallTo(() => client.CodeFirstModelProvider.TypeProvider.GetType("complete_content_type")).ReturnsLazily(() => typeof(ContentItemModelWithAttributes));
+            A.CallTo(() => client.CodeFirstModelProvider.TypeProvider.GetType("homepage")).ReturnsLazily(() => typeof(Homepage));
+
+            // Act
+            ContentItemModelWithAttributes item = (ContentItemModelWithAttributes)client.GetItemAsync<object>("complete_content_item").Result.Item;
+
+            // Assert
+            Assert.AreEqual("Text field value", item.TextFieldWithADifferentName);
+
+            Assert.AreEqual("<p>Rich text field value</p>", item.RichTextFieldWithADifferentName);
+
+            Assert.AreEqual(99, item.NumberFieldWithADifferentName);
+
+            Assert.AreEqual(1, item.MultipleChoiceFieldAsRadioButtonsWithADifferentName.Count());
+            Assert.AreEqual("Radio button 1", item.MultipleChoiceFieldAsRadioButtonsWithADifferentName.First().Name);
+
+            Assert.AreEqual(2, item.MultipleChoiceFieldAsCheckboxes.Count());
+            Assert.AreEqual("Checkbox 1", item.MultipleChoiceFieldAsCheckboxes.First().Name);
+            Assert.AreEqual("Checkbox 2", item.MultipleChoiceFieldAsCheckboxes.ElementAt(1).Name);
+
+            Assert.AreEqual(new DateTime(2017, 2, 23), item.DateTimeFieldWithADifferentName);
+
+            Assert.AreEqual(1, item.AssetFieldWithADifferentName.Count());
+            Assert.AreEqual("Fire.jpg", item.AssetFieldWithADifferentName.First().Name);
+            Assert.AreEqual(129170, item.AssetFieldWithADifferentName.First().Size);
+            Assert.AreEqual("https://assets.kenticocloud.com:443/e1167a11-75af-4a08-ad84-0582b463b010/64096741-b658-46ee-b148-b287fe03ea16/Fire.jpg", item.AssetFieldWithADifferentName.First().Url);
+
+            Assert.AreEqual(1, item.ModularContentFieldWithADifferentName.Count());
+            Assert.AreEqual("Homepage", ((Homepage)item.ModularContentFieldWithADifferentName.First()).System.Name);
+
+            Assert.AreEqual(2, item.CompleteTypeTaxonomyWithADifferentName.Count());
+            Assert.AreEqual("Option 1", item.CompleteTypeTaxonomyWithADifferentName.First().Name);
+        }
+
+        [Test]
+        public void GetStronglyTypedItemsResponse()
+        {
+            const string SANDBOX_PROJECT_ID = "e1167a11-75af-4a08-ad84-0582b463b010";
+
+            // Arrange
+            var client = new DeliveryClient(SANDBOX_PROJECT_ID);
+            client.CodeFirstModelProvider.TypeProvider = A.Fake<ICodeFirstTypeProvider>();
+            A.CallTo(() => client.CodeFirstModelProvider.TypeProvider.GetType("complete_content_type")).ReturnsLazily(() => typeof(ContentItemModelWithAttributes));
+            A.CallTo(() => client.CodeFirstModelProvider.TypeProvider.GetType("homepage")).ReturnsLazily(() => typeof(Homepage));
+
+            // Act
+            IReadOnlyList<object> items = client.GetItemsAsync<object>(new EqualsFilter("system.type", "complete_content_type")).Result.Items;
+
+            // Assert
+            Assert.True(items.All(i=> i.GetType() == typeof(ContentItemModelWithAttributes)));
         }
 
         [Test]
