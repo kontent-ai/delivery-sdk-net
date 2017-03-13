@@ -30,6 +30,14 @@ namespace KenticoCloud.Delivery.Tests
         [JsonProperty("modular_content_field")]
         public IEnumerable<object> ModularContentFieldWithADifferentName { get; set; }
 
+        [JsonProperty("modular_content_field")]
+        public HashSet<object> ModularContentFieldWithACollectionTypeDefined { get; set; }
+
+        public IEnumerable<string> RandomField { get; set; }
+
+        [JsonProperty("modular_content_field")]
+        public HashSet<Homepage> ModularContentFieldWithAGenericTypeDefined { get; set; }
+
         [JsonProperty("complete_type_taxonomy")]
         public IEnumerable<TaxonomyTerm> CompleteTypeTaxonomyWithADifferentName { get; set; }
         

@@ -215,6 +215,8 @@ namespace KenticoCloud.Delivery.Tests
 
             Assert.AreEqual(1, item.ModularContentFieldWithADifferentName.Count());
             Assert.AreEqual("Homepage", ((Homepage)item.ModularContentFieldWithADifferentName.First()).System.Name);
+            Assert.AreEqual("Homepage", ((Homepage)item.ModularContentFieldWithACollectionTypeDefined.First()).System.Name);
+            Assert.IsTrue(item.ModularContentFieldWithAGenericTypeDefined.First().CallToAction.Length > 0);
 
             Assert.AreEqual(2, item.CompleteTypeTaxonomyWithADifferentName.Count());
             Assert.AreEqual("Option 1", item.CompleteTypeTaxonomyWithADifferentName.First().Name);
