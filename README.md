@@ -30,11 +30,23 @@ Once you have a `DeliveryClient` instance, you can start querying your project r
 
 ```C#
 // Retrieving a single content item
-var response = new DeliveryClient("975bf280-fd91-488c-994c-2f04416e5ee3").GetItemAsync("about_us");
+var response = await client.GetItemAsync("about_us");
 
 // Retrieving all content items
-new DeliveryClient("975bf280-fd91-488c-994c-2f04416e5ee3").GetItemsAsync();
+var listingResponse = await client.GetItemsAsync();
 ```
+
+### Strongly-typed responses
+`DeliveryClient` also supports retrieving of strongly-typed models.
+
+```C#
+// Retrieving a single content item
+var response = await client.GetItemAsync<Article>("latest_article");
+
+// Retrieving all content items
+var listingResponse = await client.GetItemsAsync<Article>();
+```
+[Read more](https://github.com/Kentico/delivery-sdk-net/wiki/Working-with-Strongly-Typed-Models-(aka-Code-First-Approach)) to find out how to generate models and adjust the logic to your needs.
 
 ## Filtering and listing
 
