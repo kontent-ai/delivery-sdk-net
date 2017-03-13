@@ -109,3 +109,13 @@ You can find the full SDK documentation at <https://developer.kenticocloud.com/d
 ## Feedback & Contributing
 
 Check out the [contributing](https://github.com/Kentico/delivery-sdk-net/blob/master/CONTRIBUTING.md) page to see the best places to file issues, start discussions, and begin contributing.
+
+### Building the sources
+Prerequisites:
+- [.NET Core 1.0 SDK](https://www.microsoft.com/net/download/core#/sdk)
+- [.NET Core 1.0.x Runtime](https://www.microsoft.com/net/download/core#/runtime)
+
+You can use [Visual Studio Code](https://code.visualstudio.com/) to build the project. If you want the full Visual Studio experience, please use the following toolings:
+- Visual Studio 2015 (with Update 3)
+- [SDK 2016/09/13](https://github.com/dotnet/core/blob/master/release-notes/download-archive.md)
+
