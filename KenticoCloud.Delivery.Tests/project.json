@@ -3,7 +3,7 @@
   "copyright": "(c) 2016 Kentico Software. All rights reserved.",
   "authors": [ "Kentico Software" ],
   "dependencies": {
-    "KenticoCloud.Delivery": "3.2.*",
+    "KenticoCloud.Delivery": "4.0.*",
     "Microsoft.NETCore.App": {
       "type": "platform",
       "version": "1.0.1"
