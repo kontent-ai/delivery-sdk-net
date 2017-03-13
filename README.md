@@ -12,28 +12,33 @@ The Kentico Cloud Delivery .NET SDK is a client library used for retrieving cont
 
 To retrieve content from a Kentico Cloud project via the Delivery API, you first need to activate the Delivery API for the project. For more information see our [documentation](https://developer.kenticocloud.com/docs/using-delivery-api#section-enabling-the-delivery-api-for-your-projects).
 
-## Basic scenarios
-
-### Creating a DeliveryClient instance & basic querying
+## Creating a DeliveryClient
 
 The `DeliveryClient` class is the main class of the SDK that enables you to retrieve content from a project. To create an instance of the class, you need to provide the ID of your project. See the [documentation](https://developer.kenticocloud.com/docs/using-delivery-api#section-getting-project-id) on how to get the project ID.
-Once you have a `DeliveryClient` instance, you can start querying your project repository by calling methods on the instance.
-
-#### Retrieving single content item
 
 ```C#
-new DeliveryClient("975bf280-fd91-488c-994c-2f04416e5ee3").GetItemAsync("about_us");
+var client = new DeliveryClient("975bf280-fd91-488c-994c-2f04416e5ee3");
 ```
 
-#### Retrieving all content items
+### Previewing unpublished content
+
+To retrieve unpublished content, you need to create a `DeliveryClient` with both Project ID and Preview API key. Each Kentico Cloud project has its own Preview API key. For more details, see [Previewing unpublished content using the Delivery API](https://developer.kenticocloud.com/docs/preview-content-via-api).
+
+## Basic querying
+
+Once you have a `DeliveryClient` instance, you can start querying your project repository by calling methods on the instance.
 
 ```C#
+// Retrieving a single content item
+var response = new DeliveryClient("975bf280-fd91-488c-994c-2f04416e5ee3").GetItemAsync("about_us");
+
+// Retrieving all content items
 new DeliveryClient("975bf280-fd91-488c-994c-2f04416e5ee3").GetItemsAsync();
 ```
 
-#### Filtering, listing and projection of your content items
+## Filtering and listing
 
-The SDK supports full scale of the API querying capabilities as described in the [API reference](https://developer.kenticocloud.com/reference).
+The SDK supports full scale of the API querying capabilities as described in the [API reference](https://developer.kenticocloud.com/reference#filtering-content-items).
 
 Here is an example of a query that returns the selected elements from the first 10 content items of the `brewer` content type and ordered by the `product_name` element's value:
 
@@ -46,59 +51,49 @@ var response = await client.GetItemsAsync(
 );
 ```
 
-#### Retrieving unpublished content
+## Response structure
 
-To preview unpublished content, you need to create a `DeliveryClient` instance with both Project ID and Preview API key. The Preview API key is part of your Kentico Cloud project. For more details, see [Previewing unpublished content using the Delivery API](https://developer.kenticocloud.com/docs/preview-content-via-api).
-
-### Response structure
-
-#### Single content item response
+### Single content item response
 
 The `DeliveryItemResponse` is a class representing the JSON response from the Delivery API endpoint for retrieving a single content item. You can find the full description of the single content item response format in the [API reference](https://developer.kenticocloud.com/reference#view-a-content-item).
 
 * If you query a single item, you will receive a `DeliveryItemResponse` instance that contains the **ContentItem** you requested and Modular content in a dynamically typed property.
 
-#### Listing response
+### Multiple content items response
 
 The `DeliveryItemListingResponse` is a class representing the JSON response from the Delivery API endpoint for retrieving multiple content items. You can find the full description of the multiple content item response format in the [API reference](https://developer.kenticocloud.com/reference#list-content-items).
 
 * If you query multiple content items, you will receive a `DeliveryItemListingResponse` instance that contains:
   * **Pagination** property with information about the current page, total number of retrieved content items, next page URL, etc.
   * A list of the requested content items.
-  * Modular content items in a dynamically typed property.
 
-#### ContentItem structure
+### ContentItem structure
 
 * The `ContentItem` class provides the following properties:
-  * `system` property with metadata such as code name, display name, type, or sitemap location.
-  * `elements` as a dynamically typed property containing all the elements included in the response structured by code names.
+  * `System` property with metadata such as code name, display name, type, or sitemap location.
+  * `Elements` as a dynamically typed property containing all the elements included in the response structured by code names.
   * Methods for easier access to certain types of content elements such as modular content, or assets.
 
-##### Examples
-
-* Retrieving the name of an article content item:
+### Code examples
 
 ```C#
+// Retrieving the name of an article content item
 articleItem.System.Name
-```
 
-* Retrieving an article text:
-
-```C#
+// Retrieving an article text
 articleItem.GetString("body_copy")
-```
 
-* Retrieving a teaser image URL:
-
-```C#
+// Retrieving a teaser image URL
 articleItem.GetAssets("teaser_image").First().Url
-```
 
-* Retrieving related articles:
-
-```C#
+// Retrieving related articles
 articleItem.GetModularContent("related_articles")
 ```
 
+## Further information
+
+You can find the full SDK documentation at <https://developer.kenticocloud.com/docs/delivery-dotnet-sdk>.
+
 ## Feedback & Contributing
-Check out the [contributing](https://github.com/Kentico/delivery-sdk-net/blob/master/CONTRIBUTING.md) page to see the best places to file issues, start discussions and begin contributing.
+
+Check out the [contributing](https://github.com/Kentico/delivery-sdk-net/blob/master/CONTRIBUTING.md) page to see the best places to file issues, start discussions, and begin contributing.
