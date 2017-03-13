@@ -49,8 +49,9 @@ namespace KenticoCloud.Delivery
             return (T)GetContentItemModel(typeof(T), item, modularContent);
         }
 
-        internal object GetContentItemModel(Type t, JToken item, JToken modularContent)
+        internal object GetContentItemModel(Type t, JToken item, JToken modularContent, Dictionary<string, object> processedItems = null)
         {
+            processedItems = processedItems ?? new Dictionary<string, object>();
             ContentItemSystemAttributes system = (ContentItemSystemAttributes)((JObject)item["system"]).ToObject(typeof(ContentItemSystemAttributes));
             if (t == typeof(object))
             {
@@ -118,15 +119,24 @@ namespace KenticoCloud.Delivery
                                     if (modularContentItemNode != null)
                                     {
                                         object contentItem = null;
-                                        if (genericArgs.First() == typeof(ContentItem))
+                                        if (processedItems.ContainsKey(codename))
                                         {
-                                            contentItem = new ContentItem(modularContentItemNode, modularContentNode, _client);
+                                            // Avoid infinite recursion by re-using already processed content items
+                                            contentItem = processedItems[codename];
                                         }
                                         else
                                         {
-                                            contentItem = GetContentItemModel(genericArgs.First(), modularContentItemNode, modularContentNode);
+                                            if (genericArgs.First() == typeof(ContentItem))
+                                            {
+                                                contentItem = new ContentItem(modularContentItemNode, modularContentNode, _client);
+                                            }
+                                            else
+                                            {
+                                                contentItem = GetContentItemModel(genericArgs.First(), modularContentItemNode, modularContentNode, processedItems);
+                                            }
+                                            processedItems.Add(codename, contentItem);
                                         }
-                                        
+
                                         // It certain that the instance is of the ICollection<> type at this point, we can call "Add"
                                         contentItems.GetType().GetMethod("Add").Invoke(contentItems, new[] { contentItem });
                                     }
