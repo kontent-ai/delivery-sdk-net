@@ -16,7 +16,7 @@ To retrieve content from a Kentico Cloud project via the Delivery API, you first
 
 The `DeliveryClient` class is the main class of the SDK that enables you to retrieve content from a project. To create an instance of the class, you need to provide the ID of your project. See the [documentation](https://developer.kenticocloud.com/docs/using-delivery-api#section-getting-project-id) on how to get the project ID.
 
-```C#
+```csharp
 var client = new DeliveryClient("975bf280-fd91-488c-994c-2f04416e5ee3");
 ```
 
@@ -28,7 +28,7 @@ To retrieve unpublished content, you need to create a `DeliveryClient` with both
 
 Once you have a `DeliveryClient` instance, you can start querying your project repository by calling methods on the instance.
 
-```C#
+```csharp
 // Retrieving a single content item
 var response = await client.GetItemAsync("about_us");
 
@@ -37,16 +37,18 @@ var listingResponse = await client.GetItemsAsync();
 ```
 
 ### Strongly-typed responses
-`DeliveryClient` also supports retrieving of strongly-typed models.
 
-```C#
+The `DeliveryClient` also supports retrieving of strongly-typed models.
+
+```csharp
 // Retrieving a single content item
 var response = await client.GetItemAsync<Article>("latest_article");
 
 // Retrieving all content items
 var listingResponse = await client.GetItemsAsync<Article>();
 ```
-[Read more](https://github.com/Kentico/delivery-sdk-net/wiki/Working-with-Strongly-Typed-Models-(aka-Code-First-Approach)) to find out how to generate models and adjust the logic to your needs.
+
+See [Working with Strongly Typed Models](https://github.com/Kentico/delivery-sdk-net/wiki/Working-with-Strongly-Typed-Models-(aka-Code-First-Approach)) to learn how to generate models and adjust the logic to your needs.
 
 ## Filtering and listing
 
@@ -54,7 +56,7 @@ The SDK supports full scale of the API querying capabilities as described in the
 
 Here is an example of a query that returns the selected elements from the first 10 content items of the `brewer` content type and ordered by the `product_name` element's value:
 
-```C#
+```csharp
 var response = await client.GetItemsAsync(
     new EqualsFilter("system.type", "brewer"),
     new ElementsParameter("image", "price", "product_status", "processing"),
@@ -88,7 +90,7 @@ The `DeliveryItemListingResponse` is a class representing the JSON response from
 
 ### Code examples
 
-```C#
+```csharp
 // Retrieving the name of an article content item
 articleItem.System.Name
 
@@ -102,20 +104,22 @@ articleItem.GetAssets("teaser_image").First().Url
 articleItem.GetModularContent("related_articles")
 ```
 
-## Further information
-
-You can find the full SDK documentation at <https://developer.kenticocloud.com/docs/delivery-dotnet-sdk>.
-
 ## Feedback & Contributing
 
 Check out the [contributing](https://github.com/Kentico/delivery-sdk-net/blob/master/CONTRIBUTING.md) page to see the best places to file issues, start discussions, and begin contributing.
 
+## Further information
+
+For more developer resources, visit the Kentico Cloud Developer Hub at <https://developer.kenticocloud.com>.
+
 ### Building the sources
+
 Prerequisites:
-- [.NET Core 1.0 SDK](https://www.microsoft.com/net/download/core#/sdk)
-- [.NET Core 1.0.x Runtime](https://www.microsoft.com/net/download/core#/runtime)
 
-You can use [Visual Studio Code](https://code.visualstudio.com/) to build the project. If you want the full Visual Studio experience, please use the following toolings:
-- Visual Studio 2015 (with Update 3)
-- [SDK 2016/09/13](https://github.com/dotnet/core/blob/master/release-notes/download-archive.md)
+* [.NET Core 1.0 SDK](https://www.microsoft.com/net/download/core#/sdk)
+* [.NET Core 1.0.x Runtime](https://www.microsoft.com/net/download/core#/runtime)
 
+You can use [Visual Studio Code](https://code.visualstudio.com/) to build the project. If you want the full Visual Studio experience, use the following toolings:
+
+* Visual Studio 2015 (with Update 3)
+* [SDK 2016/09/13](https://github.com/dotnet/core/blob/master/release-notes/download-archive.md)
