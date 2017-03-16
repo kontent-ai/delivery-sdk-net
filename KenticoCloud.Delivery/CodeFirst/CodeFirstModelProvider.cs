@@ -93,8 +93,10 @@ namespace KenticoCloud.Delivery
                             {
                                 value = _client.ContentLinkResolver.ResolveContentLinks(propValue?.ToObject<string>(), links);
                             }
-
-                            value = propValue?.ToObject(propertyType);
+                            else
+                            {
+                                value = propValue?.ToObject(propertyType);
+                            }
                         }
                         else if (propertyType == typeof(IEnumerable<MultipleChoiceOption>)
                                  || propertyType == typeof(IEnumerable<Asset>)

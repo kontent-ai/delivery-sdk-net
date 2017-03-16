@@ -107,20 +107,16 @@ namespace KenticoCloud.Delivery.Tests
             Assert.AreEqual("Learn <a href=\"http://example.org/article/about_us/CID-about-us\" data-item-id=\"CID\">more</a>.", result);
         }
 
-        public class Office
-        {
-            public string AboutTheOffce { get; set; }
-        }
-
         [Test]
         public void ResolveLinksInStronglyTypedModel()
         {
-            // TODO: Use test project rather than sandbox
             var client = new DeliveryClient("e1167a11-75af-4a08-ad84-0582b463b010");
             client.ContentLinkUrlResolver = new CustomContentLinkUrlResolver();
 
+            string expected = "<p><a href=\"https://en.wikipedia.org/wiki/Brno\">Brno</a> office is very far from <a data-item-id=\"ee82db8c-de06-4992-9561-1fc642056c2b\" href=\"http://example.org/melbourne-office\">Melbourne</a> office.</p>";
             var item = client.GetItemAsync<Office>("brno_office").Result.Item;
-            Assert.AreEqual("", item.AboutTheOffce);
+
+            Assert.AreEqual(expected, item.AboutTheOffice);
         }
 
         private string ResolveContentLinks(string text)
