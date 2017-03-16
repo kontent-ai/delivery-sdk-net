@@ -107,6 +107,22 @@ namespace KenticoCloud.Delivery.Tests
             Assert.AreEqual("Learn <a href=\"http://example.org/article/about_us/CID-about-us\" data-item-id=\"CID\">more</a>.", result);
         }
 
+        public class Office
+        {
+            public string AboutTheOffce { get; set; }
+        }
+
+        [Test]
+        public void ResolveLinksInStronglyTypedModel()
+        {
+            // TODO: Use test project rather than sandbox
+            var client = new DeliveryClient("e1167a11-75af-4a08-ad84-0582b463b010");
+            client.ContentLinkUrlResolver = new CustomContentLinkUrlResolver();
+
+            var item = client.GetItemAsync<Office>("brno_office").Result.Item;
+            Assert.AreEqual("", item.AboutTheOffce);
+        }
+
         private string ResolveContentLinks(string text)
         {
             var linkUrlResolver = new CustomContentLinkUrlResolver();
