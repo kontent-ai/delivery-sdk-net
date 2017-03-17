@@ -1,5 +1,4 @@
 ﻿using Newtonsoft.Json;
-using Newtonsoft.Json.Linq;
 using System;
 
 namespace KenticoCloud.Delivery
@@ -12,34 +11,37 @@ namespace KenticoCloud.Delivery
         /// <summary>
         /// Gets the identifier of the content type.
         /// </summary>
+        [JsonProperty("id")]
         public string Id { get; }
 
         /// <summary>
         /// Gets the name of the content type.
         /// </summary>
+        [JsonProperty("name")]
         public string Name { get; }
 
         /// <summary>
         /// Gets the codename of the content type.
         /// </summary>
+        [JsonProperty("codename")]
         public string Codename { get; }
 
         /// <summary>
         /// Gets the time the content type was last modified.
         /// </summary>
+        [JsonProperty("last_modified")]
         public DateTime LastModified { get; }
 
         /// <summary>
-        /// Initializes a new instance of the <see cref="ContentTypeSystemAttributes"/> class with the specified JSON data.
+        /// Initializes a new instance of the <see cref="ContentTypeSystemAttributes"/> class.
         /// </summary>
-        /// <param name="source">The JSON data to deserialize.</param>
         [JsonConstructor]
-        internal ContentTypeSystemAttributes(string id, string name, string codename, DateTime last_modified)
+        internal ContentTypeSystemAttributes(string id, string name, string codename, DateTime lastModified)
         {
             Id = id;
             Name = name;
             Codename = codename;
-            LastModified = last_modified;
+            LastModified = lastModified;
         }
     }
 }

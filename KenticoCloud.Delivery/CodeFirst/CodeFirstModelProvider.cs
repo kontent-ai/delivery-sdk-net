@@ -51,7 +51,8 @@ namespace KenticoCloud.Delivery
         internal object GetContentItemModel(Type t, JToken item, JToken modularContent, Dictionary<string, object> processedItems = null)
         {
             processedItems = processedItems ?? new Dictionary<string, object>();
-            ContentItemSystemAttributes system = (ContentItemSystemAttributes)((JObject)item["system"]).ToObject(typeof(ContentItemSystemAttributes));
+            var system = item["system"].ToObject<ContentItemSystemAttributes>();
+
             if (t == typeof(object))
             {
                 // Try to find a specific type
