@@ -22,7 +22,7 @@ namespace KenticoCloud.Delivery
         /// </summary>
         public ContentItemSystemAttributes System
         {
-            get { return _system ?? (_system = new ContentItemSystemAttributes(_source["system"])); }
+            get { return _system ?? (_system = _source["system"].ToObject<ContentItemSystemAttributes>()); }
         }
 
         /// <summary>

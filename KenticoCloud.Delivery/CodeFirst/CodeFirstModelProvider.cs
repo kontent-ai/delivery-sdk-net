@@ -51,7 +51,8 @@ namespace KenticoCloud.Delivery
         internal object GetContentItemModel(Type t, JToken item, JToken modularContent, Dictionary<string, object> processedItems = null)
         {
             processedItems = processedItems ?? new Dictionary<string, object>();
-            ContentItemSystemAttributes system = (ContentItemSystemAttributes)((JObject)item["system"]).ToObject(typeof(ContentItemSystemAttributes));
+            var system = item["system"].ToObject<ContentItemSystemAttributes>();
+
             if (t == typeof(object))
             {
                 // Try to find a specific type
@@ -84,10 +85,23 @@ namespace KenticoCloud.Delivery
                             ?.FirstOrDefault(p => PropertyMapper.IsMatch(property, p.Name, system?.Type))
                             ?.FirstOrDefault()["value"];
 
-                        if (propertyType == typeof(IEnumerable<MultipleChoiceOption>)
+                        if (propertyType == typeof(string))
+                        {
+                            var links = ((JObject)propValue?.Parent?.Parent)?.Property("links")?.Value;
+
+                            // Handle rich_text link resolution
+                            if (links != null && propValue != null && _client.ContentLinkResolver != null)
+                            {
+                                value = _client.ContentLinkResolver.ResolveContentLinks(propValue?.ToObject<string>(), links);
+                            }
+                            else
+                            {
+                                value = propValue?.ToObject(propertyType);
+                            }
+                        }
+                        else if (propertyType == typeof(IEnumerable<MultipleChoiceOption>)
                                  || propertyType == typeof(IEnumerable<Asset>)
                                  || propertyType == typeof(IEnumerable<TaxonomyTerm>)
-                                 || propertyType == typeof(string)
                                  || propertyType.GetTypeInfo().IsValueType)
                         {
                             // Handle non-hierarchical fields
@@ -95,8 +109,7 @@ namespace KenticoCloud.Delivery
                         }
                         else if (propertyType.GetTypeInfo().IsGenericType
                             && ((propertyType.GetInterfaces().Any(gt => gt.GetTypeInfo().IsGenericType && gt.GetTypeInfo().GetGenericTypeDefinition() == typeof(ICollection<>)) && propertyType.GetTypeInfo().IsClass)
-                            || propertyType.GetGenericTypeDefinition() == typeof(IEnumerable<>))
-)
+                            || propertyType.GetGenericTypeDefinition() == typeof(IEnumerable<>)))
                         {
                             // Handle modular content
                             var contentItemCodenames = propValue?.ToObject<IEnumerable<string>>();
