@@ -10,6 +10,7 @@ namespace KenticoCloud.Delivery
         /// <summary>
         /// Gets the name of the option.
         /// </summary>
+        [JsonProperty("name")]
         public string Name
         {
             get;
@@ -18,6 +19,7 @@ namespace KenticoCloud.Delivery
         /// <summary>
         /// Gets the codename of the option.
         /// </summary>
+        [JsonProperty("codename")]
         public string Codename
         {
             get;

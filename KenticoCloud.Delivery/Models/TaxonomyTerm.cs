@@ -1,6 +1,4 @@
 ﻿using Newtonsoft.Json;
-using Newtonsoft.Json.Linq;
-using System;
 
 namespace KenticoCloud.Delivery
 {
@@ -12,15 +10,17 @@ namespace KenticoCloud.Delivery
         /// <summary>
         /// Gets the name of the taxonomy term.
         /// </summary>
+        [JsonProperty("name")]
         public string Name { get; }
 
         /// <summary>
         /// Gets the codename of the taxonomy term.
         /// </summary>
+        [JsonProperty("codename")]
         public string Codename { get; }
 
         /// <summary>
-        /// Initializes a new instance of the <see cref="TaxonomyTerm"/> class with the specified JSON data.
+        /// Initializes a new instance of the <see cref="TaxonomyTerm"/> class.
         /// </summary>
         [JsonConstructor]
         internal TaxonomyTerm(string name, string codename)
