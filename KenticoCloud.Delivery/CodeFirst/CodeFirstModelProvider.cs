@@ -65,6 +65,11 @@ namespace KenticoCloud.Delivery
 
             object instance = Activator.CreateInstance(t);
 
+            if (!processedItems.ContainsKey(system.Codename))
+            {
+                processedItems.Add(system.Codename, instance);
+            }
+
             foreach (var property in instance.GetType().GetProperties())
             {
                 var propertyType = property.PropertyType;
@@ -114,19 +119,19 @@ namespace KenticoCloud.Delivery
                             // Handle modular content
                             var contentItemCodenames = propValue?.ToObject<IEnumerable<string>>();
 
+                            var modularContentNode = (JObject)modularContent;
+                            var genericArgs = propertyType.GetGenericArguments();
+
+                            // Create a List<T> based on the generic parameter of the input type (IEnumerable<T> or derived types)
+                            Type collectionType = propertyType.GetTypeInfo().IsInterface ? typeof(List<>).MakeGenericType(genericArgs) : propertyType;
+
+                            object contentItems = Activator.CreateInstance(collectionType);
+
                             if (contentItemCodenames != null && contentItemCodenames.Any())
                             {
-                                var modularContentNode = (JObject)modularContent;
-                                var genericArgs = propertyType.GetGenericArguments();
-
-                                // Create a List<T> based on the generic parameter of the input type (IEnumerable<T> or derived types)
-                                Type collectionType = propertyType.GetTypeInfo().IsInterface ? typeof(List<>).MakeGenericType(genericArgs) : propertyType;
-
-                                object contentItems = Activator.CreateInstance(collectionType);
-
                                 foreach (string codename in contentItemCodenames)
                                 {
-                                    var modularContentItemNode = modularContentNode.Properties().First(p => p.Name == codename).First;
+                                    var modularContentItemNode = modularContentNode.Properties().FirstOrDefault(p => p.Name == codename)?.First;
 
                                     if (modularContentItemNode != null)
                                     {
@@ -146,16 +151,19 @@ namespace KenticoCloud.Delivery
                                             {
                                                 contentItem = GetContentItemModel(genericArgs.First(), modularContentItemNode, modularContentNode, processedItems);
                                             }
-                                            processedItems.Add(codename, contentItem);
+                                            if (!processedItems.ContainsKey(codename))
+                                            {
+                                                processedItems.Add(codename, contentItem);
+                                            }
                                         }
 
                                         // It certain that the instance is of the ICollection<> type at this point, we can call "Add"
                                         contentItems.GetType().GetMethod("Add").Invoke(contentItems, new[] { contentItem });
                                     }
                                 }
-
-                                value = contentItems;
                             }
+
+                            value = contentItems;
                         }
                         if (value != null)
                         {
