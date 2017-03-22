@@ -140,6 +140,42 @@ namespace KenticoCloud.Delivery.Tests
         }
 
         [Test]
+        public void GetStrongTypesWithLimitedDepth()
+        {
+            var client = new DeliveryClient(PROJECT_ID);
+            client.CodeFirstModelProvider.TypeProvider = A.Fake<ICodeFirstTypeProvider>();
+            A.CallTo(() => client.CodeFirstModelProvider.TypeProvider.GetType("article")).ReturnsLazily(() => typeof(Article));
+
+            // Returns on_roasts content item with related_articles modular element to two other articles.
+            // on_roasts
+            // |- coffee_processing_techniques
+            // |- origins_of_arabica_bourbon
+            //   |- on_roasts
+            var onRoastsItem = Task.Run(() => client.GetItemAsync<Article>("on_roasts", new DepthParameter(1))).Result.Item;
+
+            Assert.AreEqual(2, onRoastsItem.RelatedArticles.Count());
+            Assert.AreEqual(0, ((Article)onRoastsItem.RelatedArticles.First()).RelatedArticles.Count());
+            Assert.AreEqual(0, ((Article)onRoastsItem.RelatedArticles.ElementAt(1)).RelatedArticles.Count());
+        }
+
+        [Test]
+        public void RecursiveModularContent()
+        {
+            var client = new DeliveryClient(PROJECT_ID);
+            client.CodeFirstModelProvider.TypeProvider = A.Fake<ICodeFirstTypeProvider>();
+            A.CallTo(() => client.CodeFirstModelProvider.TypeProvider.GetType("article")).ReturnsLazily(() => typeof(Article));
+
+            
+            // Try to get recursive modular content on_roasts -> item -> on_roasts
+            var task = client.GetItemAsync<Article>("on_roasts", new DepthParameter(15));
+            
+            Assert.DoesNotThrow(() =>
+            {
+                var result = Task.Run(() => task).Result.Item;
+            });
+        }
+
+        [Test]
         public void GetStronglyTypedResponse()
         {
             const string SANDBOX_PROJECT_ID = "e1167a11-75af-4a08-ad84-0582b463b010";
