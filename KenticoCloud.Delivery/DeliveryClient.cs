@@ -10,7 +10,7 @@ namespace KenticoCloud.Delivery
     /// <summary>
     /// Executes requests against the Kentico Cloud Delivery API.
     /// </summary>
-    public sealed class DeliveryClient
+    public sealed class DeliveryClient : IDeliveryClient
     {
         private const int PROJECT_ID_MAX_LENGTH = 36;
 
@@ -51,7 +51,6 @@ namespace KenticoCloud.Delivery
             get
             {
                 return _linkResolver;
-
             }
         }
 
