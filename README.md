@@ -150,7 +150,7 @@ ContentElement element = await client.GetContentElementAsync("coffee", "processi
 After you retrieve the Multiple choice element, you can work with its list of options. Each option has the following properties:
 
 
-PRopert | Description | Example
+Property | Description | Example
 ---------|----------|---------
  Name | The display name of the option. | `Dry (Natural)`
  Codename | The codename of the option. | `dry__natural_`
