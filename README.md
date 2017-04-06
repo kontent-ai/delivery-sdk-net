@@ -131,6 +131,8 @@ For text elements, you can use the `GetString` method.
 articleItem.GetString("body_copy")
 ```
 
+The Rich text element can contain links to other content items within your project. See [Resolving links to content items](https://github.com/Kentico/delivery-sdk-net/wiki/Resolving-Links-to-Content-Items) for more details.
+
 ### Asset
 
 ```csharp
