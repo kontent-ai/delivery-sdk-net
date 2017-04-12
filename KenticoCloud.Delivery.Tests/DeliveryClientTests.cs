@@ -293,6 +293,23 @@ namespace KenticoCloud.Delivery.Tests
         }
 
         [Test]
+        public void CastListingResponse()
+        {
+            const string SANDBOX_PROJECT_ID = "e1167a11-75af-4a08-ad84-0582b463b010";
+
+            // Arrange
+            var client = new DeliveryClient(SANDBOX_PROJECT_ID);
+
+            // Act
+            var response = client.GetItemsAsync().Result;
+            var stronglyTypedListingResponse = response.CastTo<CompleteContentItemModel>();
+
+            // Assert
+            Assert.True(stronglyTypedListingResponse != null);
+            Assert.True(stronglyTypedListingResponse.Items.Any());
+        }
+
+        [Test]
         public void CastContentItem()
         {
             const string SANDBOX_PROJECT_ID = "e1167a11-75af-4a08-ad84-0582b463b010";
