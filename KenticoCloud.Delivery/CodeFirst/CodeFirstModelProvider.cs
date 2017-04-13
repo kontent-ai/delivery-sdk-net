@@ -60,7 +60,7 @@ namespace KenticoCloud.Delivery
                 if (t == null)
                 {
                     throw new Exception($"No corresponding CLR type found for the '{system.Type}' content type. Provide a correct implementation of '{nameof(ICodeFirstTypeProvider)}' to the '{nameof(TypeProvider)}' property.");
-                }
+               } 
             }
 
             object instance = Activator.CreateInstance(t);

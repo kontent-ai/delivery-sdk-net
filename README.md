@@ -131,6 +131,8 @@ For text elements, you can use the `GetString` method.
 articleItem.GetString("body_copy")
 ```
 
+The Rich text element can contain links to other content items within your project. See [Resolving links to content items](https://github.com/Kentico/delivery-sdk-net/wiki/Resolving-Links-to-Content-Items) for more details.
+
 ### Asset
 
 ```csharp
@@ -150,7 +152,7 @@ ContentElement element = await client.GetContentElementAsync("coffee", "processi
 After you retrieve the Multiple choice element, you can work with its list of options. Each option has the following properties:
 
 
-PRopert | Description | Example
+Property | Description | Example
 ---------|----------|---------
  Name | The display name of the option. | `Dry (Natural)`
  Codename | The codename of the option. | `dry__natural_`

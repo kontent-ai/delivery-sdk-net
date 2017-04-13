@@ -38,6 +38,10 @@ namespace KenticoCloud.Delivery
             _client = client;
         }
 
+        /// <summary>
+        /// Casts DeliveryItemResponse to its generic version.
+        /// </summary>
+        /// <typeparam name="T">Target type.</typeparam>
         public DeliveryItemResponse<T> CastTo<T>()
         {
             return new DeliveryItemResponse<T>(_response, _client);

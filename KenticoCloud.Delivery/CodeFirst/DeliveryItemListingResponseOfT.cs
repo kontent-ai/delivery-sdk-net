@@ -37,10 +37,7 @@ namespace KenticoCloud.Delivery
         /// </summary>
         public dynamic ModularContent
         {
-            get
-            {
-                return _modularContent ?? (_modularContent = JObject.Parse(_response["modular_content"].ToString()));
-            }
+            get { return _modularContent ?? (_modularContent = JObject.Parse(_response["modular_content"].ToString())); }
         }
 
         /// <summary>

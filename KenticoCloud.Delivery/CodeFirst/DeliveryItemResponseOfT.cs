@@ -11,8 +11,7 @@ namespace KenticoCloud.Delivery
 
         public T Item
         {
-            get
-            {
+            get {
                 if (_item == null)
                 {
                     _item = _client.CodeFirstModelProvider.GetContentItemModel<T>(_response["item"], _response["modular_content"]);
