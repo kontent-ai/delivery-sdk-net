@@ -305,7 +305,7 @@ namespace KenticoCloud.Delivery.Tests
             var stronglyTypedListingResponse = response.CastTo<CompleteContentItemModel>();
 
             // Assert
-            Assert.True(stronglyTypedListingResponse != null);
+            Assert.NotNull(stronglyTypedListingResponse);
             Assert.True(stronglyTypedListingResponse.Items.Any());
         }
 

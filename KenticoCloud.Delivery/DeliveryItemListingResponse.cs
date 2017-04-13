@@ -47,13 +47,12 @@ namespace KenticoCloud.Delivery
         {
             _response = response;
             _client = client;
-
         }
 
         /// <summary>
-        /// Casts DeliveryItemListingResponse to it's generic version.
+        /// Casts DeliveryItemListingResponse to its generic version. Use this method only when the listed items are of the same type.
         /// </summary>
-        /// <typeparam name="T">Generic version type.</typeparam>
+        /// <typeparam name="T">Target type.</typeparam>
         public DeliveryItemListingResponse<T> CastTo<T>()
         {
             return new DeliveryItemListingResponse<T>(_response, _client);

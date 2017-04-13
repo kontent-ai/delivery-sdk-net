@@ -5,7 +5,7 @@ using Newtonsoft.Json.Linq;
 namespace KenticoCloud.Delivery
 {
     /// <summary>
-    /// Defines members necessary for retrieveing content and its metadata from the Kentico Cloud Delivery service.
+    /// Defines members necessary for retrieving content and its metadata from the Kentico Cloud Delivery service.
     /// </summary>
     public interface IDeliveryClient
     {
