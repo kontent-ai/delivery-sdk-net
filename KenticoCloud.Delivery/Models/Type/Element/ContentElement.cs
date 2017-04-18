@@ -64,7 +64,7 @@ namespace KenticoCloud.Delivery
         }
 
         /// <summary>
-        /// Gets the codename of the taxonomy group fo the Taxonomy content element; otherwise, an empty string.
+        /// Gets the codename of the taxonomy group for the Taxonomy content element; otherwise, an empty string.
         /// </summary>
         public string TaxonomyGroup
         {
