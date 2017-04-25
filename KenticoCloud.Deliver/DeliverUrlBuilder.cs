@@ -1,6 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
-#if (DEBUG && NET45)
+#if (NET45)
 using System.Configuration;
 #endif
 using System.Linq;
@@ -9,7 +9,7 @@ namespace KenticoCloud.Deliver
 {
 	internal class DeliverUrlBuilder
 	{
-#if (DEBUG && NET45)
+#if (NET45)
         private string PRODUCTION_ENDPOINT = ConfigurationManager.AppSettings["ProductionEndpoint"] ?? "https://deliver.kenticocloud.com/{0}";
         private string PREVIEW_ENDPOINT = ConfigurationManager.AppSettings["PreviewEndpoint"] ?? "https://preview-deliver.kenticocloud.com/{0}";
 #else
