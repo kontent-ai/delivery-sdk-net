@@ -13,7 +13,7 @@ namespace KenticoCloud.Delivery
         public SortOrder SortOrder { get; }
 
         /// <summary>
-        /// Gets the codename of a content element or system attribute by which content entites are sorted.
+        /// Gets the codename of a content element or system attribute by which content entities are sorted.
         /// </summary>
         public string ElementOrAttributePath { get; }
 
