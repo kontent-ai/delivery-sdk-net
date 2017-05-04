@@ -35,5 +35,8 @@
     "summary": "Kentico Cloud Delivery SDK",
     "tags": [ "kentico", "mvc", "aspnet", "aspnetmvc" ]
   },
-  "version": "4.0.0-*"
+  "version": "4.0.0-*",
+  "buildOptions": {
+    "xmlDoc": true
+  }
 }
