@@ -13,6 +13,12 @@ namespace KenticoCloud.Delivery
         [JsonProperty("name")]
         public string Name { get; }
 
+		/// <summary>
+		/// Gets the description of the asset.
+		/// </summary>
+		[JsonProperty("description")]
+	    public string Description { get; }
+
         /// <summary>
         /// Gets the media type of the asset, for example "image/jpeg".
         /// </summary>
