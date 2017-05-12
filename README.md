@@ -198,3 +198,10 @@ You can use [Visual Studio Code](https://code.visualstudio.com/) to build the pr
 
 * Visual Studio 2015 (with Update 3)
 * [SDK 2016/09/13](https://github.com/dotnet/core/blob/master/release-notes/download-archive.md)
+
+## Wall of Fame
+We would like to express our thanks to the following people who contributed and made the project possible:
+
+- [Jarosław Jarnot](https://github.com/jjarnot-vimanet) - [Vimanet](http://vimanet.com/) 
+
+Would you like to become a hero too? Pick an [issue](https://github.com/Kentico/delivery-sdk-net/issues) and send us a pull request!
