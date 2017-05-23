@@ -202,6 +202,7 @@ Check out the [contributing](https://github.com/Kentico/delivery-sdk-net/blob/ma
 ### Wall of Fame
 We would like to express our thanks to the following people who contributed and made the project possible:
 
-- [Jarosław Jarnot](https://github.com/jjarnot-vimanet) - [Vimanet](http://vimanet.com/) 
+- [Jarosław Jarnot](https://github.com/jjarnot-vimanet) - [Vimanet](http://vimanet.com) 
+- [Varinder Singh](https://github.com/VarinderS) - [Kudos Web](http://www.kudosweb.com)
 
 Would you like to become a hero too? Pick an [issue](https://github.com/Kentico/delivery-sdk-net/issues) and send us a pull request!
