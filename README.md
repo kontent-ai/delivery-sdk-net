@@ -179,10 +179,6 @@ foreach (var option in element.Options)
 articleItem.GetModularContent("related_articles")
 ```
 
-## Feedback & Contributing
-
-Check out the [contributing](https://github.com/Kentico/delivery-sdk-net/blob/master/CONTRIBUTING.md) page to see the best places to file issues, start discussions, and begin contributing.
-
 ## Further information
 
 For more developer resources, visit the Kentico Cloud Developer Hub at <https://developer.kenticocloud.com>.
@@ -198,3 +194,14 @@ You can use [Visual Studio Code](https://code.visualstudio.com/) to build the pr
 
 * Visual Studio 2015 (with Update 3)
 * [SDK 2016/09/13](https://github.com/dotnet/core/blob/master/release-notes/download-archive.md)
+
+## Feedback & Contributing
+
+Check out the [contributing](https://github.com/Kentico/delivery-sdk-net/blob/master/CONTRIBUTING.md) page to see the best places to file issues, start discussions, and begin contributing.
+
+### Wall of Fame
+We would like to express our thanks to the following people who contributed and made the project possible:
+
+- [Jarosław Jarnot](https://github.com/jjarnot-vimanet) - [Vimanet](http://vimanet.com/) 
+
+Would you like to become a hero too? Pick an [issue](https://github.com/Kentico/delivery-sdk-net/issues) and send us a pull request!
