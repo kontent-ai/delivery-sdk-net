@@ -1,37 +1,36 @@
 ﻿using Newtonsoft.Json.Linq;
-using NUnit.Framework;
 using System;
+using Xunit;
 
 namespace KenticoCloud.Delivery.Tests
 {
-    [TestFixture]
     public class ContentLinkResolverTests
     {
-        [Test]
+        [Fact]
         public void ContentLinkIsResolved()
         {
             var result = ResolveContentLinks("Learn <a href=\"\" data-item-id=\"CID\">more</a>.");
 
-            Assert.AreEqual("Learn <a href=\"http://example.org/about-us\" data-item-id=\"CID\">more</a>.", result);
+            Assert.Equal("Learn <a href=\"http://example.org/about-us\" data-item-id=\"CID\">more</a>.", result);
         }
 
-        [Test]
+        [Fact]
         public void DecoratedContentLinkIsResolved()
         {
             var result = ResolveContentLinks("Learn <a href=\"\" data-item-id=\"CID\" class=\"link\">more</a>.");
 
-            Assert.AreEqual("Learn <a href=\"http://example.org/about-us\" data-item-id=\"CID\" class=\"link\">more</a>.", result);
+            Assert.Equal("Learn <a href=\"http://example.org/about-us\" data-item-id=\"CID\" class=\"link\">more</a>.", result);
         }
 
-        [Test]
+        [Fact]
         public void BrokenContentLinkIsResolved()
         {
             var result = ResolveContentLinks("Learn <a href=\"\" data-item-id=\"OTHER\">more</a>.");
 
-            Assert.AreEqual("Learn <a href=\"http://example.org/broken\" data-item-id=\"OTHER\">more</a>.", result);
+            Assert.Equal("Learn <a href=\"http://example.org/broken\" data-item-id=\"OTHER\">more</a>.", result);
         }
 
-        [Test]
+        [Fact]
         public void ResolveLinkUrlIsOptional()
         {
             var linkUrlResolver = new CustomContentLinkUrlResolver
@@ -40,10 +39,10 @@ namespace KenticoCloud.Delivery.Tests
             };
             var result = ResolveContentLinks("Learn <a href=\"\" data-item-id=\"CID\">more</a>.", linkUrlResolver);
 
-            Assert.AreEqual("Learn <a href=\"\" data-item-id=\"CID\">more</a>.", result);
+            Assert.Equal("Learn <a href=\"\" data-item-id=\"CID\">more</a>.", result);
         }
 
-        [Test]
+        [Fact]
         public void ResolveBrokenLinkUrlIsOptional()
         {
             var linkUrlResolver = new CustomContentLinkUrlResolver
@@ -52,26 +51,26 @@ namespace KenticoCloud.Delivery.Tests
             };
             var result = ResolveContentLinks("Learn <a href=\"\" data-item-id=\"OTHER\">more</a>.", linkUrlResolver);
 
-            Assert.AreEqual("Learn <a href=\"\" data-item-id=\"OTHER\">more</a>.", result);
+            Assert.Equal("Learn <a href=\"\" data-item-id=\"OTHER\">more</a>.", result);
         }
 
-        [Test]
+        [Fact]
         public void ExternalLinksArePreserved()
         {
             var result = ResolveContentLinks("Learn <a href=\"https://www.kentico.com\">more</a>.");
 
-            Assert.AreEqual("Learn <a href=\"https://www.kentico.com\">more</a>.", result);
+            Assert.Equal("Learn <a href=\"https://www.kentico.com\">more</a>.", result);
         }
 
-        [Test]
+        [Fact]
         public void ExternalEmptyLinksArePreserved()
         {
             var result = ResolveContentLinks("Learn <a href=\"\">more</a>.");
 
-            Assert.AreEqual("Learn <a href=\"\">more</a>.", result);
+            Assert.Equal("Learn <a href=\"\">more</a>.", result);
         }
 
-        [Test]
+        [Fact]
         public void UrlLinkIsEncoded()
         {
             var linkUrlResolver = new CustomContentLinkUrlResolver
@@ -80,10 +79,10 @@ namespace KenticoCloud.Delivery.Tests
             };
             var result = ResolveContentLinks("Learn <a href=\"\" data-item-id=\"CID\">more</a>.", linkUrlResolver);
 
-            Assert.AreEqual("Learn <a href=\"http://example.org?q=bits&amp;bolts\" data-item-id=\"CID\">more</a>.", result);
+            Assert.Equal("Learn <a href=\"http://example.org?q=bits&amp;bolts\" data-item-id=\"CID\">more</a>.", result);
         }
 
-        [Test]
+        [Fact]
         public void BrokenUrlLinkIsEncoded()
         {
             var linkUrlResolver = new CustomContentLinkUrlResolver
@@ -92,10 +91,10 @@ namespace KenticoCloud.Delivery.Tests
             };
             var result = ResolveContentLinks("Learn <a href=\"\" data-item-id=\"OTHER\">more</a>.", linkUrlResolver);
 
-            Assert.AreEqual("Learn <a href=\"http://example.org/&lt;broken&gt;\" data-item-id=\"OTHER\">more</a>.", result);
+            Assert.Equal("Learn <a href=\"http://example.org/&lt;broken&gt;\" data-item-id=\"OTHER\">more</a>.", result);
         }
 
-        [Test]
+        [Fact]
         public void ContentLinkAttributesAreParsed()
         {
             var linkUrlResolver = new CustomContentLinkUrlResolver
@@ -104,10 +103,10 @@ namespace KenticoCloud.Delivery.Tests
             };
             var result = ResolveContentLinks("Learn <a href=\"\" data-item-id=\"CID\">more</a>.", linkUrlResolver);
 
-            Assert.AreEqual("Learn <a href=\"http://example.org/article/about_us/CID-about-us\" data-item-id=\"CID\">more</a>.", result);
+            Assert.Equal("Learn <a href=\"http://example.org/article/about_us/CID-about-us\" data-item-id=\"CID\">more</a>.", result);
         }
 
-        [Test]
+        [Fact]
         public void ResolveLinksInStronglyTypedModel()
         {
             var client = new DeliveryClient("e1167a11-75af-4a08-ad84-0582b463b010");
@@ -116,7 +115,7 @@ namespace KenticoCloud.Delivery.Tests
             string expected = "<p><a href=\"https://en.wikipedia.org/wiki/Brno\">Brno</a> office is very far from <a data-item-id=\"ee82db8c-de06-4992-9561-1fc642056c2b\" href=\"http://example.org/melbourne-office\">Melbourne</a> office.</p>";
             var item = client.GetItemAsync<Office>("brno_office").Result.Item;
 
-            Assert.AreEqual(expected, item.AboutTheOffice);
+            Assert.Equal(expected, item.AboutTheOffice);
         }
 
         private string ResolveContentLinks(string text)
