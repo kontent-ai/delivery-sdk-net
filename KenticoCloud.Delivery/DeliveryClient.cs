@@ -117,10 +117,10 @@ namespace KenticoCloud.Delivery
         }
 
         /// <summary>
-        /// Returns a content item as JSON data.
+        /// Returns a content item as JSON data. By default, retrieves one level of modular content.
         /// </summary>
         /// <param name="codename">The codename of a content item.</param>
-        /// <param name="parameters">An array that contains zero or more query parameters, for example for projection or depth of modular content.</param>
+        /// <param name="parameters">An array that contains zero or more query parameters, for example, for projection or setting the depth of modular content.</param>
         /// <returns>The <see cref="JObject"/> instance that represents the content item with the specified codename.</returns>
         public async Task<JObject> GetItemJsonAsync(string codename, params string[] parameters)
         {
@@ -140,9 +140,9 @@ namespace KenticoCloud.Delivery
         }
 
         /// <summary>
-        /// Returns content items as JSON data.
+        /// Returns content items as JSON data. By default, retrieves one level of modular content.
         /// </summary>
-        /// <param name="parameters">An array that contains zero or more query parameters, for example for filtering, ordering or depth of modular content.</param>
+        /// <param name="parameters">An array that contains zero or more query parameters, for example, for filtering, ordering, or setting the depth of modular content.</param>
         /// <returns>The <see cref="JObject"/> instance that represents the content items. If no query parameters are specified, all content items are returned.</returns>
         public async Task<JObject> GetItemsJsonAsync(params string[] parameters)
         {
@@ -152,10 +152,10 @@ namespace KenticoCloud.Delivery
         }
 
         /// <summary>
-        /// Returns a content item.
+        /// Returns a content item. By default, retrieves one level of modular content.
         /// </summary>
         /// <param name="codename">The codename of a content item.</param>
-        /// <param name="parameters">An array that contains zero or more query parameters, for example for projection or depth of modular content.</param>
+        /// <param name="parameters">An array that contains zero or more query parameters, for example, for projection or setting the depth of modular content.</param>
         /// <returns>The <see cref="DeliveryItemResponse"/> instance that contains the content item with the specified codename.</returns>
         public async Task<DeliveryItemResponse> GetItemAsync(string codename, params IQueryParameter[] parameters)
         {
@@ -163,11 +163,11 @@ namespace KenticoCloud.Delivery
         }
 
         /// <summary>
-        /// Gets one strongly typed content item by its codename.
+        /// Gets a strongly typed content item by its codename. By default, retrieves one level of modular content.
         /// </summary>
         /// <typeparam name="T">Type of the code-first model. (Or <see cref="object"/> if the return type is not yet known.)</typeparam>
         /// <param name="codename">The codename of a content item.</param>
-        /// <param name="parameters">An array that contains zero or more query parameters, for example for projection or depth of modular content.</param>
+        /// <param name="parameters">An array that contains zero or more query parameters, for example, for projection or setting the depth of modular content.</param>
         /// <returns>The <see cref="DeliveryItemResponse{T}"/> instance that contains the content item with the specified codename.</returns>
         public async Task<DeliveryItemResponse<T>> GetItemAsync<T>(string codename, params IQueryParameter[] parameters)
         {
@@ -175,10 +175,10 @@ namespace KenticoCloud.Delivery
         }
 
         /// <summary>
-        /// Returns a content item.
+        /// Returns a content item. By default, retrieves one level of modular content.
         /// </summary>
         /// <param name="codename">The codename of a content item.</param>
-        /// <param name="parameters">A collection of query parameters, for example for projection or depth of modular content.</param>
+        /// <param name="parameters">A collection of query parameters, for example, for projection or setting the depth of modular content.</param>
         /// <returns>The <see cref="DeliveryItemResponse"/> instance that contains the content item with the specified codename.</returns>
         public async Task<DeliveryItemResponse> GetItemAsync(string codename, IEnumerable<IQueryParameter> parameters)
         {
@@ -199,11 +199,11 @@ namespace KenticoCloud.Delivery
         }
 
         /// <summary>
-        /// Gets one strongly typed content item by its codename.
+        /// Gets a strongly typed content item by its codename. By default, retrieves one level of modular content.
         /// </summary>
         /// <typeparam name="T">Type of the code-first model. (Or <see cref="object"/> if the return type is not yet known.)</typeparam>
         /// <param name="codename">The codename of a content item.</param>
-        /// <param name="parameters">A collection of query parameters, for example for projection or depth of modular content.</param>
+        /// <param name="parameters">A collection of query parameters, for example, for projection or setting the depth of modular content.</param>
         /// <returns>The <see cref="DeliveryItemResponse{T}"/> instance that contains the content item with the specified codename.</returns>
         public async Task<DeliveryItemResponse<T>> GetItemAsync<T>(string codename, IEnumerable<IQueryParameter> parameters = null)
         {
@@ -219,10 +219,9 @@ namespace KenticoCloud.Delivery
         }
 
         /// <summary>
-        /// Searches the content repository for items that match the filter criteria.
-        /// Returns content items.
+        /// Returns content items that match the optional filtering parameters. By default, retrieves one level of modular content.
         /// </summary>
-        /// <param name="parameters">An array that contains zero or more query parameters, for example for filtering, ordering or depth of modular content.</param>
+        /// <param name="parameters">An array that contains zero or more query parameters, for example, for filtering, ordering, or setting the depth of modular content.</param>
         /// <returns>The <see cref="DeliveryItemListingResponse"/> instance that contains the content items. If no query parameters are specified, all content items are returned.</returns>
         public async Task<DeliveryItemListingResponse> GetItemsAsync(params IQueryParameter[] parameters)
         {
@@ -230,9 +229,9 @@ namespace KenticoCloud.Delivery
         }
 
         /// <summary>
-        /// Returns content items.
+        /// Returns content items that match the optional filtering parameters. By default, retrieves one level of modular content.
         /// </summary>
-        /// <param name="parameters">A collection of query parameters, for example for filtering, ordering or depth of modular content.</param>
+        /// <param name="parameters">A collection of query parameters, for example, for filtering, ordering, or setting the depth of modular content.</param>
         /// <returns>The <see cref="DeliveryItemListingResponse"/> instance that contains the content items. If no query parameters are specified, all content items are returned.</returns>
         public async Task<DeliveryItemListingResponse> GetItemsAsync(IEnumerable<IQueryParameter> parameters)
         {
@@ -243,11 +242,10 @@ namespace KenticoCloud.Delivery
         }
 
         /// <summary>
-        /// Searches the content repository for items that match the filter criteria.
-        /// Returns strongly typed content items.
+        /// Returns strongly typed content items that match the optional filtering parameters. By default, retrieves one level of modular content.
         /// </summary>
         /// <typeparam name="T">Type of the code-first model. (Or <see cref="object"/> if the return type is not yet known.)</typeparam>
-        /// <param name="parameters">An array that contains zero or more query parameters, for example for filtering, ordering or depth of modular content.</param>
+        /// <param name="parameters">An array that contains zero or more query parameters, for example, for filtering, ordering, or setting the depth of modular content.</param>
         /// <returns>The <see cref="DeliveryItemListingResponse{T}"/> instance that contains the content items. If no query parameters are specified, all content items are returned.</returns>
         public async Task<DeliveryItemListingResponse<T>> GetItemsAsync<T>(params IQueryParameter[] parameters)
         {
@@ -255,11 +253,10 @@ namespace KenticoCloud.Delivery
         }
 
         /// <summary>
-        /// Searches the content repository for items that match the filter criteria.
-        /// Returns strongly typed content items.
+        /// Returns strongly typed content items that match the optional filtering parameters. By default, retrieves one level of modular content.
         /// </summary>
         /// <typeparam name="T">Type of the code-first model. (Or <see cref="object"/> if the return type is not yet known.)</typeparam>
-        /// <param name="parameters">A collection of query parameters, for example for filtering, ordering or depth of modular content.</param>
+        /// <param name="parameters">A collection of query parameters, for example, for filtering, ordering, or setting the depth of modular content.</param>
         /// <returns>The <see cref="DeliveryItemListingResponse{T}"/> instance that contains the content items. If no query parameters are specified, all content items are returned.</returns>
         public async Task<DeliveryItemListingResponse<T>> GetItemsAsync<T>(IEnumerable<IQueryParameter> parameters)
         {
@@ -294,7 +291,7 @@ namespace KenticoCloud.Delivery
         /// <summary>
         /// Returns content types as JSON data.
         /// </summary>
-        /// <param name="parameters">An array that contains zero or more query parameters, for example for paging.</param>
+        /// <param name="parameters">An array that contains zero or more query parameters, for example, for paging.</param>
         /// <returns>The <see cref="JObject"/> instance that represents the content types. If no query parameters are specified, all content types are returned.</returns>
         public async Task<JObject> GetTypesJsonAsync(params string[] parameters)
         {
@@ -329,7 +326,7 @@ namespace KenticoCloud.Delivery
         /// <summary>
         /// Returns content types.
         /// </summary>
-        /// <param name="parameters">An array that contains zero or more query parameters, for example for paging.</param>
+        /// <param name="parameters">An array that contains zero or more query parameters, for example, for paging.</param>
         /// <returns>The <see cref="DeliveryTypeListingResponse"/> instance that represents the content types. If no query parameters are specified, all content types are returned.</returns>
         public async Task<DeliveryTypeListingResponse> GetTypesAsync(params IQueryParameter[] parameters)
         {
@@ -339,7 +336,7 @@ namespace KenticoCloud.Delivery
         /// <summary>
         /// Returns content types.
         /// </summary>
-        /// <param name="parameters">A collection of query parameters, for example for paging.</param>
+        /// <param name="parameters">A collection of query parameters, for example, for paging.</param>
         /// <returns>The <see cref="DeliveryTypeListingResponse"/> instance that represents the content types. If no query parameters are specified, all content types are returned.</returns>
         public async Task<DeliveryTypeListingResponse> GetTypesAsync(IEnumerable<IQueryParameter> parameters)
         {

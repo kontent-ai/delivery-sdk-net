@@ -1,7 +1,7 @@
 ﻿namespace KenticoCloud.Delivery
 {
     /// <summary>
-    /// Specifies the order in which content entities are sorted.
+    /// Specifies the order in which content items are sorted.
     /// </summary>
     public enum SortOrder
     {
