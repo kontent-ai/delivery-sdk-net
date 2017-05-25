@@ -1,11 +1,11 @@
 ﻿
 Microsoft Visual Studio Solution File, Format Version 12.00
-# Visual Studio 14
-VisualStudioVersion = 14.0.25420.1
+# Visual Studio 15
+VisualStudioVersion = 15.0.26228.10
 MinimumVisualStudioVersion = 10.0.40219.1
-Project("{8BB2217D-0F2D-49D1-97BC-3654ED321F3B}") = "KenticoCloud.Delivery", "KenticoCloud.Delivery\KenticoCloud.Delivery.xproj", "{84B896D2-1A87-4671-B583-92A6AF3645F0}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "KenticoCloud.Delivery", "KenticoCloud.Delivery\KenticoCloud.Delivery.csproj", "{3CDC563F-AA0B-4543-A764-65A926C5FE82}"
 EndProject
-Project("{8BB2217D-0F2D-49D1-97BC-3654ED321F3B}") = "KenticoCloud.Delivery.Tests", "KenticoCloud.Delivery.Tests\KenticoCloud.Delivery.Tests.xproj", "{3E4EAEB0-03DB-4025-8D39-C445E96F38DA}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "KenticoCloud.Delivery.Tests", "KenticoCloud.Delivery.Tests\KenticoCloud.Delivery.Tests.csproj", "{B9384D2F-AD84-470C-A44E-DCAAA51F73D4}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
@@ -13,14 +13,14 @@ Global
 		Release|Any CPU = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(ProjectConfigurationPlatforms) = postSolution
-		{84B896D2-1A87-4671-B583-92A6AF3645F0}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
-		{84B896D2-1A87-4671-B583-92A6AF3645F0}.Debug|Any CPU.Build.0 = Debug|Any CPU
-		{84B896D2-1A87-4671-B583-92A6AF3645F0}.Release|Any CPU.ActiveCfg = Release|Any CPU
-		{84B896D2-1A87-4671-B583-92A6AF3645F0}.Release|Any CPU.Build.0 = Release|Any CPU
-		{3E4EAEB0-03DB-4025-8D39-C445E96F38DA}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
-		{3E4EAEB0-03DB-4025-8D39-C445E96F38DA}.Debug|Any CPU.Build.0 = Debug|Any CPU
-		{3E4EAEB0-03DB-4025-8D39-C445E96F38DA}.Release|Any CPU.ActiveCfg = Release|Any CPU
-		{3E4EAEB0-03DB-4025-8D39-C445E96F38DA}.Release|Any CPU.Build.0 = Release|Any CPU
+		{3CDC563F-AA0B-4543-A764-65A926C5FE82}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{3CDC563F-AA0B-4543-A764-65A926C5FE82}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{3CDC563F-AA0B-4543-A764-65A926C5FE82}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{3CDC563F-AA0B-4543-A764-65A926C5FE82}.Release|Any CPU.Build.0 = Release|Any CPU
+		{B9384D2F-AD84-470C-A44E-DCAAA51F73D4}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{B9384D2F-AD84-470C-A44E-DCAAA51F73D4}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{B9384D2F-AD84-470C-A44E-DCAAA51F73D4}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{B9384D2F-AD84-470C-A44E-DCAAA51F73D4}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE

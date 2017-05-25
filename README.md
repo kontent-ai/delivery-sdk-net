@@ -187,13 +187,12 @@ For more developer resources, visit the Kentico Cloud Developer Hub at <https://
 
 Prerequisites:
 
-* [.NET Core 1.0 SDK](https://www.microsoft.com/net/download/core#/sdk)
-* [.NET Core 1.0.x Runtime](https://www.microsoft.com/net/download/core#/runtime)
+**Required:**
+[.NET Core SDK](https://www.microsoft.com/net/download/core).
 
-You can use [Visual Studio Code](https://code.visualstudio.com/) to build the project. If you want the full Visual Studio experience, use the following toolings:
-
-* Visual Studio 2015 (with Update 3)
-* [SDK 2016/09/13](https://github.com/dotnet/core/blob/master/release-notes/download-archive.md)
+Optional:
+* [Visual Studio 2017](https://www.visualstudio.com/vs/) for full experience
+* or [Visual Studio Code](https://code.visualstudio.com/)
 
 ## Feedback & Contributing
 
