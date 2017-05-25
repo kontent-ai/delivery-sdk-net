@@ -15,9 +15,9 @@ namespace KenticoCloud.Delivery
         public IReadOnlyList<string> ElementCodenames { get; }
 
         /// <summary>
-        /// Initializes a new instance of the <see cref="ElementsParameter"/> class.
+        /// Initializes a new instance of the <see cref="ElementsParameter"/> class using the specified content elements codenames.
         /// </summary>
-        /// <param name="elementCodenames">An array that contains zero or more codenames of content elements that should be retrieved.</param>
+        /// <param name="elementCodenames">An array that contains zero or more codenames of the content elements that should be retrieved.</param>
         public ElementsParameter(params string[] elementCodenames)
         {
             ElementCodenames = elementCodenames.ToList().AsReadOnly();
