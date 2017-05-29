@@ -3,6 +3,7 @@
   "authors": [ "Kentico Software" ],
   "copyright": "(c) 2016 Kentico Software. All rights reserved.",
   "dependencies": {
+    "AngleSharp": "0.9.9",
     "Newtonsoft.Json": "9.0.1"
   },
   "description": "Kentico Cloud Delivery SDK enables you to connect your .NET applications to Kentico Cloud and retrieve content from your projects. For more information about Kentico Cloud, see https://kenticocloud.com/.",
@@ -15,6 +16,8 @@
     },
     "net45": {
       "imports": [ "net40" ],
+      "dependencies": {
+      },
       "frameworkAssemblies": {
         "System.Configuration": "4.0.0.0",
         "System.Net.Http": "4.0.0.0"

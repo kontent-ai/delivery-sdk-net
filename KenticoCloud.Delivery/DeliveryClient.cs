@@ -4,6 +4,7 @@ using System.Collections.Generic;
 using System.Net;
 using System.Net.Http;
 using System.Threading.Tasks;
+using KenticoCloud.Delivery.ContentItemsInRichText;
 
 namespace KenticoCloud.Delivery
 {
@@ -18,6 +19,12 @@ namespace KenticoCloud.Delivery
         private readonly DeliveryEndpointUrlBuilder _urlBuilder;
 
         private IContentLinkUrlResolver _linkUrlResolver;
+
+        /// <summary>
+        /// Richtext content items processor for content items retrieved using this client.
+        /// </summary>
+        public ContentItemsInRichTextProcessor ContentItemsInRichTextProcessor { get; private set; }
+
         private ContentLinkResolver _linkResolver;
         private ICodeFirstModelProvider _codeFirstModelProvider;
 
@@ -74,9 +81,11 @@ namespace KenticoCloud.Delivery
             {
                 throw new ArgumentException($"The specified Kentico cloud project identifier ({projectId}) is too long. Haven't you accidentally passed the Preview API key instead of the project identifier?", nameof(projectId));
             }
-
             _urlBuilder = new DeliveryEndpointUrlBuilder(projectId);
             _httpClient = new HttpClient();
+            var unretrievedContentItemsInRichTextResolver = new RemoveObjectTagForUnretrievedItemsResolver();
+            var contentItemsInRichTextDefaultResolver = new RemoveObjectTagResolver();
+            ContentItemsInRichTextProcessor = new ContentItemsInRichTextProcessor(contentItemsInRichTextDefaultResolver, unretrievedContentItemsInRichTextResolver);
         }
 
         /// <summary>
@@ -110,10 +119,12 @@ namespace KenticoCloud.Delivery
             {
                 throw new ArgumentException("The Preview API key is not specified.", nameof(projectId));
             }
-
             _urlBuilder = new DeliveryEndpointUrlBuilder(projectId, previewApiKey);
             _httpClient = new HttpClient();
             _httpClient.DefaultRequestHeaders.Add("Authorization", string.Format("Bearer {0}", previewApiKey));
+            var unretrievedContentItemsInRichTextResolver = new ReplaceWithWarningAboutDepthResolver();
+            var contentItemsInRichTextDefaultResolver = new ReplaceWithWarningAboutRegistrationResolver();
+            ContentItemsInRichTextProcessor = new ContentItemsInRichTextProcessor(contentItemsInRichTextDefaultResolver, unretrievedContentItemsInRichTextResolver);
         }
 
         /// <summary>

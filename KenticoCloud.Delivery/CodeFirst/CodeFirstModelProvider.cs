@@ -60,7 +60,7 @@ namespace KenticoCloud.Delivery
                 if (t == null)
                 {
                     throw new Exception($"No corresponding CLR type found for the '{system.Type}' content type. Provide a correct implementation of '{nameof(ICodeFirstTypeProvider)}' to the '{nameof(TypeProvider)}' property.");
-               } 
+                } 
             }
 
             object instance = Activator.CreateInstance(t);
@@ -93,15 +93,56 @@ namespace KenticoCloud.Delivery
                         if (propertyType == typeof(string))
                         {
                             var links = ((JObject)propValue?.Parent?.Parent)?.Property("links")?.Value;
+                            var modularContentInRichText =
+                                ((JObject)propValue?.Parent?.Parent)?.Property("modular_content")?.Value;
 
                             // Handle rich_text link resolution
-                            if (links != null && propValue != null && _client.ContentLinkResolver != null)
+                            value = propValue?.ToObject<string>();
+                            if (links != null && _client.ContentLinkResolver != null)
                             {
-                                value = _client.ContentLinkResolver.ResolveContentLinks(propValue?.ToObject<string>(), links);
+                                value = _client.ContentLinkResolver.ResolveContentLinks(
+                                    (string)value,
+                                    links);
                             }
-                            else
+
+                            if (modularContentInRichText != null && _client.ContentItemsInRichTextProcessor != null)
                             {
-                                value = propValue?.ToObject(propertyType);
+                                var usedCodenames = Newtonsoft.Json.JsonConvert.DeserializeObject<IEnumerable<string>>(modularContentInRichText.ToString());
+                                var contentItemsInRichText = new Dictionary<string, object>();
+
+                                foreach (var codenameUsed in usedCodenames)
+                                {
+                                    object contentItem;
+                                    if (processedItems.ContainsKey(codenameUsed))
+                                    {
+                                        // Avoid infinite recursion by re-using already processed content items
+                                        contentItem = processedItems[codenameUsed];
+                                    }
+                                    else
+                                    {
+                                        var modularContentNode = (JObject) modularContent;
+                                        var modularContentItemNode =
+                                            modularContentNode.Properties()
+                                                .FirstOrDefault(p => p.Name == codenameUsed)?.First;
+                                        if (modularContentItemNode != null)
+                                        {
+                                            contentItem = GetContentItemModel(typeof(object), modularContentItemNode,
+                                                modularContentNode, processedItems);
+                                            if (!processedItems.ContainsKey(codenameUsed))
+                                            {
+                                                processedItems.Add(codenameUsed, contentItem);
+                                            }
+                                        }
+                                        else
+                                        {
+                                            contentItem = new UnretrievedContentItem();     //This means that response from Delivery API didn't contain content of this item 
+                                        }
+                                    }
+                                    contentItemsInRichText.Add(codenameUsed, contentItem);
+                                }
+                                value = _client.ContentItemsInRichTextProcessor.Process(
+                                    value as string,
+                                    contentItemsInRichText);
                             }
                         }
                         else if (propertyType == typeof(IEnumerable<MultipleChoiceOption>)
