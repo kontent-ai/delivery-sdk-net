@@ -43,6 +43,7 @@ namespace KenticoCloud.Delivery
         /// Initializes a new instance of the <see cref="DeliveryItemListingResponse"/> class with information from a response.
         /// </summary>
         /// <param name="response">A response from Kentico Cloud Delivery API that contains a list of content items.</param>
+        /// <param name="client">An instance of delivery API client to be used.</param>
         internal DeliveryItemListingResponse(JToken response, DeliveryClient client)
         {
             _response = response;

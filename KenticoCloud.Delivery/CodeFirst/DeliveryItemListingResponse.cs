@@ -7,6 +7,7 @@ namespace KenticoCloud.Delivery
     /// <summary>
     /// Represents a response from Kentico Cloud Delivery API that contains a list of content items.
     /// </summary>
+    /// <typeparam name="T">Generic strong type of item representation.</typeparam>
     public sealed class DeliveryItemListingResponse<T>
     {
         private readonly JToken _response;
@@ -44,6 +45,7 @@ namespace KenticoCloud.Delivery
         /// Initializes a new instance of the <see cref="DeliveryItemListingResponse"/> class with information from a response.
         /// </summary>
         /// <param name="response">A response from Kentico Cloud Delivery API that contains a list of content items.</param>
+        /// <param name="client">Delivery API client.</param>
         internal DeliveryItemListingResponse(JToken response, DeliveryClient client)
         {
             _response = response;

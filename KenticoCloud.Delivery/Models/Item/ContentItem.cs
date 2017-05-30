@@ -103,7 +103,7 @@ namespace KenticoCloud.Delivery
         }
 
         /// <summary>
-        /// Returns the <see cref="DateTime"/> value of the specified Date & time element.
+        /// Returns the <see cref="DateTime"/> value of the specified Date &amp; time element.
         /// </summary>
         /// <param name="elementCodename">The codename of the element.</param>
         /// <returns>The <see cref="DateTime"/> value of the element with the specified codename, if available; otherwise, <c>null</c>.</returns>
