@@ -1,6 +1,6 @@
 ﻿namespace KenticoCloud.Delivery.ContentItemsInRichText
 {
-    public class ResolvedContentItemWrapper<T>
+    public class ResolvedContentItemData<T>
     {
         public T Item { get; set; }
     }

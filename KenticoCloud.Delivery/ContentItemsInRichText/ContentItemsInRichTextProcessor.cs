@@ -57,7 +57,7 @@ namespace KenticoCloud.Delivery.ContentItemsInRichText
                     if (unresolved != null)
                     {
                         contentType = typeof(UnretrievedContentItem);
-                        var wrapper = new ResolvedContentItemWrapper<UnretrievedContentItem> { Item = unresolved };
+                        var wrapper = new ResolvedContentItemData<UnretrievedContentItem> { Item = unresolved };
                         replacement = _unretrievedContentItemsInRichTextResolver.Resolve(wrapper);
                     }
                     else
@@ -70,7 +70,7 @@ namespace KenticoCloud.Delivery.ContentItemsInRichText
                         }
                         else
                         {
-                            var wrapper = new ResolvedContentItemWrapper<object> { Item = contentItem };
+                            var wrapper = new ResolvedContentItemData<object> { Item = contentItem };
                             replacement = DefaultResolver.Resolve(wrapper);
                         }
                        
@@ -78,7 +78,6 @@ namespace KenticoCloud.Delivery.ContentItemsInRichText
 
                     try
                     {
-
                         var options = new HtmlParserOptions()
                         {
                             IsStrictMode = true
@@ -108,7 +107,7 @@ namespace KenticoCloud.Delivery.ContentItemsInRichText
         /// <typeparam name="T">Content type which is resolver resolving.</typeparam>
         public void RegisterTypeResolver<T>(IContentItemsInRichTextResolver<T> resolver)
         {
-            _typeResolver.Add(typeof(T), x => resolver.Resolve(new ResolvedContentItemWrapper<T> { Item = (T)x }));
+            _typeResolver.Add(typeof(T), x => resolver.Resolve(new ResolvedContentItemData<T> { Item = (T)x }));
         }
     }
 }

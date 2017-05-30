@@ -7,6 +7,6 @@
 
     public interface IContentItemsInRichTextResolver<T> : IContentItemsInRichTextResolver
     {
-        string Resolve(ResolvedContentItemWrapper<T> wrapper);
+        string Resolve(ResolvedContentItemData<T> data);
     }
 }

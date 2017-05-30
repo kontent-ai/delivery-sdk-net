@@ -83,8 +83,8 @@ namespace KenticoCloud.Delivery
             }
             _urlBuilder = new DeliveryEndpointUrlBuilder(projectId);
             _httpClient = new HttpClient();
-            var unretrievedContentItemsInRichTextResolver = new RemoveObjectTagForUnretrievedItemsResolver();
-            var contentItemsInRichTextDefaultResolver = new RemoveObjectTagResolver();
+            var unretrievedContentItemsInRichTextResolver = new ReplaceWithEmptyStringForUnretrievedItemsResolver();
+            var contentItemsInRichTextDefaultResolver = new ReplaceWithEmptyStringResolver();
             ContentItemsInRichTextProcessor = new ContentItemsInRichTextProcessor(contentItemsInRichTextDefaultResolver, unretrievedContentItemsInRichTextResolver);
         }
 
@@ -122,7 +122,7 @@ namespace KenticoCloud.Delivery
             _urlBuilder = new DeliveryEndpointUrlBuilder(projectId, previewApiKey);
             _httpClient = new HttpClient();
             _httpClient.DefaultRequestHeaders.Add("Authorization", string.Format("Bearer {0}", previewApiKey));
-            var unretrievedContentItemsInRichTextResolver = new ReplaceWithWarningAboutDepthResolver();
+            var unretrievedContentItemsInRichTextResolver = new ReplaceWithWarningAboutUnretrievedItemResolver();
             var contentItemsInRichTextDefaultResolver = new ReplaceWithWarningAboutRegistrationResolver();
             ContentItemsInRichTextProcessor = new ContentItemsInRichTextProcessor(contentItemsInRichTextDefaultResolver, unretrievedContentItemsInRichTextResolver);
         }

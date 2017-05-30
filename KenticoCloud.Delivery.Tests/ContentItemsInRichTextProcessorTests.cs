@@ -358,7 +358,7 @@ namespace KenticoCloud.Delivery.Tests
 
         private class DummyResolver : IContentItemsInRichTextResolver<DummyProcessedContentItem>
         {
-            public string Resolve(ResolvedContentItemWrapper<DummyProcessedContentItem> item)
+            public string Resolve(ResolvedContentItemData<DummyProcessedContentItem> item)
             {
                 return string.Empty;
             }
@@ -376,39 +376,39 @@ namespace KenticoCloud.Delivery.Tests
 
         private class ResolverReturningValue : IContentItemsInRichTextResolver<DummyProcessedContentItem>
         {
-            public string Resolve(ResolvedContentItemWrapper<DummyProcessedContentItem> wrapper)
+            public string Resolve(ResolvedContentItemData<DummyProcessedContentItem> data)
             {
-                return wrapper.Item?.Value ?? string.Empty;
+                return data.Item?.Value ?? string.Empty;
             }
         }
 
         private class DummyImageResolver : IContentItemsInRichTextResolver<DummyImageContentItem>
         {
-            public string Resolve(ResolvedContentItemWrapper<DummyImageContentItem> wrapper)
+            public string Resolve(ResolvedContentItemData<DummyImageContentItem> data)
             {
-                return $"<img src=\"{wrapper.Item.Source}\" />";
+                return $"<img src=\"{data.Item.Source}\" />";
             }
         }
 
         private class ResolverReturningElement : IContentItemsInRichTextResolver<DummyProcessedContentItem>
         {
-            public string Resolve(ResolvedContentItemWrapper<DummyProcessedContentItem> wrapper)
+            public string Resolve(ResolvedContentItemData<DummyProcessedContentItem> data)
             {
-                return $"<span>{wrapper.Item.Value}</span>";
+                return $"<span>{data.Item.Value}</span>";
             }
         }
 
         private class ResolverReturningTextAndElement : IContentItemsInRichTextResolver<DummyProcessedContentItem>
         {
-            public string Resolve(ResolvedContentItemWrapper<DummyProcessedContentItem> wrapper)
+            public string Resolve(ResolvedContentItemData<DummyProcessedContentItem> data)
             {
-                return $"Text text brackets ( &lt; [ <span>{wrapper.Item.Value}</span><div></div>&amp; Some more text";
+                return $"Text text brackets ( &lt; [ <span>{data.Item.Value}</span><div></div>&amp; Some more text";
             }
         }
 
         private class ResolverReturningIncorrectHtml : IContentItemsInRichTextResolver<DummyProcessedContentItem>
         {
-            public string Resolve(ResolvedContentItemWrapper<DummyProcessedContentItem> wrapper)
+            public string Resolve(ResolvedContentItemData<DummyProcessedContentItem> data)
             {
                 return $"<span>Unclosed span tag";
             }
@@ -422,7 +422,7 @@ namespace KenticoCloud.Delivery.Tests
             {
                 _message = message;
             }
-            public string Resolve(ResolvedContentItemWrapper<object> item)
+            public string Resolve(ResolvedContentItemData<object> item)
             {
                 return _message;
             }
@@ -436,7 +436,7 @@ namespace KenticoCloud.Delivery.Tests
             {
                 _message = message;
             }
-            public string Resolve(ResolvedContentItemWrapper<UnretrievedContentItem> item)
+            public string Resolve(ResolvedContentItemData<UnretrievedContentItem> item)
             {
                 return _message;
             }
