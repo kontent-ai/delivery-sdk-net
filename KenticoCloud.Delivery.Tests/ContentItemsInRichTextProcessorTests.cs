@@ -1,11 +1,5 @@
-﻿using Newtonsoft.Json.Linq;
-using NUnit.Framework;
-using System;
+﻿using NUnit.Framework;
 using System.Collections.Generic;
-using System.Linq;
-using System.Security.Cryptography.X509Certificates;
-using AngleSharp.Dom;
-using AngleSharp.Parser.Html;
 using KenticoCloud.Delivery.ContentItemsInRichText;
 
 namespace KenticoCloud.Delivery.Tests
@@ -74,7 +68,7 @@ namespace KenticoCloud.Delivery.Tests
         }
 
         [Test]
-        public void NestedContentItemInRichTextIsProcessedByElementProcessor()
+        public void NestedContentItemInRichTextIsProcessedByValueProcessor()
         {
             var insertedContentName = "dummyCodename1";
             var insertedObject = GetContentItemObjectElement(insertedContentName);
@@ -98,11 +92,9 @@ namespace KenticoCloud.Delivery.Tests
         }
 
         [Test]
-        public void NestedContentItemInRichTextIsProcessedByValueProcessor()
+        public void NestedContentItemInRichTextIsProcessedByElementProcessor()
         {
             var insertedContentName = "dummyCodename1";
-
-
             var insertedObject = GetContentItemObjectElement(insertedContentName);
             var wrapperWithObject = WrapElementWithDivs(insertedObject);
             var plainRichText = $"<p>Lorem ipsum etc..<a>asdf</a>..</p>";
@@ -148,9 +140,9 @@ namespace KenticoCloud.Delivery.Tests
                 $"A documented high quality enables our unique, outside -in and customer-centric tailwinds.It's not about our targets. {insertedImage2} It's about infrastructures.";
 
             var expectedOutput =
-                $"Opting out of business line is not a choice. <div><span>{insertedDummyItem2Value}</span></div> A radical, unified, highly-curated and digitized realignment transfers a touchpoint. As a result, the attackers empower our well-planned brainstorming spaces. It's not about our evidence-based customer centricity. It's about brandings. <div><img src=\"{insertedImage1Source}\"></img></div> The project leader swiftly enhances market practices in the core. In the same time, an elite, siloed, breakthrough generates our value-added cross fertilization.\n" +
+                $"Opting out of business line is not a choice. <div><span>{insertedDummyItem2Value}</span></div> A radical, unified, highly-curated and digitized realignment transfers a touchpoint. As a result, the attackers empower our well-planned brainstorming spaces. It's not about our evidence-based customer centricity. It's about brandings. <div><img src=\"{insertedImage1Source}\"></div> The project leader swiftly enhances market practices in the core. In the same time, an elite, siloed, breakthrough generates our value-added cross fertilization.\n" +
                 $"Our pre-plan prioritizes the group.Our top-level, service - oriented, ingenuity leverages knowledge - based commitments.<span>{insertedDummyItem3Value}</span> The market thinker dramatically enforces our hands - on brainstorming spaces.Adaptability and skillset invigorate the game changers. <span>{insertedDummyItem1Value}</span> The thought leaders target a teamwork-oriented silo.\n" +
-                $"A documented high quality enables our unique, outside -in and customer-centric tailwinds.It's not about our targets. <img src=\"{insertedImage2Source}\"></img> It's about infrastructures.";
+                $"A documented high quality enables our unique, outside -in and customer-centric tailwinds.It's not about our targets. <img src=\"{insertedImage2Source}\"> It's about infrastructures.";
 
 
             var processedContentItems = new Dictionary<string, object>
@@ -197,7 +189,7 @@ namespace KenticoCloud.Delivery.Tests
                 $"A documented high quality enables our unique, outside -in and customer-centric tailwinds.It's not about our targets. {insertedImage2} It's about infrastructures.";
 
             var expectedOutput =
-                $"Opting out of business line is not a choice. <div>{unretrievedItemMessage}</div> A radical, unified, highly-curated and digitized realignment transfers a touchpoint. As a result, the attackers empower our well-planned brainstorming spaces. It's not about our evidence-based customer centricity. It's about brandings. <div><img src=\"{insertedImage1Source}\"></img></div> The project leader swiftly enhances market practices in the core. In the same time, an elite, siloed, breakthrough generates our value-added cross fertilization.\n" +
+                $"Opting out of business line is not a choice. <div>{unretrievedItemMessage}</div> A radical, unified, highly-curated and digitized realignment transfers a touchpoint. As a result, the attackers empower our well-planned brainstorming spaces. It's not about our evidence-based customer centricity. It's about brandings. <div><img src=\"{insertedImage1Source}\"></div> The project leader swiftly enhances market practices in the core. In the same time, an elite, siloed, breakthrough generates our value-added cross fertilization.\n" +
                 $"Our pre-plan prioritizes the group.Our top-level, service - oriented, ingenuity leverages knowledge - based commitments.<span>{insertedDummyItem3Value}</span> The market thinker dramatically enforces our hands - on brainstorming spaces.Adaptability and skillset invigorate the game changers. <span>{insertedDummyItem1Value}</span> The thought leaders target a teamwork-oriented silo.\n" +
                 $"A documented high quality enables our unique, outside -in and customer-centric tailwinds.It's not about our targets. {unretrievedItemMessage} It's about infrastructures.";
 
@@ -317,6 +309,53 @@ namespace KenticoCloud.Delivery.Tests
             Assert.AreEqual(plainRichText + $"<div>{message}</div>", result);
         }
 
+        [Test]
+        public void ResolverReturningMixedElementsAndTextIsProcessedCorrectly()
+        {
+            const string insertedContentName = "dummyCodename1";
+            var wrapperWithObject = GetContentItemObjectElement(insertedContentName);
+
+            var inputRichText = $"A hyper-hybrid socialization &amp; turbocharges adaptive {wrapperWithObject} frameworks by thinking outside of the box, while the support structures influence the mediators.";
+            const string insertedContentItemValue = "dummyValue";
+            var processedContentItems = new Dictionary<string, object>
+            {
+                {insertedContentName, new DummyProcessedContentItem() {Value = insertedContentItemValue}}
+            };
+            var contentItemResolver = new ResolverReturningTextAndElement();
+            var richTextProcessor = new ContentItemsInRichTextProcessor(null, null);
+            richTextProcessor.RegisterTypeResolver(contentItemResolver);
+
+            var result = richTextProcessor.Process(inputRichText, processedContentItems);
+
+            var expectedResults = $"A hyper-hybrid socialization &amp; turbocharges adaptive Text text brackets ( &lt; [ <span>{insertedContentItemValue}</span><div></div>&amp; Some more text frameworks by thinking outside of the box, while the support structures influence the mediators.";
+
+            Assert.AreEqual(expectedResults, result);
+        }
+
+        [Test]
+        public void ResolverReturningIncorrectHtmlReturnsErrorMessage()
+        {
+            const string insertedContentName = "dummyCodename1";
+            var wrapperWithObject = GetContentItemObjectElement(insertedContentName);
+
+            var inputRichText = $"A hyper-hybrid socialization &amp; turbocharges adaptive {wrapperWithObject} frameworks by thinking outside of the box, while the support structures influence the mediators.";
+            const string insertedContentItemValue = "dummyValue";
+            var processedContentItems = new Dictionary<string, object>
+            {
+                {insertedContentName, new DummyProcessedContentItem() {Value = insertedContentItemValue}}
+            };
+            var contentItemResolver = new ResolverReturningIncorrectHtml();
+            var richTextProcessor = new ContentItemsInRichTextProcessor(null, null);
+            richTextProcessor.RegisterTypeResolver(contentItemResolver);
+
+            var result = richTextProcessor.Process(inputRichText, processedContentItems);
+
+            var expectedResults = "A hyper-hybrid socialization &amp; turbocharges adaptive Error while parsing resolvers output for content type KenticoCloud.Delivery.Tests.ContentItemsInRichTextProcessorTests+DummyProcessedContentItem, codename dummyCodename1 at line 1, column 24 frameworks by thinking outside of the box, while the support structures influence the mediators.";
+
+            Assert.AreEqual(expectedResults, result);
+        }
+
+
         private class DummyResolver : IContentItemsInRichTextResolver<DummyProcessedContentItem>
         {
             public string Resolve(ResolvedContentItemWrapper<DummyProcessedContentItem> item)
@@ -356,6 +395,22 @@ namespace KenticoCloud.Delivery.Tests
             public string Resolve(ResolvedContentItemWrapper<DummyProcessedContentItem> wrapper)
             {
                 return $"<span>{wrapper.Item.Value}</span>";
+            }
+        }
+
+        private class ResolverReturningTextAndElement : IContentItemsInRichTextResolver<DummyProcessedContentItem>
+        {
+            public string Resolve(ResolvedContentItemWrapper<DummyProcessedContentItem> wrapper)
+            {
+                return $"Text text brackets ( &lt; [ <span>{wrapper.Item.Value}</span><div></div>&amp; Some more text";
+            }
+        }
+
+        private class ResolverReturningIncorrectHtml : IContentItemsInRichTextResolver<DummyProcessedContentItem>
+        {
+            public string Resolve(ResolvedContentItemWrapper<DummyProcessedContentItem> wrapper)
+            {
+                return $"<span>Unclosed span tag";
             }
         }
 

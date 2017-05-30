@@ -1,8 +1,11 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Runtime.InteropServices.ComTypes;
+using AngleSharp.Dom;
 using AngleSharp.Parser.Html;
 using AngleSharp.Parser.Xml;
+using AngleSharp.Services.Default;
 
 namespace KenticoCloud.Delivery.ContentItemsInRichText
 {
@@ -44,20 +47,24 @@ namespace KenticoCloud.Delivery.ContentItemsInRichText
             var modularContentItemsInRichText = htmlRichText.Body.GetElementsByTagName("object").Where(o => o.GetAttribute("type") == "application/kenticocloud" &&  o.GetAttribute("data-type") == "item").ToList();
             foreach (var modularContentItem in modularContentItemsInRichText)
             {
-                var wasResolved = usedContentItems.TryGetValue(modularContentItem.GetAttribute("data-codename"), out contentItem);
+                var codename = modularContentItem.GetAttribute("data-codename");
+                var wasResolved = usedContentItems.TryGetValue(codename, out contentItem);
                 if (wasResolved)
                 {
                     string replacement;
+                    Type contentType;
                     var unresolved = contentItem as UnretrievedContentItem;
                     if (unresolved != null)
                     {
+                        contentType = typeof(UnretrievedContentItem);
                         var wrapper = new ResolvedContentItemWrapper<UnretrievedContentItem> { Item = unresolved };
                         replacement = _unretrievedContentItemsInRichTextResolver.Resolve(wrapper);
                     }
                     else
                     {
+                        contentType = contentItem.GetType();
                         Func<object, string> resolver;
-                        if (_typeResolver.TryGetValue(contentItem.GetType(), out resolver))
+                        if (_typeResolver.TryGetValue(contentType, out resolver))
                         {
                             replacement = resolver(contentItem);
                         }
@@ -69,21 +76,24 @@ namespace KenticoCloud.Delivery.ContentItemsInRichText
                        
                     }
 
+                    try
+                    {
 
-                    var options = new XmlParserOptions()
-                    {
-                        IsSuppressingErrors = true
-                    };
-                    var xmlDocument = new XmlParser(options).Parse(replacement);
-                    if (xmlDocument.ChildNodes != null & xmlDocument.ChildNodes.Length != 0)
-                    {
-                        modularContentItem.Replace(xmlDocument.ChildNodes.ToArray());
+                        var options = new HtmlParserOptions()
+                        {
+                            IsStrictMode = true
+                        };
+                        var docs = new HtmlParser(options).ParseFragment(replacement, modularContentItem);
+                        modularContentItem.Replace(docs.ToArray());
                     }
-                    else
+                    catch (HtmlParseException exception)
                     {
-                        modularContentItem.Replace(xmlDocument.CreateTextNode(replacement));
+                        var textNodeWithError =
+                            htmlRichText.CreateTextNode($"Error while parsing resolvers output for content type {contentType}, codename {codename} at line {exception.Position.Line}, column {exception.Position.Column}");
+                        modularContentItem.Replace(textNodeWithError);
                     }
-                    ;
+
+                    
    
                 }
             }
