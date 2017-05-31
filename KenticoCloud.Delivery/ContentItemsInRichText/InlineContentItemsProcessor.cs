@@ -12,28 +12,28 @@ namespace KenticoCloud.Delivery.ContentItemsInRichText
     /// <summary>
     /// Processor responsible for parsing richtext elements and resolving content items referenced in them using provided resolvers.
     /// </summary>
-    public class ContentItemsInRichTextProcessor
+    public class InlineContentItemsProcessor
     {
         private readonly Dictionary<Type, Func<object, string>> _typeResolver;
 
-        private readonly IContentItemsInRichTextResolver<UnretrievedContentItem> _unretrievedContentItemsInRichTextResolver;
+        private readonly IInlineContentItemsResolver<UnretrievedContentItem> _unretrievedInlineContentItemsResolver;
 
         /// <summary>
         /// Resolver used in case we haven't registered other resolver for processed content type in richtext.
         /// </summary>
-        public IContentItemsInRichTextResolver<object> DefaultResolver;
+        public IInlineContentItemsResolver<object> DefaultResolver;
 
         /// <summary>
         /// Rich text output processor, going through HTML and replacing content items marked as object elements with output of resolvers.
         /// </summary>
         /// <param name="defaultResolver">Resolver used in case we haven't registered content type specific resolver.</param>
-        /// <param name="unretrievedContentItemsInRichTextResolver">Resolver whose output is used in case we haven't retrieved value of content item in richtext, 
+        /// <param name="unretrievedInlineContentItemsResolver">Resolver whose output is used in case we haven't retrieved value of content item in richtext, 
         /// this can happen if depth of client request is too low.</param>
-        public ContentItemsInRichTextProcessor(IContentItemsInRichTextResolver<object> defaultResolver, IContentItemsInRichTextResolver<UnretrievedContentItem> unretrievedContentItemsInRichTextResolver)
+        public InlineContentItemsProcessor(IInlineContentItemsResolver<object> defaultResolver, IInlineContentItemsResolver<UnretrievedContentItem> unretrievedInlineContentItemsResolver)
         {
             DefaultResolver = defaultResolver;
             _typeResolver = new Dictionary<Type, Func<object, string>>();
-            _unretrievedContentItemsInRichTextResolver = unretrievedContentItemsInRichTextResolver;
+            _unretrievedInlineContentItemsResolver = unretrievedInlineContentItemsResolver;
         }
 
         /// <summary>
@@ -47,8 +47,8 @@ namespace KenticoCloud.Delivery.ContentItemsInRichText
             object processedContentItem;
             var htmlRichText = new HtmlParser().Parse(value);
 
-            var contentItemsInRichText = GetContentItemsFromHtml(htmlRichText);
-            foreach (var contentItems in contentItemsInRichText)
+            var inlineContentItems = GetContentItemsFromHtml(htmlRichText);
+            foreach (var contentItems in inlineContentItems)
             {
                 var codename = contentItems.GetAttribute("data-codename");
                 var wasResolved = usedContentItems.TryGetValue(codename, out processedContentItem);
@@ -61,7 +61,7 @@ namespace KenticoCloud.Delivery.ContentItemsInRichText
                     {
                         contentType = typeof(UnretrievedContentItem);
                         var data = new ResolvedContentItemData<UnretrievedContentItem> { Item = unretrieved };
-                        replacement = _unretrievedContentItemsInRichTextResolver.Resolve(data);
+                        replacement = _unretrievedInlineContentItemsResolver.Resolve(data);
                     }
                     else
                     {
@@ -111,8 +111,8 @@ namespace KenticoCloud.Delivery.ContentItemsInRichText
         public string RemoveAll(string value)
         {
             var htmlRichText = new HtmlParser().Parse(value);
-            List<IElement> contentItemsInRichText = GetContentItemsFromHtml(htmlRichText);
-            foreach (var contentItem in contentItemsInRichText)
+            List<IElement> inlineContentItems = GetContentItemsFromHtml(htmlRichText);
+            foreach (var contentItem in inlineContentItems)
             {
                 contentItem.Remove();
             }
@@ -129,7 +129,7 @@ namespace KenticoCloud.Delivery.ContentItemsInRichText
         /// </summary>
         /// <param name="resolver">Method which is used for specific content type as resolver.</param>
         /// <typeparam name="T">Content type which is resolver resolving.</typeparam>
-        public void RegisterTypeResolver<T>(IContentItemsInRichTextResolver<T> resolver)
+        public void RegisterTypeResolver<T>(IInlineContentItemsResolver<T> resolver)
         {
             _typeResolver.Add(typeof(T), x => resolver.Resolve(new ResolvedContentItemData<T> { Item = (T)x }));
         }

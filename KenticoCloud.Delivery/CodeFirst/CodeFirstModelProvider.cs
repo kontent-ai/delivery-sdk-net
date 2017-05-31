@@ -109,7 +109,7 @@ namespace KenticoCloud.Delivery
                                     links);
                             }
 
-                            if (modularContentInRichText != null && _client.ContentItemsInRichTextProcessor != null)
+                            if (modularContentInRichText != null && _client.InlineContentItemsProcessor != null)
                             {
                                 richTextPropertiesToBeProcessed.Add(property);  //At this point we're pretty sure it's richtext because it contains modular content
                             }
@@ -201,8 +201,10 @@ namespace KenticoCloud.Delivery
                 };
                 if (currentlyResolvedRichStrings.Contains(currentlyProcessedString))
                 {
-                    value = RemoveContentItemsFromRichText(value);     //In case we've stumbled upon an element which is already being processed, we need to use it as 
-                                                                                //is (therefore removing content items) to prevent circular dependency
+                    //In case we've stumbled upon an element which is already being processed, we need to use it as 
+                    //is (therefore removing content items) to prevent circular dependency
+                    value = RemoveContentItemsFromRichText(value);     
+                                                                       
                 }
                 else
                 {
@@ -228,8 +230,10 @@ namespace KenticoCloud.Delivery
             foreach (var codenameUsed in usedCodenames)
             {
                 object contentItem;
-                if (processedItems.ContainsKey(codenameUsed) && currentlyResolvedRichStrings.All(x => x.ContentItemCodeName != codenameUsed))   // This is to reuse content items which were processed already, but not those 
-                                                                                                                                                // that are calling this resolver as they  are may contain unprocessed rich text elements
+                // This is to reuse content items which were processed already, but not those 
+                // that are calling this resolver as they  may contain unprocessed rich text elements
+                if (processedItems.ContainsKey(codenameUsed) && currentlyResolvedRichStrings.All(x => x.ContentItemCodeName != codenameUsed))  
+                                                                                                                                               
                 {
                     contentItem = processedItems[codenameUsed];
                 }
@@ -254,7 +258,7 @@ namespace KenticoCloud.Delivery
                 }
                 contentItemsInRichText.Add(codenameUsed, contentItem);
             }
-            value = _client.ContentItemsInRichTextProcessor.Process(value, contentItemsInRichText);
+            value = _client.InlineContentItemsProcessor.Process(value, contentItemsInRichText);
 
             return value;
         }
@@ -262,7 +266,7 @@ namespace KenticoCloud.Delivery
 
         private string RemoveContentItemsFromRichText(string value)
         {
-            return _client.ContentItemsInRichTextProcessor.RemoveAll(value);
+            return _client.InlineContentItemsProcessor.RemoveAll(value);
         }
     }
 }

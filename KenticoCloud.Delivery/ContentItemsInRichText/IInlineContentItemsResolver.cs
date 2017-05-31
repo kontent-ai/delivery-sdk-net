@@ -5,7 +5,7 @@
         
     }
 
-    public interface IContentItemsInRichTextResolver<T> : IContentItemsInRichTextResolver
+    public interface IInlineContentItemsResolver<T> : IContentItemsInRichTextResolver
     {
         string Resolve(ResolvedContentItemData<T> data);
     }

@@ -12,101 +12,101 @@ namespace KenticoCloud.Delivery.Tests
         private const string ContentItemDataType = "item";
 
         [Test]
-        public void ProcessedRichTextIsSameIfNoContentItemsAreIncluded()
+        public void ProcessedHtmlIsSameIfNoContentItemsAreIncluded()
         {
-            var richText = $"<p>Lorem ipsum etc..<a>asdf</a>..</p>";
-            var richTextProcessor = new ContentItemsInRichTextProcessor(null, null);
+            var inputHtml = $"<p>Lorem ipsum etc..<a>asdf</a>..</p>";
+            var inlineContentItemsProcessor = new InlineContentItemsProcessor(null, null);
             var processedContentItems = new Dictionary<string, object>();
 
-            var result = richTextProcessor.Process(richText, processedContentItems);
+            var result = inlineContentItemsProcessor.Process(inputHtml, processedContentItems);
 
-            Assert.AreEqual(richText, result);
+            Assert.AreEqual(inputHtml, result);
         }
 
         [Test]
-        public void ProcessedRichTextContentItemsAreProcessedByDummyProcessor()
+        public void ProcessedHtmlContentItemsAreProcessedByDummyProcessor()
         {
             var insertedContentName1 = "dummyCodename1";
             var insertedContentName2 = "dummyCodename2";
             var insertedObject1 = GetContentItemObjectElement(insertedContentName1);
             var insertedObject2 = GetContentItemObjectElement(insertedContentName2);
-            var plainRichText = $"<p>Lorem ipsum etc..<a>asdf</a>..</p>";
-            var input = insertedObject1 + plainRichText + insertedObject2;
+            var plainHtml = $"<p>Lorem ipsum etc..<a>asdf</a>..</p>";
+            var input = insertedObject1 + plainHtml + insertedObject2;
             var contentItemResolver = new DummyResolver();
-            var richTextProcessor = new ContentItemsInRichTextProcessor(null, null);
-            richTextProcessor.RegisterTypeResolver(contentItemResolver);
+            var inlineContentItemsProcessor = new InlineContentItemsProcessor(null, null);
+            inlineContentItemsProcessor.RegisterTypeResolver(contentItemResolver);
             var processedContentItems = new Dictionary<string, object>() {{insertedContentName1, new DummyProcessedContentItem()}, {insertedContentName2, new DummyProcessedContentItem()} };
 
-            var result = richTextProcessor.Process(input, processedContentItems);
+            var result = inlineContentItemsProcessor.Process(input, processedContentItems);
 
-            Assert.AreEqual(plainRichText, result);
+            Assert.AreEqual(plainHtml, result);
         }
 
         [Test]
-        public void NestedContentItemInRichTextIsProcessedByDummyProcessor()
+        public void NestedContentItemInHtmlIsProcessedByDummyProcessor()
         {
             var insertedContentName = "dummyCodename1";
             string wrapperWithObject = WrapElementWithDivs(GetContentItemObjectElement(insertedContentName));
-            var plainRichText = $"<p>Lorem ipsum etc..<a>asdf</a>..</p>";
-            var richTextWithWrapper = plainRichText + wrapperWithObject;
+            var plainHtml = $"<p>Lorem ipsum etc..<a>asdf</a>..</p>";
+            var input = plainHtml + wrapperWithObject;
             var processedContentItems = new Dictionary<string, object>()
             {
                 {insertedContentName, new DummyProcessedContentItem()}
             };
             var contentItemResolver = new DummyResolver();
-            var richTextProcessor = new ContentItemsInRichTextProcessor(null, null);
-            richTextProcessor.RegisterTypeResolver(contentItemResolver);
+            var inlineContentItemsProcessor = new InlineContentItemsProcessor(null, null);
+            inlineContentItemsProcessor.RegisterTypeResolver(contentItemResolver);
 
-            var result = richTextProcessor.Process(richTextWithWrapper, processedContentItems);
+            var result = inlineContentItemsProcessor.Process(input, processedContentItems);
 
-            Assert.AreEqual(plainRichText + WrapElementWithDivs(string.Empty), result);
+            Assert.AreEqual(plainHtml + WrapElementWithDivs(string.Empty), result);
             Assert.AreEqual(1, contentItemResolver.callsForResolve);
 
         }
 
         [Test]
-        public void NestedContentItemInRichTextIsProcessedByValueProcessor()
+        public void NestedContentItemInHtmlIsProcessedByValueProcessor()
         {
             var insertedContentName = "dummyCodename1";
             string wrapperWithObject = WrapElementWithDivs(GetContentItemObjectElement(insertedContentName));
             const string insertedContentItemValue = "dummyValue";
-            var plainRichText = $"<p>Lorem ipsum etc..<a>asdf</a>..</p>";
-            var richTextWithWrapper = plainRichText + wrapperWithObject;
+            var plainHtml = $"<p>Lorem ipsum etc..<a>asdf</a>..</p>";
+            var input = plainHtml + wrapperWithObject;
             var processedContentItems = new Dictionary<string, object>
             {
                 {insertedContentName, new DummyProcessedContentItem() {Value = insertedContentItemValue} }
             };
             var contentItemResolver = new ResolverReturningValue();
-            var richTextProcessor = new ContentItemsInRichTextProcessor(null, null);
-            richTextProcessor.RegisterTypeResolver(contentItemResolver);
+            var inlineContentItemsProcessor = new InlineContentItemsProcessor(null, null);
+            inlineContentItemsProcessor.RegisterTypeResolver(contentItemResolver);
 
 
-            var result = richTextProcessor.Process(richTextWithWrapper, processedContentItems);
+            var result = inlineContentItemsProcessor.Process(input, processedContentItems);
 
-            Assert.AreEqual(plainRichText + WrapElementWithDivs(insertedContentItemValue), result);
+            Assert.AreEqual(plainHtml + WrapElementWithDivs(insertedContentItemValue), result);
 
         }
 
         [Test]
-        public void NestedContentItemInRichTextIsProcessedByElementProcessor()
+        public void NestedContentItemInHtmlIsProcessedByElementProcessor()
         {
             var insertedContentName = "dummyCodename1";
             var wrapperWithObject = WrapElementWithDivs(GetContentItemObjectElement(insertedContentName));
-            var plainRichText = $"<p>Lorem ipsum etc..<a>asdf</a>..</p>";
-            var richTextWithWrapper = plainRichText + wrapperWithObject;
+            var plainHtml = $"<p>Lorem ipsum etc..<a>asdf</a>..</p>";
+            var input = plainHtml + wrapperWithObject;
             const string insertedContentItemValue = "dummyValue";
             var processedContentItems = new Dictionary<string, object>
             {
                 {insertedContentName, new DummyProcessedContentItem() {Value = insertedContentItemValue}}
             };
             var contentItemResolver = new ResolverReturningElement();
-            var richTextProcessor = new ContentItemsInRichTextProcessor(null, null);
-            richTextProcessor.RegisterTypeResolver(contentItemResolver);
+            var inlineContentItemsProcessor = new InlineContentItemsProcessor(null, null);
+            inlineContentItemsProcessor.RegisterTypeResolver(contentItemResolver);
 
-            var result = richTextProcessor.Process(richTextWithWrapper, processedContentItems);
+            var result = inlineContentItemsProcessor.Process(input, processedContentItems);
 
             var expectedElement = $"<span>{insertedContentItemValue}</span>";
-            Assert.AreEqual(plainRichText + WrapElementWithDivs(expectedElement), result);
+            Assert.AreEqual(plainHtml + WrapElementWithDivs(expectedElement), result);
         }
 
         [Test]
@@ -129,7 +129,7 @@ namespace KenticoCloud.Delivery.Tests
             var insertedDummyItem2 = WrapElementWithDivs(GetContentItemObjectElement(insertedDummyItem2CodeName));
             var insertedDummyItem3 = GetContentItemObjectElement(insertedDummyItem3CodeName);
 
-            var richTextInput =
+            var htmlInput =
                 $"Opting out of business line is not a choice. {insertedDummyItem2} A radical, unified, highly-curated and" +
                 $" digitized realignment transfers a touchpoint. As a result, the attackers empower our well-planned" +
                 $" brainstorming spaces. It's not about our evidence-based customer centricity. It's about brandings." +
@@ -164,11 +164,11 @@ namespace KenticoCloud.Delivery.Tests
                 {insertedDummyItem2CodeName, new DummyProcessedContentItem() {Value = insertedDummyItem2Value}},
                 {insertedDummyItem3CodeName, new DummyProcessedContentItem() {Value = insertedDummyItem3Value}},
             };
-            var richTextProcessor = new ContentItemsInRichTextProcessor(null, null);
-            richTextProcessor.RegisterTypeResolver(new ResolverReturningElement());
-            richTextProcessor.RegisterTypeResolver(new DummyImageResolver());
+            var inlineContentItemsProcessor = new InlineContentItemsProcessor(null, null);
+            inlineContentItemsProcessor.RegisterTypeResolver(new ResolverReturningElement());
+            inlineContentItemsProcessor.RegisterTypeResolver(new DummyImageResolver());
 
-            var result = richTextProcessor.Process(richTextInput, processedContentItems);
+            var result = inlineContentItemsProcessor.Process(htmlInput, processedContentItems);
 
             Assert.AreEqual(expectedOutput, result);
         }
@@ -194,7 +194,7 @@ namespace KenticoCloud.Delivery.Tests
             var insertedDummyItem2 = WrapElementWithDivs(GetContentItemObjectElement(insertedDummyItem2CodeName));
             var insertedDummyItem3 = GetContentItemObjectElement(insertedDummyItem3CodeName);
 
-            var richTextInput =
+            var htmlInput =
                 $"Opting out of business line is not a choice. {insertedDummyItem2} A radical, unified, highly-curated and" +
                 $" digitized realignment transfers a touchpoint. As a result, the attackers empower our well-planned" +
                 $" brainstorming spaces. It's not about our evidence-based customer centricity. It's about brandings." +
@@ -229,12 +229,12 @@ namespace KenticoCloud.Delivery.Tests
                 {insertedDummyItem2CodeName, new UnretrievedContentItem()},
                 {insertedDummyItem3CodeName, new DummyProcessedContentItem() {Value = insertedDummyItem3Value}},
             };
-            var unretrievedContentItemsInRichTextResolver = new UnretrievedItemsMessageReturningResolver(unretrievedItemMessage);
-            var richTextProcessor = new ContentItemsInRichTextProcessor(null, unretrievedContentItemsInRichTextResolver);
-            richTextProcessor.RegisterTypeResolver(new ResolverReturningElement());
-            richTextProcessor.RegisterTypeResolver(new DummyImageResolver());
+            var unretrievedInlineContentItemsResolver = new UnretrievedItemsMessageReturningResolver(unretrievedItemMessage);
+            var inlineContentItemsProcessor = new InlineContentItemsProcessor(null, unretrievedInlineContentItemsResolver);
+            inlineContentItemsProcessor.RegisterTypeResolver(new ResolverReturningElement());
+            inlineContentItemsProcessor.RegisterTypeResolver(new DummyImageResolver());
 
-            var result = richTextProcessor.Process(richTextInput, processedContentItems);
+            var result = inlineContentItemsProcessor.Process(htmlInput, processedContentItems);
 
             Assert.AreEqual(expectedOutput, result);
         }
@@ -260,7 +260,7 @@ namespace KenticoCloud.Delivery.Tests
             var insertedDummyItem2 = WrapElementWithDivs(GetContentItemObjectElement(insertedDummyItem2CodeName));
             var insertedDummyItem3 = GetContentItemObjectElement(insertedDummyItem3CodeName);
 
-            var richTextInput =
+            var htmlInput =
                 $"Opting out of business line is not a choice. {insertedDummyItem2} A radical, unified, highly-curated and" +
                 $" digitized realignment transfers a touchpoint. As a result, the attackers empower our well-planned" +
                 $" brainstorming spaces. It's not about our evidence-based customer centricity. It's about brandings. {insertedImage1}" +
@@ -295,13 +295,13 @@ namespace KenticoCloud.Delivery.Tests
                 {insertedDummyItem2CodeName, new UnretrievedContentItem()},
                 {insertedDummyItem3CodeName, new DummyProcessedContentItem() {Value = insertedDummyItem3Value}},
             };
-            var unretrievedContentItemsInRichTextResolver = new UnretrievedItemsMessageReturningResolver(unretrievedItemMessage);
+            var unretrievedInlineContentItemsResolver = new UnretrievedItemsMessageReturningResolver(unretrievedItemMessage);
             var defaultResolver = new MessageReturningResolver(defaultResolverMessage);
-            var richTextProcessor = new ContentItemsInRichTextProcessor(defaultResolver, unretrievedContentItemsInRichTextResolver);
-            richTextProcessor.RegisterTypeResolver(new ResolverReturningElement());
+            var inlineContentItemsProcessor = new InlineContentItemsProcessor(defaultResolver, unretrievedInlineContentItemsResolver);
+            inlineContentItemsProcessor.RegisterTypeResolver(new ResolverReturningElement());
 
 
-            var result = richTextProcessor.Process(richTextInput, processedContentItems);
+            var result = inlineContentItemsProcessor.Process(htmlInput, processedContentItems);
 
             Assert.AreEqual(expectedOutput, result);
         }
@@ -314,18 +314,18 @@ namespace KenticoCloud.Delivery.Tests
             const string message = "Unretrieved item detected";
             var insertedObject = GetContentItemObjectElement(insertedContentName);
             var wrapperWithObject = WrapElementWithDivs(insertedObject);
-            var plainRichText = "<p>Lorem ipsum etc..<a>asdf</a>..</p>";
-            var richTextWithWrapper = plainRichText + wrapperWithObject;
+            var plainHtml = "<p>Lorem ipsum etc..<a>asdf</a>..</p>";
+            var input = plainHtml + wrapperWithObject;
             var processedContentItems = new Dictionary<string, object>
             {
                 {insertedContentName, new UnretrievedContentItem()}
             };
             var unresolvedContentItemResolver = new UnretrievedItemsMessageReturningResolver(message);
-            var richTextProcessor = new ContentItemsInRichTextProcessor(null, unresolvedContentItemResolver);
+            var inlineContentItemsProcessor = new InlineContentItemsProcessor(null, unresolvedContentItemResolver);
 
-            var result = richTextProcessor.Process(richTextWithWrapper, processedContentItems);
+            var result = inlineContentItemsProcessor.Process(input, processedContentItems);
 
-            Assert.AreEqual(plainRichText + $"<div>{message}</div>", result);
+            Assert.AreEqual(plainHtml + $"<div>{message}</div>", result);
         }
 
 
@@ -336,20 +336,20 @@ namespace KenticoCloud.Delivery.Tests
             const string insertedContentName = "dummyCodename1";
             const string message = "Default handler";
             var wrapperWithObject = WrapElementWithDivs(GetContentItemObjectElement(insertedContentName));
-            var plainRichText = "<p>Lorem ipsum etc..<a>asdf</a>..</p>";
-            var richTextWithWrapper = plainRichText + wrapperWithObject;
+            var plainHtml = "<p>Lorem ipsum etc..<a>asdf</a>..</p>";
+            var input = plainHtml + wrapperWithObject;
             var processedContentItems = new Dictionary<string, object>
             {
                 {insertedContentName, new DummyProcessedContentItem()}
             };
             var differentResolver = new MessageReturningResolver("this should not appear");
             var defaultResolver = new MessageReturningResolver(message);
-            var richTextProcessor = new ContentItemsInRichTextProcessor(defaultResolver, null);
-            richTextProcessor.RegisterTypeResolver(differentResolver);
+            var inlineContentItemsProcessor = new InlineContentItemsProcessor(defaultResolver, null);
+            inlineContentItemsProcessor.RegisterTypeResolver(differentResolver);
 
-            var result = richTextProcessor.Process(richTextWithWrapper, processedContentItems);
+            var result = inlineContentItemsProcessor.Process(input, processedContentItems);
 
-            Assert.AreEqual(plainRichText + $"<div>{message}</div>", result);
+            Assert.AreEqual(plainHtml + $"<div>{message}</div>", result);
         }
 
         [Test]
@@ -358,17 +358,17 @@ namespace KenticoCloud.Delivery.Tests
             const string insertedContentName = "dummyCodename1";
             var wrapperWithObject = GetContentItemObjectElement(insertedContentName);
 
-            var inputRichText = $"A hyper-hybrid socialization &amp; turbocharges adaptive {wrapperWithObject} frameworks by thinking outside of the box, while the support structures influence the mediators.";
+            var inputHtml = $"A hyper-hybrid socialization &amp; turbocharges adaptive {wrapperWithObject} frameworks by thinking outside of the box, while the support structures influence the mediators.";
             const string insertedContentItemValue = "dummyValue";
             var processedContentItems = new Dictionary<string, object>
             {
                 {insertedContentName, new DummyProcessedContentItem() {Value = insertedContentItemValue}}
             };
             var contentItemResolver = new ResolverReturningTextAndElement();
-            var richTextProcessor = new ContentItemsInRichTextProcessor(null, null);
-            richTextProcessor.RegisterTypeResolver(contentItemResolver);
+            var inlineContentItemsProcessor = new InlineContentItemsProcessor(null, null);
+            inlineContentItemsProcessor.RegisterTypeResolver(contentItemResolver);
 
-            var result = richTextProcessor.Process(inputRichText, processedContentItems);
+            var result = inlineContentItemsProcessor.Process(inputHtml, processedContentItems);
 
             var expectedResults = $"A hyper-hybrid socialization &amp; turbocharges adaptive Text text brackets ( &lt; [ <span>{insertedContentItemValue}</span><div></div>&amp; Some more text frameworks by thinking outside of the box, while the support structures influence the mediators.";
 
@@ -381,17 +381,17 @@ namespace KenticoCloud.Delivery.Tests
             const string insertedContentName = "dummyCodename1";
             var wrapperWithObject = GetContentItemObjectElement(insertedContentName);
 
-            var inputRichText = $"A hyper-hybrid socialization &amp; turbocharges adaptive {wrapperWithObject} frameworks by thinking outside of the box, while the support structures influence the mediators.";
+            var inputHtml = $"A hyper-hybrid socialization &amp; turbocharges adaptive {wrapperWithObject} frameworks by thinking outside of the box, while the support structures influence the mediators.";
             const string insertedContentItemValue = "dummyValue";
             var processedContentItems = new Dictionary<string, object>
             {
                 {insertedContentName, new DummyProcessedContentItem() {Value = insertedContentItemValue}}
             };
             var contentItemResolver = new ResolverReturningIncorrectHtml();
-            var richTextProcessor = new ContentItemsInRichTextProcessor(null, null);
-            richTextProcessor.RegisterTypeResolver(contentItemResolver);
+            var inlineContentItemsProcessor = new InlineContentItemsProcessor(null, null);
+            inlineContentItemsProcessor.RegisterTypeResolver(contentItemResolver);
 
-            var result = richTextProcessor.Process(inputRichText, processedContentItems);
+            var result = inlineContentItemsProcessor.Process(inputHtml, processedContentItems);
 
             var expectedResults = "A hyper-hybrid socialization &amp; turbocharges adaptive Error while parsing resolvers output for content type KenticoCloud.Delivery.Tests.ContentItemsInRichTextProcessorTests+DummyProcessedContentItem, codename dummyCodename1 at line 1, column 24. frameworks by thinking outside of the box, while the support structures influence the mediators.";
 
@@ -399,7 +399,7 @@ namespace KenticoCloud.Delivery.Tests
         }
 
         [Test]
-        public void ContentItemInRichTextRemovesAllContentItems()
+        public void ProcessorRemoveAllRemovesAllInlineContentItems()
         {
             const string insertedImage1CodeName = "image1";
             const string insertedImage2CodeName = "image2";
@@ -413,7 +413,7 @@ namespace KenticoCloud.Delivery.Tests
             var insertedDummyItem2 = WrapElementWithDivs(GetContentItemObjectElement(insertedDummyItem2CodeName));
             var insertedDummyItem3 = GetContentItemObjectElement(insertedDummyItem3CodeName);
 
-            var richTextInput =
+            var htmlInput =
                 $"Opting out of business line is not a choice. {insertedDummyItem2} A radical, unified, highly-curated and" +
                 $" digitized realignment transfers a touchpoint. As a result, the attackers empower our well-planned" +
                 $" brainstorming spaces. It's not about our evidence-based customer centricity. It's about brandings. {insertedImage1}" +
@@ -437,9 +437,9 @@ namespace KenticoCloud.Delivery.Tests
                 $" The thought leaders target a teamwork-oriented silo.\n" +
                 $"A documented high quality enables our unique, outside -in and customer-centric tailwinds." +
                 $"It's not about our targets.  It's about infrastructures.";
-            var processor = new ContentItemsInRichTextProcessor(null, null);
+            var processor = new InlineContentItemsProcessor(null, null);
 
-            var result = processor.RemoveAll(richTextInput);
+            var result = processor.RemoveAll(htmlInput);
 
             Assert.AreEqual(expectedOutput, result);
 
@@ -447,7 +447,7 @@ namespace KenticoCloud.Delivery.Tests
 
 
 
-        private class DummyResolver : IContentItemsInRichTextResolver<DummyProcessedContentItem>
+        private class DummyResolver : IInlineContentItemsResolver<DummyProcessedContentItem>
         {
             public int callsForResolve;
             public string Resolve(ResolvedContentItemData<DummyProcessedContentItem> item)
@@ -467,7 +467,7 @@ namespace KenticoCloud.Delivery.Tests
             public string Source { get; set; }
         }
 
-        private class ResolverReturningValue : IContentItemsInRichTextResolver<DummyProcessedContentItem>
+        private class ResolverReturningValue : IInlineContentItemsResolver<DummyProcessedContentItem>
         {
             public string Resolve(ResolvedContentItemData<DummyProcessedContentItem> data)
             {
@@ -475,7 +475,7 @@ namespace KenticoCloud.Delivery.Tests
             }
         }
 
-        private class DummyImageResolver : IContentItemsInRichTextResolver<DummyImageContentItem>
+        private class DummyImageResolver : IInlineContentItemsResolver<DummyImageContentItem>
         {
             public string Resolve(ResolvedContentItemData<DummyImageContentItem> data)
             {
@@ -483,7 +483,7 @@ namespace KenticoCloud.Delivery.Tests
             }
         }
 
-        private class ResolverReturningElement : IContentItemsInRichTextResolver<DummyProcessedContentItem>
+        private class ResolverReturningElement : IInlineContentItemsResolver<DummyProcessedContentItem>
         {
             public string Resolve(ResolvedContentItemData<DummyProcessedContentItem> data)
             {
@@ -491,7 +491,7 @@ namespace KenticoCloud.Delivery.Tests
             }
         }
 
-        private class ResolverReturningTextAndElement : IContentItemsInRichTextResolver<DummyProcessedContentItem>
+        private class ResolverReturningTextAndElement : IInlineContentItemsResolver<DummyProcessedContentItem>
         {
             public string Resolve(ResolvedContentItemData<DummyProcessedContentItem> data)
             {
@@ -499,7 +499,7 @@ namespace KenticoCloud.Delivery.Tests
             }
         }
 
-        private class ResolverReturningIncorrectHtml : IContentItemsInRichTextResolver<DummyProcessedContentItem>
+        private class ResolverReturningIncorrectHtml : IInlineContentItemsResolver<DummyProcessedContentItem>
         {
             public string Resolve(ResolvedContentItemData<DummyProcessedContentItem> data)
             {
@@ -507,7 +507,7 @@ namespace KenticoCloud.Delivery.Tests
             }
         }
 
-        private class MessageReturningResolver : IContentItemsInRichTextResolver<object>
+        private class MessageReturningResolver : IInlineContentItemsResolver<object>
         {
             private readonly string _message;
 
@@ -521,7 +521,7 @@ namespace KenticoCloud.Delivery.Tests
             }
         }
 
-        private class UnretrievedItemsMessageReturningResolver : IContentItemsInRichTextResolver<UnretrievedContentItem>
+        private class UnretrievedItemsMessageReturningResolver : IInlineContentItemsResolver<UnretrievedContentItem>
         {
             private readonly string _message;
 

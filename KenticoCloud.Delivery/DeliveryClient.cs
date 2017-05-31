@@ -23,7 +23,7 @@ namespace KenticoCloud.Delivery
         /// <summary>
         /// Richtext content items processor for content items retrieved using this client.
         /// </summary>
-        public ContentItemsInRichTextProcessor ContentItemsInRichTextProcessor { get; private set; }
+        public InlineContentItemsProcessor InlineContentItemsProcessor { get; private set; }
 
         private ContentLinkResolver _linkResolver;
         private ICodeFirstModelProvider _codeFirstModelProvider;
@@ -83,9 +83,9 @@ namespace KenticoCloud.Delivery
             }
             _urlBuilder = new DeliveryEndpointUrlBuilder(projectId);
             _httpClient = new HttpClient();
-            var unretrievedContentItemsInRichTextResolver = new ReplaceWithEmptyStringForUnretrievedItemsResolver();
-            var contentItemsInRichTextDefaultResolver = new ReplaceWithEmptyStringResolver();
-            ContentItemsInRichTextProcessor = new ContentItemsInRichTextProcessor(contentItemsInRichTextDefaultResolver, unretrievedContentItemsInRichTextResolver);
+            var unretrievedInlineContentItemsResolver = new ReplaceWithEmptyStringForUnretrievedItemsResolver();
+            var defaultInlineContentItemsResolver = new ReplaceWithEmptyStringResolver();
+            InlineContentItemsProcessor = new InlineContentItemsProcessor(defaultInlineContentItemsResolver, unretrievedInlineContentItemsResolver);
         }
 
         /// <summary>
@@ -122,9 +122,9 @@ namespace KenticoCloud.Delivery
             _urlBuilder = new DeliveryEndpointUrlBuilder(projectId, previewApiKey);
             _httpClient = new HttpClient();
             _httpClient.DefaultRequestHeaders.Add("Authorization", string.Format("Bearer {0}", previewApiKey));
-            var unretrievedContentItemsInRichTextResolver = new ReplaceWithWarningAboutUnretrievedItemResolver();
-            var contentItemsInRichTextDefaultResolver = new ReplaceWithWarningAboutRegistrationResolver();
-            ContentItemsInRichTextProcessor = new ContentItemsInRichTextProcessor(contentItemsInRichTextDefaultResolver, unretrievedContentItemsInRichTextResolver);
+            var unretrievedInlineContentItemsResolver = new ReplaceWithWarningAboutUnretrievedItemResolver();
+            var defaultInlineContentItemsResolver = new ReplaceWithWarningAboutRegistrationResolver();
+            InlineContentItemsProcessor = new InlineContentItemsProcessor(defaultInlineContentItemsResolver, unretrievedInlineContentItemsResolver);
         }
 
         /// <summary>
