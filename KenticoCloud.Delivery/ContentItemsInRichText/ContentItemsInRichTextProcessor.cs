@@ -103,7 +103,12 @@ namespace KenticoCloud.Delivery.ContentItemsInRichText
             return htmlRichText.Body.InnerHtml;
         }
 
-        public string Remove(string value)
+        /// <summary>
+        /// Removes all content items from given rich text element content.
+        /// </summary>
+        /// <param name="value">Rich text element content, expected to be HTML.</param>
+        /// <returns></returns>
+        public string RemoveAll(string value)
         {
             var htmlRichText = new HtmlParser().Parse(value);
 

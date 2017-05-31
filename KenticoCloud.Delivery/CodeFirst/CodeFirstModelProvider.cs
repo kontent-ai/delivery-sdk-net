@@ -52,7 +52,7 @@ namespace KenticoCloud.Delivery
         {
             processedItems = processedItems ?? new Dictionary<string, object>();
             currentlyResolvedRichStrings = currentlyResolvedRichStrings ?? new HashSet<StringContentItems>();
-            var stringPropertiesToBeProcessed = new List<PropertyInfo>();
+            var richTextPropertiesToBeProcessed = new List<PropertyInfo>();
             var system = item["system"].ToObject<ContentItemSystemAttributes>();
 
             if (t == typeof(object))
@@ -109,8 +109,7 @@ namespace KenticoCloud.Delivery
 
                             if (modularContentInRichText != null && _client.ContentItemsInRichTextProcessor != null)
                             {
-                                stringPropertiesToBeProcessed.Add(property); 
-                                
+                                richTextPropertiesToBeProcessed.Add(property);  //At this point we're pretty sure it's richtext because it contains modular content
                             }
                             
                         }
@@ -183,7 +182,7 @@ namespace KenticoCloud.Delivery
                 }
             }
 
-            foreach (var property in stringPropertiesToBeProcessed)
+            foreach (var property in richTextPropertiesToBeProcessed)
             {
                 var value = property.GetValue(instance);
                 var propValue = ((JObject)item["elements"]).Properties()
@@ -193,7 +192,6 @@ namespace KenticoCloud.Delivery
                 var modularContentInRichText =
                                 ((JObject)propValue?.Parent?.Parent)?.Property("modular_content")?.Value;
 
-                // Handle rich_text link resolution
                 var currentlyProcessedString = new StringContentItems()
                 {
                     ContentItemCodename = system.Codename,
@@ -201,7 +199,8 @@ namespace KenticoCloud.Delivery
                 };
                 if (currentlyResolvedRichStrings.Contains(currentlyProcessedString))
                 {
-                    value = RemoveContentItemsFromRichText((string) value);
+                    value = RemoveContentItemsFromRichText((string) value);     //In case we've stumbled upon an element which is already being processed, we need to use it as 
+                                                                                //is (therefore removing content items) to prevent circular dependency
                 }
                 else
                 {
@@ -222,45 +221,43 @@ namespace KenticoCloud.Delivery
 
         private object ProcessContentItemsInRichText(JToken modularContent, Dictionary<string, object> processedItems, string value, JToken modularContentInRichText, HashSet<StringContentItems> currentlyResolvedRichStrings)
         {
-            if (modularContentInRichText != null && _client.ContentItemsInRichTextProcessor != null)
-            {
-                var usedCodenames = Newtonsoft.Json.JsonConvert.DeserializeObject<IEnumerable<string>>(modularContentInRichText.ToString());
-                var contentItemsInRichText = new Dictionary<string, object>();
+            var usedCodenames = Newtonsoft.Json.JsonConvert.DeserializeObject<IEnumerable<string>>(modularContentInRichText.ToString());
+            var contentItemsInRichText = new Dictionary<string, object>();
                 
-                foreach (var codenameUsed in usedCodenames)
+            foreach (var codenameUsed in usedCodenames)
+            {
+                object contentItem;
+                if (processedItems.ContainsKey(codenameUsed) && currentlyResolvedRichStrings.All(x => x.ContentItemCodename != codenameUsed))   // This is to reuse content items which were processed already, but not those 
+                                                                                                                                                // that are calling this resolver as they  are may contain unprocessed rich text elements
                 {
-                    object contentItem;
-                    if (processedItems.ContainsKey(codenameUsed) && currentlyResolvedRichStrings.All(x => x.ContentItemCodename != codenameUsed))
+                    contentItem = processedItems[codenameUsed];
+                }
+                else
+                {
+                    var modularContentNode = (JObject)modularContent;
+                    var modularContentItemNode =
+                        modularContentNode.Properties()
+                            .FirstOrDefault(p => p.Name == codenameUsed)?.First;
+                    if (modularContentItemNode != null)
                     {
-                        // Avoid infinite recursion by re-using already processed content items
-                        contentItem = processedItems[codenameUsed];
+                        contentItem = GetContentItemModel(typeof(object), modularContentItemNode,
+                            modularContentNode, processedItems, currentlyResolvedRichStrings);
+                        if (!processedItems.ContainsKey(codenameUsed))
+                        {
+                            processedItems.Add(codenameUsed, contentItem);
+                        }
                     }
                     else
                     {
-                        var modularContentNode = (JObject)modularContent;
-                        var modularContentItemNode =
-                            modularContentNode.Properties()
-                                .FirstOrDefault(p => p.Name == codenameUsed)?.First;
-                        if (modularContentItemNode != null)
-                        {
-                            contentItem = GetContentItemModel(typeof(object), modularContentItemNode,
-                                modularContentNode, processedItems, currentlyResolvedRichStrings);
-                            if (!processedItems.ContainsKey(codenameUsed))
-                            {
-                                processedItems.Add(codenameUsed, contentItem);
-                            }
-                        }
-                        else
-                        {
-                            contentItem = new UnretrievedContentItem();     //This means that response from Delivery API didn't contain content of this item 
-                        }
+                        contentItem = new UnretrievedContentItem();     //This means that response from Delivery API didn't contain content of this item 
                     }
-                    contentItemsInRichText.Add(codenameUsed, contentItem);
                 }
-                value = _client.ContentItemsInRichTextProcessor.Process(
-                    value,
-                    contentItemsInRichText);
+                contentItemsInRichText.Add(codenameUsed, contentItem);
             }
+            value = _client.ContentItemsInRichTextProcessor.Process(
+                value,
+                contentItemsInRichText);
+            
 
             return value;
         }
@@ -268,7 +265,7 @@ namespace KenticoCloud.Delivery
 
     private object RemoveContentItemsFromRichText(string value)
     {
-        return _client.ContentItemsInRichTextProcessor.Remove(
+        return _client.ContentItemsInRichTextProcessor.RemoveAll(
             value);
     }
 }
