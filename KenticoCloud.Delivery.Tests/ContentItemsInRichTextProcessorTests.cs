@@ -24,7 +24,7 @@ namespace KenticoCloud.Delivery.Tests
         }
 
         [Test]
-        public void ProcessedHtmlContentItemsAreProcessedByDummyProcessor()
+        public void InlineContentItemsAreProcessedByDummyProcessor()
         {
             var insertedContentName1 = "dummyCodename1";
             var insertedContentName2 = "dummyCodename2";
@@ -43,7 +43,7 @@ namespace KenticoCloud.Delivery.Tests
         }
 
         [Test]
-        public void NestedContentItemInHtmlIsProcessedByDummyProcessor()
+        public void NestedInlineContentItemIsProcessedByDummyProcessor()
         {
             var insertedContentName = "dummyCodename1";
             string wrapperWithObject = WrapElementWithDivs(GetContentItemObjectElement(insertedContentName));
@@ -65,7 +65,7 @@ namespace KenticoCloud.Delivery.Tests
         }
 
         [Test]
-        public void NestedContentItemInHtmlIsProcessedByValueProcessor()
+        public void NestedInlineContentItemIsProcessedByValueProcessor()
         {
             var insertedContentName = "dummyCodename1";
             string wrapperWithObject = WrapElementWithDivs(GetContentItemObjectElement(insertedContentName));
@@ -88,7 +88,7 @@ namespace KenticoCloud.Delivery.Tests
         }
 
         [Test]
-        public void NestedContentItemInHtmlIsProcessedByElementProcessor()
+        public void NestedInlineContentItemIsProcessedByElementProcessor()
         {
             var insertedContentName = "dummyCodename1";
             var wrapperWithObject = WrapElementWithDivs(GetContentItemObjectElement(insertedContentName));
