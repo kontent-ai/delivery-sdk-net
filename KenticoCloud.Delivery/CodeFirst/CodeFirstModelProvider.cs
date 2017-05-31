@@ -4,6 +4,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Reflection;
 using KenticoCloud.Delivery.ContentItemsInRichText;
+using Newtonsoft.Json;
 
 namespace KenticoCloud.Delivery
 {
@@ -185,7 +186,7 @@ namespace KenticoCloud.Delivery
 
             foreach (var property in richTextPropertiesToBeProcessed)
             {
-                var value = property.GetValue(instance);
+                var value = property.GetValue(instance).ToString();
                 var propValue = ((JObject)item["elements"]).Properties()
                     ?.FirstOrDefault(p => PropertyMapper.IsMatch(property, p.Name, system?.Type))
                     ?.FirstOrDefault()["value"];
@@ -200,14 +201,13 @@ namespace KenticoCloud.Delivery
                 };
                 if (currentlyResolvedRichStrings.Contains(currentlyProcessedString))
                 {
-                    value = RemoveContentItemsFromRichText((string) value);     //In case we've stumbled upon an element which is already being processed, we need to use it as 
+                    value = RemoveContentItemsFromRichText(value);     //In case we've stumbled upon an element which is already being processed, we need to use it as 
                                                                                 //is (therefore removing content items) to prevent circular dependency
                 }
                 else
                 {
                     currentlyResolvedRichStrings.Add(currentlyProcessedString);
-                    value = ProcessContentItemsInRichText(modularContent, processedItems, (string) value,
-                        modularContentInRichText, currentlyResolvedRichStrings);
+                    value = ProcessContentItemsInRichText(modularContent, processedItems, value, modularContentInRichText, currentlyResolvedRichStrings);
                     currentlyResolvedRichStrings.Remove(currentlyProcessedString);
                 }
                 if (value != null)
@@ -220,9 +220,9 @@ namespace KenticoCloud.Delivery
             return instance;
         }
 
-        private object ProcessContentItemsInRichText(JToken modularContent, Dictionary<string, object> processedItems, string value, JToken modularContentInRichText, HashSet<RichTextContentItem> currentlyResolvedRichStrings)
+        private string ProcessContentItemsInRichText(JToken modularContent, Dictionary<string, object> processedItems, string value, JToken modularContentInRichText, HashSet<RichTextContentItem> currentlyResolvedRichStrings)
         {
-            var usedCodenames = Newtonsoft.Json.JsonConvert.DeserializeObject<IEnumerable<string>>(modularContentInRichText.ToString());
+            var usedCodenames = JsonConvert.DeserializeObject<IEnumerable<string>>(modularContentInRichText.ToString());
             var contentItemsInRichText = new Dictionary<string, object>();
                 
             foreach (var codenameUsed in usedCodenames)
@@ -241,8 +241,7 @@ namespace KenticoCloud.Delivery
                             .FirstOrDefault(p => p.Name == codenameUsed)?.First;
                     if (modularContentItemNode != null)
                     {
-                        contentItem = GetContentItemModel(typeof(object), modularContentItemNode,
-                            modularContentNode, processedItems, currentlyResolvedRichStrings);
+                        contentItem = GetContentItemModel(typeof(object), modularContentItemNode, modularContentNode, processedItems, currentlyResolvedRichStrings);
                         if (!processedItems.ContainsKey(codenameUsed))
                         {
                             processedItems.Add(codenameUsed, contentItem);
@@ -255,19 +254,15 @@ namespace KenticoCloud.Delivery
                 }
                 contentItemsInRichText.Add(codenameUsed, contentItem);
             }
-            value = _client.ContentItemsInRichTextProcessor.Process(
-                value,
-                contentItemsInRichText);
-            
+            value = _client.ContentItemsInRichTextProcessor.Process(value, contentItemsInRichText);
 
             return value;
         }
     
 
-    private object RemoveContentItemsFromRichText(string value)
-    {
-        return _client.ContentItemsInRichTextProcessor.RemoveAll(
-            value);
+        private string RemoveContentItemsFromRichText(string value)
+        {
+            return _client.ContentItemsInRichTextProcessor.RemoveAll(value);
+        }
     }
-}
 }

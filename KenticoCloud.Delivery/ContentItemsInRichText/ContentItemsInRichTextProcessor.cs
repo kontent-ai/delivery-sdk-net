@@ -45,9 +45,9 @@ namespace KenticoCloud.Delivery.ContentItemsInRichText
         public string Process(string value, Dictionary<string, object> usedContentItems)
         {
             object processedContentItem;
-            var htmlRichText = new HtmlParser().Parse(value);         
+            var htmlRichText = new HtmlParser().Parse(value);
 
-            var contentItemsInRichText = htmlRichText.Body.GetElementsByTagName("object").Where(o => o.GetAttribute("type") == "application/kenticocloud" &&  o.GetAttribute("data-type") == "item").ToList();
+            var contentItemsInRichText = GetContentItemsFromHtml(htmlRichText);
             foreach (var contentItems in contentItemsInRichText)
             {
                 var codename = contentItems.GetAttribute("data-codename");
@@ -111,13 +111,17 @@ namespace KenticoCloud.Delivery.ContentItemsInRichText
         public string RemoveAll(string value)
         {
             var htmlRichText = new HtmlParser().Parse(value);
-
-            var contentItemsInRichText = htmlRichText.Body.GetElementsByTagName("object").Where(o => o.GetAttribute("type") == "application/kenticocloud" && o.GetAttribute("data-type") == "item").ToList();
+            List<IElement> contentItemsInRichText = GetContentItemsFromHtml(htmlRichText);
             foreach (var contentItem in contentItemsInRichText)
             {
                 contentItem.Remove();
             }
             return htmlRichText.Body.InnerHtml;
+        }
+
+        private static List<IElement> GetContentItemsFromHtml(AngleSharp.Dom.Html.IHtmlDocument htmlRichText)
+        {
+            return htmlRichText.Body.GetElementsByTagName("object").Where(o => o.GetAttribute("type") == "application/kenticocloud" && o.GetAttribute("data-type") == "item").ToList();
         }
 
         /// <summary>
