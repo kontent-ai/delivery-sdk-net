@@ -439,7 +439,7 @@ namespace KenticoCloud.Delivery.Tests
                 $"It's not about our targets.  It's about infrastructures.";
             var processor = new ContentItemsInRichTextProcessor(null, null);
 
-            var result = processor.Remove(richTextInput);
+            var result = processor.RemoveAll(richTextInput);
 
             Assert.AreEqual(expectedOutput, result);
 

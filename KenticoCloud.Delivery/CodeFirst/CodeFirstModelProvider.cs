@@ -3,6 +3,7 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Reflection;
+using KenticoCloud.Delivery.ContentItemsInRichText;
 
 namespace KenticoCloud.Delivery
 {
@@ -48,10 +49,10 @@ namespace KenticoCloud.Delivery
             return (T)GetContentItemModel(typeof(T), item, modularContent);
         }
 
-        internal object GetContentItemModel(Type t, JToken item, JToken modularContent, Dictionary<string, object> processedItems = null, HashSet<StringContentItems> currentlyResolvedRichStrings = null)
+        internal object GetContentItemModel(Type t, JToken item, JToken modularContent, Dictionary<string, object> processedItems = null, HashSet<RichTextContentItem> currentlyResolvedRichStrings = null)
         {
             processedItems = processedItems ?? new Dictionary<string, object>();
-            currentlyResolvedRichStrings = currentlyResolvedRichStrings ?? new HashSet<StringContentItems>();
+            currentlyResolvedRichStrings = currentlyResolvedRichStrings ?? new HashSet<RichTextContentItem>();
             var richTextPropertiesToBeProcessed = new List<PropertyInfo>();
             var system = item["system"].ToObject<ContentItemSystemAttributes>();
 
@@ -192,10 +193,10 @@ namespace KenticoCloud.Delivery
                 var modularContentInRichText =
                                 ((JObject)propValue?.Parent?.Parent)?.Property("modular_content")?.Value;
 
-                var currentlyProcessedString = new StringContentItems()
+                var currentlyProcessedString = new RichTextContentItem()
                 {
-                    ContentItemCodename = system.Codename,
-                    RichTextElementName = property.Name
+                    ContentItemCodeName = system.Codename,
+                    RichTextElementCodeName = property.Name
                 };
                 if (currentlyResolvedRichStrings.Contains(currentlyProcessedString))
                 {
@@ -219,7 +220,7 @@ namespace KenticoCloud.Delivery
             return instance;
         }
 
-        private object ProcessContentItemsInRichText(JToken modularContent, Dictionary<string, object> processedItems, string value, JToken modularContentInRichText, HashSet<StringContentItems> currentlyResolvedRichStrings)
+        private object ProcessContentItemsInRichText(JToken modularContent, Dictionary<string, object> processedItems, string value, JToken modularContentInRichText, HashSet<RichTextContentItem> currentlyResolvedRichStrings)
         {
             var usedCodenames = Newtonsoft.Json.JsonConvert.DeserializeObject<IEnumerable<string>>(modularContentInRichText.ToString());
             var contentItemsInRichText = new Dictionary<string, object>();
@@ -227,7 +228,7 @@ namespace KenticoCloud.Delivery
             foreach (var codenameUsed in usedCodenames)
             {
                 object contentItem;
-                if (processedItems.ContainsKey(codenameUsed) && currentlyResolvedRichStrings.All(x => x.ContentItemCodename != codenameUsed))   // This is to reuse content items which were processed already, but not those 
+                if (processedItems.ContainsKey(codenameUsed) && currentlyResolvedRichStrings.All(x => x.ContentItemCodeName != codenameUsed))   // This is to reuse content items which were processed already, but not those 
                                                                                                                                                 // that are calling this resolver as they  are may contain unprocessed rich text elements
                 {
                     contentItem = processedItems[codenameUsed];
@@ -269,11 +270,4 @@ namespace KenticoCloud.Delivery
             value);
     }
 }
-
-internal struct StringContentItems
-    {
-        public string ContentItemCodename { get; set; }
-
-        public string RichTextElementName { get; set; }
-    }
 }
