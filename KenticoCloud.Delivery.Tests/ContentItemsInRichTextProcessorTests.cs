@@ -1,17 +1,16 @@
 ﻿using System;
-using NUnit.Framework;
+using Xunit;
 using System.Collections.Generic;
 using KenticoCloud.Delivery.ContentItemsInRichText;
 
 namespace KenticoCloud.Delivery.Tests
 {
-    [TestFixture]
     public class ContentItemsInRichTextProcessorTests
     {
         private const string ContentItemType = "application/kenticocloud";
         private const string ContentItemDataType = "item";
 
-        [Test]
+        [Fact]
         public void ProcessedHtmlIsSameIfNoContentItemsAreIncluded()
         {
             var inputHtml = $"<p>Lorem ipsum etc..<a>asdf</a>..</p>";
@@ -20,10 +19,10 @@ namespace KenticoCloud.Delivery.Tests
 
             var result = inlineContentItemsProcessor.Process(inputHtml, processedContentItems);
 
-            Assert.AreEqual(inputHtml, result);
+            Assert.Equal(inputHtml, result);
         }
 
-        [Test]
+        [Fact]
         public void InlineContentItemsAreProcessedByDummyProcessor()
         {
             var insertedContentName1 = "dummyCodename1";
@@ -39,10 +38,10 @@ namespace KenticoCloud.Delivery.Tests
 
             var result = inlineContentItemsProcessor.Process(input, processedContentItems);
 
-            Assert.AreEqual(plainHtml, result);
+            Assert.Equal(plainHtml, result);
         }
 
-        [Test]
+        [Fact]
         public void NestedInlineContentItemIsProcessedByDummyProcessor()
         {
             var insertedContentName = "dummyCodename1";
@@ -59,12 +58,12 @@ namespace KenticoCloud.Delivery.Tests
 
             var result = inlineContentItemsProcessor.Process(input, processedContentItems);
 
-            Assert.AreEqual(plainHtml + WrapElementWithDivs(string.Empty), result);
-            Assert.AreEqual(1, contentItemResolver.callsForResolve);
+            Assert.Equal(plainHtml + WrapElementWithDivs(string.Empty), result);
+            Assert.Equal(1, contentItemResolver.callsForResolve);
 
         }
 
-        [Test]
+        [Fact]
         public void NestedInlineContentItemIsProcessedByValueProcessor()
         {
             var insertedContentName = "dummyCodename1";
@@ -83,11 +82,11 @@ namespace KenticoCloud.Delivery.Tests
 
             var result = inlineContentItemsProcessor.Process(input, processedContentItems);
 
-            Assert.AreEqual(plainHtml + WrapElementWithDivs(insertedContentItemValue), result);
+            Assert.Equal(plainHtml + WrapElementWithDivs(insertedContentItemValue), result);
 
         }
 
-        [Test]
+        [Fact]
         public void NestedInlineContentItemIsProcessedByElementProcessor()
         {
             var insertedContentName = "dummyCodename1";
@@ -106,10 +105,10 @@ namespace KenticoCloud.Delivery.Tests
             var result = inlineContentItemsProcessor.Process(input, processedContentItems);
 
             var expectedElement = $"<span>{insertedContentItemValue}</span>";
-            Assert.AreEqual(plainHtml + WrapElementWithDivs(expectedElement), result);
+            Assert.Equal(plainHtml + WrapElementWithDivs(expectedElement), result);
         }
 
-        [Test]
+        [Fact]
         public void DifferentContentTypesAreResolvedCorrectly()
         {
             const string insertedImage1CodeName = "image1";
@@ -170,11 +169,11 @@ namespace KenticoCloud.Delivery.Tests
 
             var result = inlineContentItemsProcessor.Process(htmlInput, processedContentItems);
 
-            Assert.AreEqual(expectedOutput, result);
+            Assert.Equal(expectedOutput, result);
         }
 
 
-        [Test]
+        [Fact]
         public void DifferentContentTypesAndUnretrievedAreResolvedCorrectly()
         {
             const string insertedImage1CodeName = "image1";
@@ -236,10 +235,10 @@ namespace KenticoCloud.Delivery.Tests
 
             var result = inlineContentItemsProcessor.Process(htmlInput, processedContentItems);
 
-            Assert.AreEqual(expectedOutput, result);
+            Assert.Equal(expectedOutput, result);
         }
 
-        [Test]
+        [Fact]
         public void DifferentContentTypesUnretrievedAndContentTypesWithoutResolverAreResolvedCorrectly()
         {
             const string insertedImage1CodeName = "image1";
@@ -303,11 +302,11 @@ namespace KenticoCloud.Delivery.Tests
 
             var result = inlineContentItemsProcessor.Process(htmlInput, processedContentItems);
 
-            Assert.AreEqual(expectedOutput, result);
+            Assert.Equal(expectedOutput, result);
         }
 
 
-        [Test]
+        [Fact]
         public void UnretrievedContentItemIsResolvedByUnretrievedProcessor()
         {
             const string insertedContentName = "dummyCodename1";
@@ -325,12 +324,12 @@ namespace KenticoCloud.Delivery.Tests
 
             var result = inlineContentItemsProcessor.Process(input, processedContentItems);
 
-            Assert.AreEqual(plainHtml + $"<div>{message}</div>", result);
+            Assert.Equal(plainHtml + $"<div>{message}</div>", result);
         }
 
 
 
-        [Test]
+        [Fact]
         public void ContentItemWithoutResolverIsHandledByDefaultResolver()
         {
             const string insertedContentName = "dummyCodename1";
@@ -349,10 +348,10 @@ namespace KenticoCloud.Delivery.Tests
 
             var result = inlineContentItemsProcessor.Process(input, processedContentItems);
 
-            Assert.AreEqual(plainHtml + $"<div>{message}</div>", result);
+            Assert.Equal(plainHtml + $"<div>{message}</div>", result);
         }
 
-        [Test]
+        [Fact]
         public void ResolverReturningMixedElementsAndTextIsProcessedCorrectly()
         {
             const string insertedContentName = "dummyCodename1";
@@ -372,10 +371,10 @@ namespace KenticoCloud.Delivery.Tests
 
             var expectedResults = $"A hyper-hybrid socialization &amp; turbocharges adaptive Text text brackets ( &lt; [ <span>{insertedContentItemValue}</span><div></div>&amp; Some more text frameworks by thinking outside of the box, while the support structures influence the mediators.";
 
-            Assert.AreEqual(expectedResults, result);
+            Assert.Equal(expectedResults, result);
         }
 
-        [Test]
+        [Fact]
         public void ResolverReturningIncorrectHtmlReturnsErrorMessage()
         {
             const string insertedContentName = "dummyCodename1";
@@ -395,10 +394,10 @@ namespace KenticoCloud.Delivery.Tests
 
             var expectedResults = "A hyper-hybrid socialization &amp; turbocharges adaptive Error while parsing resolvers output for content type KenticoCloud.Delivery.Tests.ContentItemsInRichTextProcessorTests+DummyProcessedContentItem, codename dummyCodename1 at line 1, column 24. frameworks by thinking outside of the box, while the support structures influence the mediators.";
 
-            Assert.AreEqual(expectedResults, result);
+            Assert.Equal(expectedResults, result);
         }
 
-        [Test]
+        [Fact]
         public void ProcessorRemoveAllRemovesAllInlineContentItems()
         {
             const string insertedImage1CodeName = "image1";
@@ -441,7 +440,7 @@ namespace KenticoCloud.Delivery.Tests
 
             var result = processor.RemoveAll(htmlInput);
 
-            Assert.AreEqual(expectedOutput, result);
+            Assert.Equal(expectedOutput, result);
 
         }
 
