@@ -12,10 +12,23 @@ namespace KenticoCloud.Delivery
     {
         private readonly JToken _source;
         private readonly JToken _modularContentSource;
-        private readonly DeliveryClient _client;
+        private readonly IDeliveryClient _client;
+        private ContentLinkResolver _contentLinkResolver;
 
         private ContentItemSystemAttributes _system;
         private JToken _elements;
+
+        internal ContentLinkResolver ContentLinkResolver
+        {
+            get
+            {
+                if (_contentLinkResolver == null && _client.ContentLinkUrlResolver != null)
+                {
+                    _contentLinkResolver = new ContentLinkResolver(_client.ContentLinkUrlResolver);
+                }
+                return _contentLinkResolver;
+            }
+        }
 
         /// <summary>
         /// Gets the system attributes of the content item.
@@ -39,7 +52,7 @@ namespace KenticoCloud.Delivery
         /// <param name="source">The JSON data of the content item to deserialize.</param>
         /// <param name="modularContentSource">The JSON data of modular content to deserialize.</param>
         /// <param name="client">The client that retrieved the content item.</param>
-        internal ContentItem(JToken source, JToken modularContentSource, DeliveryClient client)
+        internal ContentItem(JToken source, JToken modularContentSource, IDeliveryClient client)
         {
             if (source == null)
             {
@@ -72,7 +85,7 @@ namespace KenticoCloud.Delivery
 
         /// <summary>
         /// Gets a string value from an element and resolves content links in Rich text element values.
-        /// To resolve content links the <see cref="DeliveryClient.ContentLinkUrlResolver"/> property must be set.
+        /// To resolve content links the <see cref="IDeliveryClient.ContentLinkUrlResolver"/> property must be set.
         /// </summary>
         /// <param name="elementCodename">The codename of the element.</param>
         /// <returns>The <see cref="string"/> value of the element with the specified codename, if available; otherwise, <c>null</c>.</returns>
@@ -82,7 +95,7 @@ namespace KenticoCloud.Delivery
             var value = element.Value<string>("value");
             var elementType = element.Value<string>("type");
             var links = element["links"];
-            var contentLinkResolver = _client.ContentLinkResolver;
+            var contentLinkResolver = ContentLinkResolver;
 
             if (!StringComparer.Ordinal.Equals(elementType, "rich_text") || links == null || contentLinkResolver == null || string.IsNullOrEmpty(value) || !value.Contains("data-item-id"))
             {

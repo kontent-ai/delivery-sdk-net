@@ -10,7 +10,7 @@ namespace KenticoCloud.Delivery
     public sealed class DeliveryItemListingResponse<T>
     {
         private readonly JToken _response;
-        private readonly DeliveryClient _client;
+        private readonly IDeliveryClient _client;
         private dynamic _modularContent;
         private Pagination _pagination;
         private IReadOnlyList<T> _items;
@@ -44,7 +44,7 @@ namespace KenticoCloud.Delivery
         /// Initializes a new instance of the <see cref="DeliveryItemListingResponse"/> class with information from a response.
         /// </summary>
         /// <param name="response">A response from Kentico Cloud Delivery API that contains a list of content items.</param>
-        internal DeliveryItemListingResponse(JToken response, DeliveryClient client)
+        internal DeliveryItemListingResponse(JToken response, IDeliveryClient client)
         {
             _response = response;
             _client = client;
