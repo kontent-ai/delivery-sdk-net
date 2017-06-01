@@ -10,13 +10,13 @@ namespace KenticoCloud.Delivery
 {
     internal sealed class DeliveryEndpointUrlBuilder
     {
-        #if (NET45)
+#if (NET45)
         private string PRODUCTION_ENDPOINT = ConfigurationManager.AppSettings["ProductionEndpoint"] ?? "https://deliver.kenticocloud.com/{0}";
         private string PREVIEW_ENDPOINT = ConfigurationManager.AppSettings["PreviewEndpoint"] ?? "https://preview-deliver.kenticocloud.com/{0}";
-        #else
+#else
         private const string PRODUCTION_ENDPOINT = "https://deliver.kenticocloud.com/{0}";
         private const string PREVIEW_ENDPOINT = "https://preview-deliver.kenticocloud.com/{0}";
-        #endif
+#endif
 
         private const string URL_TEMPLATE_ITEM = "/items/{0}";
         private const string URL_TEMPLATE_ITEMS = "/items";
@@ -32,9 +32,8 @@ namespace KenticoCloud.Delivery
             this.projectId = projectId;
         }
 
-        public DeliveryEndpointUrlBuilder(string projectId, string previewApiKey)
+        public DeliveryEndpointUrlBuilder(string projectId, string previewApiKey) : this(projectId)
         {
-            this.projectId = projectId;
             this.previewApiKey = previewApiKey;
         }
 
