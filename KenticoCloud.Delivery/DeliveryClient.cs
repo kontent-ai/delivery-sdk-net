@@ -20,13 +20,9 @@ namespace KenticoCloud.Delivery
 
         private IContentLinkUrlResolver _linkUrlResolver;
 
-        /// <summary>
-        /// Inline content items processor for richtext elements retrieved with this client.
-        /// </summary>
-        public InlineContentItemsProcessor InlineContentItemsProcessor { get; private set; }
-
-
         private ICodeFirstModelProvider _codeFirstModelProvider;
+
+        private InlineContentItemsProcessor _inlineContentItemsProcessor;
 
         /// <summary>
         /// Gets or sets an object that resolves links to content items in Rich text element values.
@@ -40,6 +36,21 @@ namespace KenticoCloud.Delivery
             set
             {
                 _linkUrlResolver = value;
+            }
+        }
+
+        /// <summary>
+        /// Gets processor for richtext elements retrieved with this client.
+        /// </summary>
+        public InlineContentItemsProcessor InlineContentItemsProcessor
+        {
+            get
+            {
+                return _inlineContentItemsProcessor;
+            }
+            private set
+            {
+                _inlineContentItemsProcessor = value;
             }
         }
 

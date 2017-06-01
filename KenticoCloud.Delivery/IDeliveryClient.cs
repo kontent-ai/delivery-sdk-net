@@ -1,5 +1,6 @@
 using System.Collections.Generic;
 using System.Threading.Tasks;
+using KenticoCloud.Delivery.InlineContentItems;
 using Newtonsoft.Json.Linq;
 
 namespace KenticoCloud.Delivery
@@ -18,6 +19,11 @@ namespace KenticoCloud.Delivery
         /// Gets or sets an object that performs conversion of content items to code-first models.
         /// </summary>
         ICodeFirstModelProvider CodeFirstModelProvider { get; set; }
+
+        /// <summary>
+        /// Gets processor for richtext elements retrieved with this client.
+        /// </summary>
+        InlineContentItemsProcessor InlineContentItemsProcessor { get; }
 
         /// <summary>
         /// Returns a content item as JSON data. By default, retrieves one level of modular content.
