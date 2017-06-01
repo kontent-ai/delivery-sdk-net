@@ -13,8 +13,21 @@ namespace KenticoCloud.Delivery
     /// </summary>
     internal class CodeFirstModelProvider : ICodeFirstModelProvider
     {
-        private readonly DeliveryClient _client;
+        private readonly IDeliveryClient _client;
         private ICodeFirstPropertyMapper _propertyMapper;
+        private ContentLinkResolver _contentLinkResolver;
+
+        internal ContentLinkResolver ContentLinkResolver
+        {
+            get
+            {
+                if (_contentLinkResolver == null && _client.ContentLinkUrlResolver != null)
+                {
+                    _contentLinkResolver = new ContentLinkResolver(_client.ContentLinkUrlResolver);
+                }
+                return _contentLinkResolver;
+            }
+        }
 
         /// <summary>
         /// Ensures mapping between Kentico Cloud content types and CLR types.
@@ -33,7 +46,7 @@ namespace KenticoCloud.Delivery
         /// <summary>
         /// Initializes a new instance of <see cref="CodeFirstModelProvider"/>.
         /// </summary>
-        public CodeFirstModelProvider(DeliveryClient client)
+        public CodeFirstModelProvider(IDeliveryClient client)
         {
             _client = client;
         }
@@ -101,12 +114,9 @@ namespace KenticoCloud.Delivery
                                 ((JObject)propValue?.Parent?.Parent)?.Property("modular_content")?.Value;
 
                             // Handle rich_text link resolution
-                            value = propValue?.ToObject<string>();
-                            if (links != null && _client.ContentLinkResolver != null)
+                            if (links != null && propValue != null && ContentLinkResolver != null)
                             {
-                                value = _client.ContentLinkResolver.ResolveContentLinks(
-                                    (string)value,
-                                    links);
+                                value = ContentLinkResolver.ResolveContentLinks(propValue?.ToObject<string>(), links);
                             }
 
                             if (modularContentInRichText != null && _client.InlineContentItemsProcessor != null)

@@ -25,7 +25,7 @@ namespace KenticoCloud.Delivery
         /// </summary>
         public InlineContentItemsProcessor InlineContentItemsProcessor { get; private set; }
 
-        private ContentLinkResolver _linkResolver;
+
         private ICodeFirstModelProvider _codeFirstModelProvider;
 
         /// <summary>
@@ -40,7 +40,6 @@ namespace KenticoCloud.Delivery
             set
             {
                 _linkUrlResolver = value;
-                _linkResolver = new ContentLinkResolver(_linkUrlResolver);
             }
         }
 
@@ -52,15 +51,7 @@ namespace KenticoCloud.Delivery
             get { return _codeFirstModelProvider ?? (_codeFirstModelProvider = new CodeFirstModelProvider(this)); }
             set { _codeFirstModelProvider = value; }
         }
-
-        internal ContentLinkResolver ContentLinkResolver
-        {
-            get
-            {
-                return _linkResolver;
-            }
-        }
-
+        
         /// <summary>
         /// Initializes a new instance of the <see cref="DeliveryClient"/> class for the published content of the specified project.
         /// </summary>
