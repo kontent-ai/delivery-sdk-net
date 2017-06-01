@@ -11,8 +11,21 @@ namespace KenticoCloud.Delivery
     /// </summary>
     internal class CodeFirstModelProvider : ICodeFirstModelProvider
     {
-        private readonly DeliveryClient _client;
+        private readonly IDeliveryClient _client;
         private ICodeFirstPropertyMapper _propertyMapper;
+        private ContentLinkResolver _contentLinkResolver;
+
+        internal ContentLinkResolver ContentLinkResolver
+        {
+            get
+            {
+                if (_contentLinkResolver == null && _client.ContentLinkUrlResolver != null)
+                {
+                    _contentLinkResolver = new ContentLinkResolver(_client.ContentLinkUrlResolver);
+                }
+                return _contentLinkResolver;
+            }
+        }
 
         /// <summary>
         /// Ensures mapping between Kentico Cloud content types and CLR types.
@@ -31,7 +44,7 @@ namespace KenticoCloud.Delivery
         /// <summary>
         /// Initializes a new instance of <see cref="CodeFirstModelProvider"/>.
         /// </summary>
-        public CodeFirstModelProvider(DeliveryClient client)
+        public CodeFirstModelProvider(IDeliveryClient client)
         {
             _client = client;
         }
@@ -95,9 +108,9 @@ namespace KenticoCloud.Delivery
                             var links = ((JObject)propValue?.Parent?.Parent)?.Property("links")?.Value;
 
                             // Handle rich_text link resolution
-                            if (links != null && propValue != null && _client.ContentLinkResolver != null)
+                            if (links != null && propValue != null && ContentLinkResolver != null)
                             {
-                                value = _client.ContentLinkResolver.ResolveContentLinks(propValue?.ToObject<string>(), links);
+                                value = ContentLinkResolver.ResolveContentLinks(propValue?.ToObject<string>(), links);
                             }
                             else
                             {
