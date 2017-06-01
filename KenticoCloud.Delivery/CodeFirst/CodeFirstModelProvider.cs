@@ -109,6 +109,7 @@ namespace KenticoCloud.Delivery
 
                         if (propertyType == typeof(string))
                         {
+                            value = propValue?.ToObject<string>();
                             var links = ((JObject)propValue?.Parent?.Parent)?.Property("links")?.Value;
                             var modularContentInRichText = 
                                 ((JObject)propValue?.Parent?.Parent)?.Property("modular_content")?.Value;
@@ -116,10 +117,10 @@ namespace KenticoCloud.Delivery
                             // Handle rich_text link resolution
                             if (links != null && propValue != null && ContentLinkResolver != null)
                             {
-                                value = ContentLinkResolver.ResolveContentLinks(propValue?.ToObject<string>(), links);
+                                value = ContentLinkResolver.ResolveContentLinks((string) value, links);
                             }
 
-                            if (modularContentInRichText != null && _client.InlineContentItemsProcessor != null)
+                            if (modularContentInRichText != null && propValue != null && _client.InlineContentItemsProcessor != null)
                             {
                                 // At this point it's clear it's richtext because it contains modular content
                                 richTextPropertiesToBeProcessed.Add(property);  
