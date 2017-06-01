@@ -4,6 +4,7 @@ using System.Collections.Generic;
 using System.Net;
 using System.Net.Http;
 using System.Threading.Tasks;
+using KenticoCloud.Delivery.InlineContentItems;
 
 namespace KenticoCloud.Delivery
 {
@@ -18,7 +19,10 @@ namespace KenticoCloud.Delivery
         private readonly DeliveryEndpointUrlBuilder _urlBuilder;
 
         private IContentLinkUrlResolver _linkUrlResolver;
+
         private ICodeFirstModelProvider _codeFirstModelProvider;
+
+        private InlineContentItemsProcessor _inlineContentItemsProcessor;
 
         /// <summary>
         /// Gets or sets an object that resolves links to content items in Rich text element values.
@@ -32,6 +36,21 @@ namespace KenticoCloud.Delivery
             set
             {
                 _linkUrlResolver = value;
+            }
+        }
+
+        /// <summary>
+        /// Gets processor for richtext elements retrieved with this client.
+        /// </summary>
+        public InlineContentItemsProcessor InlineContentItemsProcessor
+        {
+            get
+            {
+                return _inlineContentItemsProcessor;
+            }
+            private set
+            {
+                _inlineContentItemsProcessor = value;
             }
         }
 
@@ -64,9 +83,11 @@ namespace KenticoCloud.Delivery
             {
                 throw new ArgumentException($"The specified Kentico cloud project identifier ({projectId}) is too long. Haven't you accidentally passed the Preview API key instead of the project identifier?", nameof(projectId));
             }
-
             _urlBuilder = new DeliveryEndpointUrlBuilder(projectId);
             _httpClient = new HttpClient();
+            var unretrievedInlineContentItemsResolver = new ReplaceWithEmptyStringForUnretrievedItemsResolver();
+            var defaultInlineContentItemsResolver = new ReplaceWithEmptyStringResolver();
+            InlineContentItemsProcessor = new InlineContentItemsProcessor(defaultInlineContentItemsResolver, unretrievedInlineContentItemsResolver);
         }
 
         /// <summary>
@@ -100,10 +121,12 @@ namespace KenticoCloud.Delivery
             {
                 throw new ArgumentException("The Preview API key is not specified.", nameof(projectId));
             }
-
             _urlBuilder = new DeliveryEndpointUrlBuilder(projectId, previewApiKey);
             _httpClient = new HttpClient();
             _httpClient.DefaultRequestHeaders.Add("Authorization", string.Format("Bearer {0}", previewApiKey));
+            var unretrievedInlineContentItemsResolver = new ReplaceWithWarningAboutUnretrievedItemResolver();
+            var defaultInlineContentItemsResolver = new ReplaceWithWarningAboutRegistrationResolver();
+            InlineContentItemsProcessor = new InlineContentItemsProcessor(defaultInlineContentItemsResolver, unretrievedInlineContentItemsResolver);
         }
 
         /// <summary>

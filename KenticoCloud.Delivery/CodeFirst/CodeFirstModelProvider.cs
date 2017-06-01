@@ -3,6 +3,8 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Reflection;
+using KenticoCloud.Delivery.InlineContentItems;
+using Newtonsoft.Json;
 
 namespace KenticoCloud.Delivery
 {
@@ -61,9 +63,11 @@ namespace KenticoCloud.Delivery
             return (T)GetContentItemModel(typeof(T), item, modularContent);
         }
 
-        internal object GetContentItemModel(Type t, JToken item, JToken modularContent, Dictionary<string, object> processedItems = null)
+        internal object GetContentItemModel(Type t, JToken item, JToken modularContent, Dictionary<string, object> processedItems = null, HashSet<RichTextContentElements> currentlyResolvedRichStrings = null)
         {
             processedItems = processedItems ?? new Dictionary<string, object>();
+            currentlyResolvedRichStrings = currentlyResolvedRichStrings ?? new HashSet<RichTextContentElements>();
+            var richTextPropertiesToBeProcessed = new List<PropertyInfo>();
             var system = item["system"].ToObject<ContentItemSystemAttributes>();
 
             if (t == typeof(object))
@@ -73,7 +77,7 @@ namespace KenticoCloud.Delivery
                 if (t == null)
                 {
                     throw new Exception($"No corresponding CLR type found for the '{system.Type}' content type. Provide a correct implementation of '{nameof(ICodeFirstTypeProvider)}' to the '{nameof(TypeProvider)}' property.");
-                }
+                } 
             }
 
             object instance = Activator.CreateInstance(t);
@@ -105,17 +109,23 @@ namespace KenticoCloud.Delivery
 
                         if (propertyType == typeof(string))
                         {
+                            value = propValue?.ToObject<string>();
                             var links = ((JObject)propValue?.Parent?.Parent)?.Property("links")?.Value;
+                            var modularContentInRichText = 
+                                ((JObject)propValue?.Parent?.Parent)?.Property("modular_content")?.Value;
 
                             // Handle rich_text link resolution
                             if (links != null && propValue != null && ContentLinkResolver != null)
                             {
-                                value = ContentLinkResolver.ResolveContentLinks(propValue?.ToObject<string>(), links);
+                                value = ContentLinkResolver.ResolveContentLinks((string) value, links);
                             }
-                            else
+
+                            if (modularContentInRichText != null && propValue != null && _client.InlineContentItemsProcessor != null)
                             {
-                                value = propValue?.ToObject(propertyType);
+                                // At this point it's clear it's richtext because it contains modular content
+                                richTextPropertiesToBeProcessed.Add(property);  
                             }
+                            
                         }
                         else if (propertyType == typeof(IEnumerable<MultipleChoiceOption>)
                                  || propertyType == typeof(IEnumerable<Asset>)
@@ -186,7 +196,91 @@ namespace KenticoCloud.Delivery
                 }
             }
 
+            // Richtext elements need to be processed last, so in case of circular dependency, content items resolved by
+            // resolvers would have all elements already processed
+            foreach (var property in richTextPropertiesToBeProcessed)
+            {
+                var value = property.GetValue(instance).ToString();
+                var propValue = ((JObject)item["elements"]).Properties()
+                    ?.FirstOrDefault(p => PropertyMapper.IsMatch(property, p.Name, system?.Type))
+                    ?.FirstOrDefault()["value"];
+
+                var modularContentInRichText =
+                                ((JObject)propValue?.Parent?.Parent)?.Property("modular_content")?.Value;
+
+                var currentlyProcessedString = new RichTextContentElements()
+                {
+                    ContentItemCodeName = system.Codename,
+                    RichTextElementCodeName = property.Name
+                };
+                if (currentlyResolvedRichStrings.Contains(currentlyProcessedString))
+                {
+                    // If this element is already being processed it's necessary to to use it as is (with removed inline content items)
+                    // otherwise resolving would be stuck in an infinite loop
+                    value = RemoveInlineContentItems(value);     
+                                                                       
+                }
+                else
+                {
+                    currentlyResolvedRichStrings.Add(currentlyProcessedString);
+                    value = ProcessInlineContentItems(modularContent, processedItems, value, modularContentInRichText, currentlyResolvedRichStrings);
+                    currentlyResolvedRichStrings.Remove(currentlyProcessedString);
+                }
+                if (value != null)
+                {
+                    property.SetValue(instance, value);
+                }
+
+            }
+
             return instance;
+        }
+
+        private string ProcessInlineContentItems(JToken modularContent, Dictionary<string, object> processedItems, string value, JToken modularContentInRichText, HashSet<RichTextContentElements> currentlyResolvedRichStrings)
+        {
+            var usedCodenames = JsonConvert.DeserializeObject<IEnumerable<string>>(modularContentInRichText.ToString());
+            var contentItemsInRichText = new Dictionary<string, object>();
+                
+            foreach (var codenameUsed in usedCodenames)
+            {
+                object contentItem;
+                // This is to reuse content items which were processed already, but not those 
+                // that are calling this resolver as they may contain unprocessed rich text elements
+                if (processedItems.ContainsKey(codenameUsed) && currentlyResolvedRichStrings.All(x => x.ContentItemCodeName != codenameUsed))  
+                                                                                                                                               
+                {
+                    contentItem = processedItems[codenameUsed];
+                }
+                else
+                {
+                    var modularContentNode = (JObject)modularContent;
+                    var modularContentItemNode =
+                        modularContentNode.Properties()
+                            .FirstOrDefault(p => p.Name == codenameUsed)?.First;
+                    if (modularContentItemNode != null)
+                    {
+                        contentItem = GetContentItemModel(typeof(object), modularContentItemNode, modularContentNode, processedItems, currentlyResolvedRichStrings);
+                        if (!processedItems.ContainsKey(codenameUsed))
+                        {
+                            processedItems.Add(codenameUsed, contentItem);
+                        }
+                    }
+                    else
+                    {
+                        // This means that response from Delivery API didn't contain content of this item 
+                        contentItem = new UnretrievedContentItem();
+                    }
+                }
+                contentItemsInRichText.Add(codenameUsed, contentItem);
+            }
+            value = _client.InlineContentItemsProcessor.Process(value, contentItemsInRichText);
+
+            return value;
+        }
+
+        private string RemoveInlineContentItems(string value)
+        {
+            return _client.InlineContentItemsProcessor.RemoveAll(value);
         }
     }
 }
