@@ -3,7 +3,7 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Reflection;
-using KenticoCloud.Delivery.ContentItemsInRichText;
+using KenticoCloud.Delivery.InlineContentItems;
 using Newtonsoft.Json;
 
 namespace KenticoCloud.Delivery
@@ -50,10 +50,10 @@ namespace KenticoCloud.Delivery
             return (T)GetContentItemModel(typeof(T), item, modularContent);
         }
 
-        internal object GetContentItemModel(Type t, JToken item, JToken modularContent, Dictionary<string, object> processedItems = null, HashSet<RichTextContentItem> currentlyResolvedRichStrings = null)
+        internal object GetContentItemModel(Type t, JToken item, JToken modularContent, Dictionary<string, object> processedItems = null, HashSet<RichTextContentElements> currentlyResolvedRichStrings = null)
         {
             processedItems = processedItems ?? new Dictionary<string, object>();
-            currentlyResolvedRichStrings = currentlyResolvedRichStrings ?? new HashSet<RichTextContentItem>();
+            currentlyResolvedRichStrings = currentlyResolvedRichStrings ?? new HashSet<RichTextContentElements>();
             var richTextPropertiesToBeProcessed = new List<PropertyInfo>();
             var system = item["system"].ToObject<ContentItemSystemAttributes>();
 
@@ -111,7 +111,8 @@ namespace KenticoCloud.Delivery
 
                             if (modularContentInRichText != null && _client.InlineContentItemsProcessor != null)
                             {
-                                richTextPropertiesToBeProcessed.Add(property);  //At this point we're pretty sure it's richtext because it contains modular content
+                                // At this point it's clear it's richtext because it contains modular content
+                                richTextPropertiesToBeProcessed.Add(property);  
                             }
                             
                         }
@@ -184,6 +185,8 @@ namespace KenticoCloud.Delivery
                 }
             }
 
+            // Richtext elements need to be processed last, so in case of circular dependency, content items resolved by
+            // resolvers would have all elements already processed
             foreach (var property in richTextPropertiesToBeProcessed)
             {
                 var value = property.GetValue(instance).ToString();
@@ -194,22 +197,22 @@ namespace KenticoCloud.Delivery
                 var modularContentInRichText =
                                 ((JObject)propValue?.Parent?.Parent)?.Property("modular_content")?.Value;
 
-                var currentlyProcessedString = new RichTextContentItem()
+                var currentlyProcessedString = new RichTextContentElements()
                 {
                     ContentItemCodeName = system.Codename,
                     RichTextElementCodeName = property.Name
                 };
                 if (currentlyResolvedRichStrings.Contains(currentlyProcessedString))
                 {
-                    //In case we've stumbled upon an element which is already being processed, we need to use it as 
-                    //is (therefore removing content items) to prevent circular dependency
-                    value = RemoveContentItemsFromRichText(value);     
+                    // If this element is already being processed it's necessary to to use it as is (with removed inline content items)
+                    // otherwise resolving would be stuck in an infinite loop
+                    value = RemoveInlineContentItems(value);     
                                                                        
                 }
                 else
                 {
                     currentlyResolvedRichStrings.Add(currentlyProcessedString);
-                    value = ProcessContentItemsInRichText(modularContent, processedItems, value, modularContentInRichText, currentlyResolvedRichStrings);
+                    value = ProcessInlineContentItems(modularContent, processedItems, value, modularContentInRichText, currentlyResolvedRichStrings);
                     currentlyResolvedRichStrings.Remove(currentlyProcessedString);
                 }
                 if (value != null)
@@ -222,7 +225,7 @@ namespace KenticoCloud.Delivery
             return instance;
         }
 
-        private string ProcessContentItemsInRichText(JToken modularContent, Dictionary<string, object> processedItems, string value, JToken modularContentInRichText, HashSet<RichTextContentItem> currentlyResolvedRichStrings)
+        private string ProcessInlineContentItems(JToken modularContent, Dictionary<string, object> processedItems, string value, JToken modularContentInRichText, HashSet<RichTextContentElements> currentlyResolvedRichStrings)
         {
             var usedCodenames = JsonConvert.DeserializeObject<IEnumerable<string>>(modularContentInRichText.ToString());
             var contentItemsInRichText = new Dictionary<string, object>();
@@ -231,7 +234,7 @@ namespace KenticoCloud.Delivery
             {
                 object contentItem;
                 // This is to reuse content items which were processed already, but not those 
-                // that are calling this resolver as they  may contain unprocessed rich text elements
+                // that are calling this resolver as they may contain unprocessed rich text elements
                 if (processedItems.ContainsKey(codenameUsed) && currentlyResolvedRichStrings.All(x => x.ContentItemCodeName != codenameUsed))  
                                                                                                                                                
                 {
@@ -253,7 +256,8 @@ namespace KenticoCloud.Delivery
                     }
                     else
                     {
-                        contentItem = new UnretrievedContentItem();     //This means that response from Delivery API didn't contain content of this item 
+                        // This means that response from Delivery API didn't contain content of this item 
+                        contentItem = new UnretrievedContentItem();
                     }
                 }
                 contentItemsInRichText.Add(codenameUsed, contentItem);
@@ -262,9 +266,8 @@ namespace KenticoCloud.Delivery
 
             return value;
         }
-    
 
-        private string RemoveContentItemsFromRichText(string value)
+        private string RemoveInlineContentItems(string value)
         {
             return _client.InlineContentItemsProcessor.RemoveAll(value);
         }

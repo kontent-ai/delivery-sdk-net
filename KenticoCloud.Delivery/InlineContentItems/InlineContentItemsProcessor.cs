@@ -1,16 +1,13 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
-using System.Runtime.InteropServices.ComTypes;
 using AngleSharp.Dom;
 using AngleSharp.Parser.Html;
-using AngleSharp.Parser.Xml;
-using AngleSharp.Services.Default;
 
-namespace KenticoCloud.Delivery.ContentItemsInRichText
+namespace KenticoCloud.Delivery.InlineContentItems
 {
     /// <summary>
-    /// Processor responsible for parsing richtext elements and resolving content items referenced in them using provided resolvers.
+    /// Processor responsible for parsing HTML input and resolving inline content items referenced in them using registered resolvers
     /// </summary>
     public class InlineContentItemsProcessor
     {
@@ -19,16 +16,15 @@ namespace KenticoCloud.Delivery.ContentItemsInRichText
         private readonly IInlineContentItemsResolver<UnretrievedContentItem> _unretrievedInlineContentItemsResolver;
 
         /// <summary>
-        /// Resolver used in case we haven't registered other resolver for processed content type in richtext.
+        /// Resolver used in case no other resolver was registered for type of inline content item
         /// </summary>
         public IInlineContentItemsResolver<object> DefaultResolver;
 
         /// <summary>
-        /// Rich text output processor, going through HTML and replacing content items marked as object elements with output of resolvers.
+        /// Inline content item processor, going through HTML and replacing content items marked as object elements with output of resolvers.
         /// </summary>
-        /// <param name="defaultResolver">Resolver used in case we haven't registered content type specific resolver.</param>
-        /// <param name="unretrievedInlineContentItemsResolver">Resolver whose output is used in case we haven't retrieved value of content item in richtext, 
-        /// this can happen if depth of client request is too low.</param>
+        /// <param name="defaultResolver">Resolver used in case no content type specific resolver was registered.</param>
+        /// <param name="unretrievedInlineContentItemsResolver">Resolver whose output is used in case that value of inline content item was not retrieved from Delivery API.</param>
         public InlineContentItemsProcessor(IInlineContentItemsResolver<object> defaultResolver, IInlineContentItemsResolver<UnretrievedContentItem> unretrievedInlineContentItemsResolver)
         {
             DefaultResolver = defaultResolver;
@@ -37,17 +33,17 @@ namespace KenticoCloud.Delivery.ContentItemsInRichText
         }
 
         /// <summary>
-        /// Processes richtext output, which is expected to be in HTML format and returns it with resolved content items.
+        /// Processes HTML input and returns it with inline content items replaced with resolvers output.
         /// </summary>
-        /// <param name="value">Richtext output.</param>
-        /// <param name="usedContentItems">Content items used in richtext, used as input for resolution function.</param>
-        /// <returns></returns>
+        /// <param name="value">HTML code</param>
+        /// <param name="usedContentItems">Content items referenced as inline content items</param>
+        /// <returns>HTML with inline content items replaced with resolvers output</returns>
         public string Process(string value, Dictionary<string, object> usedContentItems)
         {
             object processedContentItem;
-            var htmlRichText = new HtmlParser().Parse(value);
+            var htmlInput = new HtmlParser().Parse(value);
 
-            var inlineContentItems = GetContentItemsFromHtml(htmlRichText);
+            var inlineContentItems = GetContentItemsFromHtml(htmlInput);
             foreach (var contentItems in inlineContentItems)
             {
                 var codename = contentItems.GetAttribute("data-codename");
@@ -75,8 +71,7 @@ namespace KenticoCloud.Delivery.ContentItemsInRichText
                         {
                             var data = new ResolvedContentItemData<object> { Item = processedContentItem };
                             replacement = DefaultResolver.Resolve(data);
-                        }
-                       
+                        }                  
                     }
 
                     try
@@ -91,37 +86,34 @@ namespace KenticoCloud.Delivery.ContentItemsInRichText
                     catch (HtmlParseException exception)
                     {
                         var textNodeWithError =
-                            htmlRichText.CreateTextNode($"Error while parsing resolvers output for content type {contentType}, codename {codename} at line {exception.Position.Line}, column {exception.Position.Column}.");
+                            htmlInput.CreateTextNode($"Error while parsing resolvers output for content type {contentType}, codename {codename} at line {exception.Position.Line}, column {exception.Position.Column}.");
                         contentItems.Replace(textNodeWithError);
                     }
-
-                    
-   
                 }
             }
 
-            return htmlRichText.Body.InnerHtml;
+            return htmlInput.Body.InnerHtml;
         }
 
         /// <summary>
-        /// Removes all content items from given rich text element content.
+        /// Removes all content items from given HTML content.
         /// </summary>
-        /// <param name="value">Rich text element content, expected to be HTML.</param>
-        /// <returns></returns>
+        /// <param name="value">HTML content</param>
+        /// <returns>HTML without inline content items</returns>
         public string RemoveAll(string value)
         {
-            var htmlRichText = new HtmlParser().Parse(value);
-            List<IElement> inlineContentItems = GetContentItemsFromHtml(htmlRichText);
+            var htmlInput = new HtmlParser().Parse(value);
+            List<IElement> inlineContentItems = GetContentItemsFromHtml(htmlInput);
             foreach (var contentItem in inlineContentItems)
             {
                 contentItem.Remove();
             }
-            return htmlRichText.Body.InnerHtml;
+            return htmlInput.Body.InnerHtml;
         }
 
-        private static List<IElement> GetContentItemsFromHtml(AngleSharp.Dom.Html.IHtmlDocument htmlRichText)
+        private static List<IElement> GetContentItemsFromHtml(AngleSharp.Dom.Html.IHtmlDocument htmlInput)
         {
-            return htmlRichText.Body.GetElementsByTagName("object").Where(o => o.GetAttribute("type") == "application/kenticocloud" && o.GetAttribute("data-type") == "item").ToList();
+            return htmlInput.Body.GetElementsByTagName("object").Where(o => o.GetAttribute("type") == "application/kenticocloud" && o.GetAttribute("data-type") == "item").ToList();
         }
 
         /// <summary>

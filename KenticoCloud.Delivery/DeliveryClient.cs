@@ -4,7 +4,7 @@ using System.Collections.Generic;
 using System.Net;
 using System.Net.Http;
 using System.Threading.Tasks;
-using KenticoCloud.Delivery.ContentItemsInRichText;
+using KenticoCloud.Delivery.InlineContentItems;
 
 namespace KenticoCloud.Delivery
 {
@@ -21,7 +21,7 @@ namespace KenticoCloud.Delivery
         private IContentLinkUrlResolver _linkUrlResolver;
 
         /// <summary>
-        /// Richtext content items processor for content items retrieved using this client.
+        /// Inline content items processor for richtext elements retrieved with this client.
         /// </summary>
         public InlineContentItemsProcessor InlineContentItemsProcessor { get; private set; }
 

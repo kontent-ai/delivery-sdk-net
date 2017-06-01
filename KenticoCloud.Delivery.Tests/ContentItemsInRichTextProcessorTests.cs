@@ -1,7 +1,7 @@
 ﻿using System;
 using Xunit;
 using System.Collections.Generic;
-using KenticoCloud.Delivery.ContentItemsInRichText;
+using KenticoCloud.Delivery.InlineContentItems;
 
 namespace KenticoCloud.Delivery.Tests
 {
