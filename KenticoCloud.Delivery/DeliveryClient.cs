@@ -22,7 +22,7 @@ namespace KenticoCloud.Delivery
 
         private ICodeFirstModelProvider _codeFirstModelProvider;
 
-        private InlineContentItemsProcessor _inlineContentItemsProcessor;
+        private IInlineContentItemsProcessor _inlineContentItemsProcessor;
 
         /// <summary>
         /// Gets or sets an object that resolves links to content items in Rich text element values.
@@ -42,7 +42,7 @@ namespace KenticoCloud.Delivery
         /// <summary>
         /// Gets processor for richtext elements retrieved with this client.
         /// </summary>
-        public InlineContentItemsProcessor InlineContentItemsProcessor
+        public IInlineContentItemsProcessor InlineContentItemsProcessor
         {
             get
             {
