@@ -107,7 +107,26 @@ namespace KenticoCloud.Delivery
                             ?.FirstOrDefault(p => PropertyMapper.IsMatch(property, p.Name, system?.Type))
                             ?.FirstOrDefault()["value"];
 
-                        if (propertyType == typeof(string))
+                        var valueConverter = property.GetCustomAttributes().FirstOrDefault(attr => typeof(IPropertyValueConverter).IsAssignableFrom(attr.GetType())) as IPropertyValueConverter;
+                        if (valueConverter != null)
+                        {
+                            value = valueConverter.GetPropertyValue(
+                                property,
+                                propValue,
+                                (codename) => {
+                                    var modularContentNode = (JObject)modularContent;
+                                    var modularContentItemNode = modularContentNode.Properties().FirstOrDefault(p => p.Name == codename)?.First;
+                                    if (modularContentItemNode != null)
+                                    {
+                                        return GetContentItemModel(typeof(object), modularContentItemNode, modularContent, processedItems);
+                                    }
+
+                                    return null;
+                                },
+                                _client
+                            );
+                        }
+                        else if (propertyType == typeof(string))
                         {
                             value = propValue?.ToObject<string>();
                             var links = ((JObject)propValue?.Parent?.Parent)?.Property("links")?.Value;
