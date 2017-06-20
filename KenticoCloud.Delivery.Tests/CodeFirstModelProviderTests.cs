@@ -12,6 +12,8 @@ namespace KenticoCloud.Delivery.Tests
     public class CodeFirstModelProviderTests
     {
         [Fact]
+        // During processing of inline content items, item which detects circular dependency ( A refs B, B refs A ) should resolve resolved item
+        // as if there were no inline content items, which will prevent circular dependency
         public void RetrievingContentModelWithCircularDependencyDoesNotCycle()
         {
             var fakeDeliverClient = A.Fake<IDeliveryClient>();
