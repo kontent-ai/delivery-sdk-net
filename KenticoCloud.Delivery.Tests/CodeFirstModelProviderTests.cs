@@ -18,29 +18,32 @@ namespace KenticoCloud.Delivery.Tests
             var codeFirstTypeProvider = A.Fake<ICodeFirstTypeProvider>();
             A.CallTo(() => codeFirstTypeProvider.GetType(A<string>._)).Returns(typeof(ContentItemWithSingleRTE));
             
-            var processor = A.Fake<IInlineContentItemsProcessor>();
-            A.CallTo(() => processor.Process(A<string>.Ignored, A<Dictionary<string,object>>.Ignored));
-            
-            A.CallTo(() => fakeDeliverClient.InlineContentItemsProcessor).Returns(processor);
-
+            var processor = new InlineContentItemsProcessor(null, null);
+            processor.RegisterTypeResolver(new RichTextInlineResolver());
             var retriever = new CodeFirstModelProvider(fakeDeliverClient);
             retriever.TypeProvider = codeFirstTypeProvider;
+            A.CallTo(() => fakeDeliverClient.InlineContentItemsProcessor).Returns(processor);
 
             var item = JToken.FromObject(rt1);
             var modularContent = JToken.FromObject(modularContentObject);
 
             var result = retriever.GetContentItemModel<ContentItemWithSingleRTE>(item, modularContent);
 
+            Assert.Equal("<span>FirstRT</span><span>SecondRT</span><span>FirstRT</span>", result.RT);
             Assert.IsType<ContentItemWithSingleRTE>(result);
-            A.CallTo(() => processor.Process(A<string>._, A<Dictionary<string, object>>._))
-                .MustHaveHappened(Repeated.Like(i => i == 2));
-            A.CallTo(() => processor.RemoveAll(A<string>._))
-                .MustHaveHappened(Repeated.Like(i => i == 1));
         }
 
         private class ContentItemWithSingleRTE
         {
             public string RT { get; set; }
+        }
+
+        private class RichTextInlineResolver: IInlineContentItemsResolver<ContentItemWithSingleRTE>
+        {
+            public string Resolve(ResolvedContentItemData<ContentItemWithSingleRTE> data)
+            {
+                return data.Item.RT;
+            }
         }
 
         private static object rt1 = new
@@ -61,7 +64,7 @@ namespace KenticoCloud.Delivery.Tests
                     type = "rich_text",
                     name = "RT",
                     modular_content = new [] { "rt2"},
-                    value = "\"<object type=\\\"application/kenticocloud\\\" data-type=\\\"item\\\" data-codename=\\\"rt2\\\"></object>\""
+                    value = "<span>FirstRT</span><object type=\"application/kenticocloud\" data-type=\"item\" data-codename=\"rt2\"></object"
                 }
 
             }
@@ -86,7 +89,7 @@ namespace KenticoCloud.Delivery.Tests
                     name = "RT",
                     modular_content = new [] {"rt1"},
                     value =
-                    "\"<object type=\\\"application/kenticocloud\\\" data-type=\\\"item\\\" data-codename=\\\"rt1\\\"></object>\""
+                    "<span>SecondRT</span><object type=\"application/kenticocloud\" data-type=\"item\" data-codename=\"rt1\"></object>"
                 }
             }
         };
