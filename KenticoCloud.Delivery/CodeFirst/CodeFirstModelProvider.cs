@@ -57,7 +57,7 @@ namespace KenticoCloud.Delivery
         /// <typeparam name="T">Strongly typed content item model.</typeparam>
         /// <param name="item">Content item data.</param>
         /// <param name="modularContent">Modular content items.</param>
-        /// <returns>Strongly typed POCO model of the <see cref="T"/> type.</returns>
+        /// <returns>Strongly typed POCO model of the generic type.</returns>
         public T GetContentItemModel<T>(JToken item, JToken modularContent)
         {
             return (T)GetContentItemModel(typeof(T), item, modularContent);

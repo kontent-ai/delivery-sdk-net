@@ -13,12 +13,11 @@ namespace KenticoCloud.Delivery
     /// </summary>
     public sealed class DeliveryClient : IDeliveryClient
     {
-        private const int PROJECT_ID_MAX_LENGTH = 36;
+        private readonly Guid _projectId;
+        private readonly string _previewApiKey;
 
-        private readonly HttpClient _httpClient;
-        private readonly DeliveryEndpointUrlBuilder _urlBuilder;
-
-        private IContentLinkUrlResolver _linkUrlResolver;
+        private HttpClient _httpClient;
+        private DeliveryEndpointUrlBuilder _urlBuilder;
 
         private ICodeFirstModelProvider _codeFirstModelProvider;
 
@@ -27,17 +26,7 @@ namespace KenticoCloud.Delivery
         /// <summary>
         /// Gets or sets an object that resolves links to content items in Rich text element values.
         /// </summary>
-        public IContentLinkUrlResolver ContentLinkUrlResolver
-        {
-            get
-            {
-                return _linkUrlResolver;
-            }
-            set
-            {
-                _linkUrlResolver = value;
-            }
-        }
+        public IContentLinkUrlResolver ContentLinkUrlResolver { get; set; }
 
         /// <summary>
         /// Gets processor for richtext elements retrieved with this client.
@@ -46,6 +35,12 @@ namespace KenticoCloud.Delivery
         {
             get
             {
+                if (_inlineContentItemsProcessor == null)
+                {
+                    var unretrievedInlineContentItemsResolver = new ReplaceWithWarningAboutUnretrievedItemResolver();
+                    var defaultInlineContentItemsResolver = new ReplaceWithWarningAboutRegistrationResolver();
+                    _inlineContentItemsProcessor = new InlineContentItemsProcessor(defaultInlineContentItemsResolver, unretrievedInlineContentItemsResolver);
+                }
                 return _inlineContentItemsProcessor;
             }
             private set
@@ -62,7 +57,28 @@ namespace KenticoCloud.Delivery
             get { return _codeFirstModelProvider ?? (_codeFirstModelProvider = new CodeFirstModelProvider(this)); }
             set { _codeFirstModelProvider = value; }
         }
-        
+
+        private DeliveryEndpointUrlBuilder UrlBuilder
+        {
+            get { return _urlBuilder ?? (_urlBuilder = new DeliveryEndpointUrlBuilder(_projectId.ToString("D"), _previewApiKey)); }
+        }
+
+        private HttpClient Client
+        {
+            get
+            {
+                if (_httpClient == null)
+                {
+                    _httpClient = new HttpClient();
+                    if (!string.IsNullOrEmpty(_previewApiKey))
+                    {
+                        _httpClient.DefaultRequestHeaders.Add("Authorization", string.Format("Bearer {0}", _previewApiKey));
+                    }
+                }
+                return _httpClient;
+            }
+        }
+
         /// <summary>
         /// Initializes a new instance of the <see cref="DeliveryClient"/> class for the published content of the specified project.
         /// </summary>
@@ -79,15 +95,10 @@ namespace KenticoCloud.Delivery
                 throw new ArgumentException("Kentico Cloud project identifier is not specified.", nameof(projectId));
             }
 
-            if (projectId.Length > PROJECT_ID_MAX_LENGTH)
+            if (!Guid.TryParse(projectId, out _projectId))
             {
-                throw new ArgumentException($"The specified Kentico cloud project identifier ({projectId}) is too long. Haven't you accidentally passed the Preview API key instead of the project identifier?", nameof(projectId));
+                throw new ArgumentException("Provided string is not a valid project identifier ({projectId}). Haven't you accidentally passed the Preview API key instead of the project identifier?", nameof(projectId));
             }
-            _urlBuilder = new DeliveryEndpointUrlBuilder(projectId);
-            _httpClient = new HttpClient();
-            var unretrievedInlineContentItemsResolver = new ReplaceWithEmptyStringForUnretrievedItemsResolver();
-            var defaultInlineContentItemsResolver = new ReplaceWithEmptyStringResolver();
-            InlineContentItemsProcessor = new InlineContentItemsProcessor(defaultInlineContentItemsResolver, unretrievedInlineContentItemsResolver);
         }
 
         /// <summary>
@@ -95,23 +106,8 @@ namespace KenticoCloud.Delivery
         /// </summary>
         /// <param name="projectId">The identifier of the Kentico Cloud project.</param>
         /// <param name="previewApiKey">The Preview API key.</param>
-        public DeliveryClient(string projectId, string previewApiKey)
+        public DeliveryClient(string projectId, string previewApiKey) : this(projectId)
         {
-            if (projectId == null)
-            {
-                throw new ArgumentNullException(nameof(projectId), "Kentico Cloud project identifier is not specified.");
-            }
-
-            if (projectId == string.Empty)
-            {
-                throw new ArgumentException("Kentico Cloud project identifier is not specified.", nameof(projectId));
-            }
-
-            if (projectId.Length > PROJECT_ID_MAX_LENGTH)
-            {
-                throw new ArgumentException($"The specified Kentico cloud project identifier ({projectId}) is too long. Haven't you accidentally passed the Preview API key instead of the project identifier?", nameof(projectId));
-            }
-
             if (previewApiKey == null)
             {
                 throw new ArgumentNullException(nameof(projectId), "The Preview API key is not specified.");
@@ -121,12 +117,7 @@ namespace KenticoCloud.Delivery
             {
                 throw new ArgumentException("The Preview API key is not specified.", nameof(projectId));
             }
-            _urlBuilder = new DeliveryEndpointUrlBuilder(projectId, previewApiKey);
-            _httpClient = new HttpClient();
-            _httpClient.DefaultRequestHeaders.Add("Authorization", string.Format("Bearer {0}", previewApiKey));
-            var unretrievedInlineContentItemsResolver = new ReplaceWithWarningAboutUnretrievedItemResolver();
-            var defaultInlineContentItemsResolver = new ReplaceWithWarningAboutRegistrationResolver();
-            InlineContentItemsProcessor = new InlineContentItemsProcessor(defaultInlineContentItemsResolver, unretrievedInlineContentItemsResolver);
+            _previewApiKey = previewApiKey;
         }
 
         /// <summary>
@@ -147,7 +138,7 @@ namespace KenticoCloud.Delivery
                 throw new ArgumentException("The codename of a content item is not specified.", nameof(codename));
             }
 
-            var endpointUrl = _urlBuilder.GetItemUrl(codename, parameters);
+            var endpointUrl = UrlBuilder.GetItemUrl(codename, parameters);
 
             return await GetDeliverResponseAsync(endpointUrl);
         }
@@ -159,7 +150,7 @@ namespace KenticoCloud.Delivery
         /// <returns>The <see cref="JObject"/> instance that represents the content items. If no query parameters are specified, all content items are returned.</returns>
         public async Task<JObject> GetItemsJsonAsync(params string[] parameters)
         {
-            var endpointUrl = _urlBuilder.GetItemsUrl(parameters);
+            var endpointUrl = UrlBuilder.GetItemsUrl(parameters);
 
             return await GetDeliverResponseAsync(endpointUrl);
         }
@@ -205,7 +196,7 @@ namespace KenticoCloud.Delivery
                 throw new ArgumentException("The codename of a content item is not specified.", nameof(codename));
             }
 
-            var endpointUrl = _urlBuilder.GetItemUrl(codename, parameters);
+            var endpointUrl = UrlBuilder.GetItemUrl(codename, parameters);
             var response = await GetDeliverResponseAsync(endpointUrl);
 
             return new DeliveryItemResponse(response, this);
@@ -225,7 +216,7 @@ namespace KenticoCloud.Delivery
                 throw new ArgumentException("Entered item codename is not valid.", nameof(codename));
             }
 
-            var url = _urlBuilder.GetItemUrl(codename, parameters);
+            var url = UrlBuilder.GetItemUrl(codename, parameters);
             var response = await GetDeliverResponseAsync(url);
 
             return new DeliveryItemResponse<T>(response, this);
@@ -248,7 +239,7 @@ namespace KenticoCloud.Delivery
         /// <returns>The <see cref="DeliveryItemListingResponse"/> instance that contains the content items. If no query parameters are specified, all content items are returned.</returns>
         public async Task<DeliveryItemListingResponse> GetItemsAsync(IEnumerable<IQueryParameter> parameters)
         {
-            var endpointUrl = _urlBuilder.GetItemsUrl(parameters);
+            var endpointUrl = UrlBuilder.GetItemsUrl(parameters);
             var response = await GetDeliverResponseAsync(endpointUrl);
 
             return new DeliveryItemListingResponse(response, this);
@@ -273,7 +264,7 @@ namespace KenticoCloud.Delivery
         /// <returns>The <see cref="DeliveryItemListingResponse{T}"/> instance that contains the content items. If no query parameters are specified, all content items are returned.</returns>
         public async Task<DeliveryItemListingResponse<T>> GetItemsAsync<T>(IEnumerable<IQueryParameter> parameters)
         {
-            var endpointUrl = _urlBuilder.GetItemsUrl(parameters);
+            var endpointUrl = UrlBuilder.GetItemsUrl(parameters);
             var response = await GetDeliverResponseAsync(endpointUrl);
 
             return new DeliveryItemListingResponse<T>(response, this);
@@ -296,7 +287,7 @@ namespace KenticoCloud.Delivery
                 throw new ArgumentException("The codename of a content type is not specified.", nameof(codename));
             }
 
-            var endpointUrl = _urlBuilder.GetTypeUrl(codename);
+            var endpointUrl = UrlBuilder.GetTypeUrl(codename);
 
             return await GetDeliverResponseAsync(endpointUrl);
         }
@@ -308,7 +299,7 @@ namespace KenticoCloud.Delivery
         /// <returns>The <see cref="JObject"/> instance that represents the content types. If no query parameters are specified, all content types are returned.</returns>
         public async Task<JObject> GetTypesJsonAsync(params string[] parameters)
         {
-            var endpointUrl = _urlBuilder.GetTypesUrl(parameters);
+            var endpointUrl = UrlBuilder.GetTypesUrl(parameters);
 
             return await GetDeliverResponseAsync(endpointUrl);
         }
@@ -330,7 +321,7 @@ namespace KenticoCloud.Delivery
                 throw new ArgumentException("The codename of a content type is not specified.", nameof(codename));
             }
 
-            var endpointUrl = _urlBuilder.GetTypeUrl(codename);
+            var endpointUrl = UrlBuilder.GetTypeUrl(codename);
             var response = await GetDeliverResponseAsync(endpointUrl);
 
             return new ContentType(response);
@@ -353,7 +344,7 @@ namespace KenticoCloud.Delivery
         /// <returns>The <see cref="DeliveryTypeListingResponse"/> instance that represents the content types. If no query parameters are specified, all content types are returned.</returns>
         public async Task<DeliveryTypeListingResponse> GetTypesAsync(IEnumerable<IQueryParameter> parameters)
         {
-            var endpointUrl = _urlBuilder.GetTypesUrl(parameters: parameters);
+            var endpointUrl = UrlBuilder.GetTypesUrl(parameters: parameters);
             var response = await GetDeliverResponseAsync(endpointUrl);
 
             return new DeliveryTypeListingResponse(response);
@@ -387,10 +378,9 @@ namespace KenticoCloud.Delivery
                 throw new ArgumentException("The codename of a content element is not specified.", nameof(contentElementCodename));
             }
 
-            var endpointUrl = _urlBuilder.GetContentElementUrl(contentTypeCodename, contentElementCodename);
+            var endpointUrl = UrlBuilder.GetContentElementUrl(contentTypeCodename, contentElementCodename);
             var response = await GetDeliverResponseAsync(endpointUrl);
 
-            var elementType = response["type"].ToString();
             var elementCodename = response["codename"].ToString();
 
             return new ContentElement(response, elementCodename);
@@ -398,7 +388,7 @@ namespace KenticoCloud.Delivery
 
         private async Task<JObject> GetDeliverResponseAsync(string endpointUrl)
         {
-            var response = await _httpClient.GetAsync(endpointUrl);
+            var response = await Client.GetAsync(endpointUrl);
 
             if (response.StatusCode == HttpStatusCode.OK)
             {

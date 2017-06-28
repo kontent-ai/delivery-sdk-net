@@ -28,7 +28,8 @@ namespace KenticoCloud.Delivery
         /// <summary>
         /// Initializes a new instance of the <see cref="MultipleChoiceContentElementOption"/> class with the specified JSON data.
         /// </summary>
-        /// <param name="source">The JSON data to deserialize.</param>
+        /// <param name="name">Name of the option.</param>
+        /// <param name="codename">Code name of the option.</param>
         [JsonConstructor]
         internal MultipleChoiceContentElementOption(string name, string codename)
         {

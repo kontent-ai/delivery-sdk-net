@@ -128,7 +128,8 @@ namespace KenticoCloud.Delivery.Tests
                 new ElementsParameter("price", "product_name"),
                 new LimitParameter(10),
                 new OrderParameter("elements.price", SortOrder.Descending),
-                new SkipParameter(2)
+                new SkipParameter(2),
+                new LanguageParameter("en")
             };
             var response = await client.GetItemsAsync(parameters);
 
