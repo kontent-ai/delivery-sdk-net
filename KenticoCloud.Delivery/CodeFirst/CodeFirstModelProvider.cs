@@ -67,6 +67,7 @@ namespace KenticoCloud.Delivery
         {
             processedItems = processedItems ?? new Dictionary<string, object>();
             currentlyResolvedRichStrings = currentlyResolvedRichStrings ?? new HashSet<RichTextContentElements>();
+
             var richTextPropertiesToBeProcessed = new List<PropertyInfo>();
             var system = item["system"].ToObject<ContentItemSystemAttributes>();
 
@@ -87,6 +88,27 @@ namespace KenticoCloud.Delivery
                 processedItems.Add(system.Codename, instance);
             }
 
+            var elementsData = (JObject)item["elements"];
+            if (elementsData == null)
+            {
+                throw new InvalidOperationException("Missing elements node in the content item data.");
+            }
+
+            var context = new CodeFirstResolvingContext
+            {
+                GetModularContentItem = (codename) =>
+                {
+                    var modularContentNode = (JObject)modularContent;
+                    var modularContentItemNode = modularContentNode.Properties().FirstOrDefault(p => p.Name == codename)?.First;
+                    if (modularContentItemNode != null)
+                    {
+                        return GetContentItemModel(typeof(object), modularContentItemNode, modularContent, processedItems);
+                    }
+                    return null;
+                },
+                Client = _client,
+            };
+
             foreach (var property in instance.GetType().GetProperties())
             {
                 var propertyType = property.PropertyType;
@@ -103,43 +125,28 @@ namespace KenticoCloud.Delivery
                     else
                     {
                         object value = null;
-                        var propValue = ((JObject)item["elements"]).Properties()
-                            ?.FirstOrDefault(p => PropertyMapper.IsMatch(property, p.Name, system?.Type))
-                            ?.FirstOrDefault()["value"];
+
+                        var elementData = (JObject)elementsData.Properties()?.FirstOrDefault(p => PropertyMapper.IsMatch(property, p.Name, system?.Type))?.Value;
+                        var elementValue = elementData?.Property("value")?.Value;
 
                         var valueConverter = property.GetCustomAttributes().FirstOrDefault(attr => typeof(IPropertyValueConverter).IsAssignableFrom(attr.GetType())) as IPropertyValueConverter;
                         if (valueConverter != null)
                         {
-                            value = valueConverter.GetPropertyValue(
-                                property,
-                                propValue,
-                                (codename) => {
-                                    var modularContentNode = (JObject)modularContent;
-                                    var modularContentItemNode = modularContentNode.Properties().FirstOrDefault(p => p.Name == codename)?.First;
-                                    if (modularContentItemNode != null)
-                                    {
-                                        return GetContentItemModel(typeof(object), modularContentItemNode, modularContent, processedItems);
-                                    }
-
-                                    return null;
-                                },
-                                _client
-                            );
+                            value = valueConverter.GetPropertyValue(property, elementData, context);
                         }
                         else if (propertyType == typeof(string))
                         {
-                            value = propValue?.ToObject<string>();
-                            var links = ((JObject)propValue?.Parent?.Parent)?.Property("links")?.Value;
-                            var modularContentInRichText = 
-                                ((JObject)propValue?.Parent?.Parent)?.Property("modular_content")?.Value;
+                            value = elementValue?.ToObject<string>();
+                            var links = elementData?.Property("links")?.Value;
+                            var modularContentInRichText = elementData?.Property("modular_content")?.Value;
 
                             // Handle rich_text link resolution
-                            if (links != null && propValue != null && ContentLinkResolver != null)
+                            if (links != null && elementValue != null && ContentLinkResolver != null)
                             {
                                 value = ContentLinkResolver.ResolveContentLinks((string) value, links);
                             }
 
-                            if (modularContentInRichText != null && propValue != null && _client.InlineContentItemsProcessor != null)
+                            if (modularContentInRichText != null && elementValue != null && _client.InlineContentItemsProcessor != null)
                             {
                                 // At this point it's clear it's richtext because it contains modular content
                                 richTextPropertiesToBeProcessed.Add(property);  
@@ -152,14 +159,14 @@ namespace KenticoCloud.Delivery
                                  || propertyType.GetTypeInfo().IsValueType)
                         {
                             // Handle non-hierarchical fields
-                            value = propValue?.ToObject(propertyType);
+                            value = elementValue?.ToObject(propertyType);
                         }
                         else if (propertyType.GetTypeInfo().IsGenericType
                             && ((propertyType.GetInterfaces().Any(gt => gt.GetTypeInfo().IsGenericType && gt.GetTypeInfo().GetGenericTypeDefinition() == typeof(ICollection<>)) && propertyType.GetTypeInfo().IsClass)
                             || propertyType.GetGenericTypeDefinition() == typeof(IEnumerable<>)))
                         {
                             // Handle modular content
-                            var contentItemCodenames = propValue?.ToObject<IEnumerable<string>>();
+                            var contentItemCodenames = elementValue?.ToObject<IEnumerable<string>>();
 
                             var modularContentNode = (JObject)modularContent;
                             var genericArgs = propertyType.GetGenericArguments();
@@ -219,13 +226,10 @@ namespace KenticoCloud.Delivery
             // resolvers would have all elements already processed
             foreach (var property in richTextPropertiesToBeProcessed)
             {
-                var value = property.GetValue(instance).ToString();
-                var propValue = ((JObject)item["elements"]).Properties()
-                    ?.FirstOrDefault(p => PropertyMapper.IsMatch(property, p.Name, system?.Type))
-                    ?.FirstOrDefault()["value"];
+                var value = property.GetValue(instance)?.ToString();
+                var elementData = (JObject)elementsData.Properties()?.FirstOrDefault(p => PropertyMapper.IsMatch(property, p.Name, system?.Type))?.Value;
 
-                var modularContentInRichText =
-                                ((JObject)propValue?.Parent?.Parent)?.Property("modular_content")?.Value;
+                var modularContentInRichText = elementData?.Property("modular_content")?.Value;
 
                 var currentlyProcessedString = new RichTextContentElements()
                 {

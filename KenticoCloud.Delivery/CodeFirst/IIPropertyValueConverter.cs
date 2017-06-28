@@ -14,9 +14,8 @@ namespace KenticoCloud.Delivery
         /// Gets the property value from property data
         /// </summary>
         /// <param name="property">Property info</param>
-        /// <param name="propValue">Source property value</param>
-        /// <param name="getContentItem">Callback to retrieve content items by code name</param>
-        /// <param name="client">Delivery client</param>
-        object GetPropertyValue(PropertyInfo property, JToken propValue, Func<string, object> getContentItem, IDeliveryClient client);
+        /// <param name="elementData">Source element data</param>
+        /// <param name="context">Context of the current resolving process</param>
+        object GetPropertyValue(PropertyInfo property, JToken elementData, CodeFirstResolvingContext context);
     }
 }
