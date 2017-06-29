@@ -2,21 +2,12 @@
 using System.Collections.Generic;
 using System.Linq;
 
-#if (NET45)
-using System.Configuration;
-#endif
-
 namespace KenticoCloud.Delivery
 {
     internal sealed class DeliveryEndpointUrlBuilder
     {
-#if (NET45)
-        private string PRODUCTION_ENDPOINT = ConfigurationManager.AppSettings["ProductionEndpoint"] ?? "https://deliver.kenticocloud.com/{0}";
-        private string PREVIEW_ENDPOINT = ConfigurationManager.AppSettings["PreviewEndpoint"] ?? "https://preview-deliver.kenticocloud.com/{0}";
-#else
-        private const string PRODUCTION_ENDPOINT = "https://deliver.kenticocloud.com/{0}";
-        private const string PREVIEW_ENDPOINT = "https://preview-deliver.kenticocloud.com/{0}";
-#endif
+        private string PRODUCTION_ENDPOINT = Configuration.GetValue("ProductionEndpoint", "https://deliver.kenticocloud.com/{0}");
+        private string PREVIEW_ENDPOINT = Configuration.GetValue("PreviewEndpoint", "https://preview-deliver.kenticocloud.com/{0}");
 
         private const string URL_TEMPLATE_ITEM = "/items/{0}";
         private const string URL_TEMPLATE_ITEMS = "/items";
