@@ -23,7 +23,7 @@ namespace KenticoCloud.Delivery
         /// <summary>
         /// Gets processor for richtext elements retrieved with this client.
         /// </summary>
-        InlineContentItemsProcessor InlineContentItemsProcessor { get; }
+        IInlineContentItemsProcessor InlineContentItemsProcessor { get; }
 
         /// <summary>
         /// Returns a content item as JSON data. By default, retrieves one level of modular content.
