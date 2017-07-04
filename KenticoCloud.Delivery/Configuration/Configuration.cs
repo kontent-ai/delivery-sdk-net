@@ -9,7 +9,7 @@ namespace KenticoCloud.Delivery
         static Configuration()
         {
             var builder = new ConfigurationBuilder()
-                .Add(new NET45ConfigurationProvider());
+                .Add(new ConfigurationManagerProvider());
 
             _configuration = builder.Build();
         }
