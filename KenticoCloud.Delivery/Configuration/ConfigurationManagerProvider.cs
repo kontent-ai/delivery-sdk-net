@@ -6,7 +6,7 @@ using System.Configuration;
 
 namespace KenticoCloud.Delivery
 {
-    internal class NET45ConfigurationProvider : ConfigurationProvider, IConfigurationSource
+    internal class ConfigurationManagerProvider : ConfigurationProvider, IConfigurationSource
     {
 #if (NET45)
         public override void Load()
