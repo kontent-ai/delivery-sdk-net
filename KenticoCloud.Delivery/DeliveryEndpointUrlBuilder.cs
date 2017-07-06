@@ -6,26 +6,17 @@ namespace KenticoCloud.Delivery
 {
     internal sealed class DeliveryEndpointUrlBuilder
     {
-        private string PRODUCTION_ENDPOINT = Configuration.GetValue("ProductionEndpoint", "https://deliver.kenticocloud.com/{0}");
-        private string PREVIEW_ENDPOINT = Configuration.GetValue("PreviewEndpoint", "https://preview-deliver.kenticocloud.com/{0}");
-
         private const string URL_TEMPLATE_ITEM = "/items/{0}";
         private const string URL_TEMPLATE_ITEMS = "/items";
         private const string URL_TEMPLATE_TYPE = "/types/{0}";
         private const string URL_TEMPLATE_TYPES = "/types";
         private const string URL_TEMPLATE_ELEMENT = "/types/{0}/elements/{1}";
 
-        private readonly string projectId;
-        private readonly string previewApiKey;
+        private readonly DeliveryOptions _deliveryOptions;
 
-        public DeliveryEndpointUrlBuilder(string projectId)
+        public DeliveryEndpointUrlBuilder(DeliveryOptions deliveryOptions)
         {
-            this.projectId = projectId;
-        }
-
-        public DeliveryEndpointUrlBuilder(string projectId, string previewApiKey) : this(projectId)
-        {
-            this.previewApiKey = previewApiKey;
+            _deliveryOptions = deliveryOptions;
         }
 
         public string GetItemUrl(string codename, string[] parameters)
@@ -85,7 +76,7 @@ namespace KenticoCloud.Delivery
 
         private string GetUrl(string path, string[] parameters = null)
         {
-            var endpointUrl = string.Format(string.IsNullOrEmpty(previewApiKey) ? PRODUCTION_ENDPOINT : PREVIEW_ENDPOINT, Uri.EscapeDataString(projectId));
+            var endpointUrl = string.Format(string.IsNullOrEmpty(_deliveryOptions.PreviewApiKey) ? _deliveryOptions.ProductionEndpoint : _deliveryOptions.PreviewEndpoint, Uri.EscapeDataString(_deliveryOptions.ProjectId));
             var baseUrl = string.Concat(endpointUrl, path);
 
             if (parameters != null && parameters.Length > 0)
