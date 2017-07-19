@@ -5,6 +5,7 @@ using System.Net;
 using System.Net.Http;
 using System.Threading.Tasks;
 using KenticoCloud.Delivery.InlineContentItems;
+using Microsoft.Extensions.Options;
 
 namespace KenticoCloud.Delivery
 {
@@ -79,13 +80,13 @@ namespace KenticoCloud.Delivery
         }
 
         /// <summary>
-        /// Initializes a new instance of the <see cref="DeliveryClient"/> class for the published content of the specified project.
+        /// Initializes a new instance of the <see cref="DeliveryClient"/> class for retrieving content of the specified project.
         /// </summary>
         /// <param name="deliveryOptions">The settings of the Kentico Cloud project.</param>
         public DeliveryClient(DeliveryOptions deliveryOptions)
         {
             _deliveryOptions = deliveryOptions ?? throw new ArgumentNullException(nameof(deliveryOptions), "The Delivery options object is not specified.");
-            
+
             if (_deliveryOptions.ProjectId == null)
             {
                 throw new ArgumentNullException(nameof(_deliveryOptions.ProjectId), "Kentico Cloud project identifier is not specified.");
@@ -102,14 +103,35 @@ namespace KenticoCloud.Delivery
                 throw new ArgumentException("Provided string is not a valid project identifier ({ProjectId}). Haven't you accidentally passed the Preview API key instead of the project identifier?", nameof(_deliveryOptions.ProjectId));
             }
 
+            if (_deliveryOptions.UsePreviewApi)
+            {
+                if (_deliveryOptions.PreviewApiKey == null)
+                {
+                    throw new ArgumentNullException(nameof(_deliveryOptions.PreviewApiKey), "The Preview API key is not specified.");
+                }
+
+                if (_deliveryOptions.PreviewApiKey == string.Empty)
+                {
+                    throw new ArgumentException("The Preview API key is not specified.", nameof(_deliveryOptions.PreviewApiKey));
+                }
+            }
+
             _deliveryOptions.ProjectId = projectIdGuid.ToString("D");
+        }
+
+        /// <summary>
+        /// Initializes a new instance of the <see cref="DeliveryClient"/> class for retrieving content of the specified project.
+        /// </summary>
+        /// <param name="deliveryOptions">The settings of the Kentico Cloud project.</param>
+        public DeliveryClient(IOptions<DeliveryOptions> deliveryOptions) : this(deliveryOptions.Value)
+        {
         }
 
         /// <summary>
         /// Initializes a new instance of the <see cref="DeliveryClient"/> class for the published content of the specified project.
         /// </summary>
         /// <param name="projectId">The identifier of the Kentico Cloud project.</param>
-        public DeliveryClient(string projectId) : this(new DeliveryOptions() { ProjectId = projectId })
+        public DeliveryClient(string projectId) : this(new DeliveryOptions { ProjectId = projectId })
         {
         }
 
@@ -118,19 +140,9 @@ namespace KenticoCloud.Delivery
         /// </summary>
         /// <param name="projectId">The identifier of the Kentico Cloud project.</param>
         /// <param name="previewApiKey">The Preview API key.</param>
-        public DeliveryClient(string projectId, string previewApiKey) : this(projectId)
+        public DeliveryClient(string projectId, string previewApiKey) : this(new DeliveryOptions { ProjectId = projectId, PreviewApiKey = previewApiKey, UsePreviewApi = true })
         {
-            if (previewApiKey == null)
-            {
-                throw new ArgumentNullException(nameof(previewApiKey), "The Preview API key is not specified.");
-            }
 
-            if (previewApiKey == string.Empty)
-            {
-                throw new ArgumentException("The Preview API key is not specified.", nameof(previewApiKey));
-            }
-
-            _deliveryOptions.PreviewApiKey = previewApiKey;
         }
 
         /// <summary>

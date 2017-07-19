@@ -76,7 +76,7 @@ namespace KenticoCloud.Delivery
 
         private string GetUrl(string path, string[] parameters = null)
         {
-            var endpointUrl = string.Format(string.IsNullOrEmpty(_deliveryOptions.PreviewApiKey) ? _deliveryOptions.ProductionEndpoint : _deliveryOptions.PreviewEndpoint, Uri.EscapeDataString(_deliveryOptions.ProjectId));
+            var endpointUrl = string.Format(_deliveryOptions.UsePreviewApi ? _deliveryOptions.PreviewEndpoint : _deliveryOptions.ProductionEndpoint, Uri.EscapeDataString(_deliveryOptions.ProjectId));
             var baseUrl = string.Concat(endpointUrl, path);
 
             if (parameters != null && parameters.Length > 0)

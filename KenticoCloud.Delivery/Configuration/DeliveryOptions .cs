@@ -8,12 +8,12 @@
         /// <summary>
         /// Gets or sets the Production endpoint address.
         /// </summary>
-        public string ProductionEndpoint { get; set; }
+        public string ProductionEndpoint { get; set; } = "https://deliver.kenticocloud.com/{0}";
 
         /// <summary>
         /// Gets or sets the Preview endpoint address.
         /// </summary>
-        public string PreviewEndpoint { get; set; }
+        public string PreviewEndpoint { get; set; } = "https://preview-deliver.kenticocloud.com/{0}";
 
         /// <summary>
         /// Gets or sets the Project identifier.
@@ -26,12 +26,8 @@
         public string PreviewApiKey { get; set; }
 
         /// <summary>
-        /// Initializes a new instance of the <see cref="DeliveryOptions"/> class.
+        /// Gets or sets whether the Preview API should be used. If TRUE, <see cref="PreviewApiKey"/> needs to be set as well.
         /// </summary>
-        public DeliveryOptions()
-        {
-            ProductionEndpoint = "https://deliver.kenticocloud.com/{0}";
-            PreviewEndpoint = "https://preview-deliver.kenticocloud.com/{0}";
-        }
+        public bool UsePreviewApi { get; set; }
     }
 }
