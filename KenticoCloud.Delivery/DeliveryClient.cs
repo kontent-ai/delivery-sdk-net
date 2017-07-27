@@ -97,8 +97,7 @@ namespace KenticoCloud.Delivery
                 throw new ArgumentException("Kentico Cloud project identifier is not specified.", nameof(_deliveryOptions.ProjectId));
             }
 
-            Guid projectIdGuid;
-            if (!Guid.TryParse(_deliveryOptions.ProjectId, out projectIdGuid))
+            if (!Guid.TryParse(_deliveryOptions.ProjectId, out Guid projectIdGuid))
             {
                 throw new ArgumentException("Provided string is not a valid project identifier ({ProjectId}). Haven't you accidentally passed the Preview API key instead of the project identifier?", nameof(_deliveryOptions.ProjectId));
             }
