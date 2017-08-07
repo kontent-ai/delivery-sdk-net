@@ -5,9 +5,14 @@
     /// </summary>
     public enum SortOrder
     {
-#pragma warning disable CS1591 // Missing XML comment for publicly visible type or member
+        /// <summary>
+        /// Content items in ascending order.
+        /// </summary>
         Ascending,
+
+        /// <summary>
+        /// Content items in descending order.
+        /// </summary>
         Descending
-#pragma warning restore CS1591 // Missing XML comment for publicly visible type or member
     }
 }
