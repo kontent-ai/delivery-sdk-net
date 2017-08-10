@@ -5,7 +5,7 @@ using System.Text.RegularExpressions;
 
 namespace KenticoCloud.Delivery
 {
-    public sealed class ContentLinkResolver
+    internal sealed class ContentLinkResolver
     {
         private readonly IContentLinkUrlResolver _linkUrlResolver;
         private static readonly Regex _elementRegex = new Regex("<a[^>]+?data-item-id=\"(?<id>[^\"]+)\"[^>]*>", RegexOptions.CultureInvariant | RegexOptions.IgnoreCase);

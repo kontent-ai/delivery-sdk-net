@@ -129,7 +129,7 @@ namespace KenticoCloud.Delivery
                         var elementData = (JObject)elementsData.Properties()?.FirstOrDefault(p => PropertyMapper.IsMatch(property, p.Name, system?.Type))?.Value;
                         var elementValue = elementData?.Property("value")?.Value;
 
-                        var valueConverter = property.GetCustomAttributes().FirstOrDefault(attr => typeof(IPropertyValueConverter).IsAssignableFrom(attr.GetType())) as IPropertyValueConverter;
+                        var valueConverter = GetValueConverter(property);
                         if (valueConverter != null)
                         {
                             value = valueConverter.GetPropertyValue(property, elementData, context);
@@ -143,15 +143,15 @@ namespace KenticoCloud.Delivery
                             // Handle rich_text link resolution
                             if (links != null && elementValue != null && ContentLinkResolver != null)
                             {
-                                value = ContentLinkResolver.ResolveContentLinks((string) value, links);
+                                value = ContentLinkResolver.ResolveContentLinks((string)value, links);
                             }
 
                             if (modularContentInRichText != null && elementValue != null && _client.InlineContentItemsProcessor != null)
                             {
                                 // At this point it's clear it's richtext because it contains modular content
-                                richTextPropertiesToBeProcessed.Add(property);  
+                                richTextPropertiesToBeProcessed.Add(property);
                             }
-                            
+
                         }
                         else if (propertyType == typeof(IEnumerable<MultipleChoiceOption>)
                                  || propertyType == typeof(IEnumerable<Asset>)
@@ -257,6 +257,24 @@ namespace KenticoCloud.Delivery
             }
 
             return instance;
+        }
+
+        private static IPropertyValueConverter GetValueConverter(PropertyInfo property)
+        {
+            // Converter defined by explicit attribute has the highest priority
+            var attributeConverter = property.GetCustomAttributes().FirstOrDefault(attr => typeof(IPropertyValueConverter).IsAssignableFrom(attr.GetType())) as IPropertyValueConverter;
+            if (attributeConverter != null)
+            {
+                return attributeConverter;
+            }
+
+            // Spefific type converters
+            if (typeof(IRichTextContent).IsAssignableFrom(property.PropertyType))
+            {
+                return new RichTextContentConverter();
+            }
+
+            return null;
         }
 
         private string ProcessInlineContentItems(JToken modularContent, Dictionary<string, object> processedItems, string value, JToken modularContentInRichText, HashSet<RichTextContentElements> currentlyResolvedRichStrings)
