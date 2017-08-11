@@ -1,0 +1,893 @@
+{
+  "item": {
+    "system": {
+      "id": "1bd6ba00-4bf2-4a2b-8334-917faa686f66",
+      "name": "Home",
+      "codename": "home",
+      "language": "en-US",
+      "type": "home",
+      "sitemap_locations": [
+        "home"
+      ],
+      "last_modified": "2017-04-04T13:53:08.6639435Z"
+    },
+    "elements": {
+      "hero_unit": {
+        "type": "modular_content",
+        "name": "Hero unit",
+        "value": [
+          "home_page_hero_unit",
+          "home_page_promotion"
+        ]
+      },
+      "articles": {
+        "type": "modular_content",
+        "name": "Articles",
+        "value": [
+          "coffee_beverages_explained",
+          "donate_with_us",
+          "origins_of_arabica_bourbon",
+          "on_roasts",
+          "coffee_processing_techniques"
+        ]
+      },
+      "our_story": {
+        "type": "modular_content",
+        "name": "Our story",
+        "value": [
+          "our_story"
+        ]
+      },
+      "cafes": {
+        "type": "modular_content",
+        "name": "Cafes",
+        "value": [
+          "allendale",
+          "boston",
+          "los_angeles",
+          "new_york"
+        ]
+      },
+      "contact": {
+        "type": "rich_text",
+        "name": "Contact",
+        "images": {},
+        "links": {},
+        "modular_content": [],
+        "value": "<h3>Contact</h3>\n<p>(+1) 617-632-4520</p>\n<p><a href=\"http://dancinggoat@localhost.local\">dancinggoat@localhost.local</a></p>\n<p><br></p>\n<p>Dancing Goat Ltd<br>\n62 E Lake St Chicago,<br>\nIllinois 60601, USA</p>"
+      },
+      "url_pattern": {
+        "type": "url_slug",
+        "name": "URL pattern",
+        "value": "home"
+      }
+    }
+  },
+  "modular_content": {
+    "new_york": {
+      "system": {
+        "id": "3eb5191f-4ce1-4965-bffb-87d8f3cdca08",
+        "name": "New York",
+        "codename": "new_york",
+        "language": "en-US",
+        "type": "cafe",
+        "sitemap_locations": [
+          "cafes",
+          "north_america"
+        ],
+        "last_modified": "2016-09-05T14:14:08.4285085Z"
+      },
+      "elements": {
+        "street": {
+          "type": "text",
+          "name": "Street",
+          "value": "328 W 29th St"
+        },
+        "city": {
+          "type": "text",
+          "name": "City",
+          "value": "New York"
+        },
+        "country": {
+          "type": "text",
+          "name": "Country",
+          "value": "USA"
+        },
+        "state": {
+          "type": "text",
+          "name": "State",
+          "value": "New York"
+        },
+        "zip_code": {
+          "type": "text",
+          "name": "ZIP Code",
+          "value": "10001"
+        },
+        "phone": {
+          "type": "text",
+          "name": "Phone",
+          "value": "646-555-0150"
+        },
+        "email": {
+          "type": "text",
+          "name": "Email",
+          "value": "NewYork@localhost.local"
+        },
+        "photo": {
+          "type": "asset",
+          "name": "Photo",
+          "value": [
+            {
+              "name": "cafe06.jpg",
+              "type": "image/jpeg",
+              "size": 275350,
+              "description": "Dancing Goat Café - New York",
+              "url": "https://assets.kenticocloud.com:443/975bf280-fd91-488c-994c-2f04416e5ee3/32d055c4-8b32-48f2-881d-058a1854e36e/cafe06.jpg"
+            }
+          ]
+        }
+      }
+    },
+    "boston": {
+      "system": {
+        "id": "028f0e05-9f17-45be-962d-62bebe6b6f53",
+        "name": "Boston",
+        "codename": "boston",
+        "language": "en-US",
+        "type": "cafe",
+        "sitemap_locations": [
+          "cafes",
+          "north_america"
+        ],
+        "last_modified": "2016-09-05T14:12:49.0914134Z"
+      },
+      "elements": {
+        "street": {
+          "type": "text",
+          "name": "Street",
+          "value": "27 Bowdoin St"
+        },
+        "city": {
+          "type": "text",
+          "name": "City",
+          "value": "Boston"
+        },
+        "country": {
+          "type": "text",
+          "name": "Country",
+          "value": "USA"
+        },
+        "state": {
+          "type": "text",
+          "name": "State",
+          "value": "Massachusetts"
+        },
+        "zip_code": {
+          "type": "text",
+          "name": "ZIP Code",
+          "value": "02144"
+        },
+        "phone": {
+          "type": "text",
+          "name": "Phone",
+          "value": "617-600-225"
+        },
+        "email": {
+          "type": "text",
+          "name": "Email",
+          "value": "Boston@localhost.local"
+        },
+        "photo": {
+          "type": "asset",
+          "name": "Photo",
+          "value": [
+            {
+              "name": "cafe03.jpg",
+              "type": "image/jpeg",
+              "size": 405527,
+              "description": "Dancing Goat Café - Boston",
+              "url": "https://assets.kenticocloud.com:443/975bf280-fd91-488c-994c-2f04416e5ee3/7e510ff1-13c0-4a03-a19c-05625183df1f/cafe03.jpg"
+            }
+          ]
+        }
+      }
+    },
+    "home_page_promotion": {
+      "system": {
+        "id": "fb6f849c-ab48-4396-80d4-3ebbaa97a57d",
+        "name": "Home page promotion",
+        "codename": "home_page_promotion",
+        "language": "en-US",
+        "type": "hero_unit",
+        "sitemap_locations": [],
+        "last_modified": "2017-03-22T12:40:16.8440029Z"
+      },
+      "elements": {
+        "title": {
+          "type": "text",
+          "name": "Title",
+          "value": "Try Our Premium Coffee"
+        },
+        "image": {
+          "type": "asset",
+          "name": "Image",
+          "value": [
+            {
+              "name": "banner-b2c.jpg",
+              "type": "image/jpeg",
+              "size": 106051,
+              "description": "Cup of coffee",
+              "url": "https://assets.kenticocloud.com:443/975bf280-fd91-488c-994c-2f04416e5ee3/8787344e-4d7b-4c17-9e34-3fabb2a5ec92/banner-b2c.jpg"
+            }
+          ]
+        },
+        "marketing_message": {
+          "type": "rich_text",
+          "name": "Marketing message",
+          "images": {},
+          "links": {},
+          "modular_content": [],
+          "value": "<p>Get a free sample of any coffee we offer and choose a flavor that fits you best. Perfect as it is, that’s Dancing goat's coffee.</p>"
+        }
+      }
+    },
+    "our_story": {
+      "system": {
+        "id": "a22b5778-f4ac-490e-a9e0-e8326d2e087c",
+        "name": "Our story",
+        "codename": "our_story",
+        "language": "en-US",
+        "type": "fact_about_us",
+        "sitemap_locations": [
+          "about_us"
+        ],
+        "last_modified": "2017-04-04T11:49:14.9737715Z"
+      },
+      "elements": {
+        "title": {
+          "type": "text",
+          "name": "Title",
+          "value": "Our story"
+        },
+        "description": {
+          "type": "rich_text",
+          "name": "Description",
+          "images": {},
+          "links": {
+            "18689ab0-e5ff-4ca5-bd13-ae3b5997c2d9": {
+              "codename": "how_we_source_our_coffees",
+              "type": "fact_about_us",
+              "url_slug": ""
+            }
+          },
+          "modular_content": [],
+          "value": "<p>At Dancing Goat, we strive to do things right. Not only do we source the best coffees you can get your hands on. We also make sure we have a direct relationship with our farmers. Visiting the micro farms where we <a data-item-id=\"18689ab0-e5ff-4ca5-bd13-ae3b5997c2d9\" href=\"\">source our coffees</a> is our daily bread. This way, we can guarantee the highest quality standard all year long. No middle-men, no unfair shares. Our farmers get the best deal possible. So do you.</p>"
+        },
+        "image": {
+          "type": "asset",
+          "name": "Image",
+          "value": [
+            {
+              "name": "our-story.jpg",
+              "type": "image/jpeg",
+              "size": 69622,
+              "description": "Coffee Bean Bag",
+              "url": "https://assets.kenticocloud.com:443/975bf280-fd91-488c-994c-2f04416e5ee3/08bf515c-3b0e-4760-907b-6db0a22d41f3/our-story.jpg"
+            }
+          ]
+        }
+      }
+    },
+    "origins_of_arabica_bourbon": {
+      "system": {
+        "id": "b2fea94c-73fd-42ec-a22f-f409878de187",
+        "name": "Origins of Arabica Bourbon",
+        "codename": "origins_of_arabica_bourbon",
+        "language": "en-US",
+        "type": "article",
+        "sitemap_locations": [
+          "articles"
+        ],
+        "last_modified": "2017-04-04T13:45:44.1533096Z"
+      },
+      "elements": {
+        "personas": {
+          "type": "taxonomy",
+          "name": "Personas",
+          "taxonomy_group": "personas",
+          "value": [
+            {
+              "name": "Barista",
+              "codename": "barista"
+            },
+            {
+              "name": "Coffee blogger",
+              "codename": "coffee_blogger"
+            }
+          ]
+        },
+        "title": {
+          "type": "text",
+          "name": "Title",
+          "value": "Origins of Arabica Bourbon"
+        },
+        "teaser_image": {
+          "type": "asset",
+          "name": "Teaser image",
+          "value": [
+            {
+              "name": "origins-of-arabica-bourbon-1080px.jpg",
+              "type": "image/jpeg",
+              "size": 132229,
+              "description": "Réunion Island",
+              "url": "https://assets.kenticocloud.com:443/975bf280-fd91-488c-994c-2f04416e5ee3/1cfcb6c9-1fe6-4013-a0bb-b26f8ada2ebf/origins-of-arabica-bourbon-1080px.jpg"
+            }
+          ]
+        },
+        "post_date": {
+          "type": "date_time",
+          "name": "Post date",
+          "value": "2014-11-11T00:00:00Z"
+        },
+        "summary": {
+          "type": "text",
+          "name": "Summary",
+          "value": "This one particular type of coffee, the Arabica Bourbon, is now sold only in Japan. It has been brought back to life by enthusiasts after being almost forgotten for nearly sixty years."
+        },
+        "body_copy": {
+          "type": "rich_text",
+          "name": "Body Copy",
+          "images": {},
+          "links": {},
+          "modular_content": [],
+          "value": "<p>Arabica Bourbon is among the best coffee varieties you can find in Brazil, Salvador, and Rwanda. This widely known and popular coffee is cultivated in three color varieties, red, orange and yellow bourbon. But what does it have in common with the American whiskey? Nothing at all, fortunately.</p>\n<p>The name comes from the place of origin of this wonderful variety, which is a small island in the Indian Ocean called Réunion, formerly Bourbon. The earliest records mentioning coffee from this lovely volcanic island come from merchants of the East Indian Company and date from the beginning of the 18th century. The first exports started in 1718, and the coffee usually went to Mokka harbor in Yemen and then on to Europe. Exports started off slowly at first. Just less than two tons were shipped in 1724, but this increased rapidly over the next hundred years, peaking at 2,440 tons of coffee per year.</p>\n<p>The coffee, first called Café du Roy, then Café Leroy, was served to kings at the French court and was the brand of choice of the classic author, Honoré de Balzac, who enjoyed forty cups a day. Or so they say…</p>\n<p>The Bourbon variety found its way to Latin America around the middle of the 19th century, where it gradually replaced the older Ethiopian variety, the Arabica Typica, mainly because of its 30% larger yield. While the Arabica Bourbon was doing well in the world, the production on Réunion was slowly, but steadily, decreasing year by year. Farmers opted to grow sugarcane, tea and vanilla beans instead of coffee, and therefore 1942 marked the last export of Arabica Bourbon from the island of Réunion. The last harvest came eight years later and then the variety was forgotten about, even by the locals.</p>\n<p>After almost sixty years, one unrelenting Japanese coffee specialist from Ueshima Coffee Company discovered 27 original plants and restarted production. The resulting coffee is called Bourbon Pointu. It is sold only in Japan and holds the prestigious Premium Product title from the Specialty Coffee Association of Japan. It is also quite pricey, at $35 for 4 ounces.</p>\n<p>The Bourbon Pointu is exceptional for its low volume of caffeine and delicate taste with a slight acidity, low bitterness, full body, and the charming fruit flavor of oranges and tangerines.</p>\n<p>One can only hope that the island of Réunion will eventually return to its former coffee glory and that we will be able to enjoy Bourbon Pointu as well.</p>\n<p>If you are curious about the original taste of Arabica Bourbon, go ahead and try our (Guatemala Finca El Injerto)&nbsp;or newly imported (El Salvador Finca San Jose).</p>"
+        },
+        "related_articles": {
+          "type": "modular_content",
+          "name": "Related articles",
+          "value": []
+        },
+        "meta_keywords": {
+          "type": "text",
+          "name": "Meta keywords",
+          "value": "coffee, arabica"
+        },
+        "meta_description": {
+          "type": "text",
+          "name": "Meta description",
+          "value": "Arabica Bourbon, is now sold only in Japan. It has been brought back to life by enthusiasts after being almost forgotten for nearly sixty years."
+        },
+        "url_pattern": {
+          "type": "url_slug",
+          "name": "URL pattern",
+          "value": "origins-of-arabica-bourbon"
+        }
+      }
+    },
+    "on_roasts": {
+      "system": {
+        "id": "f4b3fc05-e988-4dae-9ac1-a94aba566474",
+        "name": "On Roasts",
+        "codename": "on_roasts",
+        "language": "en-US",
+        "type": "article",
+        "sitemap_locations": [
+          "articles"
+        ],
+        "last_modified": "2017-04-04T13:45:30.7692802Z"
+      },
+      "elements": {
+        "personas": {
+          "type": "taxonomy",
+          "name": "Personas",
+          "taxonomy_group": "personas",
+          "value": [
+            {
+              "name": "Barista",
+              "codename": "barista"
+            },
+            {
+              "name": "Coffee blogger",
+              "codename": "coffee_blogger"
+            }
+          ]
+        },
+        "title": {
+          "type": "text",
+          "name": "Title",
+          "value": "On Roasts"
+        },
+        "teaser_image": {
+          "type": "asset",
+          "name": "Teaser image",
+          "value": [
+            {
+              "name": "on-roasts-1080px.jpg",
+              "type": "image/jpeg",
+              "size": 121946,
+              "description": "Coffee Roastery",
+              "url": "https://assets.kenticocloud.com:443/975bf280-fd91-488c-994c-2f04416e5ee3/f6daed1f-3f3b-4036-a9c7-9519359b9601/on-roasts-1080px.jpg"
+            }
+          ]
+        },
+        "post_date": {
+          "type": "date_time",
+          "name": "Post date",
+          "value": "2014-11-07T00:00:00Z"
+        },
+        "summary": {
+          "type": "text",
+          "name": "Summary",
+          "value": "Roasting coffee beans can take from 6 to 13 minutes. Different roasting times produce different types of coffee, with varying concentration of caffeine and intensity of the original flavor."
+        },
+        "body_copy": {
+          "type": "rich_text",
+          "name": "Body Copy",
+          "images": {},
+          "links": {},
+          "modular_content": [],
+          "value": "<p>There’s nothing complicated about roasting. It’s as easy as baking a pie, maybe even simpler as there’s just one ingredient. What’s complicated is fine-tuning the whole process to perfection. It’s also a huge responsibility. You can easily ruin something that’s been in the works for months and has been perfect up until now.</p><h3>Light Roasts</h3><p>Usually roasted for 6-8 minutes or simply until achieving a light brown color. This method is used for milder coffee varieties and for coffee tasting. This type of roasting allows the natural characteristics of each coffee to show. The aroma of coffees produced from light roasts is usually more intense. The cup itself is more acidic and the concentration of caffeine is higher.</p><h3>Medium roast</h3><p>These exempt a stronger flavor than light roasts. The beans are still more matte than oily. Caffeine contents are decreased. Medium roasts lack the grainy taste of lighter roasts. You also get a more balanced flavor, aroma and acidity.</p><h3>Dark Roasts</h3><p>Dark roast beans are achieved by a 12-13 minute roasting process. The beans have a heavier body, a surface that appears a little oily and a somewhat shiny. Darker roasts have a more chocolate-like flavor. The sugars in the coffee caramelize more than with light roasts and make their way to the surface of the bean. This makes the beans less acidic as well.</p><p>To put it in points, these are general rules that apply to different levels of roasts:</p><ul><li>Caffeine level decreases the darker the roast is.</li><li>Darker roasts exempt less acidity than lighter roasts.</li><li>The darker beans get roasted, the oilier their surface becomes.</li><li>Lighter roasts maintain more of the original flavors of their varieties, while the darker they get, they tend to take on more flavor from the roasting process itself.</li><li>The body of the coffee gets heavier until taken to really high temperatures, where they emit what is called a ‘second crack’. Then the body starts thinning out again.</li></ul><p>You can easily imprint your own signature into each coffee that you make during the roasting process. At Dancing Goat, though, we choose to instead highlight what makes of the varietal great and unique.</p>"
+        },
+        "related_articles": {
+          "type": "modular_content",
+          "name": "Related articles",
+          "value": [
+            "coffee_processing_techniques",
+            "origins_of_arabica_bourbon"
+          ]
+        },
+        "meta_keywords": {
+          "type": "text",
+          "name": "Meta keywords",
+          "value": "roasts, coffee"
+        },
+        "meta_description": {
+          "type": "text",
+          "name": "Meta description",
+          "value": "Roasting coffee beans can take from 6 to 13 minutes. Different roasting times produce different types of coffee."
+        },
+        "url_pattern": {
+          "type": "url_slug",
+          "name": "URL pattern",
+          "value": "on-roasts"
+        }
+      }
+    },
+    "allendale": {
+      "system": {
+        "id": "e81a0107-8e09-4f2e-b583-8869abe5952a",
+        "name": "Allendale",
+        "codename": "allendale",
+        "language": "en-US",
+        "type": "cafe",
+        "sitemap_locations": [
+          "cafes",
+          "north_america"
+        ],
+        "last_modified": "2016-09-05T14:13:52.934532Z"
+      },
+      "elements": {
+        "street": {
+          "type": "text",
+          "name": "Street",
+          "value": "11480 53rd Ave"
+        },
+        "city": {
+          "type": "text",
+          "name": "City",
+          "value": "Allendale"
+        },
+        "country": {
+          "type": "text",
+          "name": "Country",
+          "value": "USA"
+        },
+        "state": {
+          "type": "text",
+          "name": "State",
+          "value": "Michigan"
+        },
+        "zip_code": {
+          "type": "text",
+          "name": "ZIP Code",
+          "value": "49401"
+        },
+        "phone": {
+          "type": "text",
+          "name": "Phone",
+          "value": "877-692-4978"
+        },
+        "email": {
+          "type": "text",
+          "name": "Email",
+          "value": "Allendale@localhost.local"
+        },
+        "photo": {
+          "type": "asset",
+          "name": "Photo",
+          "value": [
+            {
+              "name": "cafe04.jpg",
+              "type": "image/jpeg",
+              "size": 545064,
+              "description": "Dancing Goat Café - Allendale",
+              "url": "https://assets.kenticocloud.com:443/975bf280-fd91-488c-994c-2f04416e5ee3/4237a2ff-ce1a-45d9-8f59-65eb2ea3e401/cafe04.jpg"
+            }
+          ]
+        }
+      }
+    },
+    "los_angeles": {
+      "system": {
+        "id": "de4bfc43-0daf-4aed-960d-49ad4d8f95ad",
+        "name": "Los Angeles",
+        "codename": "los_angeles",
+        "language": "en-US",
+        "type": "cafe",
+        "sitemap_locations": [
+          "cafes",
+          "north_america"
+        ],
+        "last_modified": "2016-09-05T14:14:00.6640656Z"
+      },
+      "elements": {
+        "street": {
+          "type": "text",
+          "name": "Street",
+          "value": "9076 Sunset Boulevard"
+        },
+        "city": {
+          "type": "text",
+          "name": "City",
+          "value": "Los Angeles"
+        },
+        "country": {
+          "type": "text",
+          "name": "Country",
+          "value": "USA"
+        },
+        "state": {
+          "type": "text",
+          "name": "State",
+          "value": "California"
+        },
+        "zip_code": {
+          "type": "text",
+          "name": "ZIP Code",
+          "value": "90210"
+        },
+        "phone": {
+          "type": "text",
+          "name": "Phone",
+          "value": "213-326-4224"
+        },
+        "email": {
+          "type": "text",
+          "name": "Email",
+          "value": "LosAngeles@localhost.local"
+        },
+        "photo": {
+          "type": "asset",
+          "name": "Photo",
+          "value": [
+            {
+              "name": "cafe05.jpg",
+              "type": "image/jpeg",
+              "size": 114844,
+              "description": "Dancing Goat Café - Los Angeles",
+              "url": "https://assets.kenticocloud.com:443/975bf280-fd91-488c-994c-2f04416e5ee3/8858d272-777b-43bd-93be-53a98be97569/cafe05.jpg"
+            }
+          ]
+        }
+      }
+    },
+    "coffee_beverages_explained": {
+      "system": {
+        "id": "cf106f4e-30a4-42ef-b313-b8ea3fd3e5c5",
+        "name": "Coffee Beverages Explained",
+        "codename": "coffee_beverages_explained",
+        "language": "en-US",
+        "type": "article",
+        "sitemap_locations": [
+          "articles"
+        ],
+        "last_modified": "2017-06-27T13:01:54.5735581Z"
+      },
+      "elements": {
+        "personas": {
+          "type": "taxonomy",
+          "name": "Personas",
+          "taxonomy_group": "personas",
+          "value": [
+            {
+              "name": "Coffee lover",
+              "codename": "coffee_lover"
+            }
+          ]
+        },
+        "title": {
+          "type": "text",
+          "name": "Title",
+          "value": "Coffee Beverages Explained"
+        },
+        "teaser_image": {
+          "type": "asset",
+          "name": "Teaser image",
+          "value": [
+            {
+              "name": "coffee-beverages-explained-1080px.jpg",
+              "type": "image/jpeg",
+              "size": 90895,
+              "description": "Professional Espresso Machine",
+              "url": "https://assets.kenticocloud.com:443/975bf280-fd91-488c-994c-2f04416e5ee3/e700596b-03b0-4cee-ac5c-9212762c027a/coffee-beverages-explained-1080px.jpg"
+            }
+          ]
+        },
+        "post_date": {
+          "type": "date_time",
+          "name": "Post date",
+          "value": "2014-11-18T00:00:00Z"
+        },
+        "summary": {
+          "type": "text",
+          "name": "Summary",
+          "value": "Espresso and filtered coffee are the two main categories of coffee, based on the method of preparation. Learn about individual types of coffee that fall under these categories."
+        },
+        "body_copy": {
+          "type": "rich_text",
+          "name": "Body Copy",
+          "images": {},
+          "links": {},
+          "modular_content": [
+            "americano",
+            "how_to_make_a_cappuccino"
+          ],
+          "value": "<p>The coffee drinking culture has been evolving for hundreds and thousands of years. It has never been so rich as today. How do you make sense of different types of coffee, what do the particular names in beverage menus mean and what beverage to choose for which occasion in your favorite café?</p>\n<p>Coffee can be divided into two basic categories according to the method of preparation.</p>\n<h3>Espresso based beverages</h3>\n<h4>Espresso without additions</h4>\n<p>The philosophy of this beverage is not about ponding over a mug and sipping from it for long hours, but more about a quick order and two or three gulps at a bar. Espresso is not the highest achievable base among coffee beverages to pursue. It is only a single method of coffee preparation, which servers its purpose – swiftness and concentrated experience.</p>\n<p>Parameters of a good espresso:<br>\nOne portion of coffee: 7 g ± 0,5 (for some types of coffee even 10-11g)<br>\nOutput temperature of water in a coffee machine: 88 °C ± 2 °C<br>\nTemperature of the coffee in a mug: 67 °C ± 3 °C<br>\nInput water pressure: 9 bar ± 1<br>\nExtraction time: 25 seconds ± 2,5 seconds<br>\nViscosity at 45 °C: &gt; 1,5 mPa s<br>\nOil: &gt; 2 mg/ml<br>\nCaffeine: &lt; 100 mg/cup<br>\nVolume of coffee in a mug including crema: 25 ml ± 2,5</p>\n<p>Espresso is served into an espresso cup with a volume of 60-90 ml. An espresso doppio (i.e., double espresso) can be prepared as well, when a double portion of coffee (14 to 20g) and water (approx. 60 ml) is used, while keeping the extraction time the same as when preparing a standard espresso.</p>\n<h4>Espresso with water</h4>\n<p>Espresso is used as a basis for many drinks. It is often combined with water.</p>\n<p><em><strong>Americano</strong></em></p>\n<p>Americano is an espresso with added hot water which increased the volume, typically in a ratio of 1:5. According to a legend, Americano gained its name during the World War II, when American soldiers didn't like strong espresso and thus they drank it thinned. Americano can be prepared by adding hot water to espresso or, vice versa, by adding espresso into water. In the latter case, the beverage is usually called Long Black and it is served in a cappuccino cup with a volume of 15-180 ml.</p>\n<object type=\"application/kenticocloud\" data-type=\"item\" data-codename=\"americano\"></object><p><em><strong>Lungo</strong></em></p>\n<p>Lungo means long, watery or thinned in Italian, which expresses the preparation methods of this beverage. Baristas tend to acquire this beverage in different ways, some adjust the grinder to a coarser level while keeping the extraction time the same as with the espresso, gaining coffee with a volume of 60 ml. We recommend a gentler way of adding hot water to an espresso in the ratio of 1:1.</p>\n<h4>Espresso with milk</h4>\n<p><em><strong>Cappuccino</strong></em></p>\n<p>The basis of this beverage is 30 ml of espresso and warm milk, making up a mug of 150 to 180 milliliters in total. In the original Italian recipe, this coffee holds 2 centimeters of thick foam on the top of the hot milk. A newer variant, so called Seattle style cappuccino, trades the thick foam for a microfoam. This microfoam is closely interleaved with the milk and leaves a pleasant and velvety feeling in the mouth. The temperature of the milk during whipping should not exceed 65°C.</p>\n<p>The aim is to create a beverage without visible bubbles, while the surface follows the edge of the mug and does not protrude higher. Also, cappuccino should not be sprinkled with chocolate or even cinnamon.</p>\n<p>Lately, baristas learned to draw pictures in the white milk of the coffee, creating the so called latte art. They wish not only to offer a delicious mug of coffee to the customer, but to please the customer visually as well. The most common latte art motives on cappuccino are harts, tulips or so called rosettas. However, the most important is the taste of the beverage itself, latte art is only a sweet bonus.</p>\n<object type=\"application/kenticocloud\" data-type=\"item\" data-codename=\"how_to_make_a_cappuccino\"></object><p><em><strong>Flat white</strong></em></p>\n<p>For some, one espresso in a milk drink is just not enough. Therefore, growing demand for stronger coffee can be seen these days. Flat white became very popular in Australia and has already domesticated in the rest of the world. It is prepared into a glass or a cappuccino cup from two shots of espresso (doppio) and topped with warm milk and foam, which typically makes a 1 cm layer. Flat white can also be decorated with latte art.</p>\n<p><em><strong>Espresso macchiato</strong></em></p>\n<p>Espresso macchiato is a beverage matching its title, as in Italian, the macchiato means speckled or spotted.</p>\n<p>According to the classical teachings, espresso macchiato is espresso with a drop of milk foam added to the crema using a teaspoon. Modern macchiato looks like a miniature cappuccino – espresso is in its 80 ml cup topped with microfoam up to the edge. Can also be decorated with latte art.</p>\n<p><em><strong>Caffé latté</strong></em></p>\n<p>Caffe latte is a beverage of more than 250 ml in volume. It differentiates from cappuccino in total volume and also in the smaller portion of foam. Caffe latte is prepared into a cup with a handle. It was originally devised in Italy as coffee for children and is considered less popular among adults.</p>\n<p>A variant of caffe latte is latte macchiato, which is prepared a little differently. Frothed milk is poured into a glass first, where the milk foam separates from the milk in half a minute and creates a firmer layer on the top. Espresso is added last and creates a typical coffee stain on the surface. It often happens that by pouring coffee into the milk, three layers are created. This result is a bonus, not necessity.</p>\n<h3>Filtered coffee</h3>\n<p>The preparation of filtered coffee does not utilize pressure for extraction, but natural process of leaching of soluble substances instead. Hot water (up to 93°C) is in contact with coffee for 1 to 5 minutes (according to the preparation method) and then the extraction is stopped by filtering or straining the liquid. Further extraction (leaching of the coffee beans) does not take place in the resulting beverage.</p>\n<p>Filtered coffee has gained, a little unfairly, the impression of an inferior product which is better to be avoided and rather traded for espresso. However, if all basic conditions are met, this coffee presents a wonderful treat. If we perceive espresso as a concentrated beverage intended for immediate consummation, filtered coffee is quite the opposite&nbsp;– lower proportion of soluble substances allows the consumer to enjoy subtle nuances, as can be found in vine.</p>\n<p>Our tip: if the source is good quality, it is immensely interesting to watch the beverage evolve in taste during the process of cooling. In the first phase, 80-60°C, we taste only the bitter tones and the too high temperature. The beverage though, smells nicely thanks to the evaporating essential oils. In the middle of the cooling process, somewhere between the second and fifth sip, we discover the body, acidity, viscosity, sweetness and first signs of tones. In a cooled beverage, the massive aroma recedes and only a hint of light accompanying aroma remains, the tastes reveal the full potential, tones, harmony and accents. All this, of course, without any additives, such as sugar, milk, cream or honey.</p>\n<p>The following list sums up all the requirements for this coffee before its preparation:</p>\n<ul>\n  <li>Fresh selective coffee; freshness means 2-25 days after roasting</li>\n  <li>The amount of 60g / liter</li>\n  <li>Grinding on manual or electric grinder with stones always just before the preparation, coarseness chosen according to the method of preparation</li>\n  <li>Water heated to 91°C, fresh, with neutral pH, moderate hardness, non-mineralized, non-chored, non-carbonated</li>\n  <li>Hand-held non-automatic preparation</li>\n  <li>Adherence to the time of extraction</li>\n</ul>\n<p>For the preparation of filtered coffee can be used, for example, french press, aeropress, vacuum pot, moka pot, percolator with paper filter or chemex.</p>"
+        },
+        "related_articles": {
+          "type": "modular_content",
+          "name": "Related articles",
+          "value": []
+        },
+        "meta_keywords": {
+          "type": "text",
+          "name": "Meta keywords",
+          "value": "\"coffee beginner\", beverages"
+        },
+        "meta_description": {
+          "type": "text",
+          "name": "Meta description",
+          "value": "Espresso and filtered coffee are the two main categories of coffee. Learn about individual types of coffee that fall under these categories."
+        },
+        "url_pattern": {
+          "type": "url_slug",
+          "name": "URL pattern",
+          "value": "coffee-beverages-explained"
+        }
+      }
+    },
+    "donate_with_us": {
+      "system": {
+        "id": "23f71096-fa89-4f59-a3f9-970e970944ec",
+        "name": "Donate with us",
+        "codename": "donate_with_us",
+        "language": "en-US",
+        "type": "article",
+        "sitemap_locations": [
+          "articles"
+        ],
+        "last_modified": "2017-04-04T13:40:29.970377Z"
+      },
+      "elements": {
+        "personas": {
+          "type": "taxonomy",
+          "name": "Personas",
+          "taxonomy_group": "personas",
+          "value": [
+            {
+              "name": "Cafe owner",
+              "codename": "cafe_owner"
+            }
+          ]
+        },
+        "title": {
+          "type": "text",
+          "name": "Title",
+          "value": "Donate with us"
+        },
+        "teaser_image": {
+          "type": "asset",
+          "name": "Teaser image",
+          "value": [
+            {
+              "name": "donate-with-us-1080px.jpg",
+              "type": "image/jpeg",
+              "size": 133239,
+              "description": "Children in Africa",
+              "url": "https://assets.kenticocloud.com:443/975bf280-fd91-488c-994c-2f04416e5ee3/9b86141d-b667-4c35-82b1-826bc151d72a/donate-with-us-1080px.jpg"
+            }
+          ]
+        },
+        "post_date": {
+          "type": "date_time",
+          "name": "Post date",
+          "value": "2014-11-12T00:00:00Z"
+        },
+        "summary": {
+          "type": "text",
+          "name": "Summary",
+          "value": "Dancing Goat regularly donates money to Children in Africa, a foundation helping children with food, accommodation, education, and other essentials. Donate with us and create a better world."
+        },
+        "body_copy": {
+          "type": "rich_text",
+          "name": "Body Copy",
+          "images": {},
+          "links": {},
+          "modular_content": [],
+          "value": "<p>The people at Dancing Goat care about other people and their standard of living. Every year, <strong>we donate five thousand dollars to Children in Africa</strong>, and we also encourage all our customers to contribute to our public PayPal donation account to help us increase the final amount of money raised. The Children in Africa Foundation <strong>provides food, accommodation, medical service, and also education to children from poor regions</strong> in African countries.<br>\n<br>\nEvery month, volunteers from all over the world come&nbsp;and help&nbsp;out at Children in Africa camps, where they try&nbsp;and&nbsp;assist all children in need&nbsp;to try&nbsp;to narrow the gap in living standards. With the money donated, the foundation mainly buys much-needed&nbsp;food and medication.<br>\n<br>\nCreate a better world and donate with us to Children in Africa. <strong>Even a few dollars can improve someone's life.</strong> Any help from you is&nbsp;appreciated, and you will&nbsp;have our sincere thanks for every cent you donate</p>"
+        },
+        "related_articles": {
+          "type": "modular_content",
+          "name": "Related articles",
+          "value": []
+        },
+        "meta_keywords": {
+          "type": "text",
+          "name": "Meta keywords",
+          "value": "donation, africa"
+        },
+        "meta_description": {
+          "type": "text",
+          "name": "Meta description",
+          "value": "Dancing Goat regularly donates money to Children in Africa, a foundation helping children with food, accommodation, education, and other essentials."
+        },
+        "url_pattern": {
+          "type": "url_slug",
+          "name": "URL pattern",
+          "value": "donate-with-us"
+        }
+      }
+    },
+    "coffee_processing_techniques": {
+      "system": {
+        "id": "117cdfae-52cf-4885-b271-66aef6825612",
+        "name": "Coffee processing techniques",
+        "codename": "coffee_processing_techniques",
+        "language": "en-US",
+        "type": "article",
+        "sitemap_locations": [
+          "articles"
+        ],
+        "last_modified": "2017-04-04T13:40:14.6418507Z"
+      },
+      "elements": {
+        "personas": {
+          "type": "taxonomy",
+          "name": "Personas",
+          "taxonomy_group": "personas",
+          "value": [
+            {
+              "name": "Coffee blogger",
+              "codename": "coffee_blogger"
+            },
+            {
+              "name": "Coffee lover",
+              "codename": "coffee_lover"
+            }
+          ]
+        },
+        "title": {
+          "type": "text",
+          "name": "Title",
+          "value": "Coffee processing techniques"
+        },
+        "teaser_image": {
+          "type": "asset",
+          "name": "Teaser image",
+          "value": [
+            {
+              "name": "coffee-processing-techniques-1080px.jpg",
+              "type": "image/jpeg",
+              "size": 108409,
+              "description": "Dry process (also known as unwashed or natural coffee)",
+              "url": "https://assets.kenticocloud.com:443/975bf280-fd91-488c-994c-2f04416e5ee3/40edae81-37df-4d5e-8624-e2f7cfc50427/coffee-processing-techniques-1080px.jpg"
+            }
+          ]
+        },
+        "post_date": {
+          "type": "date_time",
+          "name": "Post date",
+          "value": "2014-11-02T00:00:00Z"
+        },
+        "summary": {
+          "type": "text",
+          "name": "Summary",
+          "value": "Learn about the techniques of processing the products of coffee plants. Different methods are used in different parts of the world depending mainly on their weather conditions."
+        },
+        "body_copy": {
+          "type": "rich_text",
+          "name": "Body Copy",
+          "images": {},
+          "links": {
+            "80c7074b-3da1-4e1d-882b-c5716ebb4d25": {
+              "codename": "kenya_gakuyuni_aa",
+              "type": "coffee",
+              "url_slug": "kenya-gakuyuni-aa"
+            },
+            "0c9a11bb-6fc3-409c-b3cb-f0b797e15489": {
+              "codename": "brazil_natural_barra_grande",
+              "type": "coffee",
+              "url_slug": "brazil-natural-barra-grande"
+            }
+          },
+          "modular_content": [],
+          "value": "<p>Before a ripe coffee plant transforms into a delicious cup lying on your table, it undergoes quite a journey. A journey full of possible pitfalls, which can, usually negatively, influence the coffee’s final taste. What goes wrong at the very beginning cannot be made up for at the very end.</p>\n<p>The character and taste of a coffee are largely influenced by its origin, climate, the quality and type of soil and the botanical varieties of the coffee plant.</p>\n<p>The last two links of the chain—the roastery and the barista—cannot, in any way, improve the taste of the coffee. They are left with the difficult task of making the most its potential.</p>\n<p>The farmers themselves, however, have at their disposal tools for enhancing the ‘ingrown’ taste of the coffee. These are mainly the methods of removing the multilayered skin of the coffee beans.</p>\n<p>Two, sometimes three basic methods are usually referred to. Wet-Processed (Fully-Washed), Dry-Processed (Natural) and Pulped-Natural (Semi-Washed).</p>\n<p>Dry processing, being the least economically demanding, used to be the most widely used of the methods. More exclusive beans are now usually processed using the wet and pulped-natural processing. This is due to the quality and cleanliness of the beans, as well as the speed of the whole process. If you are curious about the taste, go ahead and try the <a data-item-id=\"80c7074b-3da1-4e1d-882b-c5716ebb4d25\" href=\"\">Kenya Gakuyuni AA</a>.</p>\n<p>Wet processing rids the cherry of its layers and pulp by water fermentation. The exocarp is removed from the cherries directly after the harvest using circular and drum mechanical peelers. Afterwards, they spend 6-72 hours in water-filled fermentation tanks.</p>\n<p>In the tank, microorganisms take care of the pulp (mesocarp). The length of the process is determined by the stickiness of the beans. Leaving beans in the fermentation tank for too long produces the so-called ‘naughty’ beans. These are often beans that have stuck in the tank and their rancid and putrid state endangers the whole batch.</p>\n<p>The constantly rising levels of acetic acid are also able to impact the taste of the coffee with fermented and even vinegarish tones once it’s been roasted. The main negative aspect of wet processing is the amount of water that has to be used. This is up to 40m3 (40000 liters) of water, that have to be continuously dumped and new, clean water has to be put pumped into the tank. The dumping of contaminated water often depreciates the water supplies laying underneath the coffee farm.</p>\n<p>The dry method, considered the most traditional and the least costly, makes use of sun-drying. Cherries are often sundried on concrete courtyards, Ethiopian hilltops, and sometimes even on the very shrubs.</p>\n<p>Cherries need to be sundried directly after the harvest to avoid unwanted fermentation. The laid out beans need to be layered evenly and not 6 inches (15cm) in height. Farmers turn the seeds over both manually or with the use of tractors.</p>\n<p>During the dry fermentation, the sugars travel, via osmosis, from the pulp into the beans. This makes for more full-bodied coffee and adds sweeter tones to the taste, as compared to wet processed coffee. This often comes at the cost of a more polluted cup.</p>\n<p>Once the coffee beans reach some 11 % humidity, the peel layers and pulp can be removed using mechanical peelers. Reaching the desired humidity takes anywhere between 10 and 30 days. This is an important factor, especially in unstable climates, where automatic driers often replace the traditional sun drying process.</p>\n<p>Now’s the time for ‘reposo’, a resting time, in which the beans lay in a parchment for 30-60 days.</p>\n<p>The third method, popular primarily in Brazil, is the so-called Pulped-Natural or Semi-Washed way of processing beans. Check out our <a data-item-id=\"0c9a11bb-6fc3-409c-b3cb-f0b797e15489\" href=\"\">Brazil Natural Barra Grande</a> coffee for a tasty example. Only the top layer of the cherry peel is removed in a water bath. The rest of the process, including the sugar fermentation and the separation of the pulp from the bean, are taken care of by sun drying. This method, just like the dry method, is highly dependent on the weather, which has to be consistent for the farmers to be able to dry the beans thoroughly.</p>\n<p>This process yields full-bodied beans with low-acidity. Less aliphatic acids are produced, which has a negative impact on the aroma of the coffee.</p>"
+        },
+        "related_articles": {
+          "type": "modular_content",
+          "name": "Related articles",
+          "value": [
+            "on_roasts",
+            "which_brewing_fits_you_"
+          ]
+        },
+        "meta_keywords": {
+          "type": "text",
+          "name": "Meta keywords",
+          "value": "\"coffee processing\", brewing"
+        },
+        "meta_description": {
+          "type": "text",
+          "name": "Meta description",
+          "value": "Learn about the techniques of processing the products of coffee plants. Different methods are used in different parts of the world."
+        },
+        "url_pattern": {
+          "type": "url_slug",
+          "name": "URL pattern",
+          "value": "coffee-processing-techniques"
+        }
+      }
+    },
+    "home_page_hero_unit": {
+      "system": {
+        "id": "ec14497e-11ae-4759-80e4-4282717dbc2c",
+        "name": "Home page hero unit",
+        "codename": "home_page_hero_unit",
+        "language": "en-US",
+        "type": "hero_unit",
+        "sitemap_locations": [
+          "home"
+        ],
+        "last_modified": "2016-10-20T12:15:15.7357761Z"
+      },
+      "elements": {
+        "title": {
+          "type": "text",
+          "name": "Title",
+          "value": "Roasting premium coffee"
+        },
+        "image": {
+          "type": "asset",
+          "name": "Image",
+          "value": [
+            {
+              "name": "banner-default.jpg",
+              "type": "image/jpeg",
+              "size": 75424,
+              "description": "Coffee Bean Bag",
+              "url": "https://assets.kenticocloud.com:443/975bf280-fd91-488c-994c-2f04416e5ee3/55caecc2-400c-4ee3-91c3-0f7f067414ec/banner-default.jpg"
+            }
+          ]
+        },
+        "marketing_message": {
+          "type": "rich_text",
+          "name": "Marketing message",
+          "images": {},
+          "links": {},
+          "modular_content": [],
+          "value": "<p>Discover the fascinating world of Dancing Goat high-quality coffee and you will never miss a single coffee break again.</p>"
+        }
+      }
+    }
+  }
+}
