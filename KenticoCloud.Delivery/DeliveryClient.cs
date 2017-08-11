@@ -122,8 +122,14 @@ namespace KenticoCloud.Delivery
         /// Initializes a new instance of the <see cref="DeliveryClient"/> class for retrieving content of the specified project.
         /// </summary>
         /// <param name="deliveryOptions">The settings of the Kentico Cloud project.</param>
-        public DeliveryClient(IOptions<DeliveryOptions> deliveryOptions) : this(deliveryOptions.Value)
+        /// <param name="contentLinkUrlResolver">An instance of an object that can resolve links in rich text elements</param>
+        /// <param name="contentItemsProcessor">An instance of an object that can resolve modular content in rich text elements</param>
+        /// <param name="codeFirstModelProvider">An instance of an object that can JSON responses into strongly typed CLR objects</param>
+        public DeliveryClient(IOptions<DeliveryOptions> deliveryOptions, IContentLinkUrlResolver contentLinkUrlResolver = null, IInlineContentItemsProcessor contentItemsProcessor = null, ICodeFirstModelProvider codeFirstModelProvider = null) : this(deliveryOptions.Value)
         {
+            ContentLinkUrlResolver = contentLinkUrlResolver;
+            InlineContentItemsProcessor = contentItemsProcessor;
+            CodeFirstModelProvider = codeFirstModelProvider;
         }
 
         /// <summary>
