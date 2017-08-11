@@ -3,6 +3,7 @@ using System;
 using System.Collections.Generic;
 using System.Net;
 using System.Net.Http;
+using System.Net.Http.Headers;
 using System.Threading.Tasks;
 using KenticoCloud.Delivery.InlineContentItems;
 using Microsoft.Extensions.Options;
@@ -63,20 +64,25 @@ namespace KenticoCloud.Delivery
             get { return _urlBuilder ?? (_urlBuilder = new DeliveryEndpointUrlBuilder(_deliveryOptions)); }
         }
 
-        private HttpClient Client
+        /// <summary>
+        /// An instance of <see cref="System.Net.Http.HttpClient"/> for sending requests to KC endpoints.
+        /// </summary>
+        public HttpClient HttpClient
         {
             get
             {
                 if (_httpClient == null)
                 {
                     _httpClient = new HttpClient();
-                    if (!string.IsNullOrEmpty(_deliveryOptions.PreviewApiKey))
-                    {
-                        _httpClient.DefaultRequestHeaders.Add("Authorization", string.Format("Bearer {0}", _deliveryOptions.PreviewApiKey));
-                    }
+                }
+
+                if (_deliveryOptions.UsePreviewApi && !string.IsNullOrEmpty(_deliveryOptions.PreviewApiKey) && _httpClient.DefaultRequestHeaders.Authorization == null)
+                {
+                    _httpClient.DefaultRequestHeaders.Authorization = new AuthenticationHeaderValue("Bearer", _deliveryOptions.PreviewApiKey);
                 }
                 return _httpClient;
             }
+            set { _httpClient = value; }
         }
 
         /// <summary>
@@ -122,8 +128,14 @@ namespace KenticoCloud.Delivery
         /// Initializes a new instance of the <see cref="DeliveryClient"/> class for retrieving content of the specified project.
         /// </summary>
         /// <param name="deliveryOptions">The settings of the Kentico Cloud project.</param>
-        public DeliveryClient(IOptions<DeliveryOptions> deliveryOptions) : this(deliveryOptions.Value)
+        /// <param name="contentLinkUrlResolver">An instance of an object that can resolve links in rich text elements</param>
+        /// <param name="contentItemsProcessor">An instance of an object that can resolve modular content in rich text elements</param>
+        /// <param name="codeFirstModelProvider">An instance of an object that can JSON responses into strongly typed CLR objects</param>
+        public DeliveryClient(IOptions<DeliveryOptions> deliveryOptions, IContentLinkUrlResolver contentLinkUrlResolver = null, IInlineContentItemsProcessor contentItemsProcessor = null, ICodeFirstModelProvider codeFirstModelProvider = null) : this(deliveryOptions.Value)
         {
+            ContentLinkUrlResolver = contentLinkUrlResolver;
+            InlineContentItemsProcessor = contentItemsProcessor;
+            CodeFirstModelProvider = codeFirstModelProvider;
         }
 
         /// <summary>
@@ -412,7 +424,7 @@ namespace KenticoCloud.Delivery
 
         private async Task<JObject> GetDeliverResponseAsync(string endpointUrl)
         {
-            var response = await Client.GetAsync(endpointUrl);
+            var response = await HttpClient.GetAsync(endpointUrl);
 
             if (response.StatusCode == HttpStatusCode.OK)
             {
