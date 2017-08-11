@@ -6,6 +6,15 @@ namespace KenticoCloud.Delivery.Tests
 {
     public class ContentLinkResolverTests
     {
+        public const string PROJECT_ID = "975bf280-fd91-488c-994c-2f04416e5ee3";
+
+        private readonly DeliveryClient client;
+
+        public ContentLinkResolverTests()
+        {
+            client = new DeliveryClient(PROJECT_ID) { CodeFirstModelProvider = { TypeProvider = new CustomTypeProvider() } };
+        }
+
         [Fact]
         public void ContentLinkIsResolved()
         {
@@ -35,7 +44,7 @@ namespace KenticoCloud.Delivery.Tests
         {
             var linkUrlResolver = new CustomContentLinkUrlResolver
             {
-                GetLinkUrl = (link) => null
+                GetLinkUrl = link => null
             };
             var result = ResolveContentLinks("Learn <a href=\"\" data-item-id=\"CID\">more</a>.", linkUrlResolver);
 
@@ -75,7 +84,7 @@ namespace KenticoCloud.Delivery.Tests
         {
             var linkUrlResolver = new CustomContentLinkUrlResolver
             {
-                GetLinkUrl = (link) => "http://example.org?q=bits&bolts"
+                GetLinkUrl = link => "http://example.org?q=bits&bolts"
             };
             var result = ResolveContentLinks("Learn <a href=\"\" data-item-id=\"CID\">more</a>.", linkUrlResolver);
 
@@ -99,7 +108,7 @@ namespace KenticoCloud.Delivery.Tests
         {
             var linkUrlResolver = new CustomContentLinkUrlResolver
             {
-                GetLinkUrl = (link) => $"http://example.org/{link.ContentTypeCodename}/{link.Codename}/{link.Id}-{link.UrlSlug}"
+                GetLinkUrl = link => $"http://example.org/{link.ContentTypeCodename}/{link.Codename}/{link.Id}-{link.UrlSlug}"
             };
             var result = ResolveContentLinks("Learn <a href=\"\" data-item-id=\"CID\">more</a>.", linkUrlResolver);
 
@@ -109,13 +118,12 @@ namespace KenticoCloud.Delivery.Tests
         [Fact]
         public async void ResolveLinksInStronglyTypedModel()
         {
-            var client = new DeliveryClient("e1167a11-75af-4a08-ad84-0582b463b010");
             client.ContentLinkUrlResolver = new CustomContentLinkUrlResolver();
 
-            string expected = "<p><a href=\"https://en.wikipedia.org/wiki/Brno\">Brno</a> office is very far from <a data-item-id=\"ee82db8c-de06-4992-9561-1fc642056c2b\" href=\"http://example.org/melbourne-office\">Melbourne</a> office.</p>";
-            var item = await client.GetItemAsync<Office>("brno_office");
+            string expected = "Check out our <a data-item-id=\"0c9a11bb-6fc3-409c-b3cb-f0b797e15489\" href=\"http://example.org/brazil-natural-barra-grande\">Brazil Natural Barra Grande</a> coffee for a tasty example.";
+            var item = await client.GetItemAsync<Article>("coffee_processing_techniques");
 
-            Assert.Equal(expected, item.Item.AboutTheOffice);
+            Assert.Contains(expected, item.Item.BodyCopy);
         }
 
         private string ResolveContentLinks(string text)
@@ -143,8 +151,8 @@ namespace KenticoCloud.Delivery.Tests
 
         private sealed class CustomContentLinkUrlResolver : IContentLinkUrlResolver
         {
-            public Func<ContentLink, string> GetLinkUrl = (link) => $"http://example.org/{link.UrlSlug}";
-            public Func<string> GetBrokenLinkUrl = () => $"http://example.org/broken";
+            public Func<ContentLink, string> GetLinkUrl = link => $"http://example.org/{link.UrlSlug}";
+            public Func<string> GetBrokenLinkUrl = () => "http://example.org/broken";
 
             public string ResolveLinkUrl(ContentLink link)
             {
