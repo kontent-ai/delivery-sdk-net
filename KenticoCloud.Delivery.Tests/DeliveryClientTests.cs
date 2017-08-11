@@ -89,12 +89,12 @@ namespace KenticoCloud.Delivery.Tests
         [Fact]
         public async void GetContentElementAsync()
         {
-            var element = await client.GetContentElementAsync("article", "title");
-            var taxonomyElement = await client.GetContentElementAsync("article", "personas");
-            var multipleChoiceElement = await client.GetContentElementAsync("coffee", "processing");
+            var element = await client.GetContentElementAsync(Article.Codename, Article.TitleCodename);
+            var taxonomyElement = await client.GetContentElementAsync(Article.Codename, Article.PersonasCodename);
+            var multipleChoiceElement = await client.GetContentElementAsync(Coffee.Codename, Coffee.ProcessingCodename);
 
-            Assert.Equal("title", element.Codename);
-            Assert.Equal("personas", taxonomyElement.TaxonomyGroup);
+            Assert.Equal(Article.TitleCodename, element.Codename);
+            Assert.Equal(Article.PersonasCodename, taxonomyElement.TaxonomyGroup);
             Assert.NotEmpty(multipleChoiceElement.Options);
         }
 
@@ -153,6 +153,19 @@ namespace KenticoCloud.Delivery.Tests
             var article = await client.GetItemAsync<Article>("on_roasts", new DepthParameter(15));
 
             Assert.NotNull(article.Item);
+        }
+
+        [Fact]
+        public async void RichText()
+        {
+            // Try to get recursive modular content on_roasts -> item -> on_roasts
+            var article = await client.GetItemAsync<Article>("coffee_beverages_explained", new DepthParameter(15));
+
+            var hostedVideo = article.Item.BodyCopyRichText.Blocks.FirstOrDefault(b => (b as IInlineContentItem)?.ContentItem is HostedVideo);
+            var tweet = article.Item.BodyCopyRichText.Blocks.FirstOrDefault(b => (b as IInlineContentItem)?.ContentItem is Tweet);
+
+            Assert.NotNull(hostedVideo);
+            Assert.NotNull(tweet);
         }
 
         [Fact]
