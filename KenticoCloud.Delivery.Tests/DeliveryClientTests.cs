@@ -162,9 +162,9 @@ namespace KenticoCloud.Delivery.Tests
 
 
             // Try to get recursive modular content on_roasts -> item -> on_roasts
-            var task = client.GetItemAsync<Article>("on_roasts", new DepthParameter(15));
+            var article = await client.GetItemAsync<Article>("on_roasts", new DepthParameter(15));
 
-            Assert.NotNull((await task).Item);
+            Assert.NotNull(article.Item);
         }
 
         [Fact]
