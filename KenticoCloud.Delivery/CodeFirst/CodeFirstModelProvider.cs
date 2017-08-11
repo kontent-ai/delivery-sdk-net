@@ -268,7 +268,7 @@ namespace KenticoCloud.Delivery
                 return attributeConverter;
             }
 
-            // Spefific type converters
+            // Specific type converters
             if (typeof(IRichTextContent).IsAssignableFrom(property.PropertyType))
             {
                 return new RichTextContentConverter();
