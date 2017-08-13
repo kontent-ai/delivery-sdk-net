@@ -18,16 +18,25 @@ namespace KenticoCloud.Delivery
         /// <returns>TRUE if <paramref name="modelProperty"/> is a CLR representation of <paramref name="fieldName"/> in <paramref name="contentType"/>.</returns>
         public bool IsMatch(PropertyInfo modelProperty, string fieldName, string contentType)
         {
-            JsonPropertyAttribute propertyAttr = modelProperty.GetCustomAttribute<JsonPropertyAttribute>();
-            if (propertyAttr != null)
+            var ignoreAttribute = modelProperty.GetCustomAttribute<JsonIgnoreAttribute>();
+            if (ignoreAttribute != null)
             {
-                // Try to get the name of the field from the JSON serialization property
-                return fieldName.Equals(propertyAttr.PropertyName, StringComparison.Ordinal);
+                // If JsonIgnore is set, do not match
+                return false;
             }
             else
             {
-                // Default mapping
-                return fieldName.Replace("_", "").Equals(modelProperty.Name, StringComparison.OrdinalIgnoreCase);
+                JsonPropertyAttribute propertyAttr = modelProperty.GetCustomAttribute<JsonPropertyAttribute>();
+                if (propertyAttr != null)
+                {
+                    // Try to get the name of the field from the JSON serialization property
+                    return fieldName.Equals(propertyAttr.PropertyName, StringComparison.Ordinal);
+                }
+                else
+                {
+                    // Default mapping
+                    return fieldName.Replace("_", "").Equals(modelProperty.Name, StringComparison.OrdinalIgnoreCase);
+                }
             }
         }
     }

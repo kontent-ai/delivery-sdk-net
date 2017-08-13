@@ -10,5 +10,13 @@ namespace KenticoCloud.Delivery.Tests
         [JsonProperty("title")]
         [TestGreeterValueConverter]
         public string TitleConverted { get; set; }
+
+        [JsonProperty("title")]
+        [JsonIgnore]
+        public string TitleIgnored { get; set; }
+
+        [JsonProperty("title")]
+        [TestGreeterValueConverter]
+        public string TitleNotIgnored { get; set; }
     }
 }

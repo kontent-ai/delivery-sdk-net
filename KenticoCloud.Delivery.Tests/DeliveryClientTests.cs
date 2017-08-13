@@ -43,10 +43,21 @@ namespace KenticoCloud.Delivery.Tests
 
             var model = beveragesItem.CastTo<Article>();
 
-            Assert.NotEmpty(model.TeaserImage.FirstOrDefault().Description);
-            Assert.NotEmpty(model.TeaserImage.FirstOrDefault().Name);
-            Assert.NotEmpty(model.TeaserImage.FirstOrDefault().Type);
-            Assert.NotEmpty(model.TeaserImage.FirstOrDefault().Url);
+            Assert.NotNull(model.TeaserImage.FirstOrDefault().Description);
+            Assert.NotNull(model.TeaserImage.FirstOrDefault().Name);
+            Assert.NotNull(model.TeaserImage.FirstOrDefault().Type);
+            Assert.NotNull(model.TeaserImage.FirstOrDefault().Url);
+        }
+
+        [Fact]
+        public async void IgnoredSerializationProperties()
+        {
+            var beveragesItem = (await client.GetItemAsync("coffee_beverages_explained")).Item;
+
+            var model = beveragesItem.CastTo<Article>();
+
+            Assert.NotNull(model.TitleNotIgnored);
+            Assert.Null(model.TitleIgnored);
         }
 
         [Fact]
