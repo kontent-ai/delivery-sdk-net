@@ -37,6 +37,19 @@ namespace KenticoCloud.Delivery.Tests
         }
 
         [Fact]
+        public async void AssetPropertiesNotEmpty()
+        {
+            var beveragesItem = (await client.GetItemAsync("coffee_beverages_explained")).Item;
+
+            var model = beveragesItem.CastTo<Article>();
+
+            Assert.NotEmpty(model.TeaserImage.FirstOrDefault().Description);
+            Assert.NotEmpty(model.TeaserImage.FirstOrDefault().Name);
+            Assert.NotEmpty(model.TeaserImage.FirstOrDefault().Type);
+            Assert.NotEmpty(model.TeaserImage.FirstOrDefault().Url);
+        }
+
+        [Fact]
         public async void GetItemAsync_NotFound()
         {
             await Assert.ThrowsAsync<DeliveryException>(async () => await client.GetItemAsync("unscintillating_hemerocallidaceae_des_iroquois"));

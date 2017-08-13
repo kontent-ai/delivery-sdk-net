@@ -41,12 +41,13 @@ namespace KenticoCloud.Delivery
 		/// Initializes a new instance of the <see cref="Asset"/> class.
 		/// </summary>
 		[JsonConstructor]
-		internal Asset(string name, string type, int size, string url)
+		internal Asset(string name, string type, int size, string url, string description)
 		{
 			Name = name;
 			Type = type;
 			Size = size;
 			Url = url;
+		    Description = description;
 		}
 	}
 }
