@@ -7,7 +7,7 @@ namespace KenticoCloud.Delivery
     /// <summary>
     /// Represents a response from Kentico Cloud Delivery API that contains a list of content types.
     /// </summary>
-    public sealed class DeliveryTypeListingResponse
+    public sealed class DeliveryTypeListingResponse : AbstractResponse
     {
         /// <summary>
         /// Gets paging information.
@@ -23,9 +23,10 @@ namespace KenticoCloud.Delivery
         /// Initializes a new instance of the <see cref="DeliveryTypeListingResponse"/> class with information from a response.
         /// </summary>
         /// <param name="response">A response from Kentico Cloud Delivery API that contains a list of content types.</param>
-        internal DeliveryTypeListingResponse(JToken response)
+        /// <param name="apiUrl">API URL used to communicate with the underlying Kentico Cloud endpoint.</param>
+        internal DeliveryTypeListingResponse(JToken response, string apiUrl) : base(apiUrl)
         {
-            Pagination = new Pagination(response["pagination"]);
+            Pagination = response["pagination"].ToObject<Pagination>();
             Types = ((JArray)response["types"]).Select(type => new ContentType(type)).ToList().AsReadOnly();
         }
     }

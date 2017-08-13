@@ -21,7 +21,8 @@ namespace KenticoCloud.Delivery.Tests
         [Fact]
         public async void GetItemAsync()
         {
-            var beveragesItem = (await client.GetItemAsync("coffee_beverages_explained")).Item;
+            var beveragesResponse = (await client.GetItemAsync("coffee_beverages_explained"));
+            var beveragesItem = beveragesResponse.Item;
             var barraItem = (await client.GetItemAsync("brazil_natural_barra_grande")).Item;
             var roastsItem = (await client.GetItemAsync("on_roasts")).Item;
             Assert.Equal("article", beveragesItem.System.Type);
@@ -34,12 +35,25 @@ namespace KenticoCloud.Delivery.Tests
             Assert.Equal(beveragesItem.Elements.personas.value.Count, beveragesItem.GetTaxonomyTerms("personas").Count());
             Assert.Equal(decimal.Parse(barraItem.Elements.price.value.ToString()), barraItem.GetNumber("price"));
             Assert.Equal(barraItem.Elements.processing.value.Count, barraItem.GetOptions("processing").Count());
+            Assert.NotNull(beveragesResponse.ApiUrl);
+        }
+
+        [Fact]
+        public async void GetPagination()
+        {
+            var articles = await client.GetItemsAsync(new LimitParameter(2), new SkipParameter(1));
+
+            Assert.Equal(2, articles.Pagination.Count);
+            Assert.Equal(1, articles.Pagination.Skip);
+            Assert.Equal(2, articles.Pagination.Limit);
+            Assert.NotNull(articles.Pagination.NextPageUrl);
         }
 
         [Fact]
         public async void AssetPropertiesNotEmpty()
         {
-            var beveragesItem = (await client.GetItemAsync("coffee_beverages_explained")).Item;
+            var response = await client.GetItemAsync("coffee_beverages_explained");
+            var beveragesItem = response.Item;
 
             var model = beveragesItem.CastTo<Article>();
 
@@ -47,6 +61,7 @@ namespace KenticoCloud.Delivery.Tests
             Assert.NotNull(model.TeaserImage.FirstOrDefault().Name);
             Assert.NotNull(model.TeaserImage.FirstOrDefault().Type);
             Assert.NotNull(model.TeaserImage.FirstOrDefault().Url);
+            Assert.NotNull(response.ApiUrl);
         }
 
         [Fact]
@@ -107,6 +122,7 @@ namespace KenticoCloud.Delivery.Tests
         {
             var response = await client.GetTypesAsync(new SkipParameter(1));
 
+            Assert.NotNull(response.ApiUrl);
             Assert.NotEmpty(response.Types);
         }
 
@@ -186,7 +202,8 @@ namespace KenticoCloud.Delivery.Tests
             var client2 = new DeliveryClient(SANDBOX_PROJECT_ID);
 
             // Act
-            CompleteContentItemModel item = client2.GetItemAsync<CompleteContentItemModel>("complete_content_item").Result.Item;
+            var response = client2.GetItemAsync<CompleteContentItemModel>("complete_content_item").Result;
+            CompleteContentItemModel item = response.Item;
 
             // Assert
             Assert.Equal("Text field value", item.TextField);
@@ -214,6 +231,7 @@ namespace KenticoCloud.Delivery.Tests
 
             Assert.Equal(2, item.CompleteTypeTaxonomy.Count());
             Assert.Equal("Option 1", item.CompleteTypeTaxonomy.First().Name);
+            Assert.NotNull(response.ApiUrl);
         }
 
         [Fact]

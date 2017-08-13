@@ -6,7 +6,7 @@ namespace KenticoCloud.Delivery
     /// Represents a response from Kentico Cloud Delivery API that contains an content items.
     /// </summary>
     /// <typeparam name="T">Generic strong type of item representation.</typeparam>
-    public sealed class DeliveryItemResponse<T>
+    public sealed class DeliveryItemResponse<T> : AbstractResponse
     {
         private readonly JToken _response;
         private readonly IDeliveryClient _client;
@@ -36,7 +36,7 @@ namespace KenticoCloud.Delivery
             get { return _modularContent ?? (_modularContent = JObject.Parse(_response["modular_content"].ToString())); }
         }
 
-        internal DeliveryItemResponse(JToken response, IDeliveryClient client)
+        internal DeliveryItemResponse(JToken response, IDeliveryClient client, string apiUrl) : base(apiUrl)
         {
             _response = response;
             _client = client;

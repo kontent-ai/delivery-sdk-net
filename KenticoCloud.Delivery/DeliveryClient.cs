@@ -235,7 +235,7 @@ namespace KenticoCloud.Delivery
             var endpointUrl = UrlBuilder.GetItemUrl(codename, parameters);
             var response = await GetDeliverResponseAsync(endpointUrl);
 
-            return new DeliveryItemResponse(response, this);
+            return new DeliveryItemResponse(response, this, endpointUrl);
         }
 
         /// <summary>
@@ -252,10 +252,10 @@ namespace KenticoCloud.Delivery
                 throw new ArgumentException("Entered item codename is not valid.", nameof(codename));
             }
 
-            var url = UrlBuilder.GetItemUrl(codename, parameters);
-            var response = await GetDeliverResponseAsync(url);
+            var endpointUrl = UrlBuilder.GetItemUrl(codename, parameters);
+            var response = await GetDeliverResponseAsync(endpointUrl);
 
-            return new DeliveryItemResponse<T>(response, this);
+            return new DeliveryItemResponse<T>(response, this, endpointUrl);
         }
 
         /// <summary>
@@ -278,7 +278,7 @@ namespace KenticoCloud.Delivery
             var endpointUrl = UrlBuilder.GetItemsUrl(parameters);
             var response = await GetDeliverResponseAsync(endpointUrl);
 
-            return new DeliveryItemListingResponse(response, this);
+            return new DeliveryItemListingResponse(response, this, endpointUrl);
         }
 
         /// <summary>
@@ -303,7 +303,7 @@ namespace KenticoCloud.Delivery
             var endpointUrl = UrlBuilder.GetItemsUrl(parameters);
             var response = await GetDeliverResponseAsync(endpointUrl);
 
-            return new DeliveryItemListingResponse<T>(response, this);
+            return new DeliveryItemListingResponse<T>(response, this, endpointUrl);
         }
 
         /// <summary>
@@ -380,10 +380,10 @@ namespace KenticoCloud.Delivery
         /// <returns>The <see cref="DeliveryTypeListingResponse"/> instance that represents the content types. If no query parameters are specified, all content types are returned.</returns>
         public async Task<DeliveryTypeListingResponse> GetTypesAsync(IEnumerable<IQueryParameter> parameters)
         {
-            var endpointUrl = UrlBuilder.GetTypesUrl(parameters: parameters);
+            var endpointUrl = UrlBuilder.GetTypesUrl(parameters);
             var response = await GetDeliverResponseAsync(endpointUrl);
 
-            return new DeliveryTypeListingResponse(response);
+            return new DeliveryTypeListingResponse(response, endpointUrl);
         }
 
         /// <summary>

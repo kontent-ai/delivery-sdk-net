@@ -1,4 +1,4 @@
-﻿using Newtonsoft.Json.Linq;
+﻿using Newtonsoft.Json;
 
 namespace KenticoCloud.Delivery
 {
@@ -31,13 +31,13 @@ namespace KenticoCloud.Delivery
         /// <summary>
         /// Initializes a new instance of the <see cref="Pagination"/> class with information from a response.
         /// </summary>
-        /// <param name="source">JSON data to deserialize.</param>
-        internal Pagination(JToken source)
+        [JsonConstructor]
+        internal Pagination(int skip, int limit, int count, string next_page)
         {
-            Skip = source["skip"].Value<int>();
-            Limit = source["limit"].Value<int>();
-            Count = source["count"].Value<int>();
-            NextPageUrl = source["next_page"].ToString();
+            Skip = skip;
+            Limit = limit;
+            Count = count;
+            NextPageUrl = next_page;
         }
     }
 }

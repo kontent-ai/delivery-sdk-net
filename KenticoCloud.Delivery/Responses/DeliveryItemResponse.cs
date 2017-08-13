@@ -5,7 +5,7 @@ namespace KenticoCloud.Delivery
     /// <summary>
     /// Represents a response from Kentico Cloud Delivery API that contains a content item.
     /// </summary>
-    public sealed class DeliveryItemResponse
+    public sealed class DeliveryItemResponse : AbstractResponse
     {
         private readonly JToken _response;
         private readonly IDeliveryClient _client;
@@ -33,7 +33,8 @@ namespace KenticoCloud.Delivery
         /// </summary>
         /// <param name="response">A response from Kentico Cloud Delivery API that contains a content item.</param>
         /// <param name="client">The client that retrieved the content item.</param>
-        internal DeliveryItemResponse(JToken response, IDeliveryClient client)
+        /// <param name="apiUrl">API URL used to communicate with the underlying Kentico Cloud endpoint.</param>
+        internal DeliveryItemResponse(JToken response, IDeliveryClient client, string apiUrl) : base(apiUrl)
         {
             _response = response;
             _client = client;
@@ -45,7 +46,7 @@ namespace KenticoCloud.Delivery
         /// <typeparam name="T">Target type.</typeparam>
         public DeliveryItemResponse<T> CastTo<T>()
         {
-            return new DeliveryItemResponse<T>(_response, _client);
+            return new DeliveryItemResponse<T>(_response, _client, ApiUrl);
         }
     }
 }
