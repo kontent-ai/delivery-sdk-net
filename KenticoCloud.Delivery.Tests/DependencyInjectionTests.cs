@@ -9,7 +9,7 @@ namespace KenticoCloud.Delivery.Tests
     public class DependencyInjectionTests
     {
         [Fact]
-        public async void InstantiationTest()
+        public void InstantiationTest()
         {
             // Arrange
             var cfmp = A.Fake<ICodeFirstModelProvider>();

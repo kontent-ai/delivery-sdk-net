@@ -6,5 +6,9 @@ namespace KenticoCloud.Delivery.Tests
     {
         [JsonProperty("body_copy")]
         public IRichTextContent BodyCopyRichText { get; set; }
+
+        [JsonProperty("title")]
+        [TestGreeterValueConverter]
+        public string TitleConverted { get; set; }
     }
 }

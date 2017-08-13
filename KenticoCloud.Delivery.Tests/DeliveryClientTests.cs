@@ -156,19 +156,6 @@ namespace KenticoCloud.Delivery.Tests
         }
 
         [Fact]
-        public async void RichText()
-        {
-            // Try to get recursive modular content on_roasts -> item -> on_roasts
-            var article = await client.GetItemAsync<Article>("coffee_beverages_explained", new DepthParameter(15));
-
-            var hostedVideo = article.Item.BodyCopyRichText.Blocks.FirstOrDefault(b => (b as IInlineContentItem)?.ContentItem is HostedVideo);
-            var tweet = article.Item.BodyCopyRichText.Blocks.FirstOrDefault(b => (b as IInlineContentItem)?.ContentItem is Tweet);
-
-            Assert.NotNull(hostedVideo);
-            Assert.NotNull(tweet);
-        }
-
-        [Fact]
         public void GetStronglyTypedResponse()
         {
             // Arrange
