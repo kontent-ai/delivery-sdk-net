@@ -1,7 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
-using System.Threading.Tasks;
 using FakeItEasy;
 using Xunit;
 
@@ -9,12 +8,19 @@ namespace KenticoCloud.Delivery.Tests
 {
     public class DeliveryClientTests
     {
-        private const string PROJECT_ID = "975bf280-fd91-488c-994c-2f04416e5ee3";
+        public const string PROJECT_ID = "975bf280-fd91-488c-994c-2f04416e5ee3";
+        private const string SANDBOX_PROJECT_ID = "e1167a11-75af-4a08-ad84-0582b463b010";
+
+        private readonly DeliveryClient client;
+
+        public DeliveryClientTests()
+        {
+            client = new DeliveryClient(PROJECT_ID) { CodeFirstModelProvider = { TypeProvider = new CustomTypeProvider() } };
+        }
 
         [Fact]
         public async void GetItemAsync()
         {
-            var client = new DeliveryClient(PROJECT_ID);
             var beveragesItem = (await client.GetItemAsync("coffee_beverages_explained")).Item;
             var barraItem = (await client.GetItemAsync("brazil_natural_barra_grande")).Item;
             var roastsItem = (await client.GetItemAsync("on_roasts")).Item;
@@ -33,15 +39,12 @@ namespace KenticoCloud.Delivery.Tests
         [Fact]
         public async void GetItemAsync_NotFound()
         {
-            var client = new DeliveryClient(PROJECT_ID);
-
             await Assert.ThrowsAsync<DeliveryException>(async () => await client.GetItemAsync("unscintillating_hemerocallidaceae_des_iroquois"));
         }
 
         [Fact]
         public async void GetItemsAsync()
         {
-            var client = new DeliveryClient(PROJECT_ID);
             var response = await client.GetItemsAsync(new EqualsFilter("system.type", "cafe"));
 
             Assert.NotEmpty(response.Items);
@@ -50,7 +53,6 @@ namespace KenticoCloud.Delivery.Tests
         [Fact]
         public async void GetTypeAsync()
         {
-            var client = new DeliveryClient(PROJECT_ID);
             var articleType = await client.GetTypeAsync("article");
             var coffeeType = await client.GetTypeAsync("coffee");
             var taxonomyElement = articleType.Elements["personas"];
@@ -73,15 +75,12 @@ namespace KenticoCloud.Delivery.Tests
         [Fact]
         public async void GetTypeAsync_NotFound()
         {
-            var client = new DeliveryClient(PROJECT_ID);
-
             await Assert.ThrowsAsync<DeliveryException>(async () => await client.GetTypeAsync("unequestrian_nonadjournment_sur_achoerodus"));
         }
 
         [Fact]
         public async void GetTypesAsync()
         {
-            var client = new DeliveryClient(PROJECT_ID);
             var response = await client.GetTypesAsync(new SkipParameter(1));
 
             Assert.NotEmpty(response.Types);
@@ -90,28 +89,24 @@ namespace KenticoCloud.Delivery.Tests
         [Fact]
         public async void GetContentElementAsync()
         {
-            var client = new DeliveryClient(PROJECT_ID);
-            var element = await client.GetContentElementAsync("article", "title");
-            var taxonomyElement = await client.GetContentElementAsync("article", "personas");
-            var multipleChoiceElement = await client.GetContentElementAsync("coffee", "processing");
+            var element = await client.GetContentElementAsync(Article.Codename, Article.TitleCodename);
+            var taxonomyElement = await client.GetContentElementAsync(Article.Codename, Article.PersonasCodename);
+            var multipleChoiceElement = await client.GetContentElementAsync(Coffee.Codename, Coffee.ProcessingCodename);
 
-            Assert.Equal("title", element.Codename);
-            Assert.Equal("personas", taxonomyElement.TaxonomyGroup);
+            Assert.Equal(Article.TitleCodename, element.Codename);
+            Assert.Equal(Article.PersonasCodename, taxonomyElement.TaxonomyGroup);
             Assert.NotEmpty(multipleChoiceElement.Options);
         }
 
         [Fact]
         public async void GetContentElementsAsync_NotFound()
         {
-            var client = new DeliveryClient(PROJECT_ID);
-
             await Assert.ThrowsAsync<DeliveryException>(async () => await client.GetContentElementAsync("anticommunistical_preventure_sur_helxine", "unlacerated_topognosis_sur_nonvigilantness"));
         }
 
         [Fact]
         public async void QueryParameters()
         {
-            var client = new DeliveryClient(PROJECT_ID);
             var parameters = new IQueryParameter[]
             {
                 new AllFilter("elements.personas", "barista", "coffee", "blogger"),
@@ -139,9 +134,6 @@ namespace KenticoCloud.Delivery.Tests
         [Fact]
         public async void GetStrongTypesWithLimitedDepth()
         {
-            var client = new DeliveryClient(PROJECT_ID) { CodeFirstModelProvider = { TypeProvider = A.Fake<ICodeFirstTypeProvider>() } };
-            A.CallTo(() => client.CodeFirstModelProvider.TypeProvider.GetType("article")).ReturnsLazily(() => typeof(Article));
-
             // Returns on_roasts content item with related_articles modular element to two other articles.
             // on_roasts
             // |- coffee_processing_techniques
@@ -157,26 +149,20 @@ namespace KenticoCloud.Delivery.Tests
         [Fact]
         public async void RecursiveModularContent()
         {
-            var client = new DeliveryClient(PROJECT_ID) { CodeFirstModelProvider = { TypeProvider = A.Fake<ICodeFirstTypeProvider>() } };
-            A.CallTo(() => client.CodeFirstModelProvider.TypeProvider.GetType("article")).ReturnsLazily(() => typeof(Article));
-
-
             // Try to get recursive modular content on_roasts -> item -> on_roasts
-            var task = client.GetItemAsync<Article>("on_roasts", new DepthParameter(15));
+            var article = await client.GetItemAsync<Article>("on_roasts", new DepthParameter(15));
 
-            Assert.NotNull((await task).Item);
+            Assert.NotNull(article.Item);
         }
 
         [Fact]
         public void GetStronglyTypedResponse()
         {
-            const string SANDBOX_PROJECT_ID = "e1167a11-75af-4a08-ad84-0582b463b010";
-
             // Arrange
-            var client = new DeliveryClient(SANDBOX_PROJECT_ID);
+            var client2 = new DeliveryClient(SANDBOX_PROJECT_ID);
 
             // Act
-            CompleteContentItemModel item = client.GetItemAsync<CompleteContentItemModel>("complete_content_item").Result.Item;
+            CompleteContentItemModel item = client2.GetItemAsync<CompleteContentItemModel>("complete_content_item").Result.Item;
 
             // Assert
             Assert.Equal("Text field value", item.TextField);
@@ -209,15 +195,13 @@ namespace KenticoCloud.Delivery.Tests
         [Fact]
         public void GetStronglyTypedGenericWithAttributesResponse()
         {
-            const string SANDBOX_PROJECT_ID = "e1167a11-75af-4a08-ad84-0582b463b010";
-
             // Arrange
-            var client = new DeliveryClient(SANDBOX_PROJECT_ID) { CodeFirstModelProvider = { TypeProvider = A.Fake<ICodeFirstTypeProvider>() } };
-            A.CallTo(() => client.CodeFirstModelProvider.TypeProvider.GetType("complete_content_type")).ReturnsLazily(() => typeof(ContentItemModelWithAttributes));
-            A.CallTo(() => client.CodeFirstModelProvider.TypeProvider.GetType("homepage")).ReturnsLazily(() => typeof(Homepage));
+            var client2 = new DeliveryClient(SANDBOX_PROJECT_ID) { CodeFirstModelProvider = { TypeProvider = A.Fake<ICodeFirstTypeProvider>() } };
+            A.CallTo(() => client2.CodeFirstModelProvider.TypeProvider.GetType("complete_content_type")).ReturnsLazily(() => typeof(ContentItemModelWithAttributes));
+            A.CallTo(() => client2.CodeFirstModelProvider.TypeProvider.GetType("homepage")).ReturnsLazily(() => typeof(Homepage));
 
             // Act
-            ContentItemModelWithAttributes item = (ContentItemModelWithAttributes)client.GetItemAsync<object>("complete_content_item").Result.Item;
+            ContentItemModelWithAttributes item = (ContentItemModelWithAttributes)client2.GetItemAsync<object>("complete_content_item").Result.Item;
 
             // Assert
             Assert.Equal("Text field value", item.TextFieldWithADifferentName);
@@ -252,15 +236,13 @@ namespace KenticoCloud.Delivery.Tests
         [Fact]
         public void GetStronglyTypedItemsResponse()
         {
-            const string SANDBOX_PROJECT_ID = "e1167a11-75af-4a08-ad84-0582b463b010";
-
             // Arrange
-            var client = new DeliveryClient(SANDBOX_PROJECT_ID) { CodeFirstModelProvider = { TypeProvider = A.Fake<ICodeFirstTypeProvider>() } };
-            A.CallTo(() => client.CodeFirstModelProvider.TypeProvider.GetType("complete_content_type")).ReturnsLazily(() => typeof(ContentItemModelWithAttributes));
-            A.CallTo(() => client.CodeFirstModelProvider.TypeProvider.GetType("homepage")).ReturnsLazily(() => typeof(Homepage));
+            var client2 = new DeliveryClient(SANDBOX_PROJECT_ID) { CodeFirstModelProvider = { TypeProvider = A.Fake<ICodeFirstTypeProvider>() } };
+            A.CallTo(() => client2.CodeFirstModelProvider.TypeProvider.GetType("complete_content_type")).ReturnsLazily(() => typeof(ContentItemModelWithAttributes));
+            A.CallTo(() => client2.CodeFirstModelProvider.TypeProvider.GetType("homepage")).ReturnsLazily(() => typeof(Homepage));
 
             // Act
-            IReadOnlyList<object> items = client.GetItemsAsync<object>(new EqualsFilter("system.type", "complete_content_type")).Result.Items;
+            IReadOnlyList<object> items = client2.GetItemsAsync<object>(new EqualsFilter("system.type", "complete_content_type")).Result.Items;
 
             // Assert
             Assert.True(items.All(i => i.GetType() == typeof(ContentItemModelWithAttributes)));
@@ -269,13 +251,11 @@ namespace KenticoCloud.Delivery.Tests
         [Fact]
         public void CastResponse()
         {
-            const string SANDBOX_PROJECT_ID = "e1167a11-75af-4a08-ad84-0582b463b010";
-
             // Arrange
-            var client = new DeliveryClient(SANDBOX_PROJECT_ID);
+            var client2 = new DeliveryClient(SANDBOX_PROJECT_ID);
 
             // Act
-            var response = client.GetItemAsync("complete_content_item").Result;
+            var response = client2.GetItemAsync("complete_content_item").Result;
             var stronglyTypedResponse = response.CastTo<CompleteContentItemModel>();
 
             // Assert
@@ -285,13 +265,11 @@ namespace KenticoCloud.Delivery.Tests
         [Fact]
         public void CastListingResponse()
         {
-            const string SANDBOX_PROJECT_ID = "e1167a11-75af-4a08-ad84-0582b463b010";
-
             // Arrange
-            var client = new DeliveryClient(SANDBOX_PROJECT_ID);
+            var client2 = new DeliveryClient(SANDBOX_PROJECT_ID);
 
             // Act
-            var response = client.GetItemsAsync().Result;
+            var response = client2.GetItemsAsync().Result;
             var stronglyTypedListingResponse = response.CastTo<CompleteContentItemModel>();
 
             // Assert
@@ -302,13 +280,11 @@ namespace KenticoCloud.Delivery.Tests
         [Fact]
         public void CastContentItem()
         {
-            const string SANDBOX_PROJECT_ID = "e1167a11-75af-4a08-ad84-0582b463b010";
-
             // Arrange
-            var client = new DeliveryClient(SANDBOX_PROJECT_ID);
+            var client2 = new DeliveryClient(SANDBOX_PROJECT_ID);
 
             // Act
-            var item = client.GetItemAsync("complete_content_item").Result.Item;
+            var item = client2.GetItemAsync("complete_content_item").Result.Item;
             var stronglyTypedResponse = item.CastTo<CompleteContentItemModel>();
 
             // Assert
@@ -318,13 +294,11 @@ namespace KenticoCloud.Delivery.Tests
         [Fact]
         public void CastContentItems()
         {
-            const string SANDBOX_PROJECT_ID = "e1167a11-75af-4a08-ad84-0582b463b010";
-
             // Arrange
-            var client = new DeliveryClient(SANDBOX_PROJECT_ID);
+            var client2 = new DeliveryClient(SANDBOX_PROJECT_ID);
 
             // Act
-            DeliveryItemListingResponse response = client.GetItemsAsync().Result;
+            DeliveryItemListingResponse response = client2.GetItemsAsync().Result;
             IEnumerable<CompleteContentItemModel> list = response.Items.Where(i => i.System.Type == "complete_content_type").Select(a => a.CastTo<CompleteContentItemModel>());
 
             // Assert

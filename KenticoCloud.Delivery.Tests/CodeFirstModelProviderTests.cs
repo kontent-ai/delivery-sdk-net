@@ -1,9 +1,6 @@
 ﻿using System;
-using System.Collections.Generic;
-using AngleSharp.Dom.Events;
 using FakeItEasy;
 using KenticoCloud.Delivery.InlineContentItems;
-using Newtonsoft.Json;
 using Newtonsoft.Json.Linq;
 using Xunit;
 
