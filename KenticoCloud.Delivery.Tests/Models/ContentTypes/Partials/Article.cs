@@ -1,4 +1,5 @@
 ﻿using Newtonsoft.Json;
+using NodaTime;
 
 namespace KenticoCloud.Delivery.Tests
 {
@@ -18,5 +19,9 @@ namespace KenticoCloud.Delivery.Tests
         [JsonProperty("title")]
         [TestGreeterValueConverter]
         public string TitleNotIgnored { get; set; }
+
+        [JsonProperty("post_date")]
+        [NodaTimeValueConverter]
+        public ZonedDateTime PostDateNodaTime { get; set; }
     }
 }
