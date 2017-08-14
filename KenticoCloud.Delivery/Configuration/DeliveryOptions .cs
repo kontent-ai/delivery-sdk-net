@@ -29,5 +29,11 @@
         /// Gets or sets whether the Preview API should be used. If TRUE, <see cref="PreviewApiKey"/> needs to be set as well.
         /// </summary>
         public bool UsePreviewApi { get; set; }
+
+        /// <summary>
+        /// Set to true if you want to wait for updated content. It should be used when you are acting upon a webhook call.
+        /// </summary>
+        public bool WaitForLoadingNewContent { get; set; }
+
     }
 }

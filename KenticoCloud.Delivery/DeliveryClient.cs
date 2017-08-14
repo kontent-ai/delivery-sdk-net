@@ -75,11 +75,6 @@ namespace KenticoCloud.Delivery
                 {
                     _httpClient = new HttpClient();
                 }
-
-                if (_deliveryOptions.UsePreviewApi && !string.IsNullOrEmpty(_deliveryOptions.PreviewApiKey) && _httpClient.DefaultRequestHeaders.Authorization == null)
-                {
-                    _httpClient.DefaultRequestHeaders.Authorization = new AuthenticationHeaderValue("Bearer", _deliveryOptions.PreviewApiKey);
-                }
                 return _httpClient;
             }
             set { _httpClient = value; }
@@ -424,7 +419,17 @@ namespace KenticoCloud.Delivery
 
         private async Task<JObject> GetDeliverResponseAsync(string endpointUrl)
         {
-            var response = await HttpClient.GetAsync(endpointUrl);
+            var message = new HttpRequestMessage(HttpMethod.Get, endpointUrl);
+            if (_deliveryOptions.WaitForLoadingNewContent)
+            {
+                message.Headers.Add("X-KC-Wait-For-Loading-New-Content", "true");
+            }
+            if (_deliveryOptions.UsePreviewApi && !string.IsNullOrEmpty(_deliveryOptions.PreviewApiKey))
+            {
+                message.Headers.Authorization = new AuthenticationHeaderValue("Bearer", _deliveryOptions.PreviewApiKey);
+            }
+
+            var response = await HttpClient.SendAsync(message);
 
             if (response.StatusCode == HttpStatusCode.OK)
             {
