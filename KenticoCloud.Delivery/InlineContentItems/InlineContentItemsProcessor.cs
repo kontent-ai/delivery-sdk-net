@@ -12,8 +12,9 @@ namespace KenticoCloud.Delivery.InlineContentItems
     public class InlineContentItemsProcessor : IInlineContentItemsProcessor
     {
         private readonly Dictionary<Type, Func<object, string>> _typeResolver;
-
         private readonly IInlineContentItemsResolver<UnretrievedContentItem> _unretrievedInlineContentItemsResolver;
+        private readonly HtmlParser _htmlParser;
+        private readonly HtmlParser _strictHtmlParser;
 
         /// <summary>
         /// Resolver used in case no other resolver was registered for type of inline content item
@@ -30,69 +31,68 @@ namespace KenticoCloud.Delivery.InlineContentItems
             DefaultResolver = defaultResolver;
             _typeResolver = new Dictionary<Type, Func<object, string>>();
             _unretrievedInlineContentItemsResolver = unretrievedInlineContentItemsResolver;
+            _htmlParser = new HtmlParser();
+            _strictHtmlParser = new HtmlParser(new HtmlParserOptions
+            {
+                IsStrictMode = true
+            });
         }
 
         /// <summary>
         /// Processes HTML input and returns it with inline content items replaced with resolvers output.
         /// </summary>
         /// <param name="value">HTML code</param>
-        /// <param name="usedContentItems">Content items referenced as inline content items</param>
+        /// <param name="inlineContentItemMap">Content items referenced as inline content items</param>
         /// <returns>HTML with inline content items replaced with resolvers output</returns>
-        public string Process(string value, Dictionary<string, object> usedContentItems)
+        public string Process(string value, Dictionary<string, object> inlineContentItemMap)
         {
-            object processedContentItem;
-            var htmlInput = new HtmlParser().Parse(value);
+            var document = _htmlParser.Parse(value);
+            var inlineContentItemElements = GetInlineContentItemElements(document);
 
-            var inlineContentItems = GetContentItemsFromHtml(htmlInput);
-            foreach (var contentItems in inlineContentItems)
+            foreach (var inlineContentItemElement in inlineContentItemElements)
             {
-                var codename = contentItems.GetAttribute("data-codename");
-                var wasResolved = usedContentItems.TryGetValue(codename, out processedContentItem);
-                if (wasResolved)
+                object inlineContentItem;
+                var contentItemCodename = inlineContentItemElement.GetAttribute("data-codename");
+                if (inlineContentItemMap.TryGetValue(contentItemCodename, out inlineContentItem))
                 {
-                    string replacement;
-                    Type contentType;
-                    var unretrieved = processedContentItem as UnretrievedContentItem;
+                    string fragmentText;
+                    Type inlineContentItemType;
+                    var unretrieved = inlineContentItem as UnretrievedContentItem;
                     if (unretrieved != null)
                     {
-                        contentType = typeof(UnretrievedContentItem);
+                        inlineContentItemType = typeof(UnretrievedContentItem);
                         var data = new ResolvedContentItemData<UnretrievedContentItem> { Item = unretrieved };
-                        replacement = _unretrievedInlineContentItemsResolver.Resolve(data);
+                        fragmentText = _unretrievedInlineContentItemsResolver.Resolve(data);
                     }
                     else
                     {
-                        contentType = processedContentItem.GetType();
-                        Func<object, string> resolver;
-                        if (_typeResolver.TryGetValue(contentType, out resolver))
+                        inlineContentItemType = inlineContentItem.GetType();
+                        Func<object, string> inlineContentItemResolver;
+                        if (_typeResolver.TryGetValue(inlineContentItemType, out inlineContentItemResolver))
                         {
-                            replacement = resolver(processedContentItem);
+                            fragmentText = inlineContentItemResolver(inlineContentItem);
                         }
                         else
                         {
-                            var data = new ResolvedContentItemData<object> { Item = processedContentItem };
-                            replacement = DefaultResolver.Resolve(data);
+                            var data = new ResolvedContentItemData<object> { Item = inlineContentItem };
+                            fragmentText = DefaultResolver.Resolve(data);
                         }                  
                     }
 
                     try
                     {
-                        var options = new HtmlParserOptions()
-                        {
-                            IsStrictMode = true
-                        };
-                        var docs = new HtmlParser(options).ParseFragment(replacement, contentItems);
-                        contentItems.Replace(docs.ToArray());
+                        var fragmentNodes = _strictHtmlParser.ParseFragment(fragmentText, inlineContentItemElement.ParentElement);
+                        inlineContentItemElement.Replace(fragmentNodes.ToArray());
                     }
                     catch (HtmlParseException exception)
                     {
-                        var textNodeWithError =
-                            htmlInput.CreateTextNode($"Error while parsing resolvers output for content type {contentType}, codename {codename} at line {exception.Position.Line}, column {exception.Position.Column}.");
-                        contentItems.Replace(textNodeWithError);
+                        var errorNode = document.CreateTextNode($"[Inline content item resolver provided an invalid HTML 5 fragment ({exception.Position.Line}:{exception.Position.Column}). Please check the output for a content item {contentItemCodename} of type {inlineContentItemType}.]");
+                        inlineContentItemElement.Replace(errorNode);
                     }
                 }
             }
 
-            return htmlInput.Body.InnerHtml;
+            return document.Body.InnerHtml;
         }
 
         /// <summary>
@@ -103,7 +103,7 @@ namespace KenticoCloud.Delivery.InlineContentItems
         public string RemoveAll(string value)
         {
             var htmlInput = new HtmlParser().Parse(value);
-            List<IElement> inlineContentItems = GetContentItemsFromHtml(htmlInput);
+            List<IElement> inlineContentItems = GetInlineContentItemElements(htmlInput);
             foreach (var contentItem in inlineContentItems)
             {
                 contentItem.Remove();
@@ -111,7 +111,7 @@ namespace KenticoCloud.Delivery.InlineContentItems
             return htmlInput.Body.InnerHtml;
         }
 
-        private static List<IElement> GetContentItemsFromHtml(AngleSharp.Dom.Html.IHtmlDocument htmlInput)
+        private static List<IElement> GetInlineContentItemElements(AngleSharp.Dom.Html.IHtmlDocument htmlInput)
         {
             return htmlInput.Body.GetElementsByTagName("object").Where(o => o.GetAttribute("type") == "application/kenticocloud" && o.GetAttribute("data-type") == "item").ToList();
         }

@@ -392,7 +392,7 @@ namespace KenticoCloud.Delivery.Tests
 
             var result = inlineContentItemsProcessor.Process(inputHtml, processedContentItems);
 
-            var expectedResults = "A hyper-hybrid socialization &amp; turbocharges adaptive Error while parsing resolvers output for content type KenticoCloud.Delivery.Tests.ContentItemsInRichTextProcessorTests+DummyProcessedContentItem, codename dummyCodename1 at line 1, column 24. frameworks by thinking outside of the box, while the support structures influence the mediators.";
+            var expectedResults = "A hyper-hybrid socialization &amp; turbocharges adaptive [Inline content item resolver provided an invalid HTML 5 fragment (1:3). Please check the output for a content item dummyCodename1 of type KenticoCloud.Delivery.Tests.ContentItemsInRichTextProcessorTests+DummyProcessedContentItem.] frameworks by thinking outside of the box, while the support structures influence the mediators.";
 
             Assert.Equal(expectedResults, result);
         }
@@ -502,7 +502,7 @@ namespace KenticoCloud.Delivery.Tests
         {
             public string Resolve(ResolvedContentItemData<DummyProcessedContentItem> data)
             {
-                return $"<span>Unclosed span tag";
+                return $"<![CDATA[ test ]]>";
             }
         }
 
