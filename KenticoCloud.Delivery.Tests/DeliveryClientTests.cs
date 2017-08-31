@@ -145,6 +145,35 @@ namespace KenticoCloud.Delivery.Tests
         }
 
         [Fact]
+        public async void GetTaxonomyAsync()
+        {
+            var taxonomy = await client.GetTaxonomyAsync("personas");
+            var personasTerms = taxonomy.Terms.ToList();
+            var coffeeExpertTerms = personasTerms[0].Terms.ToList();
+
+            Assert.Equal("personas", taxonomy.System.Codename);
+            Assert.Equal("Personas", taxonomy.System.Name);
+            Assert.Equal("coffee_expert", personasTerms[0].Codename);
+            Assert.Equal("Coffee expert", personasTerms[0].Name);
+            Assert.Equal("cafe_owner", coffeeExpertTerms[1].Codename);
+            Assert.Equal("Cafe owner", coffeeExpertTerms[1].Name);
+        }
+
+        [Fact]
+        public async void GetTaxonomyAsync_NotFound()
+        {
+            await Assert.ThrowsAsync<DeliveryException>(async () => await client.GetTaxonomyAsync("unequestrian_nonadjournment_sur_achoerodus"));
+        }
+
+        [Fact]
+        public async void GetTaxonomiesAsync()
+        {
+            var response = await client.GetTaxonomiesAsync(new SkipParameter(1));
+
+            Assert.NotEmpty(response.Taxonomies);
+        }
+
+        [Fact]
         public async void QueryParameters()
         {
             var parameters = new IQueryParameter[]

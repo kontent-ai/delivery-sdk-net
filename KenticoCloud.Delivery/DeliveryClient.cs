@@ -417,6 +417,67 @@ namespace KenticoCloud.Delivery
             return new ContentElement(response, elementCodename);
         }
 
+
+        /// <inheritdoc />
+        public async Task<JObject> GetTaxonomyJsonAsync(string codename)
+        {
+            if (codename == null)
+            {
+                throw new ArgumentNullException(nameof(codename), "The codename of a taxonomy group is not specified.");
+            }
+
+            if (codename == string.Empty)
+            {
+                throw new ArgumentException("The codename of a taxonomy group is not specified.", nameof(codename));
+            }
+
+            var endpointUrl = UrlBuilder.GetTaxonomyUrl(codename);
+
+            return await GetDeliverResponseAsync(endpointUrl);
+        }
+
+        /// <inheritdoc />
+        public async Task<JObject> GetTaxonomiesJsonAsync(params string[] parameters)
+        {
+            var endpointUrl = UrlBuilder.GetTaxonomiesUrl(parameters);
+
+            return await GetDeliverResponseAsync(endpointUrl);
+        }
+
+        /// <inheritdoc />
+        public async Task<TaxonomyGroup> GetTaxonomyAsync(string codename)
+        {
+            if (codename == null)
+            {
+                throw new ArgumentNullException(nameof(codename), "The codename of a taxonomy group is not specified.");
+            }
+
+            if (codename == string.Empty)
+            {
+                throw new ArgumentException("The codename of a taxonomy group is not specified.", nameof(codename));
+            }
+
+            var endpointUrl = UrlBuilder.GetTaxonomyUrl(codename);
+            var response = await GetDeliverResponseAsync(endpointUrl);
+
+            return new TaxonomyGroup(response);
+        }
+
+        /// <inheritdoc />
+        public async Task<DeliveryTaxonomyListingResponse> GetTaxonomiesAsync(params IQueryParameter[] parameters)
+        {
+            return await GetTaxonomiesAsync((IEnumerable<IQueryParameter>)parameters);
+        }
+
+        /// <inheritdoc />
+        public async Task<DeliveryTaxonomyListingResponse> GetTaxonomiesAsync(IEnumerable<IQueryParameter> parameters)
+        {
+            var endpointUrl = UrlBuilder.GetTaxonomiesUrl(parameters);
+            var response = await GetDeliverResponseAsync(endpointUrl);
+
+            return new DeliveryTaxonomyListingResponse(response, endpointUrl);
+        }
+
         private async Task<JObject> GetDeliverResponseAsync(string endpointUrl)
         {
             var message = new HttpRequestMessage(HttpMethod.Get, endpointUrl);

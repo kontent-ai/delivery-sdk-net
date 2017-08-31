@@ -146,5 +146,40 @@ namespace KenticoCloud.Delivery
         /// <param name="contentElementCodename">The codename of the content element.</param>
         /// <returns>A content element with the specified codename that is a part of a content type with the specified codename.</returns>
         Task<ContentElement> GetContentElementAsync(string contentTypeCodename, string contentElementCodename);
+
+        /// <summary>
+        /// Returns a taxonomy group as JSON data.
+        /// </summary>
+        /// <param name="codename">The codename of a taxonomy group.</param>
+        /// <returns>The <see cref="JObject"/> instance that represents the taxonomy group with the specified codename.</returns>
+        Task<JObject> GetTaxonomyJsonAsync(string codename);
+
+        /// <summary>
+        /// Returns taxonomy groups as JSON data.
+        /// </summary>
+        /// <param name="parameters">An array that contains zero or more query parameters, for example, for paging.</param>
+        /// <returns>The <see cref="JObject"/> instance that represents the taxonomy groups. If no query parameters are specified, all taxonomy groups are returned.</returns>
+        Task<JObject> GetTaxonomiesJsonAsync(params string[] parameters);
+
+        /// <summary>
+        /// Returns a taxonomy group.
+        /// </summary>
+        /// <param name="codename">The codename of a taxonomy group.</param>
+        /// <returns>The taxonomy group with the specified codename.</returns>
+       Task<TaxonomyGroup> GetTaxonomyAsync(string codename);
+
+        /// <summary>
+        /// Returns taxonomy groups.
+        /// </summary>
+        /// <param name="parameters">An array that contains zero or more query parameters, for example, for paging.</param>
+        /// <returns>The <see cref="DeliveryTaxonomyListingResponse"/> instance that represents the taxonomy groups. If no query parameters are specified, all taxonomy groups are returned.</returns>
+        Task<DeliveryTaxonomyListingResponse> GetTaxonomiesAsync(params IQueryParameter[] parameters);
+
+        /// <summary>
+        /// Returns taxonomy groups.
+        /// </summary>
+        /// <param name="parameters">A collection of query parameters, for example, for paging.</param>
+        /// <returns>The <see cref="DeliveryTaxonomyListingResponse"/> instance that represents the taxonomy groups. If no query parameters are specified, all taxonomy groups are returned.</returns>
+        Task<DeliveryTaxonomyListingResponse> GetTaxonomiesAsync(IEnumerable<IQueryParameter> parameters);
     }
 }
