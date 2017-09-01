@@ -16,7 +16,7 @@ namespace KenticoCloud.Delivery
         /// <summary>
         /// Gets the system attributes of the taxonomy group.
         /// </summary>
-        public TaxonomyGroupSystemAttributes System 
+        public TaxonomyGroupSystemAttributes System
             => _system ?? (_system = _source["system"].ToObject<TaxonomyGroupSystemAttributes>());
 
         /// <summary>

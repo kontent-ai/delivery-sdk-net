@@ -3,6 +3,9 @@ using Newtonsoft.Json;
 
 namespace KenticoCloud.Delivery
 {
+    /// <summary>
+    /// Represents system attributes of a taxonomy group
+    /// </summary>
     public sealed class TaxonomyGroupSystemAttributes
     {
         /// <summary>

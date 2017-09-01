@@ -166,7 +166,7 @@ namespace KenticoCloud.Delivery
         /// </summary>
         /// <param name="codename">The codename of a taxonomy group.</param>
         /// <returns>The taxonomy group with the specified codename.</returns>
-       Task<TaxonomyGroup> GetTaxonomyAsync(string codename);
+        Task<TaxonomyGroup> GetTaxonomyAsync(string codename);
 
         /// <summary>
         /// Returns taxonomy groups.

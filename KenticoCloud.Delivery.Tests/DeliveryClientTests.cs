@@ -170,6 +170,7 @@ namespace KenticoCloud.Delivery.Tests
         {
             var response = await client.GetTaxonomiesAsync(new SkipParameter(1));
 
+            Assert.NotNull(response.ApiUrl);
             Assert.NotEmpty(response.Taxonomies);
         }
 
