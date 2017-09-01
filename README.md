@@ -103,7 +103,7 @@ When retrieving a list of content items, you get an instance of the `DeliveryIte
   * `Skip`: requested number of content items to skip
   * `Limit`: requested page size
   * `Count`: the total number of retrieved content items
-  * `NexPageUrl`: the URL of the next page
+  * `NextPageUrl`: the URL of the next page
 * A list of the requested content items
 
 ### ContentItem structure
