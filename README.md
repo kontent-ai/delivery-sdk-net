@@ -56,7 +56,7 @@ To retrieve unpublished content, you need to create a `DeliveryClient` with both
 ```csharp
 // Note: Within a single project, we recommend that you work with only
 // either the production or preview Delivery API, not both.
-DeliverClient client = new DeliveryClient("YOUR_PROJECT_ID", "YOUR_PREVIEW_API_KEY");
+DeliveryClient client = new DeliveryClient("YOUR_PROJECT_ID", "YOUR_PREVIEW_API_KEY");
 ```
 
 For more details, see [Previewing unpublished content using the Delivery API](https://developer.kenticocloud.com/docs/preview-content-via-api).
