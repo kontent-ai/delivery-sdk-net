@@ -56,7 +56,7 @@ To retrieve unpublished content, you need to create a `DeliveryClient` with both
 ```csharp
 // Note: Within a single project, we recommend that you work with only
 // either the production or preview Delivery API, not both.
-DeliverClient client = new DeliveryClient("YOUR_PROJECT_ID", "YOUR_PREVIEW_API_KEY");
+DeliveryClient client = new DeliveryClient("YOUR_PROJECT_ID", "YOUR_PREVIEW_API_KEY");
 ```
 
 For more details, see [Previewing unpublished content using the Delivery API](https://developer.kenticocloud.com/docs/preview-content-via-api).
@@ -103,7 +103,7 @@ When retrieving a list of content items, you get an instance of the `DeliveryIte
   * `Skip`: requested number of content items to skip
   * `Limit`: requested page size
   * `Count`: the total number of retrieved content items
-  * `NexPageUrl`: the URL of the next page
+  * `NextPageUrl`: the URL of the next page
 * A list of the requested content items
 
 ### ContentItem structure
