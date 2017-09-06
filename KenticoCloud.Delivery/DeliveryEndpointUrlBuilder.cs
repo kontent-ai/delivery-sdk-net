@@ -11,8 +11,8 @@ namespace KenticoCloud.Delivery
         private const string URL_TEMPLATE_TYPE = "/types/{0}";
         private const string URL_TEMPLATE_TYPES = "/types";
         private const string URL_TEMPLATE_ELEMENT = "/types/{0}/elements/{1}";
-        private const string URL_TEMPLATE_TAXONOMY = "/taxonomy/{0}";
-        private const string URL_TEMPLATE_TAXONOMIES = "/taxonomy";
+        private const string URL_TEMPLATE_TAXONOMY = "/taxonomies/{0}";
+        private const string URL_TEMPLATE_TAXONOMIES = "/taxonomies";
 
         private readonly DeliveryOptions _deliveryOptions;
 
