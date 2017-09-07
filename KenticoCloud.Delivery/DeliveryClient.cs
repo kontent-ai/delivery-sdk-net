@@ -417,6 +417,87 @@ namespace KenticoCloud.Delivery
             return new ContentElement(response, elementCodename);
         }
 
+
+        /// <summary>
+        /// Returns a taxonomy group as JSON data.
+        /// </summary>
+        /// <param name="codename">The codename of a taxonomy group.</param>
+        /// <returns>The <see cref="JObject"/> instance that represents the taxonomy group with the specified codename.</returns>
+        public async Task<JObject> GetTaxonomyJsonAsync(string codename)
+        {
+            if (codename == null)
+            {
+                throw new ArgumentNullException(nameof(codename), "The codename of a taxonomy group is not specified.");
+            }
+
+            if (codename == string.Empty)
+            {
+                throw new ArgumentException("The codename of a taxonomy group is not specified.", nameof(codename));
+            }
+
+            var endpointUrl = UrlBuilder.GetTaxonomyUrl(codename);
+
+            return await GetDeliverResponseAsync(endpointUrl);
+        }
+
+        /// <summary>
+        /// Returns taxonomy groups as JSON data.
+        /// </summary>
+        /// <param name="parameters">An array that contains zero or more query parameters, for example, for paging.</param>
+        /// <returns>The <see cref="JObject"/> instance that represents the taxonomy groups. If no query parameters are specified, all taxonomy groups are returned.</returns>
+        public async Task<JObject> GetTaxonomiesJsonAsync(params string[] parameters)
+        {
+            var endpointUrl = UrlBuilder.GetTaxonomiesUrl(parameters);
+
+            return await GetDeliverResponseAsync(endpointUrl);
+        }
+
+        /// <summary>
+        /// Returns a taxonomy group.
+        /// </summary>
+        /// <param name="codename">The codename of a taxonomy group.</param>
+        /// <returns>The taxonomy group with the specified codename.</returns>
+        public async Task<TaxonomyGroup> GetTaxonomyAsync(string codename)
+        {
+            if (codename == null)
+            {
+                throw new ArgumentNullException(nameof(codename), "The codename of a taxonomy group is not specified.");
+            }
+
+            if (codename == string.Empty)
+            {
+                throw new ArgumentException("The codename of a taxonomy group is not specified.", nameof(codename));
+            }
+
+            var endpointUrl = UrlBuilder.GetTaxonomyUrl(codename);
+            var response = await GetDeliverResponseAsync(endpointUrl);
+
+            return new TaxonomyGroup(response);
+        }
+
+        /// <summary>
+        /// Returns taxonomy groups.
+        /// </summary>
+        /// <param name="parameters">An array that contains zero or more query parameters, for example, for paging.</param>
+        /// <returns>The <see cref="DeliveryTaxonomyListingResponse"/> instance that represents the taxonomy groups. If no query parameters are specified, all taxonomy groups are returned.</returns>
+        public async Task<DeliveryTaxonomyListingResponse> GetTaxonomiesAsync(params IQueryParameter[] parameters)
+        {
+            return await GetTaxonomiesAsync((IEnumerable<IQueryParameter>)parameters);
+        }
+
+        /// <summary>
+        /// Returns taxonomy groups.
+        /// </summary>
+        /// <param name="parameters">A collection of query parameters, for example, for paging.</param>
+        /// <returns>The <see cref="DeliveryTaxonomyListingResponse"/> instance that represents the taxonomy groups. If no query parameters are specified, all taxonomy groups are returned.</returns>
+        public async Task<DeliveryTaxonomyListingResponse> GetTaxonomiesAsync(IEnumerable<IQueryParameter> parameters)
+        {
+            var endpointUrl = UrlBuilder.GetTaxonomiesUrl(parameters);
+            var response = await GetDeliverResponseAsync(endpointUrl);
+
+            return new DeliveryTaxonomyListingResponse(response, endpointUrl);
+        }
+
         private async Task<JObject> GetDeliverResponseAsync(string endpointUrl)
         {
             var message = new HttpRequestMessage(HttpMethod.Get, endpointUrl);

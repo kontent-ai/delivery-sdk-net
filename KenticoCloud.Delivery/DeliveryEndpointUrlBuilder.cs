@@ -11,6 +11,8 @@ namespace KenticoCloud.Delivery
         private const string URL_TEMPLATE_TYPE = "/types/{0}";
         private const string URL_TEMPLATE_TYPES = "/types";
         private const string URL_TEMPLATE_ELEMENT = "/types/{0}/elements/{1}";
+        private const string URL_TEMPLATE_TAXONOMY = "/taxonomies/{0}";
+        private const string URL_TEMPLATE_TAXONOMIES = "/taxonomies";
 
         private readonly DeliveryOptions _deliveryOptions;
 
@@ -62,6 +64,21 @@ namespace KenticoCloud.Delivery
         public string GetContentElementUrl(string contentTypeCodename, string contentElementCodename)
         {
             return GetUrl(string.Format(URL_TEMPLATE_ELEMENT, Uri.EscapeDataString(contentTypeCodename), Uri.EscapeDataString(contentElementCodename)));
+        }
+
+        public string GetTaxonomyUrl(string codename)
+        {
+            return GetUrl(string.Format(URL_TEMPLATE_TAXONOMY, Uri.EscapeDataString(codename)));
+        }
+
+        public string GetTaxonomiesUrl(string[] parameters)
+        {
+            return GetUrl(URL_TEMPLATE_TAXONOMIES, parameters);
+        }
+
+        public string GetTaxonomiesUrl(IEnumerable<IQueryParameter> parameters)
+        {
+            return GetUrl(URL_TEMPLATE_TAXONOMIES, parameters);
         }
 
         private string GetUrl(string path, IEnumerable<IQueryParameter> parameters)
