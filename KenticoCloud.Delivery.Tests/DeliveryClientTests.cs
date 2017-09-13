@@ -95,7 +95,7 @@ namespace KenticoCloud.Delivery.Tests
             var articleType = await client.GetTypeAsync("article");
             var coffeeType = await client.GetTypeAsync("coffee");
             var taxonomyElement = articleType.Elements["personas"];
-            var multipleChoiceElement = coffeeType.Elements["processing"];
+            var processingTaxonomyElement = coffeeType.Elements["processing"];
 
             Assert.Equal("article", articleType.System.Codename);
             Assert.Equal("text", articleType.Elements["title"].Type);
@@ -105,10 +105,10 @@ namespace KenticoCloud.Delivery.Tests
             Assert.Equal("modular_content", articleType.Elements["related_articles"].Type);
             Assert.Equal("taxonomy", articleType.Elements["personas"].Type);
             Assert.Equal("number", coffeeType.Elements["price"].Type);
-            Assert.Equal("multiple_choice", coffeeType.Elements["processing"].Type);
+            Assert.Equal("taxonomy", coffeeType.Elements["processing"].Type);
 
             Assert.Equal("personas", taxonomyElement.TaxonomyGroup);
-            Assert.NotEmpty(multipleChoiceElement.Options);
+            Assert.Equal("processing", processingTaxonomyElement.TaxonomyGroup);
         }
 
         [Fact]
@@ -130,12 +130,12 @@ namespace KenticoCloud.Delivery.Tests
         public async void GetContentElementAsync()
         {
             var element = await client.GetContentElementAsync(Article.Codename, Article.TitleCodename);
-            var taxonomyElement = await client.GetContentElementAsync(Article.Codename, Article.PersonasCodename);
-            var multipleChoiceElement = await client.GetContentElementAsync(Coffee.Codename, Coffee.ProcessingCodename);
+            var personasTaxonomyElement = await client.GetContentElementAsync(Article.Codename, Article.PersonasCodename);
+            var processingTaxonomyElement = await client.GetContentElementAsync(Coffee.Codename, Coffee.ProcessingCodename);
 
             Assert.Equal(Article.TitleCodename, element.Codename);
-            Assert.Equal(Article.PersonasCodename, taxonomyElement.TaxonomyGroup);
-            Assert.NotEmpty(multipleChoiceElement.Options);
+            Assert.Equal(Article.PersonasCodename, personasTaxonomyElement.TaxonomyGroup);
+            Assert.Equal(Coffee.ProcessingCodename, processingTaxonomyElement.TaxonomyGroup);
         }
 
         [Fact]
