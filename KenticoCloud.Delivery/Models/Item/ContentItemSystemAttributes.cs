@@ -46,10 +46,16 @@ namespace KenticoCloud.Delivery
         public DateTime LastModified { get; set; }
 
         /// <summary>
+        /// Gets the language of the content item.
+        /// </summary>
+        [JsonProperty("language")]
+        public string Language { get; set; }
+
+        /// <summary>
         /// Initializes a new instance of the <see cref="ContentItemSystemAttributes"/> class.
         /// </summary>
         [JsonConstructor]
-        internal ContentItemSystemAttributes(string id, string name, string codename, string type, IReadOnlyList<string> sitemapLocation, DateTime lastModified)
+        internal ContentItemSystemAttributes(string id, string name, string codename, string type, IReadOnlyList<string> sitemapLocation, DateTime lastModified, string language)
         {
             Id = id;
             Name = name;
@@ -57,6 +63,7 @@ namespace KenticoCloud.Delivery
             Type = type;
             SitemapLocation = sitemapLocation;
             LastModified = lastModified;
+            Language = language;
         }
     }
 }

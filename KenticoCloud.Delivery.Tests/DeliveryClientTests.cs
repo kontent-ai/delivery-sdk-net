@@ -26,6 +26,7 @@ namespace KenticoCloud.Delivery.Tests
             var barraItem = (await client.GetItemAsync("brazil_natural_barra_grande")).Item;
             var roastsItem = (await client.GetItemAsync("on_roasts")).Item;
             Assert.Equal("article", beveragesItem.System.Type);
+            Assert.Equal("en-US", beveragesItem.System.Language);
             Assert.NotEmpty(beveragesItem.System.SitemapLocation);
             Assert.NotEmpty(roastsItem.GetModularContent("related_articles"));
             Assert.Equal(beveragesItem.Elements.title.value.ToString(), beveragesItem.GetString("title"));
