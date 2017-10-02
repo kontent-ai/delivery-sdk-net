@@ -49,6 +49,15 @@
   </ItemGroup>
 
   <ItemGroup>
+    <None Update="Fixtures\ContentLinkResolver\coffee_beverages_explained.json">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </None>
+    <None Update="Fixtures\ContentLinkResolver\coffee_processing_techniques.json">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </None>
+    <None Update="Fixtures\ContentLinkResolver\on_roasts.json">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </None>
     <None Update="Fixtures\DeliveryClient\allendale.json">
       <CopyToOutputDirectory>Always</CopyToOutputDirectory>
     </None>

@@ -4,6 +4,8 @@ using System.Reflection;
 using Newtonsoft.Json.Linq;
 using NodaTime;
 using Xunit;
+using RichardSzalay.MockHttp;
+using System.IO;
 
 namespace KenticoCloud.Delivery.Tests
 {
@@ -39,17 +41,24 @@ namespace KenticoCloud.Delivery.Tests
 
     public class ValueConverterTests
     {
-        public const string PROJECT_ID = "975bf280-fd91-488c-994c-2f04416e5ee3";
-        private readonly DeliveryClient client;
+        private readonly string guid = string.Empty;
+        private readonly string baseUrl;
 
         public ValueConverterTests()
         {
-            client = new DeliveryClient(PROJECT_ID) { CodeFirstModelProvider = { TypeProvider = new CustomTypeProvider() } };
+            guid = Guid.NewGuid().ToString();
+            baseUrl = $"https://deliver.kenticocloud.com/{guid}";
         }
 
         [Fact]
         public async void GreeterPropertyValueConverter()
         {
+            var mockHttp = new MockHttpMessageHandler();
+            string url = $"{baseUrl}/items/on_roasts";
+            mockHttp.When(url).
+               Respond("application/json", File.ReadAllText(Path.Combine(AppContext.BaseDirectory, "Fixtures\\ContentLinkResolver\\on_roasts.json")));
+            DeliveryClient client = InitializeDeliveryClient(mockHttp);
+
             var article = await client.GetItemAsync<Article>("on_roasts");
 
             Assert.Equal("Hello On Roasts!", article.Item.TitleConverted);
@@ -58,6 +67,12 @@ namespace KenticoCloud.Delivery.Tests
         [Fact]
         public async void NodaTimePropertyValueConverter()
         {
+            var mockHttp = new MockHttpMessageHandler();
+            string url = $"{baseUrl}/items/on_roasts";
+            mockHttp.When(url).
+               Respond("application/json", File.ReadAllText(Path.Combine(AppContext.BaseDirectory, "Fixtures\\ContentLinkResolver\\on_roasts.json")));
+            DeliveryClient client = InitializeDeliveryClient(mockHttp);
+
             var article = await client.GetItemAsync<Article>("on_roasts");
 
             Assert.Equal(new ZonedDateTime(Instant.FromUtc(2014, 11, 7, 0, 0), DateTimeZone.Utc), article.Item.PostDateNodaTime);
@@ -66,6 +81,13 @@ namespace KenticoCloud.Delivery.Tests
         [Fact]
         public async void RichTextViaValueConverter()
         {
+            var mockHttp = new MockHttpMessageHandler();
+            string url = $"{baseUrl}/items/coffee_beverages_explained";
+            mockHttp.When(url).
+               WithQueryString("depth=15").
+               Respond("application/json", File.ReadAllText(Path.Combine(AppContext.BaseDirectory, "Fixtures\\ContentLinkResolver\\coffee_beverages_explained.json")));
+            DeliveryClient client = InitializeDeliveryClient(mockHttp);
+
             // Try to get recursive modular content on_roasts -> item -> on_roasts
             var article = await client.GetItemAsync<Article>("coffee_beverages_explained", new DepthParameter(15));
 
@@ -74,6 +96,18 @@ namespace KenticoCloud.Delivery.Tests
 
             Assert.NotNull(hostedVideo);
             Assert.NotNull(tweet);
+        }
+
+        private DeliveryClient InitializeDeliveryClient(MockHttpMessageHandler mockHttp)
+        {
+            var httpClient = mockHttp.ToHttpClient();
+            DeliveryClient Client = new DeliveryClient(guid)
+            {
+                CodeFirstModelProvider = { TypeProvider = new CustomTypeProvider() },
+                HttpClient = httpClient
+            };
+
+            return Client;
         }
     }
 }
