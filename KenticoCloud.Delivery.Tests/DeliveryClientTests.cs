@@ -11,9 +11,9 @@ namespace KenticoCloud.Delivery.Tests
 {
     public class DeliveryClientTests
     {
-        string guid = string.Empty;
-        string baseUrl = string.Empty;
-        MockHttpMessageHandler mockHttp;
+        readonly string guid = string.Empty;
+        readonly string baseUrl = string.Empty;
+        readonly MockHttpMessageHandler mockHttp;
 
         public DeliveryClientTests()
         {
@@ -223,7 +223,6 @@ namespace KenticoCloud.Delivery.Tests
         [Fact]
         public async void GetContentElementsAsync_NotFound()
         {
-
             string url = $"{baseUrl}/types/anticommunistical_preventure_sur_helxine/elements/unlacerated_topognosis_sur_nonvigilantness";
 
             string messsge = "{'message': 'The requested content type anticommunistical_preventure_sur_helxine was not found.','request_id': '','error_code': 101,'specific_code': 0}";
@@ -258,7 +257,6 @@ namespace KenticoCloud.Delivery.Tests
         [Fact]
         public async void GetTaxonomyAsync_NotFound()
         {
-
             string url = $"{baseUrl}/taxonomies/unequestrian_nonadjournment_sur_achoerodus";
             mockHttp.When($"{url}").
                 Respond(HttpStatusCode.NotFound, "application/json", "{'message':'The requested taxonomy group unequestrian_nonadjournment_sur_achoerodus was not found.'}");
