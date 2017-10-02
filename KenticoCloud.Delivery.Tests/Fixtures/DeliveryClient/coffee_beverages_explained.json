@@ -1,0 +1,155 @@
+﻿{
+  "item": {
+    "system": {
+      "id": "cf106f4e-30a4-42ef-b313-b8ea3fd3e5c5",
+      "name": "Coffee Beverages Explained",
+      "codename": "coffee_beverages_explained",
+      "language": "en-US",
+      "type": "article",
+      "sitemap_locations": [
+        "articles"
+      ],
+      "last_modified": "2017-06-27T13:01:54.5735581Z"
+    },
+    "elements": {
+      "personas": {
+        "type": "taxonomy",
+        "name": "Personas",
+        "taxonomy_group": "personas",
+        "value": [
+          {
+            "name": "Coffee lover",
+            "codename": "coffee_lover"
+          }
+        ]
+      },
+      "title": {
+        "type": "text",
+        "name": "Title",
+        "value": "Coffee Beverages Explained"
+      },
+      "teaser_image": {
+        "type": "asset",
+        "name": "Teaser image",
+        "value": [
+          {
+            "name": "coffee-beverages-explained-1080px.jpg",
+            "type": "image/jpeg",
+            "size": 90895,
+            "description": "Professional Espresso Machine",
+            "url": "https://assets.kenticocloud.com:443/975bf280-fd91-488c-994c-2f04416e5ee3/e700596b-03b0-4cee-ac5c-9212762c027a/coffee-beverages-explained-1080px.jpg"
+          }
+        ]
+      },
+      "post_date": {
+        "type": "date_time",
+        "name": "Post date",
+        "value": "2014-11-18T00:00:00Z"
+      },
+      "summary": {
+        "type": "text",
+        "name": "Summary",
+        "value": "Espresso and filtered coffee are the two main categories of coffee, based on the method of preparation. Learn about individual types of coffee that fall under these categories."
+      },
+      "body_copy": {
+        "type": "rich_text",
+        "name": "Body Copy",
+        "images": {},
+        "links": {},
+        "modular_content": [
+          "americano",
+          "how_to_make_a_cappuccino"
+        ],
+        "value": "<p>The coffee drinking culture has been evolving for hundreds and thousands of years. It has never been so rich as today. How do you make sense of different types of coffee, what do the particular names in beverage menus mean and what beverage to choose for which occasion in your favorite café?</p>\n<p>Coffee can be divided into two basic categories according to the method of preparation.</p>\n<h3>Espresso based beverages</h3>\n<h4>Espresso without additions</h4>\n<p>The philosophy of this beverage is not about ponding over a mug and sipping from it for long hours, but more about a quick order and two or three gulps at a bar. Espresso is not the highest achievable base among coffee beverages to pursue. It is only a single method of coffee preparation, which servers its purpose – swiftness and concentrated experience.</p>\n<p>Parameters of a good espresso:<br>\nOne portion of coffee: 7 g ± 0,5 (for some types of coffee even 10-11g)<br>\nOutput temperature of water in a coffee machine: 88 °C ± 2 °C<br>\nTemperature of the coffee in a mug: 67 °C ± 3 °C<br>\nInput water pressure: 9 bar ± 1<br>\nExtraction time: 25 seconds ± 2,5 seconds<br>\nViscosity at 45 °C: &gt; 1,5 mPa s<br>\nOil: &gt; 2 mg/ml<br>\nCaffeine: &lt; 100 mg/cup<br>\nVolume of coffee in a mug including crema: 25 ml ± 2,5</p>\n<p>Espresso is served into an espresso cup with a volume of 60-90 ml. An espresso doppio (i.e., double espresso) can be prepared as well, when a double portion of coffee (14 to 20g) and water (approx. 60 ml) is used, while keeping the extraction time the same as when preparing a standard espresso.</p>\n<h4>Espresso with water</h4>\n<p>Espresso is used as a basis for many drinks. It is often combined with water.</p>\n<p><em><strong>Americano</strong></em></p>\n<p>Americano is an espresso with added hot water which increased the volume, typically in a ratio of 1:5. According to a legend, Americano gained its name during the World War II, when American soldiers didn't like strong espresso and thus they drank it thinned. Americano can be prepared by adding hot water to espresso or, vice versa, by adding espresso into water. In the latter case, the beverage is usually called Long Black and it is served in a cappuccino cup with a volume of 15-180 ml.</p>\n<object type=\"application/kenticocloud\" data-type=\"item\" data-codename=\"americano\"></object><p><em><strong>Lungo</strong></em></p>\n<p>Lungo means long, watery or thinned in Italian, which expresses the preparation methods of this beverage. Baristas tend to acquire this beverage in different ways, some adjust the grinder to a coarser level while keeping the extraction time the same as with the espresso, gaining coffee with a volume of 60 ml. We recommend a gentler way of adding hot water to an espresso in the ratio of 1:1.</p>\n<h4>Espresso with milk</h4>\n<p><em><strong>Cappuccino</strong></em></p>\n<p>The basis of this beverage is 30 ml of espresso and warm milk, making up a mug of 150 to 180 milliliters in total. In the original Italian recipe, this coffee holds 2 centimeters of thick foam on the top of the hot milk. A newer variant, so called Seattle style cappuccino, trades the thick foam for a microfoam. This microfoam is closely interleaved with the milk and leaves a pleasant and velvety feeling in the mouth. The temperature of the milk during whipping should not exceed 65°C.</p>\n<p>The aim is to create a beverage without visible bubbles, while the surface follows the edge of the mug and does not protrude higher. Also, cappuccino should not be sprinkled with chocolate or even cinnamon.</p>\n<p>Lately, baristas learned to draw pictures in the white milk of the coffee, creating the so called latte art. They wish not only to offer a delicious mug of coffee to the customer, but to please the customer visually as well. The most common latte art motives on cappuccino are harts, tulips or so called rosettas. However, the most important is the taste of the beverage itself, latte art is only a sweet bonus.</p>\n<object type=\"application/kenticocloud\" data-type=\"item\" data-codename=\"how_to_make_a_cappuccino\"></object><p><em><strong>Flat white</strong></em></p>\n<p>For some, one espresso in a milk drink is just not enough. Therefore, growing demand for stronger coffee can be seen these days. Flat white became very popular in Australia and has already domesticated in the rest of the world. It is prepared into a glass or a cappuccino cup from two shots of espresso (doppio) and topped with warm milk and foam, which typically makes a 1 cm layer. Flat white can also be decorated with latte art.</p>\n<p><em><strong>Espresso macchiato</strong></em></p>\n<p>Espresso macchiato is a beverage matching its title, as in Italian, the macchiato means speckled or spotted.</p>\n<p>According to the classical teachings, espresso macchiato is espresso with a drop of milk foam added to the crema using a teaspoon. Modern macchiato looks like a miniature cappuccino – espresso is in its 80 ml cup topped with microfoam up to the edge. Can also be decorated with latte art.</p>\n<p><em><strong>Caffé latté</strong></em></p>\n<p>Caffe latte is a beverage of more than 250 ml in volume. It differentiates from cappuccino in total volume and also in the smaller portion of foam. Caffe latte is prepared into a cup with a handle. It was originally devised in Italy as coffee for children and is considered less popular among adults.</p>\n<p>A variant of caffe latte is latte macchiato, which is prepared a little differently. Frothed milk is poured into a glass first, where the milk foam separates from the milk in half a minute and creates a firmer layer on the top. Espresso is added last and creates a typical coffee stain on the surface. It often happens that by pouring coffee into the milk, three layers are created. This result is a bonus, not necessity.</p>\n<h3>Filtered coffee</h3>\n<p>The preparation of filtered coffee does not utilize pressure for extraction, but natural process of leaching of soluble substances instead. Hot water (up to 93°C) is in contact with coffee for 1 to 5 minutes (according to the preparation method) and then the extraction is stopped by filtering or straining the liquid. Further extraction (leaching of the coffee beans) does not take place in the resulting beverage.</p>\n<p>Filtered coffee has gained, a little unfairly, the impression of an inferior product which is better to be avoided and rather traded for espresso. However, if all basic conditions are met, this coffee presents a wonderful treat. If we perceive espresso as a concentrated beverage intended for immediate consummation, filtered coffee is quite the opposite&nbsp;– lower proportion of soluble substances allows the consumer to enjoy subtle nuances, as can be found in vine.</p>\n<p>Our tip: if the source is good quality, it is immensely interesting to watch the beverage evolve in taste during the process of cooling. In the first phase, 80-60°C, we taste only the bitter tones and the too high temperature. The beverage though, smells nicely thanks to the evaporating essential oils. In the middle of the cooling process, somewhere between the second and fifth sip, we discover the body, acidity, viscosity, sweetness and first signs of tones. In a cooled beverage, the massive aroma recedes and only a hint of light accompanying aroma remains, the tastes reveal the full potential, tones, harmony and accents. All this, of course, without any additives, such as sugar, milk, cream or honey.</p>\n<p>The following list sums up all the requirements for this coffee before its preparation:</p>\n<ul>\n  <li>Fresh selective coffee; freshness means 2-25 days after roasting</li>\n  <li>The amount of 60g / liter</li>\n  <li>Grinding on manual or electric grinder with stones always just before the preparation, coarseness chosen according to the method of preparation</li>\n  <li>Water heated to 91°C, fresh, with neutral pH, moderate hardness, non-mineralized, non-chored, non-carbonated</li>\n  <li>Hand-held non-automatic preparation</li>\n  <li>Adherence to the time of extraction</li>\n</ul>\n<p>For the preparation of filtered coffee can be used, for example, french press, aeropress, vacuum pot, moka pot, percolator with paper filter or chemex.</p>"
+      },
+      "related_articles": {
+        "type": "modular_content",
+        "name": "Related articles",
+        "value": []
+      },
+      "meta_keywords": {
+        "type": "text",
+        "name": "Meta keywords",
+        "value": "\"coffee beginner\", beverages"
+      },
+      "meta_description": {
+        "type": "text",
+        "name": "Meta description",
+        "value": "Espresso and filtered coffee are the two main categories of coffee. Learn about individual types of coffee that fall under these categories."
+      },
+      "url_pattern": {
+        "type": "url_slug",
+        "name": "URL pattern",
+        "value": "coffee-beverages-explained"
+      }
+    }
+  },
+  "modular_content": {
+    "americano": {
+      "system": {
+        "id": "1aa6d33b-7f7c-413c-b7fa-d22bf3b411fd",
+        "name": "Americano",
+        "codename": "americano",
+        "language": "en-US",
+        "type": "tweet",
+        "sitemap_locations": [],
+        "last_modified": "2017-06-27T13:00:08.2735049Z"
+      },
+      "elements": {
+        "tweet_link": {
+          "type": "text",
+          "name": "Tweet link",
+          "value": "https://twitter.com/DeCubaNorwich/status/879265763978358784"
+        },
+        "theme": {
+          "type": "multiple_choice",
+          "name": "Theme",
+          "value": [
+            {
+              "name": "Light",
+              "codename": "light"
+            }
+          ]
+        },
+        "display_options": {
+          "type": "multiple_choice",
+          "name": "Display options",
+          "value": [
+            {
+              "name": "Hide thread",
+              "codename": "hide_thread"
+            }
+          ]
+        }
+      }
+    },
+    "how_to_make_a_cappuccino": {
+      "system": {
+        "id": "7f4ab9a3-b6f6-42d7-9a50-f9ae17f827b1",
+        "name": "How to Make a Cappuccino",
+        "codename": "how_to_make_a_cappuccino",
+        "language": "en-US",
+        "type": "hosted_video",
+        "sitemap_locations": [],
+        "last_modified": "2017-06-27T12:57:16.7333276Z"
+      },
+      "elements": {
+        "video_id": {
+          "type": "text",
+          "name": "Video ID",
+          "value": "2Ao5b6uqI40"
+        },
+        "video_host": {
+          "type": "multiple_choice",
+          "name": "Video host",
+          "value": [
+            {
+              "name": "YouTube",
+              "codename": "youtube"
+            }
+          ]
+        }
+      }
+    }
+  }
+}

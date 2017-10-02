@@ -1,0 +1,60 @@
+﻿{
+  "system": {
+    "id": "929985ac-4aa5-436b-85a2-94c2d4fbbebd",
+    "name": "Coffee",
+    "codename": "coffee",
+    "last_modified": "2017-09-07T08:20:48.3034843Z"
+  },
+  "elements": {
+    "product_name": {
+      "type": "text",
+      "name": "Product name"
+    },
+    "price": {
+      "type": "number",
+      "name": "Price"
+    },
+    "image": {
+      "type": "asset",
+      "name": "Image"
+    },
+    "short_description": {
+      "type": "rich_text",
+      "name": "Short description"
+    },
+    "long_description": {
+      "type": "rich_text",
+      "name": "Long description"
+    },
+    "product_status": {
+      "type": "taxonomy",
+      "name": "Product status",
+      "taxonomy_group": "product_status"
+    },
+    "farm": {
+      "type": "text",
+      "name": "Farm"
+    },
+    "country": {
+      "type": "text",
+      "name": "Country"
+    },
+    "variety": {
+      "type": "text",
+      "name": "Variety"
+    },
+    "altitude": {
+      "type": "text",
+      "name": "Altitude"
+    },
+    "url_pattern": {
+      "type": "url_slug",
+      "name": "URL pattern"
+    },
+    "processing": {
+      "type": "taxonomy",
+      "name": "Processing",
+      "taxonomy_group": "processing"
+    }
+  }
+}

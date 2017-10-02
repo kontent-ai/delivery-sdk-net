@@ -1,0 +1,483 @@
+﻿{
+  "types": [
+    {
+      "system": {
+        "id": "d9748663-f567-4c51-a922-c24a1d6b935a",
+        "name": "Accessory",
+        "codename": "accessory",
+        "last_modified": "2017-08-02T07:33:39.3620325Z"
+      },
+      "elements": {
+        "product_name": {
+          "type": "text",
+          "name": "Product name"
+        },
+        "price": {
+          "type": "number",
+          "name": "Price"
+        },
+        "image": {
+          "type": "asset",
+          "name": "Image"
+        },
+        "manufacturer": {
+          "type": "text",
+          "name": "Manufacturer"
+        },
+        "product_status": {
+          "type": "taxonomy",
+          "name": "Product status",
+          "taxonomy_group": "product_status"
+        },
+        "short_description": {
+          "type": "rich_text",
+          "name": "Short description"
+        },
+        "long_description": {
+          "type": "rich_text",
+          "name": "Long description"
+        },
+        "url_pattern": {
+          "type": "url_slug",
+          "name": "URL pattern"
+        }
+      }
+    },
+    {
+      "system": {
+        "id": "b7aa4a53-d9b1-48cf-b7a6-ed0b182c4b89",
+        "name": "Article",
+        "codename": "article",
+        "last_modified": "2017-08-02T07:33:19.8599559Z"
+      },
+      "elements": {
+        "personas": {
+          "type": "taxonomy",
+          "name": "Personas",
+          "taxonomy_group": "personas"
+        },
+        "title": {
+          "type": "text",
+          "name": "Title"
+        },
+        "teaser_image": {
+          "type": "asset",
+          "name": "Teaser image"
+        },
+        "post_date": {
+          "type": "date_time",
+          "name": "Post date"
+        },
+        "summary": {
+          "type": "text",
+          "name": "Summary"
+        },
+        "body_copy": {
+          "type": "rich_text",
+          "name": "Body Copy"
+        },
+        "related_articles": {
+          "type": "modular_content",
+          "name": "Related articles"
+        },
+        "meta_keywords": {
+          "type": "text",
+          "name": "Meta keywords"
+        },
+        "meta_description": {
+          "type": "text",
+          "name": "Meta description"
+        },
+        "url_pattern": {
+          "type": "url_slug",
+          "name": "URL pattern"
+        }
+      }
+    },
+    {
+      "system": {
+        "id": "7bc932b3-ce2a-4aa7-954e-04cbcbd214fc",
+        "name": "Brewer",
+        "codename": "brewer",
+        "last_modified": "2017-09-07T08:17:52.2851663Z"
+      },
+      "elements": {
+        "product_name": {
+          "type": "text",
+          "name": "Product name"
+        },
+        "price": {
+          "type": "number",
+          "name": "Price"
+        },
+        "image": {
+          "type": "asset",
+          "name": "Image"
+        },
+        "product_status": {
+          "type": "taxonomy",
+          "name": "Product status",
+          "taxonomy_group": "product_status"
+        },
+        "short_description": {
+          "type": "rich_text",
+          "name": "Short description"
+        },
+        "long_description": {
+          "type": "rich_text",
+          "name": "Long description"
+        },
+        "url_pattern": {
+          "type": "url_slug",
+          "name": "URL pattern"
+        },
+        "manufacturer": {
+          "type": "taxonomy",
+          "name": "Manufacturer",
+          "taxonomy_group": "manufacturer"
+        }
+      }
+    },
+    {
+      "system": {
+        "id": "fe41ae5a-5fe2-420a-8560-f7d6d3533dc2",
+        "name": "Cafe",
+        "codename": "cafe",
+        "last_modified": "2017-08-02T07:31:59.0539138Z"
+      },
+      "elements": {
+        "street": {
+          "type": "text",
+          "name": "Street"
+        },
+        "city": {
+          "type": "text",
+          "name": "City"
+        },
+        "country": {
+          "type": "text",
+          "name": "Country"
+        },
+        "state": {
+          "type": "text",
+          "name": "State"
+        },
+        "zip_code": {
+          "type": "text",
+          "name": "ZIP Code"
+        },
+        "phone": {
+          "type": "text",
+          "name": "Phone"
+        },
+        "email": {
+          "type": "text",
+          "name": "Email"
+        },
+        "photo": {
+          "type": "asset",
+          "name": "Photo"
+        }
+      }
+    },
+    {
+      "system": {
+        "id": "929985ac-4aa5-436b-85a2-94c2d4fbbebd",
+        "name": "Coffee",
+        "codename": "coffee",
+        "last_modified": "2017-09-07T08:20:48.3034843Z"
+      },
+      "elements": {
+        "product_name": {
+          "type": "text",
+          "name": "Product name"
+        },
+        "price": {
+          "type": "number",
+          "name": "Price"
+        },
+        "image": {
+          "type": "asset",
+          "name": "Image"
+        },
+        "short_description": {
+          "type": "rich_text",
+          "name": "Short description"
+        },
+        "long_description": {
+          "type": "rich_text",
+          "name": "Long description"
+        },
+        "product_status": {
+          "type": "taxonomy",
+          "name": "Product status",
+          "taxonomy_group": "product_status"
+        },
+        "farm": {
+          "type": "text",
+          "name": "Farm"
+        },
+        "country": {
+          "type": "text",
+          "name": "Country"
+        },
+        "variety": {
+          "type": "text",
+          "name": "Variety"
+        },
+        "altitude": {
+          "type": "text",
+          "name": "Altitude"
+        },
+        "url_pattern": {
+          "type": "url_slug",
+          "name": "URL pattern"
+        },
+        "processing": {
+          "type": "taxonomy",
+          "name": "Processing",
+          "taxonomy_group": "processing"
+        }
+      }
+    },
+    {
+      "system": {
+        "id": "b99ec220-0f2b-4658-a080-ff0afe92f6d1",
+        "name": "Fact about us",
+        "codename": "fact_about_us",
+        "last_modified": "2017-08-02T07:31:38.2860586Z"
+      },
+      "elements": {
+        "title": {
+          "type": "text",
+          "name": "Title"
+        },
+        "description": {
+          "type": "rich_text",
+          "name": "Description"
+        },
+        "image": {
+          "type": "asset",
+          "name": "Image"
+        }
+      }
+    },
+    {
+      "system": {
+        "id": "da4f1cb1-8a55-43e5-9fcc-67ad331c8888",
+        "name": "Grinder",
+        "codename": "grinder",
+        "last_modified": "2017-08-02T07:31:29.6161483Z"
+      },
+      "elements": {
+        "product_name": {
+          "type": "text",
+          "name": "Product name"
+        },
+        "price": {
+          "type": "number",
+          "name": "Price"
+        },
+        "image": {
+          "type": "asset",
+          "name": "Image"
+        },
+        "manufacturer": {
+          "type": "text",
+          "name": "Manufacturer"
+        },
+        "product_status": {
+          "type": "taxonomy",
+          "name": "Product status",
+          "taxonomy_group": "product_status"
+        },
+        "short_description": {
+          "type": "rich_text",
+          "name": "Short description"
+        },
+        "long_description": {
+          "type": "rich_text",
+          "name": "Long description"
+        },
+        "url_pattern": {
+          "type": "url_slug",
+          "name": "URL pattern"
+        }
+      }
+    },
+    {
+      "system": {
+        "id": "f4deeb7e-fe9b-49a2-a5f6-a51a9be6ac73",
+        "name": "Hero Unit",
+        "codename": "hero_unit",
+        "last_modified": "2017-08-02T07:31:06.9531051Z"
+      },
+      "elements": {
+        "title": {
+          "type": "text",
+          "name": "Title"
+        },
+        "image": {
+          "type": "asset",
+          "name": "Image"
+        },
+        "marketing_message": {
+          "type": "rich_text",
+          "name": "Marketing message"
+        }
+      }
+    },
+    {
+      "system": {
+        "id": "a29399c3-5281-47ab-9916-acd4a6f887b7",
+        "name": "Home",
+        "codename": "home",
+        "last_modified": "2017-08-02T07:30:17.5637248Z"
+      },
+      "elements": {
+        "hero_unit": {
+          "type": "modular_content",
+          "name": "Hero unit"
+        },
+        "articles": {
+          "type": "modular_content",
+          "name": "Articles"
+        },
+        "our_story": {
+          "type": "modular_content",
+          "name": "Our story"
+        },
+        "cafes": {
+          "type": "modular_content",
+          "name": "Cafes"
+        },
+        "contact": {
+          "type": "rich_text",
+          "name": "Contact"
+        },
+        "url_pattern": {
+          "type": "url_slug",
+          "name": "URL pattern"
+        }
+      }
+    },
+    {
+      "system": {
+        "id": "269202ad-1d9d-47fd-b3e8-bdb05b3e3cf0",
+        "name": "Hosted video",
+        "codename": "hosted_video",
+        "last_modified": "2017-06-27T12:55:39.0543336Z"
+      },
+      "elements": {
+        "video_id": {
+          "type": "text",
+          "name": "Video ID"
+        },
+        "video_host": {
+          "type": "multiple_choice",
+          "name": "Video host",
+          "options": [
+            {
+              "name": "YouTube",
+              "codename": "youtube"
+            },
+            {
+              "name": "Vimeo",
+              "codename": "vimeo"
+            }
+          ]
+        }
+      }
+    },
+    {
+      "system": {
+        "id": "e097306b-3893-4a42-9973-2525fad14d66",
+        "name": "Office",
+        "codename": "office",
+        "last_modified": "2017-08-02T07:27:56.5626132Z"
+      },
+      "elements": {
+        "name": {
+          "type": "text",
+          "name": "Name"
+        },
+        "street": {
+          "type": "text",
+          "name": "Street"
+        },
+        "city": {
+          "type": "text",
+          "name": "City"
+        },
+        "country": {
+          "type": "text",
+          "name": "Country"
+        },
+        "state": {
+          "type": "text",
+          "name": "State"
+        },
+        "zip_code": {
+          "type": "text",
+          "name": "Zip code"
+        },
+        "phone": {
+          "type": "text",
+          "name": "Phone"
+        },
+        "email": {
+          "type": "text",
+          "name": "Email"
+        }
+      }
+    },
+    {
+      "system": {
+        "id": "f808c142-4b62-43b0-8f4d-1cbf412580ab",
+        "name": "Tweet",
+        "codename": "tweet",
+        "last_modified": "2017-06-27T12:59:35.5649789Z"
+      },
+      "elements": {
+        "tweet_link": {
+          "type": "text",
+          "name": "Tweet link"
+        },
+        "theme": {
+          "type": "multiple_choice",
+          "name": "Theme",
+          "options": [
+            {
+              "name": "Dark",
+              "codename": "dark"
+            },
+            {
+              "name": "Light",
+              "codename": "light"
+            }
+          ]
+        },
+        "display_options": {
+          "type": "multiple_choice",
+          "name": "Display options",
+          "options": [
+            {
+              "name": "Hide media",
+              "codename": "hide_media"
+            },
+            {
+              "name": "Hide thread",
+              "codename": "hide_thread"
+            }
+          ]
+        }
+      }
+    }
+  ],
+  "pagination": {
+    "skip": 1,
+    "limit": 0,
+    "count": 12,
+    "next_page": ""
+  }
+}

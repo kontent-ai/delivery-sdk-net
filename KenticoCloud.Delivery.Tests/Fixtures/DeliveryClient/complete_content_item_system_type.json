@@ -1,0 +1,168 @@
+﻿{
+  "items": [
+    {
+      "system": {
+        "id": "cd17ddf8-7bc6-47de-8beb-0e15a2381d75",
+        "name": "Complete content item",
+        "codename": "complete_content_item",
+        "language": "default",
+        "type": "complete_content_type",
+        "sitemap_locations": [],
+        "last_modified": "2017-02-22T00:52:03.9370993Z"
+      },
+      "elements": {
+        "text_field": {
+          "type": "text",
+          "name": "Text field",
+          "value": "Text field value"
+        },
+        "rich_text_field": {
+          "type": "rich_text",
+          "name": "Rich text field",
+          "images": {},
+          "links": {},
+          "modular_content": [],
+          "value": "<p>Rich text field value</p>"
+        },
+        "number_field": {
+          "type": "number",
+          "name": "Number field",
+          "value": 99
+        },
+        "multiple_choice_field_as_radio_buttons": {
+          "type": "multiple_choice",
+          "name": "Multiple choice field as Radio buttons",
+          "value": [
+            {
+              "name": "Radio button 1",
+              "codename": "radio_button_1"
+            }
+          ]
+        },
+        "multiple_choice_field_as_checkboxes": {
+          "type": "multiple_choice",
+          "name": "Multiple choice field as Checkboxes",
+          "value": [
+            {
+              "name": "Checkbox 1",
+              "codename": "checkbox_1"
+            },
+            {
+              "name": "Checkbox 2",
+              "codename": "checkbox_2"
+            }
+          ]
+        },
+        "date___time_field": {
+          "type": "date_time",
+          "name": "Date & time field",
+          "value": "2017-02-23T00:00:00Z"
+        },
+        "asset_field": {
+          "type": "asset",
+          "name": "Asset field",
+          "value": [
+            {
+              "name": "Fire.jpg",
+              "type": "image/jpeg",
+              "size": 129170,
+              "description": null,
+              "url": "https://assets.kenticocloud.com:443/e1167a11-75af-4a08-ad84-0582b463b010/64096741-b658-46ee-b148-b287fe03ea16/Fire.jpg"
+            }
+          ]
+        },
+        "modular_content_field": {
+          "type": "modular_content",
+          "name": "Modular content field",
+          "value": [
+            "homepage"
+          ]
+        },
+        "complete_type_taxonomy": {
+          "type": "taxonomy",
+          "name": "Complete type taxonomy",
+          "taxonomy_group": "complete_type_taxonomy",
+          "value": [
+            {
+              "name": "Option 1",
+              "codename": "option_1"
+            },
+            {
+              "name": "Option 2",
+              "codename": "option_2"
+            }
+          ]
+        },
+        "url_slug_field": {
+          "type": "url_slug",
+          "name": "Url slug field",
+          "value": "complete-content-item-url-slug"
+        }
+      }
+    }
+  ],
+  "modular_content": {
+    "homepage": {
+      "system": {
+        "id": "b30d533f-9822-4518-8113-e4b3437641b5",
+        "name": "Homepage",
+        "codename": "homepage",
+        "language": "default",
+        "type": "homepage",
+        "sitemap_locations": [],
+        "last_modified": "2017-02-21T04:29:42.9564205Z"
+      },
+      "elements": {
+        "call_to_action": {
+          "type": "text",
+          "name": "Call to action",
+          "value": "Winter is comming"
+        },
+        "subtitle": {
+          "type": "text",
+          "name": "Subtitle",
+          "value": "It's getting colder"
+        },
+        "image": {
+          "type": "asset",
+          "name": "Image",
+          "value": [
+            {
+              "name": "Fire won't help.jpg",
+              "type": "image/jpeg",
+              "size": 129170,
+              "description": null,
+              "url": "https://assets.kenticocloud.com:443/e1167a11-75af-4a08-ad84-0582b463b010/3b59ccf7-46dc-47e0-bb76-6404b8273b3f/Fire%20won't%20help.jpg"
+            }
+          ]
+        },
+        "untitled_taxonomy_group": {
+          "type": "taxonomy",
+          "name": "Untitled taxonomy group",
+          "taxonomy_group": "colours",
+          "value": [
+            {
+              "name": "Red",
+              "codename": "red"
+            },
+            {
+              "name": "Blue",
+              "codename": "blue"
+            }
+          ]
+        },
+        "url_slug": {
+          "type": "url_slug",
+          "name": "Url slug",
+          "value": "url-slug-for-homepage"
+        }
+      }
+    }
+  },
+  "pagination": {
+    "skip": 0,
+    "limit": 0,
+    "count": 1,
+    "next_page": ""
+  }
+}
