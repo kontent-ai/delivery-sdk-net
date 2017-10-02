@@ -1,0 +1,251 @@
+﻿{
+  "items": [
+    {
+      "system": {
+        "id": "ef23e568-6aa2-42cd-a120-7823c0ef19f7",
+        "name": "About us",
+        "codename": "about_us",
+        "language": "en-US",
+        "type": "about_us",
+        "sitemap_locations": [
+          "about_us"
+        ],
+        "last_modified": "2017-04-04T13:33:25.0990741Z"
+      },
+      "elements": {
+        "facts": {
+          "type": "modular_content",
+          "name": "Facts",
+          "value": [
+            "our_philosophy",
+            "how_we_source_our_coffees",
+            "how_we_roast_our_coffees"
+          ]
+        },
+        "url_pattern": {
+          "type": "url_slug",
+          "name": "URL pattern",
+          "value": "about-us"
+        }
+      }
+    },
+    {
+      "system": {
+        "id": "5d6167df-e39d-4877-999d-49e6e96fd8b0",
+        "name": "AeroPress",
+        "codename": "aeropress",
+        "language": "en-US",
+        "type": "brewer",
+        "sitemap_locations": [
+          "brewers"
+        ],
+        "last_modified": "2017-09-07T08:18:16.269361Z"
+      },
+      "elements": {
+        "product_name": {
+          "type": "text",
+          "name": "Product name",
+          "value": "AeroPress"
+        },
+        "price": {
+          "type": "number",
+          "name": "Price",
+          "value": 25.9
+        },
+        "image": {
+          "type": "asset",
+          "name": "Image",
+          "value": [
+            {
+              "name": "aeropress.jpg",
+              "type": "image/jpeg",
+              "size": 72879,
+              "description": "AeroPress Coffee Maker",
+              "url": "https://assets.kenticocloud.com:443/975bf280-fd91-488c-994c-2f04416e5ee3/3eee7d6e-0542-48ca-ab1e-35657f36dcfd/aeropress.jpg"
+            }
+          ]
+        },
+        "product_status": {
+          "type": "taxonomy",
+          "name": "Product status",
+          "taxonomy_group": "product_status",
+          "value": [
+            {
+              "name": "Bestseller",
+              "codename": "bestseller"
+            }
+          ]
+        },
+        "short_description": {
+          "type": "rich_text",
+          "name": "Short description",
+          "images": {},
+          "links": {},
+          "modular_content": [],
+          "value": "<p>AeroPress presents this coffee-making revolution which is affordable and makes delicious and smooth coffee. &nbsp;</p>"
+        },
+        "long_description": {
+          "type": "rich_text",
+          "name": "Long description",
+          "images": {},
+          "links": {},
+          "modular_content": [],
+          "value": "<p>Presenting a coffee-making revolution, the AeroPress Coffee Maker.<br><br>Affordable and straightforward for producing top notch coffee with. If you enjoy delicious and smooth coffee, you've come to the right place. With the innovative AeroPress, you'll be enjoying your perfect cup in no time.<br><br>Using this device, you'll be amazed at how good your coffee can taste. Its ease of use will amaze you even more. Coffee making with the versatile brewing technique offered by AeroPress. Any kind of coffee, from any part of the world will taste its best when combined with AeroPress. If you just want to enjoy the perfect quick cup, or you enjoy tinkering with the delicacies of coffee brewing, the AeroPress Coffee Maker will hit the spot!<br><br>Each AeroPress comes with a pack of filters included in the box. &nbsp;</p>"
+        },
+        "url_pattern": {
+          "type": "url_slug",
+          "name": "URL pattern",
+          "value": "aeropress"
+        },
+        "manufacturer": {
+          "type": "taxonomy",
+          "name": "Manufacturer",
+          "taxonomy_group": "manufacturer",
+          "value": [
+            {
+              "name": "Aerobie",
+              "codename": "aerobie"
+            }
+          ]
+        }
+      }
+    }
+  ],
+  "modular_content": {
+    "how_we_source_our_coffees": {
+      "system": {
+        "id": "18689ab0-e5ff-4ca5-bd13-ae3b5997c2d9",
+        "name": "How we source our coffees",
+        "codename": "how_we_source_our_coffees",
+        "language": "en-US",
+        "type": "fact_about_us",
+        "sitemap_locations": [
+          "about_us"
+        ],
+        "last_modified": "2016-10-20T12:47:13.65023Z"
+      },
+      "elements": {
+        "title": {
+          "type": "text",
+          "name": "Title",
+          "value": "How we source our coffees"
+        },
+        "description": {
+          "type": "rich_text",
+          "name": "Description",
+          "images": {},
+          "links": {},
+          "modular_content": [],
+          "value": "<p>Every coffee has a story to share. We want this story to reach you in the most unaltered manner possible.</p>\n<p>With estate coffees and micro lots from diverse varietals located all over the globe, you can taste the world with Dancing Goat.</p>\n<p>We know all our farmers personally. These are mostly family businesses that have been up and running for decades. They do what they love, and hand pick their produce with care. We make sure they get as much from our relationships as we and you do.</p>\n<p>Every bean in our stock is 100% traceable to its source. Clean both for the eye and the environment, our beans are always of the latest season — we never store more coffee than we have to.</p>"
+        },
+        "image": {
+          "type": "asset",
+          "name": "Image",
+          "value": [
+            {
+              "name": "sources.jpg",
+              "type": "image/jpeg",
+              "size": 46469,
+              "description": "Coffee Berries",
+              "url": "https://assets.kenticocloud.com:443/975bf280-fd91-488c-994c-2f04416e5ee3/3e76909f-599f-4742-b472-77fd4b510e92/sources.jpg"
+            }
+          ]
+        }
+      }
+    },
+    "how_we_roast_our_coffees": {
+      "system": {
+        "id": "1c303d3b-27a9-4827-b0c0-fb05da17ccbc",
+        "name": "How we roast our coffees",
+        "codename": "how_we_roast_our_coffees",
+        "language": "en-US",
+        "type": "fact_about_us",
+        "sitemap_locations": [
+          "about_us"
+        ],
+        "last_modified": "2017-04-04T11:48:26.1878079Z"
+      },
+      "elements": {
+        "title": {
+          "type": "text",
+          "name": "Title",
+          "value": "How we roast our coffees"
+        },
+        "description": {
+          "type": "rich_text",
+          "name": "Description",
+          "images": {},
+          "links": {
+            "f4b3fc05-e988-4dae-9ac1-a94aba566474": {
+              "codename": "on_roasts",
+              "type": "article",
+              "url_slug": "on-roasts"
+            }
+          },
+          "modular_content": [],
+          "value": "<p>We operate our own roasteries, one on every continent we cover, from where we distribute right to the shops. This allows you to experience every cup as if you were right at the very farm it originated from. To achieve this, we use a refurbished 1920s Probat coffee roasters.</p>\n<p>We know that roasting is something you must keep on constantly perfecting. Each coffee requires a different roast to get the aroma and taste just right. That’s why our experts fine tune <a data-item-id=\"f4b3fc05-e988-4dae-9ac1-a94aba566474\" href=\"\">the way we roast coffees</a> every day. It’s a constant struggle.</p>"
+        },
+        "image": {
+          "type": "asset",
+          "name": "Image",
+          "value": [
+            {
+              "name": "roaster.jpg",
+              "type": "image/jpeg",
+              "size": 50240,
+              "description": "Coffee Roaster",
+              "url": "https://assets.kenticocloud.com:443/975bf280-fd91-488c-994c-2f04416e5ee3/66d73245-10e5-4478-93e7-5609fee3cdf7/roaster.jpg"
+            }
+          ]
+        }
+      }
+    },
+    "our_philosophy": {
+      "system": {
+        "id": "a4aad96b-3f5d-41a9-b2c7-e0132bd533ec",
+        "name": "Our philosophy",
+        "codename": "our_philosophy",
+        "language": "en-US",
+        "type": "fact_about_us",
+        "sitemap_locations": [
+          "about_us"
+        ],
+        "last_modified": "2016-10-20T12:06:18.3403458Z"
+      },
+      "elements": {
+        "title": {
+          "type": "text",
+          "name": "Title",
+          "value": "Our philosophy"
+        },
+        "description": {
+          "type": "rich_text",
+          "name": "Description",
+          "images": {},
+          "links": {},
+          "modular_content": [],
+          "value": "<p>Since Dancing Goat's origin in 1969, we have been striving to do things right. Not only do we source the best coffees you can get your hands on, we also make sure we have a direct relationship with our farmers. Visiting the micro farms where we source our coffees is our daily bread. This way, we can guarantee the highest quality standard all year long. Our farmers get the best deal possible, so do you.</p>\n<p>Each one of us is a coffee enthusiast, but you don’t need to be an aficionado to enjoy the best. Ask us anything, we will happily take you on a tour of everything we have to offer. Stop by, relax, and put your mind at ease. There are no distractions at Dancing Goat; it’s just you and your cup of coffee.</p>\n<p>Are you a coffee seller or a cafe owner? Become our partner and spread our high-quality coffee among your customers. Or do you just want to taste good coffee? Come and join us at Dancing Goat, a place where the revival of alternative coffee preparation methods takes place. Extracting the best coffee in a vacuum coffee maker or the charming Chemex is just one of the things you can see here.</p>"
+        },
+        "image": {
+          "type": "asset",
+          "name": "Image",
+          "value": [
+            {
+              "name": "about.jpg",
+              "type": "image/jpeg",
+              "size": 56264,
+              "description": "Dancing Goat Café - Los Angeles",
+              "url": "https://assets.kenticocloud.com:443/975bf280-fd91-488c-994c-2f04416e5ee3/512047f1-2f7f-45fd-9e90-e71b8feae017/about.jpg"
+            }
+          ]
+        }
+      }
+    }
+  },
+  "pagination": {
+    "skip": 1,
+    "limit": 2,
+    "count": 2,
+    "next_page": "https://deliver.kenticocloud.com/975bf280-fd91-488c-994c-2f04416e5ee3/items?limit=2&skip=3"
+  }
+}

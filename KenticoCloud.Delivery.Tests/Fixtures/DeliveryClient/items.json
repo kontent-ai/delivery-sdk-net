@@ -1,0 +1,651 @@
+﻿{
+  "items": [
+    {
+      "system": {
+        "id": "2f8b020b-badd-4c7e-87a8-683eb8ac91d9",
+        "name": "Article 1",
+        "codename": "article_1",
+        "language": "default",
+        "type": "article",
+        "sitemap_locations": [],
+        "last_modified": "2017-03-02T00:42:14.9675295Z"
+      },
+      "elements": {
+        "title": {
+          "type": "text",
+          "name": "Title",
+          "value": "Title of article 1"
+        },
+        "content": {
+          "type": "rich_text",
+          "name": "Content",
+          "images": {},
+          "links": {},
+          "modular_content": [],
+          "value": "<p>Content of my article 1 :)</p>"
+        },
+        "related_articles": {
+          "type": "modular_content",
+          "name": "Related articles",
+          "value": [
+            "article_2"
+          ]
+        }
+      }
+    },
+    {
+      "system": {
+        "id": "e1bf6b90-168e-4cac-9845-91ec69518f2b",
+        "name": "Article 2",
+        "codename": "article_2",
+        "language": "default",
+        "type": "article",
+        "sitemap_locations": [],
+        "last_modified": "2017-02-23T00:09:50.4493636Z"
+      },
+      "elements": {
+        "title": {
+          "type": "text",
+          "name": "Title",
+          "value": "Title of article 2"
+        },
+        "content": {
+          "type": "rich_text",
+          "name": "Content",
+          "images": {},
+          "links": {},
+          "modular_content": [],
+          "value": ""
+        },
+        "related_articles": {
+          "type": "modular_content",
+          "name": "Related articles",
+          "value": []
+        }
+      }
+    },
+    {
+      "system": {
+        "id": "6155977a-b47f-41cf-86ca-a2f5ffb600ac",
+        "name": "Brno office",
+        "codename": "brno_office",
+        "language": "default",
+        "type": "office",
+        "sitemap_locations": [
+          "about_us"
+        ],
+        "last_modified": "2017-03-16T22:42:56.0015692Z"
+      },
+      "elements": {
+        "office_name": {
+          "type": "text",
+          "name": "Office name",
+          "value": "Brno Office"
+        },
+        "about_the_office": {
+          "type": "rich_text",
+          "name": "About the office",
+          "images": {},
+          "links": {
+            "ee82db8c-de06-4992-9561-1fc642056c2b": {
+              "codename": "melbourne_office",
+              "type": "office",
+              "url_slug": "melbourne-office"
+            }
+          },
+          "modular_content": [],
+          "value": "<p><a href=\"https://en.wikipedia.org/wiki/Brno\">Brno</a> office is very far from <a data-item-id=\"ee82db8c-de06-4992-9561-1fc642056c2b\" href=\"\">Melbourne</a> office.</p>"
+        },
+        "opening_date": {
+          "type": "date_time",
+          "name": "Opening date",
+          "value": "2015-10-13T00:00:00Z"
+        },
+        "nearby_offices": {
+          "type": "modular_content",
+          "name": "Nearby offices",
+          "value": []
+        },
+        "number_of_employees": {
+          "type": "number",
+          "name": "Number of employees",
+          "value": 65
+        },
+        "photo_of_the_office": {
+          "type": "asset",
+          "name": "Photo of the office",
+          "value": [
+            {
+              "name": "webnode-brno-office-design-7.jpg",
+              "type": "image/jpeg",
+              "size": 696269,
+              "description": null,
+              "url": "https://assets.kenticocloud.com:443/e1167a11-75af-4a08-ad84-0582b463b010/2bf48030-79ae-412a-9a5b-e9d8ada14028/webnode-brno-office-design-7.jpg"
+            }
+          ]
+        },
+        "url_slug": {
+          "type": "url_slug",
+          "name": "Url Slug",
+          "value": "brno-office"
+        }
+      }
+    },
+    {
+      "system": {
+        "id": "cd17ddf8-7bc6-47de-8beb-0e15a2381d75",
+        "name": "Complete content item",
+        "codename": "complete_content_item",
+        "language": "default",
+        "type": "complete_content_type",
+        "sitemap_locations": [],
+        "last_modified": "2017-02-22T00:52:03.9370993Z"
+      },
+      "elements": {
+        "text_field": {
+          "type": "text",
+          "name": "Text field",
+          "value": "Text field value"
+        },
+        "rich_text_field": {
+          "type": "rich_text",
+          "name": "Rich text field",
+          "images": {},
+          "links": {},
+          "modular_content": [],
+          "value": "<p>Rich text field value</p>"
+        },
+        "number_field": {
+          "type": "number",
+          "name": "Number field",
+          "value": 99
+        },
+        "multiple_choice_field_as_radio_buttons": {
+          "type": "multiple_choice",
+          "name": "Multiple choice field as Radio buttons",
+          "value": [
+            {
+              "name": "Radio button 1",
+              "codename": "radio_button_1"
+            }
+          ]
+        },
+        "multiple_choice_field_as_checkboxes": {
+          "type": "multiple_choice",
+          "name": "Multiple choice field as Checkboxes",
+          "value": [
+            {
+              "name": "Checkbox 1",
+              "codename": "checkbox_1"
+            },
+            {
+              "name": "Checkbox 2",
+              "codename": "checkbox_2"
+            }
+          ]
+        },
+        "date___time_field": {
+          "type": "date_time",
+          "name": "Date & time field",
+          "value": "2017-02-23T00:00:00Z"
+        },
+        "asset_field": {
+          "type": "asset",
+          "name": "Asset field",
+          "value": [
+            {
+              "name": "Fire.jpg",
+              "type": "image/jpeg",
+              "size": 129170,
+              "description": null,
+              "url": "https://assets.kenticocloud.com:443/e1167a11-75af-4a08-ad84-0582b463b010/64096741-b658-46ee-b148-b287fe03ea16/Fire.jpg"
+            }
+          ]
+        },
+        "modular_content_field": {
+          "type": "modular_content",
+          "name": "Modular content field",
+          "value": [
+            "homepage"
+          ]
+        },
+        "complete_type_taxonomy": {
+          "type": "taxonomy",
+          "name": "Complete type taxonomy",
+          "taxonomy_group": "complete_type_taxonomy",
+          "value": [
+            {
+              "name": "Option 1",
+              "codename": "option_1"
+            },
+            {
+              "name": "Option 2",
+              "codename": "option_2"
+            }
+          ]
+        },
+        "url_slug_field": {
+          "type": "url_slug",
+          "name": "Url slug field",
+          "value": "complete-content-item-url-slug"
+        }
+      }
+    },
+    {
+      "system": {
+        "id": "b30d533f-9822-4518-8113-e4b3437641b5",
+        "name": "Homepage",
+        "codename": "homepage",
+        "language": "default",
+        "type": "homepage",
+        "sitemap_locations": [],
+        "last_modified": "2017-02-21T04:29:42.9564205Z"
+      },
+      "elements": {
+        "call_to_action": {
+          "type": "text",
+          "name": "Call to action",
+          "value": "Winter is comming"
+        },
+        "subtitle": {
+          "type": "text",
+          "name": "Subtitle",
+          "value": "It's getting colder"
+        },
+        "image": {
+          "type": "asset",
+          "name": "Image",
+          "value": [
+            {
+              "name": "Fire won't help.jpg",
+              "type": "image/jpeg",
+              "size": 129170,
+              "description": null,
+              "url": "https://assets.kenticocloud.com:443/e1167a11-75af-4a08-ad84-0582b463b010/3b59ccf7-46dc-47e0-bb76-6404b8273b3f/Fire%20won't%20help.jpg"
+            }
+          ]
+        },
+        "untitled_taxonomy_group": {
+          "type": "taxonomy",
+          "name": "Untitled taxonomy group",
+          "taxonomy_group": "colours",
+          "value": [
+            {
+              "name": "Red",
+              "codename": "red"
+            },
+            {
+              "name": "Blue",
+              "codename": "blue"
+            }
+          ]
+        },
+        "url_slug": {
+          "type": "url_slug",
+          "name": "Url slug",
+          "value": "url-slug-for-homepage"
+        }
+      }
+    },
+    {
+      "system": {
+        "id": "ee82db8c-de06-4992-9561-1fc642056c2b",
+        "name": "Melbourne office",
+        "codename": "melbourne_office",
+        "language": "default",
+        "type": "office",
+        "sitemap_locations": [],
+        "last_modified": "2017-03-16T22:43:20.7173008Z"
+      },
+      "elements": {
+        "office_name": {
+          "type": "text",
+          "name": "Office name",
+          "value": "Melbourne office"
+        },
+        "about_the_office": {
+          "type": "rich_text",
+          "name": "About the office",
+          "images": {},
+          "links": {},
+          "modular_content": [],
+          "value": "<p>It's a beatufiul office</p>"
+        },
+        "opening_date": {
+          "type": "date_time",
+          "name": "Opening date",
+          "value": "2017-02-08T00:00:00Z"
+        },
+        "nearby_offices": {
+          "type": "modular_content",
+          "name": "Nearby offices",
+          "value": []
+        },
+        "number_of_employees": {
+          "type": "number",
+          "name": "Number of employees",
+          "value": null
+        },
+        "photo_of_the_office": {
+          "type": "asset",
+          "name": "Photo of the office",
+          "value": []
+        },
+        "url_slug": {
+          "type": "url_slug",
+          "name": "Url Slug",
+          "value": "melbourne-office"
+        }
+      }
+    },
+    {
+      "system": {
+        "id": "8b45a5e2-e797-4765-9290-0c87059fffe8",
+        "name": "Multiple modular content item",
+        "codename": "multiple_modular_content_item",
+        "language": "default",
+        "type": "multiple_modular_contents",
+        "sitemap_locations": [],
+        "last_modified": "2017-02-21T05:19:44.0820982Z"
+      },
+      "elements": {
+        "text": {
+          "type": "text",
+          "name": "text",
+          "value": "text"
+        },
+        "mc1": {
+          "type": "modular_content",
+          "name": "Mc1",
+          "value": [
+            "n1st_level_modular_content"
+          ]
+        },
+        "mc2": {
+          "type": "modular_content",
+          "name": "Mc2",
+          "value": [
+            "n2nd_level_modular_content"
+          ]
+        }
+      }
+    },
+    {
+      "system": {
+        "id": "f4421827-f732-4698-91a1-aa8d51eec6ae",
+        "name": "1st level modular content",
+        "codename": "n1st_level_modular_content",
+        "language": "default",
+        "type": "modular_content_type",
+        "sitemap_locations": [
+          "about_us",
+          "homepage"
+        ],
+        "last_modified": "2016-10-24T09:11:11.2681037Z"
+      },
+      "elements": {
+        "content": {
+          "type": "text",
+          "name": "Content",
+          "value": "1st level modulasdfsdr content"
+        },
+        "modular_content": {
+          "type": "modular_content",
+          "name": "Modular content",
+          "value": [
+            "n2nd_level_modular_content"
+          ]
+        }
+      }
+    },
+    {
+      "system": {
+        "id": "47be1bea-3f4e-4cd2-87b7-e3ec162c1df8",
+        "name": "2nd level modular content",
+        "codename": "n2nd_level_modular_content",
+        "language": "default",
+        "type": "modular_content_type",
+        "sitemap_locations": [],
+        "last_modified": "2016-08-11T06:57:08.8322664Z"
+      },
+      "elements": {
+        "content": {
+          "type": "text",
+          "name": "Content",
+          "value": "2nd level"
+        },
+        "modular_content": {
+          "type": "modular_content",
+          "name": "Modular content",
+          "value": [
+            "n3rd_level_modular_content"
+          ]
+        }
+      }
+    },
+    {
+      "system": {
+        "id": "cd6c6cea-c83d-4746-8945-588d30e081fc",
+        "name": "3rd level modular content",
+        "codename": "n3rd_level_modular_content",
+        "language": "default",
+        "type": "modular_content_type",
+        "sitemap_locations": [],
+        "last_modified": "2017-03-01T03:55:52.8880146Z"
+      },
+      "elements": {
+        "content": {
+          "type": "text",
+          "name": "Content",
+          "value": "3rd level"
+        },
+        "modular_content": {
+          "type": "modular_content",
+          "name": "Modular content",
+          "value": [
+            "n1st_level_modular_content"
+          ]
+        }
+      }
+    },
+    {
+      "system": {
+        "id": "cc47b867-755b-4971-a486-1c85c3d9c49a",
+        "name": "test",
+        "codename": "test",
+        "language": "default",
+        "type": "",
+        "sitemap_locations": [
+          "about_us",
+          "contact",
+          "homepage",
+          "contact_e3b918c"
+        ],
+        "last_modified": "2017-03-16T23:26:34.5749394Z"
+      },
+      "elements": {
+        "": {
+          "type": "rich_text",
+          "name": "test",
+          "images": {},
+          "links": {},
+          "modular_content": [],
+          "value": "<p>My rich text element</p>"
+        }
+      }
+    }
+  ],
+  "modular_content": {
+    "homepage": {
+      "system": {
+        "id": "b30d533f-9822-4518-8113-e4b3437641b5",
+        "name": "Homepage",
+        "codename": "homepage",
+        "language": "default",
+        "type": "homepage",
+        "sitemap_locations": [],
+        "last_modified": "2017-02-21T04:29:42.9564205Z"
+      },
+      "elements": {
+        "call_to_action": {
+          "type": "text",
+          "name": "Call to action",
+          "value": "Winter is comming"
+        },
+        "subtitle": {
+          "type": "text",
+          "name": "Subtitle",
+          "value": "It's getting colder"
+        },
+        "image": {
+          "type": "asset",
+          "name": "Image",
+          "value": [
+            {
+              "name": "Fire won't help.jpg",
+              "type": "image/jpeg",
+              "size": 129170,
+              "description": null,
+              "url": "https://assets.kenticocloud.com:443/e1167a11-75af-4a08-ad84-0582b463b010/3b59ccf7-46dc-47e0-bb76-6404b8273b3f/Fire%20won't%20help.jpg"
+            }
+          ]
+        },
+        "untitled_taxonomy_group": {
+          "type": "taxonomy",
+          "name": "Untitled taxonomy group",
+          "taxonomy_group": "colours",
+          "value": [
+            {
+              "name": "Red",
+              "codename": "red"
+            },
+            {
+              "name": "Blue",
+              "codename": "blue"
+            }
+          ]
+        },
+        "url_slug": {
+          "type": "url_slug",
+          "name": "Url slug",
+          "value": "url-slug-for-homepage"
+        }
+      }
+    },
+    "n1st_level_modular_content": {
+      "system": {
+        "id": "f4421827-f732-4698-91a1-aa8d51eec6ae",
+        "name": "1st level modular content",
+        "codename": "n1st_level_modular_content",
+        "language": "default",
+        "type": "modular_content_type",
+        "sitemap_locations": [
+          "about_us",
+          "homepage"
+        ],
+        "last_modified": "2016-10-24T09:11:11.2681037Z"
+      },
+      "elements": {
+        "content": {
+          "type": "text",
+          "name": "Content",
+          "value": "1st level modulasdfsdr content"
+        },
+        "modular_content": {
+          "type": "modular_content",
+          "name": "Modular content",
+          "value": [
+            "n2nd_level_modular_content"
+          ]
+        }
+      }
+    },
+    "n2nd_level_modular_content": {
+      "system": {
+        "id": "47be1bea-3f4e-4cd2-87b7-e3ec162c1df8",
+        "name": "2nd level modular content",
+        "codename": "n2nd_level_modular_content",
+        "language": "default",
+        "type": "modular_content_type",
+        "sitemap_locations": [],
+        "last_modified": "2016-08-11T06:57:08.8322664Z"
+      },
+      "elements": {
+        "content": {
+          "type": "text",
+          "name": "Content",
+          "value": "2nd level"
+        },
+        "modular_content": {
+          "type": "modular_content",
+          "name": "Modular content",
+          "value": [
+            "n3rd_level_modular_content"
+          ]
+        }
+      }
+    },
+    "article_2": {
+      "system": {
+        "id": "e1bf6b90-168e-4cac-9845-91ec69518f2b",
+        "name": "Article 2",
+        "codename": "article_2",
+        "language": "default",
+        "type": "article",
+        "sitemap_locations": [],
+        "last_modified": "2017-02-23T00:09:50.4493636Z"
+      },
+      "elements": {
+        "title": {
+          "type": "text",
+          "name": "Title",
+          "value": "Title of article 2"
+        },
+        "content": {
+          "type": "rich_text",
+          "name": "Content",
+          "images": {},
+          "links": {},
+          "modular_content": [],
+          "value": ""
+        },
+        "related_articles": {
+          "type": "modular_content",
+          "name": "Related articles",
+          "value": []
+        }
+      }
+    },
+    "n3rd_level_modular_content": {
+      "system": {
+        "id": "cd6c6cea-c83d-4746-8945-588d30e081fc",
+        "name": "3rd level modular content",
+        "codename": "n3rd_level_modular_content",
+        "language": "default",
+        "type": "modular_content_type",
+        "sitemap_locations": [],
+        "last_modified": "2017-03-01T03:55:52.8880146Z"
+      },
+      "elements": {
+        "content": {
+          "type": "text",
+          "name": "Content",
+          "value": "3rd level"
+        },
+        "modular_content": {
+          "type": "modular_content",
+          "name": "Modular content",
+          "value": [
+            "n1st_level_modular_content"
+          ]
+        }
+      }
+    }
+  },
+  "pagination": {
+    "skip": 0,
+    "limit": 0,
+    "count": 11,
+    "next_page": ""
+  }
+}

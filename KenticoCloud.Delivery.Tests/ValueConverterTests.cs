@@ -39,11 +39,12 @@ namespace KenticoCloud.Delivery.Tests
 
     public class ValueConverterTests
     {
+        public const string PROJECT_ID = "975bf280-fd91-488c-994c-2f04416e5ee3";
         private readonly DeliveryClient client;
 
         public ValueConverterTests()
         {
-            client = new DeliveryClient(DeliveryClientTests.PROJECT_ID) { CodeFirstModelProvider = { TypeProvider = new CustomTypeProvider() } };
+            client = new DeliveryClient(PROJECT_ID) { CodeFirstModelProvider = { TypeProvider = new CustomTypeProvider() } };
         }
 
         [Fact]

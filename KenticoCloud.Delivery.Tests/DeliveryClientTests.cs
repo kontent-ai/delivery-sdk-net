@@ -3,24 +3,42 @@ using System.Collections.Generic;
 using System.Linq;
 using FakeItEasy;
 using Xunit;
+using RichardSzalay.MockHttp;
+using System.IO;
+using System.Net;
 
 namespace KenticoCloud.Delivery.Tests
 {
     public class DeliveryClientTests
     {
-        public const string PROJECT_ID = "975bf280-fd91-488c-994c-2f04416e5ee3";
-        private const string SANDBOX_PROJECT_ID = "e1167a11-75af-4a08-ad84-0582b463b010";
-
-        private readonly DeliveryClient client;
+        string guid = string.Empty;
+        string baseUrl = string.Empty;
+        MockHttpMessageHandler mockHttp;
 
         public DeliveryClientTests()
         {
-            client = new DeliveryClient(PROJECT_ID) { CodeFirstModelProvider = { TypeProvider = new CustomTypeProvider() } };
+            guid = Guid.NewGuid().ToString();
+            baseUrl = $"https://deliver.kenticocloud.com/{guid}";
+            mockHttp = new MockHttpMessageHandler();
         }
 
         [Fact]
         public async void GetItemAsync()
         {
+            string url = $"{baseUrl}/items/";
+
+            mockHttp.When($"{url}{"coffee_beverages_explained"}").
+                Respond("application/json", File.ReadAllText(Path.Combine(AppContext.BaseDirectory, "Fixtures\\DeliveryClient\\coffee_beverages_explained.json")));
+
+            mockHttp.When($"{url}{"brazil_natural_barra_grande"}").
+              Respond("application/json", File.ReadAllText(Path.Combine(AppContext.BaseDirectory, "Fixtures\\DeliveryClient\\brazil_natural_barra_grande.json")));
+
+            mockHttp.When($"{url}{"on_roasts"}").
+            Respond("application/json", File.ReadAllText(Path.Combine(AppContext.BaseDirectory, "Fixtures\\DeliveryClient\\on_roasts.json")));
+
+            var httpClient = mockHttp.ToHttpClient();
+            DeliveryClient client = new DeliveryClient(guid) { HttpClient = httpClient };
+
             var beveragesResponse = (await client.GetItemAsync("coffee_beverages_explained"));
             var beveragesItem = beveragesResponse.Item;
             var barraItem = (await client.GetItemAsync("brazil_natural_barra_grande")).Item;
@@ -42,6 +60,12 @@ namespace KenticoCloud.Delivery.Tests
         [Fact]
         public async void GetPagination()
         {
+            mockHttp.When($"{baseUrl}/items").
+                WithQueryString("limit=2&skip=1").
+                Respond("application/json", File.ReadAllText(Path.Combine(AppContext.BaseDirectory, "Fixtures\\DeliveryClient\\articles.json")));
+
+            DeliveryClient client = InitializeDeliverClientWithACustomeTypeProvider();
+
             var articles = await client.GetItemsAsync(new LimitParameter(2), new SkipParameter(1));
 
             Assert.Equal(2, articles.Pagination.Count);
@@ -53,6 +77,11 @@ namespace KenticoCloud.Delivery.Tests
         [Fact]
         public async void AssetPropertiesNotEmpty()
         {
+            mockHttp.When($"{baseUrl}/items/{"coffee_beverages_explained"}").
+                Respond("application/json", File.ReadAllText(Path.Combine(AppContext.BaseDirectory, "Fixtures\\DeliveryClient\\coffee_beverages_explained.json")));
+
+            DeliveryClient client = InitializeDeliverClientWithACustomeTypeProvider();
+
             var response = await client.GetItemAsync("coffee_beverages_explained");
             var beveragesItem = response.Item;
 
@@ -68,6 +97,11 @@ namespace KenticoCloud.Delivery.Tests
         [Fact]
         public async void IgnoredSerializationProperties()
         {
+            mockHttp.When($"{baseUrl}/items/{"coffee_beverages_explained"}").
+                Respond("application/json", File.ReadAllText(Path.Combine(AppContext.BaseDirectory, "Fixtures\\DeliveryClient\\coffee_beverages_explained.json")));
+
+            DeliveryClient client = InitializeDeliverClientWithACustomeTypeProvider();
+
             var beveragesItem = (await client.GetItemAsync("coffee_beverages_explained")).Item;
 
             var model = beveragesItem.CastTo<Article>();
@@ -79,12 +113,25 @@ namespace KenticoCloud.Delivery.Tests
         [Fact]
         public async void GetItemAsync_NotFound()
         {
+            string messsge = "{'message': 'The requested content item unscintillating_hemerocallidaceae_des_iroquois was not found.','request_id': '','error_code': 101,'specific_code': 0}";
+
+            mockHttp.When($"{baseUrl}/items/unscintillating_hemerocallidaceae_des_iroquois").
+                Respond(HttpStatusCode.NotFound, "application/json", messsge);
+
+            DeliveryClient client = InitializeDeliverClientWithACustomeTypeProvider();
+
             await Assert.ThrowsAsync<DeliveryException>(async () => await client.GetItemAsync("unscintillating_hemerocallidaceae_des_iroquois"));
         }
 
         [Fact]
         public async void GetItemsAsync()
         {
+            mockHttp.When($"{baseUrl}/items").
+                WithQueryString("system.type=cafe").
+                Respond("application/json", File.ReadAllText(Path.Combine(AppContext.BaseDirectory, "Fixtures\\DeliveryClient\\allendale.json")));
+
+            DeliveryClient client = InitializeDeliverClientWithACustomeTypeProvider();
+
             var response = await client.GetItemsAsync(new EqualsFilter("system.type", "cafe"));
 
             Assert.NotEmpty(response.Items);
@@ -93,8 +140,17 @@ namespace KenticoCloud.Delivery.Tests
         [Fact]
         public async void GetTypeAsync()
         {
+            mockHttp.When($"{baseUrl}/types/article").
+                Respond("application/json", File.ReadAllText(Path.Combine(AppContext.BaseDirectory, "Fixtures\\DeliveryClient\\article.json")));
+
+            mockHttp.When($"{baseUrl}/types/coffee").
+              Respond("application/json", File.ReadAllText(Path.Combine(AppContext.BaseDirectory, "Fixtures\\DeliveryClient\\coffee.json")));
+
+            DeliveryClient client = InitializeDeliverClientWithACustomeTypeProvider();
+
             var articleType = await client.GetTypeAsync("article");
             var coffeeType = await client.GetTypeAsync("coffee");
+
             var taxonomyElement = articleType.Elements["personas"];
             var processingTaxonomyElement = coffeeType.Elements["processing"];
 
@@ -105,6 +161,7 @@ namespace KenticoCloud.Delivery.Tests
             Assert.Equal("asset", articleType.Elements["teaser_image"].Type);
             Assert.Equal("modular_content", articleType.Elements["related_articles"].Type);
             Assert.Equal("taxonomy", articleType.Elements["personas"].Type);
+
             Assert.Equal("number", coffeeType.Elements["price"].Type);
             Assert.Equal("taxonomy", coffeeType.Elements["processing"].Type);
 
@@ -115,12 +172,25 @@ namespace KenticoCloud.Delivery.Tests
         [Fact]
         public async void GetTypeAsync_NotFound()
         {
+            string messsge = "{'message': 'The requested content type unequestrian_nonadjournment_sur_achoerodus was not found','request_id': '','error_code': 101,'specific_code': 0}";
+
+            mockHttp.When($"{baseUrl}/types/unequestrian_nonadjournment_sur_achoerodus").
+                Respond(HttpStatusCode.NotFound, "application/json", messsge);
+
+            DeliveryClient client = InitializeDeliverClientWithACustomeTypeProvider();
+
             await Assert.ThrowsAsync<DeliveryException>(async () => await client.GetTypeAsync("unequestrian_nonadjournment_sur_achoerodus"));
         }
 
         [Fact]
         public async void GetTypesAsync()
         {
+            mockHttp.When($"{baseUrl}/types").
+                WithQueryString("skip=1").
+                Respond("application/json", File.ReadAllText(Path.Combine(AppContext.BaseDirectory, "Fixtures\\DeliveryClient\\types_accessory.json")));
+
+            DeliveryClient client = InitializeDeliverClientWithACustomeTypeProvider();
+
             var response = await client.GetTypesAsync(new SkipParameter(1));
 
             Assert.NotNull(response.ApiUrl);
@@ -130,6 +200,17 @@ namespace KenticoCloud.Delivery.Tests
         [Fact]
         public async void GetContentElementAsync()
         {
+            string url = $"{baseUrl}/types";
+
+            mockHttp.When($"{url}/{Article.Codename}/elements/{Article.TitleCodename}").
+                Respond("application/json", "{'type':'text','name':'Title','codename':'title'}");
+            mockHttp.When($"{url}/{Article.Codename}/elements/{Article.PersonasCodename}").
+               Respond("application/json", "{'type':'taxonomy','name':'Personas','codename':'Personas','taxonomy_group':'personas'}");
+            mockHttp.When($"{url}/{Coffee.Codename}/elements/{Coffee.ProcessingCodename}").
+               Respond("application/json", "{'type':'taxonomy','name':'Processing','taxonomy_group':'processing','codename':'processing'}");
+
+            DeliveryClient client = InitializeDeliverClientWithACustomeTypeProvider();
+
             var element = await client.GetContentElementAsync(Article.Codename, Article.TitleCodename);
             var personasTaxonomyElement = await client.GetContentElementAsync(Article.Codename, Article.PersonasCodename);
             var processingTaxonomyElement = await client.GetContentElementAsync(Coffee.Codename, Coffee.ProcessingCodename);
@@ -142,12 +223,26 @@ namespace KenticoCloud.Delivery.Tests
         [Fact]
         public async void GetContentElementsAsync_NotFound()
         {
+
+            string url = $"{baseUrl}/types/anticommunistical_preventure_sur_helxine/elements/unlacerated_topognosis_sur_nonvigilantness";
+
+            string messsge = "{'message': 'The requested content type anticommunistical_preventure_sur_helxine was not found.','request_id': '','error_code': 101,'specific_code': 0}";
+            mockHttp.When($"{url}").
+                Respond(HttpStatusCode.NotFound, "application/json", messsge);
+
+            DeliveryClient client = InitializeDeliverClientWithACustomeTypeProvider();
+
             await Assert.ThrowsAsync<DeliveryException>(async () => await client.GetContentElementAsync("anticommunistical_preventure_sur_helxine", "unlacerated_topognosis_sur_nonvigilantness"));
         }
 
         [Fact]
         public async void GetTaxonomyAsync()
         {
+            mockHttp.When($"{baseUrl}/taxonomies/personas").
+                Respond("application/json", File.ReadAllText(Path.Combine(AppContext.BaseDirectory, "Fixtures\\DeliveryClient\\taxonomies_personas.json")));
+
+            DeliveryClient client = InitializeDeliverClientWithACustomeTypeProvider();
+
             var taxonomy = await client.GetTaxonomyAsync("personas");
             var personasTerms = taxonomy.Terms.ToList();
             var coffeeExpertTerms = personasTerms[0].Terms.ToList();
@@ -163,12 +258,31 @@ namespace KenticoCloud.Delivery.Tests
         [Fact]
         public async void GetTaxonomyAsync_NotFound()
         {
+
+            string url = $"{baseUrl}/taxonomies/unequestrian_nonadjournment_sur_achoerodus";
+            mockHttp.When($"{url}").
+                Respond(HttpStatusCode.NotFound, "application/json", "{'message':'The requested taxonomy group unequestrian_nonadjournment_sur_achoerodus was not found.'}");
+
+            var httpClient = mockHttp.ToHttpClient();
+
+            DeliveryClient client = new DeliveryClient(guid)
+            {
+                CodeFirstModelProvider = { TypeProvider = new CustomTypeProvider() },
+                HttpClient = httpClient
+            };
+
             await Assert.ThrowsAsync<DeliveryException>(async () => await client.GetTaxonomyAsync("unequestrian_nonadjournment_sur_achoerodus"));
         }
 
         [Fact]
         public async void GetTaxonomiesAsync()
         {
+            mockHttp.When($"{baseUrl}/taxonomies").
+                WithQueryString("skip=1").
+                Respond("application/json", File.ReadAllText(Path.Combine(AppContext.BaseDirectory, "Fixtures\\DeliveryClient\\taxonomies_multiple.json")));
+
+            DeliveryClient client = InitializeDeliverClientWithACustomeTypeProvider();
+
             var response = await client.GetTaxonomiesAsync(new SkipParameter(1));
 
             Assert.NotNull(response.ApiUrl);
@@ -178,8 +292,15 @@ namespace KenticoCloud.Delivery.Tests
         [Fact]
         public async void QueryParameters()
         {
+
+            string url = $"{baseUrl}/items?elements.personas%5Ball%5D=barista%2Ccoffee%2Cblogger&elements.personas%5Bany%5D=barista%2Ccoffee%2Cblogger&system.sitemap_locations%5Bcontains%5D=cafes&elements.product_name=Hario%20V60&elements.price%5Bgt%5D=1000&elements.price%5Bgte%5D=50&system.type%5Bin%5D=cafe%2Ccoffee&elements.price%5Blt%5D=10&elements.price%5Blte%5D=4&elements.country%5Brange%5D=Guatemala%2CNicaragua&depth=2&elements=price%2Cproduct_name&limit=10&order=elements.price%5Bdesc%5D&skip=2&language=en";
+            mockHttp.When($"{url}").
+                        Respond("application/json", " { 'items': [],'modular_content': {},'pagination': {'skip': 2,'limit': 10,'count': 0,'next_page': ''}}");
+
+            DeliveryClient client = InitializeDeliverClientWithACustomeTypeProvider();
+
             var parameters = new IQueryParameter[]
-            {
+           {
                 new AllFilter("elements.personas", "barista", "coffee", "blogger"),
                 new AnyFilter("elements.personas", "barista", "coffee", "blogger"),
                 new ContainsFilter("system.sitemap_locations", "cafes"),
@@ -196,7 +317,8 @@ namespace KenticoCloud.Delivery.Tests
                 new OrderParameter("elements.price", SortOrder.Descending),
                 new SkipParameter(2),
                 new LanguageParameter("en")
-            };
+           };
+
             var response = await client.GetItemsAsync(parameters);
 
             Assert.Equal(0, response.Items.Count);
@@ -205,6 +327,12 @@ namespace KenticoCloud.Delivery.Tests
         [Fact]
         public async void GetStrongTypesWithLimitedDepth()
         {
+            mockHttp.When($"{baseUrl}/items/on_roasts").
+                WithQueryString("depth=1").
+                Respond("application/json", File.ReadAllText(Path.Combine(AppContext.BaseDirectory, "Fixtures\\DeliveryClient\\on_roasts.json")));
+
+            DeliveryClient client = InitializeDeliverClientWithACustomeTypeProvider();
+
             // Returns on_roasts content item with related_articles modular element to two other articles.
             // on_roasts
             // |- coffee_processing_techniques
@@ -212,6 +340,7 @@ namespace KenticoCloud.Delivery.Tests
             //   |- on_roasts
             var onRoastsItem = (await client.GetItemAsync<Article>("on_roasts", new DepthParameter(1))).Item;
 
+            Assert.NotNull(onRoastsItem.TeaserImage.First().Description);
             Assert.Equal(2, onRoastsItem.RelatedArticles.Count());
             Assert.Equal(0, ((Article)onRoastsItem.RelatedArticles.First()).RelatedArticles.Count());
             Assert.Equal(0, ((Article)onRoastsItem.RelatedArticles.ElementAt(1)).RelatedArticles.Count());
@@ -220,6 +349,12 @@ namespace KenticoCloud.Delivery.Tests
         [Fact]
         public async void RecursiveModularContent()
         {
+            mockHttp.When($"{baseUrl}/items/on_roasts").
+                WithQueryString("depth=15").
+                Respond("application/json", File.ReadAllText(Path.Combine(AppContext.BaseDirectory, "Fixtures\\DeliveryClient\\onroast_deep15.json")));
+
+            DeliveryClient client = InitializeDeliverClientWithACustomeTypeProvider();
+
             // Try to get recursive modular content on_roasts -> item -> on_roasts
             var article = await client.GetItemAsync<Article>("on_roasts", new DepthParameter(15));
 
@@ -229,11 +364,12 @@ namespace KenticoCloud.Delivery.Tests
         [Fact]
         public void GetStronglyTypedResponse()
         {
-            // Arrange
-            var client2 = new DeliveryClient(SANDBOX_PROJECT_ID);
+            mockHttp.When($"{baseUrl}/items/complete_content_item").
+                Respond("application/json", File.ReadAllText(Path.Combine(AppContext.BaseDirectory, "Fixtures\\DeliveryClient\\complete_content_item.json")));
 
-            // Act
-            var response = client2.GetItemAsync<CompleteContentItemModel>("complete_content_item").Result;
+            DeliveryClient client = InitializeDeliverClientWithACustomeTypeProvider();
+
+            var response = client.GetItemAsync<CompleteContentItemModel>("complete_content_item").Result;
             CompleteContentItemModel item = response.Item;
 
             // Assert
@@ -268,13 +404,23 @@ namespace KenticoCloud.Delivery.Tests
         [Fact]
         public void GetStronglyTypedGenericWithAttributesResponse()
         {
-            // Arrange
-            var client2 = new DeliveryClient(SANDBOX_PROJECT_ID) { CodeFirstModelProvider = { TypeProvider = A.Fake<ICodeFirstTypeProvider>() } };
-            A.CallTo(() => client2.CodeFirstModelProvider.TypeProvider.GetType("complete_content_type")).ReturnsLazily(() => typeof(ContentItemModelWithAttributes));
-            A.CallTo(() => client2.CodeFirstModelProvider.TypeProvider.GetType("homepage")).ReturnsLazily(() => typeof(Homepage));
+            mockHttp.When($"{baseUrl}/items/complete_content_item").
+                Respond("application/json", File.ReadAllText(Path.Combine(AppContext.BaseDirectory, "Fixtures\\DeliveryClient\\complete_content_item.json")));
 
-            // Act
-            ContentItemModelWithAttributes item = (ContentItemModelWithAttributes)client2.GetItemAsync<object>("complete_content_item").Result.Item;
+            var httpClient = mockHttp.ToHttpClient();
+
+            DeliveryClient client = new DeliveryClient(guid)
+            {
+                CodeFirstModelProvider = { TypeProvider = A.Fake<ICodeFirstTypeProvider>() },
+                HttpClient = httpClient
+            };
+
+
+            // Arrange
+            A.CallTo(() => client.CodeFirstModelProvider.TypeProvider.GetType("complete_content_type")).ReturnsLazily(() => typeof(ContentItemModelWithAttributes));
+            A.CallTo(() => client.CodeFirstModelProvider.TypeProvider.GetType("homepage")).ReturnsLazily(() => typeof(Homepage));
+
+            ContentItemModelWithAttributes item = (ContentItemModelWithAttributes)client.GetItemAsync<object>("complete_content_item").Result.Item;
 
             // Assert
             Assert.Equal("Text field value", item.TextFieldWithADifferentName);
@@ -309,13 +455,24 @@ namespace KenticoCloud.Delivery.Tests
         [Fact]
         public void GetStronglyTypedItemsResponse()
         {
-            // Arrange
-            var client2 = new DeliveryClient(SANDBOX_PROJECT_ID) { CodeFirstModelProvider = { TypeProvider = A.Fake<ICodeFirstTypeProvider>() } };
-            A.CallTo(() => client2.CodeFirstModelProvider.TypeProvider.GetType("complete_content_type")).ReturnsLazily(() => typeof(ContentItemModelWithAttributes));
-            A.CallTo(() => client2.CodeFirstModelProvider.TypeProvider.GetType("homepage")).ReturnsLazily(() => typeof(Homepage));
+            mockHttp.When($"{baseUrl}/items").
+                WithQueryString("system.type=complete_content_type").
+                Respond("application/json", File.ReadAllText(Path.Combine(AppContext.BaseDirectory, "Fixtures\\DeliveryClient\\complete_content_item_system_type.json")));
 
-            // Act
-            IReadOnlyList<object> items = client2.GetItemsAsync<object>(new EqualsFilter("system.type", "complete_content_type")).Result.Items;
+            var httpClient = mockHttp.ToHttpClient();
+
+            DeliveryClient client = new DeliveryClient(guid)
+            {
+                CodeFirstModelProvider = { TypeProvider = A.Fake<ICodeFirstTypeProvider>() },
+                HttpClient = httpClient
+            };
+
+
+            // Arrange
+            A.CallTo(() => client.CodeFirstModelProvider.TypeProvider.GetType("complete_content_type")).ReturnsLazily(() => typeof(ContentItemModelWithAttributes));
+            A.CallTo(() => client.CodeFirstModelProvider.TypeProvider.GetType("homepage")).ReturnsLazily(() => typeof(Homepage));
+
+            IReadOnlyList<object> items = client.GetItemsAsync<object>(new EqualsFilter("system.type", "complete_content_type")).Result.Items;
 
             // Assert
             Assert.True(items.All(i => i.GetType() == typeof(ContentItemModelWithAttributes)));
@@ -324,11 +481,17 @@ namespace KenticoCloud.Delivery.Tests
         [Fact]
         public void CastResponse()
         {
-            // Arrange
-            var client2 = new DeliveryClient(SANDBOX_PROJECT_ID);
+            mockHttp.When($"{baseUrl}/items/complete_content_item").
+                Respond("application/json", File.ReadAllText(Path.Combine(AppContext.BaseDirectory, "Fixtures\\DeliveryClient\\complete_content_item.json")));
 
-            // Act
-            var response = client2.GetItemAsync("complete_content_item").Result;
+            var httpClient = mockHttp.ToHttpClient();
+
+            DeliveryClient client = new DeliveryClient(guid)
+            {
+                HttpClient = httpClient
+            };
+
+            var response = client.GetItemAsync("complete_content_item").Result;
             var stronglyTypedResponse = response.CastTo<CompleteContentItemModel>();
 
             // Assert
@@ -338,11 +501,17 @@ namespace KenticoCloud.Delivery.Tests
         [Fact]
         public void CastListingResponse()
         {
-            // Arrange
-            var client2 = new DeliveryClient(SANDBOX_PROJECT_ID);
+            mockHttp.When($"{baseUrl}/items").
+                Respond("application/json", File.ReadAllText(Path.Combine(AppContext.BaseDirectory, "Fixtures\\DeliveryClient\\items.json")));
 
-            // Act
-            var response = client2.GetItemsAsync().Result;
+            var httpClient = mockHttp.ToHttpClient();
+
+            DeliveryClient client = new DeliveryClient(guid)
+            {
+                HttpClient = httpClient
+            };
+
+            var response = client.GetItemsAsync().Result;
             var stronglyTypedListingResponse = response.CastTo<CompleteContentItemModel>();
 
             // Assert
@@ -353,11 +522,18 @@ namespace KenticoCloud.Delivery.Tests
         [Fact]
         public void CastContentItem()
         {
-            // Arrange
-            var client2 = new DeliveryClient(SANDBOX_PROJECT_ID);
+            mockHttp.When($"{baseUrl}/items/complete_content_item").
+                Respond("application/json", File.ReadAllText(Path.Combine(AppContext.BaseDirectory, "Fixtures\\DeliveryClient\\complete_content_item.json")));
 
-            // Act
-            var item = client2.GetItemAsync("complete_content_item").Result.Item;
+            var httpClient = mockHttp.ToHttpClient();
+
+            DeliveryClient client = new DeliveryClient(guid)
+            {
+                HttpClient = httpClient
+            };
+
+
+            var item = client.GetItemAsync("complete_content_item").Result.Item;
             var stronglyTypedResponse = item.CastTo<CompleteContentItemModel>();
 
             // Assert
@@ -367,15 +543,34 @@ namespace KenticoCloud.Delivery.Tests
         [Fact]
         public void CastContentItems()
         {
-            // Arrange
-            var client2 = new DeliveryClient(SANDBOX_PROJECT_ID);
+            mockHttp.When($"{baseUrl}/items").
+                Respond("application/json", File.ReadAllText(Path.Combine(AppContext.BaseDirectory, "Fixtures\\DeliveryClient\\items.json")));
+
+            var httpClient = mockHttp.ToHttpClient();
+
+            DeliveryClient client = new DeliveryClient(guid)
+            {
+                HttpClient = httpClient
+            };
 
             // Act
-            DeliveryItemListingResponse response = client2.GetItemsAsync().Result;
+            DeliveryItemListingResponse response = client.GetItemsAsync().Result;
             IEnumerable<CompleteContentItemModel> list = response.Items.Where(i => i.System.Type == "complete_content_type").Select(a => a.CastTo<CompleteContentItemModel>());
 
             // Assert
             Assert.True(list.Any());
+        }
+
+        private DeliveryClient InitializeDeliverClientWithACustomeTypeProvider()
+        {
+            var httpClient = mockHttp.ToHttpClient();
+
+            DeliveryClient client = new DeliveryClient(guid)
+            {
+                CodeFirstModelProvider = { TypeProvider = new CustomTypeProvider() },
+                HttpClient = httpClient
+            };
+            return client;
         }
     }
 }

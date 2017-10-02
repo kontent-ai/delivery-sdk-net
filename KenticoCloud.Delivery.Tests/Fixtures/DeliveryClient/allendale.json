@@ -1,0 +1,395 @@
+﻿{
+  "items": [
+    {
+      "system": {
+        "id": "e81a0107-8e09-4f2e-b583-8869abe5952a",
+        "name": "Allendale",
+        "codename": "allendale",
+        "language": "en-US",
+        "type": "cafe",
+        "sitemap_locations": [
+          "cafes",
+          "north_america"
+        ],
+        "last_modified": "2016-09-05T14:13:52.934532Z"
+      },
+      "elements": {
+        "street": {
+          "type": "text",
+          "name": "Street",
+          "value": "11480 53rd Ave"
+        },
+        "city": {
+          "type": "text",
+          "name": "City",
+          "value": "Allendale"
+        },
+        "country": {
+          "type": "text",
+          "name": "Country",
+          "value": "USA"
+        },
+        "state": {
+          "type": "text",
+          "name": "State",
+          "value": "Michigan"
+        },
+        "zip_code": {
+          "type": "text",
+          "name": "ZIP Code",
+          "value": "49401"
+        },
+        "phone": {
+          "type": "text",
+          "name": "Phone",
+          "value": "877-692-4978"
+        },
+        "email": {
+          "type": "text",
+          "name": "Email",
+          "value": "Allendale@localhost.local"
+        },
+        "photo": {
+          "type": "asset",
+          "name": "Photo",
+          "value": [
+            {
+              "name": "cafe04.jpg",
+              "type": "image/jpeg",
+              "size": 545064,
+              "description": "Dancing Goat Café - Allendale",
+              "url": "https://assets.kenticocloud.com:443/975bf280-fd91-488c-994c-2f04416e5ee3/4237a2ff-ce1a-45d9-8f59-65eb2ea3e401/cafe04.jpg"
+            }
+          ]
+        }
+      }
+    },
+    {
+      "system": {
+        "id": "028f0e05-9f17-45be-962d-62bebe6b6f53",
+        "name": "Boston",
+        "codename": "boston",
+        "language": "en-US",
+        "type": "cafe",
+        "sitemap_locations": [
+          "cafes",
+          "north_america"
+        ],
+        "last_modified": "2016-09-05T14:12:49.0914134Z"
+      },
+      "elements": {
+        "street": {
+          "type": "text",
+          "name": "Street",
+          "value": "27 Bowdoin St"
+        },
+        "city": {
+          "type": "text",
+          "name": "City",
+          "value": "Boston"
+        },
+        "country": {
+          "type": "text",
+          "name": "Country",
+          "value": "USA"
+        },
+        "state": {
+          "type": "text",
+          "name": "State",
+          "value": "Massachusetts"
+        },
+        "zip_code": {
+          "type": "text",
+          "name": "ZIP Code",
+          "value": "02144"
+        },
+        "phone": {
+          "type": "text",
+          "name": "Phone",
+          "value": "617-600-225"
+        },
+        "email": {
+          "type": "text",
+          "name": "Email",
+          "value": "Boston@localhost.local"
+        },
+        "photo": {
+          "type": "asset",
+          "name": "Photo",
+          "value": [
+            {
+              "name": "cafe03.jpg",
+              "type": "image/jpeg",
+              "size": 405527,
+              "description": "Dancing Goat Café - Boston",
+              "url": "https://assets.kenticocloud.com:443/975bf280-fd91-488c-994c-2f04416e5ee3/7e510ff1-13c0-4a03-a19c-05625183df1f/cafe03.jpg"
+            }
+          ]
+        }
+      }
+    },
+    {
+      "system": {
+        "id": "473cd60b-a2a7-4e5b-8353-5d1995dd4b50",
+        "name": "London",
+        "codename": "london_",
+        "language": "en-US",
+        "type": "cafe",
+        "sitemap_locations": [
+          "cafes",
+          "europe"
+        ],
+        "last_modified": "2017-07-24T08:03:34.1050224Z"
+      },
+      "elements": {
+        "street": {
+          "type": "text",
+          "name": "Street",
+          "value": "344 King's Road"
+        },
+        "city": {
+          "type": "text",
+          "name": "City",
+          "value": "London"
+        },
+        "country": {
+          "type": "text",
+          "name": "Country",
+          "value": "United Kingdom"
+        },
+        "state": {
+          "type": "text",
+          "name": "State",
+          "value": ""
+        },
+        "zip_code": {
+          "type": "text",
+          "name": "ZIP Code",
+          "value": "SW3 5UR"
+        },
+        "phone": {
+          "type": "text",
+          "name": "Phone",
+          "value": "0173-733-6375"
+        },
+        "email": {
+          "type": "text",
+          "name": "Email",
+          "value": "London@localhost.local"
+        },
+        "photo": {
+          "type": "asset",
+          "name": "Photo",
+          "value": [
+            {
+              "name": "cafe01.jpg",
+              "type": "image/jpeg",
+              "size": 493724,
+              "description": "Dancing Goat Café - London",
+              "url": "https://assets.kenticocloud.com:443/975bf280-fd91-488c-994c-2f04416e5ee3/8fccb3b9-a507-48cc-bccd-0639d7fb69ec/cafe01.jpg"
+            }
+          ]
+        }
+      }
+    },
+    {
+      "system": {
+        "id": "de4bfc43-0daf-4aed-960d-49ad4d8f95ad",
+        "name": "Los Angeles",
+        "codename": "los_angeles",
+        "language": "en-US",
+        "type": "cafe",
+        "sitemap_locations": [
+          "cafes",
+          "north_america"
+        ],
+        "last_modified": "2016-09-05T14:14:00.6640656Z"
+      },
+      "elements": {
+        "street": {
+          "type": "text",
+          "name": "Street",
+          "value": "9076 Sunset Boulevard"
+        },
+        "city": {
+          "type": "text",
+          "name": "City",
+          "value": "Los Angeles"
+        },
+        "country": {
+          "type": "text",
+          "name": "Country",
+          "value": "USA"
+        },
+        "state": {
+          "type": "text",
+          "name": "State",
+          "value": "California"
+        },
+        "zip_code": {
+          "type": "text",
+          "name": "ZIP Code",
+          "value": "90210"
+        },
+        "phone": {
+          "type": "text",
+          "name": "Phone",
+          "value": "213-326-4224"
+        },
+        "email": {
+          "type": "text",
+          "name": "Email",
+          "value": "LosAngeles@localhost.local"
+        },
+        "photo": {
+          "type": "asset",
+          "name": "Photo",
+          "value": [
+            {
+              "name": "cafe05.jpg",
+              "type": "image/jpeg",
+              "size": 114844,
+              "description": "Dancing Goat Café - Los Angeles",
+              "url": "https://assets.kenticocloud.com:443/975bf280-fd91-488c-994c-2f04416e5ee3/8858d272-777b-43bd-93be-53a98be97569/cafe05.jpg"
+            }
+          ]
+        }
+      }
+    },
+    {
+      "system": {
+        "id": "92e7260d-d65a-45f1-8a1e-aad8162f209c",
+        "name": "Madrid",
+        "codename": "madrid",
+        "language": "en-US",
+        "type": "cafe",
+        "sitemap_locations": [
+          "cafes",
+          "europe"
+        ],
+        "last_modified": "2016-09-01T08:36:18.0623079Z"
+      },
+      "elements": {
+        "street": {
+          "type": "text",
+          "name": "Street",
+          "value": "Calle Juan de Mena 16"
+        },
+        "city": {
+          "type": "text",
+          "name": "City",
+          "value": "Madrid"
+        },
+        "country": {
+          "type": "text",
+          "name": "Country",
+          "value": "Spain"
+        },
+        "state": {
+          "type": "text",
+          "name": "State",
+          "value": ""
+        },
+        "zip_code": {
+          "type": "text",
+          "name": "ZIP Code",
+          "value": "28014"
+        },
+        "phone": {
+          "type": "text",
+          "name": "Phone",
+          "value": "915-546-202"
+        },
+        "email": {
+          "type": "text",
+          "name": "Email",
+          "value": "Madrid@localhost.local"
+        },
+        "photo": {
+          "type": "asset",
+          "name": "Photo",
+          "value": [
+            {
+              "name": "cafe02.jpg",
+              "type": "image/jpeg",
+              "size": 496224,
+              "description": "Dancing Goat Café - Madrid",
+              "url": "https://assets.kenticocloud.com:443/975bf280-fd91-488c-994c-2f04416e5ee3/cb9ca475-61f1-4bc5-8a7d-e524bf4aa715/cafe02.jpg"
+            }
+          ]
+        }
+      }
+    },
+    {
+      "system": {
+        "id": "3eb5191f-4ce1-4965-bffb-87d8f3cdca08",
+        "name": "New York",
+        "codename": "new_york",
+        "language": "en-US",
+        "type": "cafe",
+        "sitemap_locations": [
+          "cafes",
+          "north_america"
+        ],
+        "last_modified": "2016-09-05T14:14:08.4285085Z"
+      },
+      "elements": {
+        "street": {
+          "type": "text",
+          "name": "Street",
+          "value": "328 W 29th St"
+        },
+        "city": {
+          "type": "text",
+          "name": "City",
+          "value": "New York"
+        },
+        "country": {
+          "type": "text",
+          "name": "Country",
+          "value": "USA"
+        },
+        "state": {
+          "type": "text",
+          "name": "State",
+          "value": "New York"
+        },
+        "zip_code": {
+          "type": "text",
+          "name": "ZIP Code",
+          "value": "10001"
+        },
+        "phone": {
+          "type": "text",
+          "name": "Phone",
+          "value": "646-555-0150"
+        },
+        "email": {
+          "type": "text",
+          "name": "Email",
+          "value": "NewYork@localhost.local"
+        },
+        "photo": {
+          "type": "asset",
+          "name": "Photo",
+          "value": [
+            {
+              "name": "cafe06.jpg",
+              "type": "image/jpeg",
+              "size": 275350,
+              "description": "Dancing Goat Café - New York",
+              "url": "https://assets.kenticocloud.com:443/975bf280-fd91-488c-994c-2f04416e5ee3/32d055c4-8b32-48f2-881d-058a1854e36e/cafe06.jpg"
+            }
+          ]
+        }
+      }
+    }
+  ],
+  "modular_content": {},
+  "pagination": {
+    "skip": 0,
+    "limit": 0,
+    "count": 6,
+    "next_page": ""
+  }
+}
