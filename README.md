@@ -215,5 +215,6 @@ We would like to express our thanks to the following people who contributed and 
 
 - [Jarosław Jarnot](https://github.com/jjarnot-vimanet) - [Vimanet](http://vimanet.com) 
 - [Varinder Singh](https://github.com/VarinderS) - [Kudos Web](http://www.kudosweb.com)
+- [Charith Sooriyaarachchi](https://github.com/charithsoori) - [99X Technology](http://www.99xtechnology.com/)
 
 Would you like to become a hero too? Pick an [issue](https://github.com/Kentico/delivery-sdk-net/issues) and send us a pull request!
