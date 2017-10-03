@@ -8,11 +8,6 @@ namespace KenticoCloud.Delivery.Tests
 {
     public class ContentLinkResolverTests
     {
-
-        public ContentLinkResolverTests()
-        {
-        }
-
         [Fact]
         public void ContentLinkIsResolved()
         {
@@ -126,11 +121,11 @@ namespace KenticoCloud.Delivery.Tests
             var httpClient = mockHttp.ToHttpClient();
             DeliveryClient client = new DeliveryClient(guid)
             {
-                CodeFirstModelProvider = { TypeProvider = new CustomTypeProvider() },
-                HttpClient = httpClient
+                CodeFirstModelProvider = {TypeProvider = new CustomTypeProvider()},
+                HttpClient = httpClient,
+                ContentLinkUrlResolver = new CustomContentLinkUrlResolver()
             };
 
-            client.ContentLinkUrlResolver = new CustomContentLinkUrlResolver();
 
             string expected = "Check out our <a data-item-id=\"0c9a11bb-6fc3-409c-b3cb-f0b797e15489\" href=\"http://example.org/brazil-natural-barra-grande\">Brazil Natural Barra Grande</a> coffee for a tasty example.";
             var item = await client.GetItemAsync<Article>("coffee_processing_techniques");

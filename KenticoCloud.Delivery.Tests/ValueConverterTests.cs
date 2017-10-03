@@ -41,7 +41,7 @@ namespace KenticoCloud.Delivery.Tests
 
     public class ValueConverterTests
     {
-        private readonly string guid = string.Empty;
+        private readonly string guid;
         private readonly string baseUrl;
 
         public ValueConverterTests()
@@ -101,13 +101,13 @@ namespace KenticoCloud.Delivery.Tests
         private DeliveryClient InitializeDeliveryClient(MockHttpMessageHandler mockHttp)
         {
             var httpClient = mockHttp.ToHttpClient();
-            DeliveryClient Client = new DeliveryClient(guid)
+            DeliveryClient client = new DeliveryClient(guid)
             {
                 CodeFirstModelProvider = { TypeProvider = new CustomTypeProvider() },
                 HttpClient = httpClient
             };
 
-            return Client;
+            return client;
         }
     }
 }
