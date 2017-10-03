@@ -1,0 +1,288 @@
+﻿{
+  "item": {
+    "system": {
+      "id": "117cdfae-52cf-4885-b271-66aef6825612",
+      "name": "Coffee processing techniques",
+      "codename": "coffee_processing_techniques",
+      "language": "en-US",
+      "type": "article",
+      "sitemap_locations": [
+        "articles"
+      ],
+      "last_modified": "2017-04-04T13:40:14.6418507Z"
+    },
+    "elements": {
+      "personas": {
+        "type": "taxonomy",
+        "name": "Personas",
+        "taxonomy_group": "personas",
+        "value": [
+          {
+            "name": "Coffee blogger",
+            "codename": "coffee_blogger"
+          },
+          {
+            "name": "Coffee lover",
+            "codename": "coffee_lover"
+          }
+        ]
+      },
+      "title": {
+        "type": "text",
+        "name": "Title",
+        "value": "Coffee processing techniques"
+      },
+      "teaser_image": {
+        "type": "asset",
+        "name": "Teaser image",
+        "value": [
+          {
+            "name": "coffee-processing-techniques-1080px.jpg",
+            "type": "image/jpeg",
+            "size": 108409,
+            "description": "Dry process (also known as unwashed or natural coffee)",
+            "url": "https://assets.kenticocloud.com:443/975bf280-fd91-488c-994c-2f04416e5ee3/40edae81-37df-4d5e-8624-e2f7cfc50427/coffee-processing-techniques-1080px.jpg"
+          }
+        ]
+      },
+      "post_date": {
+        "type": "date_time",
+        "name": "Post date",
+        "value": "2014-11-02T00:00:00Z"
+      },
+      "summary": {
+        "type": "text",
+        "name": "Summary",
+        "value": "Learn about the techniques of processing the products of coffee plants. Different methods are used in different parts of the world depending mainly on their weather conditions."
+      },
+      "body_copy": {
+        "type": "rich_text",
+        "name": "Body Copy",
+        "images": {},
+        "links": {
+          "80c7074b-3da1-4e1d-882b-c5716ebb4d25": {
+            "codename": "kenya_gakuyuni_aa",
+            "type": "coffee",
+            "url_slug": "kenya-gakuyuni-aa"
+          },
+          "0c9a11bb-6fc3-409c-b3cb-f0b797e15489": {
+            "codename": "brazil_natural_barra_grande",
+            "type": "coffee",
+            "url_slug": "brazil-natural-barra-grande"
+          }
+        },
+        "modular_content": [],
+        "value": "<p>Before a ripe coffee plant transforms into a delicious cup lying on your table, it undergoes quite a journey. A journey full of possible pitfalls, which can, usually negatively, influence the coffee’s final taste. What goes wrong at the very beginning cannot be made up for at the very end.</p>\n<p>The character and taste of a coffee are largely influenced by its origin, climate, the quality and type of soil and the botanical varieties of the coffee plant.</p>\n<p>The last two links of the chain—the roastery and the barista—cannot, in any way, improve the taste of the coffee. They are left with the difficult task of making the most its potential.</p>\n<p>The farmers themselves, however, have at their disposal tools for enhancing the ‘ingrown’ taste of the coffee. These are mainly the methods of removing the multilayered skin of the coffee beans.</p>\n<p>Two, sometimes three basic methods are usually referred to. Wet-Processed (Fully-Washed), Dry-Processed (Natural) and Pulped-Natural (Semi-Washed).</p>\n<p>Dry processing, being the least economically demanding, used to be the most widely used of the methods. More exclusive beans are now usually processed using the wet and pulped-natural processing. This is due to the quality and cleanliness of the beans, as well as the speed of the whole process. If you are curious about the taste, go ahead and try the <a data-item-id=\"80c7074b-3da1-4e1d-882b-c5716ebb4d25\" href=\"\">Kenya Gakuyuni AA</a>.</p>\n<p>Wet processing rids the cherry of its layers and pulp by water fermentation. The exocarp is removed from the cherries directly after the harvest using circular and drum mechanical peelers. Afterwards, they spend 6-72 hours in water-filled fermentation tanks.</p>\n<p>In the tank, microorganisms take care of the pulp (mesocarp). The length of the process is determined by the stickiness of the beans. Leaving beans in the fermentation tank for too long produces the so-called ‘naughty’ beans. These are often beans that have stuck in the tank and their rancid and putrid state endangers the whole batch.</p>\n<p>The constantly rising levels of acetic acid are also able to impact the taste of the coffee with fermented and even vinegarish tones once it’s been roasted. The main negative aspect of wet processing is the amount of water that has to be used. This is up to 40m3 (40000 liters) of water, that have to be continuously dumped and new, clean water has to be put pumped into the tank. The dumping of contaminated water often depreciates the water supplies laying underneath the coffee farm.</p>\n<p>The dry method, considered the most traditional and the least costly, makes use of sun-drying. Cherries are often sundried on concrete courtyards, Ethiopian hilltops, and sometimes even on the very shrubs.</p>\n<p>Cherries need to be sundried directly after the harvest to avoid unwanted fermentation. The laid out beans need to be layered evenly and not 6 inches (15cm) in height. Farmers turn the seeds over both manually or with the use of tractors.</p>\n<p>During the dry fermentation, the sugars travel, via osmosis, from the pulp into the beans. This makes for more full-bodied coffee and adds sweeter tones to the taste, as compared to wet processed coffee. This often comes at the cost of a more polluted cup.</p>\n<p>Once the coffee beans reach some 11 % humidity, the peel layers and pulp can be removed using mechanical peelers. Reaching the desired humidity takes anywhere between 10 and 30 days. This is an important factor, especially in unstable climates, where automatic driers often replace the traditional sun drying process.</p>\n<p>Now’s the time for ‘reposo’, a resting time, in which the beans lay in a parchment for 30-60 days.</p>\n<p>The third method, popular primarily in Brazil, is the so-called Pulped-Natural or Semi-Washed way of processing beans. Check out our <a data-item-id=\"0c9a11bb-6fc3-409c-b3cb-f0b797e15489\" href=\"\">Brazil Natural Barra Grande</a> coffee for a tasty example. Only the top layer of the cherry peel is removed in a water bath. The rest of the process, including the sugar fermentation and the separation of the pulp from the bean, are taken care of by sun drying. This method, just like the dry method, is highly dependent on the weather, which has to be consistent for the farmers to be able to dry the beans thoroughly.</p>\n<p>This process yields full-bodied beans with low-acidity. Less aliphatic acids are produced, which has a negative impact on the aroma of the coffee.</p>"
+      },
+      "related_articles": {
+        "type": "modular_content",
+        "name": "Related articles",
+        "value": [
+          "on_roasts",
+          "which_brewing_fits_you_"
+        ]
+      },
+      "meta_keywords": {
+        "type": "text",
+        "name": "Meta keywords",
+        "value": "\"coffee processing\", brewing"
+      },
+      "meta_description": {
+        "type": "text",
+        "name": "Meta description",
+        "value": "Learn about the techniques of processing the products of coffee plants. Different methods are used in different parts of the world."
+      },
+      "url_pattern": {
+        "type": "url_slug",
+        "name": "URL pattern",
+        "value": "coffee-processing-techniques"
+      }
+    }
+  },
+  "modular_content": {
+    "which_brewing_fits_you_": {
+      "system": {
+        "id": "3120ec15-a4a2-47ec-8ccd-c85ac8ac5ba5",
+        "name": "Which brewing fits you?",
+        "codename": "which_brewing_fits_you_",
+        "language": "en-US",
+        "type": "article",
+        "sitemap_locations": [
+          "articles"
+        ],
+        "last_modified": "2017-06-27T13:11:28.3348114Z"
+      },
+      "elements": {
+        "personas": {
+          "type": "taxonomy",
+          "name": "Personas",
+          "taxonomy_group": "personas",
+          "value": [
+            {
+              "name": "Coffee lover",
+              "codename": "coffee_lover"
+            },
+            {
+              "name": "Coffee blogger",
+              "codename": "coffee_blogger"
+            },
+            {
+              "name": "Barista",
+              "codename": "barista"
+            }
+          ]
+        },
+        "title": {
+          "type": "text",
+          "name": "Title",
+          "value": "Which brewing fits you?"
+        },
+        "teaser_image": {
+          "type": "asset",
+          "name": "Teaser image",
+          "value": [
+            {
+              "name": "which-brewing-fits-you-1080px.jpg",
+              "type": "image/jpeg",
+              "size": 125770,
+              "description": "Coffee Brewing Techniques",
+              "url": "https://assets.kenticocloud.com:443/975bf280-fd91-488c-994c-2f04416e5ee3/fcbb12e6-66a3-4672-85d9-d502d16b8d9c/which-brewing-fits-you-1080px.jpg"
+            }
+          ]
+        },
+        "post_date": {
+          "type": "date_time",
+          "name": "Post date",
+          "value": "2014-10-27T00:00:00Z"
+        },
+        "summary": {
+          "type": "text",
+          "name": "Summary",
+          "value": "We have put down three procedures with clearly written steps describing the process of making coffee. Read this article to convince yourself that brewing coffee is no science"
+        },
+        "body_copy": {
+          "type": "rich_text",
+          "name": "Body Copy",
+          "images": {},
+          "links": {},
+          "modular_content": [
+            "a_chemex_method"
+          ],
+          "value": "<p>Not that long ago, actually back in the early 2000s, coffee making industry had a single aim: convenience. It may have been hand in hand with the rising economic growth. Everyone felt they had to stay busy and get as much done as possible in order to succeed at their lives. Making coffee was usually the matter of pressing a single button. Convenience brought us the likes of Tassimo, Nespresso and other many similar amenities.</p>\n<p>Nowadays, though, everything seems to be slowing down. People take time. Or maybe, they just gave up and they don't bother being in a rush any more. This brought a renaissance of rediscovering the forgotten. Decades old brewing techniques, otherwise performed only by baristas and the geekiest of coffee enthusiasts, are finding their way into everyone’s homes.</p>\n<p>The variety of devices can easily scare the uninitiated off, though. Looking at some of the more complicated brewers especially so. Take vacuum coffee makers, for example. They look like they’ve been taken straight from a chemist lab and that handling them incorrectly could make the whole block go off. Not surprisingly, then, many of us give up and opt for the ‘convenient’ way.</p>\n<p>In this article, we’ll go through some of the simple of these brewing methods. Just to show you that they’re nothing to be afraid off. Making a proper cup of coffee can be super simple. Let’s get to it.</p>\n<h3>Chemex</h3>\n<p>We won’t lie. This one’s our favorite. It’s super easy to use, and it’s got style (go for the wood handle variant)!</p>\n<p>Chemex produces a cup free of any bitterness. We use the 40oz Chemex, which can make 6 to 8 pretty smooth cups at a time.</p>\n<ol>\n  <li>Grind, or get about 42 grams (5-6 tablespoons) of ground coffee. The coffee shouldn’t be super-smooth, take kosher salt for reference.</li>\n  <li>Place the Chemex filter inside. Rinse with hot water to seal.</li>\n  <li>Remove any left-over water.</li>\n  <li>Add in the ground coffee and stir briefly. This allows for a more even brewing.</li>\n  <li>Heat water to some 205 degrees F, or let freshly boiled water off the heat for some 30-45 seconds.</li>\n  <li>Pour just enough water to saturate the grounds. Let it work for 30 seconds.</li>\n  <li>Now, pour water evenly, spiraling around the inside of the code, until it reaches the top of the brewer.</li>\n  <li>Keep on adding water periodically, until the brewed coffee reaches the Chemex’s glass button.</li>\n  <li>Remove the filter and move it to a sink.</li>\n  <li>Pre-heat your mug with warm water and then pour in the freshly brewed coffee from your Chemex.</li>\n</ol>\n<p>Enjoy! You can easily manipulate the Chemex with the coffee in, as the handle insulates the heat.</p>\n<object type=\"application/kenticocloud\" data-type=\"item\" data-codename=\"a_chemex_method\"></object><h3>Clever Dripper</h3>\n<p>This is probably the one that’s easiest to work with. It’s pretty easy to clean up and lets you control the steeping. The brewer is pretty durable and also safe, as it’s 100% BPA free.</p>\n<p>Brews only one cup at a time, but makes a very smooth, almost chocolaty cups.</p>\n<ol>\n  <li>Grind, or get about 22 grams (3 tablespoons) of ground coffee. Make sure the ground is coarse.</li>\n  <li>Put the paper filter in and rinse with warm water.</li>\n  <li>Add the coffee into the dripper.</li>\n  <li>Pour water and cover with a lid for about 1.5 minutes.</li>\n  <li>Remove cover, stir and cover again.</li>\n  <li>After 2 more minutes, stir one last time and place the Clever Dripper on top of a mug.</li>\n  <li>Start draining until the cup’s full.</li>\n</ol>\n<p>Pretty simple right? The coffee stays in the dripper until you release it yourself, which is pretty convenient. Be careful, though, as leaving the coffee in for too long will make it bitter.</p>\n<h3>Hario V60</h3>\n<p>Similar to the Clever Dripper. Immediately brews into a cup so you don’t have to do the draining yourself.</p>\n<p>Comes made from ceramic, glass or PVC and in tons of colors.</p>\n<p>Produces one cup at a time. The brew has a more ‘roasted’ taste.</p>\n<ol>\n  <li>Grind, or get about 22 grams (2.5 tablespoons) of ground coffee. Make sure the ground is finer, similar to table salt.</li>\n  <li>Place a V60 filter into the Hario.</li>\n  <li>Rinse with hot water and discard. This removes any paper taste.</li>\n  <li>Add coffee and shake with dripper to level the grounds evenly.</li>\n  <li>Pour in just enough water to absorb in the coffee. 30ml should do.</li>\n  <li>Let the water absorb for 45 seconds.</li>\n  <li>Then, pour hot water steadily over the grounds, topping the Hario. Avoid directly hitting the filter.</li>\n  <li>Pour the coffee directly into your mug.</li>\n</ol>\n<p>And that’s it. This should be a pretty smooth a cup.</p>\n<p>Don’t forget that you can buy all the three brewers and many others at our store! Let us know if you want to know about other techniques in the comments below.</p>"
+        },
+        "related_articles": {
+          "type": "modular_content",
+          "name": "Related articles",
+          "value": [
+            "coffee_processing_techniques",
+            "on_roasts"
+          ]
+        },
+        "meta_keywords": {
+          "type": "text",
+          "name": "Meta keywords",
+          "value": "brewing, arabica"
+        },
+        "meta_description": {
+          "type": "text",
+          "name": "Meta description",
+          "value": "We have put down three procedures with clearly written steps describing the process of making coffee."
+        },
+        "url_pattern": {
+          "type": "url_slug",
+          "name": "URL pattern",
+          "value": "which-brewing-fits-you"
+        }
+      }
+    },
+    "on_roasts": {
+      "system": {
+        "id": "f4b3fc05-e988-4dae-9ac1-a94aba566474",
+        "name": "On Roasts",
+        "codename": "on_roasts",
+        "language": "en-US",
+        "type": "article",
+        "sitemap_locations": [
+          "articles"
+        ],
+        "last_modified": "2017-04-04T13:45:30.7692802Z"
+      },
+      "elements": {
+        "personas": {
+          "type": "taxonomy",
+          "name": "Personas",
+          "taxonomy_group": "personas",
+          "value": [
+            {
+              "name": "Barista",
+              "codename": "barista"
+            },
+            {
+              "name": "Coffee blogger",
+              "codename": "coffee_blogger"
+            }
+          ]
+        },
+        "title": {
+          "type": "text",
+          "name": "Title",
+          "value": "On Roasts"
+        },
+        "teaser_image": {
+          "type": "asset",
+          "name": "Teaser image",
+          "value": [
+            {
+              "name": "on-roasts-1080px.jpg",
+              "type": "image/jpeg",
+              "size": 121946,
+              "description": "Coffee Roastery",
+              "url": "https://assets.kenticocloud.com:443/975bf280-fd91-488c-994c-2f04416e5ee3/f6daed1f-3f3b-4036-a9c7-9519359b9601/on-roasts-1080px.jpg"
+            }
+          ]
+        },
+        "post_date": {
+          "type": "date_time",
+          "name": "Post date",
+          "value": "2014-11-07T00:00:00Z"
+        },
+        "summary": {
+          "type": "text",
+          "name": "Summary",
+          "value": "Roasting coffee beans can take from 6 to 13 minutes. Different roasting times produce different types of coffee, with varying concentration of caffeine and intensity of the original flavor."
+        },
+        "body_copy": {
+          "type": "rich_text",
+          "name": "Body Copy",
+          "images": {},
+          "links": {},
+          "modular_content": [],
+          "value": "<p>There’s nothing complicated about roasting. It’s as easy as baking a pie, maybe even simpler as there’s just one ingredient. What’s complicated is fine-tuning the whole process to perfection. It’s also a huge responsibility. You can easily ruin something that’s been in the works for months and has been perfect up until now.</p><h3>Light Roasts</h3><p>Usually roasted for 6-8 minutes or simply until achieving a light brown color. This method is used for milder coffee varieties and for coffee tasting. This type of roasting allows the natural characteristics of each coffee to show. The aroma of coffees produced from light roasts is usually more intense. The cup itself is more acidic and the concentration of caffeine is higher.</p><h3>Medium roast</h3><p>These exempt a stronger flavor than light roasts. The beans are still more matte than oily. Caffeine contents are decreased. Medium roasts lack the grainy taste of lighter roasts. You also get a more balanced flavor, aroma and acidity.</p><h3>Dark Roasts</h3><p>Dark roast beans are achieved by a 12-13 minute roasting process. The beans have a heavier body, a surface that appears a little oily and a somewhat shiny. Darker roasts have a more chocolate-like flavor. The sugars in the coffee caramelize more than with light roasts and make their way to the surface of the bean. This makes the beans less acidic as well.</p><p>To put it in points, these are general rules that apply to different levels of roasts:</p><ul><li>Caffeine level decreases the darker the roast is.</li><li>Darker roasts exempt less acidity than lighter roasts.</li><li>The darker beans get roasted, the oilier their surface becomes.</li><li>Lighter roasts maintain more of the original flavors of their varieties, while the darker they get, they tend to take on more flavor from the roasting process itself.</li><li>The body of the coffee gets heavier until taken to really high temperatures, where they emit what is called a ‘second crack’. Then the body starts thinning out again.</li></ul><p>You can easily imprint your own signature into each coffee that you make during the roasting process. At Dancing Goat, though, we choose to instead highlight what makes of the varietal great and unique.</p>"
+        },
+        "related_articles": {
+          "type": "modular_content",
+          "name": "Related articles",
+          "value": [
+            "coffee_processing_techniques",
+            "origins_of_arabica_bourbon"
+          ]
+        },
+        "meta_keywords": {
+          "type": "text",
+          "name": "Meta keywords",
+          "value": "roasts, coffee"
+        },
+        "meta_description": {
+          "type": "text",
+          "name": "Meta description",
+          "value": "Roasting coffee beans can take from 6 to 13 minutes. Different roasting times produce different types of coffee."
+        },
+        "url_pattern": {
+          "type": "url_slug",
+          "name": "URL pattern",
+          "value": "on-roasts"
+        }
+      }
+    }
+  }
+}

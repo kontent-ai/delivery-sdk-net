@@ -1,20 +1,13 @@
 ﻿using Newtonsoft.Json.Linq;
+using RichardSzalay.MockHttp;
 using System;
+using System.IO;
 using Xunit;
 
 namespace KenticoCloud.Delivery.Tests
 {
     public class ContentLinkResolverTests
     {
-        public const string PROJECT_ID = "975bf280-fd91-488c-994c-2f04416e5ee3";
-
-        private readonly DeliveryClient client;
-
-        public ContentLinkResolverTests()
-        {
-            client = new DeliveryClient(PROJECT_ID) { CodeFirstModelProvider = { TypeProvider = new CustomTypeProvider() } };
-        }
-
         [Fact]
         public void ContentLinkIsResolved()
         {
@@ -118,7 +111,21 @@ namespace KenticoCloud.Delivery.Tests
         [Fact]
         public async void ResolveLinksInStronglyTypedModel()
         {
-            client.ContentLinkUrlResolver = new CustomContentLinkUrlResolver();
+            var mockHttp = new MockHttpMessageHandler();
+            string guid = Guid.NewGuid().ToString();
+            string url = $"https://deliver.kenticocloud.com/{guid}/items/coffee_processing_techniques";
+
+            mockHttp.When(url).
+               Respond("application/json", File.ReadAllText(Path.Combine(AppContext.BaseDirectory, "Fixtures\\ContentLinkResolver\\coffee_processing_techniques.json")));
+
+            var httpClient = mockHttp.ToHttpClient();
+            DeliveryClient client = new DeliveryClient(guid)
+            {
+                CodeFirstModelProvider = {TypeProvider = new CustomTypeProvider()},
+                HttpClient = httpClient,
+                ContentLinkUrlResolver = new CustomContentLinkUrlResolver()
+            };
+
 
             string expected = "Check out our <a data-item-id=\"0c9a11bb-6fc3-409c-b3cb-f0b797e15489\" href=\"http://example.org/brazil-natural-barra-grande\">Brazil Natural Barra Grande</a> coffee for a tasty example.";
             var item = await client.GetItemAsync<Article>("coffee_processing_techniques");
