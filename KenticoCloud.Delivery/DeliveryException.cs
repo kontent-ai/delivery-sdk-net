@@ -23,11 +23,19 @@ namespace KenticoCloud.Delivery
         /// Initializes a new instance of the <see cref="DeliveryException"/> class with information from an error response.
         /// </summary>
         /// <param name="statusCode">The HTTP status code of the response.</param>
-        /// <param name="message">The error message from the response.</param>
-        public DeliveryException(HttpStatusCode statusCode, string message)
+        /// <param name="responseStr">The error response.</param>
+        public DeliveryException(HttpStatusCode statusCode, string responseStr)
         {
             StatusCode = statusCode;
-            Message = JObject.Parse(message)["message"].ToString();
+
+            try
+            {
+                Message = JObject.Parse(responseStr)["message"].ToString();
+            }
+            catch (Exception)
+            {
+                Message = $"Unknown error. HTTP status code: {statusCode}.";
+            }
         }
     }
 }

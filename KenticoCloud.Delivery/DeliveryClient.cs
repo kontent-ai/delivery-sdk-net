@@ -500,7 +500,7 @@ namespace KenticoCloud.Delivery
 
         private async Task<JObject> GetDeliverResponseAsync(string endpointUrl)
         {
-            var message = new HttpRequestMessage(HttpMethod.Get, endpointUrl);
+            var message = new HttpRequestMessage(HttpMethod.Get, GetUri(endpointUrl));
             if (_deliveryOptions.WaitForLoadingNewContent)
             {
                 message.Headers.Add("X-KC-Wait-For-Loading-New-Content", "true");
@@ -520,6 +520,18 @@ namespace KenticoCloud.Delivery
             }
 
             throw new DeliveryException(response.StatusCode, await response.Content.ReadAsStringAsync());
+        }
+
+        private Uri GetUri(string url)
+        {
+            try
+            {
+                return new Uri(url);
+            }
+            catch (UriFormatException ex)
+            {
+                throw new Exception("The request url is too long. Split your query into multiple calls.", ex);
+            }
         }
     }
 }

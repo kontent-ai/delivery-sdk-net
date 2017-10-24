@@ -28,7 +28,7 @@ namespace KenticoCloud.Delivery
         /// </summary>
         public string GetQueryStringParameter()
         {
-            return string.Format("elements={0}", Uri.EscapeDataString(string.Join(",", ElementCodenames)));
+            return string.Format("elements={0}", string.Join(Uri.EscapeDataString(","), ElementCodenames.Select(Uri.EscapeDataString)));
         }
     }
 }
