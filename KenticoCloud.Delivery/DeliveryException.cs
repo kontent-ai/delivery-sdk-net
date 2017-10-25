@@ -1,6 +1,7 @@
 ﻿using Newtonsoft.Json.Linq;
 using System;
 using System.Net;
+using System.Net.Http;
 
 namespace KenticoCloud.Delivery
 {
@@ -22,11 +23,11 @@ namespace KenticoCloud.Delivery
         /// <summary>
         /// Initializes a new instance of the <see cref="DeliveryException"/> class with information from an error response.
         /// </summary>
-        /// <param name="statusCode">The HTTP status code of the response.</param>
+        /// <param name="response">The unsuccessful response.</param>
         /// <param name="responseStr">The error response.</param>
-        public DeliveryException(HttpStatusCode statusCode, string responseStr)
+        public DeliveryException(HttpResponseMessage response, string responseStr)
         {
-            StatusCode = statusCode;
+            StatusCode = response.StatusCode;
 
             try
             {
@@ -34,7 +35,7 @@ namespace KenticoCloud.Delivery
             }
             catch (Exception)
             {
-                Message = $"Unknown error. HTTP status code: {statusCode}.";
+                Message = $"Unknown error. HTTP status code: {StatusCode}. Reason phrase: {response.ReasonPhrase}.";
             }
         }
     }
