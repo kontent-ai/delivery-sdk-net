@@ -104,7 +104,7 @@ namespace KenticoCloud.Delivery
 
             if (url.Length > URI_MAX_LENGTH)
             {
-                throw new Exception("The request url is too long. Split your query into multiple calls.");
+                throw new UriFormatException("The request url is too long. Split your query into multiple calls.");
             }
 
             return url;
