@@ -281,39 +281,43 @@ namespace KenticoCloud.Delivery
         {
             var usedCodenames = JsonConvert.DeserializeObject<IEnumerable<string>>(modularContentInRichText.ToString());
             var contentItemsInRichText = new Dictionary<string, object>();
-                
-            foreach (var codenameUsed in usedCodenames)
+
+            if (usedCodenames != null)
             {
-                object contentItem;
-                // This is to reuse content items which were processed already, but not those 
-                // that are calling this resolver as they may contain unprocessed rich text elements
-                if (processedItems.ContainsKey(codenameUsed) && currentlyResolvedRichStrings.All(x => x.ContentItemCodeName != codenameUsed))  
-                                                                                                                                               
+                foreach (var codenameUsed in usedCodenames)
                 {
-                    contentItem = processedItems[codenameUsed];
-                }
-                else
-                {
-                    var modularContentNode = (JObject)modularContent;
-                    var modularContentItemNode =
-                        modularContentNode.Properties()
-                            .FirstOrDefault(p => p.Name == codenameUsed)?.First;
-                    if (modularContentItemNode != null)
+                    object contentItem;
+                    // This is to reuse content items which were processed already, but not those 
+                    // that are calling this resolver as they may contain unprocessed rich text elements
+                    if (processedItems.ContainsKey(codenameUsed) && currentlyResolvedRichStrings.All(x => x.ContentItemCodeName != codenameUsed))
+
                     {
-                        contentItem = GetContentItemModel(typeof(object), modularContentItemNode, modularContentNode, processedItems, currentlyResolvedRichStrings);
-                        if (!processedItems.ContainsKey(codenameUsed))
-                        {
-                            processedItems.Add(codenameUsed, contentItem);
-                        }
+                        contentItem = processedItems[codenameUsed];
                     }
                     else
                     {
-                        // This means that response from Delivery API didn't contain content of this item 
-                        contentItem = new UnretrievedContentItem();
+                        var modularContentNode = (JObject)modularContent;
+                        var modularContentItemNode =
+                            modularContentNode.Properties()
+                                .FirstOrDefault(p => p.Name == codenameUsed)?.First;
+                        if (modularContentItemNode != null)
+                        {
+                            contentItem = GetContentItemModel(typeof(object), modularContentItemNode, modularContentNode, processedItems, currentlyResolvedRichStrings);
+                            if (!processedItems.ContainsKey(codenameUsed))
+                            {
+                                processedItems.Add(codenameUsed, contentItem);
+                            }
+                        }
+                        else
+                        {
+                            // This means that response from Delivery API didn't contain content of this item 
+                            contentItem = new UnretrievedContentItem();
+                        }
                     }
+                    contentItemsInRichText.Add(codenameUsed, contentItem);
                 }
-                contentItemsInRichText.Add(codenameUsed, contentItem);
             }
+
             value = _client.InlineContentItemsProcessor.Process(value, contentItemsInRichText);
 
             return value;
