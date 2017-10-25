@@ -600,7 +600,7 @@ namespace KenticoCloud.Delivery.Tests
             var elements = new ElementsParameter(Enumerable.Range(0, 1000000).Select(i => "test").ToArray());
 
             // Act / Assert
-            await Assert.ThrowsAsync<Exception>(async () => await client.GetItemsAsync(elements));
+            await Assert.ThrowsAsync<UriFormatException>(async () => await client.GetItemsAsync(elements));
         }
 
         private DeliveryClient InitializeDeliverClientWithACustomeTypeProvider()
