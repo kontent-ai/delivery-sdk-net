@@ -519,7 +519,7 @@ namespace KenticoCloud.Delivery
                 return JObject.Parse(content);
             }
 
-            throw new DeliveryException(response.StatusCode, await response.Content.ReadAsStringAsync());
+            throw new DeliveryException(response, await response.Content.ReadAsStringAsync());
         }
     }
 }
