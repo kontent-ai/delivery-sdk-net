@@ -6,6 +6,7 @@ namespace KenticoCloud.Delivery
 {
     internal sealed class DeliveryEndpointUrlBuilder
     {
+        private const int URI_MAX_LENGTH = 65519;
         private const string URL_TEMPLATE_ITEM = "/items/{0}";
         private const string URL_TEMPLATE_ITEMS = "/items";
         private const string URL_TEMPLATE_TYPE = "/types/{0}";
@@ -94,14 +95,19 @@ namespace KenticoCloud.Delivery
         private string GetUrl(string path, string[] parameters = null)
         {
             var endpointUrl = string.Format(_deliveryOptions.UsePreviewApi ? _deliveryOptions.PreviewEndpoint : _deliveryOptions.ProductionEndpoint, Uri.EscapeDataString(_deliveryOptions.ProjectId));
-            var baseUrl = string.Concat(endpointUrl, path);
+            var url = string.Concat(endpointUrl, path);
 
             if (parameters != null && parameters.Length > 0)
             {
-                return string.Concat(baseUrl, "?", string.Join("&", parameters));
+                url = string.Concat(url, "?", string.Join("&", parameters));
             }
 
-            return baseUrl;
+            if (url.Length > URI_MAX_LENGTH)
+            {
+                throw new UriFormatException("The request url is too long. Split your query into multiple calls.");
+            }
+
+            return url;
         }
     }
 }

@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Linq;
 
 namespace KenticoCloud.Delivery
 {
@@ -7,15 +8,17 @@ namespace KenticoCloud.Delivery
     /// </summary>
     public abstract class Filter : IQueryParameter
     {
+        private static string SEPARATOR = Uri.EscapeDataString(",");
+
         /// <summary>
         /// Gets the codename of a content element or system attribute, for example <c>elements.title</c> or <c>system.name</c>.
         /// </summary>
         public string ElementOrAttributePath { get; protected set; }
 
         /// <summary>
-        /// Gets the filter value.
+        /// Gets the filter values.
         /// </summary>
-        public string Value { get; protected set; }
+        public string[] Values { get; protected set; }
 
         /// <summary>
         /// Gets the filter operator.
@@ -26,11 +29,11 @@ namespace KenticoCloud.Delivery
         /// Initializes a new instance of the <see cref="Filter"/> class.
         /// </summary>
         /// <param name="elementOrAttributePath">The codename of a content element or system attribute, for example <c>elements.title</c> or <c>system.name</c>.</param>
-        /// <param name="value">The filter value.</param>
-        public Filter(string elementOrAttributePath, string value)
+        /// <param name="values">The filter values.</param>
+        public Filter(string elementOrAttributePath, params string[] values)
         {
             ElementOrAttributePath = elementOrAttributePath;
-            Value = value;
+            Values = values;
         }
 
         /// <summary>
@@ -38,7 +41,8 @@ namespace KenticoCloud.Delivery
         /// </summary>
         public string GetQueryStringParameter()
         {
-            return string.Format("{0}{1}={2}", Uri.EscapeDataString(ElementOrAttributePath), Uri.EscapeDataString(Operator ?? string.Empty), Uri.EscapeDataString(Value));
+            var escapedValues = Values.Select(Uri.EscapeDataString);
+            return string.Format("{0}{1}={2}", Uri.EscapeDataString(ElementOrAttributePath), Uri.EscapeDataString(Operator ?? string.Empty), string.Join(SEPARATOR, escapedValues));
         }
     }
 }
