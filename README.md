@@ -26,9 +26,9 @@ DeliveryClient client = new DeliveryClient("975bf280-fd91-488c-994c-2f04416e5ee3
 
 You can also provide the project ID and other parameters by passing the [`DeliveryOptions`](https://github.com/Kentico/delivery-sdk-net/blob/master/KenticoCloud.Delivery/Configuration/DeliveryOptions%20.cs) object to the class constructor. The `DeliveryOptions` object can be used to set the following parameters:
 
-* `PreviewApiKey` – sets the Delivery Preview API key.
 * `ProjectId` – sets the project identifier.
-* `UsePreviewApi` – determines whether to use the Delivery Preview API.
+* `UsePreviewApi` – determines whether to use the Delivery Preview API. See [previewing unpublished content](#previewing-unpublished-content).
+* `PreviewApiKey` – sets the Delivery Preview API key. See [previewing unpublished content](#previewing-unpublished-content).
 * `WaitForLoadingNewContent` – makes the client instance wait while fetching updated content, useful when acting upon [webhook calls](https://developer.kenticocloud.com/docs/webhooks#section-requesting-new-content).
 
 For advanced configuration options using Dependency Injection and ASP.NET Core Configuration API, see the SDK's [wiki](https://github.com/Kentico/delivery-sdk-net/wiki/Using-the-ASP.NET-Core-Configuration-API-and-DI-to-Instantiate-the-DeliveryClient).
