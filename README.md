@@ -35,6 +35,18 @@ For advanced configuration options using Dependency Injection and ASP.NET Core C
 
 Once you create a `DeliveryClient`, you can start querying your project repository by calling methods on the client instance. See [Basic querying](#basic-querying) for details.
 
+## Basic querying
+
+Once you have a `DeliveryClient` instance, you can start querying your project repository by calling methods on the instance.
+
+```csharp
+// Retrieves a single content item
+DeliveryItemResponse response = await client.GetItemAsync("about_us");
+
+// Retrieves a list of all content items
+DeliveryItemListingResponse listingResponse = await client.GetItemsAsync();
+```
+
 ### Filtering retrieved data
 
 The SDK supports full scale of the API querying and filtering capabilities as described in the [API reference](https://developer.kenticocloud.com/reference#filtering-content-items).
@@ -50,30 +62,6 @@ DeliveryItemListingResponse response = await client.GetItemsAsync(
 );
 ```
 
-### Previewing unpublished content
-
-To retrieve unpublished content, you need to create a `DeliveryClient` with both Project ID and Preview API key. Each Kentico Cloud project has its own Preview API key. 
-
-```csharp
-// Note: Within a single project, we recommend that you work with only
-// either the production or preview Delivery API, not both.
-DeliveryClient client = new DeliveryClient("YOUR_PROJECT_ID", "YOUR_PREVIEW_API_KEY");
-```
-
-For more details, see [Previewing unpublished content using the Delivery API](https://developer.kenticocloud.com/docs/preview-content-via-api).
-
-## Basic querying
-
-Once you have a `DeliveryClient` instance, you can start querying your project repository by calling methods on the instance.
-
-```csharp
-// Retrieves a single content item
-DeliveryItemResponse response = await client.GetItemAsync("about_us");
-
-// Retrieves a list of all content items
-DeliveryItemListingResponse listingResponse = await client.GetItemsAsync();
-```
-
 ### Strongly-typed responses
 
 The `DeliveryClient` also supports retrieving of strongly-typed models.
@@ -87,6 +75,18 @@ DeliveryItemListingResponse listingResponse = await client.GetItemsAsync<Article
 ```
 
 See [Working with Strongly Typed Models](https://github.com/Kentico/delivery-sdk-net/wiki/Working-with-Strongly-Typed-Models-(aka-Code-First-Approach)) in the wiki to learn how to generate models and adjust the logic to your needs.
+
+## Previewing unpublished content
+
+To retrieve unpublished content, you need to create a `DeliveryClient` with both Project ID and Preview API key. Each Kentico Cloud project has its own Preview API key. 
+
+```csharp
+// Note: Within a single project, we recommend that you work with only
+// either the production or preview Delivery API, not both.
+DeliveryClient client = new DeliveryClient("YOUR_PROJECT_ID", "YOUR_PREVIEW_API_KEY");
+```
+
+For more details, see [Previewing unpublished content using the Delivery API](https://developer.kenticocloud.com/docs/preview-content-via-api).
 
 ## Response structure
 
