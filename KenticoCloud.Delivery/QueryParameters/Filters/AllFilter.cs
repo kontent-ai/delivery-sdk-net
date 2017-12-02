@@ -11,7 +11,7 @@
         /// </summary>
         /// <param name="elementOrAttributePath">The codename of a content element or system attribute, for example <c>elements.title</c> or <c>system.name</c>.</param>
         /// <param name="values">The filter values.</param>
-        public AllFilter(string elementOrAttributePath, params string[] values) : base(elementOrAttributePath, string.Join(",", values))
+        public AllFilter(string elementOrAttributePath, params string[] values) : base(elementOrAttributePath, values)
         {
             Operator = "[all]";
         }
