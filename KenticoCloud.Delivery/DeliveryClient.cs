@@ -81,6 +81,8 @@ namespace KenticoCloud.Delivery
             set { _httpClient = value; }
         }
 
+        private QueryParameters.Utilities.ContentTypeExtractor _extractor;
+
         /// <summary>
         /// Initializes a new instance of the <see cref="DeliveryClient"/> class for retrieving content of the specified project.
         /// </summary>
@@ -118,6 +120,7 @@ namespace KenticoCloud.Delivery
             }
 
             _deliveryOptions.ProjectId = projectIdGuid.ToString("D");
+            _extractor = new QueryParameters.Utilities.ContentTypeExtractor();
         }
 
         /// <summary>
@@ -248,9 +251,7 @@ namespace KenticoCloud.Delivery
                 throw new ArgumentException("Entered item codename is not valid.", nameof(codename));
             }
 
-            var enhancedParams = ExtractParameters<T>(parameters);
-
-            var endpointUrl = UrlBuilder.GetItemUrl(codename, enhancedParams);
+            var endpointUrl = UrlBuilder.GetItemUrl(codename, parameters);
             var response = await GetDeliverResponseAsync(endpointUrl);
 
             return new DeliveryItemResponse<T>(response, this, endpointUrl);
@@ -298,7 +299,7 @@ namespace KenticoCloud.Delivery
         /// <returns>The <see cref="DeliveryItemListingResponse{T}"/> instance that contains the content items. If no query parameters are specified, all content items are returned.</returns>
         public async Task<DeliveryItemListingResponse<T>> GetItemsAsync<T>(IEnumerable<IQueryParameter> parameters)
         {
-            var enhancedParameters = ExtractParameters<T>(parameters);
+            var enhancedParameters = _extractor.ExtractParameters<T>(parameters);
             var endpointUrl = UrlBuilder.GetItemsUrl(enhancedParameters);
             var response = await GetDeliverResponseAsync(endpointUrl);
 
@@ -524,25 +525,6 @@ namespace KenticoCloud.Delivery
             }
 
             throw new DeliveryException(response, await response.Content.ReadAsStringAsync());
-        }
-
-        private bool TryGetContentTypeCodename(Type contentType, out string codename)
-        {
-            codename = (string) contentType.GetField("Codename")?.GetValue(null);
-            return codename != null;
-        }
-
-        private IEnumerable<IQueryParameter> ExtractParameters<T>(IEnumerable<IQueryParameter> parameters = null)
-        {
-            string contentTypeCodename;
-            var contentTypeCodenameRetrieved = TryGetContentTypeCodename(typeof(T), out contentTypeCodename);
-            var enhancedParameters = parameters != null ? new List<IQueryParameter>(parameters) : new List<IQueryParameter>();
-
-            if (contentTypeCodenameRetrieved)
-            {
-                enhancedParameters.Add(new EqualsFilter("system.type", contentTypeCodename));
-            }
-            return enhancedParameters;
         }
     }
 }
