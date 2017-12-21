@@ -64,6 +64,22 @@ DeliveryItemListingResponse response = await client.GetItemsAsync(
 );
 ```
 
+### Getting localized items
+
+The language selection is just a matter of specifying one additional filtering parameter to the query.
+
+```csharp
+// Retrieves a list of the specified elements from the first 10 content items of
+// the 'brewer' content type, ordered by the 'product_name' element value
+DeliveryItemListingResponse response = await client.GetItemsAsync(
+    new LanguageParameter("es-ES"),
+    new EqualsFilter("system.type", "brewer"),
+    new ElementsParameter("image", "price", "product_status", "processing"),
+    new LimitParameter(10),
+    new OrderParameter("elements.product_name")
+);
+```
+
 ### Strongly-typed responses
 
 The `DeliveryClient` also supports retrieving of strongly-typed models.
