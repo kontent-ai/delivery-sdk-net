@@ -9,6 +9,8 @@
 
 The Kentico Cloud Delivery .NET SDK is a client library used for retrieving content from Kentico Cloud. You can use the SDK in the form of a [NuGet package](https://www.nuget.org/packages/KenticoCloud.Delivery).
 
+The SDK targets the [.NET Standard 1.3](https://docs.microsoft.com/en-us/dotnet/standard/net-standard), which means it can be used in .NET Framework 4.6 projects and above, and .NET Core 1.0 projects and above.
+
 ## Prerequisites
 
 To retrieve content from a Kentico Cloud project via the Delivery API, you first need to activate the API for the project. See our documentation on how you can [activate the Delivery API](https://developer.kenticocloud.com/docs/using-delivery-api#section-enabling-the-delivery-api-for-your-projects).
@@ -55,6 +57,22 @@ The SDK supports full scale of the API querying and filtering capabilities as de
 // Retrieves a list of the specified elements from the first 10 content items of
 // the 'brewer' content type, ordered by the 'product_name' element value
 DeliveryItemListingResponse response = await client.GetItemsAsync(
+    new EqualsFilter("system.type", "brewer"),
+    new ElementsParameter("image", "price", "product_status", "processing"),
+    new LimitParameter(10),
+    new OrderParameter("elements.product_name")
+);
+```
+
+### Getting localized items
+
+The language selection is just a matter of specifying one additional filtering parameter to the query.
+
+```csharp
+// Retrieves a list of the specified elements from the first 10 content items of
+// the 'brewer' content type, ordered by the 'product_name' element value
+DeliveryItemListingResponse response = await client.GetItemsAsync(
+    new LanguageParameter("es-ES"),
     new EqualsFilter("system.type", "brewer"),
     new ElementsParameter("image", "price", "product_status", "processing"),
     new LimitParameter(10),
