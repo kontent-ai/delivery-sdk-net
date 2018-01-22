@@ -11,10 +11,6 @@ The Kentico Cloud Delivery .NET SDK is a client library used for retrieving cont
 
 The SDK targets the [.NET Standard 1.3](https://docs.microsoft.com/en-us/dotnet/standard/net-standard), which means it can be used in .NET Framework 4.6 projects and above, and .NET Core 1.0 projects and above.
 
-## Prerequisites
-
-To retrieve content from a Kentico Cloud project via the Delivery API, you first need to activate the API for the project. See our documentation on how you can [activate the Delivery API](https://developer.kenticocloud.com/docs/using-delivery-api#section-enabling-the-delivery-api-for-your-projects).
-
 ## Using the DeliveryClient
 
 The `DeliveryClient` class is the main class of the SDK. Using this class, you can retrieve content from your Kentico Cloud projects.
