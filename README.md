@@ -27,6 +27,8 @@ You can also provide the project ID and other parameters by passing the [`Delive
 * `ProjectId` – sets the project identifier.
 * `UsePreviewApi` – determines whether to use the Delivery Preview API. See [previewing unpublished content](#previewing-unpublished-content).
 * `PreviewApiKey` – sets the Delivery Preview API key. See [previewing unpublished content](#previewing-unpublished-content).
+* `UseSecuredProductionApi` – determines whether to authenticate against the production Delivery API with an API key.
+* `SecuredProductionApiKey` – sets the production Delivery API key.
 * `WaitForLoadingNewContent` – makes the client instance wait while fetching updated content, useful when acting upon [webhook calls](https://developer.kenticocloud.com/docs/webhooks#section-requesting-new-content).
 
 For advanced configuration options using Dependency Injection and ASP.NET Core Configuration API, see the SDK's [wiki](https://github.com/Kentico/delivery-sdk-net/wiki/Using-the-ASP.NET-Core-Configuration-API-and-DI-to-Instantiate-the-DeliveryClient).
