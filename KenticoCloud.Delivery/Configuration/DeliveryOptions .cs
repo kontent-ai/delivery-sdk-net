@@ -35,5 +35,14 @@
         /// </summary>
         public bool WaitForLoadingNewContent { get; set; }
 
+        /// <summary>
+        /// Gets or sets whether the production Delivery API will be accessed using an API key.
+        /// </summary>
+        public bool UseSecuredProductionApi { get; set; }
+
+        /// <summary>
+        /// Gets or sets the production Delivery API key.
+        /// </summary>
+        public string SecuredProductionApiKey { get; set; }
     }
 }

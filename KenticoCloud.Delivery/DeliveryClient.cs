@@ -15,6 +15,7 @@ namespace KenticoCloud.Delivery
     /// </summary>
     public sealed class DeliveryClient : IDeliveryClient
     {
+        private const string WAIT_FOR_LOADING_NEW_CONTENT_HEADER = "X-KC-Wait-For-Loading-New-Content";
         private readonly DeliveryOptions _deliveryOptions;
 
         private HttpClient _httpClient;
@@ -500,11 +501,23 @@ namespace KenticoCloud.Delivery
 
         private async Task<JObject> GetDeliverResponseAsync(string endpointUrl)
         {
+            if (_deliveryOptions.UsePreviewApi && _deliveryOptions.UseSecuredProductionApi)
+            {
+                throw new InvalidOperationException("Preview API and secured Delivery API must not be configured at the same time.");
+            }
+
             var message = new HttpRequestMessage(HttpMethod.Get, endpointUrl);
+
             if (_deliveryOptions.WaitForLoadingNewContent)
             {
-                message.Headers.Add("X-KC-Wait-For-Loading-New-Content", "true");
+                message.Headers.Add(WAIT_FOR_LOADING_NEW_CONTENT_HEADER, "true");
             }
+
+            if (_deliveryOptions.UseSecuredProductionApi && !string.IsNullOrEmpty(_deliveryOptions.SecuredProductionApiKey))
+            {
+                message.Headers.Authorization = new AuthenticationHeaderValue("Bearer", _deliveryOptions.SecuredProductionApiKey);
+            }
+
             if (_deliveryOptions.UsePreviewApi && !string.IsNullOrEmpty(_deliveryOptions.PreviewApiKey))
             {
                 message.Headers.Authorization = new AuthenticationHeaderValue("Bearer", _deliveryOptions.PreviewApiKey);
