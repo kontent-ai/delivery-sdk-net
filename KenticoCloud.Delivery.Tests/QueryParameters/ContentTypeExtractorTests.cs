@@ -21,9 +21,7 @@ namespace KenticoCloud.Delivery.Tests.QueryParameters
         [Fact]
         public void TryGetContentTypeCodename_WhenGivenTypeWithCodename_ReturnsTrueAndCodename()
         {
-            string resultCodename;
-
-            var success = _extractor.TryGetContentTypeCodename(typeof(TypeWithContentTypeCodename), out resultCodename);
+            var success = _extractor.TryGetContentTypeCodename(typeof(TypeWithContentTypeCodename), out string resultCodename);
 
             Assert.True(success);
             Assert.Equal("SomeContentType", resultCodename);
@@ -37,9 +35,7 @@ namespace KenticoCloud.Delivery.Tests.QueryParameters
         [Fact]
         public void TryGetContentTypeCodename_WhenGivenTypeWithoutCodename_ReturnsFalse()
         {
-            string resultCodename;
-
-            var success = _extractor.TryGetContentTypeCodename(typeof(TypeWithoutContentTypeCodename), out resultCodename);
+            var success = _extractor.TryGetContentTypeCodename(typeof(TypeWithoutContentTypeCodename), out string resultCodename);
 
             Assert.False(success);
         }
@@ -58,24 +54,21 @@ namespace KenticoCloud.Delivery.Tests.QueryParameters
         [Fact]
         public void TryGetContentTypeCodename_WhenGivenTypeWithCodenameAsProperty_ReturnsFalse()
         {
-            string resultCodename;
 
-            var success = _extractor.TryGetContentTypeCodename(typeof(TypeWithContentTypeCodenameAsProperty), out resultCodename);
+            var success = _extractor.TryGetContentTypeCodename(typeof(TypeWithContentTypeCodenameAsProperty), out string resultCodename);
 
             Assert.False(success);
         }
 
         private class TypeWithContentTypeCodenameAsVariable
         {
-            public string Codename;
+            public string Codename = "42";
         }
 
         [Fact]
         public void TryGetContentTypeCodename_WhenGivenTypeWithCodenameAsVariable_ReturnsFalse()
         {
-            string resultCodename;
-
-            var success = _extractor.TryGetContentTypeCodename(typeof(TypeWithContentTypeCodenameAsVariable), out resultCodename);
+            var success = _extractor.TryGetContentTypeCodename(typeof(TypeWithContentTypeCodenameAsVariable), out string resultCodename);
 
             Assert.False(success);
         }
@@ -88,9 +81,7 @@ namespace KenticoCloud.Delivery.Tests.QueryParameters
         [Fact]
         public void TryGetContentTypeCodename_WhenGivenTypeWithCodenameAsPrivateField_ReturnsFalse()
         {
-            string resultCodename;
-
-            var success = _extractor.TryGetContentTypeCodename(typeof(TypeWithContentTypeCodenameAsPrivateField), out resultCodename);
+            var success = _extractor.TryGetContentTypeCodename(typeof(TypeWithContentTypeCodenameAsPrivateField), out string resultCodename);
 
             Assert.False(success);
         }
@@ -111,7 +102,7 @@ namespace KenticoCloud.Delivery.Tests.QueryParameters
         {
             var enhancedParams = new List<IQueryParameter>(_extractor.ExtractParameters<TypeWithContentTypeCodename>());
 
-            Assert.Equal(1, enhancedParams.Count);
+            Assert.Single(enhancedParams);
             Assert.True(enhancedParams.Find(x => x.GetQueryStringParameter() == $"system.type=SomeContentType") != null);
         }
 
@@ -122,7 +113,7 @@ namespace KenticoCloud.Delivery.Tests.QueryParameters
 
             var enhancedParams = new List<IQueryParameter>(_extractor.ExtractParameters<TypeWithoutContentTypeCodename>(existingParams));
 
-            Assert.Equal(1, enhancedParams.Count);
+            Assert.Single(enhancedParams);
             Assert.True(enhancedParams.Find(x => x.GetQueryStringParameter() == $"system.type=TypeWithoutContentTypeCodename") == null);
         }
     }
