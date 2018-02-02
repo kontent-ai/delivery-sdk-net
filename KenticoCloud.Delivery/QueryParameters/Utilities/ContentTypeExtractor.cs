@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Linq;
 using System.Reflection;
 
 namespace KenticoCloud.Delivery.QueryParameters.Utilities
@@ -21,17 +22,14 @@ namespace KenticoCloud.Delivery.QueryParameters.Utilities
         internal bool TryGetContentTypeCodename(Type contentType, out string codename)
         {
             var fields = contentType.GetFields(BindingFlags.Static | BindingFlags.Public);
-            foreach(var field in fields)
+            string codenameField = "Codename";
+            if (fields.Any(field => field.Name == codenameField))
             {
-                if(field.Name == "Codename")
-                {
-                    codename = (string)contentType.GetField("Codename")?.GetValue(null);
-                    return codename != null;
-                }
+                codename = (string)contentType.GetField(codenameField)?.GetValue(null);
+                return codename != null;
             }
-            codename = String.Empty;
+            codename = null;
             return false;
         }
-
     }
 }

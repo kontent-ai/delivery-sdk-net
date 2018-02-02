@@ -124,6 +124,20 @@ namespace KenticoCloud.Delivery.Tests
         }
 
         [Fact]
+        public async void GetItemsAsyncWithTypeExtractor()
+        {
+            mockHttp.When($"{baseUrl}/items").
+                WithQueryString("system.type=cafe").
+                Respond("application/json", File.ReadAllText(Path.Combine(AppContext.BaseDirectory, "Fixtures\\DeliveryClient\\allendale.json")));
+
+            DeliveryClient client = InitializeDeliverClientWithACustomeTypeProvider();
+
+            var response = await client.GetItemsAsync<Cafe>();
+
+            Assert.NotEmpty(response.Items);
+        }
+
+        [Fact]
         public async void GetItemsAsync()
         {
             mockHttp.When($"{baseUrl}/items").
