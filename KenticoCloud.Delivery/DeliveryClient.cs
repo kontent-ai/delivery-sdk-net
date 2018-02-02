@@ -4,7 +4,7 @@ using System.Collections.Generic;
 using System.Net;
 using System.Net.Http;
 using System.Net.Http.Headers;
-using System.Reflection;
+using System.Threading;
 using System.Threading.Tasks;
 using KenticoCloud.Delivery.InlineContentItems;
 using Microsoft.Extensions.Options;
@@ -528,7 +528,9 @@ namespace KenticoCloud.Delivery
                 message.Headers.Authorization = new AuthenticationHeaderValue("Bearer", _deliveryOptions.PreviewApiKey);
             }
 
-            var response = await HttpClient.SendAsync(message);
+            CancellationTokenSource source = new CancellationTokenSource();
+            CancellationToken token = source.Token;
+            var response = await HttpClient.SendAsync(message, token);
 
             if (response.StatusCode == HttpStatusCode.OK)
             {
