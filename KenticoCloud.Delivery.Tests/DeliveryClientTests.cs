@@ -124,6 +124,20 @@ namespace KenticoCloud.Delivery.Tests
         }
 
         [Fact]
+        public async void GetItemsAsyncWithTypeExtractor()
+        {
+            mockHttp.When($"{baseUrl}/items").
+                WithQueryString("system.type=cafe").
+                Respond("application/json", File.ReadAllText(Path.Combine(AppContext.BaseDirectory, "Fixtures\\DeliveryClient\\allendale.json")));
+
+            DeliveryClient client = InitializeDeliverClientWithACustomeTypeProvider();
+
+            var response = await client.GetItemsAsync<Cafe>();
+
+            Assert.NotEmpty(response.Items);
+        }
+
+        [Fact]
         public async void GetItemsAsync()
         {
             mockHttp.When($"{baseUrl}/items").
@@ -340,8 +354,8 @@ namespace KenticoCloud.Delivery.Tests
 
             Assert.NotNull(onRoastsItem.TeaserImage.First().Description);
             Assert.Equal(2, onRoastsItem.RelatedArticles.Count());
-            Assert.Equal(0, ((Article)onRoastsItem.RelatedArticles.First()).RelatedArticles.Count());
-            Assert.Equal(0, ((Article)onRoastsItem.RelatedArticles.ElementAt(1)).RelatedArticles.Count());
+            Assert.Empty(((Article)onRoastsItem.RelatedArticles.First()).RelatedArticles);
+            Assert.Empty(((Article)onRoastsItem.RelatedArticles.ElementAt(1)).RelatedArticles);
         }
 
         [Fact]
@@ -377,7 +391,7 @@ namespace KenticoCloud.Delivery.Tests
 
             Assert.Equal(99, item.NumberField);
 
-            Assert.Equal(1, item.MultipleChoiceFieldAsRadioButtons.Count());
+            Assert.Single(item.MultipleChoiceFieldAsRadioButtons);
             Assert.Equal("Radio button 1", item.MultipleChoiceFieldAsRadioButtons.First().Name);
 
             Assert.Equal(2, item.MultipleChoiceFieldAsCheckboxes.Count());
@@ -386,12 +400,12 @@ namespace KenticoCloud.Delivery.Tests
 
             Assert.Equal(new DateTime(2017, 2, 23), item.DateTimeField);
 
-            Assert.Equal(1, item.AssetField.Count());
+            Assert.Single(item.AssetField);
             Assert.Equal("Fire.jpg", item.AssetField.First().Name);
             Assert.Equal(129170, item.AssetField.First().Size);
             Assert.Equal("https://assets.kenticocloud.com:443/e1167a11-75af-4a08-ad84-0582b463b010/64096741-b658-46ee-b148-b287fe03ea16/Fire.jpg", item.AssetField.First().Url);
 
-            Assert.Equal(1, item.ModularContentField.Count());
+            Assert.Single(item.ModularContentField);
             Assert.Equal("Homepage", item.ModularContentField.First().System.Name);
 
             Assert.Equal(2, item.CompleteTypeTaxonomy.Count());
@@ -427,7 +441,7 @@ namespace KenticoCloud.Delivery.Tests
 
             Assert.Equal(99, item.NumberFieldWithADifferentName);
 
-            Assert.Equal(1, item.MultipleChoiceFieldAsRadioButtonsWithADifferentName.Count());
+            Assert.Single(item.MultipleChoiceFieldAsRadioButtonsWithADifferentName);
             Assert.Equal("Radio button 1", item.MultipleChoiceFieldAsRadioButtonsWithADifferentName.First().Name);
 
             Assert.Equal(2, item.MultipleChoiceFieldAsCheckboxes.Count());
@@ -436,12 +450,12 @@ namespace KenticoCloud.Delivery.Tests
 
             Assert.Equal(new DateTime(2017, 2, 23), item.DateTimeFieldWithADifferentName);
 
-            Assert.Equal(1, item.AssetFieldWithADifferentName.Count());
+            Assert.Single(item.AssetFieldWithADifferentName);
             Assert.Equal("Fire.jpg", item.AssetFieldWithADifferentName.First().Name);
             Assert.Equal(129170, item.AssetFieldWithADifferentName.First().Size);
             Assert.Equal("https://assets.kenticocloud.com:443/e1167a11-75af-4a08-ad84-0582b463b010/64096741-b658-46ee-b148-b287fe03ea16/Fire.jpg", item.AssetFieldWithADifferentName.First().Url);
 
-            Assert.Equal(1, item.ModularContentFieldWithADifferentName.Count());
+            Assert.Single(item.ModularContentFieldWithADifferentName);
             Assert.Equal("Homepage", ((Homepage)item.ModularContentFieldWithADifferentName.First()).System.Name);
             Assert.Equal("Homepage", ((Homepage)item.ModularContentFieldWithACollectionTypeDefined.First()).System.Name);
             Assert.True(item.ModularContentFieldWithAGenericTypeDefined.First().CallToAction.Length > 0);

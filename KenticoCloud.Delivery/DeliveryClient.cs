@@ -4,6 +4,7 @@ using System.Collections.Generic;
 using System.Net;
 using System.Net.Http;
 using System.Net.Http.Headers;
+using System.Reflection;
 using System.Threading.Tasks;
 using KenticoCloud.Delivery.InlineContentItems;
 using Microsoft.Extensions.Options;
@@ -81,6 +82,8 @@ namespace KenticoCloud.Delivery
             set { _httpClient = value; }
         }
 
+        private QueryParameters.Utilities.ContentTypeExtractor _extractor;
+
         /// <summary>
         /// Initializes a new instance of the <see cref="DeliveryClient"/> class for retrieving content of the specified project.
         /// </summary>
@@ -118,6 +121,7 @@ namespace KenticoCloud.Delivery
             }
 
             _deliveryOptions.ProjectId = projectIdGuid.ToString("D");
+            _extractor = new QueryParameters.Utilities.ContentTypeExtractor();
         }
 
         /// <summary>
@@ -296,7 +300,8 @@ namespace KenticoCloud.Delivery
         /// <returns>The <see cref="DeliveryItemListingResponse{T}"/> instance that contains the content items. If no query parameters are specified, all content items are returned.</returns>
         public async Task<DeliveryItemListingResponse<T>> GetItemsAsync<T>(IEnumerable<IQueryParameter> parameters)
         {
-            var endpointUrl = UrlBuilder.GetItemsUrl(parameters);
+            var enhancedParameters = _extractor.ExtractParameters<T>(parameters);
+            var endpointUrl = UrlBuilder.GetItemsUrl(enhancedParameters);
             var response = await GetDeliverResponseAsync(endpointUrl);
 
             return new DeliveryItemListingResponse<T>(response, this, endpointUrl);
