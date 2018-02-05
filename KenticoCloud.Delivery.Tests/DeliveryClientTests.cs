@@ -617,6 +617,54 @@ namespace KenticoCloud.Delivery.Tests
             await Assert.ThrowsAsync<UriFormatException>(async () => await client.GetItemsAsync(elements));
         }
 
+        [Theory]
+        [InlineData(false, false)]
+        [InlineData(true, false)]
+        [InlineData(false, true)]
+        [InlineData(true, true)]
+        public async void PreviewAndSecuredProductionThrowsWhentBothEnabled(bool usePreviewApi, bool useSecuredProduction)
+        {
+            if (usePreviewApi)
+            {
+                mockHttp.When($@"https://preview-deliver.kenticocloud.com/{guid}/items").
+                    Respond("application/json", File.ReadAllText(Path.Combine(AppContext.BaseDirectory, "Fixtures\\DeliveryClient\\items.json"))); 
+            }
+            else
+            {
+                mockHttp.When($"{baseUrl}/items").
+                    Respond("application/json", File.ReadAllText(Path.Combine(AppContext.BaseDirectory, "Fixtures\\DeliveryClient\\items.json")));
+            }
+
+            var httpClient = mockHttp.ToHttpClient();
+
+            var options = new DeliveryOptions
+            {
+                ProjectId = guid,
+                UsePreviewApi = usePreviewApi,
+                UseSecuredProductionApi = useSecuredProduction,
+                PreviewApiKey = "someKey",
+                SecuredProductionApiKey = "someKey"
+            };
+
+            DeliveryClient client = new DeliveryClient(options)
+            {
+                HttpClient = httpClient
+            };
+
+            if (usePreviewApi && useSecuredProduction)
+            {
+                // Assert
+                await Assert.ThrowsAsync<InvalidOperationException>(async () => await client.GetItemsAsync());
+            }
+            else
+            {
+                var response = await client.GetItemsAsync();
+
+                // Assert
+                Assert.NotNull(response);
+            }
+        }
+
         private DeliveryClient InitializeDeliverClientWithACustomeTypeProvider()
         {
             var httpClient = mockHttp.ToHttpClient();
