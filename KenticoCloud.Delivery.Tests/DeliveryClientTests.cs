@@ -1,14 +1,11 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
-using System.IO;
-using System.Net;
-using System.Net.Http;
-using System.Threading;
 using FakeItEasy;
 using Xunit;
 using RichardSzalay.MockHttp;
-using Moq;
+using System.IO;
+using System.Net;
 
 namespace KenticoCloud.Delivery.Tests
 {
@@ -590,7 +587,7 @@ namespace KenticoCloud.Delivery.Tests
             };
 
             var elements = new ElementsParameter(Enumerable.Range(0, 1000).Select(i => "test").ToArray());
-            var inFilter = new InFilter("test", Enumerable.Range(0, 1000).Select(i => "test").ToArray());
+            var inFilter = new InFilter("test", Enumerable.Range(0,1000).Select(i => "test").ToArray());
             var allFilter = new AllFilter("test", Enumerable.Range(0, 1000).Select(i => "test").ToArray());
             var anyFilter = new AnyFilter("test", Enumerable.Range(0, 1000).Select(i => "test").ToArray());
 
@@ -630,7 +627,7 @@ namespace KenticoCloud.Delivery.Tests
             if (usePreviewApi)
             {
                 mockHttp.When($@"https://preview-deliver.kenticocloud.com/{guid}/items").
-                    Respond("application/json", File.ReadAllText(Path.Combine(AppContext.BaseDirectory, "Fixtures\\DeliveryClient\\items.json")));
+                    Respond("application/json", File.ReadAllText(Path.Combine(AppContext.BaseDirectory, "Fixtures\\DeliveryClient\\items.json"))); 
             }
             else
             {
@@ -666,37 +663,6 @@ namespace KenticoCloud.Delivery.Tests
                 // Assert
                 Assert.NotNull(response);
             }
-        }
-
-        [Fact]
-        public async void SecuredProductionAddCorrectHeader()
-        {
-            var options = new DeliveryOptions
-            {
-                ProjectId = guid,
-                UsePreviewApi = false,
-                UseSecuredProductionApi = true,
-                PreviewApiKey = "someKey",
-                SecuredProductionApiKey = "someKey"
-            };
-
-            var httpClient = new Mock<HttpClient>() { CallBase = true };
-
-            Action<HttpRequestMessage, CancellationToken> callback = (message, token) =>
-            {
-                Assert.Equal("Bearer", message.Headers.Authorization.Scheme);
-                Assert.Equal("someKey", message.Headers.Authorization.Parameter);
-            };
-
-            httpClient.Setup(m => m.SendAsync(It.IsAny<HttpRequestMessage>(), It.IsAny<CancellationToken>()))
-                .Callback(callback)
-                .CallBase();
-
-            DeliveryClient client = new DeliveryClient(options)
-            {
-                HttpClient = httpClient.Object
-            };
-            var response = await client.GetItemsAsync();
         }
 
         private DeliveryClient InitializeDeliverClientWithACustomeTypeProvider()
