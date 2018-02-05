@@ -622,7 +622,7 @@ namespace KenticoCloud.Delivery.Tests
         [InlineData(true, false)]
         [InlineData(false, true)]
         [InlineData(true, true)]
-        public async void PreviewAndSecuredProductionThrows(bool usePreviewApi, bool useSecuredProduction)
+        public async void PreviewAndSecuredProductionThrowsWhentBothEnabled(bool usePreviewApi, bool useSecuredProduction)
         {
             if (usePreviewApi)
             {
