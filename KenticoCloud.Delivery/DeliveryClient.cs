@@ -21,8 +21,6 @@ namespace KenticoCloud.Delivery
 
         private HttpClient _httpClient;
         private DeliveryEndpointUrlBuilder _urlBuilder;
-        private CancellationTokenSource _tokenSource;
-
 
         private ICodeFirstModelProvider _codeFirstModelProvider;
 
@@ -82,22 +80,6 @@ namespace KenticoCloud.Delivery
                 return _httpClient;
             }
             set { _httpClient = value; }
-        }
-
-        /// <summary>
-        /// Cancelation token source used while sending the request to the endpoint.
-        /// </summary>
-        public CancellationTokenSource TokenSource
-        {
-            get
-            {
-                if (_tokenSource == null)
-                {
-                    return _tokenSource = new CancellationTokenSource();
-                }
-                return _tokenSource;
-            }
-            set { _tokenSource = value; }
         }
 
         private QueryParameters.Utilities.ContentTypeExtractor _extractor;
@@ -545,8 +527,8 @@ namespace KenticoCloud.Delivery
             {
                 message.Headers.Authorization = new AuthenticationHeaderValue("Bearer", _deliveryOptions.PreviewApiKey);
             }
-            
-            var response = await HttpClient.SendAsync(message, TokenSource.Token);
+
+            var response = await HttpClient.SendAsync(message);
 
             if (response.StatusCode == HttpStatusCode.OK)
             {
