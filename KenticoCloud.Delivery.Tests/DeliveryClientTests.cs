@@ -679,8 +679,8 @@ namespace KenticoCloud.Delivery.Tests
                 .WithHeaders("Authorization", $"Bearer {securityKey}")
                 .Respond("application/json", File.ReadAllText(Path.Combine(AppContext.BaseDirectory, "Fixtures\\DeliveryClient\\items.json")));
 
-            
             var mockHttpClient = mockHttp.ToHttpClient();
+
             DeliveryClient client = new DeliveryClient(options)
             {
                 HttpClient = mockHttpClient
