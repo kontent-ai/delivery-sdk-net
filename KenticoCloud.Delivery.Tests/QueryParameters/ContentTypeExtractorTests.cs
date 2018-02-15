@@ -48,7 +48,7 @@ namespace KenticoCloud.Delivery.Tests.QueryParameters
             {
                 get
                 {
-                    return "SomeContentType";
+                    return CONTENT_TYPE_CODENAME;
                 }
             }
         }
@@ -96,7 +96,7 @@ namespace KenticoCloud.Delivery.Tests.QueryParameters
             var enhancedParams = new List<IQueryParameter>(_extractor.ExtractParameters<TypeWithContentTypeCodename>(existingParams));
 
             Assert.Equal(2, enhancedParams.Count);
-            Assert.True(enhancedParams.Find(x => x.GetQueryStringParameter() == $"system.type=SomeContentType") != null);
+            Assert.True(enhancedParams.Find(x => x.GetQueryStringParameter() == $"system.type={CONTENT_TYPE_CODENAME}") != null);
         }
 
         [Fact]
@@ -105,7 +105,7 @@ namespace KenticoCloud.Delivery.Tests.QueryParameters
             var enhancedParams = new List<IQueryParameter>(_extractor.ExtractParameters<TypeWithContentTypeCodename>());
 
             Assert.Single(enhancedParams);
-            Assert.True(enhancedParams.Find(x => x.GetQueryStringParameter() == $"system.type=SomeContentType") != null);
+            Assert.True(enhancedParams.Find(x => x.GetQueryStringParameter() == $"system.type={CONTENT_TYPE_CODENAME}") != null);
         }
 
         [Fact]
