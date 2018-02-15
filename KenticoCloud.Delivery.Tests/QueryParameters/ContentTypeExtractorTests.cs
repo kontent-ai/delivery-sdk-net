@@ -6,6 +6,8 @@ namespace KenticoCloud.Delivery.Tests.QueryParameters
 {
     public class ContentTypeExtractorTests
     {
+        private const string CONTENT_TYPE_CODENAME = "SomeContentType";
+
         private ContentTypeExtractor _extractor;
 
         public ContentTypeExtractorTests()
@@ -15,7 +17,7 @@ namespace KenticoCloud.Delivery.Tests.QueryParameters
 
         private class TypeWithContentTypeCodename
         {
-            public const string Codename = "SomeContentType";
+            public const string Codename = CONTENT_TYPE_CODENAME;
         }
 
         [Fact]
@@ -115,6 +117,17 @@ namespace KenticoCloud.Delivery.Tests.QueryParameters
 
             Assert.Single(enhancedParams);
             Assert.True(enhancedParams.Find(x => x.GetQueryStringParameter() == $"system.type=TypeWithoutContentTypeCodename") == null);
+        }
+
+        [Fact]
+        public void ExtractParameters_WhenGivenTypeWithCodenameAndExistingTypeParameter_DoesNotAddCodenameToParams()
+        {
+            var existingParams = new List<IQueryParameter>() { new EqualsFilter("system.type", CONTENT_TYPE_CODENAME) };
+
+            var enhancedParams = new List<IQueryParameter>(_extractor.ExtractParameters<TypeWithContentTypeCodename>(existingParams));
+
+            Assert.Single(enhancedParams);
+            Assert.True(enhancedParams.Find(x => x.GetQueryStringParameter() == $"system.type={CONTENT_TYPE_CODENAME}") != null);
         }
     }
 }
