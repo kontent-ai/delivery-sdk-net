@@ -137,8 +137,5 @@ namespace KenticoCloud.Delivery.Tests.QueryParameters
             Assert.Single(enhancedParams);
             Assert.True(enhancedParams.Find(x => x.GetQueryStringParameter() == $"system.type={CONTENT_TYPE_CODENAME}") != null);
         }
-
-
-
     }
 }
