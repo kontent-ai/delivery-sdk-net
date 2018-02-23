@@ -109,6 +109,14 @@ namespace KenticoCloud.Delivery.Tests.QueryParameters
         }
 
         [Fact]
+        public void ExtractParameters_WhenGivenTypeWithoutCodenameNoParams_CreatesEmptyParams()
+        {
+            var enhancedParams = new List<IQueryParameter>(_extractor.ExtractParameters<TypeWithoutContentTypeCodename>());
+
+            Assert.Empty(enhancedParams);
+        }
+
+        [Fact]
         public void ExtractParameters_WhenGivenTypeWithoutCodenameAndParams_ReturnsParams()
         {
             var existingParams = new List<IQueryParameter>() { new SkipParameter(15) };
@@ -129,5 +137,8 @@ namespace KenticoCloud.Delivery.Tests.QueryParameters
             Assert.Single(enhancedParams);
             Assert.True(enhancedParams.Find(x => x.GetQueryStringParameter() == $"system.type={CONTENT_TYPE_CODENAME}") != null);
         }
+
+
+
     }
 }
