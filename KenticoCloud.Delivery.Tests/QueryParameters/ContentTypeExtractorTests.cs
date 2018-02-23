@@ -109,6 +109,14 @@ namespace KenticoCloud.Delivery.Tests.QueryParameters
         }
 
         [Fact]
+        public void ExtractParameters_WhenGivenTypeWithoutCodenameNoParams_CreatesEmptyParams()
+        {
+            var enhancedParams = new List<IQueryParameter>(_extractor.ExtractParameters<TypeWithoutContentTypeCodename>());
+
+            Assert.Empty(enhancedParams);
+        }
+
+        [Fact]
         public void ExtractParameters_WhenGivenTypeWithoutCodenameAndParams_ReturnsParams()
         {
             var existingParams = new List<IQueryParameter>() { new SkipParameter(15) };
