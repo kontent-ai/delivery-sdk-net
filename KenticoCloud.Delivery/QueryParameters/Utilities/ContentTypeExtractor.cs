@@ -9,14 +9,23 @@ namespace KenticoCloud.Delivery.QueryParameters.Utilities
     {
         internal IEnumerable<IQueryParameter> ExtractParameters<T>(IEnumerable<IQueryParameter> parameters = null)
         {
-            var contentTypeCodenameRetrieved = TryGetContentTypeCodename(typeof(T), out string contentTypeCodename);
             var enhancedParameters = parameters != null ? new List<IQueryParameter>(parameters) : new List<IQueryParameter>();
-
-            if (contentTypeCodenameRetrieved && (parameters == null || !parameters.Any(p => p.GetType() == typeof(EqualsFilter) && (p as EqualsFilter).ElementOrAttributePath.Equals("system.type", StringComparison.Ordinal))))
+            
+            if (!IsAlreadyInParameters(parameters) && TryGetContentTypeCodename(typeof(T), out string contentTypeCodename))
             {
                 enhancedParameters.Add(new EqualsFilter("system.type", contentTypeCodename));
             }
             return enhancedParameters;
+        }
+
+        private bool IsAlreadyInParameters(IEnumerable<IQueryParameter> parameters)
+        {
+            var typeFilterExists = parameters?
+                .OfType<EqualsFilter>()
+                .Any(filter => filter
+                    .ElementOrAttributePath
+                    .Equals("system.type", StringComparison.Ordinal));
+            return typeFilterExists ?? false;
         }
 
         internal bool TryGetContentTypeCodename(Type contentType, out string codename)
