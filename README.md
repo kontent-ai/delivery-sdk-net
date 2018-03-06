@@ -15,7 +15,7 @@ The SDK targets the [.NET Standard 1.3](https://docs.microsoft.com/en-us/dotnet/
 
 The `DeliveryClient` class is the main class of the SDK. Using this class, you can retrieve content from your Kentico Cloud projects.
 
-To create an instance of the class, you need to provide a [project ID](https://developer.kenticocloud.com/docs/using-delivery-api#section-getting-project-id).
+To create an instance of the class, you need to provide a [project ID](https://developer.kenticocloud.com/v1/docs/getting-content#section-getting-content-items).
 
 ```csharp
 // Initializes an instance of the DeliveryClient client
@@ -29,7 +29,7 @@ You can also provide the project ID and other parameters by passing the [`Delive
 * `PreviewApiKey` – sets the Delivery Preview API key. See [previewing unpublished content](#previewing-unpublished-content).
 * `UseSecuredProductionApi` – determines whether to authenticate against the production Delivery API with an API key.
 * `SecuredProductionApiKey` – sets the production Delivery API key.
-* `WaitForLoadingNewContent` – makes the client instance wait while fetching updated content, useful when acting upon [webhook calls](https://developer.kenticocloud.com/docs/webhooks#section-requesting-new-content).
+* `WaitForLoadingNewContent` – makes the client instance wait while fetching updated content, useful when acting upon [webhook calls](https://developticocloud.com/docs/webhooks#section-requesting-new-content).
 
 For advanced configuration options using Dependency Injection and ASP.NET Core Configuration API, see the SDK's [wiki](https://github.com/Kentico/delivery-sdk-net/wiki/Using-the-ASP.NET-Core-Configuration-API-and-DI-to-Instantiate-the-DeliveryClient).
 
