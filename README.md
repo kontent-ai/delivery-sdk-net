@@ -49,7 +49,7 @@ DeliveryItemListingResponse listingResponse = await client.GetItemsAsync();
 
 ### Filtering retrieved data
 
-The SDK supports full scale of the API querying and filtering capabilities as described in the [API reference](https://developer.kenticocloud.com/reference#filtering-content-items).
+The SDK supports full scale of the API querying and filtering capabilities as described in the [API reference](https://developer.kenticocloud.com/reference#content-filtering).
 
 ```csharp
 // Retrieves a list of the specified elements from the first 10 content items of
