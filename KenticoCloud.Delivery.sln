@@ -7,6 +7,10 @@ Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "KenticoCloud.Delivery", "Ke
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "KenticoCloud.Delivery.Tests", "KenticoCloud.Delivery.Tests\KenticoCloud.Delivery.Tests.csproj", "{B9384D2F-AD84-470C-A44E-DCAAA51F73D4}"
 EndProject
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "KenticoCloud.Delivery.Rx", "KenticoCloud.Delivery.Rx\KenticoCloud.Delivery.Rx.csproj", "{5D071941-1892-4D67-8B36-C8BC08B6DB6A}"
+EndProject
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "KenticoCloud.Delivery.Rx.Tests", "KenticoCloud.Delivery.Rx.Tests\KenticoCloud.Delivery.Rx.Tests.csproj", "{0B9D8A07-D8E7-4960-9940-CEA0C5C66BCD}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -21,8 +25,19 @@ Global
 		{B9384D2F-AD84-470C-A44E-DCAAA51F73D4}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{B9384D2F-AD84-470C-A44E-DCAAA51F73D4}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{B9384D2F-AD84-470C-A44E-DCAAA51F73D4}.Release|Any CPU.Build.0 = Release|Any CPU
+		{5D071941-1892-4D67-8B36-C8BC08B6DB6A}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{5D071941-1892-4D67-8B36-C8BC08B6DB6A}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{5D071941-1892-4D67-8B36-C8BC08B6DB6A}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{5D071941-1892-4D67-8B36-C8BC08B6DB6A}.Release|Any CPU.Build.0 = Release|Any CPU
+		{0B9D8A07-D8E7-4960-9940-CEA0C5C66BCD}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{0B9D8A07-D8E7-4960-9940-CEA0C5C66BCD}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{0B9D8A07-D8E7-4960-9940-CEA0C5C66BCD}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{0B9D8A07-D8E7-4960-9940-CEA0C5C66BCD}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
+	EndGlobalSection
+	GlobalSection(ExtensibilityGlobals) = postSolution
+		SolutionGuid = {AF04E26B-744D-4957-A0B9-EC44040D6826}
 	EndGlobalSection
 EndGlobal

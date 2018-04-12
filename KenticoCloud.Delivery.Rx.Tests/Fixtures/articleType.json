@@ -1,0 +1,51 @@
+﻿{
+  "system": {
+    "id": "b7aa4a53-d9b1-48cf-b7a6-ed0b182c4b89",
+    "name": "Article",
+    "codename": "article",
+    "last_modified": "2017-08-02T07:33:19.8599559Z"
+  },
+  "elements": {
+    "personas": {
+      "type": "taxonomy",
+      "name": "Personas",
+      "taxonomy_group": "personas"
+    },
+    "title": {
+      "type": "text",
+      "name": "Title"
+    },
+    "teaser_image": {
+      "type": "asset",
+      "name": "Teaser image"
+    },
+    "post_date": {
+      "type": "date_time",
+      "name": "Post date"
+    },
+    "summary": {
+      "type": "text",
+      "name": "Summary"
+    },
+    "body_copy": {
+      "type": "rich_text",
+      "name": "Body Copy"
+    },
+    "related_articles": {
+      "type": "modular_content",
+      "name": "Related articles"
+    },
+    "meta_keywords": {
+      "type": "text",
+      "name": "Meta keywords"
+    },
+    "meta_description": {
+      "type": "text",
+      "name": "Meta description"
+    },
+    "url_pattern": {
+      "type": "url_slug",
+      "name": "URL pattern"
+    }
+  }
+}

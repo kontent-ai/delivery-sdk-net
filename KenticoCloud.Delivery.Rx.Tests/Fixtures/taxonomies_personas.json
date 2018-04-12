@@ -1,0 +1,42 @@
+﻿{
+  "system": {
+    "id": "f30c7f72-e9ab-8832-2a57-62944a038809",
+    "name": "Personas",
+    "codename": "personas",
+    "last_modified": "2016-10-20T13:24:00.3200182Z"
+  },
+  "terms": [
+    {
+      "name": "Coffee expert",
+      "codename": "coffee_expert",
+      "terms": [
+        {
+          "name": "Barista",
+          "codename": "barista",
+          "terms": []
+        },
+        {
+          "name": "Cafe owner",
+          "codename": "cafe_owner",
+          "terms": []
+        }
+      ]
+    },
+    {
+      "name": "Coffee enthusiast",
+      "codename": "coffee_enthusiast",
+      "terms": [
+        {
+          "name": "Coffee lover",
+          "codename": "coffee_lover",
+          "terms": []
+        },
+        {
+          "name": "Coffee blogger",
+          "codename": "coffee_blogger",
+          "terms": []
+        }
+      ]
+    }
+  ]
+}
