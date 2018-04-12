@@ -236,14 +236,14 @@ namespace KenticoCloud.Delivery.Rx.Tests
         private void MockArticles()
         {
             mockHttp.When($"{baseUrl}/items")
-                .WithQueryString(new[] { new KeyValuePair<string, string>("system.type", Article.Codename), new KeyValuePair<string, string>("elements.personas[contains]", "barista") }) //$"system.type={Article.Codename}"
+                .WithQueryString(new[] { new KeyValuePair<string, string>("system.type", Article.Codename), new KeyValuePair<string, string>("elements.personas[contains]", "barista") })
                 .Respond("application/json", File.ReadAllText(Path.Combine(AppContext.BaseDirectory, "Fixtures\\articles.json")));
         }
 
         private void MockType()
         {
             mockHttp.When($"{baseUrl}/types/{Article.Codename}")
-                .Respond("application/json", File.ReadAllText(Path.Combine(AppContext.BaseDirectory, "Fixtures\\articleType.json")));
+                .Respond("application/json", File.ReadAllText(Path.Combine(AppContext.BaseDirectory, "Fixtures\\article-type.json")));
         }
 
         private void MockTypes()
