@@ -1,5 +1,6 @@
 using System;
 using System.Collections;
+using System.Collections.Generic;
 using System.IO;
 using System.Linq;
 using System.Reactive.Linq;
@@ -26,8 +27,7 @@ namespace KenticoCloud.Delivery.Rx.Tests
         [Fact]
         public async void ItemJsonRetrieved()
         {
-            var factory = GetObservableFactory(MockItem);
-            var observable = factory.ItemJson(BEVERAGES_IDENTIFIER);
+            var observable = DeliveryObservableFactory.ItemJson(GetDeliveryClient(MockItem), BEVERAGES_IDENTIFIER, "language=es-ES");
             var itemJson = await observable.FirstOrDefaultAsync();
 
             Assert.Single(observable.ToEnumerable());
@@ -37,8 +37,7 @@ namespace KenticoCloud.Delivery.Rx.Tests
         [Fact]
         public void ItemsJsonRetrieved()
         {
-            var factory = GetObservableFactory(MockItems);
-            var observable = factory.ItemsJson("limit=2", "skip=1");
+            var observable = DeliveryObservableFactory.ItemsJson(GetDeliveryClient(MockItems), "limit=2", "skip=1");
             var itemsJson = observable.ToEnumerable().ToList();
 
             Assert.NotEmpty(itemsJson);
@@ -48,8 +47,7 @@ namespace KenticoCloud.Delivery.Rx.Tests
         [Fact]
         public async void ContentItemRetrieved()
         {
-            var factory = GetObservableFactory(MockItem);
-            var observable = factory.Item(BEVERAGES_IDENTIFIER);
+            var observable = DeliveryObservableFactory.Item(GetDeliveryClient(MockItem), BEVERAGES_IDENTIFIER, new LanguageParameter("es-ES"));
             var item = await observable.FirstOrDefaultAsync();
 
             Assert.NotNull(item);
@@ -59,8 +57,7 @@ namespace KenticoCloud.Delivery.Rx.Tests
         [Fact]
         public async void TypedItemRetrieved()
         {
-            var factory = GetObservableFactory(MockItem);
-            var observable = factory.Item<Article>(BEVERAGES_IDENTIFIER);
+            var observable = DeliveryObservableFactory.Item<Article>(GetDeliveryClient(MockItem), BEVERAGES_IDENTIFIER, new LanguageParameter("es-ES"));
             var item = await observable.FirstOrDefaultAsync();
 
             Assert.NotNull(item);
@@ -70,8 +67,7 @@ namespace KenticoCloud.Delivery.Rx.Tests
         [Fact]
         public async void RuntimeTypedItemRetrieved()
         {
-            var factory = GetObservableFactory(MockItem);
-            var observable = factory.Item<object>(BEVERAGES_IDENTIFIER);
+            var observable = DeliveryObservableFactory.Item<object>(GetDeliveryClient(MockItem), BEVERAGES_IDENTIFIER, new LanguageParameter("es-ES"));
             var item = await observable.FirstOrDefaultAsync();
 
             Assert.IsType<Article>(item);
@@ -82,8 +78,7 @@ namespace KenticoCloud.Delivery.Rx.Tests
         [Fact]
         public void ContentItemsRetrieved()
         {
-            var factory = GetObservableFactory(MockItems);
-            var observable = factory.Items(new LimitParameter(2), new SkipParameter(1));
+            var observable = DeliveryObservableFactory.Items(GetDeliveryClient(MockItems), new LimitParameter(2), new SkipParameter(1));
             var items = observable.ToEnumerable().ToList();
 
             Assert.NotEmpty(items);
@@ -94,8 +89,7 @@ namespace KenticoCloud.Delivery.Rx.Tests
         [Fact]
         public void TypedItemsRetrieved()
         {
-            var factory = GetObservableFactory(MockArticles);
-            var observable = factory.Items<Article>();
+            var observable = DeliveryObservableFactory.Items<Article>(GetDeliveryClient(MockArticles), new ContainsFilter("elements.personas", "barista"));
             var items = observable.ToEnumerable().ToList();
 
             Assert.NotEmpty(items);
@@ -106,8 +100,7 @@ namespace KenticoCloud.Delivery.Rx.Tests
         [Fact]
         public void RuntimeTypedItemsRetrieved()
         {
-            var factory = GetObservableFactory(MockArticles);
-            var observable = factory.Items<Article>();
+            var observable = DeliveryObservableFactory.Items<Article>(GetDeliveryClient(MockArticles), new ContainsFilter("elements.personas", "barista"));
             var articles = observable.ToEnumerable().ToList();
 
             Assert.NotEmpty(articles);
@@ -118,8 +111,7 @@ namespace KenticoCloud.Delivery.Rx.Tests
         [Fact]
         public async void TypeJsonRetrieved()
         {
-            var factory = GetObservableFactory(MockType);
-            var observable = factory.TypeJson(Article.Codename);
+            var observable = DeliveryObservableFactory.TypeJson(GetDeliveryClient(MockType), Article.Codename);
             var type = await observable.FirstOrDefaultAsync();
 
             Assert.Single(observable.ToEnumerable());
@@ -129,8 +121,7 @@ namespace KenticoCloud.Delivery.Rx.Tests
         [Fact]
         public void TypesJsonRetrieved()
         {
-            var factory = GetObservableFactory(MockTypes);
-            var observable = factory.TypesJson();
+            var observable = DeliveryObservableFactory.TypesJson(GetDeliveryClient(MockTypes), "skip=2");
             var types = observable.ToEnumerable().ToList();
 
             Assert.NotEmpty(types);
@@ -140,8 +131,7 @@ namespace KenticoCloud.Delivery.Rx.Tests
         [Fact]
         public async void TypeRetrieved()
         {
-            var factory = GetObservableFactory(MockType);
-            var observable = factory.Type(Article.Codename);
+            var observable = DeliveryObservableFactory.Type(GetDeliveryClient(MockType), Article.Codename);
             var type = await observable.FirstOrDefaultAsync();
 
             Assert.Single(observable.ToEnumerable());
@@ -152,8 +142,7 @@ namespace KenticoCloud.Delivery.Rx.Tests
         [Fact]
         public void TypesRetrieved()
         {
-            var factory = GetObservableFactory(MockTypes);
-            var observable = factory.Types();
+            var observable = DeliveryObservableFactory.Types(GetDeliveryClient(MockTypes), new SkipParameter(2));
             var types = observable.ToEnumerable().ToList();
 
             Assert.NotEmpty(types);
@@ -164,8 +153,7 @@ namespace KenticoCloud.Delivery.Rx.Tests
         [Fact]
         public async void ElementRetrieved()
         {
-            var factory = GetObservableFactory(MockElement);
-            var observable = factory.Element(Article.Codename, Article.TitleCodename);
+            var observable = DeliveryObservableFactory.Element(GetDeliveryClient(MockElement), Article.Codename, Article.TitleCodename);
             var element = await observable.FirstOrDefaultAsync();
 
             Assert.NotNull(element);
@@ -179,8 +167,7 @@ namespace KenticoCloud.Delivery.Rx.Tests
         [Fact]
         public async void TaxonomyJsonRetrieved()
         {
-            var factory = GetObservableFactory(MockTaxonomy);
-            var observable = factory.TaxonomyJson("personas");
+            var observable = DeliveryObservableFactory.TaxonomyJson(GetDeliveryClient(MockTaxonomy), "personas");
             var taxonomyJson = await observable.FirstOrDefaultAsync();
 
             Assert.NotNull(taxonomyJson);
@@ -191,8 +178,7 @@ namespace KenticoCloud.Delivery.Rx.Tests
         [Fact]
         public void TaxonomiesJsonRetrieved()
         {
-            var factory = GetObservableFactory(MockTaxonomies);
-            var observable = factory.TaxonomiesJson("skip=1");
+            var observable = DeliveryObservableFactory.TaxonomiesJson(GetDeliveryClient(MockTaxonomies), "skip=1");
             var taxonomiesJson = observable.ToEnumerable().ToList();
 
             Assert.NotNull(taxonomiesJson);
@@ -203,8 +189,7 @@ namespace KenticoCloud.Delivery.Rx.Tests
         [Fact]
         public async void TaxonomyRetrieved()
         {
-            var factory = GetObservableFactory(MockTaxonomy);
-            var observable = factory.Taxonomy("personas");
+            var observable = DeliveryObservableFactory.Taxonomy(GetDeliveryClient(MockTaxonomy), "personas");
             var taxonomy = await observable.FirstOrDefaultAsync();
 
             Assert.NotNull(taxonomy);
@@ -215,8 +200,7 @@ namespace KenticoCloud.Delivery.Rx.Tests
         [Fact]
         public void TaxonomiesRetrieved()
         {
-            var factory = GetObservableFactory(MockTaxonomies);
-            var observable = factory.Taxonomies(new SkipParameter(1));
+            var observable = DeliveryObservableFactory.Taxonomies(GetDeliveryClient(MockTaxonomies), new SkipParameter(1));
             var taxonomies = observable.ToEnumerable().ToList();
 
             Assert.NotEmpty(taxonomies);
@@ -224,26 +208,21 @@ namespace KenticoCloud.Delivery.Rx.Tests
             taxonomies.ForEach(t => Assert.NotNull(t.Terms));
         }
 
-        private DeliveryObservableFactory GetObservableFactory(Action mockAction)
+        private IDeliveryClient GetDeliveryClient(Action mockAction)
         {
             mockAction();
             var httpClient = mockHttp.ToHttpClient();
 
-            var observableFactory = new DeliveryObservableFactory(guid)
+            return new DeliveryClient(guid)
             {
-                DeliveryClient = new DeliveryClient(guid)
-                {
-                    CodeFirstModelProvider = { TypeProvider = new CustomTypeProvider() },
-                    HttpClient = httpClient
-                }
+                CodeFirstModelProvider = { TypeProvider = new CustomTypeProvider() },
+                HttpClient = httpClient
             };
-
-            return observableFactory;
         }
 
         private void MockItem()
         {
-            mockHttp.When($"{baseUrl}/items/{BEVERAGES_IDENTIFIER}")
+            mockHttp.When($"{baseUrl}/items/{BEVERAGES_IDENTIFIER}?language=es-ES")
                 .Respond("application/json", File.ReadAllText(Path.Combine(AppContext.BaseDirectory, "Fixtures\\coffee_beverages_explained.json")));
         }
 
@@ -257,7 +236,7 @@ namespace KenticoCloud.Delivery.Rx.Tests
         private void MockArticles()
         {
             mockHttp.When($"{baseUrl}/items")
-                .WithQueryString($"system.type={Article.Codename}")
+                .WithQueryString(new[] { new KeyValuePair<string, string>("system.type", Article.Codename), new KeyValuePair<string, string>("elements.personas[contains]", "barista") }) //$"system.type={Article.Codename}"
                 .Respond("application/json", File.ReadAllText(Path.Combine(AppContext.BaseDirectory, "Fixtures\\articles.json")));
         }
 
@@ -269,7 +248,7 @@ namespace KenticoCloud.Delivery.Rx.Tests
 
         private void MockTypes()
         {
-            mockHttp.When($"{baseUrl}/types")
+            mockHttp.When($"{baseUrl}/types?skip=2")
                 .Respond("application/json", File.ReadAllText(Path.Combine(AppContext.BaseDirectory, "Fixtures\\types.json")));
         }
 

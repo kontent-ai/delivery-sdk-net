@@ -3,156 +3,128 @@ using System.Collections.Generic;
 using System.Reactive.Disposables;
 using System.Reactive.Linq;
 
-using KenticoCloud.Delivery.InlineContentItems;
-using Microsoft.Extensions.Options;
 using Newtonsoft.Json.Linq;
 
 namespace KenticoCloud.Delivery.Rx
 {
-    public class DeliveryObservableFactory
+    public static class DeliveryObservableFactory
     {
-        #region "Properties"
-
-        public DeliveryClient DeliveryClient { get; set; }
-
-        #endregion
-
-        #region "Constructors"
-
-        public DeliveryObservableFactory(DeliveryOptions deliveryOptions)
-        {
-            DeliveryClient = new DeliveryClient(deliveryOptions);
-        }
-
-        public DeliveryObservableFactory(IOptions<DeliveryOptions> deliveryOptions, IContentLinkUrlResolver contentLinkUrlResolver, IInlineContentItemsProcessor contentItemsProcessor, ICodeFirstModelProvider codeFirstModelProvider)
-        {
-            DeliveryClient = new DeliveryClient(deliveryOptions, contentLinkUrlResolver, contentItemsProcessor, codeFirstModelProvider);
-        }
-
-        public DeliveryObservableFactory(string projectId)
-        {
-            DeliveryClient = !string.IsNullOrEmpty(projectId) ? new DeliveryClient(projectId) : throw new ArgumentNullException(nameof(projectId));
-        }
-
-        public DeliveryObservableFactory(string projectId, string previewApiKey)
-        {
-            DeliveryClient = new DeliveryClient(projectId, previewApiKey);
-        }
-
-        #endregion
-
         #region "Public methods"
 
-        public IObservable<JObject> ItemJson(string codename, params string[] parameters)
+        public static IObservable<JObject> ItemJson(IDeliveryClient deliveryClient, string codename, params string[] parameters)
         {
-            return GetJsonObservableOfOne(() => DeliveryClient.GetItemJsonAsync(codename, parameters).Result);
+            return GetJsonObservableOfOne(() => deliveryClient?.GetItemJsonAsync(codename, parameters)?.Result);
         }
 
-        public IObservable<JObject> ItemsJson(params string[] parameters)
+        public static IObservable<JObject> ItemsJson(IDeliveryClient deliveryClient, params string[] parameters)
         {
-            return GetJsonObservableOfOne(() => DeliveryClient.GetItemsJsonAsync(parameters).Result);
+            return GetJsonObservableOfOne(() => deliveryClient?.GetItemsJsonAsync(parameters)?.Result);
         }
 
-        public IObservable<ContentItem> Item(string codename, params IQueryParameter[] parameters)
+        public static IObservable<ContentItem> Item(IDeliveryClient deliveryClient, string codename, params IQueryParameter[] parameters)
         {
-            return Item(codename, (IEnumerable<IQueryParameter>)parameters);
+            return Item(deliveryClient, codename, (IEnumerable<IQueryParameter>)parameters);
         }
 
-        public IObservable<T> Item<T>(string codename, params IQueryParameter[] parameters)
+        public static IObservable<T> Item<T>(IDeliveryClient deliveryClient, string codename, params IQueryParameter[] parameters)
+            where T : class
         {
-            return Item<T>(codename, (IEnumerable<IQueryParameter>)parameters);
+            return Item<T>(deliveryClient, codename, (IEnumerable<IQueryParameter>)parameters);
         }
 
-        public IObservable<ContentItem> Item(string codename, IEnumerable<IQueryParameter> parameters)
+        public static IObservable<ContentItem> Item(IDeliveryClient deliveryClient, string codename, IEnumerable<IQueryParameter> parameters)
         {
-            return GetObservableOfOne(() => DeliveryClient.GetItemAsync(codename, parameters).Result.Item);
+            return GetObservableOfOne(() => deliveryClient?.GetItemAsync(codename, parameters)?.Result?.Item);
         }
 
-        public IObservable<T> Item<T>(string codename, IEnumerable<IQueryParameter> parameters = null)
+        public static IObservable<T> Item<T>(IDeliveryClient deliveryClient, string codename, IEnumerable<IQueryParameter> parameters = null)
+            where T : class
         {
-            return GetObservableOfOne(() => DeliveryClient.GetItemAsync<T>(codename, parameters).Result.Item);
+            return GetObservableOfOne(() => deliveryClient?.GetItemAsync<T>(codename, parameters)?.Result?.Item);
         }
 
-        public IObservable<ContentItem> Items(params IQueryParameter[] parameters)
+        public static IObservable<ContentItem> Items(IDeliveryClient deliveryClient, params IQueryParameter[] parameters)
         {
-            return Items((IEnumerable<IQueryParameter>)parameters);
+            return Items(deliveryClient, (IEnumerable<IQueryParameter>)parameters);
         }
 
-        public IObservable<ContentItem> Items(IEnumerable<IQueryParameter> parameters)
+        public static IObservable<ContentItem> Items(IDeliveryClient deliveryClient, IEnumerable<IQueryParameter> parameters)
         {
-            return (DeliveryClient.GetItemsAsync(parameters)).Result.Items.ToObservable();
+            return (deliveryClient?.GetItemsAsync(parameters))?.Result?.Items?.ToObservable();
         }
 
-        public IObservable<T> Items<T>(params IQueryParameter[] parameters)
+        public static IObservable<T> Items<T>(IDeliveryClient deliveryClient, params IQueryParameter[] parameters)
+            where T : class
         {
-            return Items<T>((IEnumerable<IQueryParameter>)parameters);
+            return Items<T>(deliveryClient, (IEnumerable<IQueryParameter>)parameters);
         }
 
-        public IObservable<T> Items<T>(IEnumerable<IQueryParameter> parameters)
+        public static IObservable<T> Items<T>(IDeliveryClient deliveryClient, IEnumerable<IQueryParameter> parameters)
+            where T : class
         {
-            return (DeliveryClient.GetItemsAsync<T>(parameters)).Result.Items.ToObservable();
+            return (deliveryClient?.GetItemsAsync<T>(parameters))?.Result?.Items?.ToObservable();
         }
 
-        public IObservable<JObject> TypeJson(string codename)
+        public static IObservable<JObject> TypeJson(IDeliveryClient deliveryClient, string codename)
         {
-            return GetJsonObservableOfOne(() => DeliveryClient.GetTypeJsonAsync(codename).Result);
+            return GetJsonObservableOfOne(() => deliveryClient?.GetTypeJsonAsync(codename)?.Result);
         }
 
-        public IObservable<JObject> TypesJson(params string[] parameters)
+        public static IObservable<JObject> TypesJson(IDeliveryClient deliveryClient, params string[] parameters)
         {
-            return GetJsonObservableOfOne(() => DeliveryClient.GetTypesJsonAsync(parameters).Result);
+            return GetJsonObservableOfOne(() => deliveryClient?.GetTypesJsonAsync(parameters)?.Result);
         }
 
-        public IObservable<ContentType> Type(string codename)
+        public static IObservable<ContentType> Type(IDeliveryClient deliveryClient, string codename)
         {
-            return GetObservableOfOne(() => DeliveryClient.GetTypeAsync(codename).Result);
+            return GetObservableOfOne(() => deliveryClient?.GetTypeAsync(codename)?.Result);
         }
 
-        public IObservable<ContentType> Types(params IQueryParameter[] parameters)
+        public static IObservable<ContentType> Types(IDeliveryClient deliveryClient, params IQueryParameter[] parameters)
         {
-            return Types((IEnumerable<IQueryParameter>)parameters);
+            return Types(deliveryClient, (IEnumerable<IQueryParameter>)parameters);
         }
 
-        public IObservable<ContentType> Types(IEnumerable<IQueryParameter> parameters)
+        public static IObservable<ContentType> Types(IDeliveryClient deliveryClient, IEnumerable<IQueryParameter> parameters)
         {
-            return (DeliveryClient.GetTypesAsync(parameters)).Result.Types.ToObservable();
+            return (deliveryClient?.GetTypesAsync(parameters))?.Result?.Types?.ToObservable();
         }
 
-        public IObservable<ContentElement> Element(string contentTypeCodename, string contentElementCodename)
+        public static IObservable<ContentElement> Element(IDeliveryClient deliveryClient, string contentTypeCodename, string contentElementCodename)
         {
-            return GetObservableOfOne(() => DeliveryClient.GetContentElementAsync(contentTypeCodename, contentElementCodename).Result);
+            return GetObservableOfOne(() => deliveryClient?.GetContentElementAsync(contentTypeCodename, contentElementCodename)?.Result);
         }
 
-        public IObservable<JObject> TaxonomyJson(string codename)
+        public static IObservable<JObject> TaxonomyJson(IDeliveryClient deliveryClient, string codename)
         {
-            return GetJsonObservableOfOne(() => DeliveryClient.GetTaxonomyJsonAsync(codename).Result);
+            return GetJsonObservableOfOne(() => deliveryClient?.GetTaxonomyJsonAsync(codename)?.Result);
         }
 
-        public IObservable<JObject> TaxonomiesJson(params string[] parameters)
+        public static IObservable<JObject> TaxonomiesJson(IDeliveryClient deliveryClient, params string[] parameters)
         {
-            return GetJsonObservableOfOne(() => DeliveryClient.GetTaxonomiesJsonAsync(parameters).Result);
+            return GetJsonObservableOfOne(() => deliveryClient?.GetTaxonomiesJsonAsync(parameters)?.Result);
         }
 
-        public IObservable<TaxonomyGroup> Taxonomy(string codename)
+        public static IObservable<TaxonomyGroup> Taxonomy(IDeliveryClient deliveryClient, string codename)
         {
-            return GetObservableOfOne(() => DeliveryClient.GetTaxonomyAsync(codename).Result);
+            return GetObservableOfOne(() => deliveryClient?.GetTaxonomyAsync(codename)?.Result);
         }
 
-        public IObservable<TaxonomyGroup> Taxonomies(params IQueryParameter[] parameters)
+        public static IObservable<TaxonomyGroup> Taxonomies(IDeliveryClient deliveryClient, params IQueryParameter[] parameters)
         {
-            return Taxonomies((IEnumerable<IQueryParameter>)parameters);
+            return Taxonomies(deliveryClient, (IEnumerable<IQueryParameter>)parameters);
         }
 
-        public IObservable<TaxonomyGroup> Taxonomies(IEnumerable<IQueryParameter> parameters)
+        public static IObservable<TaxonomyGroup> Taxonomies(IDeliveryClient deliveryClient, IEnumerable<IQueryParameter> parameters)
         {
-            return (DeliveryClient.GetTaxonomiesAsync(parameters)).Result.Taxonomies.ToObservable();
+            return (deliveryClient?.GetTaxonomiesAsync(parameters))?.Result?.Taxonomies?.ToObservable();
         }
 
         #endregion
 
-        #region "Protected methods"
+        #region "Private methods"
 
-        protected IObservable<JObject> GetJsonObservableOfOne(Func<JObject> responseFactory)
+        private static IObservable<JObject> GetJsonObservableOfOne(Func<JObject> responseFactory)
         {
             return Observable.Create((IObserver<JObject> observer) =>
             {
@@ -160,7 +132,7 @@ namespace KenticoCloud.Delivery.Rx
 
                 if (response["error_code"] != null)
                 {
-                    observer.OnError(new Exception(response["message"].ToString()));
+                    observer.OnError(new Exception(response["message"]?.ToString()));
                 }
                 else
                 {
@@ -172,13 +144,13 @@ namespace KenticoCloud.Delivery.Rx
             });
         }
 
-        protected IObservable<T> GetObservableOfOne<T>(Func<T> valueFactory)
+        private static IObservable<T> GetObservableOfOne<T>(Func<T> responseFactory)
         {
             return Observable.Create((IObserver<T> observer) =>
             {
                 try
                 {
-                    observer.OnNext(valueFactory());
+                    observer.OnNext(responseFactory());
                     observer.OnCompleted();
                 }
                 catch (Exception ex)
