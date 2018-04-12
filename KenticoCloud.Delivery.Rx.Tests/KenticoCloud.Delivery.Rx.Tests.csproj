@@ -7,6 +7,40 @@
   </PropertyGroup>
 
   <ItemGroup>
+    <None Remove="Fixtures\article-type.json" />
+    <None Remove="Fixtures\articles.json" />
+    <None Remove="Fixtures\coffee_beverages_explained.json" />
+    <None Remove="Fixtures\items.json" />
+    <None Remove="Fixtures\taxonomies_multiple.json" />
+    <None Remove="Fixtures\taxonomies_personas.json" />
+    <None Remove="Fixtures\types.json" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <Content Include="Fixtures\article-type.json">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </Content>
+    <Content Include="Fixtures\articles.json">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </Content>
+    <Content Include="Fixtures\coffee_beverages_explained.json">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </Content>
+    <Content Include="Fixtures\items.json">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </Content>
+    <Content Include="Fixtures\taxonomies_multiple.json">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </Content>
+    <Content Include="Fixtures\taxonomies_personas.json">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </Content>
+    <Content Include="Fixtures\types.json">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </Content>
+  </ItemGroup>
+
+  <ItemGroup>
     <PackageReference Include="Microsoft.NET.Test.Sdk" Version="15.7.0" />
     <PackageReference Include="RichardSzalay.MockHttp" Version="3.3.0" />
     <PackageReference Include="xunit" Version="2.3.1" />
@@ -20,30 +54,6 @@
 
   <ItemGroup>
     <Folder Include="Models\ContentTypes\Partials\" />
-  </ItemGroup>
-
-  <ItemGroup>
-    <None Update="Fixtures\articles.json">
-      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
-    </None>
-    <None Update="Fixtures\article-type.json">
-      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
-    </None>
-    <None Update="Fixtures\coffee_beverages_explained.json">
-      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
-    </None>
-    <None Update="Fixtures\items.json">
-      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
-    </None>
-    <None Update="Fixtures\taxonomies_multiple.json">
-      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
-    </None>
-    <None Update="Fixtures\taxonomies_personas.json">
-      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
-    </None>
-    <None Update="Fixtures\types.json">
-      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
-    </None>
   </ItemGroup>
 
 </Project>
