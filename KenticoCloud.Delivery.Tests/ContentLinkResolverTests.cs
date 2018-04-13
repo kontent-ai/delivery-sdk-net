@@ -116,7 +116,7 @@ namespace KenticoCloud.Delivery.Tests
             string url = $"https://deliver.kenticocloud.com/{guid}/items/coffee_processing_techniques";
 
             mockHttp.When(url).
-               Respond("application/json", File.ReadAllText(Path.Combine(AppContext.BaseDirectory, "Fixtures\\ContentLinkResolver\\coffee_processing_techniques.json")));
+               Respond("application/json", File.ReadAllText(Path.Combine(Environment.CurrentDirectory, "Fixtures\\ContentLinkResolver\\coffee_processing_techniques.json")));
 
             var httpClient = mockHttp.ToHttpClient();
             DeliveryClient client = new DeliveryClient(guid)
