@@ -223,33 +223,33 @@ namespace KenticoCloud.Delivery.Rx.Tests
         private void MockItem()
         {
             mockHttp.When($"{baseUrl}/items/{BEVERAGES_IDENTIFIER}?language=es-ES")
-                .Respond("application/json", File.ReadAllText(Path.Combine(AppContext.BaseDirectory, "Fixtures\\coffee_beverages_explained.json")));
+                .Respond("application/json", File.ReadAllText(Path.Combine(Environment.CurrentDirectory, "Fixtures\\coffee_beverages_explained.json")));
         }
 
         private void MockItems()
         {
             mockHttp.When($"{baseUrl}/items")
                 .WithQueryString("limit=2&skip=1")
-                .Respond("application/json", File.ReadAllText(Path.Combine(AppContext.BaseDirectory, "Fixtures\\items.json")));
+                .Respond("application/json", File.ReadAllText(Path.Combine(Environment.CurrentDirectory, "Fixtures\\items.json")));
         }
 
         private void MockArticles()
         {
             mockHttp.When($"{baseUrl}/items")
                 .WithQueryString(new[] { new KeyValuePair<string, string>("system.type", Article.Codename), new KeyValuePair<string, string>("elements.personas[contains]", "barista") })
-                .Respond("application/json", File.ReadAllText(Path.Combine(AppContext.BaseDirectory, "Fixtures\\articles.json")));
+                .Respond("application/json", File.ReadAllText(Path.Combine(Environment.CurrentDirectory, "Fixtures\\articles.json")));
         }
 
         private void MockType()
         {
             mockHttp.When($"{baseUrl}/types/{Article.Codename}")
-                .Respond("application/json", File.ReadAllText(Path.Combine(AppContext.BaseDirectory, "Fixtures\\article-type.json")));
+                .Respond("application/json", File.ReadAllText(Path.Combine(Environment.CurrentDirectory, "Fixtures\\article-type.json")));
         }
 
         private void MockTypes()
         {
             mockHttp.When($"{baseUrl}/types?skip=2")
-                .Respond("application/json", File.ReadAllText(Path.Combine(AppContext.BaseDirectory, "Fixtures\\types.json")));
+                .Respond("application/json", File.ReadAllText(Path.Combine(Environment.CurrentDirectory, "Fixtures\\types.json")));
         }
 
         private void MockElement()
@@ -261,14 +261,14 @@ namespace KenticoCloud.Delivery.Rx.Tests
         private void MockTaxonomy()
         {
             mockHttp.When($"{baseUrl}/taxonomies/personas")
-                .Respond("application/json", File.ReadAllText(Path.Combine(AppContext.BaseDirectory, "Fixtures\\taxonomies_personas.json")));
+                .Respond("application/json", File.ReadAllText(Path.Combine(Environment.CurrentDirectory, "Fixtures\\taxonomies_personas.json")));
         }
 
         private void MockTaxonomies()
         {
             mockHttp.When($"{baseUrl}/taxonomies")
                 .WithQueryString("skip=1")
-                .Respond("application/json", File.ReadAllText(Path.Combine(AppContext.BaseDirectory, "Fixtures\\taxonomies_multiple.json")));
+                .Respond("application/json", File.ReadAllText(Path.Combine(Environment.CurrentDirectory, "Fixtures\\taxonomies_multiple.json")));
         }
 
         private static void AssertItemPropertiesNotNull(ContentItem item)
