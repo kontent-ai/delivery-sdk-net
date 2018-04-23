@@ -10,14 +10,14 @@ using Xunit;
 
 namespace KenticoCloud.Delivery.Rx.Tests
 {
-    public class DeliveryObservableFactoryTests
+    public class DeliveryObservableProxyTests
     {
         private const string BEVERAGES_IDENTIFIER = "coffee_beverages_explained";
         readonly string guid = string.Empty;
         readonly string baseUrl = string.Empty;
         readonly MockHttpMessageHandler mockHttp;
 
-        public DeliveryObservableFactoryTests()
+        public DeliveryObservableProxyTests()
         {
             guid = Guid.NewGuid().ToString();
             baseUrl = $"https://deliver.kenticocloud.com/{guid}";
@@ -27,7 +27,7 @@ namespace KenticoCloud.Delivery.Rx.Tests
         [Fact]
         public async void ItemJsonRetrieved()
         {
-            var observable = DeliveryObservableFactory.ItemJson(GetDeliveryClient(MockItem), BEVERAGES_IDENTIFIER, "language=es-ES");
+            var observable = new DeliveryObservableProxy(GetDeliveryClient(MockItem)).GetItemJsonObservable(BEVERAGES_IDENTIFIER, "language=es-ES");
             var itemJson = await observable.FirstOrDefaultAsync();
 
             Assert.Single(observable.ToEnumerable());
@@ -37,17 +37,17 @@ namespace KenticoCloud.Delivery.Rx.Tests
         [Fact]
         public void ItemsJsonRetrieved()
         {
-            var observable = DeliveryObservableFactory.ItemsJson(GetDeliveryClient(MockItems), "limit=2", "skip=1");
+            var observable = new DeliveryObservableProxy(GetDeliveryClient(MockItems)).GetItemsJsonObservable("limit=2", "skip=1");
             var itemsJson = observable.ToEnumerable().ToList();
 
             Assert.NotEmpty(itemsJson);
-            Assert.InRange(itemsJson[0]["items"].Count(), 2, int.MaxValue);
+            Assert.Equal(2, itemsJson[0]["items"].Count());
         }
 
         [Fact]
         public async void ContentItemRetrieved()
         {
-            var observable = DeliveryObservableFactory.Item(GetDeliveryClient(MockItem), BEVERAGES_IDENTIFIER, new LanguageParameter("es-ES"));
+            var observable = new DeliveryObservableProxy(GetDeliveryClient(MockItem)).GetItemObservable(BEVERAGES_IDENTIFIER, new LanguageParameter("es-ES"));
             var item = await observable.FirstOrDefaultAsync();
 
             Assert.NotNull(item);
@@ -57,7 +57,7 @@ namespace KenticoCloud.Delivery.Rx.Tests
         [Fact]
         public async void TypedItemRetrieved()
         {
-            var observable = DeliveryObservableFactory.Item<Article>(GetDeliveryClient(MockItem), BEVERAGES_IDENTIFIER, new LanguageParameter("es-ES"));
+            var observable = new DeliveryObservableProxy(GetDeliveryClient(MockItem)).GetItemObservable<Article>(BEVERAGES_IDENTIFIER, new LanguageParameter("es-ES"));
             var item = await observable.FirstOrDefaultAsync();
 
             Assert.NotNull(item);
@@ -67,7 +67,7 @@ namespace KenticoCloud.Delivery.Rx.Tests
         [Fact]
         public async void RuntimeTypedItemRetrieved()
         {
-            var observable = DeliveryObservableFactory.Item<object>(GetDeliveryClient(MockItem), BEVERAGES_IDENTIFIER, new LanguageParameter("es-ES"));
+            var observable = new DeliveryObservableProxy(GetDeliveryClient(MockItem)).GetItemObservable<object>(BEVERAGES_IDENTIFIER, new LanguageParameter("es-ES"));
             var item = await observable.FirstOrDefaultAsync();
 
             Assert.IsType<Article>(item);
@@ -78,40 +78,40 @@ namespace KenticoCloud.Delivery.Rx.Tests
         [Fact]
         public void ContentItemsRetrieved()
         {
-            var observable = DeliveryObservableFactory.Items(GetDeliveryClient(MockItems), new LimitParameter(2), new SkipParameter(1));
+            var observable = new DeliveryObservableProxy(GetDeliveryClient(MockItems)).GetItemsObservable(new LimitParameter(2), new SkipParameter(1));
             var items = observable.ToEnumerable().ToList();
 
             Assert.NotEmpty(items);
-            Assert.InRange(items.Count, 2, int.MaxValue);
-            items.ForEach(i => AssertItemPropertiesNotNull(i));
+            Assert.Equal(2, items.Count);
+            Assert.All(items, item => AssertItemPropertiesNotNull(item));
         }
 
         [Fact]
         public void TypedItemsRetrieved()
         {
-            var observable = DeliveryObservableFactory.Items<Article>(GetDeliveryClient(MockArticles), new ContainsFilter("elements.personas", "barista"));
+            var observable = new DeliveryObservableProxy(GetDeliveryClient(MockArticles)).GetItemsObservable<Article>(new ContainsFilter("elements.personas", "barista"));
             var items = observable.ToEnumerable().ToList();
 
             Assert.NotEmpty(items);
-            Assert.InRange(items.Count, 2, int.MaxValue);
-            items.ForEach(a => AssertArticlePropertiesNotNull(a));
+            Assert.Equal(6, items.Count);
+            Assert.All(items, article => AssertArticlePropertiesNotNull(article));
         }
 
         [Fact]
         public void RuntimeTypedItemsRetrieved()
         {
-            var observable = DeliveryObservableFactory.Items<Article>(GetDeliveryClient(MockArticles), new ContainsFilter("elements.personas", "barista"));
+            var observable = new DeliveryObservableProxy(GetDeliveryClient(MockArticles)).GetItemsObservable<Article>(new ContainsFilter("elements.personas", "barista"));
             var articles = observable.ToEnumerable().ToList();
 
             Assert.NotEmpty(articles);
-            articles.ForEach(a => Assert.IsType<Article>(a));
-            articles.ForEach(a => AssertArticlePropertiesNotNull(a));
+            Assert.All(articles, article => Assert.IsType<Article>(article));
+            Assert.All(articles, article => AssertArticlePropertiesNotNull(article));
         }
 
         [Fact]
         public async void TypeJsonRetrieved()
         {
-            var observable = DeliveryObservableFactory.TypeJson(GetDeliveryClient(MockType), Article.Codename);
+            var observable = new DeliveryObservableProxy(GetDeliveryClient(MockType)).GetTypeJsonObservable(Article.Codename);
             var type = await observable.FirstOrDefaultAsync();
 
             Assert.Single(observable.ToEnumerable());
@@ -121,17 +121,17 @@ namespace KenticoCloud.Delivery.Rx.Tests
         [Fact]
         public void TypesJsonRetrieved()
         {
-            var observable = DeliveryObservableFactory.TypesJson(GetDeliveryClient(MockTypes), "skip=2");
+            var observable = new DeliveryObservableProxy(GetDeliveryClient(MockTypes)).GetTypesJsonObservable("skip=2");
             var types = observable.ToEnumerable().ToList();
 
             Assert.NotEmpty(types);
-            Assert.InRange(types[0]["types"].Count(), 2, int.MaxValue);
+            Assert.Equal(13, types[0]["types"].Count());
         }
 
         [Fact]
         public async void TypeRetrieved()
         {
-            var observable = DeliveryObservableFactory.Type(GetDeliveryClient(MockType), Article.Codename);
+            var observable = new DeliveryObservableProxy(GetDeliveryClient(MockType)).GetTypeObservable(Article.Codename);
             var type = await observable.FirstOrDefaultAsync();
 
             Assert.Single(observable.ToEnumerable());
@@ -142,18 +142,18 @@ namespace KenticoCloud.Delivery.Rx.Tests
         [Fact]
         public void TypesRetrieved()
         {
-            var observable = DeliveryObservableFactory.Types(GetDeliveryClient(MockTypes), new SkipParameter(2));
+            var observable = new DeliveryObservableProxy(GetDeliveryClient(MockTypes)).GetTypesObservable(new SkipParameter(2));
             var types = observable.ToEnumerable().ToList();
 
             Assert.NotEmpty(types);
-            types.ForEach(t => Assert.NotNull(t.System));
-            types.ForEach(t => Assert.NotEmpty(t.Elements));
+            Assert.All(types, type => Assert.NotNull(type));
+            Assert.All(types, type => Assert.NotEmpty(type.Elements));
         }
 
         [Fact]
         public async void ElementRetrieved()
         {
-            var observable = DeliveryObservableFactory.Element(GetDeliveryClient(MockElement), Article.Codename, Article.TitleCodename);
+            var observable = new DeliveryObservableProxy(GetDeliveryClient(MockElement)).GetElementObservable(Article.Codename, Article.TitleCodename);
             var element = await observable.FirstOrDefaultAsync();
 
             Assert.NotNull(element);
@@ -167,7 +167,7 @@ namespace KenticoCloud.Delivery.Rx.Tests
         [Fact]
         public async void TaxonomyJsonRetrieved()
         {
-            var observable = DeliveryObservableFactory.TaxonomyJson(GetDeliveryClient(MockTaxonomy), "personas");
+            var observable = new DeliveryObservableProxy(GetDeliveryClient(MockTaxonomy)).GetTaxonomyJsonObservable("personas");
             var taxonomyJson = await observable.FirstOrDefaultAsync();
 
             Assert.NotNull(taxonomyJson);
@@ -178,7 +178,7 @@ namespace KenticoCloud.Delivery.Rx.Tests
         [Fact]
         public void TaxonomiesJsonRetrieved()
         {
-            var observable = DeliveryObservableFactory.TaxonomiesJson(GetDeliveryClient(MockTaxonomies), "skip=1");
+            var observable = new DeliveryObservableProxy(GetDeliveryClient(MockTaxonomies)).GetTaxonomiesJsonObservable("skip=1");
             var taxonomiesJson = observable.ToEnumerable().ToList();
 
             Assert.NotNull(taxonomiesJson);
@@ -189,7 +189,7 @@ namespace KenticoCloud.Delivery.Rx.Tests
         [Fact]
         public async void TaxonomyRetrieved()
         {
-            var observable = DeliveryObservableFactory.Taxonomy(GetDeliveryClient(MockTaxonomy), "personas");
+            var observable = new DeliveryObservableProxy(GetDeliveryClient(MockTaxonomy)).GetTaxonomyObservable("personas");
             var taxonomy = await observable.FirstOrDefaultAsync();
 
             Assert.NotNull(taxonomy);
@@ -200,12 +200,12 @@ namespace KenticoCloud.Delivery.Rx.Tests
         [Fact]
         public void TaxonomiesRetrieved()
         {
-            var observable = DeliveryObservableFactory.Taxonomies(GetDeliveryClient(MockTaxonomies), new SkipParameter(1));
+            var observable = new DeliveryObservableProxy(GetDeliveryClient(MockTaxonomies)).GetTaxonomiesObservable(new SkipParameter(1));
             var taxonomies = observable.ToEnumerable().ToList();
 
             Assert.NotEmpty(taxonomies);
-            taxonomies.ForEach(t => Assert.NotNull(t.System));
-            taxonomies.ForEach(t => Assert.NotNull(t.Terms));
+            Assert.All(taxonomies, taxonomy => Assert.NotNull(taxonomy.System));
+            Assert.All(taxonomies, taxonomy => Assert.NotNull(taxonomy.Terms));
         }
 
         private IDeliveryClient GetDeliveryClient(Action mockAction)
