@@ -1,0 +1,97 @@
+﻿{
+  "taxonomies": [
+    {
+      "system": {
+        "id": "f30c7f72-e9ab-8832-2a57-62944a038809",
+        "name": "Personas",
+        "codename": "personas",
+        "last_modified": "2016-10-20T13:24:00.3200182Z"
+      },
+      "terms": [
+        {
+          "name": "Coffee expert",
+          "codename": "coffee_expert",
+          "terms": [
+            {
+              "name": "Barista",
+              "codename": "barista",
+              "terms": []
+            },
+            {
+              "name": "Cafe owner",
+              "codename": "cafe_owner",
+              "terms": []
+            }
+          ]
+        },
+        {
+          "name": "Coffee enthusiast",
+          "codename": "coffee_enthusiast",
+          "terms": [
+            {
+              "name": "Coffee lover",
+              "codename": "coffee_lover",
+              "terms": []
+            },
+            {
+              "name": "Coffee blogger",
+              "codename": "coffee_blogger",
+              "terms": []
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "system": {
+        "id": "d351400e-0290-87b2-1413-6c411d8ae5a4",
+        "name": "Processing",
+        "codename": "processing",
+        "last_modified": "2017-09-07T08:15:33.7560308Z"
+      },
+      "terms": [
+        {
+          "name": "Wet (Washed)",
+          "codename": "wet__washed_",
+          "terms": []
+        },
+        {
+          "name": "Dry (Natural)",
+          "codename": "dry__natural_",
+          "terms": []
+        },
+        {
+          "name": "Semi-dry",
+          "codename": "semi_dry",
+          "terms": []
+        }
+      ]
+    },
+    {
+      "system": {
+        "id": "79b1c5b6-30bc-d076-a236-d9ec9f1ff01b",
+        "name": "Product status",
+        "codename": "product_status",
+        "last_modified": "2016-09-15T10:53:25.2233101Z"
+      },
+      "terms": [
+        {
+          "name": "On sale",
+          "codename": "on_sale",
+          "terms": []
+        },
+        {
+          "name": "Bestseller",
+          "codename": "bestseller",
+          "terms": []
+        }
+      ]
+    }
+  ],
+  "pagination": {
+    "skip": 1,
+    "limit": 0,
+    "count": 3,
+    "next_page": ""
+  }
+}

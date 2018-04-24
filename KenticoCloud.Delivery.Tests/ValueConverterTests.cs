@@ -56,7 +56,7 @@ namespace KenticoCloud.Delivery.Tests
             var mockHttp = new MockHttpMessageHandler();
             string url = $"{baseUrl}/items/on_roasts";
             mockHttp.When(url).
-               Respond("application/json", File.ReadAllText(Path.Combine(AppContext.BaseDirectory, "Fixtures\\ContentLinkResolver\\on_roasts.json")));
+               Respond("application/json", File.ReadAllText(Path.Combine(Environment.CurrentDirectory, "Fixtures\\ContentLinkResolver\\on_roasts.json")));
             DeliveryClient client = InitializeDeliveryClient(mockHttp);
 
             var article = await client.GetItemAsync<Article>("on_roasts");
@@ -70,7 +70,7 @@ namespace KenticoCloud.Delivery.Tests
             var mockHttp = new MockHttpMessageHandler();
             string url = $"{baseUrl}/items/on_roasts";
             mockHttp.When(url).
-               Respond("application/json", File.ReadAllText(Path.Combine(AppContext.BaseDirectory, "Fixtures\\ContentLinkResolver\\on_roasts.json")));
+               Respond("application/json", File.ReadAllText(Path.Combine(Environment.CurrentDirectory, "Fixtures\\ContentLinkResolver\\on_roasts.json")));
             DeliveryClient client = InitializeDeliveryClient(mockHttp);
 
             var article = await client.GetItemAsync<Article>("on_roasts");
@@ -85,7 +85,7 @@ namespace KenticoCloud.Delivery.Tests
             string url = $"{baseUrl}/items/coffee_beverages_explained";
             mockHttp.When(url).
                WithQueryString("depth=15").
-               Respond("application/json", File.ReadAllText(Path.Combine(AppContext.BaseDirectory, "Fixtures\\ContentLinkResolver\\coffee_beverages_explained.json")));
+               Respond("application/json", File.ReadAllText(Path.Combine(Environment.CurrentDirectory, "Fixtures\\ContentLinkResolver\\coffee_beverages_explained.json")));
             DeliveryClient client = InitializeDeliveryClient(mockHttp);
 
             // Try to get recursive modular content on_roasts -> item -> on_roasts

@@ -12,7 +12,7 @@ namespace KenticoCloud.Delivery.Tests
         {
             // Arrange
             var mockHttp = new MockHttpMessageHandler();
-            mockHttp.When("https://deliver.kenticocloud.com/*").Respond("application/json", File.ReadAllText(Path.Combine(AppContext.BaseDirectory, "Fixtures\\home.json")));
+            mockHttp.When("https://deliver.kenticocloud.com/*").Respond("application/json", File.ReadAllText(Path.Combine(Environment.CurrentDirectory, "Fixtures\\home.json")));
             var httpClient = mockHttp.ToHttpClient();
             DeliveryClient client = new DeliveryClient(Guid.NewGuid().ToString()) { HttpClient = httpClient };
 
