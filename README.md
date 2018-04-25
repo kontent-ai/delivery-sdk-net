@@ -216,7 +216,8 @@ The [DeliveryObservableProxy class](https://github.com/Kentico/delivery-sdk-net/
 The `DeliveryObservableProxy` class exposes methods that mirror the public methods of the [DeliveryClient](https://github.com/Kentico/delivery-sdk-net/blob/master/KenticoCloud.Delivery/DeliveryClient.cs). The methods have the same names, with an `Observable` suffix. They call the `DeliveryClient` methods in the background.
 
 ```csharp
-IObservable<Article> articlesWithBaristaPersona = DeliveryObservableProxy.GetItemsObservable<Article>(new ContainsFilter("elements.personas", "barista"));
+IObservable<Article> articlesWithBaristaPersona = 
+	DeliveryObservableProxy.GetItemsObservable<Article>(new ContainsFilter("elements.personas", "barista"));
 ```
 
 The `DeliveryObservableProxy` class constructor accepts an [IDeliveryClient](https://github.com/Kentico/delivery-sdk-net/blob/master/KenticoCloud.Delivery/IDeliveryClient.cs) instance, therefore you are free to create the `DeliveryClient` (or its derivatives) in any of [the available ways](#using-the-deliveryclient).
