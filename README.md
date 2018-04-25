@@ -3,6 +3,8 @@
 [![Build status](https://ci.appveyor.com/api/projects/status/3m3q2ads2y43bh9o/branch/master?svg=true)](https://ci.appveyor.com/project/kentico/deliver-net-sdk/branch/master)
 [![NuGet](https://img.shields.io/nuget/v/KenticoCloud.Delivery.svg)](https://www.nuget.org/packages/KenticoCloud.Delivery)
 [![NuGet](https://img.shields.io/nuget/dt/kenticocloud.delivery.svg)](https://www.nuget.org/packages/KenticoCloud.Delivery)
+[![NuGet](https://img.shields.io/nuget/v/KenticoCloud.Delivery.Rx.svg)](https://www.nuget.org/packages/KenticoCloud.Delivery.Rx)
+[![NuGet](https://img.shields.io/nuget/dt/kenticocloud.delivery.Rx.svg)](https://www.nuget.org/packages/KenticoCloud.Delivery.Rx)
 [![Forums](https://img.shields.io/badge/chat-on%20forums-orange.svg)](https://forums.kenticocloud.com)
 
 ## Summary
@@ -206,6 +208,25 @@ foreach (var option in element.Options)
 // Retrieves related articles
 articleItem.GetModularContent("related_articles")
 ```
+
+## Using the KenticoCloud.Delivery.Rx reactive library
+
+The [DeliveryObservableProxy class](https://github.com/Kentico/delivery-sdk-net/blob/master/KenticoCloud.Delivery.Rx/DeliveryObservableProxy.cs) provides a reactive way of retrieving Kentico Cloud content.
+
+The `DeliveryObservableProxy` class exposes methods that mirror the public methods of the [DeliveryClient](https://github.com/Kentico/delivery-sdk-net/blob/master/KenticoCloud.Delivery/DeliveryClient.cs). The methods have the same names, with an `Observable` suffix. They call the `DeliveryClient` methods in the background.
+
+```csharp
+IObservable<Article> articlesWithBaristaPersona = DeliveryObservableProxy.GetItemsObservable<Article>(new ContainsFilter("elements.personas", "barista"));
+```
+
+The `DeliveryObservableProxy` class constructor accepts an [IDeliveryClient](https://github.com/Kentico/delivery-sdk-net/blob/master/KenticoCloud.Delivery/IDeliveryClient.cs) instance, therefore you are free to create the `DeliveryClient` (or its derivatives) in any of [the available ways](#using-the-deliveryclient).
+
+```csharp
+public IDeliveryClient DeliveryClient => new DeliveryClient("975bf280-fd91-488c-994c-2f04416e5ee3");
+public DeliveryObservableProxy DeliveryObservableProxy => new DeliveryObservableProxy(DeliveryClient);
+```
+
+Unlike most of the `DeliveryClient` methods that return data wrapped in `Delivery*Response` objects, their `*Observable` counterparts always return sequences of the Kentico Cloud artifacts themselves (not wrapped). Should an error response be returned by the `DeliveryClient`, the observable sequence will terminate with the conventional [OnError](https://docs.microsoft.com/en-us/dotnet/api/system.iobserver-1.onerror) call.
 
 ## Further information
 
