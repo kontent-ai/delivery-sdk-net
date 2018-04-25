@@ -2,6 +2,16 @@
 
   <PropertyGroup>
     <TargetFramework>netstandard1.3</TargetFramework>
+    <Authors>Kentico Software</Authors>
+    <Product>Kentico Cloud</Product>
+    <Description>Kentico Cloud Delivery SDK - Reactive extensions (Rx)</Description>
+    <Copyright>© 2018 Kentico Software. All rights reserved.</Copyright>
+    <PackageLicenseUrl>https://github.com/Kentico/delivery-sdk-net/blob/master/LICENSE</PackageLicenseUrl>
+    <PackageProjectUrl>https://github.com/Kentico/delivery-sdk-net</PackageProjectUrl>
+    <PackageIconUrl>http://kentico.com/favicon.ico</PackageIconUrl>
+    <RepositoryUrl>https://github.com/Kentico/delivery-sdk-net.git</RepositoryUrl>
+    <RepositoryType>git</RepositoryType>
+    <PackageTags>kentico;mvc;aspnet;aspnetmvc;rx;reactive;observable;linq;events</PackageTags>
   </PropertyGroup>
 
   <ItemGroup>
