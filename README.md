@@ -87,10 +87,10 @@ The `DeliveryClient` also supports retrieving of strongly-typed models.
 
 ```csharp
 // Retrieving a single content item
-DeliveryItemResponse response = await client.GetItemAsync<Article>("latest_article");
+DeliveryItemResponse<Article> response = await client.GetItemAsync<Article>("latest_article");
 
 // Retrieving all content items
-DeliveryItemListingResponse listingResponse = await client.GetItemsAsync<Article>();
+DeliveryItemListingResponse<Article> listingResponse = await client.GetItemsAsync<Article>();
 ```
 
 See [Working with Strongly Typed Models](https://github.com/Kentico/delivery-sdk-net/wiki/Working-with-Strongly-Typed-Models-(aka-Code-First-Approach)) in the wiki to learn how to generate models and adjust the logic to your needs.
