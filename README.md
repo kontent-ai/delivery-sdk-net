@@ -10,7 +10,14 @@
 
 ## Summary
 
-The Kentico Cloud Delivery .NET SDK is a client library used for retrieving content from Kentico Cloud. You can use the SDK in the form of a [NuGet package](https://www.nuget.org/packages/KenticoCloud.Delivery).
+The Kentico Cloud Delivery .NET SDK is a client library used for retrieving content from Kentico Cloud.
+
+You can use it via any of the following NuGet packages:
+
+* [KenticoCloud.Delivery](https://www.nuget.org/packages/KenticoCloud.Delivery)
+* [KenticoCloud.Delivery.Rx](https://www.nuget.org/packages/KenticoCloud.Delivery.Rx)
+
+The first package provides the [DeliveryClient](#using-the-deliveryclient) object to consume Kentico Cloud data via the traditional async way. The second one provides the [DeliveryObservableProxy](#using-the-kenticoclouddeliveryrx-reactive-library) object that enables the reactive way of consuming the data.
 
 The SDK targets the [.NET Standard 1.3](https://docs.microsoft.com/en-us/dotnet/standard/net-standard), which means it can be used in .NET Framework 4.6 projects and above, and .NET Core 1.0 projects and above.
 
@@ -35,8 +42,6 @@ You can also provide the project ID and other parameters by passing the [`Delive
 * `WaitForLoadingNewContent` – makes the client instance wait while fetching updated content, useful when acting upon [webhook calls](https://developticocloud.com/docs/webhooks#section-requesting-new-content).
 
 For advanced configuration options using Dependency Injection and ASP.NET Core Configuration API, see the SDK's [wiki](https://github.com/Kentico/delivery-sdk-net/wiki/Using-the-ASP.NET-Core-Configuration-API-and-DI-to-Instantiate-the-DeliveryClient).
-
-Once you create a `DeliveryClient`, you can start querying your project repository by calling methods on the client instance. See [Basic querying](#basic-querying) for details.
 
 ## Basic querying
 
