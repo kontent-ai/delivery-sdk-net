@@ -1,6 +1,8 @@
 # Kentico Cloud Delivery .NET SDK
 
-[![Build status](https://ci.appveyor.com/api/projects/status/3m3q2ads2y43bh9o/branch/master?svg=true)](https://ci.appveyor.com/project/kentico/deliver-net-sdk/branch/master) [![Forums](https://img.shields.io/badge/chat-on%20forums-orange.svg)](https://forums.kenticocloud.com) [![Analytics](https://ga-beacon.appspot.com/UA-69014260-4/Kentico/delivery-sdk-net)](https://github.com/igrigorik/ga-beacon)
+[![Build status](https://ci.appveyor.com/api/projects/status/3m3q2ads2y43bh9o/branch/master?svg=true)](https://ci.appveyor.com/project/kentico/deliver-net-sdk/branch/master) 
+[![Forums](https://img.shields.io/badge/chat-on%20forums-orange.svg)](https://forums.kenticocloud.com) 
+[![Analytics](https://ga-beacon.appspot.com/UA-69014260-4/Kentico/delivery-sdk-net?pixel)](https://github.com/igrigorik/ga-beacon)
 
 
 | Paradigm        | Package  | Downloads | Documentation | 
