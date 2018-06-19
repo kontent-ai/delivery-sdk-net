@@ -11,7 +11,7 @@
         Lossless,
 
         /// <summary>
-        /// Irreversible compression where partial data are discrarded.
+        /// Irreversible compression where partial data are discarded.
         /// </summary>
         Lossy
     }

@@ -42,7 +42,7 @@ namespace KenticoCloud.Delivery.ImageTransformation
         }
 
         /// <summary>
-        /// The width tranformation enables dynamic width resizing based on pixels and percent values.
+        /// The width transformation enables dynamic width resizing based on pixels and percent values.
         /// </summary>
         /// <param name="width">A required image width.</param>
         /// <returns>The same <see cref="ImageUrlBuilder" /> instance. </returns>
@@ -100,7 +100,7 @@ namespace KenticoCloud.Delivery.ImageTransformation
         }
 
         /// <summary>
-        /// Applies the crop tranformation that removes pixels from an image outside the specified rectangle.
+        /// Applies the crop transformation that removes pixels from an image outside the specified rectangle.
         /// </summary>
         /// <param name="x">Rectangle offset on the X-axis. </param>
         /// <param name="y">Rectangle offset on the Y-axis.</param>
@@ -114,11 +114,11 @@ namespace KenticoCloud.Delivery.ImageTransformation
         }
 
         /// <summary>
-        /// Applies the crop tranformation centered on the specified point.
+        /// Applies the crop transformation centered on the specified point.
         /// </summary>
         /// <param name="x">Focal point X coordinate. </param>
         /// <param name="y">Focal point Y coordinate. </param>
-        /// <param name="z">Zoom of the tranformation. </param>
+        /// <param name="z">Zoom of the transformation. </param>
         /// <returns>The same <see cref="ImageUrlBuilder" /> instance. </returns>
         public ImageUrlBuilder WithFocalPointCrop(double x, double y, double z)
         {
@@ -167,7 +167,7 @@ namespace KenticoCloud.Delivery.ImageTransformation
         }
 
         /// <summary>
-        /// Specifies the compression mode for the WebP image transforamtions.
+        /// Specifies the compression mode for the WebP image transformations.
         /// </summary>
         /// <param name="compression">Specifies the lossy or lossless compression. </param>
         /// <returns>The same <see cref="ImageUrlBuilder" /> instance. </returns>

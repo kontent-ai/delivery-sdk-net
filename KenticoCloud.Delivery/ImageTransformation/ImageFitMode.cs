@@ -3,7 +3,7 @@
 namespace KenticoCloud.Delivery.ImageTransformation
 {
     /// <summary>
-    /// Specifies the possible modes for fit tranformation.
+    /// Specifies the possible modes for fit transformation.
     /// </summary>
     public struct ImageFitMode
     {
