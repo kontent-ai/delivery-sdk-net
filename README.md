@@ -217,22 +217,6 @@ foreach (var option in element.Options)
 articleItem.GetModularContent("related_articles")
 ```
 
-## Using the Image transformations
-The [ImageUrlBuilder class](https://github.com/Kentico/delivery-sdk-net/blob/master/KenticoCloud.Delivery/ImageTransformation/ImageUrlBuilder.cs) exposes methods for applying image transformations on the Asset URL. 
-
-```csharp
-string assetUrl = articleItem.GetAssets("teaser_image").First().Url;
-ImageUrlBuilder builder = new ImageUrlBuilder(assetUrl);
-string transformedAssetUrl = builder.WithFocalPointCrop(560, 515, 2)
-                                    .WithDPR(3)
-                                    .WithAutomaticFormat(ImageFormat.Png)
-                                    .WithCompression(ImageCompression.Lossy)
-                                    .WithQuality(85)
-                                    .Url;
-```
-
-For list of supported transformations and more information visit the Kentico Delivery API reference at <https://developer.kenticocloud.com/v1/reference?#image-transformation>.
-
 ## Using the KenticoCloud.Delivery.Rx reactive library
 
 The [DeliveryObservableProxy class](https://github.com/Kentico/delivery-sdk-net/blob/master/KenticoCloud.Delivery.Rx/DeliveryObservableProxy.cs) provides a reactive way of retrieving Kentico Cloud content.
