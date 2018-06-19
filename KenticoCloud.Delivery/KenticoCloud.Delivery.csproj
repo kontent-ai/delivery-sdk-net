@@ -49,13 +49,4 @@
     <Reference Include="Microsoft.CSharp" />
   </ItemGroup>
 
-  <ItemGroup>
-    <Reference Include="System.Collections.Specialized">
-      <HintPath>..\..\..\Program Files\dotnet\sdk\NuGetFallbackFolder\microsoft.netcore.app\2.0.0\ref\netcoreapp2.0\System.Collections.Specialized.dll</HintPath>
-    </Reference>
-    <Reference Include="System.Web.HttpUtility">
-      <HintPath>..\..\..\Program Files\dotnet\sdk\NuGetFallbackFolder\microsoft.netcore.app\2.0.0\ref\netcoreapp2.0\System.Web.HttpUtility.dll</HintPath>
-    </Reference>
-  </ItemGroup>
-
 </Project>
