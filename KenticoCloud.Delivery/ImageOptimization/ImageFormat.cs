@@ -1,10 +1,13 @@
-﻿namespace KenticoCloud.Delivery.ImageOptimization
+﻿using System.Collections.Generic;
+
+namespace KenticoCloud.Delivery.ImageOptimization
 {
     /// <summary>
     /// Supported image formats.
     /// </summary>
     public struct ImageFormat
     {
+        private static readonly Dictionary<string, ImageFormat> TranslateDictionary = new Dictionary<string, ImageFormat>();
         private readonly string _value;
 
         /// <summary>
@@ -40,7 +43,16 @@
         private ImageFormat(string value)
         {
             _value = value;
+            TranslateDictionary[value] = this;
         }
+
+        /// <summary>
+        /// Gets the value associated with this value.
+        /// </summary>
+        /// <param name="value">Value to parse.</param>
+        /// <param name="format"><see cref="ImageFormat"/> representation of the <paramref name="value"/>.</param>
+        /// <returns>Whether the value was parsed successfully.</returns>
+        public static bool TryParse(string value, out ImageFormat format) => TranslateDictionary.TryGetValue(value, out format);
 
         /// <inheritdoc />
         public override string ToString() => _value;

@@ -1,10 +1,13 @@
-﻿namespace KenticoCloud.Delivery.ImageOptimization
+﻿using System.Collections.Generic;
+
+namespace KenticoCloud.Delivery.ImageOptimization
 {
     /// <summary>
     /// Specifies the possible modes for fit tranformation.
     /// </summary>
     public struct ImageFitMode
     {
+        private static readonly Dictionary<string, ImageFitMode> TranslateDictionary = new Dictionary<string, ImageFitMode>();
         private readonly string _value;
 
         /// <summary>
@@ -25,7 +28,16 @@
         private ImageFitMode(string value)
         {
             _value = value;
+            TranslateDictionary[value] = this;
         }
+
+        /// <summary>
+        /// Gets the value associated with this value.
+        /// </summary>
+        /// <param name="value">Value to parse.</param>
+        /// <param name="fitMode"><see cref="ImageFitMode"/> representation of the <paramref name="value"/>.</param>
+        /// <returns>Whether the value was parsed successfully.</returns>
+        public static bool TryParse(string value, out ImageFitMode fitMode) => TranslateDictionary.TryGetValue(value, out fitMode);
 
         /// <inheritdoc />
         public override string ToString() => _value;

@@ -13,7 +13,7 @@ namespace KenticoCloud.Delivery.ImageOptimization
     {
         private readonly Uri _assetUrl;
         private readonly Dictionary<string, StringValues> _queryParameters = new Dictionary<string, StringValues>();
-        private string Query =>_queryParameters.Any() ? $"?{string.Join("&", _queryParameters.Select(x => $"{x.Key}={Uri.EscapeUriString(x.Value)}"))}" : "";
+        private string Query =>_queryParameters.Any() ? $"?{string.Join("&", _queryParameters.Select(x => $"{x.Key}={x.Value}"))}" : "";
 
         /// <summary>
         /// Gets the <see cref="T:System.Uri"/> instance with applied transformations.
@@ -70,7 +70,10 @@ namespace KenticoCloud.Delivery.ImageOptimization
         /// <returns>The same <see cref="ImageUrlBuilder" /> instance. </returns>
         public ImageUrlBuilder WithFitMode(string fitMode)
         {
-            _queryParameters["fit"] = fitMode?.ToLower() ?? ImageFitMode.Clip.ToString();
+            if (!string.IsNullOrWhiteSpace(fitMode) && ImageFitMode.TryParse(fitMode.ToLower(), out var parsedFitMode))
+            {
+                WithFitMode(parsedFitMode);
+            }
             return this;
         }
 
@@ -81,7 +84,8 @@ namespace KenticoCloud.Delivery.ImageOptimization
         /// <returns>The same <see cref="ImageUrlBuilder" /> instance. </returns>
         public ImageUrlBuilder WithFitMode(ImageFitMode fitMode)
         {
-            return WithFitMode(fitMode.ToString());
+            _queryParameters["fit"] = fitMode.ToString();
+            return this;
         }
 
         /// <summary>
@@ -133,7 +137,10 @@ namespace KenticoCloud.Delivery.ImageOptimization
         /// <returns>The same <see cref="ImageUrlBuilder" /> instance. </returns>
         public ImageUrlBuilder WithFormat(string format)
         {
-            _queryParameters["fm"] = format.ToLower();
+            if (!string.IsNullOrWhiteSpace(format) && ImageFormat.TryParse(format.ToLower(), out var parsedFormat))
+            {
+                WithFormat(parsedFormat);
+            }
             return this;
         }
 
@@ -144,7 +151,8 @@ namespace KenticoCloud.Delivery.ImageOptimization
         /// <returns>The same <see cref="ImageUrlBuilder" /> instance. </returns>
         public ImageUrlBuilder WithFormat(ImageFormat format)
         {
-            return WithFormat(format.ToString());
+            _queryParameters["fm"] = format.ToString();
+            return this;
         }
 
         /// <summary>
@@ -159,13 +167,12 @@ namespace KenticoCloud.Delivery.ImageOptimization
         }
 
         /// <summary>
-        /// Specifies the compression mode for the image transforamtions.
+        /// Specifies the compression mode for the WebP image transforamtions.
         /// </summary>
         /// <param name="compression">Specifies the lossy or lossless compression. </param>
         /// <returns>The same <see cref="ImageUrlBuilder" /> instance. </returns>
         public ImageUrlBuilder WithCompression(ImageCompression compression)
         {
-            WithFormat(ImageFormat.Webp);
             _queryParameters["lossless"] = compression == ImageCompression.Lossless ? "true" : "false";
             return this;
         }

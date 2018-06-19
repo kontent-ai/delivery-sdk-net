@@ -192,8 +192,8 @@ namespace KenticoCloud.Delivery.Tests.ImageOptimization
         }
 
         [Theory]
-        [InlineData(ImageCompression.Lossless, "?fm=webp&lossless=true")]
-        [InlineData(ImageCompression.Lossy, "?fm=webp&lossless=false")]
+        [InlineData(ImageCompression.Lossless, "?lossless=true")]
+        [InlineData(ImageCompression.Lossy, "?lossless=false")]
         public void WithCompression_TransformedQuery(ImageCompression compression, string expectedQuery)
         {
             var builder = new ImageUrlBuilder(BaseUrl);
