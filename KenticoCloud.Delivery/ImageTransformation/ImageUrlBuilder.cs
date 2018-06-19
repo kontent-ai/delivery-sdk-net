@@ -4,7 +4,7 @@ using System.Globalization;
 using System.Linq;
 using Microsoft.Extensions.Primitives;
 
-namespace KenticoCloud.Delivery.ImageOptimization
+namespace KenticoCloud.Delivery.ImageTransformation
 {
     /// <summary>
     /// Provides a builder for Image Transformations for Kentico Cloud Delivery API.

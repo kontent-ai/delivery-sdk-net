@@ -1,6 +1,6 @@
 ﻿using System.Collections.Generic;
 
-namespace KenticoCloud.Delivery.ImageOptimization
+namespace KenticoCloud.Delivery.ImageTransformation
 {
     /// <summary>
     /// Specifies the possible modes for fit tranformation.

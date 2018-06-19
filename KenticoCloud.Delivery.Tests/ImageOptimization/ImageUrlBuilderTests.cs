@@ -1,6 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
-using KenticoCloud.Delivery.ImageOptimization;
+using KenticoCloud.Delivery.ImageTransformation;
 using Xunit;
 
 namespace KenticoCloud.Delivery.Tests.ImageOptimization

@@ -1,6 +1,6 @@
 ﻿using System.Collections.Generic;
 
-namespace KenticoCloud.Delivery.ImageOptimization
+namespace KenticoCloud.Delivery.ImageTransformation
 {
     /// <summary>
     /// Supported image formats.
