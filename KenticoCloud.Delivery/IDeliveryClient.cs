@@ -1,5 +1,6 @@
 using System.Collections.Generic;
 using System.Threading.Tasks;
+using KenticoCloud.Delivery.Helpers;
 using KenticoCloud.Delivery.InlineContentItems;
 using Newtonsoft.Json.Linq;
 
@@ -29,157 +30,178 @@ namespace KenticoCloud.Delivery
         /// Returns a content item as JSON data. By default, retrieves one level of modular content.
         /// </summary>
         /// <param name="codename">The codename of a content item.</param>
+        /// <param name="policyKey">Resilience policy key.</param>
         /// <param name="parameters">An array that contains zero or more query parameters, for example, for projection or setting the depth of modular content.</param>
         /// <returns>The <see cref="JObject"/> instance that represents the content item with the specified codename.</returns>
-        Task<JObject> GetItemJsonAsync(string codename, params string[] parameters);
+        Task<JObject> GetItemJsonAsync(string codename, string policyKey = DeliveryClientHelper.DEFAULT_POLICY_KEY, params string[] parameters);
 
         /// <summary>
         /// Returns content items as JSON data. By default, retrieves one level of modular content.
         /// </summary>
+        /// <param name="policyKey">Resilience policy key.</param>
         /// <param name="parameters">An array that contains zero or more query parameters, for example, for filtering, ordering, or setting the depth of modular content.</param>
         /// <returns>The <see cref="JObject"/> instance that represents the content items. If no query parameters are specified, all content items are returned.</returns>
-        Task<JObject> GetItemsJsonAsync(params string[] parameters);
+        Task<JObject> GetItemsJsonAsync(string policyKey = DeliveryClientHelper.DEFAULT_POLICY_KEY, params string[] parameters);
 
         /// <summary>
         /// Returns a content item. By default, retrieves one level of modular content.
         /// </summary>
         /// <param name="codename">The codename of a content item.</param>
+        /// <param name="policyKey">Resilience policy key.</param>
         /// <param name="parameters">An array that contains zero or more query parameters, for example, for projection or setting the depth of modular content.</param>
         /// <returns>The <see cref="DeliveryItemResponse"/> instance that contains the content item with the specified codename.</returns>
-        Task<DeliveryItemResponse> GetItemAsync(string codename, params IQueryParameter[] parameters);
+        Task<DeliveryItemResponse> GetItemAsync(string codename, string policyKey = DeliveryClientHelper.DEFAULT_POLICY_KEY, params IQueryParameter[] parameters);
 
         /// <summary>
         /// Returns a strongly typed content item. By default, retrieves one level of modular content.
         /// </summary>
-        /// <typeparam name="T">Type of the code-first model. (Or <see cref="object"/> if the return type is not yet known.)</typeparam>
         /// <param name="codename">The codename of a content item.</param>
+        /// <typeparam name="T">Type of the code-first model. (Or <see cref="object"/> if the return type is not yet known.)</typeparam>
+        /// <param name="policyKey">Resilience policy key.</param>
         /// <param name="parameters">An array that contains zero or more query parameters, for example, for projection or setting the depth of modular content.</param>
         /// <returns>The <see cref="DeliveryItemResponse{T}"/> instance that contains the content item with the specified codename.</returns>
-        Task<DeliveryItemResponse<T>> GetItemAsync<T>(string codename, params IQueryParameter[] parameters);
+        Task<DeliveryItemResponse<T>> GetItemAsync<T>(string codename, string policyKey = DeliveryClientHelper.DEFAULT_POLICY_KEY, params IQueryParameter[] parameters);
 
         /// <summary>
         /// Returns a content item. By default, retrieves one level of modular content.
         /// </summary>
         /// <param name="codename">The codename of a content item.</param>
         /// <param name="parameters">A collection of query parameters, for example, for projection or setting the depth of modular content.</param>
+        /// <param name="policyKey">Resilience policy key.</param>
         /// <returns>The <see cref="DeliveryItemResponse"/> instance that contains the content item with the specified codename.</returns>
-        Task<DeliveryItemResponse> GetItemAsync(string codename, IEnumerable<IQueryParameter> parameters);
+        Task<DeliveryItemResponse> GetItemAsync(string codename, IEnumerable<IQueryParameter> parameters, string policyKey = DeliveryClientHelper.DEFAULT_POLICY_KEY);
 
         /// <summary>
         /// Returns a strongly typed content item. By default, retrieves one level of modular content.
         /// </summary>
-        /// <typeparam name="T">Type of the code-first model. (Or <see cref="object"/> if the return type is not yet known.)</typeparam>
         /// <param name="codename">The codename of a content item.</param>
+        /// <typeparam name="T">Type of the code-first model. (Or <see cref="object"/> if the return type is not yet known.)</typeparam>
         /// <param name="parameters">A collection of query parameters, for example, for projection or setting the depth of modular content.</param>
+        /// <param name="policyKey">Resilience policy key.</param>
         /// <returns>The <see cref="DeliveryItemResponse{T}"/> instance that contains the content item with the specified codename.</returns>
-        Task<DeliveryItemResponse<T>> GetItemAsync<T>(string codename, IEnumerable<IQueryParameter> parameters = null);
+        Task<DeliveryItemResponse<T>> GetItemAsync<T>(string codename, IEnumerable<IQueryParameter> parameters = null, string policyKey = DeliveryClientHelper.DEFAULT_POLICY_KEY);
 
         /// <summary>
         /// Returns content items that match the optional filtering parameters. By default, retrieves one level of modular content.
         /// </summary>
+        /// <param name="policyKey">Resilience policy key.</param>
         /// <param name="parameters">An array that contains zero or more query parameters, for example, for filtering, ordering, or setting the depth of modular content.</param>
         /// <returns>The <see cref="DeliveryItemListingResponse"/> instance that contains the content items. If no query parameters are specified, all content items are returned.</returns>
-        Task<DeliveryItemListingResponse> GetItemsAsync(params IQueryParameter[] parameters);
+        Task<DeliveryItemListingResponse> GetItemsAsync(string policyKey = DeliveryClientHelper.DEFAULT_POLICY_KEY, params IQueryParameter[] parameters);
 
         /// <summary>
         /// Returns content items that match the optional filtering parameters. By default, retrieves one level of modular content.
         /// </summary>
         /// <param name="parameters">A collection of query parameters, for example, for filtering, ordering, or setting the depth of modular content.</param>
+        /// <param name="policyKey">Resilience policy key.</param>
         /// <returns>The <see cref="DeliveryItemListingResponse"/> instance that contains the content items. If no query parameters are specified, all content items are returned.</returns>
-        Task<DeliveryItemListingResponse> GetItemsAsync(IEnumerable<IQueryParameter> parameters);
+        Task<DeliveryItemListingResponse> GetItemsAsync(IEnumerable<IQueryParameter> parameters, string policyKey = DeliveryClientHelper.DEFAULT_POLICY_KEY);
 
         /// <summary>
         /// Returns strongly typed content items that match the optional filtering parameters. By default, retrieves one level of modular content.
         /// </summary>
+        /// <param name="policyKey">Resilience policy key.</param>
         /// <typeparam name="T">Type of the code-first model. (Or <see cref="object"/> if the return type is not yet known.)</typeparam>
         /// <param name="parameters">An array that contains zero or more query parameters, for example, for filtering, ordering, or setting the depth of modular content.</param>
         /// <returns>The <see cref="DeliveryItemListingResponse{T}"/> instance that contains the content items. If no query parameters are specified, all content items are returned.</returns>
-        Task<DeliveryItemListingResponse<T>> GetItemsAsync<T>(params IQueryParameter[] parameters);
+        Task<DeliveryItemListingResponse<T>> GetItemsAsync<T>(string policyKey = DeliveryClientHelper.DEFAULT_POLICY_KEY, params IQueryParameter[] parameters);
 
         /// <summary>
         /// Returns strongly typed content items that match the optional filtering parameters. By default, retrieves one level of modular content.
         /// </summary>
-        /// <typeparam name="T">Type of the code-first model. (Or <see cref="object"/> if the return type is not yet known.)</typeparam>
         /// <param name="parameters">A collection of query parameters, for example, for filtering, ordering, or setting the depth of modular content.</param>
+        /// <typeparam name="T">Type of the code-first model. (Or <see cref="object"/> if the return type is not yet known.)</typeparam>
+        /// <param name="policyKey">Resilience policy key.</param>
         /// <returns>The <see cref="DeliveryItemListingResponse{T}"/> instance that contains the content items. If no query parameters are specified, all content items are returned.</returns>
-        Task<DeliveryItemListingResponse<T>> GetItemsAsync<T>(IEnumerable<IQueryParameter> parameters);
+        Task<DeliveryItemListingResponse<T>> GetItemsAsync<T>(IEnumerable<IQueryParameter> parameters, string policyKey = DeliveryClientHelper.DEFAULT_POLICY_KEY);
 
         /// <summary>
         /// Returns a content type as JSON data.
         /// </summary>
         /// <param name="codename">The codename of a content type.</param>
+        /// <param name="policyKey">Resilience policy key.</param>
         /// <returns>The <see cref="JObject"/> instance that represents the content type with the specified codename.</returns>
-        Task<JObject> GetTypeJsonAsync(string codename);
+        Task<JObject> GetTypeJsonAsync(string codename, string policyKey = DeliveryClientHelper.DEFAULT_POLICY_KEY);
 
         /// <summary>
         /// Returns content types as JSON data.
         /// </summary>
+        /// <param name="policyKey">Resilience policy key.</param>
         /// <param name="parameters">An array that contains zero or more query parameters, for example, for paging.</param>
         /// <returns>The <see cref="JObject"/> instance that represents the content types. If no query parameters are specified, all content types are returned.</returns>
-        Task<JObject> GetTypesJsonAsync(params string[] parameters);
+        Task<JObject> GetTypesJsonAsync(string policyKey = DeliveryClientHelper.DEFAULT_POLICY_KEY, params string[] parameters);
 
         /// <summary>
         /// Returns a content type.
         /// </summary>
         /// <param name="codename">The codename of a content type.</param>
+        /// <param name="policyKey">Resilience policy key.</param>
         /// <returns>The content type with the specified codename.</returns>
-        Task<ContentType> GetTypeAsync(string codename);
+        Task<ContentType> GetTypeAsync(string codename, string policyKey = DeliveryClientHelper.DEFAULT_POLICY_KEY);
 
         /// <summary>
         /// Returns content types.
         /// </summary>
+        /// <param name="policyKey">Resilience policy key.</param>
         /// <param name="parameters">An array that contains zero or more query parameters, for example, for paging.</param>
         /// <returns>The <see cref="DeliveryTypeListingResponse"/> instance that represents the content types. If no query parameters are specified, all content types are returned.</returns>
-        Task<DeliveryTypeListingResponse> GetTypesAsync(params IQueryParameter[] parameters);
+        Task<DeliveryTypeListingResponse> GetTypesAsync(string policyKey = DeliveryClientHelper.DEFAULT_POLICY_KEY, params IQueryParameter[] parameters);
 
         /// <summary>
         /// Returns content types.
         /// </summary>
         /// <param name="parameters">A collection of query parameters, for example, for paging.</param>
+        /// <param name="policyKey">Resilience policy key.</param>
         /// <returns>The <see cref="DeliveryTypeListingResponse"/> instance that represents the content types. If no query parameters are specified, all content types are returned.</returns>
-        Task<DeliveryTypeListingResponse> GetTypesAsync(IEnumerable<IQueryParameter> parameters);
+        Task<DeliveryTypeListingResponse> GetTypesAsync(IEnumerable<IQueryParameter> parameters, string policyKey = DeliveryClientHelper.DEFAULT_POLICY_KEY);
 
         /// <summary>
         /// Returns a content element.
         /// </summary>
         /// <param name="contentTypeCodename">The codename of the content type.</param>
         /// <param name="contentElementCodename">The codename of the content element.</param>
+        /// <param name="policyKey">Resilience policy key.</param>
         /// <returns>A content element with the specified codename that is a part of a content type with the specified codename.</returns>
-        Task<ContentElement> GetContentElementAsync(string contentTypeCodename, string contentElementCodename);
+        Task<ContentElement> GetContentElementAsync(string contentTypeCodename, string contentElementCodename, string policyKey = DeliveryClientHelper.DEFAULT_POLICY_KEY);
 
         /// <summary>
         /// Returns a taxonomy group as JSON data.
         /// </summary>
         /// <param name="codename">The codename of a taxonomy group.</param>
+        /// <param name="policyKey">Resilience policy key.</param>
         /// <returns>The <see cref="JObject"/> instance that represents the taxonomy group with the specified codename.</returns>
-        Task<JObject> GetTaxonomyJsonAsync(string codename);
+        Task<JObject> GetTaxonomyJsonAsync(string codename, string policyKey = DeliveryClientHelper.DEFAULT_POLICY_KEY);
 
         /// <summary>
         /// Returns taxonomy groups as JSON data.
         /// </summary>
+        /// <param name="policyKey">Resilience policy key.</param>
         /// <param name="parameters">An array that contains zero or more query parameters, for example, for paging.</param>
         /// <returns>The <see cref="JObject"/> instance that represents the taxonomy groups. If no query parameters are specified, all taxonomy groups are returned.</returns>
-        Task<JObject> GetTaxonomiesJsonAsync(params string[] parameters);
+        Task<JObject> GetTaxonomiesJsonAsync(string policyKey = DeliveryClientHelper.DEFAULT_POLICY_KEY, params string[] parameters);
 
         /// <summary>
         /// Returns a taxonomy group.
         /// </summary>
         /// <param name="codename">The codename of a taxonomy group.</param>
+        /// <param name="policyKey">Resilience policy key.</param>
         /// <returns>The taxonomy group with the specified codename.</returns>
-        Task<TaxonomyGroup> GetTaxonomyAsync(string codename);
+        Task<TaxonomyGroup> GetTaxonomyAsync(string codename, string policyKey = DeliveryClientHelper.DEFAULT_POLICY_KEY);
 
         /// <summary>
         /// Returns taxonomy groups.
         /// </summary>
+        /// <param name="policyKey">Resilience policy key.</param>
         /// <param name="parameters">An array that contains zero or more query parameters, for example, for paging.</param>
         /// <returns>The <see cref="DeliveryTaxonomyListingResponse"/> instance that represents the taxonomy groups. If no query parameters are specified, all taxonomy groups are returned.</returns>
-        Task<DeliveryTaxonomyListingResponse> GetTaxonomiesAsync(params IQueryParameter[] parameters);
+        Task<DeliveryTaxonomyListingResponse> GetTaxonomiesAsync(string policyKey = DeliveryClientHelper.DEFAULT_POLICY_KEY, params IQueryParameter[] parameters);
 
         /// <summary>
         /// Returns taxonomy groups.
         /// </summary>
         /// <param name="parameters">A collection of query parameters, for example, for paging.</param>
+        /// <param name="policyKey">Resilience policy key.</param>
         /// <returns>The <see cref="DeliveryTaxonomyListingResponse"/> instance that represents the taxonomy groups. If no query parameters are specified, all taxonomy groups are returned.</returns>
-        Task<DeliveryTaxonomyListingResponse> GetTaxonomiesAsync(IEnumerable<IQueryParameter> parameters);
+        Task<DeliveryTaxonomyListingResponse> GetTaxonomiesAsync(IEnumerable<IQueryParameter> parameters, string policyKey = DeliveryClientHelper.DEFAULT_POLICY_KEY);
     }
 }

@@ -6,8 +6,10 @@ using System.Net.Http;
 using System.Net.Http.Headers;
 using System.Threading;
 using System.Threading.Tasks;
+using KenticoCloud.Delivery.Helpers;
 using KenticoCloud.Delivery.InlineContentItems;
 using Microsoft.Extensions.Options;
+using Polly;
 
 namespace KenticoCloud.Delivery
 {
@@ -120,6 +122,12 @@ namespace KenticoCloud.Delivery
                 }
             }
 
+            if (_deliveryOptions.ResiliencePolicies == null)
+            {
+                _deliveryOptions.ResiliencePolicies = new Polly.Registry.PolicyRegistry();
+            }
+
+            _deliveryOptions.ResiliencePolicies.Add(DeliveryClientHelper.DEFAULT_POLICY_KEY, DeliveryClientHelper.GetDefaultPolicy(_deliveryOptions.MaxRetryAttempts));
             _deliveryOptions.ProjectId = projectIdGuid.ToString("D");
             _extractor = new QueryParameters.Utilities.ContentTypeExtractor();
         }
@@ -160,9 +168,10 @@ namespace KenticoCloud.Delivery
         /// Returns a content item as JSON data. By default, retrieves one level of modular content.
         /// </summary>
         /// <param name="codename">The codename of a content item.</param>
+        /// <param name="policyKey">Resilience policy key.</param>
         /// <param name="parameters">An array that contains zero or more query parameters, for example, for projection or setting the depth of modular content.</param>
         /// <returns>The <see cref="JObject"/> instance that represents the content item with the specified codename.</returns>
-        public async Task<JObject> GetItemJsonAsync(string codename, params string[] parameters)
+        public async Task<JObject> GetItemJsonAsync(string codename, string policyKey = DeliveryClientHelper.DEFAULT_POLICY_KEY, params string[] parameters)
         {
             if (codename == null)
             {
@@ -176,30 +185,32 @@ namespace KenticoCloud.Delivery
 
             var endpointUrl = UrlBuilder.GetItemUrl(codename, parameters);
 
-            return await GetDeliverResponseAsync(endpointUrl);
+            return await GetDeliverResponseAsync(endpointUrl, policyKey);
         }
 
         /// <summary>
         /// Returns content items as JSON data. By default, retrieves one level of modular content.
         /// </summary>
+        /// <param name="policyKey">Resilience policy key.</param>
         /// <param name="parameters">An array that contains zero or more query parameters, for example, for filtering, ordering, or setting the depth of modular content.</param>
         /// <returns>The <see cref="JObject"/> instance that represents the content items. If no query parameters are specified, all content items are returned.</returns>
-        public async Task<JObject> GetItemsJsonAsync(params string[] parameters)
+        public async Task<JObject> GetItemsJsonAsync(string policyKey = DeliveryClientHelper.DEFAULT_POLICY_KEY, params string[] parameters)
         {
             var endpointUrl = UrlBuilder.GetItemsUrl(parameters);
 
-            return await GetDeliverResponseAsync(endpointUrl);
+            return await GetDeliverResponseAsync(endpointUrl, policyKey);
         }
 
         /// <summary>
         /// Returns a content item. By default, retrieves one level of modular content.
         /// </summary>
         /// <param name="codename">The codename of a content item.</param>
+        /// <param name="policyKey">Resilience policy key.</param>
         /// <param name="parameters">An array that contains zero or more query parameters, for example, for projection or setting the depth of modular content.</param>
         /// <returns>The <see cref="DeliveryItemResponse"/> instance that contains the content item with the specified codename.</returns>
-        public async Task<DeliveryItemResponse> GetItemAsync(string codename, params IQueryParameter[] parameters)
+        public async Task<DeliveryItemResponse> GetItemAsync(string codename, string policyKey = DeliveryClientHelper.DEFAULT_POLICY_KEY, params IQueryParameter[] parameters)
         {
-            return await GetItemAsync(codename, (IEnumerable<IQueryParameter>)parameters);
+            return await GetItemAsync(codename, (IEnumerable<IQueryParameter>)parameters, policyKey);
         }
 
         /// <summary>
@@ -207,11 +218,12 @@ namespace KenticoCloud.Delivery
         /// </summary>
         /// <typeparam name="T">Type of the code-first model. (Or <see cref="object"/> if the return type is not yet known.)</typeparam>
         /// <param name="codename">The codename of a content item.</param>
+        /// <param name="policyKey">Resilience policy key.</param>
         /// <param name="parameters">An array that contains zero or more query parameters, for example, for projection or setting the depth of modular content.</param>
         /// <returns>The <see cref="DeliveryItemResponse{T}"/> instance that contains the content item with the specified codename.</returns>
-        public async Task<DeliveryItemResponse<T>> GetItemAsync<T>(string codename, params IQueryParameter[] parameters)
+        public async Task<DeliveryItemResponse<T>> GetItemAsync<T>(string codename, string policyKey = DeliveryClientHelper.DEFAULT_POLICY_KEY, params IQueryParameter[] parameters)
         {
-            return await GetItemAsync<T>(codename, (IEnumerable<IQueryParameter>)parameters);
+            return await GetItemAsync<T>(codename, (IEnumerable<IQueryParameter>)parameters, policyKey);
         }
 
         /// <summary>
@@ -219,8 +231,9 @@ namespace KenticoCloud.Delivery
         /// </summary>
         /// <param name="codename">The codename of a content item.</param>
         /// <param name="parameters">A collection of query parameters, for example, for projection or setting the depth of modular content.</param>
+        /// <param name="policyKey">Resilience policy key.</param>
         /// <returns>The <see cref="DeliveryItemResponse"/> instance that contains the content item with the specified codename.</returns>
-        public async Task<DeliveryItemResponse> GetItemAsync(string codename, IEnumerable<IQueryParameter> parameters)
+        public async Task<DeliveryItemResponse> GetItemAsync(string codename, IEnumerable<IQueryParameter> parameters, string policyKey = DeliveryClientHelper.DEFAULT_POLICY_KEY)
         {
             if (codename == null)
             {
@@ -233,7 +246,7 @@ namespace KenticoCloud.Delivery
             }
 
             var endpointUrl = UrlBuilder.GetItemUrl(codename, parameters);
-            var response = await GetDeliverResponseAsync(endpointUrl);
+            var response = await GetDeliverResponseAsync(endpointUrl, policyKey);
 
             return new DeliveryItemResponse(response, this, endpointUrl);
         }
@@ -244,8 +257,9 @@ namespace KenticoCloud.Delivery
         /// <typeparam name="T">Type of the code-first model. (Or <see cref="object"/> if the return type is not yet known.)</typeparam>
         /// <param name="codename">The codename of a content item.</param>
         /// <param name="parameters">A collection of query parameters, for example, for projection or setting the depth of modular content.</param>
+        /// <param name="policyKey">Resilience policy key.</param>
         /// <returns>The <see cref="DeliveryItemResponse{T}"/> instance that contains the content item with the specified codename.</returns>
-        public async Task<DeliveryItemResponse<T>> GetItemAsync<T>(string codename, IEnumerable<IQueryParameter> parameters = null)
+        public async Task<DeliveryItemResponse<T>> GetItemAsync<T>(string codename, IEnumerable<IQueryParameter> parameters = null, string policyKey = DeliveryClientHelper.DEFAULT_POLICY_KEY)
         {
             if (string.IsNullOrEmpty(codename))
             {
@@ -253,7 +267,7 @@ namespace KenticoCloud.Delivery
             }
 
             var endpointUrl = UrlBuilder.GetItemUrl(codename, parameters);
-            var response = await GetDeliverResponseAsync(endpointUrl);
+            var response = await GetDeliverResponseAsync(endpointUrl, policyKey);
 
             return new DeliveryItemResponse<T>(response, this, endpointUrl);
         }
@@ -261,22 +275,24 @@ namespace KenticoCloud.Delivery
         /// <summary>
         /// Returns content items that match the optional filtering parameters. By default, retrieves one level of modular content.
         /// </summary>
+        /// <param name="policyKey">Resilience policy key.</param>
         /// <param name="parameters">An array that contains zero or more query parameters, for example, for filtering, ordering, or setting the depth of modular content.</param>
         /// <returns>The <see cref="DeliveryItemListingResponse"/> instance that contains the content items. If no query parameters are specified, all content items are returned.</returns>
-        public async Task<DeliveryItemListingResponse> GetItemsAsync(params IQueryParameter[] parameters)
+        public async Task<DeliveryItemListingResponse> GetItemsAsync(string policyKey = DeliveryClientHelper.DEFAULT_POLICY_KEY, params IQueryParameter[] parameters)
         {
-            return await GetItemsAsync((IEnumerable<IQueryParameter>)parameters);
+            return await GetItemsAsync((IEnumerable<IQueryParameter>)parameters, policyKey);
         }
 
         /// <summary>
         /// Returns content items that match the optional filtering parameters. By default, retrieves one level of modular content.
         /// </summary>
         /// <param name="parameters">A collection of query parameters, for example, for filtering, ordering, or setting the depth of modular content.</param>
+        /// <param name="policyKey">Resilience policy key.</param>
         /// <returns>The <see cref="DeliveryItemListingResponse"/> instance that contains the content items. If no query parameters are specified, all content items are returned.</returns>
-        public async Task<DeliveryItemListingResponse> GetItemsAsync(IEnumerable<IQueryParameter> parameters)
+        public async Task<DeliveryItemListingResponse> GetItemsAsync(IEnumerable<IQueryParameter> parameters, string policyKey = DeliveryClientHelper.DEFAULT_POLICY_KEY)
         {
             var endpointUrl = UrlBuilder.GetItemsUrl(parameters);
-            var response = await GetDeliverResponseAsync(endpointUrl);
+            var response = await GetDeliverResponseAsync(endpointUrl, policyKey);
 
             return new DeliveryItemListingResponse(response, this, endpointUrl);
         }
@@ -284,12 +300,13 @@ namespace KenticoCloud.Delivery
         /// <summary>
         /// Returns strongly typed content items that match the optional filtering parameters. By default, retrieves one level of modular content.
         /// </summary>
+        /// <param name="policyKey">Resilience policy key.</param>
         /// <typeparam name="T">Type of the code-first model. (Or <see cref="object"/> if the return type is not yet known.)</typeparam>
         /// <param name="parameters">An array that contains zero or more query parameters, for example, for filtering, ordering, or setting the depth of modular content.</param>
         /// <returns>The <see cref="DeliveryItemListingResponse{T}"/> instance that contains the content items. If no query parameters are specified, all content items are returned.</returns>
-        public async Task<DeliveryItemListingResponse<T>> GetItemsAsync<T>(params IQueryParameter[] parameters)
+        public async Task<DeliveryItemListingResponse<T>> GetItemsAsync<T>(string policyKey = DeliveryClientHelper.DEFAULT_POLICY_KEY, params IQueryParameter[] parameters)
         {
-            return await GetItemsAsync<T>((IEnumerable<IQueryParameter>)parameters);
+            return await GetItemsAsync<T>((IEnumerable<IQueryParameter>)parameters, policyKey);
         }
 
         /// <summary>
@@ -297,12 +314,13 @@ namespace KenticoCloud.Delivery
         /// </summary>
         /// <typeparam name="T">Type of the code-first model. (Or <see cref="object"/> if the return type is not yet known.)</typeparam>
         /// <param name="parameters">A collection of query parameters, for example, for filtering, ordering, or setting the depth of modular content.</param>
+        /// <param name="policyKey">Resilience policy key.</param>
         /// <returns>The <see cref="DeliveryItemListingResponse{T}"/> instance that contains the content items. If no query parameters are specified, all content items are returned.</returns>
-        public async Task<DeliveryItemListingResponse<T>> GetItemsAsync<T>(IEnumerable<IQueryParameter> parameters)
+        public async Task<DeliveryItemListingResponse<T>> GetItemsAsync<T>(IEnumerable<IQueryParameter> parameters, string policyKey = DeliveryClientHelper.DEFAULT_POLICY_KEY)
         {
             var enhancedParameters = _extractor.ExtractParameters<T>(parameters);
             var endpointUrl = UrlBuilder.GetItemsUrl(enhancedParameters);
-            var response = await GetDeliverResponseAsync(endpointUrl);
+            var response = await GetDeliverResponseAsync(endpointUrl, policyKey);
 
             return new DeliveryItemListingResponse<T>(response, this, endpointUrl);
         }
@@ -311,8 +329,9 @@ namespace KenticoCloud.Delivery
         /// Returns a content type as JSON data.
         /// </summary>
         /// <param name="codename">The codename of a content type.</param>
+        /// <param name="policyKey">Resilience policy key.</param>
         /// <returns>The <see cref="JObject"/> instance that represents the content type with the specified codename.</returns>
-        public async Task<JObject> GetTypeJsonAsync(string codename)
+        public async Task<JObject> GetTypeJsonAsync(string codename, string policyKey = DeliveryClientHelper.DEFAULT_POLICY_KEY)
         {
             if (codename == null)
             {
@@ -326,27 +345,29 @@ namespace KenticoCloud.Delivery
 
             var endpointUrl = UrlBuilder.GetTypeUrl(codename);
 
-            return await GetDeliverResponseAsync(endpointUrl);
+            return await GetDeliverResponseAsync(endpointUrl, policyKey);
         }
 
         /// <summary>
         /// Returns content types as JSON data.
         /// </summary>
+        /// <param name="policyKey">Resilience policy key.</param>
         /// <param name="parameters">An array that contains zero or more query parameters, for example, for paging.</param>
         /// <returns>The <see cref="JObject"/> instance that represents the content types. If no query parameters are specified, all content types are returned.</returns>
-        public async Task<JObject> GetTypesJsonAsync(params string[] parameters)
+        public async Task<JObject> GetTypesJsonAsync(string policyKey = DeliveryClientHelper.DEFAULT_POLICY_KEY, params string[] parameters)
         {
             var endpointUrl = UrlBuilder.GetTypesUrl(parameters);
 
-            return await GetDeliverResponseAsync(endpointUrl);
+            return await GetDeliverResponseAsync(endpointUrl, policyKey);
         }
 
         /// <summary>
         /// Returns a content type.
         /// </summary>
         /// <param name="codename">The codename of a content type.</param>
+        /// <param name="policyKey">Resilience policy key.</param>
         /// <returns>The content type with the specified codename.</returns>
-        public async Task<ContentType> GetTypeAsync(string codename)
+        public async Task<ContentType> GetTypeAsync(string codename, string policyKey = DeliveryClientHelper.DEFAULT_POLICY_KEY)
         {
             if (codename == null)
             {
@@ -359,7 +380,7 @@ namespace KenticoCloud.Delivery
             }
 
             var endpointUrl = UrlBuilder.GetTypeUrl(codename);
-            var response = await GetDeliverResponseAsync(endpointUrl);
+            var response = await GetDeliverResponseAsync(endpointUrl, policyKey);
 
             return new ContentType(response);
         }
@@ -367,22 +388,24 @@ namespace KenticoCloud.Delivery
         /// <summary>
         /// Returns content types.
         /// </summary>
+        /// <param name="policyKey">Resilience policy key.</param>
         /// <param name="parameters">An array that contains zero or more query parameters, for example, for paging.</param>
         /// <returns>The <see cref="DeliveryTypeListingResponse"/> instance that represents the content types. If no query parameters are specified, all content types are returned.</returns>
-        public async Task<DeliveryTypeListingResponse> GetTypesAsync(params IQueryParameter[] parameters)
+        public async Task<DeliveryTypeListingResponse> GetTypesAsync(string policyKey = DeliveryClientHelper.DEFAULT_POLICY_KEY, params IQueryParameter[] parameters)
         {
-            return await GetTypesAsync((IEnumerable<IQueryParameter>)parameters);
+            return await GetTypesAsync((IEnumerable<IQueryParameter>)parameters, policyKey);
         }
 
         /// <summary>
         /// Returns content types.
         /// </summary>
         /// <param name="parameters">A collection of query parameters, for example, for paging.</param>
+        /// <param name="policyKey">Resilience policy key.</param>
         /// <returns>The <see cref="DeliveryTypeListingResponse"/> instance that represents the content types. If no query parameters are specified, all content types are returned.</returns>
-        public async Task<DeliveryTypeListingResponse> GetTypesAsync(IEnumerable<IQueryParameter> parameters)
+        public async Task<DeliveryTypeListingResponse> GetTypesAsync(IEnumerable<IQueryParameter> parameters, string policyKey = DeliveryClientHelper.DEFAULT_POLICY_KEY)
         {
             var endpointUrl = UrlBuilder.GetTypesUrl(parameters);
-            var response = await GetDeliverResponseAsync(endpointUrl);
+            var response = await GetDeliverResponseAsync(endpointUrl, policyKey);
 
             return new DeliveryTypeListingResponse(response, endpointUrl);
         }
@@ -392,8 +415,9 @@ namespace KenticoCloud.Delivery
         /// </summary>
         /// <param name="contentTypeCodename">The codename of the content type.</param>
         /// <param name="contentElementCodename">The codename of the content element.</param>
+        /// <param name="policyKey">Resilience policy key.</param>
         /// <returns>A content element with the specified codename that is a part of a content type with the specified codename.</returns>
-        public async Task<ContentElement> GetContentElementAsync(string contentTypeCodename, string contentElementCodename)
+        public async Task<ContentElement> GetContentElementAsync(string contentTypeCodename, string contentElementCodename, string policyKey = DeliveryClientHelper.DEFAULT_POLICY_KEY)
         {
             if (contentTypeCodename == null)
             {
@@ -416,7 +440,7 @@ namespace KenticoCloud.Delivery
             }
 
             var endpointUrl = UrlBuilder.GetContentElementUrl(contentTypeCodename, contentElementCodename);
-            var response = await GetDeliverResponseAsync(endpointUrl);
+            var response = await GetDeliverResponseAsync(endpointUrl, policyKey);
 
             var elementCodename = response["codename"].ToString();
 
@@ -428,8 +452,9 @@ namespace KenticoCloud.Delivery
         /// Returns a taxonomy group as JSON data.
         /// </summary>
         /// <param name="codename">The codename of a taxonomy group.</param>
+        /// <param name="policyKey">Resilience policy key.</param>
         /// <returns>The <see cref="JObject"/> instance that represents the taxonomy group with the specified codename.</returns>
-        public async Task<JObject> GetTaxonomyJsonAsync(string codename)
+        public async Task<JObject> GetTaxonomyJsonAsync(string codename, string policyKey = DeliveryClientHelper.DEFAULT_POLICY_KEY)
         {
             if (codename == null)
             {
@@ -443,27 +468,29 @@ namespace KenticoCloud.Delivery
 
             var endpointUrl = UrlBuilder.GetTaxonomyUrl(codename);
 
-            return await GetDeliverResponseAsync(endpointUrl);
+            return await GetDeliverResponseAsync(endpointUrl, policyKey);
         }
 
         /// <summary>
         /// Returns taxonomy groups as JSON data.
         /// </summary>
+        /// <param name="policyKey">Resilience policy key.</param>
         /// <param name="parameters">An array that contains zero or more query parameters, for example, for paging.</param>
         /// <returns>The <see cref="JObject"/> instance that represents the taxonomy groups. If no query parameters are specified, all taxonomy groups are returned.</returns>
-        public async Task<JObject> GetTaxonomiesJsonAsync(params string[] parameters)
+        public async Task<JObject> GetTaxonomiesJsonAsync(string policyKey = DeliveryClientHelper.DEFAULT_POLICY_KEY, params string[] parameters)
         {
             var endpointUrl = UrlBuilder.GetTaxonomiesUrl(parameters);
 
-            return await GetDeliverResponseAsync(endpointUrl);
+            return await GetDeliverResponseAsync(endpointUrl, policyKey);
         }
 
         /// <summary>
         /// Returns a taxonomy group.
         /// </summary>
         /// <param name="codename">The codename of a taxonomy group.</param>
+        /// <param name="policyKey">Resilience policy key.</param>
         /// <returns>The taxonomy group with the specified codename.</returns>
-        public async Task<TaxonomyGroup> GetTaxonomyAsync(string codename)
+        public async Task<TaxonomyGroup> GetTaxonomyAsync(string codename, string policyKey = DeliveryClientHelper.DEFAULT_POLICY_KEY)
         {
             if (codename == null)
             {
@@ -476,7 +503,7 @@ namespace KenticoCloud.Delivery
             }
 
             var endpointUrl = UrlBuilder.GetTaxonomyUrl(codename);
-            var response = await GetDeliverResponseAsync(endpointUrl);
+            var response = await GetDeliverResponseAsync(endpointUrl, policyKey);
 
             return new TaxonomyGroup(response);
         }
@@ -484,27 +511,29 @@ namespace KenticoCloud.Delivery
         /// <summary>
         /// Returns taxonomy groups.
         /// </summary>
+        /// <param name="policyKey">Resilience policy key.</param>
         /// <param name="parameters">An array that contains zero or more query parameters, for example, for paging.</param>
         /// <returns>The <see cref="DeliveryTaxonomyListingResponse"/> instance that represents the taxonomy groups. If no query parameters are specified, all taxonomy groups are returned.</returns>
-        public async Task<DeliveryTaxonomyListingResponse> GetTaxonomiesAsync(params IQueryParameter[] parameters)
+        public async Task<DeliveryTaxonomyListingResponse> GetTaxonomiesAsync(string policyKey = DeliveryClientHelper.DEFAULT_POLICY_KEY, params IQueryParameter[] parameters)
         {
-            return await GetTaxonomiesAsync((IEnumerable<IQueryParameter>)parameters);
+            return await GetTaxonomiesAsync((IEnumerable<IQueryParameter>)parameters, policyKey);
         }
 
         /// <summary>
         /// Returns taxonomy groups.
         /// </summary>
         /// <param name="parameters">A collection of query parameters, for example, for paging.</param>
+        /// <param name="policyKey">Resilience policy key.</param>
         /// <returns>The <see cref="DeliveryTaxonomyListingResponse"/> instance that represents the taxonomy groups. If no query parameters are specified, all taxonomy groups are returned.</returns>
-        public async Task<DeliveryTaxonomyListingResponse> GetTaxonomiesAsync(IEnumerable<IQueryParameter> parameters)
+        public async Task<DeliveryTaxonomyListingResponse> GetTaxonomiesAsync(IEnumerable<IQueryParameter> parameters, string policyKey = DeliveryClientHelper.DEFAULT_POLICY_KEY)
         {
             var endpointUrl = UrlBuilder.GetTaxonomiesUrl(parameters);
-            var response = await GetDeliverResponseAsync(endpointUrl);
+            var response = await GetDeliverResponseAsync(endpointUrl, policyKey);
 
             return new DeliveryTaxonomyListingResponse(response, endpointUrl);
         }
 
-        private async Task<JObject> GetDeliverResponseAsync(string endpointUrl)
+        private async Task<JObject> GetDeliverResponseAsync(string endpointUrl, string policyKey = DeliveryClientHelper.DEFAULT_POLICY_KEY)
         {
             if (_deliveryOptions.UsePreviewApi && _deliveryOptions.UseSecuredProductionApi)
             {
@@ -528,16 +557,26 @@ namespace KenticoCloud.Delivery
                 message.Headers.Authorization = new AuthenticationHeaderValue("Bearer", _deliveryOptions.PreviewApiKey);
             }
 
-            var response = await HttpClient.SendAsync(message);
+            IAsyncPolicy<HttpResponseMessage> policy;
 
-            if (response.StatusCode == HttpStatusCode.OK)
+            if (!_deliveryOptions.ResiliencePolicies.TryGet(policyKey, out policy))
             {
-                var content = await response.Content.ReadAsStringAsync();
-
-                return JObject.Parse(content);
+                policy = _deliveryOptions.ResiliencePolicies.Get<IAsyncPolicy<HttpResponseMessage>>(DeliveryClientHelper.DEFAULT_POLICY_KEY);
             }
 
-            throw new DeliveryException(response, await response.Content.ReadAsStringAsync());
+            var policyResult = await policy?.ExecuteAndCaptureAsync(() => HttpClient.SendAsync(message));
+
+            if (policyResult?.Outcome == OutcomeType.Successful)
+            {
+                if (policyResult.Result.StatusCode == HttpStatusCode.OK)
+                {
+                    var content = await policyResult.Result.Content.ReadAsStringAsync();
+
+                    return JObject.Parse(content);
+                }
+            }
+
+            throw new DeliveryException(policyResult?.Result, await policyResult.Result.Content.ReadAsStringAsync());
         }
     }
 }
