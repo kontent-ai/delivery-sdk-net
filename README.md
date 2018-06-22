@@ -233,6 +233,19 @@ string transformedAssetUrl = builder.WithFocalPointCrop(560, 515, 2)
 
 For list of supported transformations and more information visit the Kentico Delivery API reference at <https://developer.kenticocloud.com/v1/reference?#image-transformation>.
 
+## Resilience capabilities
+By default, the SDK uses a retry logic (policy) thanks to `DeliveryOptions.EnableResilienceLogic` being set to `true`. It can be disabled. The default policy retries the HTTP requests if the following status codes are returned:
+
+* `RequestTimeout`
+* `InternalServerError`
+* `BadGateway`
+* `ServiceUnavailable`
+* `GatewayTimeout`
+
+The default policy retries requests for 5 times, totalling to 6 overall attempts, before a `DeliveryException` is thrown. The number of attempts can be configured via `DeliveryOptions.MaxRetryAttempts`. The consecutive attempts are delayed in an exponential way, i.e. after 2<sup>2</sup> * 100 milliseconds, 2<sup>3</sup> * 100 milliseconds and so on.
+
+The default resilience policy is implemented using the [Polly](https://github.com/App-vNext/Polly) library. You can also implement your own Polly policy wrapped in your own `IResiliencePolicyProvider` instance and plug it as an optional parameter into the constructor of `DeliveryClient` anytime.
+
 ## Using the KenticoCloud.Delivery.Rx reactive library
 
 The [DeliveryObservableProxy class](https://github.com/Kentico/delivery-sdk-net/blob/master/KenticoCloud.Delivery.Rx/DeliveryObservableProxy.cs) provides a reactive way of retrieving Kentico Cloud content.
