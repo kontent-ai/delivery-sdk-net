@@ -522,7 +522,7 @@ namespace KenticoCloud.Delivery
                 throw new InvalidOperationException("Preview API and secured Delivery API must not be configured at the same time.");
             }
 
-            return _deliveryOptions.EnableRetryLogic ? await GetRepeatableDeliverResponseAsync(endpointUrl) : await GetSolitaryDeliveryResponseAsync(endpointUrl);
+            return _deliveryOptions.EnableResilienceLogic ? await GetRepeatableDeliverResponseAsync(endpointUrl) : await GetSolitaryDeliveryResponseAsync(endpointUrl);
         }
 
         private async Task<JObject> GetRepeatableDeliverResponseAsync(string endpointUrl)

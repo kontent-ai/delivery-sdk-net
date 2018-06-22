@@ -50,7 +50,7 @@ namespace KenticoCloud.Delivery
         /// <summary>
         /// Gets or sets whether HTTP requests will use a retry logic.
         /// </summary>
-        public bool EnableRetryLogic { get; set; } = true;
+        public bool EnableResilienceLogic { get; set; } = true;
 
         /// <summary>
         /// Gets or sets the maximum retry attempts.

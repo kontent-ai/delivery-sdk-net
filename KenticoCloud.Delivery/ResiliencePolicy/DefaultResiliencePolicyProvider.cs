@@ -15,15 +15,6 @@ namespace KenticoCloud.Delivery.ResiliencePolicy
     {
         private int _maxRetryAttempts;
 
-        /// <summary>
-        /// Creates a default retry policy provider with a maximum number of retry attempts.
-        /// </summary>
-        /// <param name="maxRetryAttempts">Maximum retry attempts for a request.</param>
-        public DefaultResiliencePolicyProvider(int maxRetryAttempts)
-        {
-            _maxRetryAttempts = maxRetryAttempts;
-        }
-
         private HttpStatusCode[] _httpStatusCodesWorthRetrying => new[]
             {
                 HttpStatusCode.RequestTimeout, // 408
@@ -32,6 +23,15 @@ namespace KenticoCloud.Delivery.ResiliencePolicy
                 HttpStatusCode.ServiceUnavailable, // 503
                 HttpStatusCode.GatewayTimeout // 504
             };
+
+        /// <summary>
+        /// Creates a default retry policy provider with a maximum number of retry attempts.
+        /// </summary>
+        /// <param name="maxRetryAttempts">Maximum retry attempts for a request.</param>
+        public DefaultResiliencePolicyProvider(int maxRetryAttempts)
+        {
+            _maxRetryAttempts = maxRetryAttempts;
+        }
 
         /// <summary>
         /// Gets the default (fallback) retry policy for HTTP requests.

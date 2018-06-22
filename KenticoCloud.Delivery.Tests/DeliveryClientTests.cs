@@ -720,7 +720,7 @@ namespace KenticoCloud.Delivery.Tests
             var options = new DeliveryOptions
             {
                 ProjectId = guid,
-                EnableRetryLogic = false
+                EnableResilienceLogic = false
             };
 
             DeliveryClient client = new DeliveryClient(options)
