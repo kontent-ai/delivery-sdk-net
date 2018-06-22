@@ -34,7 +34,7 @@ namespace KenticoCloud.Delivery.Rx
         /// <returns>The <see cref="IObservable{JObject}"/> that represents the content item with the specified codename.</returns>
         public IObservable<JObject> GetItemJsonObservable(string codename, params string[] parameters)
         {
-            return GetJsonObservableOfOne(() => DeliveryClient?.GetItemJsonAsync(codename: codename, parameters: parameters)?.Result);
+            return GetJsonObservableOfOne(() => DeliveryClient?.GetItemJsonAsync(codename, parameters)?.Result);
         }
 
         /// <summary>
@@ -44,7 +44,7 @@ namespace KenticoCloud.Delivery.Rx
         /// <returns>The <see cref="IObservable{JObject}"/> that represents the content items. If no query parameters are specified, all content items are returned.</returns>
         public IObservable<JObject> GetItemsJsonObservable(params string[] parameters)
         {
-            return GetJsonObservableOfOne(() => DeliveryClient?.GetItemsJsonAsync(parameters: parameters)?.Result);
+            return GetJsonObservableOfOne(() => DeliveryClient?.GetItemsJsonAsync(parameters)?.Result);
         }
 
         /// <summary>
@@ -156,7 +156,7 @@ namespace KenticoCloud.Delivery.Rx
         /// <returns>The <see cref="IObservable{JObject}"/> that represents the content types. If no query parameters are specified, all content types are returned.</returns>
         public IObservable<JObject> GetTypesJsonObservable(params string[] parameters)
         {
-            return GetJsonObservableOfOne(() => DeliveryClient?.GetTypesJsonAsync(parameters: parameters)?.Result);
+            return GetJsonObservableOfOne(() => DeliveryClient?.GetTypesJsonAsync(parameters)?.Result);
         }
 
         /// <summary>
@@ -216,7 +216,7 @@ namespace KenticoCloud.Delivery.Rx
         /// <returns>The <see cref="IObservable{JObject}"/> that represents the taxonomy groups. If no query parameters are specified, all taxonomy groups are returned.</returns>
         public IObservable<JObject> GetTaxonomiesJsonObservable(params string[] parameters)
         {
-            return GetJsonObservableOfOne(() => DeliveryClient?.GetTaxonomiesJsonAsync(parameters: parameters)?.Result);
+            return GetJsonObservableOfOne(() => DeliveryClient?.GetTaxonomiesJsonAsync(parameters)?.Result);
         }
 
         /// <summary>

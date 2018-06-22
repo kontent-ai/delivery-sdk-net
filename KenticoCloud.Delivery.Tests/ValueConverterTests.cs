@@ -89,7 +89,7 @@ namespace KenticoCloud.Delivery.Tests
             DeliveryClient client = InitializeDeliveryClient(mockHttp);
 
             // Try to get recursive modular content on_roasts -> item -> on_roasts
-            var article = await client.GetItemAsync<Article>("coffee_beverages_explained", parameters: new DepthParameter(15));
+            var article = await client.GetItemAsync<Article>("coffee_beverages_explained", new DepthParameter(15));
 
             var hostedVideo = article.Item.BodyCopyRichText.Blocks.FirstOrDefault(b => (b as IInlineContentItem)?.ContentItem is HostedVideo);
             var tweet = article.Item.BodyCopyRichText.Blocks.FirstOrDefault(b => (b as IInlineContentItem)?.ContentItem is Tweet);

@@ -6,6 +6,7 @@ using Xunit;
 using RichardSzalay.MockHttp;
 using System.IO;
 using System.Net;
+using System.Net.Http;
 
 namespace KenticoCloud.Delivery.Tests
 {
@@ -66,7 +67,7 @@ namespace KenticoCloud.Delivery.Tests
 
             DeliveryClient client = InitializeDeliverClientWithACustomeTypeProvider();
 
-            var articles = await client.GetItemsAsync(parameters: new IQueryParameter[] { new LimitParameter(2), new SkipParameter(1) });
+            var articles = await client.GetItemsAsync(new LimitParameter(2), new SkipParameter(1));
 
             Assert.Equal(2, articles.Pagination.Count);
             Assert.Equal(1, articles.Pagination.Skip);
@@ -146,7 +147,7 @@ namespace KenticoCloud.Delivery.Tests
 
             DeliveryClient client = InitializeDeliverClientWithACustomeTypeProvider();
 
-            var response = await client.GetItemsAsync(parameters: new EqualsFilter("system.type", "cafe"));
+            var response = await client.GetItemsAsync(new EqualsFilter("system.type", "cafe"));
 
             Assert.NotEmpty(response.Items);
         }
@@ -205,7 +206,7 @@ namespace KenticoCloud.Delivery.Tests
 
             DeliveryClient client = InitializeDeliverClientWithACustomeTypeProvider();
 
-            var response = await client.GetTypesAsync(parameters: new SkipParameter(1));
+            var response = await client.GetTypesAsync(new SkipParameter(1));
 
             Assert.NotNull(response.ApiUrl);
             Assert.NotEmpty(response.Types);
@@ -295,7 +296,7 @@ namespace KenticoCloud.Delivery.Tests
 
             DeliveryClient client = InitializeDeliverClientWithACustomeTypeProvider();
 
-            var response = await client.GetTaxonomiesAsync(parameters: new SkipParameter(1));
+            var response = await client.GetTaxonomiesAsync(new SkipParameter(1));
 
             Assert.NotNull(response.ApiUrl);
             Assert.NotEmpty(response.Taxonomies);
@@ -350,7 +351,7 @@ namespace KenticoCloud.Delivery.Tests
             // |- coffee_processing_techniques
             // |- origins_of_arabica_bourbon
             //   |- on_roasts
-            var onRoastsItem = (await client.GetItemAsync<Article>("on_roasts", parameters: new DepthParameter(1))).Item;
+            var onRoastsItem = (await client.GetItemAsync<Article>("on_roasts", new DepthParameter(1))).Item;
 
             Assert.NotNull(onRoastsItem.TeaserImage.First().Description);
             Assert.Equal(2, onRoastsItem.RelatedArticles.Count());
@@ -368,7 +369,7 @@ namespace KenticoCloud.Delivery.Tests
             DeliveryClient client = InitializeDeliverClientWithACustomeTypeProvider();
 
             // Try to get recursive modular content on_roasts -> item -> on_roasts
-            var article = await client.GetItemAsync<Article>("on_roasts", parameters: new DepthParameter(15));
+            var article = await client.GetItemAsync<Article>("on_roasts", new DepthParameter(15));
 
             Assert.NotNull(article.Item);
         }
@@ -484,7 +485,7 @@ namespace KenticoCloud.Delivery.Tests
             A.CallTo(() => client.CodeFirstModelProvider.TypeProvider.GetType("complete_content_type")).ReturnsLazily(() => typeof(ContentItemModelWithAttributes));
             A.CallTo(() => client.CodeFirstModelProvider.TypeProvider.GetType("homepage")).ReturnsLazily(() => typeof(Homepage));
 
-            IReadOnlyList<object> items = client.GetItemsAsync<object>(parameters: new EqualsFilter("system.type", "complete_content_type")).Result.Items;
+            IReadOnlyList<object> items = client.GetItemsAsync<object>(new EqualsFilter("system.type", "complete_content_type")).Result.Items;
 
             // Assert
             Assert.True(items.All(i => i.GetType() == typeof(ContentItemModelWithAttributes)));
@@ -592,7 +593,7 @@ namespace KenticoCloud.Delivery.Tests
             var anyFilter = new AnyFilter("test", Enumerable.Range(0, 1000).Select(i => "test").ToArray());
 
             // Act
-            var response = client.GetItemsAsync(parameters: new IQueryParameter[] { elements, inFilter, allFilter, anyFilter }).Result;
+            var response = client.GetItemsAsync(elements, inFilter, allFilter, anyFilter).Result;
 
             // Assert
             Assert.NotNull(response);
@@ -614,7 +615,7 @@ namespace KenticoCloud.Delivery.Tests
             var elements = new ElementsParameter(Enumerable.Range(0, 1000000).Select(i => "test").ToArray());
 
             // Act / Assert
-            await Assert.ThrowsAsync<UriFormatException>(async () => await client.GetItemsAsync(parameters: elements));
+            await Assert.ThrowsAsync<UriFormatException>(async () => await client.GetItemsAsync(elements));
         }
 
         [Theory]
@@ -690,6 +691,47 @@ namespace KenticoCloud.Delivery.Tests
             mockHttp.VerifyNoOutstandingExpectation();
         }
 
+        [Fact]
+        public async void RetriesWithDefaultSettings()
+        {
+            var actualHttpRequests = new RequestCount();
+
+            mockHttp.When($"{baseUrl}/items").Respond((request) => GetResponseAndLogRequest(HttpStatusCode.RequestTimeout, actualHttpRequests));
+
+            var httpClient = mockHttp.ToHttpClient();
+
+            DeliveryClient client = new DeliveryClient(guid)
+            {
+                HttpClient = httpClient
+            };
+
+            await Assert.ThrowsAsync<DeliveryException>(async () => await client.GetItemsAsync());
+            Assert.Equal(6, actualHttpRequests.Value);
+        }
+
+        [Fact]
+        public async void DoesNotRetryWhenDisabled()
+        {
+            var actualHttpRequests = new RequestCount();
+
+            mockHttp.When($"{baseUrl}/items").Respond((request) => GetResponseAndLogRequest(HttpStatusCode.RequestTimeout, actualHttpRequests));
+
+            var httpClient = mockHttp.ToHttpClient();
+            var options = new DeliveryOptions
+            {
+                ProjectId = guid,
+                EnableRetryLogic = false
+            };
+
+            DeliveryClient client = new DeliveryClient(options)
+            {
+                HttpClient = httpClient
+            };
+
+            await Assert.ThrowsAsync<DeliveryException>(async () => await client.GetItemsAsync());
+            Assert.Equal(1, actualHttpRequests.Value);
+        }
+
         private DeliveryClient InitializeDeliverClientWithACustomeTypeProvider()
         {
             var httpClient = mockHttp.ToHttpClient();
@@ -701,5 +743,17 @@ namespace KenticoCloud.Delivery.Tests
             };
             return client;
         }
+
+        private HttpResponseMessage GetResponseAndLogRequest(HttpStatusCode httpStatusCode, RequestCount actualHttpRequests)
+        {
+            actualHttpRequests.Value++;
+
+            return new HttpResponseMessage(httpStatusCode);
+        }
+    }
+
+    public class RequestCount
+    {
+        public int Value = 0;
     }
 }

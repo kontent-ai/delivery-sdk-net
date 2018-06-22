@@ -53,11 +53,6 @@ namespace KenticoCloud.Delivery
         public bool EnableRetryLogic { get; set; } = true;
 
         /// <summary>
-        /// Gets or sets the dictionary (registry) of <see cref="Polly"/> policies.
-        /// </summary>
-        public PolicyRegistry ResiliencePolicies { get; set; }
-
-        /// <summary>
         /// Gets or sets the maximum retry attempts.
         /// </summary>
         public int MaxRetryAttempts { get; set; } = 5;
