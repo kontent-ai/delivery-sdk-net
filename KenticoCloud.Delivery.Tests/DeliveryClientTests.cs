@@ -691,12 +691,17 @@ namespace KenticoCloud.Delivery.Tests
             mockHttp.VerifyNoOutstandingExpectation();
         }
 
-        [Fact]
-        public async void RetriesWithDefaultSettings()
+        [Theory]
+        [InlineData(HttpStatusCode.RequestTimeout)]
+        [InlineData(HttpStatusCode.InternalServerError)]
+        [InlineData(HttpStatusCode.BadGateway)]
+        [InlineData(HttpStatusCode.ServiceUnavailable)]
+        [InlineData(HttpStatusCode.GatewayTimeout)]
+        public async void RetriesWithDefaultSettings(HttpStatusCode retryHandledStatusCode)
         {
             int actualHttpRequestCount = 0;
 
-            mockHttp.When($"{baseUrl}/items").Respond((request) => GetResponseAndLogRequest(HttpStatusCode.RequestTimeout, ref actualHttpRequestCount));
+            mockHttp.When($"{baseUrl}/items").Respond((request) => GetResponseAndLogRequest(retryHandledStatusCode, ref actualHttpRequestCount));
 
             var httpClient = mockHttp.ToHttpClient();
 
