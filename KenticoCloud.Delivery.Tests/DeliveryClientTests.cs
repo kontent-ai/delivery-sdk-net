@@ -7,6 +7,8 @@ using RichardSzalay.MockHttp;
 using System.IO;
 using System.Net;
 using System.Net.Http;
+using KenticoCloud.Delivery.ResiliencePolicy;
+using Polly;
 
 namespace KenticoCloud.Delivery.Tests
 {
@@ -758,6 +760,32 @@ namespace KenticoCloud.Delivery.Tests
                 HttpClient = httpClient              
             };
 
+            await Assert.ThrowsAsync<DeliveryException>(async () => await client.GetItemsAsync());
+            Assert.Equal(expectedAttepts, actualHttpRequestCount);
+        }
+
+        [Fact]
+        public async void RetriesWithCustomResilencePolicy_PolicyUsed()
+        {
+            int retryAttempts = 1;
+            int expectedAttepts = retryAttempts + 1;
+            int actualHttpRequestCount = 0;
+            HttpStatusCode checkingStatusCode = HttpStatusCode.NotImplemented;
+
+            mockHttp.When($"{baseUrl}/items").Respond((request) => GetResponseAndLogRequest(checkingStatusCode, ref actualHttpRequestCount));
+
+            var mockResilencePolicyProvider = A.Fake<IResiliencePolicyProvider>();
+            A.CallTo(() => mockResilencePolicyProvider.Policy)
+               .Returns(Policy
+                   .HandleResult<HttpResponseMessage>(result => result.StatusCode == checkingStatusCode)
+                   .RetryAsync(retryAttempts));
+
+            var httpClient = mockHttp.ToHttpClient();
+            DeliveryClient client = new DeliveryClient(guid)
+            {
+                HttpClient = httpClient,
+                ResiliencePolicyProvider = mockResilencePolicyProvider
+            };
             await Assert.ThrowsAsync<DeliveryException>(async () => await client.GetItemsAsync());
             Assert.Equal(expectedAttepts, actualHttpRequestCount);
         }
