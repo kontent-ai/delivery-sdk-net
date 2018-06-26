@@ -737,6 +737,31 @@ namespace KenticoCloud.Delivery.Tests
             Assert.Equal(1, actualHttpRequestCount);
         }
 
+        [Fact]
+        public async void RetriesWithMaxRetrySet()
+        {
+            int retryAttempts = 3;
+            int expectedAttepts = retryAttempts + 1;
+            int actualHttpRequestCount = 0;
+
+            mockHttp.When($"{baseUrl}/items").Respond((request) => GetResponseAndLogRequest(HttpStatusCode.RequestTimeout, ref actualHttpRequestCount));
+            var httpClient = mockHttp.ToHttpClient();
+
+            DeliveryOptions deliveryOptions = new DeliveryOptions()
+            {
+                ProjectId = guid,
+                MaxRetryAttempts = retryAttempts
+            };
+
+            DeliveryClient client = new DeliveryClient(deliveryOptions)
+            {
+                HttpClient = httpClient              
+            };
+
+            await Assert.ThrowsAsync<DeliveryException>(async () => await client.GetItemsAsync());
+            Assert.Equal(expectedAttepts, actualHttpRequestCount);
+        }
+
         private DeliveryClient InitializeDeliverClientWithACustomeTypeProvider()
         {
             var httpClient = mockHttp.ToHttpClient();
