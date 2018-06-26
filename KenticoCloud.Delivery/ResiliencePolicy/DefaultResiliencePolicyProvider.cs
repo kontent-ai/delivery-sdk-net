@@ -15,7 +15,7 @@ namespace KenticoCloud.Delivery.ResiliencePolicy
     {
         private int _maxRetryAttempts;
 
-        private HttpStatusCode[] _httpStatusCodesWorthRetrying => new[]
+        private readonly HttpStatusCode[] _httpStatusCodesWorthRetrying = new[]
             {
                 HttpStatusCode.RequestTimeout, // 408
                 HttpStatusCode.InternalServerError, // 500
