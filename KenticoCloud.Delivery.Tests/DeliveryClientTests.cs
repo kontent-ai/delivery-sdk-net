@@ -694,9 +694,9 @@ namespace KenticoCloud.Delivery.Tests
         [Fact]
         public async void RetriesWithDefaultSettings()
         {
-            var actualHttpRequests = new RequestCount();
+            int actualHttpRequestCount = 0;
 
-            mockHttp.When($"{baseUrl}/items").Respond((request) => GetResponseAndLogRequest(HttpStatusCode.RequestTimeout, actualHttpRequests));
+            mockHttp.When($"{baseUrl}/items").Respond((request) => GetResponseAndLogRequest(HttpStatusCode.RequestTimeout, ref actualHttpRequestCount));
 
             var httpClient = mockHttp.ToHttpClient();
 
@@ -706,15 +706,15 @@ namespace KenticoCloud.Delivery.Tests
             };
 
             await Assert.ThrowsAsync<DeliveryException>(async () => await client.GetItemsAsync());
-            Assert.Equal(6, actualHttpRequests.Value);
+            Assert.Equal(6, actualHttpRequestCount);
         }
 
         [Fact]
         public async void DoesNotRetryWhenDisabled()
         {
-            var actualHttpRequests = new RequestCount();
+            var actualHttpRequestCount = 0;
 
-            mockHttp.When($"{baseUrl}/items").Respond((request) => GetResponseAndLogRequest(HttpStatusCode.RequestTimeout, actualHttpRequests));
+            mockHttp.When($"{baseUrl}/items").Respond((request) => GetResponseAndLogRequest(HttpStatusCode.RequestTimeout, ref actualHttpRequestCount));
 
             var httpClient = mockHttp.ToHttpClient();
             var options = new DeliveryOptions
@@ -729,7 +729,7 @@ namespace KenticoCloud.Delivery.Tests
             };
 
             await Assert.ThrowsAsync<DeliveryException>(async () => await client.GetItemsAsync());
-            Assert.Equal(1, actualHttpRequests.Value);
+            Assert.Equal(1, actualHttpRequestCount);
         }
 
         private DeliveryClient InitializeDeliverClientWithACustomeTypeProvider()
@@ -744,16 +744,10 @@ namespace KenticoCloud.Delivery.Tests
             return client;
         }
 
-        private HttpResponseMessage GetResponseAndLogRequest(HttpStatusCode httpStatusCode, RequestCount actualHttpRequests)
+        private HttpResponseMessage GetResponseAndLogRequest(HttpStatusCode httpStatusCode, ref int actualHttpRequestCount)
         {
-            actualHttpRequests.Value++;
-
+            actualHttpRequestCount++;
             return new HttpResponseMessage(httpStatusCode);
         }
-    }
-
-    public class RequestCount
-    {
-        public int Value = 0;
     }
 }
