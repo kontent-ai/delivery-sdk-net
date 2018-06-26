@@ -1,13 +1,13 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
-using FakeItEasy;
-using Xunit;
-using RichardSzalay.MockHttp;
 using System.IO;
 using System.Net;
 using System.Net.Http;
 using KenticoCloud.Delivery.ResiliencePolicy;
+using FakeItEasy;
+using Xunit;
+using RichardSzalay.MockHttp;
 using Polly;
 
 namespace KenticoCloud.Delivery.Tests
@@ -693,17 +693,12 @@ namespace KenticoCloud.Delivery.Tests
             mockHttp.VerifyNoOutstandingExpectation();
         }
 
-        [Theory]
-        [InlineData(HttpStatusCode.RequestTimeout)]
-        [InlineData(HttpStatusCode.InternalServerError)]
-        [InlineData(HttpStatusCode.BadGateway)]
-        [InlineData(HttpStatusCode.ServiceUnavailable)]
-        [InlineData(HttpStatusCode.GatewayTimeout)]
-        public async void RetriesWithDefaultSettings(HttpStatusCode retryHandledStatusCode)
+        [Fact]
+        public async void RetriesWithDefaultSettings()
         {
             int actualHttpRequestCount = 0;
 
-            mockHttp.When($"{baseUrl}/items").Respond((request) => GetResponseAndLogRequest(retryHandledStatusCode, ref actualHttpRequestCount));
+            mockHttp.When($"{baseUrl}/items").Respond((request) => GetResponseAndLogRequest(HttpStatusCode.RequestTimeout, ref actualHttpRequestCount));
 
             var httpClient = mockHttp.ToHttpClient();
 
@@ -744,6 +739,7 @@ namespace KenticoCloud.Delivery.Tests
         {
             int retryAttempts = 3;
             int expectedAttepts = retryAttempts + 1;
+
             int actualHttpRequestCount = 0;
 
             mockHttp.When($"{baseUrl}/items").Respond((request) => GetResponseAndLogRequest(HttpStatusCode.RequestTimeout, ref actualHttpRequestCount));
