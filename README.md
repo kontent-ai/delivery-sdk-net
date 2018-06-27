@@ -244,7 +244,7 @@ By default, the SDK uses a retry logic (policy) thanks to `DeliveryOptions.Enabl
 
 The default policy retries requests for 5 times, totalling to 6 overall attempts, before a `DeliveryException` is thrown. The number of attempts can be configured via `DeliveryOptions.MaxRetryAttempts`. The consecutive attempts are delayed in an exponential way, i.e. after 2<sup>2</sup> * 100 milliseconds, 2<sup>3</sup> * 100 milliseconds and so on.
 
-The default resilience policy is implemented using the [Polly](https://github.com/App-vNext/Polly) library. You can also implement your own Polly policy wrapped in your own `IResiliencePolicyProvider` instance and plug it as an optional parameter into the constructor of `DeliveryClient` anytime.
+The default resilience policy is implemented using the [Polly](https://github.com/App-vNext/Polly) library. You can also implement your own Polly policy wrapped in your own `IResiliencePolicyProvider` instance and plug it as an optional parameter into the constructor of `DeliveryClient` or by the `ResiliencePolicyProvider` property anytime.
 
 ## Using the KenticoCloud.Delivery.Rx reactive library
 
