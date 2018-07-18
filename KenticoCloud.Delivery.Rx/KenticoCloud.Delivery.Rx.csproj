@@ -1,22 +1,23 @@
-<Project Sdk="Microsoft.NET.Sdk">
+﻿<Project Sdk="Microsoft.NET.Sdk">
 
   <PropertyGroup>
-    <TargetFramework>netstandard1.3</TargetFramework>
+    <TargetFramework>netstandard2.0</TargetFramework>
     <Authors>Kentico Software</Authors>
     <Product>Kentico Cloud</Product>
-    <Description>Kentico Cloud Delivery SDK - Reactive extensions (Rx)</Description>
-    <Copyright>© 2018 Kentico Software. All rights reserved.</Copyright>
+    <Copyright>© 2016 Kentico Software. All rights reserved.</Copyright>
+    <Description>Kentico Cloud Delivery SDK</Description>
     <PackageLicenseUrl>https://github.com/Kentico/delivery-sdk-net/blob/master/LICENSE</PackageLicenseUrl>
     <PackageProjectUrl>https://github.com/Kentico/delivery-sdk-net</PackageProjectUrl>
     <PackageIconUrl>http://kentico.com/favicon.ico</PackageIconUrl>
     <RepositoryUrl>https://github.com/Kentico/delivery-sdk-net.git</RepositoryUrl>
     <RepositoryType>git</RepositoryType>
-    <PackageTags>kentico;mvc;aspnet;aspnetmvc;rx;reactive;observable;linq;events</PackageTags>
+    <PackageTags>kentico;mvc;aspnet;aspnetmvc;reactive;rx</PackageTags>
+    <GenerateAssemblyInfo>false</GenerateAssemblyInfo>
   </PropertyGroup>
 
   <ItemGroup>
-    <PackageReference Include="Newtonsoft.Json" Version="9.0.1" />
-    <PackageReference Include="System.Reactive" Version="3.1.1" />
+    <PackageReference Include="Newtonsoft.Json" Version="11.0.2" />
+    <PackageReference Include="System.Reactive" Version="4.0.0" />
   </ItemGroup>
 
   <ItemGroup>
