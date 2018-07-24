@@ -5,7 +5,7 @@ VisualStudioVersion = 15.0.27703.2035
 MinimumVisualStudioVersion = 10.0.40219.1
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "KenticoCloud.Delivery", "KenticoCloud.Delivery\KenticoCloud.Delivery.csproj", "{742B4C41-1C0E-40BC-8841-C236C3FF7910}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "KenticoCloud.Delivery.Rx", "KenticoCloud.Delivery.Rx\KenticoCloud.Delivery.Rx.csproj", "{66F88596-86F3-4E53-AF7D-B8FE497D5019}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "KenticoCloud.Delivery.Rx", "KenticoCloud.Delivery.Rx\KenticoCloud.Delivery.Rx.csproj", "{66F88596-86F3-4E53-AF7D-B8FE497D5019}"
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "KenticoCloud.Delivery.Tests", "KenticoCloud.Delivery.Tests\KenticoCloud.Delivery.Tests.csproj", "{CAC807C5-FDBB-4DE4-B5F3-E04B4766BEFE}"
 EndProject
