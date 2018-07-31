@@ -820,7 +820,7 @@ namespace KenticoCloud.Delivery.Tests
         {
             int policyRetryAttempts = 1;
             int expectedAttepts = policyRetryAttempts + 1;
-            int ignoredRetryAttempty = 3;
+            int ignoredRetryAttempt = 3;
             int actualHttpRequestCount = 0;
 
             mockHttp.When($"{baseUrl}/items")
@@ -834,7 +834,7 @@ namespace KenticoCloud.Delivery.Tests
             var deliveryOptions = new DeliveryOptions()
             {
                 ProjectId = guid,
-                MaxRetryAttempts = ignoredRetryAttempty
+                MaxRetryAttempts = ignoredRetryAttempt
             };
             var client = new DeliveryClient(deliveryOptions)
             {

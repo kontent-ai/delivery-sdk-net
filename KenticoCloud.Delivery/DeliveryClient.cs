@@ -522,23 +522,22 @@ namespace KenticoCloud.Delivery
                 throw new InvalidOperationException("Preview API and secured Delivery API must not be configured at the same time.");
             }
 
-            return _deliveryOptions.EnableResilienceLogic ? await GetRepeatableDeliverResponseAsync(endpointUrl) : await GetSolitaryDeliveryResponseAsync(endpointUrl);
-        }
+            if (_deliveryOptions.EnableResilienceLogic)
+            {
+                // Use the resilience logic.
+                var policyResult = await ResiliencePolicyProvider?.Policy?.ExecuteAndCaptureAsync(() =>
+                    {
+                        return SendHttpMessage(endpointUrl);
+                    }
+                );
 
-        private async Task<JObject> GetRepeatableDeliverResponseAsync(string endpointUrl)
-        {
-            var policyResult = await ResiliencePolicyProvider?.Policy?.ExecuteAndCaptureAsync(() =>
-                {
-                    return SendHttpMessage(endpointUrl);
-                }
-            );
-
-            return await GetResponseContent(policyResult?.FinalHandledResult ?? policyResult?.Result);
-        }
-
-        private async Task<JObject> GetSolitaryDeliveryResponseAsync(string endpointUrl)
-        {
-            return await GetResponseContent(await SendHttpMessage(endpointUrl));
+                return await GetResponseContent(policyResult?.FinalHandledResult ?? policyResult?.Result);
+            }
+            else
+            {
+                // Omit using the resilience logic completely.
+                return await GetResponseContent(await SendHttpMessage(endpointUrl));
+            }
         }
 
         private Task<HttpResponseMessage> SendHttpMessage(string endpointUrl)
@@ -574,7 +573,7 @@ namespace KenticoCloud.Delivery
 
             string faultContent = null;
 
-            // The null-coallescing operator cannot be used, hence "if" statement.
+            // The null-coallescing operator causes tests to fail for NREs, hence the "if" statement.
             if (httpResponseMessage?.Content != null)
             {
                 faultContent = await httpResponseMessage.Content.ReadAsStringAsync();
