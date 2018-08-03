@@ -1,11 +1,14 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.IO;
+using System.Net;
+using System.Net.Http;
+using KenticoCloud.Delivery.ResiliencePolicy;
 using FakeItEasy;
 using Xunit;
 using RichardSzalay.MockHttp;
-using System.IO;
-using System.Net;
+using Polly;
 
 namespace KenticoCloud.Delivery.Tests
 {
@@ -37,7 +40,7 @@ namespace KenticoCloud.Delivery.Tests
             Respond("application/json", File.ReadAllText(Path.Combine(Environment.CurrentDirectory, "Fixtures\\DeliveryClient\\on_roasts.json")));
 
             var httpClient = mockHttp.ToHttpClient();
-            DeliveryClient client = new DeliveryClient(guid) { HttpClient = httpClient };
+            var client = new DeliveryClient(guid) { HttpClient = httpClient };
 
             var beveragesResponse = (await client.GetItemAsync("coffee_beverages_explained"));
             var beveragesItem = beveragesResponse.Item;
@@ -64,7 +67,7 @@ namespace KenticoCloud.Delivery.Tests
                 .WithQueryString("limit=2&skip=1")
                 .Respond("application/json", File.ReadAllText(Path.Combine(Environment.CurrentDirectory, "Fixtures\\DeliveryClient\\articles.json")));
 
-            DeliveryClient client = InitializeDeliverClientWithACustomeTypeProvider();
+            var client = InitializeDeliverClientWithACustomeTypeProvider();
 
             var articles = await client.GetItemsAsync(new LimitParameter(2), new SkipParameter(1));
 
@@ -80,7 +83,7 @@ namespace KenticoCloud.Delivery.Tests
             mockHttp.When($"{baseUrl}/items/{"coffee_beverages_explained"}")
                 .Respond("application/json", File.ReadAllText(Path.Combine(Environment.CurrentDirectory, "Fixtures\\DeliveryClient\\coffee_beverages_explained.json")));
 
-            DeliveryClient client = InitializeDeliverClientWithACustomeTypeProvider();
+            var client = InitializeDeliverClientWithACustomeTypeProvider();
 
             var response = await client.GetItemAsync("coffee_beverages_explained");
             var beveragesItem = response.Item;
@@ -100,7 +103,7 @@ namespace KenticoCloud.Delivery.Tests
             mockHttp.When($"{baseUrl}/items/{"coffee_beverages_explained"}")
                 .Respond("application/json", File.ReadAllText(Path.Combine(Environment.CurrentDirectory, "Fixtures\\DeliveryClient\\coffee_beverages_explained.json")));
 
-            DeliveryClient client = InitializeDeliverClientWithACustomeTypeProvider();
+            var client = InitializeDeliverClientWithACustomeTypeProvider();
 
             var beveragesItem = (await client.GetItemAsync("coffee_beverages_explained")).Item;
 
@@ -118,7 +121,7 @@ namespace KenticoCloud.Delivery.Tests
             mockHttp.When($"{baseUrl}/items/unscintillating_hemerocallidaceae_des_iroquois")
                 .Respond(HttpStatusCode.NotFound, "application/json", messsge);
 
-            DeliveryClient client = InitializeDeliverClientWithACustomeTypeProvider();
+            var client = InitializeDeliverClientWithACustomeTypeProvider();
 
             await Assert.ThrowsAsync<DeliveryException>(async () => await client.GetItemAsync("unscintillating_hemerocallidaceae_des_iroquois"));
         }
@@ -130,7 +133,7 @@ namespace KenticoCloud.Delivery.Tests
                 .WithQueryString("system.type=cafe")
                 .Respond("application/json", File.ReadAllText(Path.Combine(Environment.CurrentDirectory, "Fixtures\\DeliveryClient\\allendale.json")));
 
-            DeliveryClient client = InitializeDeliverClientWithACustomeTypeProvider();
+            var client = InitializeDeliverClientWithACustomeTypeProvider();
 
             var response = await client.GetItemsAsync<Cafe>();
 
@@ -144,7 +147,7 @@ namespace KenticoCloud.Delivery.Tests
                 .WithQueryString("system.type=cafe")
                 .Respond("application/json", File.ReadAllText(Path.Combine(Environment.CurrentDirectory, "Fixtures\\DeliveryClient\\allendale.json")));
 
-            DeliveryClient client = InitializeDeliverClientWithACustomeTypeProvider();
+            var client = InitializeDeliverClientWithACustomeTypeProvider();
 
             var response = await client.GetItemsAsync(new EqualsFilter("system.type", "cafe"));
 
@@ -160,7 +163,7 @@ namespace KenticoCloud.Delivery.Tests
             mockHttp.When($"{baseUrl}/types/coffee")
                 .Respond("application/json", File.ReadAllText(Path.Combine(Environment.CurrentDirectory, "Fixtures\\DeliveryClient\\coffee.json")));
 
-            DeliveryClient client = InitializeDeliverClientWithACustomeTypeProvider();
+            var client = InitializeDeliverClientWithACustomeTypeProvider();
 
             var articleType = await client.GetTypeAsync("article");
             var coffeeType = await client.GetTypeAsync("coffee");
@@ -191,7 +194,7 @@ namespace KenticoCloud.Delivery.Tests
             mockHttp.When($"{baseUrl}/types/unequestrian_nonadjournment_sur_achoerodus")
                 .Respond(HttpStatusCode.NotFound, "application/json", messsge);
 
-            DeliveryClient client = InitializeDeliverClientWithACustomeTypeProvider();
+            var client = InitializeDeliverClientWithACustomeTypeProvider();
 
             await Assert.ThrowsAsync<DeliveryException>(async () => await client.GetTypeAsync("unequestrian_nonadjournment_sur_achoerodus"));
         }
@@ -203,7 +206,7 @@ namespace KenticoCloud.Delivery.Tests
                 .WithQueryString("skip=1")
                 .Respond("application/json", File.ReadAllText(Path.Combine(Environment.CurrentDirectory, "Fixtures\\DeliveryClient\\types_accessory.json")));
 
-            DeliveryClient client = InitializeDeliverClientWithACustomeTypeProvider();
+            var client = InitializeDeliverClientWithACustomeTypeProvider();
 
             var response = await client.GetTypesAsync(new SkipParameter(1));
 
@@ -223,7 +226,7 @@ namespace KenticoCloud.Delivery.Tests
             mockHttp.When($"{url}/{Coffee.Codename}/elements/{Coffee.ProcessingCodename}")
                 .Respond("application/json", "{'type':'taxonomy','name':'Processing','taxonomy_group':'processing','codename':'processing'}");
 
-            DeliveryClient client = InitializeDeliverClientWithACustomeTypeProvider();
+            var client = InitializeDeliverClientWithACustomeTypeProvider();
 
             var element = await client.GetContentElementAsync(Article.Codename, Article.TitleCodename);
             var personasTaxonomyElement = await client.GetContentElementAsync(Article.Codename, Article.PersonasCodename);
@@ -243,7 +246,7 @@ namespace KenticoCloud.Delivery.Tests
             mockHttp.When($"{url}")
                 .Respond(HttpStatusCode.NotFound, "application/json", messsge);
 
-            DeliveryClient client = InitializeDeliverClientWithACustomeTypeProvider();
+            var client = InitializeDeliverClientWithACustomeTypeProvider();
 
             await Assert.ThrowsAsync<DeliveryException>(async () => await client.GetContentElementAsync("anticommunistical_preventure_sur_helxine", "unlacerated_topognosis_sur_nonvigilantness"));
         }
@@ -254,7 +257,7 @@ namespace KenticoCloud.Delivery.Tests
             mockHttp.When($"{baseUrl}/taxonomies/personas")
                 .Respond("application/json", File.ReadAllText(Path.Combine(Environment.CurrentDirectory, "Fixtures\\DeliveryClient\\taxonomies_personas.json")));
 
-            DeliveryClient client = InitializeDeliverClientWithACustomeTypeProvider();
+            var client = InitializeDeliverClientWithACustomeTypeProvider();
 
             var taxonomy = await client.GetTaxonomyAsync("personas");
             var personasTerms = taxonomy.Terms.ToList();
@@ -277,7 +280,7 @@ namespace KenticoCloud.Delivery.Tests
 
             var httpClient = mockHttp.ToHttpClient();
 
-            DeliveryClient client = new DeliveryClient(guid)
+            var client = new DeliveryClient(guid)
             {
                 CodeFirstModelProvider = { TypeProvider = new CustomTypeProvider() },
                 HttpClient = httpClient
@@ -293,7 +296,7 @@ namespace KenticoCloud.Delivery.Tests
                 .WithQueryString("skip=1")
                 .Respond("application/json", File.ReadAllText(Path.Combine(Environment.CurrentDirectory, "Fixtures\\DeliveryClient\\taxonomies_multiple.json")));
 
-            DeliveryClient client = InitializeDeliverClientWithACustomeTypeProvider();
+            var client = InitializeDeliverClientWithACustomeTypeProvider();
 
             var response = await client.GetTaxonomiesAsync(new SkipParameter(1));
 
@@ -309,7 +312,7 @@ namespace KenticoCloud.Delivery.Tests
             mockHttp.When($"{url}")
                 .Respond("application/json", " { 'items': [],'modular_content': {},'pagination': {'skip': 2,'limit': 10,'count': 0,'next_page': ''}}");
 
-            DeliveryClient client = InitializeDeliverClientWithACustomeTypeProvider();
+            var client = InitializeDeliverClientWithACustomeTypeProvider();
 
             var parameters = new IQueryParameter[]
            {
@@ -343,7 +346,7 @@ namespace KenticoCloud.Delivery.Tests
                 .WithQueryString("depth=1")
                 .Respond("application/json", File.ReadAllText(Path.Combine(Environment.CurrentDirectory, "Fixtures\\DeliveryClient\\on_roasts.json")));
 
-            DeliveryClient client = InitializeDeliverClientWithACustomeTypeProvider();
+            var client = InitializeDeliverClientWithACustomeTypeProvider();
 
             // Returns on_roasts content item with related_articles modular element to two other articles.
             // on_roasts
@@ -365,7 +368,7 @@ namespace KenticoCloud.Delivery.Tests
                 .WithQueryString("depth=15")
                 .Respond("application/json", File.ReadAllText(Path.Combine(Environment.CurrentDirectory, "Fixtures\\DeliveryClient\\onroast_deep15.json")));
 
-            DeliveryClient client = InitializeDeliverClientWithACustomeTypeProvider();
+            var client = InitializeDeliverClientWithACustomeTypeProvider();
 
             // Try to get recursive modular content on_roasts -> item -> on_roasts
             var article = await client.GetItemAsync<Article>("on_roasts", new DepthParameter(15));
@@ -379,7 +382,7 @@ namespace KenticoCloud.Delivery.Tests
             mockHttp.When($"{baseUrl}/items/complete_content_item")
                 .Respond("application/json", File.ReadAllText(Path.Combine(Environment.CurrentDirectory, "Fixtures\\DeliveryClient\\complete_content_item.json")));
 
-            DeliveryClient client = InitializeDeliverClientWithACustomeTypeProvider();
+            var client = InitializeDeliverClientWithACustomeTypeProvider();
 
             var response = client.GetItemAsync<CompleteContentItemModel>("complete_content_item").Result;
             CompleteContentItemModel item = response.Item;
@@ -421,7 +424,7 @@ namespace KenticoCloud.Delivery.Tests
 
             var httpClient = mockHttp.ToHttpClient();
 
-            DeliveryClient client = new DeliveryClient(guid)
+            var client = new DeliveryClient(guid)
             {
                 CodeFirstModelProvider = { TypeProvider = A.Fake<ICodeFirstTypeProvider>() },
                 HttpClient = httpClient
@@ -473,7 +476,7 @@ namespace KenticoCloud.Delivery.Tests
 
             var httpClient = mockHttp.ToHttpClient();
 
-            DeliveryClient client = new DeliveryClient(guid)
+            var client = new DeliveryClient(guid)
             {
                 CodeFirstModelProvider = { TypeProvider = A.Fake<ICodeFirstTypeProvider>() },
                 HttpClient = httpClient
@@ -498,7 +501,7 @@ namespace KenticoCloud.Delivery.Tests
 
             var httpClient = mockHttp.ToHttpClient();
 
-            DeliveryClient client = new DeliveryClient(guid)
+            var client = new DeliveryClient(guid)
             {
                 HttpClient = httpClient
             };
@@ -518,7 +521,7 @@ namespace KenticoCloud.Delivery.Tests
 
             var httpClient = mockHttp.ToHttpClient();
 
-            DeliveryClient client = new DeliveryClient(guid)
+            var client = new DeliveryClient(guid)
             {
                 HttpClient = httpClient
             };
@@ -539,7 +542,7 @@ namespace KenticoCloud.Delivery.Tests
 
             var httpClient = mockHttp.ToHttpClient();
 
-            DeliveryClient client = new DeliveryClient(guid)
+            var client = new DeliveryClient(guid)
             {
                 HttpClient = httpClient
             };
@@ -560,7 +563,7 @@ namespace KenticoCloud.Delivery.Tests
 
             var httpClient = mockHttp.ToHttpClient();
 
-            DeliveryClient client = new DeliveryClient(guid)
+            var client = new DeliveryClient(guid)
             {
                 HttpClient = httpClient
             };
@@ -581,7 +584,7 @@ namespace KenticoCloud.Delivery.Tests
 
             var httpClient = mockHttp.ToHttpClient();
 
-            DeliveryClient client = new DeliveryClient(guid)
+            var client = new DeliveryClient(guid)
             {
                 HttpClient = httpClient
             };
@@ -606,7 +609,7 @@ namespace KenticoCloud.Delivery.Tests
 
             var httpClient = mockHttp.ToHttpClient();
 
-            DeliveryClient client = new DeliveryClient(guid)
+            var client = new DeliveryClient(guid)
             {
                 HttpClient = httpClient
             };
@@ -646,7 +649,7 @@ namespace KenticoCloud.Delivery.Tests
                 SecuredProductionApiKey = "someKey"
             };
 
-            DeliveryClient client = new DeliveryClient(options)
+            var client = new DeliveryClient(options)
             {
                 HttpClient = httpClient
             };
@@ -681,7 +684,7 @@ namespace KenticoCloud.Delivery.Tests
 
             var mockHttpClient = mockHttp.ToHttpClient();
 
-            DeliveryClient client = new DeliveryClient(options)
+            var client = new DeliveryClient(options)
             {
                 HttpClient = mockHttpClient
             };
@@ -690,16 +693,177 @@ namespace KenticoCloud.Delivery.Tests
             mockHttp.VerifyNoOutstandingExpectation();
         }
 
+        [Fact]
+        public async void Retries_WithDefaultSettings_Retries()
+        {
+            int actualHttpRequestCount = 0;
+
+            mockHttp.When($"{baseUrl}/items")
+                .Respond((request) => GetResponseAndLogRequest(HttpStatusCode.RequestTimeout, ref actualHttpRequestCount));
+            var httpClient = mockHttp.ToHttpClient();
+
+            var client = new DeliveryClient(guid)
+            {
+                HttpClient = httpClient
+            };
+
+            await Assert.ThrowsAsync<DeliveryException>(async () => await client.GetItemsAsync());
+            Assert.Equal(6, actualHttpRequestCount);
+        }
+
+        [Fact]
+        public async void Retries_EnableResilienceLogicDisabled_DoesNotRetry()
+        {
+            var actualHttpRequestCount = 0;
+
+            mockHttp.When($"{baseUrl}/items")
+                .Respond((request) => GetResponseAndLogRequest(HttpStatusCode.RequestTimeout, ref actualHttpRequestCount));
+            var httpClient = mockHttp.ToHttpClient();
+
+            var deliveryOptions = new DeliveryOptions
+            {
+                ProjectId = guid,
+                EnableResilienceLogic = false
+            };
+            var client = new DeliveryClient(deliveryOptions)
+            {
+                HttpClient = httpClient
+            };
+
+            await Assert.ThrowsAsync<DeliveryException>(async () => await client.GetItemsAsync());
+            Assert.Equal(1, actualHttpRequestCount);
+        }
+
+        [Fact]
+        public async void Retries_WithMaxRetrySet_SettingReflected()
+        {
+            int retryAttempts = 3;
+            int expectedAttepts = retryAttempts + 1;
+            int actualHttpRequestCount = 0;
+
+            mockHttp.When($"{baseUrl}/items")
+                .Respond((request) => GetResponseAndLogRequest(HttpStatusCode.RequestTimeout, ref actualHttpRequestCount));
+            var httpClient = mockHttp.ToHttpClient();
+
+            var deliveryOptions = new DeliveryOptions()
+            {
+                ProjectId = guid,
+                MaxRetryAttempts = retryAttempts
+            };
+            var client = new DeliveryClient(deliveryOptions)
+            {
+                HttpClient = httpClient
+            };
+
+            await Assert.ThrowsAsync<DeliveryException>(async () => await client.GetItemsAsync());
+
+            Assert.Equal(expectedAttepts, actualHttpRequestCount);
+        }
+
+        [Fact]
+        public async void Retries_WithCustomResilencePolicy_PolicyUsed()
+        {
+            int retryAttempts = 1;
+            int expectedAttepts = retryAttempts + 1;
+            int actualHttpRequestCount = 0;
+
+            mockHttp.When($"{baseUrl}/items").Respond((request) => GetResponseAndLogRequest(HttpStatusCode.NotImplemented, ref actualHttpRequestCount));
+            var httpClient = mockHttp.ToHttpClient();
+
+            var mockResilencePolicyProvider = A.Fake<IResiliencePolicyProvider>();
+            A.CallTo(() => mockResilencePolicyProvider.Policy)
+               .Returns(Policy.HandleResult<HttpResponseMessage>(result => true).RetryAsync(retryAttempts));
+
+            var client = new DeliveryClient(guid)
+            {
+                HttpClient = httpClient,
+                ResiliencePolicyProvider = mockResilencePolicyProvider
+            };
+
+            await Assert.ThrowsAsync<DeliveryException>(async () => await client.GetItemsAsync());
+
+            A.CallTo(() => mockResilencePolicyProvider.Policy).MustHaveHappened();
+            Assert.Equal(expectedAttepts, actualHttpRequestCount);
+        }
+
+        [Fact]
+        public async void Retries_WithCustomResilencePolicyAndPolicyDisabled_PolicyIgnored()
+        {
+            int policyRetryAttempts = 2;
+            int expectedAttepts = 1;
+            int actualHttpRequestCount = 0;
+
+            mockHttp.When($"{baseUrl}/items").Respond((request) => GetResponseAndLogRequest(HttpStatusCode.NotImplemented, ref actualHttpRequestCount));
+            var httpClient = mockHttp.ToHttpClient();
+
+            var mockResilencePolicyProvider = A.Fake<IResiliencePolicyProvider>();
+            A.CallTo(() => mockResilencePolicyProvider.Policy)
+               .Returns(Policy.HandleResult<HttpResponseMessage>(result => true).RetryAsync(policyRetryAttempts));
+
+            var deliveryOptions = new DeliveryOptions()
+            {
+                ProjectId = guid,
+                EnableResilienceLogic = false
+            };
+            var client = new DeliveryClient(deliveryOptions)
+            {
+                HttpClient = httpClient,
+                ResiliencePolicyProvider = mockResilencePolicyProvider
+            };
+
+            await Assert.ThrowsAsync<DeliveryException>(async () => await client.GetItemsAsync());
+            Assert.Equal(expectedAttepts, actualHttpRequestCount);
+        }
+
+        [Fact]
+        public async void Retries_WithCustomResilencePolicyWithMaxRetrySet_PolicyUsedMaxRetryIgnored()
+        {
+            int policyRetryAttempts = 1;
+            int expectedAttepts = policyRetryAttempts + 1;
+            int ignoredRetryAttempt = 3;
+            int actualHttpRequestCount = 0;
+
+            mockHttp.When($"{baseUrl}/items")
+                .Respond((request) => GetResponseAndLogRequest(HttpStatusCode.NotImplemented, ref actualHttpRequestCount));
+            var httpClient = mockHttp.ToHttpClient();
+
+            var mockResilencePolicyProvider = A.Fake<IResiliencePolicyProvider>();
+            A.CallTo(() => mockResilencePolicyProvider.Policy)
+               .Returns(Policy.HandleResult<HttpResponseMessage>(result => true).RetryAsync(policyRetryAttempts));
+
+            var deliveryOptions = new DeliveryOptions()
+            {
+                ProjectId = guid,
+                MaxRetryAttempts = ignoredRetryAttempt
+            };
+            var client = new DeliveryClient(deliveryOptions)
+            {
+                HttpClient = httpClient,
+                ResiliencePolicyProvider = mockResilencePolicyProvider
+            };
+
+            await Assert.ThrowsAsync<DeliveryException>(async () => await client.GetItemsAsync());
+
+            A.CallTo(() => mockResilencePolicyProvider.Policy).MustHaveHappened();
+            Assert.Equal(expectedAttepts, actualHttpRequestCount);
+        }
+
         private DeliveryClient InitializeDeliverClientWithACustomeTypeProvider()
         {
             var httpClient = mockHttp.ToHttpClient();
 
-            DeliveryClient client = new DeliveryClient(guid)
+            var client = new DeliveryClient(guid)
             {
                 CodeFirstModelProvider = { TypeProvider = new CustomTypeProvider() },
                 HttpClient = httpClient
             };
             return client;
+        }
+
+        private HttpResponseMessage GetResponseAndLogRequest(HttpStatusCode httpStatusCode, ref int actualHttpRequestCount)
+        {
+            actualHttpRequestCount++;
+            return new HttpResponseMessage(httpStatusCode);
         }
     }
 }

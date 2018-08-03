@@ -1,61 +1,36 @@
 ﻿<Project Sdk="Microsoft.NET.Sdk">
 
   <PropertyGroup>
-    <Description>Kentico Cloud Delivery SDK enables you to connect your .NET applications to Kentico Cloud and retrieve content from your projects. For more information about Kentico Cloud, see https://kenticocloud.com/.</Description>
-    <Copyright>(c) 2016 Kentico Software. All rights reserved.</Copyright>
-    <AssemblyTitle>Kentico Cloud Delivery SDK</AssemblyTitle>
-    <NeutralLanguage>en-us</NeutralLanguage>
-    <VersionPrefix>4.0.0</VersionPrefix>
+    <TargetFrameworks>netstandard2.0;net45</TargetFrameworks>
+    <Version>4.0.0</Version>
     <Authors>Kentico Software</Authors>
-    <TargetFrameworks>netstandard1.3;net45</TargetFrameworks>
-    <GenerateDocumentationFile>true</GenerateDocumentationFile>
-    <AssemblyName>KenticoCloud.Delivery</AssemblyName>
-    <PackageId>KenticoCloud.Delivery</PackageId>
-    <PackageTags>kentico;mvc;aspnet;aspnetmvc</PackageTags>
-    <PackageIconUrl>http://kentico.com/favicon.ico</PackageIconUrl>
-    <PackageProjectUrl>https://github.com/Kentico/delivery-sdk-net</PackageProjectUrl>
+    <Product>Kentico Cloud</Product>
+    <Description>Kentico Cloud Delivery SDK</Description>
+    <Copyright>© 2016 Kentico Software. All rights reserved.</Copyright>
     <PackageLicenseUrl>https://github.com/Kentico/delivery-sdk-net/blob/master/LICENSE</PackageLicenseUrl>
-    <PackageRequireLicenseAcceptance>true</PackageRequireLicenseAcceptance>
-    <RepositoryType>git</RepositoryType>
+    <PackageProjectUrl>https://github.com/Kentico/delivery-sdk-net</PackageProjectUrl>
+    <PackageIconUrl>http://kentico.com/favicon.ico</PackageIconUrl>
     <RepositoryUrl>https://github.com/Kentico/delivery-sdk-net.git</RepositoryUrl>
-    <NetStandardImplicitPackageVersion Condition=" '$(TargetFramework)' == 'netstandard1.3' ">1.6.1</NetStandardImplicitPackageVersion>
-    <PackageTargetFallback Condition=" '$(TargetFramework)' == 'net45' ">$(PackageTargetFallback);net40</PackageTargetFallback>
-    <GenerateAssemblyTitleAttribute>false</GenerateAssemblyTitleAttribute>
-    <GenerateAssemblyDescriptionAttribute>false</GenerateAssemblyDescriptionAttribute>
-    <GenerateAssemblyCompanyAttribute>false</GenerateAssemblyCompanyAttribute>
-    <GenerateAssemblyProductAttribute>false</GenerateAssemblyProductAttribute>
-    <GenerateAssemblyCopyrightAttribute>false</GenerateAssemblyCopyrightAttribute>
-    <GenerateAssemblyVersionAttribute>false</GenerateAssemblyVersionAttribute>
-    <GenerateAssemblyFileVersionAttribute>false</GenerateAssemblyFileVersionAttribute>
+    <RepositoryType>git</RepositoryType>
+    <PackageTags>kentico;mvc;aspnet;aspnetmvc</PackageTags>
+    <GenerateAssemblyInfo>false</GenerateAssemblyInfo>
   </PropertyGroup>
-	
+
   <ItemGroup>
-    <PackageReference Include="AngleSharp" Version="0.9.9" />
+    <PackageReference Include="AngleSharp" Version="0.9.10" />
+    <PackageReference Include="Newtonsoft.Json" Version="10.0.3" />
+    <PackageReference Include="Polly" Version="6.1.0" />
+    <PackageReference Include="System.ComponentModel.Annotations" Version="4.5.0" />
     <PackageReference Include="Microsoft.Extensions.Configuration" Version="1.0.0" />
     <PackageReference Include="Microsoft.Extensions.Configuration.Binder" Version="1.0.0" />
     <PackageReference Include="Microsoft.Extensions.Options" Version="1.0.0" />
-    <PackageReference Include="Newtonsoft.Json" Version="9.0.1" />
-    <PackageReference Include="System.ComponentModel.Annotations" Version="4.3.0" />
   </ItemGroup>
-
-  <ItemGroup Condition=" '$(TargetFramework)' == 'netstandard1.3' ">
-    <PackageReference Include="System.Reflection.TypeExtensions" Version="4.3.0" />
-  </ItemGroup>
-
+  
   <ItemGroup Condition=" '$(TargetFramework)' == 'net45' ">
     <Reference Include="System.Configuration" />
     <Reference Include="System.Net.Http" />
     <Reference Include="System" />
     <Reference Include="Microsoft.CSharp" />
-  </ItemGroup>
-
-  <ItemGroup>
-    <Reference Include="System.Collections.Specialized">
-      <HintPath>..\..\..\Program Files\dotnet\sdk\NuGetFallbackFolder\microsoft.netcore.app\2.0.0\ref\netcoreapp2.0\System.Collections.Specialized.dll</HintPath>
-    </Reference>
-    <Reference Include="System.Web.HttpUtility">
-      <HintPath>..\..\..\Program Files\dotnet\sdk\NuGetFallbackFolder\microsoft.netcore.app\2.0.0\ref\netcoreapp2.0\System.Web.HttpUtility.dll</HintPath>
-    </Reference>
   </ItemGroup>
 
 </Project>

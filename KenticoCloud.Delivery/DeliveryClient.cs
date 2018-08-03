@@ -1,13 +1,15 @@
-﻿using Newtonsoft.Json.Linq;
-using System;
+﻿using System;
 using System.Collections.Generic;
 using System.Net;
 using System.Net.Http;
 using System.Net.Http.Headers;
 using System.Threading;
 using System.Threading.Tasks;
+
 using KenticoCloud.Delivery.InlineContentItems;
+using KenticoCloud.Delivery.ResiliencePolicy;
 using Microsoft.Extensions.Options;
+using Newtonsoft.Json.Linq;
 
 namespace KenticoCloud.Delivery
 {
@@ -21,10 +23,10 @@ namespace KenticoCloud.Delivery
 
         private HttpClient _httpClient;
         private DeliveryEndpointUrlBuilder _urlBuilder;
-
         private ICodeFirstModelProvider _codeFirstModelProvider;
-
         private IInlineContentItemsProcessor _inlineContentItemsProcessor;
+        private QueryParameters.Utilities.ContentTypeExtractor _extractor;
+        private IResiliencePolicyProvider _resiliencePolicyProvider;
 
         /// <summary>
         /// Gets or sets an object that resolves links to content items in Rich text element values.
@@ -82,7 +84,14 @@ namespace KenticoCloud.Delivery
             set { _httpClient = value; }
         }
 
-        private QueryParameters.Utilities.ContentTypeExtractor _extractor;
+        /// <summary>
+        /// Gets or sets the retry policy provider for HTTP requests.
+        /// </summary>
+        public IResiliencePolicyProvider ResiliencePolicyProvider
+        {
+            get { return _resiliencePolicyProvider ?? (_resiliencePolicyProvider = new DefaultResiliencePolicyProvider(_deliveryOptions.MaxRetryAttempts)); }
+            set { _resiliencePolicyProvider = value; }
+        }
 
         /// <summary>
         /// Initializes a new instance of the <see cref="DeliveryClient"/> class for retrieving content of the specified project.
@@ -131,11 +140,13 @@ namespace KenticoCloud.Delivery
         /// <param name="contentLinkUrlResolver">An instance of an object that can resolve links in rich text elements</param>
         /// <param name="contentItemsProcessor">An instance of an object that can resolve modular content in rich text elements</param>
         /// <param name="codeFirstModelProvider">An instance of an object that can JSON responses into strongly typed CLR objects</param>
-        public DeliveryClient(IOptions<DeliveryOptions> deliveryOptions, IContentLinkUrlResolver contentLinkUrlResolver = null, IInlineContentItemsProcessor contentItemsProcessor = null, ICodeFirstModelProvider codeFirstModelProvider = null) : this(deliveryOptions.Value)
+        /// <param name="retryPolicyProvider">A provider of a resilience (retry) policy.</param>
+        public DeliveryClient(IOptions<DeliveryOptions> deliveryOptions, IContentLinkUrlResolver contentLinkUrlResolver = null, IInlineContentItemsProcessor contentItemsProcessor = null, ICodeFirstModelProvider codeFirstModelProvider = null, IResiliencePolicyProvider retryPolicyProvider = null) : this(deliveryOptions.Value)
         {
             ContentLinkUrlResolver = contentLinkUrlResolver;
             InlineContentItemsProcessor = contentItemsProcessor;
             CodeFirstModelProvider = codeFirstModelProvider;
+            ResiliencePolicyProvider = retryPolicyProvider;
         }
 
         /// <summary>
@@ -511,6 +522,26 @@ namespace KenticoCloud.Delivery
                 throw new InvalidOperationException("Preview API and secured Delivery API must not be configured at the same time.");
             }
 
+            if (_deliveryOptions.EnableResilienceLogic)
+            {
+                // Use the resilience logic.
+                var policyResult = await ResiliencePolicyProvider?.Policy?.ExecuteAndCaptureAsync(() =>
+                    {
+                        return SendHttpMessage(endpointUrl);
+                    }
+                );
+
+                return await GetResponseContent(policyResult?.FinalHandledResult ?? policyResult?.Result);
+            }
+            else
+            {
+                // Omit using the resilience logic completely.
+                return await GetResponseContent(await SendHttpMessage(endpointUrl));
+            }
+        }
+
+        private Task<HttpResponseMessage> SendHttpMessage(string endpointUrl)
+        {
             var message = new HttpRequestMessage(HttpMethod.Get, endpointUrl);
 
             if (_deliveryOptions.WaitForLoadingNewContent)
@@ -528,16 +559,27 @@ namespace KenticoCloud.Delivery
                 message.Headers.Authorization = new AuthenticationHeaderValue("Bearer", _deliveryOptions.PreviewApiKey);
             }
 
-            var response = await HttpClient.SendAsync(message);
+            return HttpClient.SendAsync(message);
+        }
 
-            if (response.StatusCode == HttpStatusCode.OK)
+        private async Task<JObject> GetResponseContent(HttpResponseMessage httpResponseMessage)
+        {
+            if (httpResponseMessage?.StatusCode == HttpStatusCode.OK)
             {
-                var content = await response.Content.ReadAsStringAsync();
+                var content = await httpResponseMessage.Content?.ReadAsStringAsync();
 
                 return JObject.Parse(content);
             }
 
-            throw new DeliveryException(response, await response.Content.ReadAsStringAsync());
+            string faultContent = null;
+
+            // The null-coallescing operator causes tests to fail for NREs, hence the "if" statement.
+            if (httpResponseMessage?.Content != null)
+            {
+                faultContent = await httpResponseMessage.Content.ReadAsStringAsync();
+            }
+
+            throw new DeliveryException(httpResponseMessage, faultContent);
         }
     }
 }

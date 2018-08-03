@@ -1,4 +1,6 @@
-﻿namespace KenticoCloud.Delivery
+﻿using Polly.Registry;
+
+namespace KenticoCloud.Delivery
 {
     /// <summary>
     /// Keeps settings which are provided by customer or have default values, used in <see cref="DeliveryClient"/>.
@@ -44,5 +46,15 @@
         /// Gets or sets the production Delivery API key.
         /// </summary>
         public string SecuredProductionApiKey { get; set; }
+
+        /// <summary>
+        /// Gets or sets whether HTTP requests will use a retry logic.
+        /// </summary>
+        public bool EnableResilienceLogic { get; set; } = true;
+
+        /// <summary>
+        /// Gets or sets the maximum retry attempts.
+        /// </summary>
+        public int MaxRetryAttempts { get; set; } = 5;
     }
 }
