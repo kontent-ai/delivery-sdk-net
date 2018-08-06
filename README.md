@@ -21,7 +21,7 @@ You can use it via any of the following NuGet packages:
 
 The first package provides the [DeliveryClient](#using-the-deliveryclient) object to consume Kentico Cloud data via the traditional async way. The second one provides the [DeliveryObservableProxy](#using-the-kenticoclouddeliveryrx-reactive-library) object that enables the reactive way of consuming the data.
 
-The SDK targets the [.NET Standard 1.3](https://docs.microsoft.com/en-us/dotnet/standard/net-standard), which means it can be used in .NET Framework 4.6 projects and above, and .NET Core 1.0 projects and above.
+The SDK targets the [.NET Standard 2.0](https://docs.microsoft.com/en-us/dotnet/standard/net-standard), which means it can be used in .NET Framework 4.6.1 projects and above, and .NET Core 2.0 projects and above.
 
 ## Using the DeliveryClient
 
