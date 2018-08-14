@@ -2,10 +2,9 @@
 using System.Collections.Generic;
 using System.Net;
 using System.Net.Http;
-using System.Net.Http.Headers;
-using System.Threading;
 using System.Threading.Tasks;
 
+using KenticoCloud.Delivery.Extensions;
 using KenticoCloud.Delivery.InlineContentItems;
 using KenticoCloud.Delivery.ResiliencePolicy;
 using Microsoft.Extensions.Options;
@@ -18,7 +17,6 @@ namespace KenticoCloud.Delivery
     /// </summary>
     public sealed class DeliveryClient : IDeliveryClient
     {
-        private const string WAIT_FOR_LOADING_NEW_CONTENT_HEADER = "X-KC-Wait-For-Loading-New-Content";
         private readonly DeliveryOptions _deliveryOptions;
 
         private HttpClient _httpClient;
@@ -544,22 +542,34 @@ namespace KenticoCloud.Delivery
         {
             var message = new HttpRequestMessage(HttpMethod.Get, endpointUrl);
 
+            message.Headers.AddSdkTrackingHeader();
+
             if (_deliveryOptions.WaitForLoadingNewContent)
             {
-                message.Headers.Add(WAIT_FOR_LOADING_NEW_CONTENT_HEADER, "true");
+                message.Headers.AddWaitForLoadingNewContentHeader();
             }
 
-            if (_deliveryOptions.UseSecuredProductionApi && !string.IsNullOrEmpty(_deliveryOptions.SecuredProductionApiKey))
+            if (UseSecuredProductionApi())
             {
-                message.Headers.Authorization = new AuthenticationHeaderValue("Bearer", _deliveryOptions.SecuredProductionApiKey);
+                message.Headers.AddAuthorizationHeader("Bearer", _deliveryOptions.SecuredProductionApiKey);
             }
 
-            if (_deliveryOptions.UsePreviewApi && !string.IsNullOrEmpty(_deliveryOptions.PreviewApiKey))
+            if (UsePreviewApi())
             {
-                message.Headers.Authorization = new AuthenticationHeaderValue("Bearer", _deliveryOptions.PreviewApiKey);
+                message.Headers.AddAuthorizationHeader("Bearer", _deliveryOptions.PreviewApiKey);
             }
 
             return HttpClient.SendAsync(message);
+        }
+
+        private bool UseSecuredProductionApi()
+        {
+            return _deliveryOptions.UseSecuredProductionApi && !string.IsNullOrEmpty(_deliveryOptions.SecuredProductionApiKey);
+        }
+
+        private bool UsePreviewApi()
+        {
+            return _deliveryOptions.UsePreviewApi && !string.IsNullOrEmpty(_deliveryOptions.PreviewApiKey);
         }
 
         private async Task<JObject> GetResponseContent(HttpResponseMessage httpResponseMessage)

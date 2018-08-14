@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Diagnostics;
 using System.Linq;
 using System.IO;
 using System.Net;
@@ -846,6 +847,30 @@ namespace KenticoCloud.Delivery.Tests
 
             A.CallTo(() => mockResilencePolicyProvider.Policy).MustHaveHappened();
             Assert.Equal(expectedAttepts, actualHttpRequestCount);
+        }
+
+        [Fact]
+        public async void CorrectSdkVersionHeaderAdded()
+        {
+            var assembly = typeof(DeliveryClient).Assembly;
+            var fileVersionInfo = FileVersionInfo.GetVersionInfo(assembly.Location);
+            var sdkVersion = fileVersionInfo.ProductVersion;
+            var sdkPackageId = assembly.GetName().Name;
+
+            mockHttp.Expect($"{baseUrl}/items")
+                    .WithHeaders("X-KC-SDKID", $"nuget.org;{sdkPackageId};{sdkVersion}")
+                    .Respond("application/json", File.ReadAllText(Path.Combine(Environment.CurrentDirectory, "Fixtures\\DeliveryClient\\items.json")));
+
+            var mockHttpClient = mockHttp.ToHttpClient();
+
+            var client = new DeliveryClient(guid)
+            {
+                HttpClient = mockHttpClient
+            };
+
+            await client.GetItemsAsync();
+
+            mockHttp.VerifyNoOutstandingExpectation();
         }
 
         private DeliveryClient InitializeDeliverClientWithACustomeTypeProvider()
