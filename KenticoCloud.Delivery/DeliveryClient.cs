@@ -2,14 +2,13 @@
 using System.Collections.Generic;
 using System.Net;
 using System.Net.Http;
-using System.Net.Http.Headers;
-using System.Threading;
 using System.Threading.Tasks;
-
-using KenticoCloud.Delivery.InlineContentItems;
-using KenticoCloud.Delivery.ResiliencePolicy;
 using Microsoft.Extensions.Options;
 using Newtonsoft.Json.Linq;
+
+using KenticoCloud.Delivery.Extensions;
+using KenticoCloud.Delivery.InlineContentItems;
+using KenticoCloud.Delivery.ResiliencePolicy;
 
 namespace KenticoCloud.Delivery
 {
@@ -18,14 +17,13 @@ namespace KenticoCloud.Delivery
     /// </summary>
     public sealed class DeliveryClient : IDeliveryClient
     {
-        private const string WAIT_FOR_LOADING_NEW_CONTENT_HEADER = "X-KC-Wait-For-Loading-New-Content";
         private readonly DeliveryOptions _deliveryOptions;
+        private readonly QueryParameters.Utilities.ContentTypeExtractor _extractor;
 
         private HttpClient _httpClient;
         private DeliveryEndpointUrlBuilder _urlBuilder;
         private ICodeFirstModelProvider _codeFirstModelProvider;
         private IInlineContentItemsProcessor _inlineContentItemsProcessor;
-        private QueryParameters.Utilities.ContentTypeExtractor _extractor;
         private IResiliencePolicyProvider _resiliencePolicyProvider;
 
         /// <summary>
@@ -60,6 +58,7 @@ namespace KenticoCloud.Delivery
         public ICodeFirstModelProvider CodeFirstModelProvider
         {
             get { return _codeFirstModelProvider ?? (_codeFirstModelProvider = new CodeFirstModelProvider(this)); }
+
             set { _codeFirstModelProvider = value; }
         }
 
@@ -141,7 +140,8 @@ namespace KenticoCloud.Delivery
         /// <param name="contentItemsProcessor">An instance of an object that can resolve modular content in rich text elements</param>
         /// <param name="codeFirstModelProvider">An instance of an object that can JSON responses into strongly typed CLR objects</param>
         /// <param name="retryPolicyProvider">A provider of a resilience (retry) policy.</param>
-        public DeliveryClient(IOptions<DeliveryOptions> deliveryOptions, IContentLinkUrlResolver contentLinkUrlResolver = null, IInlineContentItemsProcessor contentItemsProcessor = null, ICodeFirstModelProvider codeFirstModelProvider = null, IResiliencePolicyProvider retryPolicyProvider = null) : this(deliveryOptions.Value)
+        public DeliveryClient(IOptions<DeliveryOptions> deliveryOptions, IContentLinkUrlResolver contentLinkUrlResolver = null, IInlineContentItemsProcessor contentItemsProcessor = null, ICodeFirstModelProvider codeFirstModelProvider = null, IResiliencePolicyProvider retryPolicyProvider = null) 
+            : this(deliveryOptions.Value)
         {
             ContentLinkUrlResolver = contentLinkUrlResolver;
             InlineContentItemsProcessor = contentItemsProcessor;
@@ -153,19 +153,18 @@ namespace KenticoCloud.Delivery
         /// Initializes a new instance of the <see cref="DeliveryClient"/> class for the published content of the specified project.
         /// </summary>
         /// <param name="projectId">The identifier of the Kentico Cloud project.</param>
-        public DeliveryClient(string projectId) : this(new DeliveryOptions { ProjectId = projectId })
-        {
-        }
+        public DeliveryClient(string projectId) 
+            : this(new DeliveryOptions { ProjectId = projectId })
+        { }
 
         /// <summary>
         /// Initializes a new instance of the <see cref="DeliveryClient"/> class for the unpublished content of the specified project.
         /// </summary>
         /// <param name="projectId">The identifier of the Kentico Cloud project.</param>
         /// <param name="previewApiKey">The Preview API key.</param>
-        public DeliveryClient(string projectId, string previewApiKey) : this(new DeliveryOptions { ProjectId = projectId, PreviewApiKey = previewApiKey, UsePreviewApi = true })
-        {
-
-        }
+        public DeliveryClient(string projectId, string previewApiKey) 
+            : this(new DeliveryOptions { ProjectId = projectId, PreviewApiKey = previewApiKey, UsePreviewApi = true })
+        { }
 
         /// <summary>
         /// Returns a content item as JSON data. By default, retrieves one level of modular content.
@@ -533,33 +532,43 @@ namespace KenticoCloud.Delivery
 
                 return await GetResponseContent(policyResult?.FinalHandledResult ?? policyResult?.Result);
             }
-            else
-            {
-                // Omit using the resilience logic completely.
-                return await GetResponseContent(await SendHttpMessage(endpointUrl));
-            }
+
+            // Omit using the resilience logic completely.
+            return await GetResponseContent(await SendHttpMessage(endpointUrl));
         }
 
         private Task<HttpResponseMessage> SendHttpMessage(string endpointUrl)
         {
             var message = new HttpRequestMessage(HttpMethod.Get, endpointUrl);
 
+            message.Headers.AddSdkTrackingHeader();
+
             if (_deliveryOptions.WaitForLoadingNewContent)
             {
-                message.Headers.Add(WAIT_FOR_LOADING_NEW_CONTENT_HEADER, "true");
+                message.Headers.AddWaitForLoadingNewContentHeader();
             }
 
-            if (_deliveryOptions.UseSecuredProductionApi && !string.IsNullOrEmpty(_deliveryOptions.SecuredProductionApiKey))
+            if (UseSecuredProductionApi())
             {
-                message.Headers.Authorization = new AuthenticationHeaderValue("Bearer", _deliveryOptions.SecuredProductionApiKey);
+                message.Headers.AddAuthorizationHeader("Bearer", _deliveryOptions.SecuredProductionApiKey);
             }
 
-            if (_deliveryOptions.UsePreviewApi && !string.IsNullOrEmpty(_deliveryOptions.PreviewApiKey))
+            if (UsePreviewApi())
             {
-                message.Headers.Authorization = new AuthenticationHeaderValue("Bearer", _deliveryOptions.PreviewApiKey);
+                message.Headers.AddAuthorizationHeader("Bearer", _deliveryOptions.PreviewApiKey);
             }
 
             return HttpClient.SendAsync(message);
+        }
+
+        private bool UseSecuredProductionApi()
+        {
+            return _deliveryOptions.UseSecuredProductionApi && !string.IsNullOrEmpty(_deliveryOptions.SecuredProductionApiKey);
+        }
+
+        private bool UsePreviewApi()
+        {
+            return _deliveryOptions.UsePreviewApi && !string.IsNullOrEmpty(_deliveryOptions.PreviewApiKey);
         }
 
         private async Task<JObject> GetResponseContent(HttpResponseMessage httpResponseMessage)
