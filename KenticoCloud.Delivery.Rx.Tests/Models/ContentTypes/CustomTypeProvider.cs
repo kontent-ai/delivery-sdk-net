@@ -1,43 +1,41 @@
 using System;
-using KenticoCloud.Delivery;
+using System.Collections.Generic;
+using System.Linq;
 
 namespace KenticoCloud.Delivery.Rx.Tests
 {
     public class CustomTypeProvider : ICodeFirstTypeProvider
     {
+        private static readonly Dictionary<Type, string> TypesDictionary = new Dictionary<Type, string>
+        {
+            {typeof(AboutUs), "about_us"},
+            {typeof(Accessory), "accessory"},
+            {typeof(Article), "article"},
+            {typeof(Brewer), "brewer"},
+            {typeof(Cafe), "cafe"},
+            {typeof(Coffee), "coffee"},
+            {typeof(FactAboutUs), "fact_about_us"},
+            {typeof(Grinder), "grinder"},
+            {typeof(HeroUnit), "hero_unit"},
+            {typeof(Home), "home"},
+            {typeof(HostedVideo), "hosted_video"},
+            {typeof(Office), "office"},
+            {typeof(Tweet), "tweet"},
+        };
+
         public Type GetType(string contentType)
         {
-            switch (contentType)
+            return TypesDictionary.Keys.FirstOrDefault(type => GetCodename(type).Equals(contentType));
+        }
+
+        public string GetCodename(Type contentType)
+        {
+            if (!TypesDictionary.TryGetValue(contentType, out var codename))
             {
-                case "about_us":
-                    return typeof(AboutUs);
-                case "accessory":
-                    return typeof(Accessory);
-                case "article":
-                    return typeof(Article);
-                case "brewer":
-                    return typeof(Brewer);
-                case "cafe":
-                    return typeof(Cafe);
-                case "coffee":
-                    return typeof(Coffee);
-                case "fact_about_us":
-                    return typeof(FactAboutUs);
-                case "grinder":
-                    return typeof(Grinder);
-                case "hero_unit":
-                    return typeof(HeroUnit);
-                case "home":
-                    return typeof(Home);
-                case "hosted_video":
-                    return typeof(HostedVideo);
-                case "office":
-                    return typeof(Office);
-                case "tweet":
-                    return typeof(Tweet);
-                default:
-                    return null;
+                return null;
             }
+
+            return codename;
         }
     }
 }

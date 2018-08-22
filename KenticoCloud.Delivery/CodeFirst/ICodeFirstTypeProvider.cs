@@ -12,5 +12,11 @@ namespace KenticoCloud.Delivery
         /// </summary>
         /// <param name="contentType">Content type identifier.</param>
         Type GetType(string contentType);
+
+        /// <summary>
+        /// Returns a codename corresponding to the given content type model.
+        /// </summary>
+        /// <param name="contentType">Content type model.</param>
+        string GetCodename(Type contentType);
     }
 }

@@ -10,7 +10,7 @@ namespace KenticoCloud.Delivery.QueryParameters.Utilities
         internal IEnumerable<IQueryParameter> ExtractParameters<T>(IEnumerable<IQueryParameter> parameters = null)
         {
             var enhancedParameters = parameters != null ? new List<IQueryParameter>(parameters) : new List<IQueryParameter>();
-            
+        
             if (!IsAlreadyInParameters(parameters) && TryGetContentTypeCodename(typeof(T), out string contentTypeCodename))
             {
                 enhancedParameters.Add(new EqualsFilter("system.type", contentTypeCodename));
