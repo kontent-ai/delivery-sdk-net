@@ -1,17 +1,13 @@
 ﻿---
-name: Spike
-about: Suggest an analysis of a problem
+name: Question
+about: Ask a question
 
 ---
 
-### Expected result
+### Question
 
-What do we want to explore and why? Which questions do we want to answer with this spike?
+What do you want to ask?
 
-### Additional context
-
-Add any other context or guidelines here.
-
-### Resources
+### Reference
 
 * URL
