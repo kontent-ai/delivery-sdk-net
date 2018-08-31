@@ -30,12 +30,7 @@ namespace KenticoCloud.Delivery.Rx.Tests
 
         public string GetCodename(Type contentType)
         {
-            if (!TypesDictionary.TryGetValue(contentType, out var codename))
-            {
-                return null;
-            }
-
-            return codename;
+            return TypesDictionary.TryGetValue(contentType, out var codename) ? codename : null;
         }
     }
 }

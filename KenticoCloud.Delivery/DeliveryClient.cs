@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Linq;
 using System.Net;
 using System.Net.Http;
 using System.Threading.Tasks;
@@ -18,7 +19,6 @@ namespace KenticoCloud.Delivery
     public sealed class DeliveryClient : IDeliveryClient
     {
         private readonly DeliveryOptions _deliveryOptions;
-        private readonly QueryParameters.Utilities.ContentTypeExtractor _extractor;
 
         private HttpClient _httpClient;
         private DeliveryEndpointUrlBuilder _urlBuilder;
@@ -129,7 +129,6 @@ namespace KenticoCloud.Delivery
             }
 
             _deliveryOptions.ProjectId = projectIdGuid.ToString("D");
-            _extractor = new QueryParameters.Utilities.ContentTypeExtractor();
         }
 
         /// <summary>
@@ -310,7 +309,7 @@ namespace KenticoCloud.Delivery
         /// <returns>The <see cref="DeliveryItemListingResponse{T}"/> instance that contains the content items. If no query parameters are specified, all content items are returned.</returns>
         public async Task<DeliveryItemListingResponse<T>> GetItemsAsync<T>(IEnumerable<IQueryParameter> parameters)
         {
-            var enhancedParameters = _extractor.ExtractParameters<T>(parameters);
+            var enhancedParameters = ExtractParameters<T>(parameters);
             var endpointUrl = UrlBuilder.GetItemsUrl(enhancedParameters);
             var response = await GetDeliverResponseAsync(endpointUrl);
 
@@ -589,6 +588,31 @@ namespace KenticoCloud.Delivery
             }
 
             throw new DeliveryException(httpResponseMessage, faultContent);
+        }
+
+        internal IEnumerable<IQueryParameter> ExtractParameters<T>(IEnumerable<IQueryParameter> parameters = null)
+        {
+            var enhancedParameters = parameters != null
+                ? new List<IQueryParameter>(parameters)
+                : new List<IQueryParameter>();
+
+            var codename = _codeFirstModelProvider.TypeProvider.GetCodename(typeof(T));
+
+            if (codename != null && !IsTypeInQueryParameters(parameters))
+            {
+                enhancedParameters.Add(new EqualsFilter("system.type", codename));
+            }
+            return enhancedParameters;
+        }
+
+        private static bool IsTypeInQueryParameters(IEnumerable<IQueryParameter> parameters)
+        {
+            var typeFilterExists = parameters?
+                .OfType<EqualsFilter>()
+                .Any(filter => filter
+                    .ElementOrAttributePath
+                    .Equals("system.type", StringComparison.Ordinal));
+            return typeFilterExists ?? false;
         }
     }
 }
