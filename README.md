@@ -2,8 +2,6 @@
 
 [![Build status](https://ci.appveyor.com/api/projects/status/3m3q2ads2y43bh9o/branch/master?svg=true)](https://ci.appveyor.com/project/kentico/deliver-net-sdk/branch/master) 
 [![Forums](https://img.shields.io/badge/chat-on%20forums-orange.svg)](https://forums.kenticocloud.com) 
-[![Analytics](https://ga-beacon.appspot.com/UA-69014260-4/Kentico/delivery-sdk-net?pixel)](https://github.com/igrigorik/ga-beacon)
-
 
 | Paradigm        | Package  | Downloads | Documentation | 
 | ------------- |:-------------:| :-------------:|  :-------------:|
@@ -293,3 +291,5 @@ We would like to express our thanks to the following people who contributed and 
 - [Charith Sooriyaarachchi](https://github.com/charithsoori) - [99X Technology](http://www.99xtechnology.com/)
 
 Would you like to become a hero too? Pick an [issue](https://github.com/Kentico/delivery-sdk-net/issues) and send us a pull request!
+
+![Analytics](https://kentico-ga-beacon.azurewebsites.net/api/UA-69014260-4/Kentico/delivery-sdk-net?pixel)
