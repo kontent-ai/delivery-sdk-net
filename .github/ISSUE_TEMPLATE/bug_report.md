@@ -6,7 +6,7 @@ about: Create a report to help us improve
 
 ### Brief bug description
 
-A clear and concise description of what the bug is.
+What went wrong?
 
 ### Repro steps
 
@@ -17,7 +17,7 @@ A clear and concise description of what the bug is.
 
 ### Expected behavior
 
-A clear and concise description of what you expected to happen.
+What the correct behavior is?
 
 ### Test environment
 
@@ -28,3 +28,7 @@ A clear and concise description of what you expected to happen.
 ### Additional context
 
 Add any other context about the problem here.
+
+### Screenshots
+
+Add links to screenshots, if possible.

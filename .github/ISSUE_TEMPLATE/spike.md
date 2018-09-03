@@ -4,9 +4,9 @@ about: Suggest an analysis of a problem
 
 ---
 
-### Motivation
+### Expected result
 
-A clear and concise description of what the problem is. Ex. I'm always frustrated when [...]
+What do we want to explore and why? Which questions do we want to answer with this spike?
 
 ### Additional context
 
