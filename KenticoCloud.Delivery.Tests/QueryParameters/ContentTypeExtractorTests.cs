@@ -1,5 +1,6 @@
-﻿using KenticoCloud.Delivery.QueryParameters.Utilities;
+﻿using System;
 using System.Collections.Generic;
+using FakeItEasy;
 using Xunit;
 
 namespace KenticoCloud.Delivery.Tests.QueryParameters
@@ -7,26 +8,27 @@ namespace KenticoCloud.Delivery.Tests.QueryParameters
     public class ContentTypeExtractorTests
     {
         private const string CONTENT_TYPE_CODENAME = "SomeContentType";
+        private const string FAKE_PROJECT_ID = "00000000-0000-0000-0000-000000000000";
 
-        private ContentTypeExtractor _extractor;
+        private readonly DeliveryClient _client;
+        private readonly ICodeFirstTypeProvider _contentTypeProvider;
 
         public ContentTypeExtractorTests()
         {
-            _extractor = new ContentTypeExtractor();
+            _contentTypeProvider = A.Fake<ICodeFirstTypeProvider>();
+
+            A.CallTo(() => _contentTypeProvider.GetCodename(typeof(TypeWithContentTypeCodename))).Returns(TypeWithContentTypeCodename.Codename);
+            A.CallTo(() => _contentTypeProvider.GetCodename(typeof(TypeWithoutContentTypeCodename))).Returns(null);
+
+            _client = new DeliveryClient(FAKE_PROJECT_ID)
+            {
+                CodeFirstModelProvider = {TypeProvider = _contentTypeProvider}
+            };
         }
 
         private class TypeWithContentTypeCodename
         {
             public const string Codename = CONTENT_TYPE_CODENAME;
-        }
-
-        [Fact]
-        public void TryGetContentTypeCodename_WhenGivenTypeWithCodename_ReturnsTrueAndCodename()
-        {
-            var success = _extractor.TryGetContentTypeCodename(typeof(TypeWithContentTypeCodename), out string resultCodename);
-
-            Assert.True(success);
-            Assert.Equal("SomeContentType", resultCodename);
         }
 
         private class TypeWithoutContentTypeCodename
@@ -35,65 +37,11 @@ namespace KenticoCloud.Delivery.Tests.QueryParameters
         }
 
         [Fact]
-        public void TryGetContentTypeCodename_WhenGivenTypeWithoutCodename_ReturnsFalse()
-        {
-            var success = _extractor.TryGetContentTypeCodename(typeof(TypeWithoutContentTypeCodename), out string resultCodename);
-
-            Assert.False(success);
-        }
-
-        private class TypeWithContentTypeCodenameAsProperty
-        {
-            public string Codename
-            {
-                get
-                {
-                    return CONTENT_TYPE_CODENAME;
-                }
-            }
-        }
-
-        [Fact]
-        public void TryGetContentTypeCodename_WhenGivenTypeWithCodenameAsProperty_ReturnsFalse()
-        {
-
-            var success = _extractor.TryGetContentTypeCodename(typeof(TypeWithContentTypeCodenameAsProperty), out string resultCodename);
-
-            Assert.False(success);
-        }
-
-        private class TypeWithContentTypeCodenameAsVariable
-        {
-            public string Codename = "42";
-        }
-
-        [Fact]
-        public void TryGetContentTypeCodename_WhenGivenTypeWithCodenameAsVariable_ReturnsFalse()
-        {
-            var success = _extractor.TryGetContentTypeCodename(typeof(TypeWithContentTypeCodenameAsVariable), out string resultCodename);
-
-            Assert.False(success);
-        }
-
-        private class TypeWithContentTypeCodenameAsPrivateField
-        {
-            private const string Codename = "MyPrivateCodename";
-        }
-
-        [Fact]
-        public void TryGetContentTypeCodename_WhenGivenTypeWithCodenameAsPrivateField_ReturnsFalse()
-        {
-            var success = _extractor.TryGetContentTypeCodename(typeof(TypeWithContentTypeCodenameAsPrivateField), out string resultCodename);
-
-            Assert.False(success);
-        }
-
-        [Fact]
         public void ExtractParameters_WhenGivenTypeWithCodenameAndExistingParams_AddsCodenameToParams()
         {
             var existingParams = new List<IQueryParameter>() { new SkipParameter(15) };
 
-            var enhancedParams = new List<IQueryParameter>(_extractor.ExtractParameters<TypeWithContentTypeCodename>(existingParams));
+            var enhancedParams = new List<IQueryParameter>(_client.ExtractParameters<TypeWithContentTypeCodename>(existingParams));
 
             Assert.Equal(2, enhancedParams.Count);
             Assert.True(enhancedParams.Find(x => x.GetQueryStringParameter() == $"system.type={CONTENT_TYPE_CODENAME}") != null);
@@ -102,7 +50,7 @@ namespace KenticoCloud.Delivery.Tests.QueryParameters
         [Fact]
         public void ExtractParameters_WhenGivenTypeWithCodename_CreatesNewParams()
         {
-            var enhancedParams = new List<IQueryParameter>(_extractor.ExtractParameters<TypeWithContentTypeCodename>());
+            var enhancedParams = new List<IQueryParameter>(_client.ExtractParameters<TypeWithContentTypeCodename>());
 
             Assert.Single(enhancedParams);
             Assert.True(enhancedParams.Find(x => x.GetQueryStringParameter() == $"system.type={CONTENT_TYPE_CODENAME}") != null);
@@ -111,7 +59,7 @@ namespace KenticoCloud.Delivery.Tests.QueryParameters
         [Fact]
         public void ExtractParameters_WhenGivenTypeWithoutCodenameNoParams_CreatesEmptyParams()
         {
-            var enhancedParams = new List<IQueryParameter>(_extractor.ExtractParameters<TypeWithoutContentTypeCodename>());
+            var enhancedParams = new List<IQueryParameter>(_client.ExtractParameters<TypeWithoutContentTypeCodename>());
 
             Assert.Empty(enhancedParams);
         }
@@ -121,7 +69,7 @@ namespace KenticoCloud.Delivery.Tests.QueryParameters
         {
             var existingParams = new List<IQueryParameter>() { new SkipParameter(15) };
 
-            var enhancedParams = new List<IQueryParameter>(_extractor.ExtractParameters<TypeWithoutContentTypeCodename>(existingParams));
+            var enhancedParams = new List<IQueryParameter>(_client.ExtractParameters<TypeWithoutContentTypeCodename>(existingParams));
 
             Assert.Single(enhancedParams);
             Assert.True(enhancedParams.Find(x => x.GetQueryStringParameter() == $"system.type=TypeWithoutContentTypeCodename") == null);
@@ -132,7 +80,7 @@ namespace KenticoCloud.Delivery.Tests.QueryParameters
         {
             var existingParams = new List<IQueryParameter>() { new EqualsFilter("system.type", CONTENT_TYPE_CODENAME) };
 
-            var enhancedParams = new List<IQueryParameter>(_extractor.ExtractParameters<TypeWithContentTypeCodename>(existingParams));
+            var enhancedParams = new List<IQueryParameter>(_client.ExtractParameters<TypeWithContentTypeCodename>(existingParams));
 
             Assert.Single(enhancedParams);
             Assert.True(enhancedParams.Find(x => x.GetQueryStringParameter() == $"system.type={CONTENT_TYPE_CODENAME}") != null);
