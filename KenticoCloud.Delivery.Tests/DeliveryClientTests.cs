@@ -378,6 +378,20 @@ namespace KenticoCloud.Delivery.Tests
         }
 
         [Fact]
+        public async void RecursiveInlineModularContent()
+        {
+            _mockHttp.When($"{_baseUrl}/items/on_roasts")
+                .WithQueryString("depth=15")
+                .Respond("application/json", File.ReadAllText(Path.Combine(Environment.CurrentDirectory, "Fixtures\\DeliveryClient\\onroast_deep15.json")));
+
+            var client = InitializeDeliverClientWithACustomeTypeProvider();
+
+            var article = await client.GetItemAsync<Article>("on_roasts", new DepthParameter(15));
+
+            Assert.NotNull(article.Item.BodyCopyRichText);
+        }
+
+        [Fact]
         public void GetStronglyTypedResponse()
         {
             _mockHttp.When($"{_baseUrl}/items/complete_content_item")
