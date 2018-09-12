@@ -264,6 +264,26 @@ IObservable<Article> articlesWithBaristaPersona =
 
 Unlike most of the `DeliveryClient` methods that return data wrapped in `Delivery*Response` objects, their `*Observable` counterparts always return sequences of the Kentico Cloud artifacts themselves (not wrapped). Should an error response be returned by the `DeliveryClient`, the observable sequence will terminate with the conventional [OnError](https://docs.microsoft.com/en-us/dotnet/api/system.iobserver-1.onerror) call.
 
+## How to use [SourceLink](https://github.com/dotnet/sourcelink/) for debugging
+
+This repository is configured to generate SourceLink tag in the Nuget package that allows to debug this repository source code when it is referenced as a Nuget package. Source code is downloaded directly from github to the Visual Studio.
+
+### How to configure Source Link
+1. Open solution with the project referencing KenticoCloud.Delivery (or KenticoCloud.Delivery.RX) Nuget package
+2. Open Tools >> Options >> Debugging >> General
+    * Uncheck Enable Just My Code 
+    * Check Enable Source Link Support
+    * Optionally Uncheck Require source files to exactly match the original version
+3. Build your solution
+4. Copy pdb files from the KenticoCloud.Delivery Nuget package to the bin folder next to your own project pdb files*
+5. Run debugging session and try to step into the KenticoCloud.Delivery code
+6. Allow Visual Studio to download source code from GitHub
+  * ![Source link confirmation dialog](/.github/assets/allow_sourcelink_download.png)
+
+**Now you are able to debug source code of our library without necessity to download source code manually!**
+
+\* Currently SymbolSource.org server [does not allow to host portable PDB files](https://github.com/SymbolSource/SymbolSource/issues/7) and nuget still [does not come up with best practice solution](https://github.com/NuGet/Home/issues/6104). That is why we recommend to copy PDB files manually instead of using [symbol server](https://github.com/dotnet/designs/blob/master/accepted/diagnostics/debugging-with-symbols-and-sources.md).
+
 ## Further information
 
 For more developer resources, visit the Kentico Cloud Developer Hub at <https://developer.kenticocloud.com>.
