@@ -2,6 +2,9 @@
 using RichardSzalay.MockHttp;
 using System;
 using System.IO;
+using FakeItEasy;
+using KenticoCloud.Delivery.InlineContentItems;
+using Microsoft.Extensions.Options;
 using Xunit;
 
 namespace KenticoCloud.Delivery.Tests
@@ -111,6 +114,10 @@ namespace KenticoCloud.Delivery.Tests
         [Fact]
         public async void ResolveLinksInStronglyTypedModel()
         {
+            var contentLinkUrlResolver = new CustomContentLinkUrlResolver();
+            var inlineContentItemsResolver = A.Fake<IInlineContentItemsResolver<UnretrievedContentItem>>();
+            var inlineContentItemsProcessor = new InlineContentItemsProcessor(null, inlineContentItemsResolver);
+            var codeFirstModelProvider = new CodeFirstModelProvider(contentLinkUrlResolver, inlineContentItemsProcessor) { TypeProvider = new CustomTypeProvider() };
             var mockHttp = new MockHttpMessageHandler();
             string guid = Guid.NewGuid().ToString();
             string url = $"https://deliver.kenticocloud.com/{guid}/items/coffee_processing_techniques";
@@ -119,11 +126,9 @@ namespace KenticoCloud.Delivery.Tests
                Respond("application/json", File.ReadAllText(Path.Combine(Environment.CurrentDirectory, "Fixtures\\ContentLinkResolver\\coffee_processing_techniques.json")));
 
             var httpClient = mockHttp.ToHttpClient();
-            DeliveryClient client = new DeliveryClient(guid)
+            DeliveryClient client = new DeliveryClient(new OptionsWrapper<DeliveryOptions>(new DeliveryOptions { ProjectId = guid }), contentLinkUrlResolver, inlineContentItemsProcessor, codeFirstModelProvider)
             {
-                CodeFirstModelProvider = {TypeProvider = new CustomTypeProvider()},
-                HttpClient = httpClient,
-                ContentLinkUrlResolver = new CustomContentLinkUrlResolver()
+                HttpClient = httpClient
             };
 
 

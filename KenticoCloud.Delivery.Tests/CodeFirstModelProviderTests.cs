@@ -1,6 +1,7 @@
 ﻿using System;
 using FakeItEasy;
 using KenticoCloud.Delivery.InlineContentItems;
+using Microsoft.Extensions.Options;
 using Newtonsoft.Json.Linq;
 using Xunit;
 
@@ -13,15 +14,14 @@ namespace KenticoCloud.Delivery.Tests
         // as if there were no inline content items, which will prevent circular dependency
         public void RetrievingContentModelWithCircularDependencyDoesNotCycle()
         {
-            var fakeDeliverClient = A.Fake<IDeliveryClient>();
             var codeFirstTypeProvider = A.Fake<ICodeFirstTypeProvider>();
+            var contentLinkUrlResolver = A.Fake<IContentLinkUrlResolver>();
             A.CallTo(() => codeFirstTypeProvider.GetType(A<string>._)).Returns(typeof(ContentItemWithSingleRTE));
-            
+
             var processor = new InlineContentItemsProcessor(null, null);
             processor.RegisterTypeResolver(new RichTextInlineResolver());
-            var retriever = new CodeFirstModelProvider(fakeDeliverClient);
+            var retriever = new CodeFirstModelProvider(contentLinkUrlResolver, processor);
             retriever.TypeProvider = codeFirstTypeProvider;
-            A.CallTo(() => fakeDeliverClient.InlineContentItemsProcessor).Returns(processor);
 
             var item = JToken.FromObject(rt1);
             var modularContent = JToken.FromObject(modularContentForItemWithTwoReferencedContentItems);
@@ -37,15 +37,14 @@ namespace KenticoCloud.Delivery.Tests
         // this is same as in other cases, because as soon as we start processing item which is already being processed we remove inline content items.
         public void RetrievingContentModelWithItemInlineReferencingItselfDoesNotCycle()
         {
-            var fakeDeliverClient = A.Fake<IDeliveryClient>();
             var codeFirstTypeProvider = A.Fake<ICodeFirstTypeProvider>();
+            var contentLinkUrlResolver = A.Fake<IContentLinkUrlResolver>();
             A.CallTo(() => codeFirstTypeProvider.GetType(A<string>._)).Returns(typeof(ContentItemWithSingleRTE));
 
             var processor = new InlineContentItemsProcessor(null, null);
             processor.RegisterTypeResolver(new RichTextInlineResolver());
-            var retriever = new CodeFirstModelProvider(fakeDeliverClient);
+            var retriever = new CodeFirstModelProvider(contentLinkUrlResolver, processor);
             retriever.TypeProvider = codeFirstTypeProvider;
-            A.CallTo(() => fakeDeliverClient.InlineContentItemsProcessor).Returns(processor);
 
             var item = JToken.FromObject(rt3);
             var modularContent = JToken.FromObject(modularContentForItemReferencingItself);
@@ -61,7 +60,7 @@ namespace KenticoCloud.Delivery.Tests
             public string RT { get; set; }
         }
 
-        private class RichTextInlineResolver: IInlineContentItemsResolver<ContentItemWithSingleRTE>
+        private class RichTextInlineResolver : IInlineContentItemsResolver<ContentItemWithSingleRTE>
         {
             public string Resolve(ResolvedContentItemData<ContentItemWithSingleRTE> data)
             {
@@ -74,11 +73,11 @@ namespace KenticoCloud.Delivery.Tests
             system = new
             {
                 id = "9dc3ca3a-22e0-4414-a56d-7a504e9f1eb2",
-                name = "RT1" ,
+                name = "RT1",
                 codename = "rt1",
                 type = "simple_richtext",
                 sitemap_location = new string[0],
-                last_modified = new DateTime(2017,06,01, 11,43,33)
+                last_modified = new DateTime(2017, 06, 01, 11, 43, 33)
             },
             elements = new
             {
@@ -86,7 +85,7 @@ namespace KenticoCloud.Delivery.Tests
                 {
                     type = "rich_text",
                     name = "RT",
-                    modular_content = new [] { "rt2"},
+                    modular_content = new[] { "rt2" },
                     value = "<span>FirstRT</span><object type=\"application/kenticocloud\" data-type=\"item\" data-codename=\"rt2\"></object"
                 }
 
@@ -110,7 +109,7 @@ namespace KenticoCloud.Delivery.Tests
                 {
                     type = "rich_text",
                     name = "RT",
-                    modular_content = new [] {"rt1"},
+                    modular_content = new[] { "rt1" },
                     value =
                     "<span>SecondRT</span><object type=\"application/kenticocloud\" data-type=\"item\" data-codename=\"rt1\"></object>"
                 }

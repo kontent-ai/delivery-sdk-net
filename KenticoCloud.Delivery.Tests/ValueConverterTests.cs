@@ -6,6 +6,9 @@ using NodaTime;
 using Xunit;
 using RichardSzalay.MockHttp;
 using System.IO;
+using FakeItEasy;
+using KenticoCloud.Delivery.InlineContentItems;
+using Microsoft.Extensions.Options;
 
 namespace KenticoCloud.Delivery.Tests
 {
@@ -91,7 +94,9 @@ namespace KenticoCloud.Delivery.Tests
             // Try to get recursive modular content on_roasts -> item -> on_roasts
             var article = await client.GetItemAsync<Article>("coffee_beverages_explained", new DepthParameter(15));
 
-            var hostedVideo = article.Item.BodyCopyRichText.Blocks.FirstOrDefault(b => (b as IInlineContentItem)?.ContentItem is HostedVideo);
+            var hostedVideo = article
+                .Item
+                .BodyCopyRichText.Blocks.FirstOrDefault(b => (b as IInlineContentItem)?.ContentItem is HostedVideo);
             var tweet = article.Item.BodyCopyRichText.Blocks.FirstOrDefault(b => (b as IInlineContentItem)?.ContentItem is Tweet);
 
             Assert.NotNull(hostedVideo);
@@ -101,9 +106,12 @@ namespace KenticoCloud.Delivery.Tests
         private DeliveryClient InitializeDeliveryClient(MockHttpMessageHandler mockHttp)
         {
             var httpClient = mockHttp.ToHttpClient();
-            DeliveryClient client = new DeliveryClient(guid)
+            var contentLinkUrlResolver = A.Fake<IContentLinkUrlResolver>();
+            var inlineContentItemsResolver = A.Fake<IInlineContentItemsResolver<UnretrievedContentItem>>();
+            var inlineContentItemsProcessor = new InlineContentItemsProcessor(null, inlineContentItemsResolver);
+            var codeFirstModelProvider = new CodeFirstModelProvider(null, null){ TypeProvider = new CustomTypeProvider() };
+            DeliveryClient client = new DeliveryClient(new OptionsWrapper<DeliveryOptions>(new DeliveryOptions { ProjectId = guid }), contentLinkUrlResolver, inlineContentItemsProcessor, codeFirstModelProvider)
             {
-                CodeFirstModelProvider = { TypeProvider = new CustomTypeProvider() },
                 HttpClient = httpClient
             };
 

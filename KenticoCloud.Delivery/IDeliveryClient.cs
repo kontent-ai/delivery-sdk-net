@@ -11,21 +11,6 @@ namespace KenticoCloud.Delivery
     public interface IDeliveryClient
     {
         /// <summary>
-        /// Gets or sets an object that resolves links to content items in Rich text element values.
-        /// </summary>
-        IContentLinkUrlResolver ContentLinkUrlResolver { get; set; }
-
-        /// <summary>
-        /// Gets or sets an object that performs conversion of content items to code-first models.
-        /// </summary>
-        ICodeFirstModelProvider CodeFirstModelProvider { get; set; }
-
-        /// <summary>
-        /// Gets processor for richtext elements retrieved with this client.
-        /// </summary>
-        IInlineContentItemsProcessor InlineContentItemsProcessor { get; }
-
-        /// <summary>
         /// Returns a content item as JSON data. By default, retrieves one level of modular content.
         /// </summary>
         /// <param name="codename">The codename of a content item.</param>
