@@ -27,16 +27,6 @@ namespace KenticoCloud.Delivery
         private DeliveryEndpointUrlBuilder _urlBuilder;
         private IResiliencePolicyProvider _resiliencePolicyProvider;
 
-        /// <summary>
-        /// Gets or sets an object that performs conversion of content items to code-first models.
-        /// </summary>
-        //public ICodeFirstModelProvider CodeFirstModelProvider
-        //{
-        //    get { return _codeFirstModelProvider ?? (_codeFirstModelProvider = new CodeFirstModelProvider(_contentLinkUrlResolver, _inlineContentItemsProcessor)); }
-
-        //    set { _codeFirstModelProvider = value; }
-        //}
-
         private DeliveryEndpointUrlBuilder UrlBuilder
         {
             get { return _urlBuilder ?? (_urlBuilder = new DeliveryEndpointUrlBuilder(_deliveryOptions)); }

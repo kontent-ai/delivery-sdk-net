@@ -65,11 +65,6 @@ namespace KenticoCloud.Delivery
                 throw new ArgumentNullException(nameof(modularContentSource));
             }
 
-            if (contentLinkUrlResolver == null)
-            {
-                throw new ArgumentNullException(nameof(contentLinkUrlResolver));
-            }
-
             if (codeFirstModelProvider == null)
             {
                 throw new ArgumentNullException(nameof(contentLinkUrlResolver));
