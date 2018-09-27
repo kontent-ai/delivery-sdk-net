@@ -4,7 +4,8 @@ using System.Collections.Generic;
 using System.IO;
 using System.Linq;
 using System.Reactive.Linq;
-
+using FakeItEasy;
+using Microsoft.Extensions.Options;
 using RichardSzalay.MockHttp;
 using Xunit;
 
@@ -211,11 +212,11 @@ namespace KenticoCloud.Delivery.Rx.Tests
         private IDeliveryClient GetDeliveryClient(Action mockAction)
         {
             mockAction();
+            var codeFirstModelProvider = A.Fake<ICodeFirstModelProvider>();
+            A.CallTo(() => codeFirstModelProvider.TypeProvider).Returns(new CustomTypeProvider());
             var httpClient = mockHttp.ToHttpClient();
-
-            return new DeliveryClient(guid)
+            return new DeliveryClient(new OptionsWrapper<DeliveryOptions>(new DeliveryOptions { ProjectId = guid }), null, null, codeFirstModelProvider)
             {
-                CodeFirstModelProvider = { TypeProvider = new CustomTypeProvider() },
                 HttpClient = httpClient
             };
         }

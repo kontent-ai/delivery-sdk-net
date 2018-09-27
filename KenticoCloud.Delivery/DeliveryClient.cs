@@ -19,48 +19,13 @@ namespace KenticoCloud.Delivery
     public sealed class DeliveryClient : IDeliveryClient
     {
         private readonly DeliveryOptions _deliveryOptions;
+        private readonly IContentLinkUrlResolver _contentLinkUrlResolver;
+        private readonly IInlineContentItemsProcessor _inlineContentItemsProcessor;
+        private readonly ICodeFirstModelProvider _codeFirstModelProvider;
 
         private HttpClient _httpClient;
         private DeliveryEndpointUrlBuilder _urlBuilder;
-        private ICodeFirstModelProvider _codeFirstModelProvider;
-        private IInlineContentItemsProcessor _inlineContentItemsProcessor;
         private IResiliencePolicyProvider _resiliencePolicyProvider;
-
-        /// <summary>
-        /// Gets or sets an object that resolves links to content items in Rich text element values.
-        /// </summary>
-        public IContentLinkUrlResolver ContentLinkUrlResolver { get; set; }
-
-        /// <summary>
-        /// Gets processor for richtext elements retrieved with this client.
-        /// </summary>
-        public IInlineContentItemsProcessor InlineContentItemsProcessor
-        {
-            get
-            {
-                if (_inlineContentItemsProcessor == null)
-                {
-                    var unretrievedInlineContentItemsResolver = new ReplaceWithWarningAboutUnretrievedItemResolver();
-                    var defaultInlineContentItemsResolver = new ReplaceWithWarningAboutRegistrationResolver();
-                    _inlineContentItemsProcessor = new InlineContentItemsProcessor(defaultInlineContentItemsResolver, unretrievedInlineContentItemsResolver);
-                }
-                return _inlineContentItemsProcessor;
-            }
-            private set
-            {
-                _inlineContentItemsProcessor = value;
-            }
-        }
-
-        /// <summary>
-        /// Gets or sets an object that performs conversion of content items to code-first models.
-        /// </summary>
-        public ICodeFirstModelProvider CodeFirstModelProvider
-        {
-            get { return _codeFirstModelProvider ?? (_codeFirstModelProvider = new CodeFirstModelProvider(this)); }
-
-            set { _codeFirstModelProvider = value; }
-        }
 
         private DeliveryEndpointUrlBuilder UrlBuilder
         {
@@ -129,6 +94,10 @@ namespace KenticoCloud.Delivery
             }
 
             _deliveryOptions.ProjectId = projectIdGuid.ToString("D");
+
+            var unretrievedInlineContentItemsResolver = new ReplaceWithWarningAboutUnretrievedItemResolver();
+            var defaultInlineContentItemsResolver = new ReplaceWithWarningAboutRegistrationResolver();
+            _inlineContentItemsProcessor = new InlineContentItemsProcessor(defaultInlineContentItemsResolver, unretrievedInlineContentItemsResolver);
         }
 
         /// <summary>
@@ -142,9 +111,12 @@ namespace KenticoCloud.Delivery
         public DeliveryClient(IOptions<DeliveryOptions> deliveryOptions, IContentLinkUrlResolver contentLinkUrlResolver = null, IInlineContentItemsProcessor contentItemsProcessor = null, ICodeFirstModelProvider codeFirstModelProvider = null, IResiliencePolicyProvider retryPolicyProvider = null) 
             : this(deliveryOptions.Value)
         {
-            ContentLinkUrlResolver = contentLinkUrlResolver;
-            InlineContentItemsProcessor = contentItemsProcessor;
-            CodeFirstModelProvider = codeFirstModelProvider;
+            _contentLinkUrlResolver = contentLinkUrlResolver;
+            _codeFirstModelProvider = codeFirstModelProvider;
+            if (_inlineContentItemsProcessor != null)
+            {
+                _inlineContentItemsProcessor = contentItemsProcessor;
+            }
             ResiliencePolicyProvider = retryPolicyProvider;
         }
 
@@ -244,7 +216,7 @@ namespace KenticoCloud.Delivery
             var endpointUrl = UrlBuilder.GetItemUrl(codename, parameters);
             var response = await GetDeliverResponseAsync(endpointUrl);
 
-            return new DeliveryItemResponse(response, this, endpointUrl);
+            return new DeliveryItemResponse(response, _codeFirstModelProvider, _contentLinkUrlResolver, endpointUrl);
         }
 
         /// <summary>
@@ -264,7 +236,7 @@ namespace KenticoCloud.Delivery
             var endpointUrl = UrlBuilder.GetItemUrl(codename, parameters);
             var response = await GetDeliverResponseAsync(endpointUrl);
 
-            return new DeliveryItemResponse<T>(response, this, endpointUrl);
+            return new DeliveryItemResponse<T>(response, _codeFirstModelProvider, endpointUrl);
         }
 
         /// <summary>
@@ -287,7 +259,7 @@ namespace KenticoCloud.Delivery
             var endpointUrl = UrlBuilder.GetItemsUrl(parameters);
             var response = await GetDeliverResponseAsync(endpointUrl);
 
-            return new DeliveryItemListingResponse(response, this, endpointUrl);
+            return new DeliveryItemListingResponse(response, _codeFirstModelProvider, _contentLinkUrlResolver, endpointUrl);
         }
 
         /// <summary>
@@ -313,7 +285,7 @@ namespace KenticoCloud.Delivery
             var endpointUrl = UrlBuilder.GetItemsUrl(enhancedParameters);
             var response = await GetDeliverResponseAsync(endpointUrl);
 
-            return new DeliveryItemListingResponse<T>(response, this, endpointUrl);
+            return new DeliveryItemListingResponse<T>(response, _codeFirstModelProvider, endpointUrl);
         }
 
         /// <summary>

@@ -7,9 +7,11 @@ using System.Net;
 using System.Net.Http;
 using KenticoCloud.Delivery.ResiliencePolicy;
 using FakeItEasy;
+using KenticoCloud.Delivery.InlineContentItems;
 using Xunit;
 using RichardSzalay.MockHttp;
 using Polly;
+using Microsoft.Extensions.Options;
 
 namespace KenticoCloud.Delivery.Tests
 {
@@ -29,6 +31,9 @@ namespace KenticoCloud.Delivery.Tests
         [Fact]
         public async void GetItemAsync()
         {
+            var codeFirstTypeProvider = A.Fake<ICodeFirstTypeProvider>();
+            var contentLinkUrlResolver = A.Fake<IContentLinkUrlResolver>();
+            var codeFirstModelProvider = A.Fake<ICodeFirstModelProvider>();
             string url = $"{_baseUrl}/items/";
 
             _mockHttp.When($"{url}{"coffee_beverages_explained"}")
@@ -41,7 +46,8 @@ namespace KenticoCloud.Delivery.Tests
             Respond("application/json", File.ReadAllText(Path.Combine(Environment.CurrentDirectory, "Fixtures\\DeliveryClient\\on_roasts.json")));
 
             var httpClient = _mockHttp.ToHttpClient();
-            var client = new DeliveryClient(_guid) { HttpClient = httpClient };
+            // var client = new DeliveryClient(_guid) { HttpClient = httpClient };
+            var client = new DeliveryClient(new OptionsWrapper<DeliveryOptions>(new DeliveryOptions { ProjectId = _guid }), contentLinkUrlResolver, null, codeFirstModelProvider) { HttpClient = httpClient };
 
             var beveragesResponse = (await client.GetItemAsync("coffee_beverages_explained"));
             var beveragesItem = beveragesResponse.Item;
@@ -281,9 +287,10 @@ namespace KenticoCloud.Delivery.Tests
 
             var httpClient = _mockHttp.ToHttpClient();
 
-            var client = new DeliveryClient(_guid)
+            var codeFirstModelProvider = A.Fake<ICodeFirstModelProvider>();
+            A.CallTo(() => codeFirstModelProvider.TypeProvider).Returns(new CustomTypeProvider());
+            var client = new DeliveryClient(new OptionsWrapper<DeliveryOptions>(new DeliveryOptions { ProjectId = _guid }), null, null, codeFirstModelProvider)
             {
-                CodeFirstModelProvider = { TypeProvider = new CustomTypeProvider() },
                 HttpClient = httpClient
             };
 
@@ -440,16 +447,15 @@ namespace KenticoCloud.Delivery.Tests
 
             var httpClient = _mockHttp.ToHttpClient();
 
-            var client = new DeliveryClient(_guid)
+            var codeFirstModelProvider = new CodeFirstModelProvider(null, null) { TypeProvider = A.Fake<ICodeFirstTypeProvider>() };
+            var client =  new DeliveryClient(new OptionsWrapper<DeliveryOptions>(new DeliveryOptions { ProjectId = _guid }), null, null, codeFirstModelProvider)
             {
-                CodeFirstModelProvider = { TypeProvider = A.Fake<ICodeFirstTypeProvider>() },
                 HttpClient = httpClient
             };
 
-
             // Arrange
-            A.CallTo(() => client.CodeFirstModelProvider.TypeProvider.GetType("complete_content_type")).ReturnsLazily(() => typeof(ContentItemModelWithAttributes));
-            A.CallTo(() => client.CodeFirstModelProvider.TypeProvider.GetType("homepage")).ReturnsLazily(() => typeof(Homepage));
+            A.CallTo(() => codeFirstModelProvider.TypeProvider.GetType("complete_content_type")).ReturnsLazily(() => typeof(ContentItemModelWithAttributes));
+            A.CallTo(() => codeFirstModelProvider.TypeProvider.GetType("homepage")).ReturnsLazily(() => typeof(Homepage));
 
             ContentItemModelWithAttributes item = (ContentItemModelWithAttributes)client.GetItemAsync<object>("complete_content_item").Result.Item;
 
@@ -492,16 +498,16 @@ namespace KenticoCloud.Delivery.Tests
 
             var httpClient = _mockHttp.ToHttpClient();
 
-            var client = new DeliveryClient(_guid)
+            var codeFirstModelProvider = new CodeFirstModelProvider(null, null) { TypeProvider = A.Fake<ICodeFirstTypeProvider>()};
+            var client = new DeliveryClient(new OptionsWrapper<DeliveryOptions>(new DeliveryOptions { ProjectId = _guid }), null, null, codeFirstModelProvider)
             {
-                CodeFirstModelProvider = { TypeProvider = A.Fake<ICodeFirstTypeProvider>() },
                 HttpClient = httpClient
             };
 
 
             // Arrange
-            A.CallTo(() => client.CodeFirstModelProvider.TypeProvider.GetType("complete_content_type")).ReturnsLazily(() => typeof(ContentItemModelWithAttributes));
-            A.CallTo(() => client.CodeFirstModelProvider.TypeProvider.GetType("homepage")).ReturnsLazily(() => typeof(Homepage));
+            A.CallTo(() => codeFirstModelProvider.TypeProvider.GetType("complete_content_type")).ReturnsLazily(() => typeof(ContentItemModelWithAttributes));
+            A.CallTo(() => codeFirstModelProvider.TypeProvider.GetType("homepage")).ReturnsLazily(() => typeof(Homepage));
 
             IReadOnlyList<object> items = client.GetItemsAsync<object>(new EqualsFilter("system.type", "complete_content_type")).Result.Items;
 
@@ -512,12 +518,15 @@ namespace KenticoCloud.Delivery.Tests
         [Fact]
         public void CastResponse()
         {
+            var contentLinkUrlResolver = A.Fake<IContentLinkUrlResolver>();
+            var inlineContentItemsProcessor = A.Fake<IInlineContentItemsProcessor>();
+            var codeFirstModelProvider = new CodeFirstModelProvider(contentLinkUrlResolver, inlineContentItemsProcessor);
             _mockHttp.When($"{_baseUrl}/items/complete_content_item")
                 .Respond("application/json", File.ReadAllText(Path.Combine(Environment.CurrentDirectory, "Fixtures\\DeliveryClient\\complete_content_item.json")));
 
             var httpClient = _mockHttp.ToHttpClient();
 
-            var client = new DeliveryClient(_guid)
+            var client = new DeliveryClient(new OptionsWrapper<DeliveryOptions>(new DeliveryOptions { ProjectId = _guid }), contentLinkUrlResolver, null, codeFirstModelProvider)
             {
                 HttpClient = httpClient
             };
@@ -532,12 +541,14 @@ namespace KenticoCloud.Delivery.Tests
         [Fact]
         public void CastListingResponse()
         {
+            var contentLinkUrlResolver = A.Fake<IContentLinkUrlResolver>();
+            var codeFirstModelProvider = A.Fake<ICodeFirstModelProvider>();
             _mockHttp.When($"{_baseUrl}/items")
                 .Respond("application/json", File.ReadAllText(Path.Combine(Environment.CurrentDirectory, "Fixtures\\DeliveryClient\\items.json")));
 
             var httpClient = _mockHttp.ToHttpClient();
 
-            var client = new DeliveryClient(_guid)
+            var client = new DeliveryClient(new OptionsWrapper<DeliveryOptions>(new DeliveryOptions { ProjectId = _guid }), contentLinkUrlResolver, null, codeFirstModelProvider)
             {
                 HttpClient = httpClient
             };
@@ -557,8 +568,11 @@ namespace KenticoCloud.Delivery.Tests
                 .Respond("application/json", File.ReadAllText(Path.Combine(Environment.CurrentDirectory, "Fixtures\\DeliveryClient\\complete_content_item.json")));
 
             var httpClient = _mockHttp.ToHttpClient();
+            var contentLinkUrlResolver = A.Fake<IContentLinkUrlResolver>();
+            var inlineContentItemsProcessor = A.Fake<IInlineContentItemsProcessor>();
+            var codeFirstModelProvider = new CodeFirstModelProvider(contentLinkUrlResolver, inlineContentItemsProcessor);
 
-            var client = new DeliveryClient(_guid)
+            var client = new DeliveryClient(new OptionsWrapper<DeliveryOptions>(new DeliveryOptions { ProjectId = _guid }), contentLinkUrlResolver, null, codeFirstModelProvider)
             {
                 HttpClient = httpClient
             };
@@ -574,12 +588,14 @@ namespace KenticoCloud.Delivery.Tests
         [Fact]
         public void CastContentItems()
         {
+            var contentLinkUrlResolver = A.Fake<IContentLinkUrlResolver>();
+            var codeFirstModelProvider = A.Fake<ICodeFirstModelProvider>();
             _mockHttp.When($"{_baseUrl}/items")
                 .Respond("application/json", File.ReadAllText(Path.Combine(Environment.CurrentDirectory, "Fixtures\\DeliveryClient\\items.json")));
 
             var httpClient = _mockHttp.ToHttpClient();
 
-            var client = new DeliveryClient(_guid)
+            var client = new DeliveryClient(new OptionsWrapper<DeliveryOptions>(new DeliveryOptions { ProjectId = _guid }), contentLinkUrlResolver, null, codeFirstModelProvider)
             {
                 HttpClient = httpClient
             };
@@ -890,11 +906,13 @@ namespace KenticoCloud.Delivery.Tests
 
         private DeliveryClient InitializeDeliverClientWithACustomeTypeProvider()
         {
+            var contentLinkUrlResolver = A.Fake<IContentLinkUrlResolver>();
+            var inlineContentItemsProcessor = new InlineContentItemsProcessor(new ReplaceWithWarningAboutRegistrationResolver(), null);
+            var codeFirstModelProvider = new CodeFirstModelProvider(contentLinkUrlResolver, inlineContentItemsProcessor) { TypeProvider = new CustomTypeProvider() };
             var httpClient = _mockHttp.ToHttpClient();
 
-            var client = new DeliveryClient(_guid)
+            var client = new DeliveryClient(new OptionsWrapper<DeliveryOptions>(new DeliveryOptions { ProjectId = _guid }), contentLinkUrlResolver, null, codeFirstModelProvider)
             {
-                CodeFirstModelProvider = { TypeProvider = new CustomTypeProvider() },
                 HttpClient = httpClient
             };
             return client;

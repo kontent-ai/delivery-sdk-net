@@ -13,7 +13,8 @@ namespace KenticoCloud.Delivery
     /// </summary>
     internal class CodeFirstModelProvider : ICodeFirstModelProvider
     {
-        private readonly IDeliveryClient _client;
+        private readonly IContentLinkUrlResolver _contentLinkUrlResolver;
+        private readonly IInlineContentItemsProcessor _inlineContentItemsProcessor;
         private ICodeFirstPropertyMapper _propertyMapper;
         private ContentLinkResolver _contentLinkResolver;
 
@@ -21,9 +22,9 @@ namespace KenticoCloud.Delivery
         {
             get
             {
-                if (_contentLinkResolver == null && _client.ContentLinkUrlResolver != null)
+                if (_contentLinkResolver == null && _contentLinkUrlResolver != null)
                 {
-                    _contentLinkResolver = new ContentLinkResolver(_client.ContentLinkUrlResolver);
+                    _contentLinkResolver = new ContentLinkResolver(_contentLinkUrlResolver);
                 }
                 return _contentLinkResolver;
             }
@@ -46,9 +47,10 @@ namespace KenticoCloud.Delivery
         /// <summary>
         /// Initializes a new instance of <see cref="CodeFirstModelProvider"/>.
         /// </summary>
-        public CodeFirstModelProvider(IDeliveryClient client)
+        public CodeFirstModelProvider(IContentLinkUrlResolver contentLinkUrlResolver, IInlineContentItemsProcessor inlineContentItemsProcessor)
         {
-            _client = client;
+            _contentLinkUrlResolver = contentLinkUrlResolver;
+            _inlineContentItemsProcessor = inlineContentItemsProcessor;
         }
 
         /// <summary>
@@ -113,7 +115,7 @@ namespace KenticoCloud.Delivery
                     }
                     return null;
                 },
-                Client = _client,
+                ContentLinkUrlResolver = _contentLinkUrlResolver
             };
 
             foreach (var property in instance.GetType().GetProperties())
@@ -153,7 +155,7 @@ namespace KenticoCloud.Delivery
                                 value = ContentLinkResolver.ResolveContentLinks((string)value, links);
                             }
 
-                            if (modularContentInRichText != null && elementValue != null && _client.InlineContentItemsProcessor != null)
+                            if (modularContentInRichText != null && elementValue != null && _inlineContentItemsProcessor != null)
                             {
                                 // At this point it's clear it's richtext because it contains modular content
                                 richTextPropertiesToBeProcessed.Add(property);
@@ -201,7 +203,7 @@ namespace KenticoCloud.Delivery
                                         {
                                             if (genericArgs.First() == typeof(ContentItem))
                                             {
-                                                contentItem = new ContentItem(modularContentItemNode, modularContentNode, _client);
+                                                contentItem = new ContentItem(modularContentItemNode, modularContentNode, _contentLinkUrlResolver, this);
                                             }
                                             else
                                             {
@@ -325,14 +327,14 @@ namespace KenticoCloud.Delivery
                 }
             }
 
-            value = _client.InlineContentItemsProcessor.Process(value, contentItemsInRichText);
+            value = _inlineContentItemsProcessor.Process(value, contentItemsInRichText);
 
             return value;
         }
 
         private string RemoveInlineContentItems(string value)
         {
-            return _client.InlineContentItemsProcessor.RemoveAll(value);
+            return _inlineContentItemsProcessor.RemoveAll(value);
         }
     }
 }
