@@ -137,7 +137,7 @@ The `ContentItem` class provides the following:
 
 * `System` property with metadata such as code name, display name, type, or sitemap location.
 * `Elements` as a dynamically typed property containing all the elements included in the response structured by code names.
-* Methods for easier access to certain types of content elements such as modular content, or assets.
+* Methods for easier access to certain types of content elements such as linked items, or assets.
 
 ## Getting content item properties
 
@@ -208,11 +208,11 @@ foreach (var option in element.Options)
 }
 ```
 
-### Modular content
+### Linked items
 
 ```csharp
 // Retrieves related articles
-articleItem.GetModularContent("related_articles")
+articleItem.GetLinkedItems("related_articles")
 ```
 
 ## Using the Image transformations
