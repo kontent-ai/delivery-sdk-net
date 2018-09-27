@@ -102,7 +102,14 @@ namespace KenticoCloud.Delivery
                     var linkedItemsElementNode = linkedItemsNode.Properties().FirstOrDefault(p => p.Name == codename)?.First;
                     if (linkedItemsElementNode != null)
                     {
-                        return GetContentItemModel(typeof(object), linkedItemsElementNode, linkedItems, processedItems);
+                        if (processedItems.ContainsKey(codename))
+                        {
+                            return processedItems[codename];
+                        }
+                        else
+                        {
+                            return GetContentItemModel(typeof(object), linkedItemsElementNode, linkedItems, processedItems);                            
+                        }
                     }
                     return null;
                 },
