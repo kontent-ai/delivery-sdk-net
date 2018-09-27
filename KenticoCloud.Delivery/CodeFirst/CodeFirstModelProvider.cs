@@ -104,7 +104,14 @@ namespace KenticoCloud.Delivery
                     var modularContentItemNode = modularContentNode.Properties().FirstOrDefault(p => p.Name == codename)?.First;
                     if (modularContentItemNode != null)
                     {
-                        return GetContentItemModel(typeof(object), modularContentItemNode, modularContent, processedItems);
+                        if (processedItems.ContainsKey(codename))
+                        {
+                            return processedItems[codename];
+                        }
+                        else
+                        {
+                            return GetContentItemModel(typeof(object), modularContentItemNode, modularContent, processedItems);                            
+                        }
                     }
                     return null;
                 },

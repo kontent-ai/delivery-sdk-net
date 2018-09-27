@@ -50,25 +50,25 @@
 
   <ItemGroup>
     <None Update="Fixtures\ContentLinkResolver\coffee_beverages_explained.json">
-      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
     </None>
     <None Update="Fixtures\ContentLinkResolver\coffee_processing_techniques.json">
       <CopyToOutputDirectory>Always</CopyToOutputDirectory>
     </None>
     <None Update="Fixtures\ContentLinkResolver\on_roasts.json">
-      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
     </None>
     <None Update="Fixtures\DeliveryClient\allendale.json">
       <CopyToOutputDirectory>Always</CopyToOutputDirectory>
     </None>
     <None Update="Fixtures\DeliveryClient\article.json">
-      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
     </None>
     <None Update="Fixtures\DeliveryClient\articles.json">
-      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
     </None>
     <None Update="Fixtures\DeliveryClient\brazil_natural_barra_grande.json">
-      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
     </None>
     <None Update="Fixtures\DeliveryClient\coffee.json">
       <CopyToOutputDirectory>Always</CopyToOutputDirectory>
@@ -85,11 +85,14 @@
     <None Update="Fixtures\DeliveryClient\items.json">
       <CopyToOutputDirectory>Always</CopyToOutputDirectory>
     </None>
-    <None Update="Fixtures\DeliveryClient\onroast_deep15.json">
+    <None Update="Fixtures\DeliveryClient\onroast_recursive_inline_modular_content.json">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </None>
+    <None Update="Fixtures\DeliveryClient\onroast_recursive_modular_content.json">
       <CopyToOutputDirectory>Always</CopyToOutputDirectory>
     </None>
     <None Update="Fixtures\DeliveryClient\on_roasts.json">
-      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
     </None>
     <None Update="Fixtures\DeliveryClient\taxonomies_personas.json">
       <CopyToOutputDirectory>Always</CopyToOutputDirectory>
