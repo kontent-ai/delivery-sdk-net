@@ -56,14 +56,14 @@ namespace KenticoCloud.Delivery
         /// </summary>
         /// <typeparam name="T">Strongly typed content item model.</typeparam>
         /// <param name="item">Content item data.</param>
-        /// <param name="modularContent">Modular content items.</param>
+        /// <param name="linkedItems">Linked items.</param>
         /// <returns>Strongly typed POCO model of the generic type.</returns>
-        public T GetContentItemModel<T>(JToken item, JToken modularContent)
+        public T GetContentItemModel<T>(JToken item, JToken linkedItems)
         {
-            return (T)GetContentItemModel(typeof(T), item, modularContent);
+            return (T)GetContentItemModel(typeof(T), item, linkedItems);
         }
 
-        internal object GetContentItemModel(Type t, JToken item, JToken modularContent, Dictionary<string, object> processedItems = null, HashSet<RichTextContentElements> currentlyResolvedRichStrings = null)
+        internal object GetContentItemModel(Type t, JToken item, JToken linkedItems, Dictionary<string, object> processedItems = null, HashSet<RichTextContentElements> currentlyResolvedRichStrings = null)
         {
             processedItems = processedItems ?? new Dictionary<string, object>();
             currentlyResolvedRichStrings = currentlyResolvedRichStrings ?? new HashSet<RichTextContentElements>();
@@ -96,13 +96,13 @@ namespace KenticoCloud.Delivery
 
             var context = new CodeFirstResolvingContext
             {
-                GetModularContentItem = (codename) =>
+                GetLinkedItem = (codename) =>
                 {
-                    var modularContentNode = (JObject)modularContent;
-                    var modularContentItemNode = modularContentNode.Properties().FirstOrDefault(p => p.Name == codename)?.First;
-                    if (modularContentItemNode != null)
+                    var linkedItemsNode = (JObject)linkedItems;
+                    var linkedItemsElementNode = linkedItemsNode.Properties().FirstOrDefault(p => p.Name == codename)?.First;
+                    if (linkedItemsElementNode != null)
                     {
-                        return GetContentItemModel(typeof(object), modularContentItemNode, modularContent, processedItems);
+                        return GetContentItemModel(typeof(object), linkedItemsElementNode, linkedItems, processedItems);
                     }
                     return null;
                 },
@@ -138,7 +138,7 @@ namespace KenticoCloud.Delivery
                         {
                             value = elementValue?.ToObject<string>();
                             var links = elementData?.Property("links")?.Value;
-                            var modularContentInRichText = elementData?.Property("modular_content")?.Value;
+                            var linkedItemsInRichText = elementData?.Property("modular_content")?.Value;
 
                             // Handle rich_text link resolution
                             if (links != null && elementValue != null && ContentLinkResolver != null)
@@ -146,9 +146,9 @@ namespace KenticoCloud.Delivery
                                 value = ContentLinkResolver.ResolveContentLinks((string)value, links);
                             }
 
-                            if (modularContentInRichText != null && elementValue != null && _client.InlineContentItemsProcessor != null)
+                            if (linkedItemsInRichText != null && elementValue != null && _client.InlineContentItemsProcessor != null)
                             {
-                                // At this point it's clear it's richtext because it contains modular content
+                                // At this point it's clear it's richtext because it contains linked items
                                 richTextPropertiesToBeProcessed.Add(property);
                             }
 
@@ -165,10 +165,10 @@ namespace KenticoCloud.Delivery
                             && ((propertyType.GetInterfaces().Any(gt => gt.GetTypeInfo().IsGenericType && gt.GetTypeInfo().GetGenericTypeDefinition() == typeof(ICollection<>)) && propertyType.GetTypeInfo().IsClass)
                             || propertyType.GetGenericTypeDefinition() == typeof(IEnumerable<>)))
                         {
-                            // Handle modular content
+                            // Handle linked items
                             var contentItemCodenames = elementValue?.ToObject<IEnumerable<string>>();
 
-                            var modularContentNode = (JObject)modularContent;
+                            var linkedItemsNode = (JObject)linkedItems;
                             var genericArgs = propertyType.GetGenericArguments();
 
                             // Create a List<T> based on the generic parameter of the input type (IEnumerable<T> or derived types)
@@ -180,9 +180,9 @@ namespace KenticoCloud.Delivery
                             {
                                 foreach (string codename in contentItemCodenames)
                                 {
-                                    var modularContentItemNode = modularContentNode.Properties().FirstOrDefault(p => p.Name == codename)?.First;
+                                    var linkedItemsElementNode = linkedItemsNode.Properties().FirstOrDefault(p => p.Name == codename)?.First;
 
-                                    if (modularContentItemNode != null)
+                                    if (linkedItemsElementNode != null)
                                     {
                                         object contentItem = null;
                                         if (processedItems.ContainsKey(codename))
@@ -194,11 +194,11 @@ namespace KenticoCloud.Delivery
                                         {
                                             if (genericArgs.First() == typeof(ContentItem))
                                             {
-                                                contentItem = new ContentItem(modularContentItemNode, modularContentNode, _client);
+                                                contentItem = new ContentItem(linkedItemsElementNode, linkedItemsNode, _client);
                                             }
                                             else
                                             {
-                                                contentItem = GetContentItemModel(genericArgs.First(), modularContentItemNode, modularContentNode, processedItems);
+                                                contentItem = GetContentItemModel(genericArgs.First(), linkedItemsElementNode, linkedItemsNode, processedItems);
                                             }
                                             if (!processedItems.ContainsKey(codename))
                                             {
@@ -229,7 +229,7 @@ namespace KenticoCloud.Delivery
                 var value = property.GetValue(instance)?.ToString();
                 var elementData = (JObject)elementsData.Properties()?.FirstOrDefault(p => PropertyMapper.IsMatch(property, p.Name, system?.Type))?.Value;
 
-                var modularContentInRichText = elementData?.Property("modular_content")?.Value;
+                var linkedItemsInRichText = elementData?.Property("modular_content")?.Value;
 
                 var currentlyProcessedString = new RichTextContentElements()
                 {
@@ -246,7 +246,7 @@ namespace KenticoCloud.Delivery
                 else
                 {
                     currentlyResolvedRichStrings.Add(currentlyProcessedString);
-                    value = ProcessInlineContentItems(modularContent, processedItems, value, modularContentInRichText, currentlyResolvedRichStrings);
+                    value = ProcessInlineContentItems(linkedItems, processedItems, value, linkedItemsInRichText, currentlyResolvedRichStrings);
                     currentlyResolvedRichStrings.Remove(currentlyProcessedString);
                 }
                 if (value != null)
@@ -277,9 +277,9 @@ namespace KenticoCloud.Delivery
             return null;
         }
 
-        private string ProcessInlineContentItems(JToken modularContent, Dictionary<string, object> processedItems, string value, JToken modularContentInRichText, HashSet<RichTextContentElements> currentlyResolvedRichStrings)
+        private string ProcessInlineContentItems(JToken linkedItems, Dictionary<string, object> processedItems, string value, JToken linkedItemsInRichText, HashSet<RichTextContentElements> currentlyResolvedRichStrings)
         {
-            var usedCodenames = JsonConvert.DeserializeObject<IEnumerable<string>>(modularContentInRichText.ToString());
+            var usedCodenames = JsonConvert.DeserializeObject<IEnumerable<string>>(linkedItemsInRichText.ToString());
             var contentItemsInRichText = new Dictionary<string, object>();
 
             if (usedCodenames != null)
@@ -296,13 +296,13 @@ namespace KenticoCloud.Delivery
                     }
                     else
                     {
-                        var modularContentNode = (JObject)modularContent;
-                        var modularContentItemNode =
-                            modularContentNode.Properties()
+                        var linkedItemsNode = (JObject)linkedItems;
+                        var linkedItemsElementNode =
+                            linkedItemsNode.Properties()
                                 .FirstOrDefault(p => p.Name == codenameUsed)?.First;
-                        if (modularContentItemNode != null)
+                        if (linkedItemsElementNode != null)
                         {
-                            contentItem = GetContentItemModel(typeof(object), modularContentItemNode, modularContentNode, processedItems, currentlyResolvedRichStrings);
+                            contentItem = GetContentItemModel(typeof(object), linkedItemsElementNode, linkedItemsNode, processedItems, currentlyResolvedRichStrings);
                             if (!processedItems.ContainsKey(codenameUsed))
                             {
                                 processedItems.Add(codenameUsed, contentItem);

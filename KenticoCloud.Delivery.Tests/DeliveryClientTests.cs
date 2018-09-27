@@ -50,7 +50,7 @@ namespace KenticoCloud.Delivery.Tests
             Assert.Equal("article", beveragesItem.System.Type);
             Assert.Equal("en-US", beveragesItem.System.Language);
             Assert.NotEmpty(beveragesItem.System.SitemapLocation);
-            Assert.NotEmpty(roastsItem.GetModularContent("related_articles"));
+            Assert.NotEmpty(roastsItem.GetLinkedItems("related_articles"));
             Assert.Equal(beveragesItem.Elements.title.value.ToString(), beveragesItem.GetString("title"));
             Assert.Equal(beveragesItem.Elements.body_copy.value.ToString(), beveragesItem.GetString("body_copy"));
             Assert.Equal(DateTime.Parse(beveragesItem.Elements.post_date.value.ToString()), beveragesItem.GetDateTime("post_date"));
@@ -349,7 +349,7 @@ namespace KenticoCloud.Delivery.Tests
 
             var client = InitializeDeliverClientWithACustomeTypeProvider();
 
-            // Returns on_roasts content item with related_articles modular element to two other articles.
+            // Returns on_roasts content item with related_articles linked item to two other articles.
             // on_roasts
             // |- coffee_processing_techniques
             // |- origins_of_arabica_bourbon
@@ -363,7 +363,7 @@ namespace KenticoCloud.Delivery.Tests
         }
 
         [Fact]
-        public async void RecursiveModularContent()
+        public async void RecursiveLinkedItems()
         {
             _mockHttp.When($"{_baseUrl}/items/on_roasts")
                 .WithQueryString("depth=15")
@@ -371,7 +371,7 @@ namespace KenticoCloud.Delivery.Tests
 
             var client = InitializeDeliverClientWithACustomeTypeProvider();
 
-            // Try to get recursive modular content on_roasts -> item -> on_roasts
+            // Try to get recursive linked items on_roasts -> item -> on_roasts
             var article = await client.GetItemAsync<Article>("on_roasts", new DepthParameter(15));
 
             Assert.NotNull(article.Item);
@@ -409,8 +409,8 @@ namespace KenticoCloud.Delivery.Tests
             Assert.Equal(129170, item.AssetField.First().Size);
             Assert.Equal("https://assets.kenticocloud.com:443/e1167a11-75af-4a08-ad84-0582b463b010/64096741-b658-46ee-b148-b287fe03ea16/Fire.jpg", item.AssetField.First().Url);
 
-            Assert.Single(item.ModularContentField);
-            Assert.Equal("Homepage", item.ModularContentField.First().System.Name);
+            Assert.Single(item.LinkedItemsField);
+            Assert.Equal("Homepage", item.LinkedItemsField.First().System.Name);
 
             Assert.Equal(2, item.CompleteTypeTaxonomy.Count());
             Assert.Equal("Option 1", item.CompleteTypeTaxonomy.First().Name);
@@ -459,10 +459,10 @@ namespace KenticoCloud.Delivery.Tests
             Assert.Equal(129170, item.AssetFieldWithADifferentName.First().Size);
             Assert.Equal("https://assets.kenticocloud.com:443/e1167a11-75af-4a08-ad84-0582b463b010/64096741-b658-46ee-b148-b287fe03ea16/Fire.jpg", item.AssetFieldWithADifferentName.First().Url);
 
-            Assert.Single(item.ModularContentFieldWithADifferentName);
-            Assert.Equal("Homepage", ((Homepage)item.ModularContentFieldWithADifferentName.First()).System.Name);
-            Assert.Equal("Homepage", ((Homepage)item.ModularContentFieldWithACollectionTypeDefined.First()).System.Name);
-            Assert.True(item.ModularContentFieldWithAGenericTypeDefined.First().CallToAction.Length > 0);
+            Assert.Single(item.LinkedItemsFieldWithADifferentName);
+            Assert.Equal("Homepage", ((Homepage)item.LinkedItemsFieldWithADifferentName.First()).System.Name);
+            Assert.Equal("Homepage", ((Homepage)item.LinkedItemsFieldWithACollectionTypeDefined.First()).System.Name);
+            Assert.True(item.LinkedItemsFieldWithAGenericTypeDefined.First().CallToAction.Length > 0);
 
             Assert.Equal(2, item.CompleteTypeTaxonomyWithADifferentName.Count());
             Assert.Equal("Option 1", item.CompleteTypeTaxonomyWithADifferentName.First().Name);

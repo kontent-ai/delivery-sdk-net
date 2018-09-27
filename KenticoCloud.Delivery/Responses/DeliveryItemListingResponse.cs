@@ -13,7 +13,7 @@ namespace KenticoCloud.Delivery
         private readonly IDeliveryClient _client;
         private Pagination _pagination;
         private IReadOnlyList<ContentItem> _items;
-        private dynamic _modularContent;
+        private dynamic _linkedItems;
 
         /// <summary>
         /// Gets paging information.
@@ -32,11 +32,11 @@ namespace KenticoCloud.Delivery
         }
 
         /// <summary>
-        /// Gets the dynamic view of the JSON response where modular content items and their properties can be retrieved by name, for example <c>ModularContent.about_us.elements.description.value</c>.
+        /// Gets the dynamic view of the JSON response where linked items and their properties can be retrieved by name, for example <c>LinkedItems.about_us.elements.description.value</c>.
         /// </summary>
-        public dynamic ModularContent
+        public dynamic LinkedItems
         {
-            get { return _modularContent ?? (_modularContent = JObject.Parse(_response["modular_content"].ToString())); }
+            get { return _linkedItems ?? (_linkedItems = JObject.Parse(_response["modular_content"].ToString())); }
         }
 
         /// <summary>

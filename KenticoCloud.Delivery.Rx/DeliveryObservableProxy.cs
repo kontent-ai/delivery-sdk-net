@@ -27,10 +27,10 @@ namespace KenticoCloud.Delivery.Rx
         #region "Public methods"
 
         /// <summary>
-        /// Returns an observable of a single content item as JSON data. By default, retrieves one level of modular content.
+        /// Returns an observable of a single content item as JSON data. By default, retrieves one level of linked items.
         /// </summary>
         /// <param name="codename">The codename of a content item.</param>
-        /// <param name="parameters">An array that contains zero or more query parameters, for example, for projection or setting the depth of modular content.</param>
+        /// <param name="parameters">An array that contains zero or more query parameters, for example, for projection or setting the depth of linked items.</param>
         /// <returns>The <see cref="IObservable{JObject}"/> that represents the content item with the specified codename.</returns>
         public IObservable<JObject> GetItemJsonObservable(string codename, params string[] parameters)
         {
@@ -38,9 +38,9 @@ namespace KenticoCloud.Delivery.Rx
         }
 
         /// <summary>
-        /// Returns an observable of content items as JSON data. By default, retrieves one level of modular content.
+        /// Returns an observable of content items as JSON data. By default, retrieves one level of linked items.
         /// </summary>
-        /// <param name="parameters">An array that contains zero or more query parameters, for example, for filtering, ordering, or setting the depth of modular content.</param>
+        /// <param name="parameters">An array that contains zero or more query parameters, for example, for filtering, ordering, or setting the depth of linked items.</param>
         /// <returns>The <see cref="IObservable{JObject}"/> that represents the content items. If no query parameters are specified, all content items are returned.</returns>
         public IObservable<JObject> GetItemsJsonObservable(params string[] parameters)
         {
@@ -48,10 +48,10 @@ namespace KenticoCloud.Delivery.Rx
         }
 
         /// <summary>
-        /// Returns an observable of a single content item. By default, retrieves one level of modular content.
+        /// Returns an observable of a single content item. By default, retrieves one level of linked items.
         /// </summary>
         /// <param name="codename">The codename of a content item.</param>
-        /// <param name="parameters">An array that contains zero or more query parameters, for example, for projection or setting the depth of modular content.</param>
+        /// <param name="parameters">An array that contains zero or more query parameters, for example, for projection or setting the depth of linked items.</param>
         /// <returns>The <see cref="IObservable{ContentItem}"/> that represents the content item with the specified codename.</returns>
         public IObservable<ContentItem> GetItemObservable(string codename, params IQueryParameter[] parameters)
         {
@@ -59,11 +59,11 @@ namespace KenticoCloud.Delivery.Rx
         }
 
         /// <summary>
-        /// Gets an observable of a single, strongly typed content item, by its codename. By default, retrieves one level of modular content.
+        /// Gets an observable of a single, strongly typed content item, by its codename. By default, retrieves one level of linked items.
         /// </summary>
         /// <typeparam name="T">Type of the code-first model. (Or <see cref="object"/> if the return type is not yet known.)</typeparam>
         /// <param name="codename">The codename of a content item.</param>
-        /// <param name="parameters">An array that contains zero or more query parameters, for example, for projection or setting the depth of modular content.</param>
+        /// <param name="parameters">An array that contains zero or more query parameters, for example, for projection or setting the depth of linked items.</param>
         /// <returns>The <see cref="IObservable{T}"/> that represents the content item with the specified codename.</returns>
         public IObservable<T> GetItemObservable<T>(string codename, params IQueryParameter[] parameters)
             where T : class
@@ -72,10 +72,10 @@ namespace KenticoCloud.Delivery.Rx
         }
 
         /// <summary>
-        /// Returns an observable of a single content item. By default, retrieves one level of modular content.
+        /// Returns an observable of a single content item. By default, retrieves one level of linked items.
         /// </summary>
         /// <param name="codename">The codename of a content item.</param>
-        /// <param name="parameters">A collection of query parameters, for example, for projection or setting the depth of modular content.</param>
+        /// <param name="parameters">A collection of query parameters, for example, for projection or setting the depth of linked items.</param>
         /// <returns>The <see cref="IObservable{ContentItem}"/> that represents the content item with the specified codename.</returns>
         public IObservable<ContentItem> GetItemObservable(string codename, IEnumerable<IQueryParameter> parameters)
         {
@@ -83,11 +83,11 @@ namespace KenticoCloud.Delivery.Rx
         }
 
         /// <summary>
-        /// Gets an observable of a single strongly typed content item, by its codename. By default, retrieves one level of modular content.
+        /// Gets an observable of a single strongly typed content item, by its codename. By default, retrieves one level of linked items.
         /// </summary>
         /// <typeparam name="T">Type of the code-first model. (Or <see cref="object"/> if the return type is not yet known.)</typeparam>
         /// <param name="codename">The codename of a content item.</param>
-        /// <param name="parameters">A collection of query parameters, for example, for projection or setting the depth of modular content.</param>
+        /// <param name="parameters">A collection of query parameters, for example, for projection or setting the depth of linked items.</param>
         /// <returns>The <see cref="IObservable{T}"/> that represents the content item with the specified codename.</returns>
         public IObservable<T> GetItemObservable<T>(string codename, IEnumerable<IQueryParameter> parameters = null)
             where T : class
@@ -96,9 +96,9 @@ namespace KenticoCloud.Delivery.Rx
         }
 
         /// <summary>
-        /// Returns an observable of content items that match the optional filtering parameters. By default, retrieves one level of modular content.
+        /// Returns an observable of content items that match the optional filtering parameters. By default, retrieves one level of linked items.
         /// </summary>
-        /// <param name="parameters">An array that contains zero or more query parameters, for example, for filtering, ordering, or setting the depth of modular content.</param>
+        /// <param name="parameters">An array that contains zero or more query parameters, for example, for filtering, ordering, or setting the depth of linked items.</param>
         /// <returns>The <see cref="IObservable{ContentItem}"/> that represents the content items. If no query parameters are specified, all content items are returned.</returns>
         public IObservable<ContentItem> GetItemsObservable(params IQueryParameter[] parameters)
         {
@@ -106,9 +106,9 @@ namespace KenticoCloud.Delivery.Rx
         }
 
         /// <summary>
-        /// Returns an observable of content items that match the optional filtering parameters. By default, retrieves one level of modular content.
+        /// Returns an observable of content items that match the optional filtering parameters. By default, retrieves one level of linked items.
         /// </summary>
-        /// <param name="parameters">A collection of query parameters, for example, for filtering, ordering, or setting the depth of modular content.</param>
+        /// <param name="parameters">A collection of query parameters, for example, for filtering, ordering, or setting the depth of linked items.</param>
         /// <returns>The <see cref="IObservable{ContentItem}"/> that represents the content items. If no query parameters are specified, all content items are returned.</returns>
         public IObservable<ContentItem> GetItemsObservable(IEnumerable<IQueryParameter> parameters)
         {
@@ -116,10 +116,10 @@ namespace KenticoCloud.Delivery.Rx
         }
 
         /// <summary>
-        /// Returns an observable of strongly typed content items that match the optional filtering parameters. By default, retrieves one level of modular content.
+        /// Returns an observable of strongly typed content items that match the optional filtering parameters. By default, retrieves one level of linked items.
         /// </summary>
         /// <typeparam name="T">Type of the code-first model. (Or <see cref="object"/> if the return type is not yet known.)</typeparam>
-        /// <param name="parameters">An array that contains zero or more query parameters, for example, for filtering, ordering, or setting the depth of modular content.</param>
+        /// <param name="parameters">An array that contains zero or more query parameters, for example, for filtering, ordering, or setting the depth of linked items.</param>
         /// <returns>The <see cref="IObservable{T}"/> that represents the content items. If no query parameters are specified, all content items are returned.</returns>
         public IObservable<T> GetItemsObservable<T>(params IQueryParameter[] parameters)
             where T : class
@@ -128,10 +128,10 @@ namespace KenticoCloud.Delivery.Rx
         }
 
         /// <summary>
-        /// Returns an observable of strongly typed content items that match the optional filtering parameters. By default, retrieves one level of modular content.
+        /// Returns an observable of strongly typed content items that match the optional filtering parameters. By default, retrieves one level of linked items.
         /// </summary>
         /// <typeparam name="T">Type of the code-first model. (Or <see cref="object"/> if the return type is not yet known.)</typeparam>
-        /// <param name="parameters">A collection of query parameters, for example, for filtering, ordering, or setting the depth of modular content.</param>
+        /// <param name="parameters">A collection of query parameters, for example, for filtering, ordering, or setting the depth of linked items.</param>
         /// <returns>The <see cref="IObservable{T}"/> that represents the content items. If no query parameters are specified, all content items are returned.</returns>
         public IObservable<T> GetItemsObservable<T>(IEnumerable<IQueryParameter> parameters)
             where T : class
