@@ -1,8 +1,8 @@
-﻿using System;
+﻿using AngleSharp.Dom;
+using AngleSharp.Parser.Html;
+using System;
 using System.Collections.Generic;
 using System.Linq;
-using AngleSharp.Dom;
-using AngleSharp.Parser.Html;
 
 namespace KenticoCloud.Delivery.InlineContentItems
 {
@@ -76,7 +76,7 @@ namespace KenticoCloud.Delivery.InlineContentItems
                         {
                             var data = new ResolvedContentItemData<object> { Item = inlineContentItem };
                             fragmentText = DefaultResolver.Resolve(data);
-                        }                  
+                        }
                     }
 
                     try
@@ -113,7 +113,7 @@ namespace KenticoCloud.Delivery.InlineContentItems
 
         private static List<IElement> GetInlineContentItemElements(AngleSharp.Dom.Html.IHtmlDocument htmlInput)
         {
-            return htmlInput.Body.GetElementsByTagName("object").Where(o => o.GetAttribute("type") == "application/kenticocloud" && o.GetAttribute("data-type") == "item").ToList();
+            return htmlInput.Body.GetElementsByTagName("object").Where(o => o.GetAttribute("type") == "application/kenticocloud" && (o.GetAttribute("data-type") == "item" || o.GetAttribute("data-type") == "component")).ToList();
         }
 
         /// <summary>

@@ -1,10 +1,9 @@
-﻿using System;
-using System.Reflection;
+﻿using AngleSharp.Parser.Html;
+using Newtonsoft.Json.Linq;
+using System;
 using System.Collections.Generic;
 using System.Linq;
-
-using Newtonsoft.Json.Linq;
-using AngleSharp.Parser.Html;
+using System.Reflection;
 
 namespace KenticoCloud.Delivery
 {
@@ -37,7 +36,9 @@ namespace KenticoCloud.Delivery
             var htmlInput = new HtmlParser().Parse(value);
             foreach (var block in htmlInput.Body.Children)
             {
-                if (block.TagName?.Equals("object", StringComparison.OrdinalIgnoreCase) == true && block.GetAttribute("type") == "application/kenticocloud" && block.GetAttribute("data-type") == "item")
+                if (block.TagName?.Equals("object", StringComparison.OrdinalIgnoreCase) == true
+                    && block.GetAttribute("type") == "application/kenticocloud"
+                    && (block.GetAttribute("data-type") == "item" || block.GetAttribute("data-type") == "component"))
                 {
                     var codename = block.GetAttribute("data-codename");
                     blocks.Add(new InlineContentItem { ContentItem = context.GetModularContentItem(codename) });
