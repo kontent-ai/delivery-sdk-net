@@ -8,7 +8,8 @@ namespace KenticoCloud.Delivery
     public sealed class DeliveryItemResponse : AbstractResponse
     {
         private readonly JToken _response;
-        private readonly IDeliveryClient _client;
+        private readonly ICodeFirstModelProvider _codeFirstModelProvider;
+        private readonly IContentLinkUrlResolver _contentLinkUrlResolver;
         private dynamic _modularContent;
         private ContentItem _item;
 
@@ -17,7 +18,7 @@ namespace KenticoCloud.Delivery
         /// </summary>
         public ContentItem Item
         {
-            get { return _item ?? (_item = new ContentItem(_response["item"], _response["modular_content"], _client)); }
+            get { return _item ?? (_item = new ContentItem(_response["item"], _response["modular_content"], _contentLinkUrlResolver, _codeFirstModelProvider)); }
         }
 
         /// <summary>
@@ -34,10 +35,11 @@ namespace KenticoCloud.Delivery
         /// <param name="response">A response from Kentico Cloud Delivery API that contains a content item.</param>
         /// <param name="client">The client that retrieved the content item.</param>
         /// <param name="apiUrl">API URL used to communicate with the underlying Kentico Cloud endpoint.</param>
-        internal DeliveryItemResponse(JToken response, IDeliveryClient client, string apiUrl) : base(apiUrl)
+        internal DeliveryItemResponse(JToken response, ICodeFirstModelProvider codeFirstModelProvider, IContentLinkUrlResolver contentLinkUrlResolver, string apiUrl) : base(apiUrl)
         {
             _response = response;
-            _client = client;
+            _codeFirstModelProvider = codeFirstModelProvider;
+            _contentLinkUrlResolver = contentLinkUrlResolver;
         }
 
         /// <summary>
@@ -46,7 +48,7 @@ namespace KenticoCloud.Delivery
         /// <typeparam name="T">Target type.</typeparam>
         public DeliveryItemResponse<T> CastTo<T>()
         {
-            return new DeliveryItemResponse<T>(_response, _client, ApiUrl);
+            return new DeliveryItemResponse<T>(_response, _codeFirstModelProvider, ApiUrl);
         }
     }
 }

@@ -103,7 +103,7 @@ namespace KenticoCloud.Delivery.Tests
             var httpClient = mockHttp.ToHttpClient();
             DeliveryClient client = new DeliveryClient(guid)
             {
-                CodeFirstModelProvider = { TypeProvider = new CustomTypeProvider() },
+                // CodeFirstModelProvider = { TypeProvider = new CustomTypeProvider() },
                 HttpClient = httpClient
             };
 

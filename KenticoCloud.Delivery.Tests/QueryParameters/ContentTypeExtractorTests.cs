@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using FakeItEasy;
+using Microsoft.Extensions.Options;
 using Xunit;
 
 namespace KenticoCloud.Delivery.Tests.QueryParameters
@@ -20,10 +21,12 @@ namespace KenticoCloud.Delivery.Tests.QueryParameters
             A.CallTo(() => _contentTypeProvider.GetCodename(typeof(TypeWithContentTypeCodename))).Returns(TypeWithContentTypeCodename.Codename);
             A.CallTo(() => _contentTypeProvider.GetCodename(typeof(TypeWithoutContentTypeCodename))).Returns(null);
 
-            _client = new DeliveryClient(FAKE_PROJECT_ID)
-            {
-                CodeFirstModelProvider = {TypeProvider = _contentTypeProvider}
-            };
+            _client = new DeliveryClient(
+                new OptionsWrapper<DeliveryOptions>(new DeliveryOptions{ProjectId = FAKE_PROJECT_ID}),
+                null,
+                null, 
+                new CodeFirstModelProvider(null, null, _contentTypeProvider, null)
+           );
         }
 
         private class TypeWithContentTypeCodename

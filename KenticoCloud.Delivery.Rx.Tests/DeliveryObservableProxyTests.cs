@@ -215,7 +215,7 @@ namespace KenticoCloud.Delivery.Rx.Tests
 
             return new DeliveryClient(guid)
             {
-                CodeFirstModelProvider = { TypeProvider = new CustomTypeProvider() },
+                // CodeFirstModelProvider = { TypeProvider = new CustomTypeProvider() },
                 HttpClient = httpClient
             };
         }
