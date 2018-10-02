@@ -9,7 +9,7 @@ namespace KenticoCloud.Delivery
     public sealed class DeliveryItemResponse<T> : AbstractResponse
     {
         private readonly JToken _response;
-        private readonly IDeliveryClient _client;
+        private readonly ICodeFirstModelProvider _codeFirstModelProvider;
         private dynamic _modularContent;
         private T _item;
 
@@ -22,7 +22,7 @@ namespace KenticoCloud.Delivery
             {
                 if (_item == null)
                 {
-                    _item = _client.CodeFirstModelProvider.GetContentItemModel<T>(_response["item"], _response["modular_content"]);
+                    _item = _codeFirstModelProvider.GetContentItemModel<T>(_response["item"], _response["modular_content"]);
                 }
                 return _item;
             }
@@ -36,10 +36,10 @@ namespace KenticoCloud.Delivery
             get { return _modularContent ?? (_modularContent = JObject.Parse(_response["modular_content"].ToString())); }
         }
 
-        internal DeliveryItemResponse(JToken response, IDeliveryClient client, string apiUrl) : base(apiUrl)
+        internal DeliveryItemResponse(JToken response, ICodeFirstModelProvider codeFirstModelProvider, string apiUrl) : base(apiUrl)
         {
             _response = response;
-            _client = client;
+            _codeFirstModelProvider = codeFirstModelProvider;
         }
     }
 }

@@ -13,15 +13,14 @@ namespace KenticoCloud.Delivery.Tests
         // as if there were no inline content items, which will prevent circular dependency
         public void RetrievingContentModelWithCircularDependencyDoesNotCycle()
         {
-            var fakeDeliverClient = A.Fake<IDeliveryClient>();
+            var contentLinkUrlResolver = A.Fake<IContentLinkUrlResolver>();
             var codeFirstTypeProvider = A.Fake<ICodeFirstTypeProvider>();
+            var codeFirstPropertyMapper = A.Fake<ICodeFirstPropertyMapper>();
             A.CallTo(() => codeFirstTypeProvider.GetType(A<string>._)).Returns(typeof(ContentItemWithSingleRTE));
             
             var processor = new InlineContentItemsProcessor(null, null);
             processor.RegisterTypeResolver(new RichTextInlineResolver());
-            var retriever = new CodeFirstModelProvider(fakeDeliverClient);
-            retriever.TypeProvider = codeFirstTypeProvider;
-            A.CallTo(() => fakeDeliverClient.InlineContentItemsProcessor).Returns(processor);
+            var retriever = new CodeFirstModelProvider(contentLinkUrlResolver, processor, codeFirstTypeProvider, codeFirstPropertyMapper);
 
             var item = JToken.FromObject(rt1);
             var modularContent = JToken.FromObject(modularContentForItemWithTwoReferencedContentItems);
@@ -37,15 +36,14 @@ namespace KenticoCloud.Delivery.Tests
         // this is same as in other cases, because as soon as we start processing item which is already being processed we remove inline content items.
         public void RetrievingContentModelWithItemInlineReferencingItselfDoesNotCycle()
         {
-            var fakeDeliverClient = A.Fake<IDeliveryClient>();
             var codeFirstTypeProvider = A.Fake<ICodeFirstTypeProvider>();
+            var contentLinkUrlResolver = A.Fake<IContentLinkUrlResolver>();
+            var codeFirstPropertyMapper = A.Fake<ICodeFirstPropertyMapper>();
             A.CallTo(() => codeFirstTypeProvider.GetType(A<string>._)).Returns(typeof(ContentItemWithSingleRTE));
 
             var processor = new InlineContentItemsProcessor(null, null);
             processor.RegisterTypeResolver(new RichTextInlineResolver());
-            var retriever = new CodeFirstModelProvider(fakeDeliverClient);
-            retriever.TypeProvider = codeFirstTypeProvider;
-            A.CallTo(() => fakeDeliverClient.InlineContentItemsProcessor).Returns(processor);
+            var retriever = new CodeFirstModelProvider(contentLinkUrlResolver, processor, codeFirstTypeProvider, codeFirstPropertyMapper);
 
             var item = JToken.FromObject(rt3);
             var modularContent = JToken.FromObject(modularContentForItemReferencingItself);

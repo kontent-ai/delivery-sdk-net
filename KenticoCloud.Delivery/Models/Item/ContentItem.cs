@@ -12,7 +12,8 @@ namespace KenticoCloud.Delivery
     {
         private readonly JToken _source;
         private readonly JToken _modularContentSource;
-        private readonly IDeliveryClient _client;
+        private readonly IContentLinkUrlResolver _contentLinkUrlResolver;
+        private readonly ICodeFirstModelProvider _codeFirstModelProvider;
         private ContentLinkResolver _contentLinkResolver;
 
         private ContentItemSystemAttributes _system;
@@ -22,9 +23,9 @@ namespace KenticoCloud.Delivery
         {
             get
             {
-                if (_contentLinkResolver == null && _client.ContentLinkUrlResolver != null)
+                if (_contentLinkResolver == null && _contentLinkUrlResolver != null)
                 {
-                    _contentLinkResolver = new ContentLinkResolver(_client.ContentLinkUrlResolver);
+                    _contentLinkResolver = new ContentLinkResolver(_contentLinkUrlResolver);
                 }
                 return _contentLinkResolver;
             }
@@ -52,7 +53,7 @@ namespace KenticoCloud.Delivery
         /// <param name="source">The JSON data of the content item to deserialize.</param>
         /// <param name="modularContentSource">The JSON data of modular content to deserialize.</param>
         /// <param name="client">The client that retrieved the content item.</param>
-        internal ContentItem(JToken source, JToken modularContentSource, IDeliveryClient client)
+        internal ContentItem(JToken source, JToken modularContentSource, IContentLinkUrlResolver contentLinkUrlResolver, ICodeFirstModelProvider codeFirstModelProvider)
         {
             if (source == null)
             {
@@ -64,14 +65,20 @@ namespace KenticoCloud.Delivery
                 throw new ArgumentNullException(nameof(modularContentSource));
             }
 
-            if (client == null)
+            if (contentLinkUrlResolver == null)
             {
-                throw new ArgumentNullException(nameof(client));
+                throw new ArgumentNullException(nameof(contentLinkUrlResolver));
+            }
+
+            if (codeFirstModelProvider == null)
+            {
+                throw new ArgumentNullException(nameof(codeFirstModelProvider));
             }
 
             _source = source;
             _modularContentSource = modularContentSource;
-            _client = client;
+            _contentLinkUrlResolver = contentLinkUrlResolver;
+            _codeFirstModelProvider = codeFirstModelProvider;
         }
 
         /// <summary>
@@ -80,7 +87,7 @@ namespace KenticoCloud.Delivery
         /// <typeparam name="T">Type of the code-first model.</typeparam>
         public T CastTo<T>()
         {
-            return _client.CodeFirstModelProvider.GetContentItemModel<T>(_source, _modularContentSource);
+            return _codeFirstModelProvider.GetContentItemModel<T>(_source, _modularContentSource);
         }
 
         /// <summary>
@@ -139,7 +146,9 @@ namespace KenticoCloud.Delivery
             var element = GetElement(elementCodename);
             var contentItemCodenames = ((JArray)element["value"]).Values<string>();
 
-            return contentItemCodenames.Where(codename => _modularContentSource[codename] != null).Select(codename => new ContentItem(_modularContentSource[codename], _modularContentSource, _client));
+            return contentItemCodenames
+                .Where(codename => _modularContentSource[codename] != null)
+                .Select(codename => new ContentItem(_modularContentSource[codename], _modularContentSource, _contentLinkUrlResolver, _codeFirstModelProvider));
         }
 
         /// <summary>

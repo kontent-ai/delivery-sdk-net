@@ -283,7 +283,7 @@ namespace KenticoCloud.Delivery.Tests
 
             var client = new DeliveryClient(_guid)
             {
-                CodeFirstModelProvider = { TypeProvider = new CustomTypeProvider() },
+                // CodeFirstModelProvider = { TypeProvider = new CustomTypeProvider() },
                 HttpClient = httpClient
             };
 
@@ -442,14 +442,14 @@ namespace KenticoCloud.Delivery.Tests
 
             var client = new DeliveryClient(_guid)
             {
-                CodeFirstModelProvider = { TypeProvider = A.Fake<ICodeFirstTypeProvider>() },
+                // CodeFirstModelProvider = { TypeProvider = A.Fake<ICodeFirstTypeProvider>() },
                 HttpClient = httpClient
             };
 
 
             // Arrange
-            A.CallTo(() => client.CodeFirstModelProvider.TypeProvider.GetType("complete_content_type")).ReturnsLazily(() => typeof(ContentItemModelWithAttributes));
-            A.CallTo(() => client.CodeFirstModelProvider.TypeProvider.GetType("homepage")).ReturnsLazily(() => typeof(Homepage));
+            // A.CallTo(() => client.CodeFirstModelProvider.TypeProvider.GetType("complete_content_type")).ReturnsLazily(() => typeof(ContentItemModelWithAttributes));
+            //A.CallTo(() => client.CodeFirstModelProvider.TypeProvider.GetType("homepage")).ReturnsLazily(() => typeof(Homepage));
 
             ContentItemModelWithAttributes item = (ContentItemModelWithAttributes)client.GetItemAsync<object>("complete_content_item").Result.Item;
 
@@ -494,14 +494,14 @@ namespace KenticoCloud.Delivery.Tests
 
             var client = new DeliveryClient(_guid)
             {
-                CodeFirstModelProvider = { TypeProvider = A.Fake<ICodeFirstTypeProvider>() },
+                // CodeFirstModelProvider = { TypeProvider = A.Fake<ICodeFirstTypeProvider>() },
                 HttpClient = httpClient
             };
 
 
             // Arrange
-            A.CallTo(() => client.CodeFirstModelProvider.TypeProvider.GetType("complete_content_type")).ReturnsLazily(() => typeof(ContentItemModelWithAttributes));
-            A.CallTo(() => client.CodeFirstModelProvider.TypeProvider.GetType("homepage")).ReturnsLazily(() => typeof(Homepage));
+            // A.CallTo(() => client.CodeFirstModelProvider.TypeProvider.GetType("complete_content_type")).ReturnsLazily(() => typeof(ContentItemModelWithAttributes));
+            // A.CallTo(() => client.CodeFirstModelProvider.TypeProvider.GetType("homepage")).ReturnsLazily(() => typeof(Homepage));
 
             IReadOnlyList<object> items = client.GetItemsAsync<object>(new EqualsFilter("system.type", "complete_content_type")).Result.Items;
 
@@ -894,7 +894,7 @@ namespace KenticoCloud.Delivery.Tests
 
             var client = new DeliveryClient(_guid)
             {
-                CodeFirstModelProvider = { TypeProvider = new CustomTypeProvider() },
+                // CodeFirstModelProvider = { TypeProvider = new CustomTypeProvider() },
                 HttpClient = httpClient
             };
             return client;

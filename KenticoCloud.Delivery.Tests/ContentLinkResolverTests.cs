@@ -2,6 +2,8 @@
 using RichardSzalay.MockHttp;
 using System;
 using System.IO;
+using FakeItEasy;
+using KenticoCloud.Delivery.InlineContentItems;
 using Xunit;
 
 namespace KenticoCloud.Delivery.Tests
@@ -114,16 +116,15 @@ namespace KenticoCloud.Delivery.Tests
             var mockHttp = new MockHttpMessageHandler();
             string guid = Guid.NewGuid().ToString();
             string url = $"https://deliver.kenticocloud.com/{guid}/items/coffee_processing_techniques";
-
             mockHttp.When(url).
                Respond("application/json", File.ReadAllText(Path.Combine(Environment.CurrentDirectory, "Fixtures\\ContentLinkResolver\\coffee_processing_techniques.json")));
 
             var httpClient = mockHttp.ToHttpClient();
             DeliveryClient client = new DeliveryClient(guid)
             {
-                CodeFirstModelProvider = {TypeProvider = new CustomTypeProvider()},
+                // CodeFirstModelProvider = {TypeProvider = new CustomTypeProvider()},
                 HttpClient = httpClient,
-                ContentLinkUrlResolver = new CustomContentLinkUrlResolver()
+                // ContentLinkUrlResolver = new CustomContentLinkUrlResolver()
             };
 
 
