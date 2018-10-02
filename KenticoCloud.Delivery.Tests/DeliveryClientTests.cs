@@ -378,7 +378,7 @@ namespace KenticoCloud.Delivery.Tests
         }
 
         [Fact]
-        public async void RecursiveInlineModularContent()
+        public async void RecursiveInlineLinkedItems()
         {
             _mockHttp.When($"{_baseUrl}/items/on_roasts")
                 .WithQueryString("depth=15")
