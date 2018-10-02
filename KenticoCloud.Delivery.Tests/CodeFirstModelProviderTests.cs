@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Reflection;
 using FakeItEasy;
 using KenticoCloud.Delivery.InlineContentItems;
 using Newtonsoft.Json.Linq;
@@ -13,15 +14,15 @@ namespace KenticoCloud.Delivery.Tests
         // as if there were no inline content items, which will prevent circular dependency
         public void RetrievingContentModelWithCircularDependencyDoesNotCycle()
         {
-            var fakeDeliverClient = A.Fake<IDeliveryClient>();
             var codeFirstTypeProvider = A.Fake<ICodeFirstTypeProvider>();
+            var contentLinkUrlResolver = A.Fake<IContentLinkUrlResolver>();
+            var propertyMapper = A.Fake<ICodeFirstPropertyMapper>(); //new CodeFirstPropertyMapper();
+            A.CallTo(() => propertyMapper.IsMatch(A<PropertyInfo>._, A<string>._, A<string>._)).Returns(true);
             A.CallTo(() => codeFirstTypeProvider.GetType(A<string>._)).Returns(typeof(ContentItemWithSingleRTE));
 
             var processor = new InlineContentItemsProcessor(null, null);
             processor.RegisterTypeResolver(new RichTextInlineResolver());
-            var retriever = new CodeFirstModelProvider(fakeDeliverClient);
-            retriever.TypeProvider = codeFirstTypeProvider;
-            A.CallTo(() => fakeDeliverClient.InlineContentItemsProcessor).Returns(processor);
+            var retriever = new CodeFirstModelProvider(contentLinkUrlResolver, processor, codeFirstTypeProvider, propertyMapper);
 
             var item = JToken.FromObject(rt1);
             var linkedItems = JToken.FromObject(linkedItemsForItemWithTwoReferencedContentItems);
@@ -37,15 +38,15 @@ namespace KenticoCloud.Delivery.Tests
         // this is same as in other cases, because as soon as we start processing item which is already being processed we remove inline content items.
         public void RetrievingContentModelWithItemInlineReferencingItselfDoesNotCycle()
         {
-            var fakeDeliverClient = A.Fake<IDeliveryClient>();
             var codeFirstTypeProvider = A.Fake<ICodeFirstTypeProvider>();
+            var contentLinkUrlResolver = A.Fake<IContentLinkUrlResolver>();
+            var propertyMapper = A.Fake<ICodeFirstPropertyMapper>();
             A.CallTo(() => codeFirstTypeProvider.GetType(A<string>._)).Returns(typeof(ContentItemWithSingleRTE));
+            A.CallTo(() => propertyMapper.IsMatch(A<PropertyInfo>._, A<string>._, A<string>._)).Returns(true);
 
             var processor = new InlineContentItemsProcessor(null, null);
             processor.RegisterTypeResolver(new RichTextInlineResolver());
-            var retriever = new CodeFirstModelProvider(fakeDeliverClient);
-            retriever.TypeProvider = codeFirstTypeProvider;
-            A.CallTo(() => fakeDeliverClient.InlineContentItemsProcessor).Returns(processor);
+            var retriever = new CodeFirstModelProvider(contentLinkUrlResolver, processor, codeFirstTypeProvider, propertyMapper);
 
             var item = JToken.FromObject(rt3);
             var linkedItems = JToken.FromObject(linkedItemsForItemReferencingItself);
@@ -63,11 +64,12 @@ namespace KenticoCloud.Delivery.Tests
             var item = JToken.FromObject(rt4);
             var linkedItems = JToken.FromObject(linkedItemsForItemWithTwoReferencedContentItems);
 
-            var fakeDeliverClient = A.Fake<IDeliveryClient>();
+            var contentLinkUrlResolver = A.Fake<IContentLinkUrlResolver>();
+            var inlineContentItemsProcessor = A.Fake<IInlineContentItemsProcessor>();
             var codeFirstTypeProvider = A.Fake<ICodeFirstTypeProvider>();
+            var propertyMapper = A.Fake<ICodeFirstPropertyMapper>();
             A.CallTo(() => codeFirstTypeProvider.GetType("newType")).Returns(null);
-            var modelProvider = new CodeFirstModelProvider(fakeDeliverClient);
-            modelProvider.TypeProvider = codeFirstTypeProvider;
+            var modelProvider = new CodeFirstModelProvider(contentLinkUrlResolver, inlineContentItemsProcessor, codeFirstTypeProvider, propertyMapper);
 
             Assert.Null(modelProvider.GetContentItemModel<object>(item, linkedItems));
         }

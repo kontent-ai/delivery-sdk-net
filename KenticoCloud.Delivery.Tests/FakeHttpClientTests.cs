@@ -1,5 +1,10 @@
 ﻿using System;
 using System.IO;
+using System.Net.Http;
+using FakeItEasy;
+using KenticoCloud.Delivery.ResiliencePolicy;
+using Microsoft.Extensions.Options;
+using Polly;
 using RichardSzalay.MockHttp;
 using Xunit;
 
@@ -14,7 +19,23 @@ namespace KenticoCloud.Delivery.Tests
             var mockHttp = new MockHttpMessageHandler();
             mockHttp.When("https://deliver.kenticocloud.com/*").Respond("application/json", File.ReadAllText(Path.Combine(Environment.CurrentDirectory, "Fixtures\\home.json")));
             var httpClient = mockHttp.ToHttpClient();
-            DeliveryClient client = new DeliveryClient(Guid.NewGuid().ToString()) { HttpClient = httpClient };
+            var deliveryOptions = Options.Create(new DeliveryOptions {ProjectId = Guid.NewGuid().ToString()});
+            var contentLinkUrlResolver = A.Fake<IContentLinkUrlResolver>();
+            var codeFirstModelProvider = A.Fake<ICodeFirstModelProvider>();
+            var resiliencePolicyProvider = A.Fake<IResiliencePolicyProvider>();
+            A.CallTo(() => resiliencePolicyProvider.Policy)
+                .Returns(Policy.HandleResult<HttpResponseMessage>(result => true).RetryAsync(deliveryOptions.Value.MaxRetryAttempts));
+
+            var client = new DeliveryClient(
+                deliveryOptions,
+                contentLinkUrlResolver,
+                null,
+                codeFirstModelProvider,
+                resiliencePolicyProvider
+            )
+            {
+                HttpClient = httpClient,
+            };
 
             // Act
             var contentItem = await client.GetItemAsync("test");

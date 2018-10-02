@@ -2,6 +2,10 @@
 using RichardSzalay.MockHttp;
 using System;
 using System.IO;
+using FakeItEasy;
+using KenticoCloud.Delivery.InlineContentItems;
+using KenticoCloud.Delivery.ResiliencePolicy;
+using Microsoft.Extensions.Options;
 using Xunit;
 
 namespace KenticoCloud.Delivery.Tests
@@ -114,16 +118,24 @@ namespace KenticoCloud.Delivery.Tests
             var mockHttp = new MockHttpMessageHandler();
             string guid = Guid.NewGuid().ToString();
             string url = $"https://deliver.kenticocloud.com/{guid}/items/coffee_processing_techniques";
-
             mockHttp.When(url).
                Respond("application/json", File.ReadAllText(Path.Combine(Environment.CurrentDirectory, "Fixtures\\ContentLinkResolver\\coffee_processing_techniques.json")));
 
+            var deliveryOptions = Options.Create(new DeliveryOptions { ProjectId = guid });
             var httpClient = mockHttp.ToHttpClient();
-            DeliveryClient client = new DeliveryClient(guid)
+            var resiliencePolicyProvider = new DefaultResiliencePolicyProvider(deliveryOptions);
+            var contentLinkUrlResolver = new CustomContentLinkUrlResolver();
+            var contentItemsProcessor = new InlineContentItemsProcessor(new ReplaceWithEmptyStringResolver(), new ReplaceWithEmptyStringForUnretrievedItemsResolver());
+            var codeFirstModelProvider = new CodeFirstModelProvider(contentLinkUrlResolver, contentItemsProcessor, new CustomTypeProvider(), new CodeFirstPropertyMapper());
+            var client = new DeliveryClient(
+                deliveryOptions,
+                contentLinkUrlResolver,
+                contentItemsProcessor,
+                codeFirstModelProvider,
+                resiliencePolicyProvider
+            )
             {
-                CodeFirstModelProvider = {TypeProvider = new CustomTypeProvider()},
                 HttpClient = httpClient,
-                ContentLinkUrlResolver = new CustomContentLinkUrlResolver()
             };
 
 
