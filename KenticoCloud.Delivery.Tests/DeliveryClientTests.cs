@@ -367,7 +367,7 @@ namespace KenticoCloud.Delivery.Tests
         {
             _mockHttp.When($"{_baseUrl}/items/on_roasts")
                 .WithQueryString("depth=15")
-                .Respond("application/json", File.ReadAllText(Path.Combine(Environment.CurrentDirectory, "Fixtures\\DeliveryClient\\onroast_recursive_modular_content.json")));
+                .Respond("application/json", File.ReadAllText(Path.Combine(Environment.CurrentDirectory, "Fixtures\\DeliveryClient\\onroast_recursive_linked_items.json")));
 
             var client = InitializeDeliverClientWithACustomeTypeProvider();
 
@@ -382,7 +382,7 @@ namespace KenticoCloud.Delivery.Tests
         {
             _mockHttp.When($"{_baseUrl}/items/on_roasts")
                 .WithQueryString("depth=15")
-                .Respond("application/json", File.ReadAllText(Path.Combine(Environment.CurrentDirectory, "Fixtures\\DeliveryClient\\onroast_recursive_inline_modular_content.json")));
+                .Respond("application/json", File.ReadAllText(Path.Combine(Environment.CurrentDirectory, "Fixtures\\DeliveryClient\\onroast_recursive_inline_linked_items.json")));
 
             var client = InitializeDeliverClientWithACustomeTypeProvider();
 
