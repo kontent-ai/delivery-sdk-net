@@ -94,9 +94,18 @@ namespace KenticoCloud.Delivery
             }
 
             _deliveryOptions.ProjectId = projectIdGuid.ToString("D");
-            var unretrievedInlineContentItemsResolver = new ReplaceWithWarningAboutUnretrievedItemResolver();
-            var defaultInlineContentItemsResolver = new ReplaceWithWarningAboutRegistrationResolver();
-            _inlineContentItemsProcessor = new InlineContentItemsProcessor(defaultInlineContentItemsResolver, unretrievedInlineContentItemsResolver);
+
+            if (_inlineContentItemsProcessor == null)
+            {
+                var unretrievedInlineContentItemsResolver = new ReplaceWithWarningAboutUnretrievedItemResolver();
+                var defaultInlineContentItemsResolver = new ReplaceWithWarningAboutRegistrationResolver();
+                _inlineContentItemsProcessor = new InlineContentItemsProcessor(defaultInlineContentItemsResolver, unretrievedInlineContentItemsResolver);
+            }
+
+            if (_codeFirstModelProvider == null)
+            {
+                _codeFirstModelProvider = new CodeFirstModelProvider(_contentLinkUrlResolver, _inlineContentItemsProcessor);
+            }
         }
 
         /// <summary>
