@@ -37,8 +37,8 @@ namespace KenticoCloud.Delivery
         public CodeFirstModelProvider(
             IContentLinkUrlResolver contentLinkUrlResolver,
             IInlineContentItemsProcessor inlineContentItemsProcessor,
-            ICodeFirstTypeProvider typeProvider = null,
-            ICodeFirstPropertyMapper propertyMapper = null
+            ICodeFirstTypeProvider typeProvider,
+            ICodeFirstPropertyMapper propertyMapper
         )
         {
             _contentLinkUrlResolver = contentLinkUrlResolver;

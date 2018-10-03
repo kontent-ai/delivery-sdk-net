@@ -1,5 +1,7 @@
 ﻿using System;
 using System.IO;
+using FakeItEasy;
+using Microsoft.Extensions.Options;
 using RichardSzalay.MockHttp;
 using Xunit;
 
@@ -14,7 +16,18 @@ namespace KenticoCloud.Delivery.Tests
             var mockHttp = new MockHttpMessageHandler();
             mockHttp.When("https://deliver.kenticocloud.com/*").Respond("application/json", File.ReadAllText(Path.Combine(Environment.CurrentDirectory, "Fixtures\\home.json")));
             var httpClient = mockHttp.ToHttpClient();
-            DeliveryClient client = new DeliveryClient(Guid.NewGuid().ToString()) { HttpClient = httpClient };
+            var contentLinkUrlResolver = A.Fake<IContentLinkUrlResolver>();
+            var codeFirstModelProvider = A.Fake<ICodeFirstModelProvider>();
+            var deliveryOptions = new OptionsWrapper<DeliveryOptions>(new DeliveryOptions { ProjectId = Guid.NewGuid().ToString() });
+            var client = new DeliveryClient(
+                deliveryOptions,
+                contentLinkUrlResolver,
+                null,
+                codeFirstModelProvider
+            )
+            {
+                HttpClient = httpClient,
+            };
 
             // Act
             var contentItem = await client.GetItemAsync("test");

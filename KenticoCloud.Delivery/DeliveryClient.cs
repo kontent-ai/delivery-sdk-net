@@ -22,6 +22,8 @@ namespace KenticoCloud.Delivery
         private readonly IContentLinkUrlResolver _contentLinkUrlResolver;
         private readonly IInlineContentItemsProcessor _inlineContentItemsProcessor;
         private readonly ICodeFirstModelProvider _codeFirstModelProvider;
+        private ICodeFirstTypeProvider _codeFirstTypeProvider;
+        private readonly ICodeFirstPropertyMapper _codeFirstPropertyMapper;
 
         private HttpClient _httpClient;
         private DeliveryEndpointUrlBuilder _urlBuilder;
@@ -104,7 +106,7 @@ namespace KenticoCloud.Delivery
 
             if (_codeFirstModelProvider == null)
             {
-                _codeFirstModelProvider = new CodeFirstModelProvider(_contentLinkUrlResolver, _inlineContentItemsProcessor);
+                _codeFirstModelProvider = new CodeFirstModelProvider(_contentLinkUrlResolver, _inlineContentItemsProcessor, _codeFirstTypeProvider, _codeFirstPropertyMapper);
             }
         }
 
@@ -121,13 +123,17 @@ namespace KenticoCloud.Delivery
             IContentLinkUrlResolver contentLinkUrlResolver = null,
             IInlineContentItemsProcessor contentItemsProcessor = null,
             ICodeFirstModelProvider codeFirstModelProvider = null,
-            IResiliencePolicyProvider retryPolicyProvider = null
+            IResiliencePolicyProvider retryPolicyProvider = null,
+            ICodeFirstTypeProvider codeFirstTypeProvider = null,
+            ICodeFirstPropertyMapper codeFirstPropertyMapper = null
         ): this(deliveryOptions.Value)
         {
             _contentLinkUrlResolver = contentLinkUrlResolver;
             _inlineContentItemsProcessor = contentItemsProcessor;
             _codeFirstModelProvider = codeFirstModelProvider;
             ResiliencePolicyProvider = retryPolicyProvider;
+            _codeFirstTypeProvider = codeFirstTypeProvider;
+            _codeFirstPropertyMapper = codeFirstPropertyMapper;
         }
 
         /// <summary>
