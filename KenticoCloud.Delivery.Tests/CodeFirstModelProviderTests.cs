@@ -24,9 +24,9 @@ namespace KenticoCloud.Delivery.Tests
             A.CallTo(() => fakeDeliverClient.InlineContentItemsProcessor).Returns(processor);
 
             var item = JToken.FromObject(rt1);
-            var modularContent = JToken.FromObject(modularContentForItemWithTwoReferencedContentItems);
+            var linkedItems = JToken.FromObject(linkedItemsForItemWithTwoReferencedContentItems);
 
-            var result = retriever.GetContentItemModel<ContentItemWithSingleRTE>(item, modularContent);
+            var result = retriever.GetContentItemModel<ContentItemWithSingleRTE>(item, linkedItems);
 
             Assert.Equal("<span>FirstRT</span><span>SecondRT</span><span>FirstRT</span>", result.RT);
             Assert.IsType<ContentItemWithSingleRTE>(result);
@@ -48,9 +48,9 @@ namespace KenticoCloud.Delivery.Tests
             A.CallTo(() => fakeDeliverClient.InlineContentItemsProcessor).Returns(processor);
 
             var item = JToken.FromObject(rt3);
-            var modularContent = JToken.FromObject(modularContentForItemReferencingItself);
+            var linkedItems = JToken.FromObject(linkedItemsForItemReferencingItself);
 
-            var result = retriever.GetContentItemModel<ContentItemWithSingleRTE>(item, modularContent);
+            var result = retriever.GetContentItemModel<ContentItemWithSingleRTE>(item, linkedItems);
 
             Assert.Equal("<span>RT</span><span>RT</span>", result.RT);
             Assert.IsType<ContentItemWithSingleRTE>(result);
@@ -117,7 +117,7 @@ namespace KenticoCloud.Delivery.Tests
             }
         };
 
-        private static object modularContentForItemWithTwoReferencedContentItems = new
+        private static object linkedItemsForItemWithTwoReferencedContentItems = new
         {
             rt2,
             rt1
@@ -147,7 +147,7 @@ namespace KenticoCloud.Delivery.Tests
             }
         };
 
-        private static object modularContentForItemReferencingItself = new
+        private static object linkedItemsForItemReferencingItself = new
         {
             rt3
         };

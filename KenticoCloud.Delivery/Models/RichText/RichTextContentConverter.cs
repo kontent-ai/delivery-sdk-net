@@ -40,7 +40,7 @@ namespace KenticoCloud.Delivery
                 if (block.TagName?.Equals("object", StringComparison.OrdinalIgnoreCase) == true && block.GetAttribute("type") == "application/kenticocloud" && block.GetAttribute("data-type") == "item")
                 {
                     var codename = block.GetAttribute("data-codename");
-                    blocks.Add(new InlineContentItem { ContentItem = context.GetModularContentItem(codename) });
+                    blocks.Add(new InlineContentItem { ContentItem = context.GetLinkedItem(codename) });
                 }
                 else if (block.TagName?.Equals("figure", StringComparison.OrdinalIgnoreCase) == true)
                 {

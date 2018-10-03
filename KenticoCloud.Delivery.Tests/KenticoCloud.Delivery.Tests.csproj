@@ -85,10 +85,10 @@
     <None Update="Fixtures\DeliveryClient\items.json">
       <CopyToOutputDirectory>Always</CopyToOutputDirectory>
     </None>
-    <None Update="Fixtures\DeliveryClient\onroast_recursive_inline_modular_content.json">
+    <None Update="Fixtures\DeliveryClient\onroast_recursive_inline_linked_items.json">
       <CopyToOutputDirectory>Always</CopyToOutputDirectory>
     </None>
-    <None Update="Fixtures\DeliveryClient\onroast_recursive_modular_content.json">
+    <None Update="Fixtures\DeliveryClient\onroast_recursive_linked_items.json">
       <CopyToOutputDirectory>Always</CopyToOutputDirectory>
     </None>
     <None Update="Fixtures\DeliveryClient\on_roasts.json">

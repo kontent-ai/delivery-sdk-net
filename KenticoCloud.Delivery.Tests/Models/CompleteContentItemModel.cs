@@ -12,7 +12,7 @@ namespace KenticoCloud.Delivery.Tests
         public IEnumerable<MultipleChoiceOption> MultipleChoiceFieldAsCheckboxes { get; set; }
         public DateTime? DateTimeField { get; set; }
         public IEnumerable<Asset> AssetField { get; set; }
-        public IEnumerable<ContentItem> ModularContentField { get; set; }
+        public IEnumerable<ContentItem> LinkedItemsField { get; set; }
         public IEnumerable<TaxonomyTerm> CompleteTypeTaxonomy { get; set; }
         public ContentItemSystemAttributes System { get; set; }
     }

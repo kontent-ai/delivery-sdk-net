@@ -88,7 +88,7 @@ namespace KenticoCloud.Delivery.Tests
                Respond("application/json", File.ReadAllText(Path.Combine(Environment.CurrentDirectory, "Fixtures\\ContentLinkResolver\\coffee_beverages_explained.json")));
             DeliveryClient client = InitializeDeliveryClient(mockHttp);
 
-            // Try to get recursive modular content on_roasts -> item -> on_roasts
+            // Try to get recursive linked items on_roasts -> item -> on_roasts
             var article = await client.GetItemAsync<Article>("coffee_beverages_explained", new DepthParameter(15));
 
             var hostedVideo = article.Item.BodyCopyRichText.Blocks.FirstOrDefault(b => (b as IInlineContentItem)?.ContentItem is HostedVideo);
