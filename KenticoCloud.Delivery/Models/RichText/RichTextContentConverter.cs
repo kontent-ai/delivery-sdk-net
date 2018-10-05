@@ -41,7 +41,7 @@ namespace KenticoCloud.Delivery
                     && (block.GetAttribute("data-type") == "item" || block.GetAttribute("data-type") == "component"))
                 {
                     var codename = block.GetAttribute("data-codename");
-                    blocks.Add(new InlineContentItem { ContentItem = context.GetModularContentItem(codename) });
+                    blocks.Add(new InlineContentItem { ContentItem = context.GetLinkedItem(codename) });
                 }
                 else if (block.TagName?.Equals("figure", StringComparison.OrdinalIgnoreCase) == true)
                 {

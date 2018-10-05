@@ -202,7 +202,7 @@
             }
           ]
         },
-        "modular_content_field": {
+        "linked_items_field": {
           "type": "modular_content",
           "name": "Modular content field",
           "value": [

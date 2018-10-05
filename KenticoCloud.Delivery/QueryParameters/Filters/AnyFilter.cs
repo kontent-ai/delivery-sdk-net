@@ -2,7 +2,7 @@
 {
     /// <summary>
     /// Represents a filter that matches a content item if the specified content element or system attribute has a value that contains any of the specified values.
-    /// This filter is applicable to array values only, such as sitemap location or value of Modular content, Taxonomy and Multiple choice content elements.
+    /// This filter is applicable to array values only, such as sitemap location or value of Linked Items, Taxonomy and Multiple choice content elements.
     /// </summary>
     public sealed class AnyFilter : Filter
     {

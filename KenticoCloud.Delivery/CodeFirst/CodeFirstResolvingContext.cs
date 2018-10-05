@@ -10,7 +10,7 @@ namespace KenticoCloud.Delivery
         /// <summary>
         /// Gets the content item within current resolving context
         /// </summary>
-        public Func<string, object> GetModularContentItem { get; internal set; }
+        public Func<string, object> GetLinkedItem { get; internal set; }
 
         /// <summary>
         /// Gets the Delivery client used for retrieving the data

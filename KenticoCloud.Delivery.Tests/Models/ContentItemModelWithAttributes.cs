@@ -27,16 +27,16 @@ namespace KenticoCloud.Delivery.Tests
         [JsonProperty("asset_field")]
         public IEnumerable<Asset> AssetFieldWithADifferentName { get; set; }
 
-        [JsonProperty("modular_content_field")]
-        public IEnumerable<object> ModularContentFieldWithADifferentName { get; set; }
+        [JsonProperty("linked_items_field")]
+        public IEnumerable<object> LinkedItemsFieldWithADifferentName { get; set; }
 
-        [JsonProperty("modular_content_field")]
-        public HashSet<object> ModularContentFieldWithACollectionTypeDefined { get; set; }
+        [JsonProperty("linked_items_field")]
+        public HashSet<object> LinkedItemsFieldWithACollectionTypeDefined { get; set; }
 
         public IEnumerable<string> RandomField { get; set; }
 
-        [JsonProperty("modular_content_field")]
-        public HashSet<Homepage> ModularContentFieldWithAGenericTypeDefined { get; set; }
+        [JsonProperty("linked_items_field")]
+        public HashSet<Homepage> LinkedItemsFieldWithAGenericTypeDefined { get; set; }
 
         [JsonProperty("complete_type_taxonomy")]
         public IEnumerable<TaxonomyTerm> CompleteTypeTaxonomyWithADifferentName { get; set; }

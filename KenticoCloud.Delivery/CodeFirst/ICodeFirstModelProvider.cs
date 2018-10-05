@@ -12,9 +12,9 @@ namespace KenticoCloud.Delivery
         /// </summary>
         /// <typeparam name="T">Strongly typed content item model.</typeparam>
         /// <param name="item">Content item data.</param>
-        /// <param name="modularContent">Modular content items.</param>
+        /// <param name="linkedItems">Linked items.</param>
         /// <returns>Strongly typed POCO model of the generic type.</returns>
-        T GetContentItemModel<T>(JToken item, JToken modularContent);
+        T GetContentItemModel<T>(JToken item, JToken linkedItems);
 
         /// <summary>
         /// Ensures mapping between Kentico Cloud content types and CLR types.

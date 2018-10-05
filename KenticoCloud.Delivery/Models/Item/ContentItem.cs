@@ -11,7 +11,7 @@ namespace KenticoCloud.Delivery
     public sealed class ContentItem
     {
         private readonly JToken _source;
-        private readonly JToken _modularContentSource;
+        private readonly JToken _linkedItemsSource;
         private readonly IDeliveryClient _client;
         private ContentLinkResolver _contentLinkResolver;
 
@@ -50,18 +50,18 @@ namespace KenticoCloud.Delivery
         /// Initializes a new instance of the <see cref="ContentItem"/> class with the specified JSON data.
         /// </summary>
         /// <param name="source">The JSON data of the content item to deserialize.</param>
-        /// <param name="modularContentSource">The JSON data of modular content to deserialize.</param>
+        /// <param name="linkedItemsSource">The JSON data of linked items to deserialize.</param>
         /// <param name="client">The client that retrieved the content item.</param>
-        internal ContentItem(JToken source, JToken modularContentSource, IDeliveryClient client)
+        internal ContentItem(JToken source, JToken linkedItemsSource, IDeliveryClient client)
         {
             if (source == null)
             {
                 throw new ArgumentNullException(nameof(source));
             }
 
-            if (modularContentSource == null)
+            if (linkedItemsSource == null)
             {
-                throw new ArgumentNullException(nameof(modularContentSource));
+                throw new ArgumentNullException(nameof(linkedItemsSource));
             }
 
             if (client == null)
@@ -70,7 +70,7 @@ namespace KenticoCloud.Delivery
             }
 
             _source = source;
-            _modularContentSource = modularContentSource;
+            _linkedItemsSource = linkedItemsSource;
             _client = client;
         }
 
@@ -80,7 +80,7 @@ namespace KenticoCloud.Delivery
         /// <typeparam name="T">Type of the code-first model.</typeparam>
         public T CastTo<T>()
         {
-            return _client.CodeFirstModelProvider.GetContentItemModel<T>(_source, _modularContentSource);
+            return _client.CodeFirstModelProvider.GetContentItemModel<T>(_source, _linkedItemsSource);
         }
 
         /// <summary>
@@ -126,20 +126,20 @@ namespace KenticoCloud.Delivery
         }
 
         /// <summary>
-        /// Returns a collection of content items that are assigned to the specified Modular content element.
+        /// Returns a collection of linked content items by the element name.
         /// </summary>
         /// <param name="elementCodename">The codename of the element.</param>
         /// <returns>A collection of content items that are assigned to the element with the specified codename.</returns>
         /// <remarks>
-        /// The collection contains only content items that are included in the response from the Delivery API as modular content.
-        /// For more information see the <c>Modular content</c> topic in the Delivery API documentation.
+        /// The collection contains only content items that are included in the response from the Delivery API as linked items.
+        /// For more information see the <c>Linked Items</c> topic in the Delivery API documentation.
         /// </remarks>
-        public IEnumerable<ContentItem> GetModularContent(string elementCodename)
+        public IEnumerable<ContentItem> GetLinkedItems(string elementCodename)
         {
             var element = GetElement(elementCodename);
             var contentItemCodenames = ((JArray)element["value"]).Values<string>();
 
-            return contentItemCodenames.Where(codename => _modularContentSource[codename] != null).Select(codename => new ContentItem(_modularContentSource[codename], _modularContentSource, _client));
+            return contentItemCodenames.Where(codename => _linkedItemsSource[codename] != null).Select(codename => new ContentItem(_linkedItemsSource[codename], _linkedItemsSource, _client));
         }
 
         /// <summary>
