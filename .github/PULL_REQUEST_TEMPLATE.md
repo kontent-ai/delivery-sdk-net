@@ -14,4 +14,4 @@ If no issue exists, what is the fix or new feature? Were there any reasons to fi
 
 ### How to test
 
-If manual testing is required, what are the steps?
+If manual testing is required, what are the steps?//comment
