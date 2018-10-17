@@ -9,7 +9,7 @@ namespace KenticoCloud.Delivery.InlineContentItems
     /// <summary>
     /// Processor responsible for parsing HTML input and resolving inline content items referenced in them using registered resolvers
     /// </summary>
-    public class InlineContentItemsProcessor : IInlineContentItemsProcessor
+    internal class InlineContentItemsProcessor : IInlineContentItemsProcessor
     {
         private readonly Dictionary<Type, Func<object, string>> _typeResolver;
         private readonly IInlineContentItemsResolver<UnretrievedContentItem> _unretrievedInlineContentItemsResolver;

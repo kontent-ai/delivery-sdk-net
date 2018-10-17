@@ -11,7 +11,7 @@ namespace KenticoCloud.Delivery.ResiliencePolicy
     /// <summary>
     /// Provides a default (fallback) retry policy for HTTP requests
     /// </summary>
-    public class DefaultResiliencePolicyProvider : IResiliencePolicyProvider
+    internal class DefaultResiliencePolicyProvider : IResiliencePolicyProvider
     {
         private static readonly HttpStatusCode[] HttpStatusCodesWorthRetrying = 
         {
