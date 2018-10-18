@@ -16,7 +16,7 @@ namespace KenticoCloud.Delivery.Tests
             var fakeDeliverClient = A.Fake<IDeliveryClient>();
             var codeFirstTypeProvider = A.Fake<ICodeFirstTypeProvider>();
             A.CallTo(() => codeFirstTypeProvider.GetType(A<string>._)).Returns(typeof(ContentItemWithSingleRTE));
-            
+
             var processor = new InlineContentItemsProcessor(null, null);
             processor.RegisterTypeResolver(new RichTextInlineResolver());
             var retriever = new CodeFirstModelProvider(fakeDeliverClient);
@@ -57,18 +57,17 @@ namespace KenticoCloud.Delivery.Tests
         }
 
         [Fact]
-        // During processing of inline content items, item which is of type without resolver does not throw exception
-        public void RetrievingContentModelWithUnknownTypeDoesNotThrowException()
+        /// <see href="https://github.com/Kentico/delivery-sdk-net/issues/126"/>
+        public void GetContentItemModelRetrievingContentModelWithUnknownTypeReturnNull()
         {
+            var item = JToken.FromObject(rt4);
+            var linkedItems = JToken.FromObject(linkedItemsForItemWithTwoReferencedContentItems);
+
             var fakeDeliverClient = A.Fake<IDeliveryClient>();
             var codeFirstTypeProvider = A.Fake<ICodeFirstTypeProvider>();
             A.CallTo(() => codeFirstTypeProvider.GetType("newType")).Returns(null);
-
             var modelProvider = new CodeFirstModelProvider(fakeDeliverClient);
             modelProvider.TypeProvider = codeFirstTypeProvider;
-
-            var item = JToken.FromObject(rt4);
-            var linkedItems = JToken.FromObject(linkedItemsForItemWithTwoReferencedContentItems);
 
             Assert.Null(modelProvider.GetContentItemModel<object>(item, linkedItems));
         }
@@ -78,7 +77,7 @@ namespace KenticoCloud.Delivery.Tests
             public string RT { get; set; }
         }
 
-        private class RichTextInlineResolver: IInlineContentItemsResolver<ContentItemWithSingleRTE>
+        private class RichTextInlineResolver : IInlineContentItemsResolver<ContentItemWithSingleRTE>
         {
             public string Resolve(ResolvedContentItemData<ContentItemWithSingleRTE> data)
             {
@@ -91,11 +90,11 @@ namespace KenticoCloud.Delivery.Tests
             system = new
             {
                 id = "9dc3ca3a-22e0-4414-a56d-7a504e9f1eb2",
-                name = "RT1" ,
+                name = "RT1",
                 codename = "rt1",
                 type = "simple_richtext",
                 sitemap_location = new string[0],
-                last_modified = new DateTime(2017,06,01, 11,43,33)
+                last_modified = new DateTime(2017, 06, 01, 11, 43, 33)
             },
             elements = new
             {
@@ -103,7 +102,7 @@ namespace KenticoCloud.Delivery.Tests
                 {
                     type = "rich_text",
                     name = "RT",
-                    modular_content = new [] { "rt2"},
+                    modular_content = new[] { "rt2" },
                     value = "<span>FirstRT</span><object type=\"application/kenticocloud\" data-type=\"item\" data-codename=\"rt2\"></object"
                 }
 
@@ -127,7 +126,7 @@ namespace KenticoCloud.Delivery.Tests
                 {
                     type = "rich_text",
                     name = "RT",
-                    modular_content = new [] {"rt1"},
+                    modular_content = new[] { "rt1" },
                     value =
                     "<span>SecondRT</span><object type=\"application/kenticocloud\" data-type=\"item\" data-codename=\"rt1\"></object>"
                 }
@@ -180,17 +179,7 @@ namespace KenticoCloud.Delivery.Tests
                 sitemap_location = new string[0],
                 last_modified = new DateTime(2017, 06, 01, 11, 43, 33)
             },
-            elements = new
-            {
-                rt = new
-                {
-                    type = "rich_text",
-                    name = "RT",
-                    modular_content = new[] { "rt4" },
-                    value = "<span>RT</span><object type=\"application/kenticocloud\" data-type=\"item\" data-codename=\"rt4\"></object>"
-                }
-
-            }
+            elements = new { }
         };
     }
 
