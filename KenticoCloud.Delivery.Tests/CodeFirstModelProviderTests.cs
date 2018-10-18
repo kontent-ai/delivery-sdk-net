@@ -56,6 +56,23 @@ namespace KenticoCloud.Delivery.Tests
             Assert.IsType<ContentItemWithSingleRTE>(result);
         }
 
+        [Fact]
+        // During processing of inline content items, item which is of type without resolver does not throw exception
+        public void RetrievingContentModelWithUnknownTypeDoesNotThrowException()
+        {
+            var fakeDeliverClient = A.Fake<IDeliveryClient>();
+            var codeFirstTypeProvider = A.Fake<ICodeFirstTypeProvider>();
+            A.CallTo(() => codeFirstTypeProvider.GetType("newType")).Returns(null);
+
+            var modelProvider = new CodeFirstModelProvider(fakeDeliverClient);
+            modelProvider.TypeProvider = codeFirstTypeProvider;
+
+            var item = JToken.FromObject(rt4);
+            var linkedItems = JToken.FromObject(linkedItemsForItemWithTwoReferencedContentItems);
+
+            Assert.Null(modelProvider.GetContentItemModel<object>(item, linkedItems));
+        }
+
         private class ContentItemWithSingleRTE
         {
             public string RT { get; set; }
@@ -150,6 +167,30 @@ namespace KenticoCloud.Delivery.Tests
         private static object linkedItemsForItemReferencingItself = new
         {
             rt3
+        };
+
+        private static object rt4 = new
+        {
+            system = new
+            {
+                id = "43e2d109-c727-4bb0-9a54-0dc8af018be9",
+                name = "RT4",
+                codename = "rt4",
+                type = "newType",
+                sitemap_location = new string[0],
+                last_modified = new DateTime(2017, 06, 01, 11, 43, 33)
+            },
+            elements = new
+            {
+                rt = new
+                {
+                    type = "rich_text",
+                    name = "RT",
+                    modular_content = new[] { "rt4" },
+                    value = "<span>RT</span><object type=\"application/kenticocloud\" data-type=\"item\" data-codename=\"rt4\"></object>"
+                }
+
+            }
         };
     }
 
