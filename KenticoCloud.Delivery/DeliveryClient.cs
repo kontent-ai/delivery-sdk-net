@@ -587,7 +587,7 @@ namespace KenticoCloud.Delivery
                 faultContent = await httpResponseMessage.Content.ReadAsStringAsync();
             }
 
-            throw new DeliveryException(httpResponseMessage, faultContent);
+            throw new DeliveryException(httpResponseMessage, "Either the retry policy was disabled or all retry attempts were depleted.\nFault content:\n" + faultContent);
         }
 
         internal IEnumerable<IQueryParameter> ExtractParameters<T>(IEnumerable<IQueryParameter> parameters = null)
