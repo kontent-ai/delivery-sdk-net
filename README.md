@@ -167,7 +167,8 @@ For text elements, you can use the `GetString` method.
 articleItem.GetString("body_copy")
 ```
 
-The Rich text element can contain links to other content items within your project. See [Resolving links to content items](https://github.com/Kentico/delivery-sdk-net/wiki/Resolving-Links-to-Content-Items) for more details.
+* The Rich text element can contain links to other content items within your project. See [Resolving links to content items](https://github.com/Kentico/delivery-sdk-net/wiki/Resolving-Links-to-Content-Items) for more details.
+* The Rich text element can contain components and other content items. See [Structured Rich text rendering](https://github.com/Kentico/delivery-sdk-net/wiki/Structured-Rich-text-rendering) for more details. To learn more about components and linked content, visit our [API Reference](https://developer.kenticocloud.com/v1/reference#linked-content).
 
 ### Asset
 
