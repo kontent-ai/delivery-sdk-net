@@ -1,9 +1,5 @@
 ﻿using Microsoft.Extensions.Configuration;
 
-#if (NET45)
-using System.Configuration;
-#endif
-
 namespace KenticoCloud.Delivery
 {
     /// <summary>
@@ -11,19 +7,6 @@ namespace KenticoCloud.Delivery
     /// </summary>
     public class ConfigurationManagerProvider : ConfigurationProvider, IConfigurationSource
     {
-#if (NET45)        
-        /// <summary>
-        /// Loads the data used by provider
-        /// </summary>
-        public override void Load()
-        {
-            foreach (var settingKey in ConfigurationManager.AppSettings.AllKeys)
-            {
-                Data.Add(settingKey, ConfigurationManager.AppSettings[settingKey]);
-            }
-        }
-#endif
-
         /// <summary>
         /// Builds IConfigurationProvider for this class.
         /// </summary>
