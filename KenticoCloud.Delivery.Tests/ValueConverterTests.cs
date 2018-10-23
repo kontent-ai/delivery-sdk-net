@@ -117,10 +117,7 @@ namespace KenticoCloud.Delivery.Tests
                 new CustomTypeProvider(),
                 new CodeFirstPropertyMapper()
             );
-            var client = new DeliveryClient(deliveryOptions, null, null, codeFirstModelProvider, resiliencePolicyProvider)
-            {
-                HttpClient = httpClient,
-            };
+            var client = new DeliveryClient(deliveryOptions, httpClient, null, null, codeFirstModelProvider, resiliencePolicyProvider);
 
             return client;
         }

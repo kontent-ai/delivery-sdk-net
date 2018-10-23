@@ -10,7 +10,7 @@ namespace KenticoCloud.Delivery
         private readonly JToken _response;
         private readonly ICodeFirstModelProvider _codeFirstModelProvider;
         private readonly IContentLinkUrlResolver _contentLinkUrlResolver;
-        private dynamic _modularContent;
+        private dynamic _linkedItems;
         private ContentItem _item;
 
         /// <summary>

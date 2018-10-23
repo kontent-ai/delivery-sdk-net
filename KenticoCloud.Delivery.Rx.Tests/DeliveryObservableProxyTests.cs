@@ -6,6 +6,7 @@ using System.Net.Http;
 using System.Reactive.Linq;
 using FakeItEasy;
 using KenticoCloud.Delivery.InlineContentItems;
+using KenticoCloud.Delivery.ResiliencePolicy;
 using Microsoft.Extensions.Options;
 using Polly;
 using RichardSzalay.MockHttp;
@@ -225,16 +226,14 @@ namespace KenticoCloud.Delivery.Rx.Tests
             A.CallTo(() => resiliencePolicyProvider.Policy)
                 .Returns(Policy.HandleResult<HttpResponseMessage>(result => true).RetryAsync(deliveryOptions.Value.MaxRetryAttempts));
             var client = new DeliveryClient(
-                deliveryOptions, 
+                deliveryOptions,
+                httpClient,
                 contentLinkUrlResolver, 
                 null,
                 codeFirstModelProvider,
-                null,
+                resiliencePolicyProvider,
                 contentTypeProvider
-            )
-            {
-                HttpClient = httpClient,
-            };
+            );
 
             return client;
         }

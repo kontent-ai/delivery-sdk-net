@@ -47,8 +47,6 @@ namespace KenticoCloud.Delivery
             _propertyMapper = propertyMapper;
         }
 
-        public ICodeFirstTypeProvider GetTypeProvider() => _typeProvider;
-
         /// <summary>
         /// Builds a code-first model based on given JSON input.
         /// </summary>

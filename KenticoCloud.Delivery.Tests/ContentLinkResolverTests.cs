@@ -129,14 +129,12 @@ namespace KenticoCloud.Delivery.Tests
             var codeFirstModelProvider = new CodeFirstModelProvider(contentLinkUrlResolver, contentItemsProcessor, new CustomTypeProvider(), new CodeFirstPropertyMapper());
             var client = new DeliveryClient(
                 deliveryOptions,
+                httpClient,
                 contentLinkUrlResolver,
                 contentItemsProcessor,
                 codeFirstModelProvider,
                 resiliencePolicyProvider
-            )
-            {
-                HttpClient = httpClient,
-            };
+            );
 
 
             string expected = "Check out our <a data-item-id=\"0c9a11bb-6fc3-409c-b3cb-f0b797e15489\" href=\"http://example.org/brazil-natural-barra-grande\">Brazil Natural Barra Grande</a> coffee for a tasty example.";

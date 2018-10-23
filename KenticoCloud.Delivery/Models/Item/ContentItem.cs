@@ -14,22 +14,11 @@ namespace KenticoCloud.Delivery
         private readonly JToken _linkedItemsSource;
         private readonly IContentLinkUrlResolver _contentLinkUrlResolver;
         private readonly ICodeFirstModelProvider _codeFirstModelProvider;
-        private ContentLinkResolver _contentLinkResolver;
 
         private ContentItemSystemAttributes _system;
         private JToken _elements;
 
-        internal ContentLinkResolver ContentLinkResolver
-        {
-            get
-            {
-                if (_contentLinkResolver == null && _contentLinkUrlResolver != null)
-                {
-                    _contentLinkResolver = new ContentLinkResolver(_contentLinkUrlResolver);
-                }
-                return _contentLinkResolver;
-            }
-        }
+        internal Lazy<ContentLinkResolver> ContentLinkResolver;
 
         /// <summary>
         /// Gets the system attributes of the content item.
@@ -56,30 +45,16 @@ namespace KenticoCloud.Delivery
         /// <param name="codeFirstModelProvider">An instance of an object that can JSON responses into strongly typed CLR objects</param>
         internal ContentItem(JToken source, JToken linkedItemsSource, IContentLinkUrlResolver contentLinkUrlResolver, ICodeFirstModelProvider codeFirstModelProvider)
         {
-            if (source == null)
-            {
-                throw new ArgumentNullException(nameof(source));
-            }
+            _source = source ?? throw new ArgumentNullException(nameof(source));
+            _linkedItemsSource = linkedItemsSource ?? throw new ArgumentNullException(nameof(linkedItemsSource));
+            _codeFirstModelProvider = codeFirstModelProvider ?? throw new ArgumentNullException(nameof(codeFirstModelProvider));
 
-            if (linkedItemsSource == null)
-            {
-                throw new ArgumentNullException(nameof(linkedItemsSource));
-            }
-
-            if (contentLinkUrlResolver == null)
-            {
-                throw new ArgumentNullException(nameof(contentLinkUrlResolver));
-            }
-
-            if (codeFirstModelProvider == null)
-            {
-                throw new ArgumentNullException(nameof(codeFirstModelProvider));
-            }
-
-            _source = source;
-            _linkedItemsSource = linkedItemsSource;
             _contentLinkUrlResolver = contentLinkUrlResolver;
-            _codeFirstModelProvider = codeFirstModelProvider;
+            ContentLinkResolver = new Lazy<ContentLinkResolver>(() =>
+                _contentLinkUrlResolver != null
+                    ? new ContentLinkResolver(_contentLinkUrlResolver)
+                    : null
+            );
         }
 
         /// <summary>
@@ -110,7 +85,7 @@ namespace KenticoCloud.Delivery
                 return value;
             }
 
-            return contentLinkResolver.ResolveContentLinks(value, links);
+            return contentLinkResolver.Value.ResolveContentLinks(value, links);
         }
 
         /// <summary>
@@ -148,7 +123,7 @@ namespace KenticoCloud.Delivery
             var contentItemCodenames = ((JArray)element["value"]).Values<string>();
 
             return contentItemCodenames
-                .Where(codename => _modularContentSource[codename] != null)
+                .Where(codename => _linkedItemsSource[codename] != null)
                 .Select(codename => new ContentItem(_linkedItemsSource[codename], _linkedItemsSource, _contentLinkUrlResolver, _codeFirstModelProvider));
         }
 
