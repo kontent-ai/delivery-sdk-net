@@ -34,13 +34,22 @@
   </ItemGroup>
 
   <ItemGroup>
-    <PackageReference Include="Microsoft.Extensions.DependencyInjection" Version="2.0.0" />
+    <PackageReference Include="Autofac" Version="4.8.1" />
+    <PackageReference Include="Autofac.Extensions.DependencyInjection" Version="4.3.1" />
+    <PackageReference Include="Castle.Windsor" Version="4.1.1" />
+    <PackageReference Include="Castle.Windsor.MsDependencyInjection" Version="3.3.1" />
+    <PackageReference Include="Microsoft.Extensions.Configuration" Version="2.1.1" />
+    <PackageReference Include="Microsoft.Extensions.Configuration.Json" Version="2.1.1" />
     <PackageReference Include="Microsoft.NET.Test.Sdk" Version="15.7.0" />
     <PackageReference Include="FakeItEasy" Version="4.9.1" />
-    <PackageReference Include="NodaTime" Version="2.2.5" />
-    <PackageReference Include="RichardSzalay.MockHttp" Version="3.3.0" />
-    <PackageReference Include="xunit" Version="2.3.1" />
-    <PackageReference Include="xunit.runner.visualstudio" Version="2.3.1" />
+    <PackageReference Include="NodaTime" Version="2.4.2" />
+    <PackageReference Include="RichardSzalay.MockHttp" Version="5.0.0" />
+    <PackageReference Include="SimpleInjector" Version="4.4.0" />
+    <PackageReference Include="SimpleInjector.Integration.AspNetCore" Version="4.4.1" />
+    <PackageReference Include="Unity" Version="5.8.11" />
+    <PackageReference Include="Unity.Microsoft.DependencyInjection" Version="2.1.1" />
+    <PackageReference Include="xunit" Version="2.4.1" />
+    <PackageReference Include="xunit.runner.visualstudio" Version="2.4.1" />
     <DotNetCliToolReference Include="dotnet-xunit" Version="2.3.1" />
   </ItemGroup>
 
@@ -49,6 +58,18 @@
   </ItemGroup>
 
   <ItemGroup>
+    <None Update="Fixtures\ServiceCollectionsExtensions\deliveryOptions_as_root.json">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </None>
+    <None Update="Fixtures\ServiceCollectionsExtensions\deliveryOptions_nested_under_default_key.json">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </None>
+    <None Update="Fixtures\ServiceCollectionsExtensions\deliveryOptions_under_custom_key.json">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </None>
+    <None Update="Fixtures\ServiceCollectionsExtensions\deliveryOptions_under_default_key.json">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </None>
     <None Update="Fixtures\ContentLinkResolver\coffee_beverages_explained.json">
       <CopyToOutputDirectory>Always</CopyToOutputDirectory>
     </None>
