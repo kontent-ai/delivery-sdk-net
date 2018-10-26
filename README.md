@@ -158,16 +158,19 @@ articleItem.System.Type
 
 The SDK provides methods for retrieving content from content elements such as Asset, Text, Rich Text, Multiple choice, etc.
 
-### Text and Rich text
+### Text
 
-For text elements, you can use the `GetString` method.
+For Text elements, you can use the `GetString` method.
 
 ```csharp
 // Retrieves an article text from the 'body_copy' Text element
 articleItem.GetString("body_copy")
 ```
 
-The Rich text element can contain links to other content items within your project. See [Resolving links to content items](https://github.com/Kentico/delivery-sdk-net/wiki/Resolving-Links-to-Content-Items) for more details.
+### Rich text
+
+* The Rich text element can contain links to other content items within your project. See [Resolving links to content items](https://github.com/Kentico/delivery-sdk-net/wiki/Resolving-Links-to-Content-Items) for more details.
+* The Rich text element can contain components and other content items. See [Structured Rich text rendering](https://github.com/Kentico/delivery-sdk-net/wiki/Structured-Rich-text-rendering) for more details. To learn more about components and linked content, visit our [API Reference](https://developer.kenticocloud.com/v1/reference#linked-content).
 
 ### Asset
 
@@ -232,7 +235,7 @@ string transformedAssetUrl = builder.WithFocalPointCrop(560, 515, 2)
 For list of supported transformations and more information visit the Kentico Delivery API reference at <https://developer.kenticocloud.com/v1/reference?#image-transformation>.
 
 ## Resilience capabilities
-By default, the SDK uses a retry logic (policy) thanks to `DeliveryOptions.EnableResilienceLogic` being set to `true`. It can be disabled. The default policy retries the HTTP requests if the following status codes are returned:
+By default, the SDK uses a retry policy, asking for requested content again in case of an error. You can disable the retry policy by setting `DeliveryOptions.EnableResilienceLogic` to `false`. The default policy retries the HTTP requests if the following status codes are returned:
 
 * `RequestTimeout`
 * `InternalServerError`
@@ -240,9 +243,9 @@ By default, the SDK uses a retry logic (policy) thanks to `DeliveryOptions.Enabl
 * `ServiceUnavailable`
 * `GatewayTimeout`
 
-The default policy retries requests for 5 times, totalling to 6 overall attempts, before a `DeliveryException` is thrown. The number of attempts can be configured via `DeliveryOptions.MaxRetryAttempts`. The consecutive attempts are delayed in an exponential way, i.e. after 2<sup>2</sup> * 100 milliseconds, 2<sup>3</sup> * 100 milliseconds and so on.
+The default policy retries requests 5 times, totaling 6 overall attempts to retrieve content before throwing a `DeliveryException`. You can configure the number of attempts using the `DeliveryOptions.MaxRetryAttempts` property. The consecutive attempts are delayed exponentially: 400 milliseconds, 800 milliseconds, 1600 milliseconds, etc.
 
-The default resilience policy is implemented using the [Polly](https://github.com/App-vNext/Polly) library. You can also implement your own Polly policy wrapped in your own `IResiliencePolicyProvider` instance and plug it as an optional parameter into the constructor of `DeliveryClient` or by the `ResiliencePolicyProvider` property anytime.
+The default resilience policy is implemented using [Polly](https://github.com/App-vNext/Polly). You can also implement your own Polly policy wrapped in an `IResiliencePolicyProvider` instance. Plug it into the `DeliveryClient` constructor or change the `ResiliencePolicyProvider` property anytime.
 
 ## Using the KenticoCloud.Delivery.Rx reactive library
 
