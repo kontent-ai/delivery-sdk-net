@@ -75,10 +75,11 @@ namespace KenticoCloud.Delivery
             {
                 // Try to find a specific type
                 t = TypeProvider?.GetType(system.Type);
-                if (t == null)
-                {
-                    throw new Exception($"No corresponding CLR type found for the '{system.Type}' content type. Provide a correct implementation of '{nameof(ICodeFirstTypeProvider)}' to the '{nameof(TypeProvider)}' property.");
-                } 
+            }
+
+            if (t == null)
+            {
+                return null;
             }
 
             object instance = Activator.CreateInstance(t);

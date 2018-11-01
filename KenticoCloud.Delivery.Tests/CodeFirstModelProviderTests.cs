@@ -16,7 +16,7 @@ namespace KenticoCloud.Delivery.Tests
             var fakeDeliverClient = A.Fake<IDeliveryClient>();
             var codeFirstTypeProvider = A.Fake<ICodeFirstTypeProvider>();
             A.CallTo(() => codeFirstTypeProvider.GetType(A<string>._)).Returns(typeof(ContentItemWithSingleRTE));
-            
+
             var processor = new InlineContentItemsProcessor(null, null);
             processor.RegisterTypeResolver(new RichTextInlineResolver());
             var retriever = new CodeFirstModelProvider(fakeDeliverClient);
@@ -56,12 +56,28 @@ namespace KenticoCloud.Delivery.Tests
             Assert.IsType<ContentItemWithSingleRTE>(result);
         }
 
+        [Fact]
+        /// <see href="https://github.com/Kentico/delivery-sdk-net/issues/126"/>
+        public void GetContentItemModelRetrievingContentModelWithUnknownTypeReturnNull()
+        {
+            var item = JToken.FromObject(rt4);
+            var linkedItems = JToken.FromObject(linkedItemsForItemWithTwoReferencedContentItems);
+
+            var fakeDeliverClient = A.Fake<IDeliveryClient>();
+            var codeFirstTypeProvider = A.Fake<ICodeFirstTypeProvider>();
+            A.CallTo(() => codeFirstTypeProvider.GetType("newType")).Returns(null);
+            var modelProvider = new CodeFirstModelProvider(fakeDeliverClient);
+            modelProvider.TypeProvider = codeFirstTypeProvider;
+
+            Assert.Null(modelProvider.GetContentItemModel<object>(item, linkedItems));
+        }
+
         private class ContentItemWithSingleRTE
         {
             public string RT { get; set; }
         }
 
-        private class RichTextInlineResolver: IInlineContentItemsResolver<ContentItemWithSingleRTE>
+        private class RichTextInlineResolver : IInlineContentItemsResolver<ContentItemWithSingleRTE>
         {
             public string Resolve(ResolvedContentItemData<ContentItemWithSingleRTE> data)
             {
@@ -74,11 +90,11 @@ namespace KenticoCloud.Delivery.Tests
             system = new
             {
                 id = "9dc3ca3a-22e0-4414-a56d-7a504e9f1eb2",
-                name = "RT1" ,
+                name = "RT1",
                 codename = "rt1",
                 type = "simple_richtext",
                 sitemap_location = new string[0],
-                last_modified = new DateTime(2017,06,01, 11,43,33)
+                last_modified = new DateTime(2017, 06, 01, 11, 43, 33)
             },
             elements = new
             {
@@ -86,7 +102,7 @@ namespace KenticoCloud.Delivery.Tests
                 {
                     type = "rich_text",
                     name = "RT",
-                    modular_content = new [] { "rt2"},
+                    modular_content = new[] { "rt2" },
                     value = "<span>FirstRT</span><object type=\"application/kenticocloud\" data-type=\"item\" data-codename=\"rt2\"></object"
                 }
 
@@ -110,7 +126,7 @@ namespace KenticoCloud.Delivery.Tests
                 {
                     type = "rich_text",
                     name = "RT",
-                    modular_content = new [] {"rt1"},
+                    modular_content = new[] { "rt1" },
                     value =
                     "<span>SecondRT</span><object type=\"application/kenticocloud\" data-type=\"item\" data-codename=\"rt1\"></object>"
                 }
@@ -150,6 +166,20 @@ namespace KenticoCloud.Delivery.Tests
         private static object linkedItemsForItemReferencingItself = new
         {
             rt3
+        };
+
+        private static object rt4 = new
+        {
+            system = new
+            {
+                id = "43e2d109-c727-4bb0-9a54-0dc8af018be9",
+                name = "RT4",
+                codename = "rt4",
+                type = "newType",
+                sitemap_location = new string[0],
+                last_modified = new DateTime(2017, 06, 01, 11, 43, 33)
+            },
+            elements = new { }
         };
     }
 
