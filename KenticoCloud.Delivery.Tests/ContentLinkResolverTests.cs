@@ -2,7 +2,6 @@
 using RichardSzalay.MockHttp;
 using System;
 using System.IO;
-using FakeItEasy;
 using KenticoCloud.Delivery.InlineContentItems;
 using KenticoCloud.Delivery.ResiliencePolicy;
 using Microsoft.Extensions.Options;

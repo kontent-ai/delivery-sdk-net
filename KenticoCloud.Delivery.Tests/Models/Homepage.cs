@@ -1,7 +1,4 @@
-using System;
 using System.Collections.Generic;
-using KenticoCloud.Delivery;
-using Newtonsoft.Json;
 
 namespace KenticoCloud.Delivery.Tests
 {

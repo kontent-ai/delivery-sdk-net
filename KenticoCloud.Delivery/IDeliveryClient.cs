@@ -1,6 +1,5 @@
 using System.Collections.Generic;
 using System.Threading.Tasks;
-using KenticoCloud.Delivery.InlineContentItems;
 using Newtonsoft.Json.Linq;
 
 namespace KenticoCloud.Delivery

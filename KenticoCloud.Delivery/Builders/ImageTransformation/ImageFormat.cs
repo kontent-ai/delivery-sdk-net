@@ -1,6 +1,4 @@
-﻿using System;
-
-namespace KenticoCloud.Delivery.ImageTransformation
+﻿namespace KenticoCloud.Delivery.ImageTransformation
 {
     /// <summary>
     /// Supported image formats.

@@ -2,9 +2,7 @@
 using System.Collections.Generic;
 using System.Globalization;
 using System.Linq;
-using System.Runtime.InteropServices;
 using Microsoft.Extensions.Primitives;
-using Polly;
 
 namespace KenticoCloud.Delivery.ImageTransformation
 {
