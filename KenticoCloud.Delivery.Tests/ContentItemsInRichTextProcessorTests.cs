@@ -1,5 +1,4 @@
-﻿using System;
-using Xunit;
+﻿using Xunit;
 using System.Collections.Generic;
 using KenticoCloud.Delivery.InlineContentItems;
 

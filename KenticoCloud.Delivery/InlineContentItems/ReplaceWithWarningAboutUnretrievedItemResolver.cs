@@ -3,7 +3,7 @@
     /// <summary>
     /// Resolver which is replacing content items in richtext with warning message about insufficient depth for content item. Used as default for unretrieved content items resolver on Preview environment.
     /// </summary>
-    public class ReplaceWithWarningAboutUnretrievedItemResolver : IInlineContentItemsResolver<UnretrievedContentItem>
+    internal class ReplaceWithWarningAboutUnretrievedItemResolver : IInlineContentItemsResolver<UnretrievedContentItem>
     {
         /// <inheritdoc />
         public string Resolve(ResolvedContentItemData<UnretrievedContentItem> item)

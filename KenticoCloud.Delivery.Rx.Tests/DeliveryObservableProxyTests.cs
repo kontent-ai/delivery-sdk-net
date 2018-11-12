@@ -1,10 +1,14 @@
 using System;
-using System.Collections;
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
+using System.Net.Http;
 using System.Reactive.Linq;
-
+using FakeItEasy;
+using KenticoCloud.Delivery.InlineContentItems;
+using KenticoCloud.Delivery.ResiliencePolicy;
+using Microsoft.Extensions.Options;
+using Polly;
 using RichardSzalay.MockHttp;
 using Xunit;
 
@@ -212,12 +216,26 @@ namespace KenticoCloud.Delivery.Rx.Tests
         {
             mockAction();
             var httpClient = mockHttp.ToHttpClient();
+            var deliveryOptions = new OptionsWrapper<DeliveryOptions>(new DeliveryOptions { ProjectId = guid });
+            var contentLinkUrlResolver = A.Fake<IContentLinkUrlResolver>();
+            var contentItemsProcessor = A.Fake<IInlineContentItemsProcessor>();
+            var contentPropertyMapper =  new CodeFirstPropertyMapper();
+            var contentTypeProvider = new CustomTypeProvider();
+            var codeFirstModelProvider = new CodeFirstModelProvider(contentLinkUrlResolver, contentItemsProcessor, contentTypeProvider, contentPropertyMapper);
+            var resiliencePolicyProvider = A.Fake<IResiliencePolicyProvider>();
+            A.CallTo(() => resiliencePolicyProvider.Policy)
+                .Returns(Policy.HandleResult<HttpResponseMessage>(result => true).RetryAsync(deliveryOptions.Value.MaxRetryAttempts));
+            var client = new DeliveryClient(
+                deliveryOptions,
+                httpClient,
+                contentLinkUrlResolver, 
+                null,
+                codeFirstModelProvider,
+                resiliencePolicyProvider,
+                contentTypeProvider
+            );
 
-            return new DeliveryClient(guid)
-            {
-                CodeFirstModelProvider = { TypeProvider = new CustomTypeProvider() },
-                HttpClient = httpClient
-            };
+            return client;
         }
 
         private void MockItem()

@@ -6,7 +6,7 @@ namespace KenticoCloud.Delivery
     /// <summary>
     /// Represents inline content item. IEnumerable is implemented so that Html.DisplayFor is automatically bridged to the underlying ContentItem property.
     /// </summary>
-    class InlineContentItem : IInlineContentItem, IEnumerable<object>
+    internal class InlineContentItem : IInlineContentItem, IEnumerable<object>
     {
         public object ContentItem
         {

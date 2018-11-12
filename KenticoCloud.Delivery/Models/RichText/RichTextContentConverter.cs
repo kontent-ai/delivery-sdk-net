@@ -27,9 +27,9 @@ namespace KenticoCloud.Delivery
             var value = element.Property("value")?.Value?.ToObject<string>();
 
             // Handle rich_text link resolution
-            if (links != null && elementData != null && context.Client.ContentLinkUrlResolver != null)
+            if (links != null && elementData != null && context.ContentLinkUrlResolver != null)
             {
-                value = new ContentLinkResolver(context.Client.ContentLinkUrlResolver).ResolveContentLinks(value, links);
+                value = new ContentLinkResolver(context.ContentLinkUrlResolver).ResolveContentLinks(value, links);
             }
 
             var blocks = new List<IRichTextBlock>();

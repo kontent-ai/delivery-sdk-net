@@ -70,7 +70,7 @@ namespace KenticoCloud.Delivery.ImageTransformation
         /// <returns>The same <see cref="ImageUrlBuilder" /> instance. </returns>
         public ImageUrlBuilder WithFitMode(string fitMode)
         {
-            if (!string.IsNullOrWhiteSpace(fitMode) && ImageFitMode.TryParse(fitMode.ToLower(), out var parsedFitMode))
+            if (!string.IsNullOrWhiteSpace(fitMode) && Enum.TryParse(fitMode, ignoreCase: true, result: out ImageFitMode parsedFitMode))
             {
                 WithFitMode(parsedFitMode);
             }
@@ -84,7 +84,7 @@ namespace KenticoCloud.Delivery.ImageTransformation
         /// <returns>The same <see cref="ImageUrlBuilder" /> instance. </returns>
         public ImageUrlBuilder WithFitMode(ImageFitMode fitMode)
         {
-            _queryParameters["fit"] = fitMode.ToString();
+            _queryParameters["fit"] = StringifyEnum(fitMode);
             return this;
         }
 
@@ -137,7 +137,7 @@ namespace KenticoCloud.Delivery.ImageTransformation
         /// <returns>The same <see cref="ImageUrlBuilder" /> instance. </returns>
         public ImageUrlBuilder WithFormat(string format)
         {
-            if (!string.IsNullOrWhiteSpace(format) && ImageFormat.TryParse(format.ToLower(), out var parsedFormat))
+            if (!string.IsNullOrWhiteSpace(format) && Enum.TryParse(format, ignoreCase: true, result: out ImageFormat parsedFormat))
             {
                 WithFormat(parsedFormat);
             }
@@ -151,7 +151,7 @@ namespace KenticoCloud.Delivery.ImageTransformation
         /// <returns>The same <see cref="ImageUrlBuilder" /> instance. </returns>
         public ImageUrlBuilder WithFormat(ImageFormat format)
         {
-            _queryParameters["fm"] = format.ToString();
+            _queryParameters["fm"] = StringifyEnum(format);
             return this;
         }
 
@@ -183,7 +183,7 @@ namespace KenticoCloud.Delivery.ImageTransformation
         /// <returns>The same <see cref="ImageUrlBuilder" /> instance. </returns>
         public ImageUrlBuilder WithAutomaticFormat()
         {
-            _queryParameters["auto"] = ImageFormat.Webp.ToString();
+            _queryParameters["auto"] = StringifyEnum(ImageFormat.Webp);
             return this;
         }
 
@@ -198,5 +198,7 @@ namespace KenticoCloud.Delivery.ImageTransformation
         }
 
         private static string FormatDouble(double number) => number.ToString("0.##########", CultureInfo.InvariantCulture);
+
+        private static string StringifyEnum(Enum value) => value.ToString().ToLowerInvariant();
     }
 }

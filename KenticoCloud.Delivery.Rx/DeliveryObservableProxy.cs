@@ -7,16 +7,26 @@ using Newtonsoft.Json.Linq;
 
 namespace KenticoCloud.Delivery.Rx
 {
+    /// <summary>
+    /// A class that enables a reactive way of consuming data from Kentico Cloud
+    /// </summary>
     public class DeliveryObservableProxy
     {
         #region "Properties"
 
+        /// <summary>
+        /// A property that gets the <see cref="IDeliveryClient" /> instance.
+        /// </summary>
         public IDeliveryClient DeliveryClient { get; }
 
         #endregion
 
         #region "Constructors"
 
+        /// <summary>
+        /// Creates an object that enables reactive way of consuming data from Kentico Cloud
+        /// </summary>
+        /// <param name="deliveryClient">A <see cref="IDeliveryClient"/> instance.</param>
         public DeliveryObservableProxy(IDeliveryClient deliveryClient)
         {
             DeliveryClient = deliveryClient ?? throw new ArgumentNullException(nameof(deliveryClient));

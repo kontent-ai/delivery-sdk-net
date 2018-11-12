@@ -94,13 +94,8 @@ namespace KenticoCloud.Delivery
 
         private string GetUrl(string path, string[] parameters = null)
         {
-            var endpointUrl = string.Format(_deliveryOptions.UsePreviewApi ? _deliveryOptions.PreviewEndpoint : _deliveryOptions.ProductionEndpoint, Uri.EscapeDataString(_deliveryOptions.ProjectId));
-            var url = string.Concat(endpointUrl, path);
-
-            if (parameters != null && parameters.Length > 0)
-            {
-                url = string.Concat(url, "?", string.Join("&", parameters));
-            }
+            var hostUrl = AssembleHost();
+            var url = AssembleUrl(path, parameters, hostUrl);
 
             if (url.Length > UrlMaxLength)
             {
@@ -108,6 +103,29 @@ namespace KenticoCloud.Delivery
             }
 
             return url;
+        }
+
+        private static string AssembleUrl(string path, string[] parameters, string hostUrl)
+        {
+            var urlBuilder = new UriBuilder(hostUrl + path);
+
+            if (parameters != null && parameters.Length > 0)
+            {
+                urlBuilder.Query = string.Join("&", parameters);
+            }
+
+            var url = urlBuilder.ToString();
+            return url;
+        }
+
+        private string AssembleHost()
+        {
+            var endpointUrlTemplate = _deliveryOptions.UsePreviewApi
+                            ? _deliveryOptions.PreviewEndpoint
+                            : _deliveryOptions.ProductionEndpoint;
+            var projectId = Uri.EscapeDataString(_deliveryOptions.ProjectId);
+            var hostUrl = string.Format(endpointUrlTemplate, projectId);
+            return hostUrl;
         }
     }
 }

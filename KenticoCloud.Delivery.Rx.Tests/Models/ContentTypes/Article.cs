@@ -6,7 +6,6 @@
 
 using System;
 using System.Collections.Generic;
-using KenticoCloud.Delivery;
 
 namespace KenticoCloud.Delivery.Rx.Tests
 {

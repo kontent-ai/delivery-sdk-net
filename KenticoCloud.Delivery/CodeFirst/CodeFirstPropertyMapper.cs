@@ -7,7 +7,7 @@ namespace KenticoCloud.Delivery
     /// <summary>
     /// Default provider for mapping Kentico Cloud content item fields to model properties.
     /// </summary>
-    public class CodeFirstPropertyMapper : ICodeFirstPropertyMapper
+    internal class CodeFirstPropertyMapper : ICodeFirstPropertyMapper
     {
         /// <summary>
         /// Determines whether the given property corresponds with a given field.

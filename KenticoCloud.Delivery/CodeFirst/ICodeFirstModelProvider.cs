@@ -15,15 +15,5 @@ namespace KenticoCloud.Delivery
         /// <param name="linkedItems">Linked items.</param>
         /// <returns>Strongly typed POCO model of the generic type.</returns>
         T GetContentItemModel<T>(JToken item, JToken linkedItems);
-
-        /// <summary>
-        /// Ensures mapping between Kentico Cloud content types and CLR types.
-        /// </summary>
-        ICodeFirstTypeProvider TypeProvider { get; set; }
-
-        /// <summary>
-        /// Ensures mapping between Kentico Cloud content item fields and model properties.
-        /// </summary>
-        ICodeFirstPropertyMapper PropertyMapper { get; set; }
     }
 }
