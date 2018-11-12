@@ -16,7 +16,7 @@ namespace KenticoCloud.Delivery.Tests
         {
             var codeFirstTypeProvider = A.Fake<ICodeFirstTypeProvider>();
             var contentLinkUrlResolver = A.Fake<IContentLinkUrlResolver>();
-            var propertyMapper = A.Fake<ICodeFirstPropertyMapper>(); //new CodeFirstPropertyMapper();
+            var propertyMapper = A.Fake<ICodeFirstPropertyMapper>();
             A.CallTo(() => propertyMapper.IsMatch(A<PropertyInfo>._, A<string>._, A<string>._)).Returns(true);
             A.CallTo(() => codeFirstTypeProvider.GetType(A<string>._)).Returns(typeof(ContentItemWithSingleRTE));
 
