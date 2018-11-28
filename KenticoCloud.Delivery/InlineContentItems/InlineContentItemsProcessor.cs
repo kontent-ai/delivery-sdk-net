@@ -51,14 +51,12 @@ namespace KenticoCloud.Delivery.InlineContentItems
 
             foreach (var inlineContentItemElement in inlineContentItemElements)
             {
-                object inlineContentItem;
                 var contentItemCodename = inlineContentItemElement.GetAttribute("data-codename");
-                if (inlineContentItemMap.TryGetValue(contentItemCodename, out inlineContentItem))
+                if (inlineContentItemMap.TryGetValue(contentItemCodename, out object inlineContentItem))
                 {
                     string fragmentText;
                     Type inlineContentItemType;
-                    var unretrieved = inlineContentItem as UnretrievedContentItem;
-                    if (unretrieved != null)
+                    if (inlineContentItem is UnretrievedContentItem unretrieved)
                     {
                         inlineContentItemType = typeof(UnretrievedContentItem);
                         var data = new ResolvedContentItemData<UnretrievedContentItem> { Item = unretrieved };
@@ -67,8 +65,7 @@ namespace KenticoCloud.Delivery.InlineContentItems
                     else
                     {
                         inlineContentItemType = inlineContentItem.GetType();
-                        Func<object, string> inlineContentItemResolver;
-                        if (_typeResolver.TryGetValue(inlineContentItemType, out inlineContentItemResolver))
+                        if (_typeResolver.TryGetValue(inlineContentItemType, out Func<object, string> inlineContentItemResolver))
                         {
                             fragmentText = inlineContentItemResolver(inlineContentItem);
                         }
@@ -76,7 +73,7 @@ namespace KenticoCloud.Delivery.InlineContentItems
                         {
                             var data = new ResolvedContentItemData<object> { Item = inlineContentItem };
                             fragmentText = DefaultResolver.Resolve(data);
-                        }                  
+                        }
                     }
 
                     try

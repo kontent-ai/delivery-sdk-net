@@ -1,10 +1,10 @@
-﻿using Newtonsoft.Json.Linq;
+﻿using KenticoCloud.Delivery.InlineContentItems;
+using Newtonsoft.Json;
+using Newtonsoft.Json.Linq;
 using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Reflection;
-using KenticoCloud.Delivery.InlineContentItems;
-using Newtonsoft.Json;
 
 namespace KenticoCloud.Delivery
 {
@@ -105,7 +105,7 @@ namespace KenticoCloud.Delivery
                         }
                         else
                         {
-                            return GetContentItemModel(typeof(object), linkedItemsElementNode, linkedItems, processedItems);                            
+                            return GetContentItemModel(typeof(object), linkedItemsElementNode, linkedItems, processedItems);
                         }
                     }
                     return null;
@@ -244,8 +244,8 @@ namespace KenticoCloud.Delivery
                 {
                     // If this element is already being processed it's necessary to to use it as is (with removed inline content items)
                     // otherwise resolving would be stuck in an infinite loop
-                    value = RemoveInlineContentItems(value);     
-                                                                       
+                    value = RemoveInlineContentItems(value);
+
                 }
                 else
                 {
@@ -266,8 +266,7 @@ namespace KenticoCloud.Delivery
         private static IPropertyValueConverter GetValueConverter(PropertyInfo property)
         {
             // Converter defined by explicit attribute has the highest priority
-            var attributeConverter = property.GetCustomAttributes().FirstOrDefault(attr => typeof(IPropertyValueConverter).IsAssignableFrom(attr.GetType())) as IPropertyValueConverter;
-            if (attributeConverter != null)
+            if (property.GetCustomAttributes().FirstOrDefault(attr => typeof(IPropertyValueConverter).IsAssignableFrom(attr.GetType())) is IPropertyValueConverter attributeConverter)
             {
                 return attributeConverter;
             }

@@ -87,7 +87,7 @@ namespace KenticoCloud.Delivery.Tests
             }
         }
 
-        private static object rt1 = new
+        private static readonly object rt1 = new
         {
             system = new
             {
@@ -111,7 +111,7 @@ namespace KenticoCloud.Delivery.Tests
             }
         };
 
-        private static object rt2 = new
+        private static readonly object rt2 = new
         {
             system = new
             {
@@ -135,13 +135,13 @@ namespace KenticoCloud.Delivery.Tests
             }
         };
 
-        private static object linkedItemsForItemWithTwoReferencedContentItems = new
+        private static readonly object linkedItemsForItemWithTwoReferencedContentItems = new
         {
             rt2,
             rt1
         };
 
-        private static object rt3 = new
+        private static readonly object rt3 = new
         {
             system = new
             {
@@ -165,12 +165,12 @@ namespace KenticoCloud.Delivery.Tests
             }
         };
 
-        private static object linkedItemsForItemReferencingItself = new
+        private static readonly object linkedItemsForItemReferencingItself = new
         {
             rt3
         };
 
-        private static object rt4 = new
+        private static readonly object rt4 = new
         {
             system = new
             {
