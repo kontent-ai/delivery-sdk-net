@@ -13,7 +13,7 @@ namespace KenticoCloud.Delivery.Tests
         public void ProcessedHtmlIsSameIfNoContentItemsAreIncluded()
         {
             var inputHtml = $"<p>Lorem ipsum etc..<a>asdf</a>..</p>";
-            var inlineContentItemsProcessor = new InlineContentItemsProcessor(null, null);
+            var inlineContentItemsProcessor = new InlineContentItemsProcessor(null, null, null);
             var processedContentItems = new Dictionary<string, object>();
 
             var result = inlineContentItemsProcessor.Process(inputHtml, processedContentItems);
@@ -31,7 +31,7 @@ namespace KenticoCloud.Delivery.Tests
             var plainHtml = $"<p>Lorem ipsum etc..<a>asdf</a>..</p>";
             var input = insertedObject1 + plainHtml + insertedObject2;
             var contentItemResolver = new DummyResolver();
-            var inlineContentItemsProcessor = new InlineContentItemsProcessor(null, null);
+            var inlineContentItemsProcessor = new InlineContentItemsProcessor(null, null, null);
             inlineContentItemsProcessor.RegisterTypeResolver(contentItemResolver);
             var processedContentItems = new Dictionary<string, object>() {{insertedContentName1, new DummyProcessedContentItem()}, {insertedContentName2, new DummyProcessedContentItem()} };
 
@@ -52,7 +52,7 @@ namespace KenticoCloud.Delivery.Tests
                 {insertedContentName, new DummyProcessedContentItem()}
             };
             var contentItemResolver = new DummyResolver();
-            var inlineContentItemsProcessor = new InlineContentItemsProcessor(null, null);
+            var inlineContentItemsProcessor = new InlineContentItemsProcessor(null, null, null);
             inlineContentItemsProcessor.RegisterTypeResolver(contentItemResolver);
 
             var result = inlineContentItemsProcessor.Process(input, processedContentItems);
@@ -75,7 +75,7 @@ namespace KenticoCloud.Delivery.Tests
                 {insertedContentName, new DummyProcessedContentItem() {Value = insertedContentItemValue} }
             };
             var contentItemResolver = new ResolverReturningValue();
-            var inlineContentItemsProcessor = new InlineContentItemsProcessor(null, null);
+            var inlineContentItemsProcessor = new InlineContentItemsProcessor(null, null, null);
             inlineContentItemsProcessor.RegisterTypeResolver(contentItemResolver);
 
 
@@ -98,7 +98,7 @@ namespace KenticoCloud.Delivery.Tests
                 {insertedContentName, new DummyProcessedContentItem() {Value = insertedContentItemValue}}
             };
             var contentItemResolver = new ResolverReturningElement();
-            var inlineContentItemsProcessor = new InlineContentItemsProcessor(null, null);
+            var inlineContentItemsProcessor = new InlineContentItemsProcessor(null, null, null);
             inlineContentItemsProcessor.RegisterTypeResolver(contentItemResolver);
 
             var result = inlineContentItemsProcessor.Process(input, processedContentItems);
@@ -162,7 +162,7 @@ namespace KenticoCloud.Delivery.Tests
                 {insertedDummyItem2CodeName, new DummyProcessedContentItem() {Value = insertedDummyItem2Value}},
                 {insertedDummyItem3CodeName, new DummyProcessedContentItem() {Value = insertedDummyItem3Value}},
             };
-            var inlineContentItemsProcessor = new InlineContentItemsProcessor(null, null);
+            var inlineContentItemsProcessor = new InlineContentItemsProcessor(null, null, null);
             inlineContentItemsProcessor.RegisterTypeResolver(new ResolverReturningElement());
             inlineContentItemsProcessor.RegisterTypeResolver(new DummyImageResolver());
 
@@ -228,7 +228,7 @@ namespace KenticoCloud.Delivery.Tests
                 {insertedDummyItem3CodeName, new DummyProcessedContentItem() {Value = insertedDummyItem3Value}},
             };
             var unretrievedInlineContentItemsResolver = new UnretrievedItemsMessageReturningResolver(unretrievedItemMessage);
-            var inlineContentItemsProcessor = new InlineContentItemsProcessor(null, unretrievedInlineContentItemsResolver);
+            var inlineContentItemsProcessor = new InlineContentItemsProcessor(null, unretrievedInlineContentItemsResolver, null);
             inlineContentItemsProcessor.RegisterTypeResolver(new ResolverReturningElement());
             inlineContentItemsProcessor.RegisterTypeResolver(new DummyImageResolver());
 
@@ -295,7 +295,7 @@ namespace KenticoCloud.Delivery.Tests
             };
             var unretrievedInlineContentItemsResolver = new UnretrievedItemsMessageReturningResolver(unretrievedItemMessage);
             var defaultResolver = new MessageReturningResolver(defaultResolverMessage);
-            var inlineContentItemsProcessor = new InlineContentItemsProcessor(defaultResolver, unretrievedInlineContentItemsResolver);
+            var inlineContentItemsProcessor = new InlineContentItemsProcessor(defaultResolver, unretrievedInlineContentItemsResolver, null);
             inlineContentItemsProcessor.RegisterTypeResolver(new ResolverReturningElement());
 
 
@@ -319,7 +319,7 @@ namespace KenticoCloud.Delivery.Tests
                 {insertedContentName, new UnretrievedContentItem()}
             };
             var unresolvedContentItemResolver = new UnretrievedItemsMessageReturningResolver(message);
-            var inlineContentItemsProcessor = new InlineContentItemsProcessor(null, unresolvedContentItemResolver);
+            var inlineContentItemsProcessor = new InlineContentItemsProcessor(null, unresolvedContentItemResolver, null);
 
             var result = inlineContentItemsProcessor.Process(input, processedContentItems);
 
@@ -342,7 +342,7 @@ namespace KenticoCloud.Delivery.Tests
             };
             var differentResolver = new MessageReturningResolver("this should not appear");
             var defaultResolver = new MessageReturningResolver(message);
-            var inlineContentItemsProcessor = new InlineContentItemsProcessor(defaultResolver, null);
+            var inlineContentItemsProcessor = new InlineContentItemsProcessor(defaultResolver, null, null);
             inlineContentItemsProcessor.RegisterTypeResolver(differentResolver);
 
             var result = inlineContentItemsProcessor.Process(input, processedContentItems);
@@ -363,7 +363,7 @@ namespace KenticoCloud.Delivery.Tests
                 {insertedContentName, new DummyProcessedContentItem() {Value = insertedContentItemValue}}
             };
             var contentItemResolver = new ResolverReturningTextAndElement();
-            var inlineContentItemsProcessor = new InlineContentItemsProcessor(null, null);
+            var inlineContentItemsProcessor = new InlineContentItemsProcessor(null, null, null);
             inlineContentItemsProcessor.RegisterTypeResolver(contentItemResolver);
 
             var result = inlineContentItemsProcessor.Process(inputHtml, processedContentItems);
@@ -386,7 +386,7 @@ namespace KenticoCloud.Delivery.Tests
                 {insertedContentName, new DummyProcessedContentItem() {Value = insertedContentItemValue}}
             };
             var contentItemResolver = new ResolverReturningIncorrectHtml();
-            var inlineContentItemsProcessor = new InlineContentItemsProcessor(null, null);
+            var inlineContentItemsProcessor = new InlineContentItemsProcessor(null, null, null);
             inlineContentItemsProcessor.RegisterTypeResolver(contentItemResolver);
 
             var result = inlineContentItemsProcessor.Process(inputHtml, processedContentItems);
@@ -435,7 +435,7 @@ namespace KenticoCloud.Delivery.Tests
                 $" The thought leaders target a teamwork-oriented silo.\n" +
                 $"A documented high quality enables our unique, outside -in and customer-centric tailwinds." +
                 $"It's not about our targets.  It's about infrastructures.";
-            var processor = new InlineContentItemsProcessor(null, null);
+            var processor = new InlineContentItemsProcessor(null, null, null);
 
             var result = processor.RemoveAll(htmlInput);
 

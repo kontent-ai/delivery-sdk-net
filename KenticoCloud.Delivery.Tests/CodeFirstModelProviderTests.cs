@@ -1,8 +1,8 @@
-﻿using System;
-using System.Reflection;
-using FakeItEasy;
+﻿using FakeItEasy;
 using KenticoCloud.Delivery.InlineContentItems;
 using Newtonsoft.Json.Linq;
+using System;
+using System.Reflection;
 using Xunit;
 
 namespace KenticoCloud.Delivery.Tests
@@ -20,7 +20,7 @@ namespace KenticoCloud.Delivery.Tests
             A.CallTo(() => propertyMapper.IsMatch(A<PropertyInfo>._, A<string>._, A<string>._)).Returns(true);
             A.CallTo(() => codeFirstTypeProvider.GetType(A<string>._)).Returns(typeof(ContentItemWithSingleRTE));
 
-            var processor = new InlineContentItemsProcessor(null, null);
+            var processor = new InlineContentItemsProcessor(null, null, null);
             processor.RegisterTypeResolver(new RichTextInlineResolver());
             var retriever = new CodeFirstModelProvider(contentLinkUrlResolver, processor, codeFirstTypeProvider, propertyMapper);
 
@@ -44,7 +44,7 @@ namespace KenticoCloud.Delivery.Tests
             A.CallTo(() => codeFirstTypeProvider.GetType(A<string>._)).Returns(typeof(ContentItemWithSingleRTE));
             A.CallTo(() => propertyMapper.IsMatch(A<PropertyInfo>._, A<string>._, A<string>._)).Returns(true);
 
-            var processor = new InlineContentItemsProcessor(null, null);
+            var processor = new InlineContentItemsProcessor(null, null, null);
             processor.RegisterTypeResolver(new RichTextInlineResolver());
             var retriever = new CodeFirstModelProvider(contentLinkUrlResolver, processor, codeFirstTypeProvider, propertyMapper);
 
@@ -184,6 +184,4 @@ namespace KenticoCloud.Delivery.Tests
             elements = new { }
         };
     }
-
-
 }

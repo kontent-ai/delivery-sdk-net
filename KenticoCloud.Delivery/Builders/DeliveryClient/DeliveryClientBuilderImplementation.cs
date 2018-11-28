@@ -1,9 +1,10 @@
-﻿using System;
-using System.Net.Http;
-using KenticoCloud.Delivery.Builders.DeliveryOptions;
+﻿using KenticoCloud.Delivery.Builders.DeliveryOptions;
+using KenticoCloud.Delivery.Extensions;
 using KenticoCloud.Delivery.InlineContentItems;
 using KenticoCloud.Delivery.ResiliencePolicy;
 using Microsoft.Extensions.DependencyInjection;
+using System;
+using System.Net.Http;
 
 namespace KenticoCloud.Delivery.Builders.DeliveryClient
 {
@@ -11,6 +12,7 @@ namespace KenticoCloud.Delivery.Builders.DeliveryClient
     {
         private readonly IServiceCollection _serviceCollection = new ServiceCollection();
         private Delivery.DeliveryOptions _deliveryOptions;
+        private IInlineContentItemsResolverCollection _inlineContentItemsResolvers = new InlineContentItemsResolverCollection();
 
         public IOptionalClientSetup BuildWithDeliveryOptions(Func<IDeliveryOptionsBuilder, Delivery.DeliveryOptions> buildDeliveryOptions)
         {
@@ -42,7 +44,7 @@ namespace KenticoCloud.Delivery.Builders.DeliveryClient
             => RegisterOrThrow(contentLinkUrlResolver, nameof(contentLinkUrlResolver));
 
         IOptionalClientSetup IOptionalClientSetup.WithInlineContentItemsResolver<T>(IInlineContentItemsResolver<T> inlineContentItemsResolver)
-            => RegisterOrThrow(inlineContentItemsResolver, nameof(inlineContentItemsResolver));
+            => RegisterTypeResolver(inlineContentItemsResolver);
 
         IOptionalClientSetup IOptionalClientSetup.WithInlineContentItemsProcessor(IInlineContentItemsProcessor inlineContentItemsProcessor)
             => RegisterOrThrow(inlineContentItemsProcessor, nameof(inlineContentItemsProcessor));
@@ -61,6 +63,7 @@ namespace KenticoCloud.Delivery.Builders.DeliveryClient
 
         IDeliveryClient IDeliveryClientBuild.Build()
         {
+            _serviceCollection.AddSingleton(typeof(IInlineContentItemsResolverCollection), _inlineContentItemsResolvers);
             _serviceCollection.AddDeliveryClient(_deliveryOptions);
 
             var serviceProvider = _serviceCollection.BuildServiceProvider();
@@ -68,6 +71,17 @@ namespace KenticoCloud.Delivery.Builders.DeliveryClient
             var client = serviceProvider.GetService<IDeliveryClient>();
 
             return client;
+        }
+
+        private DeliveryClientBuilderImplementation RegisterTypeResolver<T>(IInlineContentItemsResolver<T> resolver)
+        {
+            if (resolver == null)
+            {
+                throw new ArgumentNullException(nameof(resolver));
+            }
+
+            _inlineContentItemsResolvers.InlineContentItemsResolvers.RegisterTypeResolver(resolver);
+            return this;
         }
 
         private DeliveryClientBuilderImplementation RegisterOrThrow<TType>(TType instance, string parameterName)

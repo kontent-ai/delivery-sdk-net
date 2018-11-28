@@ -124,7 +124,7 @@ namespace KenticoCloud.Delivery.Tests
             var httpClient = mockHttp.ToHttpClient();
             var resiliencePolicyProvider = new DefaultResiliencePolicyProvider(deliveryOptions);
             var contentLinkUrlResolver = new CustomContentLinkUrlResolver();
-            var contentItemsProcessor = new InlineContentItemsProcessor(new ReplaceWithEmptyStringResolver(), new ReplaceWithEmptyStringForUnretrievedItemsResolver());
+            var contentItemsProcessor = new InlineContentItemsProcessor(new ReplaceWithEmptyStringResolver(), new ReplaceWithEmptyStringForUnretrievedItemsResolver(), null);
             var codeFirstModelProvider = new CodeFirstModelProvider(contentLinkUrlResolver, contentItemsProcessor, new CustomTypeProvider(), new CodeFirstPropertyMapper());
             var client = new DeliveryClient(
                 deliveryOptions,

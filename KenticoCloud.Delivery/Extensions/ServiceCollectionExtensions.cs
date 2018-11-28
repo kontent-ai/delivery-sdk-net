@@ -69,9 +69,10 @@ namespace KenticoCloud.Delivery
         {
             services.TryAddSingleton<IContentLinkUrlResolver, DefaultContentLinkUrlResolver>();
             services.TryAddSingleton<ICodeFirstTypeProvider, DefaultTypeProvider>();
-            services.TryAddSingleton(new HttpClient());
+            services.TryAddSingleton(new HttpClient());            
             services.TryAddSingleton<IInlineContentItemsResolver<object>, ReplaceWithWarningAboutRegistrationResolver>();
-            services.TryAddSingleton<IInlineContentItemsResolver<UnretrievedContentItem>, ReplaceWithWarningAboutUnretrievedItemResolver>();
+            services.TryAddSingleton<IInlineContentItemsResolver<UnretrievedContentItem>, ReplaceWithWarningAboutUnretrievedItemResolver>();            
+            services.TryAddSingleton<IInlineContentItemsResolverCollection, InlineContentItemsResolverCollection>();
             services.TryAddSingleton<IInlineContentItemsProcessor, InlineContentItemsProcessor>();
             services.TryAddSingleton<ICodeFirstModelProvider, CodeFirstModelProvider>();
             services.TryAddSingleton<ICodeFirstPropertyMapper, CodeFirstPropertyMapper>();

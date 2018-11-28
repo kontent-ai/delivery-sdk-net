@@ -1,15 +1,16 @@
-﻿using System;
+﻿using FakeItEasy;
+using KenticoCloud.Delivery.InlineContentItems;
+using KenticoCloud.Delivery.Tests.Factories;
+using Polly;
+using RichardSzalay.MockHttp;
+using System;
 using System.Collections.Generic;
 using System.Diagnostics;
-using System.Linq;
 using System.IO;
+using System.Linq;
 using System.Net;
 using System.Net.Http;
-using FakeItEasy;
-using KenticoCloud.Delivery.Tests.Factories;
 using Xunit;
-using RichardSzalay.MockHttp;
-using Polly;
 
 namespace KenticoCloud.Delivery.Tests
 {
@@ -829,7 +830,7 @@ namespace KenticoCloud.Delivery.Tests
 
             A.CallTo(() => client.ResiliencePolicyProvider.Policy)
                 .Returns(Policy.HandleResult<HttpResponseMessage>(result => true).RetryAsync(policyRetryAttempts));
-            
+
             await Assert.ThrowsAsync<DeliveryException>(async () => await client.GetItemsAsync());
             Assert.Equal(expectedAttepts, actualHttpRequestCount);
         }
@@ -886,6 +887,29 @@ namespace KenticoCloud.Delivery.Tests
             _mockHttp.VerifyNoOutstandingExpectation();
         }
 
+        [Fact]
+        [Trait("Issue", "146")]
+        public async void InitializeMultipleInlineContentItemsResolvers()
+        {
+            string url = $"{_baseUrl}/items/";
+            _mockHttp
+                .When($"{url}{"coffee_beverages_explained"}")
+                .Respond("application/json", File.ReadAllText(Path.Combine(Environment.CurrentDirectory, "Fixtures\\DeliveryClient\\coffee_beverages_explained.json")));
+
+            var deliveryClient = DeliveryClientBuilder
+                .WithProjectId(_guid)
+                .WithInlineContentItemsResolver(new ResolverA())
+                .WithInlineContentItemsResolver(new ResolverB())
+                .WithCodeFirstTypeProvider(new CustomTypeProvider())
+                .WithHttpClient(_mockHttp.ToHttpClient())
+                .Build();
+
+            var article = await deliveryClient.GetItemAsync<Article>("coffee_beverages_explained");
+
+            Assert.Contains(ResolverA.MSG, article.Item.BodyCopy);
+            Assert.Contains(ResolverB.MSG, article.Item.BodyCopy);
+        }
+
         private DeliveryClient InitializeDeliveryClientWithACustomTypeProvider(MockHttpMessageHandler handler)
         {
             var customTypeProvider = new CustomTypeProvider();
@@ -924,6 +948,23 @@ namespace KenticoCloud.Delivery.Tests
         {
             actualHttpRequestCount++;
             return new HttpResponseMessage(httpStatusCode);
+        }
+
+        private class ResolverA : IInlineContentItemsResolver<HostedVideo>
+        {
+            public static string MSG = "This video comes from ";
+            public string Resolve(ResolvedContentItemData<HostedVideo> data)
+            {
+                return MSG + data.Item.VideoHost.First().Name;
+            }
+        }
+        private class ResolverB : IInlineContentItemsResolver<Tweet>
+        {
+            public static string MSG = "This tweet is located at: ";
+            public string Resolve(ResolvedContentItemData<Tweet> data)
+            {
+                return MSG + data.Item.TweetLink;
+            }
         }
     }
 }

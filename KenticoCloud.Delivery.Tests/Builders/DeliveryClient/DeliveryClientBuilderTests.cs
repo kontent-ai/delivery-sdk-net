@@ -54,8 +54,7 @@ namespace KenticoCloud.Delivery.Tests.Builders.DeliveryClient
             var mockInlineContentItemsProcessor = A.Fake<IInlineContentItemsProcessor>();
             var mockInlineContentItemsResolver = A.Fake<IInlineContentItemsResolver<object>>();
             var mockCodeFirstTypeProvider = A.Fake<ICodeFirstTypeProvider>();
-            var mockHttp = new MockHttpMessageHandler().ToHttpClient();
-            A.CallTo(() => mockInlineContentItemsProcessor.DefaultResolver).Returns(mockInlineContentItemsResolver);
+            var mockHttp = new MockHttpMessageHandler().ToHttpClient();            
 
             var deliveryClient = (Delivery.DeliveryClient) DeliveryClientBuilder
                 .WithProjectId(ProjectId)
@@ -70,8 +69,7 @@ namespace KenticoCloud.Delivery.Tests.Builders.DeliveryClient
                 .Build();
 
             Assert.Equal(ProjectId, deliveryClient.DeliveryOptions.ProjectId);
-            Assert.Equal(mockContentLinkUrlResolver, deliveryClient.ContentLinkUrlResolver);
-            Assert.Equal(mockInlineContentItemsResolver, deliveryClient.InlineContentItemsProcessor.DefaultResolver);
+            Assert.Equal(mockContentLinkUrlResolver, deliveryClient.ContentLinkUrlResolver);            
             Assert.Equal(mockInlineContentItemsProcessor, deliveryClient.InlineContentItemsProcessor);
             Assert.Equal(mockCodeFirstModelProvider, deliveryClient.CodeFirstModelProvider);
             Assert.Equal(mockCodeFirstPropertyMapper, deliveryClient.CodeFirstPropertyMapper);

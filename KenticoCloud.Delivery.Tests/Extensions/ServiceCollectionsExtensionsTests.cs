@@ -30,6 +30,7 @@ namespace KenticoCloud.Delivery.Tests.Extensions
             typeof(IContentLinkUrlResolver),
             typeof(ICodeFirstTypeProvider),
             typeof(HttpClient),
+            typeof(IInlineContentItemsResolverCollection),
             typeof(IInlineContentItemsResolver<object>),
             typeof(IInlineContentItemsResolver<UnretrievedContentItem>),
             typeof(IInlineContentItemsProcessor),
