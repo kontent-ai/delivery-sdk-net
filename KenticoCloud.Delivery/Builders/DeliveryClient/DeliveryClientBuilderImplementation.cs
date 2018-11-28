@@ -1,9 +1,9 @@
-﻿using System;
-using System.Net.Http;
-using KenticoCloud.Delivery.Builders.DeliveryOptions;
+﻿using KenticoCloud.Delivery.Builders.DeliveryOptions;
 using KenticoCloud.Delivery.InlineContentItems;
 using KenticoCloud.Delivery.ResiliencePolicy;
 using Microsoft.Extensions.DependencyInjection;
+using System;
+using System.Net.Http;
 
 namespace KenticoCloud.Delivery.Builders.DeliveryClient
 {
@@ -42,7 +42,7 @@ namespace KenticoCloud.Delivery.Builders.DeliveryClient
             => RegisterOrThrow(contentLinkUrlResolver, nameof(contentLinkUrlResolver));
 
         IOptionalClientSetup IOptionalClientSetup.WithInlineContentItemsResolver<T>(IInlineContentItemsResolver<T> inlineContentItemsResolver)
-            => RegisterOrThrow(inlineContentItemsResolver, nameof(inlineContentItemsResolver));
+            => RegisterInlineContentItemsResolverOrThrow(inlineContentItemsResolver);
 
         IOptionalClientSetup IOptionalClientSetup.WithInlineContentItemsProcessor(IInlineContentItemsProcessor inlineContentItemsProcessor)
             => RegisterOrThrow(inlineContentItemsProcessor, nameof(inlineContentItemsProcessor));
@@ -79,6 +79,18 @@ namespace KenticoCloud.Delivery.Builders.DeliveryClient
             }
 
             _serviceCollection.AddSingleton(instance);
+
+            return this;
+        }
+
+        private DeliveryClientBuilderImplementation RegisterInlineContentItemsResolverOrThrow<TContentItem>(IInlineContentItemsResolver<TContentItem> inlineContentItemsResolver)
+        {
+            if (inlineContentItemsResolver == null)
+            {
+                throw new ArgumentNullException(nameof(inlineContentItemsResolver));
+            }
+
+            _serviceCollection.AddDeliveryInlineContentItemsResolver(inlineContentItemsResolver);
 
             return this;
         }

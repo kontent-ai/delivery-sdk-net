@@ -1,17 +1,24 @@
-﻿using System;
+﻿using AngleSharp.Dom;
+using AngleSharp.Parser.Html;
+using System;
 using System.Collections.Generic;
 using System.Linq;
-using AngleSharp.Dom;
-using AngleSharp.Parser.Html;
 
 namespace KenticoCloud.Delivery.InlineContentItems
 {
+    /// <summary>
+    /// Resolves strongly typed model into string.
+    /// </summary>
+    /// <param name="o">Strongly typed model.</param>
+    /// <returns>String representation of the model (can be HTML, for instance).</returns>
+    internal delegate string ResolveInlineContent(object o);
+
     /// <summary>
     /// Processor responsible for parsing HTML input and resolving inline content items referenced in them using registered resolvers
     /// </summary>
     internal class InlineContentItemsProcessor : IInlineContentItemsProcessor
     {
-        private readonly Dictionary<Type, Func<object, string>> _typeResolver;
+        private readonly IDictionary<Type, Func<object, string>> _inlineContentItemsResolvers;
         private readonly IInlineContentItemsResolver<UnretrievedContentItem> _unretrievedInlineContentItemsResolver;
         private readonly HtmlParser _htmlParser;
         private readonly HtmlParser _strictHtmlParser;
@@ -21,16 +28,23 @@ namespace KenticoCloud.Delivery.InlineContentItems
         /// </summary>
         public IInlineContentItemsResolver<object> DefaultResolver { get; set; }
 
+        // Used by tests only
+        internal IEnumerable<Type> ContentItemTypesWithResolver => _inlineContentItemsResolvers.Keys;
+
         /// <summary>
         /// Inline content item processor, going through HTML and replacing content items marked as object elements with output of resolvers.
         /// </summary>
         /// <param name="defaultResolver">Resolver used in case no content type specific resolver was registered.</param>
         /// <param name="unretrievedInlineContentItemsResolver">Resolver whose output is used in case that value of inline content item was not retrieved from Delivery API.</param>
-        public InlineContentItemsProcessor(IInlineContentItemsResolver<object> defaultResolver, IInlineContentItemsResolver<UnretrievedContentItem> unretrievedInlineContentItemsResolver)
+        /// <param name="inlineContentItemsResolvers">Collection of inline content item resolvers.</param>
+        public InlineContentItemsProcessor(IInlineContentItemsResolver<object> defaultResolver, IInlineContentItemsResolver<UnretrievedContentItem> unretrievedInlineContentItemsResolver, IEnumerable<ITypelessInlineContentItemsResolver> inlineContentItemsResolvers)
         {
             DefaultResolver = defaultResolver;
-            _typeResolver = new Dictionary<Type, Func<object, string>>();
             _unretrievedInlineContentItemsResolver = unretrievedInlineContentItemsResolver;
+            _inlineContentItemsResolvers = inlineContentItemsResolvers
+                .ToDictionary<ITypelessInlineContentItemsResolver, Type, Func<object, string>>(
+                    descriptor => descriptor.ContentItemType,
+                    descriptor => descriptor.ResolveItem);
             _htmlParser = new HtmlParser();
             _strictHtmlParser = new HtmlParser(new HtmlParserOptions
             {
@@ -65,7 +79,7 @@ namespace KenticoCloud.Delivery.InlineContentItems
                     else
                     {
                         inlineContentItemType = inlineContentItem.GetType();
-                        if (_typeResolver.TryGetValue(inlineContentItemType, out Func<object, string> inlineContentItemResolver))
+                        if (_inlineContentItemsResolvers.TryGetValue(inlineContentItemType, out var inlineContentItemResolver))
                         {
                             fragmentText = inlineContentItemResolver(inlineContentItem);
                         }
@@ -108,19 +122,11 @@ namespace KenticoCloud.Delivery.InlineContentItems
             return htmlInput.Body.InnerHtml;
         }
 
-        private static List<IElement> GetInlineContentItemElements(AngleSharp.Dom.Html.IHtmlDocument htmlInput)
-        {
-            return htmlInput.Body.GetElementsByTagName("object").Where(o => o.GetAttribute("type") == "application/kenticocloud" && o.GetAttribute("data-type") == "item").ToList();
-        }
-
-        /// <summary>
-        /// Function used for registering content type specific resolvers used during processing.
-        /// </summary>
-        /// <param name="resolver">Method which is used for specific content type as resolver.</param>
-        /// <typeparam name="T">Content type which is resolver resolving.</typeparam>
-        public void RegisterTypeResolver<T>(IInlineContentItemsResolver<T> resolver)
-        {
-            _typeResolver.Add(typeof(T), x => resolver.Resolve(new ResolvedContentItemData<T> { Item = (T)x }));
-        }
+        private static List<IElement> GetInlineContentItemElements(AngleSharp.Dom.Html.IHtmlDocument htmlInput) 
+            => htmlInput
+                .Body
+                .GetElementsByTagName("object")
+                .Where(o => o.GetAttribute("type") == "application/kenticocloud" && o.GetAttribute("data-type") == "item")
+                .ToList();
     }
 }

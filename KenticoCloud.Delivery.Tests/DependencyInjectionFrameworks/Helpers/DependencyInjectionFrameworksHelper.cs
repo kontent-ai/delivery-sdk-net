@@ -3,6 +3,7 @@ using Autofac;
 using Autofac.Extensions.DependencyInjection;
 using Castle.Windsor;
 using Castle.Windsor.MsDependencyInjection;
+using KenticoCloud.Delivery.Tests.Factories;
 using Microsoft.Extensions.DependencyInjection;
 using SimpleInjector;
 using SimpleInjector.Lifestyles;
@@ -16,12 +17,13 @@ namespace KenticoCloud.Delivery.Tests.DependencyInjectionFrameworks.Helpers
         private const string ProjectId = "00a21be4-8fef-4dd9-9380-f4cbb82e260d";
 
         internal static IServiceCollection GetServiceCollection()
-        {
-            var serviceCollection = new ServiceCollection();
-            serviceCollection.AddDeliveryClient(new DeliveryOptions { ProjectId = ProjectId });
+            => new ServiceCollection()
+                .AddDeliveryClient(new DeliveryOptions {ProjectId = ProjectId});
 
-            return serviceCollection;
-        }
+        internal static IServiceCollection RegisterInlineContentItemResolvers(this IServiceCollection serviceCollection)
+            => serviceCollection
+                .AddDeliveryInlineContentItemsResolver(InlineContentItemsResolverFatory.CreateHostedVideoResolver(null))
+                .AddDeliveryInlineContentItemsResolver<Tweet, FakeTweetResolver>();
 
         internal static IServiceProvider BuildAutoFacServiceProvider(this IServiceCollection serviceCollection)
         {

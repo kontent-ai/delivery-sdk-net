@@ -24,11 +24,12 @@ namespace KenticoCloud.Delivery.Tests.DependencyInjectionFrameworks
             var provider = DependencyInjectionFrameworksHelper
                 .GetServiceCollection()
                 .AddScoped<ICodeFirstModelProvider, FakeModelProvider>()
+                .RegisterInlineContentItemResolvers()
                 .BuildAutoFacServiceProvider();
 
             var client = (DeliveryClient)provider.GetService<IDeliveryClient>();
 
-            client.AssertDefaultDependenciesWithCustomCodeFirstModelProvider<FakeModelProvider>();
+            client.AssertDefaultDependenciesWithCodeFirstModelProviderAndInlineContentItemTypeResolvers<FakeModelProvider>();
         }
     }
 }

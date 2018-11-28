@@ -1,6 +1,7 @@
 ﻿using Xunit;
 using System.Collections.Generic;
 using KenticoCloud.Delivery.InlineContentItems;
+using KenticoCloud.Delivery.Tests.Factories;
 
 namespace KenticoCloud.Delivery.Tests
 {
@@ -13,7 +14,7 @@ namespace KenticoCloud.Delivery.Tests
         public void ProcessedHtmlIsSameIfNoContentItemsAreIncluded()
         {
             var inputHtml = $"<p>Lorem ipsum etc..<a>asdf</a>..</p>";
-            var inlineContentItemsProcessor = new InlineContentItemsProcessor(null, null);
+            var inlineContentItemsProcessor = InlineContentItemsProcessorFactory.Create();
             var processedContentItems = new Dictionary<string, object>();
 
             var result = inlineContentItemsProcessor.Process(inputHtml, processedContentItems);
@@ -30,10 +31,10 @@ namespace KenticoCloud.Delivery.Tests
             var insertedObject2 = GetContentItemObjectElement(insertedContentName2);
             var plainHtml = $"<p>Lorem ipsum etc..<a>asdf</a>..</p>";
             var input = insertedObject1 + plainHtml + insertedObject2;
-            var contentItemResolver = new DummyResolver();
-            var inlineContentItemsProcessor = new InlineContentItemsProcessor(null, null);
-            inlineContentItemsProcessor.RegisterTypeResolver(contentItemResolver);
-            var processedContentItems = new Dictionary<string, object>() {{insertedContentName1, new DummyProcessedContentItem()}, {insertedContentName2, new DummyProcessedContentItem()} };
+            var inlineContentItemsProcessor = InlineContentItemsProcessorFactory
+                .WithResolver<DummyProcessedContentItem, DummyResolver>()
+                .Build();
+            var processedContentItems = new Dictionary<string, object> {{insertedContentName1, new DummyProcessedContentItem()}, {insertedContentName2, new DummyProcessedContentItem()} };
 
             var result = inlineContentItemsProcessor.Process(input, processedContentItems);
 
@@ -47,13 +48,14 @@ namespace KenticoCloud.Delivery.Tests
             string wrapperWithObject = WrapElementWithDivs(GetContentItemObjectElement(insertedContentName));
             var plainHtml = $"<p>Lorem ipsum etc..<a>asdf</a>..</p>";
             var input = plainHtml + wrapperWithObject;
-            var processedContentItems = new Dictionary<string, object>()
+            var processedContentItems = new Dictionary<string, object>
             {
                 {insertedContentName, new DummyProcessedContentItem()}
             };
             var contentItemResolver = new DummyResolver();
-            var inlineContentItemsProcessor = new InlineContentItemsProcessor(null, null);
-            inlineContentItemsProcessor.RegisterTypeResolver(contentItemResolver);
+            var inlineContentItemsProcessor = InlineContentItemsProcessorFactory
+                .WithResolver(contentItemResolver)
+                .Build();
 
             var result = inlineContentItemsProcessor.Process(input, processedContentItems);
 
@@ -72,11 +74,11 @@ namespace KenticoCloud.Delivery.Tests
             var input = plainHtml + wrapperWithObject;
             var processedContentItems = new Dictionary<string, object>
             {
-                {insertedContentName, new DummyProcessedContentItem() {Value = insertedContentItemValue} }
+                {insertedContentName, new DummyProcessedContentItem {Value = insertedContentItemValue} }
             };
-            var contentItemResolver = new ResolverReturningValue();
-            var inlineContentItemsProcessor = new InlineContentItemsProcessor(null, null);
-            inlineContentItemsProcessor.RegisterTypeResolver(contentItemResolver);
+            var inlineContentItemsProcessor = InlineContentItemsProcessorFactory
+                .WithResolver<DummyProcessedContentItem, ResolverReturningValue>()
+                .Build();
 
 
             var result = inlineContentItemsProcessor.Process(input, processedContentItems);
@@ -95,11 +97,11 @@ namespace KenticoCloud.Delivery.Tests
             const string insertedContentItemValue = "dummyValue";
             var processedContentItems = new Dictionary<string, object>
             {
-                {insertedContentName, new DummyProcessedContentItem() {Value = insertedContentItemValue}}
+                {insertedContentName, new DummyProcessedContentItem {Value = insertedContentItemValue}}
             };
-            var contentItemResolver = new ResolverReturningElement();
-            var inlineContentItemsProcessor = new InlineContentItemsProcessor(null, null);
-            inlineContentItemsProcessor.RegisterTypeResolver(contentItemResolver);
+            var inlineContentItemsProcessor = InlineContentItemsProcessorFactory
+                .WithResolver<DummyProcessedContentItem, ResolverReturningElement>()
+                .Build();
 
             var result = inlineContentItemsProcessor.Process(input, processedContentItems);
 
@@ -156,15 +158,16 @@ namespace KenticoCloud.Delivery.Tests
 
             var processedContentItems = new Dictionary<string, object>
             {
-                {insertedImage1CodeName, new DummyImageContentItem() {Source = insertedImage1Source}},
-                {insertedImage2CodeName, new DummyImageContentItem() {Source = insertedImage2Source}},
-                {insertedDummyItem1CodeName, new DummyProcessedContentItem() {Value = insertedDummyItem1Value}},
-                {insertedDummyItem2CodeName, new DummyProcessedContentItem() {Value = insertedDummyItem2Value}},
-                {insertedDummyItem3CodeName, new DummyProcessedContentItem() {Value = insertedDummyItem3Value}},
+                {insertedImage1CodeName, new DummyImageContentItem {Source = insertedImage1Source}},
+                {insertedImage2CodeName, new DummyImageContentItem {Source = insertedImage2Source}},
+                {insertedDummyItem1CodeName, new DummyProcessedContentItem {Value = insertedDummyItem1Value}},
+                {insertedDummyItem2CodeName, new DummyProcessedContentItem {Value = insertedDummyItem2Value}},
+                {insertedDummyItem3CodeName, new DummyProcessedContentItem {Value = insertedDummyItem3Value}},
             };
-            var inlineContentItemsProcessor = new InlineContentItemsProcessor(null, null);
-            inlineContentItemsProcessor.RegisterTypeResolver(new ResolverReturningElement());
-            inlineContentItemsProcessor.RegisterTypeResolver(new DummyImageResolver());
+            var inlineContentItemsProcessor = InlineContentItemsProcessorFactory
+                .WithResolver<DummyProcessedContentItem, ResolverReturningElement>()
+                .AndResolver<DummyImageContentItem, DummyImageResolver>()
+                .Build();
 
             var result = inlineContentItemsProcessor.Process(htmlInput, processedContentItems);
 
@@ -228,9 +231,10 @@ namespace KenticoCloud.Delivery.Tests
                 {insertedDummyItem3CodeName, new DummyProcessedContentItem() {Value = insertedDummyItem3Value}},
             };
             var unretrievedInlineContentItemsResolver = new UnretrievedItemsMessageReturningResolver(unretrievedItemMessage);
-            var inlineContentItemsProcessor = new InlineContentItemsProcessor(null, unretrievedInlineContentItemsResolver);
-            inlineContentItemsProcessor.RegisterTypeResolver(new ResolverReturningElement());
-            inlineContentItemsProcessor.RegisterTypeResolver(new DummyImageResolver());
+            var inlineContentItemsProcessor = InlineContentItemsProcessorFactory
+                .WithResolver<DummyProcessedContentItem, ResolverReturningElement>()
+                .AndResolver<DummyImageContentItem, DummyImageResolver>()
+                .Build(unretrievedInlineContentItemsResolver: unretrievedInlineContentItemsResolver);
 
             var result = inlineContentItemsProcessor.Process(htmlInput, processedContentItems);
 
@@ -295,8 +299,9 @@ namespace KenticoCloud.Delivery.Tests
             };
             var unretrievedInlineContentItemsResolver = new UnretrievedItemsMessageReturningResolver(unretrievedItemMessage);
             var defaultResolver = new MessageReturningResolver(defaultResolverMessage);
-            var inlineContentItemsProcessor = new InlineContentItemsProcessor(defaultResolver, unretrievedInlineContentItemsResolver);
-            inlineContentItemsProcessor.RegisterTypeResolver(new ResolverReturningElement());
+            var inlineContentItemsProcessor = InlineContentItemsProcessorFactory
+                .WithResolver<DummyProcessedContentItem, ResolverReturningElement>()
+                .Build(defaultResolver, unretrievedInlineContentItemsResolver);
 
 
             var result = inlineContentItemsProcessor.Process(htmlInput, processedContentItems);
@@ -319,7 +324,7 @@ namespace KenticoCloud.Delivery.Tests
                 {insertedContentName, new UnretrievedContentItem()}
             };
             var unresolvedContentItemResolver = new UnretrievedItemsMessageReturningResolver(message);
-            var inlineContentItemsProcessor = new InlineContentItemsProcessor(null, unresolvedContentItemResolver);
+            var inlineContentItemsProcessor = InlineContentItemsProcessorFactory.Create(unretrievedInlineContentItemsResolver: unresolvedContentItemResolver);
 
             var result = inlineContentItemsProcessor.Process(input, processedContentItems);
 
@@ -342,8 +347,7 @@ namespace KenticoCloud.Delivery.Tests
             };
             var differentResolver = new MessageReturningResolver("this should not appear");
             var defaultResolver = new MessageReturningResolver(message);
-            var inlineContentItemsProcessor = new InlineContentItemsProcessor(defaultResolver, null);
-            inlineContentItemsProcessor.RegisterTypeResolver(differentResolver);
+            var inlineContentItemsProcessor = InlineContentItemsProcessorFactory.WithResolver(differentResolver).Build(defaultResolver);
 
             var result = inlineContentItemsProcessor.Process(input, processedContentItems);
 
@@ -362,9 +366,9 @@ namespace KenticoCloud.Delivery.Tests
             {
                 {insertedContentName, new DummyProcessedContentItem() {Value = insertedContentItemValue}}
             };
-            var contentItemResolver = new ResolverReturningTextAndElement();
-            var inlineContentItemsProcessor = new InlineContentItemsProcessor(null, null);
-            inlineContentItemsProcessor.RegisterTypeResolver(contentItemResolver);
+            var inlineContentItemsProcessor = InlineContentItemsProcessorFactory
+                .WithResolver<DummyProcessedContentItem, ResolverReturningTextAndElement>()
+                .Build();
 
             var result = inlineContentItemsProcessor.Process(inputHtml, processedContentItems);
 
@@ -383,11 +387,11 @@ namespace KenticoCloud.Delivery.Tests
             const string insertedContentItemValue = "dummyValue";
             var processedContentItems = new Dictionary<string, object>
             {
-                {insertedContentName, new DummyProcessedContentItem() {Value = insertedContentItemValue}}
+                {insertedContentName, new DummyProcessedContentItem {Value = insertedContentItemValue}}
             };
-            var contentItemResolver = new ResolverReturningIncorrectHtml();
-            var inlineContentItemsProcessor = new InlineContentItemsProcessor(null, null);
-            inlineContentItemsProcessor.RegisterTypeResolver(contentItemResolver);
+            var inlineContentItemsProcessor = InlineContentItemsProcessorFactory
+                .WithResolver<DummyProcessedContentItem, ResolverReturningIncorrectHtml>()
+                .Build();
 
             var result = inlineContentItemsProcessor.Process(inputHtml, processedContentItems);
 
@@ -435,7 +439,7 @@ namespace KenticoCloud.Delivery.Tests
                 $" The thought leaders target a teamwork-oriented silo.\n" +
                 $"A documented high quality enables our unique, outside -in and customer-centric tailwinds." +
                 $"It's not about our targets.  It's about infrastructures.";
-            var processor = new InlineContentItemsProcessor(null, null);
+            var processor = InlineContentItemsProcessorFactory.Create();
 
             var result = processor.RemoveAll(htmlInput);
 
