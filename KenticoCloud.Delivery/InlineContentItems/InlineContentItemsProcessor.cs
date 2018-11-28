@@ -7,13 +7,6 @@ using System.Linq;
 namespace KenticoCloud.Delivery.InlineContentItems
 {
     /// <summary>
-    /// Resolves strongly typed model into string.
-    /// </summary>
-    /// <param name="o">Strongly typed model.</param>
-    /// <returns>String representation of the model (can be HTML, for instance).</returns>
-    internal delegate string ResolveInlineContent(object o);
-
-    /// <summary>
     /// Processor responsible for parsing HTML input and resolving inline content items referenced in them using registered resolvers
     /// </summary>
     internal class InlineContentItemsProcessor : IInlineContentItemsProcessor
