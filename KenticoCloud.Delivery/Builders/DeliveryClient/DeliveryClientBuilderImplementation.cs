@@ -73,7 +73,7 @@ namespace KenticoCloud.Delivery.Builders.DeliveryClient
             return client;
         }
 
-        private DeliveryClientBuilderImplementation RegisterTypeResolver<T>(IInlineContentItemsResolver<T> resolver)
+        private DeliveryClientBuilderImplementation RegisterContentItemResolver<T>(IInlineContentItemsResolver<T> inlineContentItemsResolver)
         {
             if (resolver == null)
             {
