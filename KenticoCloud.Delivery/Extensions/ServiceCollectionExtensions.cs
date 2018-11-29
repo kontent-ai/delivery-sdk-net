@@ -60,10 +60,36 @@ namespace KenticoCloud.Delivery
         /// <param name="configuration">A set of key/value application configuration properties.</param>
         /// <param name="configurationSectionName">The section name of the configuration that keeps the <see cref="DeliveryOptions"/> properties. The default value is DeliveryOptions.</param>
         /// <returns>The <paramref name="services"/> instance with <see cref="IDeliveryClient"/> registered in it</returns>
-        public static IServiceCollection AddDeliveryClient(this IServiceCollection services, IConfiguration configuration, string configurationSectionName = "DeliveryOptions") 
+        public static IServiceCollection AddDeliveryClient(this IServiceCollection services, IConfiguration configuration, string configurationSectionName = "DeliveryOptions")
             => services
                 .LoadOptionsConfiguration(configuration, configurationSectionName)
                 .RegisterDependencies();
+
+        /// <summary>
+        /// Registers an <see cref="IInlineContentItemsResolver{T}"/> implementation For <seealso cref="InlineContentItemsProcessor"/> in <see cref="ServiceCollection"/>.
+        /// </summary>
+        /// <typeparam name="TContentItem">Type of content item that <paramref name="resolver"/> works with</typeparam>
+        /// <param name="services">A <see cref="ServiceCollection"/> instance for registering and resolving dependencies.</param>
+        /// <param name="resolver">An <see cref="IInlineContentItemsResolver{T}"/> instance capable of resolving <typeparamref name="TContentItem"/> to a <see cref="string"/></param>
+        /// <returns>The <paramref name="services"/> instance with <see cref="IDeliveryClient"/> registered in it</returns>
+        public static IServiceCollection AddDeliveryInlineContentItemsResolver<TContentItem>(this IServiceCollection services, IInlineContentItemsResolver<TContentItem> resolver)
+            => services.AddSingleton(TypelessInlineContentItemsResolver.Create(resolver));
+
+        /// <summary>
+        /// Registers an <see cref="IInlineContentItemsResolver{T}"/> implementation for <seealso cref="InlineContentItemsProcessor"/> in <see cref="ServiceCollection"/>.
+        /// </summary>
+        /// <typeparam name="TContentItem">Type of content item that <typeparamref name="TInlineContentItemsResolver"/> works with</typeparam>
+        /// <typeparam name="TInlineContentItemsResolver">Type of an <see cref="IInlineContentItemsResolver{T}"/> instance capable of resolving <typeparamref name="TContentItem"/> to a <see cref="string"/></typeparam>
+        /// <returns>The <paramref name="services"/> instance with <see cref="IDeliveryClient"/> registered in it</returns>
+        /// <remarks>Instance of <typeparamref name="TInlineContentItemsResolver"/> is obtained through <see cref="IServiceProvider"/> thus its dependencies might be injected.</remarks>
+        public static IServiceCollection AddDeliveryInlineContentItemsResolver<TContentItem, TInlineContentItemsResolver>(this IServiceCollection services)
+            where TInlineContentItemsResolver : class, IInlineContentItemsResolver<TContentItem>
+            => services
+                .AddSingleton<TInlineContentItemsResolver, TInlineContentItemsResolver>()
+                .AddSingleton(provider => provider.CreateDescriptor<TContentItem>(typeof(TInlineContentItemsResolver)));
+
+        private static ITypelessInlineContentItemsResolver CreateDescriptor<TContentItem>(this IServiceProvider provider, Type resolverType)
+            => TypelessInlineContentItemsResolver.Create(provider.GetService(resolverType) as IInlineContentItemsResolver<TContentItem>);
 
         private static IServiceCollection RegisterDependencies(this IServiceCollection services)
         {
@@ -91,7 +117,7 @@ namespace KenticoCloud.Delivery
 
         private static IServiceCollection LoadOptionsConfiguration(this IServiceCollection services, IConfiguration configuration, string configurationSectionName)
             => services
-                .Configure<DeliveryOptions>(configurationSectionName == null 
+                .Configure<DeliveryOptions>(configurationSectionName == null
                     ? configuration
                     : configuration.GetSection(configurationSectionName));
 

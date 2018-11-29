@@ -7,7 +7,7 @@ using RichardSzalay.MockHttp;
 
 namespace KenticoCloud.Delivery.Tests.Factories
 {
-    internal static class DeliveryClientFactories
+    internal static class DeliveryClientFactory
     {
         private static readonly MockHttpMessageHandler MockHttp = new MockHttpMessageHandler();
         private static ICodeFirstModelProvider _mockCodeFirstModelProvider = A.Fake<ICodeFirstModelProvider>();

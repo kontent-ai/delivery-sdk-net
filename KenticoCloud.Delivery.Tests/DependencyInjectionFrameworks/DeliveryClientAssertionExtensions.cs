@@ -1,4 +1,5 @@
-﻿using KenticoCloud.Delivery.CodeFirst;
+﻿using System.Linq;
+using KenticoCloud.Delivery.CodeFirst;
 using KenticoCloud.Delivery.ContentLinks;
 using KenticoCloud.Delivery.InlineContentItems;
 using KenticoCloud.Delivery.ResiliencePolicy;
@@ -11,11 +12,21 @@ namespace KenticoCloud.Delivery.Tests.DependencyInjectionFrameworks
         private const string ProjectId = "00a21be4-8fef-4dd9-9380-f4cbb82e260d";
 
         internal static void AssertDefaultDependencies(this DeliveryClient client)
-            => client.AssertDefaultDependenciesWithCustomCodeFirstModelProvider<CodeFirstModelProvider>();
+            => client
+                .AssertDefaultDependenciesWithCustomCodeFirstModelProvider<CodeFirstModelProvider>();
 
-        internal static void AssertDefaultDependenciesWithCustomCodeFirstModelProvider<TCustomCodeFirstModelProvider>(this DeliveryClient client)
+        internal static void AssertDefaultDependenciesWithCodeFirstModelProviderAndInlineContentItemTypeResolvers<TCustomCodeFirstModelProvider>(
+            this DeliveryClient client)
+            where TCustomCodeFirstModelProvider : ICodeFirstModelProvider
+            => client
+                .AssertInlineContentItemTypesWithResolver()
+                .AssertDefaultDependenciesWithCustomCodeFirstModelProvider<TCustomCodeFirstModelProvider>();
+
+        private static void AssertDefaultDependenciesWithCustomCodeFirstModelProvider<TCustomCodeFirstModelProvider>(this DeliveryClient client)
             where TCustomCodeFirstModelProvider : ICodeFirstModelProvider
         {
+            Assert.Equal(ProjectId, client.DeliveryOptions.ProjectId);
+
             Assert.IsType<DeliveryClient>(client);
             Assert.IsType<CodeFirstPropertyMapper>(client.CodeFirstPropertyMapper);
             Assert.IsType<DefaultTypeProvider>(client.CodeFirstTypeProvider);
@@ -23,8 +34,19 @@ namespace KenticoCloud.Delivery.Tests.DependencyInjectionFrameworks
             Assert.IsType<InlineContentItemsProcessor>(client.InlineContentItemsProcessor);
             Assert.IsType<DefaultResiliencePolicyProvider>(client.ResiliencePolicyProvider);
             Assert.IsType<DeliveryOptions>(client.DeliveryOptions);
-            Assert.Equal(ProjectId, client.DeliveryOptions.ProjectId);
             Assert.IsType<TCustomCodeFirstModelProvider>(client.CodeFirstModelProvider);
+        }
+
+        internal static DeliveryClient AssertInlineContentItemTypesWithResolver(this DeliveryClient client)
+        {
+            var expectedInlineContentItemTypesWithResolever = new[] { typeof(HostedVideo), typeof(Tweet) };
+            var inlineContentItemsProcessor = client.InlineContentItemsProcessor as InlineContentItemsProcessor;
+
+            var actualInlineContentItemTypesWithResolver = inlineContentItemsProcessor?.ContentItemTypesWithResolver?.ToArray();
+
+            Assert.Equal(expectedInlineContentItemTypesWithResolever, actualInlineContentItemTypesWithResolver);
+
+            return client;
         }
     }
 }
