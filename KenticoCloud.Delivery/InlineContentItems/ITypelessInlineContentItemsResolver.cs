@@ -1,5 +1,6 @@
 ﻿using System;
 using KenticoCloud.Delivery.Builders.DeliveryClient;
+using Microsoft.Extensions.DependencyInjection;
 
 namespace KenticoCloud.Delivery.InlineContentItems
 {
@@ -10,10 +11,10 @@ namespace KenticoCloud.Delivery.InlineContentItems
     /// <seealso cref="IInlineContentItemsResolver{T}"/>
     /// <remarks>
     /// The <see cref="ServiceCollectionExtensions.AddDeliveryInlineContentItemsResolver{TContentItem}"/> or <see cref="IOptionalClientSetup.WithInlineContentItemsResolver{T}"/>
-    /// (in <see cref="DeliveryClientBuilder"/>) should always be used to create new instances of this interface. All such instances will be registered in an dependency
-    /// container and later used for <see cref="InlineContentItemsProcessor"/> instantiation.
+    /// (in <see cref="DeliveryClientBuilder"/>) should always be used to create new instances of this interface. This interface allows other than <see cref="IServiceCollection"/>
+    /// containers to register dependencies required for <see cref="InlineContentItemsProcessor"/> instantiation.
     /// </remarks>
-    internal interface ITypelessInlineContentItemsResolver
+    public interface ITypelessInlineContentItemsResolver
     {
         /// <summary>
         /// Type of an inline content item.

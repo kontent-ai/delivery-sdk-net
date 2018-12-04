@@ -1,16 +1,17 @@
 ﻿using System;
+using System.Linq;
 using System.Net.Http;
+using KenticoCloud.Delivery;
 using KenticoCloud.Delivery.Builders.DeliveryOptions;
 using KenticoCloud.Delivery.CodeFirst;
 using KenticoCloud.Delivery.ContentLinks;
 using KenticoCloud.Delivery.InlineContentItems;
 using KenticoCloud.Delivery.ResiliencePolicy;
 using Microsoft.Extensions.Configuration;
-using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.DependencyInjection.Extensions;
-using Microsoft.Extensions.Options;
 
-namespace KenticoCloud.Delivery
+// see https://docs.microsoft.com/en-us/aspnet/core/fundamentals/dependency-injection?view=aspnetcore-2.2
+namespace Microsoft.Extensions.DependencyInjection
 {
     /// <summary>
     /// A class which contains extension methods on <see cref="IServiceCollection"/> for registering an <see cref="IDeliveryClient"/> instance.
@@ -72,8 +73,10 @@ namespace KenticoCloud.Delivery
         /// <param name="services">A <see cref="ServiceCollection"/> instance for registering and resolving dependencies.</param>
         /// <param name="resolver">An <see cref="IInlineContentItemsResolver{T}"/> instance capable of resolving <typeparamref name="TContentItem"/> to a <see cref="string"/></param>
         /// <returns>The <paramref name="services"/> instance with <see cref="IDeliveryClient"/> registered in it</returns>
-        public static IServiceCollection AddDeliveryInlineContentItemsResolver<TContentItem>(this IServiceCollection services, IInlineContentItemsResolver<TContentItem> resolver)
-            => services.AddSingleton(TypelessInlineContentItemsResolver.Create(resolver));
+        public static IServiceCollection AddDeliveryInlineContentItemsResolver<TContentItem>(this IServiceCollection services, IInlineContentItemsResolver<TContentItem> resolver) 
+            => services
+                .AddSingleton(resolver)
+                .AddSingleton(TypelessInlineContentItemsResolver.Create(resolver));
 
         /// <summary>
         /// Registers an <see cref="IInlineContentItemsResolver{T}"/> implementation for <seealso cref="InlineContentItemsProcessor"/> in <see cref="ServiceCollection"/>.
@@ -85,19 +88,29 @@ namespace KenticoCloud.Delivery
         public static IServiceCollection AddDeliveryInlineContentItemsResolver<TContentItem, TInlineContentItemsResolver>(this IServiceCollection services)
             where TInlineContentItemsResolver : class, IInlineContentItemsResolver<TContentItem>
             => services
-                .AddSingleton<TInlineContentItemsResolver, TInlineContentItemsResolver>()
-                .AddSingleton(provider => provider.CreateDescriptor<TContentItem>(typeof(TInlineContentItemsResolver)));
+                .AddSingleton<IInlineContentItemsResolver<TContentItem>, TInlineContentItemsResolver>()
+                .AddSingleton(provider => provider.CreateDescriptor<TContentItem>());
 
-        private static ITypelessInlineContentItemsResolver CreateDescriptor<TContentItem>(this IServiceProvider provider, Type resolverType)
-            => TypelessInlineContentItemsResolver.Create(provider.GetService(resolverType) as IInlineContentItemsResolver<TContentItem>);
+        private static void TryAddDeliveryInlineContentItemsResolver<TContentItem, TInlineContentItemsResolver>(this IServiceCollection services)
+            where TInlineContentItemsResolver : class, IInlineContentItemsResolver<TContentItem>
+        {
+            if (services.Any(descriptor => descriptor.ServiceType == typeof(IInlineContentItemsResolver<TContentItem>)))
+                return;
+
+            services.AddDeliveryInlineContentItemsResolver<TContentItem, TInlineContentItemsResolver>();
+        }
+
+        private static ITypelessInlineContentItemsResolver CreateDescriptor<TContentItem>(this IServiceProvider provider)
+            => TypelessInlineContentItemsResolver.Create(provider.GetService<IInlineContentItemsResolver<TContentItem>>());
 
         private static IServiceCollection RegisterDependencies(this IServiceCollection services)
         {
             services.TryAddSingleton<IContentLinkUrlResolver, DefaultContentLinkUrlResolver>();
-            services.TryAddSingleton<ICodeFirstTypeProvider, DefaultTypeProvider>();
+            services.TryAddSingleton<ICodeFirstTypeProvider, CodeFirstTypeProvider>();
             services.TryAddSingleton(new HttpClient());
-            services.TryAddSingleton<IInlineContentItemsResolver<object>, ReplaceWithWarningAboutRegistrationResolver>();
-            services.TryAddSingleton<IInlineContentItemsResolver<UnretrievedContentItem>, ReplaceWithWarningAboutUnretrievedItemResolver>();
+            services.TryAddDeliveryInlineContentItemsResolver<object, ReplaceWithWarningAboutRegistrationResolver>();
+            services.TryAddDeliveryInlineContentItemsResolver<UnretrievedContentItem, ReplaceWithWarningAboutUnretrievedItemResolver>();
+            services.TryAddDeliveryInlineContentItemsResolver<UnknownContentItem, ReplaceWithWarningAboutUnknownItemResolver>();
             services.TryAddSingleton<IInlineContentItemsProcessor, InlineContentItemsProcessor>();
             services.TryAddSingleton<ICodeFirstModelProvider, CodeFirstModelProvider>();
             services.TryAddSingleton<ICodeFirstPropertyMapper, CodeFirstPropertyMapper>();
@@ -110,7 +123,7 @@ namespace KenticoCloud.Delivery
         // Options here are not validated on purpose, it is left to users to validate them if they want to.
         private static IServiceCollection RegisterOptions(this IServiceCollection services, DeliveryOptions options)
         {
-            services.TryAddSingleton(Options.Create(options));
+            services.TryAddSingleton(Options.Options.Create(options));
 
             return services;
         }

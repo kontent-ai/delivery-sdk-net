@@ -4,7 +4,7 @@ using KenticoCloud.Delivery.InlineContentItems;
 
 namespace KenticoCloud.Delivery.Tests.Factories
 {
-    internal static class InlineContentItemsResolverFatory
+    internal static class InlineContentItemsResolverFactory
     {
         public static IInlineContentItemsResolver<HostedVideo> CreateHostedVideoResolver(string messagePrefix)
             => new Resolver<HostedVideo>(messagePrefix, video => video.VideoHost.First().Name);

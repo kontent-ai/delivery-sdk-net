@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Collections.Generic;
 using FakeItEasy;
 using KenticoCloud.Delivery.InlineContentItems;
 using KenticoCloud.Delivery.ResiliencePolicy;
@@ -52,7 +53,9 @@ namespace KenticoCloud.Delivery.Tests.Builders.DeliveryClient
             var mockCodeFirstPropertyMapper = A.Fake<ICodeFirstPropertyMapper>();
             var mockContentLinkUrlResolver = A.Fake<IContentLinkUrlResolver>();
             var mockInlineContentItemsProcessor = A.Fake<IInlineContentItemsProcessor>();
-            var mockInlineContentItemsResolver = A.Fake<IInlineContentItemsResolver<object>>();
+            var mockDefaultInlineContentItemsResolver = A.Fake<IInlineContentItemsResolver<object>>();
+            var mockUnretrievedInlineContentItemsResolver = A.Fake<IInlineContentItemsResolver<UnretrievedContentItem>>();
+            var mockAnContentItemsResolver = A.Fake<IInlineContentItemsResolver<CompleteContentItemModel>>();
             var mockCodeFirstTypeProvider = A.Fake<ICodeFirstTypeProvider>();
             var mockHttp = new MockHttpMessageHandler().ToHttpClient();            
 
@@ -61,7 +64,9 @@ namespace KenticoCloud.Delivery.Tests.Builders.DeliveryClient
                 .WithHttpClient(mockHttp)
                 .WithContentLinkUrlResolver(mockContentLinkUrlResolver)
                 .WithInlineContentItemsProcessor(mockInlineContentItemsProcessor)
-                .WithInlineContentItemsResolver(mockInlineContentItemsResolver)
+                .WithInlineContentItemsResolver(mockDefaultInlineContentItemsResolver)
+                .WithInlineContentItemsResolver(mockUnretrievedInlineContentItemsResolver)
+                .WithInlineContentItemsResolver(mockAnContentItemsResolver)
                 .WithCodeFirstModelProvider(mockCodeFirstModelProvider)
                 .WithCodeFirstPropertyMapper(mockCodeFirstPropertyMapper)
                 .WithResiliencePolicyProvider(mockResiliencePolicyProvider)
@@ -76,6 +81,32 @@ namespace KenticoCloud.Delivery.Tests.Builders.DeliveryClient
             Assert.Equal(mockResiliencePolicyProvider, deliveryClient.ResiliencePolicyProvider);
             Assert.Equal(mockCodeFirstTypeProvider, deliveryClient.CodeFirstTypeProvider);
             Assert.Equal(mockHttp, deliveryClient.HttpClient);
+        }
+
+        [Fact]
+        public void BuildWithOptionalStepsWithCustomResolvers_ReturnsDeliveryClientWithSetInstances()
+        {
+            var mockDefaultInlineContentItemsResolver = A.Fake<IInlineContentItemsResolver<object>>();
+            var mockUnretrievedInlineContentItemsResolver = A.Fake<IInlineContentItemsResolver<UnretrievedContentItem>>();
+            var mockCompleteContentItemsResolver = A.Fake<IInlineContentItemsResolver<CompleteContentItemModel>>();
+            var expectedResolvableInlineContentItemsTypes = new[]
+            {
+                typeof(object),
+                typeof(UnretrievedContentItem),
+                typeof(CompleteContentItemModel),
+                typeof(UnknownContentItem)
+            };
+
+            var deliveryClient = (Delivery.DeliveryClient)DeliveryClientBuilder
+                .WithProjectId(ProjectId)
+                .WithInlineContentItemsResolver(mockDefaultInlineContentItemsResolver)
+                .WithInlineContentItemsResolver(mockUnretrievedInlineContentItemsResolver)
+                .WithInlineContentItemsResolver(mockCompleteContentItemsResolver)
+                .Build();
+            var actualResolvableInlineContentItemTypes = GetResolvableInlineContentItemTypes(deliveryClient);
+
+            Assert.Equal(ProjectId, deliveryClient.DeliveryOptions.ProjectId);
+            Assert.Equal(expectedResolvableInlineContentItemsTypes, actualResolvableInlineContentItemTypes);
         }
 
         [Fact]
@@ -94,9 +125,17 @@ namespace KenticoCloud.Delivery.Tests.Builders.DeliveryClient
         [Fact]
         public void BuildWithoutOptionalStepts_ReturnsDeliveryClientWithDefaultImplementations()
         {
+            var expectedResolvableInlineContentItemsTypes = new[]
+            {
+                typeof(object),
+                typeof(UnretrievedContentItem),
+                typeof(UnknownContentItem)
+            };
+
             var deliveryClient = (Delivery.DeliveryClient) DeliveryClientBuilder
                 .WithProjectId(_guid)
                 .Build();
+            var actualResolvableInlineContentItemTypes = GetResolvableInlineContentItemTypes(deliveryClient);
 
             Assert.NotNull(deliveryClient.CodeFirstModelProvider);
             Assert.NotNull(deliveryClient.CodeFirstPropertyMapper);
@@ -105,6 +144,7 @@ namespace KenticoCloud.Delivery.Tests.Builders.DeliveryClient
             Assert.NotNull(deliveryClient.HttpClient);
             Assert.NotNull(deliveryClient.InlineContentItemsProcessor);
             Assert.NotNull(deliveryClient.ResiliencePolicyProvider);
+            Assert.Equal(expectedResolvableInlineContentItemsTypes, actualResolvableInlineContentItemTypes);
         }
 
         [Fact]
@@ -170,5 +210,8 @@ namespace KenticoCloud.Delivery.Tests.Builders.DeliveryClient
 
             Assert.Throws<ArgumentNullException>(() => builderStep.WithCodeFirstPropertyMapper(null));
         }
+
+        private static IEnumerable<Type> GetResolvableInlineContentItemTypes(Delivery.DeliveryClient deliveryClient)
+            => (deliveryClient.InlineContentItemsProcessor as InlineContentItemsProcessor)?.ContentItemTypesWithResolver;
     }
 }

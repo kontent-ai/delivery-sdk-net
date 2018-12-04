@@ -234,7 +234,8 @@ namespace KenticoCloud.Delivery.Tests
             var inlineContentItemsProcessor = InlineContentItemsProcessorFactory
                 .WithResolver<DummyProcessedContentItem, ResolverReturningElement>()
                 .AndResolver<DummyImageContentItem, DummyImageResolver>()
-                .Build(unretrievedInlineContentItemsResolver: unretrievedInlineContentItemsResolver);
+                .AndResolver(unretrievedInlineContentItemsResolver)
+                .Build();
 
             var result = inlineContentItemsProcessor.Process(htmlInput, processedContentItems);
 
@@ -301,7 +302,9 @@ namespace KenticoCloud.Delivery.Tests
             var defaultResolver = new MessageReturningResolver(defaultResolverMessage);
             var inlineContentItemsProcessor = InlineContentItemsProcessorFactory
                 .WithResolver<DummyProcessedContentItem, ResolverReturningElement>()
-                .Build(defaultResolver, unretrievedInlineContentItemsResolver);
+                .AndResolver(defaultResolver)
+                .AndResolver(unretrievedInlineContentItemsResolver)
+                .Build();
 
 
             var result = inlineContentItemsProcessor.Process(htmlInput, processedContentItems);
@@ -324,14 +327,33 @@ namespace KenticoCloud.Delivery.Tests
                 {insertedContentName, new UnretrievedContentItem()}
             };
             var unresolvedContentItemResolver = new UnretrievedItemsMessageReturningResolver(message);
-            var inlineContentItemsProcessor = InlineContentItemsProcessorFactory.Create(unretrievedInlineContentItemsResolver: unresolvedContentItemResolver);
+            var inlineContentItemsProcessor = InlineContentItemsProcessorFactory.WithResolver(unresolvedContentItemResolver).Build();
 
             var result = inlineContentItemsProcessor.Process(input, processedContentItems);
 
             Assert.Equal(plainHtml + $"<div>{message}</div>", result);
         }
 
+        [Fact]
+        public void ContentItemWithoutModelIsResolvedByUnknownItemProcessor()
+        {
+            const string insertedContentName = "dummyCodename1";
+            const string message = "Item with no model detected";
+            var insertedObject = GetContentItemObjectElement(insertedContentName);
+            var wrapperWithObject = WrapElementWithDivs(insertedObject);
+            var plainHtml = "<p>Lorem ipsum etc..<a>asdf</a>..</p>";
+            var input = plainHtml + wrapperWithObject;
+            var processedContentItems = new Dictionary<string, object>
+            {
+                {insertedContentName, null}
+            };
+            var unknownContentItemResolver = new UnknownItemsMessageReturningResolver(message);
+            var inlineContentItemsProcessor = InlineContentItemsProcessorFactory.WithResolver(unknownContentItemResolver).Build();
 
+            var result = inlineContentItemsProcessor.Process(input, processedContentItems);
+
+            Assert.Equal(plainHtml + $"<div>{message}</div>", result);
+        }
 
         [Fact]
         public void ContentItemWithoutResolverIsHandledByDefaultResolver()
@@ -345,9 +367,9 @@ namespace KenticoCloud.Delivery.Tests
             {
                 {insertedContentName, new DummyProcessedContentItem()}
             };
-            var differentResolver = new MessageReturningResolver("this should not appear");
+            var differentResolver = new DummyImageResolver();
             var defaultResolver = new MessageReturningResolver(message);
-            var inlineContentItemsProcessor = InlineContentItemsProcessorFactory.WithResolver(differentResolver).Build(defaultResolver);
+            var inlineContentItemsProcessor = InlineContentItemsProcessorFactory.WithResolver(defaultResolver).AndResolver(differentResolver).Build();
 
             var result = inlineContentItemsProcessor.Process(input, processedContentItems);
 
@@ -447,6 +469,30 @@ namespace KenticoCloud.Delivery.Tests
 
         }
 
+        [Fact]
+        public void ContentItemWithMultipleResolversIsHandledByLastResolver()
+        {
+            const string insertedContentName = "dummyCodename1";
+            const string message = "Default handler";
+            var wrapperWithObject = WrapElementWithDivs(GetContentItemObjectElement(insertedContentName));
+            var plainHtml = "<p>Lorem ipsum etc..<a>asdf</a>..</p>";
+            var input = plainHtml + wrapperWithObject;
+            var processedContentItems = new Dictionary<string, object>
+            {
+                {insertedContentName, new DummyProcessedContentItem()}
+            };
+            var differentResolver = new MessageReturningResolver("this should not appear");
+            var defaultResolver = new MessageReturningResolver(message);
+            var inlineContentItemsProcessor = InlineContentItemsProcessorFactory
+                .WithResolver(differentResolver)
+                .AndResolver(defaultResolver)
+                .Build();
+
+            var result = inlineContentItemsProcessor.Process(input, processedContentItems);
+
+            Assert.Equal(plainHtml + $"<div>{message}</div>", result);
+        }
+
 
 
         private class DummyResolver : IInlineContentItemsResolver<DummyProcessedContentItem>
@@ -532,6 +578,20 @@ namespace KenticoCloud.Delivery.Tests
                 _message = message;
             }
             public string Resolve(ResolvedContentItemData<UnretrievedContentItem> item)
+            {
+                return _message;
+            }
+        }
+
+        private class UnknownItemsMessageReturningResolver : IInlineContentItemsResolver<UnknownContentItem>
+        {
+            private readonly string _message;
+
+            public UnknownItemsMessageReturningResolver(string message)
+            {
+                _message = message;
+            }
+            public string Resolve(ResolvedContentItemData<UnknownContentItem> data)
             {
                 return _message;
             }

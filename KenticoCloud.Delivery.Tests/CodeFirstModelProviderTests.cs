@@ -3,6 +3,7 @@ using KenticoCloud.Delivery.InlineContentItems;
 using Newtonsoft.Json.Linq;
 using System;
 using System.Reflection;
+using KenticoCloud.Delivery.CodeFirst;
 using KenticoCloud.Delivery.Tests.Factories;
 using Xunit;
 
@@ -32,6 +33,31 @@ namespace KenticoCloud.Delivery.Tests
             var result = retriever.GetContentItemModel<ContentItemWithSingleRTE>(item, linkedItems);
 
             Assert.Equal("<span>FirstRT</span><span>SecondRT</span><span>FirstRT</span>", result.RT);
+            Assert.IsType<ContentItemWithSingleRTE>(result);
+        }
+
+        [Fact]
+        public void RetrievingNonExistentContentModelCreatesWarningInRichtext()
+        {
+            var codeFirstTypeProvider = A.Fake<ICodeFirstTypeProvider>();
+            var contentLinkUrlResolver = A.Fake<IContentLinkUrlResolver>();
+            var propertyMapper = A.Fake<ICodeFirstPropertyMapper>();
+            A.CallTo(() => codeFirstTypeProvider.GetType(A<string>._)).Returns(null);
+            A.CallTo(() => propertyMapper.IsMatch(A<PropertyInfo>._, A<string>._, A<string>._)).Returns(true);
+
+            var processor = InlineContentItemsProcessorFactory
+                .WithResolver<UnknownContentItem, ReplaceWithWarningAboutUnknownItemResolver>()
+                .Build();
+            var retriever = new CodeFirstModelProvider(contentLinkUrlResolver, processor, codeFirstTypeProvider, propertyMapper);
+
+            var item = JToken.FromObject(rt5);
+            var linkedItems = JToken.FromObject(linkedItemWithNoModel);
+            var expectedResult =
+                $"<span>RT</span>Content type '{linkedItems.SelectToken("linkedItemWithNoModel.system.type")}' has no corresponding model.";
+
+            var result = retriever.GetContentItemModel<ContentItemWithSingleRTE>(item, linkedItems);
+            
+            Assert.Equal(expectedResult, result.RT);
             Assert.IsType<ContentItemWithSingleRTE>(result);
         }
 
@@ -75,6 +101,12 @@ namespace KenticoCloud.Delivery.Tests
             var modelProvider = new CodeFirstModelProvider(contentLinkUrlResolver, inlineContentItemsProcessor, codeFirstTypeProvider, propertyMapper);
 
             Assert.Null(modelProvider.GetContentItemModel<object>(item, linkedItems));
+        }
+
+        private class ReplaceWithWarningAboutUnknownItemResolver : IInlineContentItemsResolver<UnknownContentItem>
+        {
+            public string Resolve(ResolvedContentItemData<UnknownContentItem> item)
+                => $"Content type '{item.Item.Type}' has no corresponding model.";
         }
 
         private class ContentItemWithSingleRTE
@@ -173,6 +205,25 @@ namespace KenticoCloud.Delivery.Tests
             rt3
         };
 
+        private static readonly object linkedItemWithNoModel = new
+        {
+            linkedItemWithNoModel = new
+            {
+                system = new
+                {
+                    id = "473cd60b-a2a7-4e5b-8353-5d1995dd4b50",
+                    name = "linkedItemWithNoModel",
+                    codename = "linkedItemWithNoModel",
+                    language = "en-US",
+                    type = "newType",
+                    sitemap_locations = new string[0],
+                    last_modified = new DateTime(2017, 06, 01, 11, 43, 33)
+                },
+                elements = new
+                    { }
+            }
+        };
+
         private static readonly object rt4 = new
         {
             system = new
@@ -185,6 +236,29 @@ namespace KenticoCloud.Delivery.Tests
                 last_modified = new DateTime(2017, 06, 01, 11, 43, 33)
             },
             elements = new { }
+        };
+
+        private static readonly object rt5 = new
+        {
+            system = new
+            {
+                id = "43e2d109-c727-4bb0-9a54-0dc8af018be9",
+                name = "RT5",
+                codename = "rt5",
+                type = "simple_richtext",
+                sitemap_location = new string[0],
+                last_modified = new DateTime(2017, 06, 01, 11, 43, 33)
+            },
+            elements = new
+            {
+                rt = new
+                {
+                    type = "rich_text",
+                    name = "RT",
+                    modular_content = new[] { "linkedItemWithNoModel" },
+                    value = "<span>RT</span><object type=\"application/kenticocloud\" data-type=\"item\" data-codename=\"linkedItemWithNoModel\"></object>"
+                }
+            }
         };
     }
 }

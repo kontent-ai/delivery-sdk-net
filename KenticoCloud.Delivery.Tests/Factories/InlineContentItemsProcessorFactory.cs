@@ -1,5 +1,4 @@
 ﻿using System.Collections.Generic;
-using System.Linq;
 using KenticoCloud.Delivery.InlineContentItems;
 
 namespace KenticoCloud.Delivery.Tests.Factories
@@ -8,13 +7,8 @@ namespace KenticoCloud.Delivery.Tests.Factories
     {
         private readonly IList<ITypelessInlineContentItemsResolver> _resolvers = new List<ITypelessInlineContentItemsResolver>();
 
-        public static InlineContentItemsProcessor Create(
-            IInlineContentItemsResolver<object> defaultResolver = null,
-            IInlineContentItemsResolver<UnretrievedContentItem> unretrievedInlineContentItemsResolver = null)
-            => new InlineContentItemsProcessor(
-                defaultResolver,
-                unretrievedInlineContentItemsResolver,
-                Enumerable.Empty<ITypelessInlineContentItemsResolver>());
+        public static InlineContentItemsProcessor Create()
+            => new InlineContentItemsProcessorFactory().Build();
 
         public static InlineContentItemsProcessorFactory WithResolver<TContentItem>(IInlineContentItemsResolver<TContentItem> resolver)
             => new InlineContentItemsProcessorFactory().AndResolver(resolver);
@@ -38,7 +32,7 @@ namespace KenticoCloud.Delivery.Tests.Factories
             where TResolver : IInlineContentItemsResolver<TContentItem>, new()
             => AndResolver(new TResolver());
 
-        public InlineContentItemsProcessor Build(IInlineContentItemsResolver<object> defaultResolver = null, IInlineContentItemsResolver<UnretrievedContentItem> unretrievedInlineContentItemsResolver = null)
-            => new InlineContentItemsProcessor(defaultResolver, unretrievedInlineContentItemsResolver, _resolvers);
+        public InlineContentItemsProcessor Build()
+            => new InlineContentItemsProcessor(_resolvers);
     }
 }

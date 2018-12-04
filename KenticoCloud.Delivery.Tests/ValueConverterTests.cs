@@ -8,6 +8,7 @@ using RichardSzalay.MockHttp;
 using System.IO;
 using System.Net.Http;
 using FakeItEasy;
+using KenticoCloud.Delivery.CodeFirst;
 using KenticoCloud.Delivery.ResiliencePolicy;
 using Microsoft.Extensions.Options;
 using Polly;

@@ -3,6 +3,7 @@ using AngleSharp.Parser.Html;
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using Microsoft.Extensions.DependencyInjection;
 
 namespace KenticoCloud.Delivery.InlineContentItems
 {
@@ -12,29 +13,29 @@ namespace KenticoCloud.Delivery.InlineContentItems
     internal class InlineContentItemsProcessor : IInlineContentItemsProcessor
     {
         private readonly IDictionary<Type, Func<object, string>> _inlineContentItemsResolvers;
-        private readonly IInlineContentItemsResolver<UnretrievedContentItem> _unretrievedInlineContentItemsResolver;
         private readonly HtmlParser _htmlParser;
         private readonly HtmlParser _strictHtmlParser;
 
-        /// <summary>
-        /// Resolver used in case no other resolver was registered for type of inline content item
-        /// </summary>
-        public IInlineContentItemsResolver<object> DefaultResolver { get; set; }
-
         // Used by tests only
-        internal IEnumerable<Type> ContentItemTypesWithResolver => _inlineContentItemsResolvers.Keys;
+        internal IEnumerable<Type> ContentItemTypesWithResolver => _inlineContentItemsResolvers.Keys.ToArray();
 
         /// <summary>
         /// Inline content item processor, going through HTML and replacing content items marked as object elements with output of resolvers.
         /// </summary>
-        /// <param name="defaultResolver">Resolver used in case no content type specific resolver was registered.</param>
-        /// <param name="unretrievedInlineContentItemsResolver">Resolver whose output is used in case that value of inline content item was not retrieved from Delivery API.</param>
+        /// <remarks>
+        /// The collection of resolvers may contain a custom <see cref="object"/> resolver used when no content type specific resolver was registered,
+        /// a custom resolver for <see cref="UnretrievedContentItem"/>s used when an item was not retrieved from Delivery API, 
+        /// and a resolver for <see cref="UnknownContentItem"/> that a <see cref="ICodeFirstModelProvider"/> was unable to strongly type.
+        /// If these resolvers are not specified using <see cref="DeliveryClientBuilder"/> or the <see cref="IServiceCollection"/> registration
+        /// (<see cref="ServiceCollectionExtensions.AddDeliveryInlineContentItemsResolver{TContentItem, TInlineContentItemsResolver}(IServiceCollection)"/>),
+        /// the default implementations resulting in warning messages will be used.
+        /// </remarks>
         /// <param name="inlineContentItemsResolvers">Collection of inline content item resolvers.</param>
-        public InlineContentItemsProcessor(IInlineContentItemsResolver<object> defaultResolver, IInlineContentItemsResolver<UnretrievedContentItem> unretrievedInlineContentItemsResolver, IEnumerable<ITypelessInlineContentItemsResolver> inlineContentItemsResolvers)
+        public InlineContentItemsProcessor(IEnumerable<ITypelessInlineContentItemsResolver> inlineContentItemsResolvers)
         {
-            DefaultResolver = defaultResolver;
-            _unretrievedInlineContentItemsResolver = unretrievedInlineContentItemsResolver;
             _inlineContentItemsResolvers = inlineContentItemsResolvers
+                .GroupBy(descriptor => descriptor.ContentItemType)
+                .Select(descriptorGroup => descriptorGroup.Last())
                 .ToDictionary<ITypelessInlineContentItemsResolver, Type, Func<object, string>>(
                     descriptor => descriptor.ContentItemType,
                     descriptor => descriptor.ResolveItem);
@@ -61,38 +62,9 @@ namespace KenticoCloud.Delivery.InlineContentItems
                 var contentItemCodename = inlineContentItemElement.GetAttribute("data-codename");
                 if (inlineContentItemMap.TryGetValue(contentItemCodename, out object inlineContentItem))
                 {
-                    string fragmentText;
-                    Type inlineContentItemType;
-                    if (inlineContentItem is UnretrievedContentItem unretrieved)
-                    {
-                        inlineContentItemType = typeof(UnretrievedContentItem);
-                        var data = new ResolvedContentItemData<UnretrievedContentItem> { Item = unretrieved };
-                        fragmentText = _unretrievedInlineContentItemsResolver.Resolve(data);
-                    }
-                    else
-                    {
-                        inlineContentItemType = inlineContentItem.GetType();
-                        if (_inlineContentItemsResolvers.TryGetValue(inlineContentItemType, out var inlineContentItemResolver))
-                        {
-                            fragmentText = inlineContentItemResolver(inlineContentItem);
-                        }
-                        else
-                        {
-                            var data = new ResolvedContentItemData<object> { Item = inlineContentItem };
-                            fragmentText = DefaultResolver.Resolve(data);
-                        }
-                    }
+                    var fragmentText = GetFragmentText(inlineContentItem);
 
-                    try
-                    {
-                        var fragmentNodes = _strictHtmlParser.ParseFragment(fragmentText, inlineContentItemElement.ParentElement);
-                        inlineContentItemElement.Replace(fragmentNodes.ToArray());
-                    }
-                    catch (HtmlParseException exception)
-                    {
-                        var errorNode = document.CreateTextNode($"[Inline content item resolver provided an invalid HTML 5 fragment ({exception.Position.Line}:{exception.Position.Column}). Please check the output for a content item {contentItemCodename} of type {inlineContentItemType}.]");
-                        inlineContentItemElement.Replace(errorNode);
-                    }
+                    ReplaceElementWithFragmentNodes(document, inlineContentItemElement, contentItemCodename, inlineContentItem, fragmentText);
                 }
             }
 
@@ -121,5 +93,41 @@ namespace KenticoCloud.Delivery.InlineContentItems
                 .GetElementsByTagName("object")
                 .Where(o => o.GetAttribute("type") == "application/kenticocloud" && o.GetAttribute("data-type") == "item")
                 .ToList();
+
+        private string GetFragmentText(object inlineContentItem)
+        {
+            var inlineContentItemType = GetInlineContentItemType(inlineContentItem);
+            if (_inlineContentItemsResolvers.TryGetValue(inlineContentItemType, out var inlineContentItemResolver))
+            {
+                return inlineContentItemResolver(inlineContentItem);
+            }
+
+            var data = new ResolvedContentItemData<object> { Item = inlineContentItem };
+            if (_inlineContentItemsResolvers.TryGetValue(typeof(object), out var defaultContentItemResolver))
+            {
+                return defaultContentItemResolver(data);
+            }
+
+            return "Default inline content item resolver for non specific content type was not registered.";
+        }
+
+        private static Type GetInlineContentItemType(object inlineContentItem)
+        {
+            return inlineContentItem?.GetType() ?? typeof(UnknownContentItem);
+        }
+
+        private void ReplaceElementWithFragmentNodes(AngleSharp.Dom.Html.IHtmlDocument document, IElement inlineContentItemElement, string contentItemCodename, object inlineContentItem, string fragmentText)
+        {
+            try
+            {
+                var fragmentNodes = _strictHtmlParser.ParseFragment(fragmentText, inlineContentItemElement.ParentElement);
+                inlineContentItemElement.Replace(fragmentNodes.ToArray());
+            }
+            catch (HtmlParseException exception)
+            {
+                var errorNode = document.CreateTextNode($"[Inline content item resolver provided an invalid HTML 5 fragment ({exception.Position.Line}:{exception.Position.Column}). Please check the output for a content item {contentItemCodename} of type {GetInlineContentItemType(inlineContentItem)}.]");
+                inlineContentItemElement.Replace(errorNode);
+            }
+        }
     }
 }
