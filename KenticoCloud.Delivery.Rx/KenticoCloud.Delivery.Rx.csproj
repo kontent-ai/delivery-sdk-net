@@ -6,7 +6,7 @@
     <Product>Kentico Cloud</Product>
     <Copyright>© 2016 Kentico Software. All rights reserved.</Copyright>
     <Description>Kentico Cloud Delivery SDK</Description>
-    <PackageLicenseUrl>https://github.com/Kentico/delivery-sdk-net/blob/master/LICENSE</PackageLicenseUrl>
+    <PackageLicenseExpression>MIT</PackageLicenseExpression>
     <PackageProjectUrl>https://github.com/Kentico/delivery-sdk-net</PackageProjectUrl>
     <PackageIconUrl>http://kentico.com/favicon.ico</PackageIconUrl>
     <RepositoryUrl>https://github.com/Kentico/delivery-sdk-net.git</RepositoryUrl>
