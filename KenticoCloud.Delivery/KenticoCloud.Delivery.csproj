@@ -6,7 +6,7 @@
     <Product>Kentico Cloud</Product>
     <Description>Kentico Cloud Delivery SDK</Description>
     <Copyright>© 2016 Kentico Software. All rights reserved.</Copyright>
-    <PackageLicenseUrl>https://github.com/Kentico/delivery-sdk-net/blob/master/LICENSE</PackageLicenseUrl>
+    <PackageLicenseExpression>MIT</PackageLicenseExpression>
     <PackageProjectUrl>https://github.com/Kentico/delivery-sdk-net</PackageProjectUrl>
     <PackageIconUrl>http://kentico.com/favicon.ico</PackageIconUrl>
     <RepositoryUrl>https://github.com/Kentico/delivery-sdk-net.git</RepositoryUrl>
@@ -36,7 +36,7 @@
     <PackageReference Include="Microsoft.Extensions.Options" Version="2.1.1" />
     <PackageReference Include="Microsoft.Sourcelink.Github" Version="1.0.0-*" PrivateAssets="All" />
   </ItemGroup>
-  
+
   <ItemGroup Condition="'$(TargetFramework)' == 'netstandard2.0'">
     <PackageReference Include="Microsoft.Extensions.DependencyInjection">
       <Version>2.1.1</Version>
