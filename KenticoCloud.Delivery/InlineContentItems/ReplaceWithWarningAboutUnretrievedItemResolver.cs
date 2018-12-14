@@ -7,8 +7,6 @@
     {
         /// <inheritdoc />
         public string Resolve(ResolvedContentItemData<UnretrievedContentItem> item)
-        {
-            return "This inline content item was not resolved because it was not retrieved from Delivery API.";
-        }
+            => "This inline content item was not resolved because it was not retrieved from Delivery API.";
     }
 }

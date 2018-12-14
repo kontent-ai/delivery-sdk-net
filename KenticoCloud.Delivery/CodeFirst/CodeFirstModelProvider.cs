@@ -1,12 +1,13 @@
-﻿using KenticoCloud.Delivery.InlineContentItems;
-using Newtonsoft.Json;
-using Newtonsoft.Json.Linq;
-using System;
+﻿using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Reflection;
+using KenticoCloud.Delivery.ContentLinks;
+using KenticoCloud.Delivery.InlineContentItems;
+using Newtonsoft.Json;
+using Newtonsoft.Json.Linq;
 
-namespace KenticoCloud.Delivery
+namespace KenticoCloud.Delivery.CodeFirst
 {
     /// <summary>
     /// A default provider for mapping content items to code-first models.
@@ -308,6 +309,10 @@ namespace KenticoCloud.Delivery
                             contentItem = GetContentItemModel(typeof(object), linkedItemsElementNode, linkedItemsNode, processedItems, currentlyResolvedRichStrings);
                             if (!processedItems.ContainsKey(codenameUsed))
                             {
+                                if (contentItem == null)
+                                {
+                                    contentItem = new UnknownContentItem(linkedItemsElementNode);
+                                }
                                 processedItems.Add(codenameUsed, contentItem);
                             }
                         }

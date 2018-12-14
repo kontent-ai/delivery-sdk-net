@@ -7,8 +7,6 @@
     {
         /// <inheritdoc />
         public string Resolve(ResolvedContentItemData<object> item)
-        {
-            return $"Resolver for content type {item.GetType()} is not registered. Please do so in your app.";
-        }
+            => $"Resolver for content type {item.GetType()} is not registered. Please do so in your app.";
     }
 }

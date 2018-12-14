@@ -2,7 +2,7 @@
 
 namespace KenticoCloud.Delivery.CodeFirst
 {
-    internal class DefaultTypeProvider : ICodeFirstTypeProvider
+    internal class CodeFirstTypeProvider : ICodeFirstTypeProvider
     {
         public Type GetType(string contentType)
             => null;

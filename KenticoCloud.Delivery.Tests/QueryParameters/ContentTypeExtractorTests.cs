@@ -1,5 +1,6 @@
 ﻿using System.Collections.Generic;
 using FakeItEasy;
+using KenticoCloud.Delivery.CodeFirst;
 using Microsoft.Extensions.Options;
 using Xunit;
 

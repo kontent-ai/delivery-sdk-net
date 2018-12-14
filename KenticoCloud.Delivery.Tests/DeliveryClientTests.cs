@@ -9,6 +9,7 @@ using System.IO;
 using System.Linq;
 using System.Net;
 using System.Net.Http;
+using KenticoCloud.Delivery.CodeFirst;
 using Xunit;
 
 namespace KenticoCloud.Delivery.Tests
@@ -899,8 +900,8 @@ namespace KenticoCloud.Delivery.Tests
 
             var deliveryClient = DeliveryClientBuilder
                 .WithProjectId(_guid)
-                .WithInlineContentItemsResolver(InlineContentItemsResolverFatory.CreateTweetResolver(tweetPrefix))
-                .WithInlineContentItemsResolver(InlineContentItemsResolverFatory.CreateHostedVideoResolver(hostedVideoPrefix))
+                .WithInlineContentItemsResolver(InlineContentItemsResolverFactory.CreateTweetResolver(tweetPrefix))
+                .WithInlineContentItemsResolver(InlineContentItemsResolverFactory.CreateHostedVideoResolver(hostedVideoPrefix))
                 .WithCodeFirstTypeProvider(new CustomTypeProvider())
                 .WithHttpClient(_mockHttp.ToHttpClient())
                 .Build();

@@ -1,9 +1,9 @@
-﻿using Newtonsoft.Json.Linq;
-using System;
+﻿using System;
 using System.Net;
 using System.Text.RegularExpressions;
+using Newtonsoft.Json.Linq;
 
-namespace KenticoCloud.Delivery
+namespace KenticoCloud.Delivery.ContentLinks
 {
     internal sealed class ContentLinkResolver
     {

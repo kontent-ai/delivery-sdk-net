@@ -1,11 +1,19 @@
 ﻿using System;
+using KenticoCloud.Delivery.Builders.DeliveryClient;
+using Microsoft.Extensions.DependencyInjection;
 
 namespace KenticoCloud.Delivery.InlineContentItems
 {
     /// <summary>
     /// Strips an <see cref="IInlineContentItemsResolver{T}"/> of its generic type, so it can be used generically by <see cref="InlineContentItemsProcessor"/>.
     /// </summary>
-    internal class TypelessInlineContentItemsResolver : ITypelessInlineContentItemsResolver
+    /// <remarks>
+    /// This class can be used with other container than <see cref="IServiceCollection"/> to register dependencies required for
+    /// <see cref="InlineContentItemsProcessor"/> instantiation. The <see cref="ServiceCollectionExtensions.AddDeliveryInlineContentItemsResolver{TContentItem}"/>
+    /// or <see cref="IOptionalClientSetup.WithInlineContentItemsResolver{T}"/> should always be used with <see cref="IServiceCollection"/>
+    /// or <see cref="DeliveryClientBuilder"/> respectively.
+    /// </remarks>
+    public class TypelessInlineContentItemsResolver : ITypelessInlineContentItemsResolver
     {
         /// <summary>
         /// Creates new instance of <see cref="TypelessInlineContentItemsResolver"/> for given <paramref name="resolver"/>.

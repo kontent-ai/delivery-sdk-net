@@ -2,7 +2,7 @@ using System;
 using System.Reflection;
 using Newtonsoft.Json;
 
-namespace KenticoCloud.Delivery
+namespace KenticoCloud.Delivery.CodeFirst
 {
     /// <summary>
     /// Default provider for mapping Kentico Cloud content item fields to model properties.

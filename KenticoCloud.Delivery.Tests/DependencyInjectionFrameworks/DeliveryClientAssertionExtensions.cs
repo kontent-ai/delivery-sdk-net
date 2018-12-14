@@ -25,11 +25,10 @@ namespace KenticoCloud.Delivery.Tests.DependencyInjectionFrameworks
         private static void AssertDefaultDependenciesWithCustomCodeFirstModelProvider<TCustomCodeFirstModelProvider>(this DeliveryClient client)
             where TCustomCodeFirstModelProvider : ICodeFirstModelProvider
         {
-            Assert.Equal(ProjectId, client.DeliveryOptions.ProjectId);
-
             Assert.IsType<DeliveryClient>(client);
+            Assert.Equal(ProjectId, client.DeliveryOptions?.ProjectId);
             Assert.IsType<CodeFirstPropertyMapper>(client.CodeFirstPropertyMapper);
-            Assert.IsType<DefaultTypeProvider>(client.CodeFirstTypeProvider);
+            Assert.IsType<CodeFirstTypeProvider>(client.CodeFirstTypeProvider);
             Assert.IsType<DefaultContentLinkUrlResolver>(client.ContentLinkUrlResolver);
             Assert.IsType<InlineContentItemsProcessor>(client.InlineContentItemsProcessor);
             Assert.IsType<DefaultResiliencePolicyProvider>(client.ResiliencePolicyProvider);
@@ -39,12 +38,19 @@ namespace KenticoCloud.Delivery.Tests.DependencyInjectionFrameworks
 
         internal static DeliveryClient AssertInlineContentItemTypesWithResolver(this DeliveryClient client)
         {
-            var expectedInlineContentItemTypesWithResolever = new[] { typeof(HostedVideo), typeof(Tweet) };
+            var expectedInlineContentItemTypesWithResolver = new[]
+            {
+                typeof(object),
+                typeof(UnretrievedContentItem),
+                typeof(UnknownContentItem),
+                typeof(HostedVideo),
+                typeof(Tweet)
+            };
             var inlineContentItemsProcessor = client.InlineContentItemsProcessor as InlineContentItemsProcessor;
 
-            var actualInlineContentItemTypesWithResolver = inlineContentItemsProcessor?.ContentItemTypesWithResolver?.ToArray();
+            var actualInlineContentItemTypesWithResolver = inlineContentItemsProcessor?.ContentItemResolvers?.Keys.ToArray();
 
-            Assert.Equal(expectedInlineContentItemTypesWithResolever, actualInlineContentItemTypesWithResolver);
+            Assert.Equal(expectedInlineContentItemTypesWithResolver, actualInlineContentItemTypesWithResolver);
 
             return client;
         }

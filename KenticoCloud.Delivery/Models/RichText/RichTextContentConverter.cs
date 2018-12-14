@@ -5,6 +5,7 @@ using System.Linq;
 
 using Newtonsoft.Json.Linq;
 using AngleSharp.Parser.Html;
+using KenticoCloud.Delivery.ContentLinks;
 
 namespace KenticoCloud.Delivery
 {

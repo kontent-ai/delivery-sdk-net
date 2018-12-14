@@ -2,7 +2,8 @@
 using RichardSzalay.MockHttp;
 using System;
 using System.IO;
-using KenticoCloud.Delivery.InlineContentItems;
+using KenticoCloud.Delivery.CodeFirst;
+using KenticoCloud.Delivery.ContentLinks;
 using KenticoCloud.Delivery.ResiliencePolicy;
 using KenticoCloud.Delivery.Tests.Factories;
 using Microsoft.Extensions.Options;
@@ -125,7 +126,7 @@ namespace KenticoCloud.Delivery.Tests
             var httpClient = mockHttp.ToHttpClient();
             var resiliencePolicyProvider = new DefaultResiliencePolicyProvider(deliveryOptions);
             var contentLinkUrlResolver = new CustomContentLinkUrlResolver();
-            var contentItemsProcessor = InlineContentItemsProcessorFactory.Create(new ReplaceWithEmptyStringResolver(), new ReplaceWithEmptyStringForUnretrievedItemsResolver());
+            var contentItemsProcessor = InlineContentItemsProcessorFactory.Create();
             var codeFirstModelProvider = new CodeFirstModelProvider(contentLinkUrlResolver, contentItemsProcessor, new CustomTypeProvider(), new CodeFirstPropertyMapper());
             var client = new DeliveryClient(
                 deliveryOptions,
