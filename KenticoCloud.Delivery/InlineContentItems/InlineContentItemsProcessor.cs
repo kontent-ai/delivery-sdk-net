@@ -4,6 +4,7 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using Microsoft.Extensions.DependencyInjection;
+using System.Collections.ObjectModel;
 
 namespace KenticoCloud.Delivery.InlineContentItems
 {
@@ -15,9 +16,8 @@ namespace KenticoCloud.Delivery.InlineContentItems
         private readonly IDictionary<Type, Func<object, string>> _inlineContentItemsResolvers;
         private readonly HtmlParser _htmlParser;
         private readonly HtmlParser _strictHtmlParser;
-
-        // Used by tests only
-        internal IEnumerable<Type> ContentItemTypesWithResolver => _inlineContentItemsResolvers.Keys.ToArray();
+        
+        internal IReadOnlyDictionary<Type, Func<object, string>> ContentItemResolvers => new ReadOnlyDictionary<Type, Func<object, string>>(_inlineContentItemsResolvers);
 
         /// <summary>
         /// Inline content item processor, going through HTML and replacing content items marked as object elements with output of resolvers.

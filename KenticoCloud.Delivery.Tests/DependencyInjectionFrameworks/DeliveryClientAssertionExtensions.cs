@@ -48,7 +48,7 @@ namespace KenticoCloud.Delivery.Tests.DependencyInjectionFrameworks
             };
             var inlineContentItemsProcessor = client.InlineContentItemsProcessor as InlineContentItemsProcessor;
 
-            var actualInlineContentItemTypesWithResolver = inlineContentItemsProcessor?.ContentItemTypesWithResolver?.ToArray();
+            var actualInlineContentItemTypesWithResolver = inlineContentItemsProcessor?.ContentItemResolvers?.Keys.ToArray();
 
             Assert.Equal(expectedInlineContentItemTypesWithResolver, actualInlineContentItemTypesWithResolver);
 

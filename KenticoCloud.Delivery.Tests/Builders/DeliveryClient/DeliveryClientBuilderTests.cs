@@ -212,6 +212,6 @@ namespace KenticoCloud.Delivery.Tests.Builders.DeliveryClient
         }
 
         private static IEnumerable<Type> GetResolvableInlineContentItemTypes(Delivery.DeliveryClient deliveryClient)
-            => (deliveryClient.InlineContentItemsProcessor as InlineContentItemsProcessor)?.ContentItemTypesWithResolver;
+            => (deliveryClient.InlineContentItemsProcessor as InlineContentItemsProcessor)?.ContentItemResolvers.Keys;
     }
 }
