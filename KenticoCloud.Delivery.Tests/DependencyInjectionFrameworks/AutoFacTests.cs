@@ -4,6 +4,7 @@ using Xunit;
 
 namespace KenticoCloud.Delivery.Tests.DependencyInjectionFrameworks
 {
+    [Collection("DI Tests")]
     public class AutoFacTests
     {
         [Fact]
