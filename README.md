@@ -299,14 +299,14 @@ This repository is configured to generate a SourceLink tag in the NuGet package 
     * Select **Enable Source Link Support**.
     * (Optional) Clear **Require source files to exactly match the original version**.
 3. Build your solution.
-4. Copy the PDB files from the KenticoCloud.Delivery NuGet package into the bin folder next to your own project PDB files*.
+4. [Add a symbol server `https://symbols.nuget.org/download/symbols`](https://blog.nuget.org/20181116/Improved-debugging-experience-with-the-NuGet-org-symbol-server-and-snupkg.html)
+  * ![Add a symbol server in VS](/.github/assets/vs-nuget-symbol-server.PNG)
 5. Run a debugging session and try to step into the KenticoCloud.Delivery code.
 6. Allow Visual Studio to download the source code from GitHub.
   * ![SourceLink confirmation dialog](/.github/assets/allow_sourcelink_download.png)
 
 **Now you are able to debug the source code of our library without needing to download the source code manually!**
 
-\* Currently the SymbolSource.org server [does not allow hosting of portable PDB files](https://github.com/SymbolSource/SymbolSource/issues/7) and NuGet still [has not come up with a best practice solution](https://github.com/NuGet/Home/issues/6104). That is why we recommend to copy PDB files manually instead of using a [Symbol Server](https://github.com/dotnet/designs/blob/master/accepted/diagnostics/debugging-with-symbols-and-sources.md).
 
 ## Further information
 
