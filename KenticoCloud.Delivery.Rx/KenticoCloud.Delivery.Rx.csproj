@@ -8,7 +8,7 @@
     <Description>Kentico Cloud Delivery SDK</Description>
     <PackageLicenseExpression>MIT</PackageLicenseExpression>
     <PackageProjectUrl>https://github.com/Kentico/delivery-sdk-net</PackageProjectUrl>
-    <PackageIconUrl>http://kentico.com/favicon.ico</PackageIconUrl>
+    <PackageIconUrl>https://github.com/Kentico/Home/blob/master/images/logo_nuget.png?raw=true</PackageIconUrl>
     <RepositoryUrl>https://github.com/Kentico/delivery-sdk-net.git</RepositoryUrl>
     <RepositoryType>git</RepositoryType>
     <PackageTags>kentico;mvc;aspnet;aspnetmvc;reactive;rx</PackageTags>
