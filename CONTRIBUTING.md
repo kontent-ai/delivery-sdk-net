@@ -1,19 +1,17 @@
 # Ways to contribute 
 <img align="right" width="100" height="100" src="https://i.imgur.com/PYTV0jP.png">
 
-There are many different ways in which you can contribute. One of the easiest wazs is simply to use our software and providing us with your feedback in discussions. You can also participating on coding new features and fixing bugs by submitting pull requests with code changes.
+There are many different ways in which you can contribute. One of the easiest ways is simply to use our software and provide us with your feedback through the right channel. You can also help us improve the open-source projects by submitting pull requests with code and documentation changes.
 
-We don't want to make things complicated so we try to follow these same rules in all our repositories. 
+## Where to get support
+Please note that **level of provided support is always determined by the [LICENSE](LICENSE.md)** of a given open-source project. Also, always make sure you use the **[latest version](../../releases)** of any given OS project. We can't provide any help for older versions. We don't want to make things complicated so we try to take the same approach in all our repositories. 
 
-# Where to get support
-Please note that level of provided support is always determined by the [LICENSE](LICENSE.md) of a given open-source project. Also, always make sure you use the [latest version](../../releases) of any given OS project. We can't provide any help for older versions.
-
-## I found a bug in a Kentico's open-source project
+### I found a bug in a Kentico's open-source project
 <img align="right" width="100" height="100" src="https://i.imgur.com/TYIQdpv.png">
 
 Sorry to hear that. Just log a new [GitHub issue](../../issues) and someone will take a look at it. Remember, the more information you provide, the easier it will be to fix the issue. If you feel like it, you can also fix the bug on your own and submit a new pull request.
 
-## I need help with using the projects and/or coding
+### I need help with using the projects and/or coding
 <img align="right" width="100" height="100" src="https://cdn.sstatic.net/Sites/stackoverflow/company/img/logos/so/so-icon.svg">
 
 To get help with coding and structuring your projects, use [StackOverflow](https://stackoverflow.com/) to ask questions with one of the following tags:
@@ -22,13 +20,13 @@ To get help with coding and structuring your projects, use [StackOverflow](https
 
 Our team members and the community monitor these channels on a regular basis.
 
-## I want to report a security bug
+### I want to report a security bug
 <img align="right" width="100" height="100" src="https://i.imgur.com/z82nnJB.png">
 
 Security issues and bugs should be reported privately, via email, to the Kentico Developer Community Team developerscommunity@kentico.com. You should receive a response within 24 hours. If for some reason you do not, please follow up via email to ensure we received your original message.
 
 
-## I have an idea for a new feature (or feedback on existing functionality)
+### I have an idea for a new feature (or feedback on existing functionality)
 <img align="right" width="100" height="100" src="https://i.imgur.com/rUFkyPy.png">
 
 Everybody loves new features! You can submit a new [feature request](../../issues) or you can code it on your own and [send us a pull request](#submitting-pull-requests). In either case, don't forget to mention what's the use case and what's the expected output.
