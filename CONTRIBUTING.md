@@ -6,7 +6,7 @@ There are many different ways in which you can contribute. One of the easiest wa
 We don't want to make things complicated so we try to follow these same rules in all our repositories. 
 
 # Where to get support
-Please note that level of provided support is always determined by the [LICENSE](LICENSE.md) of a given open-source project. Also, always make sure you use the [latest version](releases) of any given OS project. We can't provide any help for older versions.
+Please note that level of provided support is always determined by the [LICENSE](LICENSE.md) of a given open-source project. Also, always make sure you use the [latest version](../../releases) of any given OS project. We can't provide any help for older versions.
 
 ## I found a bug in a Kentico's open-source project
 <img align="right" width="100" height="100" src="https://i.imgur.com/TYIQdpv.png">
