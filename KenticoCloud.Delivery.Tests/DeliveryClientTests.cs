@@ -456,6 +456,7 @@ namespace KenticoCloud.Delivery.Tests
 
             Assert.Equal(2, item.CompleteTypeTaxonomy.Count());
             Assert.Equal("Option 1", item.CompleteTypeTaxonomy.First().Name);
+            Assert.Equal("#d7e119", item.CustomElementField);
             Assert.NotNull(response.ApiUrl);
         }
 
