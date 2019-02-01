@@ -96,7 +96,12 @@
         "type": "url_slug",
         "name": "Url slug field",
         "value": "complete-content-item-url-slug"
-      }
+      },
+      "custom_element_field": {
+        "type": "custom",
+        "name": "ColorPicker",
+        "value": "#d7e119"
+      } 
     }
   },
   "modular_content": {
