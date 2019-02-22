@@ -102,19 +102,16 @@ namespace KenticoCloud.Delivery.InlineContentItems
                 return inlineContentItemResolver(inlineContentItem);
             }
 
-            var data = new ResolvedContentItemData<object> { Item = inlineContentItem };
             if (_inlineContentItemsResolvers.TryGetValue(typeof(object), out var defaultContentItemResolver))
             {
-                return defaultContentItemResolver(data);
+                return defaultContentItemResolver(inlineContentItem);
             }
 
             return "Default inline content item resolver for non specific content type was not registered.";
         }
 
         private static Type GetInlineContentItemType(object inlineContentItem)
-        {
-            return inlineContentItem?.GetType() ?? typeof(UnknownContentItem);
-        }
+            => inlineContentItem?.GetType() ?? typeof(UnknownContentItem);
 
         private void ReplaceElementWithFragmentNodes(AngleSharp.Dom.Html.IHtmlDocument document, IElement inlineContentItemElement, string contentItemCodename, object inlineContentItem, string fragmentText)
         {

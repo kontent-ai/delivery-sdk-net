@@ -24,6 +24,9 @@ namespace KenticoCloud.Delivery.Tests.Factories
                 ? typeof(TContentItem).FullName 
                 : item.GetType().FullName);
 
+        public IInlineContentItemsResolver<object> ResolveByDefaultToType()
+            => ResolveToType<object>();
+
         public IInlineContentItemsResolver<TContentItem> ResolveTo<TContentItem>(Func<TContentItem, string> resultSelector)
             => new SimpleResolver<TContentItem>(resultSelector);
 

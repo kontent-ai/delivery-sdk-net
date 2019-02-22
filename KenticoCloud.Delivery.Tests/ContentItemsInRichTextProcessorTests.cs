@@ -475,23 +475,46 @@ namespace KenticoCloud.Delivery.Tests
         [Fact]
         public void ContentItemWithMultipleResolversIsHandledByLastResolver()
         {
-            const string insertedContentName = "dummyCodename1";
-            const string message = "Default handler";
-            var wrapperWithObject = WrapElementWithDivs(GetContentItemObjectElement(insertedContentName));
+            const string insertedItemName = "dummyItem";
+            const string insertedImageName = "dummyImage";
+            var wrapperWithItem = WrapElementWithDivs(GetContentItemObjectElement(insertedItemName));
+            var wrapperWithImage = WrapElementWithDivs(GetContentItemObjectElement(insertedImageName));
             var plainHtml = "<p>Lorem ipsum etc..<a>asdf</a>..</p>";
-            var input = plainHtml + wrapperWithObject;
+            var input = wrapperWithImage + plainHtml + wrapperWithItem;
+            var processedContentItems = new Dictionary<string, object>
+            {
+                {insertedItemName, new DummyItem()},
+                {insertedImageName, new DummyImageItem()}
+            };
+            var inlineContentItemsProcessor = InlineContentItemsProcessorFactory
+                .WithResolver(factory => factory.ResolveByDefaultToMessage("this should not appear for a loosely resolved item"))
+                .AndResolver(factory => factory.ResolveByDefaultToType())
+                .AndResolver(factory => factory.ResolveToMessage<DummyImageItem>("this should not appear a strongly resolved item"))
+                .AndResolver(factory => factory.ResolveToType<DummyImageItem>())
+                .Build();
+
+            var result = inlineContentItemsProcessor.Process(input, processedContentItems);
+
+            Assert.Equal($"<div>{typeof(DummyImageItem)}</div>" + plainHtml + $"<div>{typeof(DummyItem)}</div>", result);
+        }
+
+        /// <seealso href="https://github.com/Kentico/delivery-sdk-net/issues/153"/>
+        [Fact]
+        public void ContentItemWithDefaultResolverReturnsContentItemDirectlyInResolvedContentItemDataItemProperty()
+        {
+            const string insertedContentName = "dummyCodename1";
+            var input = GetContentItemObjectElement(insertedContentName);
             var processedContentItems = new Dictionary<string, object>
             {
                 {insertedContentName, new DummyItem()}
             };
             var inlineContentItemsProcessor = InlineContentItemsProcessorFactory
-                .WithResolver(factory => factory.ResolveByDefaultToMessage("this should not appear"))
-                .AndResolver(factory => factory.ResolveByDefaultToMessage(message))
+                .WithResolver(factory => factory.ResolveByDefaultToType())
                 .Build();
 
             var result = inlineContentItemsProcessor.Process(input, processedContentItems);
 
-            Assert.Equal(plainHtml + $"<div>{message}</div>", result);
+            Assert.Equal(typeof(DummyItem).FullName, result);
         }
 
         private static IInlineContentItemsResolver<DummyImageItem> ResolveDummyImageToImg(InlineContentItemsResolverFactory factory)
