@@ -127,7 +127,7 @@ namespace KenticoCloud.Delivery.Tests.Extensions
         /// These are supposed to be primarily used by <see cref="InlineContentItemProcessor"/> only.
         /// </summary>
         /// <returns>
-        /// Null for typless resolvers since we want to check their registration via
+        /// Null for typeless resolvers since we want to check their registration via
         /// <see cref="ContentTypesResolvedByResolvers"/> rather than container registrations
         /// (since there is no way to obtain its content item type unless instantiated)
         /// </returns>

@@ -1,4 +1,5 @@
-﻿using System.Collections.Generic;
+﻿using System;
+using System.Collections.Generic;
 using KenticoCloud.Delivery.InlineContentItems;
 
 namespace KenticoCloud.Delivery.Tests.Factories
@@ -10,29 +11,28 @@ namespace KenticoCloud.Delivery.Tests.Factories
         public static InlineContentItemsProcessor Create()
             => new InlineContentItemsProcessorFactory().Build();
 
-        public static InlineContentItemsProcessorFactory WithResolver<TContentItem>(IInlineContentItemsResolver<TContentItem> resolver)
-            => new InlineContentItemsProcessorFactory().AndResolver(resolver);
+        public static InlineContentItemsProcessorFactory WithSimpleResolver<TContentItem>(Func<TContentItem, string> valueSelector)
+            => WithResolver(factory => factory.ResolveTo(valueSelector));
 
-        public static InlineContentItemsProcessorFactory WithResolver<TContentItem, TResolver>()
-            where TResolver : IInlineContentItemsResolver<TContentItem>, new()
-            => new InlineContentItemsProcessorFactory().AndResolver<TContentItem, TResolver>();
+        public static InlineContentItemsProcessorFactory WithResolver<TContentItem>(Func<InlineContentItemsResolverFactory, IInlineContentItemsResolver<TContentItem>> resolverSelector)
+            => new InlineContentItemsProcessorFactory().AndResolver(resolverSelector);
 
         private InlineContentItemsProcessorFactory()
         { }
 
-        public InlineContentItemsProcessorFactory AndResolver<TContentItem>(IInlineContentItemsResolver<TContentItem> resolver)
+        public InlineContentItemsProcessorFactory AndResolver<TContentItem>(Func<InlineContentItemsResolverFactory, IInlineContentItemsResolver<TContentItem>> resolverSelector)
+            => AndResolver(resolverSelector(InlineContentItemsResolverFactory.Instance));
+
+
+        public InlineContentItemsProcessor Build()
+            => new InlineContentItemsProcessor(_resolvers);
+
+        private InlineContentItemsProcessorFactory AndResolver<TContentItem>(IInlineContentItemsResolver<TContentItem> resolver)
         {
             var typelessResolver = TypelessInlineContentItemsResolver.Create(resolver);
             _resolvers.Add(typelessResolver);
 
             return this;
         }
-
-        public InlineContentItemsProcessorFactory AndResolver<TContentItem, TResolver>()
-            where TResolver : IInlineContentItemsResolver<TContentItem>, new()
-            => AndResolver(new TResolver());
-
-        public InlineContentItemsProcessor Build()
-            => new InlineContentItemsProcessor(_resolvers);
     }
 }

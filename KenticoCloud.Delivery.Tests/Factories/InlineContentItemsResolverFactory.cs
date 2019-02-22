@@ -1,32 +1,44 @@
 ﻿using System;
-using System.Linq;
 using KenticoCloud.Delivery.InlineContentItems;
 
 namespace KenticoCloud.Delivery.Tests.Factories
 {
-    internal static class InlineContentItemsResolverFactory
+    internal class InlineContentItemsResolverFactory
     {
-        public static IInlineContentItemsResolver<HostedVideo> CreateHostedVideoResolver(string messagePrefix)
-            => new Resolver<HostedVideo>(messagePrefix, video => video.VideoHost.First().Name);
+        private static readonly Lazy<InlineContentItemsResolverFactory> LazyInstance = new Lazy<InlineContentItemsResolverFactory>(() => new InlineContentItemsResolverFactory());
 
-        public static IInlineContentItemsResolver<Tweet> CreateTweetResolver(string messagePrefix)
-            => new Resolver<Tweet>(messagePrefix, tweet => tweet.TweetLink);
+        public static InlineContentItemsResolverFactory Instance => LazyInstance.Value;
 
-        private class Resolver<TContentItem> : IInlineContentItemsResolver<TContentItem>
+        private InlineContentItemsResolverFactory()
+        {            
+        }
+
+        public IInlineContentItemsResolver<TContentItem> ResolveToMessage<TContentItem>(string message)
+            => ResolveTo<TContentItem>(_ => message);
+
+        public IInlineContentItemsResolver<object> ResolveByDefaultToMessage(string message)
+            => ResolveToMessage<object>(message);
+
+        public IInlineContentItemsResolver<TContentItem> ResolveToType<TContentItem>(bool acceptNull = false)
+            => ResolveTo<TContentItem>(item => acceptNull && item == null 
+                ? typeof(TContentItem).FullName 
+                : item.GetType().FullName);
+
+        public IInlineContentItemsResolver<TContentItem> ResolveTo<TContentItem>(Func<TContentItem, string> resultSelector)
+            => new SimpleResolver<TContentItem>(resultSelector);
+
+        public IInlineContentItemsResolver<object> ResolveByDefaultTo(Func<object, string> resultSelector)
+            => ResolveTo<object>(resultSelector);
+
+        private class SimpleResolver<TContentItem> : IInlineContentItemsResolver<TContentItem>
         {
-            private readonly string _messagePrefix;
-            private readonly Func<TContentItem, string> _messageSelector;
+            private readonly Func<TContentItem, string> _resultSelector;
 
-            public Resolver(string messagePrefix, Func<TContentItem, string> messageSelector)
-            {
-                this._messagePrefix = messagePrefix;
-                this._messageSelector = messageSelector;
-            }
+            public SimpleResolver(Func<TContentItem, string> resultSelector)
+                => _resultSelector = resultSelector;
 
-            public string Resolve(ResolvedContentItemData<TContentItem> data)
-            {
-                return _messagePrefix + _messageSelector(data.Item);
-            }
+            public string Resolve(ResolvedContentItemData<TContentItem> item)
+                => _resultSelector(item.Item);
         }
     }
 }

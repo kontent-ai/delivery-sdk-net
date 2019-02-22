@@ -112,8 +112,8 @@ namespace KenticoCloud.Delivery.Tests.Extensions
         [Fact]
         public void AddDeliveryInlineContentItemsResolver_RegistersTheResolverImplementation()
         {
-            var tweetResolver = InlineContentItemsResolverFactory.CreateTweetResolver(null);
-            var hostedVideoResolver = InlineContentItemsResolverFactory.CreateHostedVideoResolver(null);
+            var tweetResolver = InlineContentItemsResolverFactory.Instance.ResolveToMessage<Tweet>("Tweet");
+            var hostedVideoResolver = InlineContentItemsResolverFactory.Instance.ResolveToMessage<HostedVideo>("HostedVideo");
             var expectedRegisteredTypes = AddToExpectedInterfacesWithImplementationTypes(
                 (typeof(IInlineContentItemsResolver<Tweet>), tweetResolver.GetType()),
                 (typeof(IInlineContentItemsResolver<HostedVideo>), hostedVideoResolver.GetType()));
