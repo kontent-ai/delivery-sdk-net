@@ -1,7 +1,6 @@
 # Kentico Cloud Delivery .NET SDK
 
 [![Build status](https://ci.appveyor.com/api/projects/status/3m3q2ads2y43bh9o/branch/master?svg=true)](https://ci.appveyor.com/project/kentico/deliver-net-sdk/branch/master)
-[![Forums](https://img.shields.io/badge/chat-on%20forums-orange.svg)](https://forums.kenticocloud.com)
 
 | Paradigm        | Package  | Downloads | Documentation |
 | ------------- |:-------------:| :-------------:|  :-------------:|
