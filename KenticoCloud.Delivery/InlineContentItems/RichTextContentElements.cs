@@ -5,8 +5,14 @@ namespace KenticoCloud.Delivery.InlineContentItems
     /// </summary>
     internal struct RichTextContentElements
     {
-        public string ContentItemCodeName { get; set; }
+        public string ContentItemCodeName { get; }
 
-        public string RichTextElementCodeName { get; set; }
+        public string RichTextElementCodeName { get; }
+
+        public RichTextContentElements(string contentItemCodeName, string richTextElementCodeName)
+        {
+            RichTextElementCodeName = richTextElementCodeName;
+            ContentItemCodeName = contentItemCodeName;
+        }
     }
 }

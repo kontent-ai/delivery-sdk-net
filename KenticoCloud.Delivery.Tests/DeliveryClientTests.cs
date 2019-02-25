@@ -901,8 +901,10 @@ namespace KenticoCloud.Delivery.Tests
 
             var deliveryClient = DeliveryClientBuilder
                 .WithProjectId(_guid)
-                .WithInlineContentItemsResolver(InlineContentItemsResolverFactory.CreateTweetResolver(tweetPrefix))
-                .WithInlineContentItemsResolver(InlineContentItemsResolverFactory.CreateHostedVideoResolver(hostedVideoPrefix))
+                .WithInlineContentItemsResolver(InlineContentItemsResolverFactory.Instance
+                    .ResolveTo<Tweet>(tweet => tweetPrefix + tweet.TweetLink))
+                .WithInlineContentItemsResolver(InlineContentItemsResolverFactory.Instance
+                    .ResolveTo<HostedVideo>(video => hostedVideoPrefix + video.VideoHost.First().Name))
                 .WithCodeFirstTypeProvider(new CustomTypeProvider())
                 .WithHttpClient(_mockHttp.ToHttpClient())
                 .Build();

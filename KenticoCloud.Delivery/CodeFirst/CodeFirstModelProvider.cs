@@ -56,204 +56,52 @@ namespace KenticoCloud.Delivery.CodeFirst
         /// <param name="linkedItems">Linked items.</param>
         /// <returns>Strongly typed POCO model of the generic type.</returns>
         public T GetContentItemModel<T>(JToken item, JToken linkedItems)
-        {
-            return (T)GetContentItemModel(typeof(T), item, linkedItems);
-        }
+            => (T)GetContentItemModel(typeof(T), item, (JObject)linkedItems);
 
-        internal object GetContentItemModel(Type t, JToken item, JToken linkedItems, Dictionary<string, object> processedItems = null, HashSet<RichTextContentElements> currentlyResolvedRichStrings = null)
+        internal object GetContentItemModel(Type modelType, JToken serializedItem, JObject linkedItems, Dictionary<string, object> processedItems = null, HashSet<RichTextContentElements> currentlyResolvedRichStrings = null)
         {
             processedItems = processedItems ?? new Dictionary<string, object>();
-            currentlyResolvedRichStrings = currentlyResolvedRichStrings ?? new HashSet<RichTextContentElements>();
+            var itemSystemAttributes = serializedItem["system"].ToObject<ContentItemSystemAttributes>();
 
-            var richTextPropertiesToBeProcessed = new List<PropertyInfo>();
-            var system = item["system"].ToObject<ContentItemSystemAttributes>();
-
-            if (t == typeof(object))
+            var instance = CreateInstance(modelType, ref itemSystemAttributes, ref processedItems);
+            if (instance == null)
             {
-                // Try to find a specific type
-                t = _typeProvider?.GetType(system.Type);
-            }
-
-            if (t == null)
-            {
+                // modelType could not be resolved or instance could not be created
                 return null;
             }
 
-            object instance = Activator.CreateInstance(t);
-
-            if (!processedItems.ContainsKey(system.Codename))
+            var elementsData = GetElementData(serializedItem);
+            var context = CreateResolvingContext(linkedItems, processedItems);
+            var richTextPropertiesToBeProcessed = new List<PropertyInfo>();
+            foreach (var property in instance.GetType().GetProperties().Where(property => property.SetMethod != null))
             {
-                processedItems.Add(system.Codename, instance);
-            }
-
-            var elementsData = (JObject)item["elements"];
-            if (elementsData == null)
-            {
-                throw new InvalidOperationException("Missing elements node in the content item data.");
-            }
-
-            var context = new CodeFirstResolvingContext
-            {
-                GetLinkedItem = (codename) =>
+                if (property.PropertyType == typeof(ContentItemSystemAttributes))
                 {
-                    var linkedItemsNode = (JObject)linkedItems;
-                    var linkedItemsElementNode = linkedItemsNode.Properties().FirstOrDefault(p => p.Name == codename)?.First;
-                    if (linkedItemsElementNode != null)
+                    // Handle the system metadata
+                    if (itemSystemAttributes != null)
                     {
-                        if (processedItems.ContainsKey(codename))
-                        {
-                            return processedItems[codename];
-                        }
-                        else
-                        {
-                            return GetContentItemModel(typeof(object), linkedItemsElementNode, linkedItems, processedItems);
-                        }
+                        property.SetValue(instance, itemSystemAttributes);
                     }
-                    return null;
-                },
-                ContentLinkUrlResolver = _contentLinkUrlResolver
-            };
-
-            foreach (var property in instance.GetType().GetProperties())
-            {
-                var propertyType = property.PropertyType;
-                if (property.SetMethod != null)
+                }
+                else
                 {
-                    if (propertyType == typeof(ContentItemSystemAttributes))
+                    var value = GetPropertyValue(elementsData, property, linkedItems,context,itemSystemAttributes, ref processedItems, ref richTextPropertiesToBeProcessed);
+                    if (value != null)
                     {
-                        // Handle the system metadata
-                        if (system != null)
-                        {
-                            property.SetValue(instance, system);
-                        }
-                    }
-                    else
-                    {
-                        object value = null;
-
-                        var elementData = (JObject)elementsData.Properties()?.FirstOrDefault(p => _propertyMapper.IsMatch(property, p.Name, system?.Type))?.Value;
-                        var elementValue = elementData?.Property("value")?.Value;
-
-                        var valueConverter = GetValueConverter(property);
-                        if (valueConverter != null)
-                        {
-                            value = valueConverter.GetPropertyValue(property, elementData, context);
-                        }
-                        else if (propertyType == typeof(string))
-                        {
-                            value = elementValue?.ToObject<string>();
-                            var links = elementData?.Property("links")?.Value;
-                            var linkedItemsInRichText = elementData?.Property("modular_content")?.Value;
-
-                            // Handle rich_text link resolution
-                            if (links != null && elementValue != null && ContentLinkResolver != null)
-                            {
-                                value = ContentLinkResolver.ResolveContentLinks((string)value, links);
-                            }
-
-                            if (linkedItemsInRichText != null && elementValue != null && _inlineContentItemsProcessor != null)
-                            {
-                                // At this point it's clear it's richtext because it contains linked items
-                                richTextPropertiesToBeProcessed.Add(property);
-                            }
-
-                        }
-                        else if (propertyType == typeof(IEnumerable<MultipleChoiceOption>)
-                                 || propertyType == typeof(IEnumerable<Asset>)
-                                 || propertyType == typeof(IEnumerable<TaxonomyTerm>)
-                                 || propertyType.GetTypeInfo().IsValueType)
-                        {
-                            // Handle non-hierarchical fields
-                            value = elementValue?.ToObject(propertyType);
-                        }
-                        else if (propertyType.GetTypeInfo().IsGenericType
-                            && ((propertyType.GetInterfaces().Any(gt => gt.GetTypeInfo().IsGenericType && gt.GetTypeInfo().GetGenericTypeDefinition() == typeof(ICollection<>)) && propertyType.GetTypeInfo().IsClass)
-                            || propertyType.GetGenericTypeDefinition() == typeof(IEnumerable<>)))
-                        {
-                            // Handle linked items
-                            var contentItemCodenames = elementValue?.ToObject<IEnumerable<string>>();
-
-                            var linkedItemsNode = (JObject)linkedItems;
-                            var genericArgs = propertyType.GetGenericArguments();
-
-                            // Create a List<T> based on the generic parameter of the input type (IEnumerable<T> or derived types)
-                            Type collectionType = propertyType.GetTypeInfo().IsInterface ? typeof(List<>).MakeGenericType(genericArgs) : propertyType;
-
-                            object contentItems = Activator.CreateInstance(collectionType);
-
-                            if (contentItemCodenames != null && contentItemCodenames.Any())
-                            {
-                                foreach (string codename in contentItemCodenames)
-                                {
-                                    var linkedItemsElementNode = linkedItemsNode.Properties().FirstOrDefault(p => p.Name == codename)?.First;
-
-                                    if (linkedItemsElementNode != null)
-                                    {
-                                        object contentItem = null;
-                                        if (processedItems.ContainsKey(codename))
-                                        {
-                                            // Avoid infinite recursion by re-using already processed content items
-                                            contentItem = processedItems[codename];
-                                        }
-                                        else
-                                        {
-                                            if (genericArgs.First() == typeof(ContentItem))
-                                            {
-                                                contentItem = new ContentItem(linkedItemsElementNode, linkedItemsNode, _contentLinkUrlResolver, this);
-                                            }
-                                            else
-                                            {
-                                                contentItem = GetContentItemModel(genericArgs.First(), linkedItemsElementNode, linkedItemsNode, processedItems);
-                                            }
-                                            if (!processedItems.ContainsKey(codename))
-                                            {
-                                                processedItems.Add(codename, contentItem);
-                                            }
-                                        }
-
-                                        // It certain that the instance is of the ICollection<> type at this point, we can call "Add"
-                                        contentItems.GetType().GetMethod("Add").Invoke(contentItems, new[] { contentItem });
-                                    }
-                                }
-                            }
-
-                            value = contentItems;
-                        }
-                        if (value != null)
-                        {
-                            property.SetValue(instance, value);
-                        }
+                        property.SetValue(instance, value);
                     }
                 }
             }
 
             // Richtext elements need to be processed last, so in case of circular dependency, content items resolved by
             // resolvers would have all elements already processed
+            currentlyResolvedRichStrings = currentlyResolvedRichStrings ?? new HashSet<RichTextContentElements>();
             foreach (var property in richTextPropertiesToBeProcessed)
             {
-                var value = property.GetValue(instance)?.ToString();
-                var elementData = (JObject)elementsData.Properties()?.FirstOrDefault(p => _propertyMapper.IsMatch(property, p.Name, system?.Type))?.Value;
+                var currentValue = property.GetValue(instance)?.ToString();
 
-                var linkedItemsInRichText = elementData?.Property("modular_content")?.Value;
+                var value = GetRichTextValue(currentValue, elementsData, property, linkedItems, context, itemSystemAttributes, ref processedItems, ref currentlyResolvedRichStrings);
 
-                var currentlyProcessedString = new RichTextContentElements()
-                {
-                    ContentItemCodeName = system.Codename,
-                    RichTextElementCodeName = property.Name
-                };
-                if (currentlyResolvedRichStrings.Contains(currentlyProcessedString))
-                {
-                    // If this element is already being processed it's necessary to to use it as is (with removed inline content items)
-                    // otherwise resolving would be stuck in an infinite loop
-                    value = RemoveInlineContentItems(value);
-
-                }
-                else
-                {
-                    currentlyResolvedRichStrings.Add(currentlyProcessedString);
-                    value = ProcessInlineContentItems(linkedItems, processedItems, value, linkedItemsInRichText, currentlyResolvedRichStrings);
-                    currentlyResolvedRichStrings.Remove(currentlyProcessedString);
-                }
                 if (value != null)
                 {
                     property.SetValue(instance, value);
@@ -264,10 +112,237 @@ namespace KenticoCloud.Delivery.CodeFirst
             return instance;
         }
 
+
+        private object GetRichTextValue(string value, JObject elementsData, PropertyInfo property, JObject linkedItems, CodeFirstResolvingContext context, ContentItemSystemAttributes itemSystemAttributes, ref Dictionary<string, object> processedItems, ref HashSet<RichTextContentElements> currentlyResolvedRichStrings)
+        {
+            var currentlyProcessedString = new RichTextContentElements(itemSystemAttributes?.Codename, property.Name);
+            if (currentlyResolvedRichStrings.Contains(currentlyProcessedString))
+            {
+                // If this element is already being processed it's necessary to use it as is (with removed inline content items)
+                // otherwise resolving would be stuck in an infinite loop
+                return RemoveInlineContentItems(value);
+            }
+
+            currentlyResolvedRichStrings.Add(currentlyProcessedString);
+
+            var elementData = GetElementData(elementsData, property, itemSystemAttributes);
+            var linkedItemsInRichText = GetLinkedItemsInRichText(elementData);
+            value = ProcessInlineContentItems(linkedItems, processedItems, value, linkedItemsInRichText, currentlyResolvedRichStrings);
+
+            currentlyResolvedRichStrings.Remove(currentlyProcessedString);
+
+            return value;
+        }
+
+
+        private object CreateInstance(Type detectedModelType, ref ContentItemSystemAttributes itemSystemAttributes, ref Dictionary<string, object> processedItems)
+        {
+            if (detectedModelType == typeof(object))
+            {
+                // Try to find a specific type
+                detectedModelType = _typeProvider?.GetType(itemSystemAttributes.Type);
+            }
+
+            if (detectedModelType == null)
+            {
+                return null;
+            }
+
+            var instance = Activator.CreateInstance(detectedModelType);
+            if (!processedItems.ContainsKey(itemSystemAttributes.Codename))
+            {
+                processedItems.Add(itemSystemAttributes.Codename, instance);
+            }
+
+            return instance;
+        }
+
+        private static JObject GetElementData(JToken serializedItem)
+        {
+            var elementsData = (JObject)serializedItem["elements"];
+            if (elementsData == null)
+            {
+                throw new InvalidOperationException("Missing elements node in the content item data.");
+            }
+
+            return elementsData;
+        }
+
+
+        private CodeFirstResolvingContext CreateResolvingContext(JObject linkedItems, Dictionary<string, object> processedItems)
+        {
+            return new CodeFirstResolvingContext
+            {
+                GetLinkedItem = codename =>
+                {
+                    var linkedItemsElementNode = linkedItems.Properties().FirstOrDefault(p => p.Name == codename)?.First;
+                    if (linkedItemsElementNode == null)
+                    {
+                        return null;
+                    }
+
+                    return processedItems.ContainsKey(codename)
+                        ? processedItems[codename]
+                        : GetContentItemModel(typeof(object), linkedItemsElementNode, linkedItems, processedItems);
+                },
+                ContentLinkUrlResolver = _contentLinkUrlResolver
+            };
+        }
+
+        private object GetPropertyValue(JObject elementsData, PropertyInfo property, JObject linkedItems, CodeFirstResolvingContext context, ContentItemSystemAttributes itemSystemAttributes, ref Dictionary<string, object> processedItems, ref List<PropertyInfo> richTextPropertiesToBeProcessed)
+        {
+            var elementData = GetElementData(elementsData, property, itemSystemAttributes);
+
+            var valueConverter = GetValueConverter(property);
+            if (valueConverter != null)
+            {
+                return valueConverter.GetPropertyValue(property, elementData, context);
+            }
+
+            if (property.PropertyType == typeof(string))
+            {
+                var (value, isRichText) = GetStringValue(elementData);
+
+                if (isRichText)
+                {
+                    richTextPropertiesToBeProcessed.Add(property);
+                }
+
+                return value;
+
+            }
+
+            if (IsNonHierarchicalField(property.PropertyType))
+            {
+                return GetRawValue(elementData)?.ToObject(property.PropertyType);
+            }
+
+            if (IsGenericHierarchicalField(property.PropertyType))
+            {
+                return GetLinkedItemsValue(elementData, linkedItems, property.PropertyType, ref processedItems);
+            }
+
+            return null;
+        }
+
+        private JObject GetElementData(JObject elementsData, PropertyInfo property, ContentItemSystemAttributes itemSystemAttributes)
+            => (JObject)elementsData.Properties()?.FirstOrDefault(p => _propertyMapper.IsMatch(property, p.Name, itemSystemAttributes?.Type))?.Value;
+
+        private static bool IsGenericHierarchicalField(Type fieldType)
+        {
+            var fieldTypeInfo = fieldType.GetTypeInfo();
+            if (!fieldTypeInfo.IsGenericType)
+            {
+                return false;
+            }
+
+            if (fieldType.GetGenericTypeDefinition() == typeof(IEnumerable<>))
+            {
+                return true;
+            }
+
+            return fieldTypeInfo.IsClass && fieldType.GetInterfaces().Any(IsGenericICollection);
+        }
+
+        private static bool IsGenericICollection(Type @interface)
+            => @interface.GetTypeInfo().IsGenericType && @interface.GetTypeInfo().GetGenericTypeDefinition() == typeof(ICollection<>);
+
+        private static bool IsNonHierarchicalField(Type propertyType)
+            => propertyType == typeof(IEnumerable<MultipleChoiceOption>)
+                || propertyType == typeof(IEnumerable<Asset>)
+                || propertyType == typeof(IEnumerable<TaxonomyTerm>)
+                || propertyType.GetTypeInfo().IsValueType;
+
+        private (string value, bool isRichText) GetStringValue(JObject elementData)
+        {
+            var elementValue = GetRawValue(elementData);
+            var value = elementValue?.ToObject<string>();
+            var links = elementData?.Property("links")?.Value;
+
+            // Handle rich_text link resolution
+            if (links != null && elementValue != null && ContentLinkResolver != null)
+            {
+                value = ContentLinkResolver.ResolveContentLinks(value, links);
+            }
+
+            var linkedItemsInRichText = GetLinkedItemsInRichText(elementData);
+
+            // it's clear it's richtext because it contains linked items
+            var isRichText = elementValue != null && linkedItemsInRichText != null && _inlineContentItemsProcessor != null;
+
+            return (value, isRichText);
+        }
+
+        private static JToken GetLinkedItemsInRichText(JObject elementData)
+            => elementData?.Property("modular_content")?.Value;
+
+        private object GetLinkedItemsValue(JObject elementData, JObject linkedItems, Type propertyType, ref Dictionary<string, object> processedItems)
+        {
+            // Create a List<T> based on the generic parameter of the input type (IEnumerable<T> or derived types)
+            var genericArgs = propertyType.GetGenericArguments();
+            var collectionType = propertyType.GetTypeInfo().IsInterface
+                ? typeof(List<>).MakeGenericType(genericArgs)
+                : propertyType;
+
+            var contentItems = Activator.CreateInstance(collectionType);
+
+            var isCollectionOfContentItems = genericArgs.Single() == typeof(ContentItem);
+
+            var codeNamesWithLinkedItems = GetRawValue(elementData)
+                ?.ToObject<IEnumerable<string>>()
+                ?.Select(codename => (codename, linkedItems.Properties().FirstOrDefault(p => p.Name == codename)?.First))
+                ?.Where(pair => pair.Item2 != null)
+                ?.ToArray()
+                ?? Array.Empty<(string, JToken)>();
+
+            if (!codeNamesWithLinkedItems.Any())
+            {
+                return contentItems;
+            }
+
+            // It certain that the instance is of the ICollection<> type at this point, we can call "Add"
+            var addMethod = contentItems.GetType().GetMethod("Add");
+            if (addMethod == null)
+            {
+                throw new InvalidOperationException("Linked items are not stored in collection allowing adding new ones. This should have never happen.");
+            }
+
+            foreach (var (codename, linkedItemsElementNode) in codeNamesWithLinkedItems)
+            {
+                object contentItem;
+                if (processedItems.ContainsKey(codename))
+                {
+                    // Avoid infinite recursion by re-using already processed content items
+                    contentItem = processedItems[codename];
+                }
+                else
+                {
+                    if (isCollectionOfContentItems)
+                    {
+                        contentItem = new ContentItem(linkedItemsElementNode, linkedItems, _contentLinkUrlResolver, this);
+                    }
+                    else
+                    {
+                        // This is the entry-point for recursion mentioned above
+                        contentItem = GetContentItemModel(genericArgs.First(), linkedItemsElementNode, linkedItems, processedItems);
+                    }
+
+                    if (!processedItems.ContainsKey(codename))
+                    {
+                        processedItems.Add(codename, contentItem);
+                    }
+                }
+
+                addMethod.Invoke(contentItems, new[] { contentItem });
+            }
+
+            return contentItems;
+        }
+
         private static IPropertyValueConverter GetValueConverter(PropertyInfo property)
         {
             // Converter defined by explicit attribute has the highest priority
-            if (property.GetCustomAttributes().FirstOrDefault(attr => typeof(IPropertyValueConverter).IsAssignableFrom(attr.GetType())) is IPropertyValueConverter attributeConverter)
+            if (property.GetCustomAttributes().OfType<IPropertyValueConverter>().FirstOrDefault() is IPropertyValueConverter attributeConverter)
             {
                 return attributeConverter;
             }
@@ -281,7 +356,10 @@ namespace KenticoCloud.Delivery.CodeFirst
             return null;
         }
 
-        private string ProcessInlineContentItems(JToken linkedItems, Dictionary<string, object> processedItems, string value, JToken linkedItemsInRichText, HashSet<RichTextContentElements> currentlyResolvedRichStrings)
+        private static JToken GetRawValue(JObject elementData)
+            => elementData?.Property("value")?.Value;
+
+        private string ProcessInlineContentItems(JObject linkedItems, Dictionary<string, object> processedItems, string value, JToken linkedItemsInRichText, HashSet<RichTextContentElements> currentlyResolvedRichStrings)
         {
             var usedCodenames = JsonConvert.DeserializeObject<IEnumerable<string>>(linkedItemsInRichText.ToString());
             var contentItemsInRichText = new Dictionary<string, object>();
@@ -300,13 +378,13 @@ namespace KenticoCloud.Delivery.CodeFirst
                     }
                     else
                     {
-                        var linkedItemsNode = (JObject)linkedItems;
-                        var linkedItemsElementNode =
-                            linkedItemsNode.Properties()
-                                .FirstOrDefault(p => p.Name == codenameUsed)?.First;
+                        var linkedItemsElementNode = linkedItems
+                            .Properties()
+                            .FirstOrDefault(p => p.Name == codenameUsed)
+                            ?.First;
                         if (linkedItemsElementNode != null)
                         {
-                            contentItem = GetContentItemModel(typeof(object), linkedItemsElementNode, linkedItemsNode, processedItems, currentlyResolvedRichStrings);
+                            contentItem = GetContentItemModel(typeof(object), linkedItemsElementNode, linkedItems, processedItems, currentlyResolvedRichStrings);
                             if (!processedItems.ContainsKey(codenameUsed))
                             {
                                 if (contentItem == null)
@@ -332,8 +410,6 @@ namespace KenticoCloud.Delivery.CodeFirst
         }
 
         private string RemoveInlineContentItems(string value)
-        {
-            return _inlineContentItemsProcessor.RemoveAll(value);
-        }
+            => _inlineContentItemsProcessor.RemoveAll(value);
     }
 }

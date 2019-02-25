@@ -20,20 +20,20 @@ namespace KenticoCloud.Delivery.Tests
             var contentLinkUrlResolver = A.Fake<IContentLinkUrlResolver>();
             var propertyMapper = A.Fake<ICodeFirstPropertyMapper>();
             A.CallTo(() => propertyMapper.IsMatch(A<PropertyInfo>._, A<string>._, A<string>._)).Returns(true);
-            A.CallTo(() => codeFirstTypeProvider.GetType(A<string>._)).Returns(typeof(ContentItemWithSingleRTE));
+            A.CallTo(() => codeFirstTypeProvider.GetType(A<string>._)).Returns(typeof(ContentItemWithSingleRte));
 
             var processor = InlineContentItemsProcessorFactory
-                .WithResolver<ContentItemWithSingleRTE,RichTextInlineResolver>()
+                .WithResolver(ResolveItemWithSingleRte)
                 .Build();
             var retriever = new CodeFirstModelProvider(contentLinkUrlResolver, processor, codeFirstTypeProvider, propertyMapper);
 
-            var item = JToken.FromObject(rt1);
-            var linkedItems = JToken.FromObject(linkedItemsForItemWithTwoReferencedContentItems);
+            var item = JToken.FromObject(Rt1);
+            var linkedItems = JToken.FromObject(LinkedItemsForItemWithTwoReferencedContentItems);
 
-            var result = retriever.GetContentItemModel<ContentItemWithSingleRTE>(item, linkedItems);
+            var result = retriever.GetContentItemModel<ContentItemWithSingleRte>(item, linkedItems);
 
-            Assert.Equal("<span>FirstRT</span><span>SecondRT</span><span>FirstRT</span>", result.RT);
-            Assert.IsType<ContentItemWithSingleRTE>(result);
+            Assert.Equal("<span>FirstRT</span><span>SecondRT</span><span>FirstRT</span>", result.Rt);
+            Assert.IsType<ContentItemWithSingleRte>(result);
         }
 
         [Fact]
@@ -46,19 +46,19 @@ namespace KenticoCloud.Delivery.Tests
             A.CallTo(() => propertyMapper.IsMatch(A<PropertyInfo>._, A<string>._, A<string>._)).Returns(true);
 
             var processor = InlineContentItemsProcessorFactory
-                .WithResolver<UnknownContentItem, ReplaceWithWarningAboutUnknownItemResolver>()
+                .WithResolver(factory => factory.ResolveTo<UnknownContentItem>(unknownItem => $"Content type '{unknownItem.Type}' has no corresponding model."))
                 .Build();
             var retriever = new CodeFirstModelProvider(contentLinkUrlResolver, processor, codeFirstTypeProvider, propertyMapper);
 
-            var item = JToken.FromObject(rt5);
-            var linkedItems = JToken.FromObject(linkedItemWithNoModel);
+            var item = JToken.FromObject(Rt5);
+            var linkedItems = JToken.FromObject(LinkedItemWithNoModel);
             var expectedResult =
                 $"<span>RT</span>Content type '{linkedItems.SelectToken("linkedItemWithNoModel.system.type")}' has no corresponding model.";
 
-            var result = retriever.GetContentItemModel<ContentItemWithSingleRTE>(item, linkedItems);
+            var result = retriever.GetContentItemModel<ContentItemWithSingleRte>(item, linkedItems);
             
-            Assert.Equal(expectedResult, result.RT);
-            Assert.IsType<ContentItemWithSingleRTE>(result);
+            Assert.Equal(expectedResult, result.Rt);
+            Assert.IsType<ContentItemWithSingleRte>(result);
         }
 
         [Fact]
@@ -69,29 +69,29 @@ namespace KenticoCloud.Delivery.Tests
             var codeFirstTypeProvider = A.Fake<ICodeFirstTypeProvider>();
             var contentLinkUrlResolver = A.Fake<IContentLinkUrlResolver>();
             var propertyMapper = A.Fake<ICodeFirstPropertyMapper>();
-            A.CallTo(() => codeFirstTypeProvider.GetType(A<string>._)).Returns(typeof(ContentItemWithSingleRTE));
+            A.CallTo(() => codeFirstTypeProvider.GetType(A<string>._)).Returns(typeof(ContentItemWithSingleRte));
             A.CallTo(() => propertyMapper.IsMatch(A<PropertyInfo>._, A<string>._, A<string>._)).Returns(true);
 
             var processor = InlineContentItemsProcessorFactory
-                .WithResolver<ContentItemWithSingleRTE,RichTextInlineResolver>()
+                .WithResolver(ResolveItemWithSingleRte)
                 .Build();
             var retriever = new CodeFirstModelProvider(contentLinkUrlResolver, processor, codeFirstTypeProvider, propertyMapper);
 
-            var item = JToken.FromObject(rt3);
-            var linkedItems = JToken.FromObject(linkedItemsForItemReferencingItself);
+            var item = JToken.FromObject(Rt3);
+            var linkedItems = JToken.FromObject(LinkedItemsForItemReferencingItself);
 
-            var result = retriever.GetContentItemModel<ContentItemWithSingleRTE>(item, linkedItems);
+            var result = retriever.GetContentItemModel<ContentItemWithSingleRte>(item, linkedItems);
 
-            Assert.Equal("<span>RT</span><span>RT</span>", result.RT);
-            Assert.IsType<ContentItemWithSingleRTE>(result);
+            Assert.Equal("<span>RT</span><span>RT</span>", result.Rt);
+            Assert.IsType<ContentItemWithSingleRte>(result);
         }
 
+        /// <seealso href="https://github.com/Kentico/delivery-sdk-net/issues/126"/>
         [Fact]
-        /// <see href="https://github.com/Kentico/delivery-sdk-net/issues/126"/>
         public void GetContentItemModelRetrievingContentModelWithUnknownTypeReturnNull()
         {
-            var item = JToken.FromObject(rt4);
-            var linkedItems = JToken.FromObject(linkedItemsForItemWithTwoReferencedContentItems);
+            var item = JToken.FromObject(Rt4);
+            var linkedItems = JToken.FromObject(LinkedItemsForItemWithTwoReferencedContentItems);
 
             var contentLinkUrlResolver = A.Fake<IContentLinkUrlResolver>();
             var inlineContentItemsProcessor = A.Fake<IInlineContentItemsProcessor>();
@@ -103,26 +103,7 @@ namespace KenticoCloud.Delivery.Tests
             Assert.Null(modelProvider.GetContentItemModel<object>(item, linkedItems));
         }
 
-        private class ReplaceWithWarningAboutUnknownItemResolver : IInlineContentItemsResolver<UnknownContentItem>
-        {
-            public string Resolve(ResolvedContentItemData<UnknownContentItem> item)
-                => $"Content type '{item.Item.Type}' has no corresponding model.";
-        }
-
-        private class ContentItemWithSingleRTE
-        {
-            public string RT { get; set; }
-        }
-
-        private class RichTextInlineResolver : IInlineContentItemsResolver<ContentItemWithSingleRTE>
-        {
-            public string Resolve(ResolvedContentItemData<ContentItemWithSingleRTE> data)
-            {
-                return data.Item.RT;
-            }
-        }
-
-        private static readonly object rt1 = new
+        private static readonly object Rt1 = new
         {
             system = new
             {
@@ -146,7 +127,7 @@ namespace KenticoCloud.Delivery.Tests
             }
         };
 
-        private static readonly object rt2 = new
+        private static readonly object Rt2 = new
         {
             system = new
             {
@@ -170,13 +151,7 @@ namespace KenticoCloud.Delivery.Tests
             }
         };
 
-        private static readonly object linkedItemsForItemWithTwoReferencedContentItems = new
-        {
-            rt2,
-            rt1
-        };
-
-        private static readonly object rt3 = new
+        private static readonly object Rt3 = new
         {
             system = new
             {
@@ -200,31 +175,7 @@ namespace KenticoCloud.Delivery.Tests
             }
         };
 
-        private static readonly object linkedItemsForItemReferencingItself = new
-        {
-            rt3
-        };
-
-        private static readonly object linkedItemWithNoModel = new
-        {
-            linkedItemWithNoModel = new
-            {
-                system = new
-                {
-                    id = "473cd60b-a2a7-4e5b-8353-5d1995dd4b50",
-                    name = "linkedItemWithNoModel",
-                    codename = "linkedItemWithNoModel",
-                    language = "en-US",
-                    type = "newType",
-                    sitemap_locations = new string[0],
-                    last_modified = new DateTime(2017, 06, 01, 11, 43, 33)
-                },
-                elements = new
-                    { }
-            }
-        };
-
-        private static readonly object rt4 = new
+        private static readonly object Rt4 = new
         {
             system = new
             {
@@ -238,7 +189,7 @@ namespace KenticoCloud.Delivery.Tests
             elements = new { }
         };
 
-        private static readonly object rt5 = new
+        private static readonly object Rt5 = new
         {
             system = new
             {
@@ -260,5 +211,43 @@ namespace KenticoCloud.Delivery.Tests
                 }
             }
         };
+
+        private static readonly object LinkedItemWithNoModel = new
+        {
+            linkedItemWithNoModel = new
+            {
+                system = new
+                {
+                    id = "473cd60b-a2a7-4e5b-8353-5d1995dd4b50",
+                    name = "linkedItemWithNoModel",
+                    codename = "linkedItemWithNoModel",
+                    language = "en-US",
+                    type = "newType",
+                    sitemap_locations = new string[0],
+                    last_modified = new DateTime(2017, 06, 01, 11, 43, 33)
+                },
+                elements = new
+                    { }
+            }
+        };
+
+        private static readonly object LinkedItemsForItemWithTwoReferencedContentItems = new
+        {
+            rt2 = Rt2,
+            rt1 = Rt1
+        };
+
+        private static readonly object LinkedItemsForItemReferencingItself = new
+        {
+            rt3 = Rt3
+        };
+
+        private static IInlineContentItemsResolver<ContentItemWithSingleRte> ResolveItemWithSingleRte(InlineContentItemsResolverFactory factory)
+            => factory.ResolveTo<ContentItemWithSingleRte>(item => item.Rt);
+
+        private class ContentItemWithSingleRte
+        {
+            public string Rt { get; set; }
+        }
     }
 }

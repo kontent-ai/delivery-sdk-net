@@ -22,7 +22,7 @@ namespace KenticoCloud.Delivery.Tests.DependencyInjectionFrameworks.Helpers
 
         internal static IServiceCollection RegisterInlineContentItemResolvers(this IServiceCollection serviceCollection)
             => serviceCollection
-                .AddDeliveryInlineContentItemsResolver(InlineContentItemsResolverFactory.CreateHostedVideoResolver(null))
+                .AddDeliveryInlineContentItemsResolver(InlineContentItemsResolverFactory.Instance.ResolveToMessage<HostedVideo>(string.Empty))
                 .AddDeliveryInlineContentItemsResolver<Tweet, FakeTweetResolver>();
 
         internal static IServiceProvider BuildAutoFacServiceProvider(this IServiceCollection serviceCollection)
