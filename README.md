@@ -111,7 +111,7 @@ DeliveryItemResponse<Article> response = await client.GetItemAsync<Article>("lat
 DeliveryItemListingResponse<Article> listingResponse = await client.GetItemsAsync<Article>();
 ```
 
-See [Working with Strongly Typed Models](https://github.com/Kentico/delivery-sdk-net/wiki/Working-with-Strongly-Typed-Models-(aka-Code-First-Approach)) to learn how to generate models and adjust the logic to your needs.
+See [Working with Strongly Typed Models](../../wiki/Working-with-strongly-typed-models) to learn how to generate models and adjust the logic to your needs.
 
 ## Previewing unpublished content
 
