@@ -13,7 +13,6 @@
     <RepositoryType>git</RepositoryType>
     <PackageTags>kentico;mvc;aspnet;aspnetmvc;reactive;rx</PackageTags>
     <GenerateAssemblyInfo>true</GenerateAssemblyInfo>
-    <AllowedOutputExtensionsInPackageBuildOutputFolder>$(AllowedOutputExtensionsInPackageBuildOutputFolder);.pdb</AllowedOutputExtensionsInPackageBuildOutputFolder>
     <PublishRepositoryUrl>true</PublishRepositoryUrl>
   </PropertyGroup>
 
