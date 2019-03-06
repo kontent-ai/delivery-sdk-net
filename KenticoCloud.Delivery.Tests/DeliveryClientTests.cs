@@ -39,15 +39,15 @@ namespace KenticoCloud.Delivery.Tests
 
             _mockHttp
                 .When($"{url}{"coffee_beverages_explained"}")
-                .Respond("application/json", File.ReadAllText(Path.Combine(Environment.CurrentDirectory, "Fixtures\\DeliveryClient\\coffee_beverages_explained.json")));
+                .Respond("application/json", File.ReadAllText(Path.Combine(Environment.CurrentDirectory, $"Fixtures{Path.DirectorySeparatorChar}DeliveryClient{Path.DirectorySeparatorChar}coffee_beverages_explained.json")));
 
             _mockHttp
                 .When($"{url}{"brazil_natural_barra_grande"}")
-                .Respond("application/json", File.ReadAllText(Path.Combine(Environment.CurrentDirectory, "Fixtures\\DeliveryClient\\brazil_natural_barra_grande.json")));
+                .Respond("application/json", File.ReadAllText(Path.Combine(Environment.CurrentDirectory, $"Fixtures{Path.DirectorySeparatorChar}DeliveryClient{Path.DirectorySeparatorChar}brazil_natural_barra_grande.json")));
 
             _mockHttp
                 .When($"{url}{"on_roasts"}")
-                .Respond("application/json", File.ReadAllText(Path.Combine(Environment.CurrentDirectory, "Fixtures\\DeliveryClient\\on_roasts.json")));
+                .Respond("application/json", File.ReadAllText(Path.Combine(Environment.CurrentDirectory, $"Fixtures{Path.DirectorySeparatorChar}DeliveryClient{Path.DirectorySeparatorChar}on_roasts.json")));
 
             var client = InitializeDeliveryClientWithCustomModelProvider(_mockHttp);
 
@@ -76,7 +76,7 @@ namespace KenticoCloud.Delivery.Tests
             _mockHttp
                 .When($"{_baseUrl}/items")
                 .WithQueryString("limit=2&skip=1")
-                .Respond("application/json", File.ReadAllText(Path.Combine(Environment.CurrentDirectory, "Fixtures\\DeliveryClient\\articles.json")));
+                .Respond("application/json", File.ReadAllText(Path.Combine(Environment.CurrentDirectory, $"Fixtures{Path.DirectorySeparatorChar}DeliveryClient{Path.DirectorySeparatorChar}articles.json")));
 
             var client = InitializeDeliveryClientWithACustomTypeProvider(_mockHttp);
 
@@ -93,7 +93,7 @@ namespace KenticoCloud.Delivery.Tests
         {
             _mockHttp
                 .When($"{_baseUrl}/items/{"coffee_beverages_explained"}")
-                .Respond("application/json", File.ReadAllText(Path.Combine(Environment.CurrentDirectory, "Fixtures\\DeliveryClient\\coffee_beverages_explained.json")));
+                .Respond("application/json", File.ReadAllText(Path.Combine(Environment.CurrentDirectory, $"Fixtures{Path.DirectorySeparatorChar}DeliveryClient{Path.DirectorySeparatorChar}coffee_beverages_explained.json")));
 
             var client = InitializeDeliveryClientWithACustomTypeProvider(_mockHttp);
 
@@ -114,7 +114,7 @@ namespace KenticoCloud.Delivery.Tests
         {
             _mockHttp
                 .When($"{_baseUrl}/items/{"coffee_beverages_explained"}")
-                .Respond("application/json", File.ReadAllText(Path.Combine(Environment.CurrentDirectory, "Fixtures\\DeliveryClient\\coffee_beverages_explained.json")));
+                .Respond("application/json", File.ReadAllText(Path.Combine(Environment.CurrentDirectory, $"Fixtures{Path.DirectorySeparatorChar}DeliveryClient{Path.DirectorySeparatorChar}coffee_beverages_explained.json")));
 
             var client = InitializeDeliveryClientWithACustomTypeProvider(_mockHttp);
 
@@ -146,7 +146,7 @@ namespace KenticoCloud.Delivery.Tests
             _mockHttp
                 .When($"{_baseUrl}/items")
                 .WithQueryString("system.type=cafe")
-                .Respond("application/json", File.ReadAllText(Path.Combine(Environment.CurrentDirectory, "Fixtures\\DeliveryClient\\allendale.json")));
+                .Respond("application/json", File.ReadAllText(Path.Combine(Environment.CurrentDirectory, $"Fixtures{Path.DirectorySeparatorChar}DeliveryClient{Path.DirectorySeparatorChar}allendale.json")));
 
             var client = InitializeDeliveryClientWithACustomTypeProvider(_mockHttp);
 
@@ -161,7 +161,7 @@ namespace KenticoCloud.Delivery.Tests
             _mockHttp
                 .When($"{_baseUrl}/items")
                 .WithQueryString("system.type=cafe")
-                .Respond("application/json", File.ReadAllText(Path.Combine(Environment.CurrentDirectory, "Fixtures\\DeliveryClient\\allendale.json")));
+                .Respond("application/json", File.ReadAllText(Path.Combine(Environment.CurrentDirectory, $"Fixtures{Path.DirectorySeparatorChar}DeliveryClient{Path.DirectorySeparatorChar}allendale.json")));
 
             var client = InitializeDeliveryClientWithACustomTypeProvider(_mockHttp);
 
@@ -175,11 +175,11 @@ namespace KenticoCloud.Delivery.Tests
         {
             _mockHttp
                 .When($"{_baseUrl}/types/article")
-                .Respond("application/json", File.ReadAllText(Path.Combine(Environment.CurrentDirectory, "Fixtures\\DeliveryClient\\article.json")));
+                .Respond("application/json", File.ReadAllText(Path.Combine(Environment.CurrentDirectory, $"Fixtures{Path.DirectorySeparatorChar}DeliveryClient{Path.DirectorySeparatorChar}article.json")));
 
             _mockHttp
                 .When($"{_baseUrl}/types/coffee")
-                .Respond("application/json", File.ReadAllText(Path.Combine(Environment.CurrentDirectory, "Fixtures\\DeliveryClient\\coffee.json")));
+                .Respond("application/json", File.ReadAllText(Path.Combine(Environment.CurrentDirectory, $"Fixtures{Path.DirectorySeparatorChar}DeliveryClient{Path.DirectorySeparatorChar}coffee.json")));
 
             var client = InitializeDeliveryClientWithACustomTypeProvider(_mockHttp);
 
@@ -224,7 +224,7 @@ namespace KenticoCloud.Delivery.Tests
             _mockHttp
                 .When($"{_baseUrl}/types")
                 .WithQueryString("skip=1")
-                .Respond("application/json", File.ReadAllText(Path.Combine(Environment.CurrentDirectory, "Fixtures\\DeliveryClient\\types_accessory.json")));
+                .Respond("application/json", File.ReadAllText(Path.Combine(Environment.CurrentDirectory, $"Fixtures{Path.DirectorySeparatorChar}DeliveryClient{Path.DirectorySeparatorChar}types_accessory.json")));
 
             var client = InitializeDeliveryClientWithACustomTypeProvider(_mockHttp);
 
@@ -280,7 +280,7 @@ namespace KenticoCloud.Delivery.Tests
         {
             _mockHttp
                 .When($"{_baseUrl}/taxonomies/personas")
-                .Respond("application/json", File.ReadAllText(Path.Combine(Environment.CurrentDirectory, "Fixtures\\DeliveryClient\\taxonomies_personas.json")));
+                .Respond("application/json", File.ReadAllText(Path.Combine(Environment.CurrentDirectory, $"Fixtures{Path.DirectorySeparatorChar}DeliveryClient{Path.DirectorySeparatorChar}taxonomies_personas.json")));
 
             var client = InitializeDeliveryClientWithACustomTypeProvider(_mockHttp);
 
@@ -315,7 +315,7 @@ namespace KenticoCloud.Delivery.Tests
             _mockHttp
                 .When($"{_baseUrl}/taxonomies")
                 .WithQueryString("skip=1")
-                .Respond("application/json", File.ReadAllText(Path.Combine(Environment.CurrentDirectory, "Fixtures\\DeliveryClient\\taxonomies_multiple.json")));
+                .Respond("application/json", File.ReadAllText(Path.Combine(Environment.CurrentDirectory, $"Fixtures{Path.DirectorySeparatorChar}DeliveryClient{Path.DirectorySeparatorChar}taxonomies_multiple.json")));
 
             var client = InitializeDeliveryClientWithACustomTypeProvider(_mockHttp);
 
@@ -367,7 +367,7 @@ namespace KenticoCloud.Delivery.Tests
             _mockHttp
                 .When($"{_baseUrl}/items/on_roasts")
                 .WithQueryString("depth=1")
-                .Respond("application/json", File.ReadAllText(Path.Combine(Environment.CurrentDirectory, "Fixtures\\DeliveryClient\\on_roasts.json")));
+                .Respond("application/json", File.ReadAllText(Path.Combine(Environment.CurrentDirectory, $"Fixtures{Path.DirectorySeparatorChar}DeliveryClient{Path.DirectorySeparatorChar}on_roasts.json")));
 
             var client = InitializeDeliveryClientWithACustomTypeProvider(_mockHttp);
 
@@ -390,7 +390,7 @@ namespace KenticoCloud.Delivery.Tests
             _mockHttp
                 .When($"{_baseUrl}/items/on_roasts")
                 .WithQueryString("depth=15")
-                .Respond("application/json", File.ReadAllText(Path.Combine(Environment.CurrentDirectory, "Fixtures\\DeliveryClient\\onroast_recursive_linked_items.json")));
+                .Respond("application/json", File.ReadAllText(Path.Combine(Environment.CurrentDirectory, $"Fixtures{Path.DirectorySeparatorChar}DeliveryClient{Path.DirectorySeparatorChar}onroast_recursive_linked_items.json")));
 
             var client = InitializeDeliveryClientWithACustomTypeProvider(_mockHttp);
 
@@ -406,7 +406,7 @@ namespace KenticoCloud.Delivery.Tests
             _mockHttp
                 .When($"{_baseUrl}/items/on_roasts")
                 .WithQueryString("depth=15")
-                .Respond("application/json", File.ReadAllText(Path.Combine(Environment.CurrentDirectory, "Fixtures\\DeliveryClient\\onroast_recursive_inline_linked_items.json")));
+                .Respond("application/json", File.ReadAllText(Path.Combine(Environment.CurrentDirectory, $"Fixtures{Path.DirectorySeparatorChar}DeliveryClient{Path.DirectorySeparatorChar}onroast_recursive_inline_linked_items.json")));
 
             var client = InitializeDeliveryClientWithACustomTypeProvider(_mockHttp);
 
@@ -421,7 +421,7 @@ namespace KenticoCloud.Delivery.Tests
         {
             _mockHttp
                 .When($"{_baseUrl}/items/complete_content_item")
-                .Respond("application/json", File.ReadAllText(Path.Combine(Environment.CurrentDirectory, "Fixtures\\DeliveryClient\\complete_content_item.json")));
+                .Respond("application/json", File.ReadAllText(Path.Combine(Environment.CurrentDirectory, $"Fixtures{Path.DirectorySeparatorChar}DeliveryClient{Path.DirectorySeparatorChar}complete_content_item.json")));
 
             var client = InitializeDeliveryClientWithACustomTypeProvider(_mockHttp);
 
@@ -465,7 +465,7 @@ namespace KenticoCloud.Delivery.Tests
         {
             _mockHttp
                 .When($"{_baseUrl}/items/complete_content_item")
-                .Respond("application/json", File.ReadAllText(Path.Combine(Environment.CurrentDirectory, "Fixtures\\DeliveryClient\\complete_content_item.json")));
+                .Respond("application/json", File.ReadAllText(Path.Combine(Environment.CurrentDirectory, $"Fixtures{Path.DirectorySeparatorChar}DeliveryClient{Path.DirectorySeparatorChar}complete_content_item.json")));
 
             var client = InitializeDeliveryClientWithCustomModelProvider(_mockHttp, new CodeFirstPropertyMapper());
 
@@ -519,7 +519,7 @@ namespace KenticoCloud.Delivery.Tests
             _mockHttp
                 .When($"{_baseUrl}/items")
                 .WithQueryString("system.type=complete_content_type")
-                .Respond("application/json", File.ReadAllText(Path.Combine(Environment.CurrentDirectory, "Fixtures\\DeliveryClient\\complete_content_item_system_type.json")));
+                .Respond("application/json", File.ReadAllText(Path.Combine(Environment.CurrentDirectory, $"Fixtures{Path.DirectorySeparatorChar}DeliveryClient{Path.DirectorySeparatorChar}complete_content_item_system_type.json")));
 
             var client = InitializeDeliveryClientWithCustomModelProvider(_mockHttp);
 
@@ -539,7 +539,7 @@ namespace KenticoCloud.Delivery.Tests
         {
             _mockHttp
                 .When($"{_baseUrl}/items/complete_content_item")
-                .Respond("application/json", File.ReadAllText(Path.Combine(Environment.CurrentDirectory, "Fixtures\\DeliveryClient\\complete_content_item.json")));
+                .Respond("application/json", File.ReadAllText(Path.Combine(Environment.CurrentDirectory, $"Fixtures{Path.DirectorySeparatorChar}DeliveryClient{Path.DirectorySeparatorChar}complete_content_item.json")));
 
             var client = InitializeDeliveryClientWithCustomModelProvider(_mockHttp, new CodeFirstPropertyMapper());
 
@@ -555,7 +555,7 @@ namespace KenticoCloud.Delivery.Tests
         {
             _mockHttp
                 .When($"{_baseUrl}/items")
-                .Respond("application/json", File.ReadAllText(Path.Combine(Environment.CurrentDirectory, "Fixtures\\DeliveryClient\\items.json")));
+                .Respond("application/json", File.ReadAllText(Path.Combine(Environment.CurrentDirectory, $"Fixtures{Path.DirectorySeparatorChar}DeliveryClient{Path.DirectorySeparatorChar}items.json")));
 
             var client = InitializeDeliveryClientWithCustomModelProvider(_mockHttp);
 
@@ -572,7 +572,7 @@ namespace KenticoCloud.Delivery.Tests
         {
             _mockHttp
                 .When($"{_baseUrl}/items/complete_content_item")
-                .Respond("application/json", File.ReadAllText(Path.Combine(Environment.CurrentDirectory, "Fixtures\\DeliveryClient\\complete_content_item.json")));
+                .Respond("application/json", File.ReadAllText(Path.Combine(Environment.CurrentDirectory, $"Fixtures{Path.DirectorySeparatorChar}DeliveryClient{Path.DirectorySeparatorChar}complete_content_item.json")));
 
             var client = InitializeDeliveryClientWithCustomModelProvider(_mockHttp, new CodeFirstPropertyMapper());
 
@@ -588,7 +588,7 @@ namespace KenticoCloud.Delivery.Tests
         {
             _mockHttp
                 .When($"{_baseUrl}/items")
-                .Respond("application/json", File.ReadAllText(Path.Combine(Environment.CurrentDirectory, "Fixtures\\DeliveryClient\\items.json")));
+                .Respond("application/json", File.ReadAllText(Path.Combine(Environment.CurrentDirectory, $"Fixtures{Path.DirectorySeparatorChar}DeliveryClient{Path.DirectorySeparatorChar}items.json")));
 
             var client = InitializeDeliveryClientWithCustomModelProvider(_mockHttp);
 
@@ -608,7 +608,7 @@ namespace KenticoCloud.Delivery.Tests
         {
             _mockHttp
                 .When($"{_baseUrl}/items")
-                .Respond("application/json", File.ReadAllText(Path.Combine(Environment.CurrentDirectory, "Fixtures\\DeliveryClient\\items.json")));
+                .Respond("application/json", File.ReadAllText(Path.Combine(Environment.CurrentDirectory, $"Fixtures{Path.DirectorySeparatorChar}DeliveryClient{Path.DirectorySeparatorChar}items.json")));
 
             var client = DeliveryClientFactory.GetMockedDeliveryClientWithProjectId(_guid, _mockHttp);
 
@@ -633,7 +633,7 @@ namespace KenticoCloud.Delivery.Tests
         {
             _mockHttp
                 .When($"{_baseUrl}/items")
-                .Respond("application/json", File.ReadAllText(Path.Combine(Environment.CurrentDirectory, "Fixtures\\DeliveryClient\\items.json")));
+                .Respond("application/json", File.ReadAllText(Path.Combine(Environment.CurrentDirectory, $"Fixtures{Path.DirectorySeparatorChar}DeliveryClient{Path.DirectorySeparatorChar}items.json")));
 
             var client = DeliveryClientFactory.GetMockedDeliveryClientWithProjectId(_guid, _mockHttp);
 
@@ -655,13 +655,13 @@ namespace KenticoCloud.Delivery.Tests
             {
                 _mockHttp
                     .When($@"https://preview-deliver.kenticocloud.com/{_guid}/items")
-                    .Respond("application/json", File.ReadAllText(Path.Combine(Environment.CurrentDirectory, "Fixtures\\DeliveryClient\\items.json")));
+                    .Respond("application/json", File.ReadAllText(Path.Combine(Environment.CurrentDirectory, $"Fixtures{Path.DirectorySeparatorChar}DeliveryClient{Path.DirectorySeparatorChar}items.json")));
             }
             else
             {
                 _mockHttp
                     .When($"{_baseUrl}/items")
-                    .Respond("application/json", File.ReadAllText(Path.Combine(Environment.CurrentDirectory, "Fixtures\\DeliveryClient\\items.json")));
+                    .Respond("application/json", File.ReadAllText(Path.Combine(Environment.CurrentDirectory, $"Fixtures{Path.DirectorySeparatorChar}DeliveryClient{Path.DirectorySeparatorChar}items.json")));
             }
 
             var options = new DeliveryOptions
@@ -706,7 +706,7 @@ namespace KenticoCloud.Delivery.Tests
             _mockHttp
                 .Expect($"{_baseUrl}/items")
                 .WithHeaders("Authorization", $"Bearer {securityKey}")
-                .Respond("application/json", File.ReadAllText(Path.Combine(Environment.CurrentDirectory, "Fixtures\\DeliveryClient\\items.json")));
+                .Respond("application/json", File.ReadAllText(Path.Combine(Environment.CurrentDirectory, $"Fixtures{Path.DirectorySeparatorChar}DeliveryClient{Path.DirectorySeparatorChar}items.json")));
 
             var client = DeliveryClientFactory.GetMockedDeliveryClientWithOptions(options, _mockHttp);
 
@@ -875,7 +875,7 @@ namespace KenticoCloud.Delivery.Tests
             _mockHttp
                 .Expect($"{_baseUrl}/items")
                 .WithHeaders("X-KC-SDKID", $"nuget.org;{sdkPackageId};{sdkVersion}")
-                .Respond("application/json", File.ReadAllText(Path.Combine(Environment.CurrentDirectory, "Fixtures\\DeliveryClient\\items.json")));
+                .Respond("application/json", File.ReadAllText(Path.Combine(Environment.CurrentDirectory, $"Fixtures{Path.DirectorySeparatorChar}DeliveryClient{Path.DirectorySeparatorChar}items.json")));
 
             var client = DeliveryClientFactory.GetMockedDeliveryClientWithProjectId(_guid, _mockHttp);
 
@@ -897,7 +897,7 @@ namespace KenticoCloud.Delivery.Tests
             const string hostedVideoPrefix = "Video resolver: ";
             _mockHttp
                 .When($"{url}{"coffee_beverages_explained"}")
-                .Respond("application/json", File.ReadAllText(Path.Combine(Environment.CurrentDirectory, "Fixtures\\DeliveryClient\\coffee_beverages_explained.json")));
+                .Respond("application/json", File.ReadAllText(Path.Combine(Environment.CurrentDirectory, $"Fixtures{Path.DirectorySeparatorChar}DeliveryClient{Path.DirectorySeparatorChar}coffee_beverages_explained.json")));
 
             var deliveryClient = DeliveryClientBuilder
                 .WithProjectId(_guid)

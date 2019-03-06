@@ -30,7 +30,7 @@ namespace KenticoCloud.Delivery.Tests
 
         private static HttpClient MockHttpClient(string baseUrl)
         {
-            var responseJsonPath = Path.Combine(Environment.CurrentDirectory, "Fixtures\\home.json");
+            var responseJsonPath = Path.Combine(Environment.CurrentDirectory, $"Fixtures{Path.DirectorySeparatorChar}home.json");
             var responseJson = File.ReadAllText(responseJsonPath);
 
             var mockHttp = new MockHttpMessageHandler();

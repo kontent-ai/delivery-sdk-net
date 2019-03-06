@@ -120,7 +120,7 @@ namespace KenticoCloud.Delivery.Tests
             string guid = Guid.NewGuid().ToString();
             string url = $"https://deliver.kenticocloud.com/{guid}/items/coffee_processing_techniques";
             mockHttp.When(url).
-               Respond("application/json", File.ReadAllText(Path.Combine(Environment.CurrentDirectory, "Fixtures\\ContentLinkResolver\\coffee_processing_techniques.json")));
+               Respond("application/json", File.ReadAllText(Path.Combine(Environment.CurrentDirectory, $"Fixtures{Path.DirectorySeparatorChar}ContentLinkResolver{Path.DirectorySeparatorChar}coffee_processing_techniques.json")));
 
             var deliveryOptions = Options.Create(new DeliveryOptions { ProjectId = guid });
             var httpClient = mockHttp.ToHttpClient();
