@@ -20,17 +20,17 @@ namespace KenticoCloud.Delivery.Tests.DependencyInjectionFrameworks
         }
 
         [Fact]
-        public void DeliveryClientIsSuccessfullyResolvedFromUnityContainer_CustomCodeFirstModelProvider()
+        public void DeliveryClientIsSuccessfullyResolvedFromUnityContainer_CustomModelProvider()
         {
             var provider = DependencyInjectionFrameworksHelper
                 .GetServiceCollection()
                 .RegisterInlineContentItemResolvers()
-                .AddScoped<ICodeFirstModelProvider, FakeModelProvider>()
+                .AddScoped<IModelProvider, FakeModelProvider>()
                 .BuildUnityServiceProvider();
 
             var client = (DeliveryClient)provider.GetService<IDeliveryClient>();
 
-            client.AssertDefaultDependenciesWithCodeFirstModelProviderAndInlineContentItemTypeResolvers<FakeModelProvider>();
+            client.AssertDefaultDependenciesWithModelProviderAndInlineContentItemTypeResolvers<FakeModelProvider>();
         }
     }
 }

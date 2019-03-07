@@ -1,6 +1,6 @@
 ﻿using System.Collections.Generic;
 using FakeItEasy;
-using KenticoCloud.Delivery.CodeFirst;
+using KenticoCloud.Delivery.StrongTyping;
 using Microsoft.Extensions.Options;
 using Xunit;
 
@@ -12,23 +12,23 @@ namespace KenticoCloud.Delivery.Tests.QueryParameters
         private const string FAKE_PROJECT_ID = "00000000-0000-0000-0000-000000000000";
 
         private readonly DeliveryClient _client;
-        private readonly ICodeFirstTypeProvider _contentTypeProvider;
+        private readonly ITypeProvider _contentTypeProvider;
 
         public ContentTypeExtractorTests()
         {
-            _contentTypeProvider = A.Fake<ICodeFirstTypeProvider>();
+            _contentTypeProvider = A.Fake<ITypeProvider>();
 
             A.CallTo(() => _contentTypeProvider.GetCodename(typeof(TypeWithContentTypeCodename))).Returns(TypeWithContentTypeCodename.Codename);
             A.CallTo(() => _contentTypeProvider.GetCodename(typeof(TypeWithoutContentTypeCodename))).Returns(null);
 
             var deliveryOptions = Options.Create(new DeliveryOptions { ProjectId = FAKE_PROJECT_ID });
-            var codeFirstModelProvider = new CodeFirstModelProvider(null, null, _contentTypeProvider, null);
+            var modelProvider = new ModelProvider(null, null, _contentTypeProvider, null);
             _client = new DeliveryClient(
                 deliveryOptions,
                 null,
                 null,
                 null,
-                codeFirstModelProvider,
+                modelProvider,
                 null,
                 _contentTypeProvider
             );

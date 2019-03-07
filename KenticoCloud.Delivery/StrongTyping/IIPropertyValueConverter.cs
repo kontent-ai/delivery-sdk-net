@@ -14,6 +14,6 @@ namespace KenticoCloud.Delivery
         /// <param name="property">Property info</param>
         /// <param name="elementData">Source element data</param>
         /// <param name="context">Context of the current resolving process</param>
-        object GetPropertyValue(PropertyInfo property, JToken elementData, CodeFirstResolvingContext context);
+        object GetPropertyValue(PropertyInfo property, JToken elementData, ResolvingContext context);
     }
 }

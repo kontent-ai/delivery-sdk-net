@@ -5,7 +5,7 @@ namespace KenticoCloud.Delivery
     /// <summary>
     /// Context of the current resolving process
     /// </summary>
-    public class CodeFirstResolvingContext
+    public class ResolvingContext
     {
         /// <summary>
         /// Gets the content item within current resolving context

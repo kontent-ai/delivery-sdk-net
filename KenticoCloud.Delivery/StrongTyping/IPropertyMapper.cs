@@ -5,7 +5,7 @@ namespace KenticoCloud.Delivery
     /// <summary>
     /// Defines the contract for mapping Kentico Cloud content item fields to model properties.
     /// </summary>
-    public interface ICodeFirstPropertyMapper
+    public interface IPropertyMapper
     {
         /// <summary>
         /// Determines whether the given property corresponds with a given field.

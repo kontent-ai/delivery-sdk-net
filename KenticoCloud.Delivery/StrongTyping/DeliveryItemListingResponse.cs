@@ -11,7 +11,7 @@ namespace KenticoCloud.Delivery
     public sealed class DeliveryItemListingResponse<T> : AbstractResponse
     {
         private readonly JToken _response;
-        private readonly ICodeFirstModelProvider _codeFirstModelProvider;
+        private readonly IModelProvider _modelProvider;
         private dynamic _linkedItems;
         private Pagination _pagination;
         private IReadOnlyList<T> _items;
@@ -29,7 +29,7 @@ namespace KenticoCloud.Delivery
         /// </summary>
         public IReadOnlyList<T> Items
         {
-            get { return _items ?? (_items = ((JArray)_response["items"]).Select(source => _codeFirstModelProvider.GetContentItemModel<T>(source, _response["modular_content"])).ToList().AsReadOnly()); }
+            get { return _items ?? (_items = ((JArray)_response["items"]).Select(source => _modelProvider.GetContentItemModel<T>(source, _response["modular_content"])).ToList().AsReadOnly()); }
         }
 
 
@@ -45,12 +45,12 @@ namespace KenticoCloud.Delivery
         /// Initializes a new instance of the <see cref="DeliveryItemListingResponse"/> class with information from a response.
         /// </summary>
         /// <param name="response">A response from Kentico Cloud Delivery API that contains a list of content items.</param>
-        /// <param name="codeFirstModelProvider"></param>
+        /// <param name="modelProvider"></param>
         /// <param name="apiUrl">API URL used to communicate with the underlying Kentico Cloud endpoint.</param>
-        internal DeliveryItemListingResponse(JToken response, ICodeFirstModelProvider codeFirstModelProvider, string apiUrl) : base(apiUrl)
+        internal DeliveryItemListingResponse(JToken response, IModelProvider modelProvider, string apiUrl) : base(apiUrl)
         {
             _response = response;
-            _codeFirstModelProvider = codeFirstModelProvider;
+            _modelProvider = modelProvider;
         }
     }
 }

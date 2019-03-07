@@ -5,7 +5,7 @@ namespace KenticoCloud.Delivery
     /// <summary>
     /// Defines the contract for mapping Kentico Cloud content types to CLR types.
     /// </summary>
-    public interface ICodeFirstTypeProvider
+    public interface ITypeProvider
     {
         /// <summary>
         /// Returns a CLR type corresponding to the given content type.

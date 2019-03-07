@@ -3,29 +3,29 @@ using KenticoCloud.Delivery.InlineContentItems;
 using Newtonsoft.Json.Linq;
 using System;
 using System.Reflection;
-using KenticoCloud.Delivery.CodeFirst;
+using KenticoCloud.Delivery.StrongTyping;
 using KenticoCloud.Delivery.Tests.Factories;
 using Xunit;
 
 namespace KenticoCloud.Delivery.Tests
 {
-    public class CodeFirstModelProviderTests
+    public class ModelProviderTests
     {
         [Fact]
         // During processing of inline content items, item which detects circular dependency ( A refs B, B refs A ) should resolve resolved item
         // as if there were no inline content items, which will prevent circular dependency
         public void RetrievingContentModelWithCircularDependencyDoesNotCycle()
         {
-            var codeFirstTypeProvider = A.Fake<ICodeFirstTypeProvider>();
+            var typeProvider = A.Fake<ITypeProvider>();
             var contentLinkUrlResolver = A.Fake<IContentLinkUrlResolver>();
-            var propertyMapper = A.Fake<ICodeFirstPropertyMapper>();
+            var propertyMapper = A.Fake<IPropertyMapper>();
             A.CallTo(() => propertyMapper.IsMatch(A<PropertyInfo>._, A<string>._, A<string>._)).Returns(true);
-            A.CallTo(() => codeFirstTypeProvider.GetType(A<string>._)).Returns(typeof(ContentItemWithSingleRte));
+            A.CallTo(() => typeProvider.GetType(A<string>._)).Returns(typeof(ContentItemWithSingleRte));
 
             var processor = InlineContentItemsProcessorFactory
                 .WithResolver(ResolveItemWithSingleRte)
                 .Build();
-            var retriever = new CodeFirstModelProvider(contentLinkUrlResolver, processor, codeFirstTypeProvider, propertyMapper);
+            var retriever = new ModelProvider(contentLinkUrlResolver, processor, typeProvider, propertyMapper);
 
             var item = JToken.FromObject(Rt1);
             var linkedItems = JToken.FromObject(LinkedItemsForItemWithTwoReferencedContentItems);
@@ -39,16 +39,16 @@ namespace KenticoCloud.Delivery.Tests
         [Fact]
         public void RetrievingNonExistentContentModelCreatesWarningInRichtext()
         {
-            var codeFirstTypeProvider = A.Fake<ICodeFirstTypeProvider>();
+            var typeProvider = A.Fake<ITypeProvider>();
             var contentLinkUrlResolver = A.Fake<IContentLinkUrlResolver>();
-            var propertyMapper = A.Fake<ICodeFirstPropertyMapper>();
-            A.CallTo(() => codeFirstTypeProvider.GetType(A<string>._)).Returns(null);
+            var propertyMapper = A.Fake<IPropertyMapper>();
+            A.CallTo(() => typeProvider.GetType(A<string>._)).Returns(null);
             A.CallTo(() => propertyMapper.IsMatch(A<PropertyInfo>._, A<string>._, A<string>._)).Returns(true);
 
             var processor = InlineContentItemsProcessorFactory
                 .WithResolver(factory => factory.ResolveTo<UnknownContentItem>(unknownItem => $"Content type '{unknownItem.Type}' has no corresponding model."))
                 .Build();
-            var retriever = new CodeFirstModelProvider(contentLinkUrlResolver, processor, codeFirstTypeProvider, propertyMapper);
+            var retriever = new ModelProvider(contentLinkUrlResolver, processor, typeProvider, propertyMapper);
 
             var item = JToken.FromObject(Rt5);
             var linkedItems = JToken.FromObject(LinkedItemWithNoModel);
@@ -66,16 +66,16 @@ namespace KenticoCloud.Delivery.Tests
         // this is same as in other cases, because as soon as we start processing item which is already being processed we remove inline content items.
         public void RetrievingContentModelWithItemInlineReferencingItselfDoesNotCycle()
         {
-            var codeFirstTypeProvider = A.Fake<ICodeFirstTypeProvider>();
+            var typeProvider = A.Fake<ITypeProvider>();
             var contentLinkUrlResolver = A.Fake<IContentLinkUrlResolver>();
-            var propertyMapper = A.Fake<ICodeFirstPropertyMapper>();
-            A.CallTo(() => codeFirstTypeProvider.GetType(A<string>._)).Returns(typeof(ContentItemWithSingleRte));
+            var propertyMapper = A.Fake<IPropertyMapper>();
+            A.CallTo(() => typeProvider.GetType(A<string>._)).Returns(typeof(ContentItemWithSingleRte));
             A.CallTo(() => propertyMapper.IsMatch(A<PropertyInfo>._, A<string>._, A<string>._)).Returns(true);
 
             var processor = InlineContentItemsProcessorFactory
                 .WithResolver(ResolveItemWithSingleRte)
                 .Build();
-            var retriever = new CodeFirstModelProvider(contentLinkUrlResolver, processor, codeFirstTypeProvider, propertyMapper);
+            var retriever = new ModelProvider(contentLinkUrlResolver, processor, typeProvider, propertyMapper);
 
             var item = JToken.FromObject(Rt3);
             var linkedItems = JToken.FromObject(LinkedItemsForItemReferencingItself);
@@ -95,10 +95,10 @@ namespace KenticoCloud.Delivery.Tests
 
             var contentLinkUrlResolver = A.Fake<IContentLinkUrlResolver>();
             var inlineContentItemsProcessor = A.Fake<IInlineContentItemsProcessor>();
-            var codeFirstTypeProvider = A.Fake<ICodeFirstTypeProvider>();
-            var propertyMapper = A.Fake<ICodeFirstPropertyMapper>();
-            A.CallTo(() => codeFirstTypeProvider.GetType("newType")).Returns(null);
-            var modelProvider = new CodeFirstModelProvider(contentLinkUrlResolver, inlineContentItemsProcessor, codeFirstTypeProvider, propertyMapper);
+            var typeProvider = A.Fake<ITypeProvider>();
+            var propertyMapper = A.Fake<IPropertyMapper>();
+            A.CallTo(() => typeProvider.GetType("newType")).Returns(null);
+            var modelProvider = new ModelProvider(contentLinkUrlResolver, inlineContentItemsProcessor, typeProvider, propertyMapper);
 
             Assert.Null(modelProvider.GetContentItemModel<object>(item, linkedItems));
         }

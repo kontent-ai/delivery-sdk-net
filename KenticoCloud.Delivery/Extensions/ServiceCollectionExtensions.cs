@@ -3,10 +3,10 @@ using System.Linq;
 using System.Net.Http;
 using KenticoCloud.Delivery;
 using KenticoCloud.Delivery.Builders.DeliveryOptions;
-using KenticoCloud.Delivery.CodeFirst;
 using KenticoCloud.Delivery.ContentLinks;
 using KenticoCloud.Delivery.InlineContentItems;
 using KenticoCloud.Delivery.ResiliencePolicy;
+using KenticoCloud.Delivery.StrongTyping;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection.Extensions;
 
@@ -106,14 +106,14 @@ namespace Microsoft.Extensions.DependencyInjection
         private static IServiceCollection RegisterDependencies(this IServiceCollection services)
         {
             services.TryAddSingleton<IContentLinkUrlResolver, DefaultContentLinkUrlResolver>();
-            services.TryAddSingleton<ICodeFirstTypeProvider, CodeFirstTypeProvider>();
+            services.TryAddSingleton<ITypeProvider, TypeProvider>();
             services.TryAddSingleton(new HttpClient());
             services.TryAddDeliveryInlineContentItemsResolver<object, ReplaceWithWarningAboutRegistrationResolver>();
             services.TryAddDeliveryInlineContentItemsResolver<UnretrievedContentItem, ReplaceWithWarningAboutUnretrievedItemResolver>();
             services.TryAddDeliveryInlineContentItemsResolver<UnknownContentItem, ReplaceWithWarningAboutUnknownItemResolver>();
             services.TryAddSingleton<IInlineContentItemsProcessor, InlineContentItemsProcessor>();
-            services.TryAddSingleton<ICodeFirstModelProvider, CodeFirstModelProvider>();
-            services.TryAddSingleton<ICodeFirstPropertyMapper, CodeFirstPropertyMapper>();
+            services.TryAddSingleton<IModelProvider, ModelProvider>();
+            services.TryAddSingleton<IPropertyMapper, PropertyMapper>();
             services.TryAddSingleton<IResiliencePolicyProvider, DefaultResiliencePolicyProvider>();
             services.TryAddSingleton<IDeliveryClient, DeliveryClient>();
 

@@ -7,17 +7,17 @@ using KenticoCloud.Delivery.InlineContentItems;
 using Newtonsoft.Json;
 using Newtonsoft.Json.Linq;
 
-namespace KenticoCloud.Delivery.CodeFirst
+namespace KenticoCloud.Delivery.StrongTyping
 {
     /// <summary>
-    /// A default provider for mapping content items to code-first models.
+    /// A default provider for mapping content items to models.
     /// </summary>
-    internal class CodeFirstModelProvider : ICodeFirstModelProvider
+    internal class ModelProvider : IModelProvider
     {
         private readonly IContentLinkUrlResolver _contentLinkUrlResolver;
-        private readonly ICodeFirstTypeProvider _typeProvider;
+        private readonly ITypeProvider _typeProvider;
         private readonly IInlineContentItemsProcessor _inlineContentItemsProcessor;
-        private readonly ICodeFirstPropertyMapper _propertyMapper;
+        private readonly IPropertyMapper _propertyMapper;
         private ContentLinkResolver _contentLinkResolver;
 
         internal ContentLinkResolver ContentLinkResolver
@@ -33,13 +33,13 @@ namespace KenticoCloud.Delivery.CodeFirst
         }
 
         /// <summary>
-        /// Initializes a new instance of <see cref="CodeFirstModelProvider"/>.
+        /// Initializes a new instance of <see cref="ModelProvider"/>.
         /// </summary>
-        public CodeFirstModelProvider(
+        public ModelProvider(
             IContentLinkUrlResolver contentLinkUrlResolver,
             IInlineContentItemsProcessor inlineContentItemsProcessor,
-            ICodeFirstTypeProvider typeProvider,
-            ICodeFirstPropertyMapper propertyMapper
+            ITypeProvider typeProvider,
+            IPropertyMapper propertyMapper
         )
         {
             _contentLinkUrlResolver = contentLinkUrlResolver;
@@ -49,7 +49,7 @@ namespace KenticoCloud.Delivery.CodeFirst
         }
 
         /// <summary>
-        /// Builds a code-first model based on given JSON input.
+        /// Builds a model based on given JSON input.
         /// </summary>
         /// <typeparam name="T">Strongly typed content item model.</typeparam>
         /// <param name="item">Content item data.</param>
@@ -113,7 +113,7 @@ namespace KenticoCloud.Delivery.CodeFirst
         }
 
 
-        private object GetRichTextValue(string value, JObject elementsData, PropertyInfo property, JObject linkedItems, CodeFirstResolvingContext context, ContentItemSystemAttributes itemSystemAttributes, ref Dictionary<string, object> processedItems, ref HashSet<RichTextContentElements> currentlyResolvedRichStrings)
+        private object GetRichTextValue(string value, JObject elementsData, PropertyInfo property, JObject linkedItems, ResolvingContext context, ContentItemSystemAttributes itemSystemAttributes, ref Dictionary<string, object> processedItems, ref HashSet<RichTextContentElements> currentlyResolvedRichStrings)
         {
             var currentlyProcessedString = new RichTextContentElements(itemSystemAttributes?.Codename, property.Name);
             if (currentlyResolvedRichStrings.Contains(currentlyProcessedString))
@@ -169,9 +169,9 @@ namespace KenticoCloud.Delivery.CodeFirst
         }
 
 
-        private CodeFirstResolvingContext CreateResolvingContext(JObject linkedItems, Dictionary<string, object> processedItems)
+        private ResolvingContext CreateResolvingContext(JObject linkedItems, Dictionary<string, object> processedItems)
         {
-            return new CodeFirstResolvingContext
+            return new ResolvingContext
             {
                 GetLinkedItem = codename =>
                 {
@@ -189,7 +189,7 @@ namespace KenticoCloud.Delivery.CodeFirst
             };
         }
 
-        private object GetPropertyValue(JObject elementsData, PropertyInfo property, JObject linkedItems, CodeFirstResolvingContext context, ContentItemSystemAttributes itemSystemAttributes, ref Dictionary<string, object> processedItems, ref List<PropertyInfo> richTextPropertiesToBeProcessed)
+        private object GetPropertyValue(JObject elementsData, PropertyInfo property, JObject linkedItems, ResolvingContext context, ContentItemSystemAttributes itemSystemAttributes, ref Dictionary<string, object> processedItems, ref List<PropertyInfo> richTextPropertiesToBeProcessed)
         {
             var elementData = GetElementData(elementsData, property, itemSystemAttributes);
 

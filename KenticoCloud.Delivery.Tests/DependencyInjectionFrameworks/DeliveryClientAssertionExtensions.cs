@@ -1,8 +1,8 @@
 ﻿using System.Linq;
-using KenticoCloud.Delivery.CodeFirst;
 using KenticoCloud.Delivery.ContentLinks;
 using KenticoCloud.Delivery.InlineContentItems;
 using KenticoCloud.Delivery.ResiliencePolicy;
+using KenticoCloud.Delivery.StrongTyping;
 using Xunit;
 
 namespace KenticoCloud.Delivery.Tests.DependencyInjectionFrameworks
@@ -13,27 +13,27 @@ namespace KenticoCloud.Delivery.Tests.DependencyInjectionFrameworks
 
         internal static void AssertDefaultDependencies(this DeliveryClient client)
             => client
-                .AssertDefaultDependenciesWithCustomCodeFirstModelProvider<CodeFirstModelProvider>();
+                .AssertDefaultDependenciesWithCustomModelProvider<ModelProvider>();
 
-        internal static void AssertDefaultDependenciesWithCodeFirstModelProviderAndInlineContentItemTypeResolvers<TCustomCodeFirstModelProvider>(
+        internal static void AssertDefaultDependenciesWithModelProviderAndInlineContentItemTypeResolvers<TCustomModelProvider>(
             this DeliveryClient client)
-            where TCustomCodeFirstModelProvider : ICodeFirstModelProvider
+            where TCustomModelProvider : IModelProvider
             => client
                 .AssertInlineContentItemTypesWithResolver()
-                .AssertDefaultDependenciesWithCustomCodeFirstModelProvider<TCustomCodeFirstModelProvider>();
+                .AssertDefaultDependenciesWithCustomModelProvider<TCustomModelProvider>();
 
-        private static void AssertDefaultDependenciesWithCustomCodeFirstModelProvider<TCustomCodeFirstModelProvider>(this DeliveryClient client)
-            where TCustomCodeFirstModelProvider : ICodeFirstModelProvider
+        private static void AssertDefaultDependenciesWithCustomModelProvider<TCustomModelProvider>(this DeliveryClient client)
+            where TCustomModelProvider : IModelProvider
         {
             Assert.IsType<DeliveryClient>(client);
             Assert.Equal(ProjectId, client.DeliveryOptions?.ProjectId);
-            Assert.IsType<CodeFirstPropertyMapper>(client.CodeFirstPropertyMapper);
-            Assert.IsType<CodeFirstTypeProvider>(client.CodeFirstTypeProvider);
+            Assert.IsType<PropertyMapper>(client.PropertyMapper);
+            Assert.IsType<TypeProvider>(client.TypeProvider);
             Assert.IsType<DefaultContentLinkUrlResolver>(client.ContentLinkUrlResolver);
             Assert.IsType<InlineContentItemsProcessor>(client.InlineContentItemsProcessor);
             Assert.IsType<DefaultResiliencePolicyProvider>(client.ResiliencePolicyProvider);
             Assert.IsType<DeliveryOptions>(client.DeliveryOptions);
-            Assert.IsType<TCustomCodeFirstModelProvider>(client.CodeFirstModelProvider);
+            Assert.IsType<TCustomModelProvider>(client.ModelProvider);
         }
 
         internal static DeliveryClient AssertInlineContentItemTypesWithResolver(this DeliveryClient client)

@@ -55,14 +55,14 @@ namespace KenticoCloud.Delivery.Builders.DeliveryClient
         /// <summary>
         /// Sets a custom instance of an object that can JSON responses into strongly typed CLR objects to the <see cref="IDeliveryClient"/> instance.
         /// </summary>
-        /// <param name="codeFirstModelProvider">An instance of an object that can JSON responses into strongly typed CLR objects</param>
-        IOptionalClientSetup WithCodeFirstModelProvider(ICodeFirstModelProvider codeFirstModelProvider);
+        /// <param name="modelProvider">An instance of an object that can JSON responses into strongly typed CLR objects</param>
+        IOptionalClientSetup WithModelProvider(IModelProvider modelProvider);
 
         /// <summary>
         /// Sets a custom instance of an object that can map Kentico Cloud content types to CLR types to the <see cref="IDeliveryClient"/> instance.
         /// </summary>
-        /// <param name="codeFirstTypeProvider">An instance of an object that can map Kentico Cloud content types to CLR types</param>
-        IOptionalClientSetup WithCodeFirstTypeProvider(ICodeFirstTypeProvider codeFirstTypeProvider);
+        /// <param name="typeProvider">An instance of an object that can map Kentico Cloud content types to CLR types</param>
+        IOptionalClientSetup WithTypeProvider(ITypeProvider typeProvider);
 
         /// <summary>
         /// Sets a custom instance of a provider of a resilience (retry) policy to the <see cref="IDeliveryClient"/> instance.
@@ -74,7 +74,7 @@ namespace KenticoCloud.Delivery.Builders.DeliveryClient
         /// Sets a custom instance of an object that can map Kentico Cloud content item fields to model properties to the <see cref="IDeliveryClient"/> instance.
         /// </summary>
         /// <param name="propertyMapper">An instance of an object that can map Kentico Cloud content item fields to model properties</param>
-        IOptionalClientSetup WithCodeFirstPropertyMapper(ICodeFirstPropertyMapper propertyMapper);
+        IOptionalClientSetup WithPropertyMapper(IPropertyMapper propertyMapper);
     }
 
     /// <summary>

@@ -2,12 +2,12 @@ using System;
 using System.Reflection;
 using Newtonsoft.Json;
 
-namespace KenticoCloud.Delivery.CodeFirst
+namespace KenticoCloud.Delivery.StrongTyping
 {
     /// <summary>
     /// Default provider for mapping Kentico Cloud content item fields to model properties.
     /// </summary>
-    internal class CodeFirstPropertyMapper : ICodeFirstPropertyMapper
+    internal class PropertyMapper : IPropertyMapper
     {
         /// <summary>
         /// Determines whether the given property corresponds with a given field.

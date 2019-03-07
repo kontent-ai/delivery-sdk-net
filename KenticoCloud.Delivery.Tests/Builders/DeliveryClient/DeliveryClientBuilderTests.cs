@@ -48,15 +48,15 @@ namespace KenticoCloud.Delivery.Tests.Builders.DeliveryClient
         [Fact]
         public void BuildWithOptionalSteps_ReturnsDeliveryClientWithSetInstances()
         {
-            var mockCodeFirstModelProvider = A.Fake<ICodeFirstModelProvider>();
+            var mockModelProvider = A.Fake<IModelProvider>();
             var mockResiliencePolicyProvider = A.Fake<IResiliencePolicyProvider>();
-            var mockCodeFirstPropertyMapper = A.Fake<ICodeFirstPropertyMapper>();
+            var mockPropertyMapper = A.Fake<IPropertyMapper>();
             var mockContentLinkUrlResolver = A.Fake<IContentLinkUrlResolver>();
             var mockInlineContentItemsProcessor = A.Fake<IInlineContentItemsProcessor>();
             var mockDefaultInlineContentItemsResolver = A.Fake<IInlineContentItemsResolver<object>>();
             var mockUnretrievedInlineContentItemsResolver = A.Fake<IInlineContentItemsResolver<UnretrievedContentItem>>();
             var mockAnContentItemsResolver = A.Fake<IInlineContentItemsResolver<CompleteContentItemModel>>();
-            var mockCodeFirstTypeProvider = A.Fake<ICodeFirstTypeProvider>();
+            var mockTypeProvider = A.Fake<ITypeProvider>();
             var mockHttp = new MockHttpMessageHandler().ToHttpClient();            
 
             var deliveryClient = (Delivery.DeliveryClient) DeliveryClientBuilder
@@ -67,19 +67,19 @@ namespace KenticoCloud.Delivery.Tests.Builders.DeliveryClient
                 .WithInlineContentItemsResolver(mockDefaultInlineContentItemsResolver)
                 .WithInlineContentItemsResolver(mockUnretrievedInlineContentItemsResolver)
                 .WithInlineContentItemsResolver(mockAnContentItemsResolver)
-                .WithCodeFirstModelProvider(mockCodeFirstModelProvider)
-                .WithCodeFirstPropertyMapper(mockCodeFirstPropertyMapper)
+                .WithModelProvider(mockModelProvider)
+                .WithPropertyMapper(mockPropertyMapper)
                 .WithResiliencePolicyProvider(mockResiliencePolicyProvider)
-                .WithCodeFirstTypeProvider(mockCodeFirstTypeProvider)
+                .WithTypeProvider(mockTypeProvider)
                 .Build();
 
             Assert.Equal(ProjectId, deliveryClient.DeliveryOptions.ProjectId);
             Assert.Equal(mockContentLinkUrlResolver, deliveryClient.ContentLinkUrlResolver);            
             Assert.Equal(mockInlineContentItemsProcessor, deliveryClient.InlineContentItemsProcessor);
-            Assert.Equal(mockCodeFirstModelProvider, deliveryClient.CodeFirstModelProvider);
-            Assert.Equal(mockCodeFirstPropertyMapper, deliveryClient.CodeFirstPropertyMapper);
+            Assert.Equal(mockModelProvider, deliveryClient.ModelProvider);
+            Assert.Equal(mockPropertyMapper, deliveryClient.PropertyMapper);
             Assert.Equal(mockResiliencePolicyProvider, deliveryClient.ResiliencePolicyProvider);
-            Assert.Equal(mockCodeFirstTypeProvider, deliveryClient.CodeFirstTypeProvider);
+            Assert.Equal(mockTypeProvider, deliveryClient.TypeProvider);
             Assert.Equal(mockHttp, deliveryClient.HttpClient);
         }
 
@@ -112,14 +112,14 @@ namespace KenticoCloud.Delivery.Tests.Builders.DeliveryClient
         [Fact]
         public void BuildWithOptionalStepsAndCustomProvider_ReturnsDeliveryClientWithSetInstances()
         {
-            var codeFirstModelProvider = new FakeModelProvider();
+            var modelProvider = new FakeModelProvider();
 
             var deliveryClient = (Delivery.DeliveryClient) DeliveryClientBuilder
                 .WithProjectId(ProjectId)
-                .WithCodeFirstModelProvider(codeFirstModelProvider)
+                .WithModelProvider(modelProvider)
                 .Build();
 
-            Assert.Equal(codeFirstModelProvider, deliveryClient.CodeFirstModelProvider);
+            Assert.Equal(modelProvider, deliveryClient.ModelProvider);
         }
 
         [Fact]
@@ -137,9 +137,9 @@ namespace KenticoCloud.Delivery.Tests.Builders.DeliveryClient
                 .Build();
             var actualResolvableInlineContentItemTypes = GetResolvableInlineContentItemTypes(deliveryClient);
 
-            Assert.NotNull(deliveryClient.CodeFirstModelProvider);
-            Assert.NotNull(deliveryClient.CodeFirstPropertyMapper);
-            Assert.NotNull(deliveryClient.CodeFirstTypeProvider);
+            Assert.NotNull(deliveryClient.ModelProvider);
+            Assert.NotNull(deliveryClient.PropertyMapper);
+            Assert.NotNull(deliveryClient.TypeProvider);
             Assert.NotNull(deliveryClient.ContentLinkUrlResolver);
             Assert.NotNull(deliveryClient.HttpClient);
             Assert.NotNull(deliveryClient.InlineContentItemsProcessor);
@@ -164,11 +164,11 @@ namespace KenticoCloud.Delivery.Tests.Builders.DeliveryClient
         }
 
         [Fact]
-        public void BuildWithOptionsAndNullCodeFirstModelProvider_ThrowsArgumentNullException()
+        public void BuildWithOptionsAndNullModelProvider_ThrowsArgumentNullException()
         {
             var builderStep = DeliveryClientBuilder.WithProjectId(_guid);
 
-            Assert.Throws<ArgumentNullException>(() => builderStep.WithCodeFirstModelProvider(null));
+            Assert.Throws<ArgumentNullException>(() => builderStep.WithModelProvider(null));
         }
 
         [Fact]
@@ -188,11 +188,11 @@ namespace KenticoCloud.Delivery.Tests.Builders.DeliveryClient
         }
 
         [Fact]
-        public void BuildWithOptionsAndNullCodeFirstTypeProvider_ThrowsArgumentNullException()
+        public void BuildWithOptionsAndNullTypeProvider_ThrowsArgumentNullException()
         {
             var builderStep = DeliveryClientBuilder.WithProjectId(_guid);
 
-            Assert.Throws<ArgumentNullException>(() => builderStep.WithCodeFirstTypeProvider(null));
+            Assert.Throws<ArgumentNullException>(() => builderStep.WithTypeProvider(null));
         }
 
         [Fact]
@@ -204,11 +204,11 @@ namespace KenticoCloud.Delivery.Tests.Builders.DeliveryClient
         }
 
         [Fact]
-        public void BuildWithOptionsAndNullCodeFirstPropertyMapper_ThrowsArgumentNullException()
+        public void BuildWithOptionsAndNullPropertyMapper_ThrowsArgumentNullException()
         {
             var builderStep = DeliveryClientBuilder.WithProjectId(_guid);
 
-            Assert.Throws<ArgumentNullException>(() => builderStep.WithCodeFirstPropertyMapper(null));
+            Assert.Throws<ArgumentNullException>(() => builderStep.WithPropertyMapper(null));
         }
 
         private static IEnumerable<Type> GetResolvableInlineContentItemTypes(Delivery.DeliveryClient deliveryClient)
