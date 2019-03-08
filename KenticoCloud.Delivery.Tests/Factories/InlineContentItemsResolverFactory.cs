@@ -40,8 +40,8 @@ namespace KenticoCloud.Delivery.Tests.Factories
             public SimpleResolver(Func<TContentItem, string> resultSelector)
                 => _resultSelector = resultSelector;
 
-            public string Resolve(ResolvedContentItemData<TContentItem> item)
-                => _resultSelector(item.Item);
+            public string Resolve(TContentItem item)
+                => _resultSelector(item);
         }
     }
 }

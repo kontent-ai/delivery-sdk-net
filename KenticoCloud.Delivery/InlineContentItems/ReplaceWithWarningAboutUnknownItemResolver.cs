@@ -2,7 +2,7 @@
 {
     internal class ReplaceWithWarningAboutUnknownItemResolver : IInlineContentItemsResolver<UnknownContentItem>
     {
-        public string Resolve(ResolvedContentItemData<UnknownContentItem> item)
-            => $"Content type '{item.Item.Type}' has no corresponding model.";
+        public string Resolve(UnknownContentItem item)
+            => $"Content type '{item.Type}' has no corresponding model.";
     }
 }

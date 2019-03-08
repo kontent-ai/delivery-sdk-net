@@ -6,7 +6,7 @@
     internal class ReplaceWithWarningAboutRegistrationResolver : IInlineContentItemsResolver<object>
     {
         /// <inheritdoc />
-        public string Resolve(ResolvedContentItemData<object> item)
+        public string Resolve(object item)
             => $"Resolver for content type {item.GetType()} is not registered. Please do so in your app.";
     }
 }
