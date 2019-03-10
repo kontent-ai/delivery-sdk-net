@@ -20,9 +20,9 @@ namespace KenticoCloud.Delivery
         internal readonly DeliveryOptions DeliveryOptions;
         internal readonly IContentLinkUrlResolver ContentLinkUrlResolver;
         internal readonly IInlineContentItemsProcessor InlineContentItemsProcessor;
-        internal readonly ICodeFirstModelProvider CodeFirstModelProvider;
-        internal readonly ICodeFirstTypeProvider CodeFirstTypeProvider;
-        internal readonly ICodeFirstPropertyMapper CodeFirstPropertyMapper;
+        internal readonly IModelProvider ModelProvider;
+        internal readonly ITypeProvider TypeProvider;
+        internal readonly IPropertyMapper PropertyMapper;
         internal readonly IResiliencePolicyProvider ResiliencePolicyProvider;
         internal readonly HttpClient HttpClient;
 
@@ -38,29 +38,29 @@ namespace KenticoCloud.Delivery
         /// <param name="httpClient">A custom HTTP client instance</param>
         /// <param name="contentLinkUrlResolver">An instance of an object that can resolve links in rich text elements</param>
         /// <param name="contentItemsProcessor">An instance of an object that can resolve linked items in rich text elements</param>
-        /// <param name="codeFirstModelProvider">An instance of an object that can JSON responses into strongly typed CLR objects</param>
+        /// <param name="modelProvider">An instance of an object that can JSON responses into strongly typed CLR objects</param>
         /// <param name="retryPolicyProvider">A provider of a resilience (retry) policy.</param>
-        /// <param name="codeFirstTypeProvider">An instance of an object that can map Kentico Cloud content types to CLR types</param>
-        /// <param name="codeFirstPropertyMapper">An instance of an object that can map Kentico Cloud content item fields to model properties</param>
+        /// <param name="typeProvider">An instance of an object that can map Kentico Cloud content types to CLR types</param>
+        /// <param name="propertyMapper">An instance of an object that can map Kentico Cloud content item fields to model properties</param>
         public DeliveryClient(
             IOptions<DeliveryOptions> deliveryOptions,
             HttpClient httpClient = null,
             IContentLinkUrlResolver contentLinkUrlResolver = null,
             IInlineContentItemsProcessor contentItemsProcessor = null,
-            ICodeFirstModelProvider codeFirstModelProvider = null,
+            IModelProvider modelProvider = null,
             IResiliencePolicyProvider retryPolicyProvider = null,
-            ICodeFirstTypeProvider codeFirstTypeProvider = null,
-            ICodeFirstPropertyMapper codeFirstPropertyMapper = null
+            ITypeProvider typeProvider = null,
+            IPropertyMapper propertyMapper = null
         )
         {
             DeliveryOptions = deliveryOptions.Value;
             HttpClient = httpClient;
             ContentLinkUrlResolver = contentLinkUrlResolver;
             InlineContentItemsProcessor = contentItemsProcessor;
-            CodeFirstModelProvider = codeFirstModelProvider;
+            ModelProvider = modelProvider;
             ResiliencePolicyProvider = retryPolicyProvider;
-            CodeFirstTypeProvider = codeFirstTypeProvider;
-            CodeFirstPropertyMapper = codeFirstPropertyMapper;
+            TypeProvider = typeProvider;
+            PropertyMapper = propertyMapper;
         }
 
         /// <summary>
@@ -112,7 +112,7 @@ namespace KenticoCloud.Delivery
         /// <summary>
         /// Gets a strongly typed content item by its codename. By default, retrieves one level of linked items.
         /// </summary>
-        /// <typeparam name="T">Type of the code-first model. (Or <see cref="object"/> if the return type is not yet known.)</typeparam>
+        /// <typeparam name="T">Type of the model. (Or <see cref="object"/> if the return type is not yet known.)</typeparam>
         /// <param name="codename">The codename of a content item.</param>
         /// <param name="parameters">An array that contains zero or more query parameters, for example, for projection or setting the depth of linked items.</param>
         /// <returns>The <see cref="DeliveryItemResponse{T}"/> instance that contains the content item with the specified codename.</returns>
@@ -142,13 +142,13 @@ namespace KenticoCloud.Delivery
             var endpointUrl = UrlBuilder.GetItemUrl(codename, parameters);
             var response = await GetDeliverResponseAsync(endpointUrl);
 
-            return new DeliveryItemResponse(response, CodeFirstModelProvider, ContentLinkUrlResolver, endpointUrl);
+            return new DeliveryItemResponse(response, ModelProvider, ContentLinkUrlResolver, endpointUrl);
         }
 
         /// <summary>
         /// Gets a strongly typed content item by its codename. By default, retrieves one level of linked items.
         /// </summary>
-        /// <typeparam name="T">Type of the code-first model. (Or <see cref="object"/> if the return type is not yet known.)</typeparam>
+        /// <typeparam name="T">Type of the model. (Or <see cref="object"/> if the return type is not yet known.)</typeparam>
         /// <param name="codename">The codename of a content item.</param>
         /// <param name="parameters">A collection of query parameters, for example, for projection or setting the depth of linked items.</param>
         /// <returns>The <see cref="DeliveryItemResponse{T}"/> instance that contains the content item with the specified codename.</returns>
@@ -162,7 +162,7 @@ namespace KenticoCloud.Delivery
             var endpointUrl = UrlBuilder.GetItemUrl(codename, parameters);
             var response = await GetDeliverResponseAsync(endpointUrl);
 
-            return new DeliveryItemResponse<T>(response, CodeFirstModelProvider, endpointUrl);
+            return new DeliveryItemResponse<T>(response, ModelProvider, endpointUrl);
         }
 
         /// <summary>
@@ -185,13 +185,13 @@ namespace KenticoCloud.Delivery
             var endpointUrl = UrlBuilder.GetItemsUrl(parameters);
             var response = await GetDeliverResponseAsync(endpointUrl);
 
-            return new DeliveryItemListingResponse(response, CodeFirstModelProvider, ContentLinkUrlResolver, endpointUrl);
+            return new DeliveryItemListingResponse(response, ModelProvider, ContentLinkUrlResolver, endpointUrl);
         }
 
         /// <summary>
         /// Returns strongly typed content items that match the optional filtering parameters. By default, retrieves one level of linked items.
         /// </summary>
-        /// <typeparam name="T">Type of the code-first model. (Or <see cref="object"/> if the return type is not yet known.)</typeparam>
+        /// <typeparam name="T">Type of the model. (Or <see cref="object"/> if the return type is not yet known.)</typeparam>
         /// <param name="parameters">An array that contains zero or more query parameters, for example, for filtering, ordering, or setting the depth of linked items.</param>
         /// <returns>The <see cref="DeliveryItemListingResponse{T}"/> instance that contains the content items. If no query parameters are specified, all content items are returned.</returns>
         public async Task<DeliveryItemListingResponse<T>> GetItemsAsync<T>(params IQueryParameter[] parameters)
@@ -202,7 +202,7 @@ namespace KenticoCloud.Delivery
         /// <summary>
         /// Returns strongly typed content items that match the optional filtering parameters. By default, retrieves one level of linked items.
         /// </summary>
-        /// <typeparam name="T">Type of the code-first model. (Or <see cref="object"/> if the return type is not yet known.)</typeparam>
+        /// <typeparam name="T">Type of the model. (Or <see cref="object"/> if the return type is not yet known.)</typeparam>
         /// <param name="parameters">A collection of query parameters, for example, for filtering, ordering, or setting the depth of linked items.</param>
         /// <returns>The <see cref="DeliveryItemListingResponse{T}"/> instance that contains the content items. If no query parameters are specified, all content items are returned.</returns>
         public async Task<DeliveryItemListingResponse<T>> GetItemsAsync<T>(IEnumerable<IQueryParameter> parameters)
@@ -211,7 +211,7 @@ namespace KenticoCloud.Delivery
             var endpointUrl = UrlBuilder.GetItemsUrl(enhancedParameters);
             var response = await GetDeliverResponseAsync(endpointUrl);
 
-            return new DeliveryItemListingResponse<T>(response, CodeFirstModelProvider, endpointUrl);
+            return new DeliveryItemListingResponse<T>(response, ModelProvider, endpointUrl);
         }
 
         /// <summary>
@@ -494,7 +494,7 @@ namespace KenticoCloud.Delivery
                 ? new List<IQueryParameter>(parameters)
                 : new List<IQueryParameter>();
 
-            var codename = CodeFirstTypeProvider.GetCodename(typeof(T));
+            var codename = TypeProvider.GetCodename(typeof(T));
 
             if (codename != null && !IsTypeInQueryParameters(parameters))
             {

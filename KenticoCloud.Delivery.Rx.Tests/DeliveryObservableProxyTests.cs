@@ -5,9 +5,9 @@ using System.Linq;
 using System.Net.Http;
 using System.Reactive.Linq;
 using FakeItEasy;
-using KenticoCloud.Delivery.CodeFirst;
 using KenticoCloud.Delivery.InlineContentItems;
 using KenticoCloud.Delivery.ResiliencePolicy;
+using KenticoCloud.Delivery.StrongTyping;
 using Microsoft.Extensions.Options;
 using Polly;
 using RichardSzalay.MockHttp;
@@ -220,9 +220,9 @@ namespace KenticoCloud.Delivery.Rx.Tests
             var deliveryOptions = new OptionsWrapper<DeliveryOptions>(new DeliveryOptions { ProjectId = guid });
             var contentLinkUrlResolver = A.Fake<IContentLinkUrlResolver>();
             var contentItemsProcessor = A.Fake<IInlineContentItemsProcessor>();
-            var contentPropertyMapper =  new CodeFirstPropertyMapper();
+            var contentPropertyMapper =  new PropertyMapper();
             var contentTypeProvider = new CustomTypeProvider();
-            var codeFirstModelProvider = new CodeFirstModelProvider(contentLinkUrlResolver, contentItemsProcessor, contentTypeProvider, contentPropertyMapper);
+            var modelProvider = new ModelProvider(contentLinkUrlResolver, contentItemsProcessor, contentTypeProvider, contentPropertyMapper);
             var resiliencePolicyProvider = A.Fake<IResiliencePolicyProvider>();
             A.CallTo(() => resiliencePolicyProvider.Policy)
                 .Returns(Policy.HandleResult<HttpResponseMessage>(result => true).RetryAsync(deliveryOptions.Value.MaxRetryAttempts));
@@ -231,7 +231,7 @@ namespace KenticoCloud.Delivery.Rx.Tests
                 httpClient,
                 contentLinkUrlResolver, 
                 null,
-                codeFirstModelProvider,
+                modelProvider,
                 resiliencePolicyProvider,
                 contentTypeProvider
             );

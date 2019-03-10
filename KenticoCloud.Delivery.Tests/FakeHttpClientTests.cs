@@ -50,7 +50,7 @@ namespace KenticoCloud.Delivery.Tests
         private static IDeliveryClient MockDeliveryClient(DeliveryOptions deliveryOptions, HttpClient httpClient)
         {
             var contentLinkUrlResolver = A.Fake<IContentLinkUrlResolver>();
-            var codeFirstModelProvider = A.Fake<ICodeFirstModelProvider>();
+            var modelProvider = A.Fake<IModelProvider>();
             var resiliencePolicyProvider = A.Fake<IResiliencePolicyProvider>();
             A.CallTo(() => resiliencePolicyProvider.Policy)
                 .Returns(Policy
@@ -61,7 +61,7 @@ namespace KenticoCloud.Delivery.Tests
                 .WithOptions(_ => deliveryOptions)
                 .WithHttpClient(httpClient)
                 .WithContentLinkUrlResolver(contentLinkUrlResolver)
-                .WithCodeFirstModelProvider(codeFirstModelProvider)
+                .WithModelProvider(modelProvider)
                 .WithResiliencePolicyProvider(resiliencePolicyProvider)
                 .Build();
 

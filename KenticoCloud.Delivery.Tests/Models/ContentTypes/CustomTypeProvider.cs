@@ -4,7 +4,7 @@ using System.Linq;
 
 namespace KenticoCloud.Delivery.Tests
 {
-    public class CustomTypeProvider : ICodeFirstTypeProvider
+    public class CustomTypeProvider : ITypeProvider
     {
         private static readonly Dictionary<Type, string> TypesDictionary = new Dictionary<Type, string>
         {

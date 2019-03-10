@@ -47,16 +47,16 @@ namespace KenticoCloud.Delivery.Builders.DeliveryClient
         IOptionalClientSetup IOptionalClientSetup.WithInlineContentItemsProcessor(IInlineContentItemsProcessor inlineContentItemsProcessor)
             => RegisterOrThrow(inlineContentItemsProcessor, nameof(inlineContentItemsProcessor));
 
-        IOptionalClientSetup IOptionalClientSetup.WithCodeFirstModelProvider(ICodeFirstModelProvider codeFirstModelProvider)
-            => RegisterOrThrow(codeFirstModelProvider, nameof(codeFirstModelProvider));
+        IOptionalClientSetup IOptionalClientSetup.WithModelProvider(IModelProvider modelProvider)
+            => RegisterOrThrow(modelProvider, nameof(modelProvider));
 
-        IOptionalClientSetup IOptionalClientSetup.WithCodeFirstTypeProvider(ICodeFirstTypeProvider codeFirstTypeProvider)
-            => RegisterOrThrow(codeFirstTypeProvider, nameof(codeFirstTypeProvider));
+        IOptionalClientSetup IOptionalClientSetup.WithTypeProvider(ITypeProvider typeProvider)
+            => RegisterOrThrow(typeProvider, nameof(typeProvider));
 
         IOptionalClientSetup IOptionalClientSetup.WithResiliencePolicyProvider(IResiliencePolicyProvider resiliencePolicyProvider)
             => RegisterOrThrow(resiliencePolicyProvider, nameof(resiliencePolicyProvider));
 
-        IOptionalClientSetup IOptionalClientSetup.WithCodeFirstPropertyMapper(ICodeFirstPropertyMapper propertyMapper)
+        IOptionalClientSetup IOptionalClientSetup.WithPropertyMapper(IPropertyMapper propertyMapper)
             => RegisterOrThrow(propertyMapper, nameof(propertyMapper));
 
         IDeliveryClient IDeliveryClientBuild.Build()

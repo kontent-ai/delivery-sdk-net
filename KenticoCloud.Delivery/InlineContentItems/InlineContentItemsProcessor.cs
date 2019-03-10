@@ -25,7 +25,7 @@ namespace KenticoCloud.Delivery.InlineContentItems
         /// <remarks>
         /// The collection of resolvers may contain a custom <see cref="object"/> resolver used when no content type specific resolver was registered,
         /// a custom resolver for <see cref="UnretrievedContentItem"/>s used when an item was not retrieved from Delivery API, 
-        /// and a resolver for <see cref="UnknownContentItem"/> that a <see cref="ICodeFirstModelProvider"/> was unable to strongly type.
+        /// and a resolver for <see cref="UnknownContentItem"/> that a <see cref="IModelProvider"/> was unable to strongly type.
         /// If these resolvers are not specified using <see cref="DeliveryClientBuilder"/> or the <see cref="IServiceCollection"/> registration
         /// (<see cref="ServiceCollectionExtensions.AddDeliveryInlineContentItemsResolver{TContentItem, TInlineContentItemsResolver}(IServiceCollection)"/>),
         /// the default implementations resulting in warning messages will be used.

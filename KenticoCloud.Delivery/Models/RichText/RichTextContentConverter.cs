@@ -11,7 +11,7 @@ namespace KenticoCloud.Delivery
 {
     internal class RichTextContentConverter : IPropertyValueConverter
     {
-        public object GetPropertyValue(PropertyInfo property, JToken elementData, CodeFirstResolvingContext context)
+        public object GetPropertyValue(PropertyInfo property, JToken elementData, ResolvingContext context)
         {
             if (!typeof(IRichTextContent).IsAssignableFrom(property.PropertyType))
             {

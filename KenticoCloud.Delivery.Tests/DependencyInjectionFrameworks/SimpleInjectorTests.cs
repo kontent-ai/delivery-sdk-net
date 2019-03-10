@@ -20,17 +20,17 @@ namespace KenticoCloud.Delivery.Tests.DependencyInjectionFrameworks
         }
 
         [Fact]
-        public void DeliveryClientIsSuccessfullyResolvedFromSimpleInjectorContainer_CustomCodeFirstModelProvider()
+        public void DeliveryClientIsSuccessfullyResolvedFromSimpleInjectorContainer_CustomModelProvider()
         {
             var container = DependencyInjectionFrameworksHelper
                 .GetServiceCollection()
-                .AddScoped<ICodeFirstModelProvider, FakeModelProvider>()
+                .AddScoped<IModelProvider, FakeModelProvider>()
                 .RegisterInlineContentItemResolvers()
                 .BuildSimpleInjectorServiceProvider();
 
             var client = (DeliveryClient) container.GetInstance<IDeliveryClient>();
 
-            client.AssertDefaultDependenciesWithCodeFirstModelProviderAndInlineContentItemTypeResolvers<FakeModelProvider>();
+            client.AssertDefaultDependenciesWithModelProviderAndInlineContentItemTypeResolvers<FakeModelProvider>();
         }
 
         [Fact]
@@ -39,9 +39,9 @@ namespace KenticoCloud.Delivery.Tests.DependencyInjectionFrameworks
             var container = DependencyInjectionFrameworksHelper
                 .GetServiceCollection()
                 .BuildSimpleInjectorServiceProvider();
-            container.Register<ICodeFirstModelProvider, FakeModelProvider>();
+            container.Register<IModelProvider, FakeModelProvider>();
 
-            var resolvedService = container.GetService<ICodeFirstModelProvider>();
+            var resolvedService = container.GetService<IModelProvider>();
 
             Assert.IsType<FakeModelProvider>(resolvedService);
         }

@@ -10,28 +10,28 @@ namespace KenticoCloud.Delivery.Tests.Factories
     internal static class DeliveryClientFactory
     {
         private static readonly MockHttpMessageHandler MockHttp = new MockHttpMessageHandler();
-        private static ICodeFirstModelProvider _mockCodeFirstModelProvider = A.Fake<ICodeFirstModelProvider>();
-        private static ICodeFirstPropertyMapper _mockCodeFirstPropertyMapper = A.Fake<ICodeFirstPropertyMapper>();
+        private static IModelProvider _mockModelProvider = A.Fake<IModelProvider>();
+        private static IPropertyMapper _mockPropertyMapper = A.Fake<IPropertyMapper>();
         private static IResiliencePolicyProvider _mockResiliencePolicyProvider = A.Fake<IResiliencePolicyProvider>();
-        private static ICodeFirstTypeProvider _mockCodeFirstTypeProvider = A.Fake<ICodeFirstTypeProvider>();
+        private static ITypeProvider _mockTypeProvider = A.Fake<ITypeProvider>();
         private static IContentLinkUrlResolver _mockContentLinkUrlResolver = A.Fake<IContentLinkUrlResolver>();
         private static IInlineContentItemsProcessor _mockInlineContentItemsProcessor = A.Fake<IInlineContentItemsProcessor>();
 
         internal static DeliveryClient GetMockedDeliveryClientWithProjectId(
             Guid projectId,
             MockHttpMessageHandler httpMessageHandler = null,
-            ICodeFirstModelProvider codeFirstModelProvider = null,
-            ICodeFirstPropertyMapper codeFirstPropertyMapper = null,
+            IModelProvider modelProvider = null,
+            IPropertyMapper propertyMapper = null,
             IResiliencePolicyProvider resiliencePolicyProvider = null,
-            ICodeFirstTypeProvider codeFirstTypeProvider = null,
+            ITypeProvider typeProvider = null,
             IContentLinkUrlResolver contentLinkUrlResolver = null,
             IInlineContentItemsProcessor inlineContentItemsProcessor = null
         )
         {
-            if (codeFirstModelProvider != null) _mockCodeFirstModelProvider = codeFirstModelProvider;
-            if (codeFirstPropertyMapper != null) _mockCodeFirstPropertyMapper = codeFirstPropertyMapper;
+            if (modelProvider != null) _mockModelProvider = modelProvider;
+            if (propertyMapper != null) _mockPropertyMapper = propertyMapper;
             if (resiliencePolicyProvider != null) _mockResiliencePolicyProvider = resiliencePolicyProvider;
-            if (codeFirstTypeProvider != null) _mockCodeFirstTypeProvider = codeFirstTypeProvider;
+            if (typeProvider != null) _mockTypeProvider = typeProvider;
             if (contentLinkUrlResolver != null) _mockContentLinkUrlResolver = contentLinkUrlResolver;
             if (inlineContentItemsProcessor != null) _mockInlineContentItemsProcessor = inlineContentItemsProcessor;
             var httpClient = httpMessageHandler != null ? httpMessageHandler.ToHttpClient() : MockHttp.ToHttpClient();
@@ -41,10 +41,10 @@ namespace KenticoCloud.Delivery.Tests.Factories
                 httpClient,
                 _mockContentLinkUrlResolver,
                 _mockInlineContentItemsProcessor,
-                _mockCodeFirstModelProvider,
+                _mockModelProvider,
                 _mockResiliencePolicyProvider,
-                _mockCodeFirstTypeProvider,
-                _mockCodeFirstPropertyMapper
+                _mockTypeProvider,
+                _mockPropertyMapper
             );
 
             return client;
@@ -58,10 +58,10 @@ namespace KenticoCloud.Delivery.Tests.Factories
                 httpClient,
                 _mockContentLinkUrlResolver,
                 _mockInlineContentItemsProcessor,
-                _mockCodeFirstModelProvider,
+                _mockModelProvider,
                 _mockResiliencePolicyProvider,
-                _mockCodeFirstTypeProvider,
-                _mockCodeFirstPropertyMapper
+                _mockTypeProvider,
+                _mockPropertyMapper
             );
 
             return client;

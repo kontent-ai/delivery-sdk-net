@@ -1,8 +1,8 @@
 ﻿using System;
 
-namespace KenticoCloud.Delivery.CodeFirst
+namespace KenticoCloud.Delivery.StrongTyping
 {
-    internal class CodeFirstTypeProvider : ICodeFirstTypeProvider
+    internal class TypeProvider : ITypeProvider
     {
         public Type GetType(string contentType)
             => null;

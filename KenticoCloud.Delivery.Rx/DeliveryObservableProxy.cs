@@ -71,7 +71,7 @@ namespace KenticoCloud.Delivery.Rx
         /// <summary>
         /// Gets an observable of a single, strongly typed content item, by its codename. By default, retrieves one level of linked items.
         /// </summary>
-        /// <typeparam name="T">Type of the code-first model. (Or <see cref="object"/> if the return type is not yet known.)</typeparam>
+        /// <typeparam name="T">Type of the model. (Or <see cref="object"/> if the return type is not yet known.)</typeparam>
         /// <param name="codename">The codename of a content item.</param>
         /// <param name="parameters">An array that contains zero or more query parameters, for example, for projection or setting the depth of linked items.</param>
         /// <returns>The <see cref="IObservable{T}"/> that represents the content item with the specified codename.</returns>
@@ -95,7 +95,7 @@ namespace KenticoCloud.Delivery.Rx
         /// <summary>
         /// Gets an observable of a single strongly typed content item, by its codename. By default, retrieves one level of linked items.
         /// </summary>
-        /// <typeparam name="T">Type of the code-first model. (Or <see cref="object"/> if the return type is not yet known.)</typeparam>
+        /// <typeparam name="T">Type of the model. (Or <see cref="object"/> if the return type is not yet known.)</typeparam>
         /// <param name="codename">The codename of a content item.</param>
         /// <param name="parameters">A collection of query parameters, for example, for projection or setting the depth of linked items.</param>
         /// <returns>The <see cref="IObservable{T}"/> that represents the content item with the specified codename.</returns>
@@ -128,7 +128,7 @@ namespace KenticoCloud.Delivery.Rx
         /// <summary>
         /// Returns an observable of strongly typed content items that match the optional filtering parameters. By default, retrieves one level of linked items.
         /// </summary>
-        /// <typeparam name="T">Type of the code-first model. (Or <see cref="object"/> if the return type is not yet known.)</typeparam>
+        /// <typeparam name="T">Type of the model. (Or <see cref="object"/> if the return type is not yet known.)</typeparam>
         /// <param name="parameters">An array that contains zero or more query parameters, for example, for filtering, ordering, or setting the depth of linked items.</param>
         /// <returns>The <see cref="IObservable{T}"/> that represents the content items. If no query parameters are specified, all content items are returned.</returns>
         public IObservable<T> GetItemsObservable<T>(params IQueryParameter[] parameters)
@@ -140,7 +140,7 @@ namespace KenticoCloud.Delivery.Rx
         /// <summary>
         /// Returns an observable of strongly typed content items that match the optional filtering parameters. By default, retrieves one level of linked items.
         /// </summary>
-        /// <typeparam name="T">Type of the code-first model. (Or <see cref="object"/> if the return type is not yet known.)</typeparam>
+        /// <typeparam name="T">Type of the model. (Or <see cref="object"/> if the return type is not yet known.)</typeparam>
         /// <param name="parameters">A collection of query parameters, for example, for filtering, ordering, or setting the depth of linked items.</param>
         /// <returns>The <see cref="IObservable{T}"/> that represents the content items. If no query parameters are specified, all content items are returned.</returns>
         public IObservable<T> GetItemsObservable<T>(IEnumerable<IQueryParameter> parameters)

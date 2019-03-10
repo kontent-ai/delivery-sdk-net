@@ -14,7 +14,7 @@ namespace KenticoCloud.Delivery
         private readonly JToken _source;
         private readonly JToken _linkedItemsSource;
         private readonly IContentLinkUrlResolver _contentLinkUrlResolver;
-        private readonly ICodeFirstModelProvider _codeFirstModelProvider;
+        private readonly IModelProvider _modelProvider;
 
         private ContentItemSystemAttributes _system;
         private JToken _elements;
@@ -43,12 +43,12 @@ namespace KenticoCloud.Delivery
         /// <param name="source">The JSON data of the content item to deserialize.</param>
         /// <param name="linkedItemsSource">The JSON data of linked items to deserialize.</param>
         /// <param name="contentLinkUrlResolver">An instance of an object that can resolve links in rich text elements</param>
-        /// <param name="codeFirstModelProvider">An instance of an object that can JSON responses into strongly typed CLR objects</param>
-        internal ContentItem(JToken source, JToken linkedItemsSource, IContentLinkUrlResolver contentLinkUrlResolver, ICodeFirstModelProvider codeFirstModelProvider)
+        /// <param name="modelProvider">An instance of an object that can JSON responses into strongly typed CLR objects</param>
+        internal ContentItem(JToken source, JToken linkedItemsSource, IContentLinkUrlResolver contentLinkUrlResolver, IModelProvider modelProvider)
         {
             _source = source ?? throw new ArgumentNullException(nameof(source));
             _linkedItemsSource = linkedItemsSource ?? throw new ArgumentNullException(nameof(linkedItemsSource));
-            _codeFirstModelProvider = codeFirstModelProvider ?? throw new ArgumentNullException(nameof(codeFirstModelProvider));
+            _modelProvider = modelProvider ?? throw new ArgumentNullException(nameof(modelProvider));
 
             _contentLinkUrlResolver = contentLinkUrlResolver;
             ContentLinkResolver = new Lazy<ContentLinkResolver>(() =>
@@ -59,12 +59,12 @@ namespace KenticoCloud.Delivery
         }
 
         /// <summary>
-        /// Casts the item to a code-first model.
+        /// Casts the item to a model.
         /// </summary>
-        /// <typeparam name="T">Type of the code-first model.</typeparam>
+        /// <typeparam name="T">Type of the model.</typeparam>
         public T CastTo<T>()
         {
-            return _codeFirstModelProvider.GetContentItemModel<T>(_source, _linkedItemsSource);
+            return _modelProvider.GetContentItemModel<T>(_source, _linkedItemsSource);
         }
 
         /// <summary>
@@ -125,7 +125,7 @@ namespace KenticoCloud.Delivery
 
             return contentItemCodenames
                 .Where(codename => _linkedItemsSource[codename] != null)
-                .Select(codename => new ContentItem(_linkedItemsSource[codename], _linkedItemsSource, _contentLinkUrlResolver, _codeFirstModelProvider));
+                .Select(codename => new ContentItem(_linkedItemsSource[codename], _linkedItemsSource, _contentLinkUrlResolver, _modelProvider));
         }
 
         /// <summary>

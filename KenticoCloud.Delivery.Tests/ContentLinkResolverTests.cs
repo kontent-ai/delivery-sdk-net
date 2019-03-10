@@ -2,9 +2,9 @@
 using RichardSzalay.MockHttp;
 using System;
 using System.IO;
-using KenticoCloud.Delivery.CodeFirst;
 using KenticoCloud.Delivery.ContentLinks;
 using KenticoCloud.Delivery.ResiliencePolicy;
+using KenticoCloud.Delivery.StrongTyping;
 using KenticoCloud.Delivery.Tests.Factories;
 using Microsoft.Extensions.Options;
 using Xunit;
@@ -127,13 +127,13 @@ namespace KenticoCloud.Delivery.Tests
             var resiliencePolicyProvider = new DefaultResiliencePolicyProvider(deliveryOptions);
             var contentLinkUrlResolver = new CustomContentLinkUrlResolver();
             var contentItemsProcessor = InlineContentItemsProcessorFactory.Create();
-            var codeFirstModelProvider = new CodeFirstModelProvider(contentLinkUrlResolver, contentItemsProcessor, new CustomTypeProvider(), new CodeFirstPropertyMapper());
+            var modelProvider= new ModelProvider(contentLinkUrlResolver, contentItemsProcessor, new CustomTypeProvider(), new PropertyMapper());
             var client = new DeliveryClient(
                 deliveryOptions,
                 httpClient,
                 contentLinkUrlResolver,
                 contentItemsProcessor,
-                codeFirstModelProvider,
+                modelProvider,
                 resiliencePolicyProvider
             );
 

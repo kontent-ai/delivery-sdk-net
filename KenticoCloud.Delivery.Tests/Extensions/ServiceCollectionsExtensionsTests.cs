@@ -4,10 +4,10 @@ using System.Collections.ObjectModel;
 using System.IO;
 using System.Linq;
 using System.Net.Http;
-using KenticoCloud.Delivery.CodeFirst;
 using KenticoCloud.Delivery.ContentLinks;
 using KenticoCloud.Delivery.InlineContentItems;
 using KenticoCloud.Delivery.ResiliencePolicy;
+using KenticoCloud.Delivery.StrongTyping;
 using KenticoCloud.Delivery.Tests.Factories;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
@@ -40,14 +40,14 @@ namespace KenticoCloud.Delivery.Tests.Extensions
             {
                 { typeof(IOptions<DeliveryOptions>), typeof(IOptions<DeliveryOptions>) },
                 { typeof(IContentLinkUrlResolver), typeof(DefaultContentLinkUrlResolver) },
-                { typeof(ICodeFirstTypeProvider), typeof(CodeFirstTypeProvider) },
+                { typeof(ITypeProvider), typeof(TypeProvider) },
                 { typeof(HttpClient), typeof(HttpClient) },
                 { typeof(IInlineContentItemsProcessor), typeof(InlineContentItemsProcessor) },
                 { typeof(IInlineContentItemsResolver<object>), typeof(ReplaceWithWarningAboutRegistrationResolver) },
                 { typeof(IInlineContentItemsResolver<UnretrievedContentItem>), typeof(ReplaceWithWarningAboutUnretrievedItemResolver) },
                 { typeof(IInlineContentItemsResolver<UnknownContentItem>), typeof(ReplaceWithWarningAboutUnknownItemResolver) },
-                { typeof(ICodeFirstModelProvider), typeof(CodeFirstModelProvider) },
-                { typeof(ICodeFirstPropertyMapper), typeof(CodeFirstPropertyMapper) },
+                { typeof(IModelProvider), typeof(ModelProvider) },
+                { typeof(IPropertyMapper), typeof(PropertyMapper) },
                 { typeof(IResiliencePolicyProvider), typeof(DefaultResiliencePolicyProvider) },
                 { typeof(IDeliveryClient), typeof(DeliveryClient) }
             }

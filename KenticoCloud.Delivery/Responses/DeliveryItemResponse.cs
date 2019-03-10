@@ -8,7 +8,7 @@ namespace KenticoCloud.Delivery
     public sealed class DeliveryItemResponse : AbstractResponse
     {
         private readonly JToken _response;
-        private readonly ICodeFirstModelProvider _codeFirstModelProvider;
+        private readonly IModelProvider _modelProvider;
         private readonly IContentLinkUrlResolver _contentLinkUrlResolver;
         private dynamic _linkedItems;
         private ContentItem _item;
@@ -18,7 +18,7 @@ namespace KenticoCloud.Delivery
         /// </summary>
         public ContentItem Item
         {
-            get { return _item ?? (_item = new ContentItem(_response["item"], _response["modular_content"], _contentLinkUrlResolver, _codeFirstModelProvider)); }
+            get { return _item ?? (_item = new ContentItem(_response["item"], _response["modular_content"], _contentLinkUrlResolver, _modelProvider)); }
         }
 
         /// <summary>
@@ -33,13 +33,13 @@ namespace KenticoCloud.Delivery
         /// Initializes a new instance of the <see cref="DeliveryItemResponse"/> class with information from a response.
         /// </summary>
         /// <param name="response">A response from Kentico Cloud Delivery API that contains a content item.</param>
-        /// /// <param name="codeFirstModelProvider">An instance of an object that can JSON responses into strongly typed CLR objects</param>
+        /// /// <param name="modelProvider">An instance of an object that can JSON responses into strongly typed CLR objects</param>
         /// <param name="contentLinkUrlResolver">An instance of an object that can resolve links in rich text elements</param>
         /// <param name="apiUrl">API URL used to communicate with the underlying Kentico Cloud endpoint.</param>
-        internal DeliveryItemResponse(JToken response, ICodeFirstModelProvider codeFirstModelProvider, IContentLinkUrlResolver contentLinkUrlResolver, string apiUrl) : base(apiUrl)
+        internal DeliveryItemResponse(JToken response, IModelProvider modelProvider, IContentLinkUrlResolver contentLinkUrlResolver, string apiUrl) : base(apiUrl)
         {
             _response = response;
-            _codeFirstModelProvider = codeFirstModelProvider;
+            _modelProvider = modelProvider;
             _contentLinkUrlResolver = contentLinkUrlResolver;
         }
 
@@ -49,7 +49,7 @@ namespace KenticoCloud.Delivery
         /// <typeparam name="T">Target type.</typeparam>
         public DeliveryItemResponse<T> CastTo<T>()
         {
-            return new DeliveryItemResponse<T>(_response, _codeFirstModelProvider, ApiUrl);
+            return new DeliveryItemResponse<T>(_response, _modelProvider, ApiUrl);
         }
     }
 }

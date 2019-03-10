@@ -8,8 +8,8 @@ using RichardSzalay.MockHttp;
 using System.IO;
 using System.Net.Http;
 using FakeItEasy;
-using KenticoCloud.Delivery.CodeFirst;
 using KenticoCloud.Delivery.ResiliencePolicy;
+using KenticoCloud.Delivery.StrongTyping;
 using Microsoft.Extensions.Options;
 using Polly;
 
@@ -18,7 +18,7 @@ namespace KenticoCloud.Delivery.Tests
     [AttributeUsage(AttributeTargets.Property)]
     public class TestGreeterValueConverterAttribute : Attribute, IPropertyValueConverter
     {
-        public object GetPropertyValue(PropertyInfo property, JToken elementData, CodeFirstResolvingContext context)
+        public object GetPropertyValue(PropertyInfo property, JToken elementData, ResolvingContext context)
         {
             var element = (JObject)elementData;
             var str = element.Property("value")?.Value?.ToObject<string>();
@@ -30,7 +30,7 @@ namespace KenticoCloud.Delivery.Tests
     [AttributeUsage(AttributeTargets.Property)]
     public class NodaTimeValueConverterAttribute : Attribute, IPropertyValueConverter
     {
-        public object GetPropertyValue(PropertyInfo property, JToken elementData, CodeFirstResolvingContext context)
+        public object GetPropertyValue(PropertyInfo property, JToken elementData, ResolvingContext context)
         {
             var element = (JObject)elementData;
             var dt = element.Property("value")?.Value?.ToObject<DateTime>();
@@ -112,13 +112,13 @@ namespace KenticoCloud.Delivery.Tests
             var resiliencePolicyProvider = A.Fake<IResiliencePolicyProvider>();
             A.CallTo(() => resiliencePolicyProvider.Policy)
                 .Returns(Policy.HandleResult<HttpResponseMessage>(result => true).RetryAsync(deliveryOptions.Value.MaxRetryAttempts));
-            var codeFirstModelProvider = new CodeFirstModelProvider(
+            var modelProvider = new ModelProvider(
                 contentLinkUrlResolver,
                 null,
                 new CustomTypeProvider(),
-                new CodeFirstPropertyMapper()
+                new PropertyMapper()
             );
-            var client = new DeliveryClient(deliveryOptions, httpClient, null, null, codeFirstModelProvider, resiliencePolicyProvider);
+            var client = new DeliveryClient(deliveryOptions, httpClient, null, null, modelProvider, resiliencePolicyProvider);
 
             return client;
         }
