@@ -27,7 +27,7 @@ namespace KenticoCloud.Delivery.InlineContentItems
                 throw new ArgumentNullException(nameof(resolver));
             }
 
-            string Resolve(object item) => resolver.Resolve(new ResolvedContentItemData<TContentItem> { Item = (TContentItem)item });
+            string Resolve(object item) => resolver.Resolve((TContentItem)item);
 
             return new TypelessInlineContentItemsResolver(Resolve, typeof(TContentItem));
         }

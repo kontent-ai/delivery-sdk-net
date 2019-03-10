@@ -12,7 +12,7 @@ namespace KenticoCloud.Delivery
         private readonly JToken _source;
         private readonly string _codename;
 
-        private IReadOnlyList<MultipleChoiceContentElementOption> _options;
+        private IReadOnlyList<MultipleChoiceOption> _options;
 
         /// <summary>
         /// Gets the type of the content element, for example "multiple_choice".
@@ -50,13 +50,13 @@ namespace KenticoCloud.Delivery
         /// <summary>
         /// Gets a list of predefined options for the Multiple choice content element; otherwise, an empty list.
         /// </summary>
-        public IReadOnlyList<MultipleChoiceContentElementOption> Options {
+        public IReadOnlyList<MultipleChoiceOption> Options {
             get
             {
                 if (_options == null)
                 {
                     var source = _source["options"] ?? new JArray();
-                    _options = source.Select(optionSource => optionSource.ToObject<MultipleChoiceContentElementOption>()).ToList().AsReadOnly();
+                    _options = source.Select(optionSource => optionSource.ToObject<MultipleChoiceOption>()).ToList().AsReadOnly();
                 }
 
                 return _options;

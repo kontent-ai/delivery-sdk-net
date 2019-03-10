@@ -12,6 +12,6 @@
         /// </summary>
         /// <param name="data">Content item to be resolved</param>
         /// <returns>HTML code</returns>
-        string Resolve(ResolvedContentItemData<T> data);
+        string Resolve(T data);
     }
 }
