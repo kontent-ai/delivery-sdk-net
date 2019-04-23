@@ -34,8 +34,19 @@ namespace KenticoCloud.Delivery.Extensions
         private static string GetSdkVersion()
         {
             var assembly = Assembly.GetExecutingAssembly();
-            var fileVersionInfo = FileVersionInfo.GetVersionInfo(assembly.Location);
-            var sdkVersion = fileVersionInfo.ProductVersion;
+            string sdkVersion;
+
+            try
+            {
+                var fileVersionInfo = FileVersionInfo.GetVersionInfo(assembly.Location);
+                sdkVersion = fileVersionInfo.ProductVersion;
+            }
+            catch (System.IO.FileNotFoundException)
+            {
+                // Invalid Location path of assembly in Android's Xamarin release mode (unchecked "Use a shared runtime" flag)
+                // https://bugzilla.xamarin.com/show_bug.cgi?id=54678
+                sdkVersion = "0.0.0";
+            }
 
             return sdkVersion;
         }
