@@ -498,7 +498,7 @@ namespace KenticoCloud.Delivery
 
             if (codename != null && !IsTypeInQueryParameters(parameters))
             {
-                enhancedParameters.Add(new EqualsFilter("system.type", codename));
+                enhancedParameters.Add(new SystemTypeEqualsFilter(codename));
             }
             return enhancedParameters;
         }
