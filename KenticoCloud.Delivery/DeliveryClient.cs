@@ -83,7 +83,7 @@ namespace KenticoCloud.Delivery
 
             var endpointUrl = UrlBuilder.GetItemUrl(codename, parameters);
 
-            return await GetDeliverResponseAsync(endpointUrl);
+            return (await GetDeliverResponseAsync(endpointUrl)).Content;
         }
 
         /// <summary>
@@ -95,7 +95,7 @@ namespace KenticoCloud.Delivery
         {
             var endpointUrl = UrlBuilder.GetItemsUrl(parameters);
 
-            return await GetDeliverResponseAsync(endpointUrl);
+            return (await GetDeliverResponseAsync(endpointUrl)).Content;
         }
 
         /// <summary>
@@ -233,7 +233,7 @@ namespace KenticoCloud.Delivery
 
             var endpointUrl = UrlBuilder.GetTypeUrl(codename);
 
-            return await GetDeliverResponseAsync(endpointUrl);
+            return (await GetDeliverResponseAsync(endpointUrl)).Content;
         }
 
         /// <summary>
@@ -245,7 +245,7 @@ namespace KenticoCloud.Delivery
         {
             var endpointUrl = UrlBuilder.GetTypesUrl(parameters);
 
-            return await GetDeliverResponseAsync(endpointUrl);
+            return (await GetDeliverResponseAsync(endpointUrl)).Content;
         }
 
         /// <summary>
@@ -268,7 +268,7 @@ namespace KenticoCloud.Delivery
             var endpointUrl = UrlBuilder.GetTypeUrl(codename);
             var response = await GetDeliverResponseAsync(endpointUrl);
 
-            return new ContentType(response);
+            return new ContentType(response.Content);
         }
 
         /// <summary>
@@ -325,9 +325,9 @@ namespace KenticoCloud.Delivery
             var endpointUrl = UrlBuilder.GetContentElementUrl(contentTypeCodename, contentElementCodename);
             var response = await GetDeliverResponseAsync(endpointUrl);
 
-            var elementCodename = response["codename"].ToString();
+            var elementCodename = response.Content["codename"].ToString();
 
-            return new ContentElement(response, elementCodename);
+            return new ContentElement(response.Content, elementCodename);
         }
 
 
@@ -350,7 +350,7 @@ namespace KenticoCloud.Delivery
 
             var endpointUrl = UrlBuilder.GetTaxonomyUrl(codename);
 
-            return await GetDeliverResponseAsync(endpointUrl);
+            return (await GetDeliverResponseAsync(endpointUrl)).Content;
         }
 
         /// <summary>
@@ -362,7 +362,7 @@ namespace KenticoCloud.Delivery
         {
             var endpointUrl = UrlBuilder.GetTaxonomiesUrl(parameters);
 
-            return await GetDeliverResponseAsync(endpointUrl);
+            return (await GetDeliverResponseAsync(endpointUrl)).Content;
         }
 
         /// <summary>
@@ -385,7 +385,7 @@ namespace KenticoCloud.Delivery
             var endpointUrl = UrlBuilder.GetTaxonomyUrl(codename);
             var response = await GetDeliverResponseAsync(endpointUrl);
 
-            return new TaxonomyGroup(response);
+            return new TaxonomyGroup(response.Content);
         }
 
         /// <summary>
@@ -411,7 +411,7 @@ namespace KenticoCloud.Delivery
             return new DeliveryTaxonomyListingResponse(response, endpointUrl);
         }
 
-        private async Task<JObject> GetDeliverResponseAsync(string endpointUrl)
+        private async Task<ApiResponse> GetDeliverResponseAsync(string endpointUrl)
         {
             if (DeliveryOptions.UsePreviewApi && DeliveryOptions.UseSecuredProductionApi)
             {
@@ -468,13 +468,14 @@ namespace KenticoCloud.Delivery
             return DeliveryOptions.UsePreviewApi && !string.IsNullOrEmpty(DeliveryOptions.PreviewApiKey);
         }
 
-        private async Task<JObject> GetResponseContent(HttpResponseMessage httpResponseMessage)
+        private async Task<ApiResponse> GetResponseContent(HttpResponseMessage httpResponseMessage)
         {
             if (httpResponseMessage?.StatusCode == HttpStatusCode.OK)
             {
-                var content = await httpResponseMessage.Content?.ReadAsStringAsync();
+                var content = JObject.Parse(await httpResponseMessage.Content?.ReadAsStringAsync());
+                var hasStaleContent = HasStaleContent(httpResponseMessage);
 
-                return JObject.Parse(content);
+                return new ApiResponse(content, hasStaleContent: hasStaleContent);
             }
 
             string faultContent = null;
@@ -486,6 +487,11 @@ namespace KenticoCloud.Delivery
             }
 
             throw new DeliveryException(httpResponseMessage, "Either the retry policy was disabled or all retry attempts were depleted.\nFault content:\n" + faultContent);
+        }
+
+        private bool HasStaleContent(HttpResponseMessage httpResponseMessage)
+        {
+            return httpResponseMessage.Headers.TryGetValues("X-Stale-Content", out var values) && values.Contains("1", StringComparer.Ordinal);
         }
 
         internal IEnumerable<IQueryParameter> ExtractParameters<T>(IEnumerable<IQueryParameter> parameters = null)

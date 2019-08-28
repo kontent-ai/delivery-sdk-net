@@ -3,12 +3,12 @@
 namespace KenticoCloud.Delivery
 {
     /// <summary>
-    /// Represents a response from Kentico Cloud Delivery API that contains an content items.
+    /// Represents a response from Kentico Cloud Delivery API that contains a list of content items.
     /// </summary>
     /// <typeparam name="T">Generic strong type of item representation.</typeparam>
     public sealed class DeliveryItemResponse<T> : AbstractResponse
     {
-        private readonly JToken _response;
+        private readonly ApiResponse _response;
         private readonly IModelProvider _modelProvider;
         private dynamic _linkedItems;
         private T _item;
@@ -22,7 +22,7 @@ namespace KenticoCloud.Delivery
             {
                 if (_item == null)
                 {
-                    _item = _modelProvider.GetContentItemModel<T>(_response["item"], _response["modular_content"]);
+                    _item = _modelProvider.GetContentItemModel<T>(_response.Content["item"], _response.Content["modular_content"]);
                 }
                 return _item;
             }
@@ -33,10 +33,23 @@ namespace KenticoCloud.Delivery
         /// </summary>
         public dynamic LinkedItems
         {
-            get { return _linkedItems ?? (_linkedItems = JObject.Parse(_response["modular_content"].ToString())); }
+            get { return _linkedItems ?? (_linkedItems = JObject.Parse(_response.Content["modular_content"].ToString())); }
         }
 
-        internal DeliveryItemResponse(JToken response, IModelProvider modelProvider, string apiUrl) : base(apiUrl)
+        /// <summary>
+        /// Gets a value that determines if content is stale.
+        /// Stale content indicates that there is a more recent version, but it will become available later.
+        /// Stale content should be cached only for a limited period of time.
+        /// </summary>
+        public bool HasStaleContent
+        {
+            get
+            {
+                return _response.HasStaleContent;
+            }
+        }
+
+        internal DeliveryItemResponse(ApiResponse response, IModelProvider modelProvider, string apiUrl) : base(apiUrl)
         {
             _response = response;
             _modelProvider = modelProvider;

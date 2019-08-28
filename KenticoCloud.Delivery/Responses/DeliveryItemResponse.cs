@@ -7,7 +7,7 @@ namespace KenticoCloud.Delivery
     /// </summary>
     public sealed class DeliveryItemResponse : AbstractResponse
     {
-        private readonly JToken _response;
+        private readonly ApiResponse _response;
         private readonly IModelProvider _modelProvider;
         private readonly IContentLinkUrlResolver _contentLinkUrlResolver;
         private dynamic _linkedItems;
@@ -18,7 +18,7 @@ namespace KenticoCloud.Delivery
         /// </summary>
         public ContentItem Item
         {
-            get { return _item ?? (_item = new ContentItem(_response["item"], _response["modular_content"], _contentLinkUrlResolver, _modelProvider)); }
+            get { return _item ?? (_item = new ContentItem(_response.Content["item"], _response.Content["modular_content"], _contentLinkUrlResolver, _modelProvider)); }
         }
 
         /// <summary>
@@ -26,7 +26,17 @@ namespace KenticoCloud.Delivery
         /// </summary>
         public dynamic LinkedItems
         {
-            get { return _linkedItems ?? (_linkedItems = JObject.Parse(_response["modular_content"].ToString())); }
+            get { return _linkedItems ?? (_linkedItems = JObject.Parse(_response.Content["modular_content"].ToString())); }
+        }
+
+        /// <summary>
+        /// Gets a value that determines if content is stale.
+        /// Stale content indicates that there is a more recent version, but it will become available later.
+        /// Stale content should be cached only for a limited period of time.
+        /// </summary>
+        public bool HasStaleContent
+        {
+            get { return _response.HasStaleContent; }
         }
 
         /// <summary>
@@ -36,7 +46,7 @@ namespace KenticoCloud.Delivery
         /// /// <param name="modelProvider">An instance of an object that can JSON responses into strongly typed CLR objects</param>
         /// <param name="contentLinkUrlResolver">An instance of an object that can resolve links in rich text elements</param>
         /// <param name="apiUrl">API URL used to communicate with the underlying Kentico Cloud endpoint.</param>
-        internal DeliveryItemResponse(JToken response, IModelProvider modelProvider, IContentLinkUrlResolver contentLinkUrlResolver, string apiUrl) : base(apiUrl)
+        internal DeliveryItemResponse(ApiResponse response, IModelProvider modelProvider, IContentLinkUrlResolver contentLinkUrlResolver, string apiUrl) : base(apiUrl)
         {
             _response = response;
             _modelProvider = modelProvider;

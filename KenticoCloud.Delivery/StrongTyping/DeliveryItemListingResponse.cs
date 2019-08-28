@@ -10,7 +10,7 @@ namespace KenticoCloud.Delivery
     /// <typeparam name="T">Generic strong type of item representation.</typeparam>
     public sealed class DeliveryItemListingResponse<T> : AbstractResponse
     {
-        private readonly JToken _response;
+        private readonly ApiResponse _response;
         private readonly IModelProvider _modelProvider;
         private dynamic _linkedItems;
         private Pagination _pagination;
@@ -21,7 +21,7 @@ namespace KenticoCloud.Delivery
         /// </summary>
         public Pagination Pagination
         {
-            get { return _pagination ?? (_pagination = _response["pagination"].ToObject<Pagination>()); }
+            get { return _pagination ?? (_pagination = _response.Content["pagination"].ToObject<Pagination>()); }
         }
 
         /// <summary>
@@ -29,7 +29,7 @@ namespace KenticoCloud.Delivery
         /// </summary>
         public IReadOnlyList<T> Items
         {
-            get { return _items ?? (_items = ((JArray)_response["items"]).Select(source => _modelProvider.GetContentItemModel<T>(source, _response["modular_content"])).ToList().AsReadOnly()); }
+            get { return _items ?? (_items = ((JArray)_response.Content["items"]).Select(source => _modelProvider.GetContentItemModel<T>(source, _response.Content["modular_content"])).ToList().AsReadOnly()); }
         }
 
 
@@ -38,7 +38,17 @@ namespace KenticoCloud.Delivery
         /// </summary>
         public dynamic LinkedItems
         {
-            get { return _linkedItems ?? (_linkedItems = JObject.Parse(_response["modular_content"].ToString())); }
+            get { return _linkedItems ?? (_linkedItems = JObject.Parse(_response.Content["modular_content"].ToString())); }
+        }
+
+        /// <summary>
+        /// Gets a value that determines if content is stale.
+        /// Stale content indicates that there is a more recent version, but it will become available later.
+        /// Stale content should be cached only for a limited period of time.
+        /// </summary>
+        public bool HasStaleContent
+        {
+            get { return _response.HasStaleContent; }
         }
 
         /// <summary>
@@ -47,7 +57,7 @@ namespace KenticoCloud.Delivery
         /// <param name="response">A response from Kentico Cloud Delivery API that contains a list of content items.</param>
         /// <param name="modelProvider"></param>
         /// <param name="apiUrl">API URL used to communicate with the underlying Kentico Cloud endpoint.</param>
-        internal DeliveryItemListingResponse(JToken response, IModelProvider modelProvider, string apiUrl) : base(apiUrl)
+        internal DeliveryItemListingResponse(ApiResponse response, IModelProvider modelProvider, string apiUrl) : base(apiUrl)
         {
             _response = response;
             _modelProvider = modelProvider;
