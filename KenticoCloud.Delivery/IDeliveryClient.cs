@@ -106,8 +106,8 @@ namespace KenticoCloud.Delivery
         /// Returns a content type.
         /// </summary>
         /// <param name="codename">The codename of a content type.</param>
-        /// <returns>The content type with the specified codename.</returns>
-        Task<ContentType> GetTypeAsync(string codename);
+        /// <returns>The <see cref="DeliveryTypeResponse"/> instance that contains the content type with the specified codename.</returns>
+        Task<DeliveryTypeResponse> GetTypeAsync(string codename);
 
         /// <summary>
         /// Returns content types.
@@ -149,8 +149,8 @@ namespace KenticoCloud.Delivery
         /// Returns a taxonomy group.
         /// </summary>
         /// <param name="codename">The codename of a taxonomy group.</param>
-        /// <returns>The taxonomy group with the specified codename.</returns>
-        Task<TaxonomyGroup> GetTaxonomyAsync(string codename);
+        /// <returns>The <see cref="DeliveryTaxonomyResponse"/> instance that contains the taxonomy group with the specified codename.</returns>
+        Task<DeliveryTaxonomyResponse> GetTaxonomyAsync(string codename);
 
         /// <summary>
         /// Returns taxonomy groups.

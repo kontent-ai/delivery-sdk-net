@@ -142,7 +142,7 @@ namespace KenticoCloud.Delivery
             var endpointUrl = UrlBuilder.GetItemUrl(codename, parameters);
             var response = await GetDeliverResponseAsync(endpointUrl);
 
-            return new DeliveryItemResponse(response, ModelProvider, ContentLinkUrlResolver, endpointUrl);
+            return new DeliveryItemResponse(response, ModelProvider, ContentLinkUrlResolver);
         }
 
         /// <summary>
@@ -162,7 +162,7 @@ namespace KenticoCloud.Delivery
             var endpointUrl = UrlBuilder.GetItemUrl(codename, parameters);
             var response = await GetDeliverResponseAsync(endpointUrl);
 
-            return new DeliveryItemResponse<T>(response, ModelProvider, endpointUrl);
+            return new DeliveryItemResponse<T>(response, ModelProvider);
         }
 
         /// <summary>
@@ -185,7 +185,7 @@ namespace KenticoCloud.Delivery
             var endpointUrl = UrlBuilder.GetItemsUrl(parameters);
             var response = await GetDeliverResponseAsync(endpointUrl);
 
-            return new DeliveryItemListingResponse(response, ModelProvider, ContentLinkUrlResolver, endpointUrl);
+            return new DeliveryItemListingResponse(response, ModelProvider, ContentLinkUrlResolver);
         }
 
         /// <summary>
@@ -211,7 +211,7 @@ namespace KenticoCloud.Delivery
             var endpointUrl = UrlBuilder.GetItemsUrl(enhancedParameters);
             var response = await GetDeliverResponseAsync(endpointUrl);
 
-            return new DeliveryItemListingResponse<T>(response, ModelProvider, endpointUrl);
+            return new DeliveryItemListingResponse<T>(response, ModelProvider);
         }
 
         /// <summary>
@@ -249,11 +249,11 @@ namespace KenticoCloud.Delivery
         }
 
         /// <summary>
-        /// Returns a content type.
+        /// Gets a content type by its codename.
         /// </summary>
         /// <param name="codename">The codename of a content type.</param>
-        /// <returns>The content type with the specified codename.</returns>
-        public async Task<ContentType> GetTypeAsync(string codename)
+        /// <returns>The <see cref="DeliveryTypeResponse"/> instance that contains the content type with the specified codename.</returns>
+        public async Task<DeliveryTypeResponse> GetTypeAsync(string codename)
         {
             if (codename == null)
             {
@@ -268,30 +268,30 @@ namespace KenticoCloud.Delivery
             var endpointUrl = UrlBuilder.GetTypeUrl(codename);
             var response = await GetDeliverResponseAsync(endpointUrl);
 
-            return new ContentType(response.Content);
+            return new DeliveryTypeResponse(response);
         }
 
         /// <summary>
-        /// Returns content types.
+        /// Returns content types that match the optional filtering parameters.
         /// </summary>
         /// <param name="parameters">An array that contains zero or more query parameters, for example, for paging.</param>
-        /// <returns>The <see cref="DeliveryTypeListingResponse"/> instance that represents the content types. If no query parameters are specified, all content types are returned.</returns>
+        /// <returns>The <see cref="DeliveryTypeListingResponse"/> instance that contains the content types. If no query parameters are specified, all content types are returned.</returns>
         public async Task<DeliveryTypeListingResponse> GetTypesAsync(params IQueryParameter[] parameters)
         {
             return await GetTypesAsync((IEnumerable<IQueryParameter>)parameters);
         }
 
         /// <summary>
-        /// Returns content types.
+        /// Returns content types that match the optional filtering parameters.
         /// </summary>
         /// <param name="parameters">A collection of query parameters, for example, for paging.</param>
-        /// <returns>The <see cref="DeliveryTypeListingResponse"/> instance that represents the content types. If no query parameters are specified, all content types are returned.</returns>
+        /// <returns>The <see cref="DeliveryTypeListingResponse"/> instance that contains the content types. If no query parameters are specified, all content types are returned.</returns>
         public async Task<DeliveryTypeListingResponse> GetTypesAsync(IEnumerable<IQueryParameter> parameters)
         {
             var endpointUrl = UrlBuilder.GetTypesUrl(parameters);
             var response = await GetDeliverResponseAsync(endpointUrl);
 
-            return new DeliveryTypeListingResponse(response, endpointUrl);
+            return new DeliveryTypeListingResponse(response);
         }
 
         /// <summary>
@@ -369,8 +369,8 @@ namespace KenticoCloud.Delivery
         /// Returns a taxonomy group.
         /// </summary>
         /// <param name="codename">The codename of a taxonomy group.</param>
-        /// <returns>The taxonomy group with the specified codename.</returns>
-        public async Task<TaxonomyGroup> GetTaxonomyAsync(string codename)
+        /// <returns>The <see cref="DeliveryTaxonomyResponse"/> instance that contains the taxonomy group with the specified codename.</returns>
+        public async Task<DeliveryTaxonomyResponse> GetTaxonomyAsync(string codename)
         {
             if (codename == null)
             {
@@ -385,7 +385,7 @@ namespace KenticoCloud.Delivery
             var endpointUrl = UrlBuilder.GetTaxonomyUrl(codename);
             var response = await GetDeliverResponseAsync(endpointUrl);
 
-            return new TaxonomyGroup(response.Content);
+            return new DeliveryTaxonomyResponse(response);
         }
 
         /// <summary>
@@ -408,7 +408,7 @@ namespace KenticoCloud.Delivery
             var endpointUrl = UrlBuilder.GetTaxonomiesUrl(parameters);
             var response = await GetDeliverResponseAsync(endpointUrl);
 
-            return new DeliveryTaxonomyListingResponse(response, endpointUrl);
+            return new DeliveryTaxonomyListingResponse(response);
         }
 
         private async Task<ApiResponse> GetDeliverResponseAsync(string endpointUrl)
@@ -475,7 +475,7 @@ namespace KenticoCloud.Delivery
                 var content = JObject.Parse(await httpResponseMessage.Content?.ReadAsStringAsync());
                 var hasStaleContent = HasStaleContent(httpResponseMessage);
 
-                return new ApiResponse(content, hasStaleContent: hasStaleContent);
+                return new ApiResponse(content, hasStaleContent: hasStaleContent, requestUrl: httpResponseMessage.RequestMessage.RequestUri.AbsoluteUri);
             }
 
             string faultContent = null;

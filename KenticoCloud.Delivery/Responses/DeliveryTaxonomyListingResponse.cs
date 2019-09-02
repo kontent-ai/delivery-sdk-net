@@ -1,6 +1,8 @@
 ﻿using Newtonsoft.Json.Linq;
+using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Threading;
 
 namespace KenticoCloud.Delivery
 {
@@ -9,33 +11,27 @@ namespace KenticoCloud.Delivery
     /// </summary>
     public sealed class DeliveryTaxonomyListingResponse : AbstractResponse
     {
+        private readonly Lazy<Pagination> _pagination;
+        private readonly Lazy<IReadOnlyList<TaxonomyGroup>> _taxonomies;
+
         /// <summary>
         /// Gets paging information.
         /// </summary>
-        public Pagination Pagination { get; }
+        public Pagination Pagination => _pagination.Value;
 
         /// <summary>
-        /// Gets a list of taxonomy groups.
+        /// Gets a read-only list of taxonomy groups.
         /// </summary>
-        public IReadOnlyList<TaxonomyGroup> Taxonomies { get; }
+        public IReadOnlyList<TaxonomyGroup> Taxonomies => _taxonomies.Value;
 
         /// <summary>
-        /// Gets a value that determines if content is stale.
-        /// Stale content indicates that there is a more recent version, but it will become available later.
-        /// Stale content should be cached only for a limited period of time.
+        /// Initializes a new instance of the <see cref="DeliveryTaxonomyListingResponse"/> class.
         /// </summary>
-        public bool HasStaleContent { get; }
-
-        /// <summary>
-        /// Initializes a new instance of the <see cref="DeliveryTaxonomyListingResponse"/> class with information from a response.
-        /// </summary>
-        /// <param name="response">A response from Kentico Cloud Delivery API that contains a list of taxonomy groups.</param>
-        /// /// <param name="apiUrl">API URL used to communicate with the underlying Kentico Cloud endpoint.</param>
-        internal DeliveryTaxonomyListingResponse(ApiResponse response, string apiUrl) : base(apiUrl)
+        /// <param name="response">The response from Kentico Cloud Delivery API that contains a list of taxonomy groups.</param>
+        internal DeliveryTaxonomyListingResponse(ApiResponse response) : base(response)
         {
-            Pagination = response.Content["pagination"].ToObject<Pagination>();
-            Taxonomies = ((JArray)response.Content["taxonomies"]).Select(type => new TaxonomyGroup(type)).ToList().AsReadOnly();
-            HasStaleContent = response.HasStaleContent;
+            _pagination = new Lazy<Pagination>(() => _response.Content["pagination"].ToObject<Pagination>(), LazyThreadSafetyMode.PublicationOnly);
+            _taxonomies = new Lazy<IReadOnlyList<TaxonomyGroup>>(() => ((JArray)_response.Content["taxonomies"]).Select(source => new TaxonomyGroup(source)).ToList().AsReadOnly(), LazyThreadSafetyMode.PublicationOnly);
         }
     }
 }

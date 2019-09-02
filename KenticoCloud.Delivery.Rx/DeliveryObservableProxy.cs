@@ -176,7 +176,7 @@ namespace KenticoCloud.Delivery.Rx
         /// <returns>The <see cref="IObservable{ContentType}"/> that represents the content type with the specified codename.</returns>
         public IObservable<ContentType> GetTypeObservable(string codename)
         {
-            return GetObservableOfOne(() => DeliveryClient?.GetTypeAsync(codename)?.Result);
+            return GetObservableOfOne(() => DeliveryClient?.GetTypeAsync(codename)?.Result.Type);
         }
 
         /// <summary>
@@ -236,7 +236,7 @@ namespace KenticoCloud.Delivery.Rx
         /// <returns>The <see cref="IObservable{TaxonomyGroup}"/> that represents the taxonomy group with the specified codename.</returns>
         public IObservable<TaxonomyGroup> GetTaxonomyObservable(string codename)
         {
-            return GetObservableOfOne(() => DeliveryClient?.GetTaxonomyAsync(codename)?.Result);
+            return GetObservableOfOne(() => DeliveryClient?.GetTaxonomyAsync(codename)?.Result.Taxonomy);
         }
 
         /// <summary>

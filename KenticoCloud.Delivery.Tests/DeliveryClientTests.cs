@@ -183,8 +183,8 @@ namespace KenticoCloud.Delivery.Tests
 
             var client = InitializeDeliveryClientWithACustomTypeProvider(_mockHttp);
 
-            var articleType = await client.GetTypeAsync("article");
-            var coffeeType = await client.GetTypeAsync("coffee");
+            var articleType = (await client.GetTypeAsync("article")).Type;
+            var coffeeType = (await client.GetTypeAsync("coffee")).Type;
 
             var taxonomyElement = articleType.Elements["personas"];
             var processingTaxonomyElement = coffeeType.Elements["processing"];
@@ -284,7 +284,7 @@ namespace KenticoCloud.Delivery.Tests
 
             var client = InitializeDeliveryClientWithACustomTypeProvider(_mockHttp);
 
-            var taxonomy = await client.GetTaxonomyAsync("personas");
+            var taxonomy = (await client.GetTaxonomyAsync("personas")).Taxonomy;
             var personasTerms = taxonomy.Terms.ToList();
             var coffeeExpertTerms = personasTerms[0].Terms.ToList();
 
