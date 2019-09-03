@@ -251,9 +251,9 @@ namespace KenticoCloud.Delivery.Tests
 
             var client = InitializeDeliveryClientWithACustomTypeProvider(_mockHttp);
 
-            var element = await client.GetContentElementAsync(Article.Codename, Article.TitleCodename);
-            var personasTaxonomyElement = await client.GetContentElementAsync(Article.Codename, Article.PersonasCodename);
-            var processingTaxonomyElement = await client.GetContentElementAsync(Coffee.Codename, Coffee.ProcessingCodename);
+            var element = (await client.GetContentElementAsync(Article.Codename, Article.TitleCodename)).Element;
+            var personasTaxonomyElement = (await client.GetContentElementAsync(Article.Codename, Article.PersonasCodename)).Element;
+            var processingTaxonomyElement = (await client.GetContentElementAsync(Coffee.Codename, Coffee.ProcessingCodename)).Element;
 
             Assert.Equal(Article.TitleCodename, element.Codename);
             Assert.Equal(Article.PersonasCodename, personasTaxonomyElement.TaxonomyGroup);

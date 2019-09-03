@@ -5,7 +5,7 @@ using System.Threading;
 namespace KenticoCloud.Delivery
 {
     /// <summary>
-    /// Represents a response from Kentico Cloud Delivery API that contains a list of content items.
+    /// Represents a response from Kentico Cloud Delivery API that contains a content item.
     /// </summary>
     /// <typeparam name="T">The type of a content item in the response.</typeparam>
     public sealed class DeliveryItemResponse<T> : AbstractResponse
@@ -24,11 +24,22 @@ namespace KenticoCloud.Delivery
         /// </summary>
         public dynamic LinkedItems => _linkedItems.Value;
 
+        /// <summary>
+        /// Initializes a new instance of the <see cref="DeliveryItemResponse{T}"/> class.
+        /// </summary>
+        /// <param name="response">The response from Kentico Cloud Delivery API that contains a content item.</param>
+        /// <param name="modelProvider">The provider that can convert JSON responses into instances of .NET types.</param>
         internal DeliveryItemResponse(ApiResponse response, IModelProvider modelProvider) : base(response)
         {
             _modelProvider = modelProvider;
             _item = new Lazy<T>(() => _modelProvider.GetContentItemModel<T>(_response.Content["item"], _response.Content["modular_content"]), LazyThreadSafetyMode.PublicationOnly);
             _linkedItems = new Lazy<JObject>(() => (JObject)_response.Content["modular_content"].DeepClone(), LazyThreadSafetyMode.PublicationOnly);
         }
+
+        /// <summary>
+        /// Implicitly converts the specified <paramref name="response"/> to a content item.
+        /// </summary>
+        /// <param name="response">The response to convert.</param>
+        public static implicit operator T(DeliveryItemResponse<T> response) => response.Item;
     }
 }

@@ -1,5 +1,4 @@
-﻿using System;
-using Newtonsoft.Json.Linq;
+﻿using Newtonsoft.Json.Linq;
 
 namespace KenticoCloud.Delivery
 {
@@ -30,24 +29,9 @@ namespace KenticoCloud.Delivery
         /// </summary>
         /// <param name="content">JSON content.</param>
         /// <param name="hasStaleContent">Specifies whether content is stale.</param>
-        /// <param name="requestUrl">URL used to retrieve this response.</param>
-        public ApiResponse(JObject content, bool hasStaleContent, string requestUrl)
+        /// <param name="requestUrl">The URL used to retrieve this response.</param>
+        internal ApiResponse(JObject content, bool hasStaleContent, string requestUrl)
         {
-            if (content is null)
-            {
-                throw new ArgumentNullException(nameof(content), "Content is not specified.");
-            }
-
-            if (requestUrl is null)
-            {
-                throw new ArgumentNullException(nameof(requestUrl), "Request URL is not specified.");
-            }
-
-            if (requestUrl == string.Empty)
-            {
-                throw new ArgumentException("Request URL is not specified.", nameof(requestUrl));
-            }
-
             Content = content;
             HasStaleContent = hasStaleContent;
             RequestUrl = requestUrl;

@@ -295,12 +295,12 @@ namespace KenticoCloud.Delivery
         }
 
         /// <summary>
-        /// Returns a content element.
+        /// Returns a content type element.
         /// </summary>
         /// <param name="contentTypeCodename">The codename of the content type.</param>
-        /// <param name="contentElementCodename">The codename of the content element.</param>
-        /// <returns>A content element with the specified codename that is a part of a content type with the specified codename.</returns>
-        public async Task<ContentElement> GetContentElementAsync(string contentTypeCodename, string contentElementCodename)
+        /// <param name="contentElementCodename">The codename of the content type element.</param>
+        /// <returns>The <see cref="DeliveryElementResponse"/> instance that contains the specified content type element.</returns>
+        public async Task<DeliveryElementResponse> GetContentElementAsync(string contentTypeCodename, string contentElementCodename)
         {
             if (contentTypeCodename == null)
             {
@@ -325,11 +325,8 @@ namespace KenticoCloud.Delivery
             var endpointUrl = UrlBuilder.GetContentElementUrl(contentTypeCodename, contentElementCodename);
             var response = await GetDeliverResponseAsync(endpointUrl);
 
-            var elementCodename = response.Content["codename"].ToString();
-
-            return new ContentElement(response.Content, elementCodename);
+            return new DeliveryElementResponse(response);
         }
-
 
         /// <summary>
         /// Returns a taxonomy group as JSON data.

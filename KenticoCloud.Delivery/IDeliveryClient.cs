@@ -124,12 +124,12 @@ namespace KenticoCloud.Delivery
         Task<DeliveryTypeListingResponse> GetTypesAsync(IEnumerable<IQueryParameter> parameters);
 
         /// <summary>
-        /// Returns a content element.
+        /// Returns a content type element.
         /// </summary>
         /// <param name="contentTypeCodename">The codename of the content type.</param>
-        /// <param name="contentElementCodename">The codename of the content element.</param>
-        /// <returns>A content element with the specified codename that is a part of a content type with the specified codename.</returns>
-        Task<ContentElement> GetContentElementAsync(string contentTypeCodename, string contentElementCodename);
+        /// <param name="contentElementCodename">The codename of the content type element.</param>
+        /// <returns>The <see cref="DeliveryElementResponse"/> instance that contains the specified content type element.</returns>
+        Task<DeliveryElementResponse> GetContentElementAsync(string contentTypeCodename, string contentElementCodename);
 
         /// <summary>
         /// Returns a taxonomy group as JSON data.

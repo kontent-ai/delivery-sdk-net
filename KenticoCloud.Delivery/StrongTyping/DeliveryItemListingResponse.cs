@@ -33,7 +33,7 @@ namespace KenticoCloud.Delivery
         public dynamic LinkedItems => _linkedItems.Value;
 
         /// <summary>
-        /// Initializes a new instance of the <see cref="DeliveryItemListingResponse"/> class.
+        /// Initializes a new instance of the <see cref="DeliveryItemListingResponse{T}"/> class.
         /// </summary>
         /// <param name="response">The response from Kentico Cloud Delivery API that contains a list of content items.</param>
         /// <param name="modelProvider">The provider that can convert JSON responses into instances of .NET types.</param>

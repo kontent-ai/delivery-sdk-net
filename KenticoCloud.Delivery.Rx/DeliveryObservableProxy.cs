@@ -206,7 +206,7 @@ namespace KenticoCloud.Delivery.Rx
         /// <returns>An <see cref="IObservable{ContentElement}"/> that represents the content element with the specified codename, that is a part of a content type with the specified codename.</returns>
         public IObservable<ContentElement> GetElementObservable(string contentTypeCodename, string contentElementCodename)
         {
-            return GetObservableOfOne(() => DeliveryClient?.GetContentElementAsync(contentTypeCodename, contentElementCodename)?.Result);
+            return GetObservableOfOne(() => DeliveryClient?.GetContentElementAsync(contentTypeCodename, contentElementCodename)?.Result.Element);
         }
 
         /// <summary>

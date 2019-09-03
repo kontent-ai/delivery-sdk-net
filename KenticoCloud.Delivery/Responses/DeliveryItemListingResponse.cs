@@ -48,7 +48,7 @@ namespace KenticoCloud.Delivery
         }
 
         /// <summary>
-        /// Casts this response to its generic version. To succceed all items must be of the same type.
+        /// Casts this response to a generic one. To succeed all items must be of the same type.
         /// </summary>
         /// <typeparam name="T">The object type that the items will be deserialized to.</typeparam>
         public DeliveryItemListingResponse<T> CastTo<T>()

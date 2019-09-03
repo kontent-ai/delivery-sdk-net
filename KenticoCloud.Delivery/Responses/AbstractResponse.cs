@@ -1,9 +1,7 @@
-﻿using Newtonsoft.Json.Linq;
-
-namespace KenticoCloud.Delivery
+﻿namespace KenticoCloud.Delivery
 {
     /// <summary>
-    /// Represents a generic response from Kentico Cloud Delivery API.
+    /// Represents a successful response from Kentico Cloud Delivery API.
     /// </summary>
     public abstract class AbstractResponse
     {

@@ -27,7 +27,7 @@ namespace KenticoCloud.Delivery
         /// <summary>
         /// Initializes a new instance of the <see cref="DeliveryItemResponse"/> class.
         /// </summary>
-        /// <param name="response">The response from Kentico Cloud Delivery API that contains a list of content items.</param>
+        /// <param name="response">The response from Kentico Cloud Delivery API that contains a content item.</param>
         /// <param name="modelProvider">The provider that can convert JSON responses into instances of .NET types.</param>
         /// <param name="contentLinkUrlResolver">The resolver that can generate URLs for links in rich text elements.</param>
         internal DeliveryItemResponse(ApiResponse response, IModelProvider modelProvider, IContentLinkUrlResolver contentLinkUrlResolver) : base(response)
@@ -39,12 +39,18 @@ namespace KenticoCloud.Delivery
         }
 
         /// <summary>
-        /// Casts this response to its generic version.
+        /// Casts this response to a generic one.
         /// </summary>
         /// <typeparam name="T">The object type that the item will be deserialized to.</typeparam>
         public DeliveryItemResponse<T> CastTo<T>()
         {
             return new DeliveryItemResponse<T>(_response, _modelProvider);
         }
+
+        /// <summary>
+        /// Implicitly converts the specified <paramref name="response"/> to a content item.
+        /// </summary>
+        /// <param name="response">The response to convert.</param>
+        public static implicit operator ContentItem(DeliveryItemResponse response) => response.Item;
     }
 }
