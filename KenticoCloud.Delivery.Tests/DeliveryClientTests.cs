@@ -889,6 +889,348 @@ namespace KenticoCloud.Delivery.Tests
         }
 
         [Fact]
+        public async void GetItemAsync_ApiReturnsStaleContent_ResponseIndicatesStaleContent()
+        {
+            var headers = new[]
+            {
+                new KeyValuePair<string, string>("X-Stale-Content", "1")
+            };
+
+            _mockHttp
+                .When($"{_baseUrl}/items/test")
+                .Respond(headers, "application/json", "{ }");
+
+            var client = InitializeDeliveryClientWithCustomModelProvider(_mockHttp);
+
+            var response = await client.GetItemAsync("test");
+
+            Assert.True(response.HasStaleContent);
+        }
+
+        [Fact]
+        public async void GetItemAsync_ApiDoesNotReturnStaleContent_ResponseDoesNotIndicateStaleContent()
+        {
+            var headers = new[]
+            {
+                new KeyValuePair<string, string>("X-Stale-Content", "0")
+            };
+
+            _mockHttp
+                .When($"{_baseUrl}/items/test")
+                .Respond(headers, "application/json", "{ }");
+
+            var client = InitializeDeliveryClientWithCustomModelProvider(_mockHttp);
+
+            var response = await client.GetItemAsync("test");
+
+            Assert.False(response.HasStaleContent);
+        }
+
+        [Fact]
+        public async void GetItemsAsync_ApiReturnsStaleContent_ResponseIndicatesStaleContent()
+        {
+            var headers = new[]
+            {
+                new KeyValuePair<string, string>("X-Stale-Content", "1")
+            };
+
+            _mockHttp
+                .When($"{_baseUrl}/items")
+                .Respond(headers, "application/json", "{ }");
+
+            var client = InitializeDeliveryClientWithCustomModelProvider(_mockHttp);
+
+            var response = await client.GetItemsAsync();
+
+            Assert.True(response.HasStaleContent);
+        }
+
+        [Fact]
+        public async void GetItemsAsync_ApiDoesNotReturnStaleContent_ResponseDoesNotIndicateStaleContent()
+        {
+            var headers = new[]
+            {
+                new KeyValuePair<string, string>("X-Stale-Content", "0")
+            };
+
+            _mockHttp
+                .When($"{_baseUrl}/items")
+                .Respond(headers, "application/json", "{ }");
+
+            var client = InitializeDeliveryClientWithCustomModelProvider(_mockHttp);
+
+            var response = await client.GetItemsAsync();
+
+            Assert.False(response.HasStaleContent);
+        }
+
+        [Fact]
+        public async void GetCustomItemAsync_ApiReturnsStaleContent_ResponseIndicatesStaleContent()
+        {
+            var headers = new[]
+            {
+                new KeyValuePair<string, string>("X-Stale-Content", "1")
+            };
+
+            _mockHttp
+                .When($"{_baseUrl}/items/test")
+                .Respond(headers, "application/json", "{ }");
+
+            var client = InitializeDeliveryClientWithCustomModelProvider(_mockHttp);
+
+            var response = await client.GetItemAsync<Homepage>("test");
+
+            Assert.True(response.HasStaleContent);
+        }
+
+        [Fact]
+        public async void GetCustomItemAsync_ApiDoesNotReturnStaleContent_ResponseDoesNotIndicateStaleContent()
+        {
+            var headers = new[]
+            {
+                new KeyValuePair<string, string>("X-Stale-Content", "0")
+            };
+
+            _mockHttp
+                .When($"{_baseUrl}/items/test")
+                .Respond(headers, "application/json", "{ }");
+
+            var client = InitializeDeliveryClientWithCustomModelProvider(_mockHttp);
+
+            var response = await client.GetItemAsync<Homepage>("test");
+
+            Assert.False(response.HasStaleContent);
+        }
+
+        [Fact]
+        public async void GetCustomItemsAsync_ApiReturnsStaleContent_ResponseIndicatesStaleContent()
+        {
+            var headers = new[]
+            {
+                new KeyValuePair<string, string>("X-Stale-Content", "1")
+            };
+
+            _mockHttp
+                .When($"{_baseUrl}/items")
+                .Respond(headers, "application/json", "{ }");
+
+            var client = InitializeDeliveryClientWithCustomModelProvider(_mockHttp);
+
+            var response = await client.GetItemsAsync<Homepage>();
+
+            Assert.True(response.HasStaleContent);
+        }
+
+        [Fact]
+        public async void GetCustomItemsAsync_ApiDoesNotReturnStaleContent_ResponseDoesNotIndicateStaleContent()
+        {
+            var headers = new[]
+            {
+                new KeyValuePair<string, string>("X-Stale-Content", "0")
+            };
+
+            _mockHttp
+                .When($"{_baseUrl}/items")
+                .Respond(headers, "application/json", "{ }");
+
+            var client = InitializeDeliveryClientWithCustomModelProvider(_mockHttp);
+
+            var response = await client.GetItemsAsync<Homepage>();
+
+            Assert.False(response.HasStaleContent);
+        }
+
+        [Fact]
+        public async void GetTypeAsync_ApiReturnsStaleContent_ResponseIndicatesStaleContent()
+        {
+            var headers = new[]
+            {
+                new KeyValuePair<string, string>("X-Stale-Content", "1")
+            };
+
+            _mockHttp
+                .When($"{_baseUrl}/types/test")
+                .Respond(headers, "application/json", "{ }");
+
+            var client = InitializeDeliveryClientWithCustomModelProvider(_mockHttp);
+
+            var response = await client.GetTypeAsync("test");
+
+            Assert.True(response.HasStaleContent);
+        }
+
+        [Fact]
+        public async void GetTypeAsync_ApiDoesNotReturnStaleContent_ResponseDoesNotIndicateStaleContent()
+        {
+            var headers = new[]
+            {
+                new KeyValuePair<string, string>("X-Stale-Content", "0")
+            };
+
+            _mockHttp
+                .When($"{_baseUrl}/types/test")
+                .Respond(headers, "application/json", "{ }");
+
+            var client = InitializeDeliveryClientWithCustomModelProvider(_mockHttp);
+
+            var response = await client.GetTypeAsync("test");
+
+            Assert.False(response.HasStaleContent);
+        }
+
+        [Fact]
+        public async void GetTypesAsync_ApiReturnsStaleContent_ResponseIndicatesStaleContent()
+        {
+            var headers = new[]
+            {
+                new KeyValuePair<string, string>("X-Stale-Content", "1")
+            };
+
+            _mockHttp
+                .When($"{_baseUrl}/types")
+                .Respond(headers, "application/json", "{ }");
+
+            var client = InitializeDeliveryClientWithCustomModelProvider(_mockHttp);
+
+            var response = await client.GetTypesAsync();
+
+            Assert.True(response.HasStaleContent);
+        }
+
+        [Fact]
+        public async void GetTypesAsync_ApiDoesNotReturnStaleContent_ResponseDoesNotIndicateStaleContent()
+        {
+            var headers = new[]
+            {
+                new KeyValuePair<string, string>("X-Stale-Content", "0")
+            };
+
+            _mockHttp
+                .When($"{_baseUrl}/types")
+                .Respond(headers, "application/json", "{ }");
+
+            var client = InitializeDeliveryClientWithCustomModelProvider(_mockHttp);
+
+            var response = await client.GetTypesAsync();
+
+            Assert.False(response.HasStaleContent);
+        }
+
+        [Fact]
+        public async void GetTaxonomyAsync_ApiReturnsStaleContent_ResponseIndicatesStaleContent()
+        {
+            var headers = new[]
+            {
+                new KeyValuePair<string, string>("X-Stale-Content", "1")
+            };
+
+            _mockHttp
+                .When($"{_baseUrl}/taxonomies/test")
+                .Respond(headers, "application/json", "{ }");
+
+            var client = InitializeDeliveryClientWithCustomModelProvider(_mockHttp);
+
+            var response = await client.GetTaxonomyAsync("test");
+
+            Assert.True(response.HasStaleContent);
+        }
+
+        [Fact]
+        public async void GetTaxonomyAsync_ApiDoesNotReturnStaleContent_ResponseDoesNotIndicateStaleContent()
+        {
+            var headers = new[]
+            {
+                new KeyValuePair<string, string>("X-Stale-Content", "0")
+            };
+
+            _mockHttp
+                .When($"{_baseUrl}/taxonomies/test")
+                .Respond(headers, "application/json", "{ }");
+
+            var client = InitializeDeliveryClientWithCustomModelProvider(_mockHttp);
+
+            var response = await client.GetTaxonomyAsync("test");
+
+            Assert.False(response.HasStaleContent);
+        }
+
+        [Fact]
+        public async void GetTaxonomiesAsync_ApiReturnsStaleContent_ResponseIndicatesStaleContent()
+        {
+            var headers = new[]
+            {
+                new KeyValuePair<string, string>("X-Stale-Content", "1")
+            };
+
+            _mockHttp
+                .When($"{_baseUrl}/taxonomies")
+                .Respond(headers, "application/json", "{ }");
+
+            var client = InitializeDeliveryClientWithCustomModelProvider(_mockHttp);
+
+            var response = await client.GetTaxonomiesAsync();
+
+            Assert.True(response.HasStaleContent);
+        }
+
+        [Fact]
+        public async void GetTaxonomiesAsync_ApiDoesNotReturnStaleContent_ResponseDoesNotIndicateStaleContent()
+        {
+            var headers = new[]
+            {
+                new KeyValuePair<string, string>("X-Stale-Content", "0")
+            };
+
+            _mockHttp
+                .When($"{_baseUrl}/taxonomies")
+                .Respond(headers, "application/json", "{ }");
+
+            var client = InitializeDeliveryClientWithCustomModelProvider(_mockHttp);
+
+            var response = await client.GetTaxonomiesAsync();
+
+            Assert.False(response.HasStaleContent);
+        }
+
+        [Fact]
+        public async void GetElementAsync_ApiReturnsStaleContent_ResponseIndicatesStaleContent()
+        {
+            var headers = new[]
+            {
+                new KeyValuePair<string, string>("X-Stale-Content", "1")
+            };
+
+            _mockHttp
+                .When($"{_baseUrl}/types/test/elements/test")
+                .Respond(headers, "application/json", "{ }");
+
+            var client = InitializeDeliveryClientWithCustomModelProvider(_mockHttp);
+
+            var response = await client.GetContentElementAsync("test", "test");
+
+            Assert.True(response.HasStaleContent);
+        }
+
+        [Fact]
+        public async void GetElementAsync_ApiDoesNotReturnStaleContent_ResponseDoesNotIndicateStaleContent()
+        {
+            var headers = new[]
+            {
+                new KeyValuePair<string, string>("X-Stale-Content", "0")
+            };
+
+            _mockHttp
+                .When($"{_baseUrl}/types/test/elements/test")
+                .Respond(headers, "application/json", "{ }");
+
+            var client = InitializeDeliveryClientWithCustomModelProvider(_mockHttp);
+
+            var response = await client.GetContentElementAsync("test", "test");
+
+            Assert.False(response.HasStaleContent);
+        }
+
+        [Fact]
         [Trait("Issue", "146")]
         public async void InitializeMultipleInlineContentItemsResolvers()
         {
