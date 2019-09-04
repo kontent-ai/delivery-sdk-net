@@ -171,6 +171,86 @@ namespace Kentico.Kontent.Delivery.Tests
         }
 
         [Fact]
+        public void GetItemsFeed_DepthParameter_ThrowsArgumentException()
+        {
+           var client = InitializeDeliveryClientWithACustomTypeProvider(_mockHttp);
+
+           Assert.Throws<ArgumentException>(() => client.GetItemsFeed(new DepthParameter(2)));
+        }
+
+        [Fact]
+        public void GetItemsFeed_LimitParameter_ThrowsArgumentException()
+        {
+            var client = InitializeDeliveryClientWithACustomTypeProvider(_mockHttp);
+
+            Assert.Throws<ArgumentException>(() => client.GetItemsFeed(new LimitParameter(2)));
+        }
+
+        [Fact]
+        public void GetItemsFeed_SkipParameter_ThrowsArgumentException()
+        {
+            var client = InitializeDeliveryClientWithACustomTypeProvider(_mockHttp);
+
+            Assert.Throws<ArgumentException>(() => client.GetItemsFeed(new SkipParameter(2)));
+        }
+
+        [Fact]
+        public async void GetItemsFeed_SingleBatch_FetchNextBatchAsync()
+        {
+            _mockHttp
+                .When($"{_baseUrl}/items-feed")
+                .WithQueryString("system.type=article")
+                .Respond("application/json", File.ReadAllText(Path.Combine(Environment.CurrentDirectory, $"Fixtures{Path.DirectorySeparatorChar}DeliveryClient{Path.DirectorySeparatorChar}articles_feed.json")));
+
+            var client = InitializeDeliveryClientWithACustomTypeProvider(_mockHttp);
+
+            var feed = client.GetItemsFeed(new EqualsFilter("system.type", "article"));
+            var items = new List<ContentItem>();
+            var timesCalled = 0;
+            while (feed.HasMoreResults)
+            {
+                timesCalled++;
+                var response = await feed.FetchNextBatchAsync();
+                items.AddRange(response);
+            }
+
+            Assert.Equal(6, items.Count);
+            Assert.Equal(1, timesCalled);
+        }
+
+        [Fact]
+        public async void GetItemsFeed_MultipleBatches_FetchNextBatchAsync()
+        {
+            // Second batch
+            _mockHttp
+                .When($"{_baseUrl}/items-feed")
+                .WithQueryString("system.type=article")
+                .WithHeaders("X-Continuation", "token")
+                .Respond("application/json", File.ReadAllText(Path.Combine(Environment.CurrentDirectory, $"Fixtures{Path.DirectorySeparatorChar}DeliveryClient{Path.DirectorySeparatorChar}articles_feed_2.json")));
+
+            // First batch
+            _mockHttp
+                .When($"{_baseUrl}/items-feed")
+                .WithQueryString("system.type=article")
+                .Respond(new[] { new KeyValuePair<string, string>("X-Continuation", "token"), }, "application/json", File.ReadAllText(Path.Combine(Environment.CurrentDirectory, $"Fixtures{Path.DirectorySeparatorChar}DeliveryClient{Path.DirectorySeparatorChar}articles_feed_1.json")));
+
+            var client = InitializeDeliveryClientWithACustomTypeProvider(_mockHttp);
+
+            var feed = client.GetItemsFeed(new EqualsFilter("system.type", "article"));
+            var items = new List<ContentItem>();
+            var timesCalled = 0;
+            while (feed.HasMoreResults)
+            {
+                timesCalled++;
+                var response = await feed.FetchNextBatchAsync();
+                items.AddRange(response);
+            }
+
+            Assert.Equal(6, items.Count);
+            Assert.Equal(2, timesCalled);
+        }
+
+        [Fact]
         public async void GetTypeAsync()
         {
             _mockHttp
@@ -535,6 +615,92 @@ namespace Kentico.Kontent.Delivery.Tests
         }
 
         [Fact]
+        public void GetStronglyTypedItemsFeed_DepthParameter_ThrowsArgumentException()
+        {
+            var client = InitializeDeliveryClientWithACustomTypeProvider(_mockHttp);
+
+            Assert.Throws<ArgumentException>(() => client.GetItemsFeed<object>(new DepthParameter(2)));
+        }
+
+        [Fact]
+        public void GetStronglyTypedItemsFeed_LimitParameter_ThrowsArgumentException()
+        {
+            var client = InitializeDeliveryClientWithACustomTypeProvider(_mockHttp);
+
+            Assert.Throws<ArgumentException>(() => client.GetItemsFeed<object>(new LimitParameter(2)));
+        }
+
+        [Fact]
+        public void GetStronglyTypedItemsFeed_SkipParameter_ThrowsArgumentException()
+        {
+            var client = InitializeDeliveryClientWithACustomTypeProvider(_mockHttp);
+
+            Assert.Throws<ArgumentException>(() => client.GetItemsFeed<object>(new SkipParameter(2)));
+        }
+
+        [Fact]
+        public async void GetStronglyTypedItemsFeed_SingleBatch_FetchNextBatchAsync()
+        {
+            _mockHttp
+                .When($"{_baseUrl}/items-feed")
+                .WithQueryString("system.type=article&elements=title,summary,personas")
+                .Respond("application/json", File.ReadAllText(Path.Combine(Environment.CurrentDirectory, $"Fixtures{Path.DirectorySeparatorChar}DeliveryClient{Path.DirectorySeparatorChar}articles_feed.json")));
+
+            var client = InitializeDeliveryClientWithCustomModelProvider(_mockHttp);
+            A.CallTo(() => _mockTypeProvider.GetType("article"))
+                .ReturnsLazily(() => typeof(ArticlePartialItemModel));
+
+            var feed = client.GetItemsFeed<object>(new EqualsFilter("system.type", "article"), new ElementsParameter("title", "summary", "personas"));
+            var items = new List<object>();
+            var timesCalled = 0;
+            while (feed.HasMoreResults)
+            {
+                timesCalled++;
+                var response = await feed.FetchNextBatchAsync();
+                items.AddRange(response);
+            }
+
+            Assert.Equal(6, items.Count);
+            Assert.Equal(1, timesCalled);
+            Assert.True(items.All(i => i.GetType() == typeof(ArticlePartialItemModel)));
+        }
+
+        [Fact]
+        public async void GetStronglyTypedItemsFeed_MultipleBatches_FetchNextBatchAsync()
+        {
+            // Second batch
+            _mockHttp
+                .When($"{_baseUrl}/items-feed")
+                .WithQueryString("system.type=article&elements=title,summary,personas")
+                .WithHeaders("X-Continuation", "token")
+                .Respond("application/json", File.ReadAllText(Path.Combine(Environment.CurrentDirectory, $"Fixtures{Path.DirectorySeparatorChar}DeliveryClient{Path.DirectorySeparatorChar}articles_feed_2.json")));
+
+            // First batch
+            _mockHttp
+                .When($"{_baseUrl}/items-feed")
+                .WithQueryString("system.type=article&elements=title,summary,personas")
+                .Respond(new[] { new KeyValuePair<string, string>("X-Continuation", "token"), }, "application/json", File.ReadAllText(Path.Combine(Environment.CurrentDirectory, $"Fixtures{Path.DirectorySeparatorChar}DeliveryClient{Path.DirectorySeparatorChar}articles_feed_1.json")));
+
+            var client = InitializeDeliveryClientWithCustomModelProvider(_mockHttp);
+            A.CallTo(() => _mockTypeProvider.GetType("article"))
+                .ReturnsLazily(() => typeof(ArticlePartialItemModel));
+
+            var feed = client.GetItemsFeed<object>(new EqualsFilter("system.type", "article"), new ElementsParameter("title", "summary", "personas"));
+            var items = new List<object>();
+            var timesCalled = 0;
+            while (feed.HasMoreResults)
+            {
+                timesCalled++;
+                var response = await feed.FetchNextBatchAsync();
+                items.AddRange(response);
+            }
+
+            Assert.Equal(6, items.Count);
+            Assert.Equal(2, timesCalled);
+            Assert.True(items.All(i => i.GetType() == typeof(ArticlePartialItemModel)));
+        }
+
+        [Fact]
         public void CastResponse()
         {
             _mockHttp
@@ -565,6 +731,24 @@ namespace Kentico.Kontent.Delivery.Tests
             // Assert
             Assert.NotNull(stronglyTypedListingResponse);
             Assert.True(stronglyTypedListingResponse.Items.Any());
+        }
+
+        [Fact]
+        public async void CastItemsFeedResponse()
+        {
+            _mockHttp
+                .When($"{_baseUrl}/items-feed")
+                .WithQueryString("system.type=article")
+                .Respond("application/json", File.ReadAllText(Path.Combine(Environment.CurrentDirectory, $"Fixtures{Path.DirectorySeparatorChar}DeliveryClient{Path.DirectorySeparatorChar}articles_feed.json")));
+
+            var client = InitializeDeliveryClientWithCustomModelProvider(_mockHttp);
+
+            var feed = client.GetItemsFeed(new EqualsFilter("system.type", "article"));
+            var response = await feed.FetchNextBatchAsync();
+            var items = response.CastTo<ArticlePartialItemModel>();
+
+            Assert.NotNull(items);
+            Assert.Equal(6, items.Count());
         }
 
         [Fact]

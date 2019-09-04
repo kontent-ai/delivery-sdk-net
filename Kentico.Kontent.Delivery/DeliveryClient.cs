@@ -28,7 +28,7 @@ namespace Kentico.Kontent.Delivery
 
         private DeliveryEndpointUrlBuilder _urlBuilder;
 
-        private DeliveryEndpointUrlBuilder UrlBuilder 
+        private DeliveryEndpointUrlBuilder UrlBuilder
             => _urlBuilder ?? (_urlBuilder = new DeliveryEndpointUrlBuilder(DeliveryOptions));
 
         /// <summary>
@@ -212,6 +212,65 @@ namespace Kentico.Kontent.Delivery
             var response = await GetDeliverResponseAsync(endpointUrl);
 
             return new DeliveryItemListingResponse<T>(response, ModelProvider);
+        }
+
+        /// <summary>
+        /// Returns a feed that is used to traverse through content items matching the optional filtering parameters.
+        /// </summary>
+        /// <param name="parameters">An array of query parameters, for example, for filtering or ordering.</param>
+        /// <returns>The <see cref="DeliveryItemsFeed"/> instance that can be used to enumerate through content items. If no query parameters are specified, all content items are enumerated.</returns>
+        public DeliveryItemsFeed GetItemsFeed(params IQueryParameter[] parameters)
+        {
+            return GetItemsFeed((IEnumerable<IQueryParameter>) parameters);
+        }
+
+        /// <summary>
+        /// Returns a feed that is used to traverse through content items matching the optional filtering parameters.
+        /// </summary>
+        /// <param name="parameters">A collection of query parameters, for example, for filtering or ordering.</param>
+        /// <returns>The <see cref="DeliveryItemsFeed"/> instance that can be used to enumerate through content items. If no query parameters are specified, all content items are enumerated.</returns>
+        public DeliveryItemsFeed GetItemsFeed(IEnumerable<IQueryParameter> parameters)
+        {
+            ValidateItemsFeedParameters(parameters);
+            var endpointUrl = UrlBuilder.GetItemsFeedUrl(parameters);
+            return new DeliveryItemsFeed(GetItemsBatchAsync, endpointUrl);
+
+            async Task<DeliveryItemsFeedResponse> GetItemsBatchAsync(string continuationToken)
+            {
+                var response = await GetDeliverResponseAsync(endpointUrl, continuationToken);
+                return new DeliveryItemsFeedResponse(response, ModelProvider, ContentLinkUrlResolver);
+            }
+        }
+
+        /// <summary>
+        /// Returns a feed that is used to traverse through strongly typed content items matching the optional filtering parameters.
+        /// </summary>
+        /// <typeparam name="T">Type of the model. (Or <see cref="object"/> if the return type is not yet known.)</typeparam>
+        /// <param name="parameters">An array of query parameters, for example, for filtering or ordering.</param>
+        /// <returns>The <see cref="DeliveryItemsFeed{T}"/> instance that can be used to enumerate through content items. If no query parameters are specified, all content items are enumerated.</returns>
+        public DeliveryItemsFeed<T> GetItemsFeed<T>(params IQueryParameter[] parameters)
+        {
+            return GetItemsFeed<T>((IEnumerable<IQueryParameter>) parameters);
+        }
+
+        /// <summary>
+        /// Returns a feed that is used to traverse through strongly typed content items matching the optional filtering parameters.
+        /// </summary>
+        /// <typeparam name="T">Type of the model. (Or <see cref="object"/> if the return type is not yet known.)</typeparam>
+        /// <param name="parameters">A collection of query parameters, for example, for filtering or ordering.</param>
+        /// <returns>The <see cref="DeliveryItemsFeed{T}"/> instance that can be used to enumerate through content items. If no query parameters are specified, all content items are enumerated.</returns>
+        public DeliveryItemsFeed<T> GetItemsFeed<T>(IEnumerable<IQueryParameter> parameters)
+        {
+            var enhancedParameters = ExtractParameters<T>(parameters).ToList();
+            ValidateItemsFeedParameters(enhancedParameters);
+            var endpointUrl = UrlBuilder.GetItemsFeedUrl(enhancedParameters);
+            return new DeliveryItemsFeed<T>(GetItemsBatchAsync, endpointUrl);
+
+            async Task<DeliveryItemsFeedResponse<T>> GetItemsBatchAsync(string continuationToken)
+            {
+                var response = await GetDeliverResponseAsync(endpointUrl, continuationToken);
+                return new DeliveryItemsFeedResponse<T>(response, ModelProvider);
+            }
         }
 
         /// <summary>
@@ -408,7 +467,7 @@ namespace Kentico.Kontent.Delivery
             return new DeliveryTaxonomyListingResponse(response);
         }
 
-        private async Task<ApiResponse> GetDeliverResponseAsync(string endpointUrl)
+        private async Task<ApiResponse> GetDeliverResponseAsync(string endpointUrl, string continuationToken = null)
         {
             if (DeliveryOptions.UsePreviewApi && DeliveryOptions.UseSecuredProductionApi)
             {
@@ -420,7 +479,7 @@ namespace Kentico.Kontent.Delivery
                 // Use the resilience logic.
                 var policyResult = await ResiliencePolicyProvider?.Policy?.ExecuteAndCaptureAsync(() =>
                     {
-                        return SendHttpMessage(endpointUrl);
+                        return SendHttpMessage(endpointUrl, continuationToken);
                     }
                 );
 
@@ -428,10 +487,10 @@ namespace Kentico.Kontent.Delivery
             }
 
             // Omit using the resilience logic completely.
-            return await GetResponseContent(await SendHttpMessage(endpointUrl));
+            return await GetResponseContent(await SendHttpMessage(endpointUrl, continuationToken));
         }
 
-        private Task<HttpResponseMessage> SendHttpMessage(string endpointUrl)
+        private Task<HttpResponseMessage> SendHttpMessage(string endpointUrl, string continuationToken = null)
         {
             var message = new HttpRequestMessage(HttpMethod.Get, endpointUrl);
 
@@ -450,6 +509,11 @@ namespace Kentico.Kontent.Delivery
             if (UsePreviewApi())
             {
                 message.Headers.AddAuthorizationHeader("Bearer", DeliveryOptions.PreviewApiKey);
+            }
+
+            if (continuationToken != null)
+            {
+                message.Headers.AddContinuationHeader(continuationToken);
             }
 
             return HttpClient.SendAsync(message);
@@ -471,8 +535,9 @@ namespace Kentico.Kontent.Delivery
             {
                 var content = JObject.Parse(await httpResponseMessage.Content?.ReadAsStringAsync());
                 var hasStaleContent = HasStaleContent(httpResponseMessage);
+                var continuationToken = httpResponseMessage.Headers.GetContinuationHeader();
 
-                return new ApiResponse(content, hasStaleContent: hasStaleContent, requestUrl: httpResponseMessage.RequestMessage.RequestUri.AbsoluteUri);
+                return new ApiResponse(content, hasStaleContent, continuationToken, httpResponseMessage.RequestMessage.RequestUri.AbsoluteUri);
             }
 
             string faultContent = null;
@@ -514,6 +579,25 @@ namespace Kentico.Kontent.Delivery
                     .ElementOrAttributePath
                     .Equals("system.type", StringComparison.Ordinal));
             return typeFilterExists ?? false;
+        }
+
+        private static void ValidateItemsFeedParameters(IEnumerable<IQueryParameter> parameters)
+        {
+            var parameterList = parameters.ToList();
+            if (parameterList.Any(x => x is DepthParameter))
+            {
+                throw new ArgumentException("Depth parameter is not supported in items feed.");
+            }
+
+            if (parameterList.Any(x => x is LimitParameter))
+            {
+                throw new ArgumentException("Limit parameter is not supported in items feed.");
+            }
+
+            if (parameterList.Any(x => x is SkipParameter))
+            {
+                throw new ArgumentException("Skip parameter is not supported in items feed.");
+            }
         }
     }
 }

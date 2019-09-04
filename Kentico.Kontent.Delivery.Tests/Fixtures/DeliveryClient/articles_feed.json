@@ -1,0 +1,229 @@
+﻿{
+  "items": [
+    {
+      "system": {
+        "id": "cf106f4e-30a4-42ef-b313-b8ea3fd3e5c5",
+        "name": "Coffee Beverages Explained",
+        "codename": "coffee_beverages_explained",
+        "language": "en-US",
+        "type": "article",
+        "sitemap_locations": [],
+        "last_modified": "2019-03-27T13:12:58.578Z"
+      },
+      "elements": {
+        "title": {
+          "type": "text",
+          "name": "Title",
+          "value": "Coffee Beverages Explained"
+        },
+        "summary": {
+          "type": "text",
+          "name": "Summary",
+          "value": "Espresso and filtered coffee are the two main categories of coffee, based on the method of preparation. Learn about individual types of coffee that fall under these categories."
+        },
+        "personas": {
+          "type": "taxonomy",
+          "name": "Personas",
+          "taxonomy_group": "personas",
+          "value": [
+            {
+              "name": "Coffee lover",
+              "codename": "coffee_lover"
+            }
+          ]
+        }
+      }
+    },
+    {
+      "system": {
+        "id": "117cdfae-52cf-4885-b271-66aef6825612",
+        "name": "Coffee processing techniques",
+        "codename": "coffee_processing_techniques",
+        "language": "en-US",
+        "type": "article",
+        "sitemap_locations": [],
+        "last_modified": "2019-03-27T13:13:35.312Z"
+      },
+      "elements": {
+        "title": {
+          "type": "text",
+          "name": "Title",
+          "value": "Coffee processing techniques"
+        },
+        "summary": {
+          "type": "text",
+          "name": "Summary",
+          "value": "Learn about the techniques of processing the products of coffee plants. Different methods are used in different parts of the world depending mainly on their weather conditions."
+        },
+        "personas": {
+          "type": "taxonomy",
+          "name": "Personas",
+          "taxonomy_group": "personas",
+          "value": [
+            {
+              "name": "Coffee blogger",
+              "codename": "coffee_blogger"
+            },
+            {
+              "name": "Coffee lover",
+              "codename": "coffee_lover"
+            }
+          ]
+        }
+      }
+    },
+    {
+      "system": {
+        "id": "23f71096-fa89-4f59-a3f9-970e970944ec",
+        "name": "Donate with us",
+        "codename": "donate_with_us",
+        "language": "en-US",
+        "type": "article",
+        "sitemap_locations": [],
+        "last_modified": "2019-03-27T13:14:07.384Z"
+      },
+      "elements": {
+        "title": {
+          "type": "text",
+          "name": "Title",
+          "value": "Donate with us"
+        },
+        "summary": {
+          "type": "text",
+          "name": "Summary",
+          "value": "Dancing Goat regularly donates money to Children in Africa, a foundation helping children with food, accommodation, education, and other essentials. Donate with us and create a better world."
+        },
+        "personas": {
+          "type": "taxonomy",
+          "name": "Personas",
+          "taxonomy_group": "personas",
+          "value": [
+            {
+              "name": "Cafe owner",
+              "codename": "cafe_owner"
+            }
+          ]
+        }
+      }
+    },
+    {
+      "system": {
+        "id": "f4b3fc05-e988-4dae-9ac1-a94aba566474",
+        "name": "On Roasts",
+        "codename": "on_roasts",
+        "language": "en-US",
+        "type": "article",
+        "sitemap_locations": [],
+        "last_modified": "2019-03-27T13:21:11.38Z"
+      },
+      "elements": {
+        "title": {
+          "type": "text",
+          "name": "Title",
+          "value": "On Roasts"
+        },
+        "summary": {
+          "type": "text",
+          "name": "Summary",
+          "value": "Roasting coffee beans can take from 6 to 13 minutes. Different roasting times produce different types of coffee, with varying concentration of caffeine and intensity of the original flavor."
+        },
+        "personas": {
+          "type": "taxonomy",
+          "name": "Personas",
+          "taxonomy_group": "personas",
+          "value": [
+            {
+              "name": "Barista",
+              "codename": "barista"
+            },
+            {
+              "name": "Coffee blogger",
+              "codename": "coffee_blogger"
+            }
+          ]
+        }
+      }
+    },
+    {
+      "system": {
+        "id": "b2fea94c-73fd-42ec-a22f-f409878de187",
+        "name": "Origins of Arabica Bourbon",
+        "codename": "origins_of_arabica_bourbon",
+        "language": "en-US",
+        "type": "article",
+        "sitemap_locations": [],
+        "last_modified": "2019-03-27T13:21:49.151Z"
+      },
+      "elements": {
+        "title": {
+          "type": "text",
+          "name": "Title",
+          "value": "Origins of Arabica Bourbon"
+        },
+        "summary": {
+          "type": "text",
+          "name": "Summary",
+          "value": "This one particular type of coffee, the Arabica Bourbon, is now sold only in Japan. It has been brought back to life by enthusiasts after being almost forgotten for nearly sixty years."
+        },
+        "personas": {
+          "type": "taxonomy",
+          "name": "Personas",
+          "taxonomy_group": "personas",
+          "value": [
+            {
+              "name": "Barista",
+              "codename": "barista"
+            },
+            {
+              "name": "Coffee blogger",
+              "codename": "coffee_blogger"
+            }
+          ]
+        }
+      }
+    },
+    {
+      "system": {
+        "id": "3120ec15-a4a2-47ec-8ccd-c85ac8ac5ba5",
+        "name": "Which brewing fits you?",
+        "codename": "which_brewing_fits_you_",
+        "language": "en-US",
+        "type": "article",
+        "sitemap_locations": [],
+        "last_modified": "2019-03-27T13:24:54.042Z"
+      },
+      "elements": {
+        "title": {
+          "type": "text",
+          "name": "Title",
+          "value": "Which brewing fits you?"
+        },
+        "summary": {
+          "type": "text",
+          "name": "Summary",
+          "value": "We have put down three procedures with clearly written steps describing the process of making coffee. Read this article to convince yourself that brewing coffee is no science"
+        },
+        "personas": {
+          "type": "taxonomy",
+          "name": "Personas",
+          "taxonomy_group": "personas",
+          "value": [
+            {
+              "name": "Coffee lover",
+              "codename": "coffee_lover"
+            },
+            {
+              "name": "Coffee blogger",
+              "codename": "coffee_blogger"
+            },
+            {
+              "name": "Barista",
+              "codename": "barista"
+            }
+          ]
+        }
+      }
+    }
+  ],
+  "modular_content": {}
+}

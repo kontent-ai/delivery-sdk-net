@@ -20,6 +20,11 @@ namespace Kentico.Kontent.Delivery
         public bool HasStaleContent { get; }
 
         /// <summary>
+        /// Gets the continuation token to be used for continuing enumeration of the Kentico Kontent Delivery API.
+        /// </summary>
+        public string ContinuationToken { get; }
+
+        /// <summary>
         /// Gets the URL used to retrieve this response for debugging purposes.
         /// </summary>
         public string RequestUrl { get; }
@@ -29,11 +34,13 @@ namespace Kentico.Kontent.Delivery
         /// </summary>
         /// <param name="content">JSON content.</param>
         /// <param name="hasStaleContent">Specifies whether content is stale.</param>
-        /// <param name="requestUrl">The URL used to retrieve this response.</param>
-        internal ApiResponse(JObject content, bool hasStaleContent, string requestUrl)
+        /// <param name="continuationToken">Continuation token to be used for continuing enumeration.</param>
+        /// <param name="requestUrl">URL used to retrieve this response.</param>
+        internal ApiResponse(JObject content, bool hasStaleContent, string continuationToken, string requestUrl)
         {
             Content = content;
             HasStaleContent = hasStaleContent;
+            ContinuationToken = continuationToken;
             RequestUrl = requestUrl;
         }
     }

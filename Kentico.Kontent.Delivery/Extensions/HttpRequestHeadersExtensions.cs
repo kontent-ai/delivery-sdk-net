@@ -9,6 +9,7 @@ namespace Kentico.Kontent.Delivery.Extensions
     {
         private const string SdkTrackingHeaderName = "X-KC-SDKID";
         private const string WaitForLoadingNewContentHeaderName = "X-KC-Wait-For-Loading-New-Content";
+        private const string ContinuationHeaderName = "X-Continuation";
 
         private const string PackageRepositoryHost = "nuget.org";
         
@@ -29,6 +30,11 @@ namespace Kentico.Kontent.Delivery.Extensions
         internal static void AddAuthorizationHeader(this HttpRequestHeaders header, string scheme, string parameter)
         {
             header.Authorization = new AuthenticationHeaderValue(scheme, parameter);
+        }
+
+        internal static void AddContinuationHeader(this HttpRequestHeaders header, string continuation)
+        {
+            header.Add(ContinuationHeaderName, continuation);
         }
 
         private static string GetSdkVersion()

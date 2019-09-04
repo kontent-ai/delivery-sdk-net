@@ -89,6 +89,36 @@ namespace Kentico.Kontent.Delivery
         Task<DeliveryItemListingResponse<T>> GetItemsAsync<T>(IEnumerable<IQueryParameter> parameters);
 
         /// <summary>
+        /// Returns a feed that is used to traverse through content items matching the optional filtering parameters.
+        /// </summary>
+        /// <param name="parameters">A collection of query parameters, for example, for filtering or ordering.</param>
+        /// <returns>The <see cref="DeliveryItemsFeed"/> instance that can be used to enumerate through content items. If no query parameters are specified, all content items are enumerated.</returns>
+        DeliveryItemsFeed GetItemsFeed(params IQueryParameter[] parameters);
+
+        /// <summary>
+        /// Returns a feed that is used to traverse through content items matching the optional filtering parameters.
+        /// </summary>
+        /// <param name="parameters">A collection of query parameters, for example, for filtering or ordering.</param>
+        /// <returns>The <see cref="DeliveryItemsFeed"/> instance that can be used to enumerate through content items. If no query parameters are specified, all content items are enumerated.</returns>
+        DeliveryItemsFeed GetItemsFeed(IEnumerable<IQueryParameter> parameters);
+
+        /// <summary>
+        /// Returns a feed that is used to traverse through strongly typed content items matching the optional filtering parameters.
+        /// </summary>
+        /// <typeparam name="T">Type of the model. (Or <see cref="object"/> if the return type is not yet known.)</typeparam>
+        /// <param name="parameters">A collection of query parameters, for example, for filtering or ordering.</param>
+        /// <returns>The <see cref="DeliveryItemsFeed{T}"/> instance that can be used to enumerate through content items. If no query parameters are specified, all content items are enumerated.</returns>
+        DeliveryItemsFeed<T> GetItemsFeed<T>(params IQueryParameter[] parameters);
+
+        /// <summary>
+        /// Returns a feed that is used to traverse through strongly typed content items matching the optional filtering parameters.
+        /// </summary>
+        /// <typeparam name="T">Type of the model. (Or <see cref="object"/> if the return type is not yet known.)</typeparam>
+        /// <param name="parameters">A collection of query parameters, for example, for filtering or ordering.</param>
+        /// <returns>The <see cref="DeliveryItemsFeed{T}"/> instance that can be used to enumerate through content items. If no query parameters are specified, all content items are enumerated.</returns>
+        DeliveryItemsFeed<T> GetItemsFeed<T>(IEnumerable<IQueryParameter> parameters);
+
+        /// <summary>
         /// Returns a content type as JSON data.
         /// </summary>
         /// <param name="codename">The codename of a content type.</param>
