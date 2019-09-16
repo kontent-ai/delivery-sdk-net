@@ -1,47 +1,47 @@
-# Kentico Cloud Delivery .NET SDK
+# Kentico Kontent Delivery .NET SDK
 
 [![Build status](https://ci.appveyor.com/api/projects/status/3m3q2ads2y43bh9o/branch/master?svg=true)](https://ci.appveyor.com/project/kentico/deliver-net-sdk/branch/master)
 [![CircleCI](https://circleci.com/gh/Kentico/delivery-sdk-net.svg?style=shield)](https://circleci.com/gh/Kentico/delivery-sdk-net)
-[![Stack Overflow](https://img.shields.io/badge/Stack%20Overflow-ASK%20NOW-FE7A16.svg?logo=stackoverflow&logoColor=white)](https://stackoverflow.com/tags/kentico-cloud)
+[![Stack Overflow](https://img.shields.io/badge/Stack%20Overflow-ASK%20NOW-FE7A16.svg?logo=stackoverflow&logoColor=white)](https://stackoverflow.com/tags/kentico-kontent)
 
 | Paradigm        | Package  | Downloads | Documentation |
 | ------------- |:-------------:| :-------------:|  :-------------:|
-| Async         | [![NuGet](https://img.shields.io/nuget/v/KenticoCloud.Delivery.svg)](https://www.nuget.org/packages/KenticoCloud.Delivery) | [![NuGet](https://img.shields.io/nuget/dt/kenticocloud.delivery.svg)](https://www.nuget.org/packages/KenticoCloud.Delivery) | [📖](#using-the-deliveryclient) |
-| Reactive      | [![NuGet](https://img.shields.io/nuget/v/KenticoCloud.Delivery.Rx.svg)](https://www.nuget.org/packages/KenticoCloud.Delivery.Rx) | [![NuGet](https://img.shields.io/nuget/dt/kenticocloud.delivery.Rx.svg)](https://www.nuget.org/packages/KenticoCloud.Delivery.Rx) | [📖](#using-the-kenticoclouddeliveryrx-reactive-library) |
+| Async         | [![NuGet](https://img.shields.io/nuget/v/KenticoKontent.Delivery.svg)](https://www.nuget.org/packages/KenticoKontent.Delivery) | [![NuGet](https://img.shields.io/nuget/dt/kenticokontent.delivery.svg)](https://www.nuget.org/packages/KenticoKontent.Delivery) | [📖](#using-the-deliveryclient) |
+| Reactive      | [![NuGet](https://img.shields.io/nuget/v/KenticoKontent.Delivery.Rx.svg)](https://www.nuget.org/packages/KenticoKontent.Delivery.Rx) | [![NuGet](https://img.shields.io/nuget/dt/kenticokontent.delivery.Rx.svg)](https://www.nuget.org/packages/KenticoKontent.Delivery.Rx) | [📖](#using-the-kenticokontentdeliveryrx-reactive-library) |
 
 ## Summary
 
-The Kentico Cloud Delivery .NET SDK is a client library used for retrieving content from Kentico Cloud.
+The Kentico Kontent Delivery .NET SDK is a client library used for retrieving content from Kentico Kontent.
 
 You can use it via any of the following NuGet packages:
 
-* [KenticoCloud.Delivery](https://www.nuget.org/packages/KenticoCloud.Delivery)
-* [KenticoCloud.Delivery.Rx](https://www.nuget.org/packages/KenticoCloud.Delivery.Rx)
+* [KenticoKontent.Delivery](https://www.nuget.org/packages/KenticoKontent.Delivery)
+* [KenticoKontent.Delivery.Rx](https://www.nuget.org/packages/KenticoKontent.Delivery.Rx)
 
-The first package provides the [DeliveryClient](#using-the-deliveryclient) object to consume Kentico Cloud data via the traditional async way. The second one provides the [DeliveryObservableProxy](#using-the-kenticoclouddeliveryrx-reactive-library) object that enables the reactive way of consuming the data.
+The first package provides the [DeliveryClient](#using-the-deliveryclient) object to consume Kentico Kontent data via the traditional async way. The second one provides the [DeliveryObservableProxy](#using-the-kenticokontentdeliveryrx-reactive-library) object that enables the reactive way of consuming the data.
 
 The SDK targets the [.NET Standard 2.0](https://docs.microsoft.com/en-us/dotnet/standard/net-standard), which means it can be used in .NET Framework 4.6.1 projects and above, and .NET Core 2.0 projects and above.
 
 ## Using the DeliveryClient
 
-The `IDeliveryClient` interface is the main interface of the SDK. Using an implementation of this interface, you can retrieve content from your Kentico Cloud projects.
+The `IDeliveryClient` interface is the main interface of the SDK. Using an implementation of this interface, you can retrieve content from your Kentico Kontent projects.
 
-To initialize the client, use the `DeliveryClientBuilder` class and provide a [project ID](https://developer.kenticocloud.com/docs/getting-content#section-getting-content-items).
+To initialize the client, use the `DeliveryClientBuilder` class and provide a [project ID](https://docs.kontent.ai/tutorials/develop-apps/get-content/getting-content#section-getting-content-items).
 
 ```csharp
 // Initializes an instance of the DeliveryClient client by building it with the DeliveryClientBuilder class
 IDeliveryClient client = DeliveryClientBuilder.WithProjectId("<YOUR_PROJECT_ID>").Build();
 ```
 
-You can also provide the project ID and other parameters by passing a function that returns the [`DeliveryOptions`](https://github.com/Kentico/delivery-sdk-net/blob/master/KenticoCloud.Delivery/Configuration/DeliveryOptions%20.cs) object to the `DeliveryClientBuilder.WithOptions` method.
+You can also provide the project ID and other parameters by passing a function that returns the [`DeliveryOptions`](https://github.com/Kentico/delivery-sdk-net/blob/master/KenticoKontent.Delivery/Configuration/DeliveryOptions%20.cs) object to the `DeliveryClientBuilder.WithOptions` method.
 
 We recommend creating the `DeliveryOptions` instance by using the `DeliveryOptionsBuilder` class. With the options builder, you can use the following parameters:
 
-* `ProjectId` – sets the ID of your Kentico Cloud project. This parameter must always be set.
+* `ProjectId` – sets the ID of your Kentico Kontent project. This parameter must always be set.
 * `UsePreviewApi` – determines whether to use the Delivery Preview API and sets the Delivery Preview API key. See [previewing unpublished content](#previewing-unpublished-content) to learn more.
 * `UseProductionApi` – determines whether to use the default production Delivery API.
 * `UseSecuredProductionApi` – determines whether authenticate requests to the production Delivery API with an API key. See [retrieving secured content](https://developer.kenticocloud.com/docs/securing-public-access#section-retrieving-secured-content) to learn more.
-* `WaitForLoadingNewContent` – forces the client instance to wait while fetching updated content, useful when acting upon [webhook calls](https://developer.kenticocloud.com/docs/webhooks).
+* `WaitForLoadingNewContent` – forces the client instance to wait while fetching updated content, useful when acting upon [webhook calls](https://docs.kontent.ai/tutorials/develop-apps/integrate/using-webhooks-for-automatic-updates).
 * `EnableResilienceLogic` – determines whether HTTP requests will use [retry logic](#resilience-capabilities). By default, the resilience logic is enabled.
 * `MaxRetryAttempts` – sets a custom number of [retry attempts](#resilience-capabilities). By default, the SDK retries requests five times.
 * `WithCustomEndpoint` - sets a custom endpoint for the specific API (preview, production, or secured production).
@@ -117,7 +117,7 @@ See [Working with Strongly Typed Models](../../wiki/Working-with-strongly-typed-
 
 ## Previewing unpublished content
 
-To retrieve unpublished content, you need to create an instance of the `IDeliveryClient` with both Project ID and Preview API key. Each Kentico Cloud project has its own Preview API key.
+To retrieve unpublished content, you need to create an instance of the `IDeliveryClient` with both Project ID and Preview API key. Each Kentico Kontent project has its own Preview API key.
 
 ```csharp
 // Note: We recomend that you work with only either the production OR preview Delivery API within a single project.
@@ -129,7 +129,7 @@ IDeliveryClient client = DeliveryClientBuilder
     .Build();
 ```
 
-Learn more about [previewing unpublished content using the Delivery API](https://developer.kenticocloud.com/docs/preview-content-via-api) in our Developer Hub.
+Learn more about [previewing unpublished content using the Delivery API](https://docs.kontent.ai/tutorials/write-and-collaborate/preview-content/previewing-unpublished-content) in our Developer Hub.
 
 ## Response structure
 
@@ -239,7 +239,7 @@ articleItem.GetLinkedItems("related_articles")
 
 ## Using the Image transformations
 
-The [ImageUrlBuilder class](https://github.com/Kentico/delivery-sdk-net/blob/master/KenticoCloud.Delivery/ImageTransformation/ImageUrlBuilder.cs) exposes methods for applying image transformations on the Asset URL.
+The [ImageUrlBuilder class](https://github.com/Kentico/delivery-sdk-net/blob/master/KenticoKontent.Delivery/ImageTransformation/ImageUrlBuilder.cs) exposes methods for applying image transformations on the Asset URL.
 
 ```csharp
 string assetUrl = articleItem.GetAssets("teaser_image").First().Url;
@@ -268,25 +268,25 @@ The default policy retries requests 5 times, totaling 6 overall attempts to retr
 
 The default resilience policy is implemented using [Polly](https://github.com/App-vNext/Polly). You can also implement your own Polly policy wrapped in an `IResiliencePolicyProvider` instance. The instance can be set to `IDeliveryClient` implementation through the `DeliveryClientBuilder` class or by registering it to the `ServiceCollection`.
 
-## Using the KenticoCloud.Delivery.Rx reactive library
+## Using the KenticoKontent.Delivery.Rx reactive library
 
-The [DeliveryObservableProxy class](https://github.com/Kentico/delivery-sdk-net/blob/master/KenticoCloud.Delivery.Rx/DeliveryObservableProxy.cs) provides a reactive way of retrieving Kentico Cloud content.
+The [DeliveryObservableProxy class](https://github.com/Kentico/delivery-sdk-net/blob/master/KenticoKontent.Delivery.Rx/DeliveryObservableProxy.cs) provides a reactive way of retrieving Kentico Kontent content.
 
-The `DeliveryObservableProxy` class constructor accepts an [IDeliveryClient](https://github.com/Kentico/delivery-sdk-net/blob/master/KenticoCloud.Delivery/IDeliveryClient.cs) instance, therefore you are free to create the `IDeliveryClient` implementation (or its derivatives) in any of [the supported ways](#using-the-deliveryclient).
+The `DeliveryObservableProxy` class constructor accepts an [IDeliveryClient](https://github.com/Kentico/delivery-sdk-net/blob/master/KenticoKontent.Delivery/IDeliveryClient.cs) instance, therefore you are free to create the `IDeliveryClient` implementation (or its derivatives) in any of [the supported ways](#using-the-deliveryclient).
 
 ```csharp
 public IDeliveryClient DeliveryClient => DeliveryClientBuilder.WithProjectId("975bf280-fd91-488c-994c-2f04416e5ee3").Build();
 public DeliveryObservableProxy DeliveryObservableProxy => new DeliveryObservableProxy(DeliveryClient);
 ```
 
-The `DeliveryObservableProxy` class exposes methods that mirror the public methods of the [IDeliveryClient](https://github.com/Kentico/delivery-sdk-net/blob/master/KenticoCloud.Delivery/IDeliveryClient.cs). The methods have the same names, with an `Observable` suffix. They call the `IDeliveryClient` methods in the background.
+The `DeliveryObservableProxy` class exposes methods that mirror the public methods of the [IDeliveryClient](https://github.com/Kentico/delivery-sdk-net/blob/master/KenticoKontent.Delivery/IDeliveryClient.cs). The methods have the same names, with an `Observable` suffix. They call the `IDeliveryClient` methods in the background.
 
 ```csharp
 IObservable<Article> articlesWithBaristaPersona =
 	DeliveryObservableProxy.GetItemsObservable<Article>(new ContainsFilter("elements.personas", "barista"));
 ```
 
-Unlike most of the `IDeliveryClient` methods that return data wrapped in `Delivery*Response` objects, their `*Observable` counterparts always return sequences of the Kentico Cloud artifacts themselves (not wrapped). Should an error response be returned by the `IDeliveryClient` implementation, the observable sequence will terminate with the conventional [OnError](https://docs.microsoft.com/en-us/dotnet/api/system.iobserver-1.onerror) call.
+Unlike most of the `IDeliveryClient` methods that return data wrapped in `Delivery*Response` objects, their `*Observable` counterparts always return sequences of the Kentico Kontent artifacts themselves (not wrapped). Should an error response be returned by the `IDeliveryClient` implementation, the observable sequence will terminate with the conventional [OnError](https://docs.microsoft.com/en-us/dotnet/api/system.iobserver-1.onerror) call.
 
 ## Using [SourceLink](https://github.com/dotnet/sourcelink/) for debugging
 
@@ -294,7 +294,7 @@ This repository is configured to generate a SourceLink tag in the NuGet package 
 
 ### How to configure SourceLink
 
-1. Open a solution with a project referencing the KenticoCloud.Delivery (or KenticoCloud.Delivery.RX) Nuget package.
+1. Open a solution with a project referencing the KenticoKontent.Delivery (or KenticoKontent.Delivery.RX) Nuget package.
 2. Open Tools -> Options -> Debugging -> General.
     * Clear **Enable Just My Code**.
     * Select **Enable Source Link Support**.
@@ -302,7 +302,7 @@ This repository is configured to generate a SourceLink tag in the NuGet package 
 3. Build your solution.
 4. [Add a symbol server `https://symbols.nuget.org/download/symbols`](https://blog.nuget.org/20181116/Improved-debugging-experience-with-the-NuGet-org-symbol-server-and-snupkg.html)
   * ![Add a symbol server in VS](/.github/assets/vs-nuget-symbol-server.PNG)
-5. Run a debugging session and try to step into the KenticoCloud.Delivery code.
+5. Run a debugging session and try to step into the KenticoKontent.Delivery code.
 6. Allow Visual Studio to download the source code from GitHub.
   * ![SourceLink confirmation dialog](/.github/assets/allow_sourcelink_download.png)
 
@@ -311,7 +311,7 @@ This repository is configured to generate a SourceLink tag in the NuGet package 
 
 ## Further information
 
-For more developer resources, visit the Kentico Cloud Developer Hub at <https://developer.kenticocloud.com>.
+For more developer resources, visit the Kentico Kontent Developer Hub at <https://docs.kontent.ai/tutorials/develop-apps>.
 
 ### Building the sources
 
