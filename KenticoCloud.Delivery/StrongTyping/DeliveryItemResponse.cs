@@ -1,45 +1,45 @@
 ﻿using Newtonsoft.Json.Linq;
-using System;
-using System.Threading;
 
 namespace KenticoCloud.Delivery
 {
     /// <summary>
-    /// Represents a response from Kentico Cloud Delivery API that contains a content item.
+    /// Represents a response from Kentico Cloud Delivery API that contains an content items.
     /// </summary>
-    /// <typeparam name="T">The type of a content item in the response.</typeparam>
+    /// <typeparam name="T">Generic strong type of item representation.</typeparam>
     public sealed class DeliveryItemResponse<T> : AbstractResponse
     {
+        private readonly JToken _response;
         private readonly IModelProvider _modelProvider;
-        private readonly Lazy<T> _item;
-        private readonly Lazy<JObject> _linkedItems;
+        private dynamic _linkedItems;
+        private T _item;
 
         /// <summary>
-        /// Gets the content item.
+        /// Gets a content item.
         /// </summary>
-        public T Item => _item.Value;
+        public T Item
+        {
+            get
+            {
+                if (_item == null)
+                {
+                    _item = _modelProvider.GetContentItemModel<T>(_response["item"], _response["modular_content"]);
+                }
+                return _item;
+            }
+        }
 
         /// <summary>
         /// Gets the dynamic view of the JSON response where linked items and their properties can be retrieved by name, for example <c>LinkedItems.about_us.elements.description.value</c>.
         /// </summary>
-        public dynamic LinkedItems => _linkedItems.Value;
-
-        /// <summary>
-        /// Initializes a new instance of the <see cref="DeliveryItemResponse{T}"/> class.
-        /// </summary>
-        /// <param name="response">The response from Kentico Cloud Delivery API that contains a content item.</param>
-        /// <param name="modelProvider">The provider that can convert JSON responses into instances of .NET types.</param>
-        internal DeliveryItemResponse(ApiResponse response, IModelProvider modelProvider) : base(response)
+        public dynamic LinkedItems
         {
-            _modelProvider = modelProvider;
-            _item = new Lazy<T>(() => _modelProvider.GetContentItemModel<T>(_response.Content["item"], _response.Content["modular_content"]), LazyThreadSafetyMode.PublicationOnly);
-            _linkedItems = new Lazy<JObject>(() => (JObject)_response.Content["modular_content"].DeepClone(), LazyThreadSafetyMode.PublicationOnly);
+            get { return _linkedItems ?? (_linkedItems = JObject.Parse(_response["modular_content"].ToString())); }
         }
 
-        /// <summary>
-        /// Implicitly converts the specified <paramref name="response"/> to a content item.
-        /// </summary>
-        /// <param name="response">The response to convert.</param>
-        public static implicit operator T(DeliveryItemResponse<T> response) => response.Item;
+        internal DeliveryItemResponse(JToken response, IModelProvider modelProvider, string apiUrl) : base(apiUrl)
+        {
+            _response = response;
+            _modelProvider = modelProvider;
+        }
     }
 }

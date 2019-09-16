@@ -1,34 +1,27 @@
 ﻿namespace KenticoCloud.Delivery
 {
     /// <summary>
-    /// Represents a successful response from Kentico Cloud Delivery API.
+    /// Base class for response objects.
     /// </summary>
     public abstract class AbstractResponse
     {
-        /// <summary>
-        /// The successful JSON response from Kentico Cloud Delivery API.
-        /// </summary>
-        protected readonly ApiResponse _response;
+        #region "Debugging properties"
 
         /// <summary>
-        /// Gets a value that determines whether content is stale.
-        /// Stale content indicates that there is a more recent version, but it will become available later.
-        /// Stale content should be cached only for a limited period of time.
+        /// The URL of the request sent to the Kentico Cloud endpoint by the <see cref="DeliveryClient"/>.
+        /// Useful for debugging.
         /// </summary>
-        public bool HasStaleContent => _response.HasStaleContent;
+        public string ApiUrl { get; protected set; }
+
+        #endregion
 
         /// <summary>
-        /// Gets the URL used to retrieve this response for debugging purposes.
+        /// Default constructor.
         /// </summary>
-        public string ApiUrl => _response.RequestUrl;
-
-        /// <summary>
-        /// Initializes a new instance of the <see cref="AbstractResponse"/> class.
-        /// </summary>
-        /// <param name="response">A successful JSON response from Kentico Cloud Delivery API.</param>
-        protected AbstractResponse(ApiResponse response)
+        /// <param name="apiUrl">API URL used to communicate with the underlying Kentico Cloud endpoint.</param>
+        protected AbstractResponse(string apiUrl)
         {
-            _response = response;
+            ApiUrl = apiUrl;
         }
     }
 }

@@ -1,8 +1,6 @@
 ﻿using Newtonsoft.Json.Linq;
-using System;
 using System.Collections.Generic;
 using System.Linq;
-using System.Threading;
 
 namespace KenticoCloud.Delivery
 {
@@ -11,27 +9,25 @@ namespace KenticoCloud.Delivery
     /// </summary>
     public sealed class DeliveryTaxonomyListingResponse : AbstractResponse
     {
-        private readonly Lazy<Pagination> _pagination;
-        private readonly Lazy<IReadOnlyList<TaxonomyGroup>> _taxonomies;
-
         /// <summary>
         /// Gets paging information.
         /// </summary>
-        public Pagination Pagination => _pagination.Value;
+        public Pagination Pagination { get; }
 
         /// <summary>
-        /// Gets a read-only list of taxonomy groups.
+        /// Gets a list of taxonomy groups.
         /// </summary>
-        public IReadOnlyList<TaxonomyGroup> Taxonomies => _taxonomies.Value;
+        public IReadOnlyList<TaxonomyGroup> Taxonomies { get; }
 
         /// <summary>
-        /// Initializes a new instance of the <see cref="DeliveryTaxonomyListingResponse"/> class.
+        /// Initializes a new instance of the <see cref="DeliveryTaxonomyListingResponse"/> class with information from a response.
         /// </summary>
-        /// <param name="response">The response from Kentico Cloud Delivery API that contains a list of taxonomy groups.</param>
-        internal DeliveryTaxonomyListingResponse(ApiResponse response) : base(response)
+        /// <param name="response">A response from Kentico Cloud Delivery API that contains a list of taxonomy groups.</param>
+        /// /// <param name="apiUrl">API URL used to communicate with the underlying Kentico Cloud endpoint.</param>
+        internal DeliveryTaxonomyListingResponse(JToken response, string apiUrl) : base(apiUrl)
         {
-            _pagination = new Lazy<Pagination>(() => _response.Content["pagination"].ToObject<Pagination>(), LazyThreadSafetyMode.PublicationOnly);
-            _taxonomies = new Lazy<IReadOnlyList<TaxonomyGroup>>(() => ((JArray)_response.Content["taxonomies"]).Select(source => new TaxonomyGroup(source)).ToList().AsReadOnly(), LazyThreadSafetyMode.PublicationOnly);
+            Pagination = response["pagination"].ToObject<Pagination>();
+            Taxonomies = ((JArray)response["taxonomies"]).Select(type => new TaxonomyGroup(type)).ToList().AsReadOnly();
         }
     }
 }
