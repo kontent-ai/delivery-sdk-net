@@ -1,8 +1,6 @@
 ﻿using Newtonsoft.Json.Linq;
-using System;
 using System.Collections.Generic;
 using System.Linq;
-using System.Threading;
 
 namespace KenticoCloud.Delivery
 {
@@ -11,27 +9,25 @@ namespace KenticoCloud.Delivery
     /// </summary>
     public sealed class DeliveryTypeListingResponse : AbstractResponse
     {
-        private readonly Lazy<Pagination> _pagination;
-        private readonly Lazy<IReadOnlyList<ContentType>> _types;
-
         /// <summary>
         /// Gets paging information.
         /// </summary>
-        public Pagination Pagination => _pagination.Value;
+        public Pagination Pagination { get; }
 
         /// <summary>
-        /// Gets a read-only list of content types.
+        /// Gets a list of content types.
         /// </summary>
-        public IReadOnlyList<ContentType> Types => _types.Value;
+        public IReadOnlyList<ContentType> Types { get; }
 
         /// <summary>
-        /// Initializes a new instance of the <see cref="DeliveryTypeListingResponse"/> class.
+        /// Initializes a new instance of the <see cref="DeliveryTypeListingResponse"/> class with information from a response.
         /// </summary>
-        /// <param name="response">The response from Kentico Cloud Delivery API that contains a list of content types.</param>
-        internal DeliveryTypeListingResponse(ApiResponse response) : base(response)
+        /// <param name="response">A response from Kentico Cloud Delivery API that contains a list of content types.</param>
+        /// <param name="apiUrl">API URL used to communicate with the underlying Kentico Cloud endpoint.</param>
+        internal DeliveryTypeListingResponse(JToken response, string apiUrl) : base(apiUrl)
         {
-            _pagination = new Lazy<Pagination>(() => _response.Content["pagination"].ToObject<Pagination>(), LazyThreadSafetyMode.PublicationOnly);
-            _types = new Lazy<IReadOnlyList<ContentType>>(() => ((JArray)_response.Content["types"]).Select(source => new ContentType(source)).ToList().AsReadOnly(), LazyThreadSafetyMode.PublicationOnly);
+            Pagination = response["pagination"].ToObject<Pagination>();
+            Types = ((JArray)response["types"]).Select(type => new ContentType(type)).ToList().AsReadOnly();
         }
     }
 }

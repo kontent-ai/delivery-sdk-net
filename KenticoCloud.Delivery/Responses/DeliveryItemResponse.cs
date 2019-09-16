@@ -1,6 +1,4 @@
-﻿using System;
-using System.Threading;
-using Newtonsoft.Json.Linq;
+﻿using Newtonsoft.Json.Linq;
 
 namespace KenticoCloud.Delivery
 {
@@ -9,48 +7,49 @@ namespace KenticoCloud.Delivery
     /// </summary>
     public sealed class DeliveryItemResponse : AbstractResponse
     {
+        private readonly JToken _response;
         private readonly IModelProvider _modelProvider;
         private readonly IContentLinkUrlResolver _contentLinkUrlResolver;
-        private readonly Lazy<ContentItem> _item;
-        private readonly Lazy<JObject> _linkedItems;
+        private dynamic _linkedItems;
+        private ContentItem _item;
 
         /// <summary>
-        /// Gets the content item.
+        /// Gets the content item from the response.
         /// </summary>
-        public ContentItem Item => _item.Value;
+        public ContentItem Item
+        {
+            get { return _item ?? (_item = new ContentItem(_response["item"], _response["modular_content"], _contentLinkUrlResolver, _modelProvider)); }
+        }
 
         /// <summary>
         /// Gets the dynamic view of the JSON response where linked items and their properties can be retrieved by name, for example <c>LinkedItems.about_us.elements.description.value</c>.
         /// </summary>
-        public dynamic LinkedItems => _linkedItems.Value;
+        public dynamic LinkedItems
+        {
+            get { return _linkedItems ?? (_linkedItems = JObject.Parse(_response["modular_content"].ToString())); }
+        }
 
         /// <summary>
-        /// Initializes a new instance of the <see cref="DeliveryItemResponse"/> class.
+        /// Initializes a new instance of the <see cref="DeliveryItemResponse"/> class with information from a response.
         /// </summary>
-        /// <param name="response">The response from Kentico Cloud Delivery API that contains a content item.</param>
-        /// <param name="modelProvider">The provider that can convert JSON responses into instances of .NET types.</param>
-        /// <param name="contentLinkUrlResolver">The resolver that can generate URLs for links in rich text elements.</param>
-        internal DeliveryItemResponse(ApiResponse response, IModelProvider modelProvider, IContentLinkUrlResolver contentLinkUrlResolver) : base(response)
+        /// <param name="response">A response from Kentico Cloud Delivery API that contains a content item.</param>
+        /// /// <param name="modelProvider">An instance of an object that can JSON responses into strongly typed CLR objects</param>
+        /// <param name="contentLinkUrlResolver">An instance of an object that can resolve links in rich text elements</param>
+        /// <param name="apiUrl">API URL used to communicate with the underlying Kentico Cloud endpoint.</param>
+        internal DeliveryItemResponse(JToken response, IModelProvider modelProvider, IContentLinkUrlResolver contentLinkUrlResolver, string apiUrl) : base(apiUrl)
         {
+            _response = response;
             _modelProvider = modelProvider;
             _contentLinkUrlResolver = contentLinkUrlResolver;
-            _item = new Lazy<ContentItem>(() => new ContentItem(_response.Content["item"], _response.Content["modular_content"], _contentLinkUrlResolver, _modelProvider), LazyThreadSafetyMode.PublicationOnly);
-            _linkedItems = new Lazy<JObject>(() => (JObject)_response.Content["modular_content"].DeepClone(), LazyThreadSafetyMode.PublicationOnly);
         }
 
         /// <summary>
-        /// Casts this response to a generic one.
+        /// Casts DeliveryItemResponse to its generic version.
         /// </summary>
-        /// <typeparam name="T">The object type that the item will be deserialized to.</typeparam>
+        /// <typeparam name="T">Target type.</typeparam>
         public DeliveryItemResponse<T> CastTo<T>()
         {
-            return new DeliveryItemResponse<T>(_response, _modelProvider);
+            return new DeliveryItemResponse<T>(_response, _modelProvider, ApiUrl);
         }
-
-        /// <summary>
-        /// Implicitly converts the specified <paramref name="response"/> to a content item.
-        /// </summary>
-        /// <param name="response">The response to convert.</param>
-        public static implicit operator ContentItem(DeliveryItemResponse response) => response.Item;
     }
 }
