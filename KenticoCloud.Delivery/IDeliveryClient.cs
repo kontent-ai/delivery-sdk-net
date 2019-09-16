@@ -2,10 +2,10 @@ using System.Collections.Generic;
 using System.Threading.Tasks;
 using Newtonsoft.Json.Linq;
 
-namespace KenticoCloud.Delivery
+namespace KenticoKontent.Delivery
 {
     /// <summary>
-    /// Defines members necessary for retrieving content and its metadata from the Kentico Cloud Delivery service.
+    /// Defines members necessary for retrieving content and its metadata from the Kentico Kontent Delivery service.
     /// </summary>
     public interface IDeliveryClient
     {

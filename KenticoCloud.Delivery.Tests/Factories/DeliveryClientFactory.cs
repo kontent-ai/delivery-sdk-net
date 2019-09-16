@@ -1,11 +1,11 @@
 ﻿using System;
 using FakeItEasy;
-using KenticoCloud.Delivery.InlineContentItems;
-using KenticoCloud.Delivery.ResiliencePolicy;
+using KenticoKontent.Delivery.InlineContentItems;
+using KenticoKontent.Delivery.ResiliencePolicy;
 using Microsoft.Extensions.Options;
 using RichardSzalay.MockHttp;
 
-namespace KenticoCloud.Delivery.Tests.Factories
+namespace KenticoKontent.Delivery.Tests.Factories
 {
     internal static class DeliveryClientFactory
     {

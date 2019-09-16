@@ -1,6 +1,6 @@
 ﻿using Newtonsoft.Json.Linq;
 
-namespace KenticoCloud.Delivery
+namespace KenticoKontent.Delivery
 {
     /// <summary>
     /// Type used to identify inline content items which don't have corresponding model.

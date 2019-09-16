@@ -6,7 +6,7 @@
     <AssemblyTitle>Kentico Cloud Delivery SDK tests</AssemblyTitle>
     <Authors>Kentico Software</Authors>
     <TargetFramework>netcoreapp2.0</TargetFramework>
-    <AssemblyName>KenticoCloud.Delivery.Tests</AssemblyName>
+    <AssemblyName>KenticoKontent.Delivery.Tests</AssemblyName>
     <PackageId>KenticoCloud.Delivery.Tests</PackageId>
     <GenerateRuntimeConfigurationFiles>true</GenerateRuntimeConfigurationFiles>
     <PackageLicenseUrl>https://github.com/Kentico/delivery-sdk-net/blob/master/LICENSE</PackageLicenseUrl>
@@ -54,7 +54,7 @@
   </ItemGroup>
 
   <ItemGroup>
-    <ProjectReference Include="..\KenticoCloud.Delivery\KenticoCloud.Delivery.csproj" />
+    <ProjectReference Include="..\KenticoCloud.Delivery\KenticoKontent.Delivery.csproj" />
   </ItemGroup>
 
   <ItemGroup>

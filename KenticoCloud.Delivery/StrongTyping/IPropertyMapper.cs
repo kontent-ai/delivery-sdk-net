@@ -1,9 +1,9 @@
 ﻿using System.Reflection;
 
-namespace KenticoCloud.Delivery
+namespace KenticoKontent.Delivery
 {
     /// <summary>
-    /// Defines the contract for mapping Kentico Cloud content item fields to model properties.
+    /// Defines the contract for mapping Kentico Kontent content item fields to model properties.
     /// </summary>
     public interface IPropertyMapper
     {

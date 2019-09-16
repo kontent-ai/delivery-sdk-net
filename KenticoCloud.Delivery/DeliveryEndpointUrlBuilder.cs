@@ -2,7 +2,7 @@
 using System.Collections.Generic;
 using System.Linq;
 
-namespace KenticoCloud.Delivery
+namespace KenticoKontent.Delivery
 {
     internal sealed class DeliveryEndpointUrlBuilder
     {

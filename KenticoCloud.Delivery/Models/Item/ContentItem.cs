@@ -2,9 +2,9 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
-using KenticoCloud.Delivery.ContentLinks;
+using KenticoKontent.Delivery.ContentLinks;
 
-namespace KenticoCloud.Delivery
+namespace KenticoKontent.Delivery
 {
     /// <summary>
     /// Represents a content item.

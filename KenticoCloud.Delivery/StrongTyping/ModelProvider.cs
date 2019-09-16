@@ -2,12 +2,12 @@
 using System.Collections.Generic;
 using System.Linq;
 using System.Reflection;
-using KenticoCloud.Delivery.ContentLinks;
-using KenticoCloud.Delivery.InlineContentItems;
+using KenticoKontent.Delivery.ContentLinks;
+using KenticoKontent.Delivery.InlineContentItems;
 using Newtonsoft.Json;
 using Newtonsoft.Json.Linq;
 
-namespace KenticoCloud.Delivery.StrongTyping
+namespace KenticoKontent.Delivery.StrongTyping
 {
     /// <summary>
     /// A default provider for mapping content items to models.

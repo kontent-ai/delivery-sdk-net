@@ -1,4 +1,4 @@
-﻿namespace KenticoCloud.Delivery
+﻿namespace KenticoKontent.Delivery
 {
     /// <summary>
     /// Defines the contract to resolve content links in Rich text element values.

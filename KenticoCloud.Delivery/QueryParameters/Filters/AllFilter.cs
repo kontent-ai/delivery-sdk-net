@@ -1,4 +1,4 @@
-﻿namespace KenticoCloud.Delivery
+﻿namespace KenticoKontent.Delivery
 {
     /// <summary>
     /// Represents a filter that matches a content item if the specified content element or system attribute has a value that contains all the specified values.

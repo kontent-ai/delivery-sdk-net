@@ -1,6 +1,6 @@
 ﻿using System;
 
-namespace KenticoCloud.Delivery
+namespace KenticoKontent.Delivery
 {
     /// <summary>
     /// Specifies the language of content items to be requested.

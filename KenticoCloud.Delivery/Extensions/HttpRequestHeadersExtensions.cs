@@ -3,7 +3,7 @@ using System.Diagnostics;
 using System.Net.Http.Headers;
 using System.Reflection;
 
-namespace KenticoCloud.Delivery.Extensions
+namespace KenticoKontent.Delivery.Extensions
 {
     internal static class HttpRequestHeadersExtensions
     {

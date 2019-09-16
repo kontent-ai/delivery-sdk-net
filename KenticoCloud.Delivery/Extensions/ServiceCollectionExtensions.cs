@@ -1,12 +1,12 @@
 ﻿using System;
 using System.Linq;
 using System.Net.Http;
-using KenticoCloud.Delivery;
-using KenticoCloud.Delivery.Builders.DeliveryOptions;
-using KenticoCloud.Delivery.ContentLinks;
-using KenticoCloud.Delivery.InlineContentItems;
-using KenticoCloud.Delivery.ResiliencePolicy;
-using KenticoCloud.Delivery.StrongTyping;
+using KenticoKontent.Delivery;
+using KenticoKontent.Delivery.Builders.DeliveryOptions;
+using KenticoKontent.Delivery.ContentLinks;
+using KenticoKontent.Delivery.InlineContentItems;
+using KenticoKontent.Delivery.ResiliencePolicy;
+using KenticoKontent.Delivery.StrongTyping;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection.Extensions;
 

@@ -1,6 +1,6 @@
 ﻿using System;
 
-namespace KenticoCloud.Delivery.StrongTyping
+namespace KenticoKontent.Delivery.StrongTyping
 {
     internal class TypeProvider : ITypeProvider
     {

@@ -2,10 +2,10 @@
 using System.Collections.Generic;
 using System.Linq;
 
-namespace KenticoCloud.Delivery
+namespace KenticoKontent.Delivery
 {
     /// <summary>
-    /// Represents a response from Kentico Cloud Delivery API that contains a list of content items.
+    /// Represents a response from Kentico Kontent Delivery API that contains a list of content items.
     /// </summary>
     public sealed class DeliveryItemListingResponse : AbstractResponse
     {
@@ -43,10 +43,10 @@ namespace KenticoCloud.Delivery
         /// <summary>
         /// Initializes a new instance of the <see cref="DeliveryItemListingResponse"/> class with information from a response.
         /// </summary>
-        /// <param name="response">A response from Kentico Cloud Delivery API that contains a list of content items.</param>
+        /// <param name="response">A response from Kentico Kontent Delivery API that contains a list of content items.</param>
         /// /// <param name="modelProvider">An instance of an object that can JSON responses into strongly typed CLR objects</param>
         /// <param name="contentLinkUrlResolver">An instance of an object that can resolve links in rich text elements</param>
-        /// <param name="apiUrl">API URL used to communicate with the underlying Kentico Cloud endpoint.</param>
+        /// <param name="apiUrl">API URL used to communicate with the underlying Kentico Kontent endpoint.</param>
         internal DeliveryItemListingResponse(JToken response, IModelProvider modelProvider, IContentLinkUrlResolver contentLinkUrlResolver, string apiUrl) : base(apiUrl)
         {
             _response = response;

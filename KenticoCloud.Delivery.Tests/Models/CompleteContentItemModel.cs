@@ -1,7 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 
-namespace KenticoCloud.Delivery.Tests
+namespace KenticoKontent.Delivery.Tests
 {
     public class CompleteContentItemModel
     {

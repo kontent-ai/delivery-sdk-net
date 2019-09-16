@@ -1,7 +1,7 @@
 ﻿using Newtonsoft.Json;
 using NodaTime;
 
-namespace KenticoCloud.Delivery.Tests
+namespace KenticoKontent.Delivery.Tests
 {
     public partial class Article
     {

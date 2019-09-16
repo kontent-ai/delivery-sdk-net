@@ -1,6 +1,6 @@
 ﻿using Newtonsoft.Json;
 
-namespace KenticoCloud.Delivery
+namespace KenticoKontent.Delivery
 {
     /// <summary>
     /// Represents a taxonomy term assigned to a Taxonomy element.

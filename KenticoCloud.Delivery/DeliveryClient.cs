@@ -6,14 +6,14 @@ using System.Net.Http;
 using System.Threading.Tasks;
 using Microsoft.Extensions.Options;
 using Newtonsoft.Json.Linq;
-using KenticoCloud.Delivery.Extensions;
-using KenticoCloud.Delivery.InlineContentItems;
-using KenticoCloud.Delivery.ResiliencePolicy;
+using KenticoKontent.Delivery.Extensions;
+using KenticoKontent.Delivery.InlineContentItems;
+using KenticoKontent.Delivery.ResiliencePolicy;
 
-namespace KenticoCloud.Delivery
+namespace KenticoKontent.Delivery
 {
     /// <summary>
-    /// Executes requests against the Kentico Cloud Delivery API.
+    /// Executes requests against the Kentico Kontent Delivery API.
     /// </summary>
     internal sealed class DeliveryClient : IDeliveryClient
     {
@@ -34,14 +34,14 @@ namespace KenticoCloud.Delivery
         /// <summary>
         /// Initializes a new instance of the <see cref="DeliveryClient"/> class for retrieving content of the specified project.
         /// </summary>
-        /// <param name="deliveryOptions">The settings of the Kentico Cloud project.</param>
+        /// <param name="deliveryOptions">The settings of the Kentico Kontent project.</param>
         /// <param name="httpClient">A custom HTTP client instance</param>
         /// <param name="contentLinkUrlResolver">An instance of an object that can resolve links in rich text elements</param>
         /// <param name="contentItemsProcessor">An instance of an object that can resolve linked items in rich text elements</param>
         /// <param name="modelProvider">An instance of an object that can JSON responses into strongly typed CLR objects</param>
         /// <param name="retryPolicyProvider">A provider of a resilience (retry) policy.</param>
-        /// <param name="typeProvider">An instance of an object that can map Kentico Cloud content types to CLR types</param>
-        /// <param name="propertyMapper">An instance of an object that can map Kentico Cloud content item fields to model properties</param>
+        /// <param name="typeProvider">An instance of an object that can map Kentico Kontent content types to CLR types</param>
+        /// <param name="propertyMapper">An instance of an object that can map Kentico Kontent content item fields to model properties</param>
         public DeliveryClient(
             IOptions<DeliveryOptions> deliveryOptions,
             HttpClient httpClient = null,

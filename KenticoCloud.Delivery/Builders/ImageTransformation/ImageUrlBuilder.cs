@@ -4,10 +4,10 @@ using System.Globalization;
 using System.Linq;
 using Microsoft.Extensions.Primitives;
 
-namespace KenticoCloud.Delivery.ImageTransformation
+namespace KenticoKontent.Delivery.ImageTransformation
 {
     /// <summary>
-    /// Provides a builder for Image Transformations for Kentico Cloud Delivery API.
+    /// Provides a builder for Image Transformations for Kentico Kontent Delivery API.
     /// </summary>
     public sealed class ImageUrlBuilder
     {

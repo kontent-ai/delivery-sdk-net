@@ -1,7 +1,7 @@
 ﻿using Newtonsoft.Json;
 using System;
 
-namespace KenticoCloud.Delivery
+namespace KenticoKontent.Delivery
 {
     /// <summary>
     /// Specifies the maximum level of recursion when retrieving linked items. If not specified, the default depth is one level.

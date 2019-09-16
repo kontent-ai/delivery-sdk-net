@@ -1,6 +1,6 @@
 ﻿using System;
 
-namespace KenticoCloud.Delivery
+namespace KenticoKontent.Delivery
 {
     /// <summary>
     /// Context of the current resolving process

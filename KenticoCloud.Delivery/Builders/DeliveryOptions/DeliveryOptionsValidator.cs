@@ -1,7 +1,7 @@
 ﻿using System;
 using System.Text.RegularExpressions;
 
-namespace KenticoCloud.Delivery
+namespace KenticoKontent.Delivery
 {
     /// <summary>
     /// A class that can be used to validate configuration of the <see cref="DeliveryOptions"/> instance.
@@ -27,12 +27,12 @@ namespace KenticoCloud.Delivery
         {
             if (projectId == null)
             {
-                throw new ArgumentNullException(nameof(projectId), "Kentico Cloud project identifier is not specified.");
+                throw new ArgumentNullException(nameof(projectId), "Kentico Kontent project identifier is not specified.");
             }
 
             if (projectId == string.Empty)
             {
-                throw new ArgumentException("Kentico Cloud project identifier is empty.", nameof(projectId));
+                throw new ArgumentException("Kentico Kontent project identifier is empty.", nameof(projectId));
             }
 
             if (!Guid.TryParse(projectId, out var projectIdGuid))
@@ -50,7 +50,7 @@ namespace KenticoCloud.Delivery
             if (projectId == Guid.Empty)
             {
                 throw new ArgumentException(
-                    "Kentico Cloud project identifier cannot be empty UUID.",
+                    "Kentico Kontent project identifier cannot be empty UUID.",
                     nameof(projectId));
             }
         }

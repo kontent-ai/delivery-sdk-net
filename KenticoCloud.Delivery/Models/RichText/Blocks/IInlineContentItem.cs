@@ -1,4 +1,4 @@
-﻿namespace KenticoCloud.Delivery
+﻿namespace KenticoKontent.Delivery
 {
     /// <summary>
     /// Represents inline content item block within rich text

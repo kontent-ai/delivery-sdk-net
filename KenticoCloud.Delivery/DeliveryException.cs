@@ -3,10 +3,10 @@ using System;
 using System.Net;
 using System.Net.Http;
 
-namespace KenticoCloud.Delivery
+namespace KenticoKontent.Delivery
 {
     /// <summary>
-    /// Represents an error response from the Kentico Cloud Delivery API.
+    /// Represents an error response from the Kentico Kontent Delivery API.
     /// </summary>
     public sealed class DeliveryException : Exception
     {

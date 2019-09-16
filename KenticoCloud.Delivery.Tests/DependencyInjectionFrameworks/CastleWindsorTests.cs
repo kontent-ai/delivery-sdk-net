@@ -1,8 +1,8 @@
-﻿using KenticoCloud.Delivery.Tests.DependencyInjectionFrameworks.Helpers;
+﻿using KenticoKontent.Delivery.Tests.DependencyInjectionFrameworks.Helpers;
 using Microsoft.Extensions.DependencyInjection;
 using Xunit;
 
-namespace KenticoCloud.Delivery.Tests.DependencyInjectionFrameworks
+namespace KenticoKontent.Delivery.Tests.DependencyInjectionFrameworks
 {
     [Collection("DI Tests")]
     public class CastleWindsorTests

@@ -1,4 +1,4 @@
-﻿namespace KenticoCloud.Delivery.InlineContentItems
+﻿namespace KenticoKontent.Delivery.InlineContentItems
 {
     internal class ReplaceWithWarningAboutUnknownItemResolver : IInlineContentItemsResolver<UnknownContentItem>
     {

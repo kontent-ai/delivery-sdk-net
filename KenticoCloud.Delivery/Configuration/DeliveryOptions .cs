@@ -1,4 +1,4 @@
-﻿namespace KenticoCloud.Delivery
+﻿namespace KenticoKontent.Delivery
 {
     /// <summary>
     /// Keeps settings which are provided by customer or have default values, used in <see cref="DeliveryClient"/>.
@@ -8,12 +8,12 @@
         /// <summary>
         /// Gets or sets the Production endpoint address.
         /// </summary>
-        public string ProductionEndpoint { get; set; } = "https://deliver.kenticocloud.com/{0}";
+        public string ProductionEndpoint { get; set; } = "https://deliver.kontent.ai/{0}";
 
         /// <summary>
         /// Gets or sets the Preview endpoint address.
         /// </summary>
-        public string PreviewEndpoint { get; set; } = "https://preview-deliver.kenticocloud.com/{0}";
+        public string PreviewEndpoint { get; set; } = "https://preview-deliver.kontent.ai/{0}";
 
         /// <summary>
         /// Gets or sets the Project identifier.

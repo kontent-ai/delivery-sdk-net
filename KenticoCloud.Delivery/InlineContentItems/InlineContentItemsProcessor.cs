@@ -6,7 +6,7 @@ using System.Linq;
 using Microsoft.Extensions.DependencyInjection;
 using System.Collections.ObjectModel;
 
-namespace KenticoCloud.Delivery.InlineContentItems
+namespace KenticoKontent.Delivery.InlineContentItems
 {
     /// <summary>
     /// Processor responsible for parsing HTML input and resolving inline content items referenced in them using registered resolvers

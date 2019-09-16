@@ -1,7 +1,7 @@
 ﻿using System;
 using System.ComponentModel.DataAnnotations;
 
-namespace KenticoCloud.Delivery
+namespace KenticoKontent.Delivery
 {
     [AttributeUsage(AttributeTargets.Class, AllowMultiple = false)]
     class UseDisplayTemplateAttribute : UIHintAttribute

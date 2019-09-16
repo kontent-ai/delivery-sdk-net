@@ -1,8 +1,8 @@
 ﻿using System;
 using System.Collections.Generic;
-using KenticoCloud.Delivery.InlineContentItems;
+using KenticoKontent.Delivery.InlineContentItems;
 
-namespace KenticoCloud.Delivery.Tests.Factories
+namespace KenticoKontent.Delivery.Tests.Factories
 {
     internal class InlineContentItemsProcessorFactory
     {

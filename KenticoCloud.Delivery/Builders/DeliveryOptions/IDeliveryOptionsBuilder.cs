@@ -1,7 +1,7 @@
 ﻿using System;
-using KenticoCloud.Delivery.ResiliencePolicy;
+using KenticoKontent.Delivery.ResiliencePolicy;
 
-namespace KenticoCloud.Delivery.Builders.DeliveryOptions
+namespace KenticoKontent.Delivery.Builders.DeliveryOptions
 {
     /// <summary>
     /// Defines the contracts of the mandatory steps for building a <see cref="DeliveryOptions"/> instance.
@@ -9,15 +9,15 @@ namespace KenticoCloud.Delivery.Builders.DeliveryOptions
     public interface IDeliveryOptionsBuilder
     {
         /// <summary>
-        /// A mandatory step of the <see cref="DeliveryOptionsBuilder"/> for specifying Kentico Cloud project id.
+        /// A mandatory step of the <see cref="DeliveryOptionsBuilder"/> for specifying Kentico Kontent project id.
         /// </summary>
-        /// <param name="projectId">The identifier of the Kentico Cloud project.</param>
+        /// <param name="projectId">The identifier of the Kentico Kontent project.</param>
         IDeliveryApiConfiguration WithProjectId(string projectId);
 
         /// <summary>
-        /// A mandatory step of the <see cref="DeliveryOptionsBuilder"/> for specifying Kentico Cloud project id.
+        /// A mandatory step of the <see cref="DeliveryOptionsBuilder"/> for specifying Kentico Kontent project id.
         /// </summary>
-        /// <param name="projectId">The identifier of the Kentico Cloud project.</param>
+        /// <param name="projectId">The identifier of the Kentico Kontent project.</param>
         IDeliveryApiConfiguration WithProjectId(Guid projectId);
     }
 

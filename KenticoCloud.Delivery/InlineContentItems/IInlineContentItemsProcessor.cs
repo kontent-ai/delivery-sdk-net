@@ -1,6 +1,6 @@
 ﻿using System.Collections.Generic;
 
-namespace KenticoCloud.Delivery.InlineContentItems
+namespace KenticoKontent.Delivery.InlineContentItems
 {
     /// <summary>
     /// Interface implemented for processing inline content items in HTML

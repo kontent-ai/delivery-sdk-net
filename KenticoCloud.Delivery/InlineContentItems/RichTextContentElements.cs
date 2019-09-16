@@ -1,4 +1,4 @@
-namespace KenticoCloud.Delivery.InlineContentItems
+namespace KenticoKontent.Delivery.InlineContentItems
 {
     /// <summary>
     /// Structure holding identifier of specific richtext element used in content item.

@@ -1,7 +1,7 @@
 ﻿using System.Collections;
 using System.Collections.Generic;
 
-namespace KenticoCloud.Delivery
+namespace KenticoKontent.Delivery
 {
     internal class RichTextContent : IRichTextContent
     {

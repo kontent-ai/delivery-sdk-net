@@ -1,6 +1,6 @@
 ﻿using Newtonsoft.Json;
 
-namespace KenticoCloud.Delivery
+namespace KenticoKontent.Delivery
 {
 	/// <summary>
 	/// Represents a digital asset, such as a document or image.

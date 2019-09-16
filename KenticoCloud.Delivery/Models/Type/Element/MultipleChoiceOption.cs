@@ -1,6 +1,6 @@
 ﻿using Newtonsoft.Json;
 
-namespace KenticoCloud.Delivery
+namespace KenticoKontent.Delivery
 {
     /// <summary>
     /// Represents an option of a Multiple choice content element.

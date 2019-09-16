@@ -5,15 +5,15 @@ using System.Linq;
 using System.Net.Http;
 using System.Reactive.Linq;
 using FakeItEasy;
-using KenticoCloud.Delivery.InlineContentItems;
-using KenticoCloud.Delivery.ResiliencePolicy;
-using KenticoCloud.Delivery.StrongTyping;
+using KenticoKontent.Delivery.InlineContentItems;
+using KenticoKontent.Delivery.ResiliencePolicy;
+using KenticoKontent.Delivery.StrongTyping;
 using Microsoft.Extensions.Options;
 using Polly;
 using RichardSzalay.MockHttp;
 using Xunit;
 
-namespace KenticoCloud.Delivery.Rx.Tests
+namespace KenticoKontent.Delivery.Rx.Tests
 {
     public class DeliveryObservableProxyTests
     {
@@ -25,7 +25,7 @@ namespace KenticoCloud.Delivery.Rx.Tests
         public DeliveryObservableProxyTests()
         {
             guid = Guid.NewGuid().ToString();
-            baseUrl = $"https://deliver.kenticocloud.com/{guid}";
+            baseUrl = $"https://deliver.kontent.ai/{guid}";
             mockHttp = new MockHttpMessageHandler();
         }
 

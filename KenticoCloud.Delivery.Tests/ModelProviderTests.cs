@@ -1,13 +1,13 @@
 ﻿using FakeItEasy;
-using KenticoCloud.Delivery.InlineContentItems;
+using KenticoKontent.Delivery.InlineContentItems;
 using Newtonsoft.Json.Linq;
 using System;
 using System.Reflection;
-using KenticoCloud.Delivery.StrongTyping;
-using KenticoCloud.Delivery.Tests.Factories;
+using KenticoKontent.Delivery.StrongTyping;
+using KenticoKontent.Delivery.Tests.Factories;
 using Xunit;
 
-namespace KenticoCloud.Delivery.Tests
+namespace KenticoKontent.Delivery.Tests
 {
     public class ModelProviderTests
     {

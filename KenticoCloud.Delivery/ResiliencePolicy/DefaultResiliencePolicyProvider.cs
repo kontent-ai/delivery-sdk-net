@@ -5,7 +5,7 @@ using System.Net.Http;
 using Microsoft.Extensions.Options;
 using Polly;
 
-namespace KenticoCloud.Delivery.ResiliencePolicy
+namespace KenticoKontent.Delivery.ResiliencePolicy
 {
     /// <summary>
     /// Provides a default (fallback) retry policy for HTTP requests

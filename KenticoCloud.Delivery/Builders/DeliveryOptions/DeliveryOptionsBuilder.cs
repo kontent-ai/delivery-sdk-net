@@ -1,7 +1,7 @@
 ﻿using System;
-using KenticoCloud.Delivery.Builders.DeliveryOptions;
+using KenticoKontent.Delivery.Builders.DeliveryOptions;
 
-namespace KenticoCloud.Delivery
+namespace KenticoKontent.Delivery
 {
     /// <summary>
     /// A builder class that can be used for creating a <see cref="DeliveryOptions"/> instance.

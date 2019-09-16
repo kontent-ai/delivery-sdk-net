@@ -1,7 +1,7 @@
 ﻿using System;
 using Xunit;
 
-namespace KenticoCloud.Delivery.Tests.Builders.DeliveryOptions
+namespace KenticoKontent.Delivery.Tests.Builders.DeliveryOptions
 {
     public class DeliveryOptionsBuilderTests
     {

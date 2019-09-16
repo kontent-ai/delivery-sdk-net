@@ -1,4 +1,4 @@
-﻿namespace KenticoCloud.Delivery.ContentLinks
+﻿namespace KenticoKontent.Delivery.ContentLinks
 {
     internal class DefaultContentLinkUrlResolver : IContentLinkUrlResolver
     {

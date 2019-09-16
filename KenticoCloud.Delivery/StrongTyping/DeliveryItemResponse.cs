@@ -1,9 +1,9 @@
 ﻿using Newtonsoft.Json.Linq;
 
-namespace KenticoCloud.Delivery
+namespace KenticoKontent.Delivery
 {
     /// <summary>
-    /// Represents a response from Kentico Cloud Delivery API that contains an content items.
+    /// Represents a response from Kentico Kontent Delivery API that contains an content items.
     /// </summary>
     /// <typeparam name="T">Generic strong type of item representation.</typeparam>
     public sealed class DeliveryItemResponse<T> : AbstractResponse

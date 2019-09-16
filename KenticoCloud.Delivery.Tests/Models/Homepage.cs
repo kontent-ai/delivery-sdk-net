@@ -1,6 +1,6 @@
 using System.Collections.Generic;
 
-namespace KenticoCloud.Delivery.Tests
+namespace KenticoKontent.Delivery.Tests
 {
     public partial class Homepage
     {

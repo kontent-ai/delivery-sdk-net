@@ -2,7 +2,7 @@
 
   <PropertyGroup>
     <TargetFramework>netcoreapp2.0</TargetFramework>
-    <AssemblyName>KenticoCloud.Delivery.Rx.Tests</AssemblyName>
+    <AssemblyName>KenticoKontent.Delivery.Rx.Tests</AssemblyName>
     <PackageId>KenticoCloud.Delivery.Rx.Tests</PackageId>
     <RuntimeFrameworkVersion>2.0.0</RuntimeFrameworkVersion>
     <IsPackable>false</IsPackable>
@@ -52,11 +52,11 @@
   </ItemGroup>
 
   <ItemGroup>
-    <ProjectReference Include="..\KenticoCloud.Delivery.Rx\KenticoCloud.Delivery.Rx.csproj" />
+    <Folder Include="Models\ContentTypes\Partials\" />
   </ItemGroup>
 
   <ItemGroup>
-    <Folder Include="Models\ContentTypes\Partials\" />
+    <ProjectReference Include="..\KenticoCloud.Delivery.Rx\KenticoKontent.Delivery.Rx.csproj" />
   </ItemGroup>
 
   <ItemGroup>

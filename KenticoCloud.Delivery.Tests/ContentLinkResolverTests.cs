@@ -2,14 +2,14 @@
 using RichardSzalay.MockHttp;
 using System;
 using System.IO;
-using KenticoCloud.Delivery.ContentLinks;
-using KenticoCloud.Delivery.ResiliencePolicy;
-using KenticoCloud.Delivery.StrongTyping;
-using KenticoCloud.Delivery.Tests.Factories;
+using KenticoKontent.Delivery.ContentLinks;
+using KenticoKontent.Delivery.ResiliencePolicy;
+using KenticoKontent.Delivery.StrongTyping;
+using KenticoKontent.Delivery.Tests.Factories;
 using Microsoft.Extensions.Options;
 using Xunit;
 
-namespace KenticoCloud.Delivery.Tests
+namespace KenticoKontent.Delivery.Tests
 {
     public class ContentLinkResolverTests
     {
@@ -118,7 +118,7 @@ namespace KenticoCloud.Delivery.Tests
         {
             var mockHttp = new MockHttpMessageHandler();
             string guid = Guid.NewGuid().ToString();
-            string url = $"https://deliver.kenticocloud.com/{guid}/items/coffee_processing_techniques";
+            string url = $"https://deliver.kontent.ai/{guid}/items/coffee_processing_techniques";
             mockHttp.When(url).
                Respond("application/json", File.ReadAllText(Path.Combine(Environment.CurrentDirectory, $"Fixtures{Path.DirectorySeparatorChar}ContentLinkResolver{Path.DirectorySeparatorChar}coffee_processing_techniques.json")));
 

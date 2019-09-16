@@ -2,12 +2,12 @@
 using System.IO;
 using System.Net.Http;
 using FakeItEasy;
-using KenticoCloud.Delivery.ResiliencePolicy;
+using KenticoKontent.Delivery.ResiliencePolicy;
 using Polly;
 using RichardSzalay.MockHttp;
 using Xunit;
 
-namespace KenticoCloud.Delivery.Tests
+namespace KenticoKontent.Delivery.Tests
 {
     // Sample test mocking HTTP client
     public class FakeHttpClientTests

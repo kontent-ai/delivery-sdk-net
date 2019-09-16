@@ -1,7 +1,7 @@
 ﻿using System;
-using KenticoCloud.Delivery.InlineContentItems;
+using KenticoKontent.Delivery.InlineContentItems;
 
-namespace KenticoCloud.Delivery.Tests.DependencyInjectionFrameworks.Helpers
+namespace KenticoKontent.Delivery.Tests.DependencyInjectionFrameworks.Helpers
 {
     internal class FakeTweetResolver : IInlineContentItemsResolver<Tweet>
     {

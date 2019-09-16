@@ -1,11 +1,11 @@
 ﻿using System.Linq;
-using KenticoCloud.Delivery.ContentLinks;
-using KenticoCloud.Delivery.InlineContentItems;
-using KenticoCloud.Delivery.ResiliencePolicy;
-using KenticoCloud.Delivery.StrongTyping;
+using KenticoKontent.Delivery.ContentLinks;
+using KenticoKontent.Delivery.InlineContentItems;
+using KenticoKontent.Delivery.ResiliencePolicy;
+using KenticoKontent.Delivery.StrongTyping;
 using Xunit;
 
-namespace KenticoCloud.Delivery.Tests.DependencyInjectionFrameworks
+namespace KenticoKontent.Delivery.Tests.DependencyInjectionFrameworks
 {
     internal static class DeliveryClientAssertionExtensions
     {

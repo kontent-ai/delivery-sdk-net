@@ -4,17 +4,17 @@ using System.Collections.ObjectModel;
 using System.IO;
 using System.Linq;
 using System.Net.Http;
-using KenticoCloud.Delivery.ContentLinks;
-using KenticoCloud.Delivery.InlineContentItems;
-using KenticoCloud.Delivery.ResiliencePolicy;
-using KenticoCloud.Delivery.StrongTyping;
-using KenticoCloud.Delivery.Tests.Factories;
+using KenticoKontent.Delivery.ContentLinks;
+using KenticoKontent.Delivery.InlineContentItems;
+using KenticoKontent.Delivery.ResiliencePolicy;
+using KenticoKontent.Delivery.StrongTyping;
+using KenticoKontent.Delivery.Tests.Factories;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Options;
 using Xunit;
 
-namespace KenticoCloud.Delivery.Tests.Extensions
+namespace KenticoKontent.Delivery.Tests.Extensions
 {
     public class ServiceCollectionsExtensionsTests
     {

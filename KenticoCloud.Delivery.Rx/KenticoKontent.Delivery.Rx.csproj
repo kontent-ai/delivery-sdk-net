@@ -26,7 +26,7 @@
   </ItemGroup>
 
   <ItemGroup>
-    <ProjectReference Include="..\KenticoCloud.Delivery\KenticoCloud.Delivery.csproj" />
+    <ProjectReference Include="..\KenticoCloud.Delivery\KenticoKontent.Delivery.csproj" />
   </ItemGroup>
 
 </Project>

@@ -2,11 +2,11 @@
 using System.Collections;
 using System.Collections.Generic;
 using System.Linq;
-using KenticoCloud.Delivery.InlineContentItems;
+using KenticoKontent.Delivery.InlineContentItems;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Options;
 
-namespace KenticoCloud.Delivery.Tests.Extensions
+namespace KenticoKontent.Delivery.Tests.Extensions
 {
     /// <summary>
     /// Mock ServiceCollection that keeps inside everything that was registered.

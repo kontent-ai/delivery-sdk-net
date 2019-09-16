@@ -5,10 +5,10 @@ using System.Reactive.Linq;
 
 using Newtonsoft.Json.Linq;
 
-namespace KenticoCloud.Delivery.Rx
+namespace KenticoKontent.Delivery.Rx
 {
     /// <summary>
-    /// A class that enables a reactive way of consuming data from Kentico Cloud
+    /// A class that enables a reactive way of consuming data from Kentico Kontent
     /// </summary>
     public class DeliveryObservableProxy
     {
@@ -24,7 +24,7 @@ namespace KenticoCloud.Delivery.Rx
         #region "Constructors"
 
         /// <summary>
-        /// Creates an object that enables reactive way of consuming data from Kentico Cloud
+        /// Creates an object that enables reactive way of consuming data from Kentico Kontent
         /// </summary>
         /// <param name="deliveryClient">A <see cref="IDeliveryClient"/> instance.</param>
         public DeliveryObservableProxy(IDeliveryClient deliveryClient)

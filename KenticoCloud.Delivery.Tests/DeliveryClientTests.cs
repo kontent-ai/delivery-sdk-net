@@ -1,5 +1,5 @@
 ﻿using FakeItEasy;
-using KenticoCloud.Delivery.Tests.Factories;
+using KenticoKontent.Delivery.Tests.Factories;
 using Polly;
 using RichardSzalay.MockHttp;
 using System;
@@ -9,10 +9,10 @@ using System.IO;
 using System.Linq;
 using System.Net;
 using System.Net.Http;
-using KenticoCloud.Delivery.StrongTyping;
+using KenticoKontent.Delivery.StrongTyping;
 using Xunit;
 
-namespace KenticoCloud.Delivery.Tests
+namespace KenticoKontent.Delivery.Tests
 {
     public class DeliveryClientTests
     {
@@ -26,7 +26,7 @@ namespace KenticoCloud.Delivery.Tests
         {
             _guid = Guid.NewGuid();
             var projectId = _guid.ToString();
-            _baseUrl = $"https://deliver.kenticocloud.com/{projectId}";
+            _baseUrl = $"https://deliver.kontent.ai/{projectId}";
             _mockHttp = new MockHttpMessageHandler();
             _mockTypeProvider = A.Fake<ITypeProvider>();
             _mockContentLinkUrlResolver = A.Fake<IContentLinkUrlResolver>();
@@ -654,7 +654,7 @@ namespace KenticoCloud.Delivery.Tests
             if (usePreviewApi)
             {
                 _mockHttp
-                    .When($@"https://preview-deliver.kenticocloud.com/{_guid}/items")
+                    .When($@"https://preview-deliver.kontent.ai/{_guid}/items")
                     .Respond("application/json", File.ReadAllText(Path.Combine(Environment.CurrentDirectory, $"Fixtures{Path.DirectorySeparatorChar}DeliveryClient{Path.DirectorySeparatorChar}items.json")));
             }
             else

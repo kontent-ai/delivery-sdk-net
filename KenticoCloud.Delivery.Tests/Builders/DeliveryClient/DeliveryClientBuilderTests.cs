@@ -1,13 +1,13 @@
 ﻿using System;
 using System.Collections.Generic;
 using FakeItEasy;
-using KenticoCloud.Delivery.InlineContentItems;
-using KenticoCloud.Delivery.ResiliencePolicy;
-using KenticoCloud.Delivery.Tests.DependencyInjectionFrameworks.Helpers;
+using KenticoKontent.Delivery.InlineContentItems;
+using KenticoKontent.Delivery.ResiliencePolicy;
+using KenticoKontent.Delivery.Tests.DependencyInjectionFrameworks.Helpers;
 using RichardSzalay.MockHttp;
 using Xunit;
 
-namespace KenticoCloud.Delivery.Tests.Builders.DeliveryClient
+namespace KenticoKontent.Delivery.Tests.Builders.DeliveryClient
 {
     public class DeliveryClientBuilderTests
     {

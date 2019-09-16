@@ -1,8 +1,8 @@
 ﻿using System;
-using KenticoCloud.Delivery.Builders.DeliveryClient;
+using KenticoKontent.Delivery.Builders.DeliveryClient;
 using Microsoft.Extensions.DependencyInjection;
 
-namespace KenticoCloud.Delivery.InlineContentItems
+namespace KenticoKontent.Delivery.InlineContentItems
 {
     /// <summary>
     /// Strips an <see cref="IInlineContentItemsResolver{T}"/> of its generic type, so it can be used generically by <see cref="InlineContentItemsProcessor"/>.

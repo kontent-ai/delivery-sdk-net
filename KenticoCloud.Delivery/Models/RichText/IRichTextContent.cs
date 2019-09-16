@@ -1,6 +1,6 @@
 ﻿using System.Collections.Generic;
 
-namespace KenticoCloud.Delivery
+namespace KenticoKontent.Delivery
 {
     /// <summary>
     /// Represents rich text content in a form of structured data 

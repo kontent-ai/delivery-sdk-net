@@ -5,9 +5,9 @@ using System.Linq;
 
 using Newtonsoft.Json.Linq;
 using AngleSharp.Parser.Html;
-using KenticoCloud.Delivery.ContentLinks;
+using KenticoKontent.Delivery.ContentLinks;
 
-namespace KenticoCloud.Delivery
+namespace KenticoKontent.Delivery
 {
     internal class RichTextContentConverter : IPropertyValueConverter
     {

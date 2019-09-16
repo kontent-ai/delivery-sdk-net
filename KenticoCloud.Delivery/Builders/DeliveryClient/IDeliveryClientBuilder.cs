@@ -1,13 +1,13 @@
 ﻿using System;
 using System.Net.Http;
-using KenticoCloud.Delivery.Builders.DeliveryOptions;
-using KenticoCloud.Delivery.InlineContentItems;
-using KenticoCloud.Delivery.ResiliencePolicy;
+using KenticoKontent.Delivery.Builders.DeliveryOptions;
+using KenticoKontent.Delivery.InlineContentItems;
+using KenticoKontent.Delivery.ResiliencePolicy;
 
-namespace KenticoCloud.Delivery.Builders.DeliveryClient
+namespace KenticoKontent.Delivery.Builders.DeliveryClient
 {
     /// <summary>
-    /// Defines the contracts of the mandatory steps for building a Kentico Cloud <see cref="IDeliveryClient"/> instance.
+    /// Defines the contracts of the mandatory steps for building a Kentico Kontent <see cref="IDeliveryClient"/> instance.
     /// </summary>
     public interface IDeliveryClientBuilder
     {
@@ -22,7 +22,7 @@ namespace KenticoCloud.Delivery.Builders.DeliveryClient
     }
 
     /// <summary>
-    /// Defines the contracts of the optional steps for building a Kentico Cloud <see cref="IDeliveryClient"/> instance.
+    /// Defines the contracts of the optional steps for building a Kentico Kontent <see cref="IDeliveryClient"/> instance.
     /// </summary>
     public interface IOptionalClientSetup : IDeliveryClientBuild
     {
@@ -59,9 +59,9 @@ namespace KenticoCloud.Delivery.Builders.DeliveryClient
         IOptionalClientSetup WithModelProvider(IModelProvider modelProvider);
 
         /// <summary>
-        /// Sets a custom instance of an object that can map Kentico Cloud content types to CLR types to the <see cref="IDeliveryClient"/> instance.
+        /// Sets a custom instance of an object that can map Kentico Kontent content types to CLR types to the <see cref="IDeliveryClient"/> instance.
         /// </summary>
-        /// <param name="typeProvider">An instance of an object that can map Kentico Cloud content types to CLR types</param>
+        /// <param name="typeProvider">An instance of an object that can map Kentico Kontent content types to CLR types</param>
         IOptionalClientSetup WithTypeProvider(ITypeProvider typeProvider);
 
         /// <summary>
@@ -71,9 +71,9 @@ namespace KenticoCloud.Delivery.Builders.DeliveryClient
         IOptionalClientSetup WithResiliencePolicyProvider(IResiliencePolicyProvider resiliencePolicyProvider);
 
         /// <summary>
-        /// Sets a custom instance of an object that can map Kentico Cloud content item fields to model properties to the <see cref="IDeliveryClient"/> instance.
+        /// Sets a custom instance of an object that can map Kentico Kontent content item fields to model properties to the <see cref="IDeliveryClient"/> instance.
         /// </summary>
-        /// <param name="propertyMapper">An instance of an object that can map Kentico Cloud content item fields to model properties</param>
+        /// <param name="propertyMapper">An instance of an object that can map Kentico Kontent content item fields to model properties</param>
         IOptionalClientSetup WithPropertyMapper(IPropertyMapper propertyMapper);
     }
 

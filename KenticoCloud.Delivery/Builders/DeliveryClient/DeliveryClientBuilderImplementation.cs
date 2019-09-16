@@ -1,11 +1,11 @@
-﻿using KenticoCloud.Delivery.Builders.DeliveryOptions;
-using KenticoCloud.Delivery.InlineContentItems;
-using KenticoCloud.Delivery.ResiliencePolicy;
+﻿using KenticoKontent.Delivery.Builders.DeliveryOptions;
+using KenticoKontent.Delivery.InlineContentItems;
+using KenticoKontent.Delivery.ResiliencePolicy;
 using Microsoft.Extensions.DependencyInjection;
 using System;
 using System.Net.Http;
 
-namespace KenticoCloud.Delivery.Builders.DeliveryClient
+namespace KenticoKontent.Delivery.Builders.DeliveryClient
 {
     internal sealed class DeliveryClientBuilderImplementation : IDeliveryClientBuilder, IOptionalClientSetup
     {

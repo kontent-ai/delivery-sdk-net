@@ -2,10 +2,10 @@
 using System.Collections.Generic;
 using System.Linq;
 
-namespace KenticoCloud.Delivery
+namespace KenticoKontent.Delivery
 {
     /// <summary>
-    /// Represents a response from Kentico Cloud Delivery API that contains a list of content types.
+    /// Represents a response from Kentico Kontent Delivery API that contains a list of content types.
     /// </summary>
     public sealed class DeliveryTypeListingResponse : AbstractResponse
     {
@@ -22,8 +22,8 @@ namespace KenticoCloud.Delivery
         /// <summary>
         /// Initializes a new instance of the <see cref="DeliveryTypeListingResponse"/> class with information from a response.
         /// </summary>
-        /// <param name="response">A response from Kentico Cloud Delivery API that contains a list of content types.</param>
-        /// <param name="apiUrl">API URL used to communicate with the underlying Kentico Cloud endpoint.</param>
+        /// <param name="response">A response from Kentico Kontent Delivery API that contains a list of content types.</param>
+        /// <param name="apiUrl">API URL used to communicate with the underlying Kentico Kontent endpoint.</param>
         internal DeliveryTypeListingResponse(JToken response, string apiUrl) : base(apiUrl)
         {
             Pagination = response["pagination"].ToObject<Pagination>();

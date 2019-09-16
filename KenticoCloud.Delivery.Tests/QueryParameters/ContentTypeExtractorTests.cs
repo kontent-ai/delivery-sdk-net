@@ -1,10 +1,10 @@
 ﻿using System.Collections.Generic;
 using FakeItEasy;
-using KenticoCloud.Delivery.StrongTyping;
+using KenticoKontent.Delivery.StrongTyping;
 using Microsoft.Extensions.Options;
 using Xunit;
 
-namespace KenticoCloud.Delivery.Tests.QueryParameters
+namespace KenticoKontent.Delivery.Tests.QueryParameters
 {
     public class ContentTypeExtractorTests
     {

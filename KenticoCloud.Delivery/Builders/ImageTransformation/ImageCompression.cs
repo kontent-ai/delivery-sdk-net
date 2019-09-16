@@ -1,4 +1,4 @@
-﻿namespace KenticoCloud.Delivery.ImageTransformation
+﻿namespace KenticoKontent.Delivery.ImageTransformation
 {
     /// <summary>
     /// Types of image compression.

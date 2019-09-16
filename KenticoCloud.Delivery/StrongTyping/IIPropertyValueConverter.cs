@@ -1,7 +1,7 @@
 ﻿using System.Reflection;
 using Newtonsoft.Json.Linq;
 
-namespace KenticoCloud.Delivery
+namespace KenticoKontent.Delivery
 {
     /// <summary>
     /// Provides value conversion for the given property

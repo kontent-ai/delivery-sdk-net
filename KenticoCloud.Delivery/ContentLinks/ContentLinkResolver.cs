@@ -3,7 +3,7 @@ using System.Net;
 using System.Text.RegularExpressions;
 using Newtonsoft.Json.Linq;
 
-namespace KenticoCloud.Delivery.ContentLinks
+namespace KenticoKontent.Delivery.ContentLinks
 {
     internal sealed class ContentLinkResolver
     {

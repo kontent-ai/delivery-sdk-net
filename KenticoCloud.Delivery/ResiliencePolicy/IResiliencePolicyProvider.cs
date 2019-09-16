@@ -1,7 +1,7 @@
 ﻿using System.Net.Http;
 using Polly;
 
-namespace KenticoCloud.Delivery.ResiliencePolicy
+namespace KenticoKontent.Delivery.ResiliencePolicy
 {
     /// <summary>
     /// Provides a resilience policy.

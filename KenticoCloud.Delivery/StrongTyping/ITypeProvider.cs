@@ -1,9 +1,9 @@
 ﻿using System;
 
-namespace KenticoCloud.Delivery
+namespace KenticoKontent.Delivery
 {
     /// <summary>
-    /// Defines the contract for mapping Kentico Cloud content types to CLR types.
+    /// Defines the contract for mapping Kentico Kontent content types to CLR types.
     /// </summary>
     public interface ITypeProvider
     {

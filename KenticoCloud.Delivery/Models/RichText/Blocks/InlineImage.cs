@@ -1,4 +1,4 @@
-﻿namespace KenticoCloud.Delivery
+﻿namespace KenticoKontent.Delivery
 {
     [DisableHtmlEncode]
     [UseDisplayTemplate("InlineImage")]

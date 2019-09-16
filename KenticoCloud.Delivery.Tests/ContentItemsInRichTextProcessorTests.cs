@@ -1,9 +1,9 @@
 ﻿using Xunit;
 using System.Collections.Generic;
-using KenticoCloud.Delivery.InlineContentItems;
-using KenticoCloud.Delivery.Tests.Factories;
+using KenticoKontent.Delivery.InlineContentItems;
+using KenticoKontent.Delivery.Tests.Factories;
 
-namespace KenticoCloud.Delivery.Tests
+namespace KenticoKontent.Delivery.Tests
 {
     public class ContentItemsInRichTextProcessorTests
     {

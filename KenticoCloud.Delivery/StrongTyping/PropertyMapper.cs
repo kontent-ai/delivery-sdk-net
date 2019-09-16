@@ -2,10 +2,10 @@ using System;
 using System.Reflection;
 using Newtonsoft.Json;
 
-namespace KenticoCloud.Delivery.StrongTyping
+namespace KenticoKontent.Delivery.StrongTyping
 {
     /// <summary>
-    /// Default provider for mapping Kentico Cloud content item fields to model properties.
+    /// Default provider for mapping Kentico Kontent content item fields to model properties.
     /// </summary>
     internal class PropertyMapper : IPropertyMapper
     {

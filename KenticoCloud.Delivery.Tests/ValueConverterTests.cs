@@ -8,12 +8,12 @@ using RichardSzalay.MockHttp;
 using System.IO;
 using System.Net.Http;
 using FakeItEasy;
-using KenticoCloud.Delivery.ResiliencePolicy;
-using KenticoCloud.Delivery.StrongTyping;
+using KenticoKontent.Delivery.ResiliencePolicy;
+using KenticoKontent.Delivery.StrongTyping;
 using Microsoft.Extensions.Options;
 using Polly;
 
-namespace KenticoCloud.Delivery.Tests
+namespace KenticoKontent.Delivery.Tests
 {
     [AttributeUsage(AttributeTargets.Property)]
     public class TestGreeterValueConverterAttribute : Attribute, IPropertyValueConverter
@@ -53,7 +53,7 @@ namespace KenticoCloud.Delivery.Tests
         public ValueConverterTests()
         {
             guid = Guid.NewGuid().ToString();
-            baseUrl = $"https://deliver.kenticocloud.com/{guid}";
+            baseUrl = $"https://deliver.kontent.ai/{guid}";
         }
 
         [Fact]

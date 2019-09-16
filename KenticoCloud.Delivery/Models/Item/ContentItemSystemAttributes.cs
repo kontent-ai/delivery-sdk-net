@@ -2,7 +2,7 @@
 using System;
 using System.Collections.Generic;
 
-namespace KenticoCloud.Delivery
+namespace KenticoKontent.Delivery
 {
     /// <summary>
     /// Represents system attributes of a content item.

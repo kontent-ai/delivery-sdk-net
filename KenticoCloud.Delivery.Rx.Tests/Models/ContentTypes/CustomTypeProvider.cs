@@ -2,7 +2,7 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 
-namespace KenticoCloud.Delivery.Rx.Tests
+namespace KenticoKontent.Delivery.Rx.Tests
 {
     public class CustomTypeProvider : ITypeProvider
     {

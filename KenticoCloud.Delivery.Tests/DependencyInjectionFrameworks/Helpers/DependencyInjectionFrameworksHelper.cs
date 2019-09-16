@@ -3,14 +3,14 @@ using Autofac;
 using Autofac.Extensions.DependencyInjection;
 using Castle.Windsor;
 using Castle.Windsor.MsDependencyInjection;
-using KenticoCloud.Delivery.Tests.Factories;
+using KenticoKontent.Delivery.Tests.Factories;
 using Microsoft.Extensions.DependencyInjection;
 using SimpleInjector;
 using SimpleInjector.Lifestyles;
 using Unity;
 using Unity.Microsoft.DependencyInjection;
 
-namespace KenticoCloud.Delivery.Tests.DependencyInjectionFrameworks.Helpers
+namespace KenticoKontent.Delivery.Tests.DependencyInjectionFrameworks.Helpers
 {
     internal static class DependencyInjectionFrameworksHelper
     {
