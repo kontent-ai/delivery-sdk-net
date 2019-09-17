@@ -3,7 +3,7 @@
   <PropertyGroup>
     <TargetFramework>netcoreapp2.0</TargetFramework>
     <AssemblyName>KenticoKontent.Delivery.Rx.Tests</AssemblyName>
-    <PackageId>KenticoCloud.Delivery.Rx.Tests</PackageId>
+    <PackageId>KenticoKontent.Delivery.Rx.Tests</PackageId>
     <RuntimeFrameworkVersion>2.0.0</RuntimeFrameworkVersion>
     <IsPackable>false</IsPackable>
   </PropertyGroup>
@@ -56,7 +56,7 @@
   </ItemGroup>
 
   <ItemGroup>
-    <ProjectReference Include="..\KenticoCloud.Delivery.Rx\KenticoKontent.Delivery.Rx.csproj" />
+    <ProjectReference Include="..\KenticoKontent.Delivery.Rx\KenticoKontent.Delivery.Rx.csproj" />
   </ItemGroup>
 
   <ItemGroup>

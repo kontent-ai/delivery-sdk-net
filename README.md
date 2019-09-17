@@ -40,7 +40,7 @@ We recommend creating the `DeliveryOptions` instance by using the `DeliveryOptio
 * `ProjectId` – sets the ID of your Kentico Kontent project. This parameter must always be set.
 * `UsePreviewApi` – determines whether to use the Delivery Preview API and sets the Delivery Preview API key. See [previewing unpublished content](#previewing-unpublished-content) to learn more.
 * `UseProductionApi` – determines whether to use the default production Delivery API.
-* `UseSecuredProductionApi` – determines whether authenticate requests to the production Delivery API with an API key. See [retrieving secured content](https://developer.kenticocloud.com/docs/securing-public-access#section-retrieving-secured-content) to learn more.
+* `UseSecuredProductionApi` – determines whether authenticate requests to the production Delivery API with an API key. See [retrieving secured content](https://developer.kenticoontent.com/docs/securing-public-access#section-retrieving-secured-content) to learn more.
 * `WaitForLoadingNewContent` – forces the client instance to wait while fetching updated content, useful when acting upon [webhook calls](https://docs.kontent.ai/tutorials/develop-apps/integrate/using-webhooks-for-automatic-updates).
 * `EnableResilienceLogic` – determines whether HTTP requests will use [retry logic](#resilience-capabilities). By default, the resilience logic is enabled.
 * `MaxRetryAttempts` – sets a custom number of [retry attempts](#resilience-capabilities). By default, the SDK retries requests five times.

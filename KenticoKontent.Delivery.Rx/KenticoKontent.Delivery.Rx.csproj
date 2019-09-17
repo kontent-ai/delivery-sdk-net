@@ -3,9 +3,9 @@
   <PropertyGroup>
     <TargetFrameworks>netstandard2.0</TargetFrameworks>
     <Authors>Kentico Software</Authors>
-    <Product>Kentico Cloud</Product>
+    <Product>Kentico Kontent</Product>
     <Copyright>© 2016 Kentico Software. All rights reserved.</Copyright>
-    <Description>Kentico Cloud Delivery SDK</Description>
+    <Description>Kentico Kontent Delivery SDK</Description>
     <PackageLicenseExpression>MIT</PackageLicenseExpression>
     <PackageProjectUrl>https://github.com/Kentico/delivery-sdk-net</PackageProjectUrl>
     <PackageIconUrl>https://github.com/Kentico/Home/blob/master/images/logo_nuget.png?raw=true</PackageIconUrl>
@@ -26,7 +26,7 @@
   </ItemGroup>
 
   <ItemGroup>
-    <ProjectReference Include="..\KenticoCloud.Delivery\KenticoKontent.Delivery.csproj" />
+    <ProjectReference Include="..\KenticoKontent.Delivery\KenticoKontent.Delivery.csproj" />
   </ItemGroup>
 
 </Project>

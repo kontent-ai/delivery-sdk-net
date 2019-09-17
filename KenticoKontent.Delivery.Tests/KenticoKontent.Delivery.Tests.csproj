@@ -1,13 +1,13 @@
 ﻿<Project Sdk="Microsoft.NET.Sdk">
 
   <PropertyGroup>
-    <Description>Kentico Cloud Delivery SDK tests validate that the client is compatible with the current version of Kentico Cloud Deliver API.</Description>
+    <Description>Kentico Kontent Delivery SDK tests validate that the client is compatible with the current version of Kentico Kontent Deliver API.</Description>
     <Copyright>(c) 2016 Kentico Software. All rights reserved.</Copyright>
-    <AssemblyTitle>Kentico Cloud Delivery SDK tests</AssemblyTitle>
+    <AssemblyTitle>Kentico Kontent Delivery SDK tests</AssemblyTitle>
     <Authors>Kentico Software</Authors>
     <TargetFramework>netcoreapp2.0</TargetFramework>
     <AssemblyName>KenticoKontent.Delivery.Tests</AssemblyName>
-    <PackageId>KenticoCloud.Delivery.Tests</PackageId>
+    <PackageId>KenticoKontent.Delivery.Tests</PackageId>
     <GenerateRuntimeConfigurationFiles>true</GenerateRuntimeConfigurationFiles>
     <PackageLicenseUrl>https://github.com/Kentico/delivery-sdk-net/blob/master/LICENSE</PackageLicenseUrl>
     <RepositoryType>git</RepositoryType>
@@ -54,7 +54,7 @@
   </ItemGroup>
 
   <ItemGroup>
-    <ProjectReference Include="..\KenticoCloud.Delivery\KenticoKontent.Delivery.csproj" />
+    <ProjectReference Include="..\KenticoKontent.Delivery\KenticoKontent.Delivery.csproj" />
   </ItemGroup>
 
   <ItemGroup>

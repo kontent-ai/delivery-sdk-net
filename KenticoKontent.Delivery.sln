@@ -3,13 +3,13 @@ Microsoft Visual Studio Solution File, Format Version 12.00
 # Visual Studio 15
 VisualStudioVersion = 15.0.27703.2035
 MinimumVisualStudioVersion = 10.0.40219.1
-Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "KenticoKontent.Delivery", "KenticoCloud.Delivery\KenticoKontent.Delivery.csproj", "{742B4C41-1C0E-40BC-8841-C236C3FF7910}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "KenticoKontent.Delivery", "KenticoKontent.Delivery\KenticoKontent.Delivery.csproj", "{742B4C41-1C0E-40BC-8841-C236C3FF7910}"
 EndProject
-Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "KenticoKontent.Delivery.Rx", "KenticoCloud.Delivery.Rx\KenticoKontent.Delivery.Rx.csproj", "{66F88596-86F3-4E53-AF7D-B8FE497D5019}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "KenticoKontent.Delivery.Rx", "KenticoKontent.Delivery.Rx\KenticoKontent.Delivery.Rx.csproj", "{66F88596-86F3-4E53-AF7D-B8FE497D5019}"
 EndProject
-Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "KenticoKontent.Delivery.Tests", "KenticoCloud.Delivery.Tests\KenticoKontent.Delivery.Tests.csproj", "{CAC807C5-FDBB-4DE4-B5F3-E04B4766BEFE}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "KenticoKontent.Delivery.Tests", "KenticoKontent.Delivery.Tests\KenticoKontent.Delivery.Tests.csproj", "{CAC807C5-FDBB-4DE4-B5F3-E04B4766BEFE}"
 EndProject
-Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "KenticoKontent.Delivery.Rx.Tests", "KenticoCloud.Delivery.Rx.Tests\KenticoKontent.Delivery.Rx.Tests.csproj", "{32FDA558-79F7-445C-93B3-30E2B06709D8}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "KenticoKontent.Delivery.Rx.Tests", "KenticoKontent.Delivery.Rx.Tests\KenticoKontent.Delivery.Rx.Tests.csproj", "{32FDA558-79F7-445C-93B3-30E2B06709D8}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
