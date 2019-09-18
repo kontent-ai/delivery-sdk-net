@@ -1,4 +1,5 @@
-﻿using System.Threading.Tasks;
+﻿using System;
+using System.Threading.Tasks;
 
 namespace Kentico.Kontent.Delivery
 {
@@ -9,28 +10,21 @@ namespace Kentico.Kontent.Delivery
     {
         internal delegate Task<DeliveryItemsFeedResponse> GetFeedResponse(string continuationToken);
 
-        private DeliveryItemsFeedResponse _lastResponse;
+        private string _continuationToken;
         private readonly GetFeedResponse _getFeedResponseAsync;
 
         /// <summary>
         /// Indicates whether there are more batches to fetch.
         /// </summary>
-        public bool HasMoreResults => _lastResponse == null || !string.IsNullOrEmpty(_lastResponse.ContinuationToken);
-
-        /// <summary>
-        /// Gets the URL used to retrieve responses in this feed for debugging purposes.
-        /// </summary>
-        public string ApiUrl { get; }
+        public bool HasMoreResults { get; private set; } = true;
 
         /// <summary>
         /// Initializes a new instance of <see cref="DeliveryItemsFeed"/> class.
         /// </summary>
         /// <param name="getFeedResponseAsync">Function to retrieve next batch of content items.</param>
-        /// <param name="requestUrl">URL used to retrieve responses for this feed.</param>
-        internal DeliveryItemsFeed(GetFeedResponse getFeedResponseAsync, string requestUrl)
+        internal DeliveryItemsFeed(GetFeedResponse getFeedResponseAsync)
         {
             _getFeedResponseAsync = getFeedResponseAsync;
-            ApiUrl = requestUrl;
         }
 
         /// <summary>
@@ -39,12 +33,16 @@ namespace Kentico.Kontent.Delivery
         /// <returns>Instance of <see cref="DeliveryItemsFeedResponse"/> class that contains a list of content items.</returns>
         public async Task<DeliveryItemsFeedResponse> FetchNextBatchAsync()
         {
-            if (HasMoreResults)
+            if (!HasMoreResults)
             {
-                _lastResponse = await _getFeedResponseAsync(_lastResponse?.ContinuationToken);
+                throw new InvalidOperationException("The feed has already been enumerated and there are no more results.");
             }
 
-            return _lastResponse;
+            var response = await _getFeedResponseAsync(_continuationToken);
+            _continuationToken = response.ContinuationToken;
+            HasMoreResults = !string.IsNullOrEmpty(response.ContinuationToken);
+
+            return response;
         }
     }
 }

@@ -233,7 +233,7 @@ namespace Kentico.Kontent.Delivery
         {
             ValidateItemsFeedParameters(parameters);
             var endpointUrl = UrlBuilder.GetItemsFeedUrl(parameters);
-            return new DeliveryItemsFeed(GetItemsBatchAsync, endpointUrl);
+            return new DeliveryItemsFeed(GetItemsBatchAsync);
 
             async Task<DeliveryItemsFeedResponse> GetItemsBatchAsync(string continuationToken)
             {
@@ -264,7 +264,7 @@ namespace Kentico.Kontent.Delivery
             var enhancedParameters = ExtractParameters<T>(parameters).ToList();
             ValidateItemsFeedParameters(enhancedParameters);
             var endpointUrl = UrlBuilder.GetItemsFeedUrl(enhancedParameters);
-            return new DeliveryItemsFeed<T>(GetItemsBatchAsync, endpointUrl);
+            return new DeliveryItemsFeed<T>(GetItemsBatchAsync);
 
             async Task<DeliveryItemsFeedResponse<T>> GetItemsBatchAsync(string continuationToken)
             {
