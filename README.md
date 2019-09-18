@@ -117,16 +117,20 @@ See [Working with Strongly Typed Models](../../wiki/Working-with-strongly-typed-
 
 ## Enumerating all items
 
-There are special cases in which you need to enumerate all items in a project (e.g. cache initialization or project export). This scenario is supported in `IDeliveryClient` by using `DeliveryItemsFeed` that can retrieve items in several batches.
+There are special use cases in which you need to get and process a larger amount of items in a project (e.g. cache initialization, project export, static website build). This is supported in `IDeliveryClient` by using `DeliveryItemsFeed` that can iterate over items in small batches. This approach has several advantages:
+* You are guaranteed to retrieve all items (as opposed to `GetItemsAsync` and paging when the project is being worked on in Kentico Kontent application)
+* You can start processing items right away and use less memory, due to a limited size of each batch
+* Even larger projects can be retrieved in a timely manner
 
 ```csharp
-// Get items feed and iteratively fetch all content items in small batches.
+// Get items feed and iteratively process all content items in small batches.
 DeliveryItemsFeed feed = client.GetItemsFeed();
-List<ContentItem> allContentItems = new List<ContentItem>();
 while(feed.HasMoreResults) 
 {
     DeliveryItemsFeedResponse response = await feed.FetchNextBatchAsync();
-    allContentItems.AddRange(response);
+    foreach(ContentItem item in response) {
+        ProcessItem(item);
+    }
 }
 ```
 
@@ -137,17 +141,18 @@ There is also a strongly-typed equivalent of the feed in `IDeliveryClient` to su
 ```csharp
 // Get strongly-typed items feed and iteratively fetch all content items in small batches.
 DeliveryItemsFeed<Article> feed = client.GetItemsFeed<Article>();
-List<Article> allContentItems = new List<Article>();
 while(feed.HasMoreResults) 
 {
     DeliveryItemsFeedResponse<Article> response = await feed.FetchNextBatchAsync();
-    allContentItems.AddRange(response);
+    foreach(Article article in response) {
+        ProcessArticle(article);
+    }
 }
 ```
 
-### Filtering
+### Filtering and localization
 
-Filtering is very similar to `GetItems` method, except for `DepthParameter`, `LimitParameter`, and `SkipParameter`. These are not supported in items feed.
+Both filtering and language selection are very similar to `GetItems` method, except for `DepthParameter`, `LimitParameter`, and `SkipParameter` parameters. These are not supported in items feed.
 
 ```csharp
 // Get a filtered feed of the specified elements of
@@ -160,13 +165,11 @@ DeliveryItemsFeed feed = await client.GetItemsFeed(
 );
 ```
 
-## Limitations
+### Limitations
 
-Since this method has very specific usage scenarios the response does not contain linked items, although, components are still included in the response.
+Since this method has specific usage scenarios the response does not contain linked items, although, components are still included in the response.
 
 Due to not supported skip and limit parameters, the size of a single batch may vary and it is not recommended to dependend on it in any way. The only guaranteed outcome is that once `HasMoreResults` property is false, you will have retrieved all the filtered items.
-
-**If you need to retrieve all the items and don't care about modular content, feel free to use the items feed. Otherwise, stick with the `GetItems` overloads.**
 
 ## Previewing unpublished content
 
