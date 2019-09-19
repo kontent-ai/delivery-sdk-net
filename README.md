@@ -40,10 +40,10 @@ We recommend creating the `DeliveryOptions` instance by using the `DeliveryOptio
 * `ProjectId` – sets the ID of your Kentico Kontent project. This parameter must always be set.
 * `UsePreviewApi` – determines whether to use the Delivery Preview API and sets the Delivery Preview API key. See [previewing unpublished content](#previewing-unpublished-content) to learn more.
 * `UseProductionApi` – determines whether to use the default production Delivery API.
-* `UseSecuredProductionApi` – determines whether authenticate requests to the production Delivery API with an API key. See [retrieving secured content](https://developer.kenticoontent.com/docs/securing-public-access#section-retrieving-secured-content) to learn more.
+* `UseSecuredProductionApi` – determines whether authenticate requests to the production Delivery API with an API key. See [retrieving secured content](https://developer.kenticokontent.com/docs/securing-public-access#section-retrieving-secured-content) to learn more.
 * `WaitForLoadingNewContent` – forces the client instance to wait while fetching updated content, useful when acting upon [webhook calls](https://docs.kontent.ai/tutorials/develop-apps/integrate/using-webhooks-for-automatic-updates).
-* `EnableResilienceLogic` – determines whether HTTP requests will use [retry logic](#resilience-capabilities). By default, the resilience logic is enabled.
-* `MaxRetryAttempts` – sets a custom number of [retry attempts](#resilience-capabilities). By default, the SDK retries requests five times.
+* `EnableRetryLogic` – determines whether HTTP requests will use [retry logic](#retry-capabilities). By default, the retry logic is enabled.
+* `RetryPolicyOptions` – sets a [custom parameters](#retry-capabilities) for the default retry policy. By default, the SDK retries for at most 30 seconds.
 * `WithCustomEndpoint` - sets a custom endpoint for the specific API (preview, production, or secured production).
 
 ```csharp
@@ -316,19 +316,34 @@ string transformedAssetUrl = builder.WithFocalPointCrop(560, 515, 2)
 
 For list of supported transformations and more information visit the Kentico Delivery API reference at <https://developer.kenticocloud.com/v1/reference?#image-transformation>.
 
-## Resilience capabilities
+## Retry capabilities
 
-By default, the SDK uses a retry policy, asking for requested content again in case of an error. You can disable the retry policy by setting the `DeliveryOptions.EnableResilienceLogic` parameter to `false`. The default policy retries the HTTP requests if the following status codes are returned:
+By default, the SDK uses a retry policy, asking for requested content again in case of an error. You can disable the retry policy by setting the `DeliveryOptions.EnableRetryLogic` parameter to `false`. The default policy retries the HTTP requests if the following status codes are returned:
 
 * 408 - `RequestTimeout` 
+* 429 - `TooManyRequests`
 * 500 - `InternalServerError`
 * 502 - `BadGateway`
 * 503 - `ServiceUnavailable`
 * 504 - `GatewayTimeout`
 
-The default policy retries requests 5 times, totaling 6 overall attempts to retrieve content before throwing a `DeliveryException`. You can configure the number of attempts using the `DeliveryOptions.MaxRetryAttempts` property. The consecutive attempts are delayed exponentially: 400 milliseconds, 800 milliseconds, 1600 milliseconds, etc.
+or if HTTP requests throw `HttpRequestException` with inner `WebException` and its exception status is one of the following:
 
-The default resilience policy is implemented using [Polly](https://github.com/App-vNext/Polly). You can also implement your own Polly policy wrapped in an `IResiliencePolicyProvider` instance. The instance can be set to `IDeliveryClient` implementation through the `DeliveryClientBuilder` class or by registering it to the `ServiceCollection`.
+* `WebExceptionStatus.ConnectFailure`
+* `WebExceptionStatus.ConnectionClosed`
+* `WebExceptionStatus.KeepAliveFailure`
+* `WebExceptionStatus.NameResolutionFailure`
+* `WebExceptionStatus.ReceiveFailure`
+* `WebExceptionStatus.SendFailure`
+* `WebExceptionStatus.Timeout`
+
+There are two parameters in `DeliveryOptions.RetryPolicyOptions` to customize the default retry policy: `DeltaBackoff` and `MaxCumulativeWaitTime`. 
+
+The consecutive retry attempts are delayed exponentically where the delay (wait time) is based on the `DeltaBackoff` and the number of attemted retries. For status codes 429 (`TooManyRequests`) and 503 (`ServiceUnavailable`) the wait time is read from a standard `Retry-After` header if present in the response. Should the wait time exceed `MaxCumulativeWaitTime` no further retry is attempted and the policy throws either `DeliveryException`, if response resulted in one of the retried status codes, or the original retried `HttpRequestException` thrown by the request. 
+
+The defaults for `RetryPolicyOptions` are `DeltaBackoff` of 1 second and `MaxCumulativeWaitTime` of 30 seconds. Custom values can be set through `DeliveryClientBuilder`.
+
+The default retry policy is implemented without any 3rd party dependency, but you can create your custom policy, for example using [Polly](https://github.com/App-vNext/Polly), by implementing `IRetryPolicy` and `IRetryPolicyProvider`. The instance of the provider can be set to `IDeliveryClient` implementation through the `DeliveryClientBuilder` class or by registering it to the `ServiceCollection`.
 
 ## Using the Kentico.Kontent.Delivery.Rx reactive library
 
