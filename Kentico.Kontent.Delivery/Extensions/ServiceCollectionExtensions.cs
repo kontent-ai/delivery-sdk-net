@@ -114,6 +114,7 @@ namespace Microsoft.Extensions.DependencyInjection
             services.TryAddSingleton<IInlineContentItemsProcessor, InlineContentItemsProcessor>();
             services.TryAddSingleton<IModelProvider, ModelProvider>();
             services.TryAddSingleton<IPropertyMapper, PropertyMapper>();
+            services.TryAddSingleton<IRetryPolicyProvider, DefaultRetryPolicyProvider>();
             services.TryAddSingleton<IDeliveryClient, DeliveryClient>();
 
             return services;

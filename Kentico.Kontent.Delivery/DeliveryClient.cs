@@ -474,6 +474,16 @@ namespace Kentico.Kontent.Delivery
                 throw new InvalidOperationException("Preview API and secured Delivery API must not be configured at the same time.");
             }
 
+            if (DeliveryOptions.EnableRetryPolicy)
+            {
+                var retryPolicy = RetryPolicyProvider.GetRetryPolicy();
+                if (retryPolicy != null)
+                {
+                    var response = await retryPolicy.ExecuteAsync(() => SendHttpMessage(endpointUrl, continuationToken));
+                    return await GetResponseContent(response);
+                }
+            }
+
             // Omit using the resilience logic completely.
             return await GetResponseContent(await SendHttpMessage(endpointUrl, continuationToken));
         }

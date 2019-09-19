@@ -20,6 +20,7 @@ namespace Kentico.Kontent.Delivery
             ValidateProjectId(deliveryOptions.ProjectId);
             ValidateUseOfPreviewAndProductionApi(deliveryOptions);
             ValidateKeyForEnabledApi(deliveryOptions);
+            deliveryOptions.RetryPolicyOptions?.ValidateRetryPolicyOptions();
         }
 
         internal static void ValidateProjectId(this string projectId)
@@ -61,6 +62,18 @@ namespace Kentico.Kontent.Delivery
             if (!ApiKeyRegex.Value.IsMatch(apiKey))
             {
                 throw new ArgumentException($"Parameter {parameterName} has invalid format.", parameterName);
+            }
+        }
+
+        internal static void ValidateRetryPolicyOptions(this RetryPolicyOptions retryPolicyOptions)
+        {
+            if (retryPolicyOptions.DeltaBackoff <= TimeSpan.Zero)
+            {
+                throw new ArgumentException($"Parameter {nameof(retryPolicyOptions.DeltaBackoff)} must be a positive timespan.");
+            }
+            if (retryPolicyOptions.MaxCumulativeWaitTime <= TimeSpan.Zero)
+            {
+                throw new ArgumentException($"Parameter {nameof(retryPolicyOptions.MaxCumulativeWaitTime)} must be a positive timespan.");
             }
         }
 

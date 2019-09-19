@@ -54,7 +54,7 @@ namespace Kentico.Kontent.Delivery.Builders.DeliveryClient
             => RegisterOrThrow(typeProvider, nameof(typeProvider));
 
         IOptionalClientSetup IOptionalClientSetup.WithRetryPolicyProvider(IRetryPolicyProvider retryPolicyProvider)
-            => throw new NotImplementedException();
+            => RegisterOrThrow(retryPolicyProvider, nameof(retryPolicyProvider));
 
         IOptionalClientSetup IOptionalClientSetup.WithPropertyMapper(IPropertyMapper propertyMapper)
             => RegisterOrThrow(propertyMapper, nameof(propertyMapper));

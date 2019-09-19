@@ -48,13 +48,19 @@ namespace Kentico.Kontent.Delivery
         {
             get
             {
+                _deliveryOptions.EnableRetryPolicy = false;
+
                 return this;
             }
         }
 
         IOptionalDeliveryConfiguration IOptionalDeliveryConfiguration.WithRetryPolicyOptions(RetryPolicyOptions options)
         {
-           return this;
+            options?.ValidateRetryPolicyOptions();
+            _deliveryOptions.RetryPolicyOptions = options;
+            _deliveryOptions.EnableRetryPolicy = options != null;
+
+            return this;
         }
 
         IOptionalDeliveryConfiguration IDeliveryApiConfiguration.UsePreviewApi(string previewApiKey)
