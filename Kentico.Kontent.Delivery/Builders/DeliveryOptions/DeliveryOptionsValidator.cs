@@ -17,7 +17,6 @@ namespace Kentico.Kontent.Delivery
         /// <param name="deliveryOptions">A <see cref="DeliveryOptions"/> instance.</param>
         public static void Validate(this DeliveryOptions deliveryOptions)
         {
-            ValidateMaxRetryAttempts(deliveryOptions.MaxRetryAttempts);
             ValidateProjectId(deliveryOptions.ProjectId);
             ValidateUseOfPreviewAndProductionApi(deliveryOptions);
             ValidateKeyForEnabledApi(deliveryOptions);
@@ -62,14 +61,6 @@ namespace Kentico.Kontent.Delivery
             if (!ApiKeyRegex.Value.IsMatch(apiKey))
             {
                 throw new ArgumentException($"Parameter {parameterName} has invalid format.", parameterName);
-            }
-        }
-
-        internal static void ValidateMaxRetryAttempts(this int attempts)
-        {
-            if (attempts < 0)
-            {
-                throw new ArgumentException("Number of maximum retry attempts can't be less than zero.", nameof(attempts));
             }
         }
 

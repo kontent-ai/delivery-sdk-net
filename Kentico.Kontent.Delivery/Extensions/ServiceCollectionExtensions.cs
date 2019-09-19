@@ -5,7 +5,7 @@ using Kentico.Kontent.Delivery;
 using Kentico.Kontent.Delivery.Builders.DeliveryOptions;
 using Kentico.Kontent.Delivery.ContentLinks;
 using Kentico.Kontent.Delivery.InlineContentItems;
-using Kentico.Kontent.Delivery.ResiliencePolicy;
+using Kentico.Kontent.Delivery.RetryPolicy;
 using Kentico.Kontent.Delivery.StrongTyping;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection.Extensions;
@@ -114,7 +114,6 @@ namespace Microsoft.Extensions.DependencyInjection
             services.TryAddSingleton<IInlineContentItemsProcessor, InlineContentItemsProcessor>();
             services.TryAddSingleton<IModelProvider, ModelProvider>();
             services.TryAddSingleton<IPropertyMapper, PropertyMapper>();
-            services.TryAddSingleton<IResiliencePolicyProvider, DefaultResiliencePolicyProvider>();
             services.TryAddSingleton<IDeliveryClient, DeliveryClient>();
 
             return services;

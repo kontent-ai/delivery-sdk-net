@@ -56,35 +56,46 @@ namespace Kentico.Kontent.Delivery.Tests.Builders.DeliveryOptions
             Assert.True(deliveryOptions.UseSecuredProductionApi);
             Assert.Equal(SecuredApiKey, deliveryOptions.SecuredProductionApiKey);
         }
-
+        
         [Fact]
-        public void BuildWithMaxRetryAttempts()
+        public void BuildWithRetryPolicyOptions()
         {
-            const int maxRetryAttempts = 10;
+            var retryOptions = new RetryPolicyOptions();
 
             var deliveryOptions = DeliveryOptionsBuilder
                 .CreateInstance()
                 .WithProjectId(ProjectId)
                 .UseProductionApi
-                .WithMaxRetryAttempts(maxRetryAttempts)
+                .WithRetryPolicyOptions(retryOptions)
                 .Build();
 
-            Assert.Equal(deliveryOptions.MaxRetryAttempts, maxRetryAttempts);
+            Assert.Equal(deliveryOptions.RetryPolicyOptions, retryOptions);
         }
 
         [Fact]
-        public void BuildWithZeroMaxRetryAttemps_ResilienceLogicIsDisabled()
+        public void BuildWithNullRetryPolicyOptions_ResilienceLogicIsDisabled()
         {
-            const int maxRetryAttempts = 0;
-
             var deliveryOptions = DeliveryOptionsBuilder
                 .CreateInstance()
                 .WithProjectId(ProjectId)
                 .UseProductionApi
-                .WithMaxRetryAttempts(maxRetryAttempts)
+                .WithRetryPolicyOptions(null)
                 .Build();
 
-            Assert.False(deliveryOptions.EnableResilienceLogic);
+            Assert.False(deliveryOptions.EnableRetryPolicy);
+        }
+
+        [Fact]
+        public void BuildWithDisabledRetryLogic()
+        {
+            var deliveryOptions = DeliveryOptionsBuilder
+                .CreateInstance()
+                .WithProjectId(Guid.NewGuid())
+                .UseProductionApi
+                .DisableRetryLogic
+                .Build();
+
+            Assert.False(deliveryOptions.EnableRetryPolicy);
         }
 
         [Fact]
@@ -98,19 +109,6 @@ namespace Kentico.Kontent.Delivery.Tests.Builders.DeliveryOptions
                 .Build();
 
             Assert.True(deliveryOptions.WaitForLoadingNewContent);
-        }
-
-        [Fact]
-        public void BuildWithDisabledResilienceLogic()
-        {
-            var deliveryOptions = DeliveryOptionsBuilder
-                .CreateInstance()
-                .WithProjectId(Guid.NewGuid())
-                .UseProductionApi
-                .DisableResilienceLogic
-                .Build();
-
-            Assert.False(deliveryOptions.EnableResilienceLogic);
         }
 
         [Fact]

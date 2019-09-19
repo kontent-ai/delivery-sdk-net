@@ -1,6 +1,6 @@
 ﻿using Kentico.Kontent.Delivery.Builders.DeliveryOptions;
 using Kentico.Kontent.Delivery.InlineContentItems;
-using Kentico.Kontent.Delivery.ResiliencePolicy;
+using Kentico.Kontent.Delivery.RetryPolicy;
 using Microsoft.Extensions.DependencyInjection;
 using System;
 using System.Net.Http;
@@ -53,8 +53,8 @@ namespace Kentico.Kontent.Delivery.Builders.DeliveryClient
         IOptionalClientSetup IOptionalClientSetup.WithTypeProvider(ITypeProvider typeProvider)
             => RegisterOrThrow(typeProvider, nameof(typeProvider));
 
-        IOptionalClientSetup IOptionalClientSetup.WithResiliencePolicyProvider(IResiliencePolicyProvider resiliencePolicyProvider)
-            => RegisterOrThrow(resiliencePolicyProvider, nameof(resiliencePolicyProvider));
+        IOptionalClientSetup IOptionalClientSetup.WithRetryPolicyProvider(IRetryPolicyProvider retryPolicyProvider)
+            => throw new NotImplementedException();
 
         IOptionalClientSetup IOptionalClientSetup.WithPropertyMapper(IPropertyMapper propertyMapper)
             => RegisterOrThrow(propertyMapper, nameof(propertyMapper));

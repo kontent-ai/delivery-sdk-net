@@ -2,7 +2,7 @@
 using System.Net.Http;
 using Kentico.Kontent.Delivery.Builders.DeliveryOptions;
 using Kentico.Kontent.Delivery.InlineContentItems;
-using Kentico.Kontent.Delivery.ResiliencePolicy;
+using Kentico.Kontent.Delivery.RetryPolicy;
 
 namespace Kentico.Kontent.Delivery.Builders.DeliveryClient
 {
@@ -65,10 +65,10 @@ namespace Kentico.Kontent.Delivery.Builders.DeliveryClient
         IOptionalClientSetup WithTypeProvider(ITypeProvider typeProvider);
 
         /// <summary>
-        /// Sets a custom instance of a provider of a resilience (retry) policy to the <see cref="IDeliveryClient"/> instance.
+        /// Sets a custom instance of a provider of a retry policy to the <see cref="IDeliveryClient"/> instance.
         /// </summary>
-        /// <param name="resiliencePolicyProvider">A provider of a resilience (retry) policy</param>
-        IOptionalClientSetup WithResiliencePolicyProvider(IResiliencePolicyProvider resiliencePolicyProvider);
+        /// <param name="retryPolicyProvider">A provider of a retry policy</param>
+        IOptionalClientSetup WithRetryPolicyProvider(IRetryPolicyProvider retryPolicyProvider);
 
         /// <summary>
         /// Sets a custom instance of an object that can map Kentico Kontent content item fields to model properties to the <see cref="IDeliveryClient"/> instance.

@@ -44,23 +44,17 @@ namespace Kentico.Kontent.Delivery
             }
         }
 
-        IOptionalDeliveryConfiguration IOptionalDeliveryConfiguration.DisableResilienceLogic
+        IOptionalDeliveryConfiguration IOptionalDeliveryConfiguration.DisableRetryLogic
         {
             get
             {
-                _deliveryOptions.EnableResilienceLogic = false;
-
                 return this;
             }
         }
 
-        IOptionalDeliveryConfiguration IOptionalDeliveryConfiguration.WithMaxRetryAttempts(int attempts)
+        IOptionalDeliveryConfiguration IOptionalDeliveryConfiguration.WithRetryPolicyOptions(RetryPolicyOptions options)
         {
-            attempts.ValidateMaxRetryAttempts();
-            _deliveryOptions.MaxRetryAttempts = attempts;
-            _deliveryOptions.EnableResilienceLogic = attempts != 0;
-
-            return this;
+           return this;
         }
 
         IOptionalDeliveryConfiguration IDeliveryApiConfiguration.UsePreviewApi(string previewApiKey)

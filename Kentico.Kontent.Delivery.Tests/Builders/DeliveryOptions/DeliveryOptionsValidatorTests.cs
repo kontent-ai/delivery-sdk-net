@@ -8,15 +8,75 @@ namespace Kentico.Kontent.Delivery.Tests.Builders.DeliveryOptions
         private readonly Guid _guid = Guid.NewGuid();
         
         [Fact]
-        public void ValidateOptionsWithNegativeMaxRetryAttempts()
+        public void ValidateRetryOptions_NegativeDeltaBackoff_Throws()
         {
             var deliveryOptions = new Delivery.DeliveryOptions
             {
                 ProjectId = _guid.ToString(),
-                MaxRetryAttempts = -10
+                RetryPolicyOptions = new RetryPolicyOptions
+                {
+                    DeltaBackoff = TimeSpan.FromSeconds(-1)
+                }
             };
 
             Assert.Throws<ArgumentException>(() => deliveryOptions.Validate());
+        }
+
+        [Fact]
+        public void ValidateRetryOptions_ZeroDeltaBackoff_Throws()
+        {
+            var deliveryOptions = new Delivery.DeliveryOptions
+            {
+                ProjectId = _guid.ToString(),
+                RetryPolicyOptions = new RetryPolicyOptions
+                {
+                    DeltaBackoff = TimeSpan.Zero
+                }
+            };
+
+            Assert.Throws<ArgumentException>(() => deliveryOptions.Validate());
+        }
+
+        [Fact]
+        public void ValidateRetryOptions_NegativeMaxCumulativeWaitTime_Throws()
+        {
+            var deliveryOptions = new Delivery.DeliveryOptions
+            {
+                ProjectId = _guid.ToString(),
+                RetryPolicyOptions = new RetryPolicyOptions
+                {
+                    MaxCumulativeWaitTime = TimeSpan.FromSeconds(-1)
+                }
+            };
+
+            Assert.Throws<ArgumentException>(() => deliveryOptions.Validate());
+        }
+
+        [Fact]
+        public void ValidateRetryOptions_ZeroMaxCumulativeWaitTime_Throws()
+        {
+            var deliveryOptions = new Delivery.DeliveryOptions
+            {
+                ProjectId = _guid.ToString(),
+                RetryPolicyOptions = new RetryPolicyOptions
+                {
+                    MaxCumulativeWaitTime = TimeSpan.Zero
+                }
+            };
+
+            Assert.Throws<ArgumentException>(() => deliveryOptions.Validate());
+        }
+
+        [Fact]
+        public void ValidateNullRetryOptions_DoesNotThrow()
+        {
+            var deliveryOptions = new Delivery.DeliveryOptions
+            {
+                ProjectId = _guid.ToString(),
+                RetryPolicyOptions = null
+            };
+
+            deliveryOptions.Validate();
         }
 
         [Fact]

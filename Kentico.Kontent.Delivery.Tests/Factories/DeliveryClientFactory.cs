@@ -1,7 +1,7 @@
 ﻿using System;
 using FakeItEasy;
 using Kentico.Kontent.Delivery.InlineContentItems;
-using Kentico.Kontent.Delivery.ResiliencePolicy;
+using Kentico.Kontent.Delivery.RetryPolicy;
 using Microsoft.Extensions.Options;
 using RichardSzalay.MockHttp;
 
@@ -12,7 +12,7 @@ namespace Kentico.Kontent.Delivery.Tests.Factories
         private static readonly MockHttpMessageHandler MockHttp = new MockHttpMessageHandler();
         private static IModelProvider _mockModelProvider = A.Fake<IModelProvider>();
         private static IPropertyMapper _mockPropertyMapper = A.Fake<IPropertyMapper>();
-        private static IResiliencePolicyProvider _mockResiliencePolicyProvider = A.Fake<IResiliencePolicyProvider>();
+        private static IRetryPolicyProvider _mockResiliencePolicyProvider = A.Fake<IRetryPolicyProvider>();
         private static ITypeProvider _mockTypeProvider = A.Fake<ITypeProvider>();
         private static IContentLinkUrlResolver _mockContentLinkUrlResolver = A.Fake<IContentLinkUrlResolver>();
         private static IInlineContentItemsProcessor _mockInlineContentItemsProcessor = A.Fake<IInlineContentItemsProcessor>();
@@ -22,7 +22,7 @@ namespace Kentico.Kontent.Delivery.Tests.Factories
             MockHttpMessageHandler httpMessageHandler = null,
             IModelProvider modelProvider = null,
             IPropertyMapper propertyMapper = null,
-            IResiliencePolicyProvider resiliencePolicyProvider = null,
+            IRetryPolicyProvider resiliencePolicyProvider = null,
             ITypeProvider typeProvider = null,
             IContentLinkUrlResolver contentLinkUrlResolver = null,
             IInlineContentItemsProcessor inlineContentItemsProcessor = null

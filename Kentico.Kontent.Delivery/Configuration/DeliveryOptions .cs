@@ -56,12 +56,12 @@
         /// <summary>
         /// Gets or sets whether a retry policy (fallback) will be used for HTTP requests.
         /// </summary>
-        public bool EnableResilienceLogic { get; set; } = true;
+        public bool EnableRetryPolicy { get; set; } = true;
 
-        // When changing the default value of max retry attempts, change it also in IDeliveryOptionsBuilder.WithMaxRetryAttempts documentation. 
+        
         /// <summary>
-        /// Gets or sets the maximum retry attempts.
+        /// Gets or sets the options for retry policy used in <see cref="DeliveryClient"/>.
         /// </summary>
-        public int MaxRetryAttempts { get; set; } = 5;
+        public RetryPolicyOptions RetryPolicyOptions { get; set; } = new RetryPolicyOptions();
     }
 }

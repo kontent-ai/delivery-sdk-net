@@ -8,7 +8,7 @@ using Microsoft.Extensions.Options;
 using Newtonsoft.Json.Linq;
 using Kentico.Kontent.Delivery.Extensions;
 using Kentico.Kontent.Delivery.InlineContentItems;
-using Kentico.Kontent.Delivery.ResiliencePolicy;
+using Kentico.Kontent.Delivery.RetryPolicy;
 
 namespace Kentico.Kontent.Delivery
 {
@@ -23,7 +23,7 @@ namespace Kentico.Kontent.Delivery
         internal readonly IModelProvider ModelProvider;
         internal readonly ITypeProvider TypeProvider;
         internal readonly IPropertyMapper PropertyMapper;
-        internal readonly IResiliencePolicyProvider ResiliencePolicyProvider;
+        internal readonly IRetryPolicyProvider RetryPolicyProvider;
         internal readonly HttpClient HttpClient;
 
         private DeliveryEndpointUrlBuilder _urlBuilder;
@@ -39,7 +39,7 @@ namespace Kentico.Kontent.Delivery
         /// <param name="contentLinkUrlResolver">An instance of an object that can resolve links in rich text elements</param>
         /// <param name="contentItemsProcessor">An instance of an object that can resolve linked items in rich text elements</param>
         /// <param name="modelProvider">An instance of an object that can JSON responses into strongly typed CLR objects</param>
-        /// <param name="retryPolicyProvider">A provider of a resilience (retry) policy.</param>
+        /// <param name="retryPolicyProvider">A provider of a retry policy.</param>
         /// <param name="typeProvider">An instance of an object that can map Kentico Kontent content types to CLR types</param>
         /// <param name="propertyMapper">An instance of an object that can map Kentico Kontent content item fields to model properties</param>
         public DeliveryClient(
@@ -48,7 +48,7 @@ namespace Kentico.Kontent.Delivery
             IContentLinkUrlResolver contentLinkUrlResolver = null,
             IInlineContentItemsProcessor contentItemsProcessor = null,
             IModelProvider modelProvider = null,
-            IResiliencePolicyProvider retryPolicyProvider = null,
+            IRetryPolicyProvider retryPolicyProvider = null,
             ITypeProvider typeProvider = null,
             IPropertyMapper propertyMapper = null
         )
@@ -58,7 +58,7 @@ namespace Kentico.Kontent.Delivery
             ContentLinkUrlResolver = contentLinkUrlResolver;
             InlineContentItemsProcessor = contentItemsProcessor;
             ModelProvider = modelProvider;
-            ResiliencePolicyProvider = retryPolicyProvider;
+            RetryPolicyProvider = retryPolicyProvider;
             TypeProvider = typeProvider;
             PropertyMapper = propertyMapper;
         }
@@ -472,18 +472,6 @@ namespace Kentico.Kontent.Delivery
             if (DeliveryOptions.UsePreviewApi && DeliveryOptions.UseSecuredProductionApi)
             {
                 throw new InvalidOperationException("Preview API and secured Delivery API must not be configured at the same time.");
-            }
-
-            if (DeliveryOptions.EnableResilienceLogic)
-            {
-                // Use the resilience logic.
-                var policyResult = await ResiliencePolicyProvider?.Policy?.ExecuteAndCaptureAsync(() =>
-                    {
-                        return SendHttpMessage(endpointUrl, continuationToken);
-                    }
-                );
-
-                return await GetResponseContent(policyResult?.FinalHandledResult ?? policyResult?.Result);
             }
 
             // Omit using the resilience logic completely.

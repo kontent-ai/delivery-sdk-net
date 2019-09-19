@@ -1,5 +1,5 @@
 ﻿using System;
-using Kentico.Kontent.Delivery.ResiliencePolicy;
+using Kentico.Kontent.Delivery.RetryPolicy;
 
 namespace Kentico.Kontent.Delivery.Builders.DeliveryOptions
 {
@@ -50,9 +50,9 @@ namespace Kentico.Kontent.Delivery.Builders.DeliveryOptions
     public interface IOptionalDeliveryConfiguration : IDeliveryOptionsBuild
     {
         /// <summary>
-        /// An optional step that disables retry policy (fallback) for HTTP requests.
+        /// An optional step that disables retry policy for HTTP requests.
         /// </summary>
-        IOptionalDeliveryConfiguration DisableResilienceLogic { get; }
+        IOptionalDeliveryConfiguration DisableRetryLogic { get; }
 
         /// <summary>
         /// An optional step that sets the client to wait for updated content.
@@ -61,15 +61,15 @@ namespace Kentico.Kontent.Delivery.Builders.DeliveryOptions
         IOptionalDeliveryConfiguration WaitForLoadingNewContent { get; }
 
         /// <summary>
-        /// An optional step that sets the maximum number of retry attempts.
+        /// An optional step that sets the custom options for retry policy.
         /// </summary>
         /// <remarks>
-        /// The maximum number of retry attempts from <see cref="DeliveryOptions"/> is only used in the default implementation of the <see cref="IResiliencePolicyProvider" /> interface.
-        /// Setting the value to 0 will result in the resilience logic not being used.
-        /// If this method does not specify otherwise, the number of maximum retry attempts will be set to 5.
+        /// The retry policy options in <see cref="RetryPolicyOptions"/> are used only in the default implementation of the <see cref="IRetryPolicyProvider" /> interface.
+        /// Setting the value to null will result in disabled retry policy.
+        /// If this method does not specify otherwise, the default options will be used.
         /// </remarks>
-        /// <param name="attempts">Number greater than 0 representing maximum retry attempts.</param>
-        IOptionalDeliveryConfiguration WithMaxRetryAttempts(int attempts);
+        /// <param name="retryPolicyOptions">Custom retry policy options.</param>
+        IOptionalDeliveryConfiguration WithRetryPolicyOptions(RetryPolicyOptions retryPolicyOptions);
 
         /// <summary>
         /// An optional step that sets a custom endpoint for a chosen API. If "{0}" is provided in the URL, it gets replaced by the projectId.

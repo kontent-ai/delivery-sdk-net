@@ -3,7 +3,7 @@ using RichardSzalay.MockHttp;
 using System;
 using System.IO;
 using Kentico.Kontent.Delivery.ContentLinks;
-using Kentico.Kontent.Delivery.ResiliencePolicy;
+using Kentico.Kontent.Delivery.RetryPolicy;
 using Kentico.Kontent.Delivery.StrongTyping;
 using Kentico.Kontent.Delivery.Tests.Factories;
 using Microsoft.Extensions.Options;
@@ -124,7 +124,7 @@ namespace Kentico.Kontent.Delivery.Tests
 
             var deliveryOptions = Options.Create(new DeliveryOptions { ProjectId = guid });
             var httpClient = mockHttp.ToHttpClient();
-            var resiliencePolicyProvider = new DefaultResiliencePolicyProvider(deliveryOptions);
+            var resiliencePolicyProvider = new DefaultRetryPolicyProvider(deliveryOptions);
             var contentLinkUrlResolver = new CustomContentLinkUrlResolver();
             var contentItemsProcessor = InlineContentItemsProcessorFactory.Create();
             var modelProvider= new ModelProvider(contentLinkUrlResolver, contentItemsProcessor, new CustomTypeProvider(), new PropertyMapper());
