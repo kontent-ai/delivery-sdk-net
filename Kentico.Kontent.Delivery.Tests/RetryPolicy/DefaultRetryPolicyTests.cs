@@ -46,7 +46,6 @@ namespace Kentico.Kontent.Delivery.Tests.RetryPolicy
             Assert.Equal(HttpStatusCode.OK, response.StatusCode);
             Assert.Equal(2, client.TimesCalled);
             Assert.True(stopwatch.Elapsed > 0.8 * options.DeltaBackoff);
-            Assert.True(stopwatch.Elapsed < options.MaxCumulativeWaitTime);
         }
 
         [Fact]
@@ -54,7 +53,7 @@ namespace Kentico.Kontent.Delivery.Tests.RetryPolicy
         {
             var options = new RetryPolicyOptions
             {
-                DeltaBackoff = TimeSpan.FromMilliseconds(500)
+                DeltaBackoff = TimeSpan.FromMilliseconds(100)
             };
             var retryPolicy = new DefaultRetryPolicy(options);
             var client = new FakeSender()
@@ -68,7 +67,6 @@ namespace Kentico.Kontent.Delivery.Tests.RetryPolicy
             Assert.Equal(HttpStatusCode.OK, response.StatusCode);
             Assert.Equal(2, client.TimesCalled);
             Assert.True(stopwatch.Elapsed > 0.8 * options.DeltaBackoff);
-            Assert.True(stopwatch.Elapsed < options.MaxCumulativeWaitTime);
         }
 
         [Fact]
@@ -119,7 +117,7 @@ namespace Kentico.Kontent.Delivery.Tests.RetryPolicy
         {
             var options = new RetryPolicyOptions
             {
-                DeltaBackoff = TimeSpan.FromSeconds(6),
+                DeltaBackoff = TimeSpan.FromSeconds(10),
                 MaxCumulativeWaitTime = TimeSpan.FromSeconds(5)
             };
             var retryPolicy = new DefaultRetryPolicy(options);
@@ -140,7 +138,7 @@ namespace Kentico.Kontent.Delivery.Tests.RetryPolicy
         {
             var options = new RetryPolicyOptions
             {
-                DeltaBackoff = TimeSpan.FromSeconds(6),
+                DeltaBackoff = TimeSpan.FromSeconds(10),
                 MaxCumulativeWaitTime = TimeSpan.FromSeconds(5)
             };
             var retryPolicy = new DefaultRetryPolicy(options);
@@ -161,7 +159,7 @@ namespace Kentico.Kontent.Delivery.Tests.RetryPolicy
         {
             var options = new RetryPolicyOptions
             {
-                DeltaBackoff = TimeSpan.FromSeconds(6),
+                DeltaBackoff = TimeSpan.FromSeconds(10),
                 MaxCumulativeWaitTime = TimeSpan.FromSeconds(5)
             };
             var retryPolicy = new DefaultRetryPolicy(options);
@@ -240,7 +238,6 @@ namespace Kentico.Kontent.Delivery.Tests.RetryPolicy
             Assert.Equal(HttpStatusCode.OK, response.StatusCode);
             Assert.Equal(2, client.TimesCalled);
             Assert.True(stopwatch.Elapsed > 0.8 * options.DeltaBackoff);
-            Assert.True(stopwatch.Elapsed < options.MaxCumulativeWaitTime);
         }
 
         [Theory]
@@ -263,8 +260,8 @@ namespace Kentico.Kontent.Delivery.Tests.RetryPolicy
             Assert.Equal(HttpStatusCode.OK, response.StatusCode);
             Assert.Equal(2, client.TimesCalled);
             Assert.True(stopwatch.Elapsed > 0.8 * options.DeltaBackoff);
-            Assert.True(stopwatch.Elapsed < options.MaxCumulativeWaitTime);
         }
+
         private static Exception GetExceptionFromStatus(WebExceptionStatus status) => new HttpRequestException("Exception", new WebException(string.Empty, status));
         public static readonly object[][] RetriedExceptions =
         {

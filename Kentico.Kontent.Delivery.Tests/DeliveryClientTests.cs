@@ -554,7 +554,7 @@ namespace Kentico.Kontent.Delivery.Tests
             A.CallTo(() => _mockTypeProvider.GetType("complete_content_type"))
                 .ReturnsLazily(() => typeof(ContentItemModelWithAttributes));
             A.CallTo(() => _mockTypeProvider.GetType("homepage")).ReturnsLazily(() => typeof(Homepage));
-           
+
             ContentItemModelWithAttributes item = (ContentItemModelWithAttributes)client.GetItemAsync<object>("complete_content_item").Result.Item;
 
             // Assert
@@ -1304,8 +1304,6 @@ namespace Kentico.Kontent.Delivery.Tests
             var client = DeliveryClientFactory.GetMockedDeliveryClientWithOptions(options, _mockHttp);
             var retryPolicy = A.Fake<IRetryPolicy>();
             A.CallTo(() => client.RetryPolicyProvider.GetRetryPolicy()).Returns(retryPolicy);
-            A.CallTo(() => retryPolicy.ExecuteAsync(A<Func<Task<HttpResponseMessage>>>._))
-                .ReturnsLazily(c => c.GetArgument<Func<Task<HttpResponseMessage>>>(0)());
 
             await Assert.ThrowsAsync<DeliveryException>(async () => await client.GetItemsAsync());
 
