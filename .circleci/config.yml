@@ -11,5 +11,5 @@ jobs:
       - run:
           name: Unit tests
           command: | 
-            dotnet test KenticoCloud.Delivery.Tests
-            dotnet test KenticoCloud.Delivery.Rx.Tests
+            dotnet test Kentico.Kontent.Delivery.Tests
+            dotnet test Kentico.Kontent.Delivery.Rx.Tests
