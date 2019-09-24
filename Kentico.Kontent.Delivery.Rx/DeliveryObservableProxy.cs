@@ -176,7 +176,7 @@ namespace Kentico.Kontent.Delivery.Rx
         /// <returns>The <see cref="IObservable{ContentType}"/> that represents the content type with the specified codename.</returns>
         public IObservable<ContentType> GetTypeObservable(string codename)
         {
-            return GetObservableOfOne(() => DeliveryClient?.GetTypeAsync(codename)?.Result);
+            return GetObservableOfOne(() => DeliveryClient?.GetTypeAsync(codename)?.Result.Type);
         }
 
         /// <summary>
@@ -206,7 +206,7 @@ namespace Kentico.Kontent.Delivery.Rx
         /// <returns>An <see cref="IObservable{ContentElement}"/> that represents the content element with the specified codename, that is a part of a content type with the specified codename.</returns>
         public IObservable<ContentElement> GetElementObservable(string contentTypeCodename, string contentElementCodename)
         {
-            return GetObservableOfOne(() => DeliveryClient?.GetContentElementAsync(contentTypeCodename, contentElementCodename)?.Result);
+            return GetObservableOfOne(() => DeliveryClient?.GetContentElementAsync(contentTypeCodename, contentElementCodename)?.Result.Element);
         }
 
         /// <summary>
@@ -236,7 +236,7 @@ namespace Kentico.Kontent.Delivery.Rx
         /// <returns>The <see cref="IObservable{TaxonomyGroup}"/> that represents the taxonomy group with the specified codename.</returns>
         public IObservable<TaxonomyGroup> GetTaxonomyObservable(string codename)
         {
-            return GetObservableOfOne(() => DeliveryClient?.GetTaxonomyAsync(codename)?.Result);
+            return GetObservableOfOne(() => DeliveryClient?.GetTaxonomyAsync(codename)?.Result.Taxonomy);
         }
 
         /// <summary>
