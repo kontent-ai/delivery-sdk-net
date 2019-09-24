@@ -6,8 +6,8 @@
 
 | Paradigm        | Package  | Downloads | Documentation |
 | ------------- |:-------------:| :-------------:|  :-------------:|
-| Async         | [![NuGet](https://img.shields.io/nuget/v/KenticoKontent.Delivery.svg)](https://www.nuget.org/packages/KenticoKontent.Delivery) | [![NuGet](https://img.shields.io/nuget/dt/kenticokontent.delivery.svg)](https://www.nuget.org/packages/KenticoKontent.Delivery) | [📖](#using-the-deliveryclient) |
-| Reactive      | [![NuGet](https://img.shields.io/nuget/v/KenticoKontent.Delivery.Rx.svg)](https://www.nuget.org/packages/KenticoKontent.Delivery.Rx) | [![NuGet](https://img.shields.io/nuget/dt/kenticokontent.delivery.Rx.svg)](https://www.nuget.org/packages/KenticoKontent.Delivery.Rx) | [📖](#using-the-kenticokontentdeliveryrx-reactive-library) |
+| Async         | [![NuGet](https://img.shields.io/nuget/v/Kentico.Kontent.Delivery.svg)](https://www.nuget.org/packages/Kentico.Kontent.Delivery) | [![NuGet](https://img.shields.io/nuget/dt/Kentico.Kontent.delivery.svg)](https://www.nuget.org/packages/Kentico.Kontent.Delivery) | [📖](#using-the-deliveryclient) |
+| Reactive      | [![NuGet](https://img.shields.io/nuget/v/Kentico.Kontent.Delivery.Rx.svg)](https://www.nuget.org/packages/Kentico.Kontent.Delivery.Rx) | [![NuGet](https://img.shields.io/nuget/dt/Kentico.Kontent.delivery.Rx.svg)](https://www.nuget.org/packages/Kentico.Kontent.Delivery.Rx) | [📖](#using-the-kenticokontentdeliveryrx-reactive-library) |
 
 ## Summary
 
@@ -15,8 +15,8 @@ The Kentico Kontent Delivery .NET SDK is a client library used for retrieving co
 
 You can use it via any of the following NuGet packages:
 
-* [KenticoKontent.Delivery](https://www.nuget.org/packages/KenticoKontent.Delivery)
-* [KenticoKontent.Delivery.Rx](https://www.nuget.org/packages/KenticoKontent.Delivery.Rx)
+* [Kentico.Kontent.Delivery](https://www.nuget.org/packages/Kentico.Kontent.Delivery)
+* [Kentico.Kontent.Delivery.Rx](https://www.nuget.org/packages/Kentico.Kontent.Delivery.Rx)
 
 The first package provides the [DeliveryClient](#using-the-deliveryclient) object to consume Kentico Kontent data via the traditional async way. The second one provides the [DeliveryObservableProxy](#using-the-kenticokontentdeliveryrx-reactive-library) object that enables the reactive way of consuming the data.
 
@@ -33,7 +33,7 @@ To initialize the client, use the `DeliveryClientBuilder` class and provide a [p
 IDeliveryClient client = DeliveryClientBuilder.WithProjectId("<YOUR_PROJECT_ID>").Build();
 ```
 
-You can also provide the project ID and other parameters by passing a function that returns the [`DeliveryOptions`](https://github.com/Kentico/delivery-sdk-net/blob/master/KenticoKontent.Delivery/Configuration/DeliveryOptions%20.cs) object to the `DeliveryClientBuilder.WithOptions` method.
+You can also provide the project ID and other parameters by passing a function that returns the [`DeliveryOptions`](https://github.com/Kentico/delivery-sdk-net/blob/master/Kentico.Kontent.Delivery/Configuration/DeliveryOptions%20.cs) object to the `DeliveryClientBuilder.WithOptions` method.
 
 We recommend creating the `DeliveryOptions` instance by using the `DeliveryOptionsBuilder` class. With the options builder, you can use the following parameters:
 
@@ -239,7 +239,7 @@ articleItem.GetLinkedItems("related_articles")
 
 ## Using the Image transformations
 
-The [ImageUrlBuilder class](https://github.com/Kentico/delivery-sdk-net/blob/master/KenticoKontent.Delivery/ImageTransformation/ImageUrlBuilder.cs) exposes methods for applying image transformations on the Asset URL.
+The [ImageUrlBuilder class](https://github.com/Kentico/delivery-sdk-net/blob/master/Kentico.Kontent.Delivery/ImageTransformation/ImageUrlBuilder.cs) exposes methods for applying image transformations on the Asset URL.
 
 ```csharp
 string assetUrl = articleItem.GetAssets("teaser_image").First().Url;
@@ -268,18 +268,18 @@ The default policy retries requests 5 times, totaling 6 overall attempts to retr
 
 The default resilience policy is implemented using [Polly](https://github.com/App-vNext/Polly). You can also implement your own Polly policy wrapped in an `IResiliencePolicyProvider` instance. The instance can be set to `IDeliveryClient` implementation through the `DeliveryClientBuilder` class or by registering it to the `ServiceCollection`.
 
-## Using the KenticoKontent.Delivery.Rx reactive library
+## Using the Kentico.Kontent.Delivery.Rx reactive library
 
-The [DeliveryObservableProxy class](https://github.com/Kentico/delivery-sdk-net/blob/master/KenticoKontent.Delivery.Rx/DeliveryObservableProxy.cs) provides a reactive way of retrieving Kentico Kontent content.
+The [DeliveryObservableProxy class](https://github.com/Kentico/delivery-sdk-net/blob/master/Kentico.Kontent.Delivery.Rx/DeliveryObservableProxy.cs) provides a reactive way of retrieving Kentico Kontent content.
 
-The `DeliveryObservableProxy` class constructor accepts an [IDeliveryClient](https://github.com/Kentico/delivery-sdk-net/blob/master/KenticoKontent.Delivery/IDeliveryClient.cs) instance, therefore you are free to create the `IDeliveryClient` implementation (or its derivatives) in any of [the supported ways](#using-the-deliveryclient).
+The `DeliveryObservableProxy` class constructor accepts an [IDeliveryClient](https://github.com/Kentico/delivery-sdk-net/blob/master/Kentico.Kontent.Delivery/IDeliveryClient.cs) instance, therefore you are free to create the `IDeliveryClient` implementation (or its derivatives) in any of [the supported ways](#using-the-deliveryclient).
 
 ```csharp
 public IDeliveryClient DeliveryClient => DeliveryClientBuilder.WithProjectId("975bf280-fd91-488c-994c-2f04416e5ee3").Build();
 public DeliveryObservableProxy DeliveryObservableProxy => new DeliveryObservableProxy(DeliveryClient);
 ```
 
-The `DeliveryObservableProxy` class exposes methods that mirror the public methods of the [IDeliveryClient](https://github.com/Kentico/delivery-sdk-net/blob/master/KenticoKontent.Delivery/IDeliveryClient.cs). The methods have the same names, with an `Observable` suffix. They call the `IDeliveryClient` methods in the background.
+The `DeliveryObservableProxy` class exposes methods that mirror the public methods of the [IDeliveryClient](https://github.com/Kentico/delivery-sdk-net/blob/master/Kentico.Kontent.Delivery/IDeliveryClient.cs). The methods have the same names, with an `Observable` suffix. They call the `IDeliveryClient` methods in the background.
 
 ```csharp
 IObservable<Article> articlesWithBaristaPersona =
@@ -294,7 +294,7 @@ This repository is configured to generate a SourceLink tag in the NuGet package 
 
 ### How to configure SourceLink
 
-1. Open a solution with a project referencing the KenticoKontent.Delivery (or KenticoKontent.Delivery.RX) Nuget package.
+1. Open a solution with a project referencing the Kentico.Kontent.Delivery (or Kentico.Kontent.Delivery.RX) Nuget package.
 2. Open Tools -> Options -> Debugging -> General.
     * Clear **Enable Just My Code**.
     * Select **Enable Source Link Support**.
@@ -302,7 +302,7 @@ This repository is configured to generate a SourceLink tag in the NuGet package 
 3. Build your solution.
 4. [Add a symbol server `https://symbols.nuget.org/download/symbols`](https://blog.nuget.org/20181116/Improved-debugging-experience-with-the-NuGet-org-symbol-server-and-snupkg.html)
   * ![Add a symbol server in VS](/.github/assets/vs-nuget-symbol-server.PNG)
-5. Run a debugging session and try to step into the KenticoKontent.Delivery code.
+5. Run a debugging session and try to step into the Kentico.Kontent.Delivery code.
 6. Allow Visual Studio to download the source code from GitHub.
   * ![SourceLink confirmation dialog](/.github/assets/allow_sourcelink_download.png)
 
