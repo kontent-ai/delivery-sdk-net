@@ -106,6 +106,8 @@ namespace Kentico.Kontent.Delivery.Tests
             Assert.NotNull(model.TeaserImage.FirstOrDefault()?.Name);
             Assert.NotNull(model.TeaserImage.FirstOrDefault()?.Type);
             Assert.NotNull(model.TeaserImage.FirstOrDefault()?.Url);
+            Assert.True(model.TeaserImage.FirstOrDefault()?.Width > 0);
+            Assert.True(model.TeaserImage.FirstOrDefault()?.Height > 0);
             Assert.NotNull(response.ApiUrl);
         }
 
