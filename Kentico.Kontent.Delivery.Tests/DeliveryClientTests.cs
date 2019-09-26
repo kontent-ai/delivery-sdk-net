@@ -851,9 +851,9 @@ namespace Kentico.Kontent.Delivery.Tests
             {
                 ProjectId = _guid.ToString(),
                 UsePreviewApi = usePreviewApi,
-                UseSecuredProductionApi = useSecuredProduction,
+                UseSecureAccess = useSecuredProduction,
                 PreviewApiKey = "someKey",
-                SecuredProductionApiKey = "someKey"
+                SecureAccessApiKey = "someKey"
             };
 
             var client = DeliveryClientFactory.GetMockedDeliveryClientWithOptions(options, _mockHttp);
@@ -885,8 +885,8 @@ namespace Kentico.Kontent.Delivery.Tests
             var options = new DeliveryOptions
             {
                 ProjectId = _guid.ToString(),
-                SecuredProductionApiKey = securityKey,
-                UseSecuredProductionApi = true
+                SecureAccessApiKey = securityKey,
+                UseSecureAccess = true
             };
             _mockHttp
                 .Expect($"{_baseUrl}/items")

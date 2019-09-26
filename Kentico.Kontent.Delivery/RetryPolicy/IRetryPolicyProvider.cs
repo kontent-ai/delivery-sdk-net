@@ -1,14 +1,14 @@
 ﻿namespace Kentico.Kontent.Delivery.RetryPolicy
 {
     /// <summary>
-    /// Provides a retry policy instance if enabled
+    /// Provides a retry policy for <see cref="DeliveryClient"/>.
     /// </summary>
     public interface IRetryPolicyProvider
     {
         /// <summary>
-        ///  Gets the retry policy instance.
+        /// Returns a new instance of a retry policy.
         /// </summary>
-        /// <returns></returns>
+        /// <returns>A new instance of a retry policy.</returns>
         IRetryPolicy GetRetryPolicy();
     }
 }

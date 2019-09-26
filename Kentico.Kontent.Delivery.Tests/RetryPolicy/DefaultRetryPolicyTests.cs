@@ -16,7 +16,7 @@ namespace Kentico.Kontent.Delivery.Tests.RetryPolicy
         [Fact]
         public async Task ExecuteAsync_ResponseOk_DoesNotRetry()
         {
-            var options = new RetryPolicyOptions
+            var options = new DefaultRetryPolicyOptions
             {
                 DeltaBackoff = TimeSpan.FromSeconds(5)
             };
@@ -32,7 +32,7 @@ namespace Kentico.Kontent.Delivery.Tests.RetryPolicy
         [Fact]
         public async Task ExecuteAsync_RecoversAfterNotSuccessStatusCode()
         {
-            var options = new RetryPolicyOptions
+            var options = new DefaultRetryPolicyOptions
             {
                 DeltaBackoff = TimeSpan.FromMilliseconds(100)
             };
@@ -51,7 +51,7 @@ namespace Kentico.Kontent.Delivery.Tests.RetryPolicy
         [Fact]
         public async Task ExecuteAsync_RecoversAfterException()
         {
-            var options = new RetryPolicyOptions
+            var options = new DefaultRetryPolicyOptions
             {
                 DeltaBackoff = TimeSpan.FromMilliseconds(100)
             };
@@ -72,7 +72,7 @@ namespace Kentico.Kontent.Delivery.Tests.RetryPolicy
         [Fact]
         public async Task ExecuteAsync_UnsuccessfulStatusCode_RetriesUntilCumulativeWaitTimeReached()
         {
-            var options = new RetryPolicyOptions
+            var options = new DefaultRetryPolicyOptions
             {
                 DeltaBackoff = TimeSpan.FromMilliseconds(100),
                 MaxCumulativeWaitTime = TimeSpan.FromSeconds(2)
@@ -93,7 +93,7 @@ namespace Kentico.Kontent.Delivery.Tests.RetryPolicy
         [Fact]
         public async Task ExecuteAsync_Exception_RetriesUntilCumulativeWaitTimeReached()
         {
-            var options = new RetryPolicyOptions
+            var options = new DefaultRetryPolicyOptions
             {
                 DeltaBackoff = TimeSpan.FromMilliseconds(100),
                 MaxCumulativeWaitTime = TimeSpan.FromSeconds(2)
@@ -115,7 +115,7 @@ namespace Kentico.Kontent.Delivery.Tests.RetryPolicy
         [InlineData(HttpStatusCode.ServiceUnavailable)]
         public async Task ExecuteAsync_ThrottledRequest_NoHeader_GetsNextWaitTime(HttpStatusCode statusCode)
         {
-            var options = new RetryPolicyOptions
+            var options = new DefaultRetryPolicyOptions
             {
                 DeltaBackoff = TimeSpan.FromSeconds(10),
                 MaxCumulativeWaitTime = TimeSpan.FromSeconds(5)
@@ -136,7 +136,7 @@ namespace Kentico.Kontent.Delivery.Tests.RetryPolicy
         [InlineData(HttpStatusCode.ServiceUnavailable, 0)]
         public async Task ExecuteAsync_ThrottledRequest_RetryAfterHeaderWithNotPositiveDelta_GetsNextWaitTime(HttpStatusCode statusCode, int waitTimeInSeconds)
         {
-            var options = new RetryPolicyOptions
+            var options = new DefaultRetryPolicyOptions
             {
                 DeltaBackoff = TimeSpan.FromSeconds(10),
                 MaxCumulativeWaitTime = TimeSpan.FromSeconds(5)
@@ -157,7 +157,7 @@ namespace Kentico.Kontent.Delivery.Tests.RetryPolicy
         [InlineData(HttpStatusCode.ServiceUnavailable)]
         public async Task ExecuteAsync_ThrottledRequest_RetryAfterHeaderWithPastDate_GetsNextWaitTime(HttpStatusCode statusCode)
         {
-            var options = new RetryPolicyOptions
+            var options = new DefaultRetryPolicyOptions
             {
                 DeltaBackoff = TimeSpan.FromSeconds(10),
                 MaxCumulativeWaitTime = TimeSpan.FromSeconds(5)
@@ -178,7 +178,7 @@ namespace Kentico.Kontent.Delivery.Tests.RetryPolicy
         [InlineData(HttpStatusCode.ServiceUnavailable)]
         public async Task ExecuteAsync_ThrottledRequest_RetryAfterHeaderWithDelta_ReadsWaitTimeFromHeader(HttpStatusCode statusCode)
         {
-            var options = new RetryPolicyOptions
+            var options = new DefaultRetryPolicyOptions
             {
                 DeltaBackoff = TimeSpan.FromMilliseconds(100),
                 MaxCumulativeWaitTime = TimeSpan.FromSeconds(5)
@@ -199,7 +199,7 @@ namespace Kentico.Kontent.Delivery.Tests.RetryPolicy
         [InlineData(HttpStatusCode.ServiceUnavailable)]
         public async Task ExecuteAsync_ThrottledRequest_RetryAfterHeaderWithDate_ReadsWaitTimeFromHeader(HttpStatusCode statusCode)
         {
-            var options = new RetryPolicyOptions
+            var options = new DefaultRetryPolicyOptions
             {
                 DeltaBackoff = TimeSpan.FromMilliseconds(100),
                 MaxCumulativeWaitTime = TimeSpan.FromSeconds(5)
@@ -224,7 +224,7 @@ namespace Kentico.Kontent.Delivery.Tests.RetryPolicy
         [InlineData(HttpStatusCode.GatewayTimeout)]
         public async Task ExecuteAsync_RetriesForCertainStatusCodes(HttpStatusCode statusCode)
         {
-            var options = new RetryPolicyOptions
+            var options = new DefaultRetryPolicyOptions
             {
                 DeltaBackoff = TimeSpan.FromMilliseconds(100)
             };
@@ -244,7 +244,7 @@ namespace Kentico.Kontent.Delivery.Tests.RetryPolicy
         [MemberData(nameof(RetriedExceptions))]
         public async Task ExecuteAsync_RetriesForCertainExceptions(Exception exception)
         {
-            var options = new RetryPolicyOptions
+            var options = new DefaultRetryPolicyOptions
             {
                 DeltaBackoff = TimeSpan.FromMilliseconds(100)
             };

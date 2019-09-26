@@ -23,7 +23,7 @@ namespace Kentico.Kontent.Delivery.RetryPolicy
         private static readonly HttpStatusCode[] StatusCodesToRetry =
         {
             HttpStatusCode.RequestTimeout,
-            (HttpStatusCode)429, //TooManyRequest
+            (HttpStatusCode)429, // Too Many Requests
             HttpStatusCode.InternalServerError,
             HttpStatusCode.BadGateway,
             HttpStatusCode.ServiceUnavailable,
@@ -31,13 +31,13 @@ namespace Kentico.Kontent.Delivery.RetryPolicy
         };
         private static readonly HttpStatusCode[] StatusCodesWithPossibleRetryHeader =
         {
-            (HttpStatusCode)429, //TooManyRequest
+            (HttpStatusCode)429, // Too Many Requests
             HttpStatusCode.ServiceUnavailable,
         };
 
-        private readonly RetryPolicyOptions _options;
+        private readonly DefaultRetryPolicyOptions _options;
 
-        public DefaultRetryPolicy(RetryPolicyOptions options)
+        public DefaultRetryPolicy(DefaultRetryPolicyOptions options)
         {
             _options = options;
         }
@@ -61,8 +61,8 @@ namespace Kentico.Kontent.Delivery.RetryPolicy
 
                     if (shouldRetry)
                     {
-                        waitTime = StatusCodesWithPossibleRetryHeader.Contains(response.StatusCode) && response.Headers.TryGetRetryHeader(out var retryHeader) && retryHeader > TimeSpan.Zero
-                            ? retryHeader
+                        waitTime = StatusCodesWithPossibleRetryHeader.Contains(response.StatusCode) && response.Headers.TryGetRetryHeader(out var retryAfter) && retryAfter > TimeSpan.Zero
+                            ? retryAfter
                             : GetNextWaitTime(retryAttempts);
                     }
 
@@ -74,6 +74,7 @@ namespace Kentico.Kontent.Delivery.RetryPolicy
                 catch (Exception e)
                 {
                     var shouldRetry = ShouldRetry(e);
+
                     if (shouldRetry)
                     {
                         waitTime = GetNextWaitTime(retryAttempts);

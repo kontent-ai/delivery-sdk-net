@@ -72,7 +72,7 @@ namespace Kentico.Kontent.Delivery.Tests.Extensions
         public void AddDeliveryClientWithProjectId_AllServicesAreRegistered()
         {
             _fakeServiceCollection.AddDeliveryClient(builder =>
-                builder.WithProjectId(ProjectId).UseProductionApi.Build());
+                builder.WithProjectId(ProjectId).UseProductionApi().Build());
 
             AssertDefaultServiceCollection(_expectedInterfacesWithImplementationTypes, _expectedResolvableContentTypes);
         }

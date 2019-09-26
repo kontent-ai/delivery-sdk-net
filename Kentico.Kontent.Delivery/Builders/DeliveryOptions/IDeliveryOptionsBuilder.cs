@@ -1,87 +1,84 @@
 ﻿using System;
-using Kentico.Kontent.Delivery.RetryPolicy;
 
 namespace Kentico.Kontent.Delivery.Builders.DeliveryOptions
 {
     /// <summary>
-    /// Defines the contracts of the mandatory steps for building a <see cref="DeliveryOptions"/> instance.
+    /// A builder abstraction of mandatory setup of <see cref="DeliveryOptions"/> instances.
     /// </summary>
     public interface IDeliveryOptionsBuilder
     {
         /// <summary>
-        /// A mandatory step of the <see cref="DeliveryOptionsBuilder"/> for specifying Kentico Kontent project id.
+        /// Use project identifier.
         /// </summary>
-        /// <param name="projectId">The identifier of the Kentico Kontent project.</param>
+        /// <param name="projectId">The identifier of a Kentico Kontent project.</param>
         IDeliveryApiConfiguration WithProjectId(string projectId);
 
         /// <summary>
-        /// A mandatory step of the <see cref="DeliveryOptionsBuilder"/> for specifying Kentico Kontent project id.
+        /// Use project identifier.
         /// </summary>
-        /// <param name="projectId">The identifier of the Kentico Kontent project.</param>
+        /// <param name="projectId">The identifier of a Kentico Kontent project.</param>
         IDeliveryApiConfiguration WithProjectId(Guid projectId);
     }
 
     /// <summary>
-    /// Defines the contracts of different APIs that might be used.
+    /// A builder abstraction of API setup of <see cref="DeliveryOptions"/> instances.
     /// </summary>
     public interface IDeliveryApiConfiguration
     {
         /// <summary>
-        /// Sets the Delivery Client to make requests to a Production API.
+        /// Use Production API with secure access disabled to retrieve content.
         /// </summary>
-        IOptionalDeliveryConfiguration UseProductionApi { get; }
+        IOptionalDeliveryConfiguration UseProductionApi();
 
         /// <summary>
-        /// Sets the Delivery Client to make requests to a Preview API.
+        /// Use Production API with secure access enabled to retrieve content.
         /// </summary>
-        /// <param name="previewApiKey">A Preview API key</param>
+        /// <param name="secureAccessApiKey">An API key for secure access.</param>
+        IOptionalDeliveryConfiguration UseProductionApi(string secureAccessApiKey);
+
+        /// <summary>
+        /// Use Preview API to retrieve content.
+        /// </summary>
+        /// <param name="previewApiKey">A Preview API key.</param>
         IOptionalDeliveryConfiguration UsePreviewApi(string previewApiKey);
-
-        /// <summary>
-        /// Sets the Delivery Client to make requests to a Secured Production API.
-        /// </summary>
-        /// <param name="securedProductionApiKey">An API key for secure access.</param>
-        IOptionalDeliveryConfiguration UseSecuredProductionApi(string securedProductionApiKey);
     }
 
     /// <summary>
-    /// Defines the contracts of the optional steps for building a <see cref="DeliveryOptions"/> instance.
+    /// A builder abstraction of optional setup of <see cref="DeliveryOptions"/> instances.
     /// </summary>
     public interface IOptionalDeliveryConfiguration : IDeliveryOptionsBuild
     {
         /// <summary>
-        /// An optional step that disables retry policy for HTTP requests.
+        /// Disable retry policy for HTTP requests.
         /// </summary>
-        IOptionalDeliveryConfiguration DisableRetryLogic { get; }
+        IOptionalDeliveryConfiguration DisableRetryPolicy();
 
         /// <summary>
-        /// An optional step that sets the client to wait for updated content.
-        /// It should be used when you are acting upon a webhook call.
+        /// Provide content that is always up-to-date.
+        /// We recommend to wait for new content when you have received a webhook notification.
+        /// However, the request might take longer than usual to complete.
         /// </summary>
-        IOptionalDeliveryConfiguration WaitForLoadingNewContent { get; }
+        IOptionalDeliveryConfiguration WaitForLoadingNewContent();
 
         /// <summary>
-        /// An optional step that sets the custom options for retry policy.
+        /// Change configuration of the default retry policy.
         /// </summary>
-        /// <remarks>
-        /// The retry policy options in <see cref="RetryPolicyOptions"/> are used only in the default implementation of the <see cref="IRetryPolicyProvider" /> interface.
-        /// Setting the value to null will result in disabled retry policy.
-        /// If this method does not specify otherwise, the default options will be used.
-        /// </remarks>
-        /// <param name="retryPolicyOptions">Custom retry policy options.</param>
-        IOptionalDeliveryConfiguration WithRetryPolicyOptions(RetryPolicyOptions retryPolicyOptions);
+        /// <param name="retryPolicyOptions">Configuration of the default retry policy.</param>
+        IOptionalDeliveryConfiguration WithDefaultRetryPolicyOptions(DefaultRetryPolicyOptions retryPolicyOptions);
 
         /// <summary>
-        /// An optional step that sets a custom endpoint for a chosen API. If "{0}" is provided in the URL, it gets replaced by the projectId.
+        /// Use a custom format for the Production or Preview API endpoint address.
+        /// The project identifier will be inserted at the position of the first format item "{0}".
         /// </summary>
         /// <remarks>
         /// While both HTTP and HTTPS protocols are supported, we recommend always using HTTPS.
         /// </remarks>
-        /// <param name="customEndpoint">A custom endpoint URL address.</param>
+        /// <param name="customEndpoint">A custom format for the Production API endpoint address.</param>
         IOptionalDeliveryConfiguration WithCustomEndpoint(string customEndpoint);
 
         /// <summary>
-        /// An optional step that sets a custom endpoint for a chosen API.
+        /// Use a custom format for the Production or Preview API endpoint address.
+        /// The project identifier will be inserted at the position of the first format item "{0}".
         /// </summary>
         /// <remarks>
         /// While both HTTP and HTTPS protocols are supported, we recommend always using HTTPS.
@@ -89,16 +86,15 @@ namespace Kentico.Kontent.Delivery.Builders.DeliveryOptions
         /// <param name="customEndpoint">A custom endpoint URI.</param>
         IOptionalDeliveryConfiguration WithCustomEndpoint(Uri customEndpoint);
     }
-    
+
     /// <summary>
-    /// Defines the contract of the last build step that creates a new instance of the of the <see cref="DeliveryOptions"/> class.
+    /// A builder abstraction of the last step in setup of <see cref="DeliveryOptions"/> instances.
     /// </summary>
     public interface IDeliveryOptionsBuild
     {
         /// <summary>
-        /// Creates a new instance of the <see cref="DeliveryOptions" /> class that configures the Kentico Delivery Client.
+        /// Returns a new instance of the <see cref="DeliveryOptions"/> class.
         /// </summary>
-        /// <returns>A new <see cref="DeliveryOptions"/> instance</returns>
         Delivery.DeliveryOptions Build();
     }
 }

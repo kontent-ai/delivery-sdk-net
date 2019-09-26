@@ -21,12 +21,12 @@ namespace Kentico.Kontent.Delivery.Tests.Builders.DeliveryOptions
             var deliveryOptions = DeliveryOptionsBuilder
                 .CreateInstance()
                 .WithProjectId(ProjectId)
-                .UseProductionApi
+                .UseProductionApi()
                 .Build();
 
             Assert.Equal(deliveryOptions.ProjectId, ProjectId);
             Assert.False(deliveryOptions.UsePreviewApi);
-            Assert.False(deliveryOptions.UseSecuredProductionApi);
+            Assert.False(deliveryOptions.UseSecureAccess);
         }
 
         [Fact]
@@ -49,40 +49,38 @@ namespace Kentico.Kontent.Delivery.Tests.Builders.DeliveryOptions
             var deliveryOptions = DeliveryOptionsBuilder
                 .CreateInstance()
                 .WithProjectId(ProjectId)
-                .UseSecuredProductionApi(SecuredApiKey)
+                .UseProductionApi(SecuredApiKey)
                 .Build();
 
             Assert.Equal(ProjectId, deliveryOptions.ProjectId);
-            Assert.True(deliveryOptions.UseSecuredProductionApi);
-            Assert.Equal(SecuredApiKey, deliveryOptions.SecuredProductionApiKey);
+            Assert.True(deliveryOptions.UseSecureAccess);
+            Assert.Equal(SecuredApiKey, deliveryOptions.SecureAccessApiKey);
         }
         
         [Fact]
         public void BuildWithRetryPolicyOptions()
         {
-            var retryOptions = new RetryPolicyOptions();
+            var retryOptions = new DefaultRetryPolicyOptions();
 
             var deliveryOptions = DeliveryOptionsBuilder
                 .CreateInstance()
                 .WithProjectId(ProjectId)
-                .UseProductionApi
-                .WithRetryPolicyOptions(retryOptions)
+                .UseProductionApi()
+                .WithDefaultRetryPolicyOptions(retryOptions)
                 .Build();
 
-            Assert.Equal(deliveryOptions.RetryPolicyOptions, retryOptions);
+            Assert.Equal(deliveryOptions.DefaultRetryPolicyOptions, retryOptions);
         }
 
         [Fact]
-        public void BuildWithNullRetryPolicyOptions_ResilienceLogicIsDisabled()
+        public void BuildWithNullRetryPolicyOptions_ThrowsException()
         {
-            var deliveryOptions = DeliveryOptionsBuilder
+            Assert.Throws<ArgumentNullException>(() => DeliveryOptionsBuilder
                 .CreateInstance()
                 .WithProjectId(ProjectId)
-                .UseProductionApi
-                .WithRetryPolicyOptions(null)
-                .Build();
-
-            Assert.False(deliveryOptions.EnableRetryPolicy);
+                .UseProductionApi()
+                .WithDefaultRetryPolicyOptions(null)
+                .Build());
         }
 
         [Fact]
@@ -91,8 +89,8 @@ namespace Kentico.Kontent.Delivery.Tests.Builders.DeliveryOptions
             var deliveryOptions = DeliveryOptionsBuilder
                 .CreateInstance()
                 .WithProjectId(Guid.NewGuid())
-                .UseProductionApi
-                .DisableRetryLogic
+                .UseProductionApi()
+                .DisableRetryPolicy()
                 .Build();
 
             Assert.False(deliveryOptions.EnableRetryPolicy);
@@ -104,8 +102,8 @@ namespace Kentico.Kontent.Delivery.Tests.Builders.DeliveryOptions
             var deliveryOptions = DeliveryOptionsBuilder
                 .CreateInstance()
                 .WithProjectId(Guid.NewGuid())
-                .UseProductionApi
-                .WaitForLoadingNewContent
+                .UseProductionApi()
+                .WaitForLoadingNewContent()
                 .Build();
 
             Assert.True(deliveryOptions.WaitForLoadingNewContent);
@@ -134,7 +132,7 @@ namespace Kentico.Kontent.Delivery.Tests.Builders.DeliveryOptions
             var deliveryOptions = DeliveryOptionsBuilder
                 .CreateInstance()
                 .WithProjectId(ProjectId)
-                .UseProductionApi
+                .UseProductionApi()
                 .WithCustomEndpoint(customEndpoint)
                 .Build();
 
@@ -166,7 +164,7 @@ namespace Kentico.Kontent.Delivery.Tests.Builders.DeliveryOptions
             var deliveryOptions = DeliveryOptionsBuilder
                 .CreateInstance()
                 .WithProjectId(ProjectId)
-                .UseProductionApi
+                .UseProductionApi()
                 .WithCustomEndpoint(uri)
                 .Build();
 

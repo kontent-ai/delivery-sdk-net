@@ -43,7 +43,7 @@ namespace Kentico.Kontent.Delivery.Tests
             => DeliveryOptionsBuilder
                 .CreateInstance()
                 .WithProjectId(Guid.NewGuid())
-                .UseProductionApi
+                .UseProductionApi()
                 .WithCustomEndpoint($"{baseUrl}/{{0}}")
                 .Build();
 

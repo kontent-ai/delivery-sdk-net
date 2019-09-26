@@ -469,9 +469,9 @@ namespace Kentico.Kontent.Delivery
 
         private async Task<ApiResponse> GetDeliverResponseAsync(string endpointUrl, string continuationToken = null)
         {
-            if (DeliveryOptions.UsePreviewApi && DeliveryOptions.UseSecuredProductionApi)
+            if (DeliveryOptions.UsePreviewApi && DeliveryOptions.UseSecureAccess)
             {
-                throw new InvalidOperationException("Preview API and secured Delivery API must not be configured at the same time.");
+                throw new InvalidOperationException("Preview API and Production API with secured access enabled can't be used at the same time.");
             }
 
             if (DeliveryOptions.EnableRetryPolicy)
@@ -499,9 +499,9 @@ namespace Kentico.Kontent.Delivery
                 message.Headers.AddWaitForLoadingNewContentHeader();
             }
 
-            if (UseSecuredProductionApi())
+            if (UseSecureAccess())
             {
-                message.Headers.AddAuthorizationHeader("Bearer", DeliveryOptions.SecuredProductionApiKey);
+                message.Headers.AddAuthorizationHeader("Bearer", DeliveryOptions.SecureAccessApiKey);
             }
 
             if (UsePreviewApi())
@@ -517,9 +517,9 @@ namespace Kentico.Kontent.Delivery
             return HttpClient.SendAsync(message);
         }
 
-        private bool UseSecuredProductionApi()
+        private bool UseSecureAccess()
         {
-            return DeliveryOptions.UseSecuredProductionApi && !string.IsNullOrEmpty(DeliveryOptions.SecuredProductionApiKey);
+            return DeliveryOptions.UseSecureAccess && !string.IsNullOrEmpty(DeliveryOptions.SecureAccessApiKey);
         }
 
         private bool UsePreviewApi()
@@ -540,13 +540,13 @@ namespace Kentico.Kontent.Delivery
 
             string faultContent = null;
 
-            // The null-coallescing operator causes tests to fail for NREs, hence the "if" statement.
+            // The null-coalescing operator causes tests to fail for NREs, hence the "if" statement.
             if (httpResponseMessage?.Content != null)
             {
                 faultContent = await httpResponseMessage.Content.ReadAsStringAsync();
             }
 
-            throw new DeliveryException(httpResponseMessage, "Either the retry policy was disabled or all retry attempts were depleted.\nFault content:\n" + faultContent);
+            throw new DeliveryException(httpResponseMessage, $"There was an error while fetching content:\nStatus:{httpResponseMessage.StatusCode}\nReason:{httpResponseMessage.ReasonPhrase}\n\n{faultContent}");
         }
 
         private bool HasStaleContent(HttpResponseMessage httpResponseMessage)

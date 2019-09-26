@@ -12,7 +12,7 @@ namespace Kentico.Kontent.Delivery.Tests.RetryPolicy
         {
             var deliveryOptions = Options.Create(new DeliveryOptions
             {
-                RetryPolicyOptions = null
+                DefaultRetryPolicyOptions = null
             });
 
             Assert.Throws<ArgumentNullException>(() => new DefaultRetryPolicyProvider(deliveryOptions));
@@ -23,7 +23,7 @@ namespace Kentico.Kontent.Delivery.Tests.RetryPolicy
         {
             var deliveryOptions = Options.Create(new DeliveryOptions
             {
-                RetryPolicyOptions = new RetryPolicyOptions()
+                DefaultRetryPolicyOptions = new DefaultRetryPolicyOptions()
             });
             var provider = new DefaultRetryPolicyProvider(deliveryOptions);
 

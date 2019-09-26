@@ -7,7 +7,7 @@ using Kentico.Kontent.Delivery.RetryPolicy;
 namespace Kentico.Kontent.Delivery.Builders.DeliveryClient
 {
     /// <summary>
-    /// Defines the contracts of the mandatory steps for building a Kentico Kontent <see cref="IDeliveryClient"/> instance.
+    /// A builder abstraction of mandatory setup of <see cref="IDeliveryClient"/> instances.
     /// </summary>
     public interface IDeliveryClientBuilder
     {
@@ -22,68 +22,67 @@ namespace Kentico.Kontent.Delivery.Builders.DeliveryClient
     }
 
     /// <summary>
-    /// Defines the contracts of the optional steps for building a Kentico Kontent <see cref="IDeliveryClient"/> instance.
+    /// A builder abstraction of optional setup of <see cref="IDeliveryClient"/> instances.
     /// </summary>
     public interface IOptionalClientSetup : IDeliveryClientBuild
     {
         /// <summary>
-        /// Sets a custom HTTP client instance to the <see cref="IDeliveryClient"/> instance.
+        /// Use a custom HTTP client.
         /// </summary>
-        /// <param name="httpClient">A custom HTTP client instance</param>
+        /// <param name="httpClient">A custom HTTP client.</param>
         IOptionalClientSetup WithHttpClient(HttpClient httpClient);
 
         /// <summary>
-        /// Sets a custom instance of an object that can resolve links in rich text elements to the <see cref="IDeliveryClient"/> instance.
+        /// Use a custom object to provide URL for content links in rich text elements.
         /// </summary>
-        /// <param name="contentLinkUrlResolver">An instance of an object that can resolve links in rich text elements</param>
+        /// <param name="contentLinkUrlResolver">An instance of the <see cref="IContentLinkUrlResolver"/>.</param>
         IOptionalClientSetup WithContentLinkUrlResolver(IContentLinkUrlResolver contentLinkUrlResolver);
 
         /// <summary>
-        /// Sets a custom instance of an object that can resolve specific content type of an inline content item to the <see cref="IDeliveryClient"/> instance.
+        /// Use an object to transform linked items and components of the specified type in rich text elements to a valid HTML fragment.
         /// </summary>
-        /// <typeparam name="T">Content type to be resolved</typeparam>
-        /// <param name="inlineContentItemsResolver">An instance of an object that can resolve component and linked items to HTML markup</param>
-        /// <returns></returns>
+        /// <typeparam name="T">The type of the linked item or component to transform.</typeparam>
+        /// <param name="inlineContentItemsResolver">An instance of the <see cref="IInlineContentItemsResolver{T}"/>.</param>
         IOptionalClientSetup WithInlineContentItemsResolver<T>(IInlineContentItemsResolver<T> inlineContentItemsResolver);
 
         /// <summary>
-        /// Sets a custom instance of an object that can resolve modular content in rich text elements to the <see cref="IDeliveryClient"/> instance.
+        /// Use a custom object to transform HTML content of rich text elements.
         /// </summary>
-        /// <param name="inlineContentItemsProcessor">An instance of an object that can resolve modular content in rich text elements</param>
+        /// <param name="inlineContentItemsProcessor">An instance of the <see cref="IInlineContentItemsProcessor"/>.</param>
         IOptionalClientSetup WithInlineContentItemsProcessor(IInlineContentItemsProcessor inlineContentItemsProcessor);
 
         /// <summary>
-        /// Sets a custom instance of an object that can JSON responses into strongly typed CLR objects to the <see cref="IDeliveryClient"/> instance.
+        /// Use a custom provider to convert JSON data into objects.
         /// </summary>
-        /// <param name="modelProvider">An instance of an object that can JSON responses into strongly typed CLR objects</param>
+        /// <param name="modelProvider">An instance of the <see cref="IModelProvider"/>.</param>
         IOptionalClientSetup WithModelProvider(IModelProvider modelProvider);
 
         /// <summary>
-        /// Sets a custom instance of an object that can map Kentico Kontent content types to CLR types to the <see cref="IDeliveryClient"/> instance.
+        /// Use a custom provider to map content type codenames to content type objects.
         /// </summary>
-        /// <param name="typeProvider">An instance of an object that can map Kentico Kontent content types to CLR types</param>
+        /// <param name="typeProvider">An instance of the <see cref="ITypeProvider"/>.</param>
         IOptionalClientSetup WithTypeProvider(ITypeProvider typeProvider);
 
         /// <summary>
-        /// Sets a custom instance of a provider of a retry policy to the <see cref="IDeliveryClient"/> instance.
+        /// Use a custom provider to create retry polices for HTTP requests.
         /// </summary>
-        /// <param name="retryPolicyProvider">A provider of a retry policy</param>
+        /// <param name="retryPolicyProvider">An instance of the <see cref="IRetryPolicyProvider"/>.</param>
         IOptionalClientSetup WithRetryPolicyProvider(IRetryPolicyProvider retryPolicyProvider);
 
         /// <summary>
-        /// Sets a custom instance of an object that can map Kentico Kontent content item fields to model properties to the <see cref="IDeliveryClient"/> instance.
+        /// Use a custom mapper to determine relationships between elements of a content item and properties of a model that represents this item.
         /// </summary>
-        /// <param name="propertyMapper">An instance of an object that can map Kentico Kontent content item fields to model properties</param>
+        /// <param name="propertyMapper">An instance of the <see cref="IPropertyMapper"/>.</param>
         IOptionalClientSetup WithPropertyMapper(IPropertyMapper propertyMapper);
     }
 
     /// <summary>
-    /// Defines the contract of the last build step that initializes a new instance of the <see cref="IDeliveryClient"/> interface.
+    /// A builder abstraction of the last step in the setup of <see cref="IDeliveryClient"/> instances.
     /// </summary>
     public interface IDeliveryClientBuild
     {
         /// <summary>
-        /// Initializes a new instance of the <see cref="IDeliveryClient"/> interface for retrieving content of the specified project.
+        /// Returns a new instance of the <see cref="IDeliveryClient"/>.
         /// </summary>
         IDeliveryClient Build();
     }

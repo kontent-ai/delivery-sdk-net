@@ -1,17 +1,17 @@
-﻿using System;
-using Kentico.Kontent.Delivery.Builders.DeliveryOptions;
+﻿using Kentico.Kontent.Delivery.Builders.DeliveryOptions;
+using System;
 
 namespace Kentico.Kontent.Delivery
 {
     /// <summary>
-    /// A builder class that can be used for creating a <see cref="DeliveryOptions"/> instance.
+    /// A builder of <see cref="DeliveryOptions"/> instances.
     /// </summary>
     public class DeliveryOptionsBuilder : IDeliveryApiConfiguration, IDeliveryOptionsBuilder, IOptionalDeliveryConfiguration
     {
         private readonly DeliveryOptions _deliveryOptions = new DeliveryOptions();
 
         /// <summary>
-        /// Creates a new instance of the <see cref="DeliveryOptionsBuilder"/> class for building <see cref="DeliveryOptions"/>.
+        /// Creates a new instance of the <see cref="DeliveryOptionsBuilder"/> class.
         /// </summary>
         public static IDeliveryOptionsBuilder CreateInstance()
             => new DeliveryOptionsBuilder();
@@ -34,31 +34,24 @@ namespace Kentico.Kontent.Delivery
             return this;
         }
 
-        IOptionalDeliveryConfiguration IOptionalDeliveryConfiguration.WaitForLoadingNewContent
+        IOptionalDeliveryConfiguration IOptionalDeliveryConfiguration.WaitForLoadingNewContent()
         {
-            get
-            {
-                _deliveryOptions.WaitForLoadingNewContent = true;
+            _deliveryOptions.WaitForLoadingNewContent = true;
 
-                return this;
-            }
+            return this;
         }
 
-        IOptionalDeliveryConfiguration IOptionalDeliveryConfiguration.DisableRetryLogic
+        IOptionalDeliveryConfiguration IOptionalDeliveryConfiguration.DisableRetryPolicy()
         {
-            get
-            {
-                _deliveryOptions.EnableRetryPolicy = false;
+            _deliveryOptions.EnableRetryPolicy = false;
 
-                return this;
-            }
+            return this;
         }
 
-        IOptionalDeliveryConfiguration IOptionalDeliveryConfiguration.WithRetryPolicyOptions(RetryPolicyOptions options)
+        IOptionalDeliveryConfiguration IOptionalDeliveryConfiguration.WithDefaultRetryPolicyOptions(DefaultRetryPolicyOptions retryPolicyOptions)
         {
-            options?.ValidateRetryPolicyOptions();
-            _deliveryOptions.RetryPolicyOptions = options;
-            _deliveryOptions.EnableRetryPolicy = options != null;
+            retryPolicyOptions.ValidateRetryPolicyOptions();
+            _deliveryOptions.DefaultRetryPolicyOptions = retryPolicyOptions;
 
             return this;
         }
@@ -71,14 +64,14 @@ namespace Kentico.Kontent.Delivery
 
             return this;
         }
-        IOptionalDeliveryConfiguration IDeliveryApiConfiguration.UseProductionApi
+        IOptionalDeliveryConfiguration IDeliveryApiConfiguration.UseProductionApi()
             => this;
 
-        IOptionalDeliveryConfiguration IDeliveryApiConfiguration.UseSecuredProductionApi(string securedProductionApiKey)
+        IOptionalDeliveryConfiguration IDeliveryApiConfiguration.UseProductionApi(string secureAccessApiKey)
         {
-            securedProductionApiKey.ValidateApiKey(nameof(securedProductionApiKey));
-            _deliveryOptions.SecuredProductionApiKey = securedProductionApiKey;
-            _deliveryOptions.UseSecuredProductionApi = true;
+            secureAccessApiKey.ValidateApiKey(nameof(secureAccessApiKey));
+            _deliveryOptions.SecureAccessApiKey = secureAccessApiKey;
+            _deliveryOptions.UseSecureAccess = true;
 
             return this;
         }

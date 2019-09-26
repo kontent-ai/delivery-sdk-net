@@ -1,19 +1,18 @@
 ﻿using System;
 using System.Net.Http;
-using System.Threading;
 using System.Threading.Tasks;
 
 namespace Kentico.Kontent.Delivery.RetryPolicy
 {
     /// <summary>
-    /// Requests handling retry policy
+    /// Represents a retry policy for HTTP requests.
     /// </summary>
     public interface IRetryPolicy
     {
         /// <summary>
-        /// Executes the specified asynchronous request within policy and returns result
+        /// Invokes the specified request delegate within policy.
         /// </summary>
-        /// <param name="sendRequest">The action to perform</param>
+        /// <param name="sendRequest">The request delegate to invoke.</param>
         /// <returns>A response message returned by <paramref name="sendRequest"/>.</returns>
         Task<HttpResponseMessage> ExecuteAsync(Func<Task<HttpResponseMessage>> sendRequest);
     }
