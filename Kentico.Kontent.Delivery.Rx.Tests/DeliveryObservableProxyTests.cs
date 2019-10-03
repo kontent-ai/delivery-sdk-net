@@ -92,6 +92,17 @@ namespace Kentico.Kontent.Delivery.Rx.Tests
         }
 
         [Fact]
+        public void ContentItemsFeedRetrieved()
+        {
+            var observable = new DeliveryObservableProxy(GetDeliveryClient(MockFeedItems)).GetItemsFeedObservable();
+            var items = observable.ToEnumerable().ToList();
+
+            Assert.NotEmpty(items);
+            Assert.Equal(2, items.Count);
+            Assert.All(items, item => AssertItemPropertiesNotNull(item));
+        }
+
+        [Fact]
         public void TypedItemsRetrieved()
         {
             var observable = new DeliveryObservableProxy(GetDeliveryClient(MockArticles)).GetItemsObservable<Article>(new ContainsFilter("elements.personas", "barista"));
@@ -103,9 +114,31 @@ namespace Kentico.Kontent.Delivery.Rx.Tests
         }
 
         [Fact]
+        public void TypedItemsFeedRetrieved()
+        {
+            var observable = new DeliveryObservableProxy(GetDeliveryClient(MockFeedArticles)).GetItemsFeedObservable<Article>(new ContainsFilter("elements.personas", "barista"));
+            var items = observable.ToEnumerable().ToList();
+
+            Assert.NotEmpty(items);
+            Assert.Equal(6, items.Count);
+            Assert.All(items, article => AssertArticlePropertiesNotNull(article));
+        }
+
+        [Fact]
         public void RuntimeTypedItemsRetrieved()
         {
             var observable = new DeliveryObservableProxy(GetDeliveryClient(MockArticles)).GetItemsObservable<Article>(new ContainsFilter("elements.personas", "barista"));
+            var articles = observable.ToEnumerable().ToList();
+
+            Assert.NotEmpty(articles);
+            Assert.All(articles, article => Assert.IsType<Article>(article));
+            Assert.All(articles, article => AssertArticlePropertiesNotNull(article));
+        }
+
+        [Fact]
+        public void RuntimeTypedItemsFeedRetrieved()
+        {
+            var observable = new DeliveryObservableProxy(GetDeliveryClient(MockFeedArticles)).GetItemsFeedObservable<Article>(new ContainsFilter("elements.personas", "barista"));
             var articles = observable.ToEnumerable().ToList();
 
             Assert.NotEmpty(articles);
@@ -252,9 +285,22 @@ namespace Kentico.Kontent.Delivery.Rx.Tests
                 .Respond("application/json", File.ReadAllText(Path.Combine(Environment.CurrentDirectory, $"Fixtures{Path.DirectorySeparatorChar}items.json")));
         }
 
+        private void MockFeedItems()
+        {
+            mockHttp.When($"{baseUrl}/items-feed")
+                .Respond("application/json", File.ReadAllText(Path.Combine(Environment.CurrentDirectory, $"Fixtures{Path.DirectorySeparatorChar}items.json")));
+        }
+
         private void MockArticles()
         {
             mockHttp.When($"{baseUrl}/items")
+                .WithQueryString(new[] { new KeyValuePair<string, string>("system.type", Article.Codename), new KeyValuePair<string, string>("elements.personas[contains]", "barista") })
+                .Respond("application/json", File.ReadAllText(Path.Combine(Environment.CurrentDirectory, $"Fixtures{Path.DirectorySeparatorChar}articles.json")));
+        }
+
+        private void MockFeedArticles()
+        {
+            mockHttp.When($"{baseUrl}/items-feed")
                 .WithQueryString(new[] { new KeyValuePair<string, string>("system.type", Article.Codename), new KeyValuePair<string, string>("elements.personas[contains]", "barista") })
                 .Respond("application/json", File.ReadAllText(Path.Combine(Environment.CurrentDirectory, $"Fixtures{Path.DirectorySeparatorChar}articles.json")));
         }

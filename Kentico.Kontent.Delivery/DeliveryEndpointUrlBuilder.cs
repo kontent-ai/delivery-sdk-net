@@ -9,6 +9,7 @@ namespace Kentico.Kontent.Delivery
         private const int UrlMaxLength = 65519;
         private const string UrlTemplateItem = "/items/{0}";
         private const string UrlTemplateItems = "/items";
+        private const string UrlTemplateItemsFeed = "/items-feed";
         private const string UrlTemplateType = "/types/{0}";
         private const string UrlTemplateTypes = "/types";
         private const string UrlTemplateElement = "/types/{0}/elements/{1}";
@@ -40,6 +41,16 @@ namespace Kentico.Kontent.Delivery
         public string GetItemsUrl(IEnumerable<IQueryParameter> parameters)
         {
             return GetUrl(UrlTemplateItems, parameters);
+        }
+
+        public string GetItemsFeedUrl(string[] parameters)
+        {
+            return GetUrl(UrlTemplateItemsFeed, parameters);
+        }
+
+        public string GetItemsFeedUrl(IEnumerable<IQueryParameter> parameters)
+        {
+            return GetUrl(UrlTemplateItemsFeed, parameters);
         }
 
         public string GetTypeUrl(string codename)

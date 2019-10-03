@@ -150,6 +150,72 @@ namespace Kentico.Kontent.Delivery.Rx
         }
 
         /// <summary>
+        /// Returns an observable of content items that match the optional filtering parameters. Items are enumerated in batches.
+        /// </summary>
+        /// <param name="parameters">A collection of query parameters, for example, for filtering or ordering.</param>
+        /// <returns>The <see cref="IObservable{ContentItem}"/> that represents the content items. If no query parameters are specified, all content items are returned.</returns>
+        public IObservable<ContentItem> GetItemsFeedObservable(params IQueryParameter[] parameters)
+        {
+            return GetItemsFeedObservable((IEnumerable<IQueryParameter>)parameters);
+        }
+
+        /// <summary>
+        /// Returns an observable of content items that match the optional filtering parameters. Items are enumerated in batches.
+        /// </summary>
+        /// <param name="parameters">An array of query parameters, for example, for filtering or ordering.</param>
+        /// <returns>The <see cref="IObservable{ContentItem}"/> that represents the content items. If no query parameters are specified, all content items are returned.</returns>
+        public IObservable<ContentItem> GetItemsFeedObservable(IEnumerable<IQueryParameter> parameters)
+        {
+            var feed = DeliveryClient?.GetItemsFeed(parameters);
+            return feed == null ? null : EnumerateFeed()?.ToObservable();
+
+            IEnumerable<ContentItem> EnumerateFeed()
+            {
+                while (feed.HasMoreResults)
+                {
+                    foreach (var contentItem in feed.FetchNextBatchAsync().Result)
+                    {
+                        yield return contentItem;
+                    }
+                }
+            }
+        }
+
+        /// <summary>
+        /// Returns an observable of strongly typed content items that match the optional filtering parameters. Items are enumerated in batches.
+        /// </summary>
+        /// /// <typeparam name="T">Type of the model. (Or <see cref="object"/> if the return type is not yet known.)</typeparam>
+        /// <param name="parameters">A collection of query parameters, for example, for filtering or ordering.</param>
+        /// <returns>The <see cref="IObservable{T}"/> that represents the content items. If no query parameters are specified, all content items are returned.</returns>
+        public IObservable<T> GetItemsFeedObservable<T>(params IQueryParameter[] parameters) where T : class
+        {
+            return GetItemsFeedObservable<T>((IEnumerable<IQueryParameter>)parameters);
+        }
+
+        /// <summary>
+        /// Returns an observable of strongly typed content items that match the optional filtering parameters. Items are enumerated in batches.
+        /// </summary>
+        /// /// <typeparam name="T">Type of the model. (Or <see cref="object"/> if the return type is not yet known.)</typeparam>
+        /// <param name="parameters">A collection of query parameters, for example, for filtering or ordering.</param>
+        /// <returns>The <see cref="IObservable{T}"/> that represents the content items. If no query parameters are specified, all content items are returned.</returns>
+        public IObservable<T> GetItemsFeedObservable<T>(IEnumerable<IQueryParameter> parameters) where T : class
+        {
+            var feed = DeliveryClient?.GetItemsFeed<T>(parameters);
+            return feed == null ? null : EnumerateFeed()?.ToObservable();
+
+            IEnumerable<T> EnumerateFeed()
+            {
+                while (feed.HasMoreResults)
+                {
+                    foreach (var contentItem in feed.FetchNextBatchAsync().Result)
+                    {
+                        yield return contentItem;
+                    }
+                }
+            }
+        }
+
+        /// <summary>
         /// Returns an observable of a single content type as JSON data.
         /// </summary>
         /// <param name="codename">The codename of a content type.</param>
@@ -176,7 +242,7 @@ namespace Kentico.Kontent.Delivery.Rx
         /// <returns>The <see cref="IObservable{ContentType}"/> that represents the content type with the specified codename.</returns>
         public IObservable<ContentType> GetTypeObservable(string codename)
         {
-            return GetObservableOfOne(() => DeliveryClient?.GetTypeAsync(codename)?.Result);
+            return GetObservableOfOne(() => DeliveryClient?.GetTypeAsync(codename)?.Result.Type);
         }
 
         /// <summary>
@@ -206,7 +272,7 @@ namespace Kentico.Kontent.Delivery.Rx
         /// <returns>An <see cref="IObservable{ContentElement}"/> that represents the content element with the specified codename, that is a part of a content type with the specified codename.</returns>
         public IObservable<ContentElement> GetElementObservable(string contentTypeCodename, string contentElementCodename)
         {
-            return GetObservableOfOne(() => DeliveryClient?.GetContentElementAsync(contentTypeCodename, contentElementCodename)?.Result);
+            return GetObservableOfOne(() => DeliveryClient?.GetContentElementAsync(contentTypeCodename, contentElementCodename)?.Result.Element);
         }
 
         /// <summary>
@@ -236,7 +302,7 @@ namespace Kentico.Kontent.Delivery.Rx
         /// <returns>The <see cref="IObservable{TaxonomyGroup}"/> that represents the taxonomy group with the specified codename.</returns>
         public IObservable<TaxonomyGroup> GetTaxonomyObservable(string codename)
         {
-            return GetObservableOfOne(() => DeliveryClient?.GetTaxonomyAsync(codename)?.Result);
+            return GetObservableOfOne(() => DeliveryClient?.GetTaxonomyAsync(codename)?.Result.Taxonomy);
         }
 
         /// <summary>

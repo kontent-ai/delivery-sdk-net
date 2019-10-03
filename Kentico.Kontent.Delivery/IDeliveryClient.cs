@@ -89,6 +89,36 @@ namespace Kentico.Kontent.Delivery
         Task<DeliveryItemListingResponse<T>> GetItemsAsync<T>(IEnumerable<IQueryParameter> parameters);
 
         /// <summary>
+        /// Returns a feed that is used to traverse through content items matching the optional filtering parameters.
+        /// </summary>
+        /// <param name="parameters">A collection of query parameters, for example, for filtering or ordering.</param>
+        /// <returns>The <see cref="DeliveryItemsFeed"/> instance that can be used to enumerate through content items. If no query parameters are specified, all content items are enumerated.</returns>
+        DeliveryItemsFeed GetItemsFeed(params IQueryParameter[] parameters);
+
+        /// <summary>
+        /// Returns a feed that is used to traverse through content items matching the optional filtering parameters.
+        /// </summary>
+        /// <param name="parameters">A collection of query parameters, for example, for filtering or ordering.</param>
+        /// <returns>The <see cref="DeliveryItemsFeed"/> instance that can be used to enumerate through content items. If no query parameters are specified, all content items are enumerated.</returns>
+        DeliveryItemsFeed GetItemsFeed(IEnumerable<IQueryParameter> parameters);
+
+        /// <summary>
+        /// Returns a feed that is used to traverse through strongly typed content items matching the optional filtering parameters.
+        /// </summary>
+        /// <typeparam name="T">Type of the model. (Or <see cref="object"/> if the return type is not yet known.)</typeparam>
+        /// <param name="parameters">A collection of query parameters, for example, for filtering or ordering.</param>
+        /// <returns>The <see cref="DeliveryItemsFeed{T}"/> instance that can be used to enumerate through content items. If no query parameters are specified, all content items are enumerated.</returns>
+        DeliveryItemsFeed<T> GetItemsFeed<T>(params IQueryParameter[] parameters);
+
+        /// <summary>
+        /// Returns a feed that is used to traverse through strongly typed content items matching the optional filtering parameters.
+        /// </summary>
+        /// <typeparam name="T">Type of the model. (Or <see cref="object"/> if the return type is not yet known.)</typeparam>
+        /// <param name="parameters">A collection of query parameters, for example, for filtering or ordering.</param>
+        /// <returns>The <see cref="DeliveryItemsFeed{T}"/> instance that can be used to enumerate through content items. If no query parameters are specified, all content items are enumerated.</returns>
+        DeliveryItemsFeed<T> GetItemsFeed<T>(IEnumerable<IQueryParameter> parameters);
+
+        /// <summary>
         /// Returns a content type as JSON data.
         /// </summary>
         /// <param name="codename">The codename of a content type.</param>
@@ -106,8 +136,8 @@ namespace Kentico.Kontent.Delivery
         /// Returns a content type.
         /// </summary>
         /// <param name="codename">The codename of a content type.</param>
-        /// <returns>The content type with the specified codename.</returns>
-        Task<ContentType> GetTypeAsync(string codename);
+        /// <returns>The <see cref="DeliveryTypeResponse"/> instance that contains the content type with the specified codename.</returns>
+        Task<DeliveryTypeResponse> GetTypeAsync(string codename);
 
         /// <summary>
         /// Returns content types.
@@ -124,12 +154,12 @@ namespace Kentico.Kontent.Delivery
         Task<DeliveryTypeListingResponse> GetTypesAsync(IEnumerable<IQueryParameter> parameters);
 
         /// <summary>
-        /// Returns a content element.
+        /// Returns a content type element.
         /// </summary>
         /// <param name="contentTypeCodename">The codename of the content type.</param>
-        /// <param name="contentElementCodename">The codename of the content element.</param>
-        /// <returns>A content element with the specified codename that is a part of a content type with the specified codename.</returns>
-        Task<ContentElement> GetContentElementAsync(string contentTypeCodename, string contentElementCodename);
+        /// <param name="contentElementCodename">The codename of the content type element.</param>
+        /// <returns>The <see cref="DeliveryElementResponse"/> instance that contains the specified content type element.</returns>
+        Task<DeliveryElementResponse> GetContentElementAsync(string contentTypeCodename, string contentElementCodename);
 
         /// <summary>
         /// Returns a taxonomy group as JSON data.
@@ -149,8 +179,8 @@ namespace Kentico.Kontent.Delivery
         /// Returns a taxonomy group.
         /// </summary>
         /// <param name="codename">The codename of a taxonomy group.</param>
-        /// <returns>The taxonomy group with the specified codename.</returns>
-        Task<TaxonomyGroup> GetTaxonomyAsync(string codename);
+        /// <returns>The <see cref="DeliveryTaxonomyResponse"/> instance that contains the taxonomy group with the specified codename.</returns>
+        Task<DeliveryTaxonomyResponse> GetTaxonomyAsync(string codename);
 
         /// <summary>
         /// Returns taxonomy groups.

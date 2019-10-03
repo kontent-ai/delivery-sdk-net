@@ -28,7 +28,7 @@ namespace Kentico.Kontent.Delivery
 
         private DeliveryEndpointUrlBuilder _urlBuilder;
 
-        private DeliveryEndpointUrlBuilder UrlBuilder 
+        private DeliveryEndpointUrlBuilder UrlBuilder
             => _urlBuilder ?? (_urlBuilder = new DeliveryEndpointUrlBuilder(DeliveryOptions));
 
         /// <summary>
@@ -83,7 +83,7 @@ namespace Kentico.Kontent.Delivery
 
             var endpointUrl = UrlBuilder.GetItemUrl(codename, parameters);
 
-            return await GetDeliverResponseAsync(endpointUrl);
+            return (await GetDeliverResponseAsync(endpointUrl)).Content;
         }
 
         /// <summary>
@@ -95,7 +95,7 @@ namespace Kentico.Kontent.Delivery
         {
             var endpointUrl = UrlBuilder.GetItemsUrl(parameters);
 
-            return await GetDeliverResponseAsync(endpointUrl);
+            return (await GetDeliverResponseAsync(endpointUrl)).Content;
         }
 
         /// <summary>
@@ -142,7 +142,7 @@ namespace Kentico.Kontent.Delivery
             var endpointUrl = UrlBuilder.GetItemUrl(codename, parameters);
             var response = await GetDeliverResponseAsync(endpointUrl);
 
-            return new DeliveryItemResponse(response, ModelProvider, ContentLinkUrlResolver, endpointUrl);
+            return new DeliveryItemResponse(response, ModelProvider, ContentLinkUrlResolver);
         }
 
         /// <summary>
@@ -162,7 +162,7 @@ namespace Kentico.Kontent.Delivery
             var endpointUrl = UrlBuilder.GetItemUrl(codename, parameters);
             var response = await GetDeliverResponseAsync(endpointUrl);
 
-            return new DeliveryItemResponse<T>(response, ModelProvider, endpointUrl);
+            return new DeliveryItemResponse<T>(response, ModelProvider);
         }
 
         /// <summary>
@@ -185,7 +185,7 @@ namespace Kentico.Kontent.Delivery
             var endpointUrl = UrlBuilder.GetItemsUrl(parameters);
             var response = await GetDeliverResponseAsync(endpointUrl);
 
-            return new DeliveryItemListingResponse(response, ModelProvider, ContentLinkUrlResolver, endpointUrl);
+            return new DeliveryItemListingResponse(response, ModelProvider, ContentLinkUrlResolver);
         }
 
         /// <summary>
@@ -211,7 +211,66 @@ namespace Kentico.Kontent.Delivery
             var endpointUrl = UrlBuilder.GetItemsUrl(enhancedParameters);
             var response = await GetDeliverResponseAsync(endpointUrl);
 
-            return new DeliveryItemListingResponse<T>(response, ModelProvider, endpointUrl);
+            return new DeliveryItemListingResponse<T>(response, ModelProvider);
+        }
+
+        /// <summary>
+        /// Returns a feed that is used to traverse through content items matching the optional filtering parameters.
+        /// </summary>
+        /// <param name="parameters">An array of query parameters, for example, for filtering or ordering.</param>
+        /// <returns>The <see cref="DeliveryItemsFeed"/> instance that can be used to enumerate through content items. If no query parameters are specified, all content items are enumerated.</returns>
+        public DeliveryItemsFeed GetItemsFeed(params IQueryParameter[] parameters)
+        {
+            return GetItemsFeed((IEnumerable<IQueryParameter>) parameters);
+        }
+
+        /// <summary>
+        /// Returns a feed that is used to traverse through content items matching the optional filtering parameters.
+        /// </summary>
+        /// <param name="parameters">A collection of query parameters, for example, for filtering or ordering.</param>
+        /// <returns>The <see cref="DeliveryItemsFeed"/> instance that can be used to enumerate through content items. If no query parameters are specified, all content items are enumerated.</returns>
+        public DeliveryItemsFeed GetItemsFeed(IEnumerable<IQueryParameter> parameters)
+        {
+            ValidateItemsFeedParameters(parameters);
+            var endpointUrl = UrlBuilder.GetItemsFeedUrl(parameters);
+            return new DeliveryItemsFeed(GetItemsBatchAsync);
+
+            async Task<DeliveryItemsFeedResponse> GetItemsBatchAsync(string continuationToken)
+            {
+                var response = await GetDeliverResponseAsync(endpointUrl, continuationToken);
+                return new DeliveryItemsFeedResponse(response, ModelProvider, ContentLinkUrlResolver);
+            }
+        }
+
+        /// <summary>
+        /// Returns a feed that is used to traverse through strongly typed content items matching the optional filtering parameters.
+        /// </summary>
+        /// <typeparam name="T">Type of the model. (Or <see cref="object"/> if the return type is not yet known.)</typeparam>
+        /// <param name="parameters">An array of query parameters, for example, for filtering or ordering.</param>
+        /// <returns>The <see cref="DeliveryItemsFeed{T}"/> instance that can be used to enumerate through content items. If no query parameters are specified, all content items are enumerated.</returns>
+        public DeliveryItemsFeed<T> GetItemsFeed<T>(params IQueryParameter[] parameters)
+        {
+            return GetItemsFeed<T>((IEnumerable<IQueryParameter>) parameters);
+        }
+
+        /// <summary>
+        /// Returns a feed that is used to traverse through strongly typed content items matching the optional filtering parameters.
+        /// </summary>
+        /// <typeparam name="T">Type of the model. (Or <see cref="object"/> if the return type is not yet known.)</typeparam>
+        /// <param name="parameters">A collection of query parameters, for example, for filtering or ordering.</param>
+        /// <returns>The <see cref="DeliveryItemsFeed{T}"/> instance that can be used to enumerate through content items. If no query parameters are specified, all content items are enumerated.</returns>
+        public DeliveryItemsFeed<T> GetItemsFeed<T>(IEnumerable<IQueryParameter> parameters)
+        {
+            var enhancedParameters = ExtractParameters<T>(parameters).ToList();
+            ValidateItemsFeedParameters(enhancedParameters);
+            var endpointUrl = UrlBuilder.GetItemsFeedUrl(enhancedParameters);
+            return new DeliveryItemsFeed<T>(GetItemsBatchAsync);
+
+            async Task<DeliveryItemsFeedResponse<T>> GetItemsBatchAsync(string continuationToken)
+            {
+                var response = await GetDeliverResponseAsync(endpointUrl, continuationToken);
+                return new DeliveryItemsFeedResponse<T>(response, ModelProvider);
+            }
         }
 
         /// <summary>
@@ -233,7 +292,7 @@ namespace Kentico.Kontent.Delivery
 
             var endpointUrl = UrlBuilder.GetTypeUrl(codename);
 
-            return await GetDeliverResponseAsync(endpointUrl);
+            return (await GetDeliverResponseAsync(endpointUrl)).Content;
         }
 
         /// <summary>
@@ -245,15 +304,15 @@ namespace Kentico.Kontent.Delivery
         {
             var endpointUrl = UrlBuilder.GetTypesUrl(parameters);
 
-            return await GetDeliverResponseAsync(endpointUrl);
+            return (await GetDeliverResponseAsync(endpointUrl)).Content;
         }
 
         /// <summary>
-        /// Returns a content type.
+        /// Gets a content type by its codename.
         /// </summary>
         /// <param name="codename">The codename of a content type.</param>
-        /// <returns>The content type with the specified codename.</returns>
-        public async Task<ContentType> GetTypeAsync(string codename)
+        /// <returns>The <see cref="DeliveryTypeResponse"/> instance that contains the content type with the specified codename.</returns>
+        public async Task<DeliveryTypeResponse> GetTypeAsync(string codename)
         {
             if (codename == null)
             {
@@ -268,39 +327,39 @@ namespace Kentico.Kontent.Delivery
             var endpointUrl = UrlBuilder.GetTypeUrl(codename);
             var response = await GetDeliverResponseAsync(endpointUrl);
 
-            return new ContentType(response);
+            return new DeliveryTypeResponse(response);
         }
 
         /// <summary>
-        /// Returns content types.
+        /// Returns content types that match the optional filtering parameters.
         /// </summary>
         /// <param name="parameters">An array that contains zero or more query parameters, for example, for paging.</param>
-        /// <returns>The <see cref="DeliveryTypeListingResponse"/> instance that represents the content types. If no query parameters are specified, all content types are returned.</returns>
+        /// <returns>The <see cref="DeliveryTypeListingResponse"/> instance that contains the content types. If no query parameters are specified, all content types are returned.</returns>
         public async Task<DeliveryTypeListingResponse> GetTypesAsync(params IQueryParameter[] parameters)
         {
             return await GetTypesAsync((IEnumerable<IQueryParameter>)parameters);
         }
 
         /// <summary>
-        /// Returns content types.
+        /// Returns content types that match the optional filtering parameters.
         /// </summary>
         /// <param name="parameters">A collection of query parameters, for example, for paging.</param>
-        /// <returns>The <see cref="DeliveryTypeListingResponse"/> instance that represents the content types. If no query parameters are specified, all content types are returned.</returns>
+        /// <returns>The <see cref="DeliveryTypeListingResponse"/> instance that contains the content types. If no query parameters are specified, all content types are returned.</returns>
         public async Task<DeliveryTypeListingResponse> GetTypesAsync(IEnumerable<IQueryParameter> parameters)
         {
             var endpointUrl = UrlBuilder.GetTypesUrl(parameters);
             var response = await GetDeliverResponseAsync(endpointUrl);
 
-            return new DeliveryTypeListingResponse(response, endpointUrl);
+            return new DeliveryTypeListingResponse(response);
         }
 
         /// <summary>
-        /// Returns a content element.
+        /// Returns a content type element.
         /// </summary>
         /// <param name="contentTypeCodename">The codename of the content type.</param>
-        /// <param name="contentElementCodename">The codename of the content element.</param>
-        /// <returns>A content element with the specified codename that is a part of a content type with the specified codename.</returns>
-        public async Task<ContentElement> GetContentElementAsync(string contentTypeCodename, string contentElementCodename)
+        /// <param name="contentElementCodename">The codename of the content type element.</param>
+        /// <returns>The <see cref="DeliveryElementResponse"/> instance that contains the specified content type element.</returns>
+        public async Task<DeliveryElementResponse> GetContentElementAsync(string contentTypeCodename, string contentElementCodename)
         {
             if (contentTypeCodename == null)
             {
@@ -325,11 +384,8 @@ namespace Kentico.Kontent.Delivery
             var endpointUrl = UrlBuilder.GetContentElementUrl(contentTypeCodename, contentElementCodename);
             var response = await GetDeliverResponseAsync(endpointUrl);
 
-            var elementCodename = response["codename"].ToString();
-
-            return new ContentElement(response, elementCodename);
+            return new DeliveryElementResponse(response);
         }
-
 
         /// <summary>
         /// Returns a taxonomy group as JSON data.
@@ -350,7 +406,7 @@ namespace Kentico.Kontent.Delivery
 
             var endpointUrl = UrlBuilder.GetTaxonomyUrl(codename);
 
-            return await GetDeliverResponseAsync(endpointUrl);
+            return (await GetDeliverResponseAsync(endpointUrl)).Content;
         }
 
         /// <summary>
@@ -362,15 +418,15 @@ namespace Kentico.Kontent.Delivery
         {
             var endpointUrl = UrlBuilder.GetTaxonomiesUrl(parameters);
 
-            return await GetDeliverResponseAsync(endpointUrl);
+            return (await GetDeliverResponseAsync(endpointUrl)).Content;
         }
 
         /// <summary>
         /// Returns a taxonomy group.
         /// </summary>
         /// <param name="codename">The codename of a taxonomy group.</param>
-        /// <returns>The taxonomy group with the specified codename.</returns>
-        public async Task<TaxonomyGroup> GetTaxonomyAsync(string codename)
+        /// <returns>The <see cref="DeliveryTaxonomyResponse"/> instance that contains the taxonomy group with the specified codename.</returns>
+        public async Task<DeliveryTaxonomyResponse> GetTaxonomyAsync(string codename)
         {
             if (codename == null)
             {
@@ -385,7 +441,7 @@ namespace Kentico.Kontent.Delivery
             var endpointUrl = UrlBuilder.GetTaxonomyUrl(codename);
             var response = await GetDeliverResponseAsync(endpointUrl);
 
-            return new TaxonomyGroup(response);
+            return new DeliveryTaxonomyResponse(response);
         }
 
         /// <summary>
@@ -408,10 +464,10 @@ namespace Kentico.Kontent.Delivery
             var endpointUrl = UrlBuilder.GetTaxonomiesUrl(parameters);
             var response = await GetDeliverResponseAsync(endpointUrl);
 
-            return new DeliveryTaxonomyListingResponse(response, endpointUrl);
+            return new DeliveryTaxonomyListingResponse(response);
         }
 
-        private async Task<JObject> GetDeliverResponseAsync(string endpointUrl)
+        private async Task<ApiResponse> GetDeliverResponseAsync(string endpointUrl, string continuationToken = null)
         {
             if (DeliveryOptions.UsePreviewApi && DeliveryOptions.UseSecuredProductionApi)
             {
@@ -423,7 +479,7 @@ namespace Kentico.Kontent.Delivery
                 // Use the resilience logic.
                 var policyResult = await ResiliencePolicyProvider?.Policy?.ExecuteAndCaptureAsync(() =>
                     {
-                        return SendHttpMessage(endpointUrl);
+                        return SendHttpMessage(endpointUrl, continuationToken);
                     }
                 );
 
@@ -431,10 +487,10 @@ namespace Kentico.Kontent.Delivery
             }
 
             // Omit using the resilience logic completely.
-            return await GetResponseContent(await SendHttpMessage(endpointUrl));
+            return await GetResponseContent(await SendHttpMessage(endpointUrl, continuationToken));
         }
 
-        private Task<HttpResponseMessage> SendHttpMessage(string endpointUrl)
+        private Task<HttpResponseMessage> SendHttpMessage(string endpointUrl, string continuationToken = null)
         {
             var message = new HttpRequestMessage(HttpMethod.Get, endpointUrl);
 
@@ -455,6 +511,11 @@ namespace Kentico.Kontent.Delivery
                 message.Headers.AddAuthorizationHeader("Bearer", DeliveryOptions.PreviewApiKey);
             }
 
+            if (continuationToken != null)
+            {
+                message.Headers.AddContinuationHeader(continuationToken);
+            }
+
             return HttpClient.SendAsync(message);
         }
 
@@ -468,13 +529,15 @@ namespace Kentico.Kontent.Delivery
             return DeliveryOptions.UsePreviewApi && !string.IsNullOrEmpty(DeliveryOptions.PreviewApiKey);
         }
 
-        private async Task<JObject> GetResponseContent(HttpResponseMessage httpResponseMessage)
+        private async Task<ApiResponse> GetResponseContent(HttpResponseMessage httpResponseMessage)
         {
             if (httpResponseMessage?.StatusCode == HttpStatusCode.OK)
             {
-                var content = await httpResponseMessage.Content?.ReadAsStringAsync();
+                var content = JObject.Parse(await httpResponseMessage.Content?.ReadAsStringAsync());
+                var hasStaleContent = HasStaleContent(httpResponseMessage);
+                var continuationToken = httpResponseMessage.Headers.GetContinuationHeader();
 
-                return JObject.Parse(content);
+                return new ApiResponse(content, hasStaleContent, continuationToken, httpResponseMessage.RequestMessage.RequestUri.AbsoluteUri);
             }
 
             string faultContent = null;
@@ -486,6 +549,11 @@ namespace Kentico.Kontent.Delivery
             }
 
             throw new DeliveryException(httpResponseMessage, "Either the retry policy was disabled or all retry attempts were depleted.\nFault content:\n" + faultContent);
+        }
+
+        private bool HasStaleContent(HttpResponseMessage httpResponseMessage)
+        {
+            return httpResponseMessage.Headers.TryGetValues("X-Stale-Content", out var values) && values.Contains("1", StringComparer.Ordinal);
         }
 
         internal IEnumerable<IQueryParameter> ExtractParameters<T>(IEnumerable<IQueryParameter> parameters = null)
@@ -511,6 +579,25 @@ namespace Kentico.Kontent.Delivery
                     .ElementOrAttributePath
                     .Equals("system.type", StringComparison.Ordinal));
             return typeFilterExists ?? false;
+        }
+
+        private static void ValidateItemsFeedParameters(IEnumerable<IQueryParameter> parameters)
+        {
+            var parameterList = parameters.ToList();
+            if (parameterList.Any(x => x is DepthParameter))
+            {
+                throw new ArgumentException("Depth parameter is not supported in items feed.");
+            }
+
+            if (parameterList.Any(x => x is LimitParameter))
+            {
+                throw new ArgumentException("Limit parameter is not supported in items feed.");
+            }
+
+            if (parameterList.Any(x => x is SkipParameter))
+            {
+                throw new ArgumentException("Skip parameter is not supported in items feed.");
+            }
         }
     }
 }
