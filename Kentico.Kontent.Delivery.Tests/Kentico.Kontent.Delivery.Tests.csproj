@@ -58,6 +58,18 @@
   </ItemGroup>
 
   <ItemGroup>
+    <None Update="Fixtures\DeliveryClient\articles_feed_2.json">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </None>
+    <None Update="Fixtures\DeliveryClient\articles_feed_1.json">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </None>
+    <None Update="Fixtures\DeliveryClient\articles_feed.json">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </None>
+    <None Update="Fixtures\DeliveryClient\complete_content_item_system_type_feed.json">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </None>
     <None Update="Fixtures\ServiceCollectionsExtensions\deliveryOptions_as_root.json">
       <CopyToOutputDirectory>Always</CopyToOutputDirectory>
     </None>

@@ -115,6 +115,62 @@ DeliveryItemListingResponse<Article> listingResponse = await client.GetItemsAsyn
 
 See [Working with Strongly Typed Models](../../wiki/Working-with-strongly-typed-models) to learn how to generate models and adjust the logic to your needs.
 
+## Enumerating all items
+
+There are special use cases in which you need to get and process a larger amount of items in a project (e.g. cache initialization, project export, static website build). This is supported in `IDeliveryClient` by using `DeliveryItemsFeed` that can iterate over items in small batches. This approach has several advantages:
+* You are guaranteed to retrieve all items (as opposed to `GetItemsAsync` and paging when the project is being worked on in Kentico Kontent application)
+* You can start processing items right away and use less memory, due to a limited size of each batch
+* Even larger projects can be retrieved in a timely manner
+
+```csharp
+// Get items feed and iteratively process all content items in small batches.
+DeliveryItemsFeed feed = client.GetItemsFeed();
+while(feed.HasMoreResults) 
+{
+    DeliveryItemsFeedResponse response = await feed.FetchNextBatchAsync();
+    foreach(ContentItem item in response) {
+        ProcessItem(item);
+    }
+}
+```
+
+### Strongly-typed models
+
+There is also a strongly-typed equivalent of the feed in `IDeliveryClient` to support enumerating into a custom model.
+
+```csharp
+// Get strongly-typed items feed and iteratively fetch all content items in small batches.
+DeliveryItemsFeed<Article> feed = client.GetItemsFeed<Article>();
+while(feed.HasMoreResults) 
+{
+    DeliveryItemsFeedResponse<Article> response = await feed.FetchNextBatchAsync();
+    foreach(Article article in response) {
+        ProcessArticle(article);
+    }
+}
+```
+
+### Filtering and localization
+
+Both filtering and language selection are very similar to `GetItems` method, except for `DepthParameter`, `LimitParameter`, and `SkipParameter` parameters. These are not supported in items feed.
+
+```csharp
+// Get a filtered feed of the specified elements of
+// the 'brewer' content type, ordered by the 'product_name' element value 
+DeliveryItemsFeed feed = await client.GetItemsFeed(
+    new LanguageParameter("es-ES"),
+    new EqualsFilter("system.type", "brewer"),
+    new ElementsParameter("image", "price", "product_status", "processing"),
+    new OrderParameter("elements.product_name")
+);
+```
+
+### Limitations
+
+Since this method has specific usage scenarios the response does not contain linked items, although, components are still included in the response.
+
+Due to not supported skip and limit parameters, the size of a single batch may vary and it is not recommended to dependend on it in any way. The only guaranteed outcome is that once `HasMoreResults` property is false, you will have retrieved all the filtered items.
+
 ## Previewing unpublished content
 
 To retrieve unpublished content, you need to create an instance of the `IDeliveryClient` with both Project ID and Preview API key. Each Kentico Kontent project has its own Preview API key.
@@ -149,6 +205,10 @@ When retrieving a list of content items, you get an instance of the `DeliveryIte
   * `Count`: the total number of retrieved content items
   * `NextPageUrl`: the URL of the next page
 * A list of the requested content items
+
+### Content items feed response
+
+When retrieving an items feed, you get an instance of the `DeliverItemsFeedResponse`. This class represents the JSON response from the Delivery API endpoint and contains a list of requested content items.
 
 ### ContentItem structure
 
@@ -236,6 +296,8 @@ foreach (var option in element.Options)
 // Retrieves related articles
 articleItem.GetLinkedItems("related_articles")
 ```
+
+If items feed is used to retrieve content items, only components can be retrieved by this method.
 
 ## Using the Image transformations
 
