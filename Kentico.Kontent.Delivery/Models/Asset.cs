@@ -53,13 +53,15 @@ namespace Kentico.Kontent.Delivery
         /// Initializes a new instance of the <see cref="Asset"/> class.
         /// </summary>
         [JsonConstructor]
-		internal Asset(string name, string type, int size, string url, string description)
+		internal Asset(string name, string type, int size, string url, string description, int width, int height)
 		{
 			Name = name;
 			Type = type;
 			Size = size;
 			Url = url;
 		    Description = description;
+            Width = width;
+            Height = height;
 		}
 	}
 }
