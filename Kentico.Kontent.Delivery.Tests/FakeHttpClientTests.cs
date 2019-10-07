@@ -1,9 +1,9 @@
 ﻿using System;
 using System.IO;
 using System.Net.Http;
+using System.Threading.Tasks;
 using FakeItEasy;
-using Kentico.Kontent.Delivery.ResiliencePolicy;
-using Polly;
+using Kentico.Kontent.Delivery.RetryPolicy;
 using RichardSzalay.MockHttp;
 using Xunit;
 
@@ -43,7 +43,7 @@ namespace Kentico.Kontent.Delivery.Tests
             => DeliveryOptionsBuilder
                 .CreateInstance()
                 .WithProjectId(Guid.NewGuid())
-                .UseProductionApi
+                .UseProductionApi()
                 .WithCustomEndpoint($"{baseUrl}/{{0}}")
                 .Build();
 
@@ -51,18 +51,19 @@ namespace Kentico.Kontent.Delivery.Tests
         {
             var contentLinkUrlResolver = A.Fake<IContentLinkUrlResolver>();
             var modelProvider = A.Fake<IModelProvider>();
-            var resiliencePolicyProvider = A.Fake<IResiliencePolicyProvider>();
-            A.CallTo(() => resiliencePolicyProvider.Policy)
-                .Returns(Policy
-                    .HandleResult<HttpResponseMessage>(result => true)
-                    .RetryAsync(deliveryOptions.MaxRetryAttempts));
+            var retryPolicy = A.Fake<IRetryPolicy>();
+            var retryPolicyProvider = A.Fake<IRetryPolicyProvider>();
+            A.CallTo(() => retryPolicyProvider.GetRetryPolicy())
+                .Returns(retryPolicy);
+            A.CallTo(() => retryPolicy.ExecuteAsync(A<Func<Task<HttpResponseMessage>>>._))
+                .ReturnsLazily(c => c.GetArgument<Func<Task<HttpResponseMessage>>>(0)());
 
             var client = DeliveryClientBuilder
                 .WithOptions(_ => deliveryOptions)
                 .WithHttpClient(httpClient)
                 .WithContentLinkUrlResolver(contentLinkUrlResolver)
                 .WithModelProvider(modelProvider)
-                .WithResiliencePolicyProvider(resiliencePolicyProvider)
+                .WithRetryPolicyProvider(retryPolicyProvider)
                 .Build();
 
             return client;

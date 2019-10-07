@@ -2,7 +2,7 @@
 using System.Collections.Generic;
 using FakeItEasy;
 using Kentico.Kontent.Delivery.InlineContentItems;
-using Kentico.Kontent.Delivery.ResiliencePolicy;
+using Kentico.Kontent.Delivery.RetryPolicy;
 using Kentico.Kontent.Delivery.Tests.DependencyInjectionFrameworks.Helpers;
 using RichardSzalay.MockHttp;
 using Xunit;
@@ -49,7 +49,7 @@ namespace Kentico.Kontent.Delivery.Tests.Builders.DeliveryClient
         public void BuildWithOptionalSteps_ReturnsDeliveryClientWithSetInstances()
         {
             var mockModelProvider = A.Fake<IModelProvider>();
-            var mockResiliencePolicyProvider = A.Fake<IResiliencePolicyProvider>();
+            var mockRetryPolicyProvider = A.Fake<IRetryPolicyProvider>();
             var mockPropertyMapper = A.Fake<IPropertyMapper>();
             var mockContentLinkUrlResolver = A.Fake<IContentLinkUrlResolver>();
             var mockInlineContentItemsProcessor = A.Fake<IInlineContentItemsProcessor>();
@@ -69,7 +69,7 @@ namespace Kentico.Kontent.Delivery.Tests.Builders.DeliveryClient
                 .WithInlineContentItemsResolver(mockAnContentItemsResolver)
                 .WithModelProvider(mockModelProvider)
                 .WithPropertyMapper(mockPropertyMapper)
-                .WithResiliencePolicyProvider(mockResiliencePolicyProvider)
+                .WithRetryPolicyProvider(mockRetryPolicyProvider)
                 .WithTypeProvider(mockTypeProvider)
                 .Build();
 
@@ -78,7 +78,7 @@ namespace Kentico.Kontent.Delivery.Tests.Builders.DeliveryClient
             Assert.Equal(mockInlineContentItemsProcessor, deliveryClient.InlineContentItemsProcessor);
             Assert.Equal(mockModelProvider, deliveryClient.ModelProvider);
             Assert.Equal(mockPropertyMapper, deliveryClient.PropertyMapper);
-            Assert.Equal(mockResiliencePolicyProvider, deliveryClient.ResiliencePolicyProvider);
+            Assert.Equal(mockRetryPolicyProvider, deliveryClient.RetryPolicyProvider);
             Assert.Equal(mockTypeProvider, deliveryClient.TypeProvider);
             Assert.Equal(mockHttp, deliveryClient.HttpClient);
         }
@@ -123,7 +123,7 @@ namespace Kentico.Kontent.Delivery.Tests.Builders.DeliveryClient
         }
 
         [Fact]
-        public void BuildWithoutOptionalStepts_ReturnsDeliveryClientWithDefaultImplementations()
+        public void BuildWithoutOptionalSteps_ReturnsDeliveryClientWithDefaultImplementations()
         {
             var expectedResolvableInlineContentItemsTypes = new[]
             {
@@ -143,7 +143,7 @@ namespace Kentico.Kontent.Delivery.Tests.Builders.DeliveryClient
             Assert.NotNull(deliveryClient.ContentLinkUrlResolver);
             Assert.NotNull(deliveryClient.HttpClient);
             Assert.NotNull(deliveryClient.InlineContentItemsProcessor);
-            Assert.NotNull(deliveryClient.ResiliencePolicyProvider);
+            Assert.NotNull(deliveryClient.RetryPolicyProvider);
             Assert.Equal(expectedResolvableInlineContentItemsTypes, actualResolvableInlineContentItemTypes);
         }
 
@@ -200,7 +200,7 @@ namespace Kentico.Kontent.Delivery.Tests.Builders.DeliveryClient
         {
             var builderStep = DeliveryClientBuilder.WithProjectId(_guid);
 
-            Assert.Throws<ArgumentNullException>(() => builderStep.WithResiliencePolicyProvider(null));
+            Assert.Throws<ArgumentNullException>(() => builderStep.WithRetryPolicyProvider(null));
         }
 
         [Fact]

@@ -40,18 +40,21 @@ We recommend creating the `DeliveryOptions` instance by using the `DeliveryOptio
 * `ProjectId` – sets the ID of your Kentico Kontent project. This parameter must always be set.
 * `UsePreviewApi` – determines whether to use the Delivery Preview API and sets the Delivery Preview API key. See [previewing unpublished content](#previewing-unpublished-content) to learn more.
 * `UseProductionApi` – determines whether to use the default production Delivery API.
-* `UseSecuredProductionApi` – determines whether authenticate requests to the production Delivery API with an API key. See [retrieving secured content](https://developer.kenticoontent.com/docs/securing-public-access#section-retrieving-secured-content) to learn more.
+* `UseSecureAccess` – determines whether authenticate requests to the production Delivery API with an API key. See [retrieving secured content](https://developer.kenticokontent.com/docs/securing-public-access#section-retrieving-secured-content) to learn more.
 * `WaitForLoadingNewContent` – forces the client instance to wait while fetching updated content, useful when acting upon [webhook calls](https://docs.kontent.ai/tutorials/develop-apps/integrate/using-webhooks-for-automatic-updates).
-* `EnableResilienceLogic` – determines whether HTTP requests will use [retry logic](#resilience-capabilities). By default, the resilience logic is enabled.
-* `MaxRetryAttempts` – sets a custom number of [retry attempts](#resilience-capabilities). By default, the SDK retries requests five times.
+* `EnableRetryPolicy` – determines whether HTTP requests will use [retry policy](#retry-capabilities). By default, the retry policy is enabled.
+* `DefaultRetryPolicyOptions` – sets a [custom parameters](#retry-capabilities) for the default retry policy. By default, the SDK retries for at most 30 seconds.
 * `WithCustomEndpoint` - sets a custom endpoint for the specific API (preview, production, or secured production).
 
 ```csharp
 IDeliveryClient client = DeliveryClientBuilder
     .WithOptions(builder => builder
         .WithProjectId("<YOUR_PROJECT_ID>")
-        .UseProductionApi
-        .WithMaxRetryAttempts(maxRetryAttempts)
+        .UseProductionApi()
+        .WithDefaultRetryPolicyOptions(new DefaultRetryPolicyOptions {
+	    DeltaBackoff = TimeSpan.FromSeconds(1),
+	    MaxCumulativeWaitTime = TimeSpan.FromSeconds(10)
+	})
 	.Build())
     .Build();
 ```
@@ -117,13 +120,13 @@ See [Working with Strongly Typed Models](../../wiki/Working-with-strongly-typed-
 
 ## Enumerating all items
 
-There are special use cases in which you need to get and process a larger amount of items in a project (e.g. cache initialization, project export, static website build). This is supported in `IDeliveryClient` by using `DeliveryItemsFeed` that can iterate over items in small batches. This approach has several advantages:
-* You are guaranteed to retrieve all items (as opposed to `GetItemsAsync` and paging when the project is being worked on in Kentico Kontent application)
-* You can start processing items right away and use less memory, due to a limited size of each batch
-* Even larger projects can be retrieved in a timely manner
+To retrieve a large amount of items, for example to warm a local cache, export content or build a static web site, the SDK provides a `DeliveryItemsFeed` to process items in a streaming fashion. With large projects feed has several advantages over fetching all items in a single API call:
+* Processing can start as soon as the first item is received, there is no need to wait for all items.
+* Memory consumption is reduced significantly.
+* There is no risk of request timeouts.
 
 ```csharp
-// Get items feed and iteratively process all content items in small batches.
+// Process all content items in a streaming fashion.
 DeliveryItemsFeed feed = client.GetItemsFeed();
 while(feed.HasMoreResults) 
 {
@@ -136,10 +139,10 @@ while(feed.HasMoreResults)
 
 ### Strongly-typed models
 
-There is also a strongly-typed equivalent of the feed in `IDeliveryClient` to support enumerating into a custom model.
+There is also a strongly-typed equivalent of the items feed.
 
 ```csharp
-// Get strongly-typed items feed and iteratively fetch all content items in small batches.
+// Process all strongly-typed content items in a streaming fashion.
 DeliveryItemsFeed<Article> feed = client.GetItemsFeed<Article>();
 while(feed.HasMoreResults) 
 {
@@ -152,11 +155,10 @@ while(feed.HasMoreResults)
 
 ### Filtering and localization
 
-Both filtering and language selection are very similar to `GetItems` method, except for `DepthParameter`, `LimitParameter`, and `SkipParameter` parameters. These are not supported in items feed.
+Both filtering and language selection are identical to the `GetItems` method, except for `DepthParameter`, `LimitParameter`, and `SkipParameter` parameters that are not supported.
 
 ```csharp
-// Get a filtered feed of the specified elements of
-// the 'brewer' content type, ordered by the 'product_name' element value 
+// Process selected and projected content items in a streaming fashion.
 DeliveryItemsFeed feed = await client.GetItemsFeed(
     new LanguageParameter("es-ES"),
     new EqualsFilter("system.type", "brewer"),
@@ -167,9 +169,8 @@ DeliveryItemsFeed feed = await client.GetItemsFeed(
 
 ### Limitations
 
-Since this method has specific usage scenarios the response does not contain linked items, although, components are still included in the response.
-
-Due to not supported skip and limit parameters, the size of a single batch may vary and it is not recommended to dependend on it in any way. The only guaranteed outcome is that once `HasMoreResults` property is false, you will have retrieved all the filtered items.
+* The response does not contain linked items, only components.
+* Delivery API determines how many items will be returned in a single batch.
 
 ## Previewing unpublished content
 
@@ -316,19 +317,30 @@ string transformedAssetUrl = builder.WithFocalPointCrop(560, 515, 2)
 
 For list of supported transformations and more information visit the Kentico Delivery API reference at <https://developer.kenticocloud.com/v1/reference?#image-transformation>.
 
-## Resilience capabilities
+## Retry capabilities
 
-By default, the SDK uses a retry policy, asking for requested content again in case of an error. You can disable the retry policy by setting the `DeliveryOptions.EnableResilienceLogic` parameter to `false`. The default policy retries the HTTP requests if the following status codes are returned:
+By default, the SDK uses a retry policy, asking for requested content again in case of an error. You can disable the retry policy by setting the `DeliveryOptions.EnableRetryPolicy` parameter to `false`. The default policy retries the HTTP requests if the following status codes are returned:
 
 * 408 - `RequestTimeout` 
+* 429 - `TooManyRequests`
 * 500 - `InternalServerError`
 * 502 - `BadGateway`
 * 503 - `ServiceUnavailable`
 * 504 - `GatewayTimeout`
 
-The default policy retries requests 5 times, totaling 6 overall attempts to retrieve content before throwing a `DeliveryException`. You can configure the number of attempts using the `DeliveryOptions.MaxRetryAttempts` property. The consecutive attempts are delayed exponentially: 400 milliseconds, 800 milliseconds, 1600 milliseconds, etc.
+or if there is one of the following connection problems:
 
-The default resilience policy is implemented using [Polly](https://github.com/App-vNext/Polly). You can also implement your own Polly policy wrapped in an `IResiliencePolicyProvider` instance. The instance can be set to `IDeliveryClient` implementation through the `DeliveryClientBuilder` class or by registering it to the `ServiceCollection`.
+* `ConnectFailure`
+* `ConnectionClosed`
+* `KeepAliveFailure`
+* `NameResolutionFailure`
+* `ReceiveFailure`
+* `SendFailure`
+* `Timeout`
+
+The default retry policy performs retries using a randomized exponential back off scheme to determine the interval between retries. It can be customized by changing parameters in `DeliveryOptions.RetryPolicyOptions`. The `DeltaBackoff` parameter specifies the back-off interval between retries. The `MaxCumulativeWaitTime` parameter specifies the maximum cumulative wait time. If the cumulative wait time exceeds this value, the client will stop retrying and return the error to the application. The default retry policy also respects the `Retry-After` response header.
+
+You can create your custom retry policy, for example with [Polly](https://github.com/App-vNext/Polly), by implementing `IRetryPolicy` and `IRetryPolicyProvider` interfaces. The custom retry policy provider can be registered with `DeliveryClientBuilder.WithRetryPolicyProvider` or with the `ServiceCollection`.
 
 ## Using the Kentico.Kontent.Delivery.Rx reactive library
 
