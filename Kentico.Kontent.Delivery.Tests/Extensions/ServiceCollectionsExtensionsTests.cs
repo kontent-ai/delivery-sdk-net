@@ -6,7 +6,7 @@ using System.Linq;
 using System.Net.Http;
 using Kentico.Kontent.Delivery.ContentLinks;
 using Kentico.Kontent.Delivery.InlineContentItems;
-using Kentico.Kontent.Delivery.ResiliencePolicy;
+using Kentico.Kontent.Delivery.RetryPolicy;
 using Kentico.Kontent.Delivery.StrongTyping;
 using Kentico.Kontent.Delivery.Tests.Factories;
 using Microsoft.Extensions.Configuration;
@@ -48,7 +48,7 @@ namespace Kentico.Kontent.Delivery.Tests.Extensions
                 { typeof(IInlineContentItemsResolver<UnknownContentItem>), typeof(ReplaceWithWarningAboutUnknownItemResolver) },
                 { typeof(IModelProvider), typeof(ModelProvider) },
                 { typeof(IPropertyMapper), typeof(PropertyMapper) },
-                { typeof(IResiliencePolicyProvider), typeof(DefaultResiliencePolicyProvider) },
+                { typeof(IRetryPolicyProvider), typeof(DefaultRetryPolicyProvider) },
                 { typeof(IDeliveryClient), typeof(DeliveryClient) }
             }
         );
@@ -72,7 +72,7 @@ namespace Kentico.Kontent.Delivery.Tests.Extensions
         public void AddDeliveryClientWithProjectId_AllServicesAreRegistered()
         {
             _fakeServiceCollection.AddDeliveryClient(builder =>
-                builder.WithProjectId(ProjectId).UseProductionApi.Build());
+                builder.WithProjectId(ProjectId).UseProductionApi().Build());
 
             AssertDefaultServiceCollection(_expectedInterfacesWithImplementationTypes, _expectedResolvableContentTypes);
         }

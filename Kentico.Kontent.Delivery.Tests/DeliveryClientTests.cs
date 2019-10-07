@@ -1,6 +1,5 @@
 ﻿using FakeItEasy;
 using Kentico.Kontent.Delivery.Tests.Factories;
-using Polly;
 using RichardSzalay.MockHttp;
 using System;
 using System.Collections.Generic;
@@ -9,6 +8,8 @@ using System.IO;
 using System.Linq;
 using System.Net;
 using System.Net.Http;
+using System.Threading.Tasks;
+using Kentico.Kontent.Delivery.RetryPolicy;
 using Kentico.Kontent.Delivery.StrongTyping;
 using Xunit;
 
@@ -553,9 +554,6 @@ namespace Kentico.Kontent.Delivery.Tests
             A.CallTo(() => _mockTypeProvider.GetType("complete_content_type"))
                 .ReturnsLazily(() => typeof(ContentItemModelWithAttributes));
             A.CallTo(() => _mockTypeProvider.GetType("homepage")).ReturnsLazily(() => typeof(Homepage));
-            A.CallTo(() => client.ResiliencePolicyProvider.Policy)
-                .Returns(Policy.HandleResult<HttpResponseMessage>(result => true)
-                    .RetryAsync(client.DeliveryOptions.MaxRetryAttempts));
 
             ContentItemModelWithAttributes item = (ContentItemModelWithAttributes)client.GetItemAsync<object>("complete_content_item").Result.Item;
 
@@ -795,10 +793,11 @@ namespace Kentico.Kontent.Delivery.Tests
                 .Respond("application/json", File.ReadAllText(Path.Combine(Environment.CurrentDirectory, $"Fixtures{Path.DirectorySeparatorChar}DeliveryClient{Path.DirectorySeparatorChar}items.json")));
 
             var client = DeliveryClientFactory.GetMockedDeliveryClientWithProjectId(_guid, _mockHttp);
-
-            A.CallTo(() => client.ResiliencePolicyProvider.Policy)
-                .Returns(Policy.HandleResult<HttpResponseMessage>(result => true)
-                    .RetryAsync(client.DeliveryOptions.MaxRetryAttempts));
+            var retryPolicy = A.Fake<IRetryPolicy>();
+            A.CallTo(() => client.RetryPolicyProvider.GetRetryPolicy())
+                .Returns(retryPolicy);
+            A.CallTo(() => retryPolicy.ExecuteAsync(A<Func<Task<HttpResponseMessage>>>._))
+                .ReturnsLazily(c => c.GetArgument<Func<Task<HttpResponseMessage>>>(0)());
 
             var elements = new ElementsParameter(Enumerable.Range(0, 1000).Select(i => "test").ToArray());
             var inFilter = new InFilter("test", Enumerable.Range(0, 1000).Select(i => "test").ToArray());
@@ -852,16 +851,18 @@ namespace Kentico.Kontent.Delivery.Tests
             {
                 ProjectId = _guid.ToString(),
                 UsePreviewApi = usePreviewApi,
-                UseSecuredProductionApi = useSecuredProduction,
+                UseSecureAccess = useSecuredProduction,
                 PreviewApiKey = "someKey",
-                SecuredProductionApiKey = "someKey"
+                SecureAccessApiKey = "someKey"
             };
 
             var client = DeliveryClientFactory.GetMockedDeliveryClientWithOptions(options, _mockHttp);
 
-            A.CallTo(() => client.ResiliencePolicyProvider.Policy)
-                .Returns(Policy.HandleResult<HttpResponseMessage>(result => true)
-                    .RetryAsync(client.DeliveryOptions.MaxRetryAttempts));
+            var retryPolicy = A.Fake<IRetryPolicy>();
+            A.CallTo(() => client.RetryPolicyProvider.GetRetryPolicy())
+                .Returns(retryPolicy);
+            A.CallTo(() => retryPolicy.ExecuteAsync(A<Func<Task<HttpResponseMessage>>>._))
+                .ReturnsLazily(c => c.GetArgument<Func<Task<HttpResponseMessage>>>(0)());
 
             if (usePreviewApi && useSecuredProduction)
             {
@@ -884,8 +885,8 @@ namespace Kentico.Kontent.Delivery.Tests
             var options = new DeliveryOptions
             {
                 ProjectId = _guid.ToString(),
-                SecuredProductionApiKey = securityKey,
-                UseSecuredProductionApi = true
+                SecureAccessApiKey = securityKey,
+                UseSecureAccess = true
             };
             _mockHttp
                 .Expect($"{_baseUrl}/items")
@@ -894,158 +895,14 @@ namespace Kentico.Kontent.Delivery.Tests
 
             var client = DeliveryClientFactory.GetMockedDeliveryClientWithOptions(options, _mockHttp);
 
-            A.CallTo(() => client.ResiliencePolicyProvider.Policy)
-                .Returns(Policy.HandleResult<HttpResponseMessage>(result => false)
-                    .RetryAsync(client.DeliveryOptions.MaxRetryAttempts));
+            var retryPolicy = A.Fake<IRetryPolicy>();
+            A.CallTo(() => client.RetryPolicyProvider.GetRetryPolicy())
+                .Returns(retryPolicy);
+            A.CallTo(() => retryPolicy.ExecuteAsync(A<Func<Task<HttpResponseMessage>>>._))
+                .ReturnsLazily(c => c.GetArgument<Func<Task<HttpResponseMessage>>>(0)());
 
             await client.GetItemsAsync();
             _mockHttp.VerifyNoOutstandingExpectation();
-        }
-
-        [Fact]
-        public async void Retries_WithDefaultSettings_Retries()
-        {
-            var actualHttpRequestCount = 0;
-            var retryAttempts = 4;
-            var expectedRetryAttempts = retryAttempts + 1;
-
-            _mockHttp
-                .When($"{_baseUrl}/items")
-                .Respond((request) =>
-                    GetResponseAndLogRequest(HttpStatusCode.RequestTimeout, ref actualHttpRequestCount));
-
-            var client = DeliveryClientFactory.GetMockedDeliveryClientWithProjectId(_guid, _mockHttp);
-
-            A.CallTo(() => client.ResiliencePolicyProvider.Policy)
-                .Returns(Policy.HandleResult<HttpResponseMessage>(result => true).RetryAsync(retryAttempts));
-
-            await Assert.ThrowsAsync<DeliveryException>(async () => await client.GetItemsAsync());
-            Assert.Equal(expectedRetryAttempts, actualHttpRequestCount);
-        }
-
-        [Fact]
-        public async void Retries_EnableResilienceLogicDisabled_DoesNotRetry()
-        {
-            var actualHttpRequestCount = 0;
-
-            _mockHttp
-                .When($"{_baseUrl}/items")
-                .Respond((request) =>
-                    GetResponseAndLogRequest(HttpStatusCode.RequestTimeout, ref actualHttpRequestCount));
-
-            var options = new DeliveryOptions
-            {
-                ProjectId = _guid.ToString(),
-                EnableResilienceLogic = false
-            };
-            var client = DeliveryClientFactory.GetMockedDeliveryClientWithOptions(options, _mockHttp);
-
-            await Assert.ThrowsAsync<DeliveryException>(async () => await client.GetItemsAsync());
-            Assert.Equal(1, actualHttpRequestCount);
-        }
-
-        [Fact]
-        public async void Retries_WithMaxRetrySet_SettingReflected()
-        {
-            int retryAttempts = 3;
-            int expectedAttempts = retryAttempts + 1;
-            int actualHttpRequestCount = 0;
-
-            _mockHttp
-                .When($"{_baseUrl}/items")
-                .Respond((request) =>
-                    GetResponseAndLogRequest(HttpStatusCode.RequestTimeout, ref actualHttpRequestCount));
-
-            var options = new DeliveryOptions
-            {
-                ProjectId = _guid.ToString(),
-                MaxRetryAttempts = retryAttempts
-            };
-            var client = DeliveryClientFactory.GetMockedDeliveryClientWithOptions(options, _mockHttp);
-
-            A.CallTo(() => client.ResiliencePolicyProvider.Policy)
-                .Returns(Policy.HandleResult<HttpResponseMessage>(result => true).RetryAsync(retryAttempts));
-
-            await Assert.ThrowsAsync<DeliveryException>(async () => await client.GetItemsAsync());
-
-            Assert.Equal(expectedAttempts, actualHttpRequestCount);
-        }
-
-        [Fact]
-        public async void Retries_WithCustomResilencePolicy_PolicyUsed()
-        {
-            int retryAttempts = 1;
-            int expectedAttepts = retryAttempts + 1;
-            int actualHttpRequestCount = 0;
-
-            _mockHttp
-                .When($"{_baseUrl}/items")
-                .Respond((request) =>
-                    GetResponseAndLogRequest(HttpStatusCode.NotImplemented, ref actualHttpRequestCount));
-
-            var client = DeliveryClientFactory.GetMockedDeliveryClientWithProjectId(_guid, _mockHttp);
-
-            A.CallTo(() => client.ResiliencePolicyProvider.Policy)
-                .Returns(Policy.HandleResult<HttpResponseMessage>(result => true).RetryAsync(retryAttempts));
-
-            await Assert.ThrowsAsync<DeliveryException>(async () => await client.GetItemsAsync());
-
-            A.CallTo(() => client.ResiliencePolicyProvider.Policy).MustHaveHappened();
-            Assert.Equal(expectedAttepts, actualHttpRequestCount);
-        }
-
-        [Fact]
-        public async void Retries_WithCustomResilencePolicyAndPolicyDisabled_PolicyIgnored()
-        {
-            int policyRetryAttempts = 2;
-            int expectedAttepts = 1;
-            int actualHttpRequestCount = 0;
-
-            _mockHttp
-                .When($"{_baseUrl}/items")
-                .Respond((request) =>
-                    GetResponseAndLogRequest(HttpStatusCode.NotImplemented, ref actualHttpRequestCount));
-
-            var options = new DeliveryOptions()
-            {
-                ProjectId = _guid.ToString(),
-                EnableResilienceLogic = false
-            };
-            var client = DeliveryClientFactory.GetMockedDeliveryClientWithOptions(options, _mockHttp);
-
-            A.CallTo(() => client.ResiliencePolicyProvider.Policy)
-                .Returns(Policy.HandleResult<HttpResponseMessage>(result => true).RetryAsync(policyRetryAttempts));
-
-            await Assert.ThrowsAsync<DeliveryException>(async () => await client.GetItemsAsync());
-            Assert.Equal(expectedAttepts, actualHttpRequestCount);
-        }
-
-        [Fact]
-        public async void Retries_WithCustomResilencePolicyWithMaxRetrySet_PolicyUsedMaxRetryIgnored()
-        {
-            int policyRetryAttempts = 1;
-            int expectedAttepts = policyRetryAttempts + 1;
-            int ignoredRetryAttempt = 3;
-            int actualHttpRequestCount = 0;
-
-            _mockHttp
-                .When($"{_baseUrl}/items")
-                .Respond((request) =>
-                    GetResponseAndLogRequest(HttpStatusCode.NotImplemented, ref actualHttpRequestCount));
-            var options = new DeliveryOptions
-            {
-                ProjectId = _guid.ToString(),
-                MaxRetryAttempts = ignoredRetryAttempt
-            };
-            var client = DeliveryClientFactory.GetMockedDeliveryClientWithOptions(options, _mockHttp);
-
-            A.CallTo(() => client.ResiliencePolicyProvider.Policy)
-                .Returns(Policy.HandleResult<HttpResponseMessage>(result => true).RetryAsync(policyRetryAttempts));
-
-            await Assert.ThrowsAsync<DeliveryException>(async () => await client.GetItemsAsync());
-
-            A.CallTo(() => client.ResiliencePolicyProvider.Policy).MustHaveHappened();
-            Assert.Equal(expectedAttepts, actualHttpRequestCount);
         }
 
         [Fact]
@@ -1063,9 +920,11 @@ namespace Kentico.Kontent.Delivery.Tests
 
             var client = DeliveryClientFactory.GetMockedDeliveryClientWithProjectId(_guid, _mockHttp);
 
-            A.CallTo(() => client.ResiliencePolicyProvider.Policy)
-                .Returns(Policy.HandleResult<HttpResponseMessage>(result => false)
-                    .RetryAsync(client.DeliveryOptions.MaxRetryAttempts));
+            var retryPolicy = A.Fake<IRetryPolicy>();
+            A.CallTo(() => client.RetryPolicyProvider.GetRetryPolicy())
+                .Returns(retryPolicy);
+            A.CallTo(() => retryPolicy.ExecuteAsync(A<Func<Task<HttpResponseMessage>>>._))
+                .ReturnsLazily(c => c.GetArgument<Func<Task<HttpResponseMessage>>>(0)());
 
             await client.GetItemsAsync();
 
@@ -1415,6 +1274,43 @@ namespace Kentico.Kontent.Delivery.Tests
         }
 
         [Fact]
+        public async void RetryPolicy_WithDefaultOptions_Retries()
+        {
+            _mockHttp
+                .When($"{_baseUrl}/items")
+                .Respond((request) => new HttpResponseMessage(HttpStatusCode.RequestTimeout));
+            var client = DeliveryClientFactory.GetMockedDeliveryClientWithProjectId(_guid, _mockHttp);
+            var retryPolicy = A.Fake<IRetryPolicy>();
+            A.CallTo(() => client.RetryPolicyProvider.GetRetryPolicy()).Returns(retryPolicy);
+            A.CallTo(() => retryPolicy.ExecuteAsync(A<Func<Task<HttpResponseMessage>>>._))
+                .ReturnsLazily(c => c.GetArgument<Func<Task<HttpResponseMessage>>>(0)());
+
+            await Assert.ThrowsAsync<DeliveryException>(async () => await client.GetItemsAsync());
+
+            A.CallTo(() => retryPolicy.ExecuteAsync(A<Func<Task<HttpResponseMessage>>>._)).MustHaveHappenedOnceExactly();
+        }
+
+        [Fact]
+        public async void RetryPolicy_Disabled_DoesNotRetry()
+        {
+            _mockHttp
+                .When($"{_baseUrl}/items")
+                .Respond(request => new HttpResponseMessage(HttpStatusCode.RequestTimeout));
+            var options = new DeliveryOptions
+            {
+                ProjectId = _guid.ToString(),
+                EnableRetryPolicy = false
+            };
+            var client = DeliveryClientFactory.GetMockedDeliveryClientWithOptions(options, _mockHttp);
+            var retryPolicy = A.Fake<IRetryPolicy>();
+            A.CallTo(() => client.RetryPolicyProvider.GetRetryPolicy()).Returns(retryPolicy);
+
+            await Assert.ThrowsAsync<DeliveryException>(async () => await client.GetItemsAsync());
+
+            A.CallTo(() => retryPolicy.ExecuteAsync(A<Func<Task<HttpResponseMessage>>>._)).MustNotHaveHappened();
+        }
+
+        [Fact]
         [Trait("Issue", "146")]
         public async void InitializeMultipleInlineContentItemsResolvers()
         {
@@ -1455,9 +1351,11 @@ namespace Kentico.Kontent.Delivery.Tests
                 modelProvider,
                 typeProvider: customTypeProvider);
 
-            A.CallTo(() => client.ResiliencePolicyProvider.Policy)
-                .Returns(Policy.HandleResult<HttpResponseMessage>(result => true)
-                    .RetryAsync(client.DeliveryOptions.MaxRetryAttempts));
+            var retryPolicy = A.Fake<IRetryPolicy>();
+            A.CallTo(() => client.RetryPolicyProvider.GetRetryPolicy())
+                .Returns(retryPolicy);
+            A.CallTo(() => retryPolicy.ExecuteAsync(A<Func<Task<HttpResponseMessage>>>._))
+                .ReturnsLazily(c => c.GetArgument<Func<Task<HttpResponseMessage>>>(0)());
 
             return client;
         }
@@ -1468,9 +1366,11 @@ namespace Kentico.Kontent.Delivery.Tests
             var modelProvider = new ModelProvider(null, null, _mockTypeProvider, mapper);
             var client = DeliveryClientFactory.GetMockedDeliveryClientWithProjectId(_guid, handler, modelProvider);
 
-            A.CallTo(() => client.ResiliencePolicyProvider.Policy)
-                .Returns(Policy.HandleResult<HttpResponseMessage>(result => true)
-                    .RetryAsync(client.DeliveryOptions.MaxRetryAttempts));
+            var retryPolicy = A.Fake<IRetryPolicy>();
+            A.CallTo(() => client.RetryPolicyProvider.GetRetryPolicy())
+                .Returns(retryPolicy);
+            A.CallTo(() => retryPolicy.ExecuteAsync(A<Func<Task<HttpResponseMessage>>>._))
+                .ReturnsLazily(c => c.GetArgument<Func<Task<HttpResponseMessage>>>(0)());
 
             return client;
         }

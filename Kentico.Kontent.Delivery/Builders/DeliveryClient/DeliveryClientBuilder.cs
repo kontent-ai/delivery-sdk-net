@@ -5,30 +5,30 @@ using Kentico.Kontent.Delivery.Builders.DeliveryOptions;
 namespace Kentico.Kontent.Delivery
 {
     /// <summary>
-    /// A builder class for creating an instance of the <see cref="IDeliveryClient"/> interface.
+    /// A builder of <see cref="IDeliveryClient"/> instances.
     /// </summary>
     public sealed class DeliveryClientBuilder
     {
         private static IDeliveryClientBuilder Builder => new DeliveryClientBuilderImplementation();
 
         /// <summary>
-        /// Mandatory step of the <see cref="DeliveryClientBuilder"/> for specifying Kentico Kontent project id.
+        /// Use project identifier.
         /// </summary>
-        /// <param name="projectId">The identifier of the Kentico Kontent project.</param>
+        /// <param name="projectId">The identifier of a Kentico Kontent project.</param>
         public static IOptionalClientSetup WithProjectId(string projectId)
             => Builder.BuildWithProjectId(projectId);
 
         /// <summary>
-        /// Mandatory step of the <see cref="DeliveryClientBuilder"/> for specifying Kentico Kontent project id.
+        /// Use project identifier.
         /// </summary>
-        /// <param name="projectId">The identifier of the Kentico Kontent project.</param>
+        /// <param name="projectId">The identifier of a Kentico Kontent project.</param>
         public static IOptionalClientSetup WithProjectId(Guid projectId)
             => Builder.BuildWithProjectId(projectId);
 
         /// <summary>
-        /// Mandatory step of the <see cref="DeliveryClientBuilder"/> for specifying Kentico Kontent project settings.
+        /// Use additional configuration.
         /// </summary>
-        /// <param name="buildDeliveryOptions">A function that is provided with an instance of <see cref="DeliveryOptionsBuilder"/> and expected to return a valid instance of <see cref="DeliveryOptions"/>.</param>
+        /// <param name="buildDeliveryOptions">A delegate that creates an instance of the <see cref="DeliveryOptions"/> using the specified <see cref="DeliveryOptionsBuilder"/>.</param>
         public static IOptionalClientSetup WithOptions(Func<IDeliveryOptionsBuilder, DeliveryOptions> buildDeliveryOptions)
             => Builder.BuildWithDeliveryOptions(buildDeliveryOptions);
     }

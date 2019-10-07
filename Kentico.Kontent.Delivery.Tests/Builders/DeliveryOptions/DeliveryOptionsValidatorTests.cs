@@ -8,15 +8,75 @@ namespace Kentico.Kontent.Delivery.Tests.Builders.DeliveryOptions
         private readonly Guid _guid = Guid.NewGuid();
         
         [Fact]
-        public void ValidateOptionsWithNegativeMaxRetryAttempts()
+        public void ValidateRetryOptions_NegativeDeltaBackoff_Throws()
         {
             var deliveryOptions = new Delivery.DeliveryOptions
             {
                 ProjectId = _guid.ToString(),
-                MaxRetryAttempts = -10
+                DefaultRetryPolicyOptions = new DefaultRetryPolicyOptions
+                {
+                    DeltaBackoff = TimeSpan.FromSeconds(-1)
+                }
             };
 
             Assert.Throws<ArgumentException>(() => deliveryOptions.Validate());
+        }
+
+        [Fact]
+        public void ValidateRetryOptions_ZeroDeltaBackoff_Throws()
+        {
+            var deliveryOptions = new Delivery.DeliveryOptions
+            {
+                ProjectId = _guid.ToString(),
+                DefaultRetryPolicyOptions = new DefaultRetryPolicyOptions
+                {
+                    DeltaBackoff = TimeSpan.Zero
+                }
+            };
+
+            Assert.Throws<ArgumentException>(() => deliveryOptions.Validate());
+        }
+
+        [Fact]
+        public void ValidateRetryOptions_NegativeMaxCumulativeWaitTime_Throws()
+        {
+            var deliveryOptions = new Delivery.DeliveryOptions
+            {
+                ProjectId = _guid.ToString(),
+                DefaultRetryPolicyOptions = new DefaultRetryPolicyOptions
+                {
+                    MaxCumulativeWaitTime = TimeSpan.FromSeconds(-1)
+                }
+            };
+
+            Assert.Throws<ArgumentException>(() => deliveryOptions.Validate());
+        }
+
+        [Fact]
+        public void ValidateRetryOptions_ZeroMaxCumulativeWaitTime_Throws()
+        {
+            var deliveryOptions = new Delivery.DeliveryOptions
+            {
+                ProjectId = _guid.ToString(),
+                DefaultRetryPolicyOptions = new DefaultRetryPolicyOptions
+                {
+                    MaxCumulativeWaitTime = TimeSpan.Zero
+                }
+            };
+
+            Assert.Throws<ArgumentException>(() => deliveryOptions.Validate());
+        }
+
+        [Fact]
+        public void ValidateNullRetryOptions_Throws()
+        {
+            var deliveryOptions = new Delivery.DeliveryOptions
+            {
+                ProjectId = _guid.ToString(),
+                DefaultRetryPolicyOptions = null
+            };
+
+            Assert.Throws<ArgumentNullException>(() => deliveryOptions.Validate());
         }
 
         [Fact]
@@ -62,7 +122,7 @@ namespace Kentico.Kontent.Delivery.Tests.Builders.DeliveryOptions
                 .CreateInstance()
                 .WithProjectId(_guid);
 
-            Assert.Throws<ArgumentNullException>(() => deliveryOptionsStep.UseSecuredProductionApi(null));
+            Assert.Throws<ArgumentNullException>(() => deliveryOptionsStep.UseProductionApi(null));
         }
 
         [Fact]
@@ -86,8 +146,8 @@ namespace Kentico.Kontent.Delivery.Tests.Builders.DeliveryOptions
                 ProjectId = _guid.ToString(),
                 UsePreviewApi = true,
                 PreviewApiKey = previewApiKey,
-                UseSecuredProductionApi = true,
-                SecuredProductionApiKey = productionApiKey
+                UseSecureAccess = true,
+                SecureAccessApiKey = productionApiKey
             };
 
             Assert.Throws<InvalidOperationException>(() => deliveryOptions.Validate());
@@ -111,7 +171,7 @@ namespace Kentico.Kontent.Delivery.Tests.Builders.DeliveryOptions
             var deliveryOptions = new Delivery.DeliveryOptions
             {
                 ProjectId = _guid.ToString(),
-                UseSecuredProductionApi = true
+                UseSecureAccess = true
             };
 
             Assert.Throws<InvalidOperationException>(() => deliveryOptions.Validate());
@@ -126,7 +186,7 @@ namespace Kentico.Kontent.Delivery.Tests.Builders.DeliveryOptions
             var deliveryOptionsSteps = DeliveryOptionsBuilder
                 .CreateInstance()
                 .WithProjectId(_guid)
-                .UseProductionApi;
+                .UseProductionApi();
 
             Assert.Throws<ArgumentException>(() => deliveryOptionsSteps.WithCustomEndpoint(endpoint));
         }
@@ -137,7 +197,7 @@ namespace Kentico.Kontent.Delivery.Tests.Builders.DeliveryOptions
             var deliveryOptionsSteps = DeliveryOptionsBuilder
                 .CreateInstance()
                 .WithProjectId(_guid)
-                .UseProductionApi;
+                .UseProductionApi();
 
             Assert.Throws<ArgumentNullException>(() => deliveryOptionsSteps.WithCustomEndpoint((Uri)null));
         }
@@ -149,7 +209,7 @@ namespace Kentico.Kontent.Delivery.Tests.Builders.DeliveryOptions
             var deliveryOptionsSteps = DeliveryOptionsBuilder
                 .CreateInstance()
                 .WithProjectId(_guid)
-                .UseProductionApi;
+                .UseProductionApi();
 
             Assert.Throws<ArgumentException>(() => deliveryOptionsSteps.WithCustomEndpoint(incorrectSchemeUri));
         }
@@ -161,7 +221,7 @@ namespace Kentico.Kontent.Delivery.Tests.Builders.DeliveryOptions
             var deliveryOptionsSteps = DeliveryOptionsBuilder
                 .CreateInstance()
                 .WithProjectId(_guid)
-                .UseProductionApi;
+                .UseProductionApi();
 
             Assert.Throws<ArgumentException>(() => deliveryOptionsSteps.WithCustomEndpoint(relativeUri));
         }

@@ -1,7 +1,7 @@
 ﻿using System.Linq;
 using Kentico.Kontent.Delivery.ContentLinks;
 using Kentico.Kontent.Delivery.InlineContentItems;
-using Kentico.Kontent.Delivery.ResiliencePolicy;
+using Kentico.Kontent.Delivery.RetryPolicy;
 using Kentico.Kontent.Delivery.StrongTyping;
 using Xunit;
 
@@ -31,7 +31,7 @@ namespace Kentico.Kontent.Delivery.Tests.DependencyInjectionFrameworks
             Assert.IsType<TypeProvider>(client.TypeProvider);
             Assert.IsType<DefaultContentLinkUrlResolver>(client.ContentLinkUrlResolver);
             Assert.IsType<InlineContentItemsProcessor>(client.InlineContentItemsProcessor);
-            Assert.IsType<DefaultResiliencePolicyProvider>(client.ResiliencePolicyProvider);
+            Assert.IsType<DefaultRetryPolicyProvider>(client.RetryPolicyProvider);
             Assert.IsType<DeliveryOptions>(client.DeliveryOptions);
             Assert.IsType<TCustomModelProvider>(client.ModelProvider);
         }
