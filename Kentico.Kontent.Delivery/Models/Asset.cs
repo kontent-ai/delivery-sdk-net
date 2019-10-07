@@ -37,31 +37,31 @@ namespace Kentico.Kontent.Delivery
 		[JsonProperty("url")]
 		public string Url { get; }
 
-        /// <summary>
-        /// Gets the width of the asset
-        /// </summary>
-        [JsonProperty("width")]
-        public int Width { get; set; }
+		/// <summary>
+		/// Gets the width of the asset
+		/// </summary>
+		[JsonProperty("width")]
+		public int Width { get; set; }
 
-        /// <summary>
-        /// Gets the height of the asset
-        /// </summary>
-        [JsonProperty("height")]
-        public int Height { get; set; }
+		/// <summary>
+		/// Gets the height of the asset
+		/// </summary>
+		[JsonProperty("height")]
+		public int Height { get; set; }
 
-        /// <summary>
-        /// Initializes a new instance of the <see cref="Asset"/> class.
-        /// </summary>
-        [JsonConstructor]
+		/// <summary>
+		/// Initializes a new instance of the <see cref="Asset"/> class.
+		/// </summary>
+		[JsonConstructor]
 		internal Asset(string name, string type, int size, string url, string description, int width, int height)
 		{
 			Name = name;
 			Type = type;
 			Size = size;
 			Url = url;
-		    Description = description;
-            Width = width;
-            Height = height;
+			Description = description;
+			Width = width;
+		    	Height = height;
 		}
 	}
 }
