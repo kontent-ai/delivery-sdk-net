@@ -8,7 +8,7 @@
         /// <summary>
         /// Gets the continuation token to be used for continuing enumeration of the Kentico Kontent Delivery API.
         /// </summary>
-        internal string ContinuationToken => _response.ContinuationToken;
+        public string ContinuationToken => _response.ContinuationToken;
 
         /// <summary>
         /// Initializes a new instance of the <see cref="FeedResponse"/> class.
