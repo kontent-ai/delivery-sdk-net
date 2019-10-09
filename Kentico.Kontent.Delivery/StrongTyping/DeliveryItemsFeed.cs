@@ -7,7 +7,7 @@ namespace Kentico.Kontent.Delivery
     /// Represents a feed that can be used to retrieve strongly typed content items from Kentico Kontent Delivery API in smaller batches.
     /// </summary>
     /// <typeparam name="T">The type of content items in the feed.</typeparam>
-    public class DeliveryItemsFeed<T>
+    public class DeliveryItemsFeed<T> : IDeliveryItemsFeed<T>
     {
         internal delegate Task<DeliveryItemsFeedResponse<T>> GetFeedResponse(string continuationToken);
 
