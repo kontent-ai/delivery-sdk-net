@@ -219,7 +219,7 @@ namespace Kentico.Kontent.Delivery
         /// </summary>
         /// <param name="parameters">An array of query parameters, for example, for filtering or ordering.</param>
         /// <returns>The <see cref="DeliveryItemsFeed"/> instance that can be used to enumerate through content items. If no query parameters are specified, all content items are enumerated.</returns>
-        public DeliveryItemsFeed GetItemsFeed(params IQueryParameter[] parameters)
+        public IDeliveryItemsFeed GetItemsFeed(params IQueryParameter[] parameters)
         {
             return GetItemsFeed((IEnumerable<IQueryParameter>) parameters);
         }
@@ -229,7 +229,7 @@ namespace Kentico.Kontent.Delivery
         /// </summary>
         /// <param name="parameters">A collection of query parameters, for example, for filtering or ordering.</param>
         /// <returns>The <see cref="DeliveryItemsFeed"/> instance that can be used to enumerate through content items. If no query parameters are specified, all content items are enumerated.</returns>
-        public DeliveryItemsFeed GetItemsFeed(IEnumerable<IQueryParameter> parameters)
+        public IDeliveryItemsFeed GetItemsFeed(IEnumerable<IQueryParameter> parameters)
         {
             ValidateItemsFeedParameters(parameters);
             var endpointUrl = UrlBuilder.GetItemsFeedUrl(parameters);
@@ -248,7 +248,7 @@ namespace Kentico.Kontent.Delivery
         /// <typeparam name="T">Type of the model. (Or <see cref="object"/> if the return type is not yet known.)</typeparam>
         /// <param name="parameters">An array of query parameters, for example, for filtering or ordering.</param>
         /// <returns>The <see cref="DeliveryItemsFeed{T}"/> instance that can be used to enumerate through content items. If no query parameters are specified, all content items are enumerated.</returns>
-        public DeliveryItemsFeed<T> GetItemsFeed<T>(params IQueryParameter[] parameters)
+        public IDeliveryItemsFeed<T> GetItemsFeed<T>(params IQueryParameter[] parameters)
         {
             return GetItemsFeed<T>((IEnumerable<IQueryParameter>) parameters);
         }
@@ -259,7 +259,7 @@ namespace Kentico.Kontent.Delivery
         /// <typeparam name="T">Type of the model. (Or <see cref="object"/> if the return type is not yet known.)</typeparam>
         /// <param name="parameters">A collection of query parameters, for example, for filtering or ordering.</param>
         /// <returns>The <see cref="DeliveryItemsFeed{T}"/> instance that can be used to enumerate through content items. If no query parameters are specified, all content items are enumerated.</returns>
-        public DeliveryItemsFeed<T> GetItemsFeed<T>(IEnumerable<IQueryParameter> parameters)
+        public IDeliveryItemsFeed<T> GetItemsFeed<T>(IEnumerable<IQueryParameter> parameters)
         {
             var enhancedParameters = ExtractParameters<T>(parameters).ToList();
             ValidateItemsFeedParameters(enhancedParameters);
