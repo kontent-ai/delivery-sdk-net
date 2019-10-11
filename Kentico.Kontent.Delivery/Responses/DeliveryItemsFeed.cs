@@ -6,7 +6,7 @@ namespace Kentico.Kontent.Delivery
     /// <summary>
     /// Represents a feed that can be used to retrieve content items from Kentico Kontent Delivery API in smaller batches.
     /// </summary>
-    public class DeliveryItemsFeed
+    public class DeliveryItemsFeed : IDeliveryItemsFeed
     {
         internal delegate Task<DeliveryItemsFeedResponse> GetFeedResponse(string continuationToken);
 
