@@ -16,7 +16,7 @@ namespace Kentico.Kontent.Delivery
         public static IDeliveryOptionsBuilder CreateInstance()
             => new DeliveryOptionsBuilder();
 
-        private DeliveryOptionsBuilder() {}
+        private DeliveryOptionsBuilder() { }
 
         IDeliveryApiConfiguration IDeliveryOptionsBuilder.WithProjectId(string projectId)
         {
@@ -37,6 +37,13 @@ namespace Kentico.Kontent.Delivery
         IOptionalDeliveryConfiguration IOptionalDeliveryConfiguration.WaitForLoadingNewContent()
         {
             _deliveryOptions.WaitForLoadingNewContent = true;
+
+            return this;
+        }
+
+        IOptionalDeliveryConfiguration IOptionalDeliveryConfiguration.IncludeTotalCount()
+        {
+            _deliveryOptions.IncludeTotalCount = true;
 
             return this;
         }

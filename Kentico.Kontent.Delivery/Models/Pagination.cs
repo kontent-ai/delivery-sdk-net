@@ -23,6 +23,11 @@ namespace Kentico.Kontent.Delivery
         public int Count { get; }
 
         /// <summary>
+        /// Gets the total number of items for query.
+        /// </summary>
+        public int? TotalCount { get; }
+
+        /// <summary>
         /// Gets the URL of the next page.
         /// </summary>
         /// <remarks>The URL of the next page, if available; otherwise, <see cref="string.Empty"/>.</remarks>
@@ -32,11 +37,12 @@ namespace Kentico.Kontent.Delivery
         /// Initializes a new instance of the <see cref="Pagination"/> class with information from a response.
         /// </summary>
         [JsonConstructor]
-        internal Pagination(int skip, int limit, int count, string next_page)
+        internal Pagination(int skip, int limit, int count, int? total_count, string next_page)
         {
             Skip = skip;
             Limit = limit;
             Count = count;
+            TotalCount = total_count;
             NextPageUrl = next_page;
         }
     }

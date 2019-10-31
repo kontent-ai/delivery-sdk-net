@@ -412,10 +412,10 @@ namespace Kentico.Kontent.Delivery.Tests
         public async void QueryParameters()
         {
 
-            string url = $"{_baseUrl}/items?elements.personas%5Ball%5D=barista%2Ccoffee%2Cblogger&elements.personas%5Bany%5D=barista%2Ccoffee%2Cblogger&system.sitemap_locations%5Bcontains%5D=cafes&elements.product_name=Hario%20V60&elements.price%5Bgt%5D=1000&elements.price%5Bgte%5D=50&system.type%5Bin%5D=cafe%2Ccoffee&elements.price%5Blt%5D=10&elements.price%5Blte%5D=4&elements.country%5Brange%5D=Guatemala%2CNicaragua&depth=2&elements=price%2Cproduct_name&limit=10&order=elements.price%5Bdesc%5D&skip=2&language=en";
+            string url = $"{_baseUrl}/items?elements.personas%5Ball%5D=barista%2Ccoffee%2Cblogger&elements.personas%5Bany%5D=barista%2Ccoffee%2Cblogger&system.sitemap_locations%5Bcontains%5D=cafes&elements.product_name=Hario%20V60&elements.price%5Bgt%5D=1000&elements.price%5Bgte%5D=50&system.type%5Bin%5D=cafe%2Ccoffee&elements.price%5Blt%5D=10&elements.price%5Blte%5D=4&elements.country%5Brange%5D=Guatemala%2CNicaragua&depth=2&elements=price%2Cproduct_name&limit=10&order=elements.price%5Bdesc%5D&skip=2&language=en&includeTotalCount";
             _mockHttp
                 .When($"{url}")
-                .Respond("application/json", " { 'items': [],'modular_content': {},'pagination': {'skip': 2,'limit': 10,'count': 0,'next_page': ''}}");
+                .Respond("application/json", " { 'items': [],'modular_content': {},'pagination': {'skip': 2,'limit': 10,'count': 0, 'total_count': 0, 'next_page': ''}}");
 
             var client = InitializeDeliveryClientWithACustomTypeProvider(_mockHttp);
 
@@ -436,7 +436,8 @@ namespace Kentico.Kontent.Delivery.Tests
                 new LimitParameter(10),
                 new OrderParameter("elements.price", SortOrder.Descending),
                 new SkipParameter(2),
-                new LanguageParameter("en")
+                new LanguageParameter("en"),
+                new IncludeTotalCountParameter()
            };
 
             var response = await client.GetItemsAsync(parameters);

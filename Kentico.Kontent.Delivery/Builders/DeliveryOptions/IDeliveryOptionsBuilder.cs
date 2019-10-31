@@ -59,7 +59,15 @@ namespace Kentico.Kontent.Delivery.Builders.DeliveryOptions
         /// However, the request might take longer than usual to complete.
         /// </summary>
         IOptionalDeliveryConfiguration WaitForLoadingNewContent();
-
+        
+        /// <summary>
+        /// Provide information on how many items are there in total for a query to items endpoint.
+        /// This can be used to determine total number of pages that can be retrieved.
+        /// We don't recommend to enable this setting for all requests as this might increase response time.
+        /// </summary>
+        /// <returns></returns>
+        IOptionalDeliveryConfiguration IncludeTotalCount();
+        
         /// <summary>
         /// Change configuration of the default retry policy.
         /// </summary>
