@@ -59,7 +59,7 @@ IDeliveryClient client = DeliveryClientBuilder
     .Build();
 ```
 
-For advanced configuration options, see [using dependency injection and ASP.NET Core Configuration API](https://github.com/Kentico/delivery-sdk-net/wiki/Using-the-ASP.NET-Core-Configuration-API-and-DI-to-Instantiate-the-DeliveryClient).
+For advanced configuration options, see [using dependency injection and ASP.NET Core Configuration API](https://github.com/Kentico/kontent-delivery-sdk-net/wiki/Instantiating-DeliveryClient-with-Configuration-API-and-DI-in-ASP.NET-Core-MVC-apps).
 
 ## Basic querying
 
