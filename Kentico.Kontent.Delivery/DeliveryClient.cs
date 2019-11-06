@@ -480,12 +480,12 @@ namespace Kentico.Kontent.Delivery
                 if (retryPolicy != null)
                 {
                     var response = await retryPolicy.ExecuteAsync(() => SendHttpMessage(endpointUrl, continuationToken));
-                    return await GetResponseContent(response);
+                    return await GetResponseContent(response, endpointUrl);
                 }
             }
 
             // Omit using the resilience logic completely.
-            return await GetResponseContent(await SendHttpMessage(endpointUrl, continuationToken));
+            return await GetResponseContent(await SendHttpMessage(endpointUrl, continuationToken), endpointUrl);
         }
 
         private Task<HttpResponseMessage> SendHttpMessage(string endpointUrl, string continuationToken = null)
@@ -527,15 +527,16 @@ namespace Kentico.Kontent.Delivery
             return DeliveryOptions.UsePreviewApi && !string.IsNullOrEmpty(DeliveryOptions.PreviewApiKey);
         }
 
-        private async Task<ApiResponse> GetResponseContent(HttpResponseMessage httpResponseMessage)
+        private async Task<ApiResponse> GetResponseContent(HttpResponseMessage httpResponseMessage, string fallbackEndpointUrl)
         {
             if (httpResponseMessage?.StatusCode == HttpStatusCode.OK)
             {
                 var content = JObject.Parse(await httpResponseMessage.Content?.ReadAsStringAsync());
                 var hasStaleContent = HasStaleContent(httpResponseMessage);
                 var continuationToken = httpResponseMessage.Headers.GetContinuationHeader();
+                var requestUri = httpResponseMessage.RequestMessage?.RequestUri?.AbsoluteUri ?? fallbackEndpointUrl;
 
-                return new ApiResponse(content, hasStaleContent, continuationToken, httpResponseMessage.RequestMessage.RequestUri.AbsoluteUri);
+                return new ApiResponse(content, hasStaleContent, continuationToken, requestUri);
             }
 
             string faultContent = null;
