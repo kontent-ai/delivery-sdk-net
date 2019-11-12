@@ -49,7 +49,7 @@ namespace Kentico.Kontent.Delivery.Tests.QueryParameters
         {
             var existingParams = new List<IQueryParameter>() { new SkipParameter(15) };
 
-            var enhancedParams = new List<IQueryParameter>(_client.ExtractParameters<TypeWithContentTypeCodename>(existingParams));
+            var enhancedParams = new List<IQueryParameter>(_client.EnsureContentTypeFilter<TypeWithContentTypeCodename>(existingParams));
 
             Assert.Equal(2, enhancedParams.Count);
             Assert.True(enhancedParams.Find(x => x.GetQueryStringParameter() == $"system.type={CONTENT_TYPE_CODENAME}") != null);
@@ -58,7 +58,7 @@ namespace Kentico.Kontent.Delivery.Tests.QueryParameters
         [Fact]
         public void ExtractParameters_WhenGivenTypeWithCodename_CreatesNewParams()
         {
-            var enhancedParams = new List<IQueryParameter>(_client.ExtractParameters<TypeWithContentTypeCodename>());
+            var enhancedParams = new List<IQueryParameter>(_client.EnsureContentTypeFilter<TypeWithContentTypeCodename>());
 
             Assert.Single(enhancedParams);
             Assert.True(enhancedParams.Find(x => x.GetQueryStringParameter() == $"system.type={CONTENT_TYPE_CODENAME}") != null);
@@ -67,7 +67,7 @@ namespace Kentico.Kontent.Delivery.Tests.QueryParameters
         [Fact]
         public void ExtractParameters_WhenGivenTypeWithoutCodenameNoParams_CreatesEmptyParams()
         {
-            var enhancedParams = new List<IQueryParameter>(_client.ExtractParameters<TypeWithoutContentTypeCodename>());
+            var enhancedParams = new List<IQueryParameter>(_client.EnsureContentTypeFilter<TypeWithoutContentTypeCodename>());
 
             Assert.Empty(enhancedParams);
         }
@@ -77,7 +77,7 @@ namespace Kentico.Kontent.Delivery.Tests.QueryParameters
         {
             var existingParams = new List<IQueryParameter>() { new SkipParameter(15) };
 
-            var enhancedParams = new List<IQueryParameter>(_client.ExtractParameters<TypeWithoutContentTypeCodename>(existingParams));
+            var enhancedParams = new List<IQueryParameter>(_client.EnsureContentTypeFilter<TypeWithoutContentTypeCodename>(existingParams));
 
             Assert.Single(enhancedParams);
             Assert.True(enhancedParams.Find(x => x.GetQueryStringParameter() == $"system.type=TypeWithoutContentTypeCodename") == null);
@@ -88,7 +88,7 @@ namespace Kentico.Kontent.Delivery.Tests.QueryParameters
         {
             var existingParams = new List<IQueryParameter>() { new EqualsFilter("system.type", CONTENT_TYPE_CODENAME) };
 
-            var enhancedParams = new List<IQueryParameter>(_client.ExtractParameters<TypeWithContentTypeCodename>(existingParams));
+            var enhancedParams = new List<IQueryParameter>(_client.EnsureContentTypeFilter<TypeWithContentTypeCodename>(existingParams));
 
             Assert.Single(enhancedParams);
             Assert.True(enhancedParams.Find(x => x.GetQueryStringParameter() == $"system.type={CONTENT_TYPE_CODENAME}") != null);
