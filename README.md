@@ -104,6 +104,21 @@ DeliveryItemListingResponse response = await client.GetItemsAsync(
 );
 ```
 
+### Pagination
+
+If you need to build a paging navigation for your items, you might need to retrieve the total number of items matching the search criteria. This can be achieved by adding `IncludeTotalCountParameter` to the request parameters. With the parameter included the `Pagination` section of the multiple content items response will contain `TotalCount` property. The parameter can also be configured globally by calling method `IncludeTotalCount()` on `IDeliveryOptionsBuilder`. This results in adding `IncludeTotalCountParameter` automatically to each request.
+
+```csharp
+// Retrieves the second page of items including total number of items matching the search criteria
+DeliveryItemListingResponse response = await client.GetItemsAsync(
+    new LanguageParameter("es-ES"),
+    new EqualsFilter("system.type", "brewer"),
+    new OrderParameter("elements.product_name"),
+    new SkipParameter(5),
+    new LimitParameter(5),
+    new IncludeTotalCountParameter(),
+```
+
 ### Strongly-typed responses
 
 The `IDeliveryClient` also supports retrieving of strongly-typed models.
