@@ -93,13 +93,7 @@ namespace Kentico.Kontent.Delivery
         /// <returns>The <see cref="JObject"/> instance that represents the content items. If no query parameters are specified, all content items are returned.</returns>
         public async Task<JObject> GetItemsJsonAsync(params string[] parameters)
         {
-            var parameterList = parameters?.ToList() ?? new List<string>();
-            if (DeliveryOptions.IncludeTotalCount && !parameterList.Contains(new IncludeTotalCountParameter().GetQueryStringParameter()))
-            {
-                parameterList.Add(new IncludeTotalCountParameter().GetQueryStringParameter());
-            }
-
-            var endpointUrl = UrlBuilder.GetItemsUrl(parameterList.ToArray());
+            var endpointUrl = UrlBuilder.GetItemsUrl(parameters);
 
             return (await GetDeliverResponseAsync(endpointUrl)).Content;
         }
@@ -188,13 +182,7 @@ namespace Kentico.Kontent.Delivery
         /// <returns>The <see cref="DeliveryItemListingResponse"/> instance that contains the content items. If no query parameters are specified, all content items are returned.</returns>
         public async Task<DeliveryItemListingResponse> GetItemsAsync(IEnumerable<IQueryParameter> parameters)
         {
-            var parameterList = parameters?.ToList() ?? new List<IQueryParameter>();
-            if (DeliveryOptions.IncludeTotalCount && !parameterList.Any(x => x is IncludeTotalCountParameter))
-            {
-                parameterList.Add(new IncludeTotalCountParameter());
-            }
-
-            var endpointUrl = UrlBuilder.GetItemsUrl(parameterList);
+            var endpointUrl = UrlBuilder.GetItemsUrl(parameters);
             var response = await GetDeliverResponseAsync(endpointUrl);
 
             return new DeliveryItemListingResponse(response, ModelProvider, ContentLinkUrlResolver);
@@ -220,10 +208,6 @@ namespace Kentico.Kontent.Delivery
         public async Task<DeliveryItemListingResponse<T>> GetItemsAsync<T>(IEnumerable<IQueryParameter> parameters)
         {
             var enhancedParameters = ExtractParameters<T>(parameters).ToList();
-            if (DeliveryOptions.IncludeTotalCount && !enhancedParameters.Any(x => x is IncludeTotalCountParameter))
-            {
-                enhancedParameters.Add(new IncludeTotalCountParameter());
-            }
             var endpointUrl = UrlBuilder.GetItemsUrl(enhancedParameters);
             var response = await GetDeliverResponseAsync(endpointUrl);
 

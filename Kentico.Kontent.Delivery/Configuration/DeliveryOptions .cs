@@ -63,8 +63,8 @@
         public DefaultRetryPolicyOptions DefaultRetryPolicyOptions { get; set; } = new DefaultRetryPolicyOptions();
 
         /// <summary>
-        /// Gets or sets a value that determines if the client provides total count for each query to items.
-        /// This can also be enabled on per request basis by query parameter <see cref="IncludeTotalCountParameter"/>.
+        /// Gets or sets a value that determines if the client includes the total number of items matching the search criteria in response.
+        /// This behavior can also be enabled for individual requests with the <see cref="IncludeTotalCountParameter"/>.
         /// </summary>
         public bool IncludeTotalCount { get; set; }
     }

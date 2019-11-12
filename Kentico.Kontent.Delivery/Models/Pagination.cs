@@ -23,7 +23,7 @@ namespace Kentico.Kontent.Delivery
         public int Count { get; }
 
         /// <summary>
-        /// Gets the total number of items for query.
+        /// Gets the total number of items matching the search criteria.
         /// </summary>
         public int? TotalCount { get; }
 
