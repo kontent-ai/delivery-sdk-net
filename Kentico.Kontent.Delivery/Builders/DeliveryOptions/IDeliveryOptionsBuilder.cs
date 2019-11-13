@@ -61,6 +61,13 @@ namespace Kentico.Kontent.Delivery.Builders.DeliveryOptions
         IOptionalDeliveryConfiguration WaitForLoadingNewContent();
 
         /// <summary>
+        /// Include the total number of items matching the search criteria in the response.
+        /// This behavior can also be enabled for individual requests with the <see cref="IncludeTotalCountParameter"/>.
+        /// Please note that using this option might increase the response time.
+        /// </summary>
+        IOptionalDeliveryConfiguration IncludeTotalCount();
+        
+        /// <summary>
         /// Change configuration of the default retry policy.
         /// </summary>
         /// <param name="retryPolicyOptions">Configuration of the default retry policy.</param>

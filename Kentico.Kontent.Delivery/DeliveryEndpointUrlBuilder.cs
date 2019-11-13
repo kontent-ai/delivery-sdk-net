@@ -35,12 +35,14 @@ namespace Kentico.Kontent.Delivery
 
         public string GetItemsUrl(string[] parameters)
         {
-            return GetUrl(UrlTemplateItems, parameters);
+            var enrichedParameters = EnrichParameters(parameters).ToArray();
+            return GetUrl(UrlTemplateItems, enrichedParameters);
         }
 
         public string GetItemsUrl(IEnumerable<IQueryParameter> parameters)
         {
-            return GetUrl(UrlTemplateItems, parameters);
+            var updatedParameters = EnrichParameters(parameters);
+            return GetUrl(UrlTemplateItems, updatedParameters);
         }
 
         public string GetItemsFeedUrl(string[] parameters)
@@ -137,6 +139,28 @@ namespace Kentico.Kontent.Delivery
             var projectId = Uri.EscapeDataString(_deliveryOptions.ProjectId);
             var hostUrl = string.Format(endpointUrlTemplate, projectId);
             return hostUrl;
+        }
+
+        private IEnumerable<string> EnrichParameters(IEnumerable<string> parameters)
+        {
+            var parameterList = parameters?.ToList() ?? new List<string>();
+            if (_deliveryOptions.IncludeTotalCount && !parameterList.Contains(new IncludeTotalCountParameter().GetQueryStringParameter()))
+            {
+                parameterList.Add(new IncludeTotalCountParameter().GetQueryStringParameter());
+            }
+
+            return parameterList;
+        }
+
+        private IEnumerable<IQueryParameter> EnrichParameters(IEnumerable<IQueryParameter> parameters)
+        {
+            var parameterList = parameters?.ToList() ?? new List<IQueryParameter>();
+            if (_deliveryOptions.IncludeTotalCount && !parameterList.Any(x => x is IncludeTotalCountParameter))
+            {
+                parameterList.Add(new IncludeTotalCountParameter());
+            }
+
+            return parameterList;
         }
     }
 }

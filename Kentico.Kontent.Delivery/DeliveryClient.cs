@@ -207,7 +207,7 @@ namespace Kentico.Kontent.Delivery
         /// <returns>The <see cref="DeliveryItemListingResponse{T}"/> instance that contains the content items. If no query parameters are specified, all content items are returned.</returns>
         public async Task<DeliveryItemListingResponse<T>> GetItemsAsync<T>(IEnumerable<IQueryParameter> parameters)
         {
-            var enhancedParameters = ExtractParameters<T>(parameters);
+            var enhancedParameters = EnsureContentTypeFilter<T>(parameters).ToList();
             var endpointUrl = UrlBuilder.GetItemsUrl(enhancedParameters);
             var response = await GetDeliverResponseAsync(endpointUrl);
 
@@ -261,7 +261,7 @@ namespace Kentico.Kontent.Delivery
         /// <returns>The <see cref="DeliveryItemsFeed{T}"/> instance that can be used to enumerate through content items. If no query parameters are specified, all content items are enumerated.</returns>
         public IDeliveryItemsFeed<T> GetItemsFeed<T>(IEnumerable<IQueryParameter> parameters)
         {
-            var enhancedParameters = ExtractParameters<T>(parameters).ToList();
+            var enhancedParameters = EnsureContentTypeFilter<T>(parameters).ToList();
             ValidateItemsFeedParameters(enhancedParameters);
             var endpointUrl = UrlBuilder.GetItemsFeedUrl(enhancedParameters);
             return new DeliveryItemsFeed<T>(GetItemsBatchAsync);
@@ -555,7 +555,7 @@ namespace Kentico.Kontent.Delivery
             return httpResponseMessage.Headers.TryGetValues("X-Stale-Content", out var values) && values.Contains("1", StringComparer.Ordinal);
         }
 
-        internal IEnumerable<IQueryParameter> ExtractParameters<T>(IEnumerable<IQueryParameter> parameters = null)
+        internal IEnumerable<IQueryParameter> EnsureContentTypeFilter<T>(IEnumerable<IQueryParameter> parameters = null)
         {
             var enhancedParameters = parameters != null
                 ? new List<IQueryParameter>(parameters)

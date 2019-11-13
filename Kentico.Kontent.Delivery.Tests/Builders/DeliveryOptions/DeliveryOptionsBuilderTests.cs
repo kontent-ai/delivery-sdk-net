@@ -110,6 +110,19 @@ namespace Kentico.Kontent.Delivery.Tests.Builders.DeliveryOptions
         }
 
         [Fact]
+        public void BuildWithIncludeTotalCount()
+        {
+            var deliveryOptions = DeliveryOptionsBuilder
+                .CreateInstance()
+                .WithProjectId(Guid.NewGuid())
+                .UseProductionApi()
+                .IncludeTotalCount()
+                .Build();
+
+            Assert.True(deliveryOptions.IncludeTotalCount);
+        }
+
+        [Fact]
         public void BuildWithCustomEndpointForPreviewApi()
         {
             const string customEndpoint = "http://www.customPreviewEndpoint.com";
