@@ -41,7 +41,7 @@ namespace Kentico.Kontent.Delivery.Tests.DependencyInjectionFrameworks
                 .BuildSimpleInjectorServiceProvider();
             container.Register<IModelProvider, FakeModelProvider>();
 
-            var resolvedService = container.GetService<IModelProvider>();
+            var resolvedService = container.GetRequiredService<IModelProvider>();
 
             Assert.IsType<FakeModelProvider>(resolvedService);
         }

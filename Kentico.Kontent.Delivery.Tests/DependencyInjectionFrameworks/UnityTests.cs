@@ -14,7 +14,7 @@ namespace Kentico.Kontent.Delivery.Tests.DependencyInjectionFrameworks
                 .GetServiceCollection()
                 .BuildUnityServiceProvider();
 
-            var client = (DeliveryClient)provider.GetService<IDeliveryClient>();
+            var client = (DeliveryClient)provider.GetRequiredService<IDeliveryClient>();
 
             client.AssertDefaultDependencies();
         }
@@ -28,7 +28,7 @@ namespace Kentico.Kontent.Delivery.Tests.DependencyInjectionFrameworks
                 .AddScoped<IModelProvider, FakeModelProvider>()
                 .BuildUnityServiceProvider();
 
-            var client = (DeliveryClient)provider.GetService<IDeliveryClient>();
+            var client = (DeliveryClient)provider.GetRequiredService<IDeliveryClient>();
 
             client.AssertDefaultDependenciesWithModelProviderAndInlineContentItemTypeResolvers<FakeModelProvider>();
         }
