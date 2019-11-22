@@ -33,7 +33,7 @@ To initialize the client, use the `DeliveryClientBuilder` class and provide a [p
 IDeliveryClient client = DeliveryClientBuilder.WithProjectId("<YOUR_PROJECT_ID>").Build();
 ```
 
-You can also provide the project ID and other parameters by passing a function that returns the [`DeliveryOptions`](https://github.com/Kentico/delivery-sdk-net/blob/master/Kentico.Kontent.Delivery/Configuration/DeliveryOptions%20.cs) object to the `DeliveryClientBuilder.WithOptions` method.
+You can also provide the project ID and other parameters by passing a function that returns the [`DeliveryOptions`](https://github.com/Kentico/delivery-sdk-net/blob/master/Kentico.Kontent.Delivery/Configuration/DeliveryOptions.cs) object to the `DeliveryClientBuilder.WithOptions` method.
 
 We recommend creating the `DeliveryOptions` instance by using the `DeliveryOptionsBuilder` class. With the options builder, you can use the following parameters:
 
