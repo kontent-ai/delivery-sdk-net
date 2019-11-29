@@ -8,7 +8,7 @@ dotnet test
 
 $target = '-target:C:\Program Files\dotnet\dotnet.exe'
 $targetArgs = '-targetargs:"test -c:' + $buildConfig + ' --logger:trx;LogFileName=results.trx /p:DebugType=full"' 
-$filter = '-filter:+[Delivery*]*-[*Tests]*'
+$filter = '-filter:+[Kentico.Kontent.Delivery*]*-[*Tests]*'
 $output = '-output:' + $buildFolder + '\coverage.xml'
 $register = if ($ENV:APPVEYOR -eq $true ) { '-register' } else { '-register:user' } # Magical parameter that breaks things
 
