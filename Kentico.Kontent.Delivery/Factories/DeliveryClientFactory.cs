@@ -8,18 +8,29 @@ using System.Text;
 
 namespace Kentico.Kontent.Delivery.Factories
 {
+    /// <summary>
+    /// A factory for <see cref="IDeliveryClient"/>
+    /// </summary>
     public class DeliveryClientFactory : IDeliveryClientFactory
     {
         private readonly IOptionsMonitor<DeliveryClientFactoryOptions> _optionsMonitor;
         private readonly ILogger<DeliveryClientFactory> _logger;
 
+        /// <summary>
+        /// </summary>
+        /// <param name="optionsMonitor">A delivery factory options</param>
+        /// <param name="logger">A logger</param>
         public DeliveryClientFactory(IOptionsMonitor<DeliveryClientFactoryOptions> optionsMonitor, ILogger<DeliveryClientFactory> logger)
         {
             _optionsMonitor = optionsMonitor;
             _logger = logger;
         }
 
-
+        /// <summary>
+        /// Create an IDeliveryClient by configuration name
+        /// </summary>
+        /// <param name="name">A name of <see cref="IDeliveryClient"/> configuration</param>
+        /// <returns></returns>
         public IDeliveryClient CreateDeliveryClient(string name)
         {
             if(name == null)
@@ -28,8 +39,7 @@ namespace Kentico.Kontent.Delivery.Factories
             }
 
             var options = _optionsMonitor.Get(name);
-            //var client = (IDeliveryClient)new EmptyDeliveryClient(); // TODO BAD
-            var client = options.DeliveryClientActions.FirstOrDefault()();
+            var client = options.DeliveryClientActions.FirstOrDefault().Invoke();
             return client;
         }
     }

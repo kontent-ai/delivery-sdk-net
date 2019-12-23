@@ -53,7 +53,6 @@ namespace Microsoft.Extensions.DependencyInjection
             }
 
             services.TryAddSingleton<IDeliveryClientFactory, DeliveryClientFactory>();
-
             services.AddTransient<IConfigureOptions<DeliveryClientFactoryOptions>>(s =>
             {
                 return new ConfigureNamedOptions<DeliveryClientFactoryOptions>(name, options =>
@@ -144,7 +143,7 @@ namespace Microsoft.Extensions.DependencyInjection
             services.TryAddSingleton<IModelProvider, ModelProvider>();
             services.TryAddSingleton<IPropertyMapper, PropertyMapper>();
             services.TryAddSingleton<IRetryPolicyProvider, DefaultRetryPolicyProvider>();
-            services.TryAddSingleton<IDeliveryClient, DeliveryClient>();
+            services.TryAddSingleton<IDeliveryClient, DeliveryClient>();//TODO Registtrovat zaroven s Factory??
 
             return services;
         }

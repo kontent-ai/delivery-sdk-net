@@ -58,7 +58,7 @@ namespace Kentico.Kontent.Delivery.Builders.DeliveryClient
         IOptionalClientSetup IOptionalClientSetup.WithPropertyMapper(IPropertyMapper propertyMapper)
             => RegisterOrThrow(propertyMapper, nameof(propertyMapper));
 
-        IDeliveryClient IDeliveryClientBuild.Build() //TODO TOHLE S FACTORIES NEPUJDE ????
+        IDeliveryClient IDeliveryClientBuild.Build()
         {
             _serviceCollection.AddDeliveryClient(_deliveryOptions);
             var serviceProvider = _serviceCollection.BuildServiceProvider();
