@@ -18,7 +18,7 @@ namespace Kentico.Kontent.Delivery.Factories
 
         /// <summary>
         /// </summary>
-        /// <param name="optionsMonitor">A delivery factory options</param>
+        /// <param name="optionsMonitor">A <see cref="DeliveryClientFactory"/> options</param>
         /// <param name="logger">A logger</param>
         public DeliveryClientFactory(IOptionsMonitor<DeliveryClientFactoryOptions> optionsMonitor, ILogger<DeliveryClientFactory> logger)
         {
@@ -27,7 +27,7 @@ namespace Kentico.Kontent.Delivery.Factories
         }
 
         /// <summary>
-        /// Create an IDeliveryClient by configuration name
+        /// Create the IDeliveryClient by configuration name
         /// </summary>
         /// <param name="name">A name of <see cref="IDeliveryClient"/> configuration</param>
         /// <returns></returns>
@@ -39,7 +39,7 @@ namespace Kentico.Kontent.Delivery.Factories
             }
 
             var options = _optionsMonitor.Get(name);
-            var client = options.DeliveryClientActions.FirstOrDefault().Invoke();
+            var client = options.DeliveryClientActions.FirstOrDefault()?.Invoke();
             return client;
         }
     }
