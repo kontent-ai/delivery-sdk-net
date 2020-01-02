@@ -42,7 +42,7 @@ namespace Microsoft.Extensions.DependencyInjection
         /// Adds a delegate that will be used to configure a named <see cref="IDeliveryClient"/>
         /// </summary>
         /// <param name="services">A <see cref="ServiceCollection"/> instance for registering and resolving dependencies.</param>
-        /// <param name="name">The name of dne client configuration</param>
+        /// <param name="name">The name of the client configuration</param>
         /// <param name="configureDeliveryClient">A delegate that is used to configure an <see cref="IDeliveryClient"/>.</param>
         /// <returns></returns>
         public static IServiceCollection AddDeliveryClient(this IServiceCollection services, string name, Func<IDeliveryClient> configureDeliveryClient)
@@ -61,7 +61,41 @@ namespace Microsoft.Extensions.DependencyInjection
                 });
 
             });
-            return services.RegisterDependencies();
+            return services.RegisterFactoryDependencies();
+        }
+
+
+        /// <summary>
+        /// Registers a <see cref="IDeliveryClient"/> instance to an <see cref="IDeliveryClient"/> interface in <see cref="ServiceCollection"/>.
+        /// </summary>
+        /// <param name="name">The name of the client configuration</param>
+        /// <param name="services">A <see cref="ServiceCollection"/> instance for registering and resolving dependencies.</param>
+        /// <param name="deliveryOptions">A <see cref="DeliveryOptions"/> instance.  Options themselves are not further validated (see <see cref="DeliveryOptionsValidator.Validate"/>).</param>
+        /// <returns>The <paramref name="services"/> instance with <see cref="IDeliveryClient"/> registered in it</returns>
+        public static IServiceCollection AddDeliveryClient(this IServiceCollection services, string name, DeliveryOptions deliveryOptions)
+        {
+            if (deliveryOptions == null)
+            {
+                throw new ArgumentNullException(nameof(deliveryOptions), "The Delivery options object is not specified.");
+            }
+
+
+            services.TryAddSingleton<IDeliveryClientFactory, DeliveryClientFactory>();
+            services.AddTransient<IConfigureOptions<DeliveryClientFactoryOptions>>(s =>
+            {
+                return new ConfigureNamedOptions<DeliveryClientFactoryOptions>(name, options =>
+                {
+                    options.DeliveryClientActions.Add(() =>
+                    {
+                        var serviceCollection = new ServiceCollection();
+                        serviceCollection.AddDeliveryClient(deliveryOptions);
+                        var serviceProvider = serviceCollection.BuildServiceProvider();
+                        return serviceProvider.GetService<IDeliveryClient>();
+                    });
+                });
+
+            });
+            return services.RegisterFactoryDependencies();
         }
 
         /// <summary>
@@ -133,6 +167,13 @@ namespace Microsoft.Extensions.DependencyInjection
 
         private static IServiceCollection RegisterDependencies(this IServiceCollection services)
         {
+            RegisterFactoryDependencies(services);
+            services.TryAddSingleton<IDeliveryClient, DeliveryClient>();
+            return services;
+        }
+
+        private static IServiceCollection RegisterFactoryDependencies(this IServiceCollection services)
+        {
             services.TryAddSingleton<IContentLinkUrlResolver, DefaultContentLinkUrlResolver>();
             services.TryAddSingleton<ITypeProvider, TypeProvider>();
             services.TryAddSingleton(new HttpClient());
@@ -143,10 +184,10 @@ namespace Microsoft.Extensions.DependencyInjection
             services.TryAddSingleton<IModelProvider, ModelProvider>();
             services.TryAddSingleton<IPropertyMapper, PropertyMapper>();
             services.TryAddSingleton<IRetryPolicyProvider, DefaultRetryPolicyProvider>();
-            services.TryAddSingleton<IDeliveryClient, DeliveryClient>();
 
             return services;
         }
+
 
         // Options here are not validated on purpose, it is left to users to validate them if they want to.
         private static IServiceCollection RegisterOptions(this IServiceCollection services, DeliveryOptions options)
