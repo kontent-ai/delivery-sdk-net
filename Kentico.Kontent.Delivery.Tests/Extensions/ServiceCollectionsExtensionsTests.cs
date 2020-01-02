@@ -5,6 +5,7 @@ using System.IO;
 using System.Linq;
 using System.Net.Http;
 using Kentico.Kontent.Delivery.ContentLinks;
+using Kentico.Kontent.Delivery.Factories;
 using Kentico.Kontent.Delivery.InlineContentItems;
 using Kentico.Kontent.Delivery.RetryPolicy;
 using Kentico.Kontent.Delivery.StrongTyping;
@@ -49,7 +50,8 @@ namespace Kentico.Kontent.Delivery.Tests.Extensions
                 { typeof(IModelProvider), typeof(ModelProvider) },
                 { typeof(IPropertyMapper), typeof(PropertyMapper) },
                 { typeof(IRetryPolicyProvider), typeof(DefaultRetryPolicyProvider) },
-                { typeof(IDeliveryClient), typeof(DeliveryClient) }
+                { typeof(IDeliveryClient), typeof(DeliveryClient) },
+                { typeof(IDeliveryClientFactory), typeof(Kentico.Kontent.Delivery.Factories.DeliveryClientFactory) }
             }
         );
 
