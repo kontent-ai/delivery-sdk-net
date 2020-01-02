@@ -39,7 +39,7 @@ namespace Microsoft.Extensions.DependencyInjection
         }
 
         /// <summary>
-        /// Adds a delegate thaht will we uset to configure a named <see cref="IDeliveryClient"/>
+        /// Adds a delegate that will be used to configure a named <see cref="IDeliveryClient"/>
         /// </summary>
         /// <param name="services">A <see cref="ServiceCollection"/> instance for registering and resolving dependencies.</param>
         /// <param name="name">The name of dne client configuration</param>
@@ -49,7 +49,7 @@ namespace Microsoft.Extensions.DependencyInjection
         {
             if (configureDeliveryClient == null)
             {
-                throw new ArgumentNullException(nameof(configureDeliveryClient), "The function for creating Delivery options is null.");
+                throw new ArgumentNullException(nameof(configureDeliveryClient), "The function for creating DeliveryClient is null.");
             }
 
             services.TryAddSingleton<IDeliveryClientFactory, DeliveryClientFactory>();
@@ -143,7 +143,7 @@ namespace Microsoft.Extensions.DependencyInjection
             services.TryAddSingleton<IModelProvider, ModelProvider>();
             services.TryAddSingleton<IPropertyMapper, PropertyMapper>();
             services.TryAddSingleton<IRetryPolicyProvider, DefaultRetryPolicyProvider>();
-            services.TryAddSingleton<IDeliveryClient, DeliveryClient>();//TODO Registtrovat zaroven s Factory??
+            services.TryAddSingleton<IDeliveryClient, DeliveryClient>();
 
             return services;
         }
