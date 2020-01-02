@@ -44,10 +44,9 @@ namespace Kentico.Kontent.Delivery.Factories
                 throw new ArgumentNullException(nameof(name));
             }
 
-            var options = _optionsMonitor.Get(name);
-
             if(!cachedDeliveryClients.TryGetValue(name, out var client))
             {
+                var options = _optionsMonitor.Get(name);
                 client = options.DeliveryClientActions.FirstOrDefault()?.Invoke();
                 cachedDeliveryClients.TryAdd(name, client);
             }
