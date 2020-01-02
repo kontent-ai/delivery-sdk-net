@@ -34,7 +34,6 @@ namespace Microsoft.Extensions.DependencyInjection
                 throw new ArgumentNullException(nameof(buildDeliveryOptions), "The function for creating Delivery options is null.");
             }
 
-            services.TryAddSingleton<IDeliveryClientFactory, DeliveryClientFactory>();
             services.AddTransient<IConfigureOptions<DeliveryClientFactoryOptions>>(s =>
             {
                 return new ConfigureNamedOptions<DeliveryClientFactoryOptions>(name, options =>
@@ -49,6 +48,7 @@ namespace Microsoft.Extensions.DependencyInjection
                 });
 
             });
+
             return services.RegisterFactoryDependencies();
         }
 
@@ -66,7 +66,6 @@ namespace Microsoft.Extensions.DependencyInjection
                 throw new ArgumentNullException(nameof(configureDeliveryClient), "The function for creating DeliveryClient is null.");
             }
 
-           
             services.AddTransient<IConfigureOptions<DeliveryClientFactoryOptions>>(s =>
             {
                 return new ConfigureNamedOptions<DeliveryClientFactoryOptions>(name, options =>
@@ -75,6 +74,7 @@ namespace Microsoft.Extensions.DependencyInjection
                 });
 
             });
+
             return services.RegisterFactoryDependencies();
         }
 
@@ -93,7 +93,6 @@ namespace Microsoft.Extensions.DependencyInjection
                 throw new ArgumentNullException(nameof(deliveryOptions), "The Delivery options object is not specified.");
             }
 
-            services.TryAddSingleton<IDeliveryClientFactory, DeliveryClientFactory>();
             services.AddTransient<IConfigureOptions<DeliveryClientFactoryOptions>>(s =>
             {
                 return new ConfigureNamedOptions<DeliveryClientFactoryOptions>(name, options =>
@@ -108,6 +107,7 @@ namespace Microsoft.Extensions.DependencyInjection
                 });
 
             });
+
             return services.RegisterFactoryDependencies();
         }
 
