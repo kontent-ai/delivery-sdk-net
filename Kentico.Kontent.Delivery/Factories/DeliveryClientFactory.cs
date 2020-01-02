@@ -5,6 +5,7 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
+using Microsoft.Extensions.DependencyInjection;
 
 namespace Kentico.Kontent.Delivery.Factories
 {
@@ -15,25 +16,28 @@ namespace Kentico.Kontent.Delivery.Factories
     {
         private readonly IOptionsMonitor<DeliveryClientFactoryOptions> _optionsMonitor;
         private readonly ILogger<DeliveryClientFactory> _logger;
+        private readonly IServiceProvider _serviceProvider;
 
         /// <summary>
         /// </summary>
         /// <param name="optionsMonitor">A <see cref="DeliveryClientFactory"/> options</param>
         /// <param name="logger">A logger</param>
-        public DeliveryClientFactory(IOptionsMonitor<DeliveryClientFactoryOptions> optionsMonitor, ILogger<DeliveryClientFactory> logger)
+        /// <param name="serviceProvider">A ServiceProvider implementation</param>
+        public DeliveryClientFactory(IOptionsMonitor<DeliveryClientFactoryOptions> optionsMonitor, ILogger<DeliveryClientFactory> logger, IServiceProvider serviceProvider)
         {
             _optionsMonitor = optionsMonitor;
             _logger = logger;
+            _serviceProvider = serviceProvider;
         }
 
         /// <summary>
-        /// Create the IDeliveryClient by configuration name
+        /// Create a IDeliveryClient by configuration name
         /// </summary>
         /// <param name="name">A name of <see cref="IDeliveryClient"/> configuration</param>
         /// <returns></returns>
         public IDeliveryClient CreateDeliveryClient(string name)
         {
-            if(name == null)
+            if (name == null)
             {
                 throw new ArgumentNullException(nameof(name));
             }
@@ -41,6 +45,15 @@ namespace Kentico.Kontent.Delivery.Factories
             var options = _optionsMonitor.Get(name);
             var client = options.DeliveryClientActions.FirstOrDefault()?.Invoke();
             return client;
+        }
+
+        /// <summary>
+        /// Create a default IDeliveryClient
+        /// </summary>
+        /// <returns></returns>
+        public IDeliveryClient CreateDeliveryClient()
+        {
+            return _serviceProvider.GetRequiredService<IDeliveryClient>();
         }
     }
 }

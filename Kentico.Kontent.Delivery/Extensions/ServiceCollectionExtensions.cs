@@ -66,7 +66,7 @@ namespace Microsoft.Extensions.DependencyInjection
                 throw new ArgumentNullException(nameof(configureDeliveryClient), "The function for creating DeliveryClient is null.");
             }
 
-            services.TryAddSingleton<IDeliveryClientFactory, DeliveryClientFactory>();
+           
             services.AddTransient<IConfigureOptions<DeliveryClientFactoryOptions>>(s =>
             {
                 return new ConfigureNamedOptions<DeliveryClientFactoryOptions>(name, options =>
@@ -199,12 +199,7 @@ namespace Microsoft.Extensions.DependencyInjection
         private static IServiceCollection RegisterDependencies(this IServiceCollection services)
         {
             RegisterFactoryDependencies(services);
-            services.TryAddSingleton<IDeliveryClient, DeliveryClient>();
-            return services;
-        }
 
-        private static IServiceCollection RegisterFactoryDependencies(this IServiceCollection services)
-        {
             services.TryAddSingleton<IContentLinkUrlResolver, DefaultContentLinkUrlResolver>();
             services.TryAddSingleton<ITypeProvider, TypeProvider>();
             services.TryAddSingleton(new HttpClient());
@@ -215,10 +210,15 @@ namespace Microsoft.Extensions.DependencyInjection
             services.TryAddSingleton<IModelProvider, ModelProvider>();
             services.TryAddSingleton<IPropertyMapper, PropertyMapper>();
             services.TryAddSingleton<IRetryPolicyProvider, DefaultRetryPolicyProvider>();
-
+            services.TryAddSingleton<IDeliveryClient, DeliveryClient>();
             return services;
         }
 
+        private static IServiceCollection RegisterFactoryDependencies(this IServiceCollection services)
+        {
+            services.TryAddSingleton<IDeliveryClientFactory, DeliveryClientFactory>();
+            return services;
+        }
 
         // Options here are not validated on purpose, it is left to users to validate them if they want to.
         private static IServiceCollection RegisterOptions(this IServiceCollection services, DeliveryOptions options)
