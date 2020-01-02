@@ -15,5 +15,11 @@ namespace Kentico.Kontent.Delivery.Factories
         /// <param name="name"></param>
         /// <returns></returns>
         IDeliveryClient CreateDeliveryClient(string name);
+
+        /// <summary>
+        /// Returns a default implementation of <see cref="IDeliveryClient"/> class.
+        /// </summary>
+        /// <returns></returns>
+        IDeliveryClient CreateDeliveryClient();
     }
 }
