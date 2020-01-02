@@ -15,7 +15,7 @@ namespace Kentico.Kontent.Delivery.Factories
     /// </summary>
     public class DeliveryClientFactory : IDeliveryClientFactory
     {
-        private ConcurrentDictionary<string, IDeliveryClient> cachedDeliveryClient = new ConcurrentDictionary<string, IDeliveryClient>();
+        private ConcurrentDictionary<string, IDeliveryClient> cachedDeliveryClients = new ConcurrentDictionary<string, IDeliveryClient>();
         private readonly IOptionsMonitor<DeliveryClientFactoryOptions> _optionsMonitor;
         private readonly ILogger<DeliveryClientFactory> _logger;
         private readonly IServiceProvider _serviceProvider;
@@ -46,10 +46,10 @@ namespace Kentico.Kontent.Delivery.Factories
 
             var options = _optionsMonitor.Get(name);
 
-            if(!cachedDeliveryClient.TryGetValue(name, out var client))
+            if(!cachedDeliveryClients.TryGetValue(name, out var client))
             {
                 client = options.DeliveryClientActions.FirstOrDefault()?.Invoke();
-                cachedDeliveryClient.TryAdd(name, client);
+                cachedDeliveryClients.TryAdd(name, client);
             }
           
             return client;
