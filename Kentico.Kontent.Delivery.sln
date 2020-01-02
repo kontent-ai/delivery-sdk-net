@@ -1,7 +1,7 @@
 ﻿
 Microsoft Visual Studio Solution File, Format Version 12.00
-# Visual Studio 15
-VisualStudioVersion = 15.0.27703.2035
+# Visual Studio Version 16
+VisualStudioVersion = 16.0.29311.281
 MinimumVisualStudioVersion = 10.0.40219.1
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Kentico.Kontent.Delivery", "Kentico.Kontent.Delivery\Kentico.Kontent.Delivery.csproj", "{742B4C41-1C0E-40BC-8841-C236C3FF7910}"
 EndProject
@@ -10,6 +10,8 @@ EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Kentico.Kontent.Delivery.Tests", "Kentico.Kontent.Delivery.Tests\Kentico.Kontent.Delivery.Tests.csproj", "{CAC807C5-FDBB-4DE4-B5F3-E04B4766BEFE}"
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Kentico.Kontent.Delivery.Rx.Tests", "Kentico.Kontent.Delivery.Rx.Tests\Kentico.Kontent.Delivery.Rx.Tests.csproj", "{32FDA558-79F7-445C-93B3-30E2B06709D8}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Kentico.Kontent.Delivery.Abstractions", "Kentico.Kontent.Delivery.Abstractions\Kentico.Kontent.Delivery.Abstractions.csproj", "{CC6D3CC0-78A1-4950-BABF-6674F608858D}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
@@ -33,6 +35,10 @@ Global
 		{32FDA558-79F7-445C-93B3-30E2B06709D8}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{32FDA558-79F7-445C-93B3-30E2B06709D8}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{32FDA558-79F7-445C-93B3-30E2B06709D8}.Release|Any CPU.Build.0 = Release|Any CPU
+		{CC6D3CC0-78A1-4950-BABF-6674F608858D}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{CC6D3CC0-78A1-4950-BABF-6674F608858D}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{CC6D3CC0-78A1-4950-BABF-6674F608858D}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{CC6D3CC0-78A1-4950-BABF-6674F608858D}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE

@@ -1,4 +1,5 @@
-﻿using AngleSharp.Dom;
+﻿
+using AngleSharp.Dom;
 using AngleSharp.Parser.Html;
 using System;
 using System.Collections.Generic;
