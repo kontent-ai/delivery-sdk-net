@@ -24,7 +24,7 @@ namespace Kentico.Kontent.Delivery.Factories
         /// </summary>
         /// <param name="optionsMonitor">A <see cref="DeliveryClientFactory"/> options</param>
         /// <param name="logger">A logger</param>
-        /// <param name="serviceProvider">A ServiceProvider implementation</param>
+        /// <param name="serviceProvider">An IServiceProvider implementation</param>
         public DeliveryClientFactory(IOptionsMonitor<DeliveryClientFactoryOptions> optionsMonitor, ILogger<DeliveryClientFactory> logger, IServiceProvider serviceProvider)
         {
             _optionsMonitor = optionsMonitor;
@@ -33,7 +33,7 @@ namespace Kentico.Kontent.Delivery.Factories
         }
 
         /// <summary>
-        /// Returns an <see cref="IDeliveryClient"/>  by configuration name
+        /// Returns a named <see cref="IDeliveryClient"/>.
         /// </summary>
         /// <param name="name">A name of <see cref="IDeliveryClient"/> configuration</param>
         /// <returns></returns>
@@ -55,7 +55,7 @@ namespace Kentico.Kontent.Delivery.Factories
         }
 
         /// <summary>
-        /// Returns an <see cref="IDeliveryClient"/> 
+        /// Returns an <see cref="IDeliveryClient"/>.
         /// </summary>
         /// <returns></returns>
         public IDeliveryClient Get()

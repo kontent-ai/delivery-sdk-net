@@ -10,14 +10,14 @@ namespace Kentico.Kontent.Delivery.Factories
     public interface IDeliveryClientFactory
     {
         /// <summary>
-        /// Returns a named <see cref="IDeliveryClient"/> class.
+        /// Returns a named <see cref="IDeliveryClient"/>.
         /// </summary>
         /// <param name="name"></param>
         /// <returns></returns>
         IDeliveryClient Get(string name);
 
         /// <summary>
-        /// Returns a default implementation of <see cref="IDeliveryClient"/> class.
+        /// Returns an <see cref="IDeliveryClient"/>.
         /// </summary>
         /// <returns></returns>
         IDeliveryClient Get();
