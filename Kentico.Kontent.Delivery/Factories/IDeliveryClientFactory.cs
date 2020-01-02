@@ -5,7 +5,7 @@ using System.Text;
 namespace Kentico.Kontent.Delivery.Factories
 {
     /// <summary>
-    /// Defines a methods for creating new delivery client.
+    /// Defines a methods for creating a new Delivery client.
     /// </summary>
     public interface IDeliveryClientFactory
     {

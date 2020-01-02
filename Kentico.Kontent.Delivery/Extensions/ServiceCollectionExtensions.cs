@@ -21,25 +21,39 @@ namespace Microsoft.Extensions.DependencyInjection
     public static class ServiceCollectionExtensions
     {
         /// <summary>
-        /// Registers a <see cref="IDeliveryClient"/> instance to an <see cref="IDeliveryClient"/> interface in <see cref="ServiceCollection"/>.
+        /// Adds a delegate that will be used to configure a named <see cref="IDeliveryClient"/> via <see cref="IDeliveryClientFactory"/>
         /// </summary>
+        ///<param name="name">The name of the client configuration</param>
         /// <param name="services">A <see cref="ServiceCollection"/> instance for registering and resolving dependencies.</param>
         /// <param name="buildDeliveryOptions">A function that is provided with an instance of <see cref="DeliveryOptionsBuilder"/>and expected to return a valid instance of <see cref="DeliveryOptions"/>.</param>
         /// <returns>The <paramref name="services"/> instance with <see cref="IDeliveryClient"/> registered in it</returns>
-        public static IServiceCollection AddDeliveryClient(this IServiceCollection services, Func<IDeliveryOptionsBuilder, DeliveryOptions> buildDeliveryOptions)
+        public static IServiceCollection AddDeliveryClient(this IServiceCollection services, string name, Func<IDeliveryOptionsBuilder, DeliveryOptions> buildDeliveryOptions)
         {
             if (buildDeliveryOptions == null)
             {
                 throw new ArgumentNullException(nameof(buildDeliveryOptions), "The function for creating Delivery options is null.");
             }
 
-            return services
-                .BuildOptions(buildDeliveryOptions)
-                .RegisterDependencies();
+            services.TryAddSingleton<IDeliveryClientFactory, DeliveryClientFactory>();
+            services.AddTransient<IConfigureOptions<DeliveryClientFactoryOptions>>(s =>
+            {
+                return new ConfigureNamedOptions<DeliveryClientFactoryOptions>(name, options =>
+                {
+                    options.DeliveryClientActions.Add(() =>
+                    {
+                        var serviceCollection = new ServiceCollection();
+                        serviceCollection.AddDeliveryClient(buildDeliveryOptions);
+                        var serviceProvider = serviceCollection.BuildServiceProvider();
+                        return serviceProvider.GetService<IDeliveryClient>();
+                    });
+                });
+
+            });
+            return services.RegisterFactoryDependencies();
         }
 
         /// <summary>
-        /// Adds a delegate that will be used to configure a named <see cref="IDeliveryClient"/>
+        /// Adds a delegate that will be used to configure a named <see cref="IDeliveryClient"/> via <see cref="IDeliveryClientFactory"/>
         /// </summary>
         /// <param name="services">A <see cref="ServiceCollection"/> instance for registering and resolving dependencies.</param>
         /// <param name="name">The name of the client configuration</param>
@@ -66,7 +80,7 @@ namespace Microsoft.Extensions.DependencyInjection
 
 
         /// <summary>
-        /// Registers a <see cref="IDeliveryClient"/> instance to an <see cref="IDeliveryClient"/> interface in <see cref="ServiceCollection"/>.
+        /// Adds an options that will be used to configure a named <see cref="IDeliveryClient"/> via <see cref="IDeliveryClientFactory"/>
         /// </summary>
         /// <param name="name">The name of the client configuration</param>
         /// <param name="services">A <see cref="ServiceCollection"/> instance for registering and resolving dependencies.</param>
@@ -78,7 +92,6 @@ namespace Microsoft.Extensions.DependencyInjection
             {
                 throw new ArgumentNullException(nameof(deliveryOptions), "The Delivery options object is not specified.");
             }
-
 
             services.TryAddSingleton<IDeliveryClientFactory, DeliveryClientFactory>();
             services.AddTransient<IConfigureOptions<DeliveryClientFactoryOptions>>(s =>
@@ -96,6 +109,24 @@ namespace Microsoft.Extensions.DependencyInjection
 
             });
             return services.RegisterFactoryDependencies();
+        }
+
+        /// <summary>
+        /// Registers a <see cref="IDeliveryClient"/> instance to an <see cref="IDeliveryClient"/> interface in <see cref="ServiceCollection"/>.
+        /// </summary>
+        /// <param name="services">A <see cref="ServiceCollection"/> instance for registering and resolving dependencies.</param>
+        /// <param name="buildDeliveryOptions">A function that is provided with an instance of <see cref="DeliveryOptionsBuilder"/>and expected to return a valid instance of <see cref="DeliveryOptions"/>.</param>
+        /// <returns>The <paramref name="services"/> instance with <see cref="IDeliveryClient"/> registered in it</returns>
+        public static IServiceCollection AddDeliveryClient(this IServiceCollection services, Func<IDeliveryOptionsBuilder, DeliveryOptions> buildDeliveryOptions)
+        {
+            if (buildDeliveryOptions == null)
+            {
+                throw new ArgumentNullException(nameof(buildDeliveryOptions), "The function for creating Delivery options is null.");
+            }
+
+            return services
+                .BuildOptions(buildDeliveryOptions)
+                .RegisterDependencies();
         }
 
         /// <summary>
