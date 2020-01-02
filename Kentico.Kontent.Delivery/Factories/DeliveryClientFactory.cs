@@ -6,6 +6,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using Microsoft.Extensions.DependencyInjection;
+using System.Collections.Concurrent;
 
 namespace Kentico.Kontent.Delivery.Factories
 {
@@ -14,6 +15,7 @@ namespace Kentico.Kontent.Delivery.Factories
     /// </summary>
     public class DeliveryClientFactory : IDeliveryClientFactory
     {
+        private ConcurrentDictionary<string, IDeliveryClient> cachedDeliveryClient = new ConcurrentDictionary<string, IDeliveryClient>();
         private readonly IOptionsMonitor<DeliveryClientFactoryOptions> _optionsMonitor;
         private readonly ILogger<DeliveryClientFactory> _logger;
         private readonly IServiceProvider _serviceProvider;
@@ -31,11 +33,11 @@ namespace Kentico.Kontent.Delivery.Factories
         }
 
         /// <summary>
-        /// Create a IDeliveryClient by configuration name
+        /// Returns an <see cref="IDeliveryClient"/>  by configuration name
         /// </summary>
         /// <param name="name">A name of <see cref="IDeliveryClient"/> configuration</param>
         /// <returns></returns>
-        public IDeliveryClient CreateDeliveryClient(string name)
+        public IDeliveryClient Get(string name)
         {
             if (name == null)
             {
@@ -43,15 +45,21 @@ namespace Kentico.Kontent.Delivery.Factories
             }
 
             var options = _optionsMonitor.Get(name);
-            var client = options.DeliveryClientActions.FirstOrDefault()?.Invoke();
+
+            if(!cachedDeliveryClient.TryGetValue(name, out var client))
+            {
+                client = options.DeliveryClientActions.FirstOrDefault()?.Invoke();
+                cachedDeliveryClient.TryAdd(name, client);
+            }
+          
             return client;
         }
 
         /// <summary>
-        /// Create a default IDeliveryClient
+        /// Returns an <see cref="IDeliveryClient"/> 
         /// </summary>
         /// <returns></returns>
-        public IDeliveryClient CreateDeliveryClient()
+        public IDeliveryClient Get()
         {
             return _serviceProvider.GetRequiredService<IDeliveryClient>();
         }
