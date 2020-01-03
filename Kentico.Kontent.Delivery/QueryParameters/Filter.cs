@@ -1,4 +1,5 @@
-﻿using System;
+﻿using Kentico.Kontent.Delivery.Abstractions;
+using System;
 using System.Linq;
 
 namespace Kentico.Kontent.Delivery

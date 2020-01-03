@@ -3,7 +3,7 @@ using System;
 using System.Net;
 using System.Net.Http;
 
-namespace Kentico.Kontent.Delivery
+namespace Kentico.Kontent.Delivery.Abstractions
 {
     /// <summary>
     /// Represents an error response from the Kentico Kontent Delivery API.

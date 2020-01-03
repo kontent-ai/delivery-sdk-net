@@ -1,4 +1,4 @@
-namespace Kentico.Kontent.Delivery.InlineContentItems
+namespace Kentico.Kontent.Delivery.Abstractions.InlineContentItems
 {
     /// <summary>
     /// Structure holding identifier of specific richtext element used in content item.

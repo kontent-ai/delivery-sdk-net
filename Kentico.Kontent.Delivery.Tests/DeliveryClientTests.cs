@@ -10,8 +10,9 @@ using System.Net;
 using System.Net.Http;
 using System.Threading.Tasks;
 using Kentico.Kontent.Delivery.RetryPolicy;
-using Kentico.Kontent.Delivery.StrongTyping;
 using Xunit;
+using Kentico.Kontent.Delivery.Abstractions;
+using Kentico.Kontent.Delivery.Abstractions.StrongTyping;
 
 namespace Kentico.Kontent.Delivery.Tests
 {

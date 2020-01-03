@@ -9,6 +9,8 @@ using Newtonsoft.Json.Linq;
 using Kentico.Kontent.Delivery.Extensions;
 using Kentico.Kontent.Delivery.InlineContentItems;
 using Kentico.Kontent.Delivery.RetryPolicy;
+using Kentico.Kontent.Delivery.Abstractions;
+using Kentico.Kontent.Delivery.Abstractions.InlineContentItems;
 
 namespace Kentico.Kontent.Delivery
 {

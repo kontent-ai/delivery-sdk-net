@@ -1,4 +1,6 @@
-﻿namespace Kentico.Kontent.Delivery.ContentLinks
+﻿using Kentico.Kontent.Delivery.Abstractions;
+
+namespace Kentico.Kontent.Delivery.ContentLinks
 {
     internal class DefaultContentLinkUrlResolver : IContentLinkUrlResolver
     {

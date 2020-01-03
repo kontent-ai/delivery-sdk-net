@@ -1,7 +1,7 @@
 ﻿using System.Reflection;
 using Newtonsoft.Json.Linq;
 
-namespace Kentico.Kontent.Delivery
+namespace Kentico.Kontent.Delivery.Abstractions
 {
     /// <summary>
     /// Provides value conversion for the given property

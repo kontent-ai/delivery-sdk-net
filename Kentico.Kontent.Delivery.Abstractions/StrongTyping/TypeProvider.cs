@@ -1,6 +1,6 @@
 ﻿using System;
 
-namespace Kentico.Kontent.Delivery.StrongTyping
+namespace Kentico.Kontent.Delivery.Abstractions.StrongTyping
 {
     internal class TypeProvider : ITypeProvider
     {

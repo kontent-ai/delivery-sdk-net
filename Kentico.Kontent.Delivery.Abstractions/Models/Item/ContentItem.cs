@@ -2,9 +2,9 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
-using Kentico.Kontent.Delivery.ContentLinks;
+using Kentico.Kontent.Delivery.Abstractions.ContentLinks;
 
-namespace Kentico.Kontent.Delivery
+namespace Kentico.Kontent.Delivery.Abstractions
 {
     /// <summary>
     /// Represents a content item.

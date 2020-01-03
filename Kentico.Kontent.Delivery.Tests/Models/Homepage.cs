@@ -1,3 +1,4 @@
+using Kentico.Kontent.Delivery.Abstractions;
 using System.Collections.Generic;
 
 namespace Kentico.Kontent.Delivery.Tests
