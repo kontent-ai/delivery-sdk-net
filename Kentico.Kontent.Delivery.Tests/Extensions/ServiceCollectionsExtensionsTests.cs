@@ -6,6 +6,7 @@ using System.Linq;
 using System.Net.Http;
 using Kentico.Kontent.Delivery.Abstractions;
 using Kentico.Kontent.Delivery.Abstractions.InlineContentItems;
+using Kentico.Kontent.Delivery.Abstractions.RetryPolicy;
 using Kentico.Kontent.Delivery.Abstractions.StrongTyping;
 using Kentico.Kontent.Delivery.ContentLinks;
 using Kentico.Kontent.Delivery.InlineContentItems;

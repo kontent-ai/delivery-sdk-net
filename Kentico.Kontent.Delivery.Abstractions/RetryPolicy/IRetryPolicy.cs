@@ -2,7 +2,7 @@
 using System.Net.Http;
 using System.Threading.Tasks;
 
-namespace Kentico.Kontent.Delivery.RetryPolicy
+namespace Kentico.Kontent.Delivery.Abstractions.RetryPolicy
 {
     /// <summary>
     /// Represents a retry policy for HTTP requests.

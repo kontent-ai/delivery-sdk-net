@@ -1,4 +1,4 @@
-﻿namespace Kentico.Kontent.Delivery
+﻿namespace Kentico.Kontent.Delivery.Abstractions
 {
     /// <summary>
     /// Specifies the order in which content items are sorted.

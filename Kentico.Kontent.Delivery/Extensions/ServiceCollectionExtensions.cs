@@ -4,6 +4,7 @@ using System.Net.Http;
 using Kentico.Kontent.Delivery;
 using Kentico.Kontent.Delivery.Abstractions;
 using Kentico.Kontent.Delivery.Abstractions.InlineContentItems;
+using Kentico.Kontent.Delivery.Abstractions.RetryPolicy;
 using Kentico.Kontent.Delivery.Abstractions.StrongTyping;
 using Kentico.Kontent.Delivery.Builders.DeliveryOptions;
 using Kentico.Kontent.Delivery.ContentLinks;

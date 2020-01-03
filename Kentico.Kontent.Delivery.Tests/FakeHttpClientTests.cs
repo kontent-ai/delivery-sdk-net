@@ -4,6 +4,7 @@ using System.Net.Http;
 using System.Threading.Tasks;
 using FakeItEasy;
 using Kentico.Kontent.Delivery.Abstractions;
+using Kentico.Kontent.Delivery.Abstractions.RetryPolicy;
 using Kentico.Kontent.Delivery.RetryPolicy;
 using RichardSzalay.MockHttp;
 using Xunit;
