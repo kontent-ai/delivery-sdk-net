@@ -13,6 +13,7 @@ using Kentico.Kontent.Delivery.RetryPolicy;
 using Microsoft.Extensions.Options;
 using Kentico.Kontent.Delivery.Abstractions;
 using Kentico.Kontent.Delivery.Abstractions.StrongTyping;
+using Kentico.Kontent.Delivery.Abstractions.RetryPolicy;
 
 namespace Kentico.Kontent.Delivery.Tests
 {
