@@ -1,6 +1,6 @@
 ﻿using Newtonsoft.Json;
 
-namespace Kentico.Kontent.Delivery
+namespace Kentico.Kontent.Delivery.Abstractions
 {
     /// <summary>
     /// Represents an option of a Multiple choice content element.

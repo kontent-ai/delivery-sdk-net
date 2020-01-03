@@ -2,6 +2,7 @@
 using System.Collections;
 using System.Collections.Generic;
 using System.Linq;
+using Kentico.Kontent.Delivery.Abstractions.InlineContentItems;
 using Kentico.Kontent.Delivery.InlineContentItems;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Options;

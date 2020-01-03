@@ -2,7 +2,7 @@ using System;
 using System.Reflection;
 using Newtonsoft.Json;
 
-namespace Kentico.Kontent.Delivery.StrongTyping
+namespace Kentico.Kontent.Delivery.Abstractions.StrongTyping
 {
     /// <summary>
     /// Default provider for mapping Kentico Kontent content item fields to model properties.

@@ -1,6 +1,6 @@
 ﻿using System.Collections.Generic;
 
-namespace Kentico.Kontent.Delivery.InlineContentItems
+namespace Kentico.Kontent.Delivery.Abstractions.InlineContentItems
 {
     /// <summary>
     /// Interface implemented for processing inline content items in HTML

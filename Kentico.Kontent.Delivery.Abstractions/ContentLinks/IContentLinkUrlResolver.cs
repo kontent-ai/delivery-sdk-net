@@ -1,4 +1,4 @@
-﻿namespace Kentico.Kontent.Delivery
+﻿namespace Kentico.Kontent.Delivery.Abstractions
 {
     /// <summary>
     /// Defines the contract to resolve content links in Rich text element values.

@@ -1,6 +1,6 @@
 ﻿using System.ComponentModel.DataAnnotations;
 
-namespace Kentico.Kontent.Delivery
+namespace Kentico.Kontent.Delivery.Abstractions
 {
     [DisableHtmlEncode]
     internal class HtmlContent : IHtmlContent

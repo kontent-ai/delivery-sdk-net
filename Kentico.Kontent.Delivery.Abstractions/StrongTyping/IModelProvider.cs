@@ -1,6 +1,6 @@
 ﻿using Newtonsoft.Json.Linq;
 
-namespace Kentico.Kontent.Delivery
+namespace Kentico.Kontent.Delivery.Abstractions
 {
     /// <summary>
     /// Defines the contract for mapping content items to models.

@@ -1,4 +1,6 @@
-﻿namespace Kentico.Kontent.Delivery.InlineContentItems
+﻿using Kentico.Kontent.Delivery.Abstractions.InlineContentItems;
+
+namespace Kentico.Kontent.Delivery.InlineContentItems
 {
     /// <summary>
     /// /// Resolver which is replacing content items in richtext with warning message about content type resolver not being registered. Used as default for default resolver on Preview environment.

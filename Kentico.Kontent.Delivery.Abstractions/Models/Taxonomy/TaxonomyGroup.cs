@@ -2,7 +2,7 @@
 using System.Linq;
 using Newtonsoft.Json.Linq;
 
-namespace Kentico.Kontent.Delivery
+namespace Kentico.Kontent.Delivery.Abstractions
 {
     /// <summary>
     /// Represents a taxonomy group.

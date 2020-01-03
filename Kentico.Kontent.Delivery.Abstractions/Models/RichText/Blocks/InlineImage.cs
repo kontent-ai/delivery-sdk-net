@@ -1,4 +1,4 @@
-﻿namespace Kentico.Kontent.Delivery
+﻿namespace Kentico.Kontent.Delivery.Abstractions
 {
     [DisableHtmlEncode]
     [UseDisplayTemplate("InlineImage")]

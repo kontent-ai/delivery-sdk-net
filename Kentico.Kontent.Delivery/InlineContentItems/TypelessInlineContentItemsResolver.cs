@@ -1,4 +1,5 @@
-﻿using System;
+﻿using Kentico.Kontent.Delivery.Abstractions.InlineContentItems;
+using System;
 namespace Kentico.Kontent.Delivery.InlineContentItems
 {
     /// <summary>

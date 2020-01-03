@@ -1,7 +1,7 @@
 ﻿using System;
 using System.Threading;
 
-namespace Kentico.Kontent.Delivery
+namespace Kentico.Kontent.Delivery.Abstractions
 {
     /// <summary>
     /// Represents a response from Kentico Kontent Delivery API that contains a content type element.

@@ -1,6 +1,6 @@
 ﻿using System;
 
-namespace Kentico.Kontent.Delivery
+namespace Kentico.Kontent.Delivery.Abstractions
 {
     /// <summary>
     /// Context of the current resolving process

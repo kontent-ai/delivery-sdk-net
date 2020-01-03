@@ -1,11 +1,12 @@
 ﻿using FakeItEasy;
-using Kentico.Kontent.Delivery.InlineContentItems;
 using Newtonsoft.Json.Linq;
 using System;
 using System.Reflection;
-using Kentico.Kontent.Delivery.StrongTyping;
 using Kentico.Kontent.Delivery.Tests.Factories;
 using Xunit;
+using Kentico.Kontent.Delivery.Abstractions;
+using Kentico.Kontent.Delivery.Abstractions.StrongTyping;
+using Kentico.Kontent.Delivery.Abstractions.InlineContentItems;
 
 namespace Kentico.Kontent.Delivery.Tests
 {

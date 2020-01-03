@@ -2,7 +2,7 @@
 using System.Collections.Generic;
 using System.Reactive.Disposables;
 using System.Reactive.Linq;
-
+using Kentico.Kontent.Delivery.Abstractions;
 using Newtonsoft.Json.Linq;
 
 namespace Kentico.Kontent.Delivery.Rx
