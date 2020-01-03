@@ -1,7 +1,4 @@
 ﻿using System;
-using Kentico.Kontent.Delivery.Builders.DeliveryClient;
-using Microsoft.Extensions.DependencyInjection;
-
 namespace Kentico.Kontent.Delivery.InlineContentItems
 {
     /// <summary>
