@@ -1,7 +1,7 @@
 ﻿using System.Collections.Generic;
 using FakeItEasy;
 using Kentico.Kontent.Delivery.Abstractions;
-using Kentico.Kontent.Delivery.Abstractions.StrongTyping;
+using Kentico.Kontent.Delivery.StrongTyping;
 using Microsoft.Extensions.Options;
 using Xunit;
 

@@ -1,4 +1,5 @@
 ﻿using System;
+using Kentico.Kontent.Delivery.Abstractions;
 using Kentico.Kontent.Delivery.Builders.DeliveryClient;
 using Kentico.Kontent.Delivery.Builders.DeliveryOptions;
 

@@ -8,7 +8,7 @@ using Microsoft.Extensions.Options;
 using Xunit;
 using Kentico.Kontent.Delivery.Abstractions;
 using Kentico.Kontent.Delivery.Abstractions.ContentLinks;
-using Kentico.Kontent.Delivery.Abstractions.StrongTyping;
+using Kentico.Kontent.Delivery.StrongTyping;
 
 namespace Kentico.Kontent.Delivery.Tests
 {
