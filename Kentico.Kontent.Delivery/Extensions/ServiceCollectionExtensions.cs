@@ -51,7 +51,7 @@ namespace Microsoft.Extensions.DependencyInjection
             {
                 throw new ArgumentNullException(nameof(deliveryOptions), "The Delivery options object is not specified.");
             }
-
+             
             return services
                 .RegisterOptions(deliveryOptions)
                 .RegisterDependencies();
