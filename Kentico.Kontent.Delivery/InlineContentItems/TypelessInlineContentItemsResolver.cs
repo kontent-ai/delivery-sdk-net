@@ -1,4 +1,6 @@
 ﻿using Kentico.Kontent.Delivery.Abstractions.InlineContentItems;
+using Kentico.Kontent.Delivery.Builders.DeliveryClient;
+using Microsoft.Extensions.DependencyInjection;
 using System;
 namespace Kentico.Kontent.Delivery.InlineContentItems
 {
