@@ -3,6 +3,7 @@ using System.Collections;
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading;
+using Kentico.Kontent.Delivery.Abstractions.ContentLinks;
 using Newtonsoft.Json.Linq;
 
 namespace Kentico.Kontent.Delivery.Abstractions
@@ -32,7 +33,7 @@ namespace Kentico.Kontent.Delivery.Abstractions
         /// <param name="response">The response from Kentico Kontent Delivery API that contains a list of content items.</param>
         /// <param name="modelProvider">The provider that can convert JSON responses into instances of .NET types.</param>
         /// <param name="contentLinkUrlResolver">The resolver that can generate URLs for links in rich text elements.</param>
-        internal DeliveryItemsFeedResponse(ApiResponse response, IModelProvider modelProvider, IContentLinkUrlResolver contentLinkUrlResolver) : base(response)
+        internal DeliveryItemsFeedResponse(ApiResponse response, IModelProvider modelProvider, IContentLinkResolver contentLinkUrlResolver) : base(response)
         {
             _modelProvider = modelProvider;
             _items = new Lazy<IReadOnlyList<ContentItem>>(() => ((JArray)_response.Content["items"])

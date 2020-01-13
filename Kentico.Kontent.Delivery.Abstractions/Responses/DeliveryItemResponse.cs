@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Threading;
+using Kentico.Kontent.Delivery.Abstractions.ContentLinks;
 using Newtonsoft.Json.Linq;
 
 namespace Kentico.Kontent.Delivery.Abstractions
@@ -10,7 +11,7 @@ namespace Kentico.Kontent.Delivery.Abstractions
     public sealed class DeliveryItemResponse : AbstractResponse
     {
         private readonly IModelProvider _modelProvider;
-        private readonly IContentLinkUrlResolver _contentLinkUrlResolver;
+        private readonly IContentLinkResolver _contentLinkResolver;
         private readonly Lazy<ContentItem> _item;
         private readonly Lazy<JObject> _linkedItems;
 
@@ -29,12 +30,12 @@ namespace Kentico.Kontent.Delivery.Abstractions
         /// </summary>
         /// <param name="response">The response from Kentico Kontent Delivery API that contains a content item.</param>
         /// <param name="modelProvider">The provider that can convert JSON responses into instances of .NET types.</param>
-        /// <param name="contentLinkUrlResolver">The resolver that can generate URLs for links in rich text elements.</param>
-        internal DeliveryItemResponse(ApiResponse response, IModelProvider modelProvider, IContentLinkUrlResolver contentLinkUrlResolver) : base(response)
+        /// <param name="contentLinkResolver">The resolver that can generate URLs for links in rich text elements.</param>
+        internal DeliveryItemResponse(ApiResponse response, IModelProvider modelProvider, IContentLinkResolver contentLinkResolver) : base(response)
         {
             _modelProvider = modelProvider;
-            _contentLinkUrlResolver = contentLinkUrlResolver;
-            _item = new Lazy<ContentItem>(() => new ContentItem(_response.Content["item"], _response.Content["modular_content"], _contentLinkUrlResolver, _modelProvider), LazyThreadSafetyMode.PublicationOnly);
+            _contentLinkResolver = contentLinkResolver;
+            _item = new Lazy<ContentItem>(() => new ContentItem(_response.Content["item"], _response.Content["modular_content"], _contentLinkResolver, _modelProvider), LazyThreadSafetyMode.PublicationOnly);
             _linkedItems = new Lazy<JObject>(() => (JObject)_response.Content["modular_content"].DeepClone(), LazyThreadSafetyMode.PublicationOnly);
         }
 

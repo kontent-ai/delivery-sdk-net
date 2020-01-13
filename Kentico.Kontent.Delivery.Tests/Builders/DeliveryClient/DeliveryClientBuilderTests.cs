@@ -4,6 +4,7 @@ using FakeItEasy;
 using Kentico.Kontent.Delivery.Abstractions;
 using Kentico.Kontent.Delivery.Abstractions.InlineContentItems;
 using Kentico.Kontent.Delivery.Abstractions.RetryPolicy;
+using Kentico.Kontent.Delivery.ContentLinks;
 using Kentico.Kontent.Delivery.InlineContentItems;
 using Kentico.Kontent.Delivery.RetryPolicy;
 using Kentico.Kontent.Delivery.Tests.DependencyInjectionFrameworks.Helpers;
@@ -77,7 +78,7 @@ namespace Kentico.Kontent.Delivery.Tests.Builders.DeliveryClient
                 .Build();
 
             Assert.Equal(ProjectId, deliveryClient.DeliveryOptions.ProjectId);
-            Assert.Equal(mockContentLinkUrlResolver, deliveryClient.ContentLinkUrlResolver);            
+            Assert.Equal(mockContentLinkUrlResolver, deliveryClient.ContentLinkResolver.ContentLinkUrlResolver);            
             Assert.Equal(mockInlineContentItemsProcessor, deliveryClient.InlineContentItemsProcessor);
             Assert.Equal(mockModelProvider, deliveryClient.ModelProvider);
             Assert.Equal(mockPropertyMapper, deliveryClient.PropertyMapper);
@@ -143,7 +144,7 @@ namespace Kentico.Kontent.Delivery.Tests.Builders.DeliveryClient
             Assert.NotNull(deliveryClient.ModelProvider);
             Assert.NotNull(deliveryClient.PropertyMapper);
             Assert.NotNull(deliveryClient.TypeProvider);
-            Assert.NotNull(deliveryClient.ContentLinkUrlResolver);
+            Assert.NotNull(deliveryClient.ContentLinkResolver);
             Assert.NotNull(deliveryClient.HttpClient);
             Assert.NotNull(deliveryClient.InlineContentItemsProcessor);
             Assert.NotNull(deliveryClient.RetryPolicyProvider);

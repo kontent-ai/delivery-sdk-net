@@ -5,6 +5,7 @@ using System.IO;
 using System.Linq;
 using System.Net.Http;
 using Kentico.Kontent.Delivery.Abstractions;
+using Kentico.Kontent.Delivery.Abstractions.ContentLinks;
 using Kentico.Kontent.Delivery.Abstractions.InlineContentItems;
 using Kentico.Kontent.Delivery.Abstractions.RetryPolicy;
 using Kentico.Kontent.Delivery.ContentLinks;
@@ -43,6 +44,7 @@ namespace Kentico.Kontent.Delivery.Tests.Extensions
             {
                 { typeof(IOptions<DeliveryOptions>), typeof(IOptions<DeliveryOptions>) },
                 { typeof(IContentLinkUrlResolver), typeof(DefaultContentLinkUrlResolver) },
+                { typeof(IContentLinkResolver), typeof(ContentLinkResolver) },
                 { typeof(ITypeProvider), typeof(TypeProvider) },
                 { typeof(HttpClient), typeof(HttpClient) },
                 { typeof(IInlineContentItemsProcessor), typeof(InlineContentItemsProcessor) },
