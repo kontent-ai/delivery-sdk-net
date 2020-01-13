@@ -3,6 +3,7 @@ using FakeItEasy;
 using Kentico.Kontent.Delivery.Abstractions;
 using Kentico.Kontent.Delivery.Abstractions.InlineContentItems;
 using Kentico.Kontent.Delivery.Abstractions.RetryPolicy;
+using Kentico.Kontent.Delivery.ContentLinks;
 using Kentico.Kontent.Delivery.InlineContentItems;
 using Kentico.Kontent.Delivery.RetryPolicy;
 using Microsoft.Extensions.Options;
@@ -42,7 +43,7 @@ namespace Kentico.Kontent.Delivery.Tests.Factories
             var client = new DeliveryClient(
                 Options.Create(new DeliveryOptions { ProjectId = projectId.ToString() }),
                 httpClient,
-                _mockContentLinkUrlResolver,
+                new ContentLinkResolver(_mockContentLinkUrlResolver),
                 _mockInlineContentItemsProcessor,
                 _mockModelProvider,
                 _mockResiliencePolicyProvider,
@@ -59,7 +60,7 @@ namespace Kentico.Kontent.Delivery.Tests.Factories
             var client = new DeliveryClient(
                 Options.Create(options),
                 httpClient,
-                _mockContentLinkUrlResolver,
+                new ContentLinkResolver(_mockContentLinkUrlResolver),
                 _mockInlineContentItemsProcessor,
                 _mockModelProvider,
                 _mockResiliencePolicyProvider,

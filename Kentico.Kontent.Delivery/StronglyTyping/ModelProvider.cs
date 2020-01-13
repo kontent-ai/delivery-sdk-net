@@ -15,35 +15,24 @@ namespace Kentico.Kontent.Delivery.StrongTyping
     /// </summary>
     internal class ModelProvider : IModelProvider
     {
-        private readonly IContentLinkUrlResolver _contentLinkUrlResolver;
         private readonly ITypeProvider _typeProvider;
         private readonly IInlineContentItemsProcessor _inlineContentItemsProcessor;
         private readonly IPropertyMapper _propertyMapper;
-        private ContentLinkResolver _contentLinkResolver;
+        private readonly IContentLinkResolver _contentLinkResolver;
 
-        internal ContentLinkResolver ContentLinkResolver
-        {
-            get
-            {
-                if (_contentLinkResolver == null && _contentLinkUrlResolver != null)
-                {
-                    _contentLinkResolver = new ContentLinkResolver(_contentLinkUrlResolver);
-                }
-                return _contentLinkResolver;
-            }
-        }
+       
 
         /// <summary>
         /// Initializes a new instance of <see cref="ModelProvider"/>.
         /// </summary>
         public ModelProvider(
-            IContentLinkUrlResolver contentLinkUrlResolver,
+            IContentLinkResolver contentLinkResolver,
             IInlineContentItemsProcessor inlineContentItemsProcessor,
             ITypeProvider typeProvider,
             IPropertyMapper propertyMapper
         )
         {
-            _contentLinkUrlResolver = contentLinkUrlResolver;
+            _contentLinkResolver = contentLinkResolver;
             _inlineContentItemsProcessor = inlineContentItemsProcessor;
             _typeProvider = typeProvider;
             _propertyMapper = propertyMapper;
@@ -186,7 +175,7 @@ namespace Kentico.Kontent.Delivery.StrongTyping
                         ? processedItems[codename]
                         : GetContentItemModel(typeof(object), linkedItemsElementNode, linkedItems, processedItems);
                 },
-                ContentLinkUrlResolver = _contentLinkUrlResolver
+                ContentLinkUrlResolver = _contentLinkResolver?.ContentLinkUrlResolver
             };
         }
 
@@ -261,9 +250,9 @@ namespace Kentico.Kontent.Delivery.StrongTyping
             var links = elementData?.Property("links")?.Value;
 
             // Handle rich_text link resolution
-            if (links != null && elementValue != null && ContentLinkResolver != null)
+            if (links != null && elementValue != null && _contentLinkResolver != null)
             {
-                value = ContentLinkResolver.ResolveContentLinks(value, links);
+                value = _contentLinkResolver.ResolveContentLinks(value, links);
             }
 
             var linkedItemsInRichText = GetLinkedItemsInRichText(elementData);
@@ -320,7 +309,7 @@ namespace Kentico.Kontent.Delivery.StrongTyping
                 {
                     if (isCollectionOfContentItems)
                     {
-                        contentItem = new ContentItem(linkedItemsElementNode, linkedItems, _contentLinkUrlResolver, this);
+                        contentItem = new ContentItem(linkedItemsElementNode, linkedItems, _contentLinkResolver, this);
                     }
                     else
                     {

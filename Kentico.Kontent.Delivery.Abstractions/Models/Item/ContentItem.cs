@@ -13,13 +13,12 @@ namespace Kentico.Kontent.Delivery.Abstractions
     {
         private readonly JToken _source;
         private readonly JToken _linkedItemsSource;
-        private readonly IContentLinkUrlResolver _contentLinkUrlResolver;
         private readonly IModelProvider _modelProvider;
 
         private ContentItemSystemAttributes _system;
         private JToken _elements;
 
-        internal Lazy<ContentLinkResolver> ContentLinkResolver;
+        private IContentLinkResolver _contentLinkResolver;
 
         /// <summary>
         /// Gets the system attributes of the content item.
@@ -42,20 +41,15 @@ namespace Kentico.Kontent.Delivery.Abstractions
         /// </summary>
         /// <param name="source">The JSON data of the content item to deserialize.</param>
         /// <param name="linkedItemsSource">The JSON data of linked items to deserialize.</param>
-        /// <param name="contentLinkUrlResolver">An instance of an object that can resolve links in rich text elements</param>
+        /// <param name="contentLinkResolver">An instance of an object that can resolve links in rich text elements</param>
         /// <param name="modelProvider">An instance of an object that can JSON responses into strongly typed CLR objects</param>
-        internal ContentItem(JToken source, JToken linkedItemsSource, IContentLinkUrlResolver contentLinkUrlResolver, IModelProvider modelProvider)
+        internal ContentItem(JToken source, JToken linkedItemsSource, IContentLinkResolver contentLinkResolver, IModelProvider modelProvider)
         {
             _source = source ?? throw new ArgumentNullException(nameof(source));
             _linkedItemsSource = linkedItemsSource ?? throw new ArgumentNullException(nameof(linkedItemsSource));
             _modelProvider = modelProvider ?? throw new ArgumentNullException(nameof(modelProvider));
 
-            _contentLinkUrlResolver = contentLinkUrlResolver;
-            ContentLinkResolver = new Lazy<ContentLinkResolver>(() =>
-                _contentLinkUrlResolver != null
-                    ? new ContentLinkResolver(_contentLinkUrlResolver)
-                    : null
-            );
+            _contentLinkResolver = contentLinkResolver;
         }
 
         /// <summary>
@@ -69,7 +63,7 @@ namespace Kentico.Kontent.Delivery.Abstractions
 
         /// <summary>
         /// Gets a string value from an element and resolves content links in Rich text element values.
-        /// To resolve content links an instance of <see cref="IContentLinkUrlResolver"/> must be set to the <see cref="IDeliveryClient"/> instance.
+        /// To resolve content links an instance of <see cref="IContentLinkResolver"/> must be set to the <see cref="IDeliveryClient"/> instance.
         /// </summary>
         /// <param name="elementCodename">The codename of the element.</param>
         /// <returns>The <see cref="string"/> value of the element with the specified codename, if available; otherwise, <c>null</c>.</returns>
@@ -79,14 +73,14 @@ namespace Kentico.Kontent.Delivery.Abstractions
             var value = element.Value<string>("value");
             var elementType = element.Value<string>("type");
             var links = element["links"];
-            var contentLinkResolver = ContentLinkResolver;
+            var contentLinkResolver = _contentLinkResolver;
 
             if (!StringComparer.Ordinal.Equals(elementType, "rich_text") || links == null || contentLinkResolver == null || string.IsNullOrEmpty(value) || !value.Contains("data-item-id"))
             {
                 return value;
             }
 
-            return contentLinkResolver.Value.ResolveContentLinks(value, links);
+            return contentLinkResolver.ResolveContentLinks(value, links);
         }
 
         /// <summary>
@@ -125,7 +119,7 @@ namespace Kentico.Kontent.Delivery.Abstractions
 
             return contentItemCodenames
                 .Where(codename => _linkedItemsSource[codename] != null)
-                .Select(codename => new ContentItem(_linkedItemsSource[codename], _linkedItemsSource, _contentLinkUrlResolver, _modelProvider));
+                .Select(codename => new ContentItem(_linkedItemsSource[codename], _linkedItemsSource, _contentLinkResolver, _modelProvider));
         }
 
         /// <summary>

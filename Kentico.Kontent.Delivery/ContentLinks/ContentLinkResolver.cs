@@ -1,23 +1,26 @@
 ﻿using System;
 using System.Net;
 using System.Text.RegularExpressions;
+using Kentico.Kontent.Delivery.Abstractions;
+using Kentico.Kontent.Delivery.Abstractions.ContentLinks;
 using Newtonsoft.Json.Linq;
 
-namespace Kentico.Kontent.Delivery.Abstractions.ContentLinks
+namespace Kentico.Kontent.Delivery.ContentLinks
 {
-    internal sealed class ContentLinkResolver
+    internal sealed class ContentLinkResolver : IContentLinkResolver
     {
-        private readonly IContentLinkUrlResolver _linkUrlResolver;
         private static readonly Regex _elementRegex = new Regex("<a[^>]+?data-item-id=\"(?<id>[^\"]+)\"[^>]*>", RegexOptions.CultureInvariant | RegexOptions.IgnoreCase);
 
-        public ContentLinkResolver(IContentLinkUrlResolver linkUrlResolver)
+        public IContentLinkUrlResolver ContentLinkUrlResolver { get; }
+
+        public ContentLinkResolver(IContentLinkUrlResolver contentLinkUrlResolver)
         {
-            if (linkUrlResolver == null)
+            if (contentLinkUrlResolver == null)
             {
-                throw new ArgumentNullException(nameof(linkUrlResolver));
+                throw new ArgumentNullException(nameof(contentLinkUrlResolver));
             }
 
-            _linkUrlResolver = linkUrlResolver;
+            ContentLinkUrlResolver = contentLinkUrlResolver;
         }
 
         public string ResolveContentLinks(string text, JToken links)
@@ -44,12 +47,12 @@ namespace Kentico.Kontent.Delivery.Abstractions.ContentLinks
 
                 if (linkSource == null)
                 {
-                    return ResolveMatch(match, _linkUrlResolver.ResolveBrokenLinkUrl());
+                    return ResolveMatch(match, ContentLinkUrlResolver.ResolveBrokenLinkUrl());
                 }
 
                 var link = new ContentLink(contentItemId, linkSource);
 
-                return ResolveMatch(match, _linkUrlResolver.ResolveLinkUrl(link));
+                return ResolveMatch(match, ContentLinkUrlResolver.ResolveLinkUrl(link));
             });
         }
 
