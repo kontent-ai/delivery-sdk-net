@@ -1,6 +1,7 @@
 ﻿using System;
 using FakeItEasy;
 using FluentAssertions;
+using Kentico.Kontent.Delivery.Abstractions;
 using Kentico.Kontent.Delivery.Tests.Factories;
 using Newtonsoft.Json;
 using Newtonsoft.Json.Linq;

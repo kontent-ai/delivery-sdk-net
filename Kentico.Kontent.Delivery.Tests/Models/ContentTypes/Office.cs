@@ -4,6 +4,8 @@
 // Changes to this file may cause incorrect behavior and will be lost if the code is regenerated. 
 // For further modifications of the class, create a separate file with the partial class.
 
+using Kentico.Kontent.Delivery.Abstractions;
+
 namespace Kentico.Kontent.Delivery.Tests
 {
     public partial class Office

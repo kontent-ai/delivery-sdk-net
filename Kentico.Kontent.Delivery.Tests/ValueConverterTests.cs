@@ -9,9 +9,11 @@ using System.IO;
 using System.Net.Http;
 using System.Threading.Tasks;
 using FakeItEasy;
-using Kentico.Kontent.Delivery.RetryPolicy;
-using Kentico.Kontent.Delivery.StrongTyping;
 using Microsoft.Extensions.Options;
+using Kentico.Kontent.Delivery.Abstractions;
+using Kentico.Kontent.Delivery.Abstractions.RetryPolicy;
+using Kentico.Kontent.Delivery.StrongTyping;
+using Kentico.Kontent.Delivery.ContentLinks;
 
 namespace Kentico.Kontent.Delivery.Tests
 {
@@ -116,7 +118,7 @@ namespace Kentico.Kontent.Delivery.Tests
             A.CallTo(() => retryPolicy.ExecuteAsync(A<Func<Task<HttpResponseMessage>>>._))
                 .ReturnsLazily(c => c.GetArgument<Func<Task<HttpResponseMessage>>>(0)());
             var modelProvider = new ModelProvider(
-                contentLinkUrlResolver,
+                new ContentLinkResolver(contentLinkUrlResolver),
                 null,
                 new CustomTypeProvider(),
                 new PropertyMapper()

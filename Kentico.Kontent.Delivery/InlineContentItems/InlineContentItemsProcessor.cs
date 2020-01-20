@@ -1,10 +1,13 @@
-﻿using AngleSharp.Dom;
+﻿
+using AngleSharp.Dom;
 using AngleSharp.Parser.Html;
 using System;
 using System.Collections.Generic;
 using System.Linq;
 using Microsoft.Extensions.DependencyInjection;
 using System.Collections.ObjectModel;
+using Kentico.Kontent.Delivery.Abstractions.InlineContentItems;
+using Kentico.Kontent.Delivery.Abstractions;
 
 namespace Kentico.Kontent.Delivery.InlineContentItems
 {

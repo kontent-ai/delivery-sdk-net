@@ -2,6 +2,10 @@
 using System.Linq;
 using System.Net.Http;
 using Kentico.Kontent.Delivery;
+using Kentico.Kontent.Delivery.Abstractions;
+using Kentico.Kontent.Delivery.Abstractions.ContentLinks;
+using Kentico.Kontent.Delivery.Abstractions.InlineContentItems;
+using Kentico.Kontent.Delivery.Abstractions.RetryPolicy;
 using Kentico.Kontent.Delivery.Builders.DeliveryOptions;
 using Kentico.Kontent.Delivery.ContentLinks;
 using Kentico.Kontent.Delivery.InlineContentItems;
@@ -48,7 +52,7 @@ namespace Microsoft.Extensions.DependencyInjection
             {
                 throw new ArgumentNullException(nameof(deliveryOptions), "The Delivery options object is not specified.");
             }
-
+             
             return services
                 .RegisterOptions(deliveryOptions)
                 .RegisterDependencies();
@@ -105,6 +109,7 @@ namespace Microsoft.Extensions.DependencyInjection
 
         private static IServiceCollection RegisterDependencies(this IServiceCollection services)
         {
+            services.TryAddSingleton<IContentLinkResolver, ContentLinkResolver>();
             services.TryAddSingleton<IContentLinkUrlResolver, DefaultContentLinkUrlResolver>();
             services.TryAddSingleton<ITypeProvider, TypeProvider>();
             services.TryAddSingleton(new HttpClient());

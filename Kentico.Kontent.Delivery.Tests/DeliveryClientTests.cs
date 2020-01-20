@@ -9,9 +9,11 @@ using System.Linq;
 using System.Net;
 using System.Net.Http;
 using System.Threading.Tasks;
-using Kentico.Kontent.Delivery.RetryPolicy;
-using Kentico.Kontent.Delivery.StrongTyping;
 using Xunit;
+using Kentico.Kontent.Delivery.Abstractions;
+using Kentico.Kontent.Delivery.Abstractions.RetryPolicy;
+using Kentico.Kontent.Delivery.StrongTyping;
+using Kentico.Kontent.Delivery.ContentLinks;
 
 namespace Kentico.Kontent.Delivery.Tests
 {
@@ -1344,7 +1346,7 @@ namespace Kentico.Kontent.Delivery.Tests
         {
             var customTypeProvider = new CustomTypeProvider();
             var modelProvider = new ModelProvider(
-                _mockContentLinkUrlResolver,
+                new ContentLinkResolver(_mockContentLinkUrlResolver),
                 null,
                 customTypeProvider,
                 new PropertyMapper());

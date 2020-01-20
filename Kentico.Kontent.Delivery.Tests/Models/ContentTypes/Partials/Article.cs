@@ -1,4 +1,5 @@
-﻿using Newtonsoft.Json;
+﻿using Kentico.Kontent.Delivery.Abstractions;
+using Newtonsoft.Json;
 using NodaTime;
 
 namespace Kentico.Kontent.Delivery.Tests

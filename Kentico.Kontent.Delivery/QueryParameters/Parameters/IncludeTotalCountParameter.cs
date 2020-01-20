@@ -1,4 +1,6 @@
-﻿namespace Kentico.Kontent.Delivery
+﻿using Kentico.Kontent.Delivery.Abstractions;
+
+namespace Kentico.Kontent.Delivery
 {
     /// <summary>
     /// Specifies whether to include total count in the paging section.

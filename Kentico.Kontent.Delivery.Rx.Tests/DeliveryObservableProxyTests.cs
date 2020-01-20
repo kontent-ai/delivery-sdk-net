@@ -6,8 +6,10 @@ using System.Net.Http;
 using System.Reactive.Linq;
 using System.Threading.Tasks;
 using FakeItEasy;
-using Kentico.Kontent.Delivery.InlineContentItems;
-using Kentico.Kontent.Delivery.RetryPolicy;
+using Kentico.Kontent.Delivery.Abstractions;
+using Kentico.Kontent.Delivery.Abstractions.InlineContentItems;
+using Kentico.Kontent.Delivery.Abstractions.RetryPolicy;
+using Kentico.Kontent.Delivery.ContentLinks;
 using Kentico.Kontent.Delivery.StrongTyping;
 using Microsoft.Extensions.Options;
 using RichardSzalay.MockHttp;
@@ -252,10 +254,11 @@ namespace Kentico.Kontent.Delivery.Rx.Tests
             var httpClient = mockHttp.ToHttpClient();
             var deliveryOptions = new OptionsWrapper<DeliveryOptions>(new DeliveryOptions { ProjectId = guid });
             var contentLinkUrlResolver = A.Fake<IContentLinkUrlResolver>();
+            var contentLinkResolver = new ContentLinkResolver(contentLinkUrlResolver);
             var contentItemsProcessor = A.Fake<IInlineContentItemsProcessor>();
             var contentPropertyMapper =  new PropertyMapper();
             var contentTypeProvider = new CustomTypeProvider();
-            var modelProvider = new ModelProvider(contentLinkUrlResolver, contentItemsProcessor, contentTypeProvider, contentPropertyMapper);
+            var modelProvider = new ModelProvider(contentLinkResolver, contentItemsProcessor, contentTypeProvider, contentPropertyMapper);
             var retryPolicy = A.Fake<IRetryPolicy>();
             var retryPolicyProvider = A.Fake<IRetryPolicyProvider>();
             A.CallTo(() => retryPolicyProvider.GetRetryPolicy()).Returns(retryPolicy);
@@ -264,7 +267,7 @@ namespace Kentico.Kontent.Delivery.Rx.Tests
             var client = new DeliveryClient(
                 deliveryOptions,
                 httpClient,
-                contentLinkUrlResolver, 
+                contentLinkResolver, 
                 null,
                 modelProvider,
                 retryPolicyProvider,

@@ -9,6 +9,10 @@ using Newtonsoft.Json.Linq;
 using Kentico.Kontent.Delivery.Extensions;
 using Kentico.Kontent.Delivery.InlineContentItems;
 using Kentico.Kontent.Delivery.RetryPolicy;
+using Kentico.Kontent.Delivery.Abstractions;
+using Kentico.Kontent.Delivery.Abstractions.InlineContentItems;
+using Kentico.Kontent.Delivery.Abstractions.RetryPolicy;
+using Kentico.Kontent.Delivery.Abstractions.ContentLinks;
 
 namespace Kentico.Kontent.Delivery
 {
@@ -18,7 +22,7 @@ namespace Kentico.Kontent.Delivery
     internal sealed class DeliveryClient : IDeliveryClient
     {
         internal readonly DeliveryOptions DeliveryOptions;
-        internal readonly IContentLinkUrlResolver ContentLinkUrlResolver;
+        internal readonly IContentLinkResolver ContentLinkResolver;
         internal readonly IInlineContentItemsProcessor InlineContentItemsProcessor;
         internal readonly IModelProvider ModelProvider;
         internal readonly ITypeProvider TypeProvider;
@@ -36,7 +40,7 @@ namespace Kentico.Kontent.Delivery
         /// </summary>
         /// <param name="deliveryOptions">The settings of the Kentico Kontent project.</param>
         /// <param name="httpClient">A custom HTTP client instance</param>
-        /// <param name="contentLinkUrlResolver">An instance of an object that can resolve links in rich text elements</param>
+        /// <param name="contentLinkResolver">An instance of an object that can resolve links in rich text elements</param>
         /// <param name="contentItemsProcessor">An instance of an object that can resolve linked items in rich text elements</param>
         /// <param name="modelProvider">An instance of an object that can JSON responses into strongly typed CLR objects</param>
         /// <param name="retryPolicyProvider">A provider of a retry policy.</param>
@@ -45,7 +49,7 @@ namespace Kentico.Kontent.Delivery
         public DeliveryClient(
             IOptions<DeliveryOptions> deliveryOptions,
             HttpClient httpClient = null,
-            IContentLinkUrlResolver contentLinkUrlResolver = null,
+            IContentLinkResolver contentLinkResolver = null,
             IInlineContentItemsProcessor contentItemsProcessor = null,
             IModelProvider modelProvider = null,
             IRetryPolicyProvider retryPolicyProvider = null,
@@ -55,7 +59,7 @@ namespace Kentico.Kontent.Delivery
         {
             DeliveryOptions = deliveryOptions.Value;
             HttpClient = httpClient;
-            ContentLinkUrlResolver = contentLinkUrlResolver;
+            ContentLinkResolver = contentLinkResolver;
             InlineContentItemsProcessor = contentItemsProcessor;
             ModelProvider = modelProvider;
             RetryPolicyProvider = retryPolicyProvider;
@@ -142,7 +146,7 @@ namespace Kentico.Kontent.Delivery
             var endpointUrl = UrlBuilder.GetItemUrl(codename, parameters);
             var response = await GetDeliverResponseAsync(endpointUrl);
 
-            return new DeliveryItemResponse(response, ModelProvider, ContentLinkUrlResolver);
+            return new DeliveryItemResponse(response, ModelProvider, ContentLinkResolver);
         }
 
         /// <summary>
@@ -185,7 +189,7 @@ namespace Kentico.Kontent.Delivery
             var endpointUrl = UrlBuilder.GetItemsUrl(parameters);
             var response = await GetDeliverResponseAsync(endpointUrl);
 
-            return new DeliveryItemListingResponse(response, ModelProvider, ContentLinkUrlResolver);
+            return new DeliveryItemListingResponse(response, ModelProvider, ContentLinkResolver);
         }
 
         /// <summary>
@@ -238,7 +242,7 @@ namespace Kentico.Kontent.Delivery
             async Task<DeliveryItemsFeedResponse> GetItemsBatchAsync(string continuationToken)
             {
                 var response = await GetDeliverResponseAsync(endpointUrl, continuationToken);
-                return new DeliveryItemsFeedResponse(response, ModelProvider, ContentLinkUrlResolver);
+                return new DeliveryItemsFeedResponse(response, ModelProvider, ContentLinkResolver);
             }
         }
 

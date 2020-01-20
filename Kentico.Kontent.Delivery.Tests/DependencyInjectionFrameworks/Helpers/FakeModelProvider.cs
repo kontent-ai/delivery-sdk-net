@@ -1,4 +1,5 @@
 ﻿using System;
+using Kentico.Kontent.Delivery.Abstractions;
 using Newtonsoft.Json.Linq;
 
 namespace Kentico.Kontent.Delivery.Tests.DependencyInjectionFrameworks.Helpers
