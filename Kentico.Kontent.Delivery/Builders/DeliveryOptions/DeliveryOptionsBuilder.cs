@@ -86,6 +86,19 @@ namespace Kentico.Kontent.Delivery
         IOptionalDeliveryConfiguration IOptionalDeliveryConfiguration.WithCustomEndpoint(string endpoint)
         {
             endpoint.ValidateCustomEndpoint();
+            SetCustomEndpoint(endpoint);
+            return this;
+        }
+
+        IOptionalDeliveryConfiguration IOptionalDeliveryConfiguration.WithCustomEndpoint(Uri endpoint)
+        {
+            endpoint.ValidateCustomEndpoint();
+            SetCustomEndpoint(endpoint.AbsoluteUri);
+            return this;
+        }
+
+        private void SetCustomEndpoint(string endpoint)
+        {
             if (_deliveryOptions.UsePreviewApi)
             {
                 _deliveryOptions.PreviewEndpoint = endpoint;
@@ -94,23 +107,6 @@ namespace Kentico.Kontent.Delivery
             {
                 _deliveryOptions.ProductionEndpoint = endpoint;
             }
-
-            return this;
-        }
-
-        IOptionalDeliveryConfiguration IOptionalDeliveryConfiguration.WithCustomEndpoint(Uri endpoint)
-        {
-            endpoint.ValidateCustomEndpoint();
-            if (_deliveryOptions.UsePreviewApi)
-            {
-                _deliveryOptions.PreviewEndpoint = endpoint.AbsoluteUri;
-            }
-            else
-            {
-                _deliveryOptions.ProductionEndpoint = endpoint.AbsoluteUri;
-            }
-
-            return this;
         }
 
         DeliveryOptions IDeliveryOptionsBuild.Build()
