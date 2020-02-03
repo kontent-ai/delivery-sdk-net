@@ -28,7 +28,7 @@ namespace Kentico.Kontent.Delivery
         internal readonly ITypeProvider TypeProvider;
         internal readonly IPropertyMapper PropertyMapper;
         internal readonly IRetryPolicyProvider RetryPolicyProvider;
-        internal readonly HttpClient HttpClient;
+        internal readonly IDeliveryHttpClient DeliveryHttpClient;
 
         private DeliveryEndpointUrlBuilder _urlBuilder;
 
@@ -39,32 +39,32 @@ namespace Kentico.Kontent.Delivery
         /// Initializes a new instance of the <see cref="DeliveryClient"/> class for retrieving content of the specified project.
         /// </summary>
         /// <param name="deliveryOptions">The settings of the Kentico Kontent project.</param>
-        /// <param name="httpClient">A custom HTTP client instance</param>
         /// <param name="contentLinkResolver">An instance of an object that can resolve links in rich text elements</param>
         /// <param name="contentItemsProcessor">An instance of an object that can resolve linked items in rich text elements</param>
         /// <param name="modelProvider">An instance of an object that can JSON responses into strongly typed CLR objects</param>
         /// <param name="retryPolicyProvider">A provider of a retry policy.</param>
         /// <param name="typeProvider">An instance of an object that can map Kentico Kontent content types to CLR types</param>
         /// <param name="propertyMapper">An instance of an object that can map Kentico Kontent content item fields to model properties</param>
+        /// <param name="deliveryHttpClient">An instance of an object that can send request againts Kentico Kontent Delivery API</param>
         public DeliveryClient(
             IOptions<DeliveryOptions> deliveryOptions,
-            HttpClient httpClient = null,
             IContentLinkResolver contentLinkResolver = null,
             IInlineContentItemsProcessor contentItemsProcessor = null,
             IModelProvider modelProvider = null,
             IRetryPolicyProvider retryPolicyProvider = null,
             ITypeProvider typeProvider = null,
-            IPropertyMapper propertyMapper = null
+            IPropertyMapper propertyMapper = null,
+            IDeliveryHttpClient deliveryHttpClient = null
         )
         {
             DeliveryOptions = deliveryOptions.Value;
-            HttpClient = httpClient;
             ContentLinkResolver = contentLinkResolver;
             InlineContentItemsProcessor = contentItemsProcessor;
             ModelProvider = modelProvider;
             RetryPolicyProvider = retryPolicyProvider;
             TypeProvider = typeProvider;
             PropertyMapper = propertyMapper;
+            DeliveryHttpClient = deliveryHttpClient;
         }
 
         /// <summary>
@@ -225,7 +225,7 @@ namespace Kentico.Kontent.Delivery
         /// <returns>The <see cref="DeliveryItemsFeed"/> instance that can be used to enumerate through content items. If no query parameters are specified, all content items are enumerated.</returns>
         public IDeliveryItemsFeed GetItemsFeed(params IQueryParameter[] parameters)
         {
-            return GetItemsFeed((IEnumerable<IQueryParameter>) parameters);
+            return GetItemsFeed((IEnumerable<IQueryParameter>)parameters);
         }
 
         /// <summary>
@@ -254,7 +254,7 @@ namespace Kentico.Kontent.Delivery
         /// <returns>The <see cref="DeliveryItemsFeed{T}"/> instance that can be used to enumerate through content items. If no query parameters are specified, all content items are enumerated.</returns>
         public IDeliveryItemsFeed<T> GetItemsFeed<T>(params IQueryParameter[] parameters)
         {
-            return GetItemsFeed<T>((IEnumerable<IQueryParameter>) parameters);
+            return GetItemsFeed<T>((IEnumerable<IQueryParameter>)parameters);
         }
 
         /// <summary>
@@ -518,7 +518,7 @@ namespace Kentico.Kontent.Delivery
                 message.Headers.AddContinuationHeader(continuationToken);
             }
 
-            return HttpClient.SendAsync(message);
+            return DeliveryHttpClient.SendHttpMessageAsync(message);
         }
 
         private bool UseSecureAccess()

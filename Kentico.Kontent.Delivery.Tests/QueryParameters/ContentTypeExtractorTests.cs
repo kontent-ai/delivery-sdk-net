@@ -28,7 +28,6 @@ namespace Kentico.Kontent.Delivery.Tests.QueryParameters
                 deliveryOptions,
                 null,
                 null,
-                null,
                 modelProvider,
                 null,
                 _contentTypeProvider

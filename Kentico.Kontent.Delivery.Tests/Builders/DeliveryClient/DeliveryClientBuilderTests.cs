@@ -61,11 +61,11 @@ namespace Kentico.Kontent.Delivery.Tests.Builders.DeliveryClient
             var mockUnretrievedInlineContentItemsResolver = A.Fake<IInlineContentItemsResolver<UnretrievedContentItem>>();
             var mockAnContentItemsResolver = A.Fake<IInlineContentItemsResolver<CompleteContentItemModel>>();
             var mockTypeProvider = A.Fake<ITypeProvider>();
-            var mockHttp = new MockHttpMessageHandler().ToHttpClient();            
+            var mockDeliveryHttpClient = new DeliveryHttpClient(new MockHttpMessageHandler().ToHttpClient());
 
             var deliveryClient = (Delivery.DeliveryClient) DeliveryClientBuilder
                 .WithProjectId(ProjectId)
-                .WithHttpClient(mockHttp)
+                .WithDeliveryHttpClient(mockDeliveryHttpClient)
                 .WithContentLinkUrlResolver(mockContentLinkUrlResolver)
                 .WithInlineContentItemsProcessor(mockInlineContentItemsProcessor)
                 .WithInlineContentItemsResolver(mockDefaultInlineContentItemsResolver)
@@ -84,7 +84,7 @@ namespace Kentico.Kontent.Delivery.Tests.Builders.DeliveryClient
             Assert.Equal(mockPropertyMapper, deliveryClient.PropertyMapper);
             Assert.Equal(mockRetryPolicyProvider, deliveryClient.RetryPolicyProvider);
             Assert.Equal(mockTypeProvider, deliveryClient.TypeProvider);
-            Assert.Equal(mockHttp, deliveryClient.HttpClient);
+            Assert.Equal(mockDeliveryHttpClient, deliveryClient.DeliveryHttpClient);
         }
 
         [Fact]
@@ -145,7 +145,7 @@ namespace Kentico.Kontent.Delivery.Tests.Builders.DeliveryClient
             Assert.NotNull(deliveryClient.PropertyMapper);
             Assert.NotNull(deliveryClient.TypeProvider);
             Assert.NotNull(deliveryClient.ContentLinkResolver);
-            Assert.NotNull(deliveryClient.HttpClient);
+            Assert.NotNull(deliveryClient.DeliveryHttpClient);
             Assert.NotNull(deliveryClient.InlineContentItemsProcessor);
             Assert.NotNull(deliveryClient.RetryPolicyProvider);
             Assert.Equal(expectedResolvableInlineContentItemsTypes, actualResolvableInlineContentItemTypes);
@@ -156,7 +156,7 @@ namespace Kentico.Kontent.Delivery.Tests.Builders.DeliveryClient
         {
             var builderStep = DeliveryClientBuilder.WithProjectId(_guid);
 
-            Assert.Throws<ArgumentNullException>(() => builderStep.WithHttpClient(null));
+            Assert.Throws<ArgumentNullException>(() => builderStep.WithDeliveryHttpClient(null));
         }
 
         [Fact]

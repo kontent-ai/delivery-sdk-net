@@ -1,0 +1,34 @@
+﻿using Kentico.Kontent.Delivery.Abstractions;
+using System;
+using System.Net.Http;
+using System.Threading.Tasks;
+
+namespace Kentico.Kontent.Delivery
+{
+    /// <summary>
+    /// Executes Http requests against the Kentico Kontent Delivery API.
+    /// </summary>
+    public class DeliveryHttpClient : IDeliveryHttpClient
+    {
+        private readonly HttpClient _httpClient;
+
+        /// <summary>
+        /// Initializes a new instance of the <see cref="IDeliveryHttpClient"/> class.
+        /// </summary>
+        /// <param name="httpClient">Http client instance</param>
+        public DeliveryHttpClient(HttpClient httpClient = null)
+        {
+            _httpClient = httpClient ?? new HttpClient();
+        }
+
+        /// <summary>
+        /// Returns a response message from Kentico Kontent Delivery API.
+        /// </summary>
+        /// <param name="message">HttpRequestMessage instance represents the request message</param>
+        /// <returns></returns>
+        public async Task<HttpResponseMessage> SendHttpMessageAsync(HttpRequestMessage message)
+        {
+            return await _httpClient.SendAsync(message);
+        }
+    }
+}

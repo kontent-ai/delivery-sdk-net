@@ -20,9 +20,9 @@ namespace Kentico.Kontent.Delivery.Tests
         {
             // Arrange
             const string testUrl = "https://tests.fake.url";
-            var httpClient = MockHttpClient(testUrl);
             var deliveryOptions = MockDeliveryOptions(testUrl);
-            var deliveryClient = MockDeliveryClient(deliveryOptions, httpClient);
+            var deliveryHttpClient = new DeliveryHttpClient(MockHttpClient(testUrl));
+            var deliveryClient = MockDeliveryClient(deliveryOptions, deliveryHttpClient);
 
             // Act
             var contentItem = await deliveryClient.GetItemAsync("test");
@@ -50,12 +50,13 @@ namespace Kentico.Kontent.Delivery.Tests
                 .WithCustomEndpoint($"{baseUrl}/{{0}}")
                 .Build();
 
-        private static IDeliveryClient MockDeliveryClient(DeliveryOptions deliveryOptions, HttpClient httpClient)
+        private static IDeliveryClient MockDeliveryClient(DeliveryOptions deliveryOptions, IDeliveryHttpClient deliveryHttpClient)
         {
             var contentLinkUrlResolver = A.Fake<IContentLinkUrlResolver>();
             var modelProvider = A.Fake<IModelProvider>();
             var retryPolicy = A.Fake<IRetryPolicy>();
             var retryPolicyProvider = A.Fake<IRetryPolicyProvider>();
+          
             A.CallTo(() => retryPolicyProvider.GetRetryPolicy())
                 .Returns(retryPolicy);
             A.CallTo(() => retryPolicy.ExecuteAsync(A<Func<Task<HttpResponseMessage>>>._))
@@ -63,7 +64,7 @@ namespace Kentico.Kontent.Delivery.Tests
 
             var client = DeliveryClientBuilder
                 .WithOptions(_ => deliveryOptions)
-                .WithHttpClient(httpClient)
+                .WithDeliveryHttpClient(deliveryHttpClient)
                 .WithContentLinkUrlResolver(contentLinkUrlResolver)
                 .WithModelProvider(modelProvider)
                 .WithRetryPolicyProvider(retryPolicyProvider)

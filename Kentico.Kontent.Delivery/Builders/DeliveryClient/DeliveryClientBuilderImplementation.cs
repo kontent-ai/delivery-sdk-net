@@ -38,8 +38,8 @@ namespace Kentico.Kontent.Delivery.Builders.DeliveryClient
                     .UseProductionApi()
                     .Build());
 
-        IOptionalClientSetup IOptionalClientSetup.WithHttpClient(HttpClient httpClient)
-            => RegisterOrThrow(httpClient, nameof(httpClient));
+        IOptionalClientSetup IOptionalClientSetup.WithDeliveryHttpClient(IDeliveryHttpClient  deliveryHttpClient)
+            => RegisterOrThrow(deliveryHttpClient, nameof(deliveryHttpClient));
 
         IOptionalClientSetup IOptionalClientSetup.WithContentLinkUrlResolver(IContentLinkUrlResolver contentLinkUrlResolver)
             => RegisterOrThrow(contentLinkUrlResolver, nameof(contentLinkUrlResolver));

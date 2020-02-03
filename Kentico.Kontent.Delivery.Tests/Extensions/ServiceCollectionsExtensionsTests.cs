@@ -46,7 +46,7 @@ namespace Kentico.Kontent.Delivery.Tests.Extensions
                 { typeof(IContentLinkUrlResolver), typeof(DefaultContentLinkUrlResolver) },
                 { typeof(IContentLinkResolver), typeof(ContentLinkResolver) },
                 { typeof(ITypeProvider), typeof(TypeProvider) },
-                { typeof(HttpClient), typeof(HttpClient) },
+                { typeof(IDeliveryHttpClient), typeof(DeliveryHttpClient) },
                 { typeof(IInlineContentItemsProcessor), typeof(InlineContentItemsProcessor) },
                 { typeof(IInlineContentItemsResolver<object>), typeof(ReplaceWithWarningAboutRegistrationResolver) },
                 { typeof(IInlineContentItemsResolver<UnretrievedContentItem>), typeof(ReplaceWithWarningAboutUnretrievedItemResolver) },
@@ -54,7 +54,7 @@ namespace Kentico.Kontent.Delivery.Tests.Extensions
                 { typeof(IModelProvider), typeof(ModelProvider) },
                 { typeof(IPropertyMapper), typeof(PropertyMapper) },
                 { typeof(IRetryPolicyProvider), typeof(DefaultRetryPolicyProvider) },
-                { typeof(IDeliveryClient), typeof(DeliveryClient) }
+                { typeof(IDeliveryClient), typeof(DeliveryClient) },
             }
         );
 
