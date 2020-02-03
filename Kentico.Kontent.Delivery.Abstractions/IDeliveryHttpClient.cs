@@ -11,7 +11,7 @@ namespace Kentico.Kontent.Delivery.Abstractions
         /// <summary>
         /// Returns a response message from Kentico Kontent Delivery API.
         /// </summary>
-        /// <param name="message"></param>
+        /// <param name="message">HttpRequestMessage instance represents the request message</param>
         /// <returns></returns>
         Task<HttpResponseMessage> SendHttpMessageAsync(HttpRequestMessage message);
     }
