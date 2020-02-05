@@ -20,7 +20,7 @@ namespace Kentico.Kontent.Delivery
         private readonly IServiceProvider _serviceProvider;
 
         /// <summary>
-        /// 
+        /// Initializes a new instance of the <see cref="DeliveryClientFactory"/> class
         /// </summary>
         /// <param name="optionsMonitor">A <see cref="DeliveryClientFactory"/> options</param>
         /// <param name="serviceProvider">A <see cref="IServiceProvider"/> instance</param>
