@@ -7,12 +7,14 @@ using Kentico.Kontent.Delivery.Abstractions.ContentLinks;
 using Kentico.Kontent.Delivery.Abstractions.InlineContentItems;
 using Kentico.Kontent.Delivery.Abstractions.RetryPolicy;
 using Kentico.Kontent.Delivery.Builders.DeliveryOptions;
+using Kentico.Kontent.Delivery.Configuration;
 using Kentico.Kontent.Delivery.ContentLinks;
 using Kentico.Kontent.Delivery.InlineContentItems;
 using Kentico.Kontent.Delivery.RetryPolicy;
 using Kentico.Kontent.Delivery.StrongTyping;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection.Extensions;
+using Microsoft.Extensions.Options;
 
 // see https://docs.microsoft.com/en-us/aspnet/core/fundamentals/dependency-injection?view=aspnetcore-2.2
 namespace Microsoft.Extensions.DependencyInjection
@@ -22,6 +24,94 @@ namespace Microsoft.Extensions.DependencyInjection
     /// </summary>
     public static class ServiceCollectionExtensions
     {
+        /// <summary>
+        /// Registers a delegate that will be used to configure a named <see cref="IDeliveryClient"/> via <see cref="IDeliveryClientFactory"/>
+        /// </summary>
+        ///<param name="name">The name of the client configuration</param>
+        /// <param name="services">A <see cref="ServiceCollection"/> instance for registering and resolving dependencies.</param>
+        /// <param name="buildDeliveryOptions">A function that is provided with an instance of <see cref="DeliveryOptionsBuilder"/>and expected to return a valid instance of <see cref="DeliveryOptions"/>.</param>
+        /// <returns>The <paramref name="services"/> instance with <see cref="IDeliveryClient"/> registered in it</returns>
+        public static IServiceCollection AddDeliveryClient(this IServiceCollection services, string name, Func<IDeliveryOptionsBuilder, DeliveryOptions> buildDeliveryOptions)
+        {
+            if (buildDeliveryOptions == null)
+            {
+                throw new ArgumentNullException(nameof(buildDeliveryOptions), "The function for creating Delivery options is null.");
+            }
+
+            services.AddTransient<IConfigureOptions<DeliveryClientFactoryOptions>>(s =>
+            {
+                return new ConfigureNamedOptions<DeliveryClientFactoryOptions>(name, options =>
+                {
+                    options.DeliveryClientsActions.Add(() =>
+                    {
+                        services.AddDeliveryClient(buildDeliveryOptions);
+                        var serviceProvider = services.BuildServiceProvider();
+                        return serviceProvider.GetService<IDeliveryClient>();
+                    });
+                });
+
+            });
+
+            return services.RegisterDependencies();
+        }
+
+        /// <summary>
+        /// Registers a delegate that will be used to configure a named <see cref="IDeliveryClient"/> via <see cref="IDeliveryClientFactory"/>
+        /// </summary>
+        ///<param name="name">The name of the client configuration</param>
+        /// <param name="services">A <see cref="ServiceCollection"/> instance for registering and resolving dependencies.</param>
+        /// <param name="deliveryOptions">A <see cref="DeliveryOptions"/> instance.  Options themselves are not further validated (see <see cref="DeliveryOptionsValidator.Validate"/>).</param>
+        /// <returns>The <paramref name="services"/> instance with <see cref="IDeliveryClient"/> registered in it</returns>
+        public static IServiceCollection AddDeliveryClient(this IServiceCollection services, string name, DeliveryOptions deliveryOptions)
+        {
+            if (deliveryOptions == null)
+            {
+                throw new ArgumentNullException(nameof(deliveryOptions), "The Delivery options object is not specified.");
+            }
+
+            services.AddTransient<IConfigureOptions<DeliveryClientFactoryOptions>>(s =>
+            {
+                return new ConfigureNamedOptions<DeliveryClientFactoryOptions>(name, options =>
+                {
+                    options.DeliveryClientsActions.Add(() =>
+                    {
+                        services.AddDeliveryClient(deliveryOptions);
+                        var serviceProvider = services.BuildServiceProvider();
+                        return serviceProvider.GetService<IDeliveryClient>();
+                    });
+                });
+
+            });
+
+            return services.RegisterDependencies();
+        }
+
+        /// <summary>
+        /// Registers a delegate that will be used to configure a named <see cref="IDeliveryClient"/> via <see cref="IDeliveryClientFactory"/>
+        /// </summary>
+        /// <param name="services">A <see cref="ServiceCollection"/> instance for registering and resolving dependencies.</param>
+        /// <param name="name">The name of the client configuration</param>
+        /// <param name="configureDeliveryClient">A delegate that is used to configure an <see cref="IDeliveryClient"/>.</param>
+        /// <returns></returns>
+        public static IServiceCollection AddDeliveryClient(this IServiceCollection services, string name, Func<IDeliveryClient> configureDeliveryClient)
+        {
+            if (configureDeliveryClient == null)
+            {
+                throw new ArgumentNullException(nameof(configureDeliveryClient), "The function for creating DeliveryClient is null.");
+            }
+
+            services.AddTransient<IConfigureOptions<DeliveryClientFactoryOptions>>(s =>
+            {
+                return new ConfigureNamedOptions<DeliveryClientFactoryOptions>(name, options =>
+                {
+                    options.DeliveryClientsActions.Add(configureDeliveryClient);
+                });
+
+            });
+
+            return services.RegisterDependencies();
+        }
+
         /// <summary>
         /// Registers a <see cref="IDeliveryClient"/> instance to an <see cref="IDeliveryClient"/> interface in <see cref="ServiceCollection"/>.
         /// </summary>
@@ -121,6 +211,7 @@ namespace Microsoft.Extensions.DependencyInjection
             services.TryAddSingleton<IPropertyMapper, PropertyMapper>();
             services.TryAddSingleton<IRetryPolicyProvider, DefaultRetryPolicyProvider>();
             services.TryAddSingleton<IDeliveryClient, DeliveryClient>();
+            services.TryAddSingleton<IDeliveryClientFactory, DeliveryClientFactory>();
 
             return services;
         }
