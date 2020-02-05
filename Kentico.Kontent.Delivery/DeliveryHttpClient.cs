@@ -25,7 +25,7 @@ namespace Kentico.Kontent.Delivery
         /// Returns a response message from Kentico Kontent Delivery API.
         /// </summary>
         /// <param name="message">HttpRequestMessage instance represents the request message</param>
-        /// <returns></returns>
+        /// <returns>Retuns a HttpResponseMessage from Kentico Kontent Delivery API</returns>
         public async Task<HttpResponseMessage> SendHttpMessageAsync(HttpRequestMessage message)
         {
             return await _httpClient.SendAsync(message);
