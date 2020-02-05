@@ -4,6 +4,7 @@ using System.Collections.ObjectModel;
 using System.IO;
 using System.Linq;
 using System.Net.Http;
+using FakeItEasy;
 using Kentico.Kontent.Delivery.Abstractions;
 using Kentico.Kontent.Delivery.Abstractions.ContentLinks;
 using Kentico.Kontent.Delivery.Abstractions.InlineContentItems;
@@ -102,11 +103,31 @@ namespace Kentico.Kontent.Delivery.Tests.Extensions
 
             AssertFactoryServiceCollection(_expectedInterfacesWithImplementationFactoryTypes, _expectedResolvableContentTypes);
         }
+        [Fact]
+        public void AddDeliveryFactoryClientWithDeliveryClient_AllServicesAreRegistered()
+        {
+            var deliveryClient = A.Fake<IDeliveryClient>();
+            _fakeServiceCollection.AddDeliveryClient("named", () => deliveryClient);
+
+            AssertFactoryServiceCollection(_expectedInterfacesWithImplementationFactoryTypes, _expectedResolvableContentTypes);
+        }
 
         [Fact]
-        public void AddDeliveryFactoryClientWithNullDeliveryOptions_AllServicesAreRegistered()
+        public void AddDeliveryFactoryClientWithNullDeliveryOptions_ThrowsArgumentNullException()
         {
             Assert.Throws<ArgumentNullException>(() => _fakeServiceCollection.AddDeliveryClient("named", deliveryOptions: null));
+        }
+
+        [Fact]
+        public void AddDeliveryFactoryClientWithNullDeliveryClient_ThrowsArgumentNullException()
+        {
+            Assert.Throws<ArgumentNullException>(() => _fakeServiceCollection.AddDeliveryClient("named", configureDeliveryClient: null));
+        }
+
+        [Fact]
+        public void AddDeliveryFactoryClientWithNullDeliveryOptionsBuilder_ThrowsArgumentNullException()
+        {
+            Assert.Throws<ArgumentNullException>(() => _fakeServiceCollection.AddDeliveryClient("named", buildDeliveryOptions: null));
         }
 
         [Fact]
