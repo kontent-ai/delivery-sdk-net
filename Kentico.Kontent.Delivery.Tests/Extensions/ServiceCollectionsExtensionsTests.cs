@@ -103,25 +103,11 @@ namespace Kentico.Kontent.Delivery.Tests.Extensions
 
             AssertFactoryServiceCollection(_expectedInterfacesWithImplementationFactoryTypes, _expectedResolvableContentTypes);
         }
-        [Fact]
-        public void AddDeliveryFactoryClientWithDeliveryClient_AllServicesAreRegistered()
-        {
-            var deliveryClient = A.Fake<IDeliveryClient>();
-            _fakeServiceCollection.AddDeliveryClient("named", () => deliveryClient);
-
-            AssertFactoryServiceCollection(_expectedInterfacesWithImplementationFactoryTypes, _expectedResolvableContentTypes);
-        }
 
         [Fact]
         public void AddDeliveryFactoryClientWithNullDeliveryOptions_ThrowsArgumentNullException()
         {
             Assert.Throws<ArgumentNullException>(() => _fakeServiceCollection.AddDeliveryClient("named", deliveryOptions: null));
-        }
-
-        [Fact]
-        public void AddDeliveryFactoryClientWithNullDeliveryClient_ThrowsArgumentNullException()
-        {
-            Assert.Throws<ArgumentNullException>(() => _fakeServiceCollection.AddDeliveryClient("named", configureDeliveryClient: null));
         }
 
         [Fact]

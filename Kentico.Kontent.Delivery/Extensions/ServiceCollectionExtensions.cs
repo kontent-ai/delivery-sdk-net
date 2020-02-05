@@ -87,32 +87,6 @@ namespace Microsoft.Extensions.DependencyInjection
         }
 
         /// <summary>
-        /// Registers a delegate that will be used to configure a named <see cref="IDeliveryClient"/> via <see cref="IDeliveryClientFactory"/>
-        /// </summary>
-        /// <param name="services">A <see cref="ServiceCollection"/> instance for registering and resolving dependencies.</param>
-        /// <param name="name">The name of the client configuration</param>
-        /// <param name="configureDeliveryClient">A delegate that is used to configure an <see cref="IDeliveryClient"/>.</param>
-        /// <returns></returns>
-        public static IServiceCollection AddDeliveryClient(this IServiceCollection services, string name, Func<IDeliveryClient> configureDeliveryClient)
-        {
-            if (configureDeliveryClient == null)
-            {
-                throw new ArgumentNullException(nameof(configureDeliveryClient), "The function for creating DeliveryClient is null.");
-            }
-
-            services.AddTransient<IConfigureOptions<DeliveryClientFactoryOptions>>(s =>
-            {
-                return new ConfigureNamedOptions<DeliveryClientFactoryOptions>(name, options =>
-                {
-                    options.DeliveryClientsActions.Add(configureDeliveryClient);
-                });
-
-            });
-
-            return services.RegisterDependencies();
-        }
-
-        /// <summary>
         /// Registers a <see cref="IDeliveryClient"/> instance to an <see cref="IDeliveryClient"/> interface in <see cref="ServiceCollection"/>.
         /// </summary>
         /// <param name="services">A <see cref="ServiceCollection"/> instance for registering and resolving dependencies.</param>
