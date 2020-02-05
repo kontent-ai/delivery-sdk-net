@@ -1333,7 +1333,7 @@ namespace Kentico.Kontent.Delivery.Tests
                 .WithInlineContentItemsResolver(InlineContentItemsResolverFactory.Instance
                     .ResolveTo<HostedVideo>(video => hostedVideoPrefix + video.VideoHost.First().Name))
                 .WithTypeProvider(new CustomTypeProvider())
-                .WithHttpClient(_mockHttp.ToHttpClient())
+                .WithDeliveryHttpClient(new DeliveryHttpClient(_mockHttp.ToHttpClient()))
                 .Build();
 
             var article = await deliveryClient.GetItemAsync<Article>("coffee_beverages_explained");

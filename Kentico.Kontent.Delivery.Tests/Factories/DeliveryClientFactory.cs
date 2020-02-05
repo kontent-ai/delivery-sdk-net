@@ -42,13 +42,13 @@ namespace Kentico.Kontent.Delivery.Tests.Factories
 
             var client = new DeliveryClient(
                 Options.Create(new DeliveryOptions { ProjectId = projectId.ToString() }),
-                httpClient,
                 new ContentLinkResolver(_mockContentLinkUrlResolver),
                 _mockInlineContentItemsProcessor,
                 _mockModelProvider,
                 _mockResiliencePolicyProvider,
                 _mockTypeProvider,
-                _mockPropertyMapper
+                _mockPropertyMapper,
+                new DeliveryHttpClient(httpClient)
             );
 
             return client;
@@ -56,16 +56,16 @@ namespace Kentico.Kontent.Delivery.Tests.Factories
 
         internal static DeliveryClient GetMockedDeliveryClientWithOptions(DeliveryOptions options, MockHttpMessageHandler httpMessageHandler = null)
         {
-            var httpClient = httpMessageHandler != null ? httpMessageHandler.ToHttpClient() : MockHttp.ToHttpClient();
+            var deliveryHttpClient = new DeliveryHttpClient(httpMessageHandler != null ? httpMessageHandler.ToHttpClient() : MockHttp.ToHttpClient());
             var client = new DeliveryClient(
                 Options.Create(options),
-                httpClient,
                 new ContentLinkResolver(_mockContentLinkUrlResolver),
                 _mockInlineContentItemsProcessor,
                 _mockModelProvider,
                 _mockResiliencePolicyProvider,
                 _mockTypeProvider,
-                _mockPropertyMapper
+                _mockPropertyMapper,
+                deliveryHttpClient
             );
 
             return client;

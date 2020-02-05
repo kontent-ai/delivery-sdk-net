@@ -108,7 +108,7 @@ namespace Kentico.Kontent.Delivery.Tests
 
         private DeliveryClient InitializeDeliveryClient(MockHttpMessageHandler mockHttp)
         {
-            var httpClient = mockHttp.ToHttpClient();
+            var deliveryHttpClient = new DeliveryHttpClient(mockHttp.ToHttpClient());
             var contentLinkUrlResolver = A.Fake<IContentLinkUrlResolver>();
             var deliveryOptions = new OptionsWrapper<DeliveryOptions>(new DeliveryOptions { ProjectId = guid });
             var retryPolicy = A.Fake<IRetryPolicy>();
@@ -123,7 +123,7 @@ namespace Kentico.Kontent.Delivery.Tests
                 new CustomTypeProvider(),
                 new PropertyMapper()
             );
-            var client = new DeliveryClient(deliveryOptions, httpClient, null, null, modelProvider, retryPolicyProvider);
+            var client = new DeliveryClient(deliveryOptions, null, null, modelProvider, retryPolicyProvider, null, null, deliveryHttpClient);
 
             return client;
         }

@@ -251,7 +251,7 @@ namespace Kentico.Kontent.Delivery.Rx.Tests
         private IDeliveryClient GetDeliveryClient(Action mockAction)
         {
             mockAction();
-            var httpClient = mockHttp.ToHttpClient();
+            var deliveryHttpClient = new DeliveryHttpClient(mockHttp.ToHttpClient());
             var deliveryOptions = new OptionsWrapper<DeliveryOptions>(new DeliveryOptions { ProjectId = guid });
             var contentLinkUrlResolver = A.Fake<IContentLinkUrlResolver>();
             var contentLinkResolver = new ContentLinkResolver(contentLinkUrlResolver);
@@ -266,12 +266,13 @@ namespace Kentico.Kontent.Delivery.Rx.Tests
                 .ReturnsLazily(call => call.GetArgument<Func<Task<HttpResponseMessage>>>(0)());
             var client = new DeliveryClient(
                 deliveryOptions,
-                httpClient,
                 contentLinkResolver, 
                 null,
                 modelProvider,
                 retryPolicyProvider,
-                contentTypeProvider
+                contentTypeProvider,
+                null,
+                deliveryHttpClient
             );
 
             return client;

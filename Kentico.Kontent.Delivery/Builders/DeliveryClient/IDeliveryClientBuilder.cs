@@ -30,10 +30,10 @@ namespace Kentico.Kontent.Delivery.Builders.DeliveryClient
     public interface IOptionalClientSetup : IDeliveryClientBuild
     {
         /// <summary>
-        /// Use a custom HTTP client.
+        /// Use a custom delivery HTTP client
         /// </summary>
-        /// <param name="httpClient">A custom HTTP client.</param>
-        IOptionalClientSetup WithHttpClient(HttpClient httpClient);
+        /// <param name="deliveryHttpClient">A custom <see cref="IDeliveryHttpClient"/> implementation</param>
+        IOptionalClientSetup WithDeliveryHttpClient(IDeliveryHttpClient deliveryHttpClient);
 
         /// <summary>
         /// Use a custom object to provide URL for content links in rich text elements.
