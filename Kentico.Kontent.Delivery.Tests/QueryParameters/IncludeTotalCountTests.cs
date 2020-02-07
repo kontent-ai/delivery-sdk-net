@@ -65,7 +65,7 @@ namespace Kentico.Kontent.Delivery.Tests.QueryParameters
                 .Expect($"{BaseUrl}/items")
                 .WithExactQueryString("includeTotalCount")
                 .Respond("application/json", responseJson);
-            var client = DeliveryClientFactory.GetMockedDeliveryClientWithOptions(Options, MockHttp);
+            var client = Factories.DeliveryClientFactory.GetMockedDeliveryClientWithOptions(Options, MockHttp);
 
             await client.GetItemsJsonAsync();
 
@@ -80,7 +80,7 @@ namespace Kentico.Kontent.Delivery.Tests.QueryParameters
                 .Expect($"{BaseUrl}/items")
                 .WithExactQueryString("includeTotalCount")
                 .Respond("application/json", responseJson);
-            var client = DeliveryClientFactory.GetMockedDeliveryClientWithOptions(Options, MockHttp);
+            var client = Factories.DeliveryClientFactory.GetMockedDeliveryClientWithOptions(Options, MockHttp);
 
             await client.GetItemsAsync();
 
@@ -95,7 +95,7 @@ namespace Kentico.Kontent.Delivery.Tests.QueryParameters
                 .Expect($"{BaseUrl}/items")
                 .WithExactQueryString("system.type=cafe&includeTotalCount")
                 .Respond("application/json", responseJson);
-            var client = DeliveryClientFactory.GetMockedDeliveryClientWithOptions(Options, MockHttp);
+            var client = Factories.DeliveryClientFactory.GetMockedDeliveryClientWithOptions(Options, MockHttp);
             A.CallTo(() => client.TypeProvider.GetCodename(typeof(Cafe))).Returns("cafe");
 
             await client.GetItemsAsync<Cafe>();

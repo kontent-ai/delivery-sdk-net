@@ -4,10 +4,12 @@ using System.Collections.ObjectModel;
 using System.IO;
 using System.Linq;
 using System.Net.Http;
+using FakeItEasy;
 using Kentico.Kontent.Delivery.Abstractions;
 using Kentico.Kontent.Delivery.Abstractions.ContentLinks;
 using Kentico.Kontent.Delivery.Abstractions.InlineContentItems;
 using Kentico.Kontent.Delivery.Abstractions.RetryPolicy;
+using Kentico.Kontent.Delivery.Configuration;
 using Kentico.Kontent.Delivery.ContentLinks;
 using Kentico.Kontent.Delivery.InlineContentItems;
 using Kentico.Kontent.Delivery.RetryPolicy;
@@ -55,8 +57,29 @@ namespace Kentico.Kontent.Delivery.Tests.Extensions
                 { typeof(IPropertyMapper), typeof(PropertyMapper) },
                 { typeof(IRetryPolicyProvider), typeof(DefaultRetryPolicyProvider) },
                 { typeof(IDeliveryClient), typeof(DeliveryClient) },
+                { typeof(IDeliveryClientFactory), typeof(DeliveryClientFactory) },
             }
         );
+
+        private readonly ReadOnlyDictionary<Type, Type> _expectedInterfacesWithImplementationFactoryTypes = new ReadOnlyDictionary<Type, Type>(
+           new Dictionary<Type, Type>
+           {
+               { typeof(IConfigureOptions<DeliveryClientFactoryOptions>), null },
+               { typeof(IContentLinkUrlResolver), typeof(DefaultContentLinkUrlResolver) },
+               { typeof(IContentLinkResolver), typeof(ContentLinkResolver) },
+               { typeof(ITypeProvider), typeof(TypeProvider) },
+               { typeof(IDeliveryHttpClient), typeof(DeliveryHttpClient) },
+               { typeof(IInlineContentItemsProcessor), typeof(InlineContentItemsProcessor) },
+               { typeof(IInlineContentItemsResolver<object>), typeof(ReplaceWithWarningAboutRegistrationResolver) },
+               { typeof(IInlineContentItemsResolver<UnretrievedContentItem>), typeof(ReplaceWithWarningAboutUnretrievedItemResolver) },
+               { typeof(IInlineContentItemsResolver<UnknownContentItem>), typeof(ReplaceWithWarningAboutUnknownItemResolver) },
+               { typeof(IModelProvider), typeof(ModelProvider) },
+               { typeof(IPropertyMapper), typeof(PropertyMapper) },
+               { typeof(IRetryPolicyProvider), typeof(DefaultRetryPolicyProvider) },
+               { typeof(IDeliveryClient), typeof(DeliveryClient) },
+               { typeof(IDeliveryClientFactory), typeof(DeliveryClientFactory) },
+           }
+   );
 
         private readonly FakeServiceCollection _fakeServiceCollection;
 
@@ -66,9 +89,37 @@ namespace Kentico.Kontent.Delivery.Tests.Extensions
         }
 
         [Fact]
+        public void AddDeliveryFactoryClientWithDeliveryOptions_AllServicesAreRegistered()
+        {
+            _fakeServiceCollection.AddDeliveryClient("named", new DeliveryOptions { ProjectId = ProjectId });
+
+            AssertFactoryServiceCollection(_expectedInterfacesWithImplementationFactoryTypes, _expectedResolvableContentTypes);
+        }
+
+        [Fact]
+        public void AddDeliveryFactoryClientWithDeliveryOptionsBuilder_AllServicesAreRegistered()
+        {
+            _fakeServiceCollection.AddDeliveryClient("named", builder => builder.WithProjectId(ProjectId).UseProductionApi().Build());
+
+            AssertFactoryServiceCollection(_expectedInterfacesWithImplementationFactoryTypes, _expectedResolvableContentTypes);
+        }
+
+        [Fact]
+        public void AddDeliveryFactoryClientWithNullDeliveryOptions_ThrowsArgumentNullException()
+        {
+            Assert.Throws<ArgumentNullException>(() => _fakeServiceCollection.AddDeliveryClient("named", deliveryOptions: null));
+        }
+
+        [Fact]
+        public void AddDeliveryFactoryClientWithNullDeliveryOptionsBuilder_ThrowsArgumentNullException()
+        {
+            Assert.Throws<ArgumentNullException>(() => _fakeServiceCollection.AddDeliveryClient("named", buildDeliveryOptions: null));
+        }
+
+        [Fact]
         public void AddDeliveryClientWithDeliveryOptions_AllServicesAreRegistered()
         {
-            _fakeServiceCollection.AddDeliveryClient(new DeliveryOptions {ProjectId = ProjectId});
+            _fakeServiceCollection.AddDeliveryClient(new DeliveryOptions { ProjectId = ProjectId });
 
             AssertDefaultServiceCollection(_expectedInterfacesWithImplementationTypes, _expectedResolvableContentTypes);
         }
@@ -136,7 +187,7 @@ namespace Kentico.Kontent.Delivery.Tests.Extensions
 
         private IDictionary<Type, Type> GetModifiedExpectedOptionsTypes()
         {
-            var excludedTypes = new [] { typeof(IOptions<DeliveryOptions>) };
+            var excludedTypes = new[] { typeof(IOptions<DeliveryOptions>) };
 
             return _expectedInterfacesWithImplementationTypes
                 .Where(pair => !excludedTypes.Contains(pair.Key))
@@ -148,7 +199,7 @@ namespace Kentico.Kontent.Delivery.Tests.Extensions
                 .Union(additionalTypes)
                 .ToArray();
 
-        private IDictionary<Type, Type> AddToExpectedInterfacesWithImplementationTypes(params (Type contract, Type implementation)[] additionalTypes) => 
+        private IDictionary<Type, Type> AddToExpectedInterfacesWithImplementationTypes(params (Type contract, Type implementation)[] additionalTypes) =>
             _expectedInterfacesWithImplementationTypes
                 .Union(additionalTypes.ToDictionary(
                     addition => addition.contract,
@@ -164,7 +215,13 @@ namespace Kentico.Kontent.Delivery.Tests.Extensions
             AssertEqualResolvableContentTypes(expectedResolvableContentTypes);
         }
 
-        private static string GetNameFromRegistration(KeyValuePair<Type, Type> registration) 
+        private void AssertFactoryServiceCollection(IDictionary<Type, Type> expectedTypes, IEnumerable<Type> expectedResolvableContentTypes)
+        {
+            AssertEqualServiceCollectionRegistrations(expectedTypes);
+            AssertEqualResolvableContentTypes(expectedResolvableContentTypes);
+        }
+
+        private static string GetNameFromRegistration(KeyValuePair<Type, Type> registration)
             => registration.Value?.FullName ?? registration.Key?.FullName;
 
         // removes types that are automatically registered by DI framework when DeliveryOptions are registered
@@ -172,6 +229,7 @@ namespace Kentico.Kontent.Delivery.Tests.Extensions
         {
             var optionsRelatedTypes = new Dictionary<Type, Type>
             {
+                {typeof(IConfigureOptions<DeliveryClientFactoryOptions>), null},
                 {typeof(IConfigureOptions<DeliveryOptions>), null},
                 {typeof(IOptionsChangeTokenSource<DeliveryOptions>), null},
                 {typeof(IOptions<>), null},

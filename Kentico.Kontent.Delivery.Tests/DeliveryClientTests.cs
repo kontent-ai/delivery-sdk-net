@@ -14,6 +14,7 @@ using Kentico.Kontent.Delivery.Abstractions;
 using Kentico.Kontent.Delivery.Abstractions.RetryPolicy;
 using Kentico.Kontent.Delivery.StrongTyping;
 using Kentico.Kontent.Delivery.ContentLinks;
+using DeliveryClientFactory = Kentico.Kontent.Delivery.Tests.Factories;
 
 namespace Kentico.Kontent.Delivery.Tests
 {
@@ -797,7 +798,7 @@ namespace Kentico.Kontent.Delivery.Tests
                 .When($"{_baseUrl}/items")
                 .Respond("application/json", File.ReadAllText(Path.Combine(Environment.CurrentDirectory, $"Fixtures{Path.DirectorySeparatorChar}DeliveryClient{Path.DirectorySeparatorChar}items.json")));
 
-            var client = DeliveryClientFactory.GetMockedDeliveryClientWithProjectId(_guid, _mockHttp);
+            var client = Factories.DeliveryClientFactory.GetMockedDeliveryClientWithProjectId(_guid, _mockHttp);
             var retryPolicy = A.Fake<IRetryPolicy>();
             A.CallTo(() => client.RetryPolicyProvider.GetRetryPolicy())
                 .Returns(retryPolicy);
@@ -823,7 +824,7 @@ namespace Kentico.Kontent.Delivery.Tests
                 .When($"{_baseUrl}/items")
                 .Respond("application/json", File.ReadAllText(Path.Combine(Environment.CurrentDirectory, $"Fixtures{Path.DirectorySeparatorChar}DeliveryClient{Path.DirectorySeparatorChar}items.json")));
 
-            var client = DeliveryClientFactory.GetMockedDeliveryClientWithProjectId(_guid, _mockHttp);
+            var client = Factories.DeliveryClientFactory.GetMockedDeliveryClientWithProjectId(_guid, _mockHttp);
 
             var elements = new ElementsParameter(Enumerable.Range(0, 1000000).Select(i => "test").ToArray());
 
@@ -861,7 +862,7 @@ namespace Kentico.Kontent.Delivery.Tests
                 SecureAccessApiKey = "someKey"
             };
 
-            var client = DeliveryClientFactory.GetMockedDeliveryClientWithOptions(options, _mockHttp);
+            var client = Factories.DeliveryClientFactory.GetMockedDeliveryClientWithOptions(options, _mockHttp);
 
             var retryPolicy = A.Fake<IRetryPolicy>();
             A.CallTo(() => client.RetryPolicyProvider.GetRetryPolicy())
@@ -898,7 +899,7 @@ namespace Kentico.Kontent.Delivery.Tests
                 .WithHeaders("Authorization", $"Bearer {securityKey}")
                 .Respond("application/json", File.ReadAllText(Path.Combine(Environment.CurrentDirectory, $"Fixtures{Path.DirectorySeparatorChar}DeliveryClient{Path.DirectorySeparatorChar}items.json")));
 
-            var client = DeliveryClientFactory.GetMockedDeliveryClientWithOptions(options, _mockHttp);
+            var client = Factories.DeliveryClientFactory.GetMockedDeliveryClientWithOptions(options, _mockHttp);
 
             var retryPolicy = A.Fake<IRetryPolicy>();
             A.CallTo(() => client.RetryPolicyProvider.GetRetryPolicy())
@@ -923,7 +924,7 @@ namespace Kentico.Kontent.Delivery.Tests
                 .WithHeaders("X-KC-SDKID", $"nuget.org;{sdkPackageId};{sdkVersion}")
                 .Respond("application/json", File.ReadAllText(Path.Combine(Environment.CurrentDirectory, $"Fixtures{Path.DirectorySeparatorChar}DeliveryClient{Path.DirectorySeparatorChar}items.json")));
 
-            var client = DeliveryClientFactory.GetMockedDeliveryClientWithProjectId(_guid, _mockHttp);
+            var client = Factories.DeliveryClientFactory.GetMockedDeliveryClientWithProjectId(_guid, _mockHttp);
 
             var retryPolicy = A.Fake<IRetryPolicy>();
             A.CallTo(() => client.RetryPolicyProvider.GetRetryPolicy())
@@ -1284,7 +1285,7 @@ namespace Kentico.Kontent.Delivery.Tests
             _mockHttp
                 .When($"{_baseUrl}/items")
                 .Respond((request) => new HttpResponseMessage(HttpStatusCode.RequestTimeout));
-            var client = DeliveryClientFactory.GetMockedDeliveryClientWithProjectId(_guid, _mockHttp);
+            var client = Factories.DeliveryClientFactory.GetMockedDeliveryClientWithProjectId(_guid, _mockHttp);
             var retryPolicy = A.Fake<IRetryPolicy>();
             A.CallTo(() => client.RetryPolicyProvider.GetRetryPolicy()).Returns(retryPolicy);
             A.CallTo(() => retryPolicy.ExecuteAsync(A<Func<Task<HttpResponseMessage>>>._))
@@ -1306,7 +1307,7 @@ namespace Kentico.Kontent.Delivery.Tests
                 ProjectId = _guid.ToString(),
                 EnableRetryPolicy = false
             };
-            var client = DeliveryClientFactory.GetMockedDeliveryClientWithOptions(options, _mockHttp);
+            var client = Factories.DeliveryClientFactory.GetMockedDeliveryClientWithOptions(options, _mockHttp);
             var retryPolicy = A.Fake<IRetryPolicy>();
             A.CallTo(() => client.RetryPolicyProvider.GetRetryPolicy()).Returns(retryPolicy);
 
@@ -1350,7 +1351,7 @@ namespace Kentico.Kontent.Delivery.Tests
                 null,
                 customTypeProvider,
                 new PropertyMapper());
-            var client = DeliveryClientFactory.GetMockedDeliveryClientWithProjectId(
+            var client = Factories.DeliveryClientFactory.GetMockedDeliveryClientWithProjectId(
                 _guid,
                 handler,
                 modelProvider,
@@ -1369,7 +1370,7 @@ namespace Kentico.Kontent.Delivery.Tests
         {
             var mapper = propertyMapper ?? A.Fake<IPropertyMapper>();
             var modelProvider = new ModelProvider(null, null, _mockTypeProvider, mapper);
-            var client = DeliveryClientFactory.GetMockedDeliveryClientWithProjectId(_guid, handler, modelProvider);
+            var client = Factories.DeliveryClientFactory.GetMockedDeliveryClientWithProjectId(_guid, handler, modelProvider);
 
             var retryPolicy = A.Fake<IRetryPolicy>();
             A.CallTo(() => client.RetryPolicyProvider.GetRetryPolicy())
