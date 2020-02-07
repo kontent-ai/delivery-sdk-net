@@ -7,8 +7,6 @@ using System.Threading.Tasks;
 using Microsoft.Extensions.Options;
 using Newtonsoft.Json.Linq;
 using Kentico.Kontent.Delivery.Extensions;
-using Kentico.Kontent.Delivery.InlineContentItems;
-using Kentico.Kontent.Delivery.RetryPolicy;
 using Kentico.Kontent.Delivery.Abstractions;
 using Kentico.Kontent.Delivery.Abstractions.InlineContentItems;
 using Kentico.Kontent.Delivery.Abstractions.RetryPolicy;
@@ -21,7 +19,7 @@ namespace Kentico.Kontent.Delivery
     /// </summary>
     internal sealed class DeliveryClient : IDeliveryClient
     {
-        internal readonly DeliveryOptions DeliveryOptions;
+        internal readonly IOptionsSnapshot<DeliveryOptions> DeliveryOptions;
         internal readonly IContentLinkResolver ContentLinkResolver;
         internal readonly IInlineContentItemsProcessor InlineContentItemsProcessor;
         internal readonly IModelProvider ModelProvider;
@@ -47,7 +45,7 @@ namespace Kentico.Kontent.Delivery
         /// <param name="propertyMapper">An instance of an object that can map Kentico Kontent content item fields to model properties</param>
         /// <param name="deliveryHttpClient">An instance of an object that can send request againts Kentico Kontent Delivery API</param>
         public DeliveryClient(
-            IOptions<DeliveryOptions> deliveryOptions,
+            IOptionsSnapshot<DeliveryOptions> deliveryOptions,
             IContentLinkResolver contentLinkResolver = null,
             IInlineContentItemsProcessor contentItemsProcessor = null,
             IModelProvider modelProvider = null,
@@ -57,7 +55,7 @@ namespace Kentico.Kontent.Delivery
             IDeliveryHttpClient deliveryHttpClient = null
         )
         {
-            DeliveryOptions = deliveryOptions.Value;
+            DeliveryOptions = deliveryOptions;
             ContentLinkResolver = contentLinkResolver;
             InlineContentItemsProcessor = contentItemsProcessor;
             ModelProvider = modelProvider;
@@ -473,12 +471,12 @@ namespace Kentico.Kontent.Delivery
 
         private async Task<ApiResponse> GetDeliverResponseAsync(string endpointUrl, string continuationToken = null)
         {
-            if (DeliveryOptions.UsePreviewApi && DeliveryOptions.UseSecureAccess)
+            if (DeliveryOptions.Value.UsePreviewApi && DeliveryOptions.Value.UseSecureAccess)
             {
                 throw new InvalidOperationException("Preview API and Production API with secured access enabled can't be used at the same time.");
             }
 
-            if (DeliveryOptions.EnableRetryPolicy)
+            if (DeliveryOptions.Value.EnableRetryPolicy)
             {
                 var retryPolicy = RetryPolicyProvider.GetRetryPolicy();
                 if (retryPolicy != null)
@@ -498,19 +496,19 @@ namespace Kentico.Kontent.Delivery
 
             message.Headers.AddSdkTrackingHeader();
 
-            if (DeliveryOptions.WaitForLoadingNewContent)
+            if (DeliveryOptions.Value.WaitForLoadingNewContent)
             {
                 message.Headers.AddWaitForLoadingNewContentHeader();
             }
 
             if (UseSecureAccess())
             {
-                message.Headers.AddAuthorizationHeader("Bearer", DeliveryOptions.SecureAccessApiKey);
+                message.Headers.AddAuthorizationHeader("Bearer", DeliveryOptions.Value.SecureAccessApiKey);
             }
 
             if (UsePreviewApi())
             {
-                message.Headers.AddAuthorizationHeader("Bearer", DeliveryOptions.PreviewApiKey);
+                message.Headers.AddAuthorizationHeader("Bearer", DeliveryOptions.Value.PreviewApiKey);
             }
 
             if (continuationToken != null)
@@ -523,12 +521,12 @@ namespace Kentico.Kontent.Delivery
 
         private bool UseSecureAccess()
         {
-            return DeliveryOptions.UseSecureAccess && !string.IsNullOrEmpty(DeliveryOptions.SecureAccessApiKey);
+            return DeliveryOptions.Value.UseSecureAccess && !string.IsNullOrEmpty(DeliveryOptions.Value.SecureAccessApiKey);
         }
 
         private bool UsePreviewApi()
         {
-            return DeliveryOptions.UsePreviewApi && !string.IsNullOrEmpty(DeliveryOptions.PreviewApiKey);
+            return DeliveryOptions.Value.UsePreviewApi && !string.IsNullOrEmpty(DeliveryOptions.Value.PreviewApiKey);
         }
 
         private async Task<ApiResponse> GetResponseContent(HttpResponseMessage httpResponseMessage, string fallbackEndpointUrl)

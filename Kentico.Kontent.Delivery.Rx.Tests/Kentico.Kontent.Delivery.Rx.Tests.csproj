@@ -58,6 +58,7 @@
   <ItemGroup>
     <ProjectReference Include="..\Kentico.Kontent.Delivery.Abstractions\Kentico.Kontent.Delivery.Abstractions.csproj" />
     <ProjectReference Include="..\Kentico.Kontent.Delivery.Rx\Kentico.Kontent.Delivery.Rx.csproj" />
+    <ProjectReference Include="..\Kentico.Kontent.Delivery.Tests\Kentico.Kontent.Delivery.Tests.csproj" />
   </ItemGroup>
 
   <ItemGroup>

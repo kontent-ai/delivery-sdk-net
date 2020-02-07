@@ -13,7 +13,7 @@ namespace Kentico.Kontent.Delivery.Tests.Factories
 {
     public class DeliveryClientFactoryTests
     {
-        private readonly IOptions<DeliveryOptions> _deliveryOptionsMock;
+        private readonly IOptionsSnapshot<DeliveryOptions> _deliveryOptionsMock;
         private readonly IOptionsMonitor<DeliveryClientFactoryOptions> _deliveryClientFactoryOptionsMock;
         private readonly IServiceProvider _serviceProviderMock;
 
@@ -21,7 +21,7 @@ namespace Kentico.Kontent.Delivery.Tests.Factories
 
         public DeliveryClientFactoryTests()
         {
-            _deliveryOptionsMock = A.Fake<IOptions<DeliveryOptions>>();
+            _deliveryOptionsMock = A.Fake<IOptionsSnapshot<DeliveryOptions>>();
             _deliveryClientFactoryOptionsMock = A.Fake<IOptionsMonitor<DeliveryClientFactoryOptions>>();
             _serviceProviderMock = A.Fake<IServiceProvider>();
         }

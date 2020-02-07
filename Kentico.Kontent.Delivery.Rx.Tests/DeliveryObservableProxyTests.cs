@@ -11,6 +11,7 @@ using Kentico.Kontent.Delivery.Abstractions.InlineContentItems;
 using Kentico.Kontent.Delivery.Abstractions.RetryPolicy;
 using Kentico.Kontent.Delivery.ContentLinks;
 using Kentico.Kontent.Delivery.StrongTyping;
+using Kentico.Kontent.Delivery.Tests.Factories;
 using Microsoft.Extensions.Options;
 using RichardSzalay.MockHttp;
 using Xunit;
@@ -252,7 +253,7 @@ namespace Kentico.Kontent.Delivery.Rx.Tests
         {
             mockAction();
             var deliveryHttpClient = new DeliveryHttpClient(mockHttp.ToHttpClient());
-            var deliveryOptions = new OptionsWrapper<DeliveryOptions>(new DeliveryOptions { ProjectId = guid });
+            var deliveryOptions = DeliveryOptionsFactory.Create(new DeliveryOptions { ProjectId = guid });
             var contentLinkUrlResolver = A.Fake<IContentLinkUrlResolver>();
             var contentLinkResolver = new ContentLinkResolver(contentLinkUrlResolver);
             var contentItemsProcessor = A.Fake<IInlineContentItemsProcessor>();

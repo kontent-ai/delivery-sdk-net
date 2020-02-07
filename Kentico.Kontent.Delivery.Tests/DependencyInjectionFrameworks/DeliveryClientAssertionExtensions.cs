@@ -27,7 +27,7 @@ namespace Kentico.Kontent.Delivery.Tests.DependencyInjectionFrameworks
             where TCustomModelProvider : IModelProvider
         {
             Assert.IsType<DeliveryClient>(client);
-            Assert.Equal(ProjectId, client.DeliveryOptions?.ProjectId);
+            Assert.Equal(ProjectId, client.DeliveryOptions?.Value.ProjectId);
             Assert.IsType<PropertyMapper>(client.PropertyMapper);
             Assert.IsType<TypeProvider>(client.TypeProvider);
             Assert.IsType<DefaultContentLinkUrlResolver>(client.ContentLinkResolver.ContentLinkUrlResolver);

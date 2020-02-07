@@ -14,6 +14,7 @@ using Kentico.Kontent.Delivery.Abstractions;
 using Kentico.Kontent.Delivery.Abstractions.RetryPolicy;
 using Kentico.Kontent.Delivery.StrongTyping;
 using Kentico.Kontent.Delivery.ContentLinks;
+using Kentico.Kontent.Delivery.Tests.Factories;
 
 namespace Kentico.Kontent.Delivery.Tests
 {
@@ -110,7 +111,7 @@ namespace Kentico.Kontent.Delivery.Tests
         {
             var deliveryHttpClient = new DeliveryHttpClient(mockHttp.ToHttpClient());
             var contentLinkUrlResolver = A.Fake<IContentLinkUrlResolver>();
-            var deliveryOptions = new OptionsWrapper<DeliveryOptions>(new DeliveryOptions { ProjectId = guid });
+            var deliveryOptions = DeliveryOptionsFactory.Create(new DeliveryOptions { ProjectId = guid });
             var retryPolicy = A.Fake<IRetryPolicy>();
             var retryPolicyProvider = A.Fake<IRetryPolicyProvider>();
             A.CallTo(() => retryPolicyProvider.GetRetryPolicy())

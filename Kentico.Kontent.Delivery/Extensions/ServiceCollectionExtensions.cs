@@ -116,7 +116,7 @@ namespace Microsoft.Extensions.DependencyInjection
             {
                 throw new ArgumentNullException(nameof(deliveryOptions), "The Delivery options object is not specified.");
             }
-             
+
             return services
                 .RegisterOptions(deliveryOptions)
                 .RegisterDependencies();
@@ -141,7 +141,7 @@ namespace Microsoft.Extensions.DependencyInjection
         /// <param name="services">A <see cref="ServiceCollection"/> instance for registering and resolving dependencies.</param>
         /// <param name="resolver">An <see cref="IInlineContentItemsResolver{T}"/> instance capable of resolving <typeparamref name="TContentItem"/> to a <see cref="string"/></param>
         /// <returns>The <paramref name="services"/> instance with <see cref="IDeliveryClient"/> registered in it</returns>
-        public static IServiceCollection AddDeliveryInlineContentItemsResolver<TContentItem>(this IServiceCollection services, IInlineContentItemsResolver<TContentItem> resolver) 
+        public static IServiceCollection AddDeliveryInlineContentItemsResolver<TContentItem>(this IServiceCollection services, IInlineContentItemsResolver<TContentItem> resolver)
             => services
                 .AddSingleton(resolver)
                 .AddSingleton(TypelessInlineContentItemsResolver.Create(resolver));
@@ -193,7 +193,21 @@ namespace Microsoft.Extensions.DependencyInjection
         // Options here are not validated on purpose, it is left to users to validate them if they want to.
         private static IServiceCollection RegisterOptions(this IServiceCollection services, DeliveryOptions options)
         {
-            services.TryAddSingleton(Options.Options.Create(options));
+            services.Configure<DeliveryOptions>(o =>
+            {
+                o.ProjectId = options.ProjectId;
+                o.ProductionEndpoint = options.ProductionEndpoint;
+                o.PreviewEndpoint = options.PreviewEndpoint;
+                o.PreviewApiKey = options.PreviewApiKey;
+                o.UsePreviewApi = options.UsePreviewApi;
+                o.WaitForLoadingNewContent = options.WaitForLoadingNewContent;
+                o.UseSecureAccess = options.UseSecureAccess;
+                o.SecureAccessApiKey = options.SecureAccessApiKey;
+                o.EnableRetryPolicy = options.EnableRetryPolicy;
+                o.DefaultRetryPolicyOptions = options.DefaultRetryPolicyOptions;
+                o.IncludeTotalCount = options.IncludeTotalCount;
+
+            });
 
             return services;
         }
