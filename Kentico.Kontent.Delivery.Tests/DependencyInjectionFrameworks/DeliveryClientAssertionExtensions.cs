@@ -33,7 +33,7 @@ namespace Kentico.Kontent.Delivery.Tests.DependencyInjectionFrameworks
             Assert.IsType<DefaultContentLinkUrlResolver>(client.ContentLinkResolver.ContentLinkUrlResolver);
             Assert.IsType<InlineContentItemsProcessor>(client.InlineContentItemsProcessor);
             Assert.IsType<DefaultRetryPolicyProvider>(client.RetryPolicyProvider);
-            Assert.IsType<DeliveryOptions>(client.DeliveryOptions);
+            Assert.IsType<DeliveryOptions>(client.DeliveryOptions.Value);
             Assert.IsType<TCustomModelProvider>(client.ModelProvider);
         }
 
