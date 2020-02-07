@@ -4,7 +4,7 @@
     <TargetFramework>netstandard2.0</TargetFramework>
     <Authors>Kentico Software</Authors>
     <Product>Kentico Kontent</Product>
-    <Copyright>© 2016 Kentico Software. All rights reserved.</Copyright>
+    <Copyright>© 2020 Kentico Software. All rights reserved.</Copyright>
     <Description>Kentico Kontent Delivery SDK</Description>
     <PackageLicenseExpression>MIT</PackageLicenseExpression>
     <PackageProjectUrl>https://github.com/Kentico/delivery-sdk-net</PackageProjectUrl>
