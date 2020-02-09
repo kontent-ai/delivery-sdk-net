@@ -44,7 +44,6 @@ namespace Kentico.Kontent.Delivery.Tests.Extensions
         private readonly ReadOnlyDictionary<Type, Type> _expectedInterfacesWithImplementationTypes = new ReadOnlyDictionary<Type, Type>(
             new Dictionary<Type, Type>
             {
-                //{ typeof(IOptionsSnapshot<DeliveryOptions>), typeof(IOptionsSnapshot<DeliveryOptions>) },
                 { typeof(IContentLinkUrlResolver), typeof(DefaultContentLinkUrlResolver) },
                 { typeof(IContentLinkResolver), typeof(ContentLinkResolver) },
                 { typeof(ITypeProvider), typeof(TypeProvider) },
@@ -64,7 +63,6 @@ namespace Kentico.Kontent.Delivery.Tests.Extensions
         private readonly ReadOnlyDictionary<Type, Type> _expectedInterfacesWithImplementationFactoryTypes = new ReadOnlyDictionary<Type, Type>(
            new Dictionary<Type, Type>
            {
-               //{ typeof(IConfigureOptions<DeliveryClientFactoryOptions>), null },
                { typeof(IContentLinkUrlResolver), typeof(DefaultContentLinkUrlResolver) },
                { typeof(IContentLinkResolver), typeof(ContentLinkResolver) },
                { typeof(ITypeProvider), typeof(TypeProvider) },

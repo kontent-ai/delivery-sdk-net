@@ -19,7 +19,7 @@ namespace Kentico.Kontent.Delivery
     /// </summary>
     internal sealed class DeliveryClient : IDeliveryClient
     {
-        internal readonly IOptionsSnapshot<DeliveryOptions> DeliveryOptions;
+        internal readonly IOptionsMonitor<DeliveryOptions> DeliveryOptions;
         internal readonly IContentLinkResolver ContentLinkResolver;
         internal readonly IInlineContentItemsProcessor InlineContentItemsProcessor;
         internal readonly IModelProvider ModelProvider;
@@ -45,7 +45,7 @@ namespace Kentico.Kontent.Delivery
         /// <param name="propertyMapper">An instance of an object that can map Kentico Kontent content item fields to model properties</param>
         /// <param name="deliveryHttpClient">An instance of an object that can send request againts Kentico Kontent Delivery API</param>
         public DeliveryClient(
-            IOptionsSnapshot<DeliveryOptions> deliveryOptions,
+            IOptionsMonitor<DeliveryOptions> deliveryOptions,
             IContentLinkResolver contentLinkResolver = null,
             IInlineContentItemsProcessor contentItemsProcessor = null,
             IModelProvider modelProvider = null,
@@ -471,12 +471,12 @@ namespace Kentico.Kontent.Delivery
 
         private async Task<ApiResponse> GetDeliverResponseAsync(string endpointUrl, string continuationToken = null)
         {
-            if (DeliveryOptions.Value.UsePreviewApi && DeliveryOptions.Value.UseSecureAccess)
+            if (DeliveryOptions.CurrentValue.UsePreviewApi && DeliveryOptions.CurrentValue.UseSecureAccess)
             {
                 throw new InvalidOperationException("Preview API and Production API with secured access enabled can't be used at the same time.");
             }
 
-            if (DeliveryOptions.Value.EnableRetryPolicy)
+            if (DeliveryOptions.CurrentValue.EnableRetryPolicy)
             {
                 var retryPolicy = RetryPolicyProvider.GetRetryPolicy();
                 if (retryPolicy != null)
@@ -496,19 +496,19 @@ namespace Kentico.Kontent.Delivery
 
             message.Headers.AddSdkTrackingHeader();
 
-            if (DeliveryOptions.Value.WaitForLoadingNewContent)
+            if (DeliveryOptions.CurrentValue.WaitForLoadingNewContent)
             {
                 message.Headers.AddWaitForLoadingNewContentHeader();
             }
 
             if (UseSecureAccess())
             {
-                message.Headers.AddAuthorizationHeader("Bearer", DeliveryOptions.Value.SecureAccessApiKey);
+                message.Headers.AddAuthorizationHeader("Bearer", DeliveryOptions.CurrentValue.SecureAccessApiKey);
             }
 
             if (UsePreviewApi())
             {
-                message.Headers.AddAuthorizationHeader("Bearer", DeliveryOptions.Value.PreviewApiKey);
+                message.Headers.AddAuthorizationHeader("Bearer", DeliveryOptions.CurrentValue.PreviewApiKey);
             }
 
             if (continuationToken != null)
@@ -521,12 +521,12 @@ namespace Kentico.Kontent.Delivery
 
         private bool UseSecureAccess()
         {
-            return DeliveryOptions.Value.UseSecureAccess && !string.IsNullOrEmpty(DeliveryOptions.Value.SecureAccessApiKey);
+            return DeliveryOptions.CurrentValue.UseSecureAccess && !string.IsNullOrEmpty(DeliveryOptions.CurrentValue.SecureAccessApiKey);
         }
 
         private bool UsePreviewApi()
         {
-            return DeliveryOptions.Value.UsePreviewApi && !string.IsNullOrEmpty(DeliveryOptions.Value.PreviewApiKey);
+            return DeliveryOptions.CurrentValue.UsePreviewApi && !string.IsNullOrEmpty(DeliveryOptions.CurrentValue.PreviewApiKey);
         }
 
         private async Task<ApiResponse> GetResponseContent(HttpResponseMessage httpResponseMessage, string fallbackEndpointUrl)

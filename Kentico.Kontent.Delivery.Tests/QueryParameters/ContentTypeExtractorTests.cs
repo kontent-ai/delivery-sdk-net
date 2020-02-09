@@ -23,7 +23,7 @@ namespace Kentico.Kontent.Delivery.Tests.QueryParameters
             A.CallTo(() => _contentTypeProvider.GetCodename(typeof(TypeWithContentTypeCodename))).Returns(TypeWithContentTypeCodename.Codename);
             A.CallTo(() => _contentTypeProvider.GetCodename(typeof(TypeWithoutContentTypeCodename))).Returns(null);
 
-            var deliveryOptions = DeliveryOptionsFactory.Create(new DeliveryOptions { ProjectId = FAKE_PROJECT_ID });
+            var deliveryOptions = DeliveryOptionsFactory.CreateMonitor(new DeliveryOptions { ProjectId = FAKE_PROJECT_ID });
             var modelProvider = new ModelProvider(null, null, _contentTypeProvider, null);
             _client = new DeliveryClient(
                 deliveryOptions,

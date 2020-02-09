@@ -27,13 +27,13 @@ namespace Kentico.Kontent.Delivery.Tests.DependencyInjectionFrameworks
             where TCustomModelProvider : IModelProvider
         {
             Assert.IsType<DeliveryClient>(client);
-            Assert.Equal(ProjectId, client.DeliveryOptions?.Value.ProjectId);
+            Assert.Equal(ProjectId, client.DeliveryOptions?.CurrentValue.ProjectId);
             Assert.IsType<PropertyMapper>(client.PropertyMapper);
             Assert.IsType<TypeProvider>(client.TypeProvider);
             Assert.IsType<DefaultContentLinkUrlResolver>(client.ContentLinkResolver.ContentLinkUrlResolver);
             Assert.IsType<InlineContentItemsProcessor>(client.InlineContentItemsProcessor);
             Assert.IsType<DefaultRetryPolicyProvider>(client.RetryPolicyProvider);
-            Assert.IsType<DeliveryOptions>(client.DeliveryOptions.Value);
+            Assert.IsType<DeliveryOptions>(client.DeliveryOptions.CurrentValue);
             Assert.IsType<TCustomModelProvider>(client.ModelProvider);
         }
 

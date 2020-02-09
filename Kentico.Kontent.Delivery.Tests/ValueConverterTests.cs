@@ -111,7 +111,7 @@ namespace Kentico.Kontent.Delivery.Tests
         {
             var deliveryHttpClient = new DeliveryHttpClient(mockHttp.ToHttpClient());
             var contentLinkUrlResolver = A.Fake<IContentLinkUrlResolver>();
-            var deliveryOptions = DeliveryOptionsFactory.Create(new DeliveryOptions { ProjectId = guid });
+            var deliveryOptions = DeliveryOptionsFactory.CreateMonitor(new DeliveryOptions { ProjectId = guid });
             var retryPolicy = A.Fake<IRetryPolicy>();
             var retryPolicyProvider = A.Fake<IRetryPolicyProvider>();
             A.CallTo(() => retryPolicyProvider.GetRetryPolicy())

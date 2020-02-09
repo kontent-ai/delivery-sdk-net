@@ -253,7 +253,7 @@ namespace Kentico.Kontent.Delivery.Rx.Tests
         {
             mockAction();
             var deliveryHttpClient = new DeliveryHttpClient(mockHttp.ToHttpClient());
-            var deliveryOptions = DeliveryOptionsFactory.Create(new DeliveryOptions { ProjectId = guid });
+            var deliveryOptions = DeliveryOptionsFactory.CreateMonitor(new DeliveryOptions { ProjectId = guid });
             var contentLinkUrlResolver = A.Fake<IContentLinkUrlResolver>();
             var contentLinkResolver = new ContentLinkResolver(contentLinkUrlResolver);
             var contentItemsProcessor = A.Fake<IInlineContentItemsProcessor>();
