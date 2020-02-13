@@ -41,6 +41,9 @@ namespace Kentico.Kontent.Delivery.Builders.DeliveryClient
         IOptionalClientSetup IOptionalClientSetup.WithDeliveryHttpClient(IDeliveryHttpClient  deliveryHttpClient)
             => RegisterOrThrow(deliveryHttpClient, nameof(deliveryHttpClient));
 
+        IOptionalClientSetup IOptionalClientSetup.WithDeliveryCacheManager(IDeliveryCacheManager deliveryCacheManager)
+           => RegisterOrThrow(deliveryCacheManager, nameof(deliveryCacheManager));
+
         IOptionalClientSetup IOptionalClientSetup.WithContentLinkUrlResolver(IContentLinkUrlResolver contentLinkUrlResolver)
             => RegisterOrThrow(contentLinkUrlResolver, nameof(contentLinkUrlResolver));
 

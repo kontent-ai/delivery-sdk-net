@@ -7,6 +7,7 @@ using Kentico.Kontent.Delivery.Abstractions.ContentLinks;
 using Kentico.Kontent.Delivery.Abstractions.InlineContentItems;
 using Kentico.Kontent.Delivery.Abstractions.RetryPolicy;
 using Kentico.Kontent.Delivery.Builders.DeliveryOptions;
+using Kentico.Kontent.Delivery.Cache;
 using Kentico.Kontent.Delivery.Configuration;
 using Kentico.Kontent.Delivery.ContentLinks;
 using Kentico.Kontent.Delivery.InlineContentItems;
@@ -186,6 +187,7 @@ namespace Microsoft.Extensions.DependencyInjection
             services.TryAddSingleton<IRetryPolicyProvider, DefaultRetryPolicyProvider>();
             services.TryAddSingleton<IDeliveryClient, DeliveryClient>();
             services.TryAddSingleton<IDeliveryClientFactory, DeliveryClientFactory>();
+            services.TryAddSingleton<IDeliveryCacheManager, DeliveryCacheManager>();
 
             return services;
         }
