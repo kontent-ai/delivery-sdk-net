@@ -118,11 +118,6 @@ namespace Kentico.Kontent.Delivery.Cache
 
         }
 
-        public void Dispose()
-        {
-            _memoryCache?.Dispose();
-        }
-
         public async Task ClearAsync()
         {
             foreach (var key in _createLocks.Keys)
