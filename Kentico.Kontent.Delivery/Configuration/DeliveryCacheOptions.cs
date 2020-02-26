@@ -1,4 +1,5 @@
-﻿using System;
+﻿using Kentico.Kontent.Delivery.Cache;
+using System;
 using System.Collections.Generic;
 using System.Text;
 
