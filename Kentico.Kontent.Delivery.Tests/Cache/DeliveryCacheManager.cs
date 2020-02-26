@@ -164,7 +164,7 @@ namespace Kentico.Kontent.Delivery.Tests.Cache
             _cacheOptions.DefaultExpiration = TimeSpan.FromMilliseconds(500);
 
             await _cacheManager.GetOrAddAsync(key, () => Task.FromResult(value), null);
-            await Task.Delay(_cacheOptions.DefaultExpiration);
+            await Task.Delay(_cacheOptions.DefaultExpiration + TimeSpan.FromMilliseconds(100));
 
             Assert.False(_memoryCache.TryGetValue(key, out _));
         }
