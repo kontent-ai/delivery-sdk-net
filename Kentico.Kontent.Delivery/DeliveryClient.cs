@@ -11,6 +11,7 @@ using Kentico.Kontent.Delivery.Abstractions;
 using Kentico.Kontent.Delivery.Abstractions.InlineContentItems;
 using Kentico.Kontent.Delivery.Abstractions.RetryPolicy;
 using Kentico.Kontent.Delivery.Abstractions.ContentLinks;
+using Kentico.Kontent.Delivery.Cache;
 
 namespace Kentico.Kontent.Delivery
 {
@@ -27,6 +28,7 @@ namespace Kentico.Kontent.Delivery
         internal readonly IPropertyMapper PropertyMapper;
         internal readonly IRetryPolicyProvider RetryPolicyProvider;
         internal readonly IDeliveryHttpClient DeliveryHttpClient;
+        internal readonly IDeliveryCacheManager DeliveryCacheManager;
 
         private DeliveryEndpointUrlBuilder _urlBuilder;
 
@@ -44,6 +46,7 @@ namespace Kentico.Kontent.Delivery
         /// <param name="typeProvider">An instance of an object that can map Kentico Kontent content types to CLR types</param>
         /// <param name="propertyMapper">An instance of an object that can map Kentico Kontent content item fields to model properties</param>
         /// <param name="deliveryHttpClient">An instance of an object that can send request againts Kentico Kontent Delivery API</param>
+        /// <param name="deliveryCacheManager">An instance of an object that can cache response againts Kentico Kontent Delivery API</param>
         public DeliveryClient(
             IOptionsMonitor<DeliveryOptions> deliveryOptions,
             IContentLinkResolver contentLinkResolver = null,
@@ -52,7 +55,8 @@ namespace Kentico.Kontent.Delivery
             IRetryPolicyProvider retryPolicyProvider = null,
             ITypeProvider typeProvider = null,
             IPropertyMapper propertyMapper = null,
-            IDeliveryHttpClient deliveryHttpClient = null
+            IDeliveryHttpClient deliveryHttpClient = null,
+            IDeliveryCacheManager deliveryCacheManager = null
         )
         {
             DeliveryOptions = deliveryOptions;
@@ -63,6 +67,7 @@ namespace Kentico.Kontent.Delivery
             TypeProvider = typeProvider;
             PropertyMapper = propertyMapper;
             DeliveryHttpClient = deliveryHttpClient;
+            DeliveryCacheManager = deliveryCacheManager;
         }
 
         /// <summary>
@@ -83,10 +88,19 @@ namespace Kentico.Kontent.Delivery
                 throw new ArgumentException("The codename of a content item is not specified.", nameof(codename));
             }
 
-            var endpointUrl = UrlBuilder.GetItemUrl(codename, parameters);
+            return await GetCachedDataAsync(
+                CacheHelpers.GetItemJsonKey(codename, parameters),
+                async () =>
+                {
+                    var endpointUrl = UrlBuilder.GetItemUrl(codename, parameters);
 
-            return (await GetDeliverResponseAsync(endpointUrl)).Content;
+                    return (await GetDeliverResponseAsync(endpointUrl)).Content;
+                },
+                response => response != null,
+                CacheHelpers.GetItemJsonDependencies);
         }
+
+
 
         /// <summary>
         /// Returns content items as JSON data. By default, retrieves one level of linked items.
@@ -95,9 +109,18 @@ namespace Kentico.Kontent.Delivery
         /// <returns>The <see cref="JObject"/> instance that represents the content items. If no query parameters are specified, all content items are returned.</returns>
         public async Task<JObject> GetItemsJsonAsync(params string[] parameters)
         {
-            var endpointUrl = UrlBuilder.GetItemsUrl(parameters);
+            
 
-            return (await GetDeliverResponseAsync(endpointUrl)).Content;
+            return await GetCachedDataAsync(
+                CacheHelpers.GetItemsJsonKey(parameters),
+                async () =>
+                {
+                    var endpointUrl = UrlBuilder.GetItemsUrl(parameters);
+
+                    return (await GetDeliverResponseAsync(endpointUrl)).Content;
+                },
+                response => response["items"].Any(),
+                CacheHelpers.GetItemsJsonDependencies);
         }
 
         /// <summary>
@@ -141,10 +164,18 @@ namespace Kentico.Kontent.Delivery
                 throw new ArgumentException("The codename of a content item is not specified.", nameof(codename));
             }
 
-            var endpointUrl = UrlBuilder.GetItemUrl(codename, parameters);
-            var response = await GetDeliverResponseAsync(endpointUrl);
+            return await GetCachedDataAsync(
+                CacheHelpers.GetItemKey(codename, parameters),
+                async () =>
+                {
+                    var endpointUrl = UrlBuilder.GetItemUrl(codename, parameters);
+                    var response = await GetDeliverResponseAsync(endpointUrl);
 
-            return new DeliveryItemResponse(response, ModelProvider, ContentLinkResolver);
+                    return new DeliveryItemResponse(response, ModelProvider, ContentLinkResolver);
+                },
+                response => response != null,
+                CacheHelpers.GetItemDependencies);
+
         }
 
         /// <summary>
@@ -161,10 +192,17 @@ namespace Kentico.Kontent.Delivery
                 throw new ArgumentException("Entered item codename is not valid.", nameof(codename));
             }
 
-            var endpointUrl = UrlBuilder.GetItemUrl(codename, parameters);
-            var response = await GetDeliverResponseAsync(endpointUrl);
+            return await GetCachedDataAsync(
+                CacheHelpers.GetItemKey(codename, parameters),
+                async () =>
+                {
+                    var endpointUrl = UrlBuilder.GetItemUrl(codename, parameters);
+                    var response = await GetDeliverResponseAsync(endpointUrl);
 
-            return new DeliveryItemResponse<T>(response, ModelProvider);
+                    return new DeliveryItemResponse<T>(response, ModelProvider);
+                },
+                response => response != null,
+                CacheHelpers.GetItemDependencies);
         }
 
         /// <summary>
@@ -184,10 +222,17 @@ namespace Kentico.Kontent.Delivery
         /// <returns>The <see cref="DeliveryItemListingResponse"/> instance that contains the content items. If no query parameters are specified, all content items are returned.</returns>
         public async Task<DeliveryItemListingResponse> GetItemsAsync(IEnumerable<IQueryParameter> parameters)
         {
-            var endpointUrl = UrlBuilder.GetItemsUrl(parameters);
-            var response = await GetDeliverResponseAsync(endpointUrl);
+            return await GetCachedDataAsync(
+                CacheHelpers.GetItemsKey(parameters),
+                async () =>
+                {
+                    var endpointUrl = UrlBuilder.GetItemsUrl(parameters);
+                    var response = await GetDeliverResponseAsync(endpointUrl);
 
-            return new DeliveryItemListingResponse(response, ModelProvider, ContentLinkResolver);
+                    return new DeliveryItemListingResponse(response, ModelProvider, ContentLinkResolver);
+                },
+                response => response.Items.Any(),
+                CacheHelpers.GetItemsDependencies);
         }
 
         /// <summary>
@@ -209,11 +254,19 @@ namespace Kentico.Kontent.Delivery
         /// <returns>The <see cref="DeliveryItemListingResponse{T}"/> instance that contains the content items. If no query parameters are specified, all content items are returned.</returns>
         public async Task<DeliveryItemListingResponse<T>> GetItemsAsync<T>(IEnumerable<IQueryParameter> parameters)
         {
-            var enhancedParameters = EnsureContentTypeFilter<T>(parameters).ToList();
-            var endpointUrl = UrlBuilder.GetItemsUrl(enhancedParameters);
-            var response = await GetDeliverResponseAsync(endpointUrl);
 
-            return new DeliveryItemListingResponse<T>(response, ModelProvider);
+            return await GetCachedDataAsync(
+                CacheHelpers.GetItemsTypedKey(parameters),
+                async () =>
+                {
+                    var enhancedParameters = EnsureContentTypeFilter<T>(parameters).ToList();
+                    var endpointUrl = UrlBuilder.GetItemsUrl(enhancedParameters);
+                    var response = await GetDeliverResponseAsync(endpointUrl);
+
+                    return new DeliveryItemListingResponse<T>(response, ModelProvider);
+                },
+                response => response.Items.Any(),
+                CacheHelpers.GetItemsDependencies);
         }
 
         /// <summary>
@@ -292,9 +345,16 @@ namespace Kentico.Kontent.Delivery
                 throw new ArgumentException("The codename of a content type is not specified.", nameof(codename));
             }
 
-            var endpointUrl = UrlBuilder.GetTypeUrl(codename);
+            return await GetCachedDataAsync(
+                CacheHelpers.GetTypeJsonKey(codename),
+                async () =>
+                {
+                    var endpointUrl = UrlBuilder.GetTypeUrl(codename);
 
-            return (await GetDeliverResponseAsync(endpointUrl)).Content;
+                    return (await GetDeliverResponseAsync(endpointUrl)).Content;
+                },
+                response => response != null,
+                CacheHelpers.GetTypeJsonDependencies);
         }
 
         /// <summary>
@@ -304,9 +364,16 @@ namespace Kentico.Kontent.Delivery
         /// <returns>The <see cref="JObject"/> instance that represents the content types. If no query parameters are specified, all content types are returned.</returns>
         public async Task<JObject> GetTypesJsonAsync(params string[] parameters)
         {
-            var endpointUrl = UrlBuilder.GetTypesUrl(parameters);
+            return await GetCachedDataAsync(
+                CacheHelpers.GetTypesJsonKey(parameters),
+                async () =>
+                {
+                    var endpointUrl = UrlBuilder.GetTypesUrl(parameters);
 
-            return (await GetDeliverResponseAsync(endpointUrl)).Content;
+                    return (await GetDeliverResponseAsync(endpointUrl)).Content;
+                },
+                response => response["types"].Any(),
+                CacheHelpers.GetTypesJsonDependencies);
         }
 
         /// <summary>
@@ -326,10 +393,17 @@ namespace Kentico.Kontent.Delivery
                 throw new ArgumentException("The codename of a content type is not specified.", nameof(codename));
             }
 
-            var endpointUrl = UrlBuilder.GetTypeUrl(codename);
-            var response = await GetDeliverResponseAsync(endpointUrl);
+            return await GetCachedDataAsync(
+                CacheHelpers.GetTypeKey(codename),
+                async () =>
+                {
+                    var endpointUrl = UrlBuilder.GetTypeUrl(codename);
+                    var response = await GetDeliverResponseAsync(endpointUrl);
 
-            return new DeliveryTypeResponse(response);
+                    return new DeliveryTypeResponse(response);
+                },
+                response => response != null,
+                CacheHelpers.GetTypeDependencies);
         }
 
         /// <summary>
@@ -349,10 +423,18 @@ namespace Kentico.Kontent.Delivery
         /// <returns>The <see cref="DeliveryTypeListingResponse"/> instance that contains the content types. If no query parameters are specified, all content types are returned.</returns>
         public async Task<DeliveryTypeListingResponse> GetTypesAsync(IEnumerable<IQueryParameter> parameters)
         {
-            var endpointUrl = UrlBuilder.GetTypesUrl(parameters);
-            var response = await GetDeliverResponseAsync(endpointUrl);
 
-            return new DeliveryTypeListingResponse(response);
+            return await GetCachedDataAsync(
+                CacheHelpers.GetTypesKey(parameters),
+                async () =>
+                {
+                    var endpointUrl = UrlBuilder.GetTypesUrl(parameters);
+                    var response = await GetDeliverResponseAsync(endpointUrl);
+
+                    return new DeliveryTypeListingResponse(response);
+                },
+                response => response.Types.Any(),
+                CacheHelpers.GetTypesDependencies);
         }
 
         /// <summary>
@@ -383,10 +465,17 @@ namespace Kentico.Kontent.Delivery
                 throw new ArgumentException("The codename of a content element is not specified.", nameof(contentElementCodename));
             }
 
-            var endpointUrl = UrlBuilder.GetContentElementUrl(contentTypeCodename, contentElementCodename);
-            var response = await GetDeliverResponseAsync(endpointUrl);
+            return await GetCachedDataAsync(
+                CacheHelpers.GetContentElementKey(contentTypeCodename, contentElementCodename),
+                async () =>
+                {
+                    var endpointUrl = UrlBuilder.GetContentElementUrl(contentTypeCodename, contentElementCodename);
+                    var response = await GetDeliverResponseAsync(endpointUrl);
 
-            return new DeliveryElementResponse(response);
+                    return new DeliveryElementResponse(response);
+                },
+                response => response != null,
+                CacheHelpers.GetContentElementDependencies);
         }
 
         /// <summary>
@@ -406,9 +495,16 @@ namespace Kentico.Kontent.Delivery
                 throw new ArgumentException("The codename of a taxonomy group is not specified.", nameof(codename));
             }
 
-            var endpointUrl = UrlBuilder.GetTaxonomyUrl(codename);
+            return await GetCachedDataAsync(
+                CacheHelpers.GetTaxonomyJsonKey(codename),
+                async () =>
+                {
+                    var endpointUrl = UrlBuilder.GetTaxonomyUrl(codename);
 
-            return (await GetDeliverResponseAsync(endpointUrl)).Content;
+                    return (await GetDeliverResponseAsync(endpointUrl)).Content;
+                },
+                response => response != null,
+                CacheHelpers.GetTaxonomyJsonDependencies);
         }
 
         /// <summary>
@@ -418,9 +514,16 @@ namespace Kentico.Kontent.Delivery
         /// <returns>The <see cref="JObject"/> instance that represents the taxonomy groups. If no query parameters are specified, all taxonomy groups are returned.</returns>
         public async Task<JObject> GetTaxonomiesJsonAsync(params string[] parameters)
         {
-            var endpointUrl = UrlBuilder.GetTaxonomiesUrl(parameters);
+            return await GetCachedDataAsync(
+                CacheHelpers.GetTaxonomiesJsonKey(parameters),
+                async () =>
+                {
+                    var endpointUrl = UrlBuilder.GetTaxonomiesUrl(parameters);
 
-            return (await GetDeliverResponseAsync(endpointUrl)).Content;
+                    return (await GetDeliverResponseAsync(endpointUrl)).Content;
+                },
+                response => response["taxonomies"].Any(),
+                CacheHelpers.GetTaxonomiesJsonDependencies);
         }
 
         /// <summary>
@@ -440,10 +543,19 @@ namespace Kentico.Kontent.Delivery
                 throw new ArgumentException("The codename of a taxonomy group is not specified.", nameof(codename));
             }
 
-            var endpointUrl = UrlBuilder.GetTaxonomyUrl(codename);
-            var response = await GetDeliverResponseAsync(endpointUrl);
 
-            return new DeliveryTaxonomyResponse(response);
+            return await GetCachedDataAsync(
+                CacheHelpers.GetTaxonomyKey(codename),
+                async () =>
+                {
+                    var endpointUrl = UrlBuilder.GetTaxonomyUrl(codename);
+
+                    var response = await GetDeliverResponseAsync(endpointUrl);
+
+                    return new DeliveryTaxonomyResponse(response);
+                },
+                response => response != null,
+                CacheHelpers.GetTaxonomyDependencies);
         }
 
         /// <summary>
@@ -463,10 +575,28 @@ namespace Kentico.Kontent.Delivery
         /// <returns>The <see cref="DeliveryTaxonomyListingResponse"/> instance that represents the taxonomy groups. If no query parameters are specified, all taxonomy groups are returned.</returns>
         public async Task<DeliveryTaxonomyListingResponse> GetTaxonomiesAsync(IEnumerable<IQueryParameter> parameters)
         {
-            var endpointUrl = UrlBuilder.GetTaxonomiesUrl(parameters);
-            var response = await GetDeliverResponseAsync(endpointUrl);
+            return await GetCachedDataAsync(
+                CacheHelpers.GetTaxonomiesKey(parameters),
+                async () =>
+                {
+                    var endpointUrl = UrlBuilder.GetTaxonomiesUrl(parameters);
+                    var response = await GetDeliverResponseAsync(endpointUrl);
 
-            return new DeliveryTaxonomyListingResponse(response);
+                    return new DeliveryTaxonomyListingResponse(response);
+                },
+                response => response.Taxonomies.Any(),
+                CacheHelpers.GetTaxonomiesDependencies);
+        }
+
+        private async Task<T> GetCachedDataAsync<T>(string key, Func<Task<T>> data, Func<T, bool> cacheCondition,
+            Func<T, IEnumerable<string>> dependenciesKeys = null)
+        {
+            if (DeliveryOptions.CurrentValue.EnableCache)
+            {
+                return await DeliveryCacheManager.GetOrAddAsync(key, data, cacheCondition, dependenciesKeys);
+            }
+
+            return await data();
         }
 
         private async Task<ApiResponse> GetDeliverResponseAsync(string endpointUrl, string continuationToken = null)
