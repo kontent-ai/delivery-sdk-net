@@ -9,12 +9,14 @@ using Kentico.Kontent.Delivery.Abstractions;
 using Kentico.Kontent.Delivery.Abstractions.ContentLinks;
 using Kentico.Kontent.Delivery.Abstractions.InlineContentItems;
 using Kentico.Kontent.Delivery.Abstractions.RetryPolicy;
+using Kentico.Kontent.Delivery.Cache;
 using Kentico.Kontent.Delivery.Configuration;
 using Kentico.Kontent.Delivery.ContentLinks;
 using Kentico.Kontent.Delivery.InlineContentItems;
 using Kentico.Kontent.Delivery.RetryPolicy;
 using Kentico.Kontent.Delivery.StrongTyping;
 using Kentico.Kontent.Delivery.Tests.Factories;
+using Microsoft.Extensions.Caching.Memory;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Options;
@@ -57,6 +59,8 @@ namespace Kentico.Kontent.Delivery.Tests.Extensions
                 { typeof(IRetryPolicyProvider), typeof(DefaultRetryPolicyProvider) },
                 { typeof(IDeliveryClient), typeof(DeliveryClient) },
                 { typeof(IDeliveryClientFactory), typeof(DeliveryClientFactory) },
+                { typeof(IDeliveryCacheManager), typeof(DeliveryCacheManager) },
+                { typeof(IMemoryCache), typeof(MemoryCache) },
             }
         );
 
@@ -76,6 +80,8 @@ namespace Kentico.Kontent.Delivery.Tests.Extensions
                { typeof(IRetryPolicyProvider), typeof(DefaultRetryPolicyProvider) },
                { typeof(IDeliveryClient), typeof(DeliveryClient) },
                { typeof(IDeliveryClientFactory), typeof(DeliveryClientFactory) },
+               { typeof(IDeliveryCacheManager), typeof(DeliveryCacheManager) },
+               { typeof(IMemoryCache), typeof(MemoryCache) },
            }
    );
 

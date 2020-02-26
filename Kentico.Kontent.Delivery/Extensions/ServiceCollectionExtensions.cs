@@ -13,6 +13,7 @@ using Kentico.Kontent.Delivery.ContentLinks;
 using Kentico.Kontent.Delivery.InlineContentItems;
 using Kentico.Kontent.Delivery.RetryPolicy;
 using Kentico.Kontent.Delivery.StrongTyping;
+using Microsoft.Extensions.Caching.Memory;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection.Extensions;
 using Microsoft.Extensions.Options;
@@ -188,6 +189,7 @@ namespace Microsoft.Extensions.DependencyInjection
             services.TryAddSingleton<IDeliveryClient, DeliveryClient>();
             services.TryAddSingleton<IDeliveryClientFactory, DeliveryClientFactory>();
             services.TryAddSingleton<IDeliveryCacheManager, DeliveryCacheManager>();
+            services.TryAddSingleton<IMemoryCache, MemoryCache>();
 
             return services;
         }
