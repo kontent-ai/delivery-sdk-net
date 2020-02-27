@@ -10,7 +10,7 @@ namespace Kentico.Kontent.Delivery.Cache
     /// <summary>
     /// A helper for creating cache dependency keys
     /// </summary>
-    internal static class CacheHelpers
+    public static class CacheHelpers
     {
         #region Constants
 
