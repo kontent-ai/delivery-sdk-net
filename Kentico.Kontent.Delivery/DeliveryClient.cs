@@ -549,7 +549,6 @@ namespace Kentico.Kontent.Delivery
                 async () =>
                 {
                     var endpointUrl = UrlBuilder.GetTaxonomyUrl(codename);
-
                     var response = await GetDeliverResponseAsync(endpointUrl);
 
                     return new DeliveryTaxonomyResponse(response);

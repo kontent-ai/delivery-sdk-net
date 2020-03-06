@@ -210,7 +210,8 @@ namespace Microsoft.Extensions.DependencyInjection
                 o.EnableRetryPolicy = options.EnableRetryPolicy;
                 o.DefaultRetryPolicyOptions = options.DefaultRetryPolicyOptions;
                 o.IncludeTotalCount = options.IncludeTotalCount;
-
+                o.EnableCache = options.EnableCache;
+                o.DefaultCacheOptions = options.DefaultCacheOptions;
             });
 
             return services;
