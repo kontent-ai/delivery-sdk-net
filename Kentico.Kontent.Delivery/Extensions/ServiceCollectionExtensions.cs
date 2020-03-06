@@ -55,7 +55,6 @@ namespace Microsoft.Extensions.DependencyInjection
             });
 
             return services
-                .Configure<DeliveryClientFactoryOptions>(_ => { })
                 .RegisterFactoryDependencies();
         }
 
@@ -88,7 +87,6 @@ namespace Microsoft.Extensions.DependencyInjection
             });
 
             return services
-                .Configure<DeliveryClientFactoryOptions>(_ => { })
                 .RegisterFactoryDependencies();
         }
 
@@ -179,15 +177,6 @@ namespace Microsoft.Extensions.DependencyInjection
 
         private static IServiceCollection RegisterDependencies(this IServiceCollection services)
         {
-            var provider = services.BuildServiceProvider();
-            var options = provider.GetService<IOptions<DeliveryOptions>>();
-            if (options != null && options.Value.EnableCache)
-            {
-                //Register cache services and decorator
-                //services.TryAddSingleton<IDeliveryCacheManager, DeliveryCacheManager>();
-                //services.TryAddSingleton<IMemoryCache, MemoryCache>();
-            }
-
             services.TryAddSingleton<IContentLinkResolver, ContentLinkResolver>();
             services.TryAddSingleton<IContentLinkUrlResolver, DefaultContentLinkUrlResolver>();
             services.TryAddSingleton<ITypeProvider, TypeProvider>();
@@ -202,6 +191,15 @@ namespace Microsoft.Extensions.DependencyInjection
             services.TryAddSingleton<IDeliveryClient, DeliveryClient>();
             services.TryAddSingleton<IDeliveryClientFactory, DeliveryClientFactory>();
 
+
+            var provider = services.BuildServiceProvider();
+            var options = provider.GetService<IOptions<DeliveryOptions>>();
+            if (options != null && options.Value.EnableCache)
+            {
+                services.Decorate<IDeliveryClient, DeliveryClientCacheDecorator>();
+                services.TryAddSingleton<IDeliveryCacheManager, DeliveryCacheManager>();
+                services.TryAddSingleton<IMemoryCache, MemoryCache>();
+            }
             return services;
         }
 
