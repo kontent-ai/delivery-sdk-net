@@ -59,8 +59,6 @@ namespace Kentico.Kontent.Delivery.Tests.Extensions
                 { typeof(IRetryPolicyProvider), typeof(DefaultRetryPolicyProvider) },
                 { typeof(IDeliveryClient), typeof(DeliveryClient) },
                 { typeof(IDeliveryClientFactory), typeof(DeliveryClientFactory) },
-                { typeof(IDeliveryCacheManager), typeof(DeliveryCacheManager) },
-                { typeof(IMemoryCache), typeof(MemoryCache) },
             }
         );
 
@@ -80,8 +78,6 @@ namespace Kentico.Kontent.Delivery.Tests.Extensions
                { typeof(IRetryPolicyProvider), typeof(DefaultRetryPolicyProvider) },
                { typeof(IDeliveryClient), typeof(DeliveryClient) },
                { typeof(IDeliveryClientFactory), typeof(DeliveryClientFactory) },
-               { typeof(IDeliveryCacheManager), typeof(DeliveryCacheManager) },
-               { typeof(IMemoryCache), typeof(MemoryCache) },
            }
    );
 
