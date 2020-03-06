@@ -54,7 +54,9 @@ namespace Microsoft.Extensions.DependencyInjection
 
             });
 
-            return services.RegisterDependencies();
+            return services
+                .Configure<DeliveryClientFactoryOptions>(_ => { })
+                .RegisterFactoryDependencies();
         }
 
         /// <summary>
@@ -85,7 +87,9 @@ namespace Microsoft.Extensions.DependencyInjection
 
             });
 
-            return services.RegisterDependencies();
+            return services
+                .Configure<DeliveryClientFactoryOptions>(_ => { })
+                .RegisterFactoryDependencies();
         }
 
         /// <summary>
@@ -176,8 +180,8 @@ namespace Microsoft.Extensions.DependencyInjection
         private static IServiceCollection RegisterDependencies(this IServiceCollection services)
         {
             var provider = services.BuildServiceProvider();
-            var options = provider.GetRequiredService<IOptions<DeliveryOptions>>();
-            if (options.Value.EnableCache)
+            var options = provider.GetService<IOptions<DeliveryOptions>>();
+            if (options != null && options.Value.EnableCache)
             {
                 //Register cache services and decorator
                 //services.TryAddSingleton<IDeliveryCacheManager, DeliveryCacheManager>();
@@ -198,8 +202,12 @@ namespace Microsoft.Extensions.DependencyInjection
             services.TryAddSingleton<IDeliveryClient, DeliveryClient>();
             services.TryAddSingleton<IDeliveryClientFactory, DeliveryClientFactory>();
 
-          
+            return services;
+        }
 
+        private static IServiceCollection RegisterFactoryDependencies(this IServiceCollection services)
+        {
+            services.TryAddSingleton<IDeliveryClientFactory, DeliveryClientFactory>();
             return services;
         }
 
