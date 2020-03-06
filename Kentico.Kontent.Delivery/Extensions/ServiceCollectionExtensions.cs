@@ -55,6 +55,7 @@ namespace Microsoft.Extensions.DependencyInjection
             });
 
             return services
+                .Configure<DeliveryClientFactoryOptions>(_ => { })
                 .RegisterFactoryDependencies();
         }
 
@@ -87,6 +88,7 @@ namespace Microsoft.Extensions.DependencyInjection
             });
 
             return services
+                .Configure<DeliveryClientFactoryOptions>(_ => { })
                 .RegisterFactoryDependencies();
         }
 
