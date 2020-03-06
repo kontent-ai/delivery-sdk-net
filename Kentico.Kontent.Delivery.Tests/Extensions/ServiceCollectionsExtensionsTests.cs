@@ -112,6 +112,18 @@ namespace Kentico.Kontent.Delivery.Tests.Extensions
 
         }
 
+        [Fact]
+        public void AddDeliveryClientFactoryWithOptions_DeliveryClientIsRegistered()
+        {
+            _serviceCollection.AddDeliveryClient("named", new DeliveryOptions { ProjectId = ProjectId });
+            var provider = _serviceCollection.BuildServiceProvider();
+            var deliveryClientFactory = provider.GetRequiredService<IDeliveryClientFactory>();
+
+            var deliveryClient = deliveryClientFactory.Get("named");
+           
+            Assert.NotNull(deliveryClient);
+        }
+
         [Theory]
         [MemberData(nameof(DeliveryOptionsConfigurationParameters))]
         public void AddDeliveryClientWithConfiguration_AllServicesAreRegistered(string fileNamePostfix, string customSectionName = null)
