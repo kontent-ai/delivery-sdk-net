@@ -5,7 +5,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 
-namespace Kentico.Kontent.Delivery.Cache
+namespace Kentico.Kontent.Delivery.Caching
 {
     /// <summary>
     /// A helper for creating cache dependency keys

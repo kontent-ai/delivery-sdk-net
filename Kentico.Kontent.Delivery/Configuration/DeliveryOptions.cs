@@ -65,15 +65,6 @@ namespace Kentico.Kontent.Delivery
         public DefaultRetryPolicyOptions DefaultRetryPolicyOptions { get; set; } = new DefaultRetryPolicyOptions();
 
         /// <summary>
-        /// Gets or sets a value that determines whether a cache is used.
-        /// </summary>
-        public bool EnableCache { get; set; } 
-        /// <summary>
-        /// Gets or sets configuration of the cache
-        /// </summary>
-        public DeliveryCacheOptions DefaultCacheOptions { get; set; } = new DeliveryCacheOptions();
-
-        /// <summary>
         /// Gets or sets a value that determines if the client includes the total number of items matching the search criteria in response.
         /// This behavior can also be enabled for individual requests with the <see cref="IncludeTotalCountParameter"/>.
         /// </summary>

@@ -10,7 +10,7 @@ using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
 
-namespace Kentico.Kontent.Delivery.Cache
+namespace Kentico.Kontent.Delivery.Caching
 {
     /// <summary>
     /// Cache responses against the Kentico Kontent Delivery API.

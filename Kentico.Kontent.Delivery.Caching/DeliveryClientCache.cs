@@ -6,14 +6,14 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 
-namespace Kentico.Kontent.Delivery.Cache
+namespace Kentico.Kontent.Delivery.Caching
 {
-    public class DeliveryClientCacheDecorator : IDeliveryClient
+    public class DeliveryClientCache : IDeliveryClient
     {
         private IDeliveryClient DeliveryClient { get; }
         private IDeliveryCacheManager DeliveryCacheManager { get; }
 
-        public DeliveryClientCacheDecorator(IDeliveryCacheManager cacheManager, IDeliveryClient deliveryClient)
+        public DeliveryClientCache(IDeliveryCacheManager cacheManager, IDeliveryClient deliveryClient)
         {
             DeliveryClient = deliveryClient ?? throw new ArgumentNullException(nameof(deliveryClient));
             DeliveryCacheManager = cacheManager ?? throw new ArgumentNullException(nameof(cacheManager));

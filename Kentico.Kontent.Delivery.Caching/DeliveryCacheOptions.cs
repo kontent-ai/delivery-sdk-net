@@ -1,9 +1,6 @@
-﻿using Kentico.Kontent.Delivery.Cache;
-using System;
-using System.Collections.Generic;
-using System.Text;
+﻿using System;
 
-namespace Kentico.Kontent.Delivery.Configuration
+namespace Kentico.Kontent.Delivery.Caching
 {
     /// <summary>
     /// Represents configuration of the <see cref="DeliveryCacheManager"/>

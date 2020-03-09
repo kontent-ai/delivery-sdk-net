@@ -7,13 +7,11 @@ using Kentico.Kontent.Delivery.Abstractions.ContentLinks;
 using Kentico.Kontent.Delivery.Abstractions.InlineContentItems;
 using Kentico.Kontent.Delivery.Abstractions.RetryPolicy;
 using Kentico.Kontent.Delivery.Builders.DeliveryOptions;
-using Kentico.Kontent.Delivery.Cache;
 using Kentico.Kontent.Delivery.Configuration;
 using Kentico.Kontent.Delivery.ContentLinks;
 using Kentico.Kontent.Delivery.InlineContentItems;
 using Kentico.Kontent.Delivery.RetryPolicy;
 using Kentico.Kontent.Delivery.StrongTyping;
-using Microsoft.Extensions.Caching.Memory;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection.Extensions;
 using Microsoft.Extensions.Options;
@@ -193,15 +191,6 @@ namespace Microsoft.Extensions.DependencyInjection
             services.TryAddSingleton<IDeliveryClient, DeliveryClient>();
             services.TryAddSingleton<IDeliveryClientFactory, DeliveryClientFactory>();
 
-
-            var provider = services.BuildServiceProvider();
-            var options = provider.GetService<IOptions<DeliveryOptions>>();
-            if (options != null && options.Value.EnableCache)
-            {
-                services.Decorate<IDeliveryClient, DeliveryClientCacheDecorator>();
-                services.TryAddSingleton<IDeliveryCacheManager, DeliveryCacheManager>();
-                services.TryAddSingleton<IMemoryCache, MemoryCache>();
-            }
             return services;
         }
 
@@ -227,8 +216,6 @@ namespace Microsoft.Extensions.DependencyInjection
                 o.EnableRetryPolicy = options.EnableRetryPolicy;
                 o.DefaultRetryPolicyOptions = options.DefaultRetryPolicyOptions;
                 o.IncludeTotalCount = options.IncludeTotalCount;
-                o.EnableCache = options.EnableCache;
-                o.DefaultCacheOptions = options.DefaultCacheOptions;
             });
 
             return services;

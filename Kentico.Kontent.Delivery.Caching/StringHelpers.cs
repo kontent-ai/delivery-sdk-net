@@ -1,6 +1,6 @@
 ﻿using System.Collections.Generic;
 
-namespace Kentico.Kontent.Delivery.Cache
+namespace Kentico.Kontent.Delivery.Caching
 {
     internal static class StringHelpers
     {

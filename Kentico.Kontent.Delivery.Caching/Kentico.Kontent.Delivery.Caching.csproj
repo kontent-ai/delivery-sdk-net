@@ -1,0 +1,34 @@
+<Project Sdk="Microsoft.NET.Sdk">
+
+  <PropertyGroup>
+    <TargetFramework>netstandard2.0</TargetFramework>
+    <Authors>Kentico Software</Authors>
+    <Product>Kentico Kontent</Product>
+    <Copyright>© 2020 Kentico Software. All rights reserved.</Copyright>
+    <Description>Kentico Kontent Delivery Caching</Description>
+    <PackageLicenseExpression>MIT</PackageLicenseExpression>
+    <PackageProjectUrl>https://github.com/Kentico/delivery-sdk-net</PackageProjectUrl>
+    <PackageIconUrl>https://github.com/Kentico/Home/blob/master/images/kk-logo-nuget.png?raw=true</PackageIconUrl>
+    <RepositoryUrl>https://github.com/Kentico/delivery-sdk-net.git</RepositoryUrl>
+    <RepositoryType>git</RepositoryType>
+    <PackageTags>kentico;mvc;aspnet;aspnetmvc</PackageTags>
+    <GenerateAssemblyInfo>true</GenerateAssemblyInfo>
+    <GenerateDocumentationFile>true</GenerateDocumentationFile>
+    <PublishRepositoryUrl>true</PublishRepositoryUrl>
+    <IncludeSymbols>true</IncludeSymbols>
+    <SymbolPackageFormat>snupkg</SymbolPackageFormat>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <PackageReference Include="Microsoft.Extensions.Caching.Abstractions" Version="3.1.2" />
+    <PackageReference Include="Microsoft.Extensions.Caching.Memory" Version="3.1.2" />
+    <PackageReference Include="Microsoft.Extensions.Options" Version="3.1.2" />
+    <PackageReference Include="Newtonsoft.Json" Version="10.0.3" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <ProjectReference Include="..\Kentico.Kontent.Delivery.Abstractions\Kentico.Kontent.Delivery.Abstractions.csproj" />
+    <ProjectReference Include="..\Kentico.Kontent.Delivery\Kentico.Kontent.Delivery.csproj" />
+  </ItemGroup>
+
+</Project>

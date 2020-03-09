@@ -1,8 +1,6 @@
 ﻿using FakeItEasy;
 using FluentAssertions;
 using Kentico.Kontent.Delivery.Abstractions;
-using Kentico.Kontent.Delivery.Cache;
-using Kentico.Kontent.Delivery.Configuration;
 using Microsoft.Extensions.Caching.Memory;
 using Microsoft.Extensions.Options;
 using Microsoft.Extensions.Primitives;
@@ -15,7 +13,7 @@ using System.Threading;
 using System.Threading.Tasks;
 using Xunit;
 
-namespace Kentico.Kontent.Delivery.Tests.Cache
+namespace Kentico.Kontent.Delivery.Caching.Tests
 {
     public class DeliveryCacheManagerTests
     {

@@ -11,7 +11,11 @@ Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Kentico.Kontent.Delivery.Te
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Kentico.Kontent.Delivery.Rx.Tests", "Kentico.Kontent.Delivery.Rx.Tests\Kentico.Kontent.Delivery.Rx.Tests.csproj", "{32FDA558-79F7-445C-93B3-30E2B06709D8}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Kentico.Kontent.Delivery.Abstractions", "Kentico.Kontent.Delivery.Abstractions\Kentico.Kontent.Delivery.Abstractions.csproj", "{CC6D3CC0-78A1-4950-BABF-6674F608858D}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Kentico.Kontent.Delivery.Abstractions", "Kentico.Kontent.Delivery.Abstractions\Kentico.Kontent.Delivery.Abstractions.csproj", "{CC6D3CC0-78A1-4950-BABF-6674F608858D}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Kentico.Kontent.Delivery.Caching", "Kentico.Kontent.Delivery.Caching\Kentico.Kontent.Delivery.Caching.csproj", "{6B44B65A-B0C2-423B-815E-B6F9308F291A}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Kentico.Kontent.Delivery.Caching.Tests", "Kentico.Kontent.Delivery.Caching.Tests\Kentico.Kontent.Delivery.Caching.Tests.csproj", "{47C00EB8-D635-4762-A4A9-5FC12B69BEFF}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
@@ -39,6 +43,14 @@ Global
 		{CC6D3CC0-78A1-4950-BABF-6674F608858D}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{CC6D3CC0-78A1-4950-BABF-6674F608858D}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{CC6D3CC0-78A1-4950-BABF-6674F608858D}.Release|Any CPU.Build.0 = Release|Any CPU
+		{6B44B65A-B0C2-423B-815E-B6F9308F291A}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{6B44B65A-B0C2-423B-815E-B6F9308F291A}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{6B44B65A-B0C2-423B-815E-B6F9308F291A}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{6B44B65A-B0C2-423B-815E-B6F9308F291A}.Release|Any CPU.Build.0 = Release|Any CPU
+		{47C00EB8-D635-4762-A4A9-5FC12B69BEFF}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{47C00EB8-D635-4762-A4A9-5FC12B69BEFF}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{47C00EB8-D635-4762-A4A9-5FC12B69BEFF}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{47C00EB8-D635-4762-A4A9-5FC12B69BEFF}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
