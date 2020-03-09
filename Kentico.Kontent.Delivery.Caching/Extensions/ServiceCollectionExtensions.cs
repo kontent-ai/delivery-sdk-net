@@ -8,8 +8,17 @@ using System.Linq;
 
 namespace Kentico.Kontent.Delivery.Caching.Extensions
 {
+    /// <summary>
+    /// A class which contains extension methods on <see cref="IServiceCollection"/> for registering an cached <see cref="IDeliveryClient"/> instance.
+    /// </summary>
     public static class ServiceCollectionExtensions
     {
+        /// <summary>
+        /// Registers a delegate that will be used to configure a cached <see cref="IDeliveryClient"/>.
+        /// </summary>
+        /// <param name="services">A <see cref="ServiceCollection"/> instance for registering and resolving dependencies.</param>
+        /// <param name="options">A <see cref="DeliveryCacheOptions"/> instance.  
+        /// <returns>The <paramref name="services"/> instance with cached <see cref="IDeliveryClient"/> registered in it</returns>
         public static IServiceCollection AddDeliveryClientCache(this IServiceCollection services, DeliveryCacheOptions options)
         {
             return services
@@ -17,6 +26,14 @@ namespace Kentico.Kontent.Delivery.Caching.Extensions
                  .RegisterDependencis()
                  .Decorate<IDeliveryClient, DeliveryClientCache>();
         }
+
+        /// <summary>
+        ///  Registers a delegate that will be used to configure a cached <see cref="IDeliveryClient"/>.
+        /// </summary>
+        /// <param name="services">A <see cref="ServiceCollection"/> instance for registering and resolving dependencies.</param>
+        /// <param name="name">A name of named client which want to use cached <see cref="IDeliveryClient"/></param>
+        /// <param name="options">A <see cref="DeliveryCacheOptions"/> instance.  
+        /// <returns></returns>
         public static IServiceCollection AddDeliveryClientCache(this IServiceCollection services, string name, DeliveryCacheOptions options)
         {
             services
