@@ -88,8 +88,6 @@ namespace Kentico.Kontent.Delivery
             return (await GetDeliverResponseAsync(endpointUrl)).Content;
         }
 
-
-
         /// <summary>
         /// Returns content items as JSON data. By default, retrieves one level of linked items.
         /// </summary>
@@ -471,7 +469,6 @@ namespace Kentico.Kontent.Delivery
 
             return new DeliveryTaxonomyListingResponse(response);
         }
-
 
         private async Task<ApiResponse> GetDeliverResponseAsync(string endpointUrl, string continuationToken = null)
         {

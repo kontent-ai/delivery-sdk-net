@@ -36,12 +36,6 @@ namespace Kentico.Kontent.Delivery.Builders.DeliveryClient
         IOptionalClientSetup WithDeliveryHttpClient(IDeliveryHttpClient deliveryHttpClient);
 
         /// <summary>
-        /// Use a custom cache manager
-        /// </summary>
-        /// <param name="deliveryCacheManager">A custom <see cref="IDeliveryCacheManager"/> implementation</param>
-        IOptionalClientSetup WithDeliveryCacheManager(IDeliveryCacheManager deliveryCacheManager);
-
-        /// <summary>
         /// Use a custom object to provide URL for content links in rich text elements.
         /// </summary>
         /// <param name="contentLinkUrlResolver">An instance of the <see cref="IContentLinkUrlResolver"/>.</param>

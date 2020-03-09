@@ -8,16 +8,25 @@ using System.Threading.Tasks;
 
 namespace Kentico.Kontent.Delivery.Caching
 {
+    /// <summary>
+    /// Executes requests with cache against the Kentico Kontent Delivery API.
+    /// </summary>
     public class DeliveryClientCache : IDeliveryClient
     {
         private IDeliveryClient DeliveryClient { get; }
         private IDeliveryCacheManager DeliveryCacheManager { get; }
 
+        /// <summary>
+        /// Initializes a new instance of the <see cref="DeliveryClient"/> class for retrieving cached content of the specified project.
+        /// </summary>
+        /// <param name="cacheManager"></param>
+        /// <param name="deliveryClient"></param>
         public DeliveryClientCache(IDeliveryCacheManager cacheManager, IDeliveryClient deliveryClient)
         {
             DeliveryClient = deliveryClient ?? throw new ArgumentNullException(nameof(deliveryClient));
             DeliveryCacheManager = cacheManager ?? throw new ArgumentNullException(nameof(cacheManager));
         }
+
         /// <summary>
         /// Returns a content item as JSON data.
         /// </summary>
