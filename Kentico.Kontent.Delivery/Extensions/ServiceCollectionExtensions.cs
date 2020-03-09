@@ -189,7 +189,7 @@ namespace Microsoft.Extensions.DependencyInjection
             services.TryAddSingleton<IPropertyMapper, PropertyMapper>();
             services.TryAddSingleton<IRetryPolicyProvider, DefaultRetryPolicyProvider>();
             services.TryAddSingleton<IDeliveryClient, DeliveryClient>();
-            services.TryAddSingleton<IDeliveryClientFactory, DeliveryClientFactory>();
+            services.TryAddTransient<IDeliveryClientFactory, DeliveryClientFactory>();
 
             return services;
         }

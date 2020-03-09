@@ -13,7 +13,7 @@ namespace Kentico.Kontent.Delivery
     /// <summary>
     /// A factory class for <see cref="IDeliveryClient"/>
     /// </summary>
-    public class DeliveryClientFactory  : IDeliveryClientFactory
+    public class DeliveryClientFactory : IDeliveryClientFactory
     {
         private ConcurrentDictionary<string, IDeliveryClient> _cachedDeliveryClients = new ConcurrentDictionary<string, IDeliveryClient>();
         private readonly IOptionsMonitor<DeliveryClientFactoryOptions> _optionsMonitor;
@@ -42,12 +42,8 @@ namespace Kentico.Kontent.Delivery
                 throw new ArgumentNullException(nameof(name));
             }
 
-            if (!_cachedDeliveryClients.TryGetValue(name, out var client))
-            {
-                var options = _optionsMonitor.Get(name);
-                client = options.DeliveryClientsActions.FirstOrDefault()?.Invoke();
-                _cachedDeliveryClients.TryAdd(name, client);
-            }
+            var options = _optionsMonitor.Get(name);
+            var client = options.DeliveryClientsActions.LastOrDefault()?.Invoke();
 
             return client;
         }

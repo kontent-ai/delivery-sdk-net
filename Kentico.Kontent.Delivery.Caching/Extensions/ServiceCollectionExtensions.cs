@@ -4,6 +4,7 @@ using Microsoft.Extensions.Caching.Memory;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.DependencyInjection.Extensions;
 using Microsoft.Extensions.Options;
+using System.Linq;
 
 namespace Kentico.Kontent.Delivery.Caching.Extensions
 {
@@ -14,12 +15,7 @@ namespace Kentico.Kontent.Delivery.Caching.Extensions
             return services
                  .RegisterCacheOptions(options)
                  .RegisterDependencis()
-                 .AddSingleton<IDeliveryClient>(sp =>
-                 {
-                     var deliveryClient = sp.GetRequiredService<IDeliveryClient>();
-                     var deliveryCacheManager = sp.GetRequiredService<IDeliveryCacheManager>();
-                     return new DeliveryClientCache(deliveryCacheManager, deliveryClient);
-                 });
+                 .Decorate<IDeliveryClient, DeliveryClientCache>();
         }
         public static IServiceCollection AddDeliveryClientCache(this IServiceCollection services, string name, DeliveryCacheOptions options)
         {
@@ -30,11 +26,12 @@ namespace Kentico.Kontent.Delivery.Caching.Extensions
                 {
                     return new ConfigureNamedOptions<DeliveryClientFactoryOptions>(name, o =>
                     {
+                        var client = o.DeliveryClientsActions.FirstOrDefault()?.Invoke();
                         o.DeliveryClientsActions.Add(() =>
                         {
-                            var deliveryClient = sp.GetRequiredService<IDeliveryClient>();
-                            var deliveryCacheManager = sp.GetRequiredService<IDeliveryCacheManager>();
-                            return new DeliveryClientCache(deliveryCacheManager, deliveryClient);
+                            var serviceProvider = services.BuildServiceProvider();
+                            var deliveryCacheManager = serviceProvider.GetRequiredService<IDeliveryCacheManager>();
+                            return new DeliveryClientCache(deliveryCacheManager, client);
                         });
                     });
 
@@ -43,7 +40,7 @@ namespace Kentico.Kontent.Delivery.Caching.Extensions
             return services;
         }
 
-        public static IServiceCollection RegisterCacheOptions(this IServiceCollection services, DeliveryCacheOptions options)
+        private static IServiceCollection RegisterCacheOptions(this IServiceCollection services, DeliveryCacheOptions options)
         {
             services.Configure<DeliveryCacheOptions>(o =>
             {
@@ -53,7 +50,7 @@ namespace Kentico.Kontent.Delivery.Caching.Extensions
             return services;
         }
 
-        public static IServiceCollection RegisterDependencis(this IServiceCollection services)
+        private static IServiceCollection RegisterDependencis(this IServiceCollection services)
         {
             services.TryAddSingleton<IDeliveryCacheManager, DeliveryCacheManager>();
             services.TryAddSingleton<IMemoryCache, MemoryCache>();
