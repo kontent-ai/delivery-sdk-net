@@ -29,8 +29,7 @@ namespace Kentico.Kontent.Delivery.Caching.Extensions
                         var client = o.DeliveryClientsActions.FirstOrDefault()?.Invoke();
                         o.DeliveryClientsActions.Add(() =>
                         {
-                            var serviceProvider = services.BuildServiceProvider();
-                            var deliveryCacheManager = serviceProvider.GetRequiredService<IDeliveryCacheManager>();
+                            var deliveryCacheManager = sp.GetRequiredService<IDeliveryCacheManager>();
                             return new DeliveryClientCache(deliveryCacheManager, client);
                         });
                     });
