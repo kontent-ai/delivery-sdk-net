@@ -3,14 +3,13 @@ using Newtonsoft.Json.Linq;
 using System;
 using System.Collections.Generic;
 using System.Linq;
-using System.Text;
 
 namespace Kentico.Kontent.Delivery.Caching
 {
     /// <summary>
     /// A helper for creating cache dependency keys
     /// </summary>
-    internal static class CacheHelpers
+    public static class CacheHelpers
     {
         #region Constants
 

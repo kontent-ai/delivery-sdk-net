@@ -9,7 +9,6 @@ using System.IO;
 using System.Net.Http;
 using System.Threading.Tasks;
 using FakeItEasy;
-using Microsoft.Extensions.Options;
 using Kentico.Kontent.Delivery.Abstractions;
 using Kentico.Kontent.Delivery.Abstractions.RetryPolicy;
 using Kentico.Kontent.Delivery.StrongTyping;

@@ -5,7 +5,6 @@ using System.Linq;
 
 using Newtonsoft.Json.Linq;
 using AngleSharp.Parser.Html;
-using Kentico.Kontent.Delivery.Abstractions.ContentLinks;
 using Kentico.Kontent.Delivery.Abstractions;
 using Kentico.Kontent.Delivery.ContentLinks;
 

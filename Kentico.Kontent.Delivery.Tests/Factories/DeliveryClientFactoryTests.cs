@@ -1,12 +1,8 @@
 ﻿using FakeItEasy;
 using FluentAssertions;
-using Kentico.Kontent.Delivery.Abstractions;
 using Kentico.Kontent.Delivery.Configuration;
-using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Options;
 using System;
-using System.Collections.Generic;
-using System.Text;
 using Xunit;
 
 namespace Kentico.Kontent.Delivery.Tests.Factories

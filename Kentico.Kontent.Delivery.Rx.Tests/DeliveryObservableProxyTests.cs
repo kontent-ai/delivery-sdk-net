@@ -12,7 +12,6 @@ using Kentico.Kontent.Delivery.Abstractions.RetryPolicy;
 using Kentico.Kontent.Delivery.ContentLinks;
 using Kentico.Kontent.Delivery.StrongTyping;
 using Kentico.Kontent.Delivery.Tests.Factories;
-using Microsoft.Extensions.Options;
 using RichardSzalay.MockHttp;
 using Xunit;
 

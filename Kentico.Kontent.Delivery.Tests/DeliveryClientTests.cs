@@ -14,7 +14,6 @@ using Kentico.Kontent.Delivery.Abstractions;
 using Kentico.Kontent.Delivery.Abstractions.RetryPolicy;
 using Kentico.Kontent.Delivery.StrongTyping;
 using Kentico.Kontent.Delivery.ContentLinks;
-using DeliveryClientFactory = Kentico.Kontent.Delivery.Tests.Factories;
 
 namespace Kentico.Kontent.Delivery.Tests
 {

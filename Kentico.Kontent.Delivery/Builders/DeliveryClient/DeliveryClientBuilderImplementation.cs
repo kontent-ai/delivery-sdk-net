@@ -1,13 +1,9 @@
 ﻿using Kentico.Kontent.Delivery.Abstractions;
-using Kentico.Kontent.Delivery.Abstractions.ContentLinks;
 using Kentico.Kontent.Delivery.Abstractions.InlineContentItems;
 using Kentico.Kontent.Delivery.Abstractions.RetryPolicy;
 using Kentico.Kontent.Delivery.Builders.DeliveryOptions;
-using Kentico.Kontent.Delivery.InlineContentItems;
-using Kentico.Kontent.Delivery.RetryPolicy;
 using Microsoft.Extensions.DependencyInjection;
 using System;
-using System.Net.Http;
 
 namespace Kentico.Kontent.Delivery.Builders.DeliveryClient
 {

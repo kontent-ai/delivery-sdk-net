@@ -1,8 +1,4 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Text;
-
-namespace Kentico.Kontent.Delivery.Abstractions
+﻿namespace Kentico.Kontent.Delivery.Abstractions
 {
     /// <summary>
     /// Defines a methods for getting a <see cref="IDeliveryClient"/>

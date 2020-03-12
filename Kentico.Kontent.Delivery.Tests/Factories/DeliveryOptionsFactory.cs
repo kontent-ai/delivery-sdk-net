@@ -1,8 +1,5 @@
 ﻿using FakeItEasy;
 using Microsoft.Extensions.Options;
-using System;
-using System.Collections.Generic;
-using System.Text;
 
 namespace Kentico.Kontent.Delivery.Tests.Factories
 {

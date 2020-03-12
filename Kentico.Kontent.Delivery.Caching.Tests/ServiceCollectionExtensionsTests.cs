@@ -3,8 +3,6 @@ using Kentico.Kontent.Delivery.Caching.Extensions;
 using Microsoft.Extensions.DependencyInjection;
 using Scrutor;
 using System;
-using System.Collections.Generic;
-using System.Text;
 using Xunit;
 
 namespace Kentico.Kontent.Delivery.Caching.Tests

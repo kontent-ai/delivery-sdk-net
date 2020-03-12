@@ -3,7 +3,6 @@ using FakeItEasy;
 using Kentico.Kontent.Delivery.Abstractions;
 using Kentico.Kontent.Delivery.StrongTyping;
 using Kentico.Kontent.Delivery.Tests.Factories;
-using Microsoft.Extensions.Options;
 using Xunit;
 
 namespace Kentico.Kontent.Delivery.Tests.QueryParameters

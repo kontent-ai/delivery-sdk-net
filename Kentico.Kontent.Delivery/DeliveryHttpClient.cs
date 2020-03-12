@@ -1,5 +1,4 @@
 ﻿using Kentico.Kontent.Delivery.Abstractions;
-using System;
 using System.Net.Http;
 using System.Threading.Tasks;
 
