@@ -91,6 +91,35 @@ namespace Microsoft.Extensions.DependencyInjection
         }
 
         /// <summary>
+        /// Registers a delegate that will be used to configure a named <see cref="IDeliveryClient"/> via <see cref="IDeliveryClientFactory"/>
+        /// </summary>
+        /// <param name="services">A <see cref="ServiceCollection"/> instance for registering and resolving dependencies.</param>
+        /// <param name="name">The name of the client configuration</param>
+        /// <param name="configuration">A set of key/value application configuration properties.</param>
+        /// <param name="configurationSectionName">The section name of the configuration that keeps the <see cref="DeliveryOptions"/> properties. The default value is DeliveryOptions.</param>
+        /// <returns>The <paramref name="services"/> instance with <see cref="IDeliveryClient"/> registered in it</returns>
+        public static IServiceCollection AddDeliveryClient(this IServiceCollection services, string name, IConfiguration configuration, string configurationSectionName = "DeliveryOptions")
+        {
+            services.AddTransient<IConfigureOptions<DeliveryClientFactoryOptions>>(s =>
+            {
+                return new ConfigureNamedOptions<DeliveryClientFactoryOptions>(name, options =>
+                {
+                    options.DeliveryClientsActions.Add(() =>
+                    {
+                        services.AddDeliveryClient(configuration, configurationSectionName);
+                        var serviceProvider = services.BuildServiceProvider();
+                        return serviceProvider.GetService<IDeliveryClient>();
+                    });
+                });
+
+            });
+
+            return services
+                .Configure<DeliveryClientFactoryOptions>(_ => { })
+                .RegisterFactoryDependencies();
+        }
+
+        /// <summary>
         /// Registers a <see cref="IDeliveryClient"/> instance to an <see cref="IDeliveryClient"/> interface in <see cref="ServiceCollection"/>.
         /// </summary>
         /// <param name="services">A <see cref="ServiceCollection"/> instance for registering and resolving dependencies.</param>
