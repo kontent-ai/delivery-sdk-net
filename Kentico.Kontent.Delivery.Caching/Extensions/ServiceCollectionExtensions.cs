@@ -19,7 +19,7 @@ namespace Kentico.Kontent.Delivery.Caching.Extensions
         /// </summary>
         /// <param name="services">A <see cref="ServiceCollection"/> instance for registering and resolving dependencies.</param>
         /// <param name="options">A <see cref="DeliveryCacheOptions"/> instance.  
-        /// <returns>The <paramref name="services"/> instance with <see cref="IDeliveryClient"/> registered in it</returns>
+        /// <returns>The <paramref name="services"/> instance with cache services registered in it</returns>
         public static IServiceCollection AddDeliveryClientCache(this IServiceCollection services, DeliveryCacheOptions options)
         {
             if (options == null)
@@ -39,7 +39,7 @@ namespace Kentico.Kontent.Delivery.Caching.Extensions
         /// <param name="services">A <see cref="ServiceCollection"/> instance for registering and resolving dependencies.</param>
         /// <param name="name">A name of named client which want to use cached <see cref="IDeliveryClient"/></param>
         /// <param name="options">A <see cref="DeliveryCacheOptions"/> instance.  
-        /// <returns></returns>
+        /// <returns>The <paramref name="services"/> instance with cache services registered in it</returns>
         public static IServiceCollection AddDeliveryClientCache(this IServiceCollection services, string name, DeliveryCacheOptions options)
         {
             if (options == null)
