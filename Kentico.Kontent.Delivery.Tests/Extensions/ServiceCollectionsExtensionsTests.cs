@@ -1,10 +1,6 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Collections.ObjectModel;
-using System.IO;
-using System.Linq;
-using System.Net.Http;
-using FakeItEasy;
+﻿using Castle.MicroKernel.Registration;
+using FluentAssertions;
+using FluentAssertions.Common;
 using Kentico.Kontent.Delivery.Abstractions;
 using Kentico.Kontent.Delivery.Abstractions.ContentLinks;
 using Kentico.Kontent.Delivery.Abstractions.InlineContentItems;
@@ -14,32 +10,23 @@ using Kentico.Kontent.Delivery.ContentLinks;
 using Kentico.Kontent.Delivery.InlineContentItems;
 using Kentico.Kontent.Delivery.RetryPolicy;
 using Kentico.Kontent.Delivery.StrongTyping;
-using Kentico.Kontent.Delivery.Tests.Factories;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Options;
+using System;
+using System.Collections.Generic;
+using System.Collections.ObjectModel;
+using System.IO;
+using System.Linq;
+using System.Text;
 using Xunit;
 
 namespace Kentico.Kontent.Delivery.Tests.Extensions
 {
     public class ServiceCollectionsExtensionsTests
     {
-        public static IEnumerable<object[]> DeliveryOptionsConfigurationParameters =>
-            new[]
-            {
-                new[] {"as_root"},
-                new[] {"under_default_key", "DeliveryOptions"},
-                new[] {"under_custom_key", "CustomNameForDeliveryOptions"},
-                new[] {"nested_under_default_key", "Options:DeliveryOptions"}
-            };
-
+        private readonly ServiceCollection _serviceCollection;
         private const string ProjectId = "d79786fb-042c-47ec-8e5c-beaf93e38b84";
-
-        private readonly Type[] _expectedResolvableContentTypes = {
-                typeof(object),
-                typeof(UnretrievedContentItem),
-                typeof(UnknownContentItem)
-        };
 
         private readonly ReadOnlyDictionary<Type, Type> _expectedInterfacesWithImplementationTypes = new ReadOnlyDictionary<Type, Type>(
             new Dictionary<Type, Type>
@@ -63,92 +50,84 @@ namespace Kentico.Kontent.Delivery.Tests.Extensions
         private readonly ReadOnlyDictionary<Type, Type> _expectedInterfacesWithImplementationFactoryTypes = new ReadOnlyDictionary<Type, Type>(
            new Dictionary<Type, Type>
            {
-               { typeof(IContentLinkUrlResolver), typeof(DefaultContentLinkUrlResolver) },
-               { typeof(IContentLinkResolver), typeof(ContentLinkResolver) },
-               { typeof(ITypeProvider), typeof(TypeProvider) },
-               { typeof(IDeliveryHttpClient), typeof(DeliveryHttpClient) },
-               { typeof(IInlineContentItemsProcessor), typeof(InlineContentItemsProcessor) },
-               { typeof(IInlineContentItemsResolver<object>), typeof(ReplaceWithWarningAboutRegistrationResolver) },
-               { typeof(IInlineContentItemsResolver<UnretrievedContentItem>), typeof(ReplaceWithWarningAboutUnretrievedItemResolver) },
-               { typeof(IInlineContentItemsResolver<UnknownContentItem>), typeof(ReplaceWithWarningAboutUnknownItemResolver) },
-               { typeof(IModelProvider), typeof(ModelProvider) },
-               { typeof(IPropertyMapper), typeof(PropertyMapper) },
-               { typeof(IRetryPolicyProvider), typeof(DefaultRetryPolicyProvider) },
-               { typeof(IDeliveryClient), typeof(DeliveryClient) },
-               { typeof(IDeliveryClientFactory), typeof(DeliveryClientFactory) },
+                { typeof(IDeliveryClientFactory), typeof(DeliveryClientFactory) },
            }
-   );
+       );
 
-        private readonly FakeServiceCollection _fakeServiceCollection;
+        public static IEnumerable<object[]> DeliveryOptionsConfigurationParameters =>
+           new[]
+           {
+                new[] {"as_root"},
+                new[] {"under_default_key", "DeliveryOptions"},
+                new[] {"under_custom_key", "CustomNameForDeliveryOptions"},
+                new[] {"nested_under_default_key", "Options:DeliveryOptions"}
+           };
+
 
         public ServiceCollectionsExtensionsTests()
         {
-            _fakeServiceCollection = new FakeServiceCollection();
-        }
-
-        [Fact]
-        public void AddDeliveryFactoryClientWithDeliveryOptions_AllServicesAreRegistered()
-        {
-            _fakeServiceCollection.AddDeliveryClient("named", new DeliveryOptions { ProjectId = ProjectId });
-
-            AssertFactoryServiceCollection(_expectedInterfacesWithImplementationFactoryTypes, _expectedResolvableContentTypes);
-        }
-
-        [Fact]
-        public void AddDeliveryFactoryClientWithDeliveryOptionsBuilder_AllServicesAreRegistered()
-        {
-            _fakeServiceCollection.AddDeliveryClient("named", builder => builder.WithProjectId(ProjectId).UseProductionApi().Build());
-
-            AssertFactoryServiceCollection(_expectedInterfacesWithImplementationFactoryTypes, _expectedResolvableContentTypes);
-        }
-
-        [Fact]
-        public void AddDeliveryFactoryClientWithNullDeliveryOptions_ThrowsArgumentNullException()
-        {
-            Assert.Throws<ArgumentNullException>(() => _fakeServiceCollection.AddDeliveryClient("named", deliveryOptions: null));
+            _serviceCollection = new ServiceCollection();
         }
 
         [Fact]
         public void AddDeliveryFactoryClientWithNullDeliveryOptionsBuilder_ThrowsArgumentNullException()
         {
-            Assert.Throws<ArgumentNullException>(() => _fakeServiceCollection.AddDeliveryClient("named", buildDeliveryOptions: null));
+            Assert.Throws<ArgumentNullException>(() => _serviceCollection.AddDeliveryClient("named", buildDeliveryOptions: null));
         }
 
-        [Fact]
-        public void AddDeliveryClientWithDeliveryOptions_AllServicesAreRegistered()
-        {
-            _fakeServiceCollection.AddDeliveryClient(new DeliveryOptions { ProjectId = ProjectId });
-
-            AssertDefaultServiceCollection(_expectedInterfacesWithImplementationTypes, _expectedResolvableContentTypes);
-        }
 
         [Fact]
-        public void AddDeliveryClientWithProjectId_AllServicesAreRegistered()
+        public void AddDeliveryFactoryClientWithNullDeliveryOptions_ThrowsArgumentNullException()
         {
-            _fakeServiceCollection.AddDeliveryClient(builder =>
-                builder.WithProjectId(ProjectId).UseProductionApi().Build());
-
-            AssertDefaultServiceCollection(_expectedInterfacesWithImplementationTypes, _expectedResolvableContentTypes);
+            Assert.Throws<ArgumentNullException>(() => _serviceCollection.AddDeliveryClient("named", deliveryOptions: null));
         }
 
         [Fact]
         public void AddDeliveryClientWithNullDeliveryOptions_ThrowsArgumentNullException()
         {
-            Assert.Throws<ArgumentNullException>(() => _fakeServiceCollection.AddDeliveryClient(deliveryOptions: null));
+            Assert.Throws<ArgumentNullException>(() => _serviceCollection.AddDeliveryClient(deliveryOptions: null));
         }
 
         [Fact]
         public void AddDeliveryClientWithNullBuildDeliveryOptions_ThrowsArgumentNullException()
         {
-            Assert.Throws<ArgumentNullException>(() => _fakeServiceCollection.AddDeliveryClient(buildDeliveryOptions: null));
+            Assert.Throws<ArgumentNullException>(() => _serviceCollection.AddDeliveryClient(buildDeliveryOptions: null));
+        }
+
+        [Fact]
+        public void AddDeliveryClientWithOptions_AllServicesAreRegistered()
+        {
+            _serviceCollection.AddDeliveryClient(new DeliveryOptions { ProjectId = ProjectId });
+            var provider = _serviceCollection.BuildServiceProvider();
+            AssertDefaultServiceCollection(provider, _expectedInterfacesWithImplementationTypes);
+
+        }
+
+        [Fact]
+        public void AddDeliveryClientFactoryWithOptions_AllServicesAreRegistered()
+        {
+            _serviceCollection.AddDeliveryClient("named", new DeliveryOptions { ProjectId = ProjectId });
+            var provider = _serviceCollection.BuildServiceProvider();
+            AssertDefaultServiceCollection(provider, _expectedInterfacesWithImplementationFactoryTypes);
+
+        }
+
+        [Fact]
+        public void AddDeliveryClientFactoryWithOptions_DeliveryClientIsRegistered()
+        {
+            _serviceCollection.AddDeliveryClient("named", new DeliveryOptions { ProjectId = ProjectId });
+            var provider = _serviceCollection.BuildServiceProvider();
+            var deliveryClientFactory = provider.GetRequiredService<IDeliveryClientFactory>();
+
+            var deliveryClient = deliveryClientFactory.Get("named");
+           
+            Assert.NotNull(deliveryClient);
         }
 
         [Theory]
         [MemberData(nameof(DeliveryOptionsConfigurationParameters))]
         public void AddDeliveryClientWithConfiguration_AllServicesAreRegistered(string fileNamePostfix, string customSectionName = null)
         {
-            var expect = GetModifiedExpectedOptionsTypes();
-
             var jsonConfigurationPath = Path.Combine(
                 Environment.CurrentDirectory,
                 "Fixtures",
@@ -158,119 +137,19 @@ namespace Kentico.Kontent.Delivery.Tests.Extensions
                 .AddJsonFile(jsonConfigurationPath)
                 .Build();
 
-            _fakeServiceCollection.AddDeliveryClient(fakeConfiguration, customSectionName);
+            _serviceCollection.AddDeliveryClient(fakeConfiguration, customSectionName);
+            var provider = _serviceCollection.BuildServiceProvider();
 
-            AssertDefaultServiceCollection(expect, _expectedResolvableContentTypes);
+            AssertDefaultServiceCollection(provider, _expectedInterfacesWithImplementationTypes);
         }
 
-        [Fact]
-        public void AddDeliveryInlineContentItemsResolver_RegistersTheResolverImplementation()
+        private void AssertDefaultServiceCollection(ServiceProvider provider, IDictionary<Type, Type> expectedTypes)
         {
-            var tweetResolver = InlineContentItemsResolverFactory.Instance.ResolveToMessage<Tweet>("Tweet");
-            var hostedVideoResolver = InlineContentItemsResolverFactory.Instance.ResolveToMessage<HostedVideo>("HostedVideo");
-            var expectedRegisteredTypes = AddToExpectedInterfacesWithImplementationTypes(
-                (typeof(IInlineContentItemsResolver<Tweet>), tweetResolver.GetType()),
-                (typeof(IInlineContentItemsResolver<HostedVideo>), hostedVideoResolver.GetType()));
-            var expectedResolvableContentTypes = AddToDefaultResolvableContentTypes(
-                typeof(Tweet),
-                typeof(HostedVideo));
-
-            _fakeServiceCollection
-                .AddDeliveryInlineContentItemsResolver(tweetResolver)
-                .AddDeliveryClient(new DeliveryOptions { ProjectId = ProjectId })
-                .AddDeliveryInlineContentItemsResolver(hostedVideoResolver);
-
-            AssertDefaultServiceCollection(expectedRegisteredTypes, expectedResolvableContentTypes);
-        }
-
-        private IDictionary<Type, Type> GetModifiedExpectedOptionsTypes()
-        {
-            var excludedTypes = new[] { typeof(IOptions<DeliveryOptions>) };
-
-            return _expectedInterfacesWithImplementationTypes
-                .Where(pair => !excludedTypes.Contains(pair.Key))
-                .ToDictionary(pair => pair.Key, pair => pair.Value);
-        }
-
-        private IEnumerable<Type> AddToDefaultResolvableContentTypes(params Type[] additionalTypes)
-            => _expectedResolvableContentTypes
-                .Union(additionalTypes)
-                .ToArray();
-
-        private IDictionary<Type, Type> AddToExpectedInterfacesWithImplementationTypes(params (Type contract, Type implementation)[] additionalTypes) =>
-            _expectedInterfacesWithImplementationTypes
-                .Union(additionalTypes.ToDictionary(
-                    addition => addition.contract,
-                    addition => addition.implementation))
-                .ToDictionary(
-                    pair => pair.Key,
-                    pair => pair.Value);
-
-        private void AssertDefaultServiceCollection(IDictionary<Type, Type> expectedTypes, IEnumerable<Type> expectedResolvableContentTypes)
-        {
-            Assert.Equal(ProjectId, _fakeServiceCollection.ProjectId);
-            AssertEqualServiceCollectionRegistrations(expectedTypes);
-            AssertEqualResolvableContentTypes(expectedResolvableContentTypes);
-        }
-
-        private void AssertFactoryServiceCollection(IDictionary<Type, Type> expectedTypes, IEnumerable<Type> expectedResolvableContentTypes)
-        {
-            AssertEqualServiceCollectionRegistrations(expectedTypes);
-            AssertEqualResolvableContentTypes(expectedResolvableContentTypes);
-        }
-
-        private static string GetNameFromRegistration(KeyValuePair<Type, Type> registration)
-            => registration.Value?.FullName ?? registration.Key?.FullName;
-
-        // removes types that are automatically registered by DI framework when DeliveryOptions are registered
-        private static bool TypeIsNotOptionsRelated(KeyValuePair<Type, Type> registration)
-        {
-            var optionsRelatedTypes = new Dictionary<Type, Type>
+            foreach (var type in expectedTypes)
             {
-                {typeof(IConfigureOptions<DeliveryClientFactoryOptions>), null},
-                {typeof(IConfigureOptions<DeliveryOptions>), null},
-                {typeof(IOptionsChangeTokenSource<DeliveryOptions>), null},
-                {typeof(IOptions<>), null},
-                {typeof(IOptionsSnapshot<>), null},
-                {typeof(IOptionsMonitor<>), null},
-                {typeof(IOptionsFactory<>), null},
-                {typeof(IOptionsMonitorCache<>), null},
-            };
-
-            return !optionsRelatedTypes.ContainsKey(registration.Key);
-        }
-
-        private void AssertEqualServiceCollectionRegistrations(IDictionary<Type, Type> expectedTypes)
-        {
-            var missingTypesNames = expectedTypes
-                .Except(_fakeServiceCollection.Dependencies)
-                .Select(GetNameFromRegistration)
-                .ToArray();
-            var unexpectedTypesNames = _fakeServiceCollection
-                .Dependencies
-                .Except(expectedTypes)
-                .Where(TypeIsNotOptionsRelated)
-                .Select(GetNameFromRegistration)
-                .ToArray();
-
-            Assert.Empty(missingTypesNames);
-            Assert.Empty(unexpectedTypesNames);
-        }
-
-        private void AssertEqualResolvableContentTypes(IEnumerable<Type> expectedResolvableContentTypes)
-        {
-            var resolvableContentTypes = expectedResolvableContentTypes.ToList();
-
-            var unexpectedResolverNames = _fakeServiceCollection
-                .ContentTypesResolvedByResolvers
-                .Except(resolvableContentTypes)
-                .Select(type => type.FullName);
-            var missingResolverNames = resolvableContentTypes
-                .Except(_fakeServiceCollection.ContentTypesResolvedByResolvers)
-                .Select(type => type.FullName);
-
-            Assert.Empty(unexpectedResolverNames);
-            Assert.Empty(missingResolverNames);
+                var imp = provider.GetRequiredService(type.Key);
+                Assert.IsType(type.Value, imp);
+            }
         }
     }
 }

@@ -52,7 +52,9 @@ namespace Microsoft.Extensions.DependencyInjection
 
             });
 
-            return services.RegisterDependencies();
+            return services
+                .Configure<DeliveryClientFactoryOptions>(_ => { })
+                .RegisterFactoryDependencies();
         }
 
         /// <summary>
@@ -83,7 +85,9 @@ namespace Microsoft.Extensions.DependencyInjection
 
             });
 
-            return services.RegisterDependencies();
+            return services
+                .Configure<DeliveryClientFactoryOptions>(_ => { })
+                .RegisterFactoryDependencies();
         }
 
         /// <summary>
@@ -185,8 +189,14 @@ namespace Microsoft.Extensions.DependencyInjection
             services.TryAddSingleton<IPropertyMapper, PropertyMapper>();
             services.TryAddSingleton<IRetryPolicyProvider, DefaultRetryPolicyProvider>();
             services.TryAddSingleton<IDeliveryClient, DeliveryClient>();
-            services.TryAddSingleton<IDeliveryClientFactory, DeliveryClientFactory>();
+            services.TryAddTransient<IDeliveryClientFactory, DeliveryClientFactory>();
 
+            return services;
+        }
+
+        private static IServiceCollection RegisterFactoryDependencies(this IServiceCollection services)
+        {
+            services.TryAddSingleton<IDeliveryClientFactory, DeliveryClientFactory>();
             return services;
         }
 
@@ -206,7 +216,6 @@ namespace Microsoft.Extensions.DependencyInjection
                 o.EnableRetryPolicy = options.EnableRetryPolicy;
                 o.DefaultRetryPolicyOptions = options.DefaultRetryPolicyOptions;
                 o.IncludeTotalCount = options.IncludeTotalCount;
-
             });
 
             return services;

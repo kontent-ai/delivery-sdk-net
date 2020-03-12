@@ -3,19 +3,15 @@ using Kentico.Kontent.Delivery.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Options;
 using System;
-using System.Collections.Concurrent;
-using System.Collections.Generic;
 using System.Linq;
-using System.Text;
 
 namespace Kentico.Kontent.Delivery
 {
     /// <summary>
     /// A factory class for <see cref="IDeliveryClient"/>
     /// </summary>
-    public class DeliveryClientFactory  : IDeliveryClientFactory
+    public class DeliveryClientFactory : IDeliveryClientFactory
     {
-        private ConcurrentDictionary<string, IDeliveryClient> _cachedDeliveryClients = new ConcurrentDictionary<string, IDeliveryClient>();
         private readonly IOptionsMonitor<DeliveryClientFactoryOptions> _optionsMonitor;
         private readonly IServiceProvider _serviceProvider;
 
@@ -42,12 +38,8 @@ namespace Kentico.Kontent.Delivery
                 throw new ArgumentNullException(nameof(name));
             }
 
-            if (!_cachedDeliveryClients.TryGetValue(name, out var client))
-            {
-                var options = _optionsMonitor.Get(name);
-                client = options.DeliveryClientsActions.FirstOrDefault()?.Invoke();
-                _cachedDeliveryClients.TryAdd(name, client);
-            }
+            var options = _optionsMonitor.Get(name);
+            var client = options.DeliveryClientsActions.LastOrDefault()?.Invoke();
 
             return client;
         }

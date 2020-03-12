@@ -421,6 +421,7 @@ namespace Kentico.Kontent.Delivery
             var endpointUrl = UrlBuilder.GetTaxonomiesUrl(parameters);
 
             return (await GetDeliverResponseAsync(endpointUrl)).Content;
+
         }
 
         /// <summary>
