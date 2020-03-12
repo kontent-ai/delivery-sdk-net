@@ -23,7 +23,7 @@ namespace Kentico.Kontent.Delivery.Caching.Extensions
         {
             return services
                  .RegisterCacheOptions(options)
-                 .RegisterDependencis()
+                 .RegisterDependencies()
                  .Decorate<IDeliveryClient, DeliveryClientCache>();
         }
 
@@ -38,7 +38,7 @@ namespace Kentico.Kontent.Delivery.Caching.Extensions
         {
             services
                 .RegisterCacheOptions(options)
-                .RegisterDependencis()
+                .RegisterDependencies()
                 .AddTransient<IConfigureOptions<DeliveryClientFactoryOptions>>(sp =>
                 {
                     return new ConfigureNamedOptions<DeliveryClientFactoryOptions>(name, o =>
@@ -66,13 +66,12 @@ namespace Kentico.Kontent.Delivery.Caching.Extensions
             return services;
         }
 
-        private static IServiceCollection RegisterDependencis(this IServiceCollection services)
+        private static IServiceCollection RegisterDependencies(this IServiceCollection services)
         {
             services.TryAddSingleton<IDeliveryCacheManager, DeliveryCacheManager>();
             services.TryAddSingleton<IMemoryCache, MemoryCache>();
 
             return services;
         }
-
     }
 }

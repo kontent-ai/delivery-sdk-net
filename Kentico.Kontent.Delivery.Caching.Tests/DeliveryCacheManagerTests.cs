@@ -39,8 +39,6 @@ namespace Kentico.Kontent.Delivery.Caching.Tests
                    return new object[] { value };
                });
 
-
-
             A.CallTo(() => _memoryCache.CreateEntry(A<object>.Ignored))
                 .ReturnsLazily(c => memoryCache.CreateEntry(c.Arguments[0]));
 
