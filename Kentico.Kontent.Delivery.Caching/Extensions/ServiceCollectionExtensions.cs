@@ -4,6 +4,7 @@ using Microsoft.Extensions.Caching.Memory;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.DependencyInjection.Extensions;
 using Microsoft.Extensions.Options;
+using System;
 using System.Linq;
 
 namespace Kentico.Kontent.Delivery.Caching.Extensions
@@ -21,6 +22,11 @@ namespace Kentico.Kontent.Delivery.Caching.Extensions
         /// <returns>The <paramref name="services"/> instance with cached <see cref="IDeliveryClient"/> registered in it</returns>
         public static IServiceCollection AddDeliveryClientCache(this IServiceCollection services, DeliveryCacheOptions options)
         {
+            if (options == null)
+            {
+                throw new ArgumentNullException(nameof(options), "The Delivery cache  options object is not specified.");
+            }
+
             return services
                  .RegisterCacheOptions(options)
                  .RegisterDependencies()
@@ -36,6 +42,11 @@ namespace Kentico.Kontent.Delivery.Caching.Extensions
         /// <returns></returns>
         public static IServiceCollection AddDeliveryClientCache(this IServiceCollection services, string name, DeliveryCacheOptions options)
         {
+            if (options == null)
+            {
+                throw new ArgumentNullException(nameof(options), "The Delivery cache  options object is not specified.");
+            }
+
             services
                 .RegisterCacheOptions(options)
                 .RegisterDependencies()
