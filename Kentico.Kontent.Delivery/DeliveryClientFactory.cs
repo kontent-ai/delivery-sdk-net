@@ -3,10 +3,7 @@ using Kentico.Kontent.Delivery.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Options;
 using System;
-using System.Collections.Concurrent;
-using System.Collections.Generic;
 using System.Linq;
-using System.Text;
 
 namespace Kentico.Kontent.Delivery
 {
@@ -15,7 +12,6 @@ namespace Kentico.Kontent.Delivery
     /// </summary>
     public class DeliveryClientFactory : IDeliveryClientFactory
     {
-        private ConcurrentDictionary<string, IDeliveryClient> _cachedDeliveryClients = new ConcurrentDictionary<string, IDeliveryClient>();
         private readonly IOptionsMonitor<DeliveryClientFactoryOptions> _optionsMonitor;
         private readonly IServiceProvider _serviceProvider;
 

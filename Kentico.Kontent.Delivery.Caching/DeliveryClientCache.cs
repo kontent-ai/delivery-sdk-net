@@ -13,8 +13,8 @@ namespace Kentico.Kontent.Delivery.Caching
     /// </summary>
     public class DeliveryClientCache : IDeliveryClient
     {
-        private IDeliveryClient DeliveryClient { get; }
-        private IDeliveryCacheManager DeliveryCacheManager { get; }
+        private readonly IDeliveryClient _deliveryClient;
+        private readonly IDeliveryCacheManager _deliveryCacheManager;
 
         /// <summary>
         /// Initializes a new instance of the <see cref="DeliveryClient"/> class for retrieving cached content of the specified project.
@@ -23,8 +23,8 @@ namespace Kentico.Kontent.Delivery.Caching
         /// <param name="deliveryClient"></param>
         public DeliveryClientCache(IDeliveryCacheManager cacheManager, IDeliveryClient deliveryClient)
         {
-            DeliveryClient = deliveryClient ?? throw new ArgumentNullException(nameof(deliveryClient));
-            DeliveryCacheManager = cacheManager ?? throw new ArgumentNullException(nameof(cacheManager));
+            _deliveryClient = deliveryClient ?? throw new ArgumentNullException(nameof(deliveryClient));
+            _deliveryCacheManager = cacheManager ?? throw new ArgumentNullException(nameof(cacheManager));
         }
 
         /// <summary>
@@ -35,9 +35,9 @@ namespace Kentico.Kontent.Delivery.Caching
         /// <returns>The <see cref="JObject"/> instance that represents the content item with the specified codename.</returns>
         public async Task<JObject> GetItemJsonAsync(string codename, params string[] parameters)
         {
-            return await DeliveryCacheManager.GetOrAddAsync(
+            return await _deliveryCacheManager.GetOrAddAsync(
                 CacheHelpers.GetItemJsonKey(codename, parameters),
-                () => DeliveryClient.GetItemJsonAsync(codename, parameters),
+                () => _deliveryClient.GetItemJsonAsync(codename, parameters),
                 response => response != null,
                 CacheHelpers.GetItemJsonDependencies);
         }
@@ -49,9 +49,9 @@ namespace Kentico.Kontent.Delivery.Caching
         /// <returns>The <see cref="JObject"/> instance that represents the content items. If no query parameters are specified, all content items are returned.</returns>
         public async Task<JObject> GetItemsJsonAsync(params string[] parameters)
         {
-            return await DeliveryCacheManager.GetOrAddAsync(
+            return await _deliveryCacheManager.GetOrAddAsync(
                 CacheHelpers.GetItemsJsonKey(parameters),
-                () => DeliveryClient.GetItemsJsonAsync(parameters),
+                () => _deliveryClient.GetItemsJsonAsync(parameters),
                 response => response["items"].Any(),
                 CacheHelpers.GetItemsJsonDependencies);
         }
@@ -88,9 +88,9 @@ namespace Kentico.Kontent.Delivery.Caching
         public async Task<DeliveryItemResponse> GetItemAsync(string codename, IEnumerable<IQueryParameter> parameters)
         {
             var queryParameters = parameters?.ToList();
-            return await DeliveryCacheManager.GetOrAddAsync(
+            return await _deliveryCacheManager.GetOrAddAsync(
                 CacheHelpers.GetItemKey(codename, queryParameters),
-                () => DeliveryClient.GetItemAsync(codename, queryParameters),
+                () => _deliveryClient.GetItemAsync(codename, queryParameters),
                 response => response != null,
                 CacheHelpers.GetItemDependencies);
         }
@@ -105,9 +105,9 @@ namespace Kentico.Kontent.Delivery.Caching
         public async Task<DeliveryItemResponse<T>> GetItemAsync<T>(string codename, IEnumerable<IQueryParameter> parameters = null)
         {
             var queryParameters = parameters?.ToList();
-            return await DeliveryCacheManager.GetOrAddAsync(
+            return await _deliveryCacheManager.GetOrAddAsync(
                 CacheHelpers.GetItemTypedKey(codename, queryParameters),
-                () => DeliveryClient.GetItemAsync<T>(codename, queryParameters),
+                () => _deliveryClient.GetItemAsync<T>(codename, queryParameters),
                 response => response != null,
                 CacheHelpers.GetItemDependencies);
         }
@@ -131,9 +131,9 @@ namespace Kentico.Kontent.Delivery.Caching
         public async Task<DeliveryItemListingResponse> GetItemsAsync(IEnumerable<IQueryParameter> parameters)
         {
             var queryParameters = parameters?.ToList();
-            return await DeliveryCacheManager.GetOrAddAsync(
+            return await _deliveryCacheManager.GetOrAddAsync(
                 CacheHelpers.GetItemsKey(queryParameters),
-                () => DeliveryClient.GetItemsAsync(queryParameters),
+                () => _deliveryClient.GetItemsAsync(queryParameters),
                 response => response.Items.Any(),
                 CacheHelpers.GetItemsDependencies);
         }
@@ -159,9 +159,9 @@ namespace Kentico.Kontent.Delivery.Caching
         public async Task<DeliveryItemListingResponse<T>> GetItemsAsync<T>(IEnumerable<IQueryParameter> parameters)
         {
             var queryParameters = parameters?.ToList();
-            return await DeliveryCacheManager.GetOrAddAsync(
+            return await _deliveryCacheManager.GetOrAddAsync(
                 CacheHelpers.GetItemsTypedKey(queryParameters),
-                () => DeliveryClient.GetItemsAsync<T>(queryParameters),
+                () => _deliveryClient.GetItemsAsync<T>(queryParameters),
                 response => response.Items.Any(),
                 CacheHelpers.GetItemsDependencies);
         }
@@ -173,7 +173,7 @@ namespace Kentico.Kontent.Delivery.Caching
         /// <returns>The <see cref="IDeliveryItemsFeed" /> instance that can be used to enumerate through content items. If no query parameters are specified, all content items are enumerated.</returns>
         public IDeliveryItemsFeed GetItemsFeed(params IQueryParameter[] parameters)
         {
-            return DeliveryClient.GetItemsFeed(parameters);
+            return _deliveryClient.GetItemsFeed(parameters);
         }
 
         /// <summary>
@@ -183,7 +183,7 @@ namespace Kentico.Kontent.Delivery.Caching
         /// <returns>The <see cref="IDeliveryItemsFeed" /> instance that can be used to enumerate through content items. If no query parameters are specified, all content items are enumerated.</returns>
         public IDeliveryItemsFeed GetItemsFeed(IEnumerable<IQueryParameter> parameters)
         {
-            return DeliveryClient.GetItemsFeed(parameters);
+            return _deliveryClient.GetItemsFeed(parameters);
         }
 
         /// <summary>
@@ -194,7 +194,7 @@ namespace Kentico.Kontent.Delivery.Caching
         /// <returns>The <see cref="IDeliveryItemsFeed{T}" /> instance that can be used to enumerate through content items. If no query parameters are specified, all content items are enumerated.</returns>
         public IDeliveryItemsFeed<T> GetItemsFeed<T>(params IQueryParameter[] parameters)
         {
-            return DeliveryClient.GetItemsFeed<T>(parameters);
+            return _deliveryClient.GetItemsFeed<T>(parameters);
         }
 
         /// <summary>
@@ -205,7 +205,7 @@ namespace Kentico.Kontent.Delivery.Caching
         /// <returns>The <see cref="IDeliveryItemsFeed{T}" /> instance that can be used to enumerate through content items. If no query parameters are specified, all content items are enumerated.</returns>
         public IDeliveryItemsFeed<T> GetItemsFeed<T>(IEnumerable<IQueryParameter> parameters)
         {
-            return DeliveryClient.GetItemsFeed<T>(parameters);
+            return _deliveryClient.GetItemsFeed<T>(parameters);
         }
 
         /// <summary>
@@ -215,9 +215,9 @@ namespace Kentico.Kontent.Delivery.Caching
         /// <returns>The <see cref="JObject"/> instance that represents the content type with the specified codename.</returns>
         public async Task<JObject> GetTypeJsonAsync(string codename)
         {
-            return await DeliveryCacheManager.GetOrAddAsync(
+            return await _deliveryCacheManager.GetOrAddAsync(
                 CacheHelpers.GetTypeJsonKey(codename),
-                () => DeliveryClient.GetTypeJsonAsync(codename),
+                () => _deliveryClient.GetTypeJsonAsync(codename),
                 response => response != null,
                 CacheHelpers.GetTypeJsonDependencies);
         }
@@ -229,9 +229,9 @@ namespace Kentico.Kontent.Delivery.Caching
         /// <returns>The <see cref="JObject"/> instance that represents the content types. If no query parameters are specified, all content types are returned.</returns>
         public async Task<JObject> GetTypesJsonAsync(params string[] parameters)
         {
-            return await DeliveryCacheManager.GetOrAddAsync(
+            return await _deliveryCacheManager.GetOrAddAsync(
                 CacheHelpers.GetTypesJsonKey(parameters),
-                () => DeliveryClient.GetTypesJsonAsync(parameters),
+                () => _deliveryClient.GetTypesJsonAsync(parameters),
                 response => response["types"].Any(),
                 CacheHelpers.GetTypesJsonDependencies);
         }
@@ -243,9 +243,9 @@ namespace Kentico.Kontent.Delivery.Caching
         /// <returns>The content type with the specified codename.</returns>
         public async Task<DeliveryTypeResponse> GetTypeAsync(string codename)
         {
-            return await DeliveryCacheManager.GetOrAddAsync(
+            return await _deliveryCacheManager.GetOrAddAsync(
                 CacheHelpers.GetTypeKey(codename),
-                () => DeliveryClient.GetTypeAsync(codename),
+                () => _deliveryClient.GetTypeAsync(codename),
                 response => response != null,
                 CacheHelpers.GetTypeDependencies);
         }
@@ -268,9 +268,9 @@ namespace Kentico.Kontent.Delivery.Caching
         public async Task<DeliveryTypeListingResponse> GetTypesAsync(IEnumerable<IQueryParameter> parameters)
         {
             var queryParameters = parameters?.ToList();
-            return await DeliveryCacheManager.GetOrAddAsync(
+            return await _deliveryCacheManager.GetOrAddAsync(
                 CacheHelpers.GetTypesKey(queryParameters),
-                () => DeliveryClient.GetTypesAsync(queryParameters),
+                () => _deliveryClient.GetTypesAsync(queryParameters),
                 response => response.Types.Any(),
                 CacheHelpers.GetTypesDependencies);
         }
@@ -284,9 +284,9 @@ namespace Kentico.Kontent.Delivery.Caching
         public async Task<DeliveryElementResponse> GetContentElementAsync(string contentTypeCodename, string contentElementCodename)
         {
 
-            return await DeliveryCacheManager.GetOrAddAsync(
+            return await _deliveryCacheManager.GetOrAddAsync(
                 CacheHelpers.GetContentElementKey(contentTypeCodename, contentElementCodename),
-                () => DeliveryClient.GetContentElementAsync(contentTypeCodename, contentElementCodename),
+                () => _deliveryClient.GetContentElementAsync(contentTypeCodename, contentElementCodename),
                 response => response != null,
                 CacheHelpers.GetContentElementDependencies);
         }
@@ -298,9 +298,9 @@ namespace Kentico.Kontent.Delivery.Caching
         /// <returns>The <see cref="JObject"/> instance that represents the taxonomy group with the specified codename.</returns>
         public async Task<JObject> GetTaxonomyJsonAsync(string codename)
         {
-            return await DeliveryCacheManager.GetOrAddAsync(
+            return await _deliveryCacheManager.GetOrAddAsync(
                 CacheHelpers.GetTaxonomyJsonKey(codename),
-                () => DeliveryClient.GetTaxonomyJsonAsync(codename),
+                () => _deliveryClient.GetTaxonomyJsonAsync(codename),
                 response => response != null,
                 CacheHelpers.GetTaxonomyJsonDependencies);
         }
@@ -312,9 +312,9 @@ namespace Kentico.Kontent.Delivery.Caching
         /// <returns>The <see cref="JObject"/> instance that represents the taxonomy groups. If no query parameters are specified, all taxonomy groups are returned.</returns>
         public async Task<JObject> GetTaxonomiesJsonAsync(params string[] parameters)
         {
-            return await DeliveryCacheManager.GetOrAddAsync(
+            return await _deliveryCacheManager.GetOrAddAsync(
                 CacheHelpers.GetTaxonomiesJsonKey(parameters),
-                () => DeliveryClient.GetTaxonomiesJsonAsync(parameters),
+                () => _deliveryClient.GetTaxonomiesJsonAsync(parameters),
                 response => response["taxonomies"].Any(),
                 CacheHelpers.GetTaxonomiesJsonDependencies);
         }
@@ -326,9 +326,9 @@ namespace Kentico.Kontent.Delivery.Caching
         /// <returns>The taxonomy group with the specified codename.</returns>
         public async Task<DeliveryTaxonomyResponse> GetTaxonomyAsync(string codename)
         {
-            return await DeliveryCacheManager.GetOrAddAsync(
+            return await _deliveryCacheManager.GetOrAddAsync(
                 CacheHelpers.GetTaxonomyKey(codename),
-                () => DeliveryClient.GetTaxonomyAsync(codename),
+                () => _deliveryClient.GetTaxonomyAsync(codename),
                 response => response != null,
                 CacheHelpers.GetTaxonomyDependencies);
         }
@@ -351,9 +351,9 @@ namespace Kentico.Kontent.Delivery.Caching
         public async Task<DeliveryTaxonomyListingResponse> GetTaxonomiesAsync(IEnumerable<IQueryParameter> parameters)
         {
             var queryParameters = parameters?.ToList();
-            return await DeliveryCacheManager.GetOrAddAsync(
+            return await _deliveryCacheManager.GetOrAddAsync(
                 CacheHelpers.GetTaxonomiesKey(queryParameters),
-                () => DeliveryClient.GetTaxonomiesAsync(queryParameters),
+                () => _deliveryClient.GetTaxonomiesAsync(queryParameters),
                 response => response.Taxonomies.Any(),
                 CacheHelpers.GetTaxonomiesDependencies);
         }

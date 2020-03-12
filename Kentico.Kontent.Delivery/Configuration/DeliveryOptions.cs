@@ -1,6 +1,4 @@
-﻿using Kentico.Kontent.Delivery.Configuration;
-
-namespace Kentico.Kontent.Delivery
+﻿namespace Kentico.Kontent.Delivery
 {
     /// <summary>
     /// Represents configuration of the <see cref="DeliveryClient"/>.
