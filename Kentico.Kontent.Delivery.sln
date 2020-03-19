@@ -13,9 +13,14 @@ Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Kentico.Kontent.Delivery.Rx
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Kentico.Kontent.Delivery.Abstractions", "Kentico.Kontent.Delivery.Abstractions\Kentico.Kontent.Delivery.Abstractions.csproj", "{CC6D3CC0-78A1-4950-BABF-6674F608858D}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Kentico.Kontent.Delivery.Caching", "Kentico.Kontent.Delivery.Caching\Kentico.Kontent.Delivery.Caching.csproj", "{6B44B65A-B0C2-423B-815E-B6F9308F291A}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Kentico.Kontent.Delivery.Caching", "Kentico.Kontent.Delivery.Caching\Kentico.Kontent.Delivery.Caching.csproj", "{6B44B65A-B0C2-423B-815E-B6F9308F291A}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Kentico.Kontent.Delivery.Caching.Tests", "Kentico.Kontent.Delivery.Caching.Tests\Kentico.Kontent.Delivery.Caching.Tests.csproj", "{47C00EB8-D635-4762-A4A9-5FC12B69BEFF}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Kentico.Kontent.Delivery.Caching.Tests", "Kentico.Kontent.Delivery.Caching.Tests\Kentico.Kontent.Delivery.Caching.Tests.csproj", "{47C00EB8-D635-4762-A4A9-5FC12B69BEFF}"
+EndProject
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Solution Items", "Solution Items", "{21C8F2F1-1DC7-4AD0-B738-C14163A17D1C}"
+	ProjectSection(SolutionItems) = preProject
+		.editorconfig = .editorconfig
+	EndProjectSection
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution

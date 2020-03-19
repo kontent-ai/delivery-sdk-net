@@ -44,76 +44,157 @@ namespace Kentico.Kontent.Delivery.Caching
 
         #region API keys
 
+        /// <summary>
+        /// Gets a ItemJson dependency key
+        /// </summary>
+        /// <param name="codename">Codename</param>
+        /// <param name="parameters">Parameters</param>
+        /// <returns>Dependency key</returns>
         public static string GetItemJsonKey(string codename, params string[] parameters)
         {
             return StringHelpers.Join(new[] { CONTENT_ITEM_JSON_IDENTIFIER, codename }.Concat(parameters ?? Enumerable.Empty<string>()));
         }
 
+        /// <summary>
+        ///  Gets a Item dependency key
+        /// </summary>
+        /// <param name="codename">CodeName</param>
+        /// <param name="parameters">Query parameters</param>
+        /// <returns>Dependency key</returns>
         public static string GetItemKey(string codename, IEnumerable<IQueryParameter> parameters)
         {
             return StringHelpers.Join(new[] { CONTENT_ITEM_IDENTIFIER, codename }.Concat(parameters?.Select(x => x.GetQueryStringParameter()) ?? Enumerable.Empty<string>()));
         }
 
+        /// <summary>
+        ///  Gets a ItemTyped dependency key
+        /// </summary>
+        /// <param name="codename">CodeName</param>
+        /// <param name="parameters">Query parameters</param>
+        /// <returns>Dependency key</returns>
         public static string GetItemTypedKey(string codename, IEnumerable<IQueryParameter> parameters)
         {
             return StringHelpers.Join(new[] { CONTENT_ITEM_TYPED_IDENTIFIER, codename }.Concat(parameters?.Select(x => x.GetQueryStringParameter()) ?? Enumerable.Empty<string>()));
         }
 
+        /// <summary>
+        /// Gets ItemsJson dependency key
+        /// </summary>
+        /// <param name="parameters">Parameters</param>
+        /// <returns>Dependency key</returns>
         public static string GetItemsJsonKey(params string[] parameters)
         {
             return StringHelpers.Join(new[] { CONTENT_ITEM_LISTING_JSON_IDENTIFIER }.Concat(parameters));
         }
 
+        /// <summary>
+        /// Gets Items dependency key
+        /// </summary>
+        /// <param name="parameters">Paramenter</param>
+        /// <returns>Dependency key</returns>
         public static string GetItemsKey(IEnumerable<IQueryParameter> parameters)
         {
             return StringHelpers.Join(new[] { CONTENT_ITEM_LISTING_IDENTIFIER }.Concat(parameters?.Select(x => x.GetQueryStringParameter()) ?? Enumerable.Empty<string>()));
         }
 
+        /// <summary>
+        /// Gets ItemsTyped dependency key
+        /// </summary>
+        /// <param name="parameters">Query parameters</param>
+        /// <returns>Dependency keys</returns>
         public static string GetItemsTypedKey(IEnumerable<IQueryParameter> parameters)
         {
             return StringHelpers.Join(new[] { CONTENT_ITEM_LISTING_TYPED_IDENTIFIER }.Concat(parameters?.Select(x => x.GetQueryStringParameter()) ?? Enumerable.Empty<string>()));
         }
 
+        /// <summary>
+        /// Gets a TypeJson dependency key
+        /// </summary>
+        /// <param name="codename">CodeName</param>
+        /// <returns>Dependency key</returns>
         public static string GetTypeJsonKey(string codename)
         {
             return StringHelpers.Join(CONTENT_TYPE_JSON_IDENTIFIER, codename);
         }
+        /// <summary>
+        /// Gets a TypeKey dependency key
+        /// </summary>
+        /// <param name="codename">CodeName</param>
+        /// <returns>Dependency key</returns>
 
         public static string GetTypeKey(string codename)
         {
             return StringHelpers.Join(CONTENT_TYPE_IDENTIFIER, codename);
         }
 
+        /// <summary>
+        /// Gets TypesJson dependency key
+        /// </summary>
+        /// <param name="parameters">Parameters</param>
+        /// <returns>Dependeny key</returns>
         public static string GetTypesJsonKey(params string[] parameters)
         {
             return StringHelpers.Join(new[] { CONTENT_TYPE_LISTING_JSON_IDENTIFIER }.Concat(parameters ?? Enumerable.Empty<string>()));
         }
+
+        /// <summary>
+        /// Gets Types dependency key
+        /// </summary>
+        /// <param name="parameters">Query parameters</param>
+        /// <returns>Dependency key</returns>
 
         public static string GetTypesKey(IEnumerable<IQueryParameter> parameters)
         {
             return StringHelpers.Join(new[] { CONTENT_TYPE_LISTING_IDENTIFIER }.Concat(parameters?.Select(x => x.GetQueryStringParameter()) ?? Enumerable.Empty<string>()));
         }
 
+        /// <summary>
+        /// Gets a TaxonomyJson dependency key
+        /// </summary>
+        /// <param name="codename">CodeName</param>
+        /// <returns>Dependency key</returns>
         public static string GetTaxonomyJsonKey(string codename)
         {
             return StringHelpers.Join(TAXONOMY_GROUP_JSON_IDENTIFIER, codename);
         }
+
+        /// <summary>
+        /// Gets a Taxonomy dependency key
+        /// </summary>
+        /// <param name="codename">CodeName</param>
+        /// <returns>Dependency key</returns>
 
         public static string GetTaxonomyKey(string codename)
         {
             return StringHelpers.Join(TAXONOMY_GROUP_IDENTIFIER, codename);
         }
 
+        /// <summary>
+        /// Gets TaxonomiesJson dependency key
+        /// </summary>
+        /// <param name="parameters">Parameters</param>
+        /// <returns>Dependency key</returns>
         public static string GetTaxonomiesJsonKey(params string[] parameters)
         {
             return StringHelpers.Join(new[] { TAXONOMY_GROUP_LISTING_JSON_IDENTIFIER }.Concat(parameters ?? Enumerable.Empty<string>()));
         }
 
+        /// <summary>
+        /// Gets Taxonomies dependency key
+        /// </summary>
+        /// <param name="parameters">Query Parameters</param>
+        /// <returns>Dependency key</returns>
         public static string GetTaxonomiesKey(IEnumerable<IQueryParameter> parameters)
         {
             return StringHelpers.Join(new[] { TAXONOMY_GROUP_LISTING_IDENTIFIER }.Concat(parameters?.Select(x => x.GetQueryStringParameter()) ?? Enumerable.Empty<string>()));
         }
 
+        /// <summary>
+        /// Gets a ContentElement dependency key
+        /// </summary>
+        /// <param name="contentTypeCodename">ContentType codeName</param>
+        /// <param name="contentElementCodename">ContentElement codeName</param>
+        /// <returns>Dependency key</returns>
         public static string GetContentElementKey(string contentTypeCodename, string contentElementCodename)
         {
             return StringHelpers.Join(CONTENT_TYPE_ELEMENT_IDENTIFIER, contentTypeCodename, contentElementCodename);
@@ -123,26 +204,47 @@ namespace Kentico.Kontent.Delivery.Caching
 
         #region Dependency keys
 
+        /// <summary>
+        /// Gets a Item dependency key from codeName
+        /// </summary>
+        /// <returns>Dependency key</returns>
         public static string GetItemDependencyKey(string codename)
         {
             return StringHelpers.Join(DEPENDENCY_ITEM, codename);
         }
 
+        /// <summary>
+        /// Gets a Items dependency key
+        /// </summary>
+        /// <returns>Dependency key</returns>
         public static string GetItemsDependencyKey()
         {
             return DEPENDENCY_ITEM_LISTING;
         }
 
+        /// <summary>
+        /// Gets a Types dependency key
+        /// </summary>
+        /// <returns>Dependency key</returns>
         public static string GetTypesDependencyKey()
         {
             return DEPENDENCY_TYPE_LISTING;
         }
+
+        /// <summary>
+        /// Gets a Taxonomy dependency key from codeName
+        /// </summary>
+        /// <returns>Dependency key</returns>
 
         public static string GetTaxonomyDependencyKey(string codename)
         {
             return StringHelpers.Join(DEPENDENCY_TAXONOMY_GROUP, codename);
         }
 
+        /// <summary>
+        /// Gets Taxonomies dependency key
+        /// </summary>
+        /// <returns>Dependency key</returns>
         public static string GetTaxonomiesDependencyKey()
         {
             return DEPENDENCY_TAXONOMY_GROUP_LISTING;
@@ -152,6 +254,11 @@ namespace Kentico.Kontent.Delivery.Caching
 
         #region Dependecies
 
+        /// <summary>
+        /// Gets an ItemJson dependency keys from response
+        /// </summary>
+        /// <param name="response">Response</param>
+        /// <returns>Dependeny keys</returns>
         public static IEnumerable<string> GetItemJsonDependencies(JObject response)
         {
             var dependencies = new HashSet<string>();
@@ -184,6 +291,12 @@ namespace Kentico.Kontent.Delivery.Caching
                 return codename != null;
             }
         }
+
+        /// <summary>
+        /// Gets an Item dependency keys from response
+        /// </summary>
+        /// <param name="response">Response</param>
+        /// <returns>Dependeny keys</returns>
 
         public static IEnumerable<string> GetItemDependencies(dynamic response)
         {
@@ -220,6 +333,11 @@ namespace Kentico.Kontent.Delivery.Caching
                 : dependencies.AsEnumerable();
         }
 
+        /// <summary>
+        /// Gets an ItemsJson dependency keys from response
+        /// </summary>
+        /// <param name="response">Response</param>
+        /// <returns>Dependeny keys</returns>
         public static IEnumerable<string> GetItemsJsonDependencies(JObject response)
         {
             return IsItemListingResponse(response)
@@ -227,6 +345,11 @@ namespace Kentico.Kontent.Delivery.Caching
                 : Enumerable.Empty<string>();
         }
 
+        /// <summary>
+        /// Gets Items dependency keys from response
+        /// </summary>
+        /// <param name="response">Response</param>
+        /// <returns>Dependeny keys</returns>
         public static IEnumerable<string> GetItemsDependencies(dynamic response)
         {
             return IsItemListingResponse(response)
@@ -234,12 +357,24 @@ namespace Kentico.Kontent.Delivery.Caching
                 : Enumerable.Empty<string>();
         }
 
+
+        /// <summary>
+        /// Gets a TypeJson dependency keys from response
+        /// </summary>
+        /// <param name="response">Response</param>
+        /// <returns>Dependency keys</returns>
         public static IEnumerable<string> GetTypeJsonDependencies(JObject response)
         {
             return response?["system"]?["codename"] != null
                 ? new[] { GetTypesDependencyKey() }
                 : Enumerable.Empty<string>();
         }
+
+        /// <summary>
+        /// Gets a Type dependency keys from response
+        /// </summary>
+        /// <param name="response">Response</param>
+        /// <returns>Dependency keys</returns>
 
         public static IEnumerable<string> GetTypeDependencies(DeliveryTypeResponse response)
         {
@@ -248,6 +383,11 @@ namespace Kentico.Kontent.Delivery.Caching
                 : Enumerable.Empty<string>();
         }
 
+        /// <summary>
+        /// Gets TypesJson dependency keys from response
+        /// </summary>
+        /// <param name="response">Response</param>
+        /// <returns>Dependency keys</returns>
         public static IEnumerable<string> GetTypesJsonDependencies(JObject response)
         {
             return response?["types"] != null
@@ -255,12 +395,23 @@ namespace Kentico.Kontent.Delivery.Caching
                 : Enumerable.Empty<string>();
         }
 
+        /// <summary>
+        /// Gets Types dependency keys from response
+        /// </summary>
+        /// <param name="response">Response</param>
+        /// <returns>Dependency keys</returns>
         public static IEnumerable<string> GetTypesDependencies(DeliveryTypeListingResponse response)
         {
             return response?.Types != null
                 ? new[] { GetTypesDependencyKey() }
                 : Enumerable.Empty<string>();
         }
+
+        /// <summary>
+        /// Gets a ContentElement dependency keys from response
+        /// </summary>
+        /// <param name="response">Response</param>
+        /// <returns>Dependency keys</returns>
 
         public static IEnumerable<string> GetContentElementDependencies(DeliveryElementResponse response)
         {
@@ -269,6 +420,11 @@ namespace Kentico.Kontent.Delivery.Caching
                 : Enumerable.Empty<string>();
         }
 
+        /// <summary>
+        /// Gets a TaxonomyJson dependency keys from response
+        /// </summary>
+        /// <param name="response">Response</param>
+        /// <returns>Dependency keys</returns>
         public static IEnumerable<string> GetTaxonomyJsonDependencies(JObject response)
         {
             return response?["system"]?["codename"] != null
@@ -276,6 +432,11 @@ namespace Kentico.Kontent.Delivery.Caching
                 : Enumerable.Empty<string>();
         }
 
+        /// <summary>
+        /// Gets a Taxonomy dependency keys from response
+        /// </summary>
+        /// <param name="response">Response</param>
+        /// <returns>Dependency keys</returns>
         public static IEnumerable<string> GetTaxonomyDependencies(DeliveryTaxonomyResponse response)
         {
             return response?.Taxonomy?.System?.Codename != null
@@ -283,6 +444,11 @@ namespace Kentico.Kontent.Delivery.Caching
                 : Enumerable.Empty<string>();
         }
 
+        /// <summary>
+        /// Gets TaxonomiesJson dependency keys from response
+        /// </summary>
+        /// <param name="response">Response</param>
+        /// <returns>Dependency keys</returns>
         public static IEnumerable<string> GetTaxonomiesJsonDependencies(JObject response)
         {
             return response?["taxonomies"] != null
@@ -290,6 +456,11 @@ namespace Kentico.Kontent.Delivery.Caching
                 : Enumerable.Empty<string>();
         }
 
+        /// <summary>
+        /// Gets Taxonomies dependency keys from response
+        /// </summary>
+        /// <param name="response">Response</param>
+        /// <returns>Dependency keys</returns>
         public static IEnumerable<string> GetTaxonomiesDependencies(DeliveryTaxonomyListingResponse response)
         {
             return response?.Taxonomies != null

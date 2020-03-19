@@ -27,26 +27,48 @@ The SDK targets the [.NET Standard 2.0](https://docs.microsoft.com/en-us/dotnet/
 
 The `IDeliveryClient` interface is the main interface of the SDK. Using an implementation of this interface, you can retrieve content from your Kentico Kontent projects.
 
-To initialize the client, use the `DeliveryClientBuilder` class and provide a [project ID](https://docs.kontent.ai/tutorials/develop-apps/get-content/getting-content#section-getting-content-items).
+We have several extensions methods on the IServiceCollection for configuring DeliveryClient services into your application.
 
 ```csharp
-// Initializes an instance of the DeliveryClient client by building it with the DeliveryClientBuilder class
-IDeliveryClient client = DeliveryClientBuilder.WithProjectId("<YOUR_PROJECT_ID>").Build();
+services.AddDeliveryClient(Configuration);
 ```
 
-You can also provide the project ID and other parameters by passing a function that returns the [`DeliveryOptions`](https://github.com/Kentico/delivery-sdk-net/blob/master/Kentico.Kontent.Delivery/Configuration/DeliveryOptions.cs) object to the `DeliveryClientBuilder.WithOptions` method.
 
-We recommend creating the `DeliveryOptions` instance by using the `DeliveryOptionsBuilder` class. With the options builder, you can use the following parameters:
+By default SDK reads configuration - [DeliveryOptions](https://github.com/Kentico/kontent-delivery-sdk-net/blob/master/Kentico.Kontent.Delivery/Configuration/DeliveryOptions.cs) from yor appsettings.json. You can also set up [DeliveryOptions](https://github.com/Kentico/kontent-delivery-sdk-net/blob/master/Kentico.Kontent.Delivery/Configuration/DeliveryOptions.cs) manually by [DeliveryOptionsBuilder](https://github.com/Kentico/kontent-delivery-sdk-net/blob/master/Kentico.Kontent.Delivery/Builders/DeliveryOptions/DeliveryOptionsBuilder.cs).
 
-* `ProjectId` – sets the ID of your Kentico Kontent project. This parameter must always be set.
-* `UsePreviewApi` – determines whether to use the Delivery Preview API and sets the Delivery Preview API key. See [previewing unpublished content](#previewing-unpublished-content) to learn more.
-* `UseProductionApi` – determines whether to use the default production Delivery API.
-* `UseSecureAccess` – determines whether authenticate requests to the production Delivery API with an API key. See [retrieving secured content](https://docs.kontent.ai/tutorials/develop-apps/get-content/securing-public-access?tech=dotnet#a-retrieving-secured-content) to learn more.
-* `WaitForLoadingNewContent` – forces the client instance to wait while fetching updated content, useful when acting upon [webhook calls](https://docs.kontent.ai/tutorials/develop-apps/integrate/using-webhooks-for-automatic-updates).
-* `EnableRetryPolicy` – determines whether HTTP requests will use [retry policy](#retry-capabilities). By default, the retry policy is enabled.
-* `DefaultRetryPolicyOptions` – sets a [custom parameters](#retry-capabilities) for the default retry policy. By default, the SDK retries for at most 30 seconds.
-* `WithCustomEndpoint` - sets a custom endpoint for the specific API (preview, production, or secured production).
 
+If you need to use more configuration for your `IDeliveryClient` you can register named `DeliveryClient`.
+
+```csharp
+services.AddDeliveryClient("client1", Configuration, "DeliveryOptions1");
+services.AddDeliveryClient("client2", Configuration, "DeliveryOptions2");
+```
+
+For resolving named client use [IDeliveryClientFactory](https://github.com/Kentico/kontent-delivery-sdk-net/blob/master/Kentico.Kontent.Delivery.Abstractions/IDeliveryClientFactory.cs), which is by default registeted in your DI container.
+```csharp
+public HomeController(IDeliveryClientFactory deliveryClientFactory)
+{
+    var deliveryClient = deliveryClientFactory.Get("client1");
+}
+```
+
+
+If you want use `HttpClientFactory` for resolving `HttpClient`, just register our `DeliveryHttpClien`t into `AddHttpClient` pipeline.
+
+```csharp
+services.AddHttpClient<IDeliveryHttpClient, DeliveryHttpClient>();
+```
+
+We also provide package for memory caching which is fully compatible with our SDK - [Kentico.Kontent.Delivery.Caching](https://www.nuget.org/packages/Kentico.Kontent.Delivery.Caching/13.0.1-beta9).
+
+Register cache service for the `client1` configuration. You can implement your custom by implementing and register [IDeliveryCacheManager](https://github.com/Kentico/kontent-delivery-sdk-net/blob/master/Kentico.Kontent.Delivery.Abstractions/IDeliveryCacheManager.cs).
+```csharp
+services.AddDeliveryClientCache("client1", new DeliveryCacheOptions());
+```
+
+
+
+If you don't use IoC/DI containers, use `DeliveryClientBuilder` for manual building `IDeliveryClient`.
 ```csharp
 IDeliveryClient client = DeliveryClientBuilder
     .WithOptions(builder => builder
@@ -59,8 +81,6 @@ IDeliveryClient client = DeliveryClientBuilder
 	.Build())
     .Build();
 ```
-
-For advanced configuration options, see [using dependency injection and ASP.NET Core Configuration API](https://github.com/Kentico/kontent-delivery-sdk-net/wiki/Instantiating-DeliveryClient-with-Configuration-API-and-DI-in-ASP.NET-Core-MVC-apps).
 
 ## Basic querying
 
