@@ -53,7 +53,7 @@ public HomeController(IDeliveryClientFactory deliveryClientFactory)
 ```
 
 
-If you want use `HttpClientFactory` for resolving `HttpClient`, just register our `DeliveryHttpClien`t into `AddHttpClient` pipeline.
+If you want to use `HttpClientFactory` for resolving `HttpClient`, just register our `DeliveryHttpClient` into `AddHttpClient` pipeline.
 
 ```csharp
 services.AddHttpClient<IDeliveryHttpClient, DeliveryHttpClient>();
