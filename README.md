@@ -34,7 +34,7 @@ services.AddDeliveryClient(Configuration);
 ```
 
 
-By default SDK reads the configuration `DeliveryOptions` from yor appsettings.json. You can also set up a `DeliveryOptions` manually by the [DeliveryOptionsBuilder](https://github.com/Kentico/kontent-delivery-sdk-net/blob/master/Kentico.Kontent.Delivery/Builders/DeliveryOptions/DeliveryOptionsBuilder.cs).
+By default SDK reads the configuration `DeliveryOptions` from your appsettings.json. You can also set up a `DeliveryOptions` manually by the [DeliveryOptionsBuilder](https://github.com/Kentico/kontent-delivery-sdk-net/blob/master/Kentico.Kontent.Delivery/Builders/DeliveryOptions/DeliveryOptionsBuilder.cs).
 
 
 If you need to use more configuration for your `IDeliveryClient` you can register named `DeliveryClient`.
@@ -59,14 +59,16 @@ If you want to use the `HttpClientFactory` for resolving a `HttpClient`, then ju
 services.AddHttpClient<IDeliveryHttpClient, DeliveryHttpClient>();
 ```
 
-We also provide a package for memory caching, which is fully compatible with our SDK - [Kentico.Kontent.Delivery.Caching](https://www.nuget.org/packages/Kentico.Kontent.Delivery.Caching).
-
-Register cache service for the named client with name `preview`. You can also implement your custom implementation by this interface -  [IDeliveryCacheManager](https://github.com/Kentico/kontent-delivery-sdk-net/blob/master/Kentico.Kontent.Delivery.Abstractions/IDeliveryCacheManager.cs).
+We also provide a package for memory caching, which is fully compatible with our SDK - [Kentico.Kontent.Delivery.Caching](https://www.nuget.org/packages/Kentico.Kontent.Delivery.Caching). 
+You can register the cache service for the concrete named client. 
 ```csharp
-services.AddDeliveryClientCache("client1", new DeliveryCacheOptions());
+services.AddDeliveryClientCache("preview", new DeliveryCacheOptions());
 ```
-
-
+Or for the all `DeliveryClient` instances.
+```csharp
+services.AddDeliveryClientCache(new DeliveryCacheOptions());
+```
+You can also implement your custom implementation by this interface -  [IDeliveryCacheManager](https://github.com/Kentico/kontent-delivery-sdk-net/blob/master/Kentico.Kontent.Delivery.Abstractions/IDeliveryCacheManager.cs).
 
 If you don't have a IoC/DI containers, use the `DeliveryClientBuilder` for manual building `IDeliveryClient`.
 ```csharp
