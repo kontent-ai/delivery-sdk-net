@@ -27,48 +27,48 @@ The SDK targets the [.NET Standard 2.0](https://docs.microsoft.com/en-us/dotnet/
 
 The `IDeliveryClient` interface is the main interface of the SDK. Using an implementation of this interface, you can retrieve content from your Kentico Kontent projects.
 
-We have several extensions methods on the IServiceCollection for configuring DeliveryClient services into your application.
+We have a several extension methods on the `IServiceCollection` for configuring `DeliveryClient` services into your application.
 
 ```csharp
 services.AddDeliveryClient(Configuration);
 ```
 
 
-By default SDK reads configuration - [DeliveryOptions](https://github.com/Kentico/kontent-delivery-sdk-net/blob/master/Kentico.Kontent.Delivery/Configuration/DeliveryOptions.cs) from yor appsettings.json. You can also set up [DeliveryOptions](https://github.com/Kentico/kontent-delivery-sdk-net/blob/master/Kentico.Kontent.Delivery/Configuration/DeliveryOptions.cs) manually by [DeliveryOptionsBuilder](https://github.com/Kentico/kontent-delivery-sdk-net/blob/master/Kentico.Kontent.Delivery/Builders/DeliveryOptions/DeliveryOptionsBuilder.cs).
+By default SDK reads the configuration `DeliveryOptions` from yor appsettings.json. You can also set up a `DeliveryOptions` manually by the [DeliveryOptionsBuilder](https://github.com/Kentico/kontent-delivery-sdk-net/blob/master/Kentico.Kontent.Delivery/Builders/DeliveryOptions/DeliveryOptionsBuilder.cs).
 
 
 If you need to use more configuration for your `IDeliveryClient` you can register named `DeliveryClient`.
 
 ```csharp
-services.AddDeliveryClient("client1", Configuration, "DeliveryOptions1");
-services.AddDeliveryClient("client2", Configuration, "DeliveryOptions2");
+services.AddDeliveryClient("production", Configuration, "DeliveryOptions1");
+services.AddDeliveryClient("preview", Configuration, "DeliveryOptions2");
 ```
 
-For resolving named client use [IDeliveryClientFactory](https://github.com/Kentico/kontent-delivery-sdk-net/blob/master/Kentico.Kontent.Delivery.Abstractions/IDeliveryClientFactory.cs), which is by default registeted in your DI container.
+For resolving named client use the [IDeliveryClientFactory](https://github.com/Kentico/kontent-delivery-sdk-net/blob/master/Kentico.Kontent.Delivery.Abstractions/IDeliveryClientFactory.cs), which is registeted in your DI container.
 ```csharp
 public HomeController(IDeliveryClientFactory deliveryClientFactory)
 {
-    var deliveryClient = deliveryClientFactory.Get("client1");
+    var deliveryClient = deliveryClientFactory.Get("production");
 }
 ```
 
 
-If you want to use `HttpClientFactory` for resolving `HttpClient`, just register our `DeliveryHttpClient` into `AddHttpClient` pipeline.
+If you want to use the `HttpClientFactory` for resolving a `HttpClient`, then just register our `DeliveryHttpClient` into `AddHttpClient` pipeline.
 
 ```csharp
 services.AddHttpClient<IDeliveryHttpClient, DeliveryHttpClient>();
 ```
 
-We also provide package for memory caching which is fully compatible with our SDK - [Kentico.Kontent.Delivery.Caching](https://www.nuget.org/packages/Kentico.Kontent.Delivery.Caching/13.0.1-beta9).
+We also provide a package for memory caching, which is fully compatible with our SDK - [Kentico.Kontent.Delivery.Caching](https://www.nuget.org/packages/Kentico.Kontent.Delivery.Caching).
 
-Register cache service for the `client1` configuration. You can implement your custom by implementing and register [IDeliveryCacheManager](https://github.com/Kentico/kontent-delivery-sdk-net/blob/master/Kentico.Kontent.Delivery.Abstractions/IDeliveryCacheManager.cs).
+Register cache service for the named client with name `preview`. You can also implement your custom implementation by this interface -  [IDeliveryCacheManager](https://github.com/Kentico/kontent-delivery-sdk-net/blob/master/Kentico.Kontent.Delivery.Abstractions/IDeliveryCacheManager.cs).
 ```csharp
 services.AddDeliveryClientCache("client1", new DeliveryCacheOptions());
 ```
 
 
 
-If you don't use IoC/DI containers, use `DeliveryClientBuilder` for manual building `IDeliveryClient`.
+If you don't have a IoC/DI containers, use the `DeliveryClientBuilder` for manual building `IDeliveryClient`.
 ```csharp
 IDeliveryClient client = DeliveryClientBuilder
     .WithOptions(builder => builder
