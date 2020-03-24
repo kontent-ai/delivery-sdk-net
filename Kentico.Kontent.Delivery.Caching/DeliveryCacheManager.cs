@@ -147,15 +147,14 @@ namespace Kentico.Kontent.Delivery.Caching
         /// Clears cache
         /// </summary>
         /// <returns></returns>
-        public async Task ClearAsync()
+        public Task ClearAsync()
         {
-            await Task.Run(() =>
+            foreach (var key in _createLocks.Keys)
             {
-                foreach (var key in _createLocks.Keys)
-                {
-                    _memoryCache.Remove(key);
-                }
-            });
+                _memoryCache.Remove(key);
+            }
+
+            return Task.CompletedTask;
         }
     }
 }
