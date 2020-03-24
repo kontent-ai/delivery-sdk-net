@@ -141,7 +141,6 @@ namespace Kentico.Kontent.Delivery.Caching
             {
                 tokenSource.Cancel();
             }
-
         }
 
         /// <summary>
@@ -150,10 +149,13 @@ namespace Kentico.Kontent.Delivery.Caching
         /// <returns></returns>
         public async Task ClearAsync()
         {
-            foreach (var key in _createLocks.Keys)
+            await Task.Run(() =>
             {
-                _memoryCache.Remove(key);
-            }
+                foreach (var key in _createLocks.Keys)
+                {
+                    _memoryCache.Remove(key);
+                }
+            });
         }
     }
 }
