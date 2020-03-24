@@ -3,14 +3,13 @@ using System;
 namespace Kentico.Kontent.Delivery.Abstractions.InlineContentItems
 {
     /// <summary>
-    /// An interface, implemented to be registered in an collection passed to <see cref="InlineContentItemsProcessor"/>.
+    /// An interface, implemented to be registered in an collection passed to <see cref="IInlineContentItemsProcessor"/>.
     /// Such collection provide the processor with generic resolvers for otherwise specific content type of inline content item.
     /// </summary>
     /// <seealso cref="IInlineContentItemsResolver{T}"/>
     /// <remarks>
-    /// The <see cref="ServiceCollectionExtensions.AddDeliveryInlineContentItemsResolver{TContentItem}"/> or <see cref="IOptionalClientSetup.WithInlineContentItemsResolver{T}"/>
-    /// (in <see cref="DeliveryClientBuilder"/>) should always be used to create new instances of this interface. This interface allows other than <see cref="IServiceCollection"/>
-    /// containers to register dependencies required for <see cref="InlineContentItemsProcessor"/> instantiation.
+    /// This interface allows containers implementing the <see cref="IServiceCollection"/> interface to
+    /// register dependencies required for <see cref="IInlineContentItemsProcessor"/> instantiation.
     /// </remarks>
     public interface ITypelessInlineContentItemsResolver
     {
