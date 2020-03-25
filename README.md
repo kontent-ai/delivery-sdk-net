@@ -64,63 +64,6 @@ IDeliveryClient client = DeliveryClientBuilder
     .Build();
 ```
 
-## Basic querying
-
-Once you have an instance of the `IDeliveryClient`, you can start querying your project by calling methods on the instance.
-
-```csharp
-// Retrieves a single content item
-DeliveryItemResponse response = await client.GetItemAsync("about_us");
-
-// Retrieves a list of all content items
-DeliveryItemListingResponse listingResponse = await client.GetItemsAsync();
-```
-
-### Filtering retrieved data
-
-The SDK supports full scale of the API querying and filtering capabilities as described in the [API reference](https://developer.kenticocloud.com/reference#content-filtering).
-
-```csharp
-// Retrieves a list of the specified elements from the first 10 content items of
-// the 'brewer' content type, ordered by the 'product_name' element value
-DeliveryItemListingResponse response = await client.GetItemsAsync(
-    new EqualsFilter("system.type", "brewer"),
-    new ElementsParameter("image", "price", "product_status", "processing"),
-    new LimitParameter(10),
-    new OrderParameter("elements.product_name")
-);
-```
-
-### Getting localized items
-
-The language selection is just a matter of specifying the `LanguageParameter` parameter with a codename of the required language.
-
-```csharp
-// Retrieves a list of the specified elements from the first 10 content items of
-// the 'brewer' content type, ordered by the 'product_name' element value
-DeliveryItemListingResponse response = await client.GetItemsAsync(
-    new LanguageParameter("es-ES"),
-    new EqualsFilter("system.type", "brewer"),
-    new ElementsParameter("image", "price", "product_status", "processing"),
-    new LimitParameter(10),
-    new OrderParameter("elements.product_name")
-);
-```
-
-### Paging navigation
-
-To display a paging navigation you need to retrieve the total number of items matching the search criteria. This can be achieved by adding the `IncludeTotalCountParameter` to the request parameters. With this parameter the item listing responses will contain the total number of items in the `Pagination.TotalCount` property. This behavior can also be enabled globally by calling the `IDeliveryOptionsBuilder.IncludeTotalCount` method. Please note that response times might increase slightly.
-
-```csharp
-// Retrieves the second page of items including total number of items matching the search criteria
-DeliveryItemListingResponse response = await client.GetItemsAsync(
-    new LanguageParameter("es-ES"),
-    new EqualsFilter("system.type", "brewer"),
-    new OrderParameter("elements.product_name"),
-    new SkipParameter(5),
-    new LimitParameter(5),
-    new IncludeTotalCountParameter(),
-```
 
 ### Strongly-typed responses
 
@@ -135,60 +78,6 @@ DeliveryItemListingResponse<Article> listingResponse = await client.GetItemsAsyn
 ```
 
 See [Working with Strongly Typed Models](../../wiki/Working-with-strongly-typed-models) to learn how to generate models and adjust the logic to your needs.
-
-## Enumerating all items
-
-To retrieve a large amount of items, for example to warm a local cache, export content or build a static web site, the SDK provides a `DeliveryItemsFeed` to process items in a streaming fashion. With large projects feed has several advantages over fetching all items in a single API call:
-* Processing can start as soon as the first item is received, there is no need to wait for all items.
-* Memory consumption is reduced significantly.
-* There is no risk of request timeouts.
-
-```csharp
-// Process all content items in a streaming fashion.
-DeliveryItemsFeed feed = client.GetItemsFeed();
-while(feed.HasMoreResults) 
-{
-    DeliveryItemsFeedResponse response = await feed.FetchNextBatchAsync();
-    foreach(ContentItem item in response) {
-        ProcessItem(item);
-    }
-}
-```
-
-### Strongly-typed models
-
-There is also a strongly-typed equivalent of the items feed.
-
-```csharp
-// Process all strongly-typed content items in a streaming fashion.
-DeliveryItemsFeed<Article> feed = client.GetItemsFeed<Article>();
-while(feed.HasMoreResults) 
-{
-    DeliveryItemsFeedResponse<Article> response = await feed.FetchNextBatchAsync();
-    foreach(Article article in response) {
-        ProcessArticle(article);
-    }
-}
-```
-
-### Filtering and localization
-
-Both filtering and language selection are identical to the `GetItems` method, except for `DepthParameter`, `LimitParameter`, and `SkipParameter` parameters that are not supported.
-
-```csharp
-// Process selected and projected content items in a streaming fashion.
-DeliveryItemsFeed feed = await client.GetItemsFeed(
-    new LanguageParameter("es-ES"),
-    new EqualsFilter("system.type", "brewer"),
-    new ElementsParameter("image", "price", "product_status", "processing"),
-    new OrderParameter("elements.product_name")
-);
-```
-
-### Limitations
-
-* The response does not contain linked items, only components.
-* Delivery API determines how many items will be returned in a single batch.
 
 ## Previewing unpublished content
 
