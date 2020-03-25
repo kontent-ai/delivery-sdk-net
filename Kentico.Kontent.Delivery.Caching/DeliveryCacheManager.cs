@@ -141,19 +141,20 @@ namespace Kentico.Kontent.Delivery.Caching
             {
                 tokenSource.Cancel();
             }
-
         }
 
         /// <summary>
         /// Clears cache
         /// </summary>
         /// <returns></returns>
-        public async Task ClearAsync()
+        public Task ClearAsync()
         {
             foreach (var key in _createLocks.Keys)
             {
                 _memoryCache.Remove(key);
             }
+
+            return Task.CompletedTask;
         }
     }
 }
