@@ -5,7 +5,7 @@
 [![codecov](https://codecov.io/gh/Kentico/kontent-delivery-sdk-net/branch/master/graph/badge.svg)](https://codecov.io/gh/Kentico/kontent-delivery-sdk-net)
 [![Stack Overflow](https://img.shields.io/badge/Stack%20Overflow-ASK%20NOW-FE7A16.svg?logo=stackoverflow&logoColor=white)](https://stackoverflow.com/tags/kentico-kontent)
 
-| Paradigm        | Package  | Downloads | Documentation |
+| Paradigm        | Package | Downloads | Documentation |
 | ------------- |:-------------:| :-------------:|  :-------------:|
 | Async         | [![NuGet](https://img.shields.io/nuget/v/Kentico.Kontent.Delivery.svg)](https://www.nuget.org/packages/Kentico.Kontent.Delivery) | [![NuGet](https://img.shields.io/nuget/dt/Kentico.Kontent.delivery.svg)](https://www.nuget.org/packages/Kentico.Kontent.Delivery) | [📖](#using-the-deliveryclient) |
 | Reactive      | [![NuGet](https://img.shields.io/nuget/v/Kentico.Kontent.Delivery.Rx.svg)](https://www.nuget.org/packages/Kentico.Kontent.Delivery.Rx) | [![NuGet](https://img.shields.io/nuget/dt/Kentico.Kontent.delivery.Rx.svg)](https://www.nuget.org/packages/Kentico.Kontent.Delivery.Rx) | [📖](../../wiki/Using-the-Kentico.Kontent.Delivery.Rx-reactive-library) |
@@ -32,7 +32,6 @@ We have a several extension methods on the `IServiceCollection` for configuring 
 ```csharp
 services.AddDeliveryClient(Configuration);
 ```
-
 
 By default SDK reads the configuration `DeliveryOptions` from your appsettings.json. You can also set up a `DeliveryOptions` manually by the [DeliveryOptionsBuilder](https://github.com/Kentico/kontent-delivery-sdk-net/blob/master/Kentico.Kontent.Delivery/Builders/DeliveryOptions/DeliveryOptionsBuilder.cs).
 
@@ -350,7 +349,7 @@ If items feed is used to retrieve content items, only components can be retrieve
 
 ## Using the Image transformations
 
-The [ImageUrlBuilder class](https://github.com/Kentico/delivery-sdk-net/blob/master/Kentico.Kontent.Delivery/ImageTransformation/ImageUrlBuilder.cs) exposes methods for applying image transformations on the Asset URL.
+The [ImageUrlBuilder class](https://github.com/Kentico/kontent-delivery-sdk-net/blob/master/Kentico.Kontent.Delivery/Builders/ImageTransformation/ImageUrlBuilder.cs) exposes methods for applying image transformations on the Asset URL.
 
 ```csharp
 string assetUrl = articleItem.GetAssets("teaser_image").First().Url;
@@ -363,81 +362,15 @@ string transformedAssetUrl = builder.WithFocalPointCrop(560, 515, 2)
                                     .Url;
 ```
 
-For list of supported transformations and more information visit the Kentico Delivery API reference at <https://developer.kenticocloud.com/v1/reference?#image-transformation>.
-
-## Retry capabilities
-
-By default, the SDK uses a retry policy, asking for requested content again in case of an error. You can disable the retry policy by setting the `DeliveryOptions.EnableRetryPolicy` parameter to `false`. The default policy retries the HTTP requests if the following status codes are returned:
-
-* 408 - `RequestTimeout` 
-* 429 - `TooManyRequests`
-* 500 - `InternalServerError`
-* 502 - `BadGateway`
-* 503 - `ServiceUnavailable`
-* 504 - `GatewayTimeout`
-
-or if there is one of the following connection problems:
-
-* `ConnectFailure`
-* `ConnectionClosed`
-* `KeepAliveFailure`
-* `NameResolutionFailure`
-* `ReceiveFailure`
-* `SendFailure`
-* `Timeout`
-
-The default retry policy performs retries using a randomized exponential back off scheme to determine the interval between retries. It can be customized by changing parameters in `DeliveryOptions.RetryPolicyOptions`. The `DeltaBackoff` parameter specifies the back-off interval between retries. The `MaxCumulativeWaitTime` parameter specifies the maximum cumulative wait time. If the cumulative wait time exceeds this value, the client will stop retrying and return the error to the application. The default retry policy also respects the `Retry-After` response header.
-
-You can create your custom retry policy, for example with [Polly](https://github.com/App-vNext/Polly), by implementing `IRetryPolicy` and `IRetryPolicyProvider` interfaces. The custom retry policy provider can be registered with `DeliveryClientBuilder.WithRetryPolicyProvider` or with the `ServiceCollection`.
-
-
-## Using [SourceLink](https://github.com/dotnet/sourcelink/) for debugging
-
-This repository is configured to generate a SourceLink tag in the NuGet package that allows debugging this repository's source code when it is referenced as a Nuget package. The source code is downloaded directly from GitHub to Visual Studio.
-
-### How to configure SourceLink
-
-1. Open a solution with a project referencing the Kentico.Kontent.Delivery (or Kentico.Kontent.Delivery.RX) Nuget package.
-2. Open Tools -> Options -> Debugging -> General.
-    * Clear **Enable Just My Code**.
-    * Select **Enable Source Link Support**.
-    * (Optional) Clear **Require source files to exactly match the original version**.
-3. Build your solution.
-4. [Add a symbol server `https://symbols.nuget.org/download/symbols`](https://blog.nuget.org/20181116/Improved-debugging-experience-with-the-NuGet-org-symbol-server-and-snupkg.html)
-  * ![Add a symbol server in VS](/.github/assets/vs-nuget-symbol-server.PNG)
-5. Run a debugging session and try to step into the Kentico.Kontent.Delivery code.
-6. Allow Visual Studio to download the source code from GitHub.
-  * ![SourceLink confirmation dialog](/.github/assets/allow_sourcelink_download.png)
-
-**Now you are able to debug the source code of our library without needing to download the source code manually!**
+For list of supported transformations and more information visit the Kentico Delivery API reference at <https://docs.kontent.ai/reference/image-transformation>.
 
 
 ## Further information
 
 For more developer resources, visit the Kentico Kontent Developer Hub at <https://docs.kontent.ai/tutorials/develop-apps>.
 
-### Building the sources
+## Get involved
 
-Prerequisites:
+Check out the [contributing](CONTRIBUTING.md) page to see the best places to file issues, start discussions, and begin contributing.
 
-**Required:**
-[.NET Core SDK](https://www.microsoft.com/net/download/core).
-
-Optional:
-* [Visual Studio 2017](https://www.visualstudio.com/vs/) for full experience
-* or [Visual Studio Code](https://code.visualstudio.com/)
-
-## Feedback & Contributing
-
-Check out the [contributing](https://github.com/Kentico/delivery-sdk-net/blob/master/CONTRIBUTING.md) page to see the best places to file issues, start discussions, and begin contributing.
-
-### Wall of Fame
-We would like to express our thanks to the following people who contributed and made the project possible:
-
-- [Jarosław Jarnot](https://github.com/jjarnot-vimanet) - [Vimanet](http://vimanet.com)
-- [Varinder Singh](https://github.com/VarinderS) - [Kudos Web](http://www.kudosweb.com)
-- [Charith Sooriyaarachchi](https://github.com/charithsoori) - [99X Technology](http://www.99xtechnology.com/)
-
-Would you like to become a hero too? Pick an [issue](https://github.com/Kentico/delivery-sdk-net/issues) and send us a pull request!
-
-![Analytics](https://kentico-ga-beacon.azurewebsites.net/api/UA-69014260-4/Kentico/delivery-sdk-net?pixel)
+![Analytics](https://kentico-ga-beacon.azurewebsites.net/api/UA-69014260-4/Kentico/kontent-delivery-sdk-net?pixel)
