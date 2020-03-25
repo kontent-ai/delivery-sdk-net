@@ -21,6 +21,7 @@ You can use it via any of the following NuGet packages:
 
 The first package provides the [DeliveryClient](#using-the-deliveryclient) object to consume Kentico Kontent data via the traditional async way. The second one provides the [DeliveryObservableProxy](../../wiki/Using-the-Kentico.Kontent.Delivery.Rx-reactive-library) object that enables the reactive way of consuming the data.
 
+### Compatibility
 The SDK targets the [.NET Standard 2.0](https://docs.microsoft.com/en-us/dotnet/standard/net-standard), which means it can be used in .NET Framework 4.6.1 projects and above, and .NET Core 2.0 projects and above.
 
 ## Using the DeliveryClient
@@ -30,44 +31,14 @@ The `IDeliveryClient` interface is the main interface of the SDK. Using an imple
 We have a several extension methods on the `IServiceCollection` for configuring `DeliveryClient` services into your application.
 
 ```csharp
-services.AddDeliveryClient(Configuration);
+public void ConfigureServices(IServiceCollection services)
+{
+	services.AddDeliveryClient(Configuration);
+}
 ```
 
 By default SDK reads the configuration `DeliveryOptions` from your appsettings.json. You can also set up a `DeliveryOptions` manually by the [DeliveryOptionsBuilder](https://github.com/Kentico/kontent-delivery-sdk-net/blob/master/Kentico.Kontent.Delivery/Builders/DeliveryOptions/DeliveryOptionsBuilder.cs).
 
-
-If you need to use more configuration for your `IDeliveryClient` you can register named `DeliveryClient`.
-
-```csharp
-services.AddDeliveryClient("production", Configuration, "DeliveryOptions1");
-services.AddDeliveryClient("preview", Configuration, "DeliveryOptions2");
-```
-
-For resolving named client use the [IDeliveryClientFactory](https://github.com/Kentico/kontent-delivery-sdk-net/blob/master/Kentico.Kontent.Delivery.Abstractions/IDeliveryClientFactory.cs), which is registeted in your DI container.
-```csharp
-public HomeController(IDeliveryClientFactory deliveryClientFactory)
-{
-    var deliveryClient = deliveryClientFactory.Get("production");
-}
-```
-
-
-If you want to use the `HttpClientFactory` for resolving a `HttpClient`, then just register our `DeliveryHttpClient` into `AddHttpClient` pipeline.
-
-```csharp
-services.AddHttpClient<IDeliveryHttpClient, DeliveryHttpClient>();
-```
-
-We also provide a package for memory caching, which is fully compatible with our SDK - [Kentico.Kontent.Delivery.Caching](https://www.nuget.org/packages/Kentico.Kontent.Delivery.Caching). 
-You can register the cache service for the concrete named client. 
-```csharp
-services.AddDeliveryClientCache("preview", new DeliveryCacheOptions());
-```
-Or for the all `DeliveryClient` instances.
-```csharp
-services.AddDeliveryClientCache(new DeliveryCacheOptions());
-```
-You can also implement your custom implementation by this interface -  [IDeliveryCacheManager](https://github.com/Kentico/kontent-delivery-sdk-net/blob/master/Kentico.Kontent.Delivery.Abstractions/IDeliveryCacheManager.cs).
 
 If you don't have an IoC/DI containers, use the `DeliveryClientBuilder` for manual building `IDeliveryClient`.
 
