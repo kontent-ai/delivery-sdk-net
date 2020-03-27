@@ -69,6 +69,7 @@ You can also set up a `DeliveryOptions` manually using the [`DeliveryClientBuild
 IDeliveryClient _client = DeliveryClientBuilder
     .WithOptions(builder => builder
         .WithProjectId("<YOUR_PROJECT_ID>")
+	.UseProductionApi()
 	.Build())
     .Build();
 ```
