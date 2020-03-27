@@ -95,36 +95,6 @@ IDeliveryClient client = DeliveryClientBuilder
 
 Learn more about [previewing unpublished content using the Delivery API](https://docs.kontent.ai/tutorials/write-and-collaborate/preview-content/previewing-unpublished-content) in our Developer Hub.
 
-## Response structure
-
-For full description of single and multiple content item JSON response formats, see our [API reference](https://developer.kenticocloud.com/reference#response-structure).
-
-### Single content item response
-
-When retrieving a single content item, you get an instance of the `DeliveryItemResponse` class. This class represents the JSON response from the Delivery API endpoint and contains the requested `ContentItem` as a property.
-
-### Multiple content items response
-
-When retrieving a list of content items, you get an instance of the `DeliveryItemListingResponse`. This class represents the JSON response from the Delivery API endpoint and contains:
-
-* `Pagination` property with information about the following:
-  * `Skip`: requested number of content items to skip
-  * `Limit`: requested page size
-  * `Count`: the total number of retrieved content items
-  * `NextPageUrl`: the URL of the next page
-* A list of the requested content items
-
-### Content items feed response
-
-When retrieving an items feed, you get an instance of the `DeliverItemsFeedResponse`. This class represents the JSON response from the Delivery API endpoint and contains a list of requested content items.
-
-### ContentItem structure
-
-The `ContentItem` class provides the following:
-
-* `System` property with metadata such as code name, display name, type, or sitemap location.
-* `Elements` as a dynamically typed property containing all the elements included in the response structured by code names.
-* Methods for easier access to certain types of content elements such as linked items, or assets.
 
 ## Getting content item properties
 
@@ -140,74 +110,6 @@ articleItem.System.Codename
 // Retrieves name of the content type of an article content item
 articleItem.System.Type
 ```
-
-## Getting element values
-
-The SDK provides methods for retrieving content from content elements such as Asset, Text, Rich Text, Multiple choice, etc.
-
-### Text
-
-For Text elements, you can use the `GetString` method.
-
-```csharp
-// Retrieves an article text from the 'body_copy' Text element
-articleItem.GetString("body_copy")
-```
-
-### Rich text
-
-* The Rich text element can contain links to other content items within your project. See [Resolving links to content items](https://github.com/Kentico/delivery-sdk-net/wiki/Resolving-Links-to-Content-Items) for more details.
-* The Rich text element can contain components and other content items. See [Structured Rich text rendering](https://github.com/Kentico/delivery-sdk-net/wiki/Structured-Rich-text-rendering) for more details. To learn more about components and linked content, visit our [API Reference](https://developer.kenticocloud.com/v1/reference#linked-content).
-
-### Asset
-
-```csharp
-// Retrieves a teaser image URL
-articleItem.GetAssets("teaser_image").First().Url
-```
-
-### Multiple choice
-
-To get a list of options defined in a Multiple choice content element, you first need to retrieve the content element itself. For this purpose, you can use the `GetContentElementAsync` method, which takes the codename of a content type and the codename of a content element.
-
-```csharp
-// Retrieves the 'processing' element of the 'coffee' content type
-ContentElement element = await client.GetContentElementAsync("coffee", "processing");
-```
-
-After you retrieve the Multiple choice element, you can work with its list of options. Each option has the following properties:
-
-
-Property | Description | Example
----------|----------|---------
- Name | The display name of the option. | `Dry (Natural)`
- Codename | The codename of the option. | `dry__natural_`
-
-To put the element's options in a list, you can use the following code:
-
-```csharp
-List<SelectListItem> items = new List<SelectListItem>();
-
-foreach (var option in element.Options)
-{
-    items.Add(new SelectListItem {
-        Text = option.Name,
-        Value = option.Codename,
-        Selected = (option.Codename == "semi_dry")
-    });
-}
-```
-
-### Linked items
-
-```csharp
-// Retrieves related articles
-articleItem.GetLinkedItems("related_articles")
-```
-
-If items feed is used to retrieve content items, only components can be retrieved by this method.
-
-
 
 ## Further information
 
