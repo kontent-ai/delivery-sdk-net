@@ -101,7 +101,7 @@ See [Working with Strongly Typed Models](../../wiki/Working-with-strongly-typed-
 ## Further information
 
 For more developer resources, visit:
-* [Best practices for Delivery SDK for .NET](../../wiki)
+* [✔️ Best practices for Delivery SDK for .NET](../../wiki)
 * Kentico Kontent Developer Hub:
   * [.NET Tutorials](https://docs.kontent.ai/tutorials/develop-apps)
   * [API Reference](https://docs.kontent.ai/reference)
