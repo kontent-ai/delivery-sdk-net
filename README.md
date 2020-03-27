@@ -5,30 +5,33 @@
 [![codecov](https://codecov.io/gh/Kentico/kontent-delivery-sdk-net/branch/master/graph/badge.svg)](https://codecov.io/gh/Kentico/kontent-delivery-sdk-net)
 [![Stack Overflow](https://img.shields.io/badge/Stack%20Overflow-ASK%20NOW-FE7A16.svg?logo=stackoverflow&logoColor=white)](https://stackoverflow.com/tags/kentico-kontent)
 
-| Paradigm        | Package | Downloads | Documentation |
-| ------------- |:-------------:| :-------------:|  :-------------:|
-| Async         | [![NuGet](https://img.shields.io/nuget/v/Kentico.Kontent.Delivery.svg)](https://www.nuget.org/packages/Kentico.Kontent.Delivery) | [![NuGet](https://img.shields.io/nuget/dt/Kentico.Kontent.delivery.svg)](https://www.nuget.org/packages/Kentico.Kontent.Delivery) | [📖](#using-the-deliveryclient) |
-| Reactive      | [![NuGet](https://img.shields.io/nuget/v/Kentico.Kontent.Delivery.Rx.svg)](https://www.nuget.org/packages/Kentico.Kontent.Delivery.Rx) | [![NuGet](https://img.shields.io/nuget/dt/Kentico.Kontent.delivery.Rx.svg)](https://www.nuget.org/packages/Kentico.Kontent.Delivery.Rx) | [📖](../../wiki/Using-the-Kentico.Kontent.Delivery.Rx-reactive-library) |
+| Paradigm        | Package | Downloads | Compatibility | Documentation |
+| ------------- |:-------------:| :-------------:|  :-------------:|  :-------------:|
+| Async         | [![NuGet](https://img.shields.io/nuget/v/Kentico.Kontent.Delivery.svg)](https://www.nuget.org/packages/Kentico.Kontent.Delivery) | [![NuGet](https://img.shields.io/nuget/dt/Kentico.Kontent.delivery.svg)](https://www.nuget.org/packages/Kentico.Kontent.Delivery) | [`netstandard2.0`](https://docs.microsoft.com/en-us/dotnet/standard/net-standard) | [📖](#using-the-deliveryclient) |
+| Reactive      | [![NuGet](https://img.shields.io/nuget/v/Kentico.Kontent.Delivery.Rx.svg)](https://www.nuget.org/packages/Kentico.Kontent.Delivery.Rx) | [![NuGet](https://img.shields.io/nuget/dt/Kentico.Kontent.delivery.Rx.svg)](https://www.nuget.org/packages/Kentico.Kontent.Delivery.Rx) | [`netstandard2.0`](https://docs.microsoft.com/en-us/dotnet/standard/net-standard) | [📖](../../wiki/Using-the-Kentico.Kontent.Delivery.Rx-reactive-library) |
 
 ## Summary
 
-The Kentico Kontent Delivery .NET SDK is a client library used for retrieving content from Kentico Kontent.
+The Kentico Kontent Delivery .NET SDK is a client library that lets you easily retrieve content from Kentico Kontent.
 
-You can use it via any of the following NuGet packages:
+### Getting started
 
-* [Kentico.Kontent.Delivery](https://www.nuget.org/packages/Kentico.Kontent.Delivery)
-* [Kentico.Kontent.Delivery.Rx](https://www.nuget.org/packages/Kentico.Kontent.Delivery.Rx)
+Installation via Package Manager Console in Visual Studio:
+```powershell
+PM> Install-Package Kentico.Kontent.Delivery 
+```
 
-The first package provides the [DeliveryClient](#using-the-deliveryclient) object to consume Kentico Kontent data via the traditional async way. The second one provides the [DeliveryObservableProxy](../../wiki/Using-the-Kentico.Kontent.Delivery.Rx-reactive-library) object that enables the reactive way of consuming the data.
+Installation via .NET CLI:
+```console
+> dotnet add package Kentico.Kontent.Delivery 
+```
 
-### Compatibility
-The SDK targets the [.NET Standard 2.0](https://docs.microsoft.com/en-us/dotnet/standard/net-standard), which means it can be used in .NET Framework 4.6.1 projects and above, and .NET Core 2.0 projects and above.
-
-## Using the DeliveryClient
-
-### Registering to the `IServiceCollection` (ASP.NET Core web apps)
+## Usage
 The `IDeliveryClient` interface is the main interface of the SDK. Using an implementation of this interface, you can retrieve content from your Kentico Kontent projects.
 
+### Use dependency injection (ideal for ASP.NET Core web apps)
+
+**Startup.cs**
 ```csharp
 public void ConfigureServices(IServiceCollection services)
 {
@@ -36,11 +39,32 @@ public void ConfigureServices(IServiceCollection services)
 }
 ```
 
-By default SDK reads the configuration `DeliveryOptions` from your appsettings.json. You can also set up a `DeliveryOptions` manually by the [DeliveryOptionsBuilder](https://github.com/Kentico/kontent-delivery-sdk-net/blob/master/Kentico.Kontent.Delivery/Builders/DeliveryOptions/DeliveryOptionsBuilder.cs).
+**HomeController.cs**
+```csharp
+    public class HomeController
+    {
+    	private IDeliveryClient _client;
+	
+        public HomeController(IDeliveryClient deliveryClient)
+        {
+            _client = deliveryClient;
+        }
+    }
+
+```
+
+In this case, the SDK reads the configuration from the `DeliveryOptions` section of the `Configuration` object. There are many ways of providing the configuration to the `DeliveryClient` as well as many advanced registration scenarios which you can all find in the [Wiki](../../wiki/Registering-the-DeliveryClient-to-the-IServiceCollection-in-ASP.NET-Core).
+
+To see a complete working example, go to the:
+- [Kentico Kontent ASP.NET Core MVC Sample Site](https://github.com/Kentico/kontent-sample-app-net) or
+- [Kentico Kontent ASP.NET Core Razor Pages Sample Site](https://github.com/Kentico/kontent-sample-app-razorpages)
+
+To spin up a fully configured blank site quickly, use the
+- [Kentico Kontent .NET boilerplate](https://github.com/Kentico/kontent-boilerplate-net)
 
 
-### Usage without IoC/DI containers (Console apps, Unit tests...)
-Use the `DeliveryClientBuilder` to build the `IDeliveryClient` manually.
+### Usage without IoC/DI containers (ideal for console apps, unit tests...)
+You can also set up a `DeliveryOptions` manually using the [`DeliveryClientBuilder`](https://github.com/Kentico/kontent-delivery-sdk-net/blob/master/Kentico.Kontent.Delivery/Builders/DeliveryOptions/DeliveryOptionsBuilder.cs).
 
 ```csharp
 IDeliveryClient _client = DeliveryClientBuilder
@@ -49,15 +73,6 @@ IDeliveryClient _client = DeliveryClientBuilder
 	.Build())
     .Build();
 ```
-
-* `ProjectId` – sets the ID of your Kentico Kontent project. This parameter must always be set.
-* `UsePreviewApi` – determines whether to use the Delivery Preview API and sets the Delivery Preview API key. See [previewing unpublished content](#previewing-unpublished-content) to learn more.
-* `UseProductionApi` – determines whether to use the default production Delivery API.
-* `UseSecureAccess` – determines whether authenticate requests to the production Delivery API with an API key. See [retrieving secured content](https://docs.kontent.ai/tutorials/develop-apps/get-content/securing-public-access?tech=dotnet#a-retrieving-secured-content) to learn more.
-* `WaitForLoadingNewContent` – forces the client instance to wait while fetching updated content, useful when acting upon [webhook calls](https://docs.kontent.ai/tutorials/develop-apps/integrate/using-webhooks-for-automatic-updates).
-* `EnableRetryPolicy` – determines whether HTTP requests will use [retry policy](#retry-capabilities). By default, the retry policy is enabled.
-* `DefaultRetryPolicyOptions` – sets a [custom parameters](#retry-capabilities) for the default retry policy. By default, the SDK retries for at most 30 seconds.
-
 
 ### Your first request
 
@@ -68,7 +83,9 @@ public class Article
 {
         public string Title { get; set; }
         public string Summary { get; set; }
-	public string BodyCopy { get; set; }
+	public string Body { get; set; }
+	public DateTime? PostDate { get; set; }
+	public ContentItemSystemAttributes System { get; set; }
 }
 ```
 
@@ -76,8 +93,8 @@ Call the `IDeliveryClient` to retrieve data from Kentico Kontent:
 ```csharp
 // Retrieving a single content item
 var response = await _client.GetItemAsync<Article>("<article_codename>");
-
-Console.WriteLine(response.Item.Title); // -> "On Roasts"
+var title = response.Item.Title; // -> "On Roasts"
+var lang = response.Item.System.Language; // -> "en-US"
 ```
 
 See [Working with Strongly Typed Models](../../wiki/Working-with-strongly-typed-models) to learn how to generate models and adjust the logic to your needs.
