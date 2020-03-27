@@ -58,8 +58,8 @@ To see a complete working example, go to one of our sample sites:
 - [Kentico Kontent ASP.NET Core MVC](https://github.com/Kentico/kontent-sample-app-net) or
 - [Kentico Kontent ASP.NET Core Razor Pages](https://github.com/Kentico/kontent-sample-app-razorpages)
 
-To spin up a fully configured blank site quickly, use the
-- [Kentico Kontent .NET boilerplate](https://github.com/Kentico/kontent-boilerplate-net)
+To spin up a fully configured blank site quickly, use the:
+- [Kentico Kontent ASP.NET boilerplate](https://github.com/Kentico/kontent-boilerplate-net)
 
 
 ### Usage without IoC/DI containers (ideal for console apps, unit tests...)
@@ -100,7 +100,12 @@ See [Working with Strongly Typed Models](../../wiki/Working-with-strongly-typed-
 
 ## Further information
 
-For more developer resources, visit the Kentico Kontent Developer Hub at <https://docs.kontent.ai/tutorials/develop-apps>.
+For more developer resources, visit:
+* [Delivery SDK Wiki](../../wiki)
+* Kentico Kontent Developer Hub:
+  * [.NET Tutorials](https://docs.kontent.ai/tutorials/develop-apps)
+  * [API Reference](https://docs.kontent.ai/reference)
+
 
 ## Get involved
 
