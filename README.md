@@ -54,9 +54,9 @@ public class HomeController
 
 In this case, the SDK reads the configuration from the `DeliveryOptions` section of the `Configuration` object. There are many ways of providing the configuration to the `DeliveryClient` as well as many advanced registration scenarios which you can all find in the [Wiki](../../wiki/Registering-the-DeliveryClient-to-the-IServiceCollection-in-ASP.NET-Core).
 
-To see a complete working example, go to the:
-- [Kentico Kontent ASP.NET Core MVC Sample Site](https://github.com/Kentico/kontent-sample-app-net) or
-- [Kentico Kontent ASP.NET Core Razor Pages Sample Site](https://github.com/Kentico/kontent-sample-app-razorpages)
+To see a complete working example, go to one of our sample sites:
+- [Kentico Kontent ASP.NET Core MVC](https://github.com/Kentico/kontent-sample-app-net) or
+- [Kentico Kontent ASP.NET Core Razor Pages](https://github.com/Kentico/kontent-sample-app-razorpages)
 
 To spin up a fully configured blank site quickly, use the
 - [Kentico Kontent .NET boilerplate](https://github.com/Kentico/kontent-boilerplate-net)
