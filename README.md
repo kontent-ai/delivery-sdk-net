@@ -41,16 +41,15 @@ public void ConfigureServices(IServiceCollection services)
 
 **HomeController.cs**
 ```csharp
-    public class HomeController
-    {
-    	private IDeliveryClient _client;
-	
-        public HomeController(IDeliveryClient deliveryClient)
-        {
-            _client = deliveryClient;
-        }
-    }
+public class HomeController
+{
+	private IDeliveryClient _client;
 
+	public HomeController(IDeliveryClient deliveryClient)
+	{
+		_client = deliveryClient;
+	}
+}
 ```
 
 In this case, the SDK reads the configuration from the `DeliveryOptions` section of the `Configuration` object. There are many ways of providing the configuration to the `DeliveryClient` as well as many advanced registration scenarios which you can all find in the [Wiki](../../wiki/Registering-the-DeliveryClient-to-the-IServiceCollection-in-ASP.NET-Core).
