@@ -20,7 +20,7 @@ namespace Kentico.Kontent.Delivery.StrongTyping
         private readonly IPropertyMapper _propertyMapper;
         private readonly IContentLinkResolver _contentLinkResolver;
 
-       
+
 
         /// <summary>
         /// Initializes a new instance of <see cref="ModelProvider"/>.
@@ -75,7 +75,7 @@ namespace Kentico.Kontent.Delivery.StrongTyping
                 }
                 else
                 {
-                    var value = GetPropertyValue(elementsData, property, linkedItems,context,itemSystemAttributes, ref processedItems, ref richTextPropertiesToBeProcessed);
+                    var value = GetPropertyValue(elementsData, property, linkedItems, context, itemSystemAttributes, ref processedItems, ref richTextPropertiesToBeProcessed);
                     if (value != null)
                     {
                         property.SetValue(instance, value);

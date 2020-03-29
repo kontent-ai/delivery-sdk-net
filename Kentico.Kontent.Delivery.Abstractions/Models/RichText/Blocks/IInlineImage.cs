@@ -14,5 +14,15 @@
         /// Source URL of the image
         /// </summary>
         string Src { get; set; }
+
+        /// <summary>
+        /// Height of the image
+        /// </summary>
+        int Height { get; set; }
+
+        /// <summary>
+        /// Width of the image
+        /// </summary>
+        int Width { get; set; }
     }
 }
