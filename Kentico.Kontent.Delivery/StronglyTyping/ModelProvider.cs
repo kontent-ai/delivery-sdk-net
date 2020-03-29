@@ -20,8 +20,6 @@ namespace Kentico.Kontent.Delivery.StrongTyping
         private readonly IPropertyMapper _propertyMapper;
         private readonly IContentLinkResolver _contentLinkResolver;
 
-
-
         /// <summary>
         /// Initializes a new instance of <see cref="ModelProvider"/>.
         /// </summary>
