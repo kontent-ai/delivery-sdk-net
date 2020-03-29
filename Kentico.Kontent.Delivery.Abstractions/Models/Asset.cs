@@ -61,7 +61,7 @@ namespace Kentico.Kontent.Delivery.Abstractions
 			Url = url;
 			Description = description;
 			Width = width;
-		    	Height = height;
+			Height = height;
 		}
 	}
 }

@@ -26,6 +26,7 @@ namespace Kentico.Kontent.Delivery.StrongTyping
             }
 
             var links = element.Property("links")?.Value;
+            var images = element.Property("images").Value;
             var value = element.Property("value")?.Value?.ToObject<string>();
 
             // Handle rich_text link resolution
@@ -49,7 +50,15 @@ namespace Kentico.Kontent.Delivery.StrongTyping
                     var img = block.Children.FirstOrDefault(child => child.TagName?.Equals("img", StringComparison.OrdinalIgnoreCase) == true);
                     if (img != null)
                     {
-                        blocks.Add(new InlineImage { Src = img.GetAttribute("src"), AltText = img.GetAttribute("alt") });
+                        var assetId = img.GetAttribute("data-asset-id");
+                        var asset = images[assetId];
+                        blocks.Add(new InlineImage
+                        {
+                            Src = asset.Value<string>("url"),
+                            AltText = asset.Value<string>("description"),
+                            Height = asset.Value<int>("height"),
+                            Width = asset.Value<int>("width")
+                        });
                     }
                 }
                 else
