@@ -17,21 +17,25 @@ The Kentico Kontent Delivery .NET SDK is a client library that lets you easily r
 ### Getting started
 
 Installation via Package Manager Console in Visual Studio:
+
 ```powershell
 PM> Install-Package Kentico.Kontent.Delivery 
 ```
 
 Installation via .NET CLI:
+
 ```console
 > dotnet add package Kentico.Kontent.Delivery 
 ```
 
 ## Usage
-The `IDeliveryClient` interface is the main interface of the SDK. Using an implementation of this interface, you can retrieve content from your Kentico Kontent projects.
+
+To retrieve content from your Kentico Kontent projects, you'll be using an implementation of the `IDeliveryClient` interface. This is the main interface of the SDK. Here's how you can instantiate and use the Delivery client either [with DI/IoC](#use-dependency-injection-ideal-for-aspnet-core-web-apps "Usage with dependency injection") or [without DI/IoC](#usage-without-iocdi-containers-ideal-for-console-apps-unit-tests "Usage without dependency injection").
 
 ### Use dependency injection (ideal for ASP.NET Core web apps)
 
 **Startup.cs**
+
 ```csharp
 public void ConfigureServices(IServiceCollection services)
 {
@@ -40,6 +44,7 @@ public void ConfigureServices(IServiceCollection services)
 ```
 
 **HomeController.cs**
+
 ```csharp
 public class HomeController
 {
@@ -54,15 +59,17 @@ public class HomeController
 
 In this case, the SDK reads the configuration from the `DeliveryOptions` section of the `Configuration` object. There are many ways of providing the configuration to the `DeliveryClient` as well as many advanced registration scenarios which you can all find in the [Wiki](../../wiki/Registering-the-DeliveryClient-to-the-IServiceCollection-in-ASP.NET-Core).
 
-To see a complete working example, go to one of our sample sites:
+To see a complete working example, go to one of our sample apps:
+
 - [Kentico Kontent ASP.NET Core MVC](https://github.com/Kentico/kontent-sample-app-net) or
 - [Kentico Kontent ASP.NET Core Razor Pages](https://github.com/Kentico/kontent-sample-app-razorpages)
 
 To spin up a fully configured blank site quickly, use the:
-- [Kentico Kontent ASP.NET boilerplate](https://github.com/Kentico/kontent-boilerplate-net)
 
+- [Kentico Kontent ASP.NET Core MVC boilerplate](https://github.com/Kentico/kontent-boilerplate-net)
 
 ### Usage without IoC/DI containers (ideal for console apps, unit tests...)
+
 You can also set up a `DeliveryOptions` manually using the [`DeliveryClientBuilder`](https://github.com/Kentico/kontent-delivery-sdk-net/blob/master/Kentico.Kontent.Delivery/Builders/DeliveryOptions/DeliveryOptionsBuilder.cs).
 
 ```csharp
@@ -90,6 +97,7 @@ public class Article
 ```
 
 Call the `IDeliveryClient` to retrieve data from Kentico Kontent:
+
 ```csharp
 // Retrieving a single content item
 var response = await _client.GetItemAsync<Article>("<article_codename>");
@@ -106,7 +114,6 @@ For more developer resources, visit:
 * Kentico Kontent Developer Hub:
   * [.NET Tutorials](https://docs.kontent.ai/tutorials/develop-apps)
   * [API Reference](https://docs.kontent.ai/reference)
-
 
 ## Get involved
 
