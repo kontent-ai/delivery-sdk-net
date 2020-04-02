@@ -6,6 +6,7 @@
     <PackageId>Kentico.Kontent.Delivery.Rx.Tests</PackageId>
     <RuntimeFrameworkVersion>2.0.0</RuntimeFrameworkVersion>
     <IsPackable>false</IsPackable>
+    <LangVersion>latest</LangVersion>
   </PropertyGroup>
 
   <ItemGroup>
