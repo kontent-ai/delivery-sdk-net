@@ -14,6 +14,8 @@ using Kentico.Kontent.Delivery.Abstractions;
 using Kentico.Kontent.Delivery.Abstractions.RetryPolicy;
 using Kentico.Kontent.Delivery.StrongTyping;
 using Kentico.Kontent.Delivery.ContentLinks;
+using Newtonsoft.Json.Linq;
+using Newtonsoft.Json;
 
 namespace Kentico.Kontent.Delivery.Tests
 {
@@ -143,6 +145,30 @@ namespace Kentico.Kontent.Delivery.Tests
             var client = InitializeDeliveryClientWithACustomTypeProvider(_mockHttp);
 
             await Assert.ThrowsAsync<DeliveryException>(async () => await client.GetItemAsync("unscintillating_hemerocallidaceae_des_iroquois"));
+        }
+
+
+        [Fact]
+        public async void GetItemAsync_ComplexRichTextTableCell_ParseCorrectly()
+        {
+
+        var mockedResponse = File.ReadAllText(Path.Combine(Environment.CurrentDirectory, $"Fixtures{Path.DirectorySeparatorChar}DeliveryClient{Path.DirectorySeparatorChar}rich_text_complex_tables.json"));
+
+            var expectedValue = JObject.Parse(mockedResponse).SelectToken("item.elements.rich_text.value").ToString();
+
+            _mockHttp
+                    .When($"{_baseUrl}/items/rich_text_complex_tables")
+                    .Respond("application/json", mockedResponse);
+
+            var client = InitializeDeliveryClientWithACustomTypeProvider(_mockHttp);
+            var result = await client.GetItemAsync("rich_text_complex_tables");
+            var typedResult = await client.GetItemAsync<SimpleRichText>("rich_text_complex_tables");
+
+            Assert.Equal(expectedValue, result.Item.Elements["rich_text"]["value"].ToString());
+            Assert.Equal(9, typedResult.Item.RichText.Count());     
+            var tableBlock = typedResult.Item.RichText.ElementAt(4);
+            Assert.NotNull(tableBlock);
+            Assert.IsType<HtmlContent>(tableBlock);
         }
 
         [Fact]
