@@ -25,7 +25,7 @@ namespace Kentico.Kontent.Delivery.Tests.DependencyInjectionFrameworks
         {
             var container = DependencyInjectionFrameworksHelper
                 .GetServiceCollection()
-                .AddScoped<IModelProvider, FakeModelProvider>()
+                .AddSingleton<IModelProvider, FakeModelProvider>()
                 .RegisterInlineContentItemResolvers()
                 .BuildSimpleInjectorServiceProvider();
 

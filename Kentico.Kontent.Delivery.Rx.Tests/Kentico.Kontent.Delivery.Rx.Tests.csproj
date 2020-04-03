@@ -5,7 +5,6 @@
     <AssemblyName>Kentico.Kontent.Delivery.Rx.Tests</AssemblyName>
     <PackageId>Kentico.Kontent.Delivery.Rx.Tests</PackageId>
     <IsPackable>false</IsPackable>
-    <LangVersion>latest</LangVersion>
   </PropertyGroup>
 
   <ItemGroup>
@@ -59,12 +58,6 @@
     <ProjectReference Include="..\Kentico.Kontent.Delivery.Abstractions\Kentico.Kontent.Delivery.Abstractions.csproj" />
     <ProjectReference Include="..\Kentico.Kontent.Delivery.Rx\Kentico.Kontent.Delivery.Rx.csproj" />
     <ProjectReference Include="..\Kentico.Kontent.Delivery.Tests\Kentico.Kontent.Delivery.Tests.csproj" />
-  </ItemGroup>
-
-  <ItemGroup>
-    <Reference Include="System">
-      <HintPath>System</HintPath>
-    </Reference>
   </ItemGroup>
 
 </Project>

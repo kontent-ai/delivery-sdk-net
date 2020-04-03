@@ -26,7 +26,7 @@ namespace Kentico.Kontent.Delivery.Tests.DependencyInjectionFrameworks
             var provider = DependencyInjectionFrameworksHelper
                 .GetServiceCollection()
                 .RegisterInlineContentItemResolvers()
-                .AddScoped<IModelProvider, FakeModelProvider>()
+                .AddSingleton<IModelProvider, FakeModelProvider>()
                 .BuildUnityServiceProvider();
 
             var client = (DeliveryClient)provider.GetRequiredService<IDeliveryClient>();

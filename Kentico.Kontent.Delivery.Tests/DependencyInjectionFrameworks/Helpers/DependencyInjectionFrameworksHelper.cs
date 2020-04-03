@@ -18,7 +18,7 @@ namespace Kentico.Kontent.Delivery.Tests.DependencyInjectionFrameworks.Helpers
 
         internal static IServiceCollection GetServiceCollection()
             => new ServiceCollection()
-                .AddDeliveryClient(new DeliveryOptions {ProjectId = ProjectId});
+                .AddDeliveryClient(new DeliveryOptions { ProjectId = ProjectId });
 
         internal static IServiceCollection RegisterInlineContentItemResolvers(this IServiceCollection serviceCollection)
             => serviceCollection
@@ -67,7 +67,14 @@ namespace Kentico.Kontent.Delivery.Tests.DependencyInjectionFrameworks.Helpers
             serviceCollection.AddSimpleInjector(container);
             serviceCollection.UseSimpleInjectorAspNetRequestScoping(container);
 
+            ServiceCollection services = serviceCollection as ServiceCollection;
+
+            ServiceCollectionContainerBuilderExtensions.BuildServiceProvider(services, validateScopes: true)
+                .UseSimpleInjector(container);
+
+
+
             return container;
         }
     }
-}   
+}

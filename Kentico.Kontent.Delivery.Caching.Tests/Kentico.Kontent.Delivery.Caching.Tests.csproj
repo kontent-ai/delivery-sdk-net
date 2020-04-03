@@ -5,7 +5,6 @@
     <AssemblyName>Kentico.Kontent.Delivery.Caching.Tests</AssemblyName>
     <PackageId>Kentico.Kontent.Delivery.Caching.Tests</PackageId>
     <IsPackable>false</IsPackable>
-    <LangVersion>latest</LangVersion>
   </PropertyGroup>
 
   <ItemGroup>
