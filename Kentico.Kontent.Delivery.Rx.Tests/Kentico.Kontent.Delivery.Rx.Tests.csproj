@@ -5,6 +5,7 @@
     <AssemblyName>Kentico.Kontent.Delivery.Rx.Tests</AssemblyName>
     <PackageId>Kentico.Kontent.Delivery.Rx.Tests</PackageId>
     <IsPackable>false</IsPackable>
+    <LangVersion>latest</LangVersion>
   </PropertyGroup>
 
   <ItemGroup>

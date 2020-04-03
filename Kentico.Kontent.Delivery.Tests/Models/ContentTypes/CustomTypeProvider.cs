@@ -22,6 +22,7 @@ namespace Kentico.Kontent.Delivery.Tests
             {typeof(HostedVideo), "hosted_video"},
             {typeof(Office), "office"},
             {typeof(Tweet), "tweet"},
+            {typeof(SimpleRichText), "simple_rich_text" }
         };
 
         public Type GetType(string contentType)
