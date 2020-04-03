@@ -64,9 +64,8 @@ namespace Kentico.Kontent.Delivery.Tests.DependencyInjectionFrameworks.Helpers
                 ApplicationServices = serviceCollection.BuildServiceProvider()
             };
 
-            serviceCollection.EnableSimpleInjectorCrossWiring(container);
+            serviceCollection.AddSimpleInjector(container);
             serviceCollection.UseSimpleInjectorAspNetRequestScoping(container);
-            container.AutoCrossWireAspNetComponents(appBuilder);
 
             return container;
         }

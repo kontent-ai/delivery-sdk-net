@@ -31,7 +31,7 @@ namespace Kentico.Kontent.Delivery
         private DeliveryEndpointUrlBuilder _urlBuilder;
 
         private DeliveryEndpointUrlBuilder UrlBuilder
-            => _urlBuilder ?? (_urlBuilder = new DeliveryEndpointUrlBuilder(DeliveryOptions));
+            => _urlBuilder ??= new DeliveryEndpointUrlBuilder(DeliveryOptions);
 
         /// <summary>
         /// Initializes a new instance of the <see cref="DeliveryClient"/> class for retrieving content of the specified project.

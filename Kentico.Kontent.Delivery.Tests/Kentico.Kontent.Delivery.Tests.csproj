@@ -5,15 +5,13 @@
     <Copyright>(c) 2016 Kentico Software. All rights reserved.</Copyright>
     <AssemblyTitle>Kentico Kontent Delivery SDK tests</AssemblyTitle>
     <Authors>Kentico Software</Authors>
-    <TargetFramework>netcoreapp2.0</TargetFramework>
+    <TargetFramework>netcoreapp3.1</TargetFramework>
     <AssemblyName>Kentico.Kontent.Delivery.Tests</AssemblyName>
     <PackageId>Kentico.Kontent.Delivery.Tests</PackageId>
     <GenerateRuntimeConfigurationFiles>true</GenerateRuntimeConfigurationFiles>
     <PackageLicenseUrl>https://github.com/Kentico/delivery-sdk-net/blob/master/LICENSE</PackageLicenseUrl>
     <RepositoryType>git</RepositoryType>
     <RepositoryUrl>https://github.com/Kentico/delivery-sdk-net.git</RepositoryUrl>
-    <RuntimeFrameworkVersion>2.0.0</RuntimeFrameworkVersion>
-    <NetStandardImplicitPackageVersion>1.6.1</NetStandardImplicitPackageVersion>
     <GenerateAssemblyTitleAttribute>false</GenerateAssemblyTitleAttribute>
     <GenerateAssemblyDescriptionAttribute>false</GenerateAssemblyDescriptionAttribute>
     <GenerateAssemblyCompanyAttribute>false</GenerateAssemblyCompanyAttribute>
@@ -34,22 +32,22 @@
   </ItemGroup>
 
   <ItemGroup>
-    <PackageReference Include="Autofac" Version="4.8.1" />
-    <PackageReference Include="Autofac.Extensions.DependencyInjection" Version="4.3.1" />
-    <PackageReference Include="Castle.Windsor" Version="4.1.1" />
+    <PackageReference Include="Autofac" Version="5.1.2" />
+    <PackageReference Include="Autofac.Extensions.DependencyInjection" Version="6.0.0" />
+    <PackageReference Include="Castle.Windsor" Version="5.0.1" />
     <PackageReference Include="Castle.Windsor.MsDependencyInjection" Version="3.3.1" />
-    <PackageReference Include="FluentAssertions" Version="5.9.0" />
+    <PackageReference Include="FluentAssertions" Version="5.10.3" />
     <PackageReference Include="Microsoft.Extensions.Caching.Memory" Version="3.1.2" />
     <PackageReference Include="Microsoft.Extensions.Configuration" Version="2.1.1" />
     <PackageReference Include="Microsoft.Extensions.Configuration.Json" Version="2.1.1" />
-    <PackageReference Include="Microsoft.NET.Test.Sdk" Version="15.9.0" />
-    <PackageReference Include="FakeItEasy" Version="4.9.2" />
-    <PackageReference Include="NodaTime" Version="2.4.2" />
-    <PackageReference Include="RichardSzalay.MockHttp" Version="5.0.0" />
-    <PackageReference Include="SimpleInjector" Version="4.4.2" />
-    <PackageReference Include="SimpleInjector.Integration.AspNetCore" Version="4.4.2" />
-    <PackageReference Include="Unity" Version="5.8.13" />
-    <PackageReference Include="Unity.Microsoft.DependencyInjection" Version="2.1.3" />
+    <PackageReference Include="Microsoft.NET.Test.Sdk" Version="16.5.0" />
+    <PackageReference Include="FakeItEasy" Version="6.0.0" />
+    <PackageReference Include="NodaTime" Version="2.4.7" />
+    <PackageReference Include="RichardSzalay.MockHttp" Version="6.0.0" />
+    <PackageReference Include="SimpleInjector" Version="4.9.1" />
+    <PackageReference Include="SimpleInjector.Integration.AspNetCore" Version="4.9.1" />
+    <PackageReference Include="Unity" Version="5.11.5" />
+    <PackageReference Include="Unity.Microsoft.DependencyInjection" Version="5.11.5" />
     <PackageReference Include="xunit" Version="2.4.1" />
     <PackageReference Include="xunit.runner.visualstudio" Version="2.4.1" />
     <DotNetCliToolReference Include="dotnet-xunit" Version="2.3.1" />
