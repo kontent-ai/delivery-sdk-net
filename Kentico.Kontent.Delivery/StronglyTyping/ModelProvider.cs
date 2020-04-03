@@ -48,7 +48,7 @@ namespace Kentico.Kontent.Delivery.StrongTyping
 
         internal object GetContentItemModel(Type modelType, JToken serializedItem, JObject linkedItems, Dictionary<string, object> processedItems = null, HashSet<RichTextContentElements> currentlyResolvedRichStrings = null)
         {
-            processedItems = processedItems ?? new Dictionary<string, object>();
+            processedItems ??= new Dictionary<string, object>();
             var itemSystemAttributes = serializedItem["system"].ToObject<ContentItemSystemAttributes>();
 
             var instance = CreateInstance(modelType, ref itemSystemAttributes, ref processedItems);
@@ -83,12 +83,12 @@ namespace Kentico.Kontent.Delivery.StrongTyping
 
             // Richtext elements need to be processed last, so in case of circular dependency, content items resolved by
             // resolvers would have all elements already processed
-            currentlyResolvedRichStrings = currentlyResolvedRichStrings ?? new HashSet<RichTextContentElements>();
+            currentlyResolvedRichStrings ??= new HashSet<RichTextContentElements>();
             foreach (var property in richTextPropertiesToBeProcessed)
             {
                 var currentValue = property.GetValue(instance)?.ToString();
 
-                var value = GetRichTextValue(currentValue, elementsData, property, linkedItems, context, itemSystemAttributes, ref processedItems, ref currentlyResolvedRichStrings);
+                var value = GetRichTextValue(currentValue, elementsData, property, linkedItems, itemSystemAttributes, ref processedItems, ref currentlyResolvedRichStrings);
 
                 if (value != null)
                 {
@@ -100,8 +100,7 @@ namespace Kentico.Kontent.Delivery.StrongTyping
             return instance;
         }
 
-
-        private object GetRichTextValue(string value, JObject elementsData, PropertyInfo property, JObject linkedItems, ResolvingContext context, ContentItemSystemAttributes itemSystemAttributes, ref Dictionary<string, object> processedItems, ref HashSet<RichTextContentElements> currentlyResolvedRichStrings)
+        private object GetRichTextValue(string value, JObject elementsData, PropertyInfo property, JObject linkedItems, ContentItemSystemAttributes itemSystemAttributes, ref Dictionary<string, object> processedItems, ref HashSet<RichTextContentElements> currentlyResolvedRichStrings)
         {
             var currentlyProcessedString = new RichTextContentElements(itemSystemAttributes?.Codename, property.Name);
             if (currentlyResolvedRichStrings.Contains(currentlyProcessedString))
@@ -121,7 +120,6 @@ namespace Kentico.Kontent.Delivery.StrongTyping
 
             return value;
         }
-
 
         private object CreateInstance(Type detectedModelType, ref ContentItemSystemAttributes itemSystemAttributes, ref Dictionary<string, object> processedItems)
         {
@@ -279,7 +277,7 @@ namespace Kentico.Kontent.Delivery.StrongTyping
             var codeNamesWithLinkedItems = GetRawValue(elementData)
                 ?.ToObject<IEnumerable<string>>()
                 ?.Select(codename => (codename, linkedItems.Properties().FirstOrDefault(p => p.Name == codename)?.First))
-                ?.Where(pair => pair.Item2 != null)
+                ?.Where(pair => pair.First != null)
                 ?.ToArray()
                 ?? Array.Empty<(string, JToken)>();
 
