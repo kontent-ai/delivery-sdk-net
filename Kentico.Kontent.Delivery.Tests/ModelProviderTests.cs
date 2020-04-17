@@ -88,7 +88,7 @@ namespace Kentico.Kontent.Delivery.Tests
             Assert.IsType<ContentItemWithSingleRte>(result);
         }
 
-        /// <seealso href="https://github.com/Kentico/delivery-sdk-net/issues/126"/>
+        /// <seealso href="https://github.com/Kentico/kontent-delivery-sdk-net/issues/126"/>
         [Fact]
         public void GetContentItemModelRetrievingContentModelWithUnknownTypeReturnNull()
         {

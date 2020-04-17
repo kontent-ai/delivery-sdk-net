@@ -499,7 +499,7 @@ namespace Kentico.Kontent.Delivery.Tests
             Assert.Equal($"<div>{typeof(DummyImageItem)}</div>" + plainHtml + $"<div>{typeof(DummyItem)}</div>", result);
         }
 
-        /// <seealso href="https://github.com/Kentico/delivery-sdk-net/issues/153"/>
+        /// <seealso href="https://github.com/Kentico/kontent-delivery-sdk-net/issues/153"/>
         [Fact]
         public void ContentItemWithDefaultResolverReturnsContentItemDirectlyInResolvedContentItemDataItemProperty()
         {

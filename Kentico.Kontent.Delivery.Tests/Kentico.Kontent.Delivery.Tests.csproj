@@ -9,9 +9,9 @@
     <AssemblyName>Kentico.Kontent.Delivery.Tests</AssemblyName>
     <PackageId>Kentico.Kontent.Delivery.Tests</PackageId>
     <GenerateRuntimeConfigurationFiles>true</GenerateRuntimeConfigurationFiles>
-    <PackageLicenseUrl>https://github.com/Kentico/delivery-sdk-net/blob/master/LICENSE</PackageLicenseUrl>
+    <PackageLicenseUrl>https://github.com/Kentico/kontent-delivery-sdk-net/blob/master/LICENSE</PackageLicenseUrl>
     <RepositoryType>git</RepositoryType>
-    <RepositoryUrl>https://github.com/Kentico/delivery-sdk-net.git</RepositoryUrl>
+    <RepositoryUrl>https://github.com/Kentico/kontent-delivery-sdk-net.git</RepositoryUrl>
     <GenerateAssemblyTitleAttribute>false</GenerateAssemblyTitleAttribute>
     <GenerateAssemblyDescriptionAttribute>false</GenerateAssemblyDescriptionAttribute>
     <GenerateAssemblyCompanyAttribute>false</GenerateAssemblyCompanyAttribute>

@@ -7,9 +7,9 @@
     <Copyright>© 2020 Kentico Software. All rights reserved.</Copyright>
     <Description>Kentico Kontent Delivery SDK</Description>
     <PackageLicenseExpression>MIT</PackageLicenseExpression>
-    <PackageProjectUrl>https://github.com/Kentico/delivery-sdk-net</PackageProjectUrl>
+    <PackageProjectUrl>https://github.com/Kentico/kontent-delivery-sdk-net</PackageProjectUrl>
     <PackageIconUrl>https://github.com/Kentico/Home/blob/master/images/kk-logo-nuget.png?raw=true</PackageIconUrl>
-    <RepositoryUrl>https://github.com/Kentico/delivery-sdk-net.git</RepositoryUrl>
+    <RepositoryUrl>https://github.com/Kentico/kontent-delivery-sdk-net.git</RepositoryUrl>
     <RepositoryType>git</RepositoryType>
     <PackageTags>kentico;mvc;aspnet;aspnetmvc;reactive;rx</PackageTags>
     <GenerateAssemblyInfo>true</GenerateAssemblyInfo>
