@@ -1,9 +1,8 @@
 ﻿using System;
 using System.Collections.Generic;
-using Kentico.Kontent.ImageTransformation;
 using Xunit;
 
-namespace Kentico.Kontent.Delivery.Tests.ImageOptimization
+namespace Kentico.Kontent.ImageTransformation.Tests
 {
     public class ImageUrlBuilderTests
     {
@@ -85,9 +84,9 @@ namespace Kentico.Kontent.Delivery.Tests.ImageOptimization
 
         public static IEnumerable<object[]> FitModesData()
         {
-            yield return new object[] {ImageFitMode.Clip, "?fit=clip"};
-            yield return new object[] {ImageFitMode.Crop, "?fit=crop"};
-            yield return new object[] {ImageFitMode.Scale, "?fit=scale"};
+            yield return new object[] { ImageFitMode.Clip, "?fit=clip" };
+            yield return new object[] { ImageFitMode.Crop, "?fit=crop" };
+            yield return new object[] { ImageFitMode.Scale, "?fit=scale" };
         }
 
         [Theory]
