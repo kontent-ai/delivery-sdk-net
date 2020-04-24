@@ -1,4 +1,4 @@
-﻿namespace Kentico.Kontent.Delivery.ImageTransformation
+﻿namespace Kentico.Kontent.ImageTransformation
 {
     /// <summary>
     /// Supported image formats.

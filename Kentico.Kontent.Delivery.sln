@@ -22,6 +22,10 @@ Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Solution Items", "Solution 
 		Directory.Build.props = Directory.Build.props
 	EndProjectSection
 EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Kentico.Kontent.ImageTransformation", "Kentico.Kontent.ImageTransformation\Kentico.Kontent.ImageTransformation.csproj", "{F1C64D17-1C3E-4F35-9038-5D16C18DDC08}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Kentico.Kontent.ImageTransformation.Tests", "Kentico.Kontent.ImageTransformation.Tests\Kentico.Kontent.ImageTransformation.Tests.csproj", "{8942D9E3-A966-406C-AA19-2B85286744C9}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -56,6 +60,14 @@ Global
 		{47C00EB8-D635-4762-A4A9-5FC12B69BEFF}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{47C00EB8-D635-4762-A4A9-5FC12B69BEFF}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{47C00EB8-D635-4762-A4A9-5FC12B69BEFF}.Release|Any CPU.Build.0 = Release|Any CPU
+		{F1C64D17-1C3E-4F35-9038-5D16C18DDC08}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{F1C64D17-1C3E-4F35-9038-5D16C18DDC08}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{F1C64D17-1C3E-4F35-9038-5D16C18DDC08}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{F1C64D17-1C3E-4F35-9038-5D16C18DDC08}.Release|Any CPU.Build.0 = Release|Any CPU
+		{8942D9E3-A966-406C-AA19-2B85286744C9}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{8942D9E3-A966-406C-AA19-2B85286744C9}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{8942D9E3-A966-406C-AA19-2B85286744C9}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{8942D9E3-A966-406C-AA19-2B85286744C9}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE

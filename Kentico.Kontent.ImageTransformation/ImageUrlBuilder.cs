@@ -4,7 +4,7 @@ using System.Globalization;
 using System.Linq;
 using Microsoft.Extensions.Primitives;
 
-namespace Kentico.Kontent.Delivery.ImageTransformation
+namespace Kentico.Kontent.ImageTransformation
 {
     /// <summary>
     /// Provides a builder for Image Transformations for Kentico Kontent Delivery API.
@@ -13,7 +13,7 @@ namespace Kentico.Kontent.Delivery.ImageTransformation
     {
         private readonly Uri _assetUrl;
         private readonly Dictionary<string, StringValues> _queryParameters = new Dictionary<string, StringValues>();
-        private string Query =>_queryParameters.Any() ? $"?{string.Join("&", _queryParameters.Select(x => $"{x.Key}={x.Value}"))}" : "";
+        private string Query => _queryParameters.Any() ? $"?{string.Join("&", _queryParameters.Select(x => $"{x.Key}={x.Value}"))}" : "";
 
         /// <summary>
         /// Gets the <see cref="T:System.Uri"/> instance with applied transformations.
@@ -109,7 +109,7 @@ namespace Kentico.Kontent.Delivery.ImageTransformation
         /// <returns>The same <see cref="ImageUrlBuilder" /> instance. </returns>
         public ImageUrlBuilder WithRectangleCrop(double x, double y, double width, double height)
         {
-            _queryParameters["rect"] = string.Join(",", new [] {x, y, width, height}.Select(FormatDouble));
+            _queryParameters["rect"] = string.Join(",", new[] { x, y, width, height }.Select(FormatDouble));
             return this;
         }
 

@@ -1,6 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
-using Kentico.Kontent.Delivery.ImageTransformation;
+using Kentico.Kontent.ImageTransformation;
 using Xunit;
 
 namespace Kentico.Kontent.Delivery.Tests.ImageOptimization

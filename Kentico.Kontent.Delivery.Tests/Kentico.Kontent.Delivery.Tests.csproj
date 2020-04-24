@@ -143,4 +143,8 @@
     </None>
   </ItemGroup>
 
+  <ItemGroup>
+    <Folder Include="Builders\ImageTransformation\" />
+  </ItemGroup>
+
 </Project>
