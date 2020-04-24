@@ -54,8 +54,8 @@ namespace Kentico.Kontent.Delivery.StrongTyping
                         var asset = images[assetId];
                         blocks.Add(new InlineImage
                         {
-                            Src = asset.Value<string>("url"),
-                            AltText = asset.Value<string>("description"),
+                            Url = asset.Value<string>("url"),
+                            Description = asset.Value<string>("description"),
                             Height = asset.Value<int>("height"),
                             Width = asset.Value<int>("width")
                         });
