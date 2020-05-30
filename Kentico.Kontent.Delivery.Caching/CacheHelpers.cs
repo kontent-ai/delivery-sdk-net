@@ -330,7 +330,7 @@ namespace Kentico.Kontent.Delivery.Caching
             // Components have substring 01 in its id starting at position 14.
             // xxxxxxxx-xxxx-01xx-xxxx-xxxxxxxxxxxx
             var id = property?.Value?["system"]?["id"]?.Value<string>();
-            return Guid.TryParse(id, out _) && id.Substring(14, 2).Equals("01", StringComparison.Ordinal);
+            return id != null && (Guid.TryParse(id, out _) && id.Substring(14, 2).Equals("01", StringComparison.Ordinal));
         }
     }
 }

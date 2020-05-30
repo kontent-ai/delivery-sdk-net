@@ -26,8 +26,9 @@ namespace Kentico.Kontent.Delivery.Models.Type
                 {
                     var elements = new Dictionary<string, IContentElement>();
 
-                    foreach (JProperty property in _source["elements"])
+                    foreach (var jToken in _source["elements"])
                     {
+                        var property = (JProperty) jToken;
                         var element = property.Value;
                         var elementCodename = property.Name;
 

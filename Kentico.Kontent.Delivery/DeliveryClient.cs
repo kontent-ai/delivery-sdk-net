@@ -280,9 +280,12 @@ namespace Kentico.Kontent.Delivery
 
         private async Task<ApiResponse> GetResponseContent(HttpResponseMessage httpResponseMessage, string fallbackEndpointUrl)
         {
-            if (httpResponseMessage?.StatusCode == HttpStatusCode.OK)
+            if (httpResponseMessage == null) throw new ArgumentNullException(nameof(httpResponseMessage));
+            if (httpResponseMessage.StatusCode == HttpStatusCode.OK)
             {
-                var content = await httpResponseMessage.Content?.ReadAsStringAsync();
+                var content = httpResponseMessage.Content != null
+                    ? await httpResponseMessage.Content?.ReadAsStringAsync()
+                    : null;
                 var hasStaleContent = HasStaleContent(httpResponseMessage);
                 var continuationToken = httpResponseMessage.Headers.GetContinuationHeader();
                 var requestUri = httpResponseMessage.RequestMessage?.RequestUri?.AbsoluteUri ?? fallbackEndpointUrl;
@@ -298,7 +301,7 @@ namespace Kentico.Kontent.Delivery
                 faultContent = await httpResponseMessage.Content.ReadAsStringAsync();
             }
 
-            throw new DeliveryException(httpResponseMessage, $"There was an error while fetching content:\nStatus:{httpResponseMessage?.StatusCode}\nReason:{httpResponseMessage?.ReasonPhrase}\n\n{faultContent}");
+            throw new DeliveryException(httpResponseMessage, $"There was an error while fetching content:\nStatus:{httpResponseMessage.StatusCode}\nReason:{httpResponseMessage.ReasonPhrase}\n\n{faultContent}");
         }
 
         private bool HasStaleContent(HttpResponseMessage httpResponseMessage)

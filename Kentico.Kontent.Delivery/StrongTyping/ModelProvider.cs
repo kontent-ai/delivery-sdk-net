@@ -135,7 +135,7 @@ namespace Kentico.Kontent.Delivery.StrongTyping
             currentlyResolvedRichStrings.Add(currentlyProcessedString);
 
             var elementData = GetElementData(elementsData, property, itemSystemAttributes);
-            var linkedItemsInRichText = GetLinkedItemsInRichText(elementData.Value.Value);
+            var linkedItemsInRichText = GetLinkedItemsInRichText(elementData?.Value);
             value = ProcessInlineContentItems(linkedItems, processedItems, value, linkedItemsInRichText, currentlyResolvedRichStrings);
 
             currentlyResolvedRichStrings.Remove(currentlyProcessedString);
@@ -201,7 +201,7 @@ namespace Kentico.Kontent.Delivery.StrongTyping
         {
             var elementDefinition = GetElementData(elementsData, property, itemSystemAttributes);
             
-            var elementValue = elementDefinition.Value.Value;
+            var elementValue = elementDefinition?.Value;
 
             if (elementValue != null)
             {
