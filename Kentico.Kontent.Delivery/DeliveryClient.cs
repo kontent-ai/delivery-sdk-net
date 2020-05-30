@@ -5,12 +5,11 @@ using System.Net;
 using System.Net.Http;
 using System.Threading.Tasks;
 using Microsoft.Extensions.Options;
-using Newtonsoft.Json.Linq;
 using Kentico.Kontent.Delivery.Extensions;
 using Kentico.Kontent.Delivery.Abstractions;
-using Kentico.Kontent.Delivery.Abstractions.InlineContentItems;
 using Kentico.Kontent.Delivery.Abstractions.RetryPolicy;
-using Kentico.Kontent.Delivery.Abstractions.ContentLinks;
+using Kentico.Kontent.Delivery.Models;
+using Kentico.Kontent.Delivery.Abstractions.Responses;
 
 namespace Kentico.Kontent.Delivery
 {
@@ -20,11 +19,8 @@ namespace Kentico.Kontent.Delivery
     internal sealed class DeliveryClient : IDeliveryClient
     {
         internal readonly IOptionsMonitor<DeliveryOptions> DeliveryOptions;
-        internal readonly IContentLinkResolver ContentLinkResolver;
-        internal readonly IInlineContentItemsProcessor InlineContentItemsProcessor;
         internal readonly IModelProvider ModelProvider;
         internal readonly ITypeProvider TypeProvider;
-        internal readonly IPropertyMapper PropertyMapper;
         internal readonly IRetryPolicyProvider RetryPolicyProvider;
         internal readonly IDeliveryHttpClient DeliveryHttpClient;
 
@@ -37,124 +33,33 @@ namespace Kentico.Kontent.Delivery
         /// Initializes a new instance of the <see cref="DeliveryClient"/> class for retrieving content of the specified project.
         /// </summary>
         /// <param name="deliveryOptions">The settings of the Kentico Kontent project.</param>
-        /// <param name="contentLinkResolver">An instance of an object that can resolve links in rich text elements</param>
-        /// <param name="contentItemsProcessor">An instance of an object that can resolve linked items in rich text elements</param>
         /// <param name="modelProvider">An instance of an object that can JSON responses into strongly typed CLR objects</param>
         /// <param name="retryPolicyProvider">A provider of a retry policy.</param>
         /// <param name="typeProvider">An instance of an object that can map Kentico Kontent content types to CLR types</param>
-        /// <param name="propertyMapper">An instance of an object that can map Kentico Kontent content item fields to model properties</param>
         /// <param name="deliveryHttpClient">An instance of an object that can send request againts Kentico Kontent Delivery API</param>
         public DeliveryClient(
             IOptionsMonitor<DeliveryOptions> deliveryOptions,
-            IContentLinkResolver contentLinkResolver = null,
-            IInlineContentItemsProcessor contentItemsProcessor = null,
             IModelProvider modelProvider = null,
             IRetryPolicyProvider retryPolicyProvider = null,
             ITypeProvider typeProvider = null,
-            IPropertyMapper propertyMapper = null,
             IDeliveryHttpClient deliveryHttpClient = null
         )
         {
             DeliveryOptions = deliveryOptions;
-            ContentLinkResolver = contentLinkResolver;
-            InlineContentItemsProcessor = contentItemsProcessor;
             ModelProvider = modelProvider;
             RetryPolicyProvider = retryPolicyProvider;
             TypeProvider = typeProvider;
-            PropertyMapper = propertyMapper;
             DeliveryHttpClient = deliveryHttpClient;
         }
 
         /// <summary>
-        /// Returns a content item as JSON data. By default, retrieves one level of modular content.
-        /// </summary>
-        /// <param name="codename">The codename of a content item.</param>
-        /// <param name="parameters">An array that contains zero or more query parameters, for example, for projection or setting the depth of linked items.</param>
-        /// <returns>The <see cref="JObject"/> instance that represents the content item with the specified codename.</returns>
-        public async Task<JObject> GetItemJsonAsync(string codename, params string[] parameters)
-        {
-            if (codename == null)
-            {
-                throw new ArgumentNullException(nameof(codename), "The codename of a content item is not specified.");
-            }
-
-            if (codename == string.Empty)
-            {
-                throw new ArgumentException("The codename of a content item is not specified.", nameof(codename));
-            }
-
-            var endpointUrl = UrlBuilder.GetItemUrl(codename, parameters);
-
-            return (await GetDeliverResponseAsync(endpointUrl)).Content;
-        }
-
-        /// <summary>
-        /// Returns content items as JSON data. By default, retrieves one level of linked items.
-        /// </summary>
-        /// <param name="parameters">An array that contains zero or more query parameters, for example, for filtering, ordering, or setting the depth of linked items.</param>
-        /// <returns>The <see cref="JObject"/> instance that represents the content items. If no query parameters are specified, all content items are returned.</returns>
-        public async Task<JObject> GetItemsJsonAsync(params string[] parameters)
-        {
-            var endpointUrl = UrlBuilder.GetItemsUrl(parameters);
-
-            return (await GetDeliverResponseAsync(endpointUrl)).Content;
-        }
-
-        /// <summary>
-        /// Returns a content item. By default, retrieves one level of linked items.
-        /// </summary>
-        /// <param name="codename">The codename of a content item.</param>
-        /// <param name="parameters">An array that contains zero or more query parameters, for example, for projection or setting the depth of linked items.</param>
-        /// <returns>The <see cref="DeliveryItemResponse"/> instance that contains the content item with the specified codename.</returns>
-        public async Task<DeliveryItemResponse> GetItemAsync(string codename, params IQueryParameter[] parameters)
-        {
-            return await GetItemAsync(codename, (IEnumerable<IQueryParameter>)parameters);
-        }
-
-        /// <summary>
-        /// Gets a strongly typed content item by its codename. By default, retrieves one level of linked items.
-        /// </summary>
-        /// <typeparam name="T">Type of the model. (Or <see cref="object"/> if the return type is not yet known.)</typeparam>
-        /// <param name="codename">The codename of a content item.</param>
-        /// <param name="parameters">An array that contains zero or more query parameters, for example, for projection or setting the depth of linked items.</param>
-        /// <returns>The <see cref="DeliveryItemResponse{T}"/> instance that contains the content item with the specified codename.</returns>
-        public async Task<DeliveryItemResponse<T>> GetItemAsync<T>(string codename, params IQueryParameter[] parameters)
-        {
-            return await GetItemAsync<T>(codename, (IEnumerable<IQueryParameter>)parameters);
-        }
-
-        /// <summary>
-        /// Returns a content item. By default, retrieves one level of linked items.
-        /// </summary>
-        /// <param name="codename">The codename of a content item.</param>
-        /// <param name="parameters">A collection of query parameters, for example, for projection or setting the depth of linked items.</param>
-        /// <returns>The <see cref="DeliveryItemResponse"/> instance that contains the content item with the specified codename.</returns>
-        public async Task<DeliveryItemResponse> GetItemAsync(string codename, IEnumerable<IQueryParameter> parameters)
-        {
-            if (codename == null)
-            {
-                throw new ArgumentNullException(nameof(codename), "The codename of a content item is not specified.");
-            }
-
-            if (codename == string.Empty)
-            {
-                throw new ArgumentException("The codename of a content item is not specified.", nameof(codename));
-            }
-
-            var endpointUrl = UrlBuilder.GetItemUrl(codename, parameters);
-            var response = await GetDeliverResponseAsync(endpointUrl);
-
-            return new DeliveryItemResponse(response, ModelProvider, ContentLinkResolver);
-        }
-
-        /// <summary>
         /// Gets a strongly typed content item by its codename. By default, retrieves one level of linked items.
         /// </summary>
         /// <typeparam name="T">Type of the model. (Or <see cref="object"/> if the return type is not yet known.)</typeparam>
         /// <param name="codename">The codename of a content item.</param>
         /// <param name="parameters">A collection of query parameters, for example, for projection or setting the depth of linked items.</param>
         /// <returns>The <see cref="DeliveryItemResponse{T}"/> instance that contains the content item with the specified codename.</returns>
-        public async Task<DeliveryItemResponse<T>> GetItemAsync<T>(string codename, IEnumerable<IQueryParameter> parameters = null)
+        public async Task<IDeliveryItemResponse<T>> GetItemAsync<T>(string codename, IEnumerable<IQueryParameter> parameters = null)
         {
             if (string.IsNullOrEmpty(codename))
             {
@@ -168,46 +73,12 @@ namespace Kentico.Kontent.Delivery
         }
 
         /// <summary>
-        /// Returns content items that match the optional filtering parameters. By default, retrieves one level of linked items.
-        /// </summary>
-        /// <param name="parameters">An array that contains zero or more query parameters, for example, for filtering, ordering, or setting the depth of linked items.</param>
-        /// <returns>The <see cref="DeliveryItemListingResponse"/> instance that contains the content items. If no query parameters are specified, all content items are returned.</returns>
-        public async Task<DeliveryItemListingResponse> GetItemsAsync(params IQueryParameter[] parameters)
-        {
-            return await GetItemsAsync((IEnumerable<IQueryParameter>)parameters);
-        }
-
-        /// <summary>
-        /// Returns content items that match the optional filtering parameters. By default, retrieves one level of linked items.
-        /// </summary>
-        /// <param name="parameters">A collection of query parameters, for example, for filtering, ordering, or setting the depth of linked items.</param>
-        /// <returns>The <see cref="DeliveryItemListingResponse"/> instance that contains the content items. If no query parameters are specified, all content items are returned.</returns>
-        public async Task<DeliveryItemListingResponse> GetItemsAsync(IEnumerable<IQueryParameter> parameters)
-        {
-            var endpointUrl = UrlBuilder.GetItemsUrl(parameters);
-            var response = await GetDeliverResponseAsync(endpointUrl);
-
-            return new DeliveryItemListingResponse(response, ModelProvider, ContentLinkResolver);
-        }
-
-        /// <summary>
-        /// Returns strongly typed content items that match the optional filtering parameters. By default, retrieves one level of linked items.
-        /// </summary>
-        /// <typeparam name="T">Type of the model. (Or <see cref="object"/> if the return type is not yet known.)</typeparam>
-        /// <param name="parameters">An array that contains zero or more query parameters, for example, for filtering, ordering, or setting the depth of linked items.</param>
-        /// <returns>The <see cref="DeliveryItemListingResponse{T}"/> instance that contains the content items. If no query parameters are specified, all content items are returned.</returns>
-        public async Task<DeliveryItemListingResponse<T>> GetItemsAsync<T>(params IQueryParameter[] parameters)
-        {
-            return await GetItemsAsync<T>((IEnumerable<IQueryParameter>)parameters);
-        }
-
-        /// <summary>
         /// Returns strongly typed content items that match the optional filtering parameters. By default, retrieves one level of linked items.
         /// </summary>
         /// <typeparam name="T">Type of the model. (Or <see cref="object"/> if the return type is not yet known.)</typeparam>
         /// <param name="parameters">A collection of query parameters, for example, for filtering, ordering, or setting the depth of linked items.</param>
         /// <returns>The <see cref="DeliveryItemListingResponse{T}"/> instance that contains the content items. If no query parameters are specified, all content items are returned.</returns>
-        public async Task<DeliveryItemListingResponse<T>> GetItemsAsync<T>(IEnumerable<IQueryParameter> parameters)
+        public async Task<IDeliveryItemListingResponse<T>> GetItemsAsync<T>(IEnumerable<IQueryParameter> parameters = null)
         {
             var enhancedParameters = EnsureContentTypeFilter<T>(parameters).ToList();
             var endpointUrl = UrlBuilder.GetItemsUrl(enhancedParameters);
@@ -217,51 +88,12 @@ namespace Kentico.Kontent.Delivery
         }
 
         /// <summary>
-        /// Returns a feed that is used to traverse through content items matching the optional filtering parameters.
-        /// </summary>
-        /// <param name="parameters">An array of query parameters, for example, for filtering or ordering.</param>
-        /// <returns>The <see cref="DeliveryItemsFeed"/> instance that can be used to enumerate through content items. If no query parameters are specified, all content items are enumerated.</returns>
-        public IDeliveryItemsFeed GetItemsFeed(params IQueryParameter[] parameters)
-        {
-            return GetItemsFeed((IEnumerable<IQueryParameter>)parameters);
-        }
-
-        /// <summary>
-        /// Returns a feed that is used to traverse through content items matching the optional filtering parameters.
-        /// </summary>
-        /// <param name="parameters">A collection of query parameters, for example, for filtering or ordering.</param>
-        /// <returns>The <see cref="DeliveryItemsFeed"/> instance that can be used to enumerate through content items. If no query parameters are specified, all content items are enumerated.</returns>
-        public IDeliveryItemsFeed GetItemsFeed(IEnumerable<IQueryParameter> parameters)
-        {
-            ValidateItemsFeedParameters(parameters);
-            var endpointUrl = UrlBuilder.GetItemsFeedUrl(parameters);
-            return new DeliveryItemsFeed(GetItemsBatchAsync);
-
-            async Task<DeliveryItemsFeedResponse> GetItemsBatchAsync(string continuationToken)
-            {
-                var response = await GetDeliverResponseAsync(endpointUrl, continuationToken);
-                return new DeliveryItemsFeedResponse(response, ModelProvider, ContentLinkResolver);
-            }
-        }
-
-        /// <summary>
-        /// Returns a feed that is used to traverse through strongly typed content items matching the optional filtering parameters.
-        /// </summary>
-        /// <typeparam name="T">Type of the model. (Or <see cref="object"/> if the return type is not yet known.)</typeparam>
-        /// <param name="parameters">An array of query parameters, for example, for filtering or ordering.</param>
-        /// <returns>The <see cref="DeliveryItemsFeed{T}"/> instance that can be used to enumerate through content items. If no query parameters are specified, all content items are enumerated.</returns>
-        public IDeliveryItemsFeed<T> GetItemsFeed<T>(params IQueryParameter[] parameters)
-        {
-            return GetItemsFeed<T>((IEnumerable<IQueryParameter>)parameters);
-        }
-
-        /// <summary>
         /// Returns a feed that is used to traverse through strongly typed content items matching the optional filtering parameters.
         /// </summary>
         /// <typeparam name="T">Type of the model. (Or <see cref="object"/> if the return type is not yet known.)</typeparam>
         /// <param name="parameters">A collection of query parameters, for example, for filtering or ordering.</param>
         /// <returns>The <see cref="DeliveryItemsFeed{T}"/> instance that can be used to enumerate through content items. If no query parameters are specified, all content items are enumerated.</returns>
-        public IDeliveryItemsFeed<T> GetItemsFeed<T>(IEnumerable<IQueryParameter> parameters)
+        public IDeliveryItemsFeed<T> GetItemsFeed<T>(IEnumerable<IQueryParameter> parameters = null)
         {
             var enhancedParameters = EnsureContentTypeFilter<T>(parameters).ToList();
             ValidateItemsFeedParameters(enhancedParameters);
@@ -276,45 +108,11 @@ namespace Kentico.Kontent.Delivery
         }
 
         /// <summary>
-        /// Returns a content type as JSON data.
-        /// </summary>
-        /// <param name="codename">The codename of a content type.</param>
-        /// <returns>The <see cref="JObject"/> instance that represents the content type with the specified codename.</returns>
-        public async Task<JObject> GetTypeJsonAsync(string codename)
-        {
-            if (codename == null)
-            {
-                throw new ArgumentNullException(nameof(codename), "The codename of a content type is not specified.");
-            }
-
-            if (codename == string.Empty)
-            {
-                throw new ArgumentException("The codename of a content type is not specified.", nameof(codename));
-            }
-
-            var endpointUrl = UrlBuilder.GetTypeUrl(codename);
-
-            return (await GetDeliverResponseAsync(endpointUrl)).Content;
-        }
-
-        /// <summary>
-        /// Returns content types as JSON data.
-        /// </summary>
-        /// <param name="parameters">An array that contains zero or more query parameters, for example, for paging.</param>
-        /// <returns>The <see cref="JObject"/> instance that represents the content types. If no query parameters are specified, all content types are returned.</returns>
-        public async Task<JObject> GetTypesJsonAsync(params string[] parameters)
-        {
-            var endpointUrl = UrlBuilder.GetTypesUrl(parameters);
-
-            return (await GetDeliverResponseAsync(endpointUrl)).Content;
-        }
-
-        /// <summary>
         /// Gets a content type by its codename.
         /// </summary>
         /// <param name="codename">The codename of a content type.</param>
         /// <returns>The <see cref="DeliveryTypeResponse"/> instance that contains the content type with the specified codename.</returns>
-        public async Task<DeliveryTypeResponse> GetTypeAsync(string codename)
+        public async Task<IDeliveryTypeResponse> GetTypeAsync(string codename)
         {
             if (codename == null)
             {
@@ -335,19 +133,9 @@ namespace Kentico.Kontent.Delivery
         /// <summary>
         /// Returns content types that match the optional filtering parameters.
         /// </summary>
-        /// <param name="parameters">An array that contains zero or more query parameters, for example, for paging.</param>
-        /// <returns>The <see cref="DeliveryTypeListingResponse"/> instance that contains the content types. If no query parameters are specified, all content types are returned.</returns>
-        public async Task<DeliveryTypeListingResponse> GetTypesAsync(params IQueryParameter[] parameters)
-        {
-            return await GetTypesAsync((IEnumerable<IQueryParameter>)parameters);
-        }
-
-        /// <summary>
-        /// Returns content types that match the optional filtering parameters.
-        /// </summary>
         /// <param name="parameters">A collection of query parameters, for example, for paging.</param>
         /// <returns>The <see cref="DeliveryTypeListingResponse"/> instance that contains the content types. If no query parameters are specified, all content types are returned.</returns>
-        public async Task<DeliveryTypeListingResponse> GetTypesAsync(IEnumerable<IQueryParameter> parameters)
+        public async Task<IDeliveryTypeListingResponse> GetTypesAsync(IEnumerable<IQueryParameter> parameters = null)
         {
             var endpointUrl = UrlBuilder.GetTypesUrl(parameters);
             var response = await GetDeliverResponseAsync(endpointUrl);
@@ -361,7 +149,7 @@ namespace Kentico.Kontent.Delivery
         /// <param name="contentTypeCodename">The codename of the content type.</param>
         /// <param name="contentElementCodename">The codename of the content type element.</param>
         /// <returns>The <see cref="DeliveryElementResponse"/> instance that contains the specified content type element.</returns>
-        public async Task<DeliveryElementResponse> GetContentElementAsync(string contentTypeCodename, string contentElementCodename)
+        public async Task<IDeliveryElementResponse> GetContentElementAsync(string contentTypeCodename, string contentElementCodename)
         {
             if (contentTypeCodename == null)
             {
@@ -390,46 +178,11 @@ namespace Kentico.Kontent.Delivery
         }
 
         /// <summary>
-        /// Returns a taxonomy group as JSON data.
-        /// </summary>
-        /// <param name="codename">The codename of a taxonomy group.</param>
-        /// <returns>The <see cref="JObject"/> instance that represents the taxonomy group with the specified codename.</returns>
-        public async Task<JObject> GetTaxonomyJsonAsync(string codename)
-        {
-            if (codename == null)
-            {
-                throw new ArgumentNullException(nameof(codename), "The codename of a taxonomy group is not specified.");
-            }
-
-            if (codename == string.Empty)
-            {
-                throw new ArgumentException("The codename of a taxonomy group is not specified.", nameof(codename));
-            }
-
-            var endpointUrl = UrlBuilder.GetTaxonomyUrl(codename);
-
-            return (await GetDeliverResponseAsync(endpointUrl)).Content;
-        }
-
-        /// <summary>
-        /// Returns taxonomy groups as JSON data.
-        /// </summary>
-        /// <param name="parameters">An array that contains zero or more query parameters, for example, for paging.</param>
-        /// <returns>The <see cref="JObject"/> instance that represents the taxonomy groups. If no query parameters are specified, all taxonomy groups are returned.</returns>
-        public async Task<JObject> GetTaxonomiesJsonAsync(params string[] parameters)
-        {
-            var endpointUrl = UrlBuilder.GetTaxonomiesUrl(parameters);
-
-            return (await GetDeliverResponseAsync(endpointUrl)).Content;
-
-        }
-
-        /// <summary>
         /// Returns a taxonomy group.
         /// </summary>
         /// <param name="codename">The codename of a taxonomy group.</param>
         /// <returns>The <see cref="DeliveryTaxonomyResponse"/> instance that contains the taxonomy group with the specified codename.</returns>
-        public async Task<DeliveryTaxonomyResponse> GetTaxonomyAsync(string codename)
+        public async Task<IDeliveryTaxonomyResponse> GetTaxonomyAsync(string codename)
         {
             if (codename == null)
             {
@@ -450,19 +203,9 @@ namespace Kentico.Kontent.Delivery
         /// <summary>
         /// Returns taxonomy groups.
         /// </summary>
-        /// <param name="parameters">An array that contains zero or more query parameters, for example, for paging.</param>
-        /// <returns>The <see cref="DeliveryTaxonomyListingResponse"/> instance that represents the taxonomy groups. If no query parameters are specified, all taxonomy groups are returned.</returns>
-        public async Task<DeliveryTaxonomyListingResponse> GetTaxonomiesAsync(params IQueryParameter[] parameters)
-        {
-            return await GetTaxonomiesAsync((IEnumerable<IQueryParameter>)parameters);
-        }
-
-        /// <summary>
-        /// Returns taxonomy groups.
-        /// </summary>
         /// <param name="parameters">A collection of query parameters, for example, for paging.</param>
         /// <returns>The <see cref="DeliveryTaxonomyListingResponse"/> instance that represents the taxonomy groups. If no query parameters are specified, all taxonomy groups are returned.</returns>
-        public async Task<DeliveryTaxonomyListingResponse> GetTaxonomiesAsync(IEnumerable<IQueryParameter> parameters)
+        public async Task<IDeliveryTaxonomyListingResponse> GetTaxonomiesAsync(IEnumerable<IQueryParameter> parameters = null)
         {
             var endpointUrl = UrlBuilder.GetTaxonomiesUrl(parameters);
             var response = await GetDeliverResponseAsync(endpointUrl);
@@ -534,7 +277,7 @@ namespace Kentico.Kontent.Delivery
         {
             if (httpResponseMessage?.StatusCode == HttpStatusCode.OK)
             {
-                var content = JObject.Parse(await httpResponseMessage.Content?.ReadAsStringAsync());
+                var content = await httpResponseMessage.Content?.ReadAsStringAsync();
                 var hasStaleContent = HasStaleContent(httpResponseMessage);
                 var continuationToken = httpResponseMessage.Headers.GetContinuationHeader();
                 var requestUri = httpResponseMessage.RequestMessage?.RequestUri?.AbsoluteUri ?? fallbackEndpointUrl;
@@ -566,7 +309,7 @@ namespace Kentico.Kontent.Delivery
 
             var codename = TypeProvider.GetCodename(typeof(T));
 
-            if (codename != null && !IsTypeInQueryParameters(parameters))
+            if (!string.IsNullOrEmpty(codename) && !IsTypeInQueryParameters(parameters))
             {
                 enhancedParameters.Add(new SystemTypeEqualsFilter(codename));
             }

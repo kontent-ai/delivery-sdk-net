@@ -2,12 +2,11 @@
 using System.Net;
 using System.Text.RegularExpressions;
 using Kentico.Kontent.Delivery.Abstractions;
-using Kentico.Kontent.Delivery.Abstractions.ContentLinks;
 using Newtonsoft.Json.Linq;
 
 namespace Kentico.Kontent.Delivery.ContentLinks
 {
-    internal sealed class ContentLinkResolver : IContentLinkResolver
+    internal sealed class ContentLinkResolver
     {
         private static readonly Regex _elementRegex = new Regex("<a[^>]+?data-item-id=\"(?<id>[^\"]+)\"[^>]*>", RegexOptions.CultureInvariant | RegexOptions.IgnoreCase);
 
@@ -15,12 +14,7 @@ namespace Kentico.Kontent.Delivery.ContentLinks
 
         public ContentLinkResolver(IContentLinkUrlResolver contentLinkUrlResolver)
         {
-            if (contentLinkUrlResolver == null)
-            {
-                throw new ArgumentNullException(nameof(contentLinkUrlResolver));
-            }
-
-            ContentLinkUrlResolver = contentLinkUrlResolver;
+            ContentLinkUrlResolver = contentLinkUrlResolver ?? throw new ArgumentNullException(nameof(contentLinkUrlResolver));
         }
 
         public string ResolveContentLinks(string text, JToken links)

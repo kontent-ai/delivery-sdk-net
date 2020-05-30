@@ -13,9 +13,7 @@ using Xunit;
 using Kentico.Kontent.Delivery.Abstractions;
 using Kentico.Kontent.Delivery.Abstractions.RetryPolicy;
 using Kentico.Kontent.Delivery.StrongTyping;
-using Kentico.Kontent.Delivery.ContentLinks;
 using Newtonsoft.Json.Linq;
-using Newtonsoft.Json;
 
 namespace Kentico.Kontent.Delivery.Tests
 {
@@ -54,25 +52,25 @@ namespace Kentico.Kontent.Delivery.Tests
                 .When($"{url}{"on_roasts"}")
                 .Respond("application/json", File.ReadAllText(Path.Combine(Environment.CurrentDirectory, $"Fixtures{Path.DirectorySeparatorChar}DeliveryClient{Path.DirectorySeparatorChar}on_roasts.json")));
 
-            var client = InitializeDeliveryClientWithCustomModelProvider(_mockHttp);
+            var client = InitializeDeliveryClientWithCustomModelProvider(_mockHttp, new PropertyMapper(), new CustomTypeProvider());
 
-            var beveragesResponse = await client.GetItemAsync("coffee_beverages_explained");
+            var beveragesResponse = await client.GetItemAsync<Article>("coffee_beverages_explained");
             var beveragesItem = beveragesResponse.Item;
-            var barraItem = (await client.GetItemAsync("brazil_natural_barra_grande")).Item;
-            var roastsItem = (await client.GetItemAsync("on_roasts")).Item;
+            var barraItem = (await client.GetItemAsync<Coffee>("brazil_natural_barra_grande")).Item;
+            var roastsItem = (await client.GetItemAsync<Article>("on_roasts")).Item;
 
             Assert.Equal("article", beveragesItem.System.Type);
             Assert.Equal("en-US", beveragesItem.System.Language);
             Assert.NotEmpty(beveragesItem.System.SitemapLocation);
-            Assert.NotEmpty(roastsItem.GetLinkedItems("related_articles"));
-            Assert.Equal(beveragesItem.Elements.title.value.ToString(), beveragesItem.GetString("title"));
-            Assert.Equal(beveragesItem.Elements.body_copy.value.ToString(), beveragesItem.GetString("body_copy"));
-            Assert.Equal(DateTime.Parse(beveragesItem.Elements.post_date.value.ToString()), beveragesItem.GetDateTime("post_date"));
-            Assert.Equal(beveragesItem.Elements.teaser_image.value.Count, beveragesItem.GetAssets("teaser_image").Count());
-            Assert.Equal(beveragesItem.Elements.personas.value.Count, beveragesItem.GetTaxonomyTerms("personas").Count());
-            Assert.Equal(decimal.Parse(barraItem.Elements.price.value.ToString()), barraItem.GetNumber("price"));
-            Assert.Equal(barraItem.Elements.processing.value.Count, barraItem.GetOptions("processing").Count());
-            Assert.NotNull(beveragesResponse.ApiUrl);
+            Assert.NotEmpty(roastsItem.RelatedArticles);
+            Assert.NotEmpty(beveragesItem.Title);
+            Assert.NotEmpty(beveragesItem.BodyCopy);
+            Assert.True(beveragesItem.PostDate.Value != default);
+            Assert.True(beveragesItem.TeaserImage.Count() > 0);
+            Assert.True(beveragesItem.Personas.Count() > 0);
+            Assert.True(barraItem.Price > 0);
+            Assert.True(barraItem.Processing.Count() > 0);
+            Assert.NotNull(beveragesResponse.ApiResponse.RequestUrl);
         }
 
         [Fact]
@@ -85,7 +83,7 @@ namespace Kentico.Kontent.Delivery.Tests
 
             var client = InitializeDeliveryClientWithACustomTypeProvider(_mockHttp);
 
-            var articles = await client.GetItemsAsync(new LimitParameter(2), new SkipParameter(1));
+            var articles = await client.GetItemsAsync<object>(new LimitParameter(2), new SkipParameter(1));
 
             Assert.Equal(2, articles.Pagination.Count);
             Assert.Equal(1, articles.Pagination.Skip);
@@ -102,10 +100,9 @@ namespace Kentico.Kontent.Delivery.Tests
 
             var client = InitializeDeliveryClientWithACustomTypeProvider(_mockHttp);
 
-            var response = await client.GetItemAsync("coffee_beverages_explained");
-            var beveragesItem = response.Item;
+            var response = await client.GetItemAsync<Article>("coffee_beverages_explained");
 
-            var model = beveragesItem.CastTo<Article>();
+            var model = response.Item;
 
             Assert.NotNull(model.TeaserImage.FirstOrDefault()?.Description);
             Assert.NotNull(model.TeaserImage.FirstOrDefault()?.Name);
@@ -113,7 +110,7 @@ namespace Kentico.Kontent.Delivery.Tests
             Assert.NotNull(model.TeaserImage.FirstOrDefault()?.Url);
             Assert.True(model.TeaserImage.FirstOrDefault()?.Width > 0);
             Assert.True(model.TeaserImage.FirstOrDefault()?.Height > 0);
-            Assert.NotNull(response.ApiUrl);
+            Assert.NotNull(response.ApiResponse.RequestUrl);
         }
 
         [Fact]
@@ -125,12 +122,10 @@ namespace Kentico.Kontent.Delivery.Tests
 
             var client = InitializeDeliveryClientWithACustomTypeProvider(_mockHttp);
 
-            var beveragesItem = (await client.GetItemAsync("coffee_beverages_explained")).Item;
+            var beveragesItem = (await client.GetItemAsync<Article>("coffee_beverages_explained")).Item;
 
-            var model = beveragesItem.CastTo<Article>();
-
-            Assert.NotNull(model.TitleNotIgnored);
-            Assert.Null(model.TitleIgnored);
+            Assert.NotNull(beveragesItem.TitleNotIgnored);
+            Assert.Null(beveragesItem.TitleIgnored);
         }
 
         [Fact]
@@ -144,7 +139,7 @@ namespace Kentico.Kontent.Delivery.Tests
 
             var client = InitializeDeliveryClientWithACustomTypeProvider(_mockHttp);
 
-            await Assert.ThrowsAsync<DeliveryException>(async () => await client.GetItemAsync("unscintillating_hemerocallidaceae_des_iroquois"));
+            await Assert.ThrowsAsync<DeliveryException>(async () => await client.GetItemAsync<object>("unscintillating_hemerocallidaceae_des_iroquois"));
         }
 
 
@@ -152,7 +147,7 @@ namespace Kentico.Kontent.Delivery.Tests
         public async void GetItemAsync_ComplexRichTextTableCell_ParseCorrectly()
         {
 
-        var mockedResponse = File.ReadAllText(Path.Combine(Environment.CurrentDirectory, $"Fixtures{Path.DirectorySeparatorChar}DeliveryClient{Path.DirectorySeparatorChar}rich_text_complex_tables.json"));
+            var mockedResponse = File.ReadAllText(Path.Combine(Environment.CurrentDirectory, $"Fixtures{Path.DirectorySeparatorChar}DeliveryClient{Path.DirectorySeparatorChar}rich_text_complex_tables.json"));
 
             var expectedValue = JObject.Parse(mockedResponse).SelectToken("item.elements.rich_text.value").ToString();
 
@@ -161,11 +156,10 @@ namespace Kentico.Kontent.Delivery.Tests
                     .Respond("application/json", mockedResponse);
 
             var client = InitializeDeliveryClientWithACustomTypeProvider(_mockHttp);
-            var result = await client.GetItemAsync("rich_text_complex_tables");
             var typedResult = await client.GetItemAsync<SimpleRichText>("rich_text_complex_tables");
 
-            Assert.Equal(expectedValue, result.Item.Elements["rich_text"]["value"].ToString());
-            Assert.Equal(9, typedResult.Item.RichText.Count());     
+            Assert.Equal(expectedValue, typedResult.Item.RichTextString);
+            Assert.Equal(9, typedResult.Item.RichText.Count());
             var tableBlock = typedResult.Item.RichText.ElementAt(4);
             Assert.NotNull(tableBlock);
             Assert.IsType<HtmlContent>(tableBlock);
@@ -196,7 +190,7 @@ namespace Kentico.Kontent.Delivery.Tests
 
             var client = InitializeDeliveryClientWithACustomTypeProvider(_mockHttp);
 
-            var response = await client.GetItemsAsync(new EqualsFilter("system.type", "cafe"));
+            var response = await client.GetItemsAsync<object>(new EqualsFilter("system.type", "cafe"));
 
             Assert.NotEmpty(response.Items);
         }
@@ -204,9 +198,9 @@ namespace Kentico.Kontent.Delivery.Tests
         [Fact]
         public void GetItemsFeed_DepthParameter_ThrowsArgumentException()
         {
-           var client = InitializeDeliveryClientWithACustomTypeProvider(_mockHttp);
+            var client = InitializeDeliveryClientWithACustomTypeProvider(_mockHttp);
 
-           Assert.Throws<ArgumentException>(() => client.GetItemsFeed(new DepthParameter(2)));
+            Assert.Throws<ArgumentException>(() => client.GetItemsFeed<object>(new DepthParameter(2)));
         }
 
         [Fact]
@@ -214,7 +208,7 @@ namespace Kentico.Kontent.Delivery.Tests
         {
             var client = InitializeDeliveryClientWithACustomTypeProvider(_mockHttp);
 
-            Assert.Throws<ArgumentException>(() => client.GetItemsFeed(new LimitParameter(2)));
+            Assert.Throws<ArgumentException>(() => client.GetItemsFeed<object>(new LimitParameter(2)));
         }
 
         [Fact]
@@ -222,7 +216,7 @@ namespace Kentico.Kontent.Delivery.Tests
         {
             var client = InitializeDeliveryClientWithACustomTypeProvider(_mockHttp);
 
-            Assert.Throws<ArgumentException>(() => client.GetItemsFeed(new SkipParameter(2)));
+            Assert.Throws<ArgumentException>(() => client.GetItemsFeed<object>(new SkipParameter(2)));
         }
 
         [Fact]
@@ -235,14 +229,14 @@ namespace Kentico.Kontent.Delivery.Tests
 
             var client = InitializeDeliveryClientWithACustomTypeProvider(_mockHttp);
 
-            var feed = client.GetItemsFeed(new EqualsFilter("system.type", "article"));
-            var items = new List<ContentItem>();
+            var feed = client.GetItemsFeed<Article>();
+            var items = new List<Article>();
             var timesCalled = 0;
             while (feed.HasMoreResults)
             {
                 timesCalled++;
                 var response = await feed.FetchNextBatchAsync();
-                items.AddRange(response);
+                items.AddRange(response.Items);
             }
 
             Assert.Equal(6, items.Count);
@@ -267,14 +261,14 @@ namespace Kentico.Kontent.Delivery.Tests
 
             var client = InitializeDeliveryClientWithACustomTypeProvider(_mockHttp);
 
-            var feed = client.GetItemsFeed(new EqualsFilter("system.type", "article"));
-            var items = new List<ContentItem>();
+            var feed = client.GetItemsFeed<Article>();
+            var items = new List<Article>();
             var timesCalled = 0;
             while (feed.HasMoreResults)
             {
                 timesCalled++;
                 var response = await feed.FetchNextBatchAsync();
-                items.AddRange(response);
+                items.AddRange(response.Items);
             }
 
             Assert.Equal(6, items.Count);
@@ -341,7 +335,7 @@ namespace Kentico.Kontent.Delivery.Tests
 
             var response = await client.GetTypesAsync(new SkipParameter(1));
 
-            Assert.NotNull(response.ApiUrl);
+            Assert.NotNull(response.ApiResponse.RequestUrl);
             Assert.NotEmpty(response.Types);
         }
 
@@ -432,7 +426,7 @@ namespace Kentico.Kontent.Delivery.Tests
 
             var response = await client.GetTaxonomiesAsync(new SkipParameter(1));
 
-            Assert.NotNull(response.ApiUrl);
+            Assert.NotNull(response.ApiResponse.RequestUrl);
             Assert.NotEmpty(response.Taxonomies);
         }
 
@@ -468,7 +462,7 @@ namespace Kentico.Kontent.Delivery.Tests
                 new IncludeTotalCountParameter()
            };
 
-            var response = await client.GetItemsAsync(parameters);
+            var response = await client.GetItemsAsync<object>(parameters);
 
             Assert.Equal(0, response.Items.Count);
         }
@@ -569,7 +563,7 @@ namespace Kentico.Kontent.Delivery.Tests
             Assert.Equal(2, item.CompleteTypeTaxonomy.Count());
             Assert.Equal("Option 1", item.CompleteTypeTaxonomy.First().Name);
             Assert.Equal("#d7e119", item.CustomElementField);
-            Assert.NotNull(response.ApiUrl);
+            Assert.NotNull(response.ApiResponse.RequestUrl);
         }
 
         [Fact]
@@ -686,7 +680,7 @@ namespace Kentico.Kontent.Delivery.Tests
             {
                 timesCalled++;
                 var response = await feed.FetchNextBatchAsync();
-                items.AddRange(response);
+                items.AddRange(response.Items);
             }
 
             Assert.Equal(6, items.Count);
@@ -721,7 +715,7 @@ namespace Kentico.Kontent.Delivery.Tests
             {
                 timesCalled++;
                 var response = await feed.FetchNextBatchAsync();
-                items.AddRange(response);
+                items.AddRange(response.Items);
             }
 
             Assert.Equal(6, items.Count);
@@ -738,11 +732,10 @@ namespace Kentico.Kontent.Delivery.Tests
 
             var client = InitializeDeliveryClientWithCustomModelProvider(_mockHttp, new PropertyMapper());
 
-            var response = client.GetItemAsync("complete_content_item").Result;
-            var stronglyTypedResponse = response.CastTo<CompleteContentItemModel>();
+            var response = client.GetItemAsync<CompleteContentItemModel>("complete_content_item").Result;
 
             // Assert
-            Assert.Equal("Text field value", stronglyTypedResponse.Item.TextField);
+            Assert.Equal("Text field value", response.Item.TextField);
         }
 
         [Fact]
@@ -754,12 +747,11 @@ namespace Kentico.Kontent.Delivery.Tests
 
             var client = InitializeDeliveryClientWithCustomModelProvider(_mockHttp);
 
-            var response = client.GetItemsAsync().Result;
-            var stronglyTypedListingResponse = response.CastTo<CompleteContentItemModel>();
+            var response = client.GetItemsAsync<CompleteContentItemModel>().Result;
 
             // Assert
-            Assert.NotNull(stronglyTypedListingResponse);
-            Assert.True(stronglyTypedListingResponse.Items.Any());
+            Assert.NotNull(response);
+            Assert.True(response.Items.Any());
         }
 
         [Fact]
@@ -772,12 +764,11 @@ namespace Kentico.Kontent.Delivery.Tests
 
             var client = InitializeDeliveryClientWithCustomModelProvider(_mockHttp);
 
-            var feed = client.GetItemsFeed(new EqualsFilter("system.type", "article"));
+            var feed = client.GetItemsFeed<ArticlePartialItemModel>(new EqualsFilter("system.type", "article"));
             var response = await feed.FetchNextBatchAsync();
-            var items = response.CastTo<ArticlePartialItemModel>();
 
-            Assert.NotNull(items);
-            Assert.Equal(6, items.Count());
+            Assert.NotNull(response.Items);
+            Assert.Equal(6, response.Items.Count());
         }
 
         [Fact]
@@ -789,11 +780,10 @@ namespace Kentico.Kontent.Delivery.Tests
 
             var client = InitializeDeliveryClientWithCustomModelProvider(_mockHttp, new PropertyMapper());
 
-            var item = client.GetItemAsync("complete_content_item").Result.Item;
-            var stronglyTypedResponse = item.CastTo<CompleteContentItemModel>();
+            var item = client.GetItemAsync<CompleteContentItemModel>("complete_content_item").Result.Item;
 
             // Assert
-            Assert.Equal("Text field value", stronglyTypedResponse.TextField);
+            Assert.Equal("Text field value", item.TextField);
         }
 
         [Fact]
@@ -806,11 +796,10 @@ namespace Kentico.Kontent.Delivery.Tests
             var client = InitializeDeliveryClientWithCustomModelProvider(_mockHttp);
 
             // Act
-            DeliveryItemListingResponse response = client.GetItemsAsync().Result;
+            var response = client.GetItemsAsync<CompleteContentItemModel>().Result;
             IEnumerable<CompleteContentItemModel> list = response
                 .Items
-                .Where(i => i.System.Type == "complete_content_type")
-                .Select(a => a.CastTo<CompleteContentItemModel>());
+                .Where(i => i.System.Type == "complete_content_type");
 
             // Assert
             Assert.True(list.Any());
@@ -836,7 +825,7 @@ namespace Kentico.Kontent.Delivery.Tests
             var anyFilter = new AnyFilter("test", Enumerable.Range(0, 1000).Select(i => "test").ToArray());
 
             // Act
-            var response = client.GetItemsAsync(elements, inFilter, allFilter, anyFilter).Result;
+            var response = client.GetItemsAsync<object>(elements, inFilter, allFilter, anyFilter).Result;
 
             // Assert
             Assert.NotNull(response);
@@ -854,7 +843,7 @@ namespace Kentico.Kontent.Delivery.Tests
             var elements = new ElementsParameter(Enumerable.Range(0, 1000000).Select(i => "test").ToArray());
 
             // Act / Assert
-            await Assert.ThrowsAsync<UriFormatException>(async () => await client.GetItemsAsync(elements));
+            await Assert.ThrowsAsync<UriFormatException>(async () => await client.GetItemsAsync<object>(elements));
         }
 
         [Theory]
@@ -898,11 +887,11 @@ namespace Kentico.Kontent.Delivery.Tests
             if (usePreviewApi && useSecuredProduction)
             {
                 // Assert
-                await Assert.ThrowsAsync<InvalidOperationException>(async () => await client.GetItemsAsync());
+                await Assert.ThrowsAsync<InvalidOperationException>(async () => await client.GetItemsAsync<object>());
             }
             else
             {
-                var response = await client.GetItemsAsync();
+                var response = await client.GetItemsAsync<object>();
 
                 // Assert
                 Assert.NotNull(response);
@@ -932,7 +921,7 @@ namespace Kentico.Kontent.Delivery.Tests
             A.CallTo(() => retryPolicy.ExecuteAsync(A<Func<Task<HttpResponseMessage>>>._))
                 .ReturnsLazily(c => c.GetArgument<Func<Task<HttpResponseMessage>>>(0)());
 
-            await client.GetItemsAsync();
+            await client.GetItemsAsync<object>();
             _mockHttp.VerifyNoOutstandingExpectation();
         }
 
@@ -957,7 +946,7 @@ namespace Kentico.Kontent.Delivery.Tests
             A.CallTo(() => retryPolicy.ExecuteAsync(A<Func<Task<HttpResponseMessage>>>._))
                 .ReturnsLazily(c => c.GetArgument<Func<Task<HttpResponseMessage>>>(0)());
 
-            await client.GetItemsAsync();
+            await client.GetItemsAsync<object>();
 
             _mockHttp.VerifyNoOutstandingExpectation();
         }
@@ -976,9 +965,9 @@ namespace Kentico.Kontent.Delivery.Tests
 
             var client = InitializeDeliveryClientWithCustomModelProvider(_mockHttp);
 
-            var response = await client.GetItemAsync("test");
+            var response = await client.GetItemAsync<object>("test");
 
-            Assert.True(response.HasStaleContent);
+            Assert.True(response.ApiResponse.HasStaleContent);
         }
 
         [Fact]
@@ -995,9 +984,9 @@ namespace Kentico.Kontent.Delivery.Tests
 
             var client = InitializeDeliveryClientWithCustomModelProvider(_mockHttp);
 
-            var response = await client.GetItemAsync("test");
+            var response = await client.GetItemAsync<object>("test");
 
-            Assert.False(response.HasStaleContent);
+            Assert.False(response.ApiResponse.HasStaleContent);
         }
 
         [Fact]
@@ -1014,9 +1003,9 @@ namespace Kentico.Kontent.Delivery.Tests
 
             var client = InitializeDeliveryClientWithCustomModelProvider(_mockHttp);
 
-            var response = await client.GetItemsAsync();
+            var response = await client.GetItemsAsync<object>();
 
-            Assert.True(response.HasStaleContent);
+            Assert.True(response.ApiResponse.HasStaleContent);
         }
 
         [Fact]
@@ -1033,9 +1022,9 @@ namespace Kentico.Kontent.Delivery.Tests
 
             var client = InitializeDeliveryClientWithCustomModelProvider(_mockHttp);
 
-            var response = await client.GetItemsAsync();
+            var response = await client.GetItemsAsync<object>();
 
-            Assert.False(response.HasStaleContent);
+            Assert.False(response.ApiResponse.HasStaleContent);
         }
 
         [Fact]
@@ -1054,7 +1043,7 @@ namespace Kentico.Kontent.Delivery.Tests
 
             var response = await client.GetItemAsync<Homepage>("test");
 
-            Assert.True(response.HasStaleContent);
+            Assert.True(response.ApiResponse.HasStaleContent);
         }
 
         [Fact]
@@ -1073,7 +1062,7 @@ namespace Kentico.Kontent.Delivery.Tests
 
             var response = await client.GetItemAsync<Homepage>("test");
 
-            Assert.False(response.HasStaleContent);
+            Assert.False(response.ApiResponse.HasStaleContent);
         }
 
         [Fact]
@@ -1092,7 +1081,7 @@ namespace Kentico.Kontent.Delivery.Tests
 
             var response = await client.GetItemsAsync<Homepage>();
 
-            Assert.True(response.HasStaleContent);
+            Assert.True(response.ApiResponse.HasStaleContent);
         }
 
         [Fact]
@@ -1111,7 +1100,7 @@ namespace Kentico.Kontent.Delivery.Tests
 
             var response = await client.GetItemsAsync<Homepage>();
 
-            Assert.False(response.HasStaleContent);
+            Assert.False(response.ApiResponse.HasStaleContent);
         }
 
         [Fact]
@@ -1130,7 +1119,7 @@ namespace Kentico.Kontent.Delivery.Tests
 
             var response = await client.GetTypeAsync("test");
 
-            Assert.True(response.HasStaleContent);
+            Assert.True(response.ApiResponse.HasStaleContent);
         }
 
         [Fact]
@@ -1149,7 +1138,7 @@ namespace Kentico.Kontent.Delivery.Tests
 
             var response = await client.GetTypeAsync("test");
 
-            Assert.False(response.HasStaleContent);
+            Assert.False(response.ApiResponse.HasStaleContent);
         }
 
         [Fact]
@@ -1168,7 +1157,7 @@ namespace Kentico.Kontent.Delivery.Tests
 
             var response = await client.GetTypesAsync();
 
-            Assert.True(response.HasStaleContent);
+            Assert.True(response.ApiResponse.HasStaleContent);
         }
 
         [Fact]
@@ -1187,7 +1176,7 @@ namespace Kentico.Kontent.Delivery.Tests
 
             var response = await client.GetTypesAsync();
 
-            Assert.False(response.HasStaleContent);
+            Assert.False(response.ApiResponse.HasStaleContent);
         }
 
         [Fact]
@@ -1206,7 +1195,7 @@ namespace Kentico.Kontent.Delivery.Tests
 
             var response = await client.GetTaxonomyAsync("test");
 
-            Assert.True(response.HasStaleContent);
+            Assert.True(response.ApiResponse.HasStaleContent);
         }
 
         [Fact]
@@ -1225,7 +1214,7 @@ namespace Kentico.Kontent.Delivery.Tests
 
             var response = await client.GetTaxonomyAsync("test");
 
-            Assert.False(response.HasStaleContent);
+            Assert.False(response.ApiResponse.HasStaleContent);
         }
 
         [Fact]
@@ -1244,7 +1233,7 @@ namespace Kentico.Kontent.Delivery.Tests
 
             var response = await client.GetTaxonomiesAsync();
 
-            Assert.True(response.HasStaleContent);
+            Assert.True(response.ApiResponse.HasStaleContent);
         }
 
         [Fact]
@@ -1263,7 +1252,7 @@ namespace Kentico.Kontent.Delivery.Tests
 
             var response = await client.GetTaxonomiesAsync();
 
-            Assert.False(response.HasStaleContent);
+            Assert.False(response.ApiResponse.HasStaleContent);
         }
 
         [Fact]
@@ -1282,7 +1271,7 @@ namespace Kentico.Kontent.Delivery.Tests
 
             var response = await client.GetContentElementAsync("test", "test");
 
-            Assert.True(response.HasStaleContent);
+            Assert.True(response.ApiResponse.HasStaleContent);
         }
 
         [Fact]
@@ -1301,7 +1290,7 @@ namespace Kentico.Kontent.Delivery.Tests
 
             var response = await client.GetContentElementAsync("test", "test");
 
-            Assert.False(response.HasStaleContent);
+            Assert.False(response.ApiResponse.HasStaleContent);
         }
 
         [Fact]
@@ -1316,7 +1305,7 @@ namespace Kentico.Kontent.Delivery.Tests
             A.CallTo(() => retryPolicy.ExecuteAsync(A<Func<Task<HttpResponseMessage>>>._))
                 .ReturnsLazily(c => c.GetArgument<Func<Task<HttpResponseMessage>>>(0)());
 
-            await Assert.ThrowsAsync<DeliveryException>(async () => await client.GetItemsAsync());
+            await Assert.ThrowsAsync<DeliveryException>(async () => await client.GetItemsAsync<object>());
 
             A.CallTo(() => retryPolicy.ExecuteAsync(A<Func<Task<HttpResponseMessage>>>._)).MustHaveHappenedOnceExactly();
         }
@@ -1336,7 +1325,7 @@ namespace Kentico.Kontent.Delivery.Tests
             var retryPolicy = A.Fake<IRetryPolicy>();
             A.CallTo(() => client.RetryPolicyProvider.GetRetryPolicy()).Returns(retryPolicy);
 
-            await Assert.ThrowsAsync<DeliveryException>(async () => await client.GetItemsAsync());
+            await Assert.ThrowsAsync<DeliveryException>(async () => await client.GetItemsAsync<object>());
 
             A.CallTo(() => retryPolicy.ExecuteAsync(A<Func<Task<HttpResponseMessage>>>._)).MustNotHaveHappened();
         }
@@ -1372,7 +1361,7 @@ namespace Kentico.Kontent.Delivery.Tests
         {
             var customTypeProvider = new CustomTypeProvider();
             var modelProvider = new ModelProvider(
-                new ContentLinkResolver(_mockContentLinkUrlResolver),
+                _mockContentLinkUrlResolver,
                 null,
                 customTypeProvider,
                 new PropertyMapper());
@@ -1391,10 +1380,11 @@ namespace Kentico.Kontent.Delivery.Tests
             return client;
         }
 
-        private DeliveryClient InitializeDeliveryClientWithCustomModelProvider(MockHttpMessageHandler handler, IPropertyMapper propertyMapper = null)
+        private DeliveryClient InitializeDeliveryClientWithCustomModelProvider(MockHttpMessageHandler handler, IPropertyMapper propertyMapper = null, ITypeProvider typeProvider = null)
         {
+            var typer = typeProvider ?? _mockTypeProvider;
             var mapper = propertyMapper ?? A.Fake<IPropertyMapper>();
-            var modelProvider = new ModelProvider(null, null, _mockTypeProvider, mapper);
+            var modelProvider = new ModelProvider(null, null, typer, mapper);
             var client = Factories.DeliveryClientFactory.GetMockedDeliveryClientWithProjectId(_guid, handler, modelProvider);
 
             var retryPolicy = A.Fake<IRetryPolicy>();
@@ -1404,12 +1394,6 @@ namespace Kentico.Kontent.Delivery.Tests
                 .ReturnsLazily(c => c.GetArgument<Func<Task<HttpResponseMessage>>>(0)());
 
             return client;
-        }
-
-        private HttpResponseMessage GetResponseAndLogRequest(HttpStatusCode httpStatusCode, ref int actualHttpRequestCount)
-        {
-            actualHttpRequestCount++;
-            return new HttpResponseMessage(httpStatusCode);
         }
     }
 }

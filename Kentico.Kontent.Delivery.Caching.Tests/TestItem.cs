@@ -1,7 +1,4 @@
-﻿using Kentico.Kontent.Delivery.Abstractions;
-using System;
-using System.Collections.Generic;
-using System.Text;
+﻿using Kentico.Kontent.Delivery.Models.Item;
 
 namespace Kentico.Kontent.Delivery.Caching.Tests
 {

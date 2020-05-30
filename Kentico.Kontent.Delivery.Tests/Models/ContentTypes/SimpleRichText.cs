@@ -7,5 +7,8 @@ namespace Kentico.Kontent.Delivery.Tests
     {
         [JsonProperty("rich_text")]
         public IRichTextContent RichText { get; set; }
+
+        [JsonProperty("rich_text")]
+        public string RichTextString { get; set; }
     }
 }

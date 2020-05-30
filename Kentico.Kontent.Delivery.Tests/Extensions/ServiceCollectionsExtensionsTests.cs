@@ -1,5 +1,4 @@
 ﻿using Kentico.Kontent.Delivery.Abstractions;
-using Kentico.Kontent.Delivery.Abstractions.ContentLinks;
 using Kentico.Kontent.Delivery.Abstractions.InlineContentItems;
 using Kentico.Kontent.Delivery.Abstractions.RetryPolicy;
 using Kentico.Kontent.Delivery.ContentLinks;
@@ -25,7 +24,6 @@ namespace Kentico.Kontent.Delivery.Tests.Extensions
             new Dictionary<Type, Type>
             {
                 { typeof(IContentLinkUrlResolver), typeof(DefaultContentLinkUrlResolver) },
-                { typeof(IContentLinkResolver), typeof(ContentLinkResolver) },
                 { typeof(ITypeProvider), typeof(TypeProvider) },
                 { typeof(IDeliveryHttpClient), typeof(DeliveryHttpClient) },
                 { typeof(IInlineContentItemsProcessor), typeof(InlineContentItemsProcessor) },

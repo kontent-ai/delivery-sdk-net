@@ -26,8 +26,6 @@ namespace Kentico.Kontent.Delivery.Tests.QueryParameters
             var modelProvider = new ModelProvider(null, null, _contentTypeProvider, null);
             _client = new DeliveryClient(
                 deliveryOptions,
-                null,
-                null,
                 modelProvider,
                 null,
                 _contentTypeProvider

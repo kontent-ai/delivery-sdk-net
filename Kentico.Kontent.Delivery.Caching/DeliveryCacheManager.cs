@@ -67,7 +67,7 @@ namespace Kentico.Kontent.Delivery.Caching
 
                 // Set different timeout for stale content
                 var valueCacheOptions = new MemoryCacheEntryOptions();
-                if (value is AbstractResponse ar && ar.HasStaleContent)
+                if (value is AbstractResponse ar && ar.ApiResponse.HasStaleContent)
                 {
                     valueCacheOptions.SetAbsoluteExpiration(_cacheOptions.StaleContentExpiration);
                 }

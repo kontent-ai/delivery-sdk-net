@@ -1,5 +1,5 @@
-﻿using Kentico.Kontent.Delivery.Abstractions;
-using Kentico.Kontent.Delivery.Abstractions.InlineContentItems;
+﻿using Kentico.Kontent.Delivery.Abstractions.InlineContentItems;
+using Kentico.Kontent.Delivery.StrongTyping;
 
 namespace Kentico.Kontent.Delivery.InlineContentItems
 {

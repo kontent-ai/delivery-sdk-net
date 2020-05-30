@@ -23,7 +23,7 @@ namespace Kentico.Kontent.Delivery.Tests
             var deliveryClient = MockDeliveryClient(deliveryOptions, deliveryHttpClient);
 
             // Act
-            var contentItem = await deliveryClient.GetItemAsync("test");
+            var contentItem = await deliveryClient.GetItemAsync<Home>("test");
 
             // Assert
             Assert.Equal("1bd6ba00-4bf2-4a2b-8334-917faa686f66", contentItem.Item.System.Id);

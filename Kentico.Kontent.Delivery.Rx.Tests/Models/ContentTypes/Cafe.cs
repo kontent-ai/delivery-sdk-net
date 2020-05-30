@@ -5,6 +5,7 @@
 // For further modifications of the class, create a separate file with the partial class.
 
 using Kentico.Kontent.Delivery.Abstractions;
+using Kentico.Kontent.Delivery.Models.Item;
 using System.Collections.Generic;
 
 namespace Kentico.Kontent.Delivery.Rx.Tests

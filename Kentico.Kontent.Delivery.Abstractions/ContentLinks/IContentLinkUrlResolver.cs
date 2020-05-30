@@ -1,4 +1,6 @@
-﻿namespace Kentico.Kontent.Delivery.Abstractions
+﻿using Kentico.Kontent.Delivery.Abstractions.ContentLinks;
+
+namespace Kentico.Kontent.Delivery.Abstractions
 {
     /// <summary>
     /// Defines the contract to resolve content links in Rich text element values.
@@ -10,7 +12,7 @@
         /// </summary>
         /// <param name="link">The link to a content item that needs to be resolved.</param>
         /// <returns>The URL of the linked content item, if possible; otherwise, <c>null</c>.</returns>
-        string ResolveLinkUrl(ContentLink link);
+        string ResolveLinkUrl(IContentLink link);
 
         /// <summary>
         /// Returns a URL of the linked content item that is not available.

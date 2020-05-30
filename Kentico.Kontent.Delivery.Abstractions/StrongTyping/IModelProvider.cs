@@ -1,4 +1,4 @@
-﻿using Newtonsoft.Json.Linq;
+﻿using System.Collections;
 
 namespace Kentico.Kontent.Delivery.Abstractions
 {
@@ -14,6 +14,6 @@ namespace Kentico.Kontent.Delivery.Abstractions
         /// <param name="item">Content item data.</param>
         /// <param name="linkedItems">Linked items.</param>
         /// <returns>Strongly typed POCO model of the generic type.</returns>
-        T GetContentItemModel<T>(JToken item, JToken linkedItems);
+        T GetContentItemModel<T>(object item, IEnumerable linkedItems);
     }
 }

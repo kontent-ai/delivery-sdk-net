@@ -18,6 +18,7 @@
 
   <ItemGroup>
     <ProjectReference Include="..\Kentico.Kontent.Delivery.Caching\Kentico.Kontent.Delivery.Caching.csproj" />
+    <ProjectReference Include="..\Kentico.Kontent.Delivery\Kentico.Kontent.Delivery.csproj" />
   </ItemGroup>
 
 </Project>

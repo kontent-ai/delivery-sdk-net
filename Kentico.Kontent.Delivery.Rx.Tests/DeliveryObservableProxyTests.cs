@@ -9,7 +9,6 @@ using FakeItEasy;
 using Kentico.Kontent.Delivery.Abstractions;
 using Kentico.Kontent.Delivery.Abstractions.InlineContentItems;
 using Kentico.Kontent.Delivery.Abstractions.RetryPolicy;
-using Kentico.Kontent.Delivery.ContentLinks;
 using Kentico.Kontent.Delivery.StrongTyping;
 using Kentico.Kontent.Delivery.Tests.Factories;
 using RichardSzalay.MockHttp;
@@ -32,36 +31,6 @@ namespace Kentico.Kontent.Delivery.Rx.Tests
         }
 
         [Fact]
-        public async void ItemJsonRetrieved()
-        {
-            var observable = new DeliveryObservableProxy(GetDeliveryClient(MockItem)).GetItemJsonObservable(BEVERAGES_IDENTIFIER, "language=es-ES");
-            var itemJson = await observable.FirstOrDefaultAsync();
-
-            Assert.Single(observable.ToEnumerable());
-            Assert.NotNull(itemJson);
-        }
-
-        [Fact]
-        public void ItemsJsonRetrieved()
-        {
-            var observable = new DeliveryObservableProxy(GetDeliveryClient(MockItems)).GetItemsJsonObservable("limit=2", "skip=1");
-            var itemsJson = observable.ToEnumerable().ToList();
-
-            Assert.NotEmpty(itemsJson);
-            Assert.Equal(2, itemsJson[0]["items"].Count());
-        }
-
-        [Fact]
-        public async void ContentItemRetrieved()
-        {
-            var observable = new DeliveryObservableProxy(GetDeliveryClient(MockItem)).GetItemObservable(BEVERAGES_IDENTIFIER, new LanguageParameter("es-ES"));
-            var item = await observable.FirstOrDefaultAsync();
-
-            Assert.NotNull(item);
-            AssertItemPropertiesNotNull(item);
-        }
-
-        [Fact]
         public async void TypedItemRetrieved()
         {
             var observable = new DeliveryObservableProxy(GetDeliveryClient(MockItem)).GetItemObservable<Article>(BEVERAGES_IDENTIFIER, new LanguageParameter("es-ES"));
@@ -80,28 +49,6 @@ namespace Kentico.Kontent.Delivery.Rx.Tests
             Assert.IsType<Article>(item);
             Assert.NotNull(item);
             AssertArticlePropertiesNotNull((Article)item);
-        }
-
-        [Fact]
-        public void ContentItemsRetrieved()
-        {
-            var observable = new DeliveryObservableProxy(GetDeliveryClient(MockItems)).GetItemsObservable(new LimitParameter(2), new SkipParameter(1));
-            var items = observable.ToEnumerable().ToList();
-
-            Assert.NotEmpty(items);
-            Assert.Equal(2, items.Count);
-            Assert.All(items, item => AssertItemPropertiesNotNull(item));
-        }
-
-        [Fact]
-        public void ContentItemsFeedRetrieved()
-        {
-            var observable = new DeliveryObservableProxy(GetDeliveryClient(MockFeedItems)).GetItemsFeedObservable();
-            var items = observable.ToEnumerable().ToList();
-
-            Assert.NotEmpty(items);
-            Assert.Equal(2, items.Count);
-            Assert.All(items, item => AssertItemPropertiesNotNull(item));
         }
 
         [Fact]
@@ -149,26 +96,6 @@ namespace Kentico.Kontent.Delivery.Rx.Tests
         }
 
         [Fact]
-        public async void TypeJsonRetrieved()
-        {
-            var observable = new DeliveryObservableProxy(GetDeliveryClient(MockType)).GetTypeJsonObservable(Article.Codename);
-            var type = await observable.FirstOrDefaultAsync();
-
-            Assert.Single(observable.ToEnumerable());
-            Assert.NotNull(type);
-        }
-
-        [Fact]
-        public void TypesJsonRetrieved()
-        {
-            var observable = new DeliveryObservableProxy(GetDeliveryClient(MockTypes)).GetTypesJsonObservable("skip=2");
-            var types = observable.ToEnumerable().ToList();
-
-            Assert.NotEmpty(types);
-            Assert.Equal(13, types[0]["types"].Count());
-        }
-
-        [Fact]
         public async void TypeRetrieved()
         {
             var observable = new DeliveryObservableProxy(GetDeliveryClient(MockType)).GetTypeObservable(Article.Codename);
@@ -205,28 +132,6 @@ namespace Kentico.Kontent.Delivery.Rx.Tests
         }
 
         [Fact]
-        public async void TaxonomyJsonRetrieved()
-        {
-            var observable = new DeliveryObservableProxy(GetDeliveryClient(MockTaxonomy)).GetTaxonomyJsonObservable("personas");
-            var taxonomyJson = await observable.FirstOrDefaultAsync();
-
-            Assert.NotNull(taxonomyJson);
-            Assert.NotNull(taxonomyJson["system"]);
-            Assert.NotNull(taxonomyJson["terms"]);
-        }
-
-        [Fact]
-        public void TaxonomiesJsonRetrieved()
-        {
-            var observable = new DeliveryObservableProxy(GetDeliveryClient(MockTaxonomies)).GetTaxonomiesJsonObservable("skip=1");
-            var taxonomiesJson = observable.ToEnumerable().ToList();
-
-            Assert.NotNull(taxonomiesJson);
-            Assert.NotNull(taxonomiesJson[0]["taxonomies"]);
-            Assert.NotNull(taxonomiesJson[0]["pagination"]);
-        }
-
-        [Fact]
         public async void TaxonomyRetrieved()
         {
             var observable = new DeliveryObservableProxy(GetDeliveryClient(MockTaxonomy)).GetTaxonomyObservable("personas");
@@ -254,11 +159,10 @@ namespace Kentico.Kontent.Delivery.Rx.Tests
             var deliveryHttpClient = new DeliveryHttpClient(mockHttp.ToHttpClient());
             var deliveryOptions = DeliveryOptionsFactory.CreateMonitor(new DeliveryOptions { ProjectId = guid });
             var contentLinkUrlResolver = A.Fake<IContentLinkUrlResolver>();
-            var contentLinkResolver = new ContentLinkResolver(contentLinkUrlResolver);
             var contentItemsProcessor = A.Fake<IInlineContentItemsProcessor>();
             var contentPropertyMapper =  new PropertyMapper();
             var contentTypeProvider = new CustomTypeProvider();
-            var modelProvider = new ModelProvider(contentLinkResolver, contentItemsProcessor, contentTypeProvider, contentPropertyMapper);
+            var modelProvider = new ModelProvider(contentLinkUrlResolver, contentItemsProcessor, contentTypeProvider, contentPropertyMapper);
             var retryPolicy = A.Fake<IRetryPolicy>();
             var retryPolicyProvider = A.Fake<IRetryPolicyProvider>();
             A.CallTo(() => retryPolicyProvider.GetRetryPolicy()).Returns(retryPolicy);
@@ -266,12 +170,9 @@ namespace Kentico.Kontent.Delivery.Rx.Tests
                 .ReturnsLazily(call => call.GetArgument<Func<Task<HttpResponseMessage>>>(0)());
             var client = new DeliveryClient(
                 deliveryOptions,
-                contentLinkResolver, 
-                null,
                 modelProvider,
                 retryPolicyProvider,
                 contentTypeProvider,
-                null,
                 deliveryHttpClient
             );
 
@@ -282,19 +183,6 @@ namespace Kentico.Kontent.Delivery.Rx.Tests
         {
             mockHttp.When($"{baseUrl}/items/{BEVERAGES_IDENTIFIER}?language=es-ES")
                 .Respond("application/json", File.ReadAllText(Path.Combine(Environment.CurrentDirectory, $"Fixtures{Path.DirectorySeparatorChar}coffee_beverages_explained.json")));
-        }
-
-        private void MockItems()
-        {
-            mockHttp.When($"{baseUrl}/items")
-                .WithQueryString("limit=2&skip=1")
-                .Respond("application/json", File.ReadAllText(Path.Combine(Environment.CurrentDirectory, $"Fixtures{Path.DirectorySeparatorChar}items.json")));
-        }
-
-        private void MockFeedItems()
-        {
-            mockHttp.When($"{baseUrl}/items-feed")
-                .Respond("application/json", File.ReadAllText(Path.Combine(Environment.CurrentDirectory, $"Fixtures{Path.DirectorySeparatorChar}items.json")));
         }
 
         private void MockArticles()
@@ -340,12 +228,6 @@ namespace Kentico.Kontent.Delivery.Rx.Tests
             mockHttp.When($"{baseUrl}/taxonomies")
                 .WithQueryString("skip=1")
                 .Respond("application/json", File.ReadAllText(Path.Combine(Environment.CurrentDirectory, $"Fixtures{Path.DirectorySeparatorChar}taxonomies_multiple.json")));
-        }
-
-        private static void AssertItemPropertiesNotNull(ContentItem item)
-        {
-            Assert.NotNull(item.System);
-            Assert.NotNull(item.Elements);
         }
 
         private static void AssertArticlePropertiesNotNull(Article item)

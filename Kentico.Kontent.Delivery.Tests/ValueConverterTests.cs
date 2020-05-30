@@ -1,7 +1,6 @@
 ﻿using System;
 using System.Linq;
 using System.Reflection;
-using Newtonsoft.Json.Linq;
 using NodaTime;
 using Xunit;
 using RichardSzalay.MockHttp;
@@ -12,19 +11,17 @@ using FakeItEasy;
 using Kentico.Kontent.Delivery.Abstractions;
 using Kentico.Kontent.Delivery.Abstractions.RetryPolicy;
 using Kentico.Kontent.Delivery.StrongTyping;
-using Kentico.Kontent.Delivery.ContentLinks;
 using Kentico.Kontent.Delivery.Tests.Factories;
+using Kentico.Kontent.Delivery.Abstractions.Models.Type.Element;
 
 namespace Kentico.Kontent.Delivery.Tests
 {
     [AttributeUsage(AttributeTargets.Property)]
     public class TestGreeterValueConverterAttribute : Attribute, IPropertyValueConverter
     {
-        public object GetPropertyValue(PropertyInfo property, JToken elementData, ResolvingContext context)
+        public object GetPropertyValue(PropertyInfo property, IContentElement elementData, ResolvingContext context)
         {
-            var element = (JObject)elementData;
-            var str = element.Property("value")?.Value?.ToObject<string>();
-            return $"Hello {str}!";
+            return $"Hello {elementData.Value}!";
         }
     }
 
@@ -32,13 +29,12 @@ namespace Kentico.Kontent.Delivery.Tests
     [AttributeUsage(AttributeTargets.Property)]
     public class NodaTimeValueConverterAttribute : Attribute, IPropertyValueConverter
     {
-        public object GetPropertyValue(PropertyInfo property, JToken elementData, ResolvingContext context)
+        public object GetPropertyValue(PropertyInfo property, IContentElement elementData, ResolvingContext context)
         {
-            var element = (JObject)elementData;
-            var dt = element.Property("value")?.Value?.ToObject<DateTime>();
+            var dt = DateTime.Parse(elementData.Value);
             if (dt != null)
             {
-                var udt = DateTime.SpecifyKind(dt.Value, DateTimeKind.Utc);
+                var udt = DateTime.SpecifyKind(dt, DateTimeKind.Utc);
                 ZonedDateTime zdt = ZonedDateTime.FromDateTimeOffset(udt);
                 return zdt;
             }
@@ -113,17 +109,10 @@ namespace Kentico.Kontent.Delivery.Tests
             var deliveryOptions = DeliveryOptionsFactory.CreateMonitor(new DeliveryOptions { ProjectId = guid });
             var retryPolicy = A.Fake<IRetryPolicy>();
             var retryPolicyProvider = A.Fake<IRetryPolicyProvider>();
-            A.CallTo(() => retryPolicyProvider.GetRetryPolicy())
-                .Returns(retryPolicy);
-            A.CallTo(() => retryPolicy.ExecuteAsync(A<Func<Task<HttpResponseMessage>>>._))
-                .ReturnsLazily(c => c.GetArgument<Func<Task<HttpResponseMessage>>>(0)());
-            var modelProvider = new ModelProvider(
-                new ContentLinkResolver(contentLinkUrlResolver),
-                null,
-                new CustomTypeProvider(),
-                new PropertyMapper()
-            );
-            var client = new DeliveryClient(deliveryOptions, null, null, modelProvider, retryPolicyProvider, null, null, deliveryHttpClient);
+            A.CallTo(() => retryPolicyProvider.GetRetryPolicy()).Returns(retryPolicy);
+            A.CallTo(() => retryPolicy.ExecuteAsync(A<Func<Task<HttpResponseMessage>>>._)).ReturnsLazily(c => c.GetArgument<Func<Task<HttpResponseMessage>>>(0)());
+            var modelProvider = new ModelProvider(contentLinkUrlResolver, null, new CustomTypeProvider(), new PropertyMapper());
+            var client = new DeliveryClient(deliveryOptions, modelProvider, retryPolicyProvider, null, deliveryHttpClient);
 
             return client;
         }

@@ -8,13 +8,13 @@
         /// <summary>
         /// Gets the continuation token to be used for continuing enumeration of the Kentico Kontent Delivery API.
         /// </summary>
-        public string ContinuationToken => _response.ContinuationToken;
+        public string ContinuationToken => ApiResponse.ContinuationToken;
 
         /// <summary>
         /// Initializes a new instance of the <see cref="FeedResponse"/> class.
         /// </summary>
         /// <param name="apiResponse">A successful JSON response from Kentico Kontent Delivery API.</param>
-        protected FeedResponse(ApiResponse apiResponse) : base(apiResponse)
+        protected FeedResponse(IApiResponse apiResponse) : base(apiResponse)
         {
         }
     }

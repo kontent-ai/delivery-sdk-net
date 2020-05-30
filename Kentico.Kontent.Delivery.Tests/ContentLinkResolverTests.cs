@@ -8,6 +8,7 @@ using Xunit;
 using Kentico.Kontent.Delivery.Abstractions;
 using Kentico.Kontent.Delivery.StrongTyping;
 using Kentico.Kontent.Delivery.ContentLinks;
+using Kentico.Kontent.Delivery.Abstractions.ContentLinks;
 
 namespace Kentico.Kontent.Delivery.Tests
 {
@@ -127,16 +128,12 @@ namespace Kentico.Kontent.Delivery.Tests
             var deliveryHttpClient = new DeliveryHttpClient(mockHttp.ToHttpClient());
             var resiliencePolicyProvider = new DefaultRetryPolicyProvider(options);
             var contentLinkUrlResolver = new CustomContentLinkUrlResolver();
-            var contentLinkResolver = new ContentLinkResolver(contentLinkUrlResolver);
             var contentItemsProcessor = InlineContentItemsProcessorFactory.Create();
-            var modelProvider= new ModelProvider(contentLinkResolver, contentItemsProcessor, new CustomTypeProvider(), new PropertyMapper());
+            var modelProvider= new ModelProvider(contentLinkUrlResolver, contentItemsProcessor, new CustomTypeProvider(), new PropertyMapper());
             var client = new DeliveryClient(
                 deliveryOptions,
-                contentLinkResolver,
-                contentItemsProcessor,
                 modelProvider,
                 resiliencePolicyProvider,
-                null,
                 null,
                 deliveryHttpClient
             );
@@ -173,10 +170,10 @@ namespace Kentico.Kontent.Delivery.Tests
 
         private sealed class CustomContentLinkUrlResolver : IContentLinkUrlResolver
         {
-            public Func<ContentLink, string> GetLinkUrl = link => $"http://example.org/{link.UrlSlug}";
+            public Func<IContentLink, string> GetLinkUrl = link => $"http://example.org/{link.UrlSlug}";
             public Func<string> GetBrokenLinkUrl = () => "http://example.org/broken";
 
-            public string ResolveLinkUrl(ContentLink link)
+            public string ResolveLinkUrl(IContentLink link)
             {
                 return GetLinkUrl(link);
             }

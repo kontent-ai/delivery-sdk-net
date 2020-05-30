@@ -1,4 +1,5 @@
 using Kentico.Kontent.Delivery.Abstractions;
+using Kentico.Kontent.Delivery.Models.Item;
 using System.Collections.Generic;
 
 namespace Kentico.Kontent.Delivery.Tests

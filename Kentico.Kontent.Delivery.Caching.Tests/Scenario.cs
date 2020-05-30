@@ -1,10 +1,8 @@
 ﻿using Kentico.Kontent.Delivery.Abstractions;
 using Microsoft.Extensions.Caching.Memory;
 using Microsoft.Extensions.Options;
-using System;
 using System.Collections.Generic;
 using System.Net.Http;
-using System.Text;
 
 namespace Kentico.Kontent.Delivery.Caching.Tests
 {

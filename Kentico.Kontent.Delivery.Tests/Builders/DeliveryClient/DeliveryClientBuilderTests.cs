@@ -5,6 +5,7 @@ using Kentico.Kontent.Delivery.Abstractions;
 using Kentico.Kontent.Delivery.Abstractions.InlineContentItems;
 using Kentico.Kontent.Delivery.Abstractions.RetryPolicy;
 using Kentico.Kontent.Delivery.InlineContentItems;
+using Kentico.Kontent.Delivery.StrongTyping;
 using Kentico.Kontent.Delivery.Tests.DependencyInjectionFrameworks.Helpers;
 using RichardSzalay.MockHttp;
 using Xunit;
@@ -76,10 +77,7 @@ namespace Kentico.Kontent.Delivery.Tests.Builders.DeliveryClient
                 .Build();
 
             Assert.Equal(ProjectId, deliveryClient.DeliveryOptions.CurrentValue.ProjectId);
-            Assert.Equal(mockContentLinkUrlResolver, deliveryClient.ContentLinkResolver.ContentLinkUrlResolver);            
-            Assert.Equal(mockInlineContentItemsProcessor, deliveryClient.InlineContentItemsProcessor);
             Assert.Equal(mockModelProvider, deliveryClient.ModelProvider);
-            Assert.Equal(mockPropertyMapper, deliveryClient.PropertyMapper);
             Assert.Equal(mockRetryPolicyProvider, deliveryClient.RetryPolicyProvider);
             Assert.Equal(mockTypeProvider, deliveryClient.TypeProvider);
             Assert.Equal(mockDeliveryHttpClient, deliveryClient.DeliveryHttpClient);
@@ -140,11 +138,8 @@ namespace Kentico.Kontent.Delivery.Tests.Builders.DeliveryClient
             var actualResolvableInlineContentItemTypes = GetResolvableInlineContentItemTypes(deliveryClient);
 
             Assert.NotNull(deliveryClient.ModelProvider);
-            Assert.NotNull(deliveryClient.PropertyMapper);
             Assert.NotNull(deliveryClient.TypeProvider);
-            Assert.NotNull(deliveryClient.ContentLinkResolver);
             Assert.NotNull(deliveryClient.DeliveryHttpClient);
-            Assert.NotNull(deliveryClient.InlineContentItemsProcessor);
             Assert.NotNull(deliveryClient.RetryPolicyProvider);
             Assert.Equal(expectedResolvableInlineContentItemsTypes, actualResolvableInlineContentItemTypes);
         }
@@ -214,6 +209,6 @@ namespace Kentico.Kontent.Delivery.Tests.Builders.DeliveryClient
         }
 
         private static IEnumerable<Type> GetResolvableInlineContentItemTypes(Delivery.DeliveryClient deliveryClient)
-            => (deliveryClient.InlineContentItemsProcessor as InlineContentItemsProcessor)?.ContentItemResolvers.Keys;
+            => (((ModelProvider)deliveryClient.ModelProvider).InlineContentItemsProcessor as InlineContentItemsProcessor).ContentItemResolvers.Keys;
     }
 }

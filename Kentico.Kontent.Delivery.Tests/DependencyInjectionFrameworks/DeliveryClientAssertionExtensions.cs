@@ -13,14 +13,17 @@ namespace Kentico.Kontent.Delivery.Tests.DependencyInjectionFrameworks
         private const string ProjectId = "00a21be4-8fef-4dd9-9380-f4cbb82e260d";
 
         internal static void AssertDefaultDependencies(this DeliveryClient client)
-            => client
-                .AssertDefaultDependenciesWithCustomModelProvider<ModelProvider>();
+        {
+            client.AssertInlineContentItemTypesWithResolver().AssertDefaultDependenciesWithCustomModelProvider<ModelProvider>();
+            Assert.IsType<PropertyMapper>(((ModelProvider)client.ModelProvider).PropertyMapper);
+            Assert.IsType<DefaultContentLinkUrlResolver>(((ModelProvider)client.ModelProvider).ContentLinkUrlResolver);
+            Assert.IsType<InlineContentItemsProcessor>(((ModelProvider)client.ModelProvider).InlineContentItemsProcessor);
+        }
 
         internal static void AssertDefaultDependenciesWithModelProviderAndInlineContentItemTypeResolvers<TCustomModelProvider>(
             this DeliveryClient client)
             where TCustomModelProvider : IModelProvider
             => client
-                .AssertInlineContentItemTypesWithResolver()
                 .AssertDefaultDependenciesWithCustomModelProvider<TCustomModelProvider>();
 
         private static void AssertDefaultDependenciesWithCustomModelProvider<TCustomModelProvider>(this DeliveryClient client)
@@ -28,10 +31,7 @@ namespace Kentico.Kontent.Delivery.Tests.DependencyInjectionFrameworks
         {
             Assert.IsType<DeliveryClient>(client);
             Assert.Equal(ProjectId, client.DeliveryOptions?.CurrentValue.ProjectId);
-            Assert.IsType<PropertyMapper>(client.PropertyMapper);
             Assert.IsType<TypeProvider>(client.TypeProvider);
-            Assert.IsType<DefaultContentLinkUrlResolver>(client.ContentLinkResolver.ContentLinkUrlResolver);
-            Assert.IsType<InlineContentItemsProcessor>(client.InlineContentItemsProcessor);
             Assert.IsType<DefaultRetryPolicyProvider>(client.RetryPolicyProvider);
             Assert.IsType<DeliveryOptions>(client.DeliveryOptions.CurrentValue);
             Assert.IsType<TCustomModelProvider>(client.ModelProvider);
@@ -47,7 +47,7 @@ namespace Kentico.Kontent.Delivery.Tests.DependencyInjectionFrameworks
                 typeof(HostedVideo),
                 typeof(Tweet)
             };
-            var inlineContentItemsProcessor = client.InlineContentItemsProcessor as InlineContentItemsProcessor;
+            var inlineContentItemsProcessor = ((ModelProvider)client.ModelProvider).InlineContentItemsProcessor as InlineContentItemsProcessor;
 
             var actualInlineContentItemTypesWithResolver = inlineContentItemsProcessor?.ContentItemResolvers?.Keys.ToArray();
 

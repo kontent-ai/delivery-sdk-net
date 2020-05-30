@@ -1,4 +1,5 @@
-﻿using System.Threading.Tasks;
+﻿using Kentico.Kontent.Delivery.Abstractions.Responses;
+using System.Threading.Tasks;
 
 namespace Kentico.Kontent.Delivery.Abstractions
 {
@@ -16,7 +17,7 @@ namespace Kentico.Kontent.Delivery.Abstractions
         /// <summary>
         /// Retrieves the next feed batch if available.
         /// </summary>
-        /// <returns>Instance of <see cref="DeliveryItemsFeedResponse{T}"/> class that contains a list of strongly typed content items.</returns>
-        Task<DeliveryItemsFeedResponse<T>> FetchNextBatchAsync();
+        /// <returns>Instance of <see cref="IDeliveryItemsFeedResponse{T}"/> class that contains a list of strongly typed content items.</returns>
+        Task<IDeliveryItemsFeedResponse<T>> FetchNextBatchAsync();
     }
 }

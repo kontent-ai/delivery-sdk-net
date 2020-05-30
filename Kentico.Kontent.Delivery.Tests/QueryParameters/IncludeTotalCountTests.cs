@@ -11,10 +11,10 @@ namespace Kentico.Kontent.Delivery.Tests.QueryParameters
 {
     public class IncludeTotalCountTests
     {
-        private static readonly Guid ProjectId = Guid.NewGuid();
-        private static readonly string BaseUrl = $"https://deliver.kontent.ai/{ProjectId}";
-        private static readonly MockHttpMessageHandler MockHttp = new MockHttpMessageHandler();
-        private static readonly DeliveryOptions Options = new DeliveryOptions
+        private readonly Guid ProjectId = Guid.NewGuid();
+        private  string BaseUrl => $"https://deliver.kontent.ai/{ProjectId}";
+        private readonly MockHttpMessageHandler MockHttp = new MockHttpMessageHandler();
+        private DeliveryOptions Options => new DeliveryOptions
         {
             ProjectId = ProjectId.ToString(),
             EnableRetryPolicy = false,
@@ -57,21 +57,6 @@ namespace Kentico.Kontent.Delivery.Tests.QueryParameters
         }
 
         [Fact]
-        public async void GetItemsJson_DeliveryOptionsWithIncludeTotalCount_IncludeTotalCountParameterAdded()
-        {
-            var responseJson = JsonConvert.SerializeObject(CreateItemsResponse());
-            MockHttp
-                .Expect($"{BaseUrl}/items")
-                .WithExactQueryString("includeTotalCount")
-                .Respond("application/json", responseJson);
-            var client = Factories.DeliveryClientFactory.GetMockedDeliveryClientWithOptions(Options, MockHttp);
-
-            await client.GetItemsJsonAsync();
-
-            MockHttp.VerifyNoOutstandingExpectation();
-        }
-
-        [Fact]
         public async void GetItems_DeliveryOptionsWithIncludeTotalCount_IncludeTotalCountParameterAdded()
         {
             var responseJson = JsonConvert.SerializeObject(CreateItemsResponse());
@@ -81,7 +66,7 @@ namespace Kentico.Kontent.Delivery.Tests.QueryParameters
                 .Respond("application/json", responseJson);
             var client = Factories.DeliveryClientFactory.GetMockedDeliveryClientWithOptions(Options, MockHttp);
 
-            await client.GetItemsAsync();
+            await client.GetItemsAsync<object>();
 
             MockHttp.VerifyNoOutstandingExpectation();
         }
