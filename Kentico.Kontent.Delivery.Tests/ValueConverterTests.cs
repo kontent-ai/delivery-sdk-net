@@ -51,20 +51,20 @@ namespace Kentico.Kontent.Delivery.Tests
 
     public class ValueConverterTests
     {
-        private readonly string guid;
-        private readonly string baseUrl;
+        private readonly string _guid;
+        private readonly string _baseUrl;
 
         public ValueConverterTests()
         {
-            guid = Guid.NewGuid().ToString();
-            baseUrl = $"https://deliver.kontent.ai/{guid}";
+            _guid = Guid.NewGuid().ToString();
+            _baseUrl = $"https://deliver.kontent.ai/{_guid}";
         }
 
         [Fact]
         public async void GreeterPropertyValueConverter()
         {
             var mockHttp = new MockHttpMessageHandler();
-            string url = $"{baseUrl}/items/on_roasts";
+            string url = $"{_baseUrl}/items/on_roasts";
             mockHttp.When(url).
                Respond("application/json", File.ReadAllText(Path.Combine(Environment.CurrentDirectory, $"Fixtures{Path.DirectorySeparatorChar}ContentLinkResolver{Path.DirectorySeparatorChar}on_roasts.json")));
             DeliveryClient client = InitializeDeliveryClient(mockHttp);
@@ -78,7 +78,7 @@ namespace Kentico.Kontent.Delivery.Tests
         public async void NodaTimePropertyValueConverter()
         {
             var mockHttp = new MockHttpMessageHandler();
-            string url = $"{baseUrl}/items/on_roasts";
+            string url = $"{_baseUrl}/items/on_roasts";
             mockHttp.When(url).
                Respond("application/json", File.ReadAllText(Path.Combine(Environment.CurrentDirectory, $"Fixtures{Path.DirectorySeparatorChar}ContentLinkResolver{Path.DirectorySeparatorChar}on_roasts.json")));
             DeliveryClient client = InitializeDeliveryClient(mockHttp);
@@ -92,7 +92,7 @@ namespace Kentico.Kontent.Delivery.Tests
         public async void RichTextViaValueConverter()
         {
             var mockHttp = new MockHttpMessageHandler();
-            string url = $"{baseUrl}/items/coffee_beverages_explained";
+            string url = $"{_baseUrl}/items/coffee_beverages_explained";
             mockHttp.When(url).
                WithQueryString("depth=15").
                Respond("application/json", File.ReadAllText(Path.Combine(Environment.CurrentDirectory, $"Fixtures{Path.DirectorySeparatorChar}ContentLinkResolver{Path.DirectorySeparatorChar}coffee_beverages_explained.json")));
@@ -112,7 +112,7 @@ namespace Kentico.Kontent.Delivery.Tests
         {
             var deliveryHttpClient = new DeliveryHttpClient(mockHttp.ToHttpClient());
             var contentLinkUrlResolver = A.Fake<IContentLinkUrlResolver>();
-            var deliveryOptions = DeliveryOptionsFactory.CreateMonitor(new DeliveryOptions { ProjectId = guid });
+            var deliveryOptions = DeliveryOptionsFactory.CreateMonitor(new DeliveryOptions { ProjectId = _guid });
             var retryPolicy = A.Fake<IRetryPolicy>();
             var retryPolicyProvider = A.Fake<IRetryPolicyProvider>();
             A.CallTo(() => retryPolicyProvider.GetRetryPolicy()).Returns(retryPolicy);

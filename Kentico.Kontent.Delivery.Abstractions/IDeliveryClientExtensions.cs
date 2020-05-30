@@ -8,7 +8,7 @@ namespace Kentico.Kontent.Delivery.Abstractions
     /// <summary>
     /// Extra overloads of the <see cref="IDeliveryClient"/> for the consumer's convenience. 
     /// </summary>
-    public static class IDeliveryClientExtensions
+    public static class DeliveryClientExtensions
     {
         /// <summary>
         /// Gets a strongly typed content item by its codename. By default, retrieves one level of linked items.

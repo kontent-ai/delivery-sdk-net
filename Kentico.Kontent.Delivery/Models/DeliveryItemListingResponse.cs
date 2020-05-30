@@ -1,5 +1,4 @@
-﻿using Kentico.Kontent.Delivery.Abstractions;
-using Kentico.Kontent.Delivery.Abstractions.Responses;
+﻿using Kentico.Kontent.Delivery.Abstractions.Responses;
 using Newtonsoft.Json.Linq;
 using System;
 using System.Collections.Generic;

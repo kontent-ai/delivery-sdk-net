@@ -24,15 +24,15 @@ namespace Kentico.Kontent.Delivery.Rx.Tests
     public class DeliveryObservableProxyTests
     {
         private const string BEVERAGES_IDENTIFIER = "coffee_beverages_explained";
-        readonly string guid = string.Empty;
-        readonly string baseUrl = string.Empty;
-        readonly MockHttpMessageHandler mockHttp;
+        readonly string _guid = string.Empty;
+        readonly string _baseUrl = string.Empty;
+        readonly MockHttpMessageHandler _mockHttp;
 
         public DeliveryObservableProxyTests()
         {
-            guid = Guid.NewGuid().ToString();
-            baseUrl = $"https://deliver.kontent.ai/{guid}";
-            mockHttp = new MockHttpMessageHandler();
+            _guid = Guid.NewGuid().ToString();
+            _baseUrl = $"https://deliver.kontent.ai/{_guid}";
+            _mockHttp = new MockHttpMessageHandler();
         }
 
         [Fact]
@@ -161,8 +161,8 @@ namespace Kentico.Kontent.Delivery.Rx.Tests
         private IDeliveryClient GetDeliveryClient(Action mockAction)
         {
             mockAction();
-            var deliveryHttpClient = new DeliveryHttpClient(mockHttp.ToHttpClient());
-            var deliveryOptions = DeliveryOptionsFactory.CreateMonitor(new DeliveryOptions { ProjectId = guid });
+            var deliveryHttpClient = new DeliveryHttpClient(_mockHttp.ToHttpClient());
+            var deliveryOptions = DeliveryOptionsFactory.CreateMonitor(new DeliveryOptions { ProjectId = _guid });
             var contentLinkUrlResolver = A.Fake<IContentLinkUrlResolver>();
             var contentItemsProcessor = A.Fake<IInlineContentItemsProcessor>();
             var contentPropertyMapper =  new PropertyMapper();
@@ -186,51 +186,51 @@ namespace Kentico.Kontent.Delivery.Rx.Tests
 
         private void MockItem()
         {
-            mockHttp.When($"{baseUrl}/items/{BEVERAGES_IDENTIFIER}?language=es-ES")
+            _mockHttp.When($"{_baseUrl}/items/{BEVERAGES_IDENTIFIER}?language=es-ES")
                 .Respond("application/json", File.ReadAllText(Path.Combine(Environment.CurrentDirectory, $"Fixtures{Path.DirectorySeparatorChar}coffee_beverages_explained.json")));
         }
 
         private void MockArticles()
         {
-            mockHttp.When($"{baseUrl}/items")
+            _mockHttp.When($"{_baseUrl}/items")
                 .WithQueryString(new[] { new KeyValuePair<string, string>("system.type", Article.Codename), new KeyValuePair<string, string>("elements.personas[contains]", "barista") })
                 .Respond("application/json", File.ReadAllText(Path.Combine(Environment.CurrentDirectory, $"Fixtures{Path.DirectorySeparatorChar}articles.json")));
         }
 
         private void MockFeedArticles()
         {
-            mockHttp.When($"{baseUrl}/items-feed")
+            _mockHttp.When($"{_baseUrl}/items-feed")
                 .WithQueryString(new[] { new KeyValuePair<string, string>("system.type", Article.Codename), new KeyValuePair<string, string>("elements.personas[contains]", "barista") })
                 .Respond("application/json", File.ReadAllText(Path.Combine(Environment.CurrentDirectory, $"Fixtures{Path.DirectorySeparatorChar}articles.json")));
         }
 
         private void MockType()
         {
-            mockHttp.When($"{baseUrl}/types/{Article.Codename}")
+            _mockHttp.When($"{_baseUrl}/types/{Article.Codename}")
                 .Respond("application/json", File.ReadAllText(Path.Combine(Environment.CurrentDirectory, $"Fixtures{Path.DirectorySeparatorChar}article-type.json")));
         }
 
         private void MockTypes()
         {
-            mockHttp.When($"{baseUrl}/types?skip=2")
+            _mockHttp.When($"{_baseUrl}/types?skip=2")
                 .Respond("application/json", File.ReadAllText(Path.Combine(Environment.CurrentDirectory, $"Fixtures{Path.DirectorySeparatorChar}types.json")));
         }
 
         private void MockElement()
         {
-            mockHttp.When($"{baseUrl}/types/{Article.Codename}/elements/{Article.TitleCodename}")
+            _mockHttp.When($"{_baseUrl}/types/{Article.Codename}/elements/{Article.TitleCodename}")
                 .Respond("application/json", "{'type':'text','name':'Title','codename':'title'}");
         }
 
         private void MockTaxonomy()
         {
-            mockHttp.When($"{baseUrl}/taxonomies/personas")
+            _mockHttp.When($"{_baseUrl}/taxonomies/personas")
                 .Respond("application/json", File.ReadAllText(Path.Combine(Environment.CurrentDirectory, $"Fixtures{Path.DirectorySeparatorChar}taxonomies_personas.json")));
         }
 
         private void MockTaxonomies()
         {
-            mockHttp.When($"{baseUrl}/taxonomies")
+            _mockHttp.When($"{_baseUrl}/taxonomies")
                 .WithQueryString("skip=1")
                 .Respond("application/json", File.ReadAllText(Path.Combine(Environment.CurrentDirectory, $"Fixtures{Path.DirectorySeparatorChar}taxonomies_multiple.json")));
         }

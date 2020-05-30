@@ -1,7 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
 using FakeItEasy;
-using Kentico.Kontent.Delivery.Abstractions;
 using Kentico.Kontent.Delivery.Abstractions.ContentLinks;
 using Kentico.Kontent.Delivery.Abstractions.InlineContentItems;
 using Kentico.Kontent.Delivery.Abstractions.RetryPolicy;

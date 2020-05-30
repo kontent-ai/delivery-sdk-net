@@ -1,7 +1,6 @@
 ﻿using System;
 using System.Net;
 using System.Text.RegularExpressions;
-using Kentico.Kontent.Delivery.Abstractions;
 using Kentico.Kontent.Delivery.Abstractions.ContentLinks;
 using Newtonsoft.Json.Linq;
 
@@ -9,7 +8,7 @@ namespace Kentico.Kontent.Delivery.ContentLinks
 {
     internal sealed class ContentLinkResolver
     {
-        private static readonly Regex _elementRegex = new Regex("<a[^>]+?data-item-id=\"(?<id>[^\"]+)\"[^>]*>", RegexOptions.CultureInvariant | RegexOptions.IgnoreCase);
+        private static readonly Regex ElementRegex = new Regex("<a[^>]+?data-item-id=\"(?<id>[^\"]+)\"[^>]*>", RegexOptions.CultureInvariant | RegexOptions.IgnoreCase);
 
         public IContentLinkUrlResolver ContentLinkUrlResolver { get; }
 
@@ -35,7 +34,7 @@ namespace Kentico.Kontent.Delivery.ContentLinks
                 return text;
             }
 
-            return _elementRegex.Replace(text, match =>
+            return ElementRegex.Replace(text, match =>
             {
                 var contentItemId = match.Groups["id"].Value;
                 var linkSource = links[contentItemId];

@@ -1,7 +1,6 @@
 ﻿using System;
 using FakeItEasy;
 using FluentAssertions;
-using Kentico.Kontent.Delivery.Abstractions;
 using Kentico.Kontent.Delivery.Configuration;
 using Kentico.Kontent.Delivery.Models;
 using Kentico.Kontent.Delivery.Tests.Models.ContentTypes;
@@ -14,12 +13,12 @@ namespace Kentico.Kontent.Delivery.Tests.QueryParameters
 {
     public class IncludeTotalCountTests
     {
-        private readonly Guid ProjectId = Guid.NewGuid();
-        private  string BaseUrl => $"https://deliver.kontent.ai/{ProjectId}";
-        private readonly MockHttpMessageHandler MockHttp = new MockHttpMessageHandler();
+        private readonly Guid _projectId = Guid.NewGuid();
+        private  string BaseUrl => $"https://deliver.kontent.ai/{_projectId}";
+        private readonly MockHttpMessageHandler _mockHttp = new MockHttpMessageHandler();
         private DeliveryOptions Options => new DeliveryOptions
         {
-            ProjectId = ProjectId.ToString(),
+            ProjectId = _projectId.ToString(),
             EnableRetryPolicy = false,
             IncludeTotalCount = true
         };
@@ -63,31 +62,31 @@ namespace Kentico.Kontent.Delivery.Tests.QueryParameters
         public async void GetItems_DeliveryOptionsWithIncludeTotalCount_IncludeTotalCountParameterAdded()
         {
             var responseJson = JsonConvert.SerializeObject(CreateItemsResponse());
-            MockHttp
+            _mockHttp
                 .Expect($"{BaseUrl}/items")
                 .WithExactQueryString("includeTotalCount")
                 .Respond("application/json", responseJson);
-            var client = Factories.DeliveryClientFactory.GetMockedDeliveryClientWithOptions(Options, MockHttp);
+            var client = Factories.DeliveryClientFactory.GetMockedDeliveryClientWithOptions(Options, _mockHttp);
 
             await client.GetItemsAsync<object>();
 
-            MockHttp.VerifyNoOutstandingExpectation();
+            _mockHttp.VerifyNoOutstandingExpectation();
         }
 
         [Fact]
         public async void GetItemsTyped_DeliveryOptionsWithIncludeTotalCount_IncludeTotalCountParameterAdded()
         {
             var responseJson = JsonConvert.SerializeObject(CreateItemsResponse());
-            MockHttp
+            _mockHttp
                 .Expect($"{BaseUrl}/items")
                 .WithExactQueryString("system.type=cafe&includeTotalCount")
                 .Respond("application/json", responseJson);
-            var client = Factories.DeliveryClientFactory.GetMockedDeliveryClientWithOptions(Options, MockHttp);
+            var client = Factories.DeliveryClientFactory.GetMockedDeliveryClientWithOptions(Options, _mockHttp);
             A.CallTo(() => client.TypeProvider.GetCodename(typeof(Cafe))).Returns("cafe");
 
             await client.GetItemsAsync<Cafe>();
 
-            MockHttp.VerifyNoOutstandingExpectation();
+            _mockHttp.VerifyNoOutstandingExpectation();
         }
 
         private static object CreateItemsResponse() => new

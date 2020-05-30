@@ -7,7 +7,6 @@ using System.Linq;
 using Microsoft.Extensions.DependencyInjection;
 using System.Collections.ObjectModel;
 using Kentico.Kontent.Delivery.Abstractions.InlineContentItems;
-using Kentico.Kontent.Delivery.Abstractions;
 using Kentico.Kontent.Delivery.Abstractions.StrongTyping;
 using Kentico.Kontent.Delivery.Builders.DeliveryClient;
 using Kentico.Kontent.Delivery.Extensions;

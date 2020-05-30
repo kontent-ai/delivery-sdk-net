@@ -1,5 +1,4 @@
-﻿using Kentico.Kontent.Delivery.Abstractions;
-using Kentico.Kontent.Delivery.Abstractions.ContentLinks;
+﻿using Kentico.Kontent.Delivery.Abstractions.ContentLinks;
 
 namespace Kentico.Kontent.Delivery.ContentLinks
 {

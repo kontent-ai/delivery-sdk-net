@@ -3,7 +3,6 @@ using System.Collections;
 using System.Collections.Generic;
 using System.Linq;
 using System.Reflection;
-using Kentico.Kontent.Delivery.Abstractions;
 using Kentico.Kontent.Delivery.Abstractions.ContentLinks;
 using Kentico.Kontent.Delivery.Abstractions.InlineContentItems;
 using Kentico.Kontent.Delivery.Abstractions.Models.RichText;

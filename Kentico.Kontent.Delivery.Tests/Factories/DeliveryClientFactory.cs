@@ -1,6 +1,5 @@
 ﻿using System;
 using FakeItEasy;
-using Kentico.Kontent.Delivery.Abstractions;
 using Kentico.Kontent.Delivery.Abstractions.RetryPolicy;
 using Kentico.Kontent.Delivery.Abstractions.StrongTyping;
 using Kentico.Kontent.Delivery.Configuration;

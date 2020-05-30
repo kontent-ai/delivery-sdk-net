@@ -1,5 +1,4 @@
-﻿using Kentico.Kontent.Delivery.Abstractions;
-using Kentico.Kontent.Delivery.Abstractions.Models.Type;
+﻿using Kentico.Kontent.Delivery.Abstractions.Models.Type;
 using Kentico.Kontent.Delivery.Abstractions.Responses;
 using Kentico.Kontent.Delivery.Models.Type;
 using Newtonsoft.Json.Linq;

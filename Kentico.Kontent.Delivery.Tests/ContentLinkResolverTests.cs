@@ -5,7 +5,6 @@ using System.IO;
 using Kentico.Kontent.Delivery.RetryPolicy;
 using Kentico.Kontent.Delivery.Tests.Factories;
 using Xunit;
-using Kentico.Kontent.Delivery.Abstractions;
 using Kentico.Kontent.Delivery.StrongTyping;
 using Kentico.Kontent.Delivery.ContentLinks;
 using Kentico.Kontent.Delivery.Abstractions.ContentLinks;

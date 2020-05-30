@@ -1,6 +1,5 @@
 ﻿using System;
 using System.Collections;
-using Kentico.Kontent.Delivery.Abstractions;
 using Kentico.Kontent.Delivery.Abstractions.StrongTyping;
 
 namespace Kentico.Kontent.Delivery.Tests.DependencyInjectionFrameworks.Helpers

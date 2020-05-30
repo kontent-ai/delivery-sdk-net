@@ -1,5 +1,4 @@
-﻿using Kentico.Kontent.Delivery.Abstractions;
-using Newtonsoft.Json;
+﻿using Newtonsoft.Json;
 using System;
 using System.Collections.Generic;
 using Kentico.Kontent.Delivery.Abstractions.Models.Item;
