@@ -240,7 +240,7 @@ namespace Kentico.Kontent.Delivery.StrongTyping
         }
 
         private (string Name, JObject Value)? GetElementData(JObject elementsData, PropertyInfo property, ContentItemSystemAttributes itemSystemAttributes)
-        => elementsData.Properties()?.Where(p => PropertyMapper.IsMatch(property, p.Name, itemSystemAttributes?.Type))?.Select(p => (p.Name, (JObject)p.Value))?.FirstOrDefault();
+        => elementsData.Properties()?.Where(p => PropertyMapper.IsMatch(property, p.Name, itemSystemAttributes?.Type)).Select(p => (p.Name, (JObject)p.Value)).FirstOrDefault();
 
         private static bool IsGenericHierarchicalField(Type fieldType)
         {
@@ -303,8 +303,8 @@ namespace Kentico.Kontent.Delivery.StrongTyping
             var codeNamesWithLinkedItems = GetRawValue(elementData)
                 ?.ToObject<IEnumerable<string>>()
                 ?.Select(codename => (codename, linkedItems.Properties().FirstOrDefault(p => p.Name == codename)?.First))
-                ?.Where(pair => pair.First != null)
-                ?.ToArray()
+                .Where(pair => pair.First != null)
+                .ToArray()
                 ?? Array.Empty<(string, JToken)>();
 
             if (!codeNamesWithLinkedItems.Any())

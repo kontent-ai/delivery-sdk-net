@@ -308,13 +308,11 @@ namespace Kentico.Kontent.Delivery
 
         internal IEnumerable<IQueryParameter> EnsureContentTypeFilter<T>(IEnumerable<IQueryParameter> parameters = null)
         {
-            var enhancedParameters = parameters != null
-                ? new List<IQueryParameter>(parameters)
-                : new List<IQueryParameter>();
+            List<IQueryParameter> enhancedParameters = parameters?.ToList() ?? new List<IQueryParameter>();
 
             var codename = TypeProvider.GetCodename(typeof(T));
 
-            if (!string.IsNullOrEmpty(codename) && !IsTypeInQueryParameters(parameters))
+            if (!string.IsNullOrEmpty(codename) && !IsTypeInQueryParameters(enhancedParameters))
             {
                 enhancedParameters.Add(new SystemTypeEqualsFilter(codename));
             }

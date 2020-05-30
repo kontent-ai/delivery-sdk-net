@@ -101,9 +101,13 @@ namespace Kentico.Kontent.Delivery
 
         private string GetUrl(string path, IEnumerable<IQueryParameter> parameters)
         {
-            if (parameters != null && parameters.Any())
+            if (parameters != null)
             {
-                return GetUrl(path, parameters.Select(parameter => parameter.GetQueryStringParameter()).ToArray());
+                var queryParameters = parameters.ToList();
+                if (queryParameters.Any())
+                {
+                    return GetUrl(path, queryParameters.Select(parameter => parameter.GetQueryStringParameter()).ToArray());
+                }
             }
 
             return GetUrl(path);
