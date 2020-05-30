@@ -6,7 +6,7 @@ using Kentico.Kontent.Delivery.Models.Type;
 
 namespace Kentico.Kontent.Delivery.Models
 {
-    /// <inheritdoc/>
+    /// <inheritdoc cref="IDeliveryTypeResponse" />
     public sealed class DeliveryTypeResponse : AbstractResponse, IDeliveryTypeResponse
     {
         private readonly Lazy<ContentType> _type;

@@ -347,7 +347,7 @@ namespace Kentico.Kontent.Delivery.StrongTyping
         private static IPropertyValueConverter GetValueConverter(PropertyInfo property)
         {
             // Converter defined by explicit attribute has the highest priority
-            if (property.GetCustomAttributes().OfType<IPropertyValueConverter>().FirstOrDefault() is IPropertyValueConverter attributeConverter)
+            if (property.GetCustomAttributes().OfType<IPropertyValueConverter>().FirstOrDefault() is { } attributeConverter)
             {
                 return attributeConverter;
             }

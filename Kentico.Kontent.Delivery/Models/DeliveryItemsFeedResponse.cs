@@ -9,7 +9,7 @@ using Newtonsoft.Json.Linq;
 
 namespace Kentico.Kontent.Delivery.Models
 {
-    /// <inheritdoc/>
+    /// <inheritdoc cref="IDeliveryItemsFeedResponse{T}" />
     public class DeliveryItemsFeedResponse<T> : FeedResponse, IEnumerable<T>, IDeliveryItemsFeedResponse<T>
     {
         private readonly Lazy<IReadOnlyList<T>> _items;
@@ -32,7 +32,7 @@ namespace Kentico.Kontent.Delivery.Models
             _linkedItems = new Lazy<JObject>(() => (JObject)response.JsonContent["modular_content"].DeepClone(), LazyThreadSafetyMode.PublicationOnly);
         }
 
-        /// <inheritdoc/>
+        /// <inheritdoc cref="IDeliveryItemsFeedResponse{T}" />
         public IEnumerator<T> GetEnumerator()
         {
             return Items.GetEnumerator();

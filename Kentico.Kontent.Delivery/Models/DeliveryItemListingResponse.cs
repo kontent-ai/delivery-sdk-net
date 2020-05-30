@@ -12,7 +12,6 @@ namespace Kentico.Kontent.Delivery.Models
     /// <inheritdoc cref="IDeliveryItemListingResponse{T}" />
     public sealed class DeliveryItemListingResponse<T> : AbstractResponse, IDeliveryItemListingResponse<T>
     {
-        private readonly IModelProvider _modelProvider;
         private readonly Lazy<Pagination> _pagination;
         private readonly Lazy<IReadOnlyList<T>> _items;
         private readonly Lazy<JObject> _linkedItems;
@@ -33,9 +32,8 @@ namespace Kentico.Kontent.Delivery.Models
         /// <param name="modelProvider">The provider that can convert JSON responses into instances of .NET types.</param>
         internal DeliveryItemListingResponse(ApiResponse response, IModelProvider modelProvider) : base(response)
         {
-            _modelProvider = modelProvider;
             _pagination = new Lazy<Pagination>(() => response.JsonContent["pagination"].ToObject<Pagination>(), LazyThreadSafetyMode.PublicationOnly);
-            _items = new Lazy<IReadOnlyList<T>>(() => ((JArray)response.JsonContent["items"]).Select(source => _modelProvider.GetContentItemModel<T>(source, response.JsonContent["modular_content"])).ToList().AsReadOnly(), LazyThreadSafetyMode.PublicationOnly);
+            _items = new Lazy<IReadOnlyList<T>>(() => ((JArray)response.JsonContent["items"]).Select(source => modelProvider.GetContentItemModel<T>(source, response.JsonContent["modular_content"])).ToList().AsReadOnly(), LazyThreadSafetyMode.PublicationOnly);
             _linkedItems = new Lazy<JObject>(() => (JObject)response.JsonContent["modular_content"].DeepClone(), LazyThreadSafetyMode.PublicationOnly);
         }
     }

@@ -50,16 +50,16 @@ namespace Kentico.Kontent.Delivery.Tests
             string url = $"{_baseUrl}/items/";
 
             _mockHttp
-                .When($"{url}{"coffee_beverages_explained"}")
-                .Respond("application/json", File.ReadAllText(Path.Combine(Environment.CurrentDirectory, $"Fixtures{Path.DirectorySeparatorChar}DeliveryClient{Path.DirectorySeparatorChar}coffee_beverages_explained.json")));
+                .When($"{url}coffee_beverages_explained")
+                .Respond("application/json", await File.ReadAllTextAsync(Path.Combine(Environment.CurrentDirectory, $"Fixtures{Path.DirectorySeparatorChar}DeliveryClient{Path.DirectorySeparatorChar}coffee_beverages_explained.json")));
 
             _mockHttp
-                .When($"{url}{"brazil_natural_barra_grande"}")
-                .Respond("application/json", File.ReadAllText(Path.Combine(Environment.CurrentDirectory, $"Fixtures{Path.DirectorySeparatorChar}DeliveryClient{Path.DirectorySeparatorChar}brazil_natural_barra_grande.json")));
+                .When($"{url}brazil_natural_barra_grande")
+                .Respond("application/json", await File.ReadAllTextAsync(Path.Combine(Environment.CurrentDirectory, $"Fixtures{Path.DirectorySeparatorChar}DeliveryClient{Path.DirectorySeparatorChar}brazil_natural_barra_grande.json")));
 
             _mockHttp
-                .When($"{url}{"on_roasts"}")
-                .Respond("application/json", File.ReadAllText(Path.Combine(Environment.CurrentDirectory, $"Fixtures{Path.DirectorySeparatorChar}DeliveryClient{Path.DirectorySeparatorChar}on_roasts.json")));
+                .When($"{url}on_roasts")
+                .Respond("application/json", await File.ReadAllTextAsync(Path.Combine(Environment.CurrentDirectory, $"Fixtures{Path.DirectorySeparatorChar}DeliveryClient{Path.DirectorySeparatorChar}on_roasts.json")));
 
             var client = InitializeDeliveryClientWithCustomModelProvider(_mockHttp, new PropertyMapper(), new CustomTypeProvider());
 
@@ -75,10 +75,10 @@ namespace Kentico.Kontent.Delivery.Tests
             Assert.NotEmpty(beveragesItem.Title);
             Assert.NotEmpty(beveragesItem.BodyCopy);
             Assert.True(beveragesItem.PostDate.Value != default);
-            Assert.True(beveragesItem.TeaserImage.Count() > 0);
-            Assert.True(beveragesItem.Personas.Count() > 0);
+            Assert.True(beveragesItem.TeaserImage.Any());
+            Assert.True(beveragesItem.Personas.Any());
             Assert.True(barraItem.Price > 0);
-            Assert.True(barraItem.Processing.Count() > 0);
+            Assert.True(barraItem.Processing.Any());
             Assert.NotNull(beveragesResponse.ApiResponse.RequestUrl);
         }
 
@@ -88,7 +88,7 @@ namespace Kentico.Kontent.Delivery.Tests
             _mockHttp
                 .When($"{_baseUrl}/items")
                 .WithQueryString("limit=2&skip=1")
-                .Respond("application/json", File.ReadAllText(Path.Combine(Environment.CurrentDirectory, $"Fixtures{Path.DirectorySeparatorChar}DeliveryClient{Path.DirectorySeparatorChar}articles.json")));
+                .Respond("application/json", await File.ReadAllTextAsync(Path.Combine(Environment.CurrentDirectory, $"Fixtures{Path.DirectorySeparatorChar}DeliveryClient{Path.DirectorySeparatorChar}articles.json")));
 
             var client = InitializeDeliveryClientWithACustomTypeProvider(_mockHttp);
 
@@ -104,8 +104,8 @@ namespace Kentico.Kontent.Delivery.Tests
         public async void AssetPropertiesNotEmpty()
         {
             _mockHttp
-                .When($"{_baseUrl}/items/{"coffee_beverages_explained"}")
-                .Respond("application/json", File.ReadAllText(Path.Combine(Environment.CurrentDirectory, $"Fixtures{Path.DirectorySeparatorChar}DeliveryClient{Path.DirectorySeparatorChar}coffee_beverages_explained.json")));
+                .When($"{_baseUrl}/items/coffee_beverages_explained")
+                .Respond("application/json", await File.ReadAllTextAsync(Path.Combine(Environment.CurrentDirectory, $"Fixtures{Path.DirectorySeparatorChar}DeliveryClient{Path.DirectorySeparatorChar}coffee_beverages_explained.json")));
 
             var client = InitializeDeliveryClientWithACustomTypeProvider(_mockHttp);
 
@@ -126,8 +126,8 @@ namespace Kentico.Kontent.Delivery.Tests
         public async void IgnoredSerializationProperties()
         {
             _mockHttp
-                .When($"{_baseUrl}/items/{"coffee_beverages_explained"}")
-                .Respond("application/json", File.ReadAllText(Path.Combine(Environment.CurrentDirectory, $"Fixtures{Path.DirectorySeparatorChar}DeliveryClient{Path.DirectorySeparatorChar}coffee_beverages_explained.json")));
+                .When($"{_baseUrl}/items/coffee_beverages_explained")
+                .Respond("application/json", await File.ReadAllTextAsync(Path.Combine(Environment.CurrentDirectory, $"Fixtures{Path.DirectorySeparatorChar}DeliveryClient{Path.DirectorySeparatorChar}coffee_beverages_explained.json")));
 
             var client = InitializeDeliveryClientWithACustomTypeProvider(_mockHttp);
 
@@ -156,7 +156,7 @@ namespace Kentico.Kontent.Delivery.Tests
         public async void GetItemAsync_ComplexRichTextTableCell_ParseCorrectly()
         {
 
-            var mockedResponse = File.ReadAllText(Path.Combine(Environment.CurrentDirectory, $"Fixtures{Path.DirectorySeparatorChar}DeliveryClient{Path.DirectorySeparatorChar}rich_text_complex_tables.json"));
+            var mockedResponse = await File.ReadAllTextAsync(Path.Combine(Environment.CurrentDirectory, $"Fixtures{Path.DirectorySeparatorChar}DeliveryClient{Path.DirectorySeparatorChar}rich_text_complex_tables.json"));
 
             var expectedValue = JObject.Parse(mockedResponse).SelectToken("item.elements.rich_text.value").ToString();
 
@@ -180,7 +180,7 @@ namespace Kentico.Kontent.Delivery.Tests
             _mockHttp
                 .When($"{_baseUrl}/items")
                 .WithQueryString("system.type=cafe")
-                .Respond("application/json", File.ReadAllText(Path.Combine(Environment.CurrentDirectory, $"Fixtures{Path.DirectorySeparatorChar}DeliveryClient{Path.DirectorySeparatorChar}allendale.json")));
+                .Respond("application/json", await File.ReadAllTextAsync(Path.Combine(Environment.CurrentDirectory, $"Fixtures{Path.DirectorySeparatorChar}DeliveryClient{Path.DirectorySeparatorChar}allendale.json")));
 
             var client = InitializeDeliveryClientWithACustomTypeProvider(_mockHttp);
 
@@ -195,7 +195,7 @@ namespace Kentico.Kontent.Delivery.Tests
             _mockHttp
                 .When($"{_baseUrl}/items")
                 .WithQueryString("system.type=cafe")
-                .Respond("application/json", File.ReadAllText(Path.Combine(Environment.CurrentDirectory, $"Fixtures{Path.DirectorySeparatorChar}DeliveryClient{Path.DirectorySeparatorChar}allendale.json")));
+                .Respond("application/json", await File.ReadAllTextAsync(Path.Combine(Environment.CurrentDirectory, $"Fixtures{Path.DirectorySeparatorChar}DeliveryClient{Path.DirectorySeparatorChar}allendale.json")));
 
             var client = InitializeDeliveryClientWithACustomTypeProvider(_mockHttp);
 
@@ -234,7 +234,7 @@ namespace Kentico.Kontent.Delivery.Tests
             _mockHttp
                 .When($"{_baseUrl}/items-feed")
                 .WithQueryString("system.type=article")
-                .Respond("application/json", File.ReadAllText(Path.Combine(Environment.CurrentDirectory, $"Fixtures{Path.DirectorySeparatorChar}DeliveryClient{Path.DirectorySeparatorChar}articles_feed.json")));
+                .Respond("application/json", await File.ReadAllTextAsync(Path.Combine(Environment.CurrentDirectory, $"Fixtures{Path.DirectorySeparatorChar}DeliveryClient{Path.DirectorySeparatorChar}articles_feed.json")));
 
             var client = InitializeDeliveryClientWithACustomTypeProvider(_mockHttp);
 
@@ -260,13 +260,13 @@ namespace Kentico.Kontent.Delivery.Tests
                 .When($"{_baseUrl}/items-feed")
                 .WithQueryString("system.type=article")
                 .WithHeaders("X-Continuation", "token")
-                .Respond("application/json", File.ReadAllText(Path.Combine(Environment.CurrentDirectory, $"Fixtures{Path.DirectorySeparatorChar}DeliveryClient{Path.DirectorySeparatorChar}articles_feed_2.json")));
+                .Respond("application/json", await File.ReadAllTextAsync(Path.Combine(Environment.CurrentDirectory, $"Fixtures{Path.DirectorySeparatorChar}DeliveryClient{Path.DirectorySeparatorChar}articles_feed_2.json")));
 
             // First batch
             _mockHttp
                 .When($"{_baseUrl}/items-feed")
                 .WithQueryString("system.type=article")
-                .Respond(new[] { new KeyValuePair<string, string>("X-Continuation", "token"), }, "application/json", File.ReadAllText(Path.Combine(Environment.CurrentDirectory, $"Fixtures{Path.DirectorySeparatorChar}DeliveryClient{Path.DirectorySeparatorChar}articles_feed_1.json")));
+                .Respond(new[] { new KeyValuePair<string, string>("X-Continuation", "token"), }, "application/json", await File.ReadAllTextAsync(Path.Combine(Environment.CurrentDirectory, $"Fixtures{Path.DirectorySeparatorChar}DeliveryClient{Path.DirectorySeparatorChar}articles_feed_1.json")));
 
             var client = InitializeDeliveryClientWithACustomTypeProvider(_mockHttp);
 
@@ -289,11 +289,11 @@ namespace Kentico.Kontent.Delivery.Tests
         {
             _mockHttp
                 .When($"{_baseUrl}/types/article")
-                .Respond("application/json", File.ReadAllText(Path.Combine(Environment.CurrentDirectory, $"Fixtures{Path.DirectorySeparatorChar}DeliveryClient{Path.DirectorySeparatorChar}article.json")));
+                .Respond("application/json", await File.ReadAllTextAsync(Path.Combine(Environment.CurrentDirectory, $"Fixtures{Path.DirectorySeparatorChar}DeliveryClient{Path.DirectorySeparatorChar}article.json")));
 
             _mockHttp
                 .When($"{_baseUrl}/types/coffee")
-                .Respond("application/json", File.ReadAllText(Path.Combine(Environment.CurrentDirectory, $"Fixtures{Path.DirectorySeparatorChar}DeliveryClient{Path.DirectorySeparatorChar}coffee.json")));
+                .Respond("application/json", await File.ReadAllTextAsync(Path.Combine(Environment.CurrentDirectory, $"Fixtures{Path.DirectorySeparatorChar}DeliveryClient{Path.DirectorySeparatorChar}coffee.json")));
 
             var client = InitializeDeliveryClientWithACustomTypeProvider(_mockHttp);
 
@@ -338,7 +338,7 @@ namespace Kentico.Kontent.Delivery.Tests
             _mockHttp
                 .When($"{_baseUrl}/types")
                 .WithQueryString("skip=1")
-                .Respond("application/json", File.ReadAllText(Path.Combine(Environment.CurrentDirectory, $"Fixtures{Path.DirectorySeparatorChar}DeliveryClient{Path.DirectorySeparatorChar}types_accessory.json")));
+                .Respond("application/json", await File.ReadAllTextAsync(Path.Combine(Environment.CurrentDirectory, $"Fixtures{Path.DirectorySeparatorChar}DeliveryClient{Path.DirectorySeparatorChar}types_accessory.json")));
 
             var client = InitializeDeliveryClientWithACustomTypeProvider(_mockHttp);
 
@@ -394,7 +394,7 @@ namespace Kentico.Kontent.Delivery.Tests
         {
             _mockHttp
                 .When($"{_baseUrl}/taxonomies/personas")
-                .Respond("application/json", File.ReadAllText(Path.Combine(Environment.CurrentDirectory, $"Fixtures{Path.DirectorySeparatorChar}DeliveryClient{Path.DirectorySeparatorChar}taxonomies_personas.json")));
+                .Respond("application/json", await File.ReadAllTextAsync(Path.Combine(Environment.CurrentDirectory, $"Fixtures{Path.DirectorySeparatorChar}DeliveryClient{Path.DirectorySeparatorChar}taxonomies_personas.json")));
 
             var client = InitializeDeliveryClientWithACustomTypeProvider(_mockHttp);
 
@@ -429,7 +429,7 @@ namespace Kentico.Kontent.Delivery.Tests
             _mockHttp
                 .When($"{_baseUrl}/taxonomies")
                 .WithQueryString("skip=1")
-                .Respond("application/json", File.ReadAllText(Path.Combine(Environment.CurrentDirectory, $"Fixtures{Path.DirectorySeparatorChar}DeliveryClient{Path.DirectorySeparatorChar}taxonomies_multiple.json")));
+                .Respond("application/json", await File.ReadAllTextAsync(Path.Combine(Environment.CurrentDirectory, $"Fixtures{Path.DirectorySeparatorChar}DeliveryClient{Path.DirectorySeparatorChar}taxonomies_multiple.json")));
 
             var client = InitializeDeliveryClientWithACustomTypeProvider(_mockHttp);
 
@@ -482,7 +482,7 @@ namespace Kentico.Kontent.Delivery.Tests
             _mockHttp
                 .When($"{_baseUrl}/items/on_roasts")
                 .WithQueryString("depth=1")
-                .Respond("application/json", File.ReadAllText(Path.Combine(Environment.CurrentDirectory, $"Fixtures{Path.DirectorySeparatorChar}DeliveryClient{Path.DirectorySeparatorChar}on_roasts.json")));
+                .Respond("application/json", await File.ReadAllTextAsync(Path.Combine(Environment.CurrentDirectory, $"Fixtures{Path.DirectorySeparatorChar}DeliveryClient{Path.DirectorySeparatorChar}on_roasts.json")));
 
             var client = InitializeDeliveryClientWithACustomTypeProvider(_mockHttp);
 
@@ -505,7 +505,7 @@ namespace Kentico.Kontent.Delivery.Tests
             _mockHttp
                 .When($"{_baseUrl}/items/on_roasts")
                 .WithQueryString("depth=15")
-                .Respond("application/json", File.ReadAllText(Path.Combine(Environment.CurrentDirectory, $"Fixtures{Path.DirectorySeparatorChar}DeliveryClient{Path.DirectorySeparatorChar}onroast_recursive_linked_items.json")));
+                .Respond("application/json", await File.ReadAllTextAsync(Path.Combine(Environment.CurrentDirectory, $"Fixtures{Path.DirectorySeparatorChar}DeliveryClient{Path.DirectorySeparatorChar}onroast_recursive_linked_items.json")));
 
             var client = InitializeDeliveryClientWithACustomTypeProvider(_mockHttp);
 
@@ -521,7 +521,7 @@ namespace Kentico.Kontent.Delivery.Tests
             _mockHttp
                 .When($"{_baseUrl}/items/on_roasts")
                 .WithQueryString("depth=15")
-                .Respond("application/json", File.ReadAllText(Path.Combine(Environment.CurrentDirectory, $"Fixtures{Path.DirectorySeparatorChar}DeliveryClient{Path.DirectorySeparatorChar}onroast_recursive_inline_linked_items.json")));
+                .Respond("application/json", await File.ReadAllTextAsync(Path.Combine(Environment.CurrentDirectory, $"Fixtures{Path.DirectorySeparatorChar}DeliveryClient{Path.DirectorySeparatorChar}onroast_recursive_inline_linked_items.json")));
 
             var client = InitializeDeliveryClientWithACustomTypeProvider(_mockHttp);
 
@@ -676,7 +676,7 @@ namespace Kentico.Kontent.Delivery.Tests
             _mockHttp
                 .When($"{_baseUrl}/items-feed")
                 .WithQueryString("system.type=article&elements=title,summary,personas")
-                .Respond("application/json", File.ReadAllText(Path.Combine(Environment.CurrentDirectory, $"Fixtures{Path.DirectorySeparatorChar}DeliveryClient{Path.DirectorySeparatorChar}articles_feed.json")));
+                .Respond("application/json", await File.ReadAllTextAsync(Path.Combine(Environment.CurrentDirectory, $"Fixtures{Path.DirectorySeparatorChar}DeliveryClient{Path.DirectorySeparatorChar}articles_feed.json")));
 
             var client = InitializeDeliveryClientWithCustomModelProvider(_mockHttp);
             A.CallTo(() => _mockTypeProvider.GetType("article"))
@@ -705,13 +705,13 @@ namespace Kentico.Kontent.Delivery.Tests
                 .When($"{_baseUrl}/items-feed")
                 .WithQueryString("system.type=article&elements=title,summary,personas")
                 .WithHeaders("X-Continuation", "token")
-                .Respond("application/json", File.ReadAllText(Path.Combine(Environment.CurrentDirectory, $"Fixtures{Path.DirectorySeparatorChar}DeliveryClient{Path.DirectorySeparatorChar}articles_feed_2.json")));
+                .Respond("application/json", await File.ReadAllTextAsync(Path.Combine(Environment.CurrentDirectory, $"Fixtures{Path.DirectorySeparatorChar}DeliveryClient{Path.DirectorySeparatorChar}articles_feed_2.json")));
 
             // First batch
             _mockHttp
                 .When($"{_baseUrl}/items-feed")
                 .WithQueryString("system.type=article&elements=title,summary,personas")
-                .Respond(new[] { new KeyValuePair<string, string>("X-Continuation", "token"), }, "application/json", File.ReadAllText(Path.Combine(Environment.CurrentDirectory, $"Fixtures{Path.DirectorySeparatorChar}DeliveryClient{Path.DirectorySeparatorChar}articles_feed_1.json")));
+                .Respond(new[] { new KeyValuePair<string, string>("X-Continuation", "token"), }, "application/json", await File.ReadAllTextAsync(Path.Combine(Environment.CurrentDirectory, $"Fixtures{Path.DirectorySeparatorChar}DeliveryClient{Path.DirectorySeparatorChar}articles_feed_1.json")));
 
             var client = InitializeDeliveryClientWithCustomModelProvider(_mockHttp);
             A.CallTo(() => _mockTypeProvider.GetType("article"))
@@ -769,7 +769,7 @@ namespace Kentico.Kontent.Delivery.Tests
             _mockHttp
                 .When($"{_baseUrl}/items-feed")
                 .WithQueryString("system.type=article")
-                .Respond("application/json", File.ReadAllText(Path.Combine(Environment.CurrentDirectory, $"Fixtures{Path.DirectorySeparatorChar}DeliveryClient{Path.DirectorySeparatorChar}articles_feed.json")));
+                .Respond("application/json", await File.ReadAllTextAsync(Path.Combine(Environment.CurrentDirectory, $"Fixtures{Path.DirectorySeparatorChar}DeliveryClient{Path.DirectorySeparatorChar}articles_feed.json")));
 
             var client = InitializeDeliveryClientWithCustomModelProvider(_mockHttp);
 
@@ -777,7 +777,7 @@ namespace Kentico.Kontent.Delivery.Tests
             var response = await feed.FetchNextBatchAsync();
 
             Assert.NotNull(response.Items);
-            Assert.Equal(6, response.Items.Count());
+            Assert.Equal(6, response.Items.Count);
         }
 
         [Fact]
@@ -845,7 +845,7 @@ namespace Kentico.Kontent.Delivery.Tests
         {
             _mockHttp
                 .When($"{_baseUrl}/items")
-                .Respond("application/json", File.ReadAllText(Path.Combine(Environment.CurrentDirectory, $"Fixtures{Path.DirectorySeparatorChar}DeliveryClient{Path.DirectorySeparatorChar}items.json")));
+                .Respond("application/json", await File.ReadAllTextAsync(Path.Combine(Environment.CurrentDirectory, $"Fixtures{Path.DirectorySeparatorChar}DeliveryClient{Path.DirectorySeparatorChar}items.json")));
 
             var client = Factories.DeliveryClientFactory.GetMockedDeliveryClientWithProjectId(_guid, _mockHttp);
 
@@ -867,13 +867,13 @@ namespace Kentico.Kontent.Delivery.Tests
             {
                 _mockHttp
                     .When($@"https://preview-deliver.kontent.ai/{_guid}/items")
-                    .Respond("application/json", File.ReadAllText(Path.Combine(Environment.CurrentDirectory, $"Fixtures{Path.DirectorySeparatorChar}DeliveryClient{Path.DirectorySeparatorChar}items.json")));
+                    .Respond("application/json", await File.ReadAllTextAsync(Path.Combine(Environment.CurrentDirectory, $"Fixtures{Path.DirectorySeparatorChar}DeliveryClient{Path.DirectorySeparatorChar}items.json")));
             }
             else
             {
                 _mockHttp
                     .When($"{_baseUrl}/items")
-                    .Respond("application/json", File.ReadAllText(Path.Combine(Environment.CurrentDirectory, $"Fixtures{Path.DirectorySeparatorChar}DeliveryClient{Path.DirectorySeparatorChar}items.json")));
+                    .Respond("application/json", await File.ReadAllTextAsync(Path.Combine(Environment.CurrentDirectory, $"Fixtures{Path.DirectorySeparatorChar}DeliveryClient{Path.DirectorySeparatorChar}items.json")));
             }
 
             var options = new DeliveryOptions
@@ -920,7 +920,7 @@ namespace Kentico.Kontent.Delivery.Tests
             _mockHttp
                 .Expect($"{_baseUrl}/items")
                 .WithHeaders("Authorization", $"Bearer {securityKey}")
-                .Respond("application/json", File.ReadAllText(Path.Combine(Environment.CurrentDirectory, $"Fixtures{Path.DirectorySeparatorChar}DeliveryClient{Path.DirectorySeparatorChar}items.json")));
+                .Respond("application/json", await File.ReadAllTextAsync(Path.Combine(Environment.CurrentDirectory, $"Fixtures{Path.DirectorySeparatorChar}DeliveryClient{Path.DirectorySeparatorChar}items.json")));
 
             var client = Factories.DeliveryClientFactory.GetMockedDeliveryClientWithOptions(options, _mockHttp);
 
@@ -945,7 +945,7 @@ namespace Kentico.Kontent.Delivery.Tests
             _mockHttp
                 .Expect($"{_baseUrl}/items")
                 .WithHeaders("X-KC-SDKID", $"nuget.org;{sdkPackageId};{sdkVersion}")
-                .Respond("application/json", File.ReadAllText(Path.Combine(Environment.CurrentDirectory, $"Fixtures{Path.DirectorySeparatorChar}DeliveryClient{Path.DirectorySeparatorChar}items.json")));
+                .Respond("application/json", await File.ReadAllTextAsync(Path.Combine(Environment.CurrentDirectory, $"Fixtures{Path.DirectorySeparatorChar}DeliveryClient{Path.DirectorySeparatorChar}items.json")));
 
             var client = Factories.DeliveryClientFactory.GetMockedDeliveryClientWithProjectId(_guid, _mockHttp);
 
@@ -1347,8 +1347,8 @@ namespace Kentico.Kontent.Delivery.Tests
             const string tweetPrefix = "Tweet resolver: ";
             const string hostedVideoPrefix = "Video resolver: ";
             _mockHttp
-                .When($"{url}{"coffee_beverages_explained"}")
-                .Respond("application/json", File.ReadAllText(Path.Combine(Environment.CurrentDirectory, $"Fixtures{Path.DirectorySeparatorChar}DeliveryClient{Path.DirectorySeparatorChar}coffee_beverages_explained.json")));
+                .When($"{url}coffee_beverages_explained")
+                .Respond("application/json", await File.ReadAllTextAsync(Path.Combine(Environment.CurrentDirectory, $"Fixtures{Path.DirectorySeparatorChar}DeliveryClient{Path.DirectorySeparatorChar}coffee_beverages_explained.json")));
 
             var deliveryClient = DeliveryClientBuilder
                 .WithProjectId(_guid)

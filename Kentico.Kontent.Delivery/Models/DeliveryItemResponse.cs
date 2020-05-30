@@ -6,7 +6,7 @@ using Newtonsoft.Json.Linq;
 
 namespace Kentico.Kontent.Delivery.Models
 {
-    /// <inheritdoc/>
+    /// <inheritdoc cref="IDeliveryItemResponse{T}" />
     public sealed class DeliveryItemResponse<T> : AbstractResponse, IDeliveryItemResponse<T>
     {
         private readonly Lazy<T> _item;

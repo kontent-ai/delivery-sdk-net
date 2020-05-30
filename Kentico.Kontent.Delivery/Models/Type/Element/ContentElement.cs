@@ -13,13 +13,13 @@ namespace Kentico.Kontent.Delivery.Models.Type.Element
         private IReadOnlyList<MultipleChoiceOption> _options;
 
         /// <inheritdoc/>
-        public string Type => Source["type"]?.Value<string>() ?? null;
+        public string Type => Source["type"]?.Value<string>();
 
         /// <inheritdoc/>
         public string Value => Source["value"] != null ? ((JObject)Source).Property("value").Value.ToString() : null;
 
         /// <inheritdoc/>
-        public string Name => Source["name"]?.Value<string>() ?? null;
+        public string Name => Source["name"]?.Value<string>();
 
         /// <inheritdoc/>
         public string Codename { get; }

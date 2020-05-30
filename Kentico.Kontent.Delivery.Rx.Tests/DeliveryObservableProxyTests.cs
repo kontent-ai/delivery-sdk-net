@@ -24,8 +24,8 @@ namespace Kentico.Kontent.Delivery.Rx.Tests
     public class DeliveryObservableProxyTests
     {
         private const string BEVERAGES_IDENTIFIER = "coffee_beverages_explained";
-        readonly string _guid = string.Empty;
-        readonly string _baseUrl = string.Empty;
+        readonly string _guid;
+        readonly string _baseUrl;
         readonly MockHttpMessageHandler _mockHttp;
 
         public DeliveryObservableProxyTests()

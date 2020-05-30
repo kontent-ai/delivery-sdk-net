@@ -3,7 +3,7 @@ namespace Kentico.Kontent.Delivery.Abstractions.InlineContentItems
     /// <summary>
     /// Structure holding identifier of specific richtext element used in content item.
     /// </summary>
-    internal struct RichTextContentElements
+    internal readonly struct RichTextContentElements
     {
         public string ContentItemCodeName { get; }
 

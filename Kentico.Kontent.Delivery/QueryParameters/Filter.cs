@@ -9,7 +9,7 @@ namespace Kentico.Kontent.Delivery.QueryParameters
     /// </summary>
     public abstract class Filter : IQueryParameter
     {
-        private static string SEPARATOR = Uri.EscapeDataString(",");
+        private static readonly string SEPARATOR = Uri.EscapeDataString(",");
 
         /// <summary>
         /// Gets the codename of a content element or system attribute, for example <c>elements.title</c> or <c>system.name</c>.
@@ -31,7 +31,7 @@ namespace Kentico.Kontent.Delivery.QueryParameters
         /// </summary>
         /// <param name="elementOrAttributePath">The codename of a content element or system attribute, for example <c>elements.title</c> or <c>system.name</c>.</param>
         /// <param name="values">The filter values.</param>
-        public Filter(string elementOrAttributePath, params string[] values)
+        protected Filter(string elementOrAttributePath, params string[] values)
         {
             ElementOrAttributePath = elementOrAttributePath;
             Values = values;

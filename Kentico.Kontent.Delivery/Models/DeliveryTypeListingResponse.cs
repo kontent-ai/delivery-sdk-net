@@ -10,7 +10,7 @@ using Newtonsoft.Json.Linq;
 
 namespace Kentico.Kontent.Delivery.Models
 {
-    /// <inheritdoc/>
+    /// <inheritdoc cref="IDeliveryTypeListingResponse" />
     public sealed class DeliveryTypeListingResponse : AbstractResponse, IDeliveryTypeListingResponse
     {
         private readonly Lazy<Pagination> _pagination;

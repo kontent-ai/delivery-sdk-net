@@ -6,7 +6,7 @@ using Kentico.Kontent.Delivery.Models.Taxonomy;
 
 namespace Kentico.Kontent.Delivery.Models
 {
-    /// <inheritdoc/>
+    /// <inheritdoc cref="IDeliveryTaxonomyResponse" />
     public sealed class DeliveryTaxonomyResponse : AbstractResponse, IDeliveryTaxonomyResponse
     {
         private readonly Lazy<TaxonomyGroup> _taxonomy;

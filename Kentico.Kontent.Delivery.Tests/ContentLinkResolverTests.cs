@@ -122,7 +122,7 @@ namespace Kentico.Kontent.Delivery.Tests
             string guid = Guid.NewGuid().ToString();
             string url = $"https://deliver.kontent.ai/{guid}/items/coffee_processing_techniques";
             mockHttp.When(url).
-               Respond("application/json", File.ReadAllText(Path.Combine(Environment.CurrentDirectory, $"Fixtures{Path.DirectorySeparatorChar}ContentLinkResolver{Path.DirectorySeparatorChar}coffee_processing_techniques.json")));
+               Respond("application/json", await File.ReadAllTextAsync(Path.Combine(Environment.CurrentDirectory, $"Fixtures{Path.DirectorySeparatorChar}ContentLinkResolver{Path.DirectorySeparatorChar}coffee_processing_techniques.json")));
 
             var deliveryOptions = DeliveryOptionsFactory.CreateMonitor(new DeliveryOptions { ProjectId = guid });
             var options = DeliveryOptionsFactory.Create(new DeliveryOptions { ProjectId = guid });

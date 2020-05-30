@@ -298,7 +298,7 @@ namespace Kentico.Kontent.Delivery
                 faultContent = await httpResponseMessage.Content.ReadAsStringAsync();
             }
 
-            throw new DeliveryException(httpResponseMessage, $"There was an error while fetching content:\nStatus:{httpResponseMessage.StatusCode}\nReason:{httpResponseMessage.ReasonPhrase}\n\n{faultContent}");
+            throw new DeliveryException(httpResponseMessage, $"There was an error while fetching content:\nStatus:{httpResponseMessage?.StatusCode}\nReason:{httpResponseMessage?.ReasonPhrase}\n\n{faultContent}");
         }
 
         private bool HasStaleContent(HttpResponseMessage httpResponseMessage)

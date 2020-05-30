@@ -38,13 +38,8 @@ namespace Kentico.Kontent.Delivery.Tests
         public object GetPropertyValue(PropertyInfo property, IContentElement elementData, ResolvingContext context)
         {
             var dt = DateTime.Parse(elementData.Value);
-            if (dt != null)
-            {
-                var udt = DateTime.SpecifyKind(dt, DateTimeKind.Utc);
-                ZonedDateTime zdt = ZonedDateTime.FromDateTimeOffset(udt);
-                return zdt;
-            }
-            return null;
+            var udt = DateTime.SpecifyKind(dt, DateTimeKind.Utc);
+            return ZonedDateTime.FromDateTimeOffset(udt);
         }
     }
 
@@ -66,7 +61,7 @@ namespace Kentico.Kontent.Delivery.Tests
             var mockHttp = new MockHttpMessageHandler();
             string url = $"{_baseUrl}/items/on_roasts";
             mockHttp.When(url).
-               Respond("application/json", File.ReadAllText(Path.Combine(Environment.CurrentDirectory, $"Fixtures{Path.DirectorySeparatorChar}ContentLinkResolver{Path.DirectorySeparatorChar}on_roasts.json")));
+               Respond("application/json", await File.ReadAllTextAsync(Path.Combine(Environment.CurrentDirectory, $"Fixtures{Path.DirectorySeparatorChar}ContentLinkResolver{Path.DirectorySeparatorChar}on_roasts.json")));
             DeliveryClient client = InitializeDeliveryClient(mockHttp);
 
             var article = await client.GetItemAsync<Article>("on_roasts");
@@ -80,7 +75,7 @@ namespace Kentico.Kontent.Delivery.Tests
             var mockHttp = new MockHttpMessageHandler();
             string url = $"{_baseUrl}/items/on_roasts";
             mockHttp.When(url).
-               Respond("application/json", File.ReadAllText(Path.Combine(Environment.CurrentDirectory, $"Fixtures{Path.DirectorySeparatorChar}ContentLinkResolver{Path.DirectorySeparatorChar}on_roasts.json")));
+               Respond("application/json", await File.ReadAllTextAsync(Path.Combine(Environment.CurrentDirectory, $"Fixtures{Path.DirectorySeparatorChar}ContentLinkResolver{Path.DirectorySeparatorChar}on_roasts.json")));
             DeliveryClient client = InitializeDeliveryClient(mockHttp);
 
             var article = await client.GetItemAsync<Article>("on_roasts");
@@ -95,7 +90,7 @@ namespace Kentico.Kontent.Delivery.Tests
             string url = $"{_baseUrl}/items/coffee_beverages_explained";
             mockHttp.When(url).
                WithQueryString("depth=15").
-               Respond("application/json", File.ReadAllText(Path.Combine(Environment.CurrentDirectory, $"Fixtures{Path.DirectorySeparatorChar}ContentLinkResolver{Path.DirectorySeparatorChar}coffee_beverages_explained.json")));
+               Respond("application/json", await File.ReadAllTextAsync(Path.Combine(Environment.CurrentDirectory, $"Fixtures{Path.DirectorySeparatorChar}ContentLinkResolver{Path.DirectorySeparatorChar}coffee_beverages_explained.json")));
             DeliveryClient client = InitializeDeliveryClient(mockHttp);
 
             // Try to get recursive linked items on_roasts -> item -> on_roasts

@@ -6,7 +6,7 @@ using Kentico.Kontent.Delivery.Models.Type.Element;
 
 namespace Kentico.Kontent.Delivery.Models
 {
-    /// <inheritdoc/>
+    /// <inheritdoc cref="IDeliveryElementResponse" />
     public sealed class DeliveryElementResponse : AbstractResponse, IDeliveryElementResponse
     {
         private readonly Lazy<ContentElement> _element;
