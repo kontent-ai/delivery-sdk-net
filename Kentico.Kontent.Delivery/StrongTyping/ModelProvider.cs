@@ -196,19 +196,23 @@ namespace Kentico.Kontent.Delivery.StrongTyping
 
         private object GetPropertyValue(JObject elementsData, PropertyInfo property, JObject linkedItems, ResolvingContext context, ContentItemSystemAttributes itemSystemAttributes, ref Dictionary<string, object> processedItems, ref List<PropertyInfo> richTextPropertiesToBeProcessed)
         {
-            var data = GetElementData(elementsData, property, itemSystemAttributes);
-            var elementData = data.Value.Value;
+            var elementDefinition = GetElementData(elementsData, property, itemSystemAttributes);
+            
+            var elementValue = elementDefinition.Value.Value;
 
-            var valueConverter = GetValueConverter(property);
-            if (valueConverter != null)
+            if (elementValue != null)
             {
-                ContentElement contentElement = new ContentElement(elementData, data.Value.Name);
-                return valueConverter.GetPropertyValue(property, contentElement, context);
+                var valueConverter = GetValueConverter(property);
+                if (valueConverter != null)
+                {
+                    ContentElement contentElement = new ContentElement(elementValue, elementDefinition.Value.Name);
+                    return valueConverter.GetPropertyValue(property, contentElement, context);
+                }
             }
 
             if (property.PropertyType == typeof(string))
             {
-                var (value, isRichText) = GetStringValue(elementData);
+                var (value, isRichText) = GetStringValue(elementValue);
 
                 if (isRichText)
                 {
@@ -221,12 +225,12 @@ namespace Kentico.Kontent.Delivery.StrongTyping
 
             if (IsNonHierarchicalField(property.PropertyType))
             {
-                return GetRawValue(elementData)?.ToObject(property.PropertyType);
+                return GetRawValue(elementValue)?.ToObject(property.PropertyType);
             }
 
             if (IsGenericHierarchicalField(property.PropertyType))
             {
-                return GetLinkedItemsValue(elementData, linkedItems, property.PropertyType, ref processedItems);
+                return GetLinkedItemsValue(elementValue, linkedItems, property.PropertyType, ref processedItems);
             }
 
             return null;

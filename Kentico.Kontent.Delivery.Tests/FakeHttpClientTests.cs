@@ -10,7 +10,9 @@ using Xunit;
 
 namespace Kentico.Kontent.Delivery.Tests
 {
-    // Sample test mocking HTTP client
+    /// <summary>
+    /// Sample test mocking HTTP client
+    /// </summary>
     public class FakeHttpClientTests
     {
         [Fact]
@@ -51,7 +53,6 @@ namespace Kentico.Kontent.Delivery.Tests
         private static IDeliveryClient MockDeliveryClient(DeliveryOptions deliveryOptions, IDeliveryHttpClient deliveryHttpClient)
         {
             var contentLinkUrlResolver = A.Fake<IContentLinkUrlResolver>();
-            var modelProvider = A.Fake<IModelProvider>();
             var retryPolicy = A.Fake<IRetryPolicy>();
             var retryPolicyProvider = A.Fake<IRetryPolicyProvider>();
           
@@ -64,8 +65,8 @@ namespace Kentico.Kontent.Delivery.Tests
                 .WithOptions(_ => deliveryOptions)
                 .WithDeliveryHttpClient(deliveryHttpClient)
                 .WithContentLinkUrlResolver(contentLinkUrlResolver)
-                .WithModelProvider(modelProvider)
                 .WithRetryPolicyProvider(retryPolicyProvider)
+                .WithTypeProvider(new CustomTypeProvider())
                 .Build();
 
             return client;
