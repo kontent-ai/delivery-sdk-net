@@ -8,7 +8,7 @@ using Kentico.Kontent.Delivery.Models.Item;
 
 namespace Kentico.Kontent.Delivery.Rx.Tests.Models.ContentTypes
 {
-    public partial class Office
+    public class Office
     {
         public const string Codename = "office";
         public const string NameCodename = "name";

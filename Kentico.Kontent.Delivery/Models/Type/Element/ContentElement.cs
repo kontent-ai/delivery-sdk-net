@@ -1,7 +1,7 @@
-﻿using Kentico.Kontent.Delivery.Abstractions.Models.Type.Element;
-using Newtonsoft.Json.Linq;
-using System.Collections.Generic;
+﻿using System.Collections.Generic;
 using System.Linq;
+using Kentico.Kontent.Delivery.Abstractions.Models.Type.Element;
+using Newtonsoft.Json.Linq;
 
 namespace Kentico.Kontent.Delivery.Models.Type.Element
 {

@@ -1,15 +1,14 @@
-﻿using Kentico.Kontent.Delivery.Abstractions.Responses;
-using Newtonsoft.Json.Linq;
-using System;
+﻿using System;
 using System.Threading;
+using Kentico.Kontent.Delivery.Abstractions.Responses;
 using Kentico.Kontent.Delivery.Abstractions.StrongTyping;
+using Newtonsoft.Json.Linq;
 
 namespace Kentico.Kontent.Delivery.Models
 {
     /// <inheritdoc/>
     public sealed class DeliveryItemResponse<T> : AbstractResponse, IDeliveryItemResponse<T>
     {
-        private readonly IModelProvider _modelProvider;
         private readonly Lazy<T> _item;
         private readonly Lazy<JObject> _linkedItems;
 
@@ -26,8 +25,7 @@ namespace Kentico.Kontent.Delivery.Models
         /// <param name="modelProvider">The provider that can convert JSON responses into instances of .NET types.</param>
         internal DeliveryItemResponse(ApiResponse response, IModelProvider modelProvider) : base(response)
         {
-            _modelProvider = modelProvider;
-            _item = new Lazy<T>(() => _modelProvider.GetContentItemModel<T>(response.JsonContent["item"], response.JsonContent["modular_content"]), LazyThreadSafetyMode.PublicationOnly);
+            _item = new Lazy<T>(() => modelProvider.GetContentItemModel<T>(response.JsonContent["item"], response.JsonContent["modular_content"]), LazyThreadSafetyMode.PublicationOnly);
             _linkedItems = new Lazy<JObject>(() => (JObject)response.JsonContent["modular_content"].DeepClone(), LazyThreadSafetyMode.PublicationOnly);
         }
 

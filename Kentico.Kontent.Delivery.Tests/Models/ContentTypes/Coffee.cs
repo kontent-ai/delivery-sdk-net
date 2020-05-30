@@ -11,7 +11,7 @@ using Kentico.Kontent.Delivery.Models.Type.Element;
 
 namespace Kentico.Kontent.Delivery.Tests.Models.ContentTypes
 {
-    public partial class Coffee
+    public class Coffee
     {
         public const string Codename = "coffee";
         public const string ProductNameCodename = "product_name";

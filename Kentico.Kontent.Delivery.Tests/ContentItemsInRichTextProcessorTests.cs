@@ -1,8 +1,8 @@
-﻿using Xunit;
-using System.Collections.Generic;
-using Kentico.Kontent.Delivery.Tests.Factories;
+﻿using System.Collections.Generic;
 using Kentico.Kontent.Delivery.Abstractions.InlineContentItems;
 using Kentico.Kontent.Delivery.StrongTyping;
+using Kentico.Kontent.Delivery.Tests.Factories;
+using Xunit;
 
 namespace Kentico.Kontent.Delivery.Tests
 {
@@ -30,7 +30,7 @@ namespace Kentico.Kontent.Delivery.Tests
             var insertedContentName2 = "dummyCodename2";
             var insertedObject1 = GetContentItemObjectElement(insertedContentName1);
             var insertedObject2 = GetContentItemObjectElement(insertedContentName2);
-            var plainHtml = $"<p>Lorem ipsum etc..<a>asdf</a>..</p>";
+            var plainHtml = "<p>Lorem ipsum etc..<a>asdf</a>..</p>";
             var input = insertedObject1 + plainHtml + insertedObject2;
             var inlineContentItemsProcessor = InlineContentItemsProcessorFactory
                 .WithResolver(factory => factory.ResolveToMessage<DummyItem>(string.Empty))
@@ -48,7 +48,7 @@ namespace Kentico.Kontent.Delivery.Tests
             var insertedContentName = "dummyCodename1";
             var callsForResolve = 0;
             string wrapperWithObject = WrapElementWithDivs(GetContentItemObjectElement(insertedContentName));
-            var plainHtml = $"<p>Lorem ipsum etc..<a>asdf</a>..</p>";
+            var plainHtml = "<p>Lorem ipsum etc..<a>asdf</a>..</p>";
             var input = plainHtml + wrapperWithObject;
             var processedContentItems = new Dictionary<string, object>
             {
@@ -71,7 +71,7 @@ namespace Kentico.Kontent.Delivery.Tests
             var insertedContentName = "dummyCodename1";
             string wrapperWithObject = WrapElementWithDivs(GetContentItemObjectElement(insertedContentName));
             const string insertedContentItemValue = "dummyValue";
-            var plainHtml = $"<p>Lorem ipsum etc..<a>asdf</a>..</p>";
+            var plainHtml = "<p>Lorem ipsum etc..<a>asdf</a>..</p>";
             var input = plainHtml + wrapperWithObject;
             var processedContentItems = new Dictionary<string, object>
             {
@@ -93,7 +93,7 @@ namespace Kentico.Kontent.Delivery.Tests
         {
             var insertedContentName = "dummyCodename1";
             var wrapperWithObject = WrapElementWithDivs(GetContentItemObjectElement(insertedContentName));
-            var plainHtml = $"<p>Lorem ipsum etc..<a>asdf</a>..</p>";
+            var plainHtml = "<p>Lorem ipsum etc..<a>asdf</a>..</p>";
             var input = plainHtml + wrapperWithObject;
             const string insertedContentItemValue = "dummyValue";
             var processedContentItems = new Dictionary<string, object>
@@ -132,28 +132,28 @@ namespace Kentico.Kontent.Delivery.Tests
 
             var htmlInput =
                 $"Opting out of business line is not a choice. {insertedDummyItem2} A radical, unified, highly-curated and" +
-                $" digitized realignment transfers a touchpoint. As a result, the attackers empower our well-planned" +
-                $" brainstorming spaces. It's not about our evidence-based customer centricity. It's about brandings." +
+                " digitized realignment transfers a touchpoint. As a result, the attackers empower our well-planned" +
+                " brainstorming spaces. It's not about our evidence-based customer centricity. It's about brandings." +
                 $" {insertedImage1} The project leader swiftly enhances market practices in the core. In the same time," +
-                $" an elite, siloed, breakthrough generates our value-added cross fertilization.\n" +
-                $"Our pre-plan prioritizes the group.Our top-level, service - oriented, ingenuity leverages knowledge" +
+                " an elite, siloed, breakthrough generates our value-added cross fertilization.\n" +
+                "Our pre-plan prioritizes the group.Our top-level, service - oriented, ingenuity leverages knowledge" +
                 $" - based commitments.{insertedDummyItem3} The market thinker dramatically enforces our hands" +
                 $" - on brainstorming spaces.Adaptability and skillset invigorate the game changers. {insertedDummyItem1}" +
-                $" The thought leaders target a teamwork-oriented silo.\n" +
-                $"A documented high quality enables our unique, outside -in and customer-centric tailwinds.It's not about" +
+                " The thought leaders target a teamwork-oriented silo.\n" +
+                "A documented high quality enables our unique, outside -in and customer-centric tailwinds.It's not about" +
                 $" our targets. {insertedImage2} It's about infrastructures.";
 
             var expectedOutput =
                 $"Opting out of business line is not a choice. <div><span>{insertedDummyItem2Value}</span></div> A radical, unified, highly-curated and" +
-                $" digitized realignment transfers a touchpoint. As a result, the attackers empower our well-planned" +
-                $" brainstorming spaces. It's not about our evidence-based customer centricity. It's about brandings." +
+                " digitized realignment transfers a touchpoint. As a result, the attackers empower our well-planned" +
+                " brainstorming spaces. It's not about our evidence-based customer centricity. It's about brandings." +
                 $" <div><img src=\"{insertedImage1Source}\"></div> The project leader swiftly enhances market practices in the core. In the same time," +
-                $" an elite, siloed, breakthrough generates our value-added cross fertilization.\n" +
-                $"Our pre-plan prioritizes the group.Our top-level, service - oriented, ingenuity leverages knowledge" +
+                " an elite, siloed, breakthrough generates our value-added cross fertilization.\n" +
+                "Our pre-plan prioritizes the group.Our top-level, service - oriented, ingenuity leverages knowledge" +
                 $" - based commitments.<span>{insertedDummyItem3Value}</span> The market thinker dramatically enforces our hands" +
                 $" - on brainstorming spaces.Adaptability and skillset invigorate the game changers. <span>{insertedDummyItem1Value}</span>" +
-                $" The thought leaders target a teamwork-oriented silo.\n" +
-                $"A documented high quality enables our unique, outside -in and customer-centric tailwinds.It's not about" +
+                " The thought leaders target a teamwork-oriented silo.\n" +
+                "A documented high quality enables our unique, outside -in and customer-centric tailwinds.It's not about" +
                 $" our targets. <img src=\"{insertedImage2Source}\"> It's about infrastructures.";
 
 
@@ -198,28 +198,28 @@ namespace Kentico.Kontent.Delivery.Tests
 
             var htmlInput =
                 $"Opting out of business line is not a choice. {insertedDummyItem2} A radical, unified, highly-curated and" +
-                $" digitized realignment transfers a touchpoint. As a result, the attackers empower our well-planned" +
-                $" brainstorming spaces. It's not about our evidence-based customer centricity. It's about brandings." +
+                " digitized realignment transfers a touchpoint. As a result, the attackers empower our well-planned" +
+                " brainstorming spaces. It's not about our evidence-based customer centricity. It's about brandings." +
                 $" {insertedImage1} The project leader swiftly enhances market practices in the core. In the same time," +
-                $" an elite, siloed, breakthrough generates our value-added cross fertilization.\n" +
-                $"Our pre-plan prioritizes the group.Our top-level, service - oriented, ingenuity leverages knowledge" +
+                " an elite, siloed, breakthrough generates our value-added cross fertilization.\n" +
+                "Our pre-plan prioritizes the group.Our top-level, service - oriented, ingenuity leverages knowledge" +
                 $" - based commitments.{insertedDummyItem3} The market thinker dramatically enforces our hands" +
                 $" - on brainstorming spaces.Adaptability and skillset invigorate the game changers. {insertedDummyItem1}" +
-                $" The thought leaders target a teamwork-oriented silo.\n" +
-                $"A documented high quality enables our unique, outside -in and customer-centric tailwinds." +
+                " The thought leaders target a teamwork-oriented silo.\n" +
+                "A documented high quality enables our unique, outside -in and customer-centric tailwinds." +
                 $"It's not about our targets. {insertedImage2} It's about infrastructures.";
 
             var expectedOutput =
                 $"Opting out of business line is not a choice. <div>{unretrievedItemMessage}</div> A radical, unified, highly-curated and" +
-                $" digitized realignment transfers a touchpoint. As a result, the attackers empower our well-planned" +
-                $" brainstorming spaces. It's not about our evidence-based customer centricity. It's about brandings." +
+                " digitized realignment transfers a touchpoint. As a result, the attackers empower our well-planned" +
+                " brainstorming spaces. It's not about our evidence-based customer centricity. It's about brandings." +
                 $" <div><img src=\"{insertedImage1Source}\"></div> The project leader swiftly enhances market practices in the core. In the same time," +
-                $" an elite, siloed, breakthrough generates our value-added cross fertilization.\n" +
-                $"Our pre-plan prioritizes the group.Our top-level, service - oriented, ingenuity leverages knowledge" +
+                " an elite, siloed, breakthrough generates our value-added cross fertilization.\n" +
+                "Our pre-plan prioritizes the group.Our top-level, service - oriented, ingenuity leverages knowledge" +
                 $" - based commitments.<span>{insertedDummyItem3Value}</span> The market thinker dramatically enforces our hands" +
                 $" - on brainstorming spaces.Adaptability and skillset invigorate the game changers. <span>{insertedDummyItem1Value}</span>" +
-                $" The thought leaders target a teamwork-oriented silo.\n" +
-                $"A documented high quality enables our unique, outside -in and customer-centric tailwinds." +
+                " The thought leaders target a teamwork-oriented silo.\n" +
+                "A documented high quality enables our unique, outside -in and customer-centric tailwinds." +
                 $"It's not about our targets. {unretrievedItemMessage} It's about infrastructures.";
 
 
@@ -265,28 +265,28 @@ namespace Kentico.Kontent.Delivery.Tests
 
             var htmlInput =
                 $"Opting out of business line is not a choice. {insertedDummyItem2} A radical, unified, highly-curated and" +
-                $" digitized realignment transfers a touchpoint. As a result, the attackers empower our well-planned" +
+                " digitized realignment transfers a touchpoint. As a result, the attackers empower our well-planned" +
                 $" brainstorming spaces. It's not about our evidence-based customer centricity. It's about brandings. {insertedImage1}" +
-                $" The project leader swiftly enhances market practices in the core. In the same time, an elite, siloed," +
-                $" breakthrough generates our value-added cross fertilization.\n" +
-                $"Our pre-plan prioritizes the group.Our top-level, service - oriented, ingenuity leverages knowledge" +
+                " The project leader swiftly enhances market practices in the core. In the same time, an elite, siloed," +
+                " breakthrough generates our value-added cross fertilization.\n" +
+                "Our pre-plan prioritizes the group.Our top-level, service - oriented, ingenuity leverages knowledge" +
                 $" - based commitments.{insertedDummyItem3} The market thinker dramatically enforces our hands" +
                 $" - on brainstorming spaces.Adaptability and skillset invigorate the game changers. {insertedDummyItem1}" +
-                $" The thought leaders target a teamwork-oriented silo.\n" +
-                $"A documented high quality enables our unique, outside -in and customer-centric tailwinds." +
+                " The thought leaders target a teamwork-oriented silo.\n" +
+                "A documented high quality enables our unique, outside -in and customer-centric tailwinds." +
                 $"It's not about our targets. {insertedImage2} It's about infrastructures.";
 
             var expectedOutput =
                 $"Opting out of business line is not a choice. <div>{unretrievedItemMessage}</div> A radical, unified, highly-curated and" +
-                $" digitized realignment transfers a touchpoint. As a result, the attackers empower our well-planned" +
+                " digitized realignment transfers a touchpoint. As a result, the attackers empower our well-planned" +
                 $" brainstorming spaces. It's not about our evidence-based customer centricity. It's about brandings. <div>{defaultResolverMessage}</div>" +
-                $" The project leader swiftly enhances market practices in the core. In the same time, an elite, siloed," +
-                $" breakthrough generates our value-added cross fertilization.\n" +
-                $"Our pre-plan prioritizes the group.Our top-level, service - oriented, ingenuity leverages knowledge" +
+                " The project leader swiftly enhances market practices in the core. In the same time, an elite, siloed," +
+                " breakthrough generates our value-added cross fertilization.\n" +
+                "Our pre-plan prioritizes the group.Our top-level, service - oriented, ingenuity leverages knowledge" +
                 $" - based commitments.<span>{insertedDummyItem3Value}</span> The market thinker dramatically enforces our hands" +
                 $" - on brainstorming spaces.Adaptability and skillset invigorate the game changers. <span>{insertedDummyItem1Value}</span>" +
-                $" The thought leaders target a teamwork-oriented silo.\n" +
-                $"A documented high quality enables our unique, outside -in and customer-centric tailwinds." +
+                " The thought leaders target a teamwork-oriented silo.\n" +
+                "A documented high quality enables our unique, outside -in and customer-centric tailwinds." +
                 $"It's not about our targets. {unretrievedItemMessage} It's about infrastructures.";
 
 
@@ -345,7 +345,7 @@ namespace Kentico.Kontent.Delivery.Tests
                 {insertedContentName, null}
             };
             var inlineContentItemsProcessor = InlineContentItemsProcessorFactory
-                .WithResolver(factory => factory.ResolveToType<UnknownContentItem>(acceptNull: true))
+                .WithResolver(factory => factory.ResolveToType<UnknownContentItem>(true))
                 .Build();
 
             var result = inlineContentItemsProcessor.Process(input, processedContentItems);
@@ -443,28 +443,28 @@ namespace Kentico.Kontent.Delivery.Tests
 
             var htmlInput =
                 $"Opting out of business line is not a choice. {insertedDummyItem2} A radical, unified, highly-curated and" +
-                $" digitized realignment transfers a touchpoint. As a result, the attackers empower our well-planned" +
+                " digitized realignment transfers a touchpoint. As a result, the attackers empower our well-planned" +
                 $" brainstorming spaces. It's not about our evidence-based customer centricity. It's about brandings. {insertedImage1}" +
-                $" The project leader swiftly enhances market practices in the core. In the same time, an elite, siloed," +
-                $" breakthrough generates our value-added cross fertilization.\n" +
-                $"Our pre-plan prioritizes the group.Our top-level, service - oriented, ingenuity leverages knowledge" +
+                " The project leader swiftly enhances market practices in the core. In the same time, an elite, siloed," +
+                " breakthrough generates our value-added cross fertilization.\n" +
+                "Our pre-plan prioritizes the group.Our top-level, service - oriented, ingenuity leverages knowledge" +
                 $" - based commitments.{insertedDummyItem3} The market thinker dramatically enforces our hands" +
                 $" - on brainstorming spaces.Adaptability and skillset invigorate the game changers. {insertedDummyItem1}" +
-                $" The thought leaders target a teamwork-oriented silo.\n" +
-                $"A documented high quality enables our unique, outside -in and customer-centric tailwinds." +
+                " The thought leaders target a teamwork-oriented silo.\n" +
+                "A documented high quality enables our unique, outside -in and customer-centric tailwinds." +
                 $"It's not about our targets. {insertedImage2} It's about infrastructures.";
             var expectedOutput = 
                 $"Opting out of business line is not a choice. {WrapElementWithDivs(string.Empty)} A radical, unified, highly-curated and" +
-                $" digitized realignment transfers a touchpoint. As a result, the attackers empower our well-planned" +
+                " digitized realignment transfers a touchpoint. As a result, the attackers empower our well-planned" +
                 $" brainstorming spaces. It's not about our evidence-based customer centricity. It's about brandings. {WrapElementWithDivs(string.Empty)}" +
-                $" The project leader swiftly enhances market practices in the core. In the same time, an elite, siloed," +
-                $" breakthrough generates our value-added cross fertilization.\n" +
-                $"Our pre-plan prioritizes the group.Our top-level, service - oriented, ingenuity leverages knowledge" +
-                $" - based commitments. The market thinker dramatically enforces our hands" +
-                $" - on brainstorming spaces.Adaptability and skillset invigorate the game changers. " +
-                $" The thought leaders target a teamwork-oriented silo.\n" +
-                $"A documented high quality enables our unique, outside -in and customer-centric tailwinds." +
-                $"It's not about our targets.  It's about infrastructures.";
+                " The project leader swiftly enhances market practices in the core. In the same time, an elite, siloed," +
+                " breakthrough generates our value-added cross fertilization.\n" +
+                "Our pre-plan prioritizes the group.Our top-level, service - oriented, ingenuity leverages knowledge" +
+                " - based commitments. The market thinker dramatically enforces our hands" +
+                " - on brainstorming spaces.Adaptability and skillset invigorate the game changers. " +
+                " The thought leaders target a teamwork-oriented silo.\n" +
+                "A documented high quality enables our unique, outside -in and customer-centric tailwinds." +
+                "It's not about our targets.  It's about infrastructures.";
             var processor = InlineContentItemsProcessorFactory.Create();
 
             var result = processor.RemoveAll(htmlInput);

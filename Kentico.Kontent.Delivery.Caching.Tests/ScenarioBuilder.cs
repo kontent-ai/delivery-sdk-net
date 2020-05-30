@@ -1,13 +1,13 @@
-﻿using Microsoft.Extensions.Caching.Memory;
-using Microsoft.Extensions.Options;
-using Newtonsoft.Json;
-using RichardSzalay.MockHttp;
-using System;
+﻿using System;
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
 using System.Text;
 using Kentico.Kontent.Delivery.Configuration;
+using Microsoft.Extensions.Caching.Memory;
+using Microsoft.Extensions.Options;
+using Newtonsoft.Json;
+using RichardSzalay.MockHttp;
 
 namespace Kentico.Kontent.Delivery.Caching.Tests
 {

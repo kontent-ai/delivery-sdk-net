@@ -1,5 +1,6 @@
-﻿using Microsoft.Extensions.DependencyInjection;
-using System;
+﻿using System;
+using Microsoft.Extensions.DependencyInjection;
+
 namespace Kentico.Kontent.Delivery.Abstractions.InlineContentItems
 {
     /// <summary>

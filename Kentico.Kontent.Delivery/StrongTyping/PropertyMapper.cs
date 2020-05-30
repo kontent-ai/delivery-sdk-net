@@ -25,20 +25,16 @@ namespace Kentico.Kontent.Delivery.StrongTyping
                 // If JsonIgnore is set, do not match
                 return false;
             }
-            else
+
+            JsonPropertyAttribute propertyAttr = modelProperty.GetCustomAttribute<JsonPropertyAttribute>();
+            if (propertyAttr != null)
             {
-                JsonPropertyAttribute propertyAttr = modelProperty.GetCustomAttribute<JsonPropertyAttribute>();
-                if (propertyAttr != null)
-                {
-                    // Try to get the name of the field from the JSON serialization property
-                    return fieldName.Equals(propertyAttr.PropertyName, StringComparison.Ordinal);
-                }
-                else
-                {
-                    // Default mapping
-                    return fieldName.Replace("_", "").Equals(modelProperty.Name, StringComparison.OrdinalIgnoreCase);
-                }
+                // Try to get the name of the field from the JSON serialization property
+                return fieldName.Equals(propertyAttr.PropertyName, StringComparison.Ordinal);
             }
+
+            // Default mapping
+            return fieldName.Replace("_", "").Equals(modelProperty.Name, StringComparison.OrdinalIgnoreCase);
         }
     }
 }

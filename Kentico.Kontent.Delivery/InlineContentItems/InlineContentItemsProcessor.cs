@@ -1,16 +1,17 @@
 ﻿
-using AngleSharp.Dom;
-using AngleSharp.Parser.Html;
 using System;
 using System.Collections.Generic;
-using System.Linq;
-using Microsoft.Extensions.DependencyInjection;
 using System.Collections.ObjectModel;
+using System.Linq;
+using AngleSharp.Dom;
+using AngleSharp.Dom.Html;
+using AngleSharp.Parser.Html;
 using Kentico.Kontent.Delivery.Abstractions.InlineContentItems;
 using Kentico.Kontent.Delivery.Abstractions.StrongTyping;
 using Kentico.Kontent.Delivery.Builders.DeliveryClient;
 using Kentico.Kontent.Delivery.Extensions;
 using Kentico.Kontent.Delivery.StrongTyping;
+using Microsoft.Extensions.DependencyInjection;
 
 namespace Kentico.Kontent.Delivery.InlineContentItems
 {
@@ -93,7 +94,7 @@ namespace Kentico.Kontent.Delivery.InlineContentItems
             return htmlInput.Body.InnerHtml;
         }
 
-        private static List<IElement> GetInlineContentItemElements(AngleSharp.Dom.Html.IHtmlDocument htmlInput) 
+        private static List<IElement> GetInlineContentItemElements(IHtmlDocument htmlInput) 
             => htmlInput
                 .Body
                 .GetElementsByTagName("object")
@@ -119,7 +120,7 @@ namespace Kentico.Kontent.Delivery.InlineContentItems
         private static Type GetInlineContentItemType(object inlineContentItem)
             => inlineContentItem?.GetType() ?? typeof(UnknownContentItem);
 
-        private void ReplaceElementWithFragmentNodes(AngleSharp.Dom.Html.IHtmlDocument document, IElement inlineContentItemElement, string contentItemCodename, object inlineContentItem, string fragmentText)
+        private void ReplaceElementWithFragmentNodes(IHtmlDocument document, IElement inlineContentItemElement, string contentItemCodename, object inlineContentItem, string fragmentText)
         {
             try
             {

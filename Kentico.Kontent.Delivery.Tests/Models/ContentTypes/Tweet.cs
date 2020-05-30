@@ -10,7 +10,7 @@ using Kentico.Kontent.Delivery.Models.Type.Element;
 
 namespace Kentico.Kontent.Delivery.Tests.Models.ContentTypes
 {
-    public partial class Tweet
+    public class Tweet
     {
         public const string Codename = "tweet";
         public const string TweetLinkCodename = "tweet_link";

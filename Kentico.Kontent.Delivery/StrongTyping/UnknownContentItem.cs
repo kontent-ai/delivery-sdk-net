@@ -19,7 +19,7 @@ namespace Kentico.Kontent.Delivery.StrongTyping
         public UnknownContentItem(JToken elementNode)
         {
             Type = elementNode
-                .SelectToken("system.type", errorWhenNoMatch: false)
+                .SelectToken("system.type", false)
                 ?.ToString()
                 ?? "unextractable system type";
         }

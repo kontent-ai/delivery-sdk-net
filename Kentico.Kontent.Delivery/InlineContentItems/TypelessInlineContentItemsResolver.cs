@@ -1,8 +1,8 @@
-﻿using Kentico.Kontent.Delivery.Abstractions.InlineContentItems;
+﻿using System;
+using Kentico.Kontent.Delivery.Abstractions.InlineContentItems;
 using Kentico.Kontent.Delivery.Builders.DeliveryClient;
-using Microsoft.Extensions.DependencyInjection;
-using System;
 using Kentico.Kontent.Delivery.Extensions;
+using Microsoft.Extensions.DependencyInjection;
 
 namespace Kentico.Kontent.Delivery.InlineContentItems
 {

@@ -1,12 +1,12 @@
-﻿using Kentico.Kontent.Delivery.Abstractions.Responses;
-using Kentico.Kontent.Delivery.Models.Taxonomy;
-using Newtonsoft.Json.Linq;
-using System;
+﻿using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading;
 using Kentico.Kontent.Delivery.Abstractions.Models;
 using Kentico.Kontent.Delivery.Abstractions.Models.Taxonomy;
+using Kentico.Kontent.Delivery.Abstractions.Responses;
+using Kentico.Kontent.Delivery.Models.Taxonomy;
+using Newtonsoft.Json.Linq;
 
 namespace Kentico.Kontent.Delivery.Models
 {

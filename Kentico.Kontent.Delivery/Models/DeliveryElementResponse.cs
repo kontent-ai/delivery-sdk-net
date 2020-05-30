@@ -1,8 +1,8 @@
-﻿using Kentico.Kontent.Delivery.Abstractions.Models.Type.Element;
+﻿using System;
+using System.Threading;
+using Kentico.Kontent.Delivery.Abstractions.Models.Type.Element;
 using Kentico.Kontent.Delivery.Abstractions.Responses;
 using Kentico.Kontent.Delivery.Models.Type.Element;
-using System;
-using System.Threading;
 
 namespace Kentico.Kontent.Delivery.Models
 {

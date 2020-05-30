@@ -10,7 +10,7 @@ using Kentico.Kontent.Delivery.Models.Type.Element;
 
 namespace Kentico.Kontent.Delivery.Rx.Tests.Models.ContentTypes
 {
-    public partial class HostedVideo
+    public class HostedVideo
     {
         public const string Codename = "hosted_video";
         public const string VideoIdCodename = "video_id";

@@ -11,7 +11,7 @@ using Kentico.Kontent.Delivery.Models.Item;
 
 namespace Kentico.Kontent.Delivery.Rx.Tests.Models.ContentTypes
 {
-    public partial class Article
+    public class Article
     {
         public const string Codename = "article";
         public const string PersonasCodename = "personas";

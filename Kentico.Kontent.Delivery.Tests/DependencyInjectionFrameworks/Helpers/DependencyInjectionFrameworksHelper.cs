@@ -62,17 +62,14 @@ namespace Kentico.Kontent.Delivery.Tests.DependencyInjectionFrameworks.Helpers
                 }
             };
 
-            var appBuilder = new FakeApplicationBuilder
-            {
-                ApplicationServices = serviceCollection.BuildServiceProvider()
-            };
+            serviceCollection.BuildServiceProvider();
 
             serviceCollection.AddSimpleInjector(container);
             serviceCollection.UseSimpleInjectorAspNetRequestScoping(container);
 
             ServiceCollection services = serviceCollection as ServiceCollection;
 
-            ServiceCollectionContainerBuilderExtensions.BuildServiceProvider(services, validateScopes: true)
+            ServiceCollectionContainerBuilderExtensions.BuildServiceProvider(services, true)
                 .UseSimpleInjector(container);
 
 

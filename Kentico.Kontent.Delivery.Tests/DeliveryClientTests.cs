@@ -1,7 +1,4 @@
-﻿using FakeItEasy;
-using Kentico.Kontent.Delivery.Tests.Factories;
-using RichardSzalay.MockHttp;
-using System;
+﻿using System;
 using System.Collections.Generic;
 using System.Diagnostics;
 using System.IO;
@@ -9,7 +6,7 @@ using System.Linq;
 using System.Net;
 using System.Net.Http;
 using System.Threading.Tasks;
-using Xunit;
+using FakeItEasy;
 using Kentico.Kontent.Delivery.Abstractions;
 using Kentico.Kontent.Delivery.Abstractions.ContentLinks;
 using Kentico.Kontent.Delivery.Abstractions.RetryPolicy;
@@ -20,9 +17,12 @@ using Kentico.Kontent.Delivery.QueryParameters.Filters;
 using Kentico.Kontent.Delivery.QueryParameters.Parameters;
 using Kentico.Kontent.Delivery.StrongTyping;
 using Kentico.Kontent.Delivery.StrongTyping.RichText.Blocks;
+using Kentico.Kontent.Delivery.Tests.Factories;
 using Kentico.Kontent.Delivery.Tests.Models;
 using Kentico.Kontent.Delivery.Tests.Models.ContentTypes;
 using Newtonsoft.Json.Linq;
+using RichardSzalay.MockHttp;
+using Xunit;
 
 namespace Kentico.Kontent.Delivery.Tests
 {
@@ -1307,7 +1307,7 @@ namespace Kentico.Kontent.Delivery.Tests
         {
             _mockHttp
                 .When($"{_baseUrl}/items")
-                .Respond((request) => new HttpResponseMessage(HttpStatusCode.RequestTimeout));
+                .Respond(request => new HttpResponseMessage(HttpStatusCode.RequestTimeout));
             var client = Factories.DeliveryClientFactory.GetMockedDeliveryClientWithProjectId(_guid, _mockHttp);
             var retryPolicy = A.Fake<IRetryPolicy>();
             A.CallTo(() => client.RetryPolicyProvider.GetRetryPolicy()).Returns(retryPolicy);

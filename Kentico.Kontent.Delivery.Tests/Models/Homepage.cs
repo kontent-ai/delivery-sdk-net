@@ -4,7 +4,7 @@ using Kentico.Kontent.Delivery.Models.Item;
 
 namespace Kentico.Kontent.Delivery.Tests.Models
 {
-    public partial class Homepage
+    public class Homepage
     {
         public string CallToAction { get; set; }
         public string Subtitle { get; set; }

@@ -1,6 +1,6 @@
-﻿using Kentico.Kontent.Delivery.Abstractions.Models.Type;
+﻿using System;
+using Kentico.Kontent.Delivery.Abstractions.Models.Type;
 using Newtonsoft.Json;
-using System;
 
 namespace Kentico.Kontent.Delivery.Models.Type
 {

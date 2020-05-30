@@ -1,6 +1,6 @@
-﻿using FluentAssertions;
-using System.Linq;
+﻿using System.Linq;
 using System.Threading.Tasks;
+using FluentAssertions;
 using Xunit;
 using static Kentico.Kontent.Delivery.Caching.Tests.ResponseHelper;
 

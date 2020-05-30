@@ -1,5 +1,5 @@
-﻿using Kentico.Kontent.Delivery.Abstractions.Models.Type.Element;
-using System.Collections.Generic;
+﻿using System.Collections.Generic;
+using Kentico.Kontent.Delivery.Abstractions.Models.Type.Element;
 
 namespace Kentico.Kontent.Delivery.Abstractions.Models.Type
 {

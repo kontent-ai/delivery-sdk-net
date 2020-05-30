@@ -10,7 +10,7 @@ using Kentico.Kontent.Delivery.Models.Item;
 
 namespace Kentico.Kontent.Delivery.Tests.Models.ContentTypes
 {
-    public partial class Grinder
+    public class Grinder
     {
         public const string Codename = "grinder";
         public const string ProductNameCodename = "product_name";

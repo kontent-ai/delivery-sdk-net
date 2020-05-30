@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Diagnostics;
+using System.IO;
 using System.Net.Http.Headers;
 using System.Reflection;
 
@@ -47,7 +48,7 @@ namespace Kentico.Kontent.Delivery.Extensions
                 var fileVersionInfo = FileVersionInfo.GetVersionInfo(assembly.Location);
                 sdkVersion = fileVersionInfo.ProductVersion;
             }
-            catch (System.IO.FileNotFoundException)
+            catch (FileNotFoundException)
             {
                 // Invalid Location path of assembly in Android's Xamarin release mode (unchecked "Use a shared runtime" flag)
                 // https://bugzilla.xamarin.com/show_bug.cgi?id=54678

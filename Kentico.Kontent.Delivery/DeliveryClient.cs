@@ -4,17 +4,17 @@ using System.Linq;
 using System.Net;
 using System.Net.Http;
 using System.Threading.Tasks;
-using Microsoft.Extensions.Options;
-using Kentico.Kontent.Delivery.Extensions;
 using Kentico.Kontent.Delivery.Abstractions;
-using Kentico.Kontent.Delivery.Abstractions.RetryPolicy;
-using Kentico.Kontent.Delivery.Models;
 using Kentico.Kontent.Delivery.Abstractions.Responses;
+using Kentico.Kontent.Delivery.Abstractions.RetryPolicy;
 using Kentico.Kontent.Delivery.Abstractions.StrongTyping;
 using Kentico.Kontent.Delivery.Configuration;
+using Kentico.Kontent.Delivery.Extensions;
+using Kentico.Kontent.Delivery.Models;
 using Kentico.Kontent.Delivery.QueryParameters.Filters;
 using Kentico.Kontent.Delivery.QueryParameters.Parameters;
 using Kentico.Kontent.Delivery.QueryParameters.SystemEqualsFilters;
+using Microsoft.Extensions.Options;
 
 namespace Kentico.Kontent.Delivery
 {

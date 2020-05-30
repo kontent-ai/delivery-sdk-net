@@ -1,6 +1,5 @@
-﻿using Kentico.Kontent.Delivery.Abstractions.Responses;
-using System.Collections.Generic;
-using System.Threading.Tasks;
+﻿using System.Threading.Tasks;
+using Kentico.Kontent.Delivery.Abstractions.Responses;
 using Kentico.Kontent.Delivery.Abstractions.StrongTyping;
 
 namespace Kentico.Kontent.Delivery.Abstractions
@@ -20,7 +19,7 @@ namespace Kentico.Kontent.Delivery.Abstractions
         /// <returns>The <see cref="IDeliveryItemResponse{T}"/> instance that contains the content item with the specified codename.</returns>
         public static async Task<IDeliveryItemResponse<T>> GetItemAsync<T>(this IDeliveryClient client, string codename, params IQueryParameter[] parameters)
         {
-            return await client.GetItemAsync<T>(codename, (IEnumerable<IQueryParameter>)parameters);
+            return await client.GetItemAsync<T>(codename, parameters);
         }
 
         /// <summary>
@@ -32,7 +31,7 @@ namespace Kentico.Kontent.Delivery.Abstractions
         /// <returns>The <see cref="IDeliveryItemListingResponse{T}"/> instance that contains the content items. If no query parameters are specified, all content items are returned.</returns>
         public static async Task<IDeliveryItemListingResponse<T>> GetItemsAsync<T>(this IDeliveryClient client, params IQueryParameter[] parameters)
         {
-            return await client.GetItemsAsync<T>((IEnumerable<IQueryParameter>)parameters);
+            return await client.GetItemsAsync<T>(parameters);
         }
 
         /// <summary>
@@ -44,7 +43,7 @@ namespace Kentico.Kontent.Delivery.Abstractions
         /// <returns>The <see cref="IDeliveryItemsFeed{T}"/> instance that can be used to enumerate through content items. If no query parameters are specified, all content items are enumerated.</returns>
         public static IDeliveryItemsFeed<T> GetItemsFeed<T>(this IDeliveryClient client, params IQueryParameter[] parameters)
         {
-            return client.GetItemsFeed<T>((IEnumerable<IQueryParameter>)parameters);
+            return client.GetItemsFeed<T>(parameters);
         }
 
         /// <summary>
@@ -55,7 +54,7 @@ namespace Kentico.Kontent.Delivery.Abstractions
         /// <returns>The <see cref="IDeliveryTypeListingResponse"/> instance that contains the content types. If no query parameters are specified, all content types are returned.</returns>
         public static async Task<IDeliveryTypeListingResponse> GetTypesAsync(this IDeliveryClient client, params IQueryParameter[] parameters)
         {
-            return await client.GetTypesAsync((IEnumerable<IQueryParameter>)parameters);
+            return await client.GetTypesAsync(parameters);
         }
 
         /// <summary>
@@ -66,7 +65,7 @@ namespace Kentico.Kontent.Delivery.Abstractions
         /// <returns>The <see cref="IDeliveryTaxonomyListingResponse"/> instance that represents the taxonomy groups. If no query parameters are specified, all taxonomy groups are returned.</returns>
         public static async Task<IDeliveryTaxonomyListingResponse> GetTaxonomiesAsync(this IDeliveryClient client, params IQueryParameter[] parameters)
         {
-            return await client.GetTaxonomiesAsync((IEnumerable<IQueryParameter>)parameters);
+            return await client.GetTaxonomiesAsync(parameters);
         }
     }
 }

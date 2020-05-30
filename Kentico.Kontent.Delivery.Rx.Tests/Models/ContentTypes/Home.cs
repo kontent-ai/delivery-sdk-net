@@ -9,7 +9,7 @@ using Kentico.Kontent.Delivery.Models.Item;
 
 namespace Kentico.Kontent.Delivery.Rx.Tests.Models.ContentTypes
 {
-    public partial class Home
+    public class Home
     {
         public const string Codename = "home";
         public const string HeroUnitCodename = "hero_unit";

@@ -17,22 +17,21 @@ namespace Kentico.Kontent.Delivery.Tests.QueryParameters
         private const string FAKE_PROJECT_ID = "00000000-0000-0000-0000-000000000000";
 
         private readonly DeliveryClient _client;
-        private readonly ITypeProvider _contentTypeProvider;
 
         public ContentTypeExtractorTests()
         {
-            _contentTypeProvider = A.Fake<ITypeProvider>();
+            var contentTypeProvider = A.Fake<ITypeProvider>();
 
-            A.CallTo(() => _contentTypeProvider.GetCodename(typeof(TypeWithContentTypeCodename))).Returns(TypeWithContentTypeCodename.Codename);
-            A.CallTo(() => _contentTypeProvider.GetCodename(typeof(TypeWithoutContentTypeCodename))).Returns(null);
+            A.CallTo(() => contentTypeProvider.GetCodename(typeof(TypeWithContentTypeCodename))).Returns(TypeWithContentTypeCodename.Codename);
+            A.CallTo(() => contentTypeProvider.GetCodename(typeof(TypeWithoutContentTypeCodename))).Returns(null);
 
             var deliveryOptions = DeliveryOptionsFactory.CreateMonitor(new DeliveryOptions { ProjectId = FAKE_PROJECT_ID });
-            var modelProvider = new ModelProvider(null, null, _contentTypeProvider, null);
+            var modelProvider = new ModelProvider(null, null, contentTypeProvider, null);
             _client = new DeliveryClient(
                 deliveryOptions,
                 modelProvider,
                 null,
-                _contentTypeProvider
+                contentTypeProvider
             );
         }
 
@@ -49,7 +48,7 @@ namespace Kentico.Kontent.Delivery.Tests.QueryParameters
         [Fact]
         public void ExtractParameters_WhenGivenTypeWithCodenameAndExistingParams_AddsCodenameToParams()
         {
-            var existingParams = new List<IQueryParameter>() { new SkipParameter(15) };
+            var existingParams = new List<IQueryParameter> { new SkipParameter(15) };
 
             var enhancedParams = new List<IQueryParameter>(_client.EnsureContentTypeFilter<TypeWithContentTypeCodename>(existingParams));
 
@@ -77,18 +76,18 @@ namespace Kentico.Kontent.Delivery.Tests.QueryParameters
         [Fact]
         public void ExtractParameters_WhenGivenTypeWithoutCodenameAndParams_ReturnsParams()
         {
-            var existingParams = new List<IQueryParameter>() { new SkipParameter(15) };
+            var existingParams = new List<IQueryParameter> { new SkipParameter(15) };
 
             var enhancedParams = new List<IQueryParameter>(_client.EnsureContentTypeFilter<TypeWithoutContentTypeCodename>(existingParams));
 
             Assert.Single(enhancedParams);
-            Assert.True(enhancedParams.Find(x => x.GetQueryStringParameter() == $"system.type=TypeWithoutContentTypeCodename") == null);
+            Assert.True(enhancedParams.Find(x => x.GetQueryStringParameter() == "system.type=TypeWithoutContentTypeCodename") == null);
         }
 
         [Fact]
         public void ExtractParameters_WhenGivenTypeWithCodenameAndExistingTypeParameter_DoesNotAddCodenameToParams()
         {
-            var existingParams = new List<IQueryParameter>() { new EqualsFilter("system.type", CONTENT_TYPE_CODENAME) };
+            var existingParams = new List<IQueryParameter> { new EqualsFilter("system.type", CONTENT_TYPE_CODENAME) };
 
             var enhancedParams = new List<IQueryParameter>(_client.EnsureContentTypeFilter<TypeWithContentTypeCodename>(existingParams));
 

@@ -1,18 +1,17 @@
 ﻿using System;
-using System.Reflection;
 using System.Collections.Generic;
 using System.Linq;
-
-using Newtonsoft.Json.Linq;
+using System.Reflection;
 using AngleSharp.Parser.Html;
 using Kentico.Kontent.Delivery.Abstractions.Models.RichText;
 using Kentico.Kontent.Delivery.Abstractions.Models.RichText.Blocks;
-using Kentico.Kontent.Delivery.ContentLinks;
 using Kentico.Kontent.Delivery.Abstractions.Models.Type.Element;
 using Kentico.Kontent.Delivery.Abstractions.StrongTyping;
+using Kentico.Kontent.Delivery.ContentLinks;
 using Kentico.Kontent.Delivery.Models.Type.Element;
 using Kentico.Kontent.Delivery.StrongTyping.RichText;
 using Kentico.Kontent.Delivery.StrongTyping.RichText.Blocks;
+using Newtonsoft.Json.Linq;
 
 namespace Kentico.Kontent.Delivery.StrongTyping
 {

@@ -1,6 +1,6 @@
-﻿using Kentico.Kontent.Delivery.Abstractions.Responses;
-using System;
+﻿using System;
 using System.Threading.Tasks;
+using Kentico.Kontent.Delivery.Abstractions.Responses;
 using Kentico.Kontent.Delivery.Abstractions.StrongTyping;
 
 namespace Kentico.Kontent.Delivery.Models
@@ -13,7 +13,7 @@ namespace Kentico.Kontent.Delivery.Models
     {
         internal delegate Task<DeliveryItemsFeedResponse<T>> GetFeedResponse(string continuationToken);
 
-        private string _continuationToken = null;
+        private string _continuationToken;
         private readonly GetFeedResponse _getFeedResponseAsync;
 
         /// <summary>

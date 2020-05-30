@@ -1,12 +1,12 @@
-﻿using Kentico.Kontent.Delivery.Abstractions;
+﻿using System;
+using Kentico.Kontent.Delivery.Abstractions;
+using Kentico.Kontent.Delivery.Abstractions.ContentLinks;
 using Kentico.Kontent.Delivery.Abstractions.InlineContentItems;
 using Kentico.Kontent.Delivery.Abstractions.RetryPolicy;
-using Kentico.Kontent.Delivery.Builders.DeliveryOptions;
-using Microsoft.Extensions.DependencyInjection;
-using System;
-using Kentico.Kontent.Delivery.Abstractions.ContentLinks;
 using Kentico.Kontent.Delivery.Abstractions.StrongTyping;
+using Kentico.Kontent.Delivery.Builders.DeliveryOptions;
 using Kentico.Kontent.Delivery.Extensions;
+using Microsoft.Extensions.DependencyInjection;
 
 namespace Kentico.Kontent.Delivery.Builders.DeliveryClient
 {

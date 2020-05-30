@@ -1,10 +1,10 @@
-﻿using Kentico.Kontent.Delivery.Abstractions;
-using Microsoft.Extensions.Options;
-using System;
+﻿using System;
 using System.Collections.Generic;
 using System.Linq;
+using Kentico.Kontent.Delivery.Abstractions;
 using Kentico.Kontent.Delivery.Configuration;
 using Kentico.Kontent.Delivery.QueryParameters.Parameters;
+using Microsoft.Extensions.Options;
 
 namespace Kentico.Kontent.Delivery
 {

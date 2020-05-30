@@ -1,6 +1,6 @@
-﻿using FluentAssertions;
+﻿using System.Linq;
+using FluentAssertions;
 using Kentico.Kontent.Delivery.Abstractions;
-using System.Linq;
 using Kentico.Kontent.Delivery.QueryParameters.Parameters;
 using Kentico.Kontent.Delivery.QueryParameters.SystemEqualsFilters;
 using Xunit;

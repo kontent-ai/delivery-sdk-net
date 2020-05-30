@@ -10,7 +10,7 @@ using Kentico.Kontent.Delivery.Models.Item;
 
 namespace Kentico.Kontent.Delivery.Tests.Models.ContentTypes
 {
-    public partial class Cafe
+    public class Cafe
     {
         public const string Codename = "cafe";
         public const string StreetCodename = "street";

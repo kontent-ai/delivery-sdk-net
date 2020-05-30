@@ -8,13 +8,6 @@ namespace Kentico.Kontent.Delivery.QueryParameters.Parameters
     public sealed class IncludeTotalCountParameter : IQueryParameter
     {
         /// <summary>
-        /// Initializes a new instance of the <see cref="IncludeTotalCountParameter"/> class.
-        /// </summary>
-        public IncludeTotalCountParameter()
-        {
-        }
-
-        /// <summary>
         /// Returns the query string representation of the query parameter.
         /// </summary>
         public string GetQueryStringParameter()
