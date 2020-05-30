@@ -291,8 +291,27 @@ namespace Kentico.Kontent.Delivery.Caching
         private static bool IsItemResponse(dynamic response)
         {
             return response.GetType().IsGenericType
-                   && response.GetType().GetGenericTypeDefinition() == typeof(IDeliveryItemResponse<>) //TODO: check if implements the interface
+                   && IsAssignableToGenericType(response.GetType(), typeof(IDeliveryItemResponse<>))
                    && response.Item != null;
+        }
+
+        private static bool IsAssignableToGenericType(Type givenType, Type genericType)
+        {
+            var interfaceTypes = givenType.GetInterfaces();
+
+            foreach (var it in interfaceTypes)
+            {
+                if (it.IsGenericType && it.GetGenericTypeDefinition() == genericType)
+                    return true;
+            }
+
+            if (givenType.IsGenericType && givenType.GetGenericTypeDefinition() == genericType)
+                return true;
+
+            Type baseType = givenType.BaseType;
+            if (baseType == null) return false;
+
+            return IsAssignableToGenericType(baseType, genericType);
         }
 
         private static bool IsItemListingResponse(JObject response)
@@ -303,7 +322,7 @@ namespace Kentico.Kontent.Delivery.Caching
         private static bool IsItemListingResponse(dynamic response)
         {
             return response.GetType().IsGenericType &&
-                   response.GetType().GetGenericTypeDefinition() == typeof(IDeliveryItemListingResponse<>); //TODO: check if implements the interface
+                   IsAssignableToGenericType(response.GetType(), typeof(IDeliveryItemListingResponse<>));
         }
 
         private static bool IsComponent(JProperty property)

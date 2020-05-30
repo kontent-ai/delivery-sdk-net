@@ -6,16 +6,12 @@ using System.Threading;
 
 namespace Kentico.Kontent.Delivery.Models
 {
-    /// <summary>
-    /// Represents a response from Kentico Kontent Delivery API that contains a taxonomy group.
-    /// </summary>
+    /// <inheritdoc/>
     public sealed class DeliveryTaxonomyResponse : AbstractResponse, IDeliveryTaxonomyResponse
     {
         private readonly Lazy<TaxonomyGroup> _taxonomy;
 
-        /// <summary>
-        /// Gets the taxonomy group.
-        /// </summary>
+        /// <inheritdoc/>
         public ITaxonomyGroup Taxonomy => _taxonomy.Value;
 
         /// <summary>

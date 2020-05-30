@@ -7,18 +7,14 @@ using System.Collections.ObjectModel;
 
 namespace Kentico.Kontent.Delivery.Models.Type
 {
-    /// <summary>
-    /// Represents a content type.
-    /// </summary>
+    /// <inheritdoc/>
     public sealed class ContentType : IContentType
     {
         private readonly JToken _source;
         private ContentTypeSystemAttributes _system;
         private IReadOnlyDictionary<string, IContentElement> _elements;
 
-        /// <summary>
-        /// Gets the system attributes of the content type.
-        /// </summary>
+        /// <inheritdoc/>
         public IContentTypeSystemAttributes System
         {
             get
@@ -32,9 +28,7 @@ namespace Kentico.Kontent.Delivery.Models.Type
             }
         }
 
-        /// <summary>
-        /// Gets a dictionary that contains elements of the content type index by their codename.
-        /// </summary>
+        /// <inheritdoc/>
         public IReadOnlyDictionary<string, IContentElement> Elements
         {
             get

@@ -17,7 +17,7 @@ namespace Kentico.Kontent.Delivery.Models.Type.Element
         {
             get
             {
-                return Source.Value<string>("type");
+                return Source["type"]?.Value<string>() ?? null;
             }
         }
 
@@ -26,7 +26,7 @@ namespace Kentico.Kontent.Delivery.Models.Type.Element
         {
             get
             {
-                return ((JObject)Source).Property("value").Value.ToString();
+                return Source["value"] != null ? ((JObject)Source).Property("value").Value.ToString() : null;
             }
         }
 
@@ -35,7 +35,7 @@ namespace Kentico.Kontent.Delivery.Models.Type.Element
         {
             get
             {
-                return Source.Value<string>("name");
+                return Source["name"]?.Value<string>() ?? null;
             }
         }
 

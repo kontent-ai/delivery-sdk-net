@@ -1,9 +1,12 @@
 ﻿namespace Kentico.Kontent.Delivery.Abstractions.Responses
 {
+    /// <summary>
+    /// A base interface for all response envelopes.
+    /// </summary>
     public interface IResponse
     {
         /// <summary>
-        /// The successful JSON response from Kentico Kontent Delivery API.
+        /// A successful JSON response from the Kentico Kontent Delivery API.
         /// </summary>
         public IApiResponse ApiResponse { get; }
     }
