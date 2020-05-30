@@ -1,6 +1,4 @@
-﻿using Kentico.Kontent.Delivery.Abstractions.Responses;
-
-namespace Kentico.Kontent.Delivery.Abstractions
+﻿namespace Kentico.Kontent.Delivery.Abstractions.Responses
 {
     /// <summary>
     /// Represents a successful response from Kentico Kontent Delivery API.
@@ -10,7 +8,7 @@ namespace Kentico.Kontent.Delivery.Abstractions
         /// <summary>
         /// The successful JSON response from Kentico Kontent Delivery API.
         /// </summary>
-        public IApiResponse ApiResponse { get; private set; }
+        public IApiResponse ApiResponse { get; }
 
         /// <summary>
         /// Initializes a new instance of the <see cref="AbstractResponse"/> class.

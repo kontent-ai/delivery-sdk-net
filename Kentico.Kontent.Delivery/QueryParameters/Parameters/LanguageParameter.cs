@@ -1,7 +1,7 @@
-﻿using Kentico.Kontent.Delivery.Abstractions;
-using System;
+﻿using System;
+using Kentico.Kontent.Delivery.Abstractions;
 
-namespace Kentico.Kontent.Delivery
+namespace Kentico.Kontent.Delivery.QueryParameters.Parameters
 {
     /// <summary>
     /// Specifies the language of content items to be requested.
@@ -27,7 +27,7 @@ namespace Kentico.Kontent.Delivery
         /// </summary>
         public string GetQueryStringParameter()
         {
-            return string.Format("language={0}", Uri.EscapeDataString(Language));
+            return $"language={Uri.EscapeDataString(Language)}";
         }
     }
 }

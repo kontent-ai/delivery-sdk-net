@@ -1,11 +1,11 @@
 ﻿using System;
 using System.Collections.Generic;
-using Kentico.Kontent.Delivery.Abstractions;
+using Kentico.Kontent.Delivery.Models;
 using Kentico.Kontent.Delivery.Models.Item;
 using Kentico.Kontent.Delivery.Models.Type.Element;
 using Newtonsoft.Json;
 
-namespace Kentico.Kontent.Delivery.Tests
+namespace Kentico.Kontent.Delivery.Tests.Models
 {
     public class ContentItemModelWithAttributes
     {

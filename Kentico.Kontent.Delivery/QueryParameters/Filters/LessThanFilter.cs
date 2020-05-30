@@ -1,4 +1,4 @@
-﻿namespace Kentico.Kontent.Delivery
+﻿namespace Kentico.Kontent.Delivery.QueryParameters.Filters
 {
     /// <summary>
     /// Represents a filter that matches a content item if the specified content element or system attribute has a value that is less than the specified value.

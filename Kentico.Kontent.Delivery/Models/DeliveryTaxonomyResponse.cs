@@ -3,6 +3,7 @@ using Kentico.Kontent.Delivery.Abstractions.Responses;
 using Kentico.Kontent.Delivery.Models.Taxonomy;
 using System;
 using System.Threading;
+using Kentico.Kontent.Delivery.Abstractions.Models.Taxonomy;
 
 namespace Kentico.Kontent.Delivery.Models
 {

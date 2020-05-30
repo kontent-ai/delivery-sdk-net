@@ -1,6 +1,6 @@
 ﻿using System.Collections;
 
-namespace Kentico.Kontent.Delivery.Abstractions
+namespace Kentico.Kontent.Delivery.Abstractions.StrongTyping
 {
     /// <summary>
     /// Defines the contract for mapping content items to models.

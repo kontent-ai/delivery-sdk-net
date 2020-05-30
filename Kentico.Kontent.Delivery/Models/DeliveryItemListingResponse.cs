@@ -5,10 +5,12 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading;
+using Kentico.Kontent.Delivery.Abstractions.Models;
+using Kentico.Kontent.Delivery.Abstractions.StrongTyping;
 
 namespace Kentico.Kontent.Delivery.Models
 {
-    /// <inheritdoc/>
+    /// <inheritdoc cref="IDeliveryItemListingResponse{T}" />
     public sealed class DeliveryItemListingResponse<T> : AbstractResponse, IDeliveryItemListingResponse<T>
     {
         private readonly IModelProvider _modelProvider;

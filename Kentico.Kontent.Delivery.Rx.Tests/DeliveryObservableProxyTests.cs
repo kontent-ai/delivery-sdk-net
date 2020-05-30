@@ -7,8 +7,13 @@ using System.Reactive.Linq;
 using System.Threading.Tasks;
 using FakeItEasy;
 using Kentico.Kontent.Delivery.Abstractions;
+using Kentico.Kontent.Delivery.Abstractions.ContentLinks;
 using Kentico.Kontent.Delivery.Abstractions.InlineContentItems;
 using Kentico.Kontent.Delivery.Abstractions.RetryPolicy;
+using Kentico.Kontent.Delivery.Configuration;
+using Kentico.Kontent.Delivery.QueryParameters.Filters;
+using Kentico.Kontent.Delivery.QueryParameters.Parameters;
+using Kentico.Kontent.Delivery.Rx.Tests.Models.ContentTypes;
 using Kentico.Kontent.Delivery.StrongTyping;
 using Kentico.Kontent.Delivery.Tests.Factories;
 using RichardSzalay.MockHttp;
@@ -59,7 +64,7 @@ namespace Kentico.Kontent.Delivery.Rx.Tests
 
             Assert.NotEmpty(items);
             Assert.Equal(6, items.Count);
-            Assert.All(items, article => AssertArticlePropertiesNotNull(article));
+            Assert.All(items, AssertArticlePropertiesNotNull);
         }
 
         [Fact]
@@ -70,7 +75,7 @@ namespace Kentico.Kontent.Delivery.Rx.Tests
 
             Assert.NotEmpty(items);
             Assert.Equal(6, items.Count);
-            Assert.All(items, article => AssertArticlePropertiesNotNull(article));
+            Assert.All(items, AssertArticlePropertiesNotNull);
         }
 
         [Fact]
@@ -81,7 +86,7 @@ namespace Kentico.Kontent.Delivery.Rx.Tests
 
             Assert.NotEmpty(articles);
             Assert.All(articles, article => Assert.IsType<Article>(article));
-            Assert.All(articles, article => AssertArticlePropertiesNotNull(article));
+            Assert.All(articles, AssertArticlePropertiesNotNull);
         }
 
         [Fact]
@@ -92,7 +97,7 @@ namespace Kentico.Kontent.Delivery.Rx.Tests
 
             Assert.NotEmpty(articles);
             Assert.All(articles, article => Assert.IsType<Article>(article));
-            Assert.All(articles, article => AssertArticlePropertiesNotNull(article));
+            Assert.All(articles, AssertArticlePropertiesNotNull);
         }
 
         [Fact]
@@ -113,7 +118,7 @@ namespace Kentico.Kontent.Delivery.Rx.Tests
             var types = observable.ToEnumerable().ToList();
 
             Assert.NotEmpty(types);
-            Assert.All(types, type => Assert.NotNull(type));
+            Assert.All(types, Assert.NotNull);
             Assert.All(types, type => Assert.NotEmpty(type.Elements));
         }
 

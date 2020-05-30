@@ -1,4 +1,5 @@
 ﻿using System;
+using Kentico.Kontent.Delivery.Configuration;
 using Kentico.Kontent.Delivery.RetryPolicy;
 using Microsoft.Extensions.Options;
 using Xunit;

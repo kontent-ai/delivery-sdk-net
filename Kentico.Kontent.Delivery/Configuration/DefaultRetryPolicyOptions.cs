@@ -1,7 +1,7 @@
 ﻿using System;
 using Kentico.Kontent.Delivery.RetryPolicy;
 
-namespace Kentico.Kontent.Delivery
+namespace Kentico.Kontent.Delivery.Configuration
 {
     /// <summary>
     /// Represents configuration of the <see cref="DefaultRetryPolicy"/> that performs retries using a randomized exponential back off scheme to determine the interval between retries.

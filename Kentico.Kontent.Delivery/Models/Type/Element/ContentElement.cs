@@ -8,36 +8,18 @@ namespace Kentico.Kontent.Delivery.Models.Type.Element
     /// <inheritdoc/>
     public class ContentElement : IContentElement
     {
-        internal JToken Source { get; private set; }
+        internal JToken Source { get; }
 
         private IReadOnlyList<MultipleChoiceOption> _options;
 
         /// <inheritdoc/>
-        public string Type
-        {
-            get
-            {
-                return Source["type"]?.Value<string>() ?? null;
-            }
-        }
+        public string Type => Source["type"]?.Value<string>() ?? null;
 
         /// <inheritdoc/>
-        public string Value
-        {
-            get
-            {
-                return Source["value"] != null ? ((JObject)Source).Property("value").Value.ToString() : null;
-            }
-        }
+        public string Value => Source["value"] != null ? ((JObject)Source).Property("value").Value.ToString() : null;
 
         /// <inheritdoc/>
-        public string Name
-        {
-            get
-            {
-                return Source["name"]?.Value<string>() ?? null;
-            }
-        }
+        public string Name => Source["name"]?.Value<string>() ?? null;
 
         /// <inheritdoc/>
         public string Codename { get; }
@@ -58,13 +40,7 @@ namespace Kentico.Kontent.Delivery.Models.Type.Element
         }
 
         /// <inheritdoc/>
-        public string TaxonomyGroup
-        {
-            get
-            {
-                return Source["taxonomy_group"]?.Value<string>() ?? string.Empty;
-            }
-        }
+        public string TaxonomyGroup => Source["taxonomy_group"]?.Value<string>() ?? string.Empty;
 
         /// <summary>
         /// Initializes a new instance of the <see cref="ContentElement"/> class with the specified JSON data.

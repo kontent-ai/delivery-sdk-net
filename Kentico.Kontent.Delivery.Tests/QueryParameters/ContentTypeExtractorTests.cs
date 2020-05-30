@@ -1,6 +1,10 @@
 ﻿using System.Collections.Generic;
 using FakeItEasy;
 using Kentico.Kontent.Delivery.Abstractions;
+using Kentico.Kontent.Delivery.Abstractions.StrongTyping;
+using Kentico.Kontent.Delivery.Configuration;
+using Kentico.Kontent.Delivery.QueryParameters.Filters;
+using Kentico.Kontent.Delivery.QueryParameters.Parameters;
 using Kentico.Kontent.Delivery.StrongTyping;
 using Kentico.Kontent.Delivery.Tests.Factories;
 using Xunit;

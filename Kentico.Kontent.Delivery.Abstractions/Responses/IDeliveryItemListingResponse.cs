@@ -1,4 +1,5 @@
 ﻿using System.Collections.Generic;
+using Kentico.Kontent.Delivery.Abstractions.Models;
 
 namespace Kentico.Kontent.Delivery.Abstractions.Responses
 {
@@ -6,7 +7,7 @@ namespace Kentico.Kontent.Delivery.Abstractions.Responses
     /// Represents a response from Kentico Kontent Delivery API that contains a list of content items.
     /// </summary>
     /// <typeparam name="T">The type of content items in the response.</typeparam>
-    public interface IDeliveryItemListingResponse<T> : IResponse
+    public interface IDeliveryItemListingResponse<out T> : IResponse
     {
         /// <summary>
         /// Gets a read-only list of content items.

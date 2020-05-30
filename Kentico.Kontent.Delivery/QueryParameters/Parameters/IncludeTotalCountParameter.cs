@@ -1,6 +1,6 @@
 ﻿using Kentico.Kontent.Delivery.Abstractions;
 
-namespace Kentico.Kontent.Delivery
+namespace Kentico.Kontent.Delivery.QueryParameters.Parameters
 {
     /// <summary>
     /// Specifies whether to include total count in the paging section.

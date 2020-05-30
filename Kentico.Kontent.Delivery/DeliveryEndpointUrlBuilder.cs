@@ -3,6 +3,8 @@ using Microsoft.Extensions.Options;
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using Kentico.Kontent.Delivery.Configuration;
+using Kentico.Kontent.Delivery.QueryParameters.Parameters;
 
 namespace Kentico.Kontent.Delivery
 {

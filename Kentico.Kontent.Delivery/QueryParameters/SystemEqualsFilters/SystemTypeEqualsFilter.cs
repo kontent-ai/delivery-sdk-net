@@ -1,4 +1,4 @@
-﻿namespace Kentico.Kontent.Delivery
+﻿namespace Kentico.Kontent.Delivery.QueryParameters.SystemEqualsFilters
 {
     /// <summary>
     /// Represents a filter that matches a content item of the given content type.

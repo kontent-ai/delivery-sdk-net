@@ -1,4 +1,4 @@
-﻿namespace Kentico.Kontent.Delivery.Abstractions
+﻿namespace Kentico.Kontent.Delivery.Abstractions.Models
 {
     /// <summary>
     /// Represents information about a page.

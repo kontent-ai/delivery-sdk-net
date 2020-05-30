@@ -1,6 +1,8 @@
 ﻿using FluentAssertions;
 using Kentico.Kontent.Delivery.Abstractions;
 using System.Linq;
+using Kentico.Kontent.Delivery.QueryParameters.Parameters;
+using Kentico.Kontent.Delivery.QueryParameters.SystemEqualsFilters;
 using Xunit;
 
 namespace Kentico.Kontent.Delivery.Caching.Tests

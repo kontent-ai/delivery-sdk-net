@@ -4,9 +4,10 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Threading;
 using Kentico.Kontent.Delivery.Abstractions.Responses;
+using Kentico.Kontent.Delivery.Abstractions.StrongTyping;
 using Newtonsoft.Json.Linq;
 
-namespace Kentico.Kontent.Delivery.Abstractions
+namespace Kentico.Kontent.Delivery.Models
 {
     /// <inheritdoc/>
     public class DeliveryItemsFeedResponse<T> : FeedResponse, IEnumerable<T>, IDeliveryItemsFeedResponse<T>

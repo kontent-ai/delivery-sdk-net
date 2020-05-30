@@ -1,4 +1,4 @@
-﻿namespace Kentico.Kontent.Delivery.Abstractions
+﻿namespace Kentico.Kontent.Delivery.Abstractions.Models.RichText.Blocks
 {
     /// <summary>
     /// Base interface for rich text content blocks

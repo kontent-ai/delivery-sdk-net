@@ -1,6 +1,7 @@
 ﻿using System;
+using Kentico.Kontent.Delivery.Abstractions.ContentLinks;
 
-namespace Kentico.Kontent.Delivery.Abstractions
+namespace Kentico.Kontent.Delivery.Abstractions.StrongTyping
 {
     /// <summary>
     /// Context of the current resolving process

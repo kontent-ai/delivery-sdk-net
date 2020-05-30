@@ -1,7 +1,7 @@
-﻿using Kentico.Kontent.Delivery.Abstractions.Models.Type.Element;
-using System.Reflection;
+﻿using System.Reflection;
+using Kentico.Kontent.Delivery.Abstractions.Models.Type.Element;
 
-namespace Kentico.Kontent.Delivery.Abstractions
+namespace Kentico.Kontent.Delivery.Abstractions.StrongTyping
 {
     /// <summary>
     /// Provides value conversion for the given property

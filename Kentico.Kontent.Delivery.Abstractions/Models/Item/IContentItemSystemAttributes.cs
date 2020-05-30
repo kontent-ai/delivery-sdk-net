@@ -1,7 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 
-namespace Kentico.Kontent.Delivery.Abstractions
+namespace Kentico.Kontent.Delivery.Abstractions.Models.Item
 {
     /// <summary>
     /// Represents system attributes of a content item.

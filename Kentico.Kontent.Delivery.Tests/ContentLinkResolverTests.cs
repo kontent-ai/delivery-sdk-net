@@ -9,6 +9,8 @@ using Kentico.Kontent.Delivery.Abstractions;
 using Kentico.Kontent.Delivery.StrongTyping;
 using Kentico.Kontent.Delivery.ContentLinks;
 using Kentico.Kontent.Delivery.Abstractions.ContentLinks;
+using Kentico.Kontent.Delivery.Configuration;
+using Kentico.Kontent.Delivery.Tests.Models.ContentTypes;
 
 namespace Kentico.Kontent.Delivery.Tests
 {

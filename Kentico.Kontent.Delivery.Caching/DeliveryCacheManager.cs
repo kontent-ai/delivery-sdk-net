@@ -7,6 +7,7 @@ using System.Collections.Concurrent;
 using System.Collections.Generic;
 using System.Threading;
 using System.Threading.Tasks;
+using Kentico.Kontent.Delivery.Abstractions.Responses;
 
 namespace Kentico.Kontent.Delivery.Caching
 {

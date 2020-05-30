@@ -1,8 +1,8 @@
-using Kentico.Kontent.Delivery.Abstractions;
-using Kentico.Kontent.Delivery.Models.Item;
 using System.Collections.Generic;
+using Kentico.Kontent.Delivery.Models;
+using Kentico.Kontent.Delivery.Models.Item;
 
-namespace Kentico.Kontent.Delivery.Tests
+namespace Kentico.Kontent.Delivery.Tests.Models
 {
     public partial class Homepage
     {

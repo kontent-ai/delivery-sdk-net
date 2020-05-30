@@ -1,7 +1,7 @@
-﻿using Kentico.Kontent.Delivery.Abstractions;
+﻿using Kentico.Kontent.Delivery.Abstractions.Models.RichText;
 using Newtonsoft.Json;
 
-namespace Kentico.Kontent.Delivery.Tests
+namespace Kentico.Kontent.Delivery.Tests.Models.ContentTypes
 {
     public partial class SimpleRichText
     {

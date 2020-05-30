@@ -1,8 +1,8 @@
-﻿using Kentico.Kontent.Delivery.Abstractions;
+﻿using System;
+using Kentico.Kontent.Delivery.Abstractions;
 using Newtonsoft.Json;
-using System;
 
-namespace Kentico.Kontent.Delivery
+namespace Kentico.Kontent.Delivery.QueryParameters.Parameters
 {
     /// <summary>
     /// Specifies the number of content items to skip.
@@ -28,7 +28,7 @@ namespace Kentico.Kontent.Delivery
         /// </summary>
         public string GetQueryStringParameter()
         {
-            return string.Format("skip={0}", Uri.EscapeDataString(JsonConvert.ToString(Skip)));
+            return $"skip={Uri.EscapeDataString(JsonConvert.ToString(Skip))}";
         }
     }
 }

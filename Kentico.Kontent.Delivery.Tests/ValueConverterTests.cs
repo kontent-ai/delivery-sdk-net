@@ -9,10 +9,16 @@ using System.Net.Http;
 using System.Threading.Tasks;
 using FakeItEasy;
 using Kentico.Kontent.Delivery.Abstractions;
+using Kentico.Kontent.Delivery.Abstractions.ContentLinks;
+using Kentico.Kontent.Delivery.Abstractions.Models.RichText.Blocks;
 using Kentico.Kontent.Delivery.Abstractions.RetryPolicy;
 using Kentico.Kontent.Delivery.StrongTyping;
 using Kentico.Kontent.Delivery.Tests.Factories;
 using Kentico.Kontent.Delivery.Abstractions.Models.Type.Element;
+using Kentico.Kontent.Delivery.Abstractions.StrongTyping;
+using Kentico.Kontent.Delivery.Configuration;
+using Kentico.Kontent.Delivery.QueryParameters.Parameters;
+using Kentico.Kontent.Delivery.Tests.Models.ContentTypes;
 
 namespace Kentico.Kontent.Delivery.Tests
 {

@@ -3,6 +3,7 @@ using Kentico.Kontent.Delivery.Abstractions.Responses;
 using Newtonsoft.Json.Linq;
 using System;
 using System.Threading;
+using Kentico.Kontent.Delivery.Abstractions.StrongTyping;
 
 namespace Kentico.Kontent.Delivery.Models
 {

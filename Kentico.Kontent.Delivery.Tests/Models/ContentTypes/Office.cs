@@ -6,7 +6,7 @@
 
 using Kentico.Kontent.Delivery.Models.Item;
 
-namespace Kentico.Kontent.Delivery.Tests
+namespace Kentico.Kontent.Delivery.Tests.Models.ContentTypes
 {
     public partial class Office
     {

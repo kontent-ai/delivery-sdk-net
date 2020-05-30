@@ -1,8 +1,8 @@
-﻿using Kentico.Kontent.Delivery.Abstractions;
+﻿using System;
+using Kentico.Kontent.Delivery.Abstractions;
 using Newtonsoft.Json;
-using System;
 
-namespace Kentico.Kontent.Delivery
+namespace Kentico.Kontent.Delivery.QueryParameters.Parameters
 {
     /// <summary>
     /// Specifies the maximum level of recursion when retrieving linked items. If not specified, the default depth is one level.
@@ -28,7 +28,7 @@ namespace Kentico.Kontent.Delivery
         /// </summary>
         public string GetQueryStringParameter()
         {
-            return string.Format("depth={0}", Uri.EscapeDataString(JsonConvert.ToString(Depth)));
+            return $"depth={Uri.EscapeDataString(JsonConvert.ToString(Depth))}";
         }
     }
 }

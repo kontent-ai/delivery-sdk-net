@@ -5,7 +5,7 @@
     /// </summary>
     /// <typeparam name="T">Content type to be resolved</typeparam>
     /// <seealso cref="ITypelessInlineContentItemsResolver"/>
-    public interface IInlineContentItemsResolver<T>
+    public interface IInlineContentItemsResolver<in T>
     {
         /// <summary>
         /// Method implementing the resolving of inline content item. Result should be valid HTML code

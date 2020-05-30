@@ -1,6 +1,7 @@
-﻿using Newtonsoft.Json;
+﻿using Kentico.Kontent.Delivery.Abstractions.Models.Taxonomy;
+using Newtonsoft.Json;
 
-namespace Kentico.Kontent.Delivery.Abstractions
+namespace Kentico.Kontent.Delivery.Models
 {
     /// <inheritdoc/>
     public sealed class TaxonomyTerm : ITaxonomyTerm

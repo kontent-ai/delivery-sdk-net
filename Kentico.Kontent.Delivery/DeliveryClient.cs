@@ -10,6 +10,11 @@ using Kentico.Kontent.Delivery.Abstractions;
 using Kentico.Kontent.Delivery.Abstractions.RetryPolicy;
 using Kentico.Kontent.Delivery.Models;
 using Kentico.Kontent.Delivery.Abstractions.Responses;
+using Kentico.Kontent.Delivery.Abstractions.StrongTyping;
+using Kentico.Kontent.Delivery.Configuration;
+using Kentico.Kontent.Delivery.QueryParameters.Filters;
+using Kentico.Kontent.Delivery.QueryParameters.Parameters;
+using Kentico.Kontent.Delivery.QueryParameters.SystemEqualsFilters;
 
 namespace Kentico.Kontent.Delivery
 {

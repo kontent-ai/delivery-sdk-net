@@ -11,6 +11,10 @@ using System;
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
 using System.IO;
+using Kentico.Kontent.Delivery.Abstractions.ContentLinks;
+using Kentico.Kontent.Delivery.Abstractions.StrongTyping;
+using Kentico.Kontent.Delivery.Configuration;
+using Kentico.Kontent.Delivery.Extensions;
 using Xunit;
 
 namespace Kentico.Kontent.Delivery.Tests.Extensions

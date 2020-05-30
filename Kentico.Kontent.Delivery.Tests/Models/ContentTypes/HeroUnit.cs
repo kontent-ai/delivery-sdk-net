@@ -4,11 +4,11 @@
 // Changes to this file may cause incorrect behavior and will be lost if the code is regenerated. 
 // For further modifications of the class, create a separate file with the partial class.
 
-using Kentico.Kontent.Delivery.Abstractions;
-using Kentico.Kontent.Delivery.Models.Item;
 using System.Collections.Generic;
+using Kentico.Kontent.Delivery.Models;
+using Kentico.Kontent.Delivery.Models.Item;
 
-namespace Kentico.Kontent.Delivery.Tests
+namespace Kentico.Kontent.Delivery.Tests.Models.ContentTypes
 {
     public partial class HeroUnit
     {

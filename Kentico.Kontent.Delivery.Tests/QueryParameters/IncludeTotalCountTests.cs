@@ -2,6 +2,9 @@
 using FakeItEasy;
 using FluentAssertions;
 using Kentico.Kontent.Delivery.Abstractions;
+using Kentico.Kontent.Delivery.Configuration;
+using Kentico.Kontent.Delivery.Models;
+using Kentico.Kontent.Delivery.Tests.Models.ContentTypes;
 using Newtonsoft.Json;
 using Newtonsoft.Json.Linq;
 using RichardSzalay.MockHttp;

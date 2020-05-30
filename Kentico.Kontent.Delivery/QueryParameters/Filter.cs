@@ -1,8 +1,8 @@
-﻿using Kentico.Kontent.Delivery.Abstractions;
-using System;
+﻿using System;
 using System.Linq;
+using Kentico.Kontent.Delivery.Abstractions;
 
-namespace Kentico.Kontent.Delivery
+namespace Kentico.Kontent.Delivery.QueryParameters
 {
     /// <summary>
     /// Provides the base class for filter implementations.
@@ -43,7 +43,7 @@ namespace Kentico.Kontent.Delivery
         public string GetQueryStringParameter()
         {
             var escapedValues = Values.Select(Uri.EscapeDataString);
-            return string.Format("{0}{1}={2}", Uri.EscapeDataString(ElementOrAttributePath), Uri.EscapeDataString(Operator ?? string.Empty), string.Join(SEPARATOR, escapedValues));
+            return $"{Uri.EscapeDataString(ElementOrAttributePath)}{Uri.EscapeDataString(Operator ?? string.Empty)}={string.Join(SEPARATOR, escapedValues)}";
         }
     }
 }

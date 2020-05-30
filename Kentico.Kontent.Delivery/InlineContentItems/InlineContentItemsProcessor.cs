@@ -8,6 +8,9 @@ using Microsoft.Extensions.DependencyInjection;
 using System.Collections.ObjectModel;
 using Kentico.Kontent.Delivery.Abstractions.InlineContentItems;
 using Kentico.Kontent.Delivery.Abstractions;
+using Kentico.Kontent.Delivery.Abstractions.StrongTyping;
+using Kentico.Kontent.Delivery.Builders.DeliveryClient;
+using Kentico.Kontent.Delivery.Extensions;
 using Kentico.Kontent.Delivery.StrongTyping;
 
 namespace Kentico.Kontent.Delivery.InlineContentItems
@@ -31,7 +34,7 @@ namespace Kentico.Kontent.Delivery.InlineContentItems
         /// a custom resolver for <see cref="UnretrievedContentItem"/>s used when an item was not retrieved from Delivery API, 
         /// and a resolver for <see cref="UnknownContentItem"/> that a <see cref="IModelProvider"/> was unable to strongly type.
         /// If these resolvers are not specified using <see cref="DeliveryClientBuilder"/> or the <see cref="IServiceCollection"/> registration
-        /// (<see cref="ServiceCollectionExtensions.AddDeliveryInlineContentItemsResolver{TContentItem, TInlineContentItemsResolver}(IServiceCollection)"/>),
+        /// (<see cref="ServiceCollectionExtensions.AddDeliveryInlineContentItemsResolver{TContentItem,TInlineContentItemsResolver}"/>),
         /// the default implementations resulting in warning messages will be used.
         /// </remarks>
         /// <param name="inlineContentItemsResolvers">Collection of inline content item resolvers.</param>

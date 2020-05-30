@@ -1,8 +1,8 @@
-﻿using Kentico.Kontent.Delivery.Abstractions;
+﻿using System;
+using Kentico.Kontent.Delivery.Abstractions;
 using Newtonsoft.Json;
-using System;
 
-namespace Kentico.Kontent.Delivery
+namespace Kentico.Kontent.Delivery.QueryParameters.Parameters
 {
     /// <summary>
     /// Specifies the maximum number of content items to return.
@@ -28,7 +28,7 @@ namespace Kentico.Kontent.Delivery
         /// </summary>
         public string GetQueryStringParameter()
         {
-            return string.Format("limit={0}", Uri.EscapeDataString(JsonConvert.ToString(Limit)));
+            return $"limit={Uri.EscapeDataString(JsonConvert.ToString(Limit))}";
         }
     }
 }

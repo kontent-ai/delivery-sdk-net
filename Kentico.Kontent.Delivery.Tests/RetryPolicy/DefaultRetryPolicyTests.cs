@@ -6,6 +6,7 @@ using System.Net;
 using System.Net.Http;
 using System.Net.Http.Headers;
 using System.Threading.Tasks;
+using Kentico.Kontent.Delivery.Configuration;
 using Kentico.Kontent.Delivery.RetryPolicy;
 using Xunit;
 

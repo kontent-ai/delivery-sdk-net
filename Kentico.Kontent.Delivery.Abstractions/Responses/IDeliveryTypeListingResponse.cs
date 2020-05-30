@@ -1,5 +1,6 @@
 ﻿using Kentico.Kontent.Delivery.Abstractions.Models.Type;
 using System.Collections.Generic;
+using Kentico.Kontent.Delivery.Abstractions.Models;
 
 namespace Kentico.Kontent.Delivery.Abstractions.Responses
 {

@@ -1,9 +1,9 @@
-using Kentico.Kontent.Delivery.Abstractions;
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using Kentico.Kontent.Delivery.Abstractions.StrongTyping;
 
-namespace Kentico.Kontent.Delivery.Rx.Tests
+namespace Kentico.Kontent.Delivery.Rx.Tests.Models.ContentTypes
 {
     public class CustomTypeProvider : ITypeProvider
     {

@@ -4,8 +4,12 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Reflection;
 using Kentico.Kontent.Delivery.Abstractions;
+using Kentico.Kontent.Delivery.Abstractions.ContentLinks;
 using Kentico.Kontent.Delivery.Abstractions.InlineContentItems;
+using Kentico.Kontent.Delivery.Abstractions.Models.RichText;
+using Kentico.Kontent.Delivery.Abstractions.StrongTyping;
 using Kentico.Kontent.Delivery.ContentLinks;
+using Kentico.Kontent.Delivery.Models;
 using Kentico.Kontent.Delivery.Models.Item;
 using Kentico.Kontent.Delivery.Models.Type.Element;
 using Newtonsoft.Json;
@@ -21,11 +25,11 @@ namespace Kentico.Kontent.Delivery.StrongTyping
         private ContentLinkResolver _contentLinkResolver;
         internal ITypeProvider TypeProvider { get; set; }
 
-        internal IInlineContentItemsProcessor InlineContentItemsProcessor { get; private set; }
+        internal IInlineContentItemsProcessor InlineContentItemsProcessor { get; }
 
-        internal IPropertyMapper PropertyMapper { get; private set; }
+        internal IPropertyMapper PropertyMapper { get; }
 
-        internal IContentLinkUrlResolver ContentLinkUrlResolver { get; private set; }
+        internal IContentLinkUrlResolver ContentLinkUrlResolver { get; }
 
         private ContentLinkResolver ContentLinkResolver
         {
@@ -389,10 +393,7 @@ namespace Kentico.Kontent.Delivery.StrongTyping
                             contentItem = GetContentItemModel(typeof(object), linkedItemsElementNode, linkedItems, processedItems, currentlyResolvedRichStrings);
                             if (!processedItems.ContainsKey(codenameUsed))
                             {
-                                if (contentItem == null)
-                                {
-                                    contentItem = new UnknownContentItem(linkedItemsElementNode);
-                                }
+                                contentItem ??= new UnknownContentItem(linkedItemsElementNode);
                                 processedItems.Add(codenameUsed, contentItem);
                             }
                         }

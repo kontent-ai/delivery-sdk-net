@@ -1,13 +1,15 @@
-﻿using Newtonsoft.Json.Linq;
+﻿using Kentico.Kontent.Delivery.Abstractions;
+using Kentico.Kontent.Delivery.Abstractions.Responses;
+using Newtonsoft.Json.Linq;
 
-namespace Kentico.Kontent.Delivery.Abstractions
+namespace Kentico.Kontent.Delivery.Models
 {
     /// <summary>
     /// Represents a successful JSON response from Kentico Kontent Delivery API.
     /// </summary>
     public sealed class ApiResponse : IApiResponse
     {
-        private JObject jsonContent;
+        private JObject _jsonContent;
 
         /// <inheritdoc/>
         public string Content { get; }
@@ -15,17 +17,7 @@ namespace Kentico.Kontent.Delivery.Abstractions
         /// <summary>
         /// Gets an object model of the JSON content.
         /// </summary>
-        public JObject JsonContent
-        {
-            get
-            {
-                if (jsonContent == null)
-                {
-                    jsonContent = JObject.Parse(Content);
-                }
-                return jsonContent;
-            }
-        }
+        public JObject JsonContent => _jsonContent ??= JObject.Parse(Content);
 
         /// <inheritdoc/>
         public bool HasStaleContent { get; }

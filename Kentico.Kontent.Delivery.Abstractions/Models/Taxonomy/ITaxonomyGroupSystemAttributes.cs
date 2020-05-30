@@ -1,6 +1,6 @@
 ﻿using System;
 
-namespace Kentico.Kontent.Delivery.Abstractions
+namespace Kentico.Kontent.Delivery.Abstractions.Models.Taxonomy
 {
     /// <summary>
     /// Represents system attributes of a taxonomy group

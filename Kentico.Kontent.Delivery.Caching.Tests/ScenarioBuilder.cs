@@ -7,6 +7,7 @@ using System.Collections.Generic;
 using System.IO;
 using System.Linq;
 using System.Text;
+using Kentico.Kontent.Delivery.Configuration;
 
 namespace Kentico.Kontent.Delivery.Caching.Tests
 {

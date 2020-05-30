@@ -1,7 +1,7 @@
-﻿using Kentico.Kontent.Delivery.Abstractions.Responses;
-using System.Threading.Tasks;
+﻿using System.Threading.Tasks;
+using Kentico.Kontent.Delivery.Abstractions.Responses;
 
-namespace Kentico.Kontent.Delivery.Abstractions
+namespace Kentico.Kontent.Delivery.Abstractions.StrongTyping
 {
     /// <summary>
     /// Represents a feed that can be used to retrieve strongly typed content items from Kentico Kontent Delivery API in smaller batches.

@@ -15,18 +15,7 @@ namespace Kentico.Kontent.Delivery.Models.Type
         private IReadOnlyDictionary<string, IContentElement> _elements;
 
         /// <inheritdoc/>
-        public IContentTypeSystemAttributes System
-        {
-            get
-            {
-                if (_system == null)
-                {
-                    _system = _source["system"].ToObject<ContentTypeSystemAttributes>();
-                }
-
-                return _system;
-            }
-        }
+        public IContentTypeSystemAttributes System => _system ??= _source["system"].ToObject<ContentTypeSystemAttributes>();
 
         /// <inheritdoc/>
         public IReadOnlyDictionary<string, IContentElement> Elements

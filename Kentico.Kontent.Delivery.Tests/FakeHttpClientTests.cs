@@ -4,7 +4,12 @@ using System.Net.Http;
 using System.Threading.Tasks;
 using FakeItEasy;
 using Kentico.Kontent.Delivery.Abstractions;
+using Kentico.Kontent.Delivery.Abstractions.ContentLinks;
 using Kentico.Kontent.Delivery.Abstractions.RetryPolicy;
+using Kentico.Kontent.Delivery.Builders.DeliveryClient;
+using Kentico.Kontent.Delivery.Builders.DeliveryOptions;
+using Kentico.Kontent.Delivery.Configuration;
+using Kentico.Kontent.Delivery.Tests.Models.ContentTypes;
 using RichardSzalay.MockHttp;
 using Xunit;
 

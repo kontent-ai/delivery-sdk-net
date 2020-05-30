@@ -1,5 +1,6 @@
 ﻿using System;
 using Kentico.Kontent.Delivery.Abstractions;
+using Kentico.Kontent.Delivery.Abstractions.Models.Taxonomy;
 using Newtonsoft.Json;
 
 namespace Kentico.Kontent.Delivery.Models.Taxonomy

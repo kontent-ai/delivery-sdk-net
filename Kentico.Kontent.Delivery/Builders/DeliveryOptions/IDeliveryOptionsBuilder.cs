@@ -1,4 +1,6 @@
 ﻿using System;
+using Kentico.Kontent.Delivery.Configuration;
+using Kentico.Kontent.Delivery.QueryParameters.Parameters;
 
 namespace Kentico.Kontent.Delivery.Builders.DeliveryOptions
 {
@@ -102,6 +104,6 @@ namespace Kentico.Kontent.Delivery.Builders.DeliveryOptions
         /// <summary>
         /// Returns a new instance of the <see cref="DeliveryOptions"/> class.
         /// </summary>
-        Delivery.DeliveryOptions Build();
+        Configuration.DeliveryOptions Build();
     }
 }

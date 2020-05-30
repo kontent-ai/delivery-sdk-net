@@ -1,4 +1,4 @@
-﻿namespace Kentico.Kontent.Delivery.Abstractions
+﻿namespace Kentico.Kontent.Delivery.Abstractions.Responses
 {
     /// <summary>
     /// Represents a successful JSON response from Kentico Kontent Delivery API.

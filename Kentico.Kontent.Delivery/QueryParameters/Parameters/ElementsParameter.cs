@@ -1,9 +1,9 @@
-﻿using Kentico.Kontent.Delivery.Abstractions;
-using System;
+﻿using System;
 using System.Collections.Generic;
 using System.Linq;
+using Kentico.Kontent.Delivery.Abstractions;
 
-namespace Kentico.Kontent.Delivery
+namespace Kentico.Kontent.Delivery.QueryParameters.Parameters
 {
     /// <summary>
     /// Specifies the content elements to retrieve.
@@ -29,7 +29,7 @@ namespace Kentico.Kontent.Delivery
         /// </summary>
         public string GetQueryStringParameter()
         {
-            return string.Format("elements={0}", string.Join(Uri.EscapeDataString(","), ElementCodenames.Select(Uri.EscapeDataString)));
+            return $"elements={string.Join(Uri.EscapeDataString(","), ElementCodenames.Select(Uri.EscapeDataString))}";
         }
     }
 }

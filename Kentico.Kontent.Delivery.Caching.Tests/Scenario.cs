@@ -3,6 +3,8 @@ using Microsoft.Extensions.Caching.Memory;
 using Microsoft.Extensions.Options;
 using System.Collections.Generic;
 using System.Net.Http;
+using Kentico.Kontent.Delivery.Builders.DeliveryClient;
+using Kentico.Kontent.Delivery.Configuration;
 
 namespace Kentico.Kontent.Delivery.Caching.Tests
 {

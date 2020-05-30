@@ -1,4 +1,6 @@
 ﻿using System;
+using Kentico.Kontent.Delivery.Builders.DeliveryOptions;
+using Kentico.Kontent.Delivery.Configuration;
 using Xunit;
 
 namespace Kentico.Kontent.Delivery.Tests.Builders.DeliveryOptions

@@ -1,4 +1,6 @@
-﻿namespace Kentico.Kontent.Delivery
+﻿using Kentico.Kontent.Delivery.QueryParameters.Parameters;
+
+namespace Kentico.Kontent.Delivery.Configuration
 {
     /// <summary>
     /// Represents configuration of the <see cref="DeliveryClient"/>.

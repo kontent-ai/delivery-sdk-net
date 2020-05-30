@@ -1,7 +1,8 @@
 ﻿using System;
 using System.Text.RegularExpressions;
+using Kentico.Kontent.Delivery.Configuration;
 
-namespace Kentico.Kontent.Delivery
+namespace Kentico.Kontent.Delivery.Builders.DeliveryOptions
 {
     /// <summary>
     /// Validates instances of the <see cref="DeliveryOptions"/> class.
@@ -15,7 +16,7 @@ namespace Kentico.Kontent.Delivery
         /// If the configuration is not valid, an exception is thrown.
         /// </summary>
         /// <param name="deliveryOptions">An instance of the <see cref="DeliveryOptions"/> class.</param>
-        public static void Validate(this DeliveryOptions deliveryOptions)
+        public static void Validate(this Configuration.DeliveryOptions deliveryOptions)
         {
             ValidateProjectId(deliveryOptions.ProjectId);
             ValidateUseOfPreviewAndProductionApi(deliveryOptions);
@@ -126,7 +127,7 @@ namespace Kentico.Kontent.Delivery
             }
         }
 
-        private static void ValidateKeyForEnabledApi(this DeliveryOptions deliveryOptions)
+        private static void ValidateKeyForEnabledApi(this Configuration.DeliveryOptions deliveryOptions)
         {
             if (deliveryOptions.UsePreviewApi && string.IsNullOrWhiteSpace(deliveryOptions.PreviewApiKey))
             {
@@ -139,7 +140,7 @@ namespace Kentico.Kontent.Delivery
             }
         }
 
-        private static void ValidateUseOfPreviewAndProductionApi(this DeliveryOptions deliveryOptions)
+        private static void ValidateUseOfPreviewAndProductionApi(this Configuration.DeliveryOptions deliveryOptions)
         {
             if (deliveryOptions.UsePreviewApi && deliveryOptions.UseSecureAccess)
             {

@@ -1,6 +1,6 @@
 ﻿using System.Reflection;
 
-namespace Kentico.Kontent.Delivery.Abstractions
+namespace Kentico.Kontent.Delivery.Abstractions.StrongTyping
 {
     /// <summary>
     /// Defines the contract for mapping Kentico Kontent content item fields to model properties.

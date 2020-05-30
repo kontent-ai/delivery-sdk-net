@@ -1,7 +1,7 @@
-﻿using Kentico.Kontent.Delivery.Abstractions;
-using System;
+﻿using System;
+using Kentico.Kontent.Delivery.Abstractions;
 
-namespace Kentico.Kontent.Delivery
+namespace Kentico.Kontent.Delivery.QueryParameters.Parameters
 {
     /// <summary>
     /// Specifies how content items are sorted.
@@ -34,7 +34,7 @@ namespace Kentico.Kontent.Delivery
         /// </summary>
         public string GetQueryStringParameter()
         {
-            return string.Format("order={0}{1}", Uri.EscapeDataString(ElementOrAttributePath), Uri.EscapeDataString(SortOrder == SortOrder.Ascending ? "[asc]" : "[desc]"));
+            return $"order={Uri.EscapeDataString(ElementOrAttributePath)}{Uri.EscapeDataString(SortOrder == SortOrder.Ascending ? "[asc]" : "[desc]")}";
         }
     }
 }

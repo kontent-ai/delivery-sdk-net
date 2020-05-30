@@ -1,4 +1,6 @@
 ﻿using System.Collections.Generic;
+using Kentico.Kontent.Delivery.Abstractions.Models;
+using Kentico.Kontent.Delivery.Abstractions.Models.Taxonomy;
 
 namespace Kentico.Kontent.Delivery.Abstractions.Responses
 {

@@ -2,6 +2,7 @@
 using System.Net;
 using System.Text.RegularExpressions;
 using Kentico.Kontent.Delivery.Abstractions;
+using Kentico.Kontent.Delivery.Abstractions.ContentLinks;
 using Newtonsoft.Json.Linq;
 
 namespace Kentico.Kontent.Delivery.ContentLinks
@@ -59,7 +60,7 @@ namespace Kentico.Kontent.Delivery.ContentLinks
 
             const string needle = "href=\"\"";
             var haystack = match.Value;
-            var index = haystack.IndexOf(needle);
+            var index = haystack.IndexOf(needle, StringComparison.InvariantCulture);
             
             if (index < 0)
             {
