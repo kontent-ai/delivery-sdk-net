@@ -1,8 +1,8 @@
 ﻿using System;
 using FakeItEasy;
 using FluentAssertions;
-using Kentico.Kontent.Delivery.Configuration;
-using Kentico.Kontent.Delivery.Models;
+using Kentico.Kontent.Delivery.Configuration.DeliveryOptions;
+using Kentico.Kontent.Delivery.SharedModels;
 using Kentico.Kontent.Delivery.Tests.Models.ContentTypes;
 using Newtonsoft.Json;
 using Newtonsoft.Json.Linq;

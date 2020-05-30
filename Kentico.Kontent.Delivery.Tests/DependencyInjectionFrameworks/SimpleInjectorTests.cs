@@ -1,5 +1,5 @@
 ﻿using Kentico.Kontent.Delivery.Abstractions;
-using Kentico.Kontent.Delivery.Abstractions.StrongTyping;
+using Kentico.Kontent.Delivery.Abstractions.ContentItems;
 using Kentico.Kontent.Delivery.Tests.DependencyInjectionFrameworks.Helpers;
 using Microsoft.Extensions.DependencyInjection;
 using Xunit;

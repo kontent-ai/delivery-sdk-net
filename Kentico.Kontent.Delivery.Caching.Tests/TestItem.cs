@@ -1,4 +1,4 @@
-﻿using Kentico.Kontent.Delivery.Models.Item;
+﻿using Kentico.Kontent.Delivery.ContentItems;
 
 namespace Kentico.Kontent.Delivery.Caching.Tests
 {

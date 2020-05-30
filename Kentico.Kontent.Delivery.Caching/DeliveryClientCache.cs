@@ -3,8 +3,9 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
 using Kentico.Kontent.Delivery.Abstractions;
-using Kentico.Kontent.Delivery.Abstractions.Responses;
-using Kentico.Kontent.Delivery.Abstractions.StrongTyping;
+using Kentico.Kontent.Delivery.Abstractions.ContentItems;
+using Kentico.Kontent.Delivery.Abstractions.ContentTypes;
+using Kentico.Kontent.Delivery.Abstractions.TaxonomyGroups;
 
 namespace Kentico.Kontent.Delivery.Caching
 {

@@ -1,6 +1,6 @@
 ﻿using System.Collections.Generic;
-using Kentico.Kontent.Delivery.Abstractions.InlineContentItems;
-using Kentico.Kontent.Delivery.StrongTyping;
+using Kentico.Kontent.Delivery.Abstractions.ContentItems.InlineContentItems;
+using Kentico.Kontent.Delivery.ContentItems;
 using Kentico.Kontent.Delivery.Tests.Factories;
 using Xunit;
 

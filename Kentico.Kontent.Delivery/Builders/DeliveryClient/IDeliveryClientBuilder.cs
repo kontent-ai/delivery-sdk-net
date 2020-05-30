@@ -1,11 +1,10 @@
 ﻿using System;
 using Kentico.Kontent.Delivery.Abstractions;
-using Kentico.Kontent.Delivery.Abstractions.ContentLinks;
-using Kentico.Kontent.Delivery.Abstractions.InlineContentItems;
+using Kentico.Kontent.Delivery.Abstractions.ContentItems;
+using Kentico.Kontent.Delivery.Abstractions.ContentItems.ContentLinks;
+using Kentico.Kontent.Delivery.Abstractions.ContentItems.InlineContentItems;
 using Kentico.Kontent.Delivery.Abstractions.RetryPolicy;
-using Kentico.Kontent.Delivery.Abstractions.StrongTyping;
-using Kentico.Kontent.Delivery.Builders.DeliveryOptions;
-using Kentico.Kontent.Delivery.Configuration;
+using Kentico.Kontent.Delivery.Configuration.DeliveryOptions;
 
 namespace Kentico.Kontent.Delivery.Builders.DeliveryClient
 {
@@ -21,7 +20,7 @@ namespace Kentico.Kontent.Delivery.Builders.DeliveryClient
         IOptionalClientSetup BuildWithProjectId(Guid projectId);
 
         /// <seealso cref="DeliveryClientBuilder.WithOptions(Func{IDeliveryOptionsBuilder, DeliveryOptions})"/>
-        IOptionalClientSetup BuildWithDeliveryOptions(Func<IDeliveryOptionsBuilder, Configuration.DeliveryOptions> buildDeliveryOptions);
+        IOptionalClientSetup BuildWithDeliveryOptions(Func<IDeliveryOptionsBuilder, Configuration.DeliveryOptions.DeliveryOptions> buildDeliveryOptions);
     }
 
     /// <summary>

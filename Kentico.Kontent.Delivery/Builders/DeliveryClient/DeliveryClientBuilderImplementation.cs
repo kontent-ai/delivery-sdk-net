@@ -1,10 +1,10 @@
 ﻿using System;
 using Kentico.Kontent.Delivery.Abstractions;
-using Kentico.Kontent.Delivery.Abstractions.ContentLinks;
-using Kentico.Kontent.Delivery.Abstractions.InlineContentItems;
+using Kentico.Kontent.Delivery.Abstractions.ContentItems;
+using Kentico.Kontent.Delivery.Abstractions.ContentItems.ContentLinks;
+using Kentico.Kontent.Delivery.Abstractions.ContentItems.InlineContentItems;
 using Kentico.Kontent.Delivery.Abstractions.RetryPolicy;
-using Kentico.Kontent.Delivery.Abstractions.StrongTyping;
-using Kentico.Kontent.Delivery.Builders.DeliveryOptions;
+using Kentico.Kontent.Delivery.Configuration.DeliveryOptions;
 using Kentico.Kontent.Delivery.Extensions;
 using Microsoft.Extensions.DependencyInjection;
 
@@ -13,9 +13,9 @@ namespace Kentico.Kontent.Delivery.Builders.DeliveryClient
     internal sealed class DeliveryClientBuilderImplementation : IDeliveryClientBuilder, IOptionalClientSetup
     {
         private readonly IServiceCollection _serviceCollection = new ServiceCollection();
-        private Configuration.DeliveryOptions _deliveryOptions;
+        private Configuration.DeliveryOptions.DeliveryOptions _deliveryOptions;
 
-        public IOptionalClientSetup BuildWithDeliveryOptions(Func<IDeliveryOptionsBuilder, Configuration.DeliveryOptions> buildDeliveryOptions)
+        public IOptionalClientSetup BuildWithDeliveryOptions(Func<IDeliveryOptionsBuilder, Configuration.DeliveryOptions.DeliveryOptions> buildDeliveryOptions)
         {
             var builder = DeliveryOptionsBuilder.CreateInstance();
             _deliveryOptions = buildDeliveryOptions(builder);

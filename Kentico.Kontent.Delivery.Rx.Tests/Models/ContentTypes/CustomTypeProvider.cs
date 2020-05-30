@@ -1,7 +1,7 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
-using Kentico.Kontent.Delivery.Abstractions.StrongTyping;
+using Kentico.Kontent.Delivery.Abstractions.ContentItems;
 
 namespace Kentico.Kontent.Delivery.Rx.Tests.Models.ContentTypes
 {

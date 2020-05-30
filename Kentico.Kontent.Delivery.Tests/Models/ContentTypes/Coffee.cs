@@ -5,9 +5,9 @@
 // For further modifications of the class, create a separate file with the partial class.
 
 using System.Collections.Generic;
-using Kentico.Kontent.Delivery.Models;
-using Kentico.Kontent.Delivery.Models.Item;
-using Kentico.Kontent.Delivery.Models.Type.Element;
+using Kentico.Kontent.Delivery.ContentItems;
+using Kentico.Kontent.Delivery.ContentTypes.Element;
+using Kentico.Kontent.Delivery.TaxonomyGroups;
 
 namespace Kentico.Kontent.Delivery.Tests.Models.ContentTypes
 {

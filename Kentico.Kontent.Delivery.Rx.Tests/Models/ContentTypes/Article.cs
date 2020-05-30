@@ -6,8 +6,8 @@
 
 using System;
 using System.Collections.Generic;
-using Kentico.Kontent.Delivery.Models;
-using Kentico.Kontent.Delivery.Models.Item;
+using Kentico.Kontent.Delivery.ContentItems;
+using Kentico.Kontent.Delivery.TaxonomyGroups;
 
 namespace Kentico.Kontent.Delivery.Rx.Tests.Models.ContentTypes
 {

@@ -1,7 +1,6 @@
 ﻿using System;
 using Kentico.Kontent.Delivery.Abstractions;
-using Kentico.Kontent.Delivery.Builders.DeliveryOptions;
-using Kentico.Kontent.Delivery.Configuration;
+using Kentico.Kontent.Delivery.Configuration.DeliveryOptions;
 
 namespace Kentico.Kontent.Delivery.Builders.DeliveryClient
 {
@@ -30,7 +29,7 @@ namespace Kentico.Kontent.Delivery.Builders.DeliveryClient
         /// Use additional configuration.
         /// </summary>
         /// <param name="buildDeliveryOptions">A delegate that creates an instance of the <see cref="DeliveryOptions"/> using the specified <see cref="DeliveryOptionsBuilder"/>.</param>
-        public static IOptionalClientSetup WithOptions(Func<IDeliveryOptionsBuilder, Configuration.DeliveryOptions> buildDeliveryOptions)
+        public static IOptionalClientSetup WithOptions(Func<IDeliveryOptionsBuilder, Configuration.DeliveryOptions.DeliveryOptions> buildDeliveryOptions)
             => Builder.BuildWithDeliveryOptions(buildDeliveryOptions);
     }
 }

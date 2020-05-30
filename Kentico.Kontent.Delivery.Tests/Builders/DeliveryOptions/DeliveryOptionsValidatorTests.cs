@@ -1,6 +1,6 @@
 ﻿using System;
-using Kentico.Kontent.Delivery.Builders.DeliveryOptions;
 using Kentico.Kontent.Delivery.Configuration;
+using Kentico.Kontent.Delivery.Configuration.DeliveryOptions;
 using Xunit;
 
 namespace Kentico.Kontent.Delivery.Tests.Builders.DeliveryOptions
@@ -12,7 +12,7 @@ namespace Kentico.Kontent.Delivery.Tests.Builders.DeliveryOptions
         [Fact]
         public void ValidateRetryOptions_NegativeDeltaBackoff_Throws()
         {
-            var deliveryOptions = new Configuration.DeliveryOptions
+            var deliveryOptions = new Configuration.DeliveryOptions.DeliveryOptions
             {
                 ProjectId = _guid.ToString(),
                 DefaultRetryPolicyOptions = new DefaultRetryPolicyOptions
@@ -27,7 +27,7 @@ namespace Kentico.Kontent.Delivery.Tests.Builders.DeliveryOptions
         [Fact]
         public void ValidateRetryOptions_ZeroDeltaBackoff_Throws()
         {
-            var deliveryOptions = new Configuration.DeliveryOptions
+            var deliveryOptions = new Configuration.DeliveryOptions.DeliveryOptions
             {
                 ProjectId = _guid.ToString(),
                 DefaultRetryPolicyOptions = new DefaultRetryPolicyOptions
@@ -42,7 +42,7 @@ namespace Kentico.Kontent.Delivery.Tests.Builders.DeliveryOptions
         [Fact]
         public void ValidateRetryOptions_NegativeMaxCumulativeWaitTime_Throws()
         {
-            var deliveryOptions = new Configuration.DeliveryOptions
+            var deliveryOptions = new Configuration.DeliveryOptions.DeliveryOptions
             {
                 ProjectId = _guid.ToString(),
                 DefaultRetryPolicyOptions = new DefaultRetryPolicyOptions
@@ -57,7 +57,7 @@ namespace Kentico.Kontent.Delivery.Tests.Builders.DeliveryOptions
         [Fact]
         public void ValidateRetryOptions_ZeroMaxCumulativeWaitTime_Throws()
         {
-            var deliveryOptions = new Configuration.DeliveryOptions
+            var deliveryOptions = new Configuration.DeliveryOptions.DeliveryOptions
             {
                 ProjectId = _guid.ToString(),
                 DefaultRetryPolicyOptions = new DefaultRetryPolicyOptions
@@ -72,7 +72,7 @@ namespace Kentico.Kontent.Delivery.Tests.Builders.DeliveryOptions
         [Fact]
         public void ValidateNullRetryOptions_Throws()
         {
-            var deliveryOptions = new Configuration.DeliveryOptions
+            var deliveryOptions = new Configuration.DeliveryOptions.DeliveryOptions
             {
                 ProjectId = _guid.ToString(),
                 DefaultRetryPolicyOptions = null
@@ -84,7 +84,7 @@ namespace Kentico.Kontent.Delivery.Tests.Builders.DeliveryOptions
         [Fact]
         public void ValidateOptionsWithEmptyProjectId()
         {
-            var deliveryOptions = new Configuration.DeliveryOptions {ProjectId = ""};
+            var deliveryOptions = new Configuration.DeliveryOptions.DeliveryOptions {ProjectId = ""};
 
             Assert.Throws<ArgumentException>(() => deliveryOptions.Validate());
         }
@@ -92,7 +92,7 @@ namespace Kentico.Kontent.Delivery.Tests.Builders.DeliveryOptions
         [Fact]
         public void ValidateOptionsWithNullProjectId()
         {
-            var deliveryOptions = new Configuration.DeliveryOptions { ProjectId = null };
+            var deliveryOptions = new Configuration.DeliveryOptions.DeliveryOptions { ProjectId = null };
 
             Assert.Throws<ArgumentNullException>(() => deliveryOptions.Validate());
         }
@@ -102,7 +102,7 @@ namespace Kentico.Kontent.Delivery.Tests.Builders.DeliveryOptions
         [InlineData("00000000-0000-0000-0000-000000000000")]
         public void ValidateOptionsWithEmptyGuidProjectId(string projectId)
         {
-            var deliveryOptions = new Configuration.DeliveryOptions { ProjectId = projectId };
+            var deliveryOptions = new Configuration.DeliveryOptions.DeliveryOptions { ProjectId = projectId };
 
             Assert.Throws<ArgumentException>(() => deliveryOptions.Validate());
         }
@@ -143,7 +143,7 @@ namespace Kentico.Kontent.Delivery.Tests.Builders.DeliveryOptions
             const string previewApiKey = "previewApiKey";
             const string productionApiKey = "productionApiKey";
 
-            var deliveryOptions = new Configuration.DeliveryOptions
+            var deliveryOptions = new Configuration.DeliveryOptions.DeliveryOptions
             {
                 ProjectId = _guid.ToString(),
                 UsePreviewApi = true,
@@ -158,7 +158,7 @@ namespace Kentico.Kontent.Delivery.Tests.Builders.DeliveryOptions
         [Fact]
         public void ValidateOptionsWithEnabledPreviewApiWithSetKey()
         {
-            var deliveryOptions = new Configuration.DeliveryOptions
+            var deliveryOptions = new Configuration.DeliveryOptions.DeliveryOptions
             {
                 ProjectId = _guid.ToString(),
                 UsePreviewApi = true
@@ -170,7 +170,7 @@ namespace Kentico.Kontent.Delivery.Tests.Builders.DeliveryOptions
         [Fact]
         public void ValidateOptionsWithEnabledSecuredApiWithSetKey()
         {
-            var deliveryOptions = new Configuration.DeliveryOptions
+            var deliveryOptions = new Configuration.DeliveryOptions.DeliveryOptions
             {
                 ProjectId = _guid.ToString(),
                 UseSecureAccess = true

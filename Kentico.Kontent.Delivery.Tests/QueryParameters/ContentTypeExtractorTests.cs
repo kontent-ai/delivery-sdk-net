@@ -1,12 +1,12 @@
 ﻿using System.Collections.Generic;
 using FakeItEasy;
 using Kentico.Kontent.Delivery.Abstractions;
-using Kentico.Kontent.Delivery.Abstractions.StrongTyping;
-using Kentico.Kontent.Delivery.Configuration;
-using Kentico.Kontent.Delivery.QueryParameters.Filters;
-using Kentico.Kontent.Delivery.QueryParameters.Parameters;
-using Kentico.Kontent.Delivery.StrongTyping;
+using Kentico.Kontent.Delivery.Abstractions.ContentItems;
+using Kentico.Kontent.Delivery.Configuration.DeliveryOptions;
+using Kentico.Kontent.Delivery.ContentItems;
 using Kentico.Kontent.Delivery.Tests.Factories;
+using Kentico.Kontent.Delivery.Urls.QueryParameters;
+using Kentico.Kontent.Delivery.Urls.QueryParameters.Filters;
 using Xunit;
 
 namespace Kentico.Kontent.Delivery.Tests.QueryParameters

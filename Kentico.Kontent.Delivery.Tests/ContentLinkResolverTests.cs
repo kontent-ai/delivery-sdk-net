@@ -1,10 +1,10 @@
 ﻿using System;
 using System.IO;
-using Kentico.Kontent.Delivery.Abstractions.ContentLinks;
-using Kentico.Kontent.Delivery.Configuration;
-using Kentico.Kontent.Delivery.ContentLinks;
+using Kentico.Kontent.Delivery.Abstractions.ContentItems.ContentLinks;
+using Kentico.Kontent.Delivery.Configuration.DeliveryOptions;
+using Kentico.Kontent.Delivery.ContentItems;
+using Kentico.Kontent.Delivery.ContentItems.ContentLinks;
 using Kentico.Kontent.Delivery.RetryPolicy;
-using Kentico.Kontent.Delivery.StrongTyping;
 using Kentico.Kontent.Delivery.Tests.Factories;
 using Kentico.Kontent.Delivery.Tests.Models.ContentTypes;
 using Newtonsoft.Json.Linq;

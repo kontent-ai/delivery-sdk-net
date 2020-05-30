@@ -1,10 +1,10 @@
 ﻿using System.Linq;
-using Kentico.Kontent.Delivery.Abstractions.StrongTyping;
-using Kentico.Kontent.Delivery.Configuration;
-using Kentico.Kontent.Delivery.ContentLinks;
-using Kentico.Kontent.Delivery.InlineContentItems;
+using Kentico.Kontent.Delivery.Abstractions.ContentItems;
+using Kentico.Kontent.Delivery.Configuration.DeliveryOptions;
+using Kentico.Kontent.Delivery.ContentItems;
+using Kentico.Kontent.Delivery.ContentItems.ContentLinks;
+using Kentico.Kontent.Delivery.ContentItems.InlineContentItems;
 using Kentico.Kontent.Delivery.RetryPolicy;
-using Kentico.Kontent.Delivery.StrongTyping;
 using Kentico.Kontent.Delivery.Tests.Models.ContentTypes;
 using Xunit;
 

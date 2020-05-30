@@ -1,8 +1,8 @@
 ﻿using System;
 using FakeItEasy;
+using Kentico.Kontent.Delivery.Abstractions.ContentItems;
 using Kentico.Kontent.Delivery.Abstractions.RetryPolicy;
-using Kentico.Kontent.Delivery.Abstractions.StrongTyping;
-using Kentico.Kontent.Delivery.Configuration;
+using Kentico.Kontent.Delivery.Configuration.DeliveryOptions;
 using RichardSzalay.MockHttp;
 
 namespace Kentico.Kontent.Delivery.Tests.Factories

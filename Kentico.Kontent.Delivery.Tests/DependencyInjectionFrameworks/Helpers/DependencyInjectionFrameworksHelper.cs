@@ -3,7 +3,7 @@ using Autofac;
 using Autofac.Extensions.DependencyInjection;
 using Castle.Windsor;
 using Castle.Windsor.MsDependencyInjection;
-using Kentico.Kontent.Delivery.Configuration;
+using Kentico.Kontent.Delivery.Configuration.DeliveryOptions;
 using Kentico.Kontent.Delivery.Extensions;
 using Kentico.Kontent.Delivery.Tests.Factories;
 using Kentico.Kontent.Delivery.Tests.Models.ContentTypes;

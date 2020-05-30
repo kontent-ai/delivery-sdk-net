@@ -1,7 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
-using Kentico.Kontent.Delivery.Abstractions.InlineContentItems;
-using Kentico.Kontent.Delivery.InlineContentItems;
+using Kentico.Kontent.Delivery.Abstractions.ContentItems.InlineContentItems;
+using Kentico.Kontent.Delivery.ContentItems.InlineContentItems;
 
 namespace Kentico.Kontent.Delivery.Tests.Factories
 {
