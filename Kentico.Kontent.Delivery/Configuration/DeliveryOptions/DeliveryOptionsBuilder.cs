@@ -7,7 +7,7 @@ namespace Kentico.Kontent.Delivery.Configuration.DeliveryOptions
     /// </summary>
     public class DeliveryOptionsBuilder : IDeliveryApiConfiguration, IDeliveryOptionsBuilder, IOptionalDeliveryConfiguration
     {
-        private readonly Configuration.DeliveryOptions.DeliveryOptions _deliveryOptions = new Configuration.DeliveryOptions.DeliveryOptions();
+        private readonly DeliveryOptions _deliveryOptions = new DeliveryOptions();
 
         /// <summary>
         /// Creates a new instance of the <see cref="DeliveryOptionsBuilder"/> class.
@@ -108,7 +108,7 @@ namespace Kentico.Kontent.Delivery.Configuration.DeliveryOptions
             }
         }
 
-        Configuration.DeliveryOptions.DeliveryOptions IDeliveryOptionsBuild.Build()
+        DeliveryOptions IDeliveryOptionsBuild.Build()
         {
             _deliveryOptions.Validate();
 

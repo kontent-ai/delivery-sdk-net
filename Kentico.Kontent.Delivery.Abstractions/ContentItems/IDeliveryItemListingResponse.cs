@@ -15,9 +15,9 @@ namespace Kentico.Kontent.Delivery.Abstractions.ContentItems
         IReadOnlyList<T> Items { get; }
 
         /// <summary>
-        /// Gets the dynamic view of the JSON response where linked items and their properties can be retrieved by name, for example <c>LinkedItems.about_us.elements.description.value</c>.
+        /// Gets the linked items and their properties.
         /// </summary>
-        dynamic LinkedItems { get; }
+        IReadOnlyList<object> LinkedItems { get; }
 
         /// <summary>
         /// Gets paging information.

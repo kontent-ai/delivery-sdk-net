@@ -103,6 +103,6 @@ namespace Kentico.Kontent.Delivery.Configuration.DeliveryOptions
         /// <summary>
         /// Returns a new instance of the <see cref="DeliveryOptions"/> class.
         /// </summary>
-        Configuration.DeliveryOptions.DeliveryOptions Build();
+        DeliveryOptions Build();
     }
 }

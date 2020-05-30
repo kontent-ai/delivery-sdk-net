@@ -15,7 +15,7 @@ namespace Kentico.Kontent.Delivery.Configuration.DeliveryOptions
         /// If the configuration is not valid, an exception is thrown.
         /// </summary>
         /// <param name="deliveryOptions">An instance of the <see cref="DeliveryOptions"/> class.</param>
-        public static void Validate(this Configuration.DeliveryOptions.DeliveryOptions deliveryOptions)
+        public static void Validate(this DeliveryOptions deliveryOptions)
         {
             ValidateProjectId(deliveryOptions.ProjectId);
             ValidateUseOfPreviewAndProductionApi(deliveryOptions);
@@ -126,7 +126,7 @@ namespace Kentico.Kontent.Delivery.Configuration.DeliveryOptions
             }
         }
 
-        private static void ValidateKeyForEnabledApi(this Configuration.DeliveryOptions.DeliveryOptions deliveryOptions)
+        private static void ValidateKeyForEnabledApi(this DeliveryOptions deliveryOptions)
         {
             if (deliveryOptions.UsePreviewApi && string.IsNullOrWhiteSpace(deliveryOptions.PreviewApiKey))
             {
@@ -139,7 +139,7 @@ namespace Kentico.Kontent.Delivery.Configuration.DeliveryOptions
             }
         }
 
-        private static void ValidateUseOfPreviewAndProductionApi(this Configuration.DeliveryOptions.DeliveryOptions deliveryOptions)
+        private static void ValidateUseOfPreviewAndProductionApi(this DeliveryOptions deliveryOptions)
         {
             if (deliveryOptions.UsePreviewApi && deliveryOptions.UseSecureAccess)
             {

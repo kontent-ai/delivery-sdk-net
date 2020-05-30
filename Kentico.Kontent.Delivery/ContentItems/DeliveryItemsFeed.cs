@@ -41,8 +41,8 @@ namespace Kentico.Kontent.Delivery.ContentItems
             }
 
             var response = await _getFeedResponseAsync(_continuationToken);
-            _continuationToken = response.ContinuationToken;
-            HasMoreResults = !string.IsNullOrEmpty(response.ContinuationToken);
+            _continuationToken = response.ApiResponse.ContinuationToken;
+            HasMoreResults = !string.IsNullOrEmpty(response.ApiResponse.ContinuationToken);
 
             return response;
         }

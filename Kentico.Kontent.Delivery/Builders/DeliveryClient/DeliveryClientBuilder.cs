@@ -29,7 +29,7 @@ namespace Kentico.Kontent.Delivery.Builders.DeliveryClient
         /// Use additional configuration.
         /// </summary>
         /// <param name="buildDeliveryOptions">A delegate that creates an instance of the <see cref="DeliveryOptions"/> using the specified <see cref="DeliveryOptionsBuilder"/>.</param>
-        public static IOptionalClientSetup WithOptions(Func<IDeliveryOptionsBuilder, Configuration.DeliveryOptions.DeliveryOptions> buildDeliveryOptions)
+        public static IOptionalClientSetup WithOptions(Func<IDeliveryOptionsBuilder, DeliveryOptions> buildDeliveryOptions)
             => Builder.BuildWithDeliveryOptions(buildDeliveryOptions);
     }
 }

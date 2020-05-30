@@ -4,6 +4,7 @@ using System.Linq;
 using Kentico.Kontent.Delivery.Abstractions;
 using Kentico.Kontent.Delivery.Abstractions.ContentItems;
 using Kentico.Kontent.Delivery.Abstractions.ContentTypes;
+using Kentico.Kontent.Delivery.Abstractions.SharedModels;
 using Kentico.Kontent.Delivery.Abstractions.TaxonomyGroups;
 using Newtonsoft.Json.Linq;
 
@@ -172,9 +173,9 @@ namespace Kentico.Kontent.Delivery.Caching
         /// Gets an Item dependency keys from response
         /// </summary>
         /// <param name="response">Response</param>
-        /// <returns>Dependeny keys</returns>
+        /// <returns>Dependency keys</returns>
 
-        public static IEnumerable<string> GetItemDependencies(dynamic response)
+        public static IEnumerable<string> GetItemDependencies(IResponse response)
         {
             var dependencies = new HashSet<string>();
 
@@ -183,14 +184,16 @@ namespace Kentico.Kontent.Delivery.Caching
                 return dependencies;
             }
 
-            var codename = response.Item?.System?.Codename?.ToString();
+            var jsonObject = JObject.Parse(response.ApiResponse.Content);
+
+            var codename = jsonObject["item"]?["system"]?["codename"]?.ToString();
             if (codename != null)
             {
                 var dependencyKey = GetItemDependencyKey(codename);
                 dependencies.Add(dependencyKey);
             }
 
-            foreach (var modularItem in response.LinkedItems)
+            foreach (var modularItem in jsonObject["modular_content"].DeepClone())
             {
                 if (modularItem is JProperty property && !IsComponent(property))
                 {
@@ -213,8 +216,8 @@ namespace Kentico.Kontent.Delivery.Caching
         /// Gets Items dependency keys from response
         /// </summary>
         /// <param name="response">Response</param>
-        /// <returns>Dependeny keys</returns>
-        public static IEnumerable<string> GetItemsDependencies(dynamic response)
+        /// <returns>Dependency keys</returns>
+        public static IEnumerable<string> GetItemsDependencies(IResponse response)
         {
             return IsItemListingResponse(response)
                 ? new[] { GetItemsDependencyKey() }
@@ -290,11 +293,10 @@ namespace Kentico.Kontent.Delivery.Caching
             return response?["item"] != null;
         }
 
-        private static bool IsItemResponse(dynamic response)
+        private static bool IsItemResponse(IResponse response)
         {
             return response.GetType().IsGenericType
-                   && IsAssignableToGenericType(response.GetType(), typeof(IDeliveryItemResponse<>))
-                   && response.Item != null;
+                   && IsAssignableToGenericType(response.GetType(), typeof(IDeliveryItemResponse<>));
         }
 
         private static bool IsAssignableToGenericType(Type givenType, Type genericType)
@@ -321,7 +323,7 @@ namespace Kentico.Kontent.Delivery.Caching
             return response?["items"] != null;
         }
 
-        private static bool IsItemListingResponse(dynamic response)
+        private static bool IsItemListingResponse(IResponse response)
         {
             return response.GetType().IsGenericType &&
                    IsAssignableToGenericType(response.GetType(), typeof(IDeliveryItemListingResponse<>));

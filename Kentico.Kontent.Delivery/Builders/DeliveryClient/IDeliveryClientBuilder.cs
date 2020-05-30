@@ -20,7 +20,7 @@ namespace Kentico.Kontent.Delivery.Builders.DeliveryClient
         IOptionalClientSetup BuildWithProjectId(Guid projectId);
 
         /// <seealso cref="DeliveryClientBuilder.WithOptions(Func{IDeliveryOptionsBuilder, DeliveryOptions})"/>
-        IOptionalClientSetup BuildWithDeliveryOptions(Func<IDeliveryOptionsBuilder, Configuration.DeliveryOptions.DeliveryOptions> buildDeliveryOptions);
+        IOptionalClientSetup BuildWithDeliveryOptions(Func<IDeliveryOptionsBuilder, DeliveryOptions> buildDeliveryOptions);
     }
 
     /// <summary>

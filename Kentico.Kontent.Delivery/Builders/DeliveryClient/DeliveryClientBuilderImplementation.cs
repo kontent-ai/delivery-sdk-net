@@ -13,9 +13,9 @@ namespace Kentico.Kontent.Delivery.Builders.DeliveryClient
     internal sealed class DeliveryClientBuilderImplementation : IDeliveryClientBuilder, IOptionalClientSetup
     {
         private readonly IServiceCollection _serviceCollection = new ServiceCollection();
-        private Configuration.DeliveryOptions.DeliveryOptions _deliveryOptions;
+        private DeliveryOptions _deliveryOptions;
 
-        public IOptionalClientSetup BuildWithDeliveryOptions(Func<IDeliveryOptionsBuilder, Configuration.DeliveryOptions.DeliveryOptions> buildDeliveryOptions)
+        public IOptionalClientSetup BuildWithDeliveryOptions(Func<IDeliveryOptionsBuilder, DeliveryOptions> buildDeliveryOptions)
         {
             var builder = DeliveryOptionsBuilder.CreateInstance();
             _deliveryOptions = buildDeliveryOptions(builder);

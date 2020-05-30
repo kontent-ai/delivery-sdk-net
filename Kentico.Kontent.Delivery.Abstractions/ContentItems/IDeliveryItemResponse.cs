@@ -1,4 +1,5 @@
-﻿using Kentico.Kontent.Delivery.Abstractions.SharedModels;
+﻿using System.Collections.Generic;
+using Kentico.Kontent.Delivery.Abstractions.SharedModels;
 
 namespace Kentico.Kontent.Delivery.Abstractions.ContentItems
 {
@@ -14,8 +15,8 @@ namespace Kentico.Kontent.Delivery.Abstractions.ContentItems
         T Item { get; }
 
         /// <summary>
-        /// Gets the dynamic view of the JSON response where linked items and their properties can be retrieved by name, for example <c>LinkedItems.about_us.elements.description.value</c>.
+        /// Gets the linked items and their properties.
         /// </summary>
-        dynamic LinkedItems { get; }
+        IReadOnlyList<object> LinkedItems { get; }
     }
 }
