@@ -6,24 +6,17 @@ using System.Threading;
 
 namespace Kentico.Kontent.Delivery.Models
 {
-    /// <summary>
-    /// Represents a response from Kentico Kontent Delivery API that contains a content item.
-    /// </summary>
-    /// <typeparam name="T">The type of a content item in the response.</typeparam>
+    /// <inheritdoc/>
     public sealed class DeliveryItemResponse<T> : AbstractResponse, IDeliveryItemResponse<T>
     {
         private readonly IModelProvider _modelProvider;
         private readonly Lazy<T> _item;
         private readonly Lazy<JObject> _linkedItems;
 
-        /// <summary>
-        /// Gets the content item.
-        /// </summary>
+        /// <inheritdoc/>
         public T Item => _item.Value;
 
-        /// <summary>
-        /// Gets the dynamic view of the JSON response where linked items and their properties can be retrieved by name, for example <c>LinkedItems.about_us.elements.description.value</c>.
-        /// </summary>
+        /// <inheritdoc/>
         public dynamic LinkedItems => _linkedItems.Value;
 
         /// <summary>

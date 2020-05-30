@@ -5,50 +5,34 @@ using System.Collections.Generic;
 
 namespace Kentico.Kontent.Delivery.Models.Item
 {
-    /// <summary>
-    /// Represents system attributes of a content item.
-    /// </summary>
+    /// <inheritdoc/>
     public sealed class ContentItemSystemAttributes : IContentItemSystemAttributes
     {
-        /// <summary>
-        /// Gets the identifier of the content item.
-        /// </summary>
+        /// <inheritdoc/>
         [JsonProperty("id")]
         public string Id { get; }
 
-        /// <summary>
-        /// Gets the name of the content item.
-        /// </summary>
+        /// <inheritdoc/>
         [JsonProperty("name")]
         public string Name { get; }
 
-        /// <summary>
-        /// Gets the codename of the content item.
-        /// </summary>
+        /// <inheritdoc/>
         [JsonProperty("codename")]
         public string Codename { get; }
 
-        /// <summary>
-        /// Gets the codename of the content type, for example "article".
-        /// </summary>
+        /// <inheritdoc/>
         [JsonProperty("type")]
         public string Type { get; }
 
-        /// <summary>
-        /// Gets a list of codenames of sitemap items to which the content item is assigned.
-        /// </summary>
+        /// <inheritdoc/>
         [JsonProperty("sitemap_locations")]
         public IReadOnlyList<string> SitemapLocation { get; }
 
-        /// <summary>
-        /// Gets the time the content item was last modified.
-        /// </summary>
+        /// <inheritdoc/>
         [JsonProperty("last_modified")]
         public DateTime LastModified { get; set; }
 
-        /// <summary>
-        /// Gets the language of the content item.
-        /// </summary>
+        /// <inheritdoc/>
         [JsonProperty("language")]
         public string Language { get; set; }
 

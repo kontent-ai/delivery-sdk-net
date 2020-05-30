@@ -2,20 +2,14 @@
 
 namespace Kentico.Kontent.Delivery.Abstractions
 {
-    /// <summary>
-    /// Represents a taxonomy term assigned to a Taxonomy element.
-    /// </summary>
+    /// <inheritdoc/>
     public sealed class TaxonomyTerm : ITaxonomyTerm
     {
-        /// <summary>
-        /// Gets the name of the taxonomy term.
-        /// </summary>
+        /// <inheritdoc/>
         [JsonProperty("name")]
         public string Name { get; }
 
-        /// <summary>
-        /// Gets the codename of the taxonomy term.
-        /// </summary>
+        /// <inheritdoc/>
         [JsonProperty("codename")]
         public string Codename { get; }
 

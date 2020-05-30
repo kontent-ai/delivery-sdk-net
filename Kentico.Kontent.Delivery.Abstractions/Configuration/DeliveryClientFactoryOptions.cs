@@ -4,7 +4,7 @@ using System.Collections.Generic;
 namespace Kentico.Kontent.Delivery.Abstractions.Configuration
 {
     /// <summary>
-    /// Represents configuration of the <see cref="DeliveryClientFactory"/>.
+    /// Represents configuration of the <see cref="IDeliveryClientFactory"/>.
     /// </summary>
     public class DeliveryClientFactoryOptions
     {

@@ -3,23 +3,17 @@ using Newtonsoft.Json;
 
 namespace Kentico.Kontent.Delivery.Models.Type.Element
 {
-    /// <summary>
-    /// Represents an option of a Multiple choice content element.
-    /// </summary>
+    /// <inheritdoc/>
     public sealed class MultipleChoiceOption : IMultipleChoiceOption
     {
-        /// <summary>
-        /// Gets the name of the option.
-        /// </summary>
+        /// <inheritdoc/>
         [JsonProperty("name")]
         public string Name
         {
             get;
         }
 
-        /// <summary>
-        /// Gets the codename of the option.
-        /// </summary>
+        /// <inheritdoc/>
         [JsonProperty("codename")]
         public string Codename
         {

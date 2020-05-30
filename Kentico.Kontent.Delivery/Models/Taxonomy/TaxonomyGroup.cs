@@ -5,24 +5,18 @@ using Newtonsoft.Json.Linq;
 
 namespace Kentico.Kontent.Delivery.Models.Taxonomy
 {
-    /// <summary>
-    /// Represents a taxonomy group.
-    /// </summary>
+    /// <inheritdoc/>
     public sealed class TaxonomyGroup : ITaxonomyGroup
     {
         private readonly JToken _source;
         private TaxonomyGroupSystemAttributes _system;
         private IReadOnlyList<TaxonomyTermDetails> _terms;
 
-        /// <summary>
-        /// Gets the system attributes of the taxonomy group.
-        /// </summary>
+        /// <inheritdoc/>
         public ITaxonomyGroupSystemAttributes System
             => _system ??= _source["system"].ToObject<TaxonomyGroupSystemAttributes>();
 
-        /// <summary>
-        /// Gets a readonly collection that contains terms of the taxonomy group.
-        /// </summary>
+        /// <inheritdoc/>
         public IReadOnlyList<ITaxonomyTermDetails> Terms
             => _terms ??= _source["terms"].Select(term => new TaxonomyTermDetails(term)).ToList().AsReadOnly();
 

@@ -3,38 +3,28 @@ using Newtonsoft.Json.Linq;
 
 namespace Kentico.Kontent.Delivery.ContentLinks
 {
-    /// <summary>
-    /// Represents a link to a content item in a Rich text element.
-    /// </summary>
+    /// <inheritdoc/>
     public sealed class ContentLink : IContentLink
     {
-        /// <summary>
-        /// Gets the identifier of the linked content item.
-        /// </summary>
+        /// <inheritdoc/>
         public string Id
         {
             get;
         }
 
-        /// <summary>
-        /// Gets the codename of the linked content item.
-        /// </summary>
+        /// <inheritdoc/>
         public string Codename
         {
             get;
         }
 
-        /// <summary>
-        /// Gets the URL slug of the linked content item, if available; otherwise, <c>null</c>.
-        /// </summary>
+        /// <inheritdoc/>
         public string UrlSlug
         {
             get;
         }
 
-        /// <summary>
-        /// Gets the content type codename of the linked content item.
-        /// </summary>
+        /// <inheritdoc/>
         public string ContentTypeCodename
         {
             get;

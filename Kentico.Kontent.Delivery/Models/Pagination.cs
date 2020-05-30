@@ -2,35 +2,22 @@
 
 namespace Kentico.Kontent.Delivery.Abstractions
 {
-    /// <summary>
-    /// Represents information about a page.
-    /// </summary>
+    /// <inheritdoc/>
     public sealed class Pagination : IPagination
     {
-        /// <summary>
-        /// Gets the requested number of items to skip.
-        /// </summary>
+        /// <inheritdoc/>
         public int Skip { get; }
 
-        /// <summary>
-        /// Gets the requested page size.
-        /// </summary>
+        /// <inheritdoc/>
         public int Limit { get; }
 
-        /// <summary>
-        /// Gets the number of retrieved items.
-        /// </summary>
+        /// <inheritdoc/>
         public int Count { get; }
 
-        /// <summary>
-        /// Gets the total number of items matching the search criteria.
-        /// </summary>
+        /// <inheritdoc/>
         public int? TotalCount { get; }
 
-        /// <summary>
-        /// Gets the URL of the next page.
-        /// </summary>
-        /// <remarks>The URL of the next page, if available; otherwise, <see cref="string.Empty"/>.</remarks>
+        /// <inheritdoc/>
         public string NextPageUrl { get; }
 
         /// <summary>

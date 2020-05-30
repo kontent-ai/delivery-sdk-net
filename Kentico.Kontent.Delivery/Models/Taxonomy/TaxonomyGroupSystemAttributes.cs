@@ -4,32 +4,22 @@ using Newtonsoft.Json;
 
 namespace Kentico.Kontent.Delivery.Models.Taxonomy
 {
-    /// <summary>
-    /// Represents system attributes of a taxonomy group
-    /// </summary>
+    /// <inheritdoc/>
     public sealed class TaxonomyGroupSystemAttributes : ITaxonomyGroupSystemAttributes
     {
-        /// <summary>
-        /// Gets the identifier of the taxonomy group.
-        /// </summary>
+        /// <inheritdoc/>
         [JsonProperty("id")]
         public string Id { get; }
 
-        /// <summary>
-        /// Gets the name of the taxonomy group.
-        /// </summary>
+        /// <inheritdoc/>
         [JsonProperty("name")]
         public string Name { get; }
 
-        /// <summary>
-        /// Gets the codename of the taxonomy group.
-        /// </summary>
+        /// <inheritdoc/>
         [JsonProperty("codename")]
         public string Codename { get; }
 
-        /// <summary>
-        /// Gets the time the taxonomy group was last modified.
-        /// </summary>
+        /// <inheritdoc/>
         [JsonProperty("last_modified")]
         public DateTime LastModified { get; }
 

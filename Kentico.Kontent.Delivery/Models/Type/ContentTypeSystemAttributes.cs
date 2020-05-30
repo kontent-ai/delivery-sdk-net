@@ -4,32 +4,22 @@ using System;
 
 namespace Kentico.Kontent.Delivery.Models.Type
 {
-    /// <summary>
-    /// Represents system attributes of a content type.
-    /// </summary>
+    /// <inheritdoc/>
     public sealed class ContentTypeSystemAttributes : IContentTypeSystemAttributes
     {
-        /// <summary>
-        /// Gets the identifier of the content type.
-        /// </summary>
+        /// <inheritdoc/>
         [JsonProperty("id")]
         public string Id { get; }
 
-        /// <summary>
-        /// Gets the name of the content type.
-        /// </summary>
+        /// <inheritdoc/>
         [JsonProperty("name")]
         public string Name { get; }
 
-        /// <summary>
-        /// Gets the codename of the content type.
-        /// </summary>
+        /// <inheritdoc/>
         [JsonProperty("codename")]
         public string Codename { get; }
 
-        /// <summary>
-        /// Gets the time the content type was last modified.
-        /// </summary>
+        /// <inheritdoc/>
         [JsonProperty("last_modified")]
         public DateTime LastModified { get; }
 

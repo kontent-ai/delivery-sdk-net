@@ -8,23 +8,16 @@ using Newtonsoft.Json.Linq;
 
 namespace Kentico.Kontent.Delivery.Abstractions
 {
-    /// <summary>
-    /// Represents a partial response from Kentico Kontent Delivery API enumeration methods that contains a list of content items.
-    /// </summary>
-    /// <typeparam name="T">The type of content items in the response.</typeparam>
+    /// <inheritdoc/>
     public class DeliveryItemsFeedResponse<T> : FeedResponse, IEnumerable<T>, IDeliveryItemsFeedResponse<T>
     {
         private readonly Lazy<IReadOnlyList<T>> _items;
         private readonly Lazy<JObject> _linkedItems;
 
-        /// <summary>
-        /// Gets a read-only list of content items.
-        /// </summary>
+        /// <inheritdoc/>
         public IReadOnlyList<T> Items => _items.Value;
 
-        /// <summary>
-        /// Gets the dynamic view of the JSON response where linked items and their properties can be retrieved by name, for example <c>LinkedItems.about_us.elements.description.value</c>.
-        /// </summary>
+        /// <inheritdoc/>
         public dynamic LinkedItems => _linkedItems.Value;
 
         /// <summary>
@@ -38,9 +31,7 @@ namespace Kentico.Kontent.Delivery.Abstractions
             _linkedItems = new Lazy<JObject>(() => (JObject)response.JsonContent["modular_content"].DeepClone(), LazyThreadSafetyMode.PublicationOnly);
         }
 
-        /// <summary>
-        /// Returns an enumerator that iterates through the collection of content items.
-        /// </summary>
+        /// <inheritdoc/>
         public IEnumerator<T> GetEnumerator()
         {
             return Items.GetEnumerator();

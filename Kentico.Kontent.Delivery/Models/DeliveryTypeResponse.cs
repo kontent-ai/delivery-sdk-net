@@ -7,16 +7,12 @@ using System.Threading;
 
 namespace Kentico.Kontent.Delivery.Models
 {
-    /// <summary>
-    /// Represents a response from Kentico Kontent Delivery API that contains a content type.
-    /// </summary>
+    /// <inheritdoc/>
     public sealed class DeliveryTypeResponse : AbstractResponse, IDeliveryTypeResponse
     {
         private readonly Lazy<ContentType> _type;
 
-        /// <summary>
-        /// Gets the content type.
-        /// </summary>
+        /// <inheritdoc/>
         public IContentType Type => _type.Value;
 
         /// <summary>

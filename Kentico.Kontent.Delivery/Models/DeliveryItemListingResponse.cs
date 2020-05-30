@@ -8,10 +8,7 @@ using System.Threading;
 
 namespace Kentico.Kontent.Delivery.Models
 {
-    /// <summary>
-    /// Represents a response from Kentico Kontent Delivery API that contains a list of content items.
-    /// </summary>
-    /// <typeparam name="T">The type of content items in the response.</typeparam>
+    /// <inheritdoc/>
     public sealed class DeliveryItemListingResponse<T> : AbstractResponse, IDeliveryItemListingResponse<T>
     {
         private readonly IModelProvider _modelProvider;
@@ -19,19 +16,13 @@ namespace Kentico.Kontent.Delivery.Models
         private readonly Lazy<IReadOnlyList<T>> _items;
         private readonly Lazy<JObject> _linkedItems;
 
-        /// <summary>
-        /// Gets paging information.
-        /// </summary>
+        /// <inheritdoc/>
         public IPagination Pagination => _pagination.Value;
 
-        /// <summary>
-        /// Gets a read-only list of content items.
-        /// </summary>
+        /// <inheritdoc/>
         public IReadOnlyList<T> Items => _items.Value;
 
-        /// <summary>
-        /// Gets the dynamic view of the JSON response where linked items and their properties can be retrieved by name, for example <c>LinkedItems.about_us.elements.description.value</c>.
-        /// </summary>
+        /// <inheritdoc/>
         public dynamic LinkedItems => _linkedItems.Value;
 
         /// <summary>

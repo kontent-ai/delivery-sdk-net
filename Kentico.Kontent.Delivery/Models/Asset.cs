@@ -2,50 +2,34 @@
 
 namespace Kentico.Kontent.Delivery.Abstractions
 {
-    /// <summary>
-    /// Represents a digital asset, such as a document or image.
-    /// </summary>
+    /// <inheritdoc/>
     public sealed class Asset : IAsset
     {
-        /// <summary>
-        /// Gets the name of the asset.
-        /// </summary>
+        /// <inheritdoc/>
         [JsonProperty("name")]
         public string Name { get; }
 
-        /// <summary>
-        /// Gets the description of the asset.
-        /// </summary>
+        /// <inheritdoc/>
         [JsonProperty("description")]
         public string Description { get; set; }
 
-        /// <summary>
-        /// Gets the media type of the asset, for example "image/jpeg".
-        /// </summary>
+        /// <inheritdoc/>
         [JsonProperty("type")]
         public string Type { get; }
 
-        /// <summary>
-        /// Gets the asset size in bytes.
-        /// </summary>
+        /// <inheritdoc/>
         [JsonProperty("size")]
         public int Size { get; }
 
-        /// <summary>
-        /// Gets the URL of the asset.
-        /// </summary>
+        /// <inheritdoc/>
         [JsonProperty("url")]
         public string Url { get; set; }
 
-        /// <summary>
-        /// Gets the width of the asset.
-        /// </summary>
+        /// <inheritdoc/>
         [JsonProperty("width")]
         public int Width { get; set; }
 
-        /// <summary>
-        /// Gets the height of the asset.
-        /// </summary>
+        /// <inheritdoc/>
         [JsonProperty("height")]
         public int Height { get; set; }
 

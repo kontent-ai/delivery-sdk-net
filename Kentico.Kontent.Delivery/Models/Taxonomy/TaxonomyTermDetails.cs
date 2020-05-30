@@ -5,9 +5,7 @@ using Newtonsoft.Json.Linq;
 
 namespace Kentico.Kontent.Delivery.Models.Taxonomy
 {
-    /// <summary>
-    /// Represents a taxonomy term with child terms.
-    /// </summary>
+    /// <inheritdoc/>
     public sealed class TaxonomyTermDetails : ITaxonomyTermDetails
     {
         private readonly JToken _source;
@@ -15,21 +13,15 @@ namespace Kentico.Kontent.Delivery.Models.Taxonomy
         private string _codename;
         private IReadOnlyList<TaxonomyTermDetails> _terms;
 
-        /// <summary>
-        /// Gets the name of the taxonomy term.
-        /// </summary>
+        /// <inheritdoc/>
         public string Name
             => _name ??= _source.Value<string>("name");
 
-        /// <summary>
-        /// Gets the codename of the taxonomy term.
-        /// </summary>
+        /// <inheritdoc/>
         public string Codename
             => _codename ??= _source.Value<string>("codename");
 
-        /// <summary>
-        /// Gets a readonly collection that contains child terms of the taxonomy term.
-        /// </summary>
+        /// <inheritdoc/>
         public IReadOnlyList<ITaxonomyTermDetails> Terms
             => _terms ??= _source["terms"].Select(term => new TaxonomyTermDetails(term)).ToList().AsReadOnly();
 
