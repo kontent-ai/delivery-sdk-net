@@ -18,9 +18,9 @@ namespace Kentico.Kontent.Delivery.Abstractions
         /// <param name="codename">The codename of a content item.</param>
         /// <param name="parameters">An array that contains zero or more query parameters, for example, for projection or setting the depth of linked items.</param>
         /// <returns>The <see cref="IDeliveryItemResponse{T}"/> instance that contains the content item with the specified codename.</returns>
-        public static async Task<IDeliveryItemResponse<T>> GetItemAsync<T>(this IDeliveryClient client, string codename, params IQueryParameter[] parameters)
+        public static Task<IDeliveryItemResponse<T>> GetItemAsync<T>(this IDeliveryClient client, string codename, params IQueryParameter[] parameters)
         {
-            return await client.GetItemAsync<T>(codename, parameters);
+            return client.GetItemAsync<T>(codename, parameters);
         }
 
         /// <summary>
@@ -30,9 +30,9 @@ namespace Kentico.Kontent.Delivery.Abstractions
         /// <param name="client">An instance of the <see cref="IDeliveryClient"/></param>
         /// <param name="parameters">An array that contains zero or more query parameters, for example, for filtering, ordering, or setting the depth of linked items.</param>
         /// <returns>The <see cref="IDeliveryItemListingResponse{T}"/> instance that contains the content items. If no query parameters are specified, all content items are returned.</returns>
-        public static async Task<IDeliveryItemListingResponse<T>> GetItemsAsync<T>(this IDeliveryClient client, params IQueryParameter[] parameters)
+        public static Task<IDeliveryItemListingResponse<T>> GetItemsAsync<T>(this IDeliveryClient client, params IQueryParameter[] parameters)
         {
-            return await client.GetItemsAsync<T>(parameters);
+            return client.GetItemsAsync<T>(parameters);
         }
 
         /// <summary>
@@ -53,9 +53,9 @@ namespace Kentico.Kontent.Delivery.Abstractions
         /// <param name="client">An instance of the <see cref="IDeliveryClient"/></param>
         /// <param name="parameters">An array that contains zero or more query parameters, for example, for paging.</param>
         /// <returns>The <see cref="IDeliveryTypeListingResponse"/> instance that contains the content types. If no query parameters are specified, all content types are returned.</returns>
-        public static async Task<IDeliveryTypeListingResponse> GetTypesAsync(this IDeliveryClient client, params IQueryParameter[] parameters)
+        public static Task<IDeliveryTypeListingResponse> GetTypesAsync(this IDeliveryClient client, params IQueryParameter[] parameters)
         {
-            return await client.GetTypesAsync(parameters);
+            return client.GetTypesAsync(parameters);
         }
 
         /// <summary>
@@ -64,9 +64,9 @@ namespace Kentico.Kontent.Delivery.Abstractions
         /// <param name="client">An instance of the <see cref="IDeliveryClient"/></param>
         /// <param name="parameters">An array that contains zero or more query parameters, for example, for paging.</param>
         /// <returns>The <see cref="IDeliveryTaxonomyListingResponse"/> instance that represents the taxonomy groups. If no query parameters are specified, all taxonomy groups are returned.</returns>
-        public static async Task<IDeliveryTaxonomyListingResponse> GetTaxonomiesAsync(this IDeliveryClient client, params IQueryParameter[] parameters)
+        public static Task<IDeliveryTaxonomyListingResponse> GetTaxonomiesAsync(this IDeliveryClient client, params IQueryParameter[] parameters)
         {
-            return await client.GetTaxonomiesAsync(parameters);
+            return client.GetTaxonomiesAsync(parameters);
         }
     }
 }
