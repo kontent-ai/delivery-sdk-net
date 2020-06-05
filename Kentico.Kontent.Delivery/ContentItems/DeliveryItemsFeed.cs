@@ -1,6 +1,6 @@
 ﻿using System;
 using System.Threading.Tasks;
-using Kentico.Kontent.Delivery.Abstractions.ContentItems;
+using Kentico.Kontent.Delivery.Abstractions;
 
 namespace Kentico.Kontent.Delivery.ContentItems
 {

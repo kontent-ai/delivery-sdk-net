@@ -1,7 +1,6 @@
 ﻿using System.Collections;
 using System.Collections.Generic;
-using Kentico.Kontent.Delivery.Abstractions.ContentItems.RichText;
-using Kentico.Kontent.Delivery.Abstractions.ContentItems.RichText.Blocks;
+using Kentico.Kontent.Delivery.Abstractions;
 
 namespace Kentico.Kontent.Delivery.ContentItems.RichText
 {

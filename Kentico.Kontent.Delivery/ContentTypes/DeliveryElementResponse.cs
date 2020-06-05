@@ -1,7 +1,6 @@
 ﻿using System;
 using System.Threading;
-using Kentico.Kontent.Delivery.Abstractions.ContentTypes;
-using Kentico.Kontent.Delivery.Abstractions.ContentTypes.Element;
+using Kentico.Kontent.Delivery.Abstractions;
 using Kentico.Kontent.Delivery.ContentTypes.Element;
 using Kentico.Kontent.Delivery.SharedModels;
 

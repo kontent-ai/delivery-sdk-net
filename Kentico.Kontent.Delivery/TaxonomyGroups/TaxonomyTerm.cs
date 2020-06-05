@@ -1,4 +1,4 @@
-﻿using Kentico.Kontent.Delivery.Abstractions.TaxonomyGroups;
+﻿using Kentico.Kontent.Delivery.Abstractions;
 using Newtonsoft.Json;
 
 namespace Kentico.Kontent.Delivery.TaxonomyGroups

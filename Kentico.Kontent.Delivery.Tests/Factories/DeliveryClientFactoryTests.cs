@@ -1,7 +1,7 @@
 ﻿using System;
 using FakeItEasy;
 using FluentAssertions;
-using Kentico.Kontent.Delivery.Abstractions.Configuration;
+using Kentico.Kontent.Delivery.Abstractions;
 using Kentico.Kontent.Delivery.Configuration.DeliveryOptions;
 using Microsoft.Extensions.Options;
 using Xunit;

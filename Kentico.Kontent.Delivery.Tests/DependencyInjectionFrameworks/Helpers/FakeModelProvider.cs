@@ -1,6 +1,6 @@
 ﻿using System;
 using System.Collections;
-using Kentico.Kontent.Delivery.Abstractions.ContentItems;
+using Kentico.Kontent.Delivery.Abstractions;
 
 namespace Kentico.Kontent.Delivery.Tests.DependencyInjectionFrameworks.Helpers
 {

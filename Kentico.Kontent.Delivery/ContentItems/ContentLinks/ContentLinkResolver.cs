@@ -1,7 +1,7 @@
 ﻿using System;
 using System.Net;
 using System.Text.RegularExpressions;
-using Kentico.Kontent.Delivery.Abstractions.ContentItems.ContentLinks;
+using Kentico.Kontent.Delivery.Abstractions;
 using Newtonsoft.Json.Linq;
 
 namespace Kentico.Kontent.Delivery.ContentItems.ContentLinks

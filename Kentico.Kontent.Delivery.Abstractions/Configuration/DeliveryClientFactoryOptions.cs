@@ -1,7 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 
-namespace Kentico.Kontent.Delivery.Abstractions.Configuration
+namespace Kentico.Kontent.Delivery.Abstractions
 {
     /// <summary>
     /// Represents configuration of the <see cref="IDeliveryClientFactory"/>.

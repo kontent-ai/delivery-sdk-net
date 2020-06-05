@@ -1,5 +1,5 @@
 ﻿using System;
-using Kentico.Kontent.Delivery.Abstractions.ContentItems.InlineContentItems;
+using Kentico.Kontent.Delivery.Abstractions;
 using Kentico.Kontent.Delivery.Builders.DeliveryClient;
 using Kentico.Kontent.Delivery.Extensions;
 using Microsoft.Extensions.DependencyInjection;

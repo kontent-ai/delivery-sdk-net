@@ -3,11 +3,9 @@ using System.Collections;
 using System.Collections.Generic;
 using System.Linq;
 using System.Reflection;
-using Kentico.Kontent.Delivery.Abstractions.ContentItems;
-using Kentico.Kontent.Delivery.Abstractions.ContentItems.ContentLinks;
-using Kentico.Kontent.Delivery.Abstractions.ContentItems.InlineContentItems;
-using Kentico.Kontent.Delivery.Abstractions.ContentItems.RichText;
+using Kentico.Kontent.Delivery.Abstractions;
 using Kentico.Kontent.Delivery.ContentItems.ContentLinks;
+using Kentico.Kontent.Delivery.ContentItems.InlineContentItems;
 using Kentico.Kontent.Delivery.ContentTypes.Element;
 using Kentico.Kontent.Delivery.TaxonomyGroups;
 using Newtonsoft.Json;
@@ -199,7 +197,7 @@ namespace Kentico.Kontent.Delivery.ContentItems
         private object GetPropertyValue(JObject elementsData, PropertyInfo property, JObject linkedItems, ResolvingContext context, ContentItemSystemAttributes itemSystemAttributes, ref Dictionary<string, object> processedItems, ref List<PropertyInfo> richTextPropertiesToBeProcessed)
         {
             var elementDefinition = GetElementData(elementsData, property, itemSystemAttributes);
-            
+
             var elementValue = elementDefinition?.Value;
 
             if (elementValue != null)
@@ -232,6 +230,17 @@ namespace Kentico.Kontent.Delivery.ContentItems
 
             if (IsGenericHierarchicalField(property.PropertyType))
             {
+                var typeBindings = new List<(Type Interface, Type Implementation)>
+                {
+                    (typeof(IEnumerable<IAsset>), typeof(List<Asset>)),
+                    (typeof(IEnumerable<ITaxonomyTerm>), typeof(List<TaxonomyTerm>)),
+                    (typeof(IEnumerable<IMultipleChoiceOption>), typeof(List<TaxonomyTerm>))
+                };
+
+                foreach (var binding in typeBindings.Where(binding => binding.Interface.IsAssignableFrom(property.PropertyType)))
+                {
+                    return GetRawValue(elementValue)?.ToObject(binding.Implementation);
+                }
                 return GetLinkedItemsValue(elementValue, linkedItems, property.PropertyType, ref processedItems);
             }
 

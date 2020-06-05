@@ -1,4 +1,4 @@
-﻿using Kentico.Kontent.Delivery.Abstractions.ContentItems.ContentLinks;
+﻿using Kentico.Kontent.Delivery.Abstractions;
 using Newtonsoft.Json.Linq;
 
 namespace Kentico.Kontent.Delivery.ContentItems.ContentLinks

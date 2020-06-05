@@ -1,5 +1,5 @@
 ﻿using System;
-using Kentico.Kontent.Delivery.Abstractions.ContentTypes;
+using Kentico.Kontent.Delivery.Abstractions;
 using Newtonsoft.Json;
 
 namespace Kentico.Kontent.Delivery.ContentTypes

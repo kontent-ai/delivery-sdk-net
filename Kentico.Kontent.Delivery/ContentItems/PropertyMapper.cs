@@ -1,6 +1,6 @@
 using System;
 using System.Reflection;
-using Kentico.Kontent.Delivery.Abstractions.ContentItems;
+using Kentico.Kontent.Delivery.Abstractions;
 using Newtonsoft.Json;
 
 namespace Kentico.Kontent.Delivery.ContentItems

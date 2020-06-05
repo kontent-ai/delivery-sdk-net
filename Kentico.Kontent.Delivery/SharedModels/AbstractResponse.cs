@@ -1,4 +1,4 @@
-﻿using Kentico.Kontent.Delivery.Abstractions.SharedModels;
+﻿using Kentico.Kontent.Delivery.Abstractions;
 
 namespace Kentico.Kontent.Delivery.SharedModels
 {

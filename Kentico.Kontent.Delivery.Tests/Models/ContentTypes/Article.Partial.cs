@@ -1,4 +1,4 @@
-﻿using Kentico.Kontent.Delivery.Abstractions.ContentItems.RichText;
+﻿using Kentico.Kontent.Delivery.Abstractions;
 using Newtonsoft.Json;
 using NodaTime;
 

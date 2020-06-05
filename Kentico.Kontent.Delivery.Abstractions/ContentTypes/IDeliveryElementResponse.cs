@@ -1,7 +1,4 @@
-﻿using Kentico.Kontent.Delivery.Abstractions.ContentTypes.Element;
-using Kentico.Kontent.Delivery.Abstractions.SharedModels;
-
-namespace Kentico.Kontent.Delivery.Abstractions.ContentTypes
+﻿namespace Kentico.Kontent.Delivery.Abstractions
 {
     /// <summary>
     /// Represents a response from Kentico Kontent Delivery API that contains a content type element.

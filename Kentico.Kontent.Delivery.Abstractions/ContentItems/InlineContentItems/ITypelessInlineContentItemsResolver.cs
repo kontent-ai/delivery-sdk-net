@@ -1,7 +1,7 @@
 ﻿using System;
 using Microsoft.Extensions.DependencyInjection;
 
-namespace Kentico.Kontent.Delivery.Abstractions.ContentItems.InlineContentItems
+namespace Kentico.Kontent.Delivery.Abstractions
 {
     /// <summary>
     /// An interface, implemented to be registered in an collection passed to <see cref="IInlineContentItemsProcessor"/>.

@@ -8,9 +8,6 @@ using System.Net.Http;
 using System.Threading.Tasks;
 using FakeItEasy;
 using Kentico.Kontent.Delivery.Abstractions;
-using Kentico.Kontent.Delivery.Abstractions.ContentItems;
-using Kentico.Kontent.Delivery.Abstractions.ContentItems.ContentLinks;
-using Kentico.Kontent.Delivery.Abstractions.RetryPolicy;
 using Kentico.Kontent.Delivery.Builders.DeliveryClient;
 using Kentico.Kontent.Delivery.Configuration.DeliveryOptions;
 using Kentico.Kontent.Delivery.ContentItems;
@@ -80,6 +77,25 @@ namespace Kentico.Kontent.Delivery.Tests
             Assert.True(barraItem.Price > 0);
             Assert.True(barraItem.Processing.Any());
             Assert.NotNull(beveragesResponse.ApiResponse.RequestUrl);
+        }
+
+        [Fact]
+        public async void GetItemWithInterfaces()
+        {
+            // Arrange
+            _mockHttp
+                .When($"{_baseUrl}/items/coffee_beverages_explained")
+                .Respond("application/json",
+                    await File.ReadAllTextAsync(Path.Combine(Environment.CurrentDirectory,
+                        $"Fixtures{Path.DirectorySeparatorChar}DeliveryClient{Path.DirectorySeparatorChar}coffee_beverages_explained.json")));
+            var client = InitializeDeliveryClientWithCustomModelProvider(_mockHttp, new PropertyMapper(), new CustomTypeProvider());
+
+            // Act
+            var beveragesResponse = await client.GetItemAsync<ArticleWithInterfaces>("coffee_beverages_explained");
+
+            // Assert
+            Assert.NotEmpty(beveragesResponse.Item.TeaserImage);
+            Assert.NotEmpty(beveragesResponse.Item.Personas);
         }
 
         [Fact]

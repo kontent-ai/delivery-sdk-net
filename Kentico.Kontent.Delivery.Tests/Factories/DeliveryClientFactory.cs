@@ -1,7 +1,6 @@
 ﻿using System;
 using FakeItEasy;
-using Kentico.Kontent.Delivery.Abstractions.ContentItems;
-using Kentico.Kontent.Delivery.Abstractions.RetryPolicy;
+using Kentico.Kontent.Delivery.Abstractions;
 using Kentico.Kontent.Delivery.Configuration.DeliveryOptions;
 using RichardSzalay.MockHttp;
 
