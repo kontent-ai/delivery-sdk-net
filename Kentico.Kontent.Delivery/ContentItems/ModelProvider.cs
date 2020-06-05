@@ -68,7 +68,7 @@ namespace Kentico.Kontent.Delivery.ContentItems
         internal object GetContentItemModel(Type modelType, JToken serializedItem, JObject linkedItems, Dictionary<string, object> processedItems = null, HashSet<RichTextContentElements> currentlyResolvedRichStrings = null)
         {
             processedItems ??= new Dictionary<string, object>();
-            var itemSystemAttributes = serializedItem["system"].ToObject<ContentItemSystemAttributes>();
+            IContentItemSystemAttributes itemSystemAttributes = serializedItem["system"].ToObject<ContentItemSystemAttributes>();
 
             var instance = CreateInstance(modelType, ref itemSystemAttributes, ref processedItems);
             if (instance == null)
@@ -82,7 +82,7 @@ namespace Kentico.Kontent.Delivery.ContentItems
             var richTextPropertiesToBeProcessed = new List<PropertyInfo>();
             foreach (var property in instance.GetType().GetProperties().Where(property => property.SetMethod != null))
             {
-                if (property.PropertyType == typeof(ContentItemSystemAttributes))
+                if (typeof(IContentItemSystemAttributes).IsAssignableFrom(property.PropertyType))
                 {
                     // Handle the system metadata
                     if (itemSystemAttributes != null)
@@ -119,7 +119,7 @@ namespace Kentico.Kontent.Delivery.ContentItems
             return instance;
         }
 
-        private object GetRichTextValue(string value, JObject elementsData, PropertyInfo property, JObject linkedItems, ContentItemSystemAttributes itemSystemAttributes, ref Dictionary<string, object> processedItems, ref HashSet<RichTextContentElements> currentlyResolvedRichStrings)
+        private object GetRichTextValue(string value, JObject elementsData, PropertyInfo property, JObject linkedItems, IContentItemSystemAttributes itemSystemAttributes, ref Dictionary<string, object> processedItems, ref HashSet<RichTextContentElements> currentlyResolvedRichStrings)
         {
             var currentlyProcessedString = new RichTextContentElements(itemSystemAttributes?.Codename, property.Name);
             if (currentlyResolvedRichStrings.Contains(currentlyProcessedString))
@@ -140,7 +140,7 @@ namespace Kentico.Kontent.Delivery.ContentItems
             return value;
         }
 
-        private object CreateInstance(Type detectedModelType, ref ContentItemSystemAttributes itemSystemAttributes, ref Dictionary<string, object> processedItems)
+        private object CreateInstance(Type detectedModelType, ref IContentItemSystemAttributes itemSystemAttributes, ref Dictionary<string, object> processedItems)
         {
             if (detectedModelType == typeof(object))
             {
@@ -194,7 +194,7 @@ namespace Kentico.Kontent.Delivery.ContentItems
             };
         }
 
-        private object GetPropertyValue(JObject elementsData, PropertyInfo property, JObject linkedItems, ResolvingContext context, ContentItemSystemAttributes itemSystemAttributes, ref Dictionary<string, object> processedItems, ref List<PropertyInfo> richTextPropertiesToBeProcessed)
+        private object GetPropertyValue(JObject elementsData, PropertyInfo property, JObject linkedItems, ResolvingContext context, IContentItemSystemAttributes itemSystemAttributes, ref Dictionary<string, object> processedItems, ref List<PropertyInfo> richTextPropertiesToBeProcessed)
         {
             var elementDefinition = GetElementData(elementsData, property, itemSystemAttributes);
 
@@ -220,7 +220,6 @@ namespace Kentico.Kontent.Delivery.ContentItems
                 }
 
                 return value;
-
             }
 
             if (IsNonHierarchicalField(property.PropertyType))
@@ -234,7 +233,7 @@ namespace Kentico.Kontent.Delivery.ContentItems
                 {
                     (typeof(IEnumerable<IAsset>), typeof(List<Asset>)),
                     (typeof(IEnumerable<ITaxonomyTerm>), typeof(List<TaxonomyTerm>)),
-                    (typeof(IEnumerable<IMultipleChoiceOption>), typeof(List<TaxonomyTerm>))
+                    (typeof(IEnumerable<IMultipleChoiceOption>), typeof(List<MultipleChoiceOption>))
                 };
 
                 foreach (var binding in typeBindings.Where(binding => binding.Interface.IsAssignableFrom(property.PropertyType)))
@@ -247,13 +246,12 @@ namespace Kentico.Kontent.Delivery.ContentItems
             return null;
         }
 
-        private (string Name, JObject Value)? GetElementData(JObject elementsData, PropertyInfo property, ContentItemSystemAttributes itemSystemAttributes)
+        private (string Name, JObject Value)? GetElementData(JObject elementsData, PropertyInfo property, IContentItemSystemAttributes itemSystemAttributes)
         => elementsData.Properties()?.Where(p => PropertyMapper.IsMatch(property, p.Name, itemSystemAttributes?.Type)).Select(p => (p.Name, (JObject)p.Value)).FirstOrDefault();
 
         private static bool IsGenericHierarchicalField(Type fieldType)
         {
-            var fieldTypeInfo = fieldType.GetTypeInfo();
-            if (!fieldTypeInfo.IsGenericType)
+            if (!fieldType.IsGenericType)
             {
                 return false;
             }
@@ -262,18 +260,16 @@ namespace Kentico.Kontent.Delivery.ContentItems
             {
                 return true;
             }
+            bool IsGenericICollection(Type @interface)
+                => @interface.IsGenericType && @interface.GetGenericTypeDefinition() == typeof(ICollection<>);
 
-            return fieldTypeInfo.IsClass && fieldType.GetInterfaces().Any(IsGenericICollection);
+
+            return fieldType.IsClass && fieldType.GetInterfaces().Any(IsGenericICollection);
         }
 
-        private static bool IsGenericICollection(Type @interface)
-            => @interface.GetTypeInfo().IsGenericType && @interface.GetTypeInfo().GetGenericTypeDefinition() == typeof(ICollection<>);
-
         private static bool IsNonHierarchicalField(Type propertyType)
-            => propertyType == typeof(IEnumerable<MultipleChoiceOption>)
-                || propertyType == typeof(IEnumerable<Asset>)
-                || propertyType == typeof(IEnumerable<TaxonomyTerm>)
-                || propertyType.GetTypeInfo().IsValueType;
+            => propertyType.IsValueType && !(typeof(Enumerable).IsAssignableFrom(propertyType)
+               || (propertyType.IsGenericType && propertyType.GetGenericTypeDefinition() == typeof(IEnumerable<>)));
 
         private (string value, bool isRichText) GetStringValue(JObject elementData)
         {
@@ -302,7 +298,7 @@ namespace Kentico.Kontent.Delivery.ContentItems
         {
             // Create a List<T> based on the generic parameter of the input type (IEnumerable<T> or derived types)
             var genericArgs = propertyType.GetGenericArguments();
-            var collectionType = propertyType.GetTypeInfo().IsInterface
+            var collectionType = propertyType.IsInterface
                 ? typeof(List<>).MakeGenericType(genericArgs)
                 : propertyType;
 
