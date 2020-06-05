@@ -2,7 +2,7 @@
 using System.Linq;
 using System.Net.Http;
 using Kentico.Kontent.Delivery.Abstractions;
-using Kentico.Kontent.Delivery.Configuration.DeliveryOptions;
+using Kentico.Kontent.Delivery.Configuration;
 using Kentico.Kontent.Delivery.ContentItems;
 using Kentico.Kontent.Delivery.ContentItems.ContentLinks;
 using Kentico.Kontent.Delivery.ContentItems.InlineContentItems;

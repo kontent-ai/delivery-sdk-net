@@ -9,7 +9,6 @@ using System.Threading.Tasks;
 using FakeItEasy;
 using Kentico.Kontent.Delivery.Abstractions;
 using Kentico.Kontent.Delivery.Builders.DeliveryClient;
-using Kentico.Kontent.Delivery.Configuration.DeliveryOptions;
 using Kentico.Kontent.Delivery.ContentItems;
 using Kentico.Kontent.Delivery.ContentItems.RichText.Blocks;
 using Kentico.Kontent.Delivery.Tests.Factories;

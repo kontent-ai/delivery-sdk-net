@@ -1,9 +1,9 @@
 ﻿using System;
+using Kentico.Kontent.Delivery.Abstractions;
 using Kentico.Kontent.Delivery.Configuration;
-using Kentico.Kontent.Delivery.Configuration.DeliveryOptions;
 using Xunit;
 
-namespace Kentico.Kontent.Delivery.Tests.Builders.DeliveryOptions
+namespace Kentico.Kontent.Delivery.Tests.Builders.Configuration
 {
     public class DeliveryOptionsBuilderTests
     {

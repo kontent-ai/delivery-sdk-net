@@ -1,7 +1,8 @@
 ﻿using System;
 using System.Text.RegularExpressions;
+using Kentico.Kontent.Delivery.Abstractions;
 
-namespace Kentico.Kontent.Delivery.Configuration.DeliveryOptions
+namespace Kentico.Kontent.Delivery.Configuration
 {
     /// <summary>
     /// Validates instances of the <see cref="DeliveryOptions"/> class.

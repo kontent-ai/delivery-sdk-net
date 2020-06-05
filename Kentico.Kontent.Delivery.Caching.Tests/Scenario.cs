@@ -2,7 +2,6 @@
 using System.Net.Http;
 using Kentico.Kontent.Delivery.Abstractions;
 using Kentico.Kontent.Delivery.Builders.DeliveryClient;
-using Kentico.Kontent.Delivery.Configuration.DeliveryOptions;
 using Microsoft.Extensions.Caching.Memory;
 using Microsoft.Extensions.Options;
 

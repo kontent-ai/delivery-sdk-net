@@ -5,7 +5,6 @@ using System.Net;
 using System.Net.Http;
 using System.Threading.Tasks;
 using Kentico.Kontent.Delivery.Abstractions;
-using Kentico.Kontent.Delivery.Configuration.DeliveryOptions;
 using Kentico.Kontent.Delivery.ContentItems;
 using Kentico.Kontent.Delivery.ContentTypes;
 using Kentico.Kontent.Delivery.Extensions;

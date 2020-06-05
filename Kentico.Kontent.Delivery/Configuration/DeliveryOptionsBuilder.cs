@@ -1,6 +1,8 @@
 ﻿using System;
+using Kentico.Kontent.Delivery.Abstractions;
+using DefaultRetryPolicyOptions = Kentico.Kontent.Delivery.Abstractions.DefaultRetryPolicyOptions;
 
-namespace Kentico.Kontent.Delivery.Configuration.DeliveryOptions
+namespace Kentico.Kontent.Delivery.Configuration
 {
     /// <summary>
     /// A builder of <see cref="DeliveryOptions"/> instances.

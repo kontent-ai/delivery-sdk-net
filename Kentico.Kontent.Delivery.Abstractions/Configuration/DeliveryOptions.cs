@@ -1,9 +1,7 @@
-﻿using Kentico.Kontent.Delivery.Urls.QueryParameters;
-
-namespace Kentico.Kontent.Delivery.Configuration.DeliveryOptions
+﻿namespace Kentico.Kontent.Delivery.Abstractions
 {
     /// <summary>
-    /// Represents configuration of the <see cref="DeliveryClient"/>.
+    /// Represents configuration of the <see cref="IDeliveryClient"/>.
     /// </summary>
     public class DeliveryOptions
     {
@@ -66,7 +64,7 @@ namespace Kentico.Kontent.Delivery.Configuration.DeliveryOptions
 
         /// <summary>
         /// Gets or sets a value that determines if the client includes the total number of items matching the search criteria in response.
-        /// This behavior can also be enabled for individual requests with the <see cref="IncludeTotalCountParameter"/>.
+        /// This behavior can also be enabled for individual requests with the IncludeTotalCountParameter.
         /// </summary>
         public bool IncludeTotalCount { get; set; }
     }

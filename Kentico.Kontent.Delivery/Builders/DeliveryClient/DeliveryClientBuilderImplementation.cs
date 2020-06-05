@@ -1,6 +1,6 @@
 ﻿using System;
 using Kentico.Kontent.Delivery.Abstractions;
-using Kentico.Kontent.Delivery.Configuration.DeliveryOptions;
+using Kentico.Kontent.Delivery.Configuration;
 using Kentico.Kontent.Delivery.Extensions;
 using Microsoft.Extensions.DependencyInjection;
 

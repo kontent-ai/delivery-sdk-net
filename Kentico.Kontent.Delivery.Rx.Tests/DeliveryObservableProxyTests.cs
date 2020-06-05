@@ -7,7 +7,6 @@ using System.Reactive.Linq;
 using System.Threading.Tasks;
 using FakeItEasy;
 using Kentico.Kontent.Delivery.Abstractions;
-using Kentico.Kontent.Delivery.Configuration.DeliveryOptions;
 using Kentico.Kontent.Delivery.ContentItems;
 using Kentico.Kontent.Delivery.Rx.Tests.Models.ContentTypes;
 using Kentico.Kontent.Delivery.Tests.Factories;
