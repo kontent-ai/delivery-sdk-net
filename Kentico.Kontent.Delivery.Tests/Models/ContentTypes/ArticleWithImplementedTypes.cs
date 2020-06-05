@@ -8,10 +8,11 @@ using System;
 using System.Collections.Generic;
 using Kentico.Kontent.Delivery.Abstractions;
 using Kentico.Kontent.Delivery.ContentItems;
+using Kentico.Kontent.Delivery.TaxonomyGroups;
 
 namespace Kentico.Kontent.Delivery.Tests.Models.ContentTypes
 {
-    public class ArticleWithInterfaces
+    public class ArticleWithImplementedTypes
     {
         public const string Codename = "article";
         public const string PersonasCodename = "personas";
@@ -25,9 +26,9 @@ namespace Kentico.Kontent.Delivery.Tests.Models.ContentTypes
         public const string MetaDescriptionCodename = "meta_description";
         public const string UrlPatternCodename = "url_pattern";
 
-        public IEnumerable<ITaxonomyTerm> Personas { get; set; }
+        public IEnumerable<TaxonomyTerm> Personas { get; set; }
         public string Title { get; set; }
-        public IEnumerable<IAsset> TeaserImage { get; set; }
+        public IEnumerable<Asset> TeaserImage { get; set; }
         public DateTime? PostDate { get; set; }
         public string Summary { get; set; }
         public IRichTextContent BodyCopy { get; set; }

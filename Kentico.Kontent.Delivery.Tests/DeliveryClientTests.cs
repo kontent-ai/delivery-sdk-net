@@ -79,7 +79,7 @@ namespace Kentico.Kontent.Delivery.Tests
         }
 
         [Fact]
-        public async void GetItemWithInterfaces()
+        public async void GetItemWithImplementedTypes()
         {
             // Arrange
             _mockHttp
@@ -90,7 +90,7 @@ namespace Kentico.Kontent.Delivery.Tests
             var client = InitializeDeliveryClientWithCustomModelProvider(_mockHttp, new PropertyMapper(), new CustomTypeProvider());
 
             // Act
-            var beveragesResponse = await client.GetItemAsync<ArticleWithInterfaces>("coffee_beverages_explained");
+            var beveragesResponse = await client.GetItemAsync<ArticleWithImplementedTypes>("coffee_beverages_explained");
 
             // Assert
             Assert.NotEmpty(beveragesResponse.Item.TeaserImage);

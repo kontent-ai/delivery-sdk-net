@@ -260,7 +260,8 @@ namespace Kentico.Kontent.Delivery.ContentItems
             {
                 return true;
             }
-            bool IsGenericICollection(Type @interface)
+
+            static bool IsGenericICollection(Type @interface)
                 => @interface.IsGenericType && @interface.GetGenericTypeDefinition() == typeof(ICollection<>);
 
 
