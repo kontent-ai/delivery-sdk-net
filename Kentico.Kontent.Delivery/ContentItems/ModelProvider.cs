@@ -251,21 +251,12 @@ namespace Kentico.Kontent.Delivery.ContentItems
 
         private static bool IsGenericHierarchicalField(Type fieldType)
         {
-            if (!fieldType.IsGenericType)
-            {
-                return false;
-            }
-
-            if (fieldType.GetGenericTypeDefinition() == typeof(IEnumerable<>))
-            {
-                return true;
-            }
-
             static bool IsGenericICollection(Type @interface)
                 => @interface.IsGenericType && @interface.GetGenericTypeDefinition() == typeof(ICollection<>);
 
-
-            return fieldType.IsClass && fieldType.GetInterfaces().Any(IsGenericICollection);
+            return fieldType.IsGenericType && (fieldType.GetGenericTypeDefinition() == typeof(IEnumerable<>) ||
+                                               fieldType.IsClass &&
+                                               fieldType.GetInterfaces().Any(IsGenericICollection));
         }
 
         private static bool IsNonHierarchicalField(Type propertyType)

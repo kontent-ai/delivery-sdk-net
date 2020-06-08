@@ -12,12 +12,16 @@ namespace Kentico.Kontent.Delivery.ContentItems
     /// </summary>
     public abstract class AbstractItemsResponse : AbstractResponse
     {
-        private readonly Lazy<List<object>> _linkedItems;
+        private Lazy<IReadOnlyList<object>> _linkedItems;
 
         /// <summary>
         /// Gets the linked items and their properties.
         /// </summary>
-        public IReadOnlyList<object> LinkedItems => _linkedItems.Value;
+        public IReadOnlyList<object> LinkedItems
+        {
+            get => _linkedItems.Value;
+            set => _linkedItems = new Lazy<IReadOnlyList<object>>(() => value);
+        }
 
         /// <summary>
         /// Initializes a new instance of the <see cref="AbstractItemsResponse"/> class.
@@ -26,7 +30,7 @@ namespace Kentico.Kontent.Delivery.ContentItems
         /// <param name="modelProvider">The provider that can convert JSON responses into instances of .NET types.</param>
         protected AbstractItemsResponse(ApiResponse response, IModelProvider modelProvider) : base(response)
         {
-            _linkedItems = new Lazy<List<object>>(() =>
+            _linkedItems = new Lazy<IReadOnlyList<object>>(() =>
             {
                 var linkedItems = (JObject)response.JsonContent["modular_content"].DeepClone();
                 List<object> result = new List<object>();
@@ -37,6 +41,16 @@ namespace Kentico.Kontent.Delivery.ContentItems
                 return result;
 
             }, LazyThreadSafetyMode.PublicationOnly);
+        }
+
+        /// <summary>
+        /// Constructor used for deserialization (e.g. for caching purposes), contains no logic.
+        /// </summary>
+        /// <param name="response">The response from Kentico Kontent Delivery API that contains a content item.</param>
+        /// <param name="linkedItems">Collection of linked content items.</param>
+        protected AbstractItemsResponse(ApiResponse response, IReadOnlyList<object> linkedItems) : base(response)
+        {
+            LinkedItems = linkedItems;
         }
     }
 }

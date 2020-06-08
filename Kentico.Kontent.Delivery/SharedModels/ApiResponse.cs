@@ -1,4 +1,5 @@
 ﻿using Kentico.Kontent.Delivery.Abstractions;
+using Newtonsoft.Json;
 using Newtonsoft.Json.Linq;
 
 namespace Kentico.Kontent.Delivery.SharedModels
@@ -16,7 +17,7 @@ namespace Kentico.Kontent.Delivery.SharedModels
         /// <summary>
         /// Gets an object model of the JSON content.
         /// </summary>
-        public JObject JsonContent => _jsonContent ??= JObject.Parse(Content);
+        public JObject JsonContent => _jsonContent ??= Content != null ? JObject.Parse(Content) : null;
 
         /// <inheritdoc/>
         public bool HasStaleContent { get; }
@@ -34,6 +35,7 @@ namespace Kentico.Kontent.Delivery.SharedModels
         /// <param name="hasStaleContent">Specifies whether content is stale.</param>
         /// <param name="continuationToken">Continuation token to be used for continuing enumeration.</param>
         /// <param name="requestUrl">URL used to retrieve this response.</param>
+        [JsonConstructor]
         internal ApiResponse(string content, bool hasStaleContent, string continuationToken, string requestUrl)
         {
             Content = content;

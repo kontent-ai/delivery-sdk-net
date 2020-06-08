@@ -40,7 +40,7 @@ namespace Kentico.Kontent.Delivery
         /// <param name="modelProvider">An instance of an object that can JSON responses into strongly typed CLR objects</param>
         /// <param name="retryPolicyProvider">A provider of a retry policy.</param>
         /// <param name="typeProvider">An instance of an object that can map Kentico Kontent content types to CLR types</param>
-        /// <param name="deliveryHttpClient">An instance of an object that can send request againts Kentico Kontent Delivery API</param>
+        /// <param name="deliveryHttpClient">An instance of an object that can send request against Kentico Kontent Delivery API</param>
         public DeliveryClient(
             IOptionsMonitor<DeliveryOptions> deliveryOptions,
             IModelProvider modelProvider = null,

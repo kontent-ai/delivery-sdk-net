@@ -6,7 +6,7 @@ namespace Kentico.Kontent.Delivery.Abstractions
     /// Represents a response from Kentico Kontent Delivery API that contains a list of content items.
     /// </summary>
     /// <typeparam name="T">The type of content items in the response.</typeparam>
-    public interface IDeliveryItemListingResponse<out T> : IResponse
+    public interface IDeliveryItemListingResponse<out T> : IResponse, IPageable
     {
         /// <summary>
         /// Gets a read-only list of content items.
@@ -17,10 +17,5 @@ namespace Kentico.Kontent.Delivery.Abstractions
         /// Gets the linked items and their properties.
         /// </summary>
         IReadOnlyList<object> LinkedItems { get; }
-
-        /// <summary>
-        /// Gets paging information.
-        /// </summary>
-        IPagination Pagination { get; }
     }
 }

@@ -10,7 +10,7 @@ namespace Kentico.Kontent.Delivery.SharedModels
         /// <summary>
         /// The successful JSON response from Kentico Kontent Delivery API.
         /// </summary>
-        public IApiResponse ApiResponse { get; }
+        public IApiResponse ApiResponse { get; set; }
 
         /// <summary>
         /// Initializes a new instance of the <see cref="AbstractResponse"/> class.
