@@ -4,12 +4,13 @@
 // Changes to this file may cause incorrect behavior and will be lost if the code is regenerated. 
 // For further modifications of the class, create a separate file with the partial class.
 
-using Kentico.Kontent.Delivery.Abstractions;
 using System.Collections.Generic;
+using Kentico.Kontent.Delivery.ContentItems;
+using Kentico.Kontent.Delivery.TaxonomyGroups;
 
-namespace Kentico.Kontent.Delivery.Rx.Tests
+namespace Kentico.Kontent.Delivery.Rx.Tests.Models.ContentTypes
 {
-    public partial class Grinder
+    public class Grinder
     {
         public const string Codename = "grinder";
         public const string ProductNameCodename = "product_name";

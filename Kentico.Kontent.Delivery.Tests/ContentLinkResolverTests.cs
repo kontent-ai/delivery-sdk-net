@@ -1,13 +1,14 @@
-﻿using Newtonsoft.Json.Linq;
-using RichardSzalay.MockHttp;
-using System;
+﻿using System;
 using System.IO;
+using Kentico.Kontent.Delivery.Abstractions;
+using Kentico.Kontent.Delivery.ContentItems;
+using Kentico.Kontent.Delivery.ContentItems.ContentLinks;
 using Kentico.Kontent.Delivery.RetryPolicy;
 using Kentico.Kontent.Delivery.Tests.Factories;
+using Kentico.Kontent.Delivery.Tests.Models.ContentTypes;
+using Newtonsoft.Json.Linq;
+using RichardSzalay.MockHttp;
 using Xunit;
-using Kentico.Kontent.Delivery.Abstractions;
-using Kentico.Kontent.Delivery.StrongTyping;
-using Kentico.Kontent.Delivery.ContentLinks;
 
 namespace Kentico.Kontent.Delivery.Tests
 {
@@ -120,23 +121,19 @@ namespace Kentico.Kontent.Delivery.Tests
             string guid = Guid.NewGuid().ToString();
             string url = $"https://deliver.kontent.ai/{guid}/items/coffee_processing_techniques";
             mockHttp.When(url).
-               Respond("application/json", File.ReadAllText(Path.Combine(Environment.CurrentDirectory, $"Fixtures{Path.DirectorySeparatorChar}ContentLinkResolver{Path.DirectorySeparatorChar}coffee_processing_techniques.json")));
+               Respond("application/json", await File.ReadAllTextAsync(Path.Combine(Environment.CurrentDirectory, $"Fixtures{Path.DirectorySeparatorChar}ContentLinkResolver{Path.DirectorySeparatorChar}coffee_processing_techniques.json")));
 
             var deliveryOptions = DeliveryOptionsFactory.CreateMonitor(new DeliveryOptions { ProjectId = guid });
             var options = DeliveryOptionsFactory.Create(new DeliveryOptions { ProjectId = guid });
             var deliveryHttpClient = new DeliveryHttpClient(mockHttp.ToHttpClient());
             var resiliencePolicyProvider = new DefaultRetryPolicyProvider(options);
             var contentLinkUrlResolver = new CustomContentLinkUrlResolver();
-            var contentLinkResolver = new ContentLinkResolver(contentLinkUrlResolver);
             var contentItemsProcessor = InlineContentItemsProcessorFactory.Create();
-            var modelProvider= new ModelProvider(contentLinkResolver, contentItemsProcessor, new CustomTypeProvider(), new PropertyMapper());
+            var modelProvider= new ModelProvider(contentLinkUrlResolver, contentItemsProcessor, new CustomTypeProvider(), new PropertyMapper());
             var client = new DeliveryClient(
                 deliveryOptions,
-                contentLinkResolver,
-                contentItemsProcessor,
                 modelProvider,
                 resiliencePolicyProvider,
-                null,
                 null,
                 deliveryHttpClient
             );
@@ -173,10 +170,10 @@ namespace Kentico.Kontent.Delivery.Tests
 
         private sealed class CustomContentLinkUrlResolver : IContentLinkUrlResolver
         {
-            public Func<ContentLink, string> GetLinkUrl = link => $"http://example.org/{link.UrlSlug}";
+            public Func<IContentLink, string> GetLinkUrl = link => $"http://example.org/{link.UrlSlug}";
             public Func<string> GetBrokenLinkUrl = () => "http://example.org/broken";
 
-            public string ResolveLinkUrl(ContentLink link)
+            public string ResolveLinkUrl(IContentLink link)
             {
                 return GetLinkUrl(link);
             }

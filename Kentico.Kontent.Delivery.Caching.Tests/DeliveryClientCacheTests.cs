@@ -1,8 +1,6 @@
-﻿using FakeItEasy;
-using FluentAssertions;
-using Kentico.Kontent.Delivery.Abstractions;
-using System.Linq;
+﻿using System.Linq;
 using System.Threading.Tasks;
+using FluentAssertions;
 using Xunit;
 using static Kentico.Kontent.Delivery.Caching.Tests.ResponseHelper;
 
@@ -23,10 +21,10 @@ namespace Kentico.Kontent.Delivery.Caching.Tests
             var scenarioBuilder = new ScenarioBuilder();
 
             var scenario = scenarioBuilder.WithResponse(url, item).Build();
-            var firstResponse = await scenario.CachingClient.GetItemJsonAsync(codename);
+            var firstResponse = await scenario.CachingClient.GetItemAsync<TestItem>(codename);
 
             scenario = scenarioBuilder.WithResponse(url, updatedItem).Build();
-            var secondResponse = await scenario.CachingClient.GetItemJsonAsync(codename);
+            var secondResponse = await scenario.CachingClient.GetItemAsync<TestItem>(codename);
 
             firstResponse.Should().NotBeNull();
             firstResponse.Should().BeEquivalentTo(secondResponse);
@@ -44,15 +42,15 @@ namespace Kentico.Kontent.Delivery.Caching.Tests
             var scenarioBuilder = new ScenarioBuilder();
 
             var scenario = scenarioBuilder.WithResponse(url, item).Build();
-            var firstResponse = await scenario.CachingClient.GetItemJsonAsync(codename);
+            var firstResponse = await scenario.CachingClient.GetItemAsync<TestItem>(codename);
 
             scenario = scenarioBuilder.WithResponse(url, updatedItem).Build();
             scenario.InvalidateDependency(CacheHelpers.GetItemDependencyKey(codename));
-            var secondResponse = await scenario.CachingClient.GetItemJsonAsync(codename);
+            var secondResponse = await scenario.CachingClient.GetItemAsync<TestItem>(codename);
 
             firstResponse.Should().NotBeNull();
             secondResponse.Should().NotBeNull();
-            firstResponse.Should().NotEqual(secondResponse);
+            firstResponse.Should().NotBeEquivalentTo(secondResponse);
             scenario.GetRequestCount(url).Should().Be(2);
         }
 
@@ -69,15 +67,15 @@ namespace Kentico.Kontent.Delivery.Caching.Tests
             var scenarioBuilder = new ScenarioBuilder();
 
             var scenario = scenarioBuilder.WithResponse(url, item).Build();
-            var firstResponse = await scenario.CachingClient.GetItemJsonAsync(codename);
+            var firstResponse = await scenario.CachingClient.GetItemAsync<TestItem>(codename);
 
             scenario = scenarioBuilder.WithResponse(url, updatedItem).Build();
             scenario.InvalidateDependency(CacheHelpers.GetItemDependencyKey(modularCodename));
-            var secondResponse = await scenario.CachingClient.GetItemJsonAsync(codename);
+            var secondResponse = await scenario.CachingClient.GetItemAsync<TestItem>(codename);
 
             firstResponse.Should().NotBeNull();
             secondResponse.Should().NotBeNull();
-            firstResponse.Should().NotEqual(secondResponse);
+            firstResponse.Should().NotBeEquivalentTo(secondResponse);
             scenario.GetRequestCount(url).Should().Be(2);
         }
 
@@ -94,11 +92,11 @@ namespace Kentico.Kontent.Delivery.Caching.Tests
             var scenarioBuilder = new ScenarioBuilder();
 
             var scenario = scenarioBuilder.WithResponse(url, item).Build();
-            var firstResponse = await scenario.CachingClient.GetItemJsonAsync(codename);
+            var firstResponse = await scenario.CachingClient.GetItemAsync<TestItem>(codename);
 
             scenario = scenarioBuilder.WithResponse(url, updatedItem).Build();
             scenario.InvalidateDependency(CacheHelpers.GetItemDependencyKey(component.codename));
-            var secondResponse = await scenario.CachingClient.GetItemJsonAsync(codename);
+            var secondResponse = await scenario.CachingClient.GetItemAsync<TestItem>(codename);
 
             firstResponse.Should().NotBeNull();
             firstResponse.Should().BeEquivalentTo(secondResponse);
@@ -117,15 +115,15 @@ namespace Kentico.Kontent.Delivery.Caching.Tests
             var scenarioBuilder = new ScenarioBuilder();
 
             var scenario = scenarioBuilder.WithResponse(url, item).Build();
-            var firstResponse = await scenario.CachingClient.GetItemJsonAsync(codename);
+            var firstResponse = await scenario.CachingClient.GetItemAsync<TestItem>(codename);
 
             scenario = scenarioBuilder.WithResponse(url, updatedItem).Build();
             scenario.InvalidateDependency(CacheHelpers.GetItemsDependencyKey());
-            var secondResponse = await scenario.CachingClient.GetItemJsonAsync(codename);
+            var secondResponse = await scenario.CachingClient.GetItemAsync<TestItem>(codename);
 
             firstResponse.Should().NotBeNull();
             secondResponse.Should().NotBeNull();
-            firstResponse.Should().NotEqual(secondResponse);
+            firstResponse.Should().NotBeEquivalentTo(secondResponse);
             scenario.GetRequestCount(url).Should().Be(2);
         }
 
@@ -144,10 +142,10 @@ namespace Kentico.Kontent.Delivery.Caching.Tests
             var scenarioBuilder = new ScenarioBuilder();
 
             var scenario = scenarioBuilder.WithResponse(url, item).Build();
-            var firstResponse = await scenario.CachingClient.GetItemAsync(codename);
+            var firstResponse = await scenario.CachingClient.GetItemAsync<TestItem>(codename);
 
             scenario = scenarioBuilder.WithResponse(url, updatedItem).Build();
-            var secondResponse = await scenario.CachingClient.GetItemAsync(codename);
+            var secondResponse = await scenario.CachingClient.GetItemAsync<TestItem>(codename);
 
             firstResponse.Should().NotBeNull();
             firstResponse.Should().BeEquivalentTo(secondResponse);
@@ -165,11 +163,11 @@ namespace Kentico.Kontent.Delivery.Caching.Tests
             var scenarioBuilder = new ScenarioBuilder();
 
             var scenario = scenarioBuilder.WithResponse(url, item).Build();
-            var firstResponse = await scenario.CachingClient.GetItemAsync(codename);
+            var firstResponse = await scenario.CachingClient.GetItemAsync<TestItem>(codename);
 
             scenario = scenarioBuilder.WithResponse(url, updatedItem).Build();
             scenario.InvalidateDependency(CacheHelpers.GetItemDependencyKey(codename));
-            var secondResponse = await scenario.CachingClient.GetItemAsync(codename);
+            var secondResponse = await scenario.CachingClient.GetItemAsync<TestItem>(codename);
 
             firstResponse.Should().NotBeNull();
             secondResponse.Should().NotBeNull();
@@ -190,11 +188,11 @@ namespace Kentico.Kontent.Delivery.Caching.Tests
             var scenarioBuilder = new ScenarioBuilder();
 
             var scenario = scenarioBuilder.WithResponse(url, item).Build();
-            var firstResponse = await scenario.CachingClient.GetItemAsync(codename);
+            var firstResponse = await scenario.CachingClient.GetItemAsync<TestItem>(codename);
 
             scenario = scenarioBuilder.WithResponse(url, updatedItem).Build();
             scenario.InvalidateDependency(CacheHelpers.GetItemDependencyKey(modularCodename));
-            var secondResponse = await scenario.CachingClient.GetItemAsync(codename);
+            var secondResponse = await scenario.CachingClient.GetItemAsync<TestItem>(codename);
 
             firstResponse.Should().NotBeNull();
             secondResponse.Should().NotBeNull();
@@ -215,11 +213,11 @@ namespace Kentico.Kontent.Delivery.Caching.Tests
             var scenarioBuilder = new ScenarioBuilder();
 
             var scenario = scenarioBuilder.WithResponse(url, item).Build();
-            var firstResponse = await scenario.CachingClient.GetItemAsync(codename);
+            var firstResponse = await scenario.CachingClient.GetItemAsync<TestItem>(codename);
 
             scenario = scenarioBuilder.WithResponse(url, updatedItem).Build();
             scenario.InvalidateDependency(CacheHelpers.GetItemDependencyKey(component.codename));
-            var secondResponse = await scenario.CachingClient.GetItemAsync(codename);
+            var secondResponse = await scenario.CachingClient.GetItemAsync<TestItem>(codename);
 
             firstResponse.Should().NotBeNull();
             firstResponse.Should().BeEquivalentTo(secondResponse);
@@ -238,11 +236,11 @@ namespace Kentico.Kontent.Delivery.Caching.Tests
             var scenarioBuilder = new ScenarioBuilder();
 
             var scenario = scenarioBuilder.WithResponse(url, item).Build();
-            var firstResponse = await scenario.CachingClient.GetItemAsync(codename);
+            var firstResponse = await scenario.CachingClient.GetItemAsync<TestItem>(codename);
 
             scenario = scenarioBuilder.WithResponse(url, updatedItem).Build();
             scenario.InvalidateDependency(CacheHelpers.GetItemsDependencyKey());
-            var secondResponse = await scenario.CachingClient.GetItemAsync(codename);
+            var secondResponse = await scenario.CachingClient.GetItemAsync<TestItem>(codename);
 
             firstResponse.Should().NotBeNull();
             secondResponse.Should().NotBeNull();
@@ -386,10 +384,10 @@ namespace Kentico.Kontent.Delivery.Caching.Tests
             var scenarioBuilder = new ScenarioBuilder();
 
             var scenario = scenarioBuilder.WithResponse(url, items).Build();
-            var firstResponse = await scenario.CachingClient.GetItemsJsonAsync();
+            var firstResponse = await scenario.CachingClient.GetItemsAsync<TestItem>();
 
             scenario = scenarioBuilder.WithResponse(url, updatedItems).Build();
-            var secondResponse = await scenario.CachingClient.GetItemsJsonAsync();
+            var secondResponse = await scenario.CachingClient.GetItemsAsync<TestItem>();
 
             firstResponse.Should().NotBeNull();
             firstResponse.Should().BeEquivalentTo(secondResponse);
@@ -407,15 +405,15 @@ namespace Kentico.Kontent.Delivery.Caching.Tests
             var scenarioBuilder = new ScenarioBuilder();
 
             var scenario = scenarioBuilder.WithResponse(url, items).Build();
-            var firstResponse = await scenario.CachingClient.GetItemsJsonAsync();
+            var firstResponse = await scenario.CachingClient.GetItemsAsync<TestItem>();
 
             scenario = scenarioBuilder.WithResponse(url, updatedItems).Build();
             scenario.InvalidateDependency(CacheHelpers.GetItemsDependencyKey());
-            var secondResponse = await scenario.CachingClient.GetItemsJsonAsync();
+            var secondResponse = await scenario.CachingClient.GetItemsAsync<TestItem>();
 
             firstResponse.Should().NotBeNull();
             secondResponse.Should().NotBeNull();
-            firstResponse.Should().NotEqual(secondResponse);
+            firstResponse.Should().NotBeEquivalentTo(secondResponse);
             scenario.GetRequestCount(url).Should().Be(2);
         }
 
@@ -434,10 +432,10 @@ namespace Kentico.Kontent.Delivery.Caching.Tests
             var scenarioBuilder = new ScenarioBuilder();
 
             var scenario = scenarioBuilder.WithResponse(url, items).Build();
-            var firstResponse = await scenario.CachingClient.GetItemsAsync();
+            var firstResponse = await scenario.CachingClient.GetItemsAsync<TestItem>();
 
             scenario = scenarioBuilder.WithResponse(url, updatedItems).Build();
-            var secondResponse = await scenario.CachingClient.GetItemsAsync();
+            var secondResponse = await scenario.CachingClient.GetItemsAsync<TestItem>();
 
             firstResponse.Should().NotBeNull();
             firstResponse.Should().BeEquivalentTo(secondResponse);
@@ -455,11 +453,11 @@ namespace Kentico.Kontent.Delivery.Caching.Tests
             var scenarioBuilder = new ScenarioBuilder();
 
             var scenario = scenarioBuilder.WithResponse(url, items).Build();
-            var firstResponse = await scenario.CachingClient.GetItemsAsync();
+            var firstResponse = await scenario.CachingClient.GetItemsAsync<TestItem>();
 
             scenario = scenarioBuilder.WithResponse(url, updatedItems).Build();
             scenario.InvalidateDependency(CacheHelpers.GetItemsDependencyKey());
-            var secondResponse = await scenario.CachingClient.GetItemsAsync();
+            var secondResponse = await scenario.CachingClient.GetItemsAsync<TestItem>();
 
             firstResponse.Should().NotBeNull();
             secondResponse.Should().NotBeNull();
@@ -530,10 +528,10 @@ namespace Kentico.Kontent.Delivery.Caching.Tests
             var scenarioBuilder = new ScenarioBuilder();
 
             var scenario = scenarioBuilder.WithResponse(url, type).Build();
-            var firstResponse = await scenario.CachingClient.GetTypeJsonAsync(codename);
+            var firstResponse = await scenario.CachingClient.GetTypeAsync(codename);
 
             scenario = scenarioBuilder.WithResponse(url, updatedType).Build();
-            var secondResponse = await scenario.CachingClient.GetTypeJsonAsync(codename);
+            var secondResponse = await scenario.CachingClient.GetTypeAsync(codename);
 
             firstResponse.Should().NotBeNull();
             firstResponse.Should().BeEquivalentTo(secondResponse);
@@ -551,15 +549,15 @@ namespace Kentico.Kontent.Delivery.Caching.Tests
             var scenarioBuilder = new ScenarioBuilder();
 
             var scenario = scenarioBuilder.WithResponse(url, type).Build();
-            var firstResponse = await scenario.CachingClient.GetTypeJsonAsync(codename);
+            var firstResponse = await scenario.CachingClient.GetTypeAsync(codename);
 
             scenario = scenarioBuilder.WithResponse(url, updatedType).Build();
             scenario.InvalidateDependency(CacheHelpers.GetTypesDependencyKey());
-            var secondResponse = await scenario.CachingClient.GetTypeJsonAsync(codename);
+            var secondResponse = await scenario.CachingClient.GetTypeAsync(codename);
 
             firstResponse.Should().NotBeNull();
             secondResponse.Should().NotBeNull();
-            firstResponse.Should().NotEqual(secondResponse);
+            firstResponse.Should().NotBeEquivalentTo(secondResponse);
             scenario.GetRequestCount(url).Should().Be(2);
         }
 
@@ -626,10 +624,10 @@ namespace Kentico.Kontent.Delivery.Caching.Tests
             var scenarioBuilder = new ScenarioBuilder();
 
             var scenario = scenarioBuilder.WithResponse(url, types).Build();
-            var firstResponse = await scenario.CachingClient.GetTypesJsonAsync();
+            var firstResponse = await scenario.CachingClient.GetTypesAsync();
 
             scenario = scenarioBuilder.WithResponse(url, updatedTypes).Build();
-            var secondResponse = await scenario.CachingClient.GetTypesJsonAsync();
+            var secondResponse = await scenario.CachingClient.GetTypesAsync();
 
             firstResponse.Should().NotBeNull();
             firstResponse.Should().BeEquivalentTo(secondResponse);
@@ -647,15 +645,15 @@ namespace Kentico.Kontent.Delivery.Caching.Tests
             var scenarioBuilder = new ScenarioBuilder();
 
             var scenario = scenarioBuilder.WithResponse(url, types).Build();
-            var firstResponse = await scenario.CachingClient.GetTypesJsonAsync();
+            var firstResponse = await scenario.CachingClient.GetTypesAsync();
 
             scenario = scenarioBuilder.WithResponse(url, updatedTypes).Build();
             scenario.InvalidateDependency(CacheHelpers.GetTypesDependencyKey());
-            var secondResponse = await scenario.CachingClient.GetTypesJsonAsync();
+            var secondResponse = await scenario.CachingClient.GetTypesAsync();
 
             firstResponse.Should().NotBeNull();
             secondResponse.Should().NotBeNull();
-            firstResponse.Should().NotEqual(secondResponse);
+            firstResponse.Should().NotBeEquivalentTo(secondResponse);
             scenario.GetRequestCount(url).Should().Be(2);
         }
 
@@ -772,10 +770,10 @@ namespace Kentico.Kontent.Delivery.Caching.Tests
             var scenarioBuilder = new ScenarioBuilder();
 
             var scenario = scenarioBuilder.WithResponse(url, taxonomy).Build();
-            var firstResponse = await scenario.CachingClient.GetTaxonomyJsonAsync(codename);
+            var firstResponse = await scenario.CachingClient.GetTaxonomyAsync(codename);
 
             scenario = scenarioBuilder.WithResponse(url, updatedTaxonomy).Build();
-            var secondResponse = await scenario.CachingClient.GetTaxonomyJsonAsync(codename);
+            var secondResponse = await scenario.CachingClient.GetTaxonomyAsync(codename);
 
             firstResponse.Should().NotBeNull();
             firstResponse.Should().BeEquivalentTo(secondResponse);
@@ -793,15 +791,15 @@ namespace Kentico.Kontent.Delivery.Caching.Tests
             var scenarioBuilder = new ScenarioBuilder();
 
             var scenario = scenarioBuilder.WithResponse(url, taxonomy).Build();
-            var firstResponse = await scenario.CachingClient.GetTaxonomyJsonAsync(codename);
+            var firstResponse = await scenario.CachingClient.GetTaxonomyAsync(codename);
 
             scenario = scenarioBuilder.WithResponse(url, updatedTaxonomy).Build();
             scenario.InvalidateDependency(CacheHelpers.GetTaxonomyDependencyKey(codename));
-            var secondResponse = await scenario.CachingClient.GetTaxonomyJsonAsync(codename);
+            var secondResponse = await scenario.CachingClient.GetTaxonomyAsync(codename);
 
             firstResponse.Should().NotBeNull();
             secondResponse.Should().NotBeNull();
-            firstResponse.Should().NotEqual(secondResponse);
+            firstResponse.Should().NotBeEquivalentTo(secondResponse);
             scenario.GetRequestCount(url).Should().Be(2);
         }
 
@@ -868,10 +866,10 @@ namespace Kentico.Kontent.Delivery.Caching.Tests
             var scenarioBuilder = new ScenarioBuilder();
 
             var scenario = scenarioBuilder.WithResponse(url, taxonomies).Build();
-            var firstResponse = await scenario.CachingClient.GetTaxonomiesJsonAsync();
+            var firstResponse = await scenario.CachingClient.GetTaxonomiesAsync();
 
             scenario = scenarioBuilder.WithResponse(url, updatedTaxonomies).Build();
-            var secondResponse = await scenario.CachingClient.GetTaxonomiesJsonAsync();
+            var secondResponse = await scenario.CachingClient.GetTaxonomiesAsync();
 
             firstResponse.Should().NotBeNull();
             firstResponse.Should().BeEquivalentTo(secondResponse);
@@ -889,15 +887,15 @@ namespace Kentico.Kontent.Delivery.Caching.Tests
             var scenarioBuilder = new ScenarioBuilder();
 
             var scenario = scenarioBuilder.WithResponse(url, taxonomies).Build();
-            var firstResponse = await scenario.CachingClient.GetTaxonomiesJsonAsync();
+            var firstResponse = await scenario.CachingClient.GetTaxonomiesAsync();
 
             scenario = scenarioBuilder.WithResponse(url, updatedTaxonomies).Build();
             scenario.InvalidateDependency(CacheHelpers.GetTaxonomiesDependencyKey());
-            var secondResponse = await scenario.CachingClient.GetTaxonomiesJsonAsync();
+            var secondResponse = await scenario.CachingClient.GetTaxonomiesAsync();
 
             firstResponse.Should().NotBeNull();
             secondResponse.Should().NotBeNull();
-            firstResponse.Should().NotEqual(secondResponse);
+            firstResponse.Should().NotBeEquivalentTo(secondResponse);
             scenario.GetRequestCount(url).Should().Be(2);
         }
 

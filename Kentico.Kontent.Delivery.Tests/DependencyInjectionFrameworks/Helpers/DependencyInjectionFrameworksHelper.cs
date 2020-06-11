@@ -3,7 +3,10 @@ using Autofac;
 using Autofac.Extensions.DependencyInjection;
 using Castle.Windsor;
 using Castle.Windsor.MsDependencyInjection;
+using Kentico.Kontent.Delivery.Abstractions;
+using Kentico.Kontent.Delivery.Extensions;
 using Kentico.Kontent.Delivery.Tests.Factories;
+using Kentico.Kontent.Delivery.Tests.Models.ContentTypes;
 using Microsoft.Extensions.DependencyInjection;
 using SimpleInjector;
 using SimpleInjector.Lifestyles;
@@ -59,17 +62,14 @@ namespace Kentico.Kontent.Delivery.Tests.DependencyInjectionFrameworks.Helpers
                 }
             };
 
-            var appBuilder = new FakeApplicationBuilder
-            {
-                ApplicationServices = serviceCollection.BuildServiceProvider()
-            };
+            serviceCollection.BuildServiceProvider();
 
             serviceCollection.AddSimpleInjector(container);
             serviceCollection.UseSimpleInjectorAspNetRequestScoping(container);
 
             ServiceCollection services = serviceCollection as ServiceCollection;
 
-            ServiceCollectionContainerBuilderExtensions.BuildServiceProvider(services, validateScopes: true)
+            ServiceCollectionContainerBuilderExtensions.BuildServiceProvider(services, true)
                 .UseSimpleInjector(container);
 
 

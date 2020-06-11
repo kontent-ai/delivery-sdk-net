@@ -4,12 +4,12 @@
 // Changes to this file may cause incorrect behavior and will be lost if the code is regenerated. 
 // For further modifications of the class, create a separate file with the partial class.
 
-using Kentico.Kontent.Delivery.Abstractions;
 using System.Collections.Generic;
+using Kentico.Kontent.Delivery.ContentItems;
 
-namespace Kentico.Kontent.Delivery.Rx.Tests
+namespace Kentico.Kontent.Delivery.Rx.Tests.Models.ContentTypes
 {
-    public partial class Cafe
+    public class Cafe
     {
         public const string Codename = "cafe";
         public const string StreetCodename = "street";

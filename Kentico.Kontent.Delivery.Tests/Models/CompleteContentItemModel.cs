@@ -1,8 +1,10 @@
-﻿using Kentico.Kontent.Delivery.Abstractions;
-using System;
+﻿using System;
 using System.Collections.Generic;
+using Kentico.Kontent.Delivery.ContentItems;
+using Kentico.Kontent.Delivery.ContentTypes.Element;
+using Kentico.Kontent.Delivery.TaxonomyGroups;
 
-namespace Kentico.Kontent.Delivery.Tests
+namespace Kentico.Kontent.Delivery.Tests.Models
 {
     public class CompleteContentItemModel
     {
@@ -13,7 +15,7 @@ namespace Kentico.Kontent.Delivery.Tests
         public IEnumerable<MultipleChoiceOption> MultipleChoiceFieldAsCheckboxes { get; set; }
         public DateTime? DateTimeField { get; set; }
         public IEnumerable<Asset> AssetField { get; set; }
-        public IEnumerable<ContentItem> LinkedItemsField { get; set; }
+        public IEnumerable<Homepage> LinkedItemsField { get; set; }
         public IEnumerable<TaxonomyTerm> CompleteTypeTaxonomy { get; set; }
         public string CustomElementField { get; set; }
         public ContentItemSystemAttributes System { get; set; }

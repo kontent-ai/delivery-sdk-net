@@ -1,12 +1,12 @@
-﻿using Kentico.Kontent.Delivery.Abstractions;
-using Microsoft.Extensions.Caching.Memory;
-using Microsoft.Extensions.Options;
-using Microsoft.Extensions.Primitives;
-using System;
+﻿using System;
 using System.Collections.Concurrent;
 using System.Collections.Generic;
 using System.Threading;
 using System.Threading.Tasks;
+using Kentico.Kontent.Delivery.Abstractions;
+using Microsoft.Extensions.Caching.Memory;
+using Microsoft.Extensions.Options;
+using Microsoft.Extensions.Primitives;
 
 namespace Kentico.Kontent.Delivery.Caching
 {
@@ -67,7 +67,7 @@ namespace Kentico.Kontent.Delivery.Caching
 
                 // Set different timeout for stale content
                 var valueCacheOptions = new MemoryCacheEntryOptions();
-                if (value is AbstractResponse ar && ar.HasStaleContent)
+                if (value is IResponse ar && ar.ApiResponse.HasStaleContent)
                 {
                     valueCacheOptions.SetAbsoluteExpiration(_cacheOptions.StaleContentExpiration);
                 }

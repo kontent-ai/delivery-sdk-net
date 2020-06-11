@@ -1,6 +1,6 @@
-﻿using Kentico.Kontent.Delivery.Abstractions;
-using System.Net.Http;
+﻿using System.Net.Http;
 using System.Threading.Tasks;
+using Kentico.Kontent.Delivery.Abstractions;
 
 namespace Kentico.Kontent.Delivery
 {

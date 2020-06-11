@@ -1,23 +1,19 @@
 ﻿using System;
 using System.Linq;
 using System.Net.Http;
-using Kentico.Kontent.Delivery;
 using Kentico.Kontent.Delivery.Abstractions;
-using Kentico.Kontent.Delivery.Abstractions.ContentLinks;
-using Kentico.Kontent.Delivery.Abstractions.InlineContentItems;
-using Kentico.Kontent.Delivery.Abstractions.RetryPolicy;
-using Kentico.Kontent.Delivery.Builders.DeliveryOptions;
 using Kentico.Kontent.Delivery.Configuration;
-using Kentico.Kontent.Delivery.ContentLinks;
-using Kentico.Kontent.Delivery.InlineContentItems;
+using Kentico.Kontent.Delivery.ContentItems;
+using Kentico.Kontent.Delivery.ContentItems.ContentLinks;
+using Kentico.Kontent.Delivery.ContentItems.InlineContentItems;
 using Kentico.Kontent.Delivery.RetryPolicy;
-using Kentico.Kontent.Delivery.StrongTyping;
 using Microsoft.Extensions.Configuration;
+using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.DependencyInjection.Extensions;
 using Microsoft.Extensions.Options;
 
 // see https://docs.microsoft.com/en-us/aspnet/core/fundamentals/dependency-injection?view=aspnetcore-2.2
-namespace Microsoft.Extensions.DependencyInjection
+namespace Kentico.Kontent.Delivery.Extensions
 {
     /// <summary>
     /// A class which contains extension methods on <see cref="IServiceCollection"/> for registering an <see cref="IDeliveryClient"/> instance.
@@ -206,7 +202,6 @@ namespace Microsoft.Extensions.DependencyInjection
 
         private static IServiceCollection RegisterDependencies(this IServiceCollection services)
         {
-            services.TryAddSingleton<IContentLinkResolver, ContentLinkResolver>();
             services.TryAddSingleton<IContentLinkUrlResolver, DefaultContentLinkUrlResolver>();
             services.TryAddSingleton<ITypeProvider, TypeProvider>();
             services.TryAddSingleton<IDeliveryHttpClient>(new DeliveryHttpClient(new HttpClient()));

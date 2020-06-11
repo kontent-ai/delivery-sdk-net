@@ -1,8 +1,6 @@
 ﻿using System;
 using Kentico.Kontent.Delivery.Abstractions;
-using Kentico.Kontent.Delivery.Abstractions.InlineContentItems;
-using Kentico.Kontent.Delivery.Abstractions.RetryPolicy;
-using Kentico.Kontent.Delivery.Builders.DeliveryOptions;
+using Kentico.Kontent.Delivery.Configuration;
 
 namespace Kentico.Kontent.Delivery.Builders.DeliveryClient
 {
@@ -17,8 +15,8 @@ namespace Kentico.Kontent.Delivery.Builders.DeliveryClient
         /// <seealso cref="DeliveryClientBuilder.WithProjectId(Guid)"/>>
         IOptionalClientSetup BuildWithProjectId(Guid projectId);
 
-        /// <seealso cref="DeliveryClientBuilder.WithOptions(Func{IDeliveryOptionsBuilder, Delivery.DeliveryOptions})"/>
-        IOptionalClientSetup BuildWithDeliveryOptions(Func<IDeliveryOptionsBuilder, Delivery.DeliveryOptions> buildDeliveryOptions);
+        /// <seealso cref="DeliveryClientBuilder.WithOptions(Func{IDeliveryOptionsBuilder, DeliveryOptions})"/>
+        IOptionalClientSetup BuildWithDeliveryOptions(Func<IDeliveryOptionsBuilder, DeliveryOptions> buildDeliveryOptions);
     }
 
     /// <summary>

@@ -70,7 +70,7 @@ namespace Kentico.Kontent.ImageTransformation
         /// <returns>The same <see cref="ImageUrlBuilder" /> instance. </returns>
         public ImageUrlBuilder WithFitMode(string fitMode)
         {
-            if (!string.IsNullOrWhiteSpace(fitMode) && Enum.TryParse(fitMode, ignoreCase: true, result: out ImageFitMode parsedFitMode))
+            if (!string.IsNullOrWhiteSpace(fitMode) && Enum.TryParse(fitMode, true, out ImageFitMode parsedFitMode))
             {
                 WithFitMode(parsedFitMode);
             }
@@ -137,7 +137,7 @@ namespace Kentico.Kontent.ImageTransformation
         /// <returns>The same <see cref="ImageUrlBuilder" /> instance. </returns>
         public ImageUrlBuilder WithFormat(string format)
         {
-            if (!string.IsNullOrWhiteSpace(format) && Enum.TryParse(format, ignoreCase: true, result: out ImageFormat parsedFormat))
+            if (!string.IsNullOrWhiteSpace(format) && Enum.TryParse(format, true, out ImageFormat parsedFormat))
             {
                 WithFormat(parsedFormat);
             }

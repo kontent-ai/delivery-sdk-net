@@ -32,7 +32,7 @@
   </ItemGroup>
 
   <ItemGroup>
-    <PackageReference Include="Autofac" Version="5.1.2" />
+    <PackageReference Include="Autofac" Version="5.2.0" />
     <PackageReference Include="Autofac.Extensions.DependencyInjection" Version="6.0.0" />
     <PackageReference Include="Castle.Windsor" Version="5.0.1" />
     <PackageReference Include="Castle.Windsor.MsDependencyInjection" Version="3.3.1" />
@@ -40,22 +40,24 @@
     <PackageReference Include="Microsoft.Extensions.Caching.Memory" Version="3.1.2" />
     <PackageReference Include="Microsoft.Extensions.Configuration" Version="2.1.1" />
     <PackageReference Include="Microsoft.Extensions.Configuration.Json" Version="2.1.1" />
-    <PackageReference Include="Microsoft.NET.Test.Sdk" Version="16.5.0" />
-    <PackageReference Include="FakeItEasy" Version="6.0.0" />
-    <PackageReference Include="NodaTime" Version="2.4.7" />
+    <PackageReference Include="Microsoft.NET.Test.Sdk" Version="16.6.1" />
+    <PackageReference Include="FakeItEasy" Version="6.0.1" />
+    <PackageReference Include="NodaTime" Version="3.0.0" />
     <PackageReference Include="RichardSzalay.MockHttp" Version="6.0.0" />
-    <PackageReference Include="SimpleInjector" Version="4.9.1" />
-    <PackageReference Include="SimpleInjector.Integration.AspNetCore" Version="4.9.1" />
-    <PackageReference Include="Unity" Version="5.11.5" />
+    <PackageReference Include="SimpleInjector" Version="4.10.2" />
+    <PackageReference Include="SimpleInjector.Integration.AspNetCore" Version="4.10.3" />
+    <PackageReference Include="Unity" Version="5.11.7" />
     <PackageReference Include="Unity.Microsoft.DependencyInjection" Version="5.11.5" />
     <PackageReference Include="xunit" Version="2.4.1" />
-    <PackageReference Include="xunit.runner.visualstudio" Version="2.4.1" />
+    <PackageReference Include="xunit.runner.visualstudio" Version="2.4.2">
+      <PrivateAssets>all</PrivateAssets>
+      <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
+    </PackageReference>
     <DotNetCliToolReference Include="dotnet-xunit" Version="2.3.1" />
   </ItemGroup>
 
   <ItemGroup>
     <ProjectReference Include="..\Kentico.Kontent.Delivery.Abstractions\Kentico.Kontent.Delivery.Abstractions.csproj" />
-    <ProjectReference Include="..\Kentico.Kontent.Delivery.Caching\Kentico.Kontent.Delivery.Caching.csproj" />
     <ProjectReference Include="..\Kentico.Kontent.Delivery\Kentico.Kontent.Delivery.csproj" />
   </ItemGroup>
 

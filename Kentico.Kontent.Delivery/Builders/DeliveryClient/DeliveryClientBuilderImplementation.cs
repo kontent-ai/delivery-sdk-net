@@ -1,18 +1,17 @@
-﻿using Kentico.Kontent.Delivery.Abstractions;
-using Kentico.Kontent.Delivery.Abstractions.InlineContentItems;
-using Kentico.Kontent.Delivery.Abstractions.RetryPolicy;
-using Kentico.Kontent.Delivery.Builders.DeliveryOptions;
+﻿using System;
+using Kentico.Kontent.Delivery.Abstractions;
+using Kentico.Kontent.Delivery.Configuration;
+using Kentico.Kontent.Delivery.Extensions;
 using Microsoft.Extensions.DependencyInjection;
-using System;
 
 namespace Kentico.Kontent.Delivery.Builders.DeliveryClient
 {
     internal sealed class DeliveryClientBuilderImplementation : IDeliveryClientBuilder, IOptionalClientSetup
     {
         private readonly IServiceCollection _serviceCollection = new ServiceCollection();
-        private Delivery.DeliveryOptions _deliveryOptions;
+        private DeliveryOptions _deliveryOptions;
 
-        public IOptionalClientSetup BuildWithDeliveryOptions(Func<IDeliveryOptionsBuilder, Delivery.DeliveryOptions> buildDeliveryOptions)
+        public IOptionalClientSetup BuildWithDeliveryOptions(Func<IDeliveryOptionsBuilder, DeliveryOptions> buildDeliveryOptions)
         {
             var builder = DeliveryOptionsBuilder.CreateInstance();
             _deliveryOptions = buildDeliveryOptions(builder);

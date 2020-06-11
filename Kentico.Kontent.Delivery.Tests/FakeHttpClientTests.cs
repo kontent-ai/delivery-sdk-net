@@ -4,13 +4,17 @@ using System.Net.Http;
 using System.Threading.Tasks;
 using FakeItEasy;
 using Kentico.Kontent.Delivery.Abstractions;
-using Kentico.Kontent.Delivery.Abstractions.RetryPolicy;
+using Kentico.Kontent.Delivery.Builders.DeliveryClient;
+using Kentico.Kontent.Delivery.Configuration;
+using Kentico.Kontent.Delivery.Tests.Models.ContentTypes;
 using RichardSzalay.MockHttp;
 using Xunit;
 
 namespace Kentico.Kontent.Delivery.Tests
 {
-    // Sample test mocking HTTP client
+    /// <summary>
+    /// Sample test mocking HTTP client
+    /// </summary>
     public class FakeHttpClientTests
     {
         [Fact]
@@ -23,7 +27,7 @@ namespace Kentico.Kontent.Delivery.Tests
             var deliveryClient = MockDeliveryClient(deliveryOptions, deliveryHttpClient);
 
             // Act
-            var contentItem = await deliveryClient.GetItemAsync("test");
+            var contentItem = await deliveryClient.GetItemAsync<Home>("test");
 
             // Assert
             Assert.Equal("1bd6ba00-4bf2-4a2b-8334-917faa686f66", contentItem.Item.System.Id);
@@ -51,7 +55,6 @@ namespace Kentico.Kontent.Delivery.Tests
         private static IDeliveryClient MockDeliveryClient(DeliveryOptions deliveryOptions, IDeliveryHttpClient deliveryHttpClient)
         {
             var contentLinkUrlResolver = A.Fake<IContentLinkUrlResolver>();
-            var modelProvider = A.Fake<IModelProvider>();
             var retryPolicy = A.Fake<IRetryPolicy>();
             var retryPolicyProvider = A.Fake<IRetryPolicyProvider>();
           
@@ -64,8 +67,8 @@ namespace Kentico.Kontent.Delivery.Tests
                 .WithOptions(_ => deliveryOptions)
                 .WithDeliveryHttpClient(deliveryHttpClient)
                 .WithContentLinkUrlResolver(contentLinkUrlResolver)
-                .WithModelProvider(modelProvider)
                 .WithRetryPolicyProvider(retryPolicyProvider)
+                .WithTypeProvider(new CustomTypeProvider())
                 .Build();
 
             return client;

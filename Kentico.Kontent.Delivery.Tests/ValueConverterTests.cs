@@ -1,30 +1,27 @@
 ﻿using System;
-using System.Linq;
-using System.Reflection;
-using Newtonsoft.Json.Linq;
-using NodaTime;
-using Xunit;
-using RichardSzalay.MockHttp;
 using System.IO;
+using System.Linq;
 using System.Net.Http;
+using System.Reflection;
 using System.Threading.Tasks;
 using FakeItEasy;
 using Kentico.Kontent.Delivery.Abstractions;
-using Kentico.Kontent.Delivery.Abstractions.RetryPolicy;
-using Kentico.Kontent.Delivery.StrongTyping;
-using Kentico.Kontent.Delivery.ContentLinks;
+using Kentico.Kontent.Delivery.ContentItems;
 using Kentico.Kontent.Delivery.Tests.Factories;
+using Kentico.Kontent.Delivery.Tests.Models.ContentTypes;
+using Kentico.Kontent.Delivery.Urls.QueryParameters;
+using NodaTime;
+using RichardSzalay.MockHttp;
+using Xunit;
 
 namespace Kentico.Kontent.Delivery.Tests
 {
     [AttributeUsage(AttributeTargets.Property)]
     public class TestGreeterValueConverterAttribute : Attribute, IPropertyValueConverter
     {
-        public object GetPropertyValue(PropertyInfo property, JToken elementData, ResolvingContext context)
+        public object GetPropertyValue(PropertyInfo property, IContentElement elementData, ResolvingContext context)
         {
-            var element = (JObject)elementData;
-            var str = element.Property("value")?.Value?.ToObject<string>();
-            return $"Hello {str}!";
+            return $"Hello {elementData.Value}!";
         }
     }
 
@@ -32,39 +29,33 @@ namespace Kentico.Kontent.Delivery.Tests
     [AttributeUsage(AttributeTargets.Property)]
     public class NodaTimeValueConverterAttribute : Attribute, IPropertyValueConverter
     {
-        public object GetPropertyValue(PropertyInfo property, JToken elementData, ResolvingContext context)
+        public object GetPropertyValue(PropertyInfo property, IContentElement elementData, ResolvingContext context)
         {
-            var element = (JObject)elementData;
-            var dt = element.Property("value")?.Value?.ToObject<DateTime>();
-            if (dt != null)
-            {
-                var udt = DateTime.SpecifyKind(dt.Value, DateTimeKind.Utc);
-                ZonedDateTime zdt = ZonedDateTime.FromDateTimeOffset(udt);
-                return zdt;
-            }
-            return null;
+            var dt = DateTime.Parse(elementData.Value);
+            var udt = DateTime.SpecifyKind(dt, DateTimeKind.Utc);
+            return ZonedDateTime.FromDateTimeOffset(udt);
         }
     }
 
 
     public class ValueConverterTests
     {
-        private readonly string guid;
-        private readonly string baseUrl;
+        private readonly string _guid;
+        private readonly string _baseUrl;
 
         public ValueConverterTests()
         {
-            guid = Guid.NewGuid().ToString();
-            baseUrl = $"https://deliver.kontent.ai/{guid}";
+            _guid = Guid.NewGuid().ToString();
+            _baseUrl = $"https://deliver.kontent.ai/{_guid}";
         }
 
         [Fact]
         public async void GreeterPropertyValueConverter()
         {
             var mockHttp = new MockHttpMessageHandler();
-            string url = $"{baseUrl}/items/on_roasts";
+            string url = $"{_baseUrl}/items/on_roasts";
             mockHttp.When(url).
-               Respond("application/json", File.ReadAllText(Path.Combine(Environment.CurrentDirectory, $"Fixtures{Path.DirectorySeparatorChar}ContentLinkResolver{Path.DirectorySeparatorChar}on_roasts.json")));
+               Respond("application/json", await File.ReadAllTextAsync(Path.Combine(Environment.CurrentDirectory, $"Fixtures{Path.DirectorySeparatorChar}ContentLinkResolver{Path.DirectorySeparatorChar}on_roasts.json")));
             DeliveryClient client = InitializeDeliveryClient(mockHttp);
 
             var article = await client.GetItemAsync<Article>("on_roasts");
@@ -76,9 +67,9 @@ namespace Kentico.Kontent.Delivery.Tests
         public async void NodaTimePropertyValueConverter()
         {
             var mockHttp = new MockHttpMessageHandler();
-            string url = $"{baseUrl}/items/on_roasts";
+            string url = $"{_baseUrl}/items/on_roasts";
             mockHttp.When(url).
-               Respond("application/json", File.ReadAllText(Path.Combine(Environment.CurrentDirectory, $"Fixtures{Path.DirectorySeparatorChar}ContentLinkResolver{Path.DirectorySeparatorChar}on_roasts.json")));
+               Respond("application/json", await File.ReadAllTextAsync(Path.Combine(Environment.CurrentDirectory, $"Fixtures{Path.DirectorySeparatorChar}ContentLinkResolver{Path.DirectorySeparatorChar}on_roasts.json")));
             DeliveryClient client = InitializeDeliveryClient(mockHttp);
 
             var article = await client.GetItemAsync<Article>("on_roasts");
@@ -90,10 +81,10 @@ namespace Kentico.Kontent.Delivery.Tests
         public async void RichTextViaValueConverter()
         {
             var mockHttp = new MockHttpMessageHandler();
-            string url = $"{baseUrl}/items/coffee_beverages_explained";
+            string url = $"{_baseUrl}/items/coffee_beverages_explained";
             mockHttp.When(url).
                WithQueryString("depth=15").
-               Respond("application/json", File.ReadAllText(Path.Combine(Environment.CurrentDirectory, $"Fixtures{Path.DirectorySeparatorChar}ContentLinkResolver{Path.DirectorySeparatorChar}coffee_beverages_explained.json")));
+               Respond("application/json", await File.ReadAllTextAsync(Path.Combine(Environment.CurrentDirectory, $"Fixtures{Path.DirectorySeparatorChar}ContentLinkResolver{Path.DirectorySeparatorChar}coffee_beverages_explained.json")));
             DeliveryClient client = InitializeDeliveryClient(mockHttp);
 
             // Try to get recursive linked items on_roasts -> item -> on_roasts
@@ -110,20 +101,13 @@ namespace Kentico.Kontent.Delivery.Tests
         {
             var deliveryHttpClient = new DeliveryHttpClient(mockHttp.ToHttpClient());
             var contentLinkUrlResolver = A.Fake<IContentLinkUrlResolver>();
-            var deliveryOptions = DeliveryOptionsFactory.CreateMonitor(new DeliveryOptions { ProjectId = guid });
+            var deliveryOptions = DeliveryOptionsFactory.CreateMonitor(new DeliveryOptions { ProjectId = _guid });
             var retryPolicy = A.Fake<IRetryPolicy>();
             var retryPolicyProvider = A.Fake<IRetryPolicyProvider>();
-            A.CallTo(() => retryPolicyProvider.GetRetryPolicy())
-                .Returns(retryPolicy);
-            A.CallTo(() => retryPolicy.ExecuteAsync(A<Func<Task<HttpResponseMessage>>>._))
-                .ReturnsLazily(c => c.GetArgument<Func<Task<HttpResponseMessage>>>(0)());
-            var modelProvider = new ModelProvider(
-                new ContentLinkResolver(contentLinkUrlResolver),
-                null,
-                new CustomTypeProvider(),
-                new PropertyMapper()
-            );
-            var client = new DeliveryClient(deliveryOptions, null, null, modelProvider, retryPolicyProvider, null, null, deliveryHttpClient);
+            A.CallTo(() => retryPolicyProvider.GetRetryPolicy()).Returns(retryPolicy);
+            A.CallTo(() => retryPolicy.ExecuteAsync(A<Func<Task<HttpResponseMessage>>>._)).ReturnsLazily(c => c.GetArgument<Func<Task<HttpResponseMessage>>>(0)());
+            var modelProvider = new ModelProvider(contentLinkUrlResolver, null, new CustomTypeProvider(), new PropertyMapper());
+            var client = new DeliveryClient(deliveryOptions, modelProvider, retryPolicyProvider, null, deliveryHttpClient);
 
             return client;
         }

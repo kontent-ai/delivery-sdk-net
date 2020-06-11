@@ -1,9 +1,8 @@
-﻿using Kentico.Kontent.Delivery.Abstractions;
-using Kentico.Kontent.Delivery.Configuration;
+﻿using System;
+using System.Linq;
+using Kentico.Kontent.Delivery.Abstractions;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Options;
-using System;
-using System.Linq;
 
 namespace Kentico.Kontent.Delivery
 {

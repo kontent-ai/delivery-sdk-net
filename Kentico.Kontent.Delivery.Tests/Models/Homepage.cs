@@ -1,9 +1,10 @@
-using Kentico.Kontent.Delivery.Abstractions;
 using System.Collections.Generic;
+using Kentico.Kontent.Delivery.ContentItems;
+using Kentico.Kontent.Delivery.TaxonomyGroups;
 
-namespace Kentico.Kontent.Delivery.Tests
+namespace Kentico.Kontent.Delivery.Tests.Models
 {
-    public partial class Homepage
+    public class Homepage
     {
         public string CallToAction { get; set; }
         public string Subtitle { get; set; }

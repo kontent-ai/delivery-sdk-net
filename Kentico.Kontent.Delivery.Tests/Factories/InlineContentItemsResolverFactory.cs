@@ -1,5 +1,5 @@
 ﻿using System;
-using Kentico.Kontent.Delivery.Abstractions.InlineContentItems;
+using Kentico.Kontent.Delivery.Abstractions;
 
 namespace Kentico.Kontent.Delivery.Tests.Factories
 {
@@ -31,7 +31,7 @@ namespace Kentico.Kontent.Delivery.Tests.Factories
             => new SimpleResolver<TContentItem>(resultSelector);
 
         public IInlineContentItemsResolver<object> ResolveByDefaultTo(Func<object, string> resultSelector)
-            => ResolveTo<object>(resultSelector);
+            => ResolveTo(resultSelector);
 
         private class SimpleResolver<TContentItem> : IInlineContentItemsResolver<TContentItem>
         {
