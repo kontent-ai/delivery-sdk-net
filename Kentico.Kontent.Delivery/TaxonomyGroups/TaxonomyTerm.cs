@@ -1,9 +1,11 @@
 ﻿using Kentico.Kontent.Delivery.Abstractions;
 using Newtonsoft.Json;
+using System.Diagnostics;
 
 namespace Kentico.Kontent.Delivery.TaxonomyGroups
 {
     /// <inheritdoc/>
+    [DebuggerDisplay("Name = {" + nameof(Name) + "}")]
     public sealed class TaxonomyTerm : ITaxonomyTerm
     {
         /// <inheritdoc/>

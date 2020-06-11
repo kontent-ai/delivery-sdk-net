@@ -1,11 +1,13 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Diagnostics;
 using Kentico.Kontent.Delivery.Abstractions;
 using Newtonsoft.Json;
 
 namespace Kentico.Kontent.Delivery.ContentItems
 {
     /// <inheritdoc/>
+    [DebuggerDisplay("Id = {" + nameof(Id) + "}")]
     public sealed class ContentItemSystemAttributes : IContentItemSystemAttributes
     {
         /// <inheritdoc/>

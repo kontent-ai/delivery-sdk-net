@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Diagnostics;
 using System.Threading;
 using Kentico.Kontent.Delivery.Abstractions;
 using Kentico.Kontent.Delivery.ContentTypes.Element;
@@ -7,6 +8,7 @@ using Kentico.Kontent.Delivery.SharedModels;
 namespace Kentico.Kontent.Delivery.ContentTypes
 {
     /// <inheritdoc cref="IDeliveryElementResponse" />
+    [DebuggerDisplay("Name = {" + nameof(Element) + "." + nameof(IContentElement.Name) + "}")]
     public sealed class DeliveryElementResponse : AbstractResponse, IDeliveryElementResponse
     {
         private readonly Lazy<ContentElement> _element;

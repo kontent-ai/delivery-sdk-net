@@ -6,32 +6,12 @@ namespace Kentico.Kontent.Delivery.Abstractions
     /// <summary>
     /// Represents system attributes of a content item.
     /// </summary>
-    public interface IContentItemSystemAttributes
+    public interface IContentItemSystemAttributes : ISystemAttributes
     {
-        /// <summary>
-        /// Gets the codename of the content item.
-        /// </summary>
-        string Codename { get; }
-
-        /// <summary>
-        /// Gets the identifier of the content item.
-        /// </summary>
-        string Id { get; }
-
         /// <summary>
         /// Gets the language of the content item.
         /// </summary>
         string Language { get; set; }
-
-        /// <summary>
-        /// Gets the time the content item was last modified.
-        /// </summary>
-        DateTime LastModified { get; set; }
-
-        /// <summary>
-        /// Gets the name of the content item.
-        /// </summary>
-        string Name { get; }
 
         /// <summary>
         /// Gets a list of codenames of sitemap items to which the content item is assigned.

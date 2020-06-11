@@ -1,8 +1,11 @@
+using System.Diagnostics;
+
 namespace Kentico.Kontent.Delivery.ContentItems.InlineContentItems
 {
     /// <summary>
     /// Structure holding identifier of specific richtext element used in content item.
     /// </summary>
+    [DebuggerDisplay("Codename = {" + nameof(RichTextElementCodeName) + "}")]
     internal readonly struct RichTextContentElements
     {
         public string ContentItemCodeName { get; }

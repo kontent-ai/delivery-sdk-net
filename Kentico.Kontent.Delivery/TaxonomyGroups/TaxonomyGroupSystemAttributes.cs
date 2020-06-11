@@ -1,10 +1,12 @@
 ﻿using System;
+using System.Diagnostics;
 using Kentico.Kontent.Delivery.Abstractions;
 using Newtonsoft.Json;
 
 namespace Kentico.Kontent.Delivery.TaxonomyGroups
 {
     /// <inheritdoc/>
+    [DebuggerDisplay("Id = {" + nameof(Id) + "}")]
     public sealed class TaxonomyGroupSystemAttributes : ITaxonomyGroupSystemAttributes
     {
         /// <inheritdoc/>

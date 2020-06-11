@@ -1,30 +1,9 @@
-﻿using System;
-
-namespace Kentico.Kontent.Delivery.Abstractions
+﻿namespace Kentico.Kontent.Delivery.Abstractions
 {
     /// <summary>
     /// Represents system attributes of a taxonomy group
     /// </summary>
-    public interface ITaxonomyGroupSystemAttributes
+    public interface ITaxonomyGroupSystemAttributes : ISystemAttributes
     {
-        /// <summary>
-        /// Gets the codename of the taxonomy group.
-        /// </summary>
-        string Codename { get; }
-
-        /// <summary>
-        /// Gets the identifier of the taxonomy group.
-        /// </summary>
-        string Id { get; }
-
-        /// <summary>
-        /// Gets the time the taxonomy group was last modified.
-        /// </summary>
-        DateTime LastModified { get; }
-
-        /// <summary>
-        /// Gets the name of the taxonomy group.
-        /// </summary>
-        string Name { get; }
     }
 }

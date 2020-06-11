@@ -1,4 +1,5 @@
 ﻿using System.Collections.Generic;
+using System.Diagnostics;
 using System.Linq;
 using Kentico.Kontent.Delivery.Abstractions;
 using Newtonsoft.Json.Linq;
@@ -6,6 +7,7 @@ using Newtonsoft.Json.Linq;
 namespace Kentico.Kontent.Delivery.TaxonomyGroups
 {
     /// <inheritdoc/>
+    [DebuggerDisplay("Name = {" + nameof(Name) + "}")]
     public sealed class TaxonomyTermDetails : ITaxonomyTermDetails
     {
         private readonly JToken _source;

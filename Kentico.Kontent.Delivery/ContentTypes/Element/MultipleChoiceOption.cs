@@ -1,9 +1,11 @@
 ﻿using Kentico.Kontent.Delivery.Abstractions;
 using Newtonsoft.Json;
+using System.Diagnostics;
 
 namespace Kentico.Kontent.Delivery.ContentTypes.Element
 {
     /// <inheritdoc/>
+    [DebuggerDisplay("Name = {" + nameof(Name) + "}")]
     public sealed class MultipleChoiceOption : IMultipleChoiceOption
     {
         /// <inheritdoc/>

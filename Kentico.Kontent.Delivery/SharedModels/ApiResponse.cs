@@ -1,12 +1,14 @@
 ﻿using Kentico.Kontent.Delivery.Abstractions;
 using Newtonsoft.Json;
 using Newtonsoft.Json.Linq;
+using System.Diagnostics;
 
 namespace Kentico.Kontent.Delivery.SharedModels
 {
     /// <summary>
     /// Represents a successful JSON response from Kentico Kontent Delivery API.
     /// </summary>
+    [DebuggerDisplay("Url = {" + nameof(RequestUrl) + "}")]
     public sealed class ApiResponse : IApiResponse
     {
         private JObject _jsonContent;

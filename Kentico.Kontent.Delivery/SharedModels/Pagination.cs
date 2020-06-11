@@ -1,9 +1,11 @@
 ﻿using Kentico.Kontent.Delivery.Abstractions;
 using Newtonsoft.Json;
+using System.Diagnostics;
 
 namespace Kentico.Kontent.Delivery.SharedModels
 {
     /// <inheritdoc/>
+    [DebuggerDisplay("Count = {" + nameof(Count) + "}, Total = {" + nameof(TotalCount) + "}")]
     public sealed class Pagination : IPagination
     {
         /// <inheritdoc/>

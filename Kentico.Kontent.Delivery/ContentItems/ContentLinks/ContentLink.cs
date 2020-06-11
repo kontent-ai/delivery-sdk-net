@@ -1,9 +1,11 @@
 ﻿using Kentico.Kontent.Delivery.Abstractions;
 using Newtonsoft.Json.Linq;
+using System.Diagnostics;
 
 namespace Kentico.Kontent.Delivery.ContentItems.ContentLinks
 {
     /// <inheritdoc/>
+    [DebuggerDisplay("Codename = {" + nameof(Codename) + "}")]
     public sealed class ContentLink : IContentLink
     {
         /// <inheritdoc/>

@@ -1,5 +1,6 @@
 ﻿using System.Collections.Generic;
 using System.Collections.ObjectModel;
+using System.Diagnostics;
 using Kentico.Kontent.Delivery.Abstractions;
 using Kentico.Kontent.Delivery.ContentTypes.Element;
 using Newtonsoft.Json.Linq;
@@ -7,6 +8,7 @@ using Newtonsoft.Json.Linq;
 namespace Kentico.Kontent.Delivery.ContentTypes
 {
     /// <inheritdoc/>
+    [DebuggerDisplay("Name = {" + nameof(System) + "." + nameof(IContentTypeSystemAttributes.Name) + "}")]
     public sealed class ContentType : IContentType
     {
         private readonly JToken _source;
@@ -27,7 +29,7 @@ namespace Kentico.Kontent.Delivery.ContentTypes
 
                     foreach (var jToken in _source["elements"])
                     {
-                        var property = (JProperty) jToken;
+                        var property = (JProperty)jToken;
                         var element = property.Value;
                         var elementCodename = property.Name;
 
