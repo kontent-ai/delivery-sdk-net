@@ -142,9 +142,9 @@ namespace Kentico.Kontent.Delivery.ContentItems
 
         private object CreateInstance(Type detectedModelType, ref IContentItemSystemAttributes itemSystemAttributes, ref Dictionary<string, object> processedItems)
         {
-            if (detectedModelType == typeof(object))
+            if (detectedModelType == typeof(object) || detectedModelType.IsInterface)
             {
-                // Try to find a specific type
+                // Try to find a more specific type or a type that can be instantiated
                 detectedModelType = TypeProvider?.GetType(itemSystemAttributes.Type);
             }
 
