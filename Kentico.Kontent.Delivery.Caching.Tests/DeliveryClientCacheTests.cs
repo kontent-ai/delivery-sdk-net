@@ -10,15 +10,17 @@ namespace Kentico.Kontent.Delivery.Caching.Tests
     {
         #region GetItemJson
 
-        [Fact]
-        public async Task GetItemJsonAsync_ResponseIsCached()
+        [Theory]
+        [InlineData(CacheTypeEnum.Memory)]
+        [InlineData(CacheTypeEnum.Distributed)]
+        public async Task GetItemJsonAsync_ResponseIsCached(CacheTypeEnum cacheType)
         {
             const string codename = "codename";
             var url = $"items/{codename}";
             var item = CreateItemResponse(CreateItem(codename, "original"));
             var updatedItem = CreateItemResponse(CreateItem(codename, "updated"));
 
-            var scenarioBuilder = new ScenarioBuilder();
+            var scenarioBuilder = new ScenarioBuilder(cacheType);
 
             var scenario = scenarioBuilder.WithResponse(url, item).Build();
             var firstResponse = await scenario.CachingClient.GetItemAsync<TestItem>(codename);

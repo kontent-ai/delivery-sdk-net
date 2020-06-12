@@ -3,7 +3,7 @@
 namespace Kentico.Kontent.Delivery.Caching
 {
     /// <summary>
-    /// Represents configuration of the <see cref="DeliveryCacheManager"/>
+    /// Represents configuration of the <see cref="MemoryCacheManager"/>
     /// </summary>
     public class DeliveryCacheOptions
     {
