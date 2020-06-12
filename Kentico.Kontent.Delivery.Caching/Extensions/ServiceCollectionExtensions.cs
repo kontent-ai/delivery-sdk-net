@@ -78,7 +78,7 @@ namespace Kentico.Kontent.Delivery.Caching.Extensions
 
         private static IServiceCollection RegisterDependencies(this IServiceCollection services)
         {
-            services.TryAddSingleton<IDeliveryCacheManager, DeliveryCacheManager>();
+            services.TryAddSingleton<IDeliveryCacheManager, MemoryCacheManager>();
             services.TryAddSingleton<IMemoryCache, MemoryCache>();
 
             return services;

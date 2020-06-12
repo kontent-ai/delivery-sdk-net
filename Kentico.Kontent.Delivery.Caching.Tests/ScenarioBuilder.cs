@@ -4,6 +4,7 @@ using System.IO;
 using System.Linq;
 using System.Text;
 using Kentico.Kontent.Delivery.Abstractions;
+using Microsoft.Extensions.Caching.Distributed;
 using Microsoft.Extensions.Caching.Memory;
 using Microsoft.Extensions.Options;
 using Newtonsoft.Json;
@@ -17,13 +18,17 @@ namespace Kentico.Kontent.Delivery.Caching.Tests
         private readonly string _baseUrl;
 
         private readonly MemoryCache _memoryCache = new MemoryCache(Options.Create(new MemoryCacheOptions()));
+        private readonly IDistributedCache _distributedCache = new MemoryDistributedCache(Options.Create(new MemoryDistributedCacheOptions()));
         private readonly Dictionary<string, int> _requestCounter = new Dictionary<string, int>();
 
         private readonly List<(string key, Action<MockHttpMessageHandler> configure)> _configurations = new List<(string key, Action<MockHttpMessageHandler> configure)>();
 
-        public ScenarioBuilder()
+        public CacheTypeEnum CacheType { get; }
+
+        public ScenarioBuilder(CacheTypeEnum cacheType = CacheTypeEnum.Memory)
         {
             _baseUrl = $"https://deliver.kontent.ai/{_projectId}/";
+            CacheType = cacheType;
         }
 
         public ScenarioBuilder WithResponse(string relativeUrl, object responseObject)
@@ -86,7 +91,14 @@ namespace Kentico.Kontent.Delivery.Caching.Tests
             {
                 configure?.Invoke(mockHttp);
             }
-            return new Scenario(_memoryCache, mockHttp.ToHttpClient(), new DeliveryOptions { ProjectId = _projectId }, _requestCounter);
+            if (CacheType == CacheTypeEnum.Memory)
+            {
+                return new Scenario(_memoryCache, mockHttp.ToHttpClient(), new DeliveryOptions { ProjectId = _projectId }, _requestCounter);
+            }
+            else
+            {
+                return new Scenario(_distributedCache, mockHttp.ToHttpClient(), new DeliveryOptions { ProjectId = _projectId }, _requestCounter);
+            }
         }
     }
 }

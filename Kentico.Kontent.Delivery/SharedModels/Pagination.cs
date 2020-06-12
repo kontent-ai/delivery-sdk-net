@@ -21,7 +21,7 @@ namespace Kentico.Kontent.Delivery.SharedModels
         public int? TotalCount { get; }
 
         /// <inheritdoc/>
-        public string NextPageUrl { get; }
+        public string NextPageUrl { get; } //TODO= string.Empty;
 
         /// <summary>
         /// Initializes a new instance of the <see cref="Pagination"/> class with information from a response.
