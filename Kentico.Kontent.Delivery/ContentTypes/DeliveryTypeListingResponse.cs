@@ -1,11 +1,9 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.Linq;
 using System.Threading;
 using Kentico.Kontent.Delivery.Abstractions;
 using Kentico.Kontent.Delivery.SharedModels;
 using Newtonsoft.Json;
-using Newtonsoft.Json.Linq;
 
 namespace Kentico.Kontent.Delivery.ContentTypes
 {
@@ -36,7 +34,7 @@ namespace Kentico.Kontent.Delivery.ContentTypes
         internal DeliveryTypeListingResponse(ApiResponse response) : base(response)
         {
             _pagination = new Lazy<IPagination>(() => response.JsonContent["pagination"].ToObject<Pagination>(), LazyThreadSafetyMode.PublicationOnly);
-            _types = new Lazy<IReadOnlyList<IContentType>>(() => ((JArray)response.JsonContent["types"]).Select(source => new ContentType(source)).ToList().AsReadOnly(), LazyThreadSafetyMode.PublicationOnly);
+            _types = new Lazy<IReadOnlyList<IContentType>>(() => response.JsonContent["types"].ToObject<IReadOnlyList<ContentType>>(Serializer), LazyThreadSafetyMode.PublicationOnly);
         }
 
         /// <summary>

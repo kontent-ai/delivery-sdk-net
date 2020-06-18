@@ -8,21 +8,21 @@
         /// <summary>
         /// Gets the description of the asset.
         /// </summary>
-        string Description { get; set; }
+        string Description { get; }
 
         /// <summary>
         /// Gets the URL of the image.
         /// </summary>
-        string Url { get; set; }
+        string Url { get; }
 
         /// <summary>
         /// Gets the width of the image.
         /// </summary>
-        int Height { get; set; }
+        int Height { get; }
 
         /// <summary>
         /// Gets the height of the image.
         /// </summary>
-        int Width { get; set; }
+        int Width { get; }
     }
 }

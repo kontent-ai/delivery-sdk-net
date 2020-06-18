@@ -229,7 +229,7 @@ namespace Kentico.Kontent.Delivery.ContentItems
             if (IsGenericHierarchicalField(property.PropertyType))
             {
                 var typeBindings = new List<(Type Interface, Type Implementation)>
-                {
+                {//TODO:refactor
                     (typeof(IEnumerable<IAsset>), typeof(List<Asset>)),
                     (typeof(IEnumerable<ITaxonomyTerm>), typeof(List<TaxonomyTerm>)),
                     (typeof(IEnumerable<IMultipleChoiceOption>), typeof(List<MultipleChoiceOption>))

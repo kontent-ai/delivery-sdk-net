@@ -3,6 +3,7 @@ using System.Collections.ObjectModel;
 using System.Diagnostics;
 using Kentico.Kontent.Delivery.Abstractions;
 using Kentico.Kontent.Delivery.ContentTypes.Element;
+using Newtonsoft.Json;
 using Newtonsoft.Json.Linq;
 
 namespace Kentico.Kontent.Delivery.ContentTypes
@@ -12,11 +13,21 @@ namespace Kentico.Kontent.Delivery.ContentTypes
     public sealed class ContentType : IContentType
     {
         private readonly JToken _source;
-        private ContentTypeSystemAttributes _system;
+        private IContentTypeSystemAttributes _system;
         private IReadOnlyDictionary<string, IContentElement> _elements;
 
         /// <inheritdoc/>
-        public IContentTypeSystemAttributes System => _system ??= _source["system"].ToObject<ContentTypeSystemAttributes>();
+        public IContentTypeSystemAttributes System
+        {
+            get
+            {
+                return _system ??= _source["system"].ToObject<ContentTypeSystemAttributes>();
+            }
+            private set
+            {
+                _system = value;
+            }
+        }
 
         /// <inheritdoc/>
         public IReadOnlyDictionary<string, IContentElement> Elements
@@ -41,6 +52,10 @@ namespace Kentico.Kontent.Delivery.ContentTypes
 
                 return _elements;
             }
+            private set
+            {
+                _elements = value;
+            }
         }
 
         /// <summary>
@@ -52,7 +67,11 @@ namespace Kentico.Kontent.Delivery.ContentTypes
             _source = source;
         }
 
-        public ContentType()
-        { }
+        [JsonConstructor]
+        internal ContentType(ContentTypeSystemAttributes system, IReadOnlyDictionary<string, IContentElement> elements)
+        {
+            System = system;
+            Elements = elements;
+        }
     }
 }

@@ -10,45 +10,38 @@ namespace Kentico.Kontent.Delivery.ContentItems
     {
         /// <inheritdoc/>
         [JsonProperty("name")]
-        public string Name { get; }
+        public string Name { get; internal set; }
 
         /// <inheritdoc/>
         [JsonProperty("description")]
-        public string Description { get; set; }
+        public string Description { get; internal set; }
 
         /// <inheritdoc/>
         [JsonProperty("type")]
-        public string Type { get; }
+        public string Type { get; internal set; }
 
         /// <inheritdoc/>
         [JsonProperty("size")]
-        public int Size { get; }
+        public int Size { get; internal set; }
 
         /// <inheritdoc/>
         [JsonProperty("url")]
-        public string Url { get; set; }
+        public string Url { get; internal set; }
 
         /// <inheritdoc/>
         [JsonProperty("width")]
-        public int Width { get; set; }
+        public int Width { get; internal set; }
 
         /// <inheritdoc/>
         [JsonProperty("height")]
-        public int Height { get; set; }
+        public int Height { get; internal set; }
 
         /// <summary>
         /// Initializes a new instance of the <see cref="Asset"/> class.
         /// </summary>
         [JsonConstructor]
-        internal Asset(string name, string type, int size, string url, string description, int width, int height)
+        internal Asset()
         {
-            Name = name;
-            Type = type;
-            Size = size;
-            Url = url;
-            Description = description;
-            Width = width;
-            Height = height;
         }
     }
 }
