@@ -21,12 +21,11 @@ namespace Kentico.Kontent.Delivery.Abstractions
         Task<T> GetOrAddAsync<T>(string key, Func<Task<T>> valueFactory, Func<T, bool> shouldCache = null, Func<T, IEnumerable<string>> dependenciesFactory = null) where T : class;
 
         /// <summary>
-        /// Tries to retrieve an item from cache.
+        /// Attemptes to retrieve data from cache.
         /// </summary>
-        /// <typeparam name="T">Type of the item to retrieve</typeparam>
+        /// <typeparam name="T">Type of the response used for deserialization</typeparam>
         /// <param name="key">A cache key</param>
-        /// <param name="value">Strongly typed item retrieved from cache.</param>
-        /// <returns>Returns true if the retrieval was successful.</returns>
+        /// <returns>Returns true along with the deserialized value if the retrieval attempt was successful. Otherwise, returns false and null for the value.</returns>
         Task<(bool Success, T Value)> TryGetAsync<T>(string key) where T : class;
 
         /// <summary>

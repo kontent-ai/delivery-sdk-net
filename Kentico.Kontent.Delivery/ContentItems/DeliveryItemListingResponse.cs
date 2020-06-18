@@ -43,12 +43,12 @@ namespace Kentico.Kontent.Delivery.ContentItems
         /// <summary>
         /// Constructor used for deserialization (e.g. for caching purposes), contains no logic.
         /// </summary>
-        /// <param name="response">The response from Kentico Kontent Delivery API that contains a content item.</param>
+        /// <param name="response">The response from Kentico Kontent Delivery API that contains content items.</param>
         /// <param name="items">A collection of content items of a specific type.</param>
         /// <param name="linkedItems">Collection of linked content items.</param>
         /// <param name="pagination">Response paging information.</param>
         [JsonConstructor]
-        public DeliveryItemListingResponse(ApiResponse response, IReadOnlyList<T> items, IReadOnlyList<object> linkedItems, IPagination pagination) : base(response, linkedItems)
+        internal DeliveryItemListingResponse(ApiResponse response, IReadOnlyList<T> items, IReadOnlyList<object> linkedItems, IPagination pagination) : base(response, linkedItems)
         {
             Items = items;
             Pagination = pagination;

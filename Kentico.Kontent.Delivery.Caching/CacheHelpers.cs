@@ -284,11 +284,6 @@ namespace Kentico.Kontent.Delivery.Caching
 
         #endregion
 
-        private static bool IsItemResponse(JObject response)
-        {
-            return response?["item"] != null;
-        }
-
         private static bool IsItemResponse(IResponse response)
         {
             return response.GetType().IsGenericType
@@ -312,11 +307,6 @@ namespace Kentico.Kontent.Delivery.Caching
             if (baseType == null) return false;
 
             return IsAssignableToGenericType(baseType, genericType);
-        }
-
-        private static bool IsItemListingResponse(JObject response)
-        {
-            return response?["items"] != null;
         }
 
         private static bool IsItemListingResponse(IResponse response)
