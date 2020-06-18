@@ -51,5 +51,8 @@ namespace Kentico.Kontent.Delivery.ContentTypes
         {
             _source = source;
         }
+
+        public ContentType()
+        { }
     }
 }

@@ -108,14 +108,12 @@ namespace Kentico.Kontent.Delivery.Caching
                 entryLock.Release();
             }
         }
-
         /// <summary>
-        /// Tries to return a data
+        /// Attemptes to retrieve data from cache.
         /// </summary>
-        /// <typeparam name="T">Generic type</typeparam>
+        /// <typeparam name="T">Type of the response used for deserialization</typeparam>
         /// <param name="key">A cache key</param>
-        /// <param name="value">Returns data in out parameter if are there.</param>
-        /// <returns>Returns true or false.</returns>
+        /// <returns>Returns true along with the deserialized value if the retrieval attempt was successful. Otherwise, returns false and null for the value.</returns>
         public Task<(bool Success, T Value)> TryGetAsync<T>(string key) where T : class
         {
             if (key == null)
@@ -139,10 +137,19 @@ namespace Kentico.Kontent.Delivery.Caching
                 throw new ArgumentNullException(nameof(key));
             }
 
-            var attempt = await TryGetAsync<CancellationTokenSource>(key);
-            if (attempt.Success)
+            var (Success, Value) = await TryGetAsync<CancellationTokenSource>(key);
+            if (Success)
             {
-                attempt.Value.Cancel();
+                if (Value is CancellationTokenSource)
+                {
+                    // Invalidate by item dependency
+                    Value.Cancel();
+                }
+                else
+                {
+                    // Invalidate the item itself
+                    _memoryCache.Remove(key);
+                }
             }
         }
 

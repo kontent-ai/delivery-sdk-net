@@ -113,7 +113,6 @@ namespace Kentico.Kontent.Delivery.ContentItems
                 {
                     property.SetValue(instance, value);
                 }
-
             }
 
             return instance;
@@ -236,9 +235,9 @@ namespace Kentico.Kontent.Delivery.ContentItems
                     (typeof(IEnumerable<IMultipleChoiceOption>), typeof(List<MultipleChoiceOption>))
                 };
 
-                foreach (var binding in typeBindings.Where(binding => binding.Interface.IsAssignableFrom(property.PropertyType)))
+                foreach (var (Interface, Implementation) in typeBindings.Where(binding => binding.Interface.IsAssignableFrom(property.PropertyType)))
                 {
-                    return GetRawValue(elementValue)?.ToObject(binding.Implementation);
+                    return GetRawValue(elementValue)?.ToObject(Implementation);
                 }
                 return GetLinkedItemsValue(elementValue, linkedItems, property.PropertyType, ref processedItems);
             }

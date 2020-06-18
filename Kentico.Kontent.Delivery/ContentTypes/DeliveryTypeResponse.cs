@@ -2,16 +2,21 @@
 using System.Threading;
 using Kentico.Kontent.Delivery.Abstractions;
 using Kentico.Kontent.Delivery.SharedModels;
+using Newtonsoft.Json;
 
 namespace Kentico.Kontent.Delivery.ContentTypes
 {
     /// <inheritdoc cref="IDeliveryTypeResponse" />
     public sealed class DeliveryTypeResponse : AbstractResponse, IDeliveryTypeResponse
     {
-        private readonly Lazy<ContentType> _type;
+        private Lazy<IContentType> _type;
 
         /// <inheritdoc/>
-        public IContentType Type => _type.Value;
+        public IContentType Type
+        {
+            get => _type.Value;
+            private set => _type = new Lazy<IContentType>(() => value);
+        }
 
         /// <summary>
         /// Initializes a new instance of the <see cref="DeliveryTypeResponse"/> class.
@@ -19,7 +24,18 @@ namespace Kentico.Kontent.Delivery.ContentTypes
         /// <param name="response">The response from Kentico Kontent Delivery API that contains a content type.</param>
         internal DeliveryTypeResponse(ApiResponse response) : base(response)
         {
-            _type = new Lazy<ContentType>(() => new ContentType(response.JsonContent), LazyThreadSafetyMode.PublicationOnly);
+            _type = new Lazy<IContentType>(() => new ContentType(response.JsonContent), LazyThreadSafetyMode.PublicationOnly);
+        }
+
+        /// <summary>
+        /// Constructor used for deserialization (e.g. for caching purposes), contains no logic.
+        /// </summary>
+        /// <param name="response">The response from Kentico Kontent Delivery API that contains content types.</param>
+        /// <param name="type">A content type.</param>
+        [JsonConstructor]
+        internal DeliveryTypeResponse(ApiResponse response, IContentType type) : base(response)
+        {
+            Type = type;
         }
     }
 }

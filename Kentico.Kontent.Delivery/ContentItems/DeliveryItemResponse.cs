@@ -36,7 +36,7 @@ namespace Kentico.Kontent.Delivery.ContentItems
         /// <param name="item">Content item of a specific type.</param>
         /// <param name="linkedItems">Collection of linked content items.</param>
         [JsonConstructor]
-        public DeliveryItemResponse(ApiResponse response, T item, IReadOnlyList<object> linkedItems) : base(response, linkedItems)
+        internal DeliveryItemResponse(ApiResponse response, T item, IReadOnlyList<object> linkedItems) : base(response, linkedItems)
         {
             Item = item;
         }

@@ -21,7 +21,7 @@ namespace Kentico.Kontent.Delivery.SharedModels
         public int? TotalCount { get; }
 
         /// <inheritdoc/>
-        public string NextPageUrl { get; } //TODO= string.Empty;
+        public string NextPageUrl { get; }
 
         /// <summary>
         /// Initializes a new instance of the <see cref="Pagination"/> class with information from a response.
@@ -33,7 +33,7 @@ namespace Kentico.Kontent.Delivery.SharedModels
             Limit = limit;
             Count = count;
             TotalCount = total_count;
-            NextPageUrl = next_page;
+            NextPageUrl = string.IsNullOrEmpty(next_page) ? null : next_page; // Normalize deserialization
         }
     }
 }
