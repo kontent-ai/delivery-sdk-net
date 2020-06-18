@@ -1,4 +1,5 @@
-﻿using System.Linq;
+﻿using System;
+using System.Linq;
 using System.Threading.Tasks;
 using FluentAssertions;
 using Kentico.Kontent.Delivery.Abstractions;
@@ -582,7 +583,7 @@ namespace Kentico.Kontent.Delivery.Caching.Tests
         #region GetTypeJson
 
         [Theory]
-       // [InlineData(CacheTypeEnum.Memory)]
+        [InlineData(CacheTypeEnum.Memory)]
         [InlineData(CacheTypeEnum.Distributed)]
         public async Task GetTypeJsonAsync_ResponseIsCached(CacheTypeEnum cacheType)
         {
@@ -600,7 +601,7 @@ namespace Kentico.Kontent.Delivery.Caching.Tests
             var secondResponse = await scenario.CachingClient.GetTypeAsync(codename);
 
             firstResponse.Should().NotBeNull();
-            firstResponse.Should().BeEquivalentTo(secondResponse);
+            firstResponse.Should().BeEquivalentTo(secondResponse, o => o.Excluding(p => p.SelectedMemberInfo.MemberType == typeof(DateTime) || p.SelectedMemberInfo.MemberType == typeof(DateTime?)));
             scenario.GetRequestCount(url).Should().Be(1);
         }
 

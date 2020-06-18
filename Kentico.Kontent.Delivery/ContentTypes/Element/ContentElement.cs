@@ -1,46 +1,102 @@
 ﻿using System.Collections.Generic;
+using System.Diagnostics;
 using System.Linq;
 using Kentico.Kontent.Delivery.Abstractions;
+using Newtonsoft.Json;
 using Newtonsoft.Json.Linq;
 
 namespace Kentico.Kontent.Delivery.ContentTypes.Element
 {
     /// <inheritdoc/>
+    [DebuggerDisplay("Name = {" + nameof(Name) + "}")]
     public class ContentElement : IContentElement
     {
+        string _type, _value, _name, _taxonomyGroup;
+
         internal JToken Source { get; }
 
-        private IReadOnlyList<MultipleChoiceOption> _options;
+        private IReadOnlyList<IMultipleChoiceOption> _options;
 
         /// <inheritdoc/>
-        public string Type => Source["type"]?.Value<string>();
+        [JsonProperty("type")]
+        public string Type
+        {
+            get
+            {
+                return _type ??= Source?["type"]?.Value<string>();
+            }
+            internal set
+            {
+                _type = value;
+            }
+        }
 
         /// <inheritdoc/>
-        public string Value => Source["value"] != null ? ((JObject)Source).Property("value").Value.ToString() : null;
+        [JsonProperty("value")]
+        public string Value
+        {
+            get
+            {
+                return _value ??= (Source?["value"] != null ? ((JObject)Source).Property("value").Value.ToString() : null);
+            }
+            internal set
+            {
+                _value = value;
+            }
+        }
 
         /// <inheritdoc/>
-        public string Name => Source["name"]?.Value<string>();
+        [JsonProperty("name")]
+        public string Name
+        {
+            get
+            {
+                return _name ??= Source?["name"]?.Value<string>();
+            }
+            internal set
+            {
+                _name = value;
+            }
+        }
 
         /// <inheritdoc/>
-        public string Codename { get; }
+        [JsonProperty("codename")]
+        public string Codename { get; internal set; }
 
         /// <inheritdoc/>
+        [JsonProperty("options")]
         public IReadOnlyList<IMultipleChoiceOption> Options
         {
             get
             {
+                //todo: add tests for this
                 if (_options == null)
                 {
-                    var source = Source["options"] ?? new JArray();
+                    var source = Source?["options"] ?? new JArray();
                     _options = source.Select(optionSource => optionSource.ToObject<MultipleChoiceOption>()).ToList().AsReadOnly();
                 }
 
                 return _options;
             }
+            internal set
+            {
+                _options = value;
+            }
         }
 
         /// <inheritdoc/>
-        public string TaxonomyGroup => Source["taxonomy_group"]?.Value<string>() ?? string.Empty;
+        [JsonProperty("taxonomy_group")]
+        public string TaxonomyGroup
+        {
+            get
+            {
+                return _taxonomyGroup ??= (Source?["taxonomy_group"]?.Value<string>() ?? string.Empty);
+            }
+            internal set
+            {
+                _taxonomyGroup = value;
+            }
+        }
 
         /// <summary>
         /// Initializes a new instance of the <see cref="ContentElement"/> class with the specified JSON data.
@@ -51,6 +107,14 @@ namespace Kentico.Kontent.Delivery.ContentTypes.Element
         {
             Source = source;
             Codename = codename;
+        }
+
+        /// <summary>
+        /// Constructor used for deserialization (e.g. for caching purposes), contains no logic.
+        /// </summary>
+        [JsonConstructor]
+        internal ContentElement()
+        {
         }
     }
 }
