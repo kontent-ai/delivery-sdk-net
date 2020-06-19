@@ -10,7 +10,7 @@ namespace Kentico.Kontent.Delivery.ContentTypes
 {
     /// <inheritdoc/>
     [DebuggerDisplay("Name = {" + nameof(System) + "." + nameof(IContentTypeSystemAttributes.Name) + "}")]
-    public sealed class ContentType : IContentType
+    internal sealed class ContentType : IContentType
     {
         private readonly JToken _source;
         private IContentTypeSystemAttributes _system;
@@ -68,7 +68,7 @@ namespace Kentico.Kontent.Delivery.ContentTypes
         }
 
         [JsonConstructor]
-        internal ContentType(ContentTypeSystemAttributes system, IReadOnlyDictionary<string, IContentElement> elements)
+        public ContentType(ContentTypeSystemAttributes system, IReadOnlyDictionary<string, IContentElement> elements)
         {
             System = system;
             Elements = elements;

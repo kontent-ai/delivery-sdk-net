@@ -6,7 +6,7 @@ namespace Kentico.Kontent.Delivery.ContentItems
 {
     /// <inheritdoc/>
     [DebuggerDisplay("Name = {" + nameof(Name) + "}")]
-    public sealed class Asset : IAsset
+    internal sealed class Asset : IAsset
     {
         /// <inheritdoc/>
         [JsonProperty("name")]
@@ -40,7 +40,7 @@ namespace Kentico.Kontent.Delivery.ContentItems
         /// Initializes a new instance of the <see cref="Asset"/> class.
         /// </summary>
         [JsonConstructor]
-        internal Asset()
+        public Asset()
         {
         }
     }
