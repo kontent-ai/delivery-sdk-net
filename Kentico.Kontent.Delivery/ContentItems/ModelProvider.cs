@@ -228,17 +228,6 @@ namespace Kentico.Kontent.Delivery.ContentItems
 
             if (IsGenericHierarchicalField(property.PropertyType))
             {
-                var typeBindings = new List<(Type Interface, Type Implementation)>
-                {//TODO:refactor
-                    (typeof(IEnumerable<IAsset>), typeof(List<Asset>)),
-                    (typeof(IEnumerable<ITaxonomyTerm>), typeof(List<TaxonomyTerm>)),
-                    (typeof(IEnumerable<IMultipleChoiceOption>), typeof(List<MultipleChoiceOption>))
-                };
-
-                foreach (var (Interface, Implementation) in typeBindings.Where(binding => binding.Interface.IsAssignableFrom(property.PropertyType)))
-                {
-                    return GetRawValue(elementValue)?.ToObject(Implementation);
-                }
                 return GetLinkedItemsValue(elementValue, linkedItems, property.PropertyType, ref processedItems);
             }
 
@@ -294,6 +283,17 @@ namespace Kentico.Kontent.Delivery.ContentItems
                 : propertyType;
 
             var contentItems = Activator.CreateInstance(collectionType);
+
+            //TODO:refactor
+            var Serializer = new JsonSerializer()
+            {
+                ContractResolver = new DeliveryContractResolver()
+            };
+
+            if(genericArgs.Contains(typeof(IAsset))|| genericArgs.Contains(typeof(ITaxonomyTerm))|| genericArgs.Contains(typeof(IMultipleChoiceOption)))
+            {
+                return GetRawValue(elementData)?.ToObject(collectionType, Serializer);
+            }
 
             var codeNamesWithLinkedItems = GetRawValue(elementData)
                 ?.ToObject<IEnumerable<string>>()
