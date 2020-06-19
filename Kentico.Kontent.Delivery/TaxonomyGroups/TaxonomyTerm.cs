@@ -6,24 +6,22 @@ namespace Kentico.Kontent.Delivery.TaxonomyGroups
 {
     /// <inheritdoc/>
     [DebuggerDisplay("Name = {" + nameof(Name) + "}")]
-    public sealed class TaxonomyTerm : ITaxonomyTerm
+    internal sealed class TaxonomyTerm : ITaxonomyTerm
     {
         /// <inheritdoc/>
         [JsonProperty("name")]
-        public string Name { get; }
+        public string Name { get; internal set; }
 
         /// <inheritdoc/>
         [JsonProperty("codename")]
-        public string Codename { get; }
+        public string Codename { get; internal set; }
 
         /// <summary>
         /// Initializes a new instance of the <see cref="TaxonomyTerm"/> class.
         /// </summary>
         [JsonConstructor]
-        internal TaxonomyTerm(string name, string codename)
+        public TaxonomyTerm()
         {
-            Name = name;
-            Codename = codename;
         }
     }
 }

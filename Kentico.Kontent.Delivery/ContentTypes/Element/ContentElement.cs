@@ -9,7 +9,7 @@ namespace Kentico.Kontent.Delivery.ContentTypes.Element
 {
     /// <inheritdoc/>
     [DebuggerDisplay("Name = {" + nameof(Name) + "}")]
-    public class ContentElement : IContentElement
+    internal class ContentElement : IContentElement
     {
         string _type, _value, _name, _taxonomyGroup;
 
@@ -113,7 +113,7 @@ namespace Kentico.Kontent.Delivery.ContentTypes.Element
         /// Constructor used for deserialization (e.g. for caching purposes), contains no logic.
         /// </summary>
         [JsonConstructor]
-        internal ContentElement()
+        public ContentElement()
         {
         }
     }
