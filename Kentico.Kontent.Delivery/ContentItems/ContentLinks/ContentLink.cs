@@ -6,7 +6,7 @@ namespace Kentico.Kontent.Delivery.ContentItems.ContentLinks
 {
     /// <inheritdoc/>
     [DebuggerDisplay("Codename = {" + nameof(Codename) + "}")]
-    public sealed class ContentLink : IContentLink
+    internal sealed class ContentLink : IContentLink
     {
         /// <inheritdoc/>
         public string Id
@@ -32,7 +32,7 @@ namespace Kentico.Kontent.Delivery.ContentItems.ContentLinks
             get;
         }
 
-        internal ContentLink(string id, JToken source)
+        public ContentLink(string id, JToken source)
         {
             Id = id;
             Codename = source.Value<string>("codename");

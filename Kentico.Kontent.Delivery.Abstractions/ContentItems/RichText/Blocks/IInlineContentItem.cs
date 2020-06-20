@@ -8,6 +8,6 @@
         /// <summary>
         /// Referenced content item
         /// </summary>
-        object ContentItem { get; set; }
+        object ContentItem { get; }
     }
 }

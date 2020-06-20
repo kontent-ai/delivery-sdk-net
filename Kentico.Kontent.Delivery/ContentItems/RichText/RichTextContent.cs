@@ -9,7 +9,12 @@ namespace Kentico.Kontent.Delivery.ContentItems.RichText
         public IEnumerable<IRichTextBlock> Blocks
         {
             get;
-            set;
+            private set;
+        }
+
+        public RichTextContent(IEnumerable<IRichTextBlock> blocks)
+        {
+            Blocks = blocks;
         }
 
         public IEnumerator<IRichTextBlock> GetEnumerator()

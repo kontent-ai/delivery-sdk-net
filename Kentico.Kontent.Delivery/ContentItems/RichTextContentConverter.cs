@@ -43,7 +43,7 @@ namespace Kentico.Kontent.Delivery.ContentItems
                 if (block.TagName?.Equals("object", StringComparison.OrdinalIgnoreCase) == true && block.GetAttribute("type") == "application/kenticocloud" && block.GetAttribute("data-type") == "item")
                 {
                     var codename = block.GetAttribute("data-codename");
-                    blocks.Add(new InlineContentItem { ContentItem = context.GetLinkedItem(codename) });
+                    blocks.Add(new InlineContentItem(context.GetLinkedItem(codename)));
                 }
                 else if (block.TagName?.Equals("figure", StringComparison.OrdinalIgnoreCase) == true)
                 {
@@ -67,10 +67,7 @@ namespace Kentico.Kontent.Delivery.ContentItems
                 }
             }
 
-            return new RichTextContent
-            {
-                Blocks = blocks
-            };
+            return new RichTextContent(blocks);
         }
     }
 }
