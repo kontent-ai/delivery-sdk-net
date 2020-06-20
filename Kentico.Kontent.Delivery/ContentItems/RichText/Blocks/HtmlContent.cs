@@ -10,7 +10,6 @@ namespace Kentico.Kontent.Delivery.ContentItems.RichText.Blocks
         [DataType(DataType.Html)]
         public string Html { get; set; }
 
-
         public override string ToString()
         {
             return Html;

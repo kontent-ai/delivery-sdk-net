@@ -17,7 +17,6 @@ namespace Kentico.Kontent.Delivery.ContentItems.RichText.Blocks
 
         public int Width { get; set; }
 
-
         public override string ToString()
         {
             return $"<figure><img src=\"{Url}\" alt=\"{Description}\"></figure>";

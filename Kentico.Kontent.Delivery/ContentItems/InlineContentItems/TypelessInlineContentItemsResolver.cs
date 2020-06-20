@@ -15,7 +15,7 @@ namespace Kentico.Kontent.Delivery.ContentItems.InlineContentItems
     /// or <see cref="IOptionalClientSetup.WithInlineContentItemsResolver{T}"/> should always be used with <see cref="IServiceCollection"/>
     /// or <see cref="DeliveryClientBuilder"/> respectively.
     /// </remarks>
-    public class TypelessInlineContentItemsResolver : ITypelessInlineContentItemsResolver
+    internal class TypelessInlineContentItemsResolver : ITypelessInlineContentItemsResolver
     {
         /// <summary>
         /// Creates new instance of <see cref="TypelessInlineContentItemsResolver"/> for given <paramref name="resolver"/>.

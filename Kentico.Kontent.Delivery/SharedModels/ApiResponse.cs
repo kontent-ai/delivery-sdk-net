@@ -9,7 +9,7 @@ namespace Kentico.Kontent.Delivery.SharedModels
     /// Represents a successful JSON response from Kentico Kontent Delivery API.
     /// </summary>
     [DebuggerDisplay("Url = {" + nameof(RequestUrl) + "}")]
-    public sealed class ApiResponse : IApiResponse
+    internal sealed class ApiResponse : IApiResponse
     {
         private JObject _jsonContent;
 
@@ -38,7 +38,7 @@ namespace Kentico.Kontent.Delivery.SharedModels
         /// <param name="continuationToken">Continuation token to be used for continuing enumeration.</param>
         /// <param name="requestUrl">URL used to retrieve this response.</param>
         [JsonConstructor]
-        internal ApiResponse(string content, bool hasStaleContent, string continuationToken, string requestUrl)
+        public ApiResponse(string content, bool hasStaleContent, string continuationToken, string requestUrl)
         {
             Content = content;
             HasStaleContent = hasStaleContent;
