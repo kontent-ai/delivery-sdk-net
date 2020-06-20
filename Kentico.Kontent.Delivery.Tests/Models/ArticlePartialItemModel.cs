@@ -11,6 +11,6 @@ namespace Kentico.Kontent.Delivery.Tests.Models
         public string Title { get; set; }
         public string Summary { get; set; }
         public IEnumerable<ITaxonomyTerm> Personas { get; set; }
-        public ContentItemSystemAttributes System { get; set; }
+        public IContentItemSystemAttributes System { get; set; }
     }
 }

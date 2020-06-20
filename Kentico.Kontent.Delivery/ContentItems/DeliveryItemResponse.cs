@@ -8,7 +8,7 @@ using Newtonsoft.Json;
 namespace Kentico.Kontent.Delivery.ContentItems
 {
     /// <inheritdoc cref="IDeliveryItemResponse{T}" />
-    public sealed class DeliveryItemResponse<T> : AbstractItemsResponse, IDeliveryItemResponse<T>
+    internal sealed class DeliveryItemResponse<T> : AbstractItemsResponse, IDeliveryItemResponse<T>
     {
         private Lazy<T> _item;
 

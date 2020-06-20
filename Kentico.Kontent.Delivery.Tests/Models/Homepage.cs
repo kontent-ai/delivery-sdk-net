@@ -10,6 +10,6 @@ namespace Kentico.Kontent.Delivery.Tests.Models
         public string Subtitle { get; set; }
         public IEnumerable<IAsset> Image { get; set; }
         public IEnumerable<ITaxonomyTerm> UntitledTaxonomyGroup { get; set; }
-        public ContentItemSystemAttributes System { get; set; }
+        public IContentItemSystemAttributes System { get; set; }
     }
 }

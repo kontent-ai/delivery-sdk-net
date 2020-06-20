@@ -8,7 +8,7 @@ namespace Kentico.Kontent.Delivery.TaxonomyGroups
 {
     /// <inheritdoc/>
     [DebuggerDisplay("Name = {" + nameof(Name) + "}")]
-    public sealed class TaxonomyTermDetails : ITaxonomyTermDetails
+    internal sealed class TaxonomyTermDetails : ITaxonomyTermDetails
     {
         private readonly JToken _source;
         private string _name;
@@ -31,7 +31,7 @@ namespace Kentico.Kontent.Delivery.TaxonomyGroups
         /// Initializes a new instance of the <see cref="TaxonomyTermDetails"/> class.
         /// </summary>
         /// <param name="source">The JSON data to deserialize.</param>
-        internal TaxonomyTermDetails(JToken source)
+        public TaxonomyTermDetails(JToken source)
         {
             _source = source;
         }

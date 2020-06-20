@@ -6,7 +6,6 @@
 
 using System.Collections.Generic;
 using Kentico.Kontent.Delivery.Abstractions;
-using Kentico.Kontent.Delivery.ContentItems;
 
 namespace Kentico.Kontent.Delivery.Rx.Tests.Models.ContentTypes
 {
@@ -20,6 +19,6 @@ namespace Kentico.Kontent.Delivery.Rx.Tests.Models.ContentTypes
         public string Title { get; set; }
         public IEnumerable<IAsset> Image { get; set; }
         public string MarketingMessage { get; set; }
-        public ContentItemSystemAttributes System { get; set; }
+        public IContentItemSystemAttributes System { get; set; }
     }
 }

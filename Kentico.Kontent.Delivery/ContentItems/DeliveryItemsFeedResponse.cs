@@ -10,7 +10,7 @@ using Newtonsoft.Json.Linq;
 namespace Kentico.Kontent.Delivery.ContentItems
 {
     /// <inheritdoc cref="IDeliveryItemsFeedResponse{T}" />
-    public class DeliveryItemsFeedResponse<T> : AbstractItemsResponse, IEnumerable<T>, IDeliveryItemsFeedResponse<T>
+    internal class DeliveryItemsFeedResponse<T> : AbstractItemsResponse, IEnumerable<T>, IDeliveryItemsFeedResponse<T>
     {
         private readonly Lazy<IReadOnlyList<T>> _items;
 

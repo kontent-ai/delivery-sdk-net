@@ -7,34 +7,30 @@ namespace Kentico.Kontent.Delivery.ContentTypes
 {
     /// <inheritdoc/>
     [DebuggerDisplay("Id = {" + nameof(Id) + "}")]
-    public sealed class ContentTypeSystemAttributes : IContentTypeSystemAttributes
+    internal sealed class ContentTypeSystemAttributes : IContentTypeSystemAttributes
     {
         /// <inheritdoc/>
         [JsonProperty("id")]
-        public string Id { get; }
+        public string Id { get; internal set; }
 
         /// <inheritdoc/>
         [JsonProperty("name")]
-        public string Name { get; }
+        public string Name { get; internal set; }
 
         /// <inheritdoc/>
         [JsonProperty("codename")]
-        public string Codename { get; }
+        public string Codename { get; internal set; }
 
         /// <inheritdoc/>
         [JsonProperty("last_modified")]
-        public DateTime LastModified { get; }
+        public DateTime LastModified { get; internal set; }
 
         /// <summary>
         /// Initializes a new instance of the <see cref="ContentTypeSystemAttributes"/> class.
         /// </summary>
         [JsonConstructor]
-        internal ContentTypeSystemAttributes(string id, string name, string codename, DateTime lastModified)
+        public ContentTypeSystemAttributes()
         {
-            Id = id;
-            Name = name;
-            Codename = codename;
-            LastModified = lastModified;
         }
     }
 }

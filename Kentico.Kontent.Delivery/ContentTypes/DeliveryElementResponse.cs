@@ -9,7 +9,7 @@ namespace Kentico.Kontent.Delivery.ContentTypes
 {
     /// <inheritdoc cref="IDeliveryElementResponse" />
     [DebuggerDisplay("Name = {" + nameof(Element) + "." + nameof(IContentElement.Name) + "}")]
-    public sealed class DeliveryElementResponse : AbstractResponse, IDeliveryElementResponse
+    internal sealed class DeliveryElementResponse : AbstractResponse, IDeliveryElementResponse
     {
         private readonly Lazy<ContentElement> _element;
 
