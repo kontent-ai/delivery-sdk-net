@@ -7,7 +7,6 @@ using AngleSharp.Dom.Html;
 using AngleSharp.Parser.Html;
 using Kentico.Kontent.Delivery.Abstractions;
 using Kentico.Kontent.Delivery.Builders.DeliveryClient;
-using Kentico.Kontent.Delivery.Extensions;
 using Microsoft.Extensions.DependencyInjection;
 
 namespace Kentico.Kontent.Delivery.ContentItems.InlineContentItems
@@ -31,7 +30,7 @@ namespace Kentico.Kontent.Delivery.ContentItems.InlineContentItems
         /// a custom resolver for <see cref="UnretrievedContentItem"/>s used when an item was not retrieved from Delivery API, 
         /// and a resolver for <see cref="UnknownContentItem"/> that a <see cref="IModelProvider"/> was unable to strongly type.
         /// If these resolvers are not specified using <see cref="DeliveryClientBuilder"/> or the <see cref="IServiceCollection"/> registration
-        /// (<see cref="ServiceCollectionExtensions.AddDeliveryInlineContentItemsResolver{TContentItem,TInlineContentItemsResolver}"/>),
+        /// (<see cref="Extensions.ServiceCollectionExtensions.AddDeliveryInlineContentItemsResolver{TContentItem,TInlineContentItemsResolver}"/>),
         /// the default implementations resulting in warning messages will be used.
         /// </remarks>
         /// <param name="inlineContentItemsResolvers">Collection of inline content item resolvers.</param>

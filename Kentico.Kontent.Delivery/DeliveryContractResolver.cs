@@ -7,17 +7,19 @@ namespace Kentico.Kontent.Delivery
     {
         protected override JsonContract CreateContract(Type objectType)
         {
-            var contract = base.CreateContract(objectType);
-            DeliveryServiceCollection sc = new DeliveryServiceCollection();
-            var sp = sc.ServiceProvider;
-            var s = sp.GetService(objectType);
-            if (s != null)
+            JsonContract contract = null;
+            if (objectType.IsInterface)
             {
-                contract = base.CreateObjectContract(s.GetType());
-                contract.DefaultCreator = () => sp.GetService(objectType);
+                var collection = new DeliveryServiceCollection();
+                var serviceProvider = collection.ServiceProvider;
+                var service = serviceProvider.GetService(objectType);
+                if (service != null)
+                {
+                    contract = base.CreateObjectContract(service.GetType());
+                    contract.DefaultCreator = () => serviceProvider.GetService(objectType);
+                }
             }
-
-            return contract;
+            return contract ?? base.CreateContract(objectType);
         }
     }
 }
