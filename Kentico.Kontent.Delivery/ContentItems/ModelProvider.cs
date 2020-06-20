@@ -7,7 +7,6 @@ using Kentico.Kontent.Delivery.Abstractions;
 using Kentico.Kontent.Delivery.ContentItems.ContentLinks;
 using Kentico.Kontent.Delivery.ContentItems.InlineContentItems;
 using Kentico.Kontent.Delivery.ContentTypes.Element;
-using Kentico.Kontent.Delivery.TaxonomyGroups;
 using Newtonsoft.Json;
 using Newtonsoft.Json.Linq;
 
