@@ -6,8 +6,6 @@
 
 using System.Collections.Generic;
 using Kentico.Kontent.Delivery.Abstractions;
-using Kentico.Kontent.Delivery.ContentItems;
-using Kentico.Kontent.Delivery.TaxonomyGroups;
 
 namespace Kentico.Kontent.Delivery.Rx.Tests.Models.ContentTypes
 {
@@ -31,6 +29,6 @@ namespace Kentico.Kontent.Delivery.Rx.Tests.Models.ContentTypes
         public string ShortDescription { get; set; }
         public string LongDescription { get; set; }
         public string UrlPattern { get; set; }
-        public ContentItemSystemAttributes System { get; set; }
+        public IContentItemSystemAttributes System { get; set; }
     }
 }

@@ -7,7 +7,7 @@ using Kentico.Kontent.Delivery.SharedModels;
 namespace Kentico.Kontent.Delivery.TaxonomyGroups
 {
     /// <inheritdoc cref="IDeliveryTaxonomyResponse" />
-    public sealed class DeliveryTaxonomyResponse : AbstractResponse, IDeliveryTaxonomyResponse
+    internal sealed class DeliveryTaxonomyResponse : AbstractResponse, IDeliveryTaxonomyResponse
     {
         private readonly Lazy<TaxonomyGroup> _taxonomy;
 
@@ -18,7 +18,7 @@ namespace Kentico.Kontent.Delivery.TaxonomyGroups
         /// Initializes a new instance of the <see cref="DeliveryTypeResponse"/> class.
         /// </summary>
         /// <param name="response">The response from Kentico Kontent Delivery API that contains a taxonomy group.</param>
-        internal DeliveryTaxonomyResponse(ApiResponse response) : base(response)
+        public DeliveryTaxonomyResponse(ApiResponse response) : base(response)
         {
             _taxonomy = new Lazy<TaxonomyGroup>(() => new TaxonomyGroup(response.JsonContent), LazyThreadSafetyMode.PublicationOnly);
         }

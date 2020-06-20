@@ -4,7 +4,7 @@
 // Changes to this file may cause incorrect behavior and will be lost if the code is regenerated. 
 // For further modifications of the class, create a separate file with the partial class.
 
-using Kentico.Kontent.Delivery.ContentItems;
+using Kentico.Kontent.Delivery.Abstractions;
 
 namespace Kentico.Kontent.Delivery.Rx.Tests.Models.ContentTypes
 {
@@ -28,6 +28,6 @@ namespace Kentico.Kontent.Delivery.Rx.Tests.Models.ContentTypes
         public string ZipCode { get; set; }
         public string Phone { get; set; }
         public string Email { get; set; }
-        public ContentItemSystemAttributes System { get; set; }
+        public IContentItemSystemAttributes System { get; set; }
     }
 }

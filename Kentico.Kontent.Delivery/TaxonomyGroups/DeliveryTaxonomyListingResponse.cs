@@ -11,7 +11,7 @@ namespace Kentico.Kontent.Delivery.TaxonomyGroups
     /// <summary>
     /// Represents a response from Kentico Kontent Delivery API that contains a list of taxonomy groups.
     /// </summary>
-    public sealed class DeliveryTaxonomyListingResponse : AbstractResponse, IDeliveryTaxonomyListingResponse
+    internal sealed class DeliveryTaxonomyListingResponse : AbstractResponse, IDeliveryTaxonomyListingResponse
     {
         private readonly Lazy<Pagination> _pagination;
         private readonly Lazy<IReadOnlyList<TaxonomyGroup>> _taxonomies;
@@ -30,7 +30,7 @@ namespace Kentico.Kontent.Delivery.TaxonomyGroups
         /// Initializes a new instance of the <see cref="DeliveryTaxonomyListingResponse"/> class.
         /// </summary>
         /// <param name="response">The response from Kentico Kontent Delivery API that contains a list of taxonomy groups.</param>
-        internal DeliveryTaxonomyListingResponse(ApiResponse response) : base(response)
+        public DeliveryTaxonomyListingResponse(ApiResponse response) : base(response)
         {
             _pagination = new Lazy<Pagination>(() => response.JsonContent["pagination"].ToObject<Pagination>(), LazyThreadSafetyMode.PublicationOnly);
             _taxonomies = new Lazy<IReadOnlyList<TaxonomyGroup>>(() => ((JArray)response.JsonContent["taxonomies"]).Select(source => new TaxonomyGroup(source)).ToList().AsReadOnly(), LazyThreadSafetyMode.PublicationOnly);

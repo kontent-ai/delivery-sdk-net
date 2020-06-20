@@ -7,7 +7,7 @@ using Newtonsoft.Json;
 namespace Kentico.Kontent.Delivery.ContentTypes
 {
     /// <inheritdoc cref="IDeliveryTypeResponse" />
-    public sealed class DeliveryTypeResponse : AbstractResponse, IDeliveryTypeResponse
+    internal sealed class DeliveryTypeResponse : AbstractResponse, IDeliveryTypeResponse
     {
         private Lazy<IContentType> _type;
 

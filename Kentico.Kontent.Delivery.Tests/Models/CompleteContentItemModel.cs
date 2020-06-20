@@ -19,6 +19,6 @@ namespace Kentico.Kontent.Delivery.Tests.Models
         public IEnumerable<Homepage> LinkedItemsField { get; set; }
         public IEnumerable<ITaxonomyTerm> CompleteTypeTaxonomy { get; set; }
         public string CustomElementField { get; set; }
-        public ContentItemSystemAttributes System { get; set; }
+        public IContentItemSystemAttributes System { get; set; }
     }
 }

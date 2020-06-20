@@ -8,7 +8,7 @@ using Newtonsoft.Json;
 namespace Kentico.Kontent.Delivery.ContentTypes
 {
     /// <inheritdoc cref="IDeliveryTypeListingResponse" />
-    public sealed class DeliveryTypeListingResponse : AbstractResponse, IDeliveryTypeListingResponse
+    internal sealed class DeliveryTypeListingResponse : AbstractResponse, IDeliveryTypeListingResponse
     {
         private Lazy<IPagination> _pagination;
         private Lazy<IReadOnlyList<IContentType>> _types;

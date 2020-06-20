@@ -45,6 +45,6 @@ namespace Kentico.Kontent.Delivery.Tests.Models
         [JsonProperty("complete_type_taxonomy")]
         public IEnumerable<ITaxonomyTerm> CompleteTypeTaxonomyWithADifferentName { get; set; }
         
-        public ContentItemSystemAttributes System { get; set; }
+        public IContentItemSystemAttributes System { get; set; }
     }
 }

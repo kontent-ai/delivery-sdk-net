@@ -1,5 +1,4 @@
-﻿using System;
-using System.Collections.Generic;
+﻿using System.Collections.Generic;
 
 namespace Kentico.Kontent.Delivery.Abstractions
 {
@@ -11,7 +10,7 @@ namespace Kentico.Kontent.Delivery.Abstractions
         /// <summary>
         /// Gets the language of the content item.
         /// </summary>
-        string Language { get; set; }
+        string Language { get; }
 
         /// <summary>
         /// Gets a list of codenames of sitemap items to which the content item is assigned.

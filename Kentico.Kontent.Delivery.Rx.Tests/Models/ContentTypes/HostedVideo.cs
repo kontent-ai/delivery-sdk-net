@@ -6,8 +6,6 @@
 
 using System.Collections.Generic;
 using Kentico.Kontent.Delivery.Abstractions;
-using Kentico.Kontent.Delivery.ContentItems;
-using Kentico.Kontent.Delivery.ContentTypes.Element;
 
 namespace Kentico.Kontent.Delivery.Rx.Tests.Models.ContentTypes
 {
@@ -19,6 +17,6 @@ namespace Kentico.Kontent.Delivery.Rx.Tests.Models.ContentTypes
 
         public string VideoId { get; set; }
         public IEnumerable<IMultipleChoiceOption> VideoHost { get; set; }
-        public ContentItemSystemAttributes System { get; set; }
+        public IContentItemSystemAttributes System { get; set; }
     }
 }

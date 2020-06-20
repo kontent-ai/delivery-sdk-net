@@ -7,34 +7,30 @@ namespace Kentico.Kontent.Delivery.TaxonomyGroups
 {
     /// <inheritdoc/>
     [DebuggerDisplay("Id = {" + nameof(Id) + "}")]
-    public sealed class TaxonomyGroupSystemAttributes : ITaxonomyGroupSystemAttributes
+    internal sealed class TaxonomyGroupSystemAttributes : ITaxonomyGroupSystemAttributes
     {
         /// <inheritdoc/>
         [JsonProperty("id")]
-        public string Id { get; }
+        public string Id { get; internal set; }
 
         /// <inheritdoc/>
         [JsonProperty("name")]
-        public string Name { get; }
+        public string Name { get; internal set; }
 
         /// <inheritdoc/>
         [JsonProperty("codename")]
-        public string Codename { get; }
+        public string Codename { get; internal set; }
 
         /// <inheritdoc/>
         [JsonProperty("last_modified")]
-        public DateTime LastModified { get; }
+        public DateTime LastModified { get; internal set; }
 
         /// <summary>
         /// Initializes a new instance of the <see cref="TaxonomyGroupSystemAttributes"/> class.
         /// </summary>
         [JsonConstructor]
-        internal TaxonomyGroupSystemAttributes(string id, string name, string codename, DateTime lastModified)
+        public TaxonomyGroupSystemAttributes()
         {
-            Id = id;
-            Name = name;
-            Codename = codename;
-            LastModified = lastModified;
         }
     }
 }

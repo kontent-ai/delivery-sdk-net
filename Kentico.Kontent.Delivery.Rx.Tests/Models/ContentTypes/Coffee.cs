@@ -6,9 +6,6 @@
 
 using System.Collections.Generic;
 using Kentico.Kontent.Delivery.Abstractions;
-using Kentico.Kontent.Delivery.ContentItems;
-using Kentico.Kontent.Delivery.ContentTypes.Element;
-using Kentico.Kontent.Delivery.TaxonomyGroups;
 
 namespace Kentico.Kontent.Delivery.Rx.Tests.Models.ContentTypes
 {
@@ -40,6 +37,6 @@ namespace Kentico.Kontent.Delivery.Rx.Tests.Models.ContentTypes
         public IEnumerable<IMultipleChoiceOption> Processing { get; set; }
         public string Altitude { get; set; }
         public string UrlPattern { get; set; }
-        public ContentItemSystemAttributes System { get; set; }
+        public IContentItemSystemAttributes System { get; set; }
     }
 }

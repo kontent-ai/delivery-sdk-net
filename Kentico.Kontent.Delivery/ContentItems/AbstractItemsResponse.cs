@@ -10,7 +10,7 @@ namespace Kentico.Kontent.Delivery.ContentItems
     /// <summary>
     /// Response object with built-in linked items resolution.
     /// </summary>
-    public abstract class AbstractItemsResponse : AbstractResponse
+    internal abstract class AbstractItemsResponse : AbstractResponse
     {
         private Lazy<IReadOnlyList<object>> _linkedItems;
 

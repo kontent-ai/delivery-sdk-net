@@ -36,6 +36,6 @@ namespace Kentico.Kontent.Delivery.Tests.Models.ContentTypes
         public string MetaKeywords { get; set; }
         public string MetaDescription { get; set; }
         public string UrlPattern { get; set; }
-        public ContentItemSystemAttributes System { get; set; }
+        public IContentItemSystemAttributes System { get; set; }
     }
 }
