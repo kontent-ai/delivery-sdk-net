@@ -26,9 +26,9 @@ namespace Kentico.Kontent.Delivery.SharedModels
         {
             ApiResponse = response;
 
-            Serializer = new JsonSerializer()
+            Serializer = new JsonSerializer
             {
-                ContractResolver = new DeliveryContractResolver()
+                ContractResolver = new DeliveryContractResolver(new DeliveryServiceCollection().ServiceProvider)
             };
         }
     }

@@ -284,12 +284,16 @@ namespace Kentico.Kontent.Delivery.ContentItems
             var contentItems = Activator.CreateInstance(collectionType);
 
             //TODO:refactor
-            var Serializer = new JsonSerializer()
+            JsonSerializerSettings s = new JsonSerializerSettings
             {
-                ContractResolver = new DeliveryContractResolver()
+                ContractResolver = new DeliveryContractResolver(new DeliveryServiceCollection().ServiceProvider)
             };
 
-            if(genericArgs.Contains(typeof(IAsset))|| genericArgs.Contains(typeof(ITaxonomyTerm))|| genericArgs.Contains(typeof(IMultipleChoiceOption)))
+
+            var Serializer = JsonSerializer.Create(s);
+            //JsonConvert.DeserializeObject<string>("a", s);
+
+            if ((genericArgs.Length == 1) && (new[] { typeof(IAsset), typeof(ITaxonomyTerm), typeof(IMultipleChoiceOption) }.Contains(genericArgs.First())))
             {
                 return GetRawValue(elementData)?.ToObject(collectionType, Serializer);
             }

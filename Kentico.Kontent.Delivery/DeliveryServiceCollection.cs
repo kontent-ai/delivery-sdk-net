@@ -1,21 +1,26 @@
-﻿using Microsoft.Extensions.DependencyInjection;
+﻿using System;
+using Microsoft.Extensions.DependencyInjection;
 
 namespace Kentico.Kontent.Delivery
 {
+    /// <summary>
+    /// Collection of all types from <see cref="Kentico.Kontent.Delivery"/> registered as implemented interfaces.
+    /// </summary>
     public class DeliveryServiceCollection
     {
-        public ServiceProvider ServiceProvider;
+        /// <summary>
+        /// Provider able to resolve any concrete type based on any interface from <see cref="Kentico.Kontent.Delivery.Abstractions"/>.
+        /// </summary>
+        public IServiceProvider ServiceProvider { get; }
 
+        /// <summary>
+        /// Creates an instance of the service collection.
+        /// </summary>
         public DeliveryServiceCollection()
         {
             var collection = new ServiceCollection();
-
-            collection.Scan(scan => {
-                
-                scan.FromAssemblyOf<DeliveryClient>().AddClasses(false).AsImplementedInterfaces();
-
-            });
-
+            // Load and register concrete implementations of all interfaces and creates bindings between them <IType, Type>
+            collection.Scan(scan => scan.FromAssemblyOf<DeliveryClient>().AddClasses(false).AsImplementedInterfaces());
             ServiceProvider = collection.BuildServiceProvider();
         }
     }
