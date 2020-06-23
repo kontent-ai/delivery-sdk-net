@@ -3,8 +3,8 @@ using System.Collections.Generic;
 using System.Collections.ObjectModel;
 using System.Linq;
 using AngleSharp.Dom;
-using AngleSharp.Dom.Html;
-using AngleSharp.Parser.Html;
+using AngleSharp.Html.Dom;
+using AngleSharp.Html.Parser;
 using Kentico.Kontent.Delivery.Abstractions;
 using Kentico.Kontent.Delivery.Builders.DeliveryClient;
 using Microsoft.Extensions.DependencyInjection;
@@ -57,7 +57,7 @@ namespace Kentico.Kontent.Delivery.ContentItems.InlineContentItems
         /// <returns>HTML with inline content items replaced with resolvers output</returns>
         public string Process(string value, Dictionary<string, object> inlineContentItemMap)
         {
-            var document = _htmlParser.Parse(value);
+            var document = _htmlParser.ParseDocument(value);
             var inlineContentItemElements = GetInlineContentItemElements(document);
 
             foreach (var inlineContentItemElement in inlineContentItemElements)
@@ -81,7 +81,7 @@ namespace Kentico.Kontent.Delivery.ContentItems.InlineContentItems
         /// <returns>HTML without inline content items</returns>
         public string RemoveAll(string value)
         {
-            var htmlInput = new HtmlParser().Parse(value);
+            var htmlInput = new HtmlParser().ParseDocument(value);
             List<IElement> inlineContentItems = GetInlineContentItemElements(htmlInput);
             foreach (var contentItem in inlineContentItems)
             {
