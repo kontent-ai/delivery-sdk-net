@@ -2,7 +2,7 @@
 using System.Collections.Generic;
 using System.Linq;
 using System.Reflection;
-using AngleSharp.Parser.Html;
+using AngleSharp.Html.Parser;
 using Kentico.Kontent.Delivery.Abstractions;
 using Kentico.Kontent.Delivery.ContentItems.ContentLinks;
 using Kentico.Kontent.Delivery.ContentItems.RichText;
@@ -37,7 +37,7 @@ namespace Kentico.Kontent.Delivery.ContentItems
 
             var blocks = new List<IRichTextBlock>();
 
-            var htmlInput = new HtmlParser().Parse(value);
+            var htmlInput = new HtmlParser().ParseDocument(value);
             foreach (var block in htmlInput.Body.Children)
             {
                 if (block.TagName?.Equals("object", StringComparison.OrdinalIgnoreCase) == true && block.GetAttribute("type") == "application/kenticocloud" && block.GetAttribute("data-type") == "item")
