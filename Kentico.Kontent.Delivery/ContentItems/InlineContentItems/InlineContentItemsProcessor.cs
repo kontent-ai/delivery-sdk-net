@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
 using System.Linq;
+using System.Threading.Tasks;
 using AngleSharp.Dom;
 using AngleSharp.Html.Dom;
 using AngleSharp.Html.Parser;
@@ -19,7 +20,7 @@ namespace Kentico.Kontent.Delivery.ContentItems.InlineContentItems
         private readonly IDictionary<Type, Func<object, string>> _inlineContentItemsResolvers;
         private readonly HtmlParser _htmlParser;
         private readonly HtmlParser _strictHtmlParser;
-        
+
         internal IReadOnlyDictionary<Type, Func<object, string>> ContentItemResolvers => new ReadOnlyDictionary<Type, Func<object, string>>(_inlineContentItemsResolvers);
 
         /// <summary>
@@ -55,9 +56,9 @@ namespace Kentico.Kontent.Delivery.ContentItems.InlineContentItems
         /// <param name="value">HTML code</param>
         /// <param name="inlineContentItemMap">Content items referenced as inline content items</param>
         /// <returns>HTML with inline content items replaced with resolvers output</returns>
-        public string Process(string value, Dictionary<string, object> inlineContentItemMap)
+        public async Task<string> Process(string value, Dictionary<string, object> inlineContentItemMap)
         {
-            var document = _htmlParser.ParseDocument(value);
+            var document = await _htmlParser.ParseDocumentAsync(value);
             var inlineContentItemElements = GetInlineContentItemElements(document);
 
             foreach (var inlineContentItemElement in inlineContentItemElements)
@@ -79,9 +80,9 @@ namespace Kentico.Kontent.Delivery.ContentItems.InlineContentItems
         /// </summary>
         /// <param name="value">HTML content</param>
         /// <returns>HTML without inline content items</returns>
-        public string RemoveAll(string value)
+        public async Task<string> RemoveAll(string value)
         {
-            var htmlInput = new HtmlParser().ParseDocument(value);
+            var htmlInput = await new HtmlParser().ParseDocumentAsync(value);
             List<IElement> inlineContentItems = GetInlineContentItemElements(htmlInput);
             foreach (var contentItem in inlineContentItems)
             {
@@ -90,7 +91,7 @@ namespace Kentico.Kontent.Delivery.ContentItems.InlineContentItems
             return htmlInput.Body.InnerHtml;
         }
 
-        private static List<IElement> GetInlineContentItemElements(IHtmlDocument htmlInput) 
+        private static List<IElement> GetInlineContentItemElements(IHtmlDocument htmlInput)
             => htmlInput
                 .Body
                 .GetElementsByTagName("object")

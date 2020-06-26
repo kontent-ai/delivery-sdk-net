@@ -96,8 +96,8 @@ namespace Kentico.Kontent.Delivery
             var endpointUrl = UrlBuilder.GetItemUrl(codename, parameters);
             var response = await GetDeliveryResponseAsync(endpointUrl);
             var content = await response.GetJsonContentAsync();
-            var model = ModelProvider.GetContentItemModel<T>(content["item"], content["modular_content"]);
-            return new DeliveryItemResponse<T>(response, model, GetLinkedItems(content));
+            var model = await ModelProvider.GetContentItemModel<T>(content["item"], content["modular_content"]);
+            return new DeliveryItemResponse<T>(response, model, await GetLinkedItems(content));
         }
 
         /// <summary>
@@ -113,9 +113,8 @@ namespace Kentico.Kontent.Delivery
             var response = await GetDeliveryResponseAsync(endpointUrl);
             var content = await response.GetJsonContentAsync();
             var pagination = content["pagination"].ToObject<Pagination>();
-            var items = ((JArray)content["items"]).Select(source => ModelProvider.GetContentItemModel<T>(source, content["modular_content"])).ToList().AsReadOnly();
-
-            return new DeliveryItemListingResponse<T>(response, items, GetLinkedItems(content), pagination);
+            var items =  ((JArray)content["items"]).Select(async source => await ModelProvider.GetContentItemModel<T>(source, content["modular_content"])).ToList().AsReadOnly();
+            return new DeliveryItemListingResponse<T>(response, await Task.WhenAll(items), await GetLinkedItems(content), pagination);
         }
 
         /// <summary>
@@ -136,9 +135,9 @@ namespace Kentico.Kontent.Delivery
                 var response = await GetDeliveryResponseAsync(endpointUrl, continuationToken);
                 var content = await response.GetJsonContentAsync();
 
-                var items = ((JArray)content["items"]).Select(source => ModelProvider.GetContentItemModel<T>(source, content["modular_content"])).ToList().AsReadOnly();
+                var items = ((JArray)content["items"]).Select(async source => await ModelProvider.GetContentItemModel<T>(source, content["modular_content"])).ToList().AsReadOnly();
 
-                return new DeliveryItemsFeedResponse<T>(response, items, GetLinkedItems(content));
+                return new DeliveryItemsFeedResponse<T>(response, await Task.WhenAll(items), await GetLinkedItems(content));
             }
         }
 
@@ -385,13 +384,13 @@ namespace Kentico.Kontent.Delivery
             }
         }
 
-        private IReadOnlyList<object> GetLinkedItems(JObject content)
+        private async Task<IReadOnlyList<object>> GetLinkedItems(JObject content)
         {
             var linkedItems = (JObject)content["modular_content"].DeepClone();
             List<object> result = new List<object>();
             foreach (var keyValuePair in linkedItems)
             {
-                result.Add(ModelProvider.GetContentItemModel<object>(keyValuePair.Value, linkedItems));
+                result.Add(await ModelProvider.GetContentItemModel<object>(keyValuePair.Value, linkedItems));
             }
             return result;
         }

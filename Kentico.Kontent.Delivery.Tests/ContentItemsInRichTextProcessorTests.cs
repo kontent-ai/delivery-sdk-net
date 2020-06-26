@@ -1,4 +1,5 @@
 ﻿using System.Collections.Generic;
+using System.Threading.Tasks;
 using Kentico.Kontent.Delivery.Abstractions;
 using Kentico.Kontent.Delivery.ContentItems;
 using Kentico.Kontent.Delivery.Tests.Factories;
@@ -12,19 +13,19 @@ namespace Kentico.Kontent.Delivery.Tests
         private const string ContentItemDataType = "item";
 
         [Fact]
-        public void ProcessedHtmlIsSameIfNoContentItemsAreIncluded()
+        public async Task ProcessedHtmlIsSameIfNoContentItemsAreIncluded()
         {
             var inputHtml = "<p>Lorem ipsum etc..<a>asdf</a>..</p>";
             var inlineContentItemsProcessor = InlineContentItemsProcessorFactory.Create();
             var processedContentItems = new Dictionary<string, object>();
 
-            var result = inlineContentItemsProcessor.Process(inputHtml, processedContentItems);
+            var result = await inlineContentItemsProcessor.Process(inputHtml, processedContentItems);
 
             Assert.Equal(inputHtml, result);
         }
 
         [Fact]
-        public void InlineContentItemsAreProcessedByDummyProcessor()
+        public async Task InlineContentItemsAreProcessedByDummyProcessor()
         {
             var insertedContentName1 = "dummyCodename1";
             var insertedContentName2 = "dummyCodename2";
@@ -37,13 +38,13 @@ namespace Kentico.Kontent.Delivery.Tests
                 .Build();
             var processedContentItems = new Dictionary<string, object> {{insertedContentName1, new DummyItem()}, {insertedContentName2, new DummyItem()} };
 
-            var result = inlineContentItemsProcessor.Process(input, processedContentItems);
+            var result = await inlineContentItemsProcessor.Process(input, processedContentItems);
 
             Assert.Equal(plainHtml, result);
         }
 
         [Fact]
-        public void NestedInlineContentItemIsProcessedByDummyProcessor()
+        public async Task NestedInlineContentItemIsProcessedByDummyProcessor()
         {
             var insertedContentName = "dummyCodename1";
             var callsForResolve = 0;
@@ -58,7 +59,7 @@ namespace Kentico.Kontent.Delivery.Tests
                 .WithResolver(factory => factory.ResolveTo<DummyItem>(_ => { callsForResolve++; return string.Empty; }))
                 .Build();
 
-            var result = inlineContentItemsProcessor.Process(input, processedContentItems);
+            var result = await inlineContentItemsProcessor.Process(input, processedContentItems);
 
             Assert.Equal(plainHtml + WrapElementWithDivs(string.Empty), result);
             Assert.Equal(1, callsForResolve);
@@ -66,7 +67,7 @@ namespace Kentico.Kontent.Delivery.Tests
         }
 
         [Fact]
-        public void NestedInlineContentItemIsProcessedByValueProcessor()
+        public async Task NestedInlineContentItemIsProcessedByValueProcessor()
         {
             var insertedContentName = "dummyCodename1";
             string wrapperWithObject = WrapElementWithDivs(GetContentItemObjectElement(insertedContentName));
@@ -82,14 +83,14 @@ namespace Kentico.Kontent.Delivery.Tests
                 .Build();
 
 
-            var result = inlineContentItemsProcessor.Process(input, processedContentItems);
+            var result = await inlineContentItemsProcessor.Process(input, processedContentItems);
 
             Assert.Equal(plainHtml + WrapElementWithDivs(insertedContentItemValue), result);
 
         }
 
         [Fact]
-        public void NestedInlineContentItemIsProcessedByElementProcessor()
+        public async Task NestedInlineContentItemIsProcessedByElementProcessor()
         {
             var insertedContentName = "dummyCodename1";
             var wrapperWithObject = WrapElementWithDivs(GetContentItemObjectElement(insertedContentName));
@@ -104,14 +105,14 @@ namespace Kentico.Kontent.Delivery.Tests
                 .WithResolver(ResolveDummyItemToSpan)
                 .Build();
 
-            var result = inlineContentItemsProcessor.Process(input, processedContentItems);
+            var result = await inlineContentItemsProcessor.Process(input, processedContentItems);
 
             var expectedElement = $"<span>{insertedContentItemValue}</span>";
             Assert.Equal(plainHtml + WrapElementWithDivs(expectedElement), result);
         }
 
         [Fact]
-        public void DifferentContentTypesAreResolvedCorrectly()
+        public async Task DifferentContentTypesAreResolvedCorrectly()
         {
             const string insertedImage1CodeName = "image1";
             const string insertedImage1Source = "www.images.com/image1.png";
@@ -170,14 +171,14 @@ namespace Kentico.Kontent.Delivery.Tests
                 .AndResolver(ResolveDummyImageToImg)
                 .Build();
 
-            var result = inlineContentItemsProcessor.Process(htmlInput, processedContentItems);
+            var result = await inlineContentItemsProcessor.Process(htmlInput, processedContentItems);
 
             Assert.Equal(expectedOutput, result);
         }
 
 
         [Fact]
-        public void DifferentContentTypesAndUnretrievedAreResolvedCorrectly()
+        public async Task DifferentContentTypesAndUnretrievedAreResolvedCorrectly()
         {
             const string insertedImage1CodeName = "image1";
             const string insertedImage1Source = "www.images.com/image1.png";
@@ -237,13 +238,13 @@ namespace Kentico.Kontent.Delivery.Tests
                 .AndResolver(factory => factory.ResolveToMessage<UnretrievedContentItem>(unretrievedItemMessage))
                 .Build();
 
-            var result = inlineContentItemsProcessor.Process(htmlInput, processedContentItems);
+            var result = await inlineContentItemsProcessor.Process(htmlInput, processedContentItems);
 
             Assert.Equal(expectedOutput, result);
         }
 
         [Fact]
-        public void DifferentContentTypesUnretrievedAndContentTypesWithoutResolverAreResolvedCorrectly()
+        public async Task DifferentContentTypesUnretrievedAndContentTypesWithoutResolverAreResolvedCorrectly()
         {
             const string insertedImage1CodeName = "image1";
             const string insertedImage1Source = "www.images.com/image1.png";
@@ -305,14 +306,14 @@ namespace Kentico.Kontent.Delivery.Tests
                 .Build();
 
 
-            var result = inlineContentItemsProcessor.Process(htmlInput, processedContentItems);
+            var result = await inlineContentItemsProcessor.Process(htmlInput, processedContentItems);
 
             Assert.Equal(expectedOutput, result);
         }
 
 
         [Fact]
-        public void UnretrievedContentItemIsResolvedByUnretrievedProcessor()
+        public async Task UnretrievedContentItemIsResolvedByUnretrievedProcessor()
         {
             const string insertedContentName = "dummyCodename1";
             var insertedObject = GetContentItemObjectElement(insertedContentName);
@@ -327,13 +328,13 @@ namespace Kentico.Kontent.Delivery.Tests
                 .WithResolver(factory => factory.ResolveToType<UnretrievedContentItem>())
                 .Build();
 
-            var result = inlineContentItemsProcessor.Process(input, processedContentItems);
+            var result = await inlineContentItemsProcessor.Process(input, processedContentItems);
 
             Assert.Equal(plainHtml + $"<div>{typeof(UnretrievedContentItem)}</div>", result);
         }
 
         [Fact]
-        public void ContentItemWithoutModelIsResolvedByUnknownItemProcessor()
+        public async Task ContentItemWithoutModelIsResolvedByUnknownItemProcessor()
         {
             const string insertedContentName = "dummyCodename1";
             var insertedObject = GetContentItemObjectElement(insertedContentName);
@@ -348,13 +349,13 @@ namespace Kentico.Kontent.Delivery.Tests
                 .WithResolver(factory => factory.ResolveToType<UnknownContentItem>(true))
                 .Build();
 
-            var result = inlineContentItemsProcessor.Process(input, processedContentItems);
+            var result = await inlineContentItemsProcessor.Process(input, processedContentItems);
 
             Assert.Equal(plainHtml + $"<div>{typeof(UnknownContentItem)}</div>", result);
         }
 
         [Fact]
-        public void ContentItemWithoutResolverIsHandledByDefaultResolver()
+        public async Task ContentItemWithoutResolverIsHandledByDefaultResolver()
         {
             const string insertedContentName = "dummyCodename1";
             const string message = "Default handler";
@@ -370,13 +371,13 @@ namespace Kentico.Kontent.Delivery.Tests
                 .AndResolver(ResolveDummyImageToImg)
                 .Build();
 
-            var result = inlineContentItemsProcessor.Process(input, processedContentItems);
+            var result = await inlineContentItemsProcessor.Process(input, processedContentItems);
 
             Assert.Equal(plainHtml + $"<div>{message}</div>", result);
         }
 
         [Fact]
-        public void ResolverReturningMixedElementsAndTextIsProcessedCorrectly()
+        public async Task ResolverReturningMixedElementsAndTextIsProcessedCorrectly()
         {
             const string insertedContentName = "dummyCodename1";
             var wrapperWithObject = GetContentItemObjectElement(insertedContentName);
@@ -391,7 +392,7 @@ namespace Kentico.Kontent.Delivery.Tests
                 .WithResolver(factory => factory.ResolveTo<DummyItem>(item => $"Text text brackets ( &lt; [ <span>{item.Value}</span><div></div>&amp; Some more text"))
                 .Build();
 
-            var result = inlineContentItemsProcessor.Process(inputHtml, processedContentItems);
+            var result = await inlineContentItemsProcessor.Process(inputHtml, processedContentItems);
 
             var expectedResults = $"A hyper-hybrid socialization &amp; turbocharges adaptive Text text brackets ( &lt; [ <span>{insertedContentItemValue}</span><div></div>&amp; Some more text frameworks by thinking outside of the box, while the support structures influence the mediators.";
 
@@ -399,7 +400,7 @@ namespace Kentico.Kontent.Delivery.Tests
         }
 
         [Fact]
-        public void ResolverReturningIncorrectHtmlReturnsErrorMessage()
+        public async Task ResolverReturningIncorrectHtmlReturnsErrorMessage()
         {
             const string insertedContentName = "dummyCodename1";
             var wrapperWithObject = GetContentItemObjectElement(insertedContentName);
@@ -416,7 +417,7 @@ namespace Kentico.Kontent.Delivery.Tests
                 .WithResolver(factory => factory.ResolveTo<DummyItem>(_ => "<![CDATA[ test ]]>"))
                 .Build();
 
-            var result = inlineContentItemsProcessor.Process(inputHtml, processedContentItems);
+            var result = await inlineContentItemsProcessor.Process(inputHtml, processedContentItems);
 
             var expectedResults = 
                 "A hyper-hybrid socialization &amp; turbocharges adaptive [Inline content item resolver provided an invalid HTML 5 fragment (1:3)."
@@ -427,7 +428,7 @@ namespace Kentico.Kontent.Delivery.Tests
         }
 
         [Fact]
-        public void ProcessorRemoveAllRemovesAllInlineContentItems()
+        public async Task ProcessorRemoveAllRemovesAllInlineContentItems()
         {
             const string insertedImage1CodeName = "image1";
             const string insertedImage2CodeName = "image2";
@@ -467,14 +468,14 @@ namespace Kentico.Kontent.Delivery.Tests
                 "It's not about our targets.  It's about infrastructures.";
             var processor = InlineContentItemsProcessorFactory.Create();
 
-            var result = processor.RemoveAll(htmlInput);
+            var result = await processor.RemoveAll(htmlInput);
 
             Assert.Equal(expectedOutput, result);
 
         }
 
         [Fact]
-        public void ContentItemWithMultipleResolversIsHandledByLastResolver()
+        public async Task ContentItemWithMultipleResolversIsHandledByLastResolver()
         {
             const string insertedItemName = "dummyItem";
             const string insertedImageName = "dummyImage";
@@ -494,14 +495,14 @@ namespace Kentico.Kontent.Delivery.Tests
                 .AndResolver(factory => factory.ResolveToType<DummyImageItem>())
                 .Build();
 
-            var result = inlineContentItemsProcessor.Process(input, processedContentItems);
+            var result = await inlineContentItemsProcessor.Process(input, processedContentItems);
 
             Assert.Equal($"<div>{typeof(DummyImageItem)}</div>" + plainHtml + $"<div>{typeof(DummyItem)}</div>", result);
         }
 
         /// <seealso href="https://github.com/Kentico/kontent-delivery-sdk-net/issues/153"/>
         [Fact]
-        public void ContentItemWithDefaultResolverReturnsContentItemDirectlyInResolvedContentItemDataItemProperty()
+        public async Task ContentItemWithDefaultResolverReturnsContentItemDirectlyInResolvedContentItemDataItemProperty()
         {
             const string insertedContentName = "dummyCodename1";
             var input = GetContentItemObjectElement(insertedContentName);
@@ -513,7 +514,7 @@ namespace Kentico.Kontent.Delivery.Tests
                 .WithResolver(factory => factory.ResolveByDefaultToType())
                 .Build();
 
-            var result = inlineContentItemsProcessor.Process(input, processedContentItems);
+            var result = await inlineContentItemsProcessor.Process(input, processedContentItems);
 
             Assert.Equal(typeof(DummyItem).FullName, result);
         }
