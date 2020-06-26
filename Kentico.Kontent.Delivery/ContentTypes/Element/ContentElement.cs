@@ -105,6 +105,7 @@ namespace Kentico.Kontent.Delivery.ContentTypes.Element
         /// <param name="codename">The codename of the content element.</param>
         internal ContentElement(JToken source, string codename)
         {
+            //TODO: remove
             Source = source;
             Codename = codename;
         }
