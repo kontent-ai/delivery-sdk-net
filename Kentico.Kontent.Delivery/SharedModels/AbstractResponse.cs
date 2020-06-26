@@ -28,6 +28,7 @@ namespace Kentico.Kontent.Delivery.SharedModels
 
             Serializer = new JsonSerializer
             {
+                ConstructorHandling = ConstructorHandling.AllowNonPublicDefaultConstructor,
                 ContractResolver = new DeliveryContractResolver(new DeliveryServiceCollection().ServiceProvider)
             };
         }

@@ -24,7 +24,7 @@ namespace Kentico.Kontent.Delivery.ContentTypes
         /// <param name="response">The response from Kentico Kontent Delivery API that contains a content type.</param>
         internal DeliveryTypeResponse(ApiResponse response) : base(response)
         {
-            _type = new Lazy<IContentType>(() => new ContentType(response.JsonContent), LazyThreadSafetyMode.PublicationOnly);
+            _type = new Lazy<IContentType>(() => response.JsonContent.ToObject<ContentType>(Serializer), LazyThreadSafetyMode.PublicationOnly);
         }
 
         /// <summary>

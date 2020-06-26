@@ -17,19 +17,21 @@ namespace Kentico.Kontent.Delivery.ContentTypes
         private IReadOnlyDictionary<string, IContentElement> _elements;
 
         /// <inheritdoc/>
+        [JsonProperty("system")]
         public IContentTypeSystemAttributes System
         {
             get
             {
                 return _system ??= _source["system"].ToObject<ContentTypeSystemAttributes>();
             }
-            private set
+            set
             {
                 _system = value;
             }
         }
 
         /// <inheritdoc/>
+        [JsonProperty("elements")]
         public IReadOnlyDictionary<string, IContentElement> Elements
         {
             get
@@ -52,7 +54,7 @@ namespace Kentico.Kontent.Delivery.ContentTypes
 
                 return _elements;
             }
-            private set
+            set
             {
                 _elements = value;
             }
@@ -67,6 +69,9 @@ namespace Kentico.Kontent.Delivery.ContentTypes
             _source = source;
         }
 
+        /// <summary>
+        /// Constructor used for deserialization (e.g. for caching purposes), contains no logic.
+        /// </summary>
         [JsonConstructor]
         public ContentType(ContentTypeSystemAttributes system, IReadOnlyDictionary<string, IContentElement> elements)
         {
