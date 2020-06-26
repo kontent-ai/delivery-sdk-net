@@ -1,7 +1,11 @@
 ﻿using Kentico.Kontent.Delivery.Abstractions;
+using Microsoft.AspNetCore.WebUtilities;
 using Newtonsoft.Json;
 using Newtonsoft.Json.Linq;
 using System.Diagnostics;
+using System.Net.Http;
+using System.Text;
+using System.Threading.Tasks;
 
 namespace Kentico.Kontent.Delivery.SharedModels
 {
@@ -12,14 +16,24 @@ namespace Kentico.Kontent.Delivery.SharedModels
     internal sealed class ApiResponse : IApiResponse
     {
         private JObject _jsonContent;
+        private string _content;
 
         /// <inheritdoc/>
-        public string Content { get; }
+        [JsonIgnore]
+        public HttpContent HttpContent { get; }
 
-        /// <summary>
-        /// Gets an object model of the JSON content.
-        /// </summary>
-        public JObject JsonContent => _jsonContent ??= Content != null ? JObject.Parse(Content) : null;
+        /// <inheritdoc/>
+        public string Content
+        {
+            get
+            {
+                return _content ??= Task.Run(() => HttpContent.ReadAsStringAsync()).GetAwaiter().GetResult();
+            }
+            set
+            {
+                _content = value;
+            }
+        }
 
         /// <inheritdoc/>
         public bool HasStaleContent { get; }
@@ -33,17 +47,46 @@ namespace Kentico.Kontent.Delivery.SharedModels
         /// <summary>
         /// Initializes a new instance of the <see cref="ApiResponse"/> class.
         /// </summary>
+        /// <param name="httpContent">HTTP body content.</param>
+        /// <param name="hasStaleContent">Specifies whether content is stale.</param>
+        /// <param name="continuationToken">Continuation token to be used for continuing enumeration.</param>
+        /// <param name="requestUrl">URL used to retrieve this response.</param>
+        internal ApiResponse(HttpContent httpContent, bool hasStaleContent, string continuationToken, string requestUrl)
+        {
+            HttpContent = httpContent;
+            HasStaleContent = hasStaleContent;
+            ContinuationToken = continuationToken;
+            RequestUrl = requestUrl;
+        }
+
+        /// <summary>
+        /// An internal constructor used for deserialization (useful for caching scenarios, etc.)
+        /// </summary>
         /// <param name="content">JSON content.</param>
         /// <param name="hasStaleContent">Specifies whether content is stale.</param>
         /// <param name="continuationToken">Continuation token to be used for continuing enumeration.</param>
         /// <param name="requestUrl">URL used to retrieve this response.</param>
         [JsonConstructor]
-        public ApiResponse(string content, bool hasStaleContent, string continuationToken, string requestUrl)
+        internal ApiResponse(string content, bool hasStaleContent, string continuationToken, string requestUrl)
         {
             Content = content;
             HasStaleContent = hasStaleContent;
             ContinuationToken = continuationToken;
             RequestUrl = requestUrl;
+        }
+
+        /// <summary>
+        /// Gets an object model of the JSON content.
+        /// </summary>
+        public async Task<JObject> GetJsonContentAsync()
+        {
+            if (_jsonContent == null)
+            {
+                using var streamReader = new HttpRequestStreamReader(await HttpContent.ReadAsStreamAsync(), Encoding.UTF8);
+                using var jsonReader = new JsonTextReader(streamReader);
+                _jsonContent = await JObject.LoadAsync(jsonReader);
+            }
+            return _jsonContent;
         }
     }
 }

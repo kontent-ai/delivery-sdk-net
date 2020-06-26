@@ -7,6 +7,7 @@ using System.Threading.Tasks;
 using Kentico.Kontent.Delivery.Abstractions;
 using Kentico.Kontent.Delivery.ContentItems;
 using Kentico.Kontent.Delivery.ContentTypes;
+using Kentico.Kontent.Delivery.ContentTypes.Element;
 using Kentico.Kontent.Delivery.Extensions;
 using Kentico.Kontent.Delivery.SharedModels;
 using Kentico.Kontent.Delivery.TaxonomyGroups;
@@ -14,6 +15,8 @@ using Kentico.Kontent.Delivery.Urls;
 using Kentico.Kontent.Delivery.Urls.QueryParameters;
 using Kentico.Kontent.Delivery.Urls.QueryParameters.Filters;
 using Microsoft.Extensions.Options;
+using Newtonsoft.Json;
+using Newtonsoft.Json.Linq;
 
 namespace Kentico.Kontent.Delivery
 {
@@ -22,13 +25,33 @@ namespace Kentico.Kontent.Delivery
     /// </summary>
     internal sealed class DeliveryClient : IDeliveryClient
     {
+        internal DeliveryEndpointUrlBuilder _urlBuilder;
+        internal JsonSerializer _serializer;
+
         internal readonly IOptionsMonitor<DeliveryOptions> DeliveryOptions;
         internal readonly IModelProvider ModelProvider;
         internal readonly ITypeProvider TypeProvider;
         internal readonly IRetryPolicyProvider RetryPolicyProvider;
         internal readonly IDeliveryHttpClient DeliveryHttpClient;
 
-        private DeliveryEndpointUrlBuilder _urlBuilder;
+        /// <summary>
+        /// Default serializer.
+        /// </summary>
+        internal JsonSerializer Serializer
+        {
+            get
+            {
+                if (_serializer == null)
+                {
+                    _serializer = new JsonSerializer
+                    {
+                        //ConstructorHandling = ConstructorHandling.AllowNonPublicDefaultConstructor,
+                        ContractResolver = new DeliveryContractResolver(new DeliveryServiceCollection().ServiceProvider)
+                    };
+                }
+                return _serializer;
+            }
+        }
 
         private DeliveryEndpointUrlBuilder UrlBuilder
             => _urlBuilder ??= new DeliveryEndpointUrlBuilder(DeliveryOptions);
@@ -71,9 +94,10 @@ namespace Kentico.Kontent.Delivery
             }
 
             var endpointUrl = UrlBuilder.GetItemUrl(codename, parameters);
-            var response = await GetDeliverResponseAsync(endpointUrl);
-
-            return new DeliveryItemResponse<T>(response, ModelProvider);
+            var response = await GetDeliveryResponseAsync(endpointUrl);
+            var content = await response.GetJsonContentAsync();
+            var model = ModelProvider.GetContentItemModel<T>(content["item"], content["modular_content"]);
+            return new DeliveryItemResponse<T>(response, model, GetLinkedItems(content));
         }
 
         /// <summary>
@@ -86,9 +110,12 @@ namespace Kentico.Kontent.Delivery
         {
             var enhancedParameters = EnsureContentTypeFilter<T>(parameters).ToList();
             var endpointUrl = UrlBuilder.GetItemsUrl(enhancedParameters);
-            var response = await GetDeliverResponseAsync(endpointUrl);
+            var response = await GetDeliveryResponseAsync(endpointUrl);
+            var content = await response.GetJsonContentAsync();
+            var pagination = content["pagination"].ToObject<Pagination>();
+            var items = ((JArray)content["items"]).Select(source => ModelProvider.GetContentItemModel<T>(source, content["modular_content"])).ToList().AsReadOnly();
 
-            return new DeliveryItemListingResponse<T>(response, ModelProvider);
+            return new DeliveryItemListingResponse<T>(response, items, GetLinkedItems(content), pagination);
         }
 
         /// <summary>
@@ -106,8 +133,12 @@ namespace Kentico.Kontent.Delivery
 
             async Task<DeliveryItemsFeedResponse<T>> GetItemsBatchAsync(string continuationToken)
             {
-                var response = await GetDeliverResponseAsync(endpointUrl, continuationToken);
-                return new DeliveryItemsFeedResponse<T>(response, ModelProvider);
+                var response = await GetDeliveryResponseAsync(endpointUrl, continuationToken);
+                var content = await response.GetJsonContentAsync();
+
+                var items = ((JArray)content["items"]).Select(source => ModelProvider.GetContentItemModel<T>(source, content["modular_content"])).ToList().AsReadOnly();
+
+                return new DeliveryItemsFeedResponse<T>(response, items, GetLinkedItems(content));
             }
         }
 
@@ -129,9 +160,10 @@ namespace Kentico.Kontent.Delivery
             }
 
             var endpointUrl = UrlBuilder.GetTypeUrl(codename);
-            var response = await GetDeliverResponseAsync(endpointUrl);
+            var response = await GetDeliveryResponseAsync(endpointUrl);
+            var type = (await response.GetJsonContentAsync()).ToObject<ContentType>(Serializer);
 
-            return new DeliveryTypeResponse(response);
+            return new DeliveryTypeResponse(response, type);
         }
 
         /// <summary>
@@ -142,9 +174,12 @@ namespace Kentico.Kontent.Delivery
         public async Task<IDeliveryTypeListingResponse> GetTypesAsync(IEnumerable<IQueryParameter> parameters = null)
         {
             var endpointUrl = UrlBuilder.GetTypesUrl(parameters);
-            var response = await GetDeliverResponseAsync(endpointUrl);
+            var response = await GetDeliveryResponseAsync(endpointUrl);
+            var content = await response.GetJsonContentAsync();
+            var pagination = content["pagination"].ToObject<Pagination>();
+            var types = content["types"].ToObject<IReadOnlyList<ContentType>>(Serializer);
 
-            return new DeliveryTypeListingResponse(response);
+            return new DeliveryTypeListingResponse(response, types, pagination);
         }
 
         /// <summary>
@@ -176,9 +211,10 @@ namespace Kentico.Kontent.Delivery
             }
 
             var endpointUrl = UrlBuilder.GetContentElementUrl(contentTypeCodename, contentElementCodename);
-            var response = await GetDeliverResponseAsync(endpointUrl);
-
-            return new DeliveryElementResponse(response);
+            var response = await GetDeliveryResponseAsync(endpointUrl);
+            var content = await response.GetJsonContentAsync();
+            var element = new ContentElement(content, content.Value<string>("codename"));
+            return new DeliveryElementResponse(response, element);
         }
 
         /// <summary>
@@ -199,9 +235,9 @@ namespace Kentico.Kontent.Delivery
             }
 
             var endpointUrl = UrlBuilder.GetTaxonomyUrl(codename);
-            var response = await GetDeliverResponseAsync(endpointUrl);
-
-            return new DeliveryTaxonomyResponse(response);
+            var response = await GetDeliveryResponseAsync(endpointUrl);
+            var taxonomy = new TaxonomyGroup(await response.GetJsonContentAsync());
+            return new DeliveryTaxonomyResponse(response, taxonomy);
         }
 
         /// <summary>
@@ -212,12 +248,14 @@ namespace Kentico.Kontent.Delivery
         public async Task<IDeliveryTaxonomyListingResponse> GetTaxonomiesAsync(IEnumerable<IQueryParameter> parameters = null)
         {
             var endpointUrl = UrlBuilder.GetTaxonomiesUrl(parameters);
-            var response = await GetDeliverResponseAsync(endpointUrl);
-
-            return new DeliveryTaxonomyListingResponse(response);
+            var response = await GetDeliveryResponseAsync(endpointUrl);
+            var content = await response.GetJsonContentAsync();
+            var pagination = content["pagination"].ToObject<Pagination>();
+            var taxonomies = ((JArray)content["taxonomies"]).Select(source => new TaxonomyGroup(source)).ToList().AsReadOnly();
+            return new DeliveryTaxonomyListingResponse(response, taxonomies, pagination);
         }
 
-        private async Task<ApiResponse> GetDeliverResponseAsync(string endpointUrl, string continuationToken = null)
+        private async Task<ApiResponse> GetDeliveryResponseAsync(string endpointUrl, string continuationToken = null)
         {
             if (DeliveryOptions.CurrentValue.UsePreviewApi && DeliveryOptions.CurrentValue.UseSecureAccess)
             {
@@ -282,14 +320,11 @@ namespace Kentico.Kontent.Delivery
             if (httpResponseMessage == null) throw new ArgumentNullException(nameof(httpResponseMessage));
             if (httpResponseMessage.StatusCode == HttpStatusCode.OK)
             {
-                var content = httpResponseMessage.Content != null
-                    ? await httpResponseMessage.Content?.ReadAsStringAsync()
-                    : null;
                 var hasStaleContent = HasStaleContent(httpResponseMessage);
                 var continuationToken = httpResponseMessage.Headers.GetContinuationHeader();
                 var requestUri = httpResponseMessage.RequestMessage?.RequestUri?.AbsoluteUri ?? fallbackEndpointUrl;
 
-                return new ApiResponse(content, hasStaleContent, continuationToken, requestUri);
+                return new ApiResponse(httpResponseMessage.Content, hasStaleContent, continuationToken, requestUri);
             }
 
             string faultContent = null;
@@ -348,6 +383,17 @@ namespace Kentico.Kontent.Delivery
             {
                 throw new ArgumentException("Skip parameter is not supported in items feed.");
             }
+        }
+
+        private IReadOnlyList<object> GetLinkedItems(JObject content)
+        {
+            var linkedItems = (JObject)content["modular_content"].DeepClone();
+            List<object> result = new List<object>();
+            foreach (var keyValuePair in linkedItems)
+            {
+                result.Add(ModelProvider.GetContentItemModel<object>(keyValuePair.Value, linkedItems));
+            }
+            return result;
         }
     }
 }
