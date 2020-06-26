@@ -1,13 +1,14 @@
 ﻿using Kentico.Kontent.Delivery.Abstractions;
+using System.Threading.Tasks;
 
 namespace Kentico.Kontent.Delivery.ContentItems.ContentLinks
 {
     internal class DefaultContentLinkUrlResolver : IContentLinkUrlResolver
     {
-        public string ResolveLinkUrl(IContentLink link) 
-            => null;
+        public Task<string> ResolveLinkUrl(IContentLink link) 
+            => Task.FromResult<string>(null);
 
-        public string ResolveBrokenLinkUrl()
-            => null;
+        public Task<string> ResolveBrokenLinkUrl()
+            => Task.FromResult<string>(null);
     }
 }

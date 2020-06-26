@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Net;
 using System.Text.RegularExpressions;
+using System.Threading.Tasks;
 using Kentico.Kontent.Delivery.Abstractions;
 using Newtonsoft.Json.Linq;
 
@@ -41,12 +42,13 @@ namespace Kentico.Kontent.Delivery.ContentItems.ContentLinks
 
                 if (linkSource == null)
                 {
-                    return ResolveMatch(match, ContentLinkUrlResolver.ResolveBrokenLinkUrl());
+                    //TODO: get rid of task.run - there must be a better way (IAsyncResult??)
+                    return ResolveMatch(match, Task.Run(() => ContentLinkUrlResolver.ResolveBrokenLinkUrl()).GetAwaiter().GetResult());
                 }
 
                 var link = new ContentLink(contentItemId, linkSource);
 
-                return ResolveMatch(match, ContentLinkUrlResolver.ResolveLinkUrl(link));
+                return ResolveMatch(match, Task.Run(() => ContentLinkUrlResolver.ResolveLinkUrl(link)).GetAwaiter().GetResult());
             });
         }
 
@@ -60,13 +62,13 @@ namespace Kentico.Kontent.Delivery.ContentItems.ContentLinks
             const string needle = "href=\"\"";
             var haystack = match.Value;
             var index = haystack.IndexOf(needle, StringComparison.InvariantCulture);
-            
+
             if (index < 0)
             {
                 return haystack;
             }
 
-            return haystack.Insert(index + 6, WebUtility.HtmlEncode(url)); 
+            return haystack.Insert(index + 6, WebUtility.HtmlEncode(url));
         }
     }
 }

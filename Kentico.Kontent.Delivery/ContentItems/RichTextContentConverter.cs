@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using System.Linq;
 using System.Reflection;
+using System.Threading.Tasks;
 using AngleSharp.Html.Parser;
 using Kentico.Kontent.Delivery.Abstractions;
 using Kentico.Kontent.Delivery.ContentItems.ContentLinks;
@@ -14,7 +15,7 @@ namespace Kentico.Kontent.Delivery.ContentItems
 {
     internal class RichTextContentConverter : IPropertyValueConverter
     {
-        public object GetPropertyValue(PropertyInfo property, IContentElement contentElement, ResolvingContext context)
+        public async Task<object> GetPropertyValue(PropertyInfo property, IContentElement contentElement, ResolvingContext context)
         {
             if (!typeof(IRichTextContent).IsAssignableFrom(property.PropertyType))
             {
@@ -37,13 +38,13 @@ namespace Kentico.Kontent.Delivery.ContentItems
 
             var blocks = new List<IRichTextBlock>();
 
-            var htmlInput = new HtmlParser().ParseDocument(value);
+            var htmlInput = await new HtmlParser().ParseDocumentAsync(value);
             foreach (var block in htmlInput.Body.Children)
             {
                 if (block.TagName?.Equals("object", StringComparison.OrdinalIgnoreCase) == true && block.GetAttribute("type") == "application/kenticocloud" && block.GetAttribute("data-type") == "item")
                 {
                     var codename = block.GetAttribute("data-codename");
-                    blocks.Add(new InlineContentItem(context.GetLinkedItem(codename)));
+                    blocks.Add(new InlineContentItem(await context.GetLinkedItem(codename)));
                 }
                 else if (block.TagName?.Equals("figure", StringComparison.OrdinalIgnoreCase) == true)
                 {

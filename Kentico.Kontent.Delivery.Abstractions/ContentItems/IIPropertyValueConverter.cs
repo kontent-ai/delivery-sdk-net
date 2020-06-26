@@ -1,4 +1,5 @@
 ﻿using System.Reflection;
+using System.Threading.Tasks;
 
 namespace Kentico.Kontent.Delivery.Abstractions
 {
@@ -13,6 +14,6 @@ namespace Kentico.Kontent.Delivery.Abstractions
         /// <param name="property">Property info</param>
         /// <param name="elementData">Source element data</param>
         /// <param name="context">Context of the current resolving process</param>
-        object GetPropertyValue(PropertyInfo property, IContentElement elementData, ResolvingContext context);
+        Task<object> GetPropertyValue(PropertyInfo property, IContentElement elementData, ResolvingContext context);
     }
 }

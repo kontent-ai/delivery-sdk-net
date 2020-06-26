@@ -1,5 +1,6 @@
 ﻿using System;
 using System.IO;
+using System.Threading.Tasks;
 using Kentico.Kontent.Delivery.Abstractions;
 using Kentico.Kontent.Delivery.ContentItems;
 using Kentico.Kontent.Delivery.ContentItems.ContentLinks;
@@ -173,14 +174,14 @@ namespace Kentico.Kontent.Delivery.Tests
             public Func<IContentLink, string> GetLinkUrl = link => $"http://example.org/{link.UrlSlug}";
             public Func<string> GetBrokenLinkUrl = () => "http://example.org/broken";
 
-            public string ResolveLinkUrl(IContentLink link)
+            public Task<string> ResolveLinkUrl(IContentLink link)
             {
-                return GetLinkUrl(link);
+                return Task.FromResult(GetLinkUrl(link));
             }
 
-            public string ResolveBrokenLinkUrl()
+            public Task<string> ResolveBrokenLinkUrl()
             {
-                return GetBrokenLinkUrl();
+                return Task.FromResult(GetBrokenLinkUrl());
             }
         }
     }
