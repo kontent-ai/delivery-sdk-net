@@ -1,30 +1,25 @@
-﻿using System;
-using System.Collections;
+﻿using System.Collections;
 using System.Collections.Generic;
-using System.Linq;
-using System.Threading;
 using Kentico.Kontent.Delivery.Abstractions;
 using Kentico.Kontent.Delivery.SharedModels;
-using Newtonsoft.Json.Linq;
 
 namespace Kentico.Kontent.Delivery.ContentItems
 {
     /// <inheritdoc cref="IDeliveryItemsFeedResponse{T}" />
     internal class DeliveryItemsFeedResponse<T> : AbstractItemsResponse, IEnumerable<T>, IDeliveryItemsFeedResponse<T>
     {
-        private readonly Lazy<IReadOnlyList<T>> _items;
-
         /// <inheritdoc/>
-        public IReadOnlyList<T> Items => _items.Value;
+        public IReadOnlyList<T> Items { get; set; }
 
         /// <summary>
         /// Initializes a new instance of the <see cref="DeliveryItemsFeedResponse{T}"/> class.
         /// </summary>
         /// <param name="response">The response from Kentico Kontent Delivery API that contains a list of content items.</param>
-        /// <param name="modelProvider">The provider that can convert JSON responses into instances of .NET types.</param>
-        internal DeliveryItemsFeedResponse(ApiResponse response, IModelProvider modelProvider) : base(response, modelProvider)
+        /// <param name="items">A list of content items.</param>
+        /// <param name="linkedItems">Collection of linked content items.</param>
+        internal DeliveryItemsFeedResponse(ApiResponse response, IReadOnlyList<T> items, IReadOnlyList<object> linkedItems) : base(response, linkedItems)
         {
-            _items = new Lazy<IReadOnlyList<T>>(() => ((JArray)response.JsonContent["items"]).Select(source => modelProvider.GetContentItemModel<T>(source, response.JsonContent["modular_content"])).ToList().AsReadOnly(), LazyThreadSafetyMode.PublicationOnly);
+            Items = items;
         }
 
         /// <inheritdoc cref="IDeliveryItemsFeedResponse{T}" />
