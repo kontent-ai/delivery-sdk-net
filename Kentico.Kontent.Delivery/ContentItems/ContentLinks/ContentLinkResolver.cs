@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Linq;
 using System.Net;
 using System.Text.RegularExpressions;
 using System.Threading.Tasks;
@@ -18,7 +19,7 @@ namespace Kentico.Kontent.Delivery.ContentItems.ContentLinks
             ContentLinkUrlResolver = contentLinkUrlResolver ?? throw new ArgumentNullException(nameof(contentLinkUrlResolver));
         }
 
-        public string ResolveContentLinks(string text, JToken links)
+        public async Task<string> ResolveContentLinks(string text, JToken links)
         {
             if (text == null)
             {
@@ -35,24 +36,37 @@ namespace Kentico.Kontent.Delivery.ContentItems.ContentLinks
                 return text;
             }
 
-            return ElementRegex.Replace(text, match =>
+            var matches = ElementRegex.Matches(text);
+
+            static string Replace(string s, int index, int length, string replacement)
+            {
+                return string.Concat(s.Substring(0, index), replacement, s.Substring(index + length));
+            }
+
+            foreach (var match in matches.Cast<Match>().Reverse())
             {
                 var contentItemId = match.Groups["id"].Value;
                 var linkSource = links[contentItemId];
 
-                if (linkSource == null)
+                string url;
+                if (linkSource != null)
                 {
-                    //TODO: get rid of task.run - there must be a better way (IAsyncResult??)
-                    return ResolveMatch(match, Task.Run(() => ContentLinkUrlResolver.ResolveBrokenLinkUrl()).GetAwaiter().GetResult());
+                    var link = new ContentLink(contentItemId, linkSource);
+                    url = await ContentLinkUrlResolver.ResolveLinkUrl(link);
+                }
+                else
+                {
+                    url = await ContentLinkUrlResolver.ResolveBrokenLinkUrl();
                 }
 
-                var link = new ContentLink(contentItemId, linkSource);
+                var replacement = ResolveMatch(match, url);
+                text = Replace(text, match.Index, match.Length, replacement);
+            }
 
-                return ResolveMatch(match, Task.Run(() => ContentLinkUrlResolver.ResolveLinkUrl(link)).GetAwaiter().GetResult());
-            });
+            return text;
         }
 
-        private string ResolveMatch(Match match, string url)
+        private static string ResolveMatch(Capture match, string url)
         {
             if (string.IsNullOrEmpty(url))
             {
@@ -68,7 +82,8 @@ namespace Kentico.Kontent.Delivery.ContentItems.ContentLinks
                 return haystack;
             }
 
-            return haystack.Insert(index + 6, WebUtility.HtmlEncode(url));
+            var withinHrefIndex = index + needle.Length - "\"".Length;
+            return haystack.Insert(withinHrefIndex, WebUtility.HtmlEncode(url));
         }
     }
 }

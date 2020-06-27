@@ -33,7 +33,7 @@ namespace Kentico.Kontent.Delivery.ContentItems
             // Handle rich_text link resolution
             if (links != null && ((JObject)element.Source) != null && context.ContentLinkUrlResolver != null)
             {
-                value = new ContentLinkResolver(context.ContentLinkUrlResolver).ResolveContentLinks(value, links);
+                value = await new ContentLinkResolver(context.ContentLinkUrlResolver).ResolveContentLinks(value, links);
             }
 
             var blocks = new List<IRichTextBlock>();

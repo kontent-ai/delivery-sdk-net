@@ -213,7 +213,7 @@ namespace Kentico.Kontent.Delivery.ContentItems
 
             if (property.PropertyType == typeof(string))
             {
-                var (value, isRichText) = GetStringValue(elementValue);
+                var (value, isRichText) = await GetStringValue(elementValue);
 
                 if (isRichText)
                 {
@@ -253,7 +253,7 @@ namespace Kentico.Kontent.Delivery.ContentItems
             => propertyType.IsValueType && !(typeof(Enumerable).IsAssignableFrom(propertyType)
                || (propertyType.IsGenericType && propertyType.GetGenericTypeDefinition() == typeof(IEnumerable<>)));
 
-        private (string value, bool isRichText) GetStringValue(JObject elementData)
+        private async Task<(string value, bool isRichText)> GetStringValue(JObject elementData)
         {
             var elementValue = GetRawValue(elementData);
             var value = elementValue?.ToObject<string>();
@@ -262,7 +262,7 @@ namespace Kentico.Kontent.Delivery.ContentItems
             // Handle rich_text link resolution
             if (links != null && elementValue != null && ContentLinkResolver != null)
             {
-                value = ContentLinkResolver.ResolveContentLinks(value, links);
+                value = await ContentLinkResolver.ResolveContentLinks(value, links);
             }
 
             var linkedItemsInRichText = GetLinkedItemsInRichText(elementData);

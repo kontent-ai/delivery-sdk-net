@@ -156,11 +156,11 @@ namespace Kentico.Kontent.Delivery.Tests
         [Fact]
         public async Task GetItemAsync_NotFound()
         {
-            string messsge = "{'message': 'The requested content item unscintillating_hemerocallidaceae_des_iroquois was not found.','request_id': '','error_code': 101,'specific_code': 0}";
+            string message = "{'message': 'The requested content item unscintillating_hemerocallidaceae_des_iroquois was not found.','request_id': '','error_code': 101,'specific_code': 0}";
 
             _mockHttp
                 .When($"{_baseUrl}/items/unscintillating_hemerocallidaceae_des_iroquois")
-                .Respond(HttpStatusCode.NotFound, "application/json", messsge);
+                .Respond(HttpStatusCode.NotFound, "application/json", message);
 
             var client = InitializeDeliveryClientWithACustomTypeProvider(_mockHttp);
 
@@ -171,7 +171,6 @@ namespace Kentico.Kontent.Delivery.Tests
         [Fact]
         public async Task GetItemAsync_ComplexRichTextTableCell_ParseCorrectly()
         {
-
             var mockedResponse = await File.ReadAllTextAsync(Path.Combine(Environment.CurrentDirectory, $"Fixtures{Path.DirectorySeparatorChar}DeliveryClient{Path.DirectorySeparatorChar}rich_text_complex_tables.json"));
 
             var expectedValue = JObject.Parse(mockedResponse).SelectToken("item.elements.rich_text.value").ToString();

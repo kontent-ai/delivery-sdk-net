@@ -37,21 +37,11 @@ namespace Kentico.Kontent.Delivery
         /// <summary>
         /// Default serializer.
         /// </summary>
-        internal JsonSerializer Serializer
-        {
-            get
+        internal JsonSerializer Serializer =>
+            _serializer ??= new JsonSerializer
             {
-                if (_serializer == null)
-                {
-                    _serializer = new JsonSerializer
-                    {
-                        //ConstructorHandling = ConstructorHandling.AllowNonPublicDefaultConstructor,
-                        ContractResolver = new DeliveryContractResolver(new DeliveryServiceCollection().ServiceProvider)
-                    };
-                }
-                return _serializer;
-            }
-        }
+                ContractResolver = new DeliveryContractResolver(new DeliveryServiceCollection().ServiceProvider)
+            };
 
         private DeliveryEndpointUrlBuilder UrlBuilder
             => _urlBuilder ??= new DeliveryEndpointUrlBuilder(DeliveryOptions);
