@@ -16,101 +16,101 @@ namespace Kentico.Kontent.Delivery.Tests
     public class ContentLinkResolverTests
     {
         [Fact]
-        public void ContentLinkIsResolved()
+        public async Task ContentLinkIsResolved()
         {
-            var result = ResolveContentLinks("Learn <a href=\"\" data-item-id=\"CID\">more</a>.");
+            var result = await ResolveContentLinks("Learn <a href=\"\" data-item-id=\"CID\">more</a>.");
 
             Assert.Equal("Learn <a href=\"http://example.org/about-us\" data-item-id=\"CID\">more</a>.", result);
         }
 
         [Fact]
-        public void DecoratedContentLinkIsResolved()
+        public async Task DecoratedContentLinkIsResolved()
         {
-            var result = ResolveContentLinks("Learn <a href=\"\" data-item-id=\"CID\" class=\"link\">more</a>.");
+            var result = await ResolveContentLinks("Learn <a href=\"\" data-item-id=\"CID\" class=\"link\">more</a>.");
 
             Assert.Equal("Learn <a href=\"http://example.org/about-us\" data-item-id=\"CID\" class=\"link\">more</a>.", result);
         }
 
         [Fact]
-        public void BrokenContentLinkIsResolved()
+        public async Task BrokenContentLinkIsResolved()
         {
-            var result = ResolveContentLinks("Learn <a href=\"\" data-item-id=\"OTHER\">more</a>.");
+            var result = await ResolveContentLinks("Learn <a href=\"\" data-item-id=\"OTHER\">more</a>.");
 
             Assert.Equal("Learn <a href=\"http://example.org/broken\" data-item-id=\"OTHER\">more</a>.", result);
         }
 
         [Fact]
-        public void ResolveLinkUrlIsOptional()
+        public async Task ResolveLinkUrlIsOptional()
         {
             var linkUrlResolver = new CustomContentLinkUrlResolver
             {
                 GetLinkUrl = link => null
             };
-            var result = ResolveContentLinks("Learn <a href=\"\" data-item-id=\"CID\">more</a>.", linkUrlResolver);
+            var result = await ResolveContentLinks("Learn <a href=\"\" data-item-id=\"CID\">more</a>.", linkUrlResolver);
 
             Assert.Equal("Learn <a href=\"\" data-item-id=\"CID\">more</a>.", result);
         }
 
         [Fact]
-        public void ResolveBrokenLinkUrlIsOptional()
+        public async Task ResolveBrokenLinkUrlIsOptional()
         {
             var linkUrlResolver = new CustomContentLinkUrlResolver
             {
                 GetBrokenLinkUrl = () => null
             };
-            var result = ResolveContentLinks("Learn <a href=\"\" data-item-id=\"OTHER\">more</a>.", linkUrlResolver);
+            var result = await ResolveContentLinks("Learn <a href=\"\" data-item-id=\"OTHER\">more</a>.", linkUrlResolver);
 
             Assert.Equal("Learn <a href=\"\" data-item-id=\"OTHER\">more</a>.", result);
         }
 
         [Fact]
-        public void ExternalLinksArePreserved()
+        public async Task ExternalLinksArePreserved()
         {
-            var result = ResolveContentLinks("Learn <a href=\"https://www.kentico.com\">more</a>.");
+            var result = await ResolveContentLinks("Learn <a href=\"https://www.kentico.com\">more</a>.");
 
             Assert.Equal("Learn <a href=\"https://www.kentico.com\">more</a>.", result);
         }
 
         [Fact]
-        public void ExternalEmptyLinksArePreserved()
+        public async Task ExternalEmptyLinksArePreserved()
         {
-            var result = ResolveContentLinks("Learn <a href=\"\">more</a>.");
+            var result = await ResolveContentLinks("Learn <a href=\"\">more</a>.");
 
             Assert.Equal("Learn <a href=\"\">more</a>.", result);
         }
 
         [Fact]
-        public void UrlLinkIsEncoded()
+        public async Task UrlLinkIsEncoded()
         {
             var linkUrlResolver = new CustomContentLinkUrlResolver
             {
                 GetLinkUrl = link => "http://example.org?q=bits&bolts"
             };
-            var result = ResolveContentLinks("Learn <a href=\"\" data-item-id=\"CID\">more</a>.", linkUrlResolver);
+            var result = await ResolveContentLinks("Learn <a href=\"\" data-item-id=\"CID\">more</a>.", linkUrlResolver);
 
             Assert.Equal("Learn <a href=\"http://example.org?q=bits&amp;bolts\" data-item-id=\"CID\">more</a>.", result);
         }
 
         [Fact]
-        public void BrokenUrlLinkIsEncoded()
+        public async Task BrokenUrlLinkIsEncoded()
         {
             var linkUrlResolver = new CustomContentLinkUrlResolver
             {
                 GetBrokenLinkUrl = () => "http://example.org/<broken>"
             };
-            var result = ResolveContentLinks("Learn <a href=\"\" data-item-id=\"OTHER\">more</a>.", linkUrlResolver);
+            var result = await ResolveContentLinks("Learn <a href=\"\" data-item-id=\"OTHER\">more</a>.", linkUrlResolver);
 
             Assert.Equal("Learn <a href=\"http://example.org/&lt;broken&gt;\" data-item-id=\"OTHER\">more</a>.", result);
         }
 
         [Fact]
-        public void ContentLinkAttributesAreParsed()
+        public async Task ContentLinkAttributesAreParsed()
         {
             var linkUrlResolver = new CustomContentLinkUrlResolver
             {
                 GetLinkUrl = link => $"http://example.org/{link.ContentTypeCodename}/{link.Codename}/{link.Id}-{link.UrlSlug}"
             };
-            var result = ResolveContentLinks("Learn <a href=\"\" data-item-id=\"CID\">more</a>.", linkUrlResolver);
+            var result = await ResolveContentLinks("Learn <a href=\"\" data-item-id=\"CID\">more</a>.", linkUrlResolver);
 
             Assert.Equal("Learn <a href=\"http://example.org/article/about_us/CID-about-us\" data-item-id=\"CID\">more</a>.", result);
         }
@@ -146,14 +146,14 @@ namespace Kentico.Kontent.Delivery.Tests
             Assert.Contains(expected, item.Item.BodyCopy);
         }
 
-        private string ResolveContentLinks(string text)
+        private async Task<string> ResolveContentLinks(string text)
         {
             var linkUrlResolver = new CustomContentLinkUrlResolver();
 
-            return ResolveContentLinks(text, linkUrlResolver);
+            return await ResolveContentLinks(text, linkUrlResolver);
         }
 
-        private string ResolveContentLinks(string text, CustomContentLinkUrlResolver linkUrlResolver)
+        private async Task<string> ResolveContentLinks(string text, CustomContentLinkUrlResolver linkUrlResolver)
         {
             var linkResolver = new ContentLinkResolver(linkUrlResolver);
             var links = JObject.FromObject(new
@@ -166,7 +166,7 @@ namespace Kentico.Kontent.Delivery.Tests
                 }
             });
 
-            return linkResolver.ResolveContentLinks(text, links);
+            return await linkResolver.ResolveContentLinks(text, links);
         }
 
         private sealed class CustomContentLinkUrlResolver : IContentLinkUrlResolver
