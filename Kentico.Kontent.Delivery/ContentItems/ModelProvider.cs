@@ -367,8 +367,9 @@ namespace Kentico.Kontent.Delivery.ContentItems
 
         private async Task<string> ProcessInlineContentItems(JObject linkedItems, Dictionary<string, object> processedItems, string value, JToken linkedItemsInRichText, HashSet<RichTextContentElements> currentlyResolvedRichStrings)
         {
-            //TODO: get rid of jsonconvert (static context)
+            //TODO: pass json settings & get rid of the static context
             var usedCodenames = JsonConvert.DeserializeObject<IEnumerable<string>>(linkedItemsInRichText.ToString());
+            
             var contentItemsInRichText = new Dictionary<string, object>();
 
             if (usedCodenames != null)
