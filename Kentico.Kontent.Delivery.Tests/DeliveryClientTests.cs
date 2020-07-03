@@ -325,6 +325,10 @@ namespace Kentico.Kontent.Delivery.Tests
             Assert.Equal("asset", articleType.Elements["teaser_image"].Type);
             Assert.Equal("modular_content", articleType.Elements["related_articles"].Type);
             Assert.Equal("taxonomy", articleType.Elements["personas"].Type);
+            foreach (var element in articleType.Elements)
+            {
+                Assert.NotEmpty(element.Value.Codename);
+            }
 
             Assert.Equal("number", coffeeType.Elements["price"].Type);
             Assert.Equal("taxonomy", coffeeType.Elements["processing"].Type);

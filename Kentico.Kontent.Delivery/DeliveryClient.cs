@@ -103,7 +103,7 @@ namespace Kentico.Kontent.Delivery
             var response = await GetDeliveryResponseAsync(endpointUrl);
             var content = await response.GetJsonContentAsync();
             var pagination = content["pagination"].ToObject<Pagination>();
-            var items =  ((JArray)content["items"]).Select(async source => await ModelProvider.GetContentItemModel<T>(source, content["modular_content"])).ToList().AsReadOnly();
+            var items = ((JArray)content["items"]).Select(async source => await ModelProvider.GetContentItemModel<T>(source, content["modular_content"])).ToList().AsReadOnly();
             return new DeliveryItemListingResponse<T>(response, await Task.WhenAll(items), await GetLinkedItems(content), pagination);
         }
 
@@ -202,7 +202,7 @@ namespace Kentico.Kontent.Delivery
             var endpointUrl = UrlBuilder.GetContentElementUrl(contentTypeCodename, contentElementCodename);
             var response = await GetDeliveryResponseAsync(endpointUrl);
             var content = await response.GetJsonContentAsync();
-            var element = new ContentElement(content, content.Value<string>("codename"));
+            var element = content.ToObject<ContentElement>(Serializer);
             return new DeliveryElementResponse(response, element);
         }
 
