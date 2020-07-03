@@ -21,6 +21,8 @@ namespace Kentico.Kontent.Delivery.ContentItems
             {
                 throw new InvalidOperationException($"Type of property {property.Name} must implement {nameof(IRichTextContent)} in order to receive rich text content.");
             }
+
+            //TODO: get rid of this (differentiate between content element value and definition, introduce value types according to https://docs.kontent.ai/reference/delivery-api#section/Rich-text-element)
             if (!(contentElement is ContentElement element))
             {
                 return null;

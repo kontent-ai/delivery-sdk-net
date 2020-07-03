@@ -19,6 +19,7 @@ namespace Kentico.Kontent.Delivery.ContentItems
     internal class ModelProvider : IModelProvider
     {
         private ContentLinkResolver _contentLinkResolver;
+        internal JsonSerializer _serializer;
         internal ITypeProvider TypeProvider { get; set; }
 
         internal IInlineContentItemsProcessor InlineContentItemsProcessor { get; }
@@ -38,6 +39,16 @@ namespace Kentico.Kontent.Delivery.ContentItems
                 return _contentLinkResolver;
             }
         }
+
+        /// <summary>
+        /// Default serializer.
+        /// </summary>
+        internal JsonSerializer Serializer =>
+            _serializer ??= new JsonSerializer
+            {
+                //TODO: get from DI container
+                ContractResolver = new DeliveryContractResolver(new DeliveryServiceCollection().ServiceProvider)
+            };
 
         /// <summary>
         /// Initializes a new instance of <see cref="ModelProvider"/>.
@@ -284,16 +295,6 @@ namespace Kentico.Kontent.Delivery.ContentItems
                 ? typeof(List<>).MakeGenericType(genericArgs)
                 : propertyType;
 
-            var contentItems = Activator.CreateInstance(collectionType);
-
-            //TODO:refactor
-            JsonSerializerSettings settings = new JsonSerializerSettings
-            {
-                ContractResolver = new DeliveryContractResolver(new DeliveryServiceCollection().ServiceProvider)
-            };
-
-            var Serializer = JsonSerializer.Create(settings);
-
             if ((genericArgs.Length == 1) && (new[] { typeof(IAsset), typeof(ITaxonomyTerm), typeof(IMultipleChoiceOption) }.Contains(genericArgs.First())))
             {
                 return GetRawValue(elementData)?.ToObject(collectionType, Serializer);
@@ -306,6 +307,7 @@ namespace Kentico.Kontent.Delivery.ContentItems
                 .ToArray()
                 ?? Array.Empty<(string, JToken)>();
 
+            var contentItems = Activator.CreateInstance(collectionType);
             if (!codeNamesWithLinkedItems.Any())
             {
                 return contentItems;
@@ -365,6 +367,7 @@ namespace Kentico.Kontent.Delivery.ContentItems
 
         private async Task<string> ProcessInlineContentItems(JObject linkedItems, Dictionary<string, object> processedItems, string value, JToken linkedItemsInRichText, HashSet<RichTextContentElements> currentlyResolvedRichStrings)
         {
+            //TODO: get rid of jsonconvert (static context)
             var usedCodenames = JsonConvert.DeserializeObject<IEnumerable<string>>(linkedItemsInRichText.ToString());
             var contentItemsInRichText = new Dictionary<string, object>();
 
