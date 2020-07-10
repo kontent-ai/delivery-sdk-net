@@ -2,6 +2,7 @@
 using System.Linq;
 using System.Net.Http;
 using Kentico.Kontent.Delivery.Abstractions;
+using Kentico.Kontent.Delivery.Builders.DeliveryClient;
 using Kentico.Kontent.Delivery.Configuration;
 using Kentico.Kontent.Delivery.ContentItems;
 using Kentico.Kontent.Delivery.ContentItems.ContentLinks;
@@ -27,7 +28,7 @@ namespace Kentico.Kontent.Delivery.Extensions
         /// <param name="services">A <see cref="ServiceCollection"/> instance for registering and resolving dependencies.</param>
         /// <param name="buildDeliveryClient">A function that returns a valid instance of <see cref="IDeliveryClient"/>.</param>
         /// <returns>The <paramref name="services"/> instance with <see cref="IDeliveryClient"/> registered in it</returns>
-        public static IServiceCollection AddDeliveryClient(this IServiceCollection services, string name, Func<IDeliveryClient> buildDeliveryClient)
+        public static IServiceCollection AddDeliveryClient(this IServiceCollection services, string name, Func<IDeliveryClientBuilder, IDeliveryClient> buildDeliveryClient)
         {
             if (buildDeliveryClient == null)
             {
@@ -40,7 +41,7 @@ namespace Kentico.Kontent.Delivery.Extensions
                 {
                     options.DeliveryClientsActions.Add(() =>
                     {
-                        return buildDeliveryClient();
+                        return buildDeliveryClient(new DeliveryClientBuilderImplementation());
                     });
                 });
 

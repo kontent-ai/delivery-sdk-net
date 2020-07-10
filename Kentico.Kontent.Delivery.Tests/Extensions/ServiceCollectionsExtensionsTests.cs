@@ -109,9 +109,9 @@ namespace Kentico.Kontent.Delivery.Tests.Extensions
         [Fact]
         public void AddDeliveryClientFactoryWithDeliveryClient_AllServicesAreRegistered()
         {
-            _serviceCollection.AddDeliveryClient("named", () =>
+            _serviceCollection.AddDeliveryClient("named", (builder) =>
             {
-                return DeliveryClientBuilder.WithProjectId(ProjectId)
+                return builder.BuildWithProjectId(ProjectId)
                 .Build();
             });
 
