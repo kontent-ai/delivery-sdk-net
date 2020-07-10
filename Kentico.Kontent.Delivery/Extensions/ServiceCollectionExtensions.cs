@@ -51,7 +51,6 @@ namespace Kentico.Kontent.Delivery.Extensions
                 .RegisterFactoryDependencies();
         }
 
-
         /// <summary>
         /// Registers a delegate that will be used to configure a named <see cref="IDeliveryClient"/> via <see cref="IDeliveryClientFactory"/>
         /// </summary>
