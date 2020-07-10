@@ -22,17 +22,17 @@ namespace Kentico.Kontent.Delivery.Extensions
     public static class ServiceCollectionExtensions
     {
         /// <summary>
-        /// Registers a delegate that will be used to configure a named <see cref="IDeliveryClient"/> via <see cref="IDeliveryClientFactory"/>
+        /// Registers a delegate that will be used to configure a named <see cref="IDeliveryClient"/> via the <see cref="IDeliveryClientFactory"/>
         /// </summary>
         ///<param name="name">The name of the client configuration</param>
         /// <param name="services">A <see cref="ServiceCollection"/> instance for registering and resolving dependencies.</param>
-        /// <param name="buildDeliveryClient">A function that returns a valid instance of <see cref="IDeliveryClient"/>.</param>
-        /// <returns>The <paramref name="services"/> instance with <see cref="IDeliveryClient"/> registered in it</returns>
+        /// <param name="buildDeliveryClient">A function that returns a valid instance of the <see cref="IDeliveryClient"/>.</param>
+        /// <returns>The <paramref name="services"/> instance with <see cref="IDeliveryClient"/> registered in it.</returns>
         public static IServiceCollection AddDeliveryClient(this IServiceCollection services, string name, Func<IDeliveryClientBuilder, IDeliveryClient> buildDeliveryClient)
         {
             if (buildDeliveryClient == null)
             {
-                throw new ArgumentNullException(nameof(buildDeliveryClient), "The function for creating Delivery client is null.");
+                throw new ArgumentNullException(nameof(buildDeliveryClient), $"You have to provide a function for creating an instance of a class implementing the {nameof(IDeliveryClient)} interface.");
             }
 
             services.AddTransient<IConfigureOptions<DeliveryClientFactoryOptions>>(s =>
@@ -44,7 +44,6 @@ namespace Kentico.Kontent.Delivery.Extensions
                         return buildDeliveryClient(new DeliveryClientBuilderImplementation());
                     });
                 });
-
             });
 
             return services
