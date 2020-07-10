@@ -25,6 +25,38 @@ namespace Kentico.Kontent.Delivery.Extensions
         /// </summary>
         ///<param name="name">The name of the client configuration</param>
         /// <param name="services">A <see cref="ServiceCollection"/> instance for registering and resolving dependencies.</param>
+        /// <param name="buildDeliveryClient">A function that returns a valid instance of <see cref="IDeliveryClient"/>.</param>
+        /// <returns>The <paramref name="services"/> instance with <see cref="IDeliveryClient"/> registered in it</returns>
+        public static IServiceCollection AddDeliveryClient(this IServiceCollection services, string name, Func<IDeliveryClient> buildDeliveryClient)
+        {
+            if (buildDeliveryClient == null)
+            {
+                throw new ArgumentNullException(nameof(buildDeliveryClient), "The function for creating Delivery client is null.");
+            }
+
+            services.AddTransient<IConfigureOptions<DeliveryClientFactoryOptions>>(s =>
+            {
+                return new ConfigureNamedOptions<DeliveryClientFactoryOptions>(name, options =>
+                {
+                    options.DeliveryClientsActions.Add(() =>
+                    {
+                        return buildDeliveryClient();
+                    });
+                });
+
+            });
+
+            return services
+                .Configure<DeliveryClientFactoryOptions>(_ => { })
+                .RegisterFactoryDependencies();
+        }
+
+
+        /// <summary>
+        /// Registers a delegate that will be used to configure a named <see cref="IDeliveryClient"/> via <see cref="IDeliveryClientFactory"/>
+        /// </summary>
+        ///<param name="name">The name of the client configuration</param>
+        /// <param name="services">A <see cref="ServiceCollection"/> instance for registering and resolving dependencies.</param>
         /// <param name="buildDeliveryOptions">A function that is provided with an instance of <see cref="DeliveryOptionsBuilder"/>and expected to return a valid instance of <see cref="DeliveryOptions"/>.</param>
         /// <returns>The <paramref name="services"/> instance with <see cref="IDeliveryClient"/> registered in it</returns>
         public static IServiceCollection AddDeliveryClient(this IServiceCollection services, string name, Func<IDeliveryOptionsBuilder, DeliveryOptions> buildDeliveryOptions)
