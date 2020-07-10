@@ -2,6 +2,7 @@
 using System.Linq;
 using System.Net.Http;
 using Kentico.Kontent.Delivery.Abstractions;
+using Kentico.Kontent.Delivery.Builders.DeliveryClient;
 using Kentico.Kontent.Delivery.Configuration;
 using Kentico.Kontent.Delivery.ContentItems;
 using Kentico.Kontent.Delivery.ContentItems.ContentLinks;
@@ -20,6 +21,36 @@ namespace Kentico.Kontent.Delivery.Extensions
     /// </summary>
     public static class ServiceCollectionExtensions
     {
+        /// <summary>
+        /// Registers a delegate that will be used to configure a named <see cref="IDeliveryClient"/> via the <see cref="IDeliveryClientFactory"/>
+        /// </summary>
+        ///<param name="name">The name of the client configuration</param>
+        /// <param name="services">A <see cref="ServiceCollection"/> instance for registering and resolving dependencies.</param>
+        /// <param name="buildDeliveryClient">A function that returns a valid instance of the <see cref="IDeliveryClient"/>.</param>
+        /// <returns>The <paramref name="services"/> instance with <see cref="IDeliveryClient"/> registered in it.</returns>
+        public static IServiceCollection AddDeliveryClient(this IServiceCollection services, string name, Func<IDeliveryClientBuilder, IDeliveryClient> buildDeliveryClient)
+        {
+            if (buildDeliveryClient == null)
+            {
+                throw new ArgumentNullException(nameof(buildDeliveryClient), $"You have to provide a function for creating an instance of a class implementing the {nameof(IDeliveryClient)} interface.");
+            }
+
+            services.AddTransient<IConfigureOptions<DeliveryClientFactoryOptions>>(s =>
+            {
+                return new ConfigureNamedOptions<DeliveryClientFactoryOptions>(name, options =>
+                {
+                    options.DeliveryClientsActions.Add(() =>
+                    {
+                        return buildDeliveryClient(new DeliveryClientBuilderImplementation());
+                    });
+                });
+            });
+
+            return services
+                .Configure<DeliveryClientFactoryOptions>(_ => { })
+                .RegisterFactoryDependencies();
+        }
+
         /// <summary>
         /// Registers a delegate that will be used to configure a named <see cref="IDeliveryClient"/> via <see cref="IDeliveryClientFactory"/>
         /// </summary>

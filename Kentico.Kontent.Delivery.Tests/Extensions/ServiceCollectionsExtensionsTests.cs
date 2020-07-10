@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Collections.ObjectModel;
 using System.IO;
 using Kentico.Kontent.Delivery.Abstractions;
+using Kentico.Kontent.Delivery.Builders.DeliveryClient;
 using Kentico.Kontent.Delivery.ContentItems;
 using Kentico.Kontent.Delivery.ContentItems.ContentLinks;
 using Kentico.Kontent.Delivery.ContentItems.InlineContentItems;
@@ -65,6 +66,11 @@ namespace Kentico.Kontent.Delivery.Tests.Extensions
             Assert.Throws<ArgumentNullException>(() => _serviceCollection.AddDeliveryClient("named", buildDeliveryOptions: null));
         }
 
+        [Fact]
+        public void AddDeliveryFactoryClientWithNullDeliveryClientBuilder_ThrowsArgumentNullException()
+        {
+            Assert.Throws<ArgumentNullException>(() => _serviceCollection.AddDeliveryClient("named", buildDeliveryClient: null));
+        }
 
         [Fact]
         public void AddDeliveryFactoryClientWithNullDeliveryOptions_ThrowsArgumentNullException()
@@ -90,7 +96,6 @@ namespace Kentico.Kontent.Delivery.Tests.Extensions
             _serviceCollection.AddDeliveryClient(new DeliveryOptions { ProjectId = ProjectId });
             var provider = _serviceCollection.BuildServiceProvider();
             AssertDefaultServiceCollection(provider, _expectedInterfacesWithImplementationTypes);
-
         }
 
         [Fact]
@@ -99,7 +104,19 @@ namespace Kentico.Kontent.Delivery.Tests.Extensions
             _serviceCollection.AddDeliveryClient("named", new DeliveryOptions { ProjectId = ProjectId });
             var provider = _serviceCollection.BuildServiceProvider();
             AssertDefaultServiceCollection(provider, _expectedInterfacesWithImplementationFactoryTypes);
+        }
 
+        [Fact]
+        public void AddDeliveryClientFactoryWithDeliveryClient_AllServicesAreRegistered()
+        {
+            _serviceCollection.AddDeliveryClient("named", (builder) =>
+            {
+                return builder.BuildWithProjectId(ProjectId)
+                .Build();
+            });
+
+            var provider = _serviceCollection.BuildServiceProvider();
+            AssertDefaultServiceCollection(provider, _expectedInterfacesWithImplementationFactoryTypes);
         }
 
         [Fact]
@@ -110,7 +127,7 @@ namespace Kentico.Kontent.Delivery.Tests.Extensions
             var deliveryClientFactory = provider.GetRequiredService<IDeliveryClientFactory>();
 
             var deliveryClient = deliveryClientFactory.Get("named");
-           
+
             Assert.NotNull(deliveryClient);
         }
 
