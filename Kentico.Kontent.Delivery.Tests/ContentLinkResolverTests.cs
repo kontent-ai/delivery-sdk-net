@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Collections.Generic;
 using System.IO;
 using System.Threading.Tasks;
 using Kentico.Kontent.Delivery.Abstractions;
@@ -15,28 +16,31 @@ namespace Kentico.Kontent.Delivery.Tests
 {
     public class ContentLinkResolverTests
     {
+        private Guid ContentItemIdA = Guid.NewGuid();
+        private Guid ContentItemIdB = Guid.NewGuid();
+
         [Fact]
         public async Task ContentLinkIsResolved()
         {
-            var result = await ResolveContentLinks("Learn <a href=\"\" data-item-id=\"CID\">more</a>.");
+            var result = await ResolveContentLinks($"Learn <a href=\"\" data-item-id=\"{ContentItemIdA}\">more</a>.");
 
-            Assert.Equal("Learn <a href=\"http://example.org/about-us\" data-item-id=\"CID\">more</a>.", result);
+            Assert.Equal($"Learn <a href=\"http://example.org/about-us\" data-item-id=\"{ContentItemIdA}\">more</a>.", result);
         }
 
         [Fact]
         public async Task DecoratedContentLinkIsResolved()
         {
-            var result = await ResolveContentLinks("Learn <a href=\"\" data-item-id=\"CID\" class=\"link\">more</a>.");
+            var result = await ResolveContentLinks($"Learn <a href=\"\" data-item-id=\"{ContentItemIdA}\" class=\"link\">more</a>.");
 
-            Assert.Equal("Learn <a href=\"http://example.org/about-us\" data-item-id=\"CID\" class=\"link\">more</a>.", result);
+            Assert.Equal($"Learn <a href=\"http://example.org/about-us\" data-item-id=\"{ContentItemIdA}\" class=\"link\">more</a>.", result);
         }
 
         [Fact]
         public async Task BrokenContentLinkIsResolved()
         {
-            var result = await ResolveContentLinks("Learn <a href=\"\" data-item-id=\"OTHER\">more</a>.");
+            var result = await ResolveContentLinks($"Learn <a href=\"\" data-item-id=\"{ContentItemIdB}\">more</a>.");
 
-            Assert.Equal("Learn <a href=\"http://example.org/broken\" data-item-id=\"OTHER\">more</a>.", result);
+            Assert.Equal($"Learn <a href=\"http://example.org/broken\" data-item-id=\"{ContentItemIdB}\">more</a>.", result);
         }
 
         [Fact]
@@ -46,9 +50,9 @@ namespace Kentico.Kontent.Delivery.Tests
             {
                 GetLinkUrl = link => null
             };
-            var result = await ResolveContentLinks("Learn <a href=\"\" data-item-id=\"CID\">more</a>.", linkUrlResolver);
+            var result = await ResolveContentLinks($"Learn <a href=\"\" data-item-id=\"{ContentItemIdA}\">more</a>.", linkUrlResolver);
 
-            Assert.Equal("Learn <a href=\"\" data-item-id=\"CID\">more</a>.", result);
+            Assert.Equal($"Learn <a href=\"\" data-item-id=\"{ContentItemIdA}\">more</a>.", result);
         }
 
         [Fact]
@@ -58,9 +62,9 @@ namespace Kentico.Kontent.Delivery.Tests
             {
                 GetBrokenLinkUrl = () => null
             };
-            var result = await ResolveContentLinks("Learn <a href=\"\" data-item-id=\"OTHER\">more</a>.", linkUrlResolver);
+            var result = await ResolveContentLinks($"Learn <a href=\"\" data-item-id=\"{ContentItemIdB}\">more</a>.", linkUrlResolver);
 
-            Assert.Equal("Learn <a href=\"\" data-item-id=\"OTHER\">more</a>.", result);
+            Assert.Equal($"Learn <a href=\"\" data-item-id=\"{ContentItemIdB}\">more</a>.", result);
         }
 
         [Fact]
@@ -86,9 +90,9 @@ namespace Kentico.Kontent.Delivery.Tests
             {
                 GetLinkUrl = link => "http://example.org?q=bits&bolts"
             };
-            var result = await ResolveContentLinks("Learn <a href=\"\" data-item-id=\"CID\">more</a>.", linkUrlResolver);
+            var result = await ResolveContentLinks($"Learn <a href=\"\" data-item-id=\"{ContentItemIdA}\">more</a>.", linkUrlResolver);
 
-            Assert.Equal("Learn <a href=\"http://example.org?q=bits&amp;bolts\" data-item-id=\"CID\">more</a>.", result);
+            Assert.Equal($"Learn <a href=\"http://example.org?q=bits&amp;bolts\" data-item-id=\"{ContentItemIdA}\">more</a>.", result);
         }
 
         [Fact]
@@ -98,9 +102,9 @@ namespace Kentico.Kontent.Delivery.Tests
             {
                 GetBrokenLinkUrl = () => "http://example.org/<broken>"
             };
-            var result = await ResolveContentLinks("Learn <a href=\"\" data-item-id=\"OTHER\">more</a>.", linkUrlResolver);
+            var result = await ResolveContentLinks($"Learn <a href=\"\" data-item-id=\"{ContentItemIdB}\">more</a>.", linkUrlResolver);
 
-            Assert.Equal("Learn <a href=\"http://example.org/&lt;broken&gt;\" data-item-id=\"OTHER\">more</a>.", result);
+            Assert.Equal($"Learn <a href=\"http://example.org/&lt;broken&gt;\" data-item-id=\"{ContentItemIdB}\">more</a>.", result);
         }
 
         [Fact]
@@ -110,9 +114,9 @@ namespace Kentico.Kontent.Delivery.Tests
             {
                 GetLinkUrl = link => $"http://example.org/{link.ContentTypeCodename}/{link.Codename}/{link.Id}-{link.UrlSlug}"
             };
-            var result = await ResolveContentLinks("Learn <a href=\"\" data-item-id=\"CID\">more</a>.", linkUrlResolver);
+            var result = await ResolveContentLinks($"Learn <a href=\"\" data-item-id=\"{ContentItemIdA}\">more</a>.", linkUrlResolver);
 
-            Assert.Equal("Learn <a href=\"http://example.org/article/about_us/CID-about-us\" data-item-id=\"CID\">more</a>.", result);
+            Assert.Equal($"Learn <a href=\"http://example.org/article/about_us/{ContentItemIdA}-about-us\" data-item-id=\"{ContentItemIdA}\">more</a>.", result);
         }
 
         [Fact]
@@ -130,7 +134,7 @@ namespace Kentico.Kontent.Delivery.Tests
             var resiliencePolicyProvider = new DefaultRetryPolicyProvider(options);
             var contentLinkUrlResolver = new CustomContentLinkUrlResolver();
             var contentItemsProcessor = InlineContentItemsProcessorFactory.Create();
-            var modelProvider= new ModelProvider(contentLinkUrlResolver, contentItemsProcessor, new CustomTypeProvider(), new PropertyMapper());
+            var modelProvider = new ModelProvider(contentLinkUrlResolver, contentItemsProcessor, new CustomTypeProvider(), new PropertyMapper());
             var client = new DeliveryClient(
                 deliveryOptions,
                 modelProvider,
@@ -156,15 +160,15 @@ namespace Kentico.Kontent.Delivery.Tests
         private async Task<string> ResolveContentLinks(string text, CustomContentLinkUrlResolver linkUrlResolver)
         {
             var linkResolver = new ContentLinkResolver(linkUrlResolver);
-            var links = JObject.FromObject(new
-            {
-                CID = new
-                {
-                    codename = "about_us",
-                    type = "article",
-                    url_slug = "about-us"
-                }
-            });
+            var link = JObject.FromObject(
+                 new
+                 {
+                     codename = "about_us",
+                     type = "article",
+                     url_slug = "about-us"
+                 }
+            );
+            var links = new Dictionary<Guid, IContentLink> { { ContentItemIdA, new ContentLink(ContentItemIdA.ToString(), link) } };
 
             return await linkResolver.ResolveContentLinks(text, links);
         }
@@ -174,14 +178,14 @@ namespace Kentico.Kontent.Delivery.Tests
             public Func<IContentLink, string> GetLinkUrl = link => $"http://example.org/{link.UrlSlug}";
             public Func<string> GetBrokenLinkUrl = () => "http://example.org/broken";
 
-            public Task<string> ResolveLinkUrl(IContentLink link)
-            {
-                return Task.FromResult(GetLinkUrl(link));
-            }
-
             public Task<string> ResolveBrokenLinkUrl()
             {
                 return Task.FromResult(GetBrokenLinkUrl());
+            }
+
+            public Task<string> ResolveLinkUrl(Guid contentItemId, IContentLink link)
+            {
+                return Task.FromResult(GetLinkUrl(link));
             }
         }
     }

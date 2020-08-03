@@ -8,14 +8,12 @@ using Kentico.Kontent.Delivery.Abstractions;
 using Kentico.Kontent.Delivery.ContentItems.ContentLinks;
 using Kentico.Kontent.Delivery.ContentItems.RichText;
 using Kentico.Kontent.Delivery.ContentItems.RichText.Blocks;
-using Kentico.Kontent.Delivery.ContentTypes.Element;
-using Newtonsoft.Json.Linq;
 
 namespace Kentico.Kontent.Delivery.ContentItems
 {
-    internal class RichTextContentConverter : IPropertyValueConverter
+    internal class RichTextContentConverter : IPropertyValueConverter<string>
     {
-        public async Task<object> GetPropertyValue(PropertyInfo property, IContentElement contentElement, ResolvingContext context)
+        public async Task<object> GetPropertyValue<U>(PropertyInfo property, U contentElement, ResolvingContext context) where U : IContentElementValue<string>
         {
             if (!typeof(IRichTextContent).IsAssignableFrom(property.PropertyType))
             {
@@ -23,17 +21,16 @@ namespace Kentico.Kontent.Delivery.ContentItems
             }
 
             //TODO: get rid of this (differentiate between content element value and definition, introduce value types according to https://docs.kontent.ai/reference/delivery-api#section/Rich-text-element)
-            if (!(contentElement is ContentElement element))
+            if (!(contentElement is IRichTextElement element))
             {
                 return null;
             }
 
-            var links = ((JObject)element.Source).Property("links")?.Value;
-            var images = ((JObject)element.Source).Property("images").Value;
-            var value = ((JObject)element.Source).Property("value")?.Value?.ToObject<string>();
+            var links = element.Links;
+            var value = element.Value;
 
             // Handle rich_text link resolution
-            if (links != null && ((JObject)element.Source) != null && context.ContentLinkUrlResolver != null)
+            if (links != null && context.ContentLinkUrlResolver != null)
             {
                 value = await new ContentLinkResolver(context.ContentLinkUrlResolver).ResolveContentLinks(value, links);
             }
@@ -53,15 +50,8 @@ namespace Kentico.Kontent.Delivery.ContentItems
                     var img = block.Children.FirstOrDefault(child => child.TagName?.Equals("img", StringComparison.OrdinalIgnoreCase) == true);
                     if (img != null)
                     {
-                        var assetId = img.GetAttribute("data-asset-id");
-                        var asset = images[assetId];
-                        blocks.Add(new InlineImage
-                        {
-                            Url = asset.Value<string>("url"),
-                            Description = asset.Value<string>("description"),
-                            Height = asset.Value<int>("height"),
-                            Width = asset.Value<int>("width")
-                        });
+                        var assetId = Guid.Parse(img.GetAttribute("data-asset-id"));
+                        blocks.Add(element.Images[assetId]);
                     }
                 }
                 else

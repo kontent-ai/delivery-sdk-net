@@ -20,20 +20,16 @@ namespace Kentico.Kontent.Delivery.Abstractions
         /// <summary>
         /// Gets a list of predefined options for the Multiple choice content element; otherwise, an empty list.
         /// </summary>
-        IReadOnlyList<IMultipleChoiceOption> Options { get; }
+        IReadOnlyList<IMultipleChoiceOption> Options { get; }  //TODO: move to a specific CE type
 
         /// <summary>
         /// Gets the codename of the taxonomy group for the Taxonomy content element; otherwise, an empty string.
         /// </summary>
-        string TaxonomyGroup { get; }
+        string TaxonomyGroup { get; }  //TODO: move to a specific CE type
 
         /// <summary>
         /// Gets the type of the content element, for example "multiple_choice".
         /// </summary>
         string Type { get; }
-        /// <summary>
-        /// Gets the value of the content element.
-        /// </summary>
-        string Value { get; }
     }
 }

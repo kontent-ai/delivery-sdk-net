@@ -1,4 +1,5 @@
-﻿using System.Threading.Tasks;
+﻿using System;
+using System.Threading.Tasks;
 
 namespace Kentico.Kontent.Delivery.Abstractions
 {
@@ -12,7 +13,7 @@ namespace Kentico.Kontent.Delivery.Abstractions
         /// </summary>
         /// <param name="link">The link to a content item that needs to be resolved.</param>
         /// <returns>The URL of the linked content item, if possible; otherwise, <c>null</c>.</returns>
-        Task<string> ResolveLinkUrl(IContentLink link);
+        Task<string> ResolveLinkUrl(Guid contentItemId, IContentLink link);
 
         /// <summary>
         /// Returns a URL of the linked content item that is not available.

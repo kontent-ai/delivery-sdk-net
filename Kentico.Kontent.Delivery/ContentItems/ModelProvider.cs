@@ -6,6 +6,7 @@ using System.Reflection;
 using System.Threading.Tasks;
 using Kentico.Kontent.Delivery.Abstractions;
 using Kentico.Kontent.Delivery.ContentItems.ContentLinks;
+using Kentico.Kontent.Delivery.ContentItems.Elements;
 using Kentico.Kontent.Delivery.ContentItems.InlineContentItems;
 using Kentico.Kontent.Delivery.ContentTypes.Element;
 using Newtonsoft.Json;
@@ -217,8 +218,18 @@ namespace Kentico.Kontent.Delivery.ContentItems
                 var valueConverter = GetValueConverter(property);
                 if (valueConverter != null)
                 {
-                    ContentElement contentElement = new ContentElement(elementValue, elementDefinition.Value.Name);
-                    return await valueConverter.GetPropertyValue(property, contentElement, context);
+                    switch (elementValue["type"].ToString())
+                    {
+                        //TODO: extend the list of supported types
+                        case "rich_text":
+                            return await ConvertValue<RichTextElement, string>(property, context, elementDefinition, elementValue, valueConverter);
+
+                        case "date_time":
+                            return await ConvertValue<ContentElementValue<DateTime>, DateTime>(property, context, elementDefinition, elementValue, valueConverter);
+
+                        default:
+                            return await ConvertValue<ContentElementValue<string>, string>(property, context, elementDefinition, elementValue, valueConverter);
+                    }
                 }
             }
 
@@ -247,6 +258,12 @@ namespace Kentico.Kontent.Delivery.ContentItems
             return null;
         }
 
+        private async Task<object> ConvertValue<R, T>(PropertyInfo property, ResolvingContext context, (string Name, JObject Value)? elementDefinition, JObject elementValue, IPropertyValueConverter valueConverter) where R: IContentElementValue<T>
+        {
+            var contentElement = elementValue.ToObject<R>(Serializer);
+            return await ((IPropertyValueConverter<T>)valueConverter).GetPropertyValue(property, contentElement, context);
+        }
+
         private (string Name, JObject Value)? GetElementData(JObject elementsData, PropertyInfo property, IContentItemSystemAttributes itemSystemAttributes)
         => elementsData.Properties()?.Where(p => PropertyMapper.IsMatch(property, p.Name, itemSystemAttributes?.Type)).Select(p => (p.Name, (JObject)p.Value)).FirstOrDefault();
 
@@ -268,7 +285,7 @@ namespace Kentico.Kontent.Delivery.ContentItems
         {
             var elementValue = GetRawValue(elementData);
             var value = elementValue?.ToObject<string>();
-            var links = elementData?.Property("links")?.Value;
+            var links = elementData?.Property("links")?.Value.ToObject<IReadOnlyDictionary<Guid, IContentLink>>(Serializer);
 
             // Handle rich_text link resolution
             if (links != null && elementValue != null && ContentLinkResolver != null)
@@ -278,7 +295,7 @@ namespace Kentico.Kontent.Delivery.ContentItems
 
             var linkedItemsInRichText = GetLinkedItemsInRichText(elementData);
 
-            // it's clear it's richtext because it contains linked items
+            // It's clear it's richtext because it contains linked items
             var isRichText = elementValue != null && linkedItemsInRichText != null && InlineContentItemsProcessor != null;
 
             return (value, isRichText);
@@ -353,6 +370,7 @@ namespace Kentico.Kontent.Delivery.ContentItems
                 return attributeConverter;
             }
 
+            //TODO: revert
             // Specific type converters
             if (typeof(IRichTextContent).IsAssignableFrom(property.PropertyType))
             {
@@ -369,7 +387,7 @@ namespace Kentico.Kontent.Delivery.ContentItems
         {
             //TODO: pass json settings & get rid of the static context
             var usedCodenames = JsonConvert.DeserializeObject<IEnumerable<string>>(linkedItemsInRichText.ToString());
-            
+
             var contentItemsInRichText = new Dictionary<string, object>();
 
             if (usedCodenames != null)

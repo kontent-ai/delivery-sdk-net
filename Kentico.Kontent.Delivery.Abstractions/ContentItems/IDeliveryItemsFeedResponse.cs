@@ -17,10 +17,5 @@ namespace Kentico.Kontent.Delivery.Abstractions
         /// Gets the linked items and their properties.
         /// </summary>
         IReadOnlyList<object> LinkedItems { get; }
-
-        /// <summary>
-        /// Returns an enumerator that iterates through the collection of content items.
-        /// </summary>
-        IEnumerator<T> GetEnumerator();
     }
 }

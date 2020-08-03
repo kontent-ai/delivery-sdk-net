@@ -1,10 +1,10 @@
 ﻿using System;
+using System.Collections.Generic;
 using System.Linq;
 using System.Net;
 using System.Text.RegularExpressions;
 using System.Threading.Tasks;
 using Kentico.Kontent.Delivery.Abstractions;
-using Newtonsoft.Json.Linq;
 
 namespace Kentico.Kontent.Delivery.ContentItems.ContentLinks
 {
@@ -19,7 +19,7 @@ namespace Kentico.Kontent.Delivery.ContentItems.ContentLinks
             ContentLinkUrlResolver = contentLinkUrlResolver ?? throw new ArgumentNullException(nameof(contentLinkUrlResolver));
         }
 
-        public async Task<string> ResolveContentLinks(string text, JToken links)
+        public async Task<string> ResolveContentLinks(string text, IReadOnlyDictionary<Guid, IContentLink> links)
         {
             if (text == null)
             {
@@ -45,14 +45,12 @@ namespace Kentico.Kontent.Delivery.ContentItems.ContentLinks
 
             foreach (var match in matches.Cast<Match>().Reverse())
             {
-                var contentItemId = match.Groups["id"].Value;
-                var linkSource = links[contentItemId];
-
+                var contentItemId = Guid.Parse(match.Groups["id"].Value);
                 string url;
-                if (linkSource != null)
+                if (links.ContainsKey(contentItemId))
                 {
-                    var link = new ContentLink(contentItemId, linkSource);
-                    url = await ContentLinkUrlResolver.ResolveLinkUrl(link);
+                    var link = links[contentItemId];
+                    url = await ContentLinkUrlResolver.ResolveLinkUrl(contentItemId, link);
                 }
                 else
                 {

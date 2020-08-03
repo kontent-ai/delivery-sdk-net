@@ -41,15 +41,15 @@
     <PackageReference Include="Microsoft.Extensions.Configuration" Version="2.1.1" />
     <PackageReference Include="Microsoft.Extensions.Configuration.Json" Version="2.1.1" />
     <PackageReference Include="Microsoft.NET.Test.Sdk" Version="16.6.1" />
-    <PackageReference Include="FakeItEasy" Version="6.0.1" />
+    <PackageReference Include="FakeItEasy" Version="6.2.0" />
     <PackageReference Include="NodaTime" Version="3.0.0" />
     <PackageReference Include="RichardSzalay.MockHttp" Version="6.0.0" />
-    <PackageReference Include="SimpleInjector" Version="4.10.2" />
-    <PackageReference Include="SimpleInjector.Integration.AspNetCore" Version="4.10.3" />
+    <PackageReference Include="SimpleInjector" Version="5.0.3" />
+    <PackageReference Include="SimpleInjector.Integration.AspNetCore" Version="5.1.0" />
     <PackageReference Include="Unity" Version="5.11.7" />
     <PackageReference Include="Unity.Microsoft.DependencyInjection" Version="5.11.5" />
     <PackageReference Include="xunit" Version="2.4.1" />
-    <PackageReference Include="xunit.runner.visualstudio" Version="2.4.2">
+    <PackageReference Include="xunit.runner.visualstudio" Version="2.4.3">
       <PrivateAssets>all</PrivateAssets>
       <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
     </PackageReference>
@@ -143,10 +143,6 @@
     <None Update="Fixtures\DeliveryClient\types_accessory.json">
       <CopyToOutputDirectory>Always</CopyToOutputDirectory>
     </None>
-  </ItemGroup>
-
-  <ItemGroup>
-    <Folder Include="Builders\ImageTransformation\" />
   </ItemGroup>
 
 </Project>

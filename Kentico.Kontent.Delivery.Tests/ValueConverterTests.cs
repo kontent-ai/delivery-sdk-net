@@ -17,26 +17,23 @@ using Xunit;
 namespace Kentico.Kontent.Delivery.Tests
 {
     [AttributeUsage(AttributeTargets.Property)]
-    public class TestGreeterValueConverterAttribute : Attribute, IPropertyValueConverter
+    public class TestGreeterValueConverterAttribute : Attribute, IPropertyValueConverter<string>
     {
-        public Task<object> GetPropertyValue(PropertyInfo property, IContentElement elementData, ResolvingContext context)
+        public Task<object> GetPropertyValue<U>(PropertyInfo property, U elementData, ResolvingContext context) where U : IContentElementValue<string>
         {
             return Task.FromResult((object)$"Hello {elementData.Value}!");
         }
     }
 
-
     [AttributeUsage(AttributeTargets.Property)]
-    public class NodaTimeValueConverterAttribute : Attribute, IPropertyValueConverter
+    public class NodaTimeValueConverterAttribute : Attribute, IPropertyValueConverter<DateTime>
     {
-        public Task<object> GetPropertyValue(PropertyInfo property, IContentElement elementData, ResolvingContext context)
+        public Task<object> GetPropertyValue<U>(PropertyInfo property, U elementData, ResolvingContext context) where U : IContentElementValue<DateTime>
         {
-            var dt = DateTime.Parse(elementData.Value);
-            var udt = DateTime.SpecifyKind(dt, DateTimeKind.Utc);
+            var udt = DateTime.SpecifyKind(elementData.Value, DateTimeKind.Utc);
             return Task.FromResult((object)ZonedDateTime.FromDateTimeOffset(udt));
         }
     }
-
 
     public class ValueConverterTests
     {
