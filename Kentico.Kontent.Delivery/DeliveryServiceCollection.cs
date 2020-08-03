@@ -9,7 +9,7 @@ namespace Kentico.Kontent.Delivery
     public class DeliveryServiceCollection
     {
         /// <summary>
-        /// Provider able to resolve any concrete type based on any interface from <see cref="Kentico.Kontent.Delivery.Abstractions"/>.
+        /// Provider able to resolve any concrete type based on any interface from <see cref="Abstractions"/>.
         /// </summary>
         public IServiceProvider ServiceProvider { get; }
 
