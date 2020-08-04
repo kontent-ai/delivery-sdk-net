@@ -222,13 +222,19 @@ namespace Kentico.Kontent.Delivery.ContentItems
                     {
                         //TODO: extend the list of supported types
                         case "rich_text":
-                            return await ConvertValue<RichTextElement, string>(property, context, elementDefinition, elementValue, valueConverter);
+                            return await GetElementModel<RichTextElement, string>(property, context, elementValue, valueConverter);
+
+                        case "asset":
+                            return await GetElementModel<ContentElementValue<Asset>, Asset>(property, context, elementValue, valueConverter);
+
+                        case "number":
+                            return await GetElementModel<ContentElementValue<decimal?>, decimal?>(property, context, elementValue, valueConverter);
 
                         case "date_time":
-                            return await ConvertValue<ContentElementValue<DateTime>, DateTime>(property, context, elementDefinition, elementValue, valueConverter);
+                            return await GetElementModel<ContentElementValue<DateTime>, DateTime>(property, context, elementValue, valueConverter);
 
-                        default:
-                            return await ConvertValue<ContentElementValue<string>, string>(property, context, elementDefinition, elementValue, valueConverter);
+                        default: // Custom element, text element, URL slug element
+                            return await GetElementModel<ContentElementValue<string>, string>(property, context, elementValue, valueConverter);
                     }
                 }
             }
@@ -258,7 +264,7 @@ namespace Kentico.Kontent.Delivery.ContentItems
             return null;
         }
 
-        private async Task<object> ConvertValue<R, T>(PropertyInfo property, ResolvingContext context, (string Name, JObject Value)? elementDefinition, JObject elementValue, IPropertyValueConverter valueConverter) where R: IContentElementValue<T>
+        private async Task<object> GetElementModel<R, T>(PropertyInfo property, ResolvingContext context, JObject elementValue, IPropertyValueConverter valueConverter) where R : IContentElementValue<T>
         {
             var contentElement = elementValue.ToObject<R>(Serializer);
             return await ((IPropertyValueConverter<T>)valueConverter).GetPropertyValue(property, contentElement, context);
@@ -370,7 +376,6 @@ namespace Kentico.Kontent.Delivery.ContentItems
                 return attributeConverter;
             }
 
-            //TODO: revert
             // Specific type converters
             if (typeof(IRichTextContent).IsAssignableFrom(property.PropertyType))
             {
