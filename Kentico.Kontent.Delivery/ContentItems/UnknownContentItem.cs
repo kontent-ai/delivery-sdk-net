@@ -1,6 +1,4 @@
-﻿using Newtonsoft.Json.Linq;
-
-namespace Kentico.Kontent.Delivery.ContentItems
+﻿namespace Kentico.Kontent.Delivery.ContentItems
 {
     /// <summary>
     /// Type used to identify inline content items which don't have corresponding model.
@@ -15,13 +13,10 @@ namespace Kentico.Kontent.Delivery.ContentItems
         /// <summary>
         /// Creates an instance of <see cref="UnknownContentItem"/> which represents content item with no corresponding model.
         /// </summary>
-        /// <param name="elementNode">The corresponding node in JSON containing the unknown type.</param>
-        public UnknownContentItem(JToken elementNode)
+        /// <param name="type">The unresolvable type.</param>
+        public UnknownContentItem(string type)
         {
-            Type = elementNode
-                .SelectToken("system.type", false)
-                ?.ToString()
-                ?? "unextractable system type";
+            Type = type;
         }
     }
 }

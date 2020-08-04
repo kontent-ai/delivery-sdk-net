@@ -15,48 +15,30 @@ namespace Kentico.Kontent.Delivery.ContentItems.ContentLinks
             get; internal set;
         }
 
-        [JsonProperty("codename")]
         /// <inheritdoc/>
+        [JsonProperty("codename")]
         public string Codename
         {
             get; internal set;
         }
 
-        [JsonProperty("url_slug")]
         /// <inheritdoc/>
+        [JsonProperty("url_slug")]
         public string UrlSlug
         {
             get; internal set;
         }
 
-        [JsonProperty("type")]
         /// <inheritdoc/>
+        [JsonProperty("type")]
         public string ContentTypeCodename
         {
             get; internal set;
         }
 
-        public ContentLink(string id, JToken source)
-        {
-            //TODO: reduce constructors
-            Id = id;
-            Codename = source.Value<string>("codename");
-            UrlSlug = source.Value<string>("url_slug");
-            ContentTypeCodename = source.Value<string>("type");
-        }
-
-
         [JsonConstructor]
         public ContentLink()
         {
-        }
-
-
-        public ContentLink(string codename, string type, string urlSlug)
-        {
-            Codename = codename;
-            ContentTypeCodename = type;
-            UrlSlug = urlSlug;
         }
     }
 }

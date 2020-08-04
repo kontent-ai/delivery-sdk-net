@@ -153,22 +153,20 @@ namespace Kentico.Kontent.Delivery.Tests
         private async Task<string> ResolveContentLinks(string text)
         {
             var linkUrlResolver = new CustomContentLinkUrlResolver();
-
             return await ResolveContentLinks(text, linkUrlResolver);
         }
 
         private async Task<string> ResolveContentLinks(string text, CustomContentLinkUrlResolver linkUrlResolver)
         {
             var linkResolver = new ContentLinkResolver(linkUrlResolver);
-            var link = JObject.FromObject(
-                 new
-                 {
-                     codename = "about_us",
-                     type = "article",
-                     url_slug = "about-us"
-                 }
-            );
-            var links = new Dictionary<Guid, IContentLink> { { ContentItemIdA, new ContentLink(ContentItemIdA.ToString(), link) } };
+            ContentLink link = new ContentLink()
+            {
+                Codename = "about_us",
+                ContentTypeCodename = "article",
+                UrlSlug = "about-us",
+                Id = ContentItemIdA.ToString()
+            };
+            var links = new Dictionary<Guid, IContentLink> { { ContentItemIdA, link } };
 
             return await linkResolver.ResolveContentLinks(text, links);
         }

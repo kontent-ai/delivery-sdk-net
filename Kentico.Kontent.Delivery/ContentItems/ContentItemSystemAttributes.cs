@@ -49,7 +49,7 @@ namespace Kentico.Kontent.Delivery.ContentItems
             Codename = codename;
             Type = type;
             SitemapLocation = sitemapLocation;
-            LastModified = lastModified.ToUniversalTime(); //todo: constructor
+            LastModified = lastModified.ToUniversalTime();
             Language = language;
         }
     }

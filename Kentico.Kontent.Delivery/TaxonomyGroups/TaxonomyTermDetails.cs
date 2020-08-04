@@ -1,9 +1,7 @@
 ﻿using System.Collections.Generic;
 using System.Diagnostics;
-using System.Linq;
 using Kentico.Kontent.Delivery.Abstractions;
 using Newtonsoft.Json;
-using Newtonsoft.Json.Linq;
 
 namespace Kentico.Kontent.Delivery.TaxonomyGroups
 {

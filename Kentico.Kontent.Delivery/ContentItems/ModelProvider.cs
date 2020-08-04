@@ -418,7 +418,10 @@ namespace Kentico.Kontent.Delivery.ContentItems
                             contentItem = await GetContentItemModel(typeof(object), linkedItemsElementNode, linkedItems, processedItems, currentlyResolvedRichStrings);
                             if (!processedItems.ContainsKey(codenameUsed))
                             {
-                                contentItem ??= new UnknownContentItem(linkedItemsElementNode);
+                                contentItem ??= new UnknownContentItem(linkedItemsElementNode
+                                                                        .SelectToken("system.type", false)
+                                                                        ?.ToString()
+                                                                        ?? "unextractable system type");
                                 processedItems.Add(codenameUsed, contentItem);
                             }
                         }
