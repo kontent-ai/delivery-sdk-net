@@ -225,7 +225,7 @@ namespace Kentico.Kontent.Delivery
 
             var endpointUrl = UrlBuilder.GetTaxonomyUrl(codename);
             var response = await GetDeliveryResponseAsync(endpointUrl);
-            var taxonomy = new TaxonomyGroup(await response.GetJsonContentAsync());
+            var taxonomy = (await response.GetJsonContentAsync()).ToObject<TaxonomyGroup>(Serializer);//new TaxonomyGroup(await response.GetJsonContentAsync());
             return new DeliveryTaxonomyResponse(response, taxonomy);
         }
 

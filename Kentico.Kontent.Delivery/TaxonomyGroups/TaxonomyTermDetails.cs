@@ -11,34 +11,17 @@ namespace Kentico.Kontent.Delivery.TaxonomyGroups
     [DebuggerDisplay("Name = {" + nameof(Name) + "}")]
     internal sealed class TaxonomyTermDetails : ITaxonomyTermDetails
     {
-        private readonly JToken _source;
-        private string _name;
-        private string _codename;
-        private IReadOnlyList<ITaxonomyTermDetails> _terms;
-
         /// <inheritdoc/>
         [JsonProperty("name")]
-        public string Name
-        {
-            get => _name ??= _source.Value<string>("name");
-            set => _name = value;
-        }
+        public string Name { get; internal set; }
 
         /// <inheritdoc/>
         [JsonProperty("codename")]
-        public string Codename
-        {
-            get => _codename ??= _source.Value<string>("codename");
-            set => _codename = value;
-        }
+        public string Codename { get; internal set; }
 
         /// <inheritdoc/>
         [JsonProperty("terms")]
-        public IReadOnlyList<ITaxonomyTermDetails> Terms
-        {
-            get => _terms ??= _source["terms"].Select(term => new TaxonomyTermDetails(term)).ToList().AsReadOnly();
-            set => _terms = value;
-        }
+        public IReadOnlyList<ITaxonomyTermDetails> Terms { get; internal set; }
 
         /// <summary>
         /// Initializes a new instance of the <see cref="TaxonomyTermDetails"/> class.
@@ -46,18 +29,17 @@ namespace Kentico.Kontent.Delivery.TaxonomyGroups
         /// <param name="source">The JSON data to deserialize.</param>
         public TaxonomyTermDetails(JToken source)
         {
-            _source = source;
+            Name = source.Value<string>("name");
+            Codename = source.Value<string>("codename");
+            Terms = source["terms"].Select(term => new TaxonomyTermDetails(term)).ToList().AsReadOnly();
         }
 
         /// <summary>
         /// Constructor used for deserialization (e.g. for caching purposes), contains no logic.
         /// </summary>
         [JsonConstructor]
-        public TaxonomyTermDetails(string name, string codename, IReadOnlyList<ITaxonomyTermDetails> terms)
+        public TaxonomyTermDetails()
         {
-            Name = name;
-            Codename = codename;
-            Terms = terms;
         }
     }
 }
