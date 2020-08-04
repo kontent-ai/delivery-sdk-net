@@ -14,11 +14,11 @@ namespace Kentico.Kontent.Delivery.ContentTypes
 
         /// <inheritdoc/>
         [JsonProperty("system")]
-        public IContentTypeSystemAttributes System { get; set; }
+        public IContentTypeSystemAttributes System { get; internal set; }
 
         /// <inheritdoc/>
         [JsonProperty("elements")]
-        public IReadOnlyDictionary<string, IContentElement> Elements { get; set; }
+        public IReadOnlyDictionary<string, IContentElement> Elements { get; internal set; }
 
         /// <summary>
         /// Constructor used for deserialization (e.g. for caching purposes), contains no logic.
