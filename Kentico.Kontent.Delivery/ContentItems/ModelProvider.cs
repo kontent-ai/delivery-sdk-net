@@ -218,24 +218,16 @@ namespace Kentico.Kontent.Delivery.ContentItems
                 var valueConverter = GetValueConverter(property);
                 if (valueConverter != null)
                 {
-                    switch (elementValue["type"].ToString())
+                    //TODO: extend the list of supported types
+                    return (elementValue["type"].ToString()) switch
                     {
-                        //TODO: extend the list of supported types
-                        case "rich_text":
-                            return await GetElementModel<RichTextElement, string>(property, context, elementValue, valueConverter);
-
-                        case "asset":
-                            return await GetElementModel<ContentElementValue<Asset>, Asset>(property, context, elementValue, valueConverter);
-
-                        case "number":
-                            return await GetElementModel<ContentElementValue<decimal?>, decimal?>(property, context, elementValue, valueConverter);
-
-                        case "date_time":
-                            return await GetElementModel<ContentElementValue<DateTime>, DateTime>(property, context, elementValue, valueConverter);
-
-                        default: // Custom element, text element, URL slug element
-                            return await GetElementModel<ContentElementValue<string>, string>(property, context, elementValue, valueConverter);
-                    }
+                        "rich_text" => await GetElementModel<RichTextElement, string>(property, context, elementValue, valueConverter),
+                        "asset" => await GetElementModel<ContentElementValue<Asset>, Asset>(property, context, elementValue, valueConverter),
+                        "number" => await GetElementModel<ContentElementValue<decimal?>, decimal?>(property, context, elementValue, valueConverter),
+                        "date_time" => await GetElementModel<ContentElementValue<DateTime>, DateTime>(property, context, elementValue, valueConverter),
+                        // Custom element, text element, URL slug element
+                        _ => await GetElementModel<ContentElementValue<string>, string>(property, context, elementValue, valueConverter),
+                    };
                 }
             }
 

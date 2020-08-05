@@ -27,6 +27,7 @@ namespace Kentico.Kontent.Delivery
         protected override JsonContract CreateContract(Type objectType)
         {
             JsonContract contract = null;
+            //TODO: implement contract caching
             if (objectType.IsInterface)
             {
                 var service = ServiceProvider.GetService(objectType);

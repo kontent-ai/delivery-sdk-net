@@ -14,6 +14,7 @@ namespace Kentico.Kontent.Delivery.Caching.Extensions
         /// </summary>
         public static JsonSerializerSettings Settings => new JsonSerializerSettings
         {
+            DateTimeZoneHandling = DateTimeZoneHandling.Unspecified,
             TypeNameHandling = TypeNameHandling.All, // Allow preserving type information (necessary for deserializing interfaces into implemented types) 
             ReferenceLoopHandling = ReferenceLoopHandling.Ignore // Linked items can be recursive, this will prevent the StackOverflowException
             //PreserveReferencesHandling = PreserveReferencesHandling.All, // Not implemented for collections. Will result into "Cannot preserve reference to array or readonly list, or list created from a non-default constructor" exception.

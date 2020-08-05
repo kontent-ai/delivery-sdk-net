@@ -42,12 +42,8 @@ namespace Kentico.Kontent.Delivery.Caching.Tests
             var serializedResponse = response.ToBson();
             var deserializedResponse = serializedResponse.FromBson<DeliveryItemResponse<Coffee>>();
 
-            // Assert item equality
-            // Assert all except DateTime (precision is lost when using BSON)
-            response.Should().BeEquivalentTo(deserializedResponse, o => o.Excluding(p => p.SelectedMemberInfo.MemberType == typeof(DateTime)));
-
-            // Check DateTime separately
-            Assert.Equal(response.Item.System.LastModified.ToString("yyyy'-'MM'-'dd'T'HH':'mm':'ss.fff'Z'"), deserializedResponse.Item.System.LastModified.ToString("yyyy'-'MM'-'dd'T'HH':'mm':'ss.fff'Z'"));
+            // Assert item equality (apply precision correction for DateTime when deserializing)
+            response.Should().BeEquivalentTo(deserializedResponse, o => o.DateTimesBsonCorrection());
 
             // Check that collections are ok
             Assert.NotEmpty(deserializedResponse.Item.Image);
@@ -63,7 +59,7 @@ namespace Kentico.Kontent.Delivery.Caching.Tests
             _mockHttp
                 .When(url)
                 .WithQueryString("system.type=article")
-                .Respond("application/json", 
+                .Respond("application/json",
                     await File.ReadAllTextAsync(Path.Combine(Environment.CurrentDirectory, $"Fixtures{Path.DirectorySeparatorChar}full_articles.json")));
 
             var client = DeliveryClientBuilder.WithProjectId(_projectId).WithTypeProvider(new CustomTypeProvider()).WithDeliveryHttpClient(new DeliveryHttpClient(_mockHttp.ToHttpClient())).Build();
@@ -75,20 +71,20 @@ namespace Kentico.Kontent.Delivery.Caching.Tests
             var deserializedResponse = serializedResponse.FromBson<DeliveryItemListingResponse<Article>>();
 
             // Assert item equality
-            //response.Should().BeEquivalentTo(deserializedResponse, o => o.ExcludingNestedObjects().Excluding(p => p.SelectedMemberInfo.MemberType == typeof(DateTime) || p.SelectedMemberInfo.MemberType == typeof(DateTime?)));
+            response.Pagination.Should().BeEquivalentTo(deserializedResponse.Pagination);
+            response.ApiResponse.Should().BeEquivalentTo(deserializedResponse.ApiResponse);
+
+            //TODO: revert
+            //response.Items.FirstOrDefault().Should().BeEquivalentTo(deserializedResponse.Items.FirstOrDefault(), o => o.DateTimesBsonCorrection());
+            //response.Should().BeEquivalentTo(deserializedResponse, o => o.IgnoringCyclicReferences().DateTimesBsonCorrection());
 
 
-            // Assert item
-            //Assert.NotEmpty(deserializedResponse.Item.Image);
-            //Assert.Equal(response.Items.Image.First().Url, deserializedResponse.Item.Image.First().Url);
-            //Assert.NotEmpty(deserializedResponse.Item.Processing);
-            //Assert.Equal(response.Item.Processing.First().Codename, deserializedResponse.Item.Processing.First().Codename);
-            //Assert.Equal(response.Item.ProductName, deserializedResponse.Item.ProductName);
-            //Assert.Equal(response.Item.Altitude, deserializedResponse.Item.Altitude);
-
-            //// Assert system data
-            //Assert.Equal(response.Item.System.LastModified.ToUniversalTime().ToString("yyyy'-'MM'-'dd'T'HH':'mm':'ss.fff'Z'"), deserializedResponse.Item.System.LastModified.ToUniversalTime().ToString("yyyy'-'MM'-'dd'T'HH':'mm':'ss.fff'Z'"));
-            //Assert.Equal(response.Item.System.Type, deserializedResponse.Item.System.Type);
+            // Assert the first item - check collections and DateTimes
+            var firstItem = response.Items.FirstOrDefault();
+            var firstDeserializedItem = deserializedResponse.Items.FirstOrDefault();
+            Assert.NotEmpty(firstDeserializedItem.TeaserImage);
+            Assert.NotEmpty(firstDeserializedItem.Personas);
+            Assert.Equal(firstItem.PostDate, firstDeserializedItem.PostDate);
         }
     }
 }

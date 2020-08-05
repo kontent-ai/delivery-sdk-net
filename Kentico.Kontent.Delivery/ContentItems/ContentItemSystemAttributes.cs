@@ -42,15 +42,8 @@ namespace Kentico.Kontent.Delivery.ContentItems
         /// Initializes a new instance of the <see cref="ContentItemSystemAttributes"/> class.
         /// </summary>
         [JsonConstructor]
-        public ContentItemSystemAttributes(string id, string name, string codename, string type, IReadOnlyList<string> sitemapLocation, DateTime lastModified, string language)
+        public ContentItemSystemAttributes()
         {
-            Id = id;
-            Name = name;
-            Codename = codename;
-            Type = type;
-            SitemapLocation = sitemapLocation;
-            LastModified = lastModified.ToUniversalTime();
-            Language = language;
         }
     }
 }

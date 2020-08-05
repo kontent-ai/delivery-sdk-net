@@ -254,7 +254,7 @@ namespace Kentico.Kontent.Delivery.Caching.Tests
             var secondResponse = await scenario.CachingClient.GetTypeAsync(codename);
 
             firstResponse.Should().NotBeNull();
-            firstResponse.Should().BeEquivalentTo(secondResponse, o => o.ExcludingDateTimes());
+            firstResponse.Should().BeEquivalentTo(secondResponse, o=>o.DateTimesBsonCorrection());
             scenario.GetRequestCount(url).Should().Be(1);
         }
 
@@ -304,7 +304,7 @@ namespace Kentico.Kontent.Delivery.Caching.Tests
             var secondResponse = await scenario.CachingClient.GetTypesAsync();
 
             firstResponse.Should().NotBeNull();
-            firstResponse.Should().BeEquivalentTo(secondResponse, o => o.ExcludingDateTimes());
+            firstResponse.Should().BeEquivalentTo(secondResponse, o => o.DateTimesBsonCorrection());
             scenario.GetRequestCount(url).Should().Be(1);
         }
 
@@ -406,7 +406,7 @@ namespace Kentico.Kontent.Delivery.Caching.Tests
             var secondResponse = await scenario.CachingClient.GetTaxonomyAsync(codename);
 
             firstResponse.Should().NotBeNull();
-            firstResponse.Should().BeEquivalentTo(secondResponse, o => o.ExcludingDateTimes());
+            firstResponse.Should().BeEquivalentTo(secondResponse, o => o.DateTimesBsonCorrection());
             scenario.GetRequestCount(url).Should().Be(1);
         }
 
@@ -456,7 +456,7 @@ namespace Kentico.Kontent.Delivery.Caching.Tests
             var secondResponse = await scenario.CachingClient.GetTaxonomiesAsync();
 
             firstResponse.Should().NotBeNull();
-            firstResponse.Should().BeEquivalentTo(secondResponse, o => o.ExcludingDateTimes());
+            firstResponse.Should().BeEquivalentTo(secondResponse, o => o.DateTimesBsonCorrection());
             scenario.GetRequestCount(url).Should().Be(1);
         }
 
