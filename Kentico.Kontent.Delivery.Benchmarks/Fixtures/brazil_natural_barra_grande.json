@@ -1,0 +1,99 @@
+﻿{
+  "item": {
+    "system": {
+      "id": "0c9a11bb-6fc3-409c-b3cb-f0b797e15489",
+      "name": "Brazil Natural Barra Grande",
+      "codename": "brazil_natural_barra_grande",
+      "language": "en-US",
+      "type": "coffee",
+      "sitemap_locations": [
+        "coffee"
+      ],
+      "last_modified": "2017-09-07T08:21:06.8837862Z"
+    },
+    "elements": {
+      "product_name": {
+        "type": "text",
+        "name": "Product name",
+        "value": "Brazil Natural Barra Grande"
+      },
+      "price": {
+        "type": "number",
+        "name": "Price",
+        "value": 8.5
+      },
+      "image": {
+        "type": "asset",
+        "name": "Image",
+        "value": [
+          {
+            "name": "brazil.jpg",
+            "type": "image/jpeg",
+            "size": 75217,
+            "description": "Brazil Natural Barra Grande Coffee Beans",
+            "url": "https://assets.kenticocloud.com:443/975bf280-fd91-488c-994c-2f04416e5ee3/988caa85-d8fe-4c72-9b26-180d8822a14e/brazil.jpg"
+          }
+        ]
+      },
+      "short_description": {
+        "type": "rich_text",
+        "name": "Short description",
+        "images": {},
+        "links": {},
+        "modular_content": [],
+        "value": "<p>Naturally processed Brazilian coffee grown with the nurturing and kindness of the family grower with a creamy mouth sensation,&nbsp;and a cherry and chocolaty flavor. &nbsp;</p>"
+      },
+      "long_description": {
+        "type": "rich_text",
+        "name": "Long description",
+        "images": {},
+        "links": {},
+        "modular_content": [],
+        "value": "<p>Taste Natural Barra Grande from the high altitudes of Poco Fundo in&nbsp;Minas Gerais in Brazil, where a family business with a strong keenness&nbsp;on natural processing has been growing coffee for three generations.</p>\n<p>The path of the Barra Grande has not always been so smooth. The father of Sildes Caixeta, the current owner, was forced to sell their company when Sildes was just&nbsp;five years old. After long years of waiting, Sildes&nbsp;managed to buy the company back and now says that this patience is the family secret&nbsp;for growing good coffee and&nbsp;has taught&nbsp;this motto to his son.</p>\n<p>This coffee is a blend of Yellow Catuai and Mundo Novo,&nbsp;whose excellent large beans are patio dried and create a creamy mouth sensation and a cherry flavor with a pinch of chocolate and caramel.</p>"
+      },
+      "product_status": {
+        "type": "taxonomy",
+        "name": "Product status",
+        "taxonomy_group": "product_status",
+        "value": []
+      },
+      "farm": {
+        "type": "text",
+        "name": "Farm",
+        "value": "Sitio Barra Grande"
+      },
+      "country": {
+        "type": "text",
+        "name": "Country",
+        "value": "Brazil"
+      },
+      "variety": {
+        "type": "text",
+        "name": "Variety",
+        "value": "Yellow Catuai, Mundo Novo"
+      },
+      "altitude": {
+        "type": "text",
+        "name": "Altitude",
+        "value": "3900"
+      },
+      "url_pattern": {
+        "type": "url_slug",
+        "name": "URL pattern",
+        "value": "brazil-natural-barra-grande"
+      },
+      "processing": {
+        "type": "taxonomy",
+        "name": "Processing",
+        "taxonomy_group": "processing",
+        "value": [
+          {
+            "name": "Dry (Natural)",
+            "codename": "dry__natural_"
+          }
+        ]
+      }
+    }
+  },
+  "modular_content": {}
+}
