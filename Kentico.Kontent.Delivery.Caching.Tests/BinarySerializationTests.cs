@@ -71,13 +71,7 @@ namespace Kentico.Kontent.Delivery.Caching.Tests
             var deserializedResponse = serializedResponse.FromBson<DeliveryItemListingResponse<Article>>();
 
             // Assert item equality
-            response.Pagination.Should().BeEquivalentTo(deserializedResponse.Pagination);
-            response.ApiResponse.Should().BeEquivalentTo(deserializedResponse.ApiResponse);
-
-            //TODO: revert
-            //response.Items.FirstOrDefault().Should().BeEquivalentTo(deserializedResponse.Items.FirstOrDefault(), o => o.DateTimesBsonCorrection());
-            //response.Should().BeEquivalentTo(deserializedResponse, o => o.IgnoringCyclicReferences().DateTimesBsonCorrection());
-
+            response.Should().BeEquivalentTo(deserializedResponse, o => o.IgnoringCyclicReferences().DateTimesBsonCorrection());
 
             // Assert the first item - check collections and DateTimes
             var firstItem = response.Items.FirstOrDefault();

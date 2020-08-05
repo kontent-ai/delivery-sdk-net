@@ -10,6 +10,6 @@ namespace Kentico.Kontent.Delivery.Abstractions
         /// <summary>
         /// Gets a read-only list of taxonomy groups.
         /// </summary>
-        IReadOnlyList<ITaxonomyGroup> Taxonomies { get; }
+        IList<ITaxonomyGroup> Taxonomies { get; }
     }
 }

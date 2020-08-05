@@ -8,10 +8,10 @@ namespace Kentico.Kontent.Delivery.ContentTypes.Element
     internal class RichTextElement : ContentElement, IRichTextElement
     {
         [JsonProperty("images")]
-        public IReadOnlyDictionary<Guid, IInlineImage> Images { get; set; }
+        public IDictionary<Guid, IInlineImage> Images { get; set; }
 
         [JsonProperty("links")]
-        public IReadOnlyDictionary<Guid, IContentLink> Links { get; set; }
+        public IDictionary<Guid, IContentLink> Links { get; set; }
 
         [JsonProperty("modular_content")]
         public List<string> ModularContent { get; set; }

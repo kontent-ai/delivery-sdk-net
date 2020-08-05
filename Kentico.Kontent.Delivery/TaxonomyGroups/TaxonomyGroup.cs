@@ -7,7 +7,7 @@ namespace Kentico.Kontent.Delivery.TaxonomyGroups
 {
     /// <inheritdoc/>
     [DebuggerDisplay("Name = {" + nameof(System) + "." + nameof(IContentTypeSystemAttributes.Name) + "}")]
-    public sealed class TaxonomyGroup : ITaxonomyGroup
+    internal sealed class TaxonomyGroup : ITaxonomyGroup
     {
         /// <inheritdoc/>
         [JsonProperty("system")]
@@ -15,13 +15,13 @@ namespace Kentico.Kontent.Delivery.TaxonomyGroups
 
         /// <inheritdoc/>
         [JsonProperty("terms")]
-        public IReadOnlyList<ITaxonomyTermDetails> Terms { get; internal set; }
+        public IList<ITaxonomyTermDetails> Terms { get; internal set; }
 
         /// <summary>
         /// Constructor used for deserialization (e.g. for caching purposes), contains no logic.
         /// </summary>
         [JsonConstructor]
-        internal TaxonomyGroup(ITaxonomyGroupSystemAttributes system, IReadOnlyList<ITaxonomyTermDetails> terms)
+        public TaxonomyGroup(ITaxonomyGroupSystemAttributes system, IList<ITaxonomyTermDetails> terms)
         {
             System = system;
             Terms = terms;

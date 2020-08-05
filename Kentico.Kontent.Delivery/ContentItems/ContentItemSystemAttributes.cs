@@ -28,7 +28,7 @@ namespace Kentico.Kontent.Delivery.ContentItems
 
         /// <inheritdoc/>
         [JsonProperty("sitemap_locations")]
-        public IReadOnlyList<string> SitemapLocation { get; internal set; }
+        public IList<string> SitemapLocation { get; internal set; }
 
         /// <inheritdoc/>
         [JsonProperty("last_modified")]

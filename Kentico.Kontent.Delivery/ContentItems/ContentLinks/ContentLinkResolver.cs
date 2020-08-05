@@ -19,7 +19,7 @@ namespace Kentico.Kontent.Delivery.ContentItems.ContentLinks
             ContentLinkUrlResolver = contentLinkUrlResolver ?? throw new ArgumentNullException(nameof(contentLinkUrlResolver));
         }
 
-        public async Task<string> ResolveContentLinks(string text, IReadOnlyDictionary<Guid, IContentLink> links)
+        public async Task<string> ResolveContentLinks(string text, IDictionary<Guid, IContentLink> links)
         {
             if (text == null)
             {

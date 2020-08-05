@@ -283,7 +283,7 @@ namespace Kentico.Kontent.Delivery.ContentItems
         {
             var elementValue = GetRawValue(elementData);
             var value = elementValue?.ToObject<string>();
-            var links = elementData?.Property("links")?.Value.ToObject<IReadOnlyDictionary<Guid, IContentLink>>(Serializer);
+            var links = elementData?.Property("links")?.Value.ToObject<IDictionary<Guid, IContentLink>>(Serializer);
 
             // Handle rich_text link resolution
             if (links != null && elementValue != null && ContentLinkResolver != null)

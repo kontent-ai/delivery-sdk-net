@@ -11,20 +11,19 @@ namespace Kentico.Kontent.Delivery.ContentTypes
     [DebuggerDisplay("Name = {" + nameof(System) + "." + nameof(IContentTypeSystemAttributes.Name) + "}")]
     internal sealed class ContentType : IContentType
     {
-
         /// <inheritdoc/>
         [JsonProperty("system")]
         public IContentTypeSystemAttributes System { get; internal set; }
 
         /// <inheritdoc/>
         [JsonProperty("elements")]
-        public IReadOnlyDictionary<string, IContentElement> Elements { get; internal set; }
+        public IDictionary<string, IContentElement> Elements { get; internal set; }
 
         /// <summary>
         /// Constructor used for deserialization (e.g. for caching purposes), contains no logic.
         /// </summary>
         [JsonConstructor]
-        public ContentType(ContentTypeSystemAttributes system, IReadOnlyDictionary<string, IContentElement> elements)
+        public ContentType(IContentTypeSystemAttributes system, IDictionary<string, IContentElement> elements)
         {
             System = system;
             Elements = elements;

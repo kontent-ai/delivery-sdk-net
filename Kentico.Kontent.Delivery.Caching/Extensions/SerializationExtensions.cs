@@ -16,9 +16,8 @@ namespace Kentico.Kontent.Delivery.Caching.Extensions
         {
             DateTimeZoneHandling = DateTimeZoneHandling.Unspecified,
             TypeNameHandling = TypeNameHandling.All, // Allow preserving type information (necessary for deserializing interfaces into implemented types) 
-            ReferenceLoopHandling = ReferenceLoopHandling.Ignore // Linked items can be recursive, this will prevent the StackOverflowException
-            //PreserveReferencesHandling = PreserveReferencesHandling.All, // Not implemented for collections. Will result into "Cannot preserve reference to array or readonly list, or list created from a non-default constructor" exception.
-            //ConstructorHandling = ConstructorHandling.AllowNonPublicDefaultConstructor // Not required
+            ReferenceLoopHandling = ReferenceLoopHandling.Serialize, // The content item models contain recursive references which are supposed to be preserved.
+            PreserveReferencesHandling = PreserveReferencesHandling.All // The code must not use arrays and readonly collections, otherwise it'll result in "Cannot preserve reference to array or readonly list, or list created from a non-default constructor" exception. (more details at https://stackoverflow.com/a/41307438/1332034)
         };
 
         /// <summary>

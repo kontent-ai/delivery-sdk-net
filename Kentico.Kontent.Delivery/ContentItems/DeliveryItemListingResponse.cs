@@ -16,7 +16,7 @@ namespace Kentico.Kontent.Delivery.ContentItems
         }
 
         /// <inheritdoc/>
-        public IReadOnlyList<T> Items
+        public IList<T> Items
         {
             get;
             private set;
@@ -30,7 +30,7 @@ namespace Kentico.Kontent.Delivery.ContentItems
         /// <param name="linkedItems">Collection of linked content items.</param>
         /// <param name="pagination">Response paging information.</param>
         [JsonConstructor]
-        internal DeliveryItemListingResponse(ApiResponse response, IReadOnlyList<T> items, IReadOnlyList<object> linkedItems, IPagination pagination) : base(response, linkedItems)
+        internal DeliveryItemListingResponse(ApiResponse response, IList<T> items, IList<object> linkedItems, IPagination pagination) : base(response, linkedItems)
         {
             Items = items;
             Pagination = pagination;

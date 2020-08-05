@@ -22,7 +22,7 @@ namespace Kentico.Kontent.Delivery.ContentItems.Elements
         [JsonProperty("codename")]
         public string Codename { get; internal set; }
 
-        public IReadOnlyList<IMultipleChoiceOption> Options => throw new System.NotImplementedException();
+        public IList<IMultipleChoiceOption> Options => throw new System.NotImplementedException();
 
         public string TaxonomyGroup => throw new System.NotImplementedException();
 

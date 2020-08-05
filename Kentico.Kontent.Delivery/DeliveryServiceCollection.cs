@@ -4,7 +4,7 @@ using Microsoft.Extensions.DependencyInjection;
 namespace Kentico.Kontent.Delivery
 {
     /// <summary>
-    /// Collection of all types from <see cref="Kentico.Kontent.Delivery"/> registered as implemented interfaces.
+    /// Collection of all types from <see cref="Delivery"/> registered as implemented interfaces.
     /// </summary>
     public class DeliveryServiceCollection
     {

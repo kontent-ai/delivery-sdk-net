@@ -19,7 +19,7 @@ namespace Kentico.Kontent.Delivery.TaxonomyGroups
 
         /// <inheritdoc/>
         [JsonProperty("terms")]
-        public IReadOnlyList<ITaxonomyTermDetails> Terms { get; internal set; }
+        public IList<ITaxonomyTermDetails> Terms { get; internal set; }
 
         /// <summary>
         /// Constructor used for deserialization (e.g. for caching purposes), contains no logic.

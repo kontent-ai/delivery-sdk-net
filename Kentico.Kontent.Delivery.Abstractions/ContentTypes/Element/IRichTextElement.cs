@@ -5,9 +5,9 @@ namespace Kentico.Kontent.Delivery.Abstractions
 {
     public interface IRichTextElement : IContentElementValue<string>
     {
-        IReadOnlyDictionary<Guid, IInlineImage> Images { get; }
+        IDictionary<Guid, IInlineImage> Images { get; }
 
-        IReadOnlyDictionary<Guid, IContentLink> Links { get; }
+        IDictionary<Guid, IContentLink> Links { get; }
 
         List<string> ModularContent { get; }
     }

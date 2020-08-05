@@ -20,7 +20,7 @@ namespace Kentico.Kontent.Delivery.Abstractions
         /// <summary>
         /// Gets a list of predefined options for the Multiple choice content element; otherwise, an empty list.
         /// </summary>
-        IReadOnlyList<IMultipleChoiceOption> Options { get; }  //TODO: move to a specific CE type
+        IList<IMultipleChoiceOption> Options { get; }  //TODO: move to a specific CE type
 
         /// <summary>
         /// Gets the codename of the taxonomy group for the Taxonomy content element; otherwise, an empty string.

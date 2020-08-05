@@ -11,7 +11,7 @@ namespace Kentico.Kontent.Delivery.ContentItems
         /// <summary>
         /// Gets the linked items and their properties.
         /// </summary>
-        public IReadOnlyList<object> LinkedItems
+        public IList<object> LinkedItems
         {
             get;
             set;
@@ -22,7 +22,7 @@ namespace Kentico.Kontent.Delivery.ContentItems
         /// </summary>
         /// <param name="response">The response from Kentico Kontent Delivery API that contains a content item.</param>
         /// <param name="linkedItems">Collection of linked content items.</param>
-        protected AbstractItemsResponse(ApiResponse response, IReadOnlyList<object> linkedItems) : base(response)
+        protected AbstractItemsResponse(ApiResponse response, IList<object> linkedItems) : base(response)
         {
             LinkedItems = linkedItems;
         }

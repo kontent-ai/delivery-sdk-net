@@ -23,7 +23,7 @@ namespace Kentico.Kontent.Delivery.ContentTypes.Element
 
         /// <inheritdoc/>
         [JsonProperty("options")]
-        public IReadOnlyList<IMultipleChoiceOption> Options { get; internal set; } //TODO: move to a specific CE type + add tests for this
+        public IList<IMultipleChoiceOption> Options { get; internal set; } //TODO: move to a specific CE type + add tests for this
 
         /// <inheritdoc/>
         [JsonProperty("taxonomy_group")]

@@ -22,7 +22,7 @@ namespace Kentico.Kontent.Delivery.TaxonomyGroups
         /// <summary>
         /// Gets a read-only list of taxonomy groups.
         /// </summary>
-        public IReadOnlyList<ITaxonomyGroup> Taxonomies
+        public IList<ITaxonomyGroup> Taxonomies
         {
             get;
             private set;
@@ -35,7 +35,7 @@ namespace Kentico.Kontent.Delivery.TaxonomyGroups
         /// <param name="taxonomies">A collection of taxonomies.</param>
         /// <param name="pagination">Response paging information.</param>
         [JsonConstructor]
-        internal DeliveryTaxonomyListingResponse(ApiResponse response, IReadOnlyList<ITaxonomyGroup> taxonomies, IPagination pagination) : base(response)
+        internal DeliveryTaxonomyListingResponse(ApiResponse response, IList<ITaxonomyGroup> taxonomies, IPagination pagination) : base(response)
         {
             Taxonomies = taxonomies;
             Pagination = pagination;

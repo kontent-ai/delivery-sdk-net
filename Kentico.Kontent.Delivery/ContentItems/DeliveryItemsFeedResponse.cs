@@ -8,7 +8,7 @@ namespace Kentico.Kontent.Delivery.ContentItems
     internal class DeliveryItemsFeedResponse<T> : AbstractItemsResponse, IDeliveryItemsFeedResponse<T>
     {
         /// <inheritdoc/>
-        public IReadOnlyList<T> Items { get; set; }
+        public IList<T> Items { get; set; }
 
         /// <summary>
         /// Initializes a new instance of the <see cref="DeliveryItemsFeedResponse{T}"/> class.
@@ -16,7 +16,7 @@ namespace Kentico.Kontent.Delivery.ContentItems
         /// <param name="response">The response from Kentico Kontent Delivery API that contains a list of content items.</param>
         /// <param name="items">A list of content items.</param>
         /// <param name="linkedItems">Collection of linked content items.</param>
-        internal DeliveryItemsFeedResponse(ApiResponse response, IReadOnlyList<T> items, IReadOnlyList<object> linkedItems) : base(response, linkedItems)
+        internal DeliveryItemsFeedResponse(ApiResponse response, IList<T> items, IList<object> linkedItems) : base(response, linkedItems)
         {
             Items = items;
         }

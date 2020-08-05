@@ -16,7 +16,7 @@ namespace Kentico.Kontent.Delivery.ContentTypes
         }
 
         /// <inheritdoc/>
-        public IReadOnlyList<IContentType> Types
+        public IList<IContentType> Types
         {
             get;
             private set;
@@ -29,7 +29,7 @@ namespace Kentico.Kontent.Delivery.ContentTypes
         /// <param name="types">A collection of content types.</param>
         /// <param name="pagination">Response paging information.</param>
         [JsonConstructor]
-        internal DeliveryTypeListingResponse(ApiResponse response, IReadOnlyList<IContentType> types, IPagination pagination) : base(response)
+        internal DeliveryTypeListingResponse(ApiResponse response, IList<IContentType> types, IPagination pagination) : base(response)
         {
             Types = types;
             Pagination = pagination;

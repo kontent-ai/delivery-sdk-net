@@ -15,6 +15,6 @@ namespace Kentico.Kontent.Delivery.Abstractions
         /// <summary>
         /// Gets a readonly collection that contains terms of the taxonomy group.
         /// </summary>
-        IReadOnlyList<ITaxonomyTermDetails> Terms { get; }
+        IList<ITaxonomyTermDetails> Terms { get; }
     }
 }

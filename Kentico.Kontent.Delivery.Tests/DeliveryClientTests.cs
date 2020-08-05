@@ -659,7 +659,7 @@ namespace Kentico.Kontent.Delivery.Tests
                 .ReturnsLazily(() => typeof(ContentItemModelWithAttributes));
             A.CallTo(() => _mockTypeProvider.GetType("homepage")).ReturnsLazily(() => typeof(Homepage));
 
-            IReadOnlyList<object> items = (await client.GetItemsAsync<object>(new EqualsFilter("system.type", "complete_content_type"))).Items;
+            IList<object> items = (await client.GetItemsAsync<object>(new EqualsFilter("system.type", "complete_content_type"))).Items;
 
             // Assert
             Assert.True(items.All(i => i.GetType() == typeof(ContentItemModelWithAttributes)));
