@@ -333,8 +333,11 @@ namespace Kentico.Kontent.Delivery.Tests
             Assert.Equal("number", coffeeType.Elements["price"].Type);
             Assert.Equal("taxonomy", coffeeType.Elements["processing"].Type);
 
-            Assert.Equal("personas", taxonomyElement.TaxonomyGroup);
-            Assert.Equal("processing", processingTaxonomyElement.TaxonomyGroup);
+            Assert.IsAssignableFrom<ITaxonomyElement>(taxonomyElement);
+            Assert.Equal("personas", ((ITaxonomyElement)taxonomyElement).TaxonomyGroup);
+
+            Assert.IsAssignableFrom<ITaxonomyElement>(processingTaxonomyElement);
+            Assert.Equal("processing", ((ITaxonomyElement)processingTaxonomyElement).TaxonomyGroup);
         }
 
         [Fact]
@@ -381,16 +384,28 @@ namespace Kentico.Kontent.Delivery.Tests
             _mockHttp
                 .When($"{url}/{Coffee.Codename}/elements/{Coffee.ProcessingCodename}")
                 .Respond("application/json", "{'type':'taxonomy','name':'Processing','taxonomy_group':'processing','codename':'processing'}");
+            _mockHttp
+                .When($"{url}/{Tweet.Codename}/elements/{Tweet.ThemeCodename}")
+                .Respond("application/json", "{ 'type': 'multiple_choice', 'name': 'Theme', 'options': [ { 'name': 'Dark', 'codename': 'dark' }, { 'name': 'Light', 'codename': 'light' } ], 'codename': 'theme' }");
 
             var client = InitializeDeliveryClientWithACustomTypeProvider(_mockHttp);
 
             var element = (await client.GetContentElementAsync(Article.Codename, Article.TitleCodename)).Element;
             var personasTaxonomyElement = (await client.GetContentElementAsync(Article.Codename, Article.PersonasCodename)).Element;
             var processingTaxonomyElement = (await client.GetContentElementAsync(Coffee.Codename, Coffee.ProcessingCodename)).Element;
+            var themeMultipleChoiceElement = (await client.GetContentElementAsync(Tweet.Codename, Tweet.ThemeCodename)).Element;
 
+            Assert.IsAssignableFrom<IContentElement>(element);
             Assert.Equal(Article.TitleCodename, element.Codename);
-            Assert.Equal(Article.PersonasCodename, personasTaxonomyElement.TaxonomyGroup);
-            Assert.Equal(Coffee.ProcessingCodename, processingTaxonomyElement.TaxonomyGroup);
+
+            Assert.IsAssignableFrom<ITaxonomyElement>(personasTaxonomyElement);
+            Assert.Equal(Article.PersonasCodename, ((ITaxonomyElement)personasTaxonomyElement).TaxonomyGroup);
+
+            Assert.IsAssignableFrom<ITaxonomyElement>(processingTaxonomyElement);
+            Assert.Equal(Coffee.ProcessingCodename, ((ITaxonomyElement)processingTaxonomyElement).TaxonomyGroup);
+
+            Assert.IsAssignableFrom<IMultipleChoiceElement>(themeMultipleChoiceElement);
+            Assert.NotEmpty(((IMultipleChoiceElement)themeMultipleChoiceElement).Options);
         }
 
         [Fact]

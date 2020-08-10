@@ -4,7 +4,7 @@ using System.Collections.Generic;
 
 namespace Kentico.Kontent.Delivery.ContentItems.Elements
 {
-    internal sealed class ContentElementValue<T> : IContentElementValue<T>
+    internal class ContentElementValue<T> : IContentElementValue<T>
     {
         /// <inheritdoc/>
         [JsonProperty("type")]
@@ -21,10 +21,6 @@ namespace Kentico.Kontent.Delivery.ContentItems.Elements
         /// <inheritdoc/>
         [JsonProperty("codename")]
         public string Codename { get; internal set; }
-
-        public IList<IMultipleChoiceOption> Options => throw new System.NotImplementedException();
-
-        public string TaxonomyGroup => throw new System.NotImplementedException();
 
         public ContentElementValue()
         {

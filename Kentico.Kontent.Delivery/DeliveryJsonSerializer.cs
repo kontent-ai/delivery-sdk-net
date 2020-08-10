@@ -1,4 +1,5 @@
-﻿using Newtonsoft.Json;
+﻿using Kentico.Kontent.Delivery.ContentTypes.Element;
+using Newtonsoft.Json;
 
 namespace Kentico.Kontent.Delivery
 {
@@ -7,6 +8,7 @@ namespace Kentico.Kontent.Delivery
         public DeliveryJsonSerializer()
         {
             ContractResolver = new DeliveryContractResolver(new DeliveryServiceCollection().ServiceProvider);
+            Converters.Add(new ContentElementConverter());
         }
     }
 }

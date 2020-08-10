@@ -127,10 +127,25 @@ namespace Kentico.Kontent.Delivery.Rx.Tests
             Assert.NotNull(element);
             Assert.NotNull(element.Codename);
             Assert.NotNull(element.Name);
-            //TODO: need a new test for these two (they never worked)
-            //Assert.NotNull(element.Options);
-            //Assert.NotNull(element.TaxonomyGroup);
             Assert.NotNull(element.Type);
+        }
+
+        [Fact]
+        public async void TaxonomyElementRetrieved()
+        {
+            var observable = new DeliveryObservableProxy(GetDeliveryClient(MockTaxonomyElement)).GetElementObservable(Coffee.Codename, Coffee.ProcessingCodename);
+            var element = await observable.FirstOrDefaultAsync();
+
+            Assert.IsAssignableFrom<ITaxonomyElement>(element);
+        }
+
+        [Fact]
+        public async void MultipleChoiceElementRetrieved()
+        {
+            var observable = new DeliveryObservableProxy(GetDeliveryClient(MockMultipleChoiceElement)).GetElementObservable(Tweet.Codename, Tweet.ThemeCodename);
+            var element = await observable.FirstOrDefaultAsync();
+
+            Assert.IsAssignableFrom<IMultipleChoiceElement>(element);
         }
 
         [Fact]
@@ -162,7 +177,7 @@ namespace Kentico.Kontent.Delivery.Rx.Tests
             var deliveryOptions = DeliveryOptionsFactory.CreateMonitor(new DeliveryOptions { ProjectId = _guid });
             var contentLinkUrlResolver = A.Fake<IContentLinkUrlResolver>();
             var contentItemsProcessor = A.Fake<IInlineContentItemsProcessor>();
-            var contentPropertyMapper =  new PropertyMapper();
+            var contentPropertyMapper = new PropertyMapper();
             var contentTypeProvider = new CustomTypeProvider();
             var serializer = new DeliveryJsonSerializer();
             var modelProvider = new ModelProvider(contentLinkUrlResolver, contentItemsProcessor, contentTypeProvider, contentPropertyMapper, serializer);
@@ -176,7 +191,7 @@ namespace Kentico.Kontent.Delivery.Rx.Tests
                 modelProvider,
                 retryPolicyProvider,
                 contentTypeProvider,
-                deliveryHttpClient, 
+                deliveryHttpClient,
                 serializer
             );
 
@@ -219,6 +234,19 @@ namespace Kentico.Kontent.Delivery.Rx.Tests
         {
             _mockHttp.When($"{_baseUrl}/types/{Article.Codename}/elements/{Article.TitleCodename}")
                 .Respond("application/json", "{'type':'text','name':'Title','codename':'title'}");
+        }
+        private void MockTaxonomyElement()
+        {
+            _mockHttp
+                   .When($"{_baseUrl}/types/{Coffee.Codename}/elements/{Coffee.ProcessingCodename}")
+                   .Respond("application/json", "{'type':'taxonomy','name':'Processing','taxonomy_group':'processing','codename':'processing'}");
+        }
+
+        private void MockMultipleChoiceElement()
+        {
+            _mockHttp
+                .When($"{_baseUrl}/types/{Tweet.Codename}/elements/{Tweet.ThemeCodename}")
+                .Respond("application/json", "{ 'type': 'multiple_choice', 'name': 'Theme', 'options': [ { 'name': 'Dark', 'codename': 'dark' }, { 'name': 'Light', 'codename': 'light' } ], 'codename': 'theme' }");
         }
 
         private void MockTaxonomy()

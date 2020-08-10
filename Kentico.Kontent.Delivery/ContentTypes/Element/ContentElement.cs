@@ -1,5 +1,4 @@
-﻿using System.Collections.Generic;
-using System.Diagnostics;
+﻿using System.Diagnostics;
 using Kentico.Kontent.Delivery.Abstractions;
 using Newtonsoft.Json;
 
@@ -20,14 +19,6 @@ namespace Kentico.Kontent.Delivery.ContentTypes.Element
         /// <inheritdoc/>
         [JsonProperty("codename")]
         public string Codename { get; internal set; }
-
-        /// <inheritdoc/>
-        [JsonProperty("options")]
-        public IList<IMultipleChoiceOption> Options { get; internal set; } //TODO: move to a specific CE type + add tests for this
-
-        /// <inheritdoc/>
-        [JsonProperty("taxonomy_group")]
-        public string TaxonomyGroup { get; internal set; }
 
         /// <summary>
         /// Constructor used for deserialization (e.g. for caching purposes), contains no logic.

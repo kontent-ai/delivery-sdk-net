@@ -3,9 +3,9 @@ using Newtonsoft.Json;
 using System;
 using System.Collections.Generic;
 
-namespace Kentico.Kontent.Delivery.ContentTypes.Element
+namespace Kentico.Kontent.Delivery.ContentItems.Elements
 {
-    internal class RichTextElement : ContentElement, IRichTextElement
+    internal class RichTextElementValue : ContentElementValue<string>, IRichTextElementValue
     {
         [JsonProperty("images")]
         public IDictionary<Guid, IInlineImage> Images { get; set; }
@@ -16,10 +16,7 @@ namespace Kentico.Kontent.Delivery.ContentTypes.Element
         [JsonProperty("modular_content")]
         public List<string> ModularContent { get; set; }
 
-        [JsonProperty("value")]
-        public string Value { get; set; }
-
-        public RichTextElement() : base()
+        public RichTextElementValue() : base()
         {
         }
     }

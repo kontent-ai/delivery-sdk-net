@@ -20,7 +20,7 @@ namespace Kentico.Kontent.Delivery.ContentItems
                 throw new InvalidOperationException($"Type of property {property.Name} must implement {nameof(IRichTextContent)} in order to receive rich text content.");
             }
 
-            if (!(contentElement is IRichTextElement element))
+            if (!(contentElement is IRichTextElementValue element))
             {
                 return null;
             }

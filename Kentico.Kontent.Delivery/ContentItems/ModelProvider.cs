@@ -8,7 +8,6 @@ using Kentico.Kontent.Delivery.Abstractions;
 using Kentico.Kontent.Delivery.ContentItems.ContentLinks;
 using Kentico.Kontent.Delivery.ContentItems.Elements;
 using Kentico.Kontent.Delivery.ContentItems.InlineContentItems;
-using Kentico.Kontent.Delivery.ContentTypes.Element;
 using Newtonsoft.Json;
 using Newtonsoft.Json.Linq;
 
@@ -215,7 +214,7 @@ namespace Kentico.Kontent.Delivery.ContentItems
                     //TODO: extend the list of supported types
                     return (elementValue["type"].ToString()) switch
                     {
-                        "rich_text" => await GetElementModel<RichTextElement, string>(property, context, elementValue, valueConverter),
+                        "rich_text" => await GetElementModel<RichTextElementValue, string>(property, context, elementValue, valueConverter),
                         "asset" => await GetElementModel<ContentElementValue<Asset>, Asset>(property, context, elementValue, valueConverter),
                         "number" => await GetElementModel<ContentElementValue<decimal?>, decimal?>(property, context, elementValue, valueConverter),
                         "date_time" => await GetElementModel<ContentElementValue<DateTime>, DateTime>(property, context, elementValue, valueConverter),

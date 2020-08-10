@@ -7,7 +7,6 @@ using System.Threading.Tasks;
 using Kentico.Kontent.Delivery.Abstractions;
 using Kentico.Kontent.Delivery.ContentItems;
 using Kentico.Kontent.Delivery.ContentTypes;
-using Kentico.Kontent.Delivery.ContentTypes.Element;
 using Kentico.Kontent.Delivery.Extensions;
 using Kentico.Kontent.Delivery.SharedModels;
 using Kentico.Kontent.Delivery.TaxonomyGroups;
@@ -195,7 +194,7 @@ namespace Kentico.Kontent.Delivery
             var endpointUrl = UrlBuilder.GetContentElementUrl(contentTypeCodename, contentElementCodename);
             var response = await GetDeliveryResponseAsync(endpointUrl);
             var content = await response.GetJsonContentAsync();
-            var element = content.ToObject<ContentElement>(Serializer);
+            var element = content.ToObject<IContentElement>(Serializer);
             return new DeliveryElementResponse(response, element);
         }
 

@@ -1,4 +1,7 @@
 ﻿using System;
+using System.Collections.Generic;
+using System.Linq;
+using Microsoft.Extensions.DependencyInjection;
 using Newtonsoft.Json.Serialization;
 
 namespace Kentico.Kontent.Delivery
@@ -30,14 +33,30 @@ namespace Kentico.Kontent.Delivery
             //TODO: implement contract caching
             if (objectType.IsInterface)
             {
-                var service = ServiceProvider.GetService(objectType);
-                if (service != null)
+                var services = ServiceProvider.GetServices(objectType);
+                if (services != null && services.Any())
                 {
-                    contract = base.CreateObjectContract(service.GetType());
-                    contract.DefaultCreator = () => ServiceProvider.GetService(objectType);
+                    var implementation = GetClosestImplementation(services, objectType);
+                    contract = base.CreateObjectContract(implementation);
+                    contract.DefaultCreator = () => ServiceProvider.GetService(implementation);
                 }
             }
             return contract ?? base.CreateContract(objectType);
+        }
+
+        public Type GetClosestImplementation(IEnumerable<object> services, Type interf)
+            => services.Select(s => s.GetType()).FirstOrDefault(type => type.GetInterfaces().Contains(interf));
+
+        public Type ClosestAncestor(Type typeOfClass, Type parent)
+        {
+            var baseType = typeOfClass.BaseType;
+            if (typeOfClass.GetInterfaces().Contains(parent) &&
+                !baseType.GetInterfaces().Contains(parent))
+            {
+                return typeOfClass;
+            }
+
+            return ClosestAncestor(baseType, parent);
         }
     }
 }
