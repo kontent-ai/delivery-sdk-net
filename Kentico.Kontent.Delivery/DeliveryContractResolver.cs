@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Collections;
 using System.Collections.Generic;
 using System.Linq;
 using Microsoft.Extensions.DependencyInjection;
@@ -11,6 +12,8 @@ namespace Kentico.Kontent.Delivery
     /// </summary>
     internal class DeliveryContractResolver : DefaultContractResolver
     {
+        private readonly Dictionary<Type, JsonContract> _contractCache = new Dictionary<Type, JsonContract>();
+
         private IServiceProvider ServiceProvider { get; }
 
         /// <summary>
@@ -30,33 +33,25 @@ namespace Kentico.Kontent.Delivery
         protected override JsonContract CreateContract(Type objectType)
         {
             JsonContract contract = null;
-            //TODO: implement contract caching
+
             if (objectType.IsInterface)
             {
-                var services = ServiceProvider.GetServices(objectType);
-                if (services != null && services.Any())
+                if (!_contractCache.TryGetValue(objectType, out contract))
                 {
-                    var implementation = GetClosestImplementation(services, objectType);
-                    contract = base.CreateObjectContract(implementation);
-                    contract.DefaultCreator = () => ServiceProvider.GetService(implementation);
+                    var services = ServiceProvider.GetServices(objectType);
+                    if (services != null && services.Any())
+                    {
+                        var implementation = GetClosestImplementation(services, objectType);
+                        contract = base.CreateObjectContract(implementation);
+                        contract.DefaultCreator = () => ServiceProvider.GetService(implementation);
+                        _contractCache.Add(objectType, contract);
+                    }
                 }
             }
             return contract ?? base.CreateContract(objectType);
         }
 
-        public Type GetClosestImplementation(IEnumerable<object> services, Type interf)
-            => services.Select(s => s.GetType()).FirstOrDefault(type => type.GetInterfaces().Contains(interf));
-
-        public Type ClosestAncestor(Type typeOfClass, Type parent)
-        {
-            var baseType = typeOfClass.BaseType;
-            if (typeOfClass.GetInterfaces().Contains(parent) &&
-                !baseType.GetInterfaces().Contains(parent))
-            {
-                return typeOfClass;
-            }
-
-            return ClosestAncestor(baseType, parent);
-        }
+        public Type GetClosestImplementation(IEnumerable<object> services, Type @interface)
+            => services.Select(s => s.GetType()).FirstOrDefault(type => type.GetInterfaces().Contains(@interface));
     }
 }

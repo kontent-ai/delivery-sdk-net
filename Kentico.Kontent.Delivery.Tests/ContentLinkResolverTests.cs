@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using System.IO;
 using System.Threading.Tasks;
+using AngleSharp.Html.Parser;
 using Kentico.Kontent.Delivery.Abstractions;
 using Kentico.Kontent.Delivery.ContentItems;
 using Kentico.Kontent.Delivery.ContentItems.ContentLinks;
@@ -134,7 +135,7 @@ namespace Kentico.Kontent.Delivery.Tests
             var resiliencePolicyProvider = new DefaultRetryPolicyProvider(options);
             var contentLinkUrlResolver = new CustomContentLinkUrlResolver();
             var contentItemsProcessor = InlineContentItemsProcessorFactory.Create();
-            var modelProvider = new ModelProvider(contentLinkUrlResolver, contentItemsProcessor, new CustomTypeProvider(), new PropertyMapper(), new DeliveryJsonSerializer());
+            var modelProvider = new ModelProvider(contentLinkUrlResolver, contentItemsProcessor, new CustomTypeProvider(), new PropertyMapper(), new DeliveryJsonSerializer(), new HtmlParser());
             var client = new DeliveryClient(
                 deliveryOptions,
                 modelProvider,

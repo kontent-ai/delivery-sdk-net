@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Linq;
 using System.Net.Http;
+using AngleSharp.Html.Parser;
 using Kentico.Kontent.Delivery.Abstractions;
 using Kentico.Kontent.Delivery.Builders.DeliveryClient;
 using Kentico.Kontent.Delivery.Configuration;
@@ -244,6 +245,7 @@ namespace Kentico.Kontent.Delivery.Extensions
             services.TryAddSingleton<IModelProvider, ModelProvider>();
             services.TryAddSingleton<IPropertyMapper, PropertyMapper>();
             services.TryAddSingleton<IRetryPolicyProvider, DefaultRetryPolicyProvider>();
+            services.TryAddSingleton<IHtmlParser, HtmlParser>();
             services.TryAddSingleton<JsonSerializer>(new DeliveryJsonSerializer());
             services.TryAddSingleton<IDeliveryClient, DeliveryClient>();
             services.TryAddTransient<IDeliveryClientFactory, DeliveryClientFactory>();

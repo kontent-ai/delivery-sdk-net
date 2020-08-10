@@ -4,6 +4,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Reflection;
 using System.Threading.Tasks;
+using AngleSharp.Html.Parser;
 using Kentico.Kontent.Delivery.Abstractions;
 using Kentico.Kontent.Delivery.ContentItems.ContentLinks;
 using Kentico.Kontent.Delivery.ContentItems.Elements;
@@ -20,7 +21,7 @@ namespace Kentico.Kontent.Delivery.ContentItems
     internal class ModelProvider : IModelProvider
     {
         private ContentLinkResolver _contentLinkResolver;
-        internal JsonSerializer _serializer;
+
         internal ITypeProvider TypeProvider { get; set; }
 
         internal IInlineContentItemsProcessor InlineContentItemsProcessor { get; }
@@ -30,6 +31,7 @@ namespace Kentico.Kontent.Delivery.ContentItems
         internal IContentLinkUrlResolver ContentLinkUrlResolver { get; }
 
         internal JsonSerializer Serializer { get; }
+        public IHtmlParser HtmlParser { get; }
 
         private ContentLinkResolver ContentLinkResolver
         {
@@ -52,13 +54,15 @@ namespace Kentico.Kontent.Delivery.ContentItems
             IInlineContentItemsProcessor inlineContentItemsProcessor,
             ITypeProvider typeProvider,
             IPropertyMapper propertyMapper,
-            JsonSerializer serializer)
+            JsonSerializer serializer,
+            IHtmlParser htmlParser)
         {
             ContentLinkUrlResolver = contentLinkUrlResolver;
             InlineContentItemsProcessor = inlineContentItemsProcessor;
             TypeProvider = typeProvider;
             PropertyMapper = propertyMapper;
             Serializer = serializer;
+            HtmlParser = htmlParser;
         }
 
         /// <summary>
@@ -355,7 +359,7 @@ namespace Kentico.Kontent.Delivery.ContentItems
             return contentItems;
         }
 
-        private static IPropertyValueConverter GetValueConverter(PropertyInfo property)
+        private IPropertyValueConverter GetValueConverter(PropertyInfo property)
         {
             // Converter defined by explicit attribute has the highest priority
             if (property.GetCustomAttributes().OfType<IPropertyValueConverter>().FirstOrDefault() is { } attributeConverter)
@@ -366,7 +370,7 @@ namespace Kentico.Kontent.Delivery.ContentItems
             // Specific type converters
             if (typeof(IRichTextContent).IsAssignableFrom(property.PropertyType))
             {
-                return new RichTextContentConverter();
+                return new RichTextContentConverter(HtmlParser);
             }
 
             return null;

@@ -5,6 +5,7 @@ using System.Linq;
 using System.Net.Http;
 using System.Reactive.Linq;
 using System.Threading.Tasks;
+using AngleSharp.Html.Parser;
 using FakeItEasy;
 using Kentico.Kontent.Delivery.Abstractions;
 using Kentico.Kontent.Delivery.ContentItems;
@@ -180,7 +181,7 @@ namespace Kentico.Kontent.Delivery.Rx.Tests
             var contentPropertyMapper = new PropertyMapper();
             var contentTypeProvider = new CustomTypeProvider();
             var serializer = new DeliveryJsonSerializer();
-            var modelProvider = new ModelProvider(contentLinkUrlResolver, contentItemsProcessor, contentTypeProvider, contentPropertyMapper, serializer);
+            var modelProvider = new ModelProvider(contentLinkUrlResolver, contentItemsProcessor, contentTypeProvider, contentPropertyMapper, serializer, new HtmlParser());
             var retryPolicy = A.Fake<IRetryPolicy>();
             var retryPolicyProvider = A.Fake<IRetryPolicyProvider>();
             A.CallTo(() => retryPolicyProvider.GetRetryPolicy()).Returns(retryPolicy);

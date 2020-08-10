@@ -43,6 +43,7 @@ namespace Kentico.Kontent.Delivery.ContentItems.InlineContentItems
                 .ToDictionary<ITypelessInlineContentItemsResolver, Type, Func<object, string>>(
                     descriptor => descriptor.ContentItemType,
                     descriptor => descriptor.ResolveItem);
+            //TODO: inject parser (performance)
             _htmlParser = new HtmlParser();
             _strictHtmlParser = new HtmlParser(new HtmlParserOptions
             {
@@ -82,7 +83,7 @@ namespace Kentico.Kontent.Delivery.ContentItems.InlineContentItems
         /// <returns>HTML without inline content items</returns>
         public async Task<string> RemoveAll(string value)
         {
-            var htmlInput = await new HtmlParser().ParseDocumentAsync(value);
+            var htmlInput = await _htmlParser.ParseDocumentAsync(value);
             List<IElement> inlineContentItems = GetInlineContentItemElements(htmlInput);
             foreach (var contentItem in inlineContentItems)
             {

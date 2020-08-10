@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Reflection;
 using System.Threading.Tasks;
+using AngleSharp.Html.Parser;
 using FakeItEasy;
 using Kentico.Kontent.Delivery.Abstractions;
 using Kentico.Kontent.Delivery.ContentItems;
@@ -26,7 +27,7 @@ namespace Kentico.Kontent.Delivery.Tests
             var processor = InlineContentItemsProcessorFactory
                 .WithResolver(ResolveItemWithSingleRte)
                 .Build();
-            var retriever = new ModelProvider(contentLinkUrlResolver, processor, typeProvider, propertyMapper, new DeliveryJsonSerializer());
+            var retriever = new ModelProvider(contentLinkUrlResolver, processor, typeProvider, propertyMapper, new DeliveryJsonSerializer(), new HtmlParser());
 
             var item = JToken.FromObject(Rt1);
             var linkedItems = JToken.FromObject(LinkedItemsForItemWithTwoReferencedContentItems);
@@ -49,7 +50,7 @@ namespace Kentico.Kontent.Delivery.Tests
             var processor = InlineContentItemsProcessorFactory
                 .WithResolver(factory => factory.ResolveTo<UnknownContentItem>(unknownItem => $"Content type '{unknownItem.Type}' has no corresponding model."))
                 .Build();
-            var retriever = new ModelProvider(contentLinkUrlResolver, processor, typeProvider, propertyMapper, new DeliveryJsonSerializer());
+            var retriever = new ModelProvider(contentLinkUrlResolver, processor, typeProvider, propertyMapper, new DeliveryJsonSerializer(), new HtmlParser());
 
             var item = JToken.FromObject(Rt5);
             var linkedItems = JToken.FromObject(LinkedItemWithNoModel);
@@ -76,7 +77,7 @@ namespace Kentico.Kontent.Delivery.Tests
             var processor = InlineContentItemsProcessorFactory
                 .WithResolver(ResolveItemWithSingleRte)
                 .Build();
-            var retriever = new ModelProvider(contentLinkUrlResolver, processor, typeProvider, propertyMapper, new DeliveryJsonSerializer());
+            var retriever = new ModelProvider(contentLinkUrlResolver, processor, typeProvider, propertyMapper, new DeliveryJsonSerializer(), new HtmlParser());
 
             var item = JToken.FromObject(Rt3);
             var linkedItems = JToken.FromObject(LinkedItemsForItemReferencingItself);
@@ -99,7 +100,7 @@ namespace Kentico.Kontent.Delivery.Tests
             var typeProvider = A.Fake<ITypeProvider>();
             var propertyMapper = A.Fake<IPropertyMapper>();
             A.CallTo(() => typeProvider.GetType("newType")).Returns(null);
-            var modelProvider = new ModelProvider(contentLinkUrlResolver, inlineContentItemsProcessor, typeProvider, propertyMapper, new DeliveryJsonSerializer());
+            var modelProvider = new ModelProvider(contentLinkUrlResolver, inlineContentItemsProcessor, typeProvider, propertyMapper, new DeliveryJsonSerializer(), new HtmlParser());
 
             Assert.Null(await modelProvider.GetContentItemModel<object>(item, linkedItems));
         }

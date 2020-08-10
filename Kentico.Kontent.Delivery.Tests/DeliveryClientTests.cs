@@ -6,6 +6,7 @@ using System.Linq;
 using System.Net;
 using System.Net.Http;
 using System.Threading.Tasks;
+using AngleSharp.Html.Parser;
 using FakeItEasy;
 using Kentico.Kontent.Delivery.Abstractions;
 using Kentico.Kontent.Delivery.Builders.DeliveryClient;
@@ -1442,7 +1443,7 @@ namespace Kentico.Kontent.Delivery.Tests
                 null,
                 customTypeProvider,
                 new PropertyMapper(),
-                new DeliveryJsonSerializer());
+                new DeliveryJsonSerializer(), new HtmlParser());
             var client = Factories.DeliveryClientFactory.GetMockedDeliveryClientWithProjectId(
                 _guid,
                 handler,
@@ -1463,7 +1464,7 @@ namespace Kentico.Kontent.Delivery.Tests
             var typer = typeProvider ?? _mockTypeProvider;
             var mapper = propertyMapper ?? A.Fake<IPropertyMapper>();
             var serializer = new DeliveryJsonSerializer();
-            var modelProvider = new ModelProvider(null, null, typer, mapper, serializer);
+            var modelProvider = new ModelProvider(null, null, typer, mapper, serializer, new HtmlParser());
             var client = Factories.DeliveryClientFactory.GetMockedDeliveryClientWithProjectId(_guid, handler, modelProvider);
 
             var retryPolicy = A.Fake<IRetryPolicy>();

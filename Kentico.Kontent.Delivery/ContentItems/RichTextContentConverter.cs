@@ -13,6 +13,13 @@ namespace Kentico.Kontent.Delivery.ContentItems
 {
     internal class RichTextContentConverter : IPropertyValueConverter<string>
     {
+        public IHtmlParser Parser { get; }
+
+        public RichTextContentConverter(IHtmlParser parser)
+        {
+            Parser = parser;
+        }
+
         public async Task<object> GetPropertyValue<U>(PropertyInfo property, U contentElement, ResolvingContext context) where U : IContentElementValue<string>
         {
             if (!typeof(IRichTextContent).IsAssignableFrom(property.PropertyType))
@@ -35,8 +42,7 @@ namespace Kentico.Kontent.Delivery.ContentItems
             }
 
             var blocks = new List<IRichTextBlock>();
-
-            var htmlInput = await new HtmlParser().ParseDocumentAsync(value);
+            var htmlInput = await Parser.ParseDocumentAsync(value);
             foreach (var block in htmlInput.Body.Children)
             {
                 if (block.TagName?.Equals("object", StringComparison.OrdinalIgnoreCase) == true && block.GetAttribute("type") == "application/kenticocloud" && block.GetAttribute("data-type") == "item")

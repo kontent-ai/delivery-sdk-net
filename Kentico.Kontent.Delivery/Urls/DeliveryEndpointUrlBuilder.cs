@@ -38,7 +38,7 @@ namespace Kentico.Kontent.Delivery.Urls
 
         public string GetItemsUrl(string[] parameters)
         {
-            var enrichedParameters = EnrichParameters(parameters).ToArray();
+            var enrichedParameters = EnrichParameters(parameters);
             return GetUrl(UrlTemplateItems, enrichedParameters);
         }
 
@@ -105,14 +105,14 @@ namespace Kentico.Kontent.Delivery.Urls
                 var queryParameters = parameters.ToList();
                 if (queryParameters.Any())
                 {
-                    return GetUrl(path, queryParameters.Select(parameter => parameter.GetQueryStringParameter()).ToArray());
+                    return GetUrl(path, queryParameters.Select(parameter => parameter.GetQueryStringParameter()));
                 }
             }
 
             return GetUrl(path);
         }
 
-        private string GetUrl(string path, string[] parameters = null)
+        private string GetUrl(string path, IEnumerable<string> parameters = null)
         {
             var hostUrl = AssembleHost();
             var url = AssembleUrl(path, parameters, hostUrl);
@@ -125,17 +125,16 @@ namespace Kentico.Kontent.Delivery.Urls
             return url;
         }
 
-        private static string AssembleUrl(string path, string[] parameters, string hostUrl)
+        private static string AssembleUrl(string path, IEnumerable<string> parameters, string hostUrl)
         {
             var urlBuilder = new UriBuilder(hostUrl + path);
 
-            if (parameters != null && parameters.Length > 0)
+            if (parameters != null)
             {
                 urlBuilder.Query = string.Join("&", parameters);
             }
 
-            var url = urlBuilder.ToString();
-            return url;
+            return urlBuilder.ToString();
         }
 
         private string AssembleHost()

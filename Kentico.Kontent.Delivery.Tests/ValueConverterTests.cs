@@ -4,6 +4,7 @@ using System.Linq;
 using System.Net.Http;
 using System.Reflection;
 using System.Threading.Tasks;
+using AngleSharp.Html.Parser;
 using FakeItEasy;
 using Kentico.Kontent.Delivery.Abstractions;
 using Kentico.Kontent.Delivery.ContentItems;
@@ -103,7 +104,7 @@ namespace Kentico.Kontent.Delivery.Tests
             var retryPolicyProvider = A.Fake<IRetryPolicyProvider>();
             A.CallTo(() => retryPolicyProvider.GetRetryPolicy()).Returns(retryPolicy);
             A.CallTo(() => retryPolicy.ExecuteAsync(A<Func<Task<HttpResponseMessage>>>._)).ReturnsLazily(c => c.GetArgument<Func<Task<HttpResponseMessage>>>(0)());
-            var modelProvider = new ModelProvider(contentLinkUrlResolver, null, new CustomTypeProvider(), new PropertyMapper(), new DeliveryJsonSerializer());
+            var modelProvider = new ModelProvider(contentLinkUrlResolver, null, new CustomTypeProvider(), new PropertyMapper(), new DeliveryJsonSerializer(), new HtmlParser());
             var client = new DeliveryClient(deliveryOptions, modelProvider, retryPolicyProvider, null, deliveryHttpClient);
 
             return client;
