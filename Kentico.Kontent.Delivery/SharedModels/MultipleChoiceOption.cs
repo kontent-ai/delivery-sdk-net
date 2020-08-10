@@ -2,11 +2,11 @@
 using Newtonsoft.Json;
 using System.Diagnostics;
 
-namespace Kentico.Kontent.Delivery.TaxonomyGroups
+namespace Kentico.Kontent.Delivery.SharedModels
 {
     /// <inheritdoc/>
     [DebuggerDisplay("Name = {" + nameof(Name) + "}")]
-    internal sealed class TaxonomyTerm : ITaxonomyTerm
+    internal sealed class MultipleChoiceOption : IMultipleChoiceOption
     {
         /// <inheritdoc/>
         [JsonProperty("name")]
@@ -17,10 +17,10 @@ namespace Kentico.Kontent.Delivery.TaxonomyGroups
         public string Codename { get; internal set; }
 
         /// <summary>
-        /// Initializes a new instance of the <see cref="TaxonomyTerm"/> class.
+        /// Initializes a new instance of the <see cref="MultipleChoiceOption"/> class with the specified JSON data.
         /// </summary>
         [JsonConstructor]
-        public TaxonomyTerm()
+        public MultipleChoiceOption()
         {
         }
     }
