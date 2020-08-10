@@ -1,4 +1,6 @@
-﻿namespace Kentico.Kontent.Delivery.Abstractions
+﻿using System;
+
+namespace Kentico.Kontent.Delivery.Abstractions
 {
     /// <summary>
     /// Represents a link to a content item in a Rich text element.
@@ -18,7 +20,7 @@
         /// <summary>
         /// Gets the identifier of the linked content item.
         /// </summary>
-        string Id { get; }
+        Guid Id { get; internal set; }
 
         /// <summary>
         /// Gets the URL slug of the linked content item, if available; otherwise, <c>null</c>.

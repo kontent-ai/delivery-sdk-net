@@ -50,7 +50,8 @@ namespace Kentico.Kontent.Delivery.ContentItems.ContentLinks
                 if (links.ContainsKey(contentItemId))
                 {
                     var link = links[contentItemId];
-                    url = await ContentLinkUrlResolver.ResolveLinkUrl(contentItemId, link);
+                    link.Id = contentItemId;
+                    url = await ContentLinkUrlResolver.ResolveLinkUrl(link);
                 }
                 else
                 {

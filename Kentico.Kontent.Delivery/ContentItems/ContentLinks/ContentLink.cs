@@ -1,17 +1,18 @@
 ﻿using Kentico.Kontent.Delivery.Abstractions;
 using Newtonsoft.Json;
+using System;
 using System.Diagnostics;
 
 namespace Kentico.Kontent.Delivery.ContentItems.ContentLinks
 {
     /// <inheritdoc/>
-    [DebuggerDisplay("Codename = {" + nameof(Codename) + "}")]
+    [DebuggerDisplay("Codename = {" + nameof(IContentLink.Codename) + "}")]
     internal sealed class ContentLink : IContentLink
     {
         /// <inheritdoc/>
-        public string Id
+        Guid IContentLink.Id
         {
-            get; internal set;
+            get; set;
         }
 
         /// <inheritdoc/>

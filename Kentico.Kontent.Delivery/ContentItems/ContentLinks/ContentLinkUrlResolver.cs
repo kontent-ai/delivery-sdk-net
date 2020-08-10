@@ -1,5 +1,4 @@
 ﻿using Kentico.Kontent.Delivery.Abstractions;
-using System;
 using System.Threading.Tasks;
 
 namespace Kentico.Kontent.Delivery.ContentItems.ContentLinks
@@ -9,7 +8,7 @@ namespace Kentico.Kontent.Delivery.ContentItems.ContentLinks
         public Task<string> ResolveBrokenLinkUrl()
             => Task.FromResult<string>(null);
 
-        public Task<string> ResolveLinkUrl(Guid contentItemId, IContentLink link)
+        public Task<string> ResolveLinkUrl(IContentLink link)
             => Task.FromResult<string>(null);
     }
 }

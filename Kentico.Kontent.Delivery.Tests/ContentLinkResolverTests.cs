@@ -158,13 +158,14 @@ namespace Kentico.Kontent.Delivery.Tests
         private async Task<string> ResolveContentLinks(string text, CustomContentLinkUrlResolver linkUrlResolver)
         {
             var linkResolver = new ContentLinkResolver(linkUrlResolver);
-            ContentLink link = new ContentLink()
+            IContentLink link = new ContentLink()
             {
-                Codename = "about_us",
                 ContentTypeCodename = "article",
                 UrlSlug = "about-us",
-                Id = ContentItemIdA.ToString()
+                Codename = "about_us"
             };
+
+            link.Id = ContentItemIdA;
             var links = new Dictionary<Guid, IContentLink> { { ContentItemIdA, link } };
 
             return await linkResolver.ResolveContentLinks(text, links);
@@ -180,7 +181,7 @@ namespace Kentico.Kontent.Delivery.Tests
                 return Task.FromResult(GetBrokenLinkUrl());
             }
 
-            public Task<string> ResolveLinkUrl(Guid contentItemId, IContentLink link)
+            public Task<string> ResolveLinkUrl(IContentLink link)
             {
                 return Task.FromResult(GetLinkUrl(link));
             }
