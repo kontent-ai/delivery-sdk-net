@@ -74,7 +74,7 @@ namespace Kentico.Kontent.Delivery.ContentItems
         internal async Task<object> GetContentItemModel(Type modelType, JToken serializedItem, JObject linkedItems, Dictionary<string, object> processedItems = null, HashSet<RichTextContentElements> currentlyResolvedRichStrings = null)
         {
             processedItems ??= new Dictionary<string, object>();
-            IContentItemSystemAttributes itemSystemAttributes = serializedItem["system"].ToObject<ContentItemSystemAttributes>();
+            IContentItemSystemAttributes itemSystemAttributes = serializedItem["system"].ToObject<IContentItemSystemAttributes>(Serializer);
 
             var instance = CreateInstance(modelType, ref itemSystemAttributes, ref processedItems);
             if (instance == null)
@@ -276,7 +276,7 @@ namespace Kentico.Kontent.Delivery.ContentItems
         private async Task<(string value, bool isRichText)> GetStringValue(JObject elementData)
         {
             var elementValue = GetRawValue(elementData);
-            var value = elementValue?.ToObject<string>();
+            var value = elementValue?.ToObject<string>(Serializer);
             var links = elementData?.Property("links")?.Value.ToObject<IDictionary<Guid, IContentLink>>(Serializer);
 
             // Handle rich_text link resolution
@@ -310,7 +310,7 @@ namespace Kentico.Kontent.Delivery.ContentItems
             }
 
             var codeNamesWithLinkedItems = GetRawValue(elementData)
-                ?.ToObject<IEnumerable<string>>()
+                ?.ToObject<List<string>>(Serializer)
                 ?.Select(codename => (codename, linkedItems.Properties().FirstOrDefault(p => p.Name == codename)?.First))
                 .Where(pair => pair.First != null)
                 .ToArray()
@@ -376,9 +376,7 @@ namespace Kentico.Kontent.Delivery.ContentItems
 
         private async Task<string> ProcessInlineContentItems(JObject linkedItems, Dictionary<string, object> processedItems, string value, JToken linkedItemsInRichText, HashSet<RichTextContentElements> currentlyResolvedRichStrings)
         {
-            //TODO: pass json settings & get rid of the static context
-            var usedCodenames = JsonConvert.DeserializeObject<IEnumerable<string>>(linkedItemsInRichText.ToString());
-
+            var usedCodenames = linkedItemsInRichText.ToObject<List<string>>(Serializer);
             var contentItemsInRichText = new Dictionary<string, object>();
 
             if (usedCodenames != null)

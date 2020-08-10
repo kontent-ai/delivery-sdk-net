@@ -96,7 +96,7 @@ namespace Kentico.Kontent.Delivery
             var endpointUrl = UrlBuilder.GetItemsUrl(enhancedParameters);
             var response = await GetDeliveryResponseAsync(endpointUrl);
             var content = await response.GetJsonContentAsync();
-            var pagination = content["pagination"].ToObject<Pagination>();
+            var pagination = content["pagination"].ToObject<Pagination>(Serializer);
             var items = ((JArray)content["items"]).Select(async source => await ModelProvider.GetContentItemModel<T>(source, content["modular_content"]));
             return new DeliveryItemListingResponse<T>(response, (await Task.WhenAll(items)).ToList(), await GetLinkedItems(content), pagination);
         }
@@ -159,7 +159,7 @@ namespace Kentico.Kontent.Delivery
             var endpointUrl = UrlBuilder.GetTypesUrl(parameters);
             var response = await GetDeliveryResponseAsync(endpointUrl);
             var content = await response.GetJsonContentAsync();
-            var pagination = content["pagination"].ToObject<Pagination>();
+            var pagination = content["pagination"].ToObject<Pagination>(Serializer);
             var types = content["types"].ToObject<List<ContentType>>(Serializer);
             return new DeliveryTypeListingResponse(response, types.ToList<IContentType>(), pagination);
         }
@@ -232,7 +232,7 @@ namespace Kentico.Kontent.Delivery
             var endpointUrl = UrlBuilder.GetTaxonomiesUrl(parameters);
             var response = await GetDeliveryResponseAsync(endpointUrl);
             var content = await response.GetJsonContentAsync();
-            var pagination = content["pagination"].ToObject<Pagination>();
+            var pagination = content["pagination"].ToObject<Pagination>(Serializer);
             var taxonomies = content["taxonomies"].ToObject<List<TaxonomyGroup>>(Serializer);
             return new DeliveryTaxonomyListingResponse(response, taxonomies.ToList<ITaxonomyGroup>(), pagination);
         }
