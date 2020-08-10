@@ -10,8 +10,7 @@ namespace Kentico.Kontent.Delivery.Benchmarks
         public void DeliveryClient() => RunBenchmark<DeliveryClientBenchmark>();
 
         /// <remarks>
-        /// This method is used to enforce that benchmark types are added to <see cref="Benchmarks.All"/>
-        /// so that they can be used directly from the command line in <see cref="Program.Main"/> as well.
+        /// Load all benchmarks to <see cref="Benchmarks.All"/> and make them acessible from the command line (<see cref="Program.Main"/>).        
         /// </remarks>
         private static void RunBenchmark<TBenchmark>()
         {

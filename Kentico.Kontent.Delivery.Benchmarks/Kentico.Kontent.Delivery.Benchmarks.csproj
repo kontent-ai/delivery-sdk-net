@@ -24,9 +24,6 @@
   </ItemGroup>
 
   <ItemGroup>
-    <None Update="Fixtures\brazil_natural_barra_grande.json">
-      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
-    </None>
     <None Update="Fixtures\full_articles.json">
       <CopyToOutputDirectory>Always</CopyToOutputDirectory>
     </None>

@@ -1426,7 +1426,8 @@ namespace Kentico.Kontent.Delivery.Tests
                 _mockContentLinkUrlResolver,
                 null,
                 customTypeProvider,
-                new PropertyMapper());
+                new PropertyMapper(),
+                new DeliveryJsonSerializer());
             var client = Factories.DeliveryClientFactory.GetMockedDeliveryClientWithProjectId(
                 _guid,
                 handler,
@@ -1446,7 +1447,8 @@ namespace Kentico.Kontent.Delivery.Tests
         {
             var typer = typeProvider ?? _mockTypeProvider;
             var mapper = propertyMapper ?? A.Fake<IPropertyMapper>();
-            var modelProvider = new ModelProvider(null, null, typer, mapper);
+            var serializer = new DeliveryJsonSerializer();
+            var modelProvider = new ModelProvider(null, null, typer, mapper, serializer);
             var client = Factories.DeliveryClientFactory.GetMockedDeliveryClientWithProjectId(_guid, handler, modelProvider);
 
             var retryPolicy = A.Fake<IRetryPolicy>();

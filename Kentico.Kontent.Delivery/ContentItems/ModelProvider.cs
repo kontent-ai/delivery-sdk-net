@@ -29,6 +29,8 @@ namespace Kentico.Kontent.Delivery.ContentItems
 
         internal IContentLinkUrlResolver ContentLinkUrlResolver { get; }
 
+        internal JsonSerializer Serializer { get; }
+
         private ContentLinkResolver ContentLinkResolver
         {
             get
@@ -41,15 +43,6 @@ namespace Kentico.Kontent.Delivery.ContentItems
             }
         }
 
-        /// <summary>
-        /// Default serializer.
-        /// </summary>
-        internal JsonSerializer Serializer =>
-            _serializer ??= new JsonSerializer
-            {
-                //TODO: get from DI container
-                ContractResolver = new DeliveryContractResolver(new DeliveryServiceCollection().ServiceProvider)
-            };
 
         /// <summary>
         /// Initializes a new instance of <see cref="ModelProvider"/>.
@@ -58,13 +51,14 @@ namespace Kentico.Kontent.Delivery.ContentItems
             IContentLinkUrlResolver contentLinkUrlResolver,
             IInlineContentItemsProcessor inlineContentItemsProcessor,
             ITypeProvider typeProvider,
-            IPropertyMapper propertyMapper
-        )
+            IPropertyMapper propertyMapper,
+            JsonSerializer serializer)
         {
             ContentLinkUrlResolver = contentLinkUrlResolver;
             InlineContentItemsProcessor = inlineContentItemsProcessor;
             TypeProvider = typeProvider;
             PropertyMapper = propertyMapper;
+            Serializer = serializer;
         }
 
         /// <summary>

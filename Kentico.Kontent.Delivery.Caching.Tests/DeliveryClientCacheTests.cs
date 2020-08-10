@@ -254,7 +254,7 @@ namespace Kentico.Kontent.Delivery.Caching.Tests
             var secondResponse = await scenario.CachingClient.GetTypeAsync(codename);
 
             firstResponse.Should().NotBeNull();
-            firstResponse.Should().BeEquivalentTo(secondResponse, o=>o.DateTimesBsonCorrection());
+            firstResponse.Should().BeEquivalentTo(secondResponse, o => o.DateTimesBsonCorrection());
             scenario.GetRequestCount(url).Should().Be(1);
         }
 
@@ -433,6 +433,31 @@ namespace Kentico.Kontent.Delivery.Caching.Tests
             scenario.GetRequestCount(url).Should().Be(2);
         }
 
+        [Theory]
+        [InlineData(CacheTypeEnum.Memory)]
+        [InlineData(CacheTypeEnum.Distributed)]
+        public async Task GetTaxonomyAsync_InvalidatedByTaxonomyKey(CacheTypeEnum cacheType)
+        {
+            const string codename = "codename";
+            var url = $"taxonomies/{codename}";
+            var taxonomy = CreateTaxonomy(codename, new[] { "term1" });
+            var updatedTaxonomy = CreateTaxonomy(codename, new[] { "term1", "term2" });
+
+            var scenarioBuilder = new ScenarioBuilder(cacheType);
+
+            var scenario = scenarioBuilder.WithResponse(url, taxonomy).Build();
+            var firstResponse = await scenario.CachingClient.GetTaxonomyAsync(codename);
+
+            scenario = scenarioBuilder.WithResponse(url, updatedTaxonomy).Build();
+            scenario.InvalidateDependency(CacheHelpers.GetTaxonomyKey(codename));
+            var secondResponse = await scenario.CachingClient.GetTaxonomyAsync(codename);
+
+            firstResponse.Should().NotBeNull();
+            secondResponse.Should().NotBeNull();
+            firstResponse.Should().NotBeEquivalentTo(secondResponse);
+            scenario.GetRequestCount(url).Should().Be(2);
+        }
+
         #endregion
 
         #region GetTaxonomies
@@ -460,6 +485,31 @@ namespace Kentico.Kontent.Delivery.Caching.Tests
             scenario.GetRequestCount(url).Should().Be(1);
         }
 
+        [Theory]
+        [InlineData(CacheTypeEnum.Memory)]
+        [InlineData(CacheTypeEnum.Distributed)]
+        public async Task GetTaxonomiesAsync_InvalidatedByTaxonomiesKey(CacheTypeEnum cacheType)
+        {
+            var url = "taxonomies";
+            var taxonomyA = CreateTaxonomy("a", new[] { "term1" });
+            var taxonomies = CreateTaxonomiesResponse(new[] { taxonomyA });
+            var updatedTaxonomies = CreateTaxonomiesResponse(new[] { taxonomyA, CreateTaxonomy("b", new[] { "term3" }) });
+
+            var scenarioBuilder = new ScenarioBuilder(cacheType);
+
+            var scenario = scenarioBuilder.WithResponse(url, taxonomies).Build();
+            var firstResponse = await scenario.CachingClient.GetTaxonomiesAsync();
+
+            scenario = scenarioBuilder.WithResponse(url, updatedTaxonomies).Build();
+            scenario.InvalidateDependency(CacheHelpers.GetTaxonomiesKey(null));
+            var secondResponse = await scenario.CachingClient.GetTaxonomiesAsync();
+
+            firstResponse.Should().NotBeNull();
+            secondResponse.Should().NotBeNull();
+            firstResponse.Should().NotBeEquivalentTo(secondResponse);
+            scenario.GetRequestCount(url).Should().Be(2);
+        }
+
         [Fact]
         public async Task GetTaxonomiesAsync_InvalidatedByTaxonomiesDependency()
         {
@@ -484,7 +534,5 @@ namespace Kentico.Kontent.Delivery.Caching.Tests
         }
 
         #endregion
-
-        //TODO: add ItemKey tests
     }
 }

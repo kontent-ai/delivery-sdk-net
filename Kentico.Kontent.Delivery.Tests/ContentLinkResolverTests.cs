@@ -134,7 +134,7 @@ namespace Kentico.Kontent.Delivery.Tests
             var resiliencePolicyProvider = new DefaultRetryPolicyProvider(options);
             var contentLinkUrlResolver = new CustomContentLinkUrlResolver();
             var contentItemsProcessor = InlineContentItemsProcessorFactory.Create();
-            var modelProvider = new ModelProvider(contentLinkUrlResolver, contentItemsProcessor, new CustomTypeProvider(), new PropertyMapper());
+            var modelProvider = new ModelProvider(contentLinkUrlResolver, contentItemsProcessor, new CustomTypeProvider(), new PropertyMapper(), new DeliveryJsonSerializer());
             var client = new DeliveryClient(
                 deliveryOptions,
                 modelProvider,
@@ -142,7 +142,6 @@ namespace Kentico.Kontent.Delivery.Tests
                 null,
                 deliveryHttpClient
             );
-
 
             string expected = "Check out our <a data-item-id=\"0c9a11bb-6fc3-409c-b3cb-f0b797e15489\" href=\"http://example.org/brazil-natural-barra-grande\">Brazil Natural Barra Grande</a> coffee for a tasty example.";
             var item = await client.GetItemAsync<Article>("coffee_processing_techniques");

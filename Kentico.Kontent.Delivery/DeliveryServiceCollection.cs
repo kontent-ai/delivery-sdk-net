@@ -6,7 +6,7 @@ namespace Kentico.Kontent.Delivery
     /// <summary>
     /// Collection of all types from <see cref="Delivery"/> registered as implemented interfaces.
     /// </summary>
-    public class DeliveryServiceCollection
+    internal class DeliveryServiceCollection
     {
         /// <summary>
         /// Provider able to resolve any concrete type based on any interface from <see cref="Abstractions"/>.

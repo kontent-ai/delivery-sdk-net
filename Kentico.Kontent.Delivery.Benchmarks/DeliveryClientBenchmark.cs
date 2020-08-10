@@ -2,6 +2,7 @@
 using System.IO;
 using Kentico.Kontent.Delivery.Builders.DeliveryClient;
 using Kentico.Kontent.Delivery.Caching.Tests.ContentTypes;
+using Kentico.Kontent.Delivery.Abstractions;
 using BenchmarkDotNet.Attributes;
 using RichardSzalay.MockHttp;
 using System.Threading.Tasks;
@@ -25,25 +26,23 @@ namespace Kentico.Kontent.Delivery.Benchmarks
         }
 
         [Benchmark]
-        public async Task<Abstractions.IDeliveryItemResponse<Coffee>> GetItemAsync()
+        public async Task<IDeliveryItemResponse<Article>> GetItemAsync()
         {
             // Arrange
-            string url = $"{_baseUrl}/items/brazil_natural_barra_grande";
+            string url = $"{_baseUrl}/items/on_roasts";
 
             _mockHttp
                 .When(url)
-                .Respond("application/json", await File.ReadAllTextAsync(Path.Combine(Environment.CurrentDirectory, $"Fixtures{Path.DirectorySeparatorChar}brazil_natural_barra_grande.json")));
+                .Respond("application/json", await File.ReadAllTextAsync(Path.Combine(Environment.CurrentDirectory, $"Fixtures{Path.DirectorySeparatorChar}on_roasts.json")));
 
             var client = DeliveryClientBuilder.WithProjectId(_projectId).WithTypeProvider(new CustomTypeProvider()).WithDeliveryHttpClient(new DeliveryHttpClient(_mockHttp.ToHttpClient())).Build();
 
             // Act
-            var response = await client.GetItemAsync<Coffee>("brazil_natural_barra_grande");
-
-            return response;
+            return await client.GetItemAsync<Article>("on_roasts");
         }
 
         [Benchmark]
-        public async Task<Abstractions.IDeliveryItemListingResponse<Article>> GetItemsAsync()
+        public async Task<IDeliveryItemListingResponse<Article>> GetItemsAsync()
         {
             // Arrange
             string url = $"{_baseUrl}/items";
@@ -57,9 +56,7 @@ namespace Kentico.Kontent.Delivery.Benchmarks
             var client = DeliveryClientBuilder.WithProjectId(_projectId).WithTypeProvider(new CustomTypeProvider()).WithDeliveryHttpClient(new DeliveryHttpClient(_mockHttp.ToHttpClient())).Build();
 
             // Act
-            var response = await client.GetItemsAsync<Article>();
-
-            return response;
+            return await client.GetItemsAsync<Article>();
         }
     }
 }

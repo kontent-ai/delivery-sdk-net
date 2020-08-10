@@ -64,7 +64,7 @@ namespace Kentico.Kontent.Delivery.Caching
                 valueCacheOptions.SetSlidingExpiration(_cacheOptions.DefaultExpiration);
             }
 
-            _distributedCache.Set(key, value.ToBson(), valueCacheOptions);
+            await _distributedCache.SetAsync(key, value.ToBson(), valueCacheOptions);
 
             return value;
         }
@@ -98,7 +98,7 @@ namespace Kentico.Kontent.Delivery.Caching
                 throw new ArgumentNullException(nameof(key));
             }
 
-            await _distributedCache.RemoveAsync(key); //todo: second param - cancellationtoken
+            await _distributedCache.RemoveAsync(key);
         }
 
         /// <summary>

@@ -6,7 +6,7 @@ namespace Kentico.Kontent.Delivery
     /// <summary>
     /// DI-based contract resolver.
     /// </summary>
-    public class DeliveryContractResolver : DefaultContractResolver
+    internal class DeliveryContractResolver : DefaultContractResolver
     {
         private IServiceProvider ServiceProvider { get; }
 

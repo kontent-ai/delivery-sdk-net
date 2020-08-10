@@ -33,15 +33,7 @@ namespace Kentico.Kontent.Delivery
         internal readonly ITypeProvider TypeProvider;
         internal readonly IRetryPolicyProvider RetryPolicyProvider;
         internal readonly IDeliveryHttpClient DeliveryHttpClient;
-
-        /// <summary>
-        /// Default serializer.
-        /// </summary>
-        internal JsonSerializer Serializer =>
-            _serializer ??= new JsonSerializer
-            {
-                ContractResolver = new DeliveryContractResolver(new DeliveryServiceCollection().ServiceProvider)
-            };
+        internal readonly JsonSerializer Serializer;
 
         private DeliveryEndpointUrlBuilder UrlBuilder
             => _urlBuilder ??= new DeliveryEndpointUrlBuilder(DeliveryOptions);
@@ -54,19 +46,21 @@ namespace Kentico.Kontent.Delivery
         /// <param name="retryPolicyProvider">A provider of a retry policy.</param>
         /// <param name="typeProvider">An instance of an object that can map Kentico Kontent content types to CLR types</param>
         /// <param name="deliveryHttpClient">An instance of an object that can send request against Kentico Kontent Delivery API</param>
+        /// <param name="serializer">Default JSON serializer</param>
         public DeliveryClient(
             IOptionsMonitor<DeliveryOptions> deliveryOptions,
             IModelProvider modelProvider = null,
             IRetryPolicyProvider retryPolicyProvider = null,
             ITypeProvider typeProvider = null,
-            IDeliveryHttpClient deliveryHttpClient = null
-        )
+            IDeliveryHttpClient deliveryHttpClient = null, 
+            JsonSerializer serializer = null)
         {
             DeliveryOptions = deliveryOptions;
             ModelProvider = modelProvider;
             RetryPolicyProvider = retryPolicyProvider;
             TypeProvider = typeProvider;
             DeliveryHttpClient = deliveryHttpClient;
+            Serializer = serializer;
         }
 
         /// <summary>

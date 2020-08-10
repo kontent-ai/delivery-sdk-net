@@ -164,7 +164,8 @@ namespace Kentico.Kontent.Delivery.Rx.Tests
             var contentItemsProcessor = A.Fake<IInlineContentItemsProcessor>();
             var contentPropertyMapper =  new PropertyMapper();
             var contentTypeProvider = new CustomTypeProvider();
-            var modelProvider = new ModelProvider(contentLinkUrlResolver, contentItemsProcessor, contentTypeProvider, contentPropertyMapper);
+            var serializer = new DeliveryJsonSerializer();
+            var modelProvider = new ModelProvider(contentLinkUrlResolver, contentItemsProcessor, contentTypeProvider, contentPropertyMapper, serializer);
             var retryPolicy = A.Fake<IRetryPolicy>();
             var retryPolicyProvider = A.Fake<IRetryPolicyProvider>();
             A.CallTo(() => retryPolicyProvider.GetRetryPolicy()).Returns(retryPolicy);
@@ -175,7 +176,8 @@ namespace Kentico.Kontent.Delivery.Rx.Tests
                 modelProvider,
                 retryPolicyProvider,
                 contentTypeProvider,
-                deliveryHttpClient
+                deliveryHttpClient, 
+                serializer
             );
 
             return client;
