@@ -209,7 +209,7 @@ namespace Kentico.Kontent.ImageTransformation.Tests
 
             builder.WithAutomaticFormat();
 
-            Assert.Equal("?auto=webp", builder.Url.Query);
+            Assert.Equal("?auto=format", builder.Url.Query);
         }
 
         [Theory]
@@ -217,7 +217,7 @@ namespace Kentico.Kontent.ImageTransformation.Tests
         public void WithAutomaticCompressionAndBackup_TransformedQuery(ImageFormat format, string expectedFormat)
         {
             var builder = new ImageUrlBuilder(BaseUrl);
-            var expectedQuery = $"?fm={expectedFormat}&auto=webp";
+            var expectedQuery = $"?fm={expectedFormat}&auto=format";
 
             builder.WithAutomaticFormat(format);
 
