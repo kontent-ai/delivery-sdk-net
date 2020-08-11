@@ -217,8 +217,8 @@ namespace Microsoft.Extensions.DependencyInjection
             services.TryAddSingleton<IModelProvider, ModelProvider>();
             services.TryAddSingleton<IPropertyMapper, PropertyMapper>();
             services.TryAddSingleton<IRetryPolicyProvider, DefaultRetryPolicyProvider>();
-            services.TryAddSingleton<IDeliveryClient, DeliveryClient>();
-            services.TryAddTransient<IDeliveryClientFactory, DeliveryClientFactory>();
+            services.TryAddSingleton<IDeliveryClient, DeliveryClient>(); 
+            services.TryAddSingleton<IDeliveryClientFactory, DeliveryClientFactory>();
 
             return services;
         }
