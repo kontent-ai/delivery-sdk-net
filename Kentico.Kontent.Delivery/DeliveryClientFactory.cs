@@ -14,8 +14,8 @@ namespace Kentico.Kontent.Delivery
     {
         private readonly IOptionsMonitor<DeliveryClientFactoryOptions> _optionsMonitor;
         private readonly IServiceProvider _serviceProvider;
+        private readonly ConcurrentDictionary<string, IDeliveryClient> _cache = new ConcurrentDictionary<string, IDeliveryClient>();
 
-        private ConcurrentDictionary<string, IDeliveryClient> _cache = new ConcurrentDictionary<string, IDeliveryClient>();
         /// <summary>
         /// Initializes a new instance of the <see cref="DeliveryClientFactory"/> class
         /// </summary>
