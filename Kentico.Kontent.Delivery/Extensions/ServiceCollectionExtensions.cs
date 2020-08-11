@@ -248,7 +248,7 @@ namespace Kentico.Kontent.Delivery.Extensions
             services.TryAddSingleton<IHtmlParser, HtmlParser>();
             services.TryAddSingleton<JsonSerializer>(new DeliveryJsonSerializer());
             services.TryAddSingleton<IDeliveryClient, DeliveryClient>();
-            services.TryAddTransient<IDeliveryClientFactory, DeliveryClientFactory>();
+            services.TryAddSingleton<IDeliveryClientFactory, DeliveryClientFactory>();
 
             return services;
         }
