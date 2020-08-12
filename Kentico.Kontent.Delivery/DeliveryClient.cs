@@ -24,8 +24,7 @@ namespace Kentico.Kontent.Delivery
     /// </summary>
     internal sealed class DeliveryClient : IDeliveryClient
     {
-        internal DeliveryEndpointUrlBuilder _urlBuilder;
-        internal JsonSerializer _serializer;
+        private DeliveryEndpointUrlBuilder _urlBuilder;
 
         internal readonly IOptionsMonitor<DeliveryOptions> DeliveryOptions;
         internal readonly IModelProvider ModelProvider;
@@ -34,7 +33,7 @@ namespace Kentico.Kontent.Delivery
         internal readonly IDeliveryHttpClient DeliveryHttpClient;
         internal readonly JsonSerializer Serializer;
 
-        private DeliveryEndpointUrlBuilder UrlBuilder
+        internal DeliveryEndpointUrlBuilder UrlBuilder
             => _urlBuilder ??= new DeliveryEndpointUrlBuilder(DeliveryOptions);
 
         /// <summary>
@@ -51,7 +50,7 @@ namespace Kentico.Kontent.Delivery
             IModelProvider modelProvider = null,
             IRetryPolicyProvider retryPolicyProvider = null,
             ITypeProvider typeProvider = null,
-            IDeliveryHttpClient deliveryHttpClient = null, 
+            IDeliveryHttpClient deliveryHttpClient = null,
             JsonSerializer serializer = null)
         {
             DeliveryOptions = deliveryOptions;
@@ -368,13 +367,9 @@ namespace Kentico.Kontent.Delivery
 
         private async Task<IList<object>> GetLinkedItems(JObject content)
         {
-            var linkedItems = (JObject)content["modular_content"].DeepClone();
-            List<object> result = new List<object>();
-            foreach (var keyValuePair in linkedItems)
-            {
-                result.Add(await ModelProvider.GetContentItemModel<object>(keyValuePair.Value, linkedItems));
-            }
-            return result;
+            var items = ((JObject)content["modular_content"]).Values().Select(async source => await ModelProvider.GetContentItemModel<object>(source, content["modular_content"]));
+
+            return (await Task.WhenAll(items)).ToList();
         }
     }
 }

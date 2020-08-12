@@ -11,52 +11,38 @@ namespace Kentico.Kontent.Delivery.Benchmarks
 {
     public class DeliveryClientBenchmark
     {
-        private Guid _projectId;
-        private string _baseUrl;
-        private MockHttpMessageHandler _mockHttp;
-
+        private IDeliveryClient _client;
 
         [GlobalSetup]
-        public void Setup()
+        public async Task Setup()
         {
-            _projectId = Guid.NewGuid();
-            var projectId = _projectId.ToString();
-            _baseUrl = $"https://deliver.kontent.ai/{projectId}";
-            _mockHttp = new MockHttpMessageHandler();
+            var projectId = Guid.NewGuid();
+            var baseUrl = $"https://deliver.kontent.ai/{projectId}";
+            var mockHttp = new MockHttpMessageHandler();
+
+            mockHttp
+                .When($"{baseUrl}/items/on_roasts")
+                .Respond("application/json", await File.ReadAllTextAsync(Path.Combine(Environment.CurrentDirectory, $"Fixtures{Path.DirectorySeparatorChar}on_roasts.json")));
+
+            mockHttp
+                .When($"{baseUrl}/items")
+                .WithQueryString("system.type=article")
+                .Respond("application/json",
+                    await File.ReadAllTextAsync(Path.Combine(Environment.CurrentDirectory, $"Fixtures{Path.DirectorySeparatorChar}full_articles.json")));
+
+            _client = DeliveryClientBuilder.WithProjectId(projectId).WithTypeProvider(new CustomTypeProvider()).WithDeliveryHttpClient(new DeliveryHttpClient(mockHttp.ToHttpClient())).Build();
         }
 
         [Benchmark]
         public async Task<IDeliveryItemResponse<Article>> GetItemAsync()
         {
-            // Arrange
-            string url = $"{_baseUrl}/items/on_roasts";
-
-            _mockHttp
-                .When(url)
-                .Respond("application/json", await File.ReadAllTextAsync(Path.Combine(Environment.CurrentDirectory, $"Fixtures{Path.DirectorySeparatorChar}on_roasts.json")));
-
-            var client = DeliveryClientBuilder.WithProjectId(_projectId).WithTypeProvider(new CustomTypeProvider()).WithDeliveryHttpClient(new DeliveryHttpClient(_mockHttp.ToHttpClient())).Build();
-
-            // Act
-            return await client.GetItemAsync<Article>("on_roasts");
+            return await _client.GetItemAsync<Article>("on_roasts");
         }
 
         [Benchmark]
         public async Task<IDeliveryItemListingResponse<Article>> GetItemsAsync()
         {
-            // Arrange
-            string url = $"{_baseUrl}/items";
-
-            _mockHttp
-                .When(url)
-                .WithQueryString("system.type=article")
-                .Respond("application/json",
-                    await File.ReadAllTextAsync(Path.Combine(Environment.CurrentDirectory, $"Fixtures{Path.DirectorySeparatorChar}full_articles.json")));
-
-            var client = DeliveryClientBuilder.WithProjectId(_projectId).WithTypeProvider(new CustomTypeProvider()).WithDeliveryHttpClient(new DeliveryHttpClient(_mockHttp.ToHttpClient())).Build();
-
-            // Act
-            return await client.GetItemsAsync<Article>();
+            return await _client.GetItemsAsync<Article>();
         }
     }
 }
