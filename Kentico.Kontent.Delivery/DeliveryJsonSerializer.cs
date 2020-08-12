@@ -1,14 +1,12 @@
-﻿using Kentico.Kontent.Delivery.ContentTypes.Element;
-using Newtonsoft.Json;
+﻿using Newtonsoft.Json;
 
 namespace Kentico.Kontent.Delivery
 {
-    internal class DeliveryJsonSerializer : JsonSerializer
+    internal sealed class DeliveryJsonSerializer : JsonSerializer
     {
         public DeliveryJsonSerializer()
         {
             ContractResolver = new DeliveryContractResolver(new DeliveryServiceCollection().ServiceProvider);
-            Converters.Add(new ContentElementConverter());
         }
     }
 }

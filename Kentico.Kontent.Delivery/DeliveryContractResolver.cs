@@ -1,7 +1,8 @@
 ﻿using System;
-using System.Collections;
 using System.Collections.Generic;
 using System.Linq;
+using Kentico.Kontent.Delivery.Abstractions;
+using Kentico.Kontent.Delivery.ContentTypes.Element;
 using Microsoft.Extensions.DependencyInjection;
 using Newtonsoft.Json.Serialization;
 
@@ -43,6 +44,10 @@ namespace Kentico.Kontent.Delivery
                     {
                         var implementation = GetClosestImplementation(services, objectType);
                         contract = base.CreateObjectContract(implementation);
+                        if (objectType.IsAssignableFrom(typeof(IContentElement)))
+                        {
+                            contract.Converter = new ContentElementConverter();
+                        }
                         contract.DefaultCreator = () => ServiceProvider.GetService(implementation);
                         _contractCache.Add(objectType, contract);
                     }
