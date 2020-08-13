@@ -243,7 +243,7 @@ namespace Kentico.Kontent.ImageTransformation.Tests
         public void ComplexTransformation_TransformedQuery()
         {
             var builder = new ImageUrlBuilder(BaseUrl);
-            var expectedQuery = "?w=100&h=100&fit=scale&dpr=2&rect=0.5,0.5,20,20&fm=jpg&auto=webp&lossless=true";
+            var expectedQuery = "?w=100&h=100&fit=scale&dpr=2&rect=0.5,0.5,20,20&fm=jpg&auto=format&lossless=true";
 
             builder.WithWidth(100)
                 .WithHeight(100)
