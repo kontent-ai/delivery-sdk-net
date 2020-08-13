@@ -40,19 +40,24 @@ namespace Kentico.Kontent.Delivery
                 if (!_contractCache.TryGetValue(objectType, out contract))
                 {
                     var services = ServiceProvider.GetServices(objectType);
-                    if (services != null && services.Any())
+                    if (services != null)
                     {
                         var implementation = GetClosestImplementation(services, objectType);
-                        contract = base.CreateObjectContract(implementation);
-                        if (objectType.IsAssignableFrom(typeof(IContentElement)))
+                        if (implementation != null)
                         {
-                            contract.Converter = new ContentElementConverter();
+                            contract = base.CreateObjectContract(implementation);
+                            if (objectType.IsAssignableFrom(typeof(IContentElement)))
+                            {
+                                contract.Converter = new ContentElementConverter();
+                            }
+
+                            contract.DefaultCreator = () => ServiceProvider.GetService(implementation);
+                            _contractCache.Add(objectType, contract);
                         }
-                        contract.DefaultCreator = () => ServiceProvider.GetService(implementation);
-                        _contractCache.Add(objectType, contract);
                     }
                 }
             }
+
             return contract ?? base.CreateContract(objectType);
         }
 
