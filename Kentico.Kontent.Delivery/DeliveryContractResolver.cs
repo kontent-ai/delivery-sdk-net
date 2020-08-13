@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Collections.Concurrent;
 using System.Collections.Generic;
 using System.Linq;
 using Kentico.Kontent.Delivery.Abstractions;
@@ -13,7 +14,7 @@ namespace Kentico.Kontent.Delivery
     /// </summary>
     internal class DeliveryContractResolver : DefaultContractResolver
     {
-        private readonly Dictionary<Type, JsonContract> _contractCache = new Dictionary<Type, JsonContract>();
+        private readonly ConcurrentDictionary<Type, JsonContract> _contractCache = new ConcurrentDictionary<Type, JsonContract>();
 
         private IServiceProvider ServiceProvider { get; }
 
@@ -33,11 +34,9 @@ namespace Kentico.Kontent.Delivery
         /// <returns>Information about how a type should be instantiated.</returns>
         protected override JsonContract CreateContract(Type objectType)
         {
-            JsonContract contract = null;
-
-            if (objectType.IsInterface)
+            if (!_contractCache.TryGetValue(objectType, out var contract))
             {
-                if (!_contractCache.TryGetValue(objectType, out contract))
+                if (objectType.IsInterface)
                 {
                     var services = ServiceProvider.GetServices(objectType);
                     if (services != null)
@@ -52,13 +51,15 @@ namespace Kentico.Kontent.Delivery
                             }
 
                             contract.DefaultCreator = () => ServiceProvider.GetService(implementation);
-                            _contractCache.Add(objectType, contract);
                         }
                     }
                 }
+
+                contract ??= base.CreateContract(objectType);
+                _contractCache.TryAdd(objectType, contract);
             }
 
-            return contract ?? base.CreateContract(objectType);
+            return contract;
         }
 
         public Type GetClosestImplementation(IEnumerable<object> services, Type @interface)
