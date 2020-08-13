@@ -183,7 +183,7 @@ namespace Kentico.Kontent.ImageTransformation
         /// <returns>The same <see cref="ImageUrlBuilder" /> instance. </returns>
         public ImageUrlBuilder WithAutomaticFormat()
         {
-            _queryParameters["auto"] = StringifyEnum(ImageFormat.Webp);
+            _queryParameters["auto"] = "format";
             return this;
         }
 
