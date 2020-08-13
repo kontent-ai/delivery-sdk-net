@@ -1,11 +1,11 @@
 ﻿using System;
 using System.IO;
 using Kentico.Kontent.Delivery.Builders.DeliveryClient;
-using Kentico.Kontent.Delivery.Caching.Tests.ContentTypes;
 using Kentico.Kontent.Delivery.Abstractions;
 using BenchmarkDotNet.Attributes;
 using RichardSzalay.MockHttp;
 using System.Threading.Tasks;
+using Kentico.Kontent.Delivery.Benchmarks.ContentTypes;
 
 namespace Kentico.Kontent.Delivery.Benchmarks
 {

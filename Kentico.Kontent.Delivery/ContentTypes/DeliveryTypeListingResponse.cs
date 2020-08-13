@@ -12,14 +12,12 @@ namespace Kentico.Kontent.Delivery.ContentTypes
         public IPagination Pagination
         {
             get;
-            private set;
         }
 
         /// <inheritdoc/>
         public IList<IContentType> Types
         {
             get;
-            private set;
         }
 
         /// <summary>

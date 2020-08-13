@@ -3,7 +3,7 @@
     /// <summary>
     /// Represents a content element.
     /// </summary>
-    public interface IContentElementValue<T>
+    public interface IContentElementValue<out T>
     {
         /// <summary>
         /// Gets the value of the content element.

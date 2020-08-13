@@ -18,7 +18,9 @@ namespace Kentico.Kontent.Delivery.SharedModels
         private JObject _jsonContent;
         private string _content;
 
-        /// <inheritdoc/>
+        /// <summary>
+        /// Facilitates access to HTTP response body and headers
+        /// </summary>
         [JsonIgnore]
         public HttpContent HttpContent { get; }
 
@@ -29,10 +31,7 @@ namespace Kentico.Kontent.Delivery.SharedModels
             {
                 return _content ??= Task.Run(() => HttpContent.ReadAsStringAsync()).GetAwaiter().GetResult();
             }
-            set
-            {
-                _content = value;
-            }
+            set => _content = value;
         }
 
         /// <inheritdoc/>

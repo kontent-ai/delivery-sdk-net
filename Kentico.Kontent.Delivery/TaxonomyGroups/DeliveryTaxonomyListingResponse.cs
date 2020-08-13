@@ -16,7 +16,6 @@ namespace Kentico.Kontent.Delivery.TaxonomyGroups
         public IPagination Pagination
         {
             get;
-            private set;
         }
 
         /// <summary>
@@ -25,7 +24,6 @@ namespace Kentico.Kontent.Delivery.TaxonomyGroups
         public IList<ITaxonomyGroup> Taxonomies
         {
             get;
-            private set;
         }
 
         /// <summary>

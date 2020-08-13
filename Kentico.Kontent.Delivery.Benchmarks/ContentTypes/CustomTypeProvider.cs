@@ -3,7 +3,7 @@ using System.Collections.Generic;
 using System.Linq;
 using Kentico.Kontent.Delivery.Abstractions;
 
-namespace Kentico.Kontent.Delivery.Caching.Tests.ContentTypes
+namespace Kentico.Kontent.Delivery.Benchmarks.ContentTypes
 {
     public class CustomTypeProvider : ITypeProvider
     {

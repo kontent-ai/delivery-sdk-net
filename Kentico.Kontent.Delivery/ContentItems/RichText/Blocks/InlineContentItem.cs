@@ -12,7 +12,6 @@ namespace Kentico.Kontent.Delivery.ContentItems.RichText.Blocks
         public object ContentItem
         {
             get;
-            private set;
         }
 
         public InlineContentItem(object contentItem)

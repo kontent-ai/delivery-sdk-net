@@ -12,7 +12,6 @@ namespace Kentico.Kontent.Delivery.TaxonomyGroups
         public ITaxonomyGroup Taxonomy
         {
             get;
-            private set;
         }
 
         /// <summary>

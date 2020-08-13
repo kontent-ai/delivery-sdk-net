@@ -11,7 +11,6 @@ namespace Kentico.Kontent.Delivery.ContentTypes
         public IContentType Type
         {
             get;
-            private set;
         }
 
         /// <summary>

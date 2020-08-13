@@ -41,10 +41,7 @@ namespace Kentico.Kontent.Delivery.Extensions
             {
                 return new ConfigureNamedOptions<DeliveryClientFactoryOptions>(name, options =>
                 {
-                    options.DeliveryClientsActions.Add(() =>
-                    {
-                        return buildDeliveryClient(new DeliveryClientBuilderImplementation());
-                    });
+                    options.DeliveryClientsActions.Add(() => buildDeliveryClient(new DeliveryClientBuilderImplementation()));
                 });
             });
 

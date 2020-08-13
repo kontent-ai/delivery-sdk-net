@@ -21,15 +21,10 @@ namespace Kentico.Kontent.Delivery.ContentItems.RichText.Blocks
 
         public Guid ImageId { get; set; }
 
-        public InlineImage(string description, string url, int height, int width, Guid imageId)
-        {
-        }
-
         [JsonConstructor]
         public InlineImage()
         {
         }
-
 
         public override string ToString()
         {

@@ -8,9 +8,5 @@ namespace Kentico.Kontent.Delivery.ContentItems.Elements
     {
         [JsonProperty("taxonomy_group")]
         public string TaxonomyGroup { get; set; }
-
-        public TaxonomyElementValue() : base()
-        {
-        }
     }
 }

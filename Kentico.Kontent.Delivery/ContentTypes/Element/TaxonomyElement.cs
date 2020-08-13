@@ -1,8 +1,7 @@
 ﻿using Kentico.Kontent.Delivery.Abstractions;
-using Kentico.Kontent.Delivery.ContentTypes.Element;
 using Newtonsoft.Json;
 
-namespace Kentico.Kontent.Delivery.ContentItems.Elements
+namespace Kentico.Kontent.Delivery.ContentTypes.Element
 {
     internal class TaxonomyElement : ContentElement, ITaxonomyElement
     {

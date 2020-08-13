@@ -7,8 +7,6 @@
 using System;
 using System.Collections.Generic;
 using Kentico.Kontent.Delivery.Abstractions;
-using Kentico.Kontent.Delivery.ContentItems;
-using Kentico.Kontent.Delivery.TaxonomyGroups;
 
 namespace Kentico.Kontent.Delivery.Tests.Models.ContentTypes
 {

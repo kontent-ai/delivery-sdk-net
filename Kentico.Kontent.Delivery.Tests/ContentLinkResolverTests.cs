@@ -9,7 +9,6 @@ using Kentico.Kontent.Delivery.ContentItems.ContentLinks;
 using Kentico.Kontent.Delivery.RetryPolicy;
 using Kentico.Kontent.Delivery.Tests.Factories;
 using Kentico.Kontent.Delivery.Tests.Models.ContentTypes;
-using Newtonsoft.Json.Linq;
 using RichardSzalay.MockHttp;
 using Xunit;
 
@@ -17,8 +16,8 @@ namespace Kentico.Kontent.Delivery.Tests
 {
     public class ContentLinkResolverTests
     {
-        private Guid ContentItemIdA = Guid.NewGuid();
-        private Guid ContentItemIdB = Guid.NewGuid();
+        private readonly Guid ContentItemIdA = Guid.NewGuid();
+        private readonly Guid ContentItemIdB = Guid.NewGuid();
 
         [Fact]
         public async Task ContentLinkIsResolved()

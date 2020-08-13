@@ -140,7 +140,7 @@ namespace Kentico.Kontent.Delivery.Caching
             var (Success, Value) = await TryGetAsync<CancellationTokenSource>(key);
             if (Success)
             {
-                if (Value is CancellationTokenSource)
+                if (Value is { })
                 {
                     // Invalidate by item dependency
                     Value.Cancel();

@@ -12,14 +12,12 @@ namespace Kentico.Kontent.Delivery.ContentItems
         public IPagination Pagination
         {
             get;
-            private set;
         }
 
         /// <inheritdoc/>
         public IList<T> Items
         {
             get;
-            private set;
         }
 
         /// <summary>

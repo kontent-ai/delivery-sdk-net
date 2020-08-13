@@ -20,7 +20,7 @@ namespace Kentico.Kontent.Delivery.ContentItems
             Parser = parser;
         }
 
-        public async Task<object> GetPropertyValue<U>(PropertyInfo property, U contentElement, ResolvingContext context) where U : IContentElementValue<string>
+        public async Task<object> GetPropertyValue<TElement>(PropertyInfo property, TElement contentElement, ResolvingContext context) where TElement : IContentElementValue<string>
         {
             if (!typeof(IRichTextContent).IsAssignableFrom(property.PropertyType))
             {

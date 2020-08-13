@@ -2,7 +2,6 @@
 using Kentico.Kontent.Delivery.Abstractions;
 using System;
 using Newtonsoft.Json.Linq;
-using Kentico.Kontent.Delivery.ContentItems.Elements;
 
 namespace Kentico.Kontent.Delivery.ContentTypes.Element
 {
@@ -22,14 +21,14 @@ namespace Kentico.Kontent.Delivery.ContentTypes.Element
         {
             JObject jObject = JObject.Load(reader);
 
-            objectType = (jObject["type"].ToString()) switch
+            var elementType = (jObject["type"].ToString()) switch
             {
                 "taxonomy" => typeof(TaxonomyElement),
                 "multiple_choice" => typeof(MultipleChoiceElement),
                 _ => typeof(ContentElement)
             };
 
-            var viewType = serializer.ContractResolver.ResolveContract(objectType);
+            var viewType = serializer.ContractResolver.ResolveContract(elementType);
             var resultInstance = viewType.DefaultCreator();
 
             serializer.Populate(jObject.CreateReader(), resultInstance);

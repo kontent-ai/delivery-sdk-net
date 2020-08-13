@@ -12,7 +12,6 @@ namespace Kentico.Kontent.Delivery.ContentItems
         public T Item
         {
             get;
-            private set;
         }
 
         /// <summary>

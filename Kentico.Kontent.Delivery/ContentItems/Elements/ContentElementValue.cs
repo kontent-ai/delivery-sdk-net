@@ -1,6 +1,5 @@
 ﻿using Kentico.Kontent.Delivery.Abstractions;
 using Newtonsoft.Json;
-using System.Collections.Generic;
 
 namespace Kentico.Kontent.Delivery.ContentItems.Elements
 {
@@ -21,9 +20,5 @@ namespace Kentico.Kontent.Delivery.ContentItems.Elements
         /// <inheritdoc/>
         [JsonProperty("codename")]
         public string Codename { get; internal set; }
-
-        public ContentElementValue()
-        {
-        }
     }
 }

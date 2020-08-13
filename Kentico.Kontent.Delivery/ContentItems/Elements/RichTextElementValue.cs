@@ -15,9 +15,5 @@ namespace Kentico.Kontent.Delivery.ContentItems.Elements
 
         [JsonProperty("modular_content")]
         public List<string> ModularContent { get; set; }
-
-        public RichTextElementValue() : base()
-        {
-        }
     }
 }
