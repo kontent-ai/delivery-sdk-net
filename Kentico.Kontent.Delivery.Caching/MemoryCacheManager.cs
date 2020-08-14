@@ -31,15 +31,7 @@ namespace Kentico.Kontent.Delivery.Caching
             _cacheOptions = cacheOptions.Value ?? new DeliveryCacheOptions();
         }
 
-        /// <summary>
-        /// Returns or Adds data to the cache
-        /// </summary>
-        /// <typeparam name="T">A generic type</typeparam>
-        /// <param name="key">A cache key</param>
-        /// <param name="valueFactory">A factory which returns a data</param>
-        /// <param name="shouldCache"></param>
-        /// <param name="dependenciesFactory"></param>
-        /// <returns>The data of generic type</returns>
+        /// <inheritdoc />
         public async Task<T> GetOrAddAsync<T>(string key, Func<Task<T>> valueFactory, Func<T, bool> shouldCache = null, Func<T, IEnumerable<string>> dependenciesFactory = null) where T : class
         {
             var attempt = await TryGetAsync<T>(key);
@@ -108,12 +100,8 @@ namespace Kentico.Kontent.Delivery.Caching
                 entryLock.Release();
             }
         }
-        /// <summary>
-        /// Attemptes to retrieve data from cache.
-        /// </summary>
-        /// <typeparam name="T">Type of the response used for deserialization</typeparam>
-        /// <param name="key">A cache key</param>
-        /// <returns>Returns true along with the deserialized value if the retrieval attempt was successful. Otherwise, returns false and null for the value.</returns>
+
+        /// <inheritdoc />
         public Task<(bool Success, T Value)> TryGetAsync<T>(string key) where T : class
         {
             if (key == null)
@@ -125,11 +113,7 @@ namespace Kentico.Kontent.Delivery.Caching
             return Task.FromResult((Success: result, Value: value as T));
         }
 
-        /// <summary>
-        /// Invalidates data by the key
-        /// </summary>
-        /// <param name="key">A cache key</param>
-        /// <returns></returns>
+        /// <inheritdoc />
         public async Task InvalidateDependencyAsync(string key)
         {
             if (key == null)
@@ -153,10 +137,7 @@ namespace Kentico.Kontent.Delivery.Caching
             }
         }
 
-        /// <summary>
-        /// Clears cache
-        /// </summary>
-        /// <returns></returns>
+        /// <inheritdoc />
         public Task ClearAsync()
         {
             foreach (var key in _createLocks.Keys)

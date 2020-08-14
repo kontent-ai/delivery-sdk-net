@@ -57,7 +57,7 @@ namespace Kentico.Kontent.Delivery.ContentItems.InlineContentItems
         /// <param name="value">HTML code</param>
         /// <param name="inlineContentItemMap">Content items referenced as inline content items</param>
         /// <returns>HTML with inline content items replaced with resolvers output</returns>
-        public async Task<string> Process(string value, Dictionary<string, object> inlineContentItemMap)
+        public async Task<string> ProcessAsync(string value, Dictionary<string, object> inlineContentItemMap)
         {
             var document = await _htmlParser.ParseDocumentAsync(value);
             var inlineContentItemElements = GetInlineContentItemElements(document);
@@ -81,7 +81,7 @@ namespace Kentico.Kontent.Delivery.ContentItems.InlineContentItems
         /// </summary>
         /// <param name="value">HTML content</param>
         /// <returns>HTML without inline content items</returns>
-        public async Task<string> RemoveAll(string value)
+        public async Task<string> RemoveAllAsync(string value)
         {
             var htmlInput = await _htmlParser.ParseDocumentAsync(value);
             List<IElement> inlineContentItems = GetInlineContentItemElements(htmlInput);

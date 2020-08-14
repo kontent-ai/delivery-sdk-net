@@ -14,7 +14,7 @@ namespace Kentico.Kontent.Delivery.Abstractions
         /// <param name="property">Property info</param>
         /// <param name="element">Source element data</param>
         /// <param name="context">Context of the current resolving process</param>
-        Task<object> GetPropertyValue<TElement>(PropertyInfo property, TElement element, ResolvingContext context) where TElement : IContentElementValue<T>;
+        Task<object> GetPropertyValueAsync<TElement>(PropertyInfo property, TElement element, ResolvingContext context) where TElement : IContentElementValue<T>;
     }
 
     /// <summary>

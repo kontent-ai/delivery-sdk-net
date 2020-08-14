@@ -20,7 +20,7 @@ namespace Kentico.Kontent.Delivery.ContentItems
             Parser = parser;
         }
 
-        public async Task<object> GetPropertyValue<TElement>(PropertyInfo property, TElement contentElement, ResolvingContext context) where TElement : IContentElementValue<string>
+        public async Task<object> GetPropertyValueAsync<TElement>(PropertyInfo property, TElement contentElement, ResolvingContext context) where TElement : IContentElementValue<string>
         {
             if (!typeof(IRichTextContent).IsAssignableFrom(property.PropertyType))
             {
@@ -38,7 +38,7 @@ namespace Kentico.Kontent.Delivery.ContentItems
             // Handle rich_text link resolution
             if (links != null && context.ContentLinkUrlResolver != null)
             {
-                value = await new ContentLinkResolver(context.ContentLinkUrlResolver).ResolveContentLinks(value, links);
+                value = await new ContentLinkResolver(context.ContentLinkUrlResolver).ResolveContentLinksAsync(value, links);
             }
 
             var blocks = new List<IRichTextBlock>();

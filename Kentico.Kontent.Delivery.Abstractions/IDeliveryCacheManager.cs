@@ -10,7 +10,7 @@ namespace Kentico.Kontent.Delivery.Abstractions
     public interface IDeliveryCacheManager
     {
         /// <summary>
-        /// Returns the cached data or fetches the data using a factory and caches it before returing.
+        /// Returns the cached data or fetches the data using a factory and caches it before returning.
         /// </summary>
         /// <typeparam name="T">The type of data to be returned.</typeparam>
         /// <param name="key">A cache key under which the data is or will be stored.</param>
@@ -21,7 +21,7 @@ namespace Kentico.Kontent.Delivery.Abstractions
         Task<T> GetOrAddAsync<T>(string key, Func<Task<T>> valueFactory, Func<T, bool> shouldCache = null, Func<T, IEnumerable<string>> dependenciesFactory = null) where T : class;
 
         /// <summary>
-        /// Attemptes to retrieve data from cache.
+        /// Attempts to retrieve data from cache.
         /// </summary>
         /// <typeparam name="T">Type of the response used for deserialization</typeparam>
         /// <param name="key">A cache key under which the data is supposed to be stored.</param>
@@ -32,7 +32,7 @@ namespace Kentico.Kontent.Delivery.Abstractions
         /// Invalidates data using a cache key.
         /// </summary>
         /// <param name="key">A cache key the data under which is supposed to be invalidated.</param>
-        /// <returns>Asynchrnous task used for invalidating a cache item.</returns>
+        /// <returns>Asynchronous task used for invalidating a cache item.</returns>
         Task InvalidateDependencyAsync(string key);
 
         /// <summary>

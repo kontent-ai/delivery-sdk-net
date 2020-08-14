@@ -15,6 +15,6 @@ namespace Kentico.Kontent.Delivery.Abstractions
         /// <param name="item">Content item data.</param>
         /// <param name="linkedItems">Linked items.</param>
         /// <returns>Strongly typed POCO model of the generic type.</returns>
-        Task<T> GetContentItemModel<T>(object item, IEnumerable linkedItems);
+        Task<T> GetContentItemModelAsync<T>(object item, IEnumerable linkedItems);
     }
 }

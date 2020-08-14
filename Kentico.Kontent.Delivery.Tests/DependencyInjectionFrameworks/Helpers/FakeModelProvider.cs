@@ -7,7 +7,7 @@ namespace Kentico.Kontent.Delivery.Tests.DependencyInjectionFrameworks.Helpers
 {
     internal class FakeModelProvider : IModelProvider
     {
-        public Task<T> GetContentItemModel<T>(object item, IEnumerable modularContent) 
+        public Task<T> GetContentItemModelAsync<T>(object item, IEnumerable modularContent)
             => throw new NotImplementedException();
     }
 }

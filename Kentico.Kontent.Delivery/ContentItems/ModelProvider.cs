@@ -31,7 +31,8 @@ namespace Kentico.Kontent.Delivery.ContentItems
         internal IContentLinkUrlResolver ContentLinkUrlResolver { get; }
 
         internal JsonSerializer Serializer { get; }
-        public IHtmlParser HtmlParser { get; }
+
+        internal IHtmlParser HtmlParser { get; }
 
         private ContentLinkResolver ContentLinkResolver
         {
@@ -72,10 +73,10 @@ namespace Kentico.Kontent.Delivery.ContentItems
         /// <param name="item">Content item data.</param>
         /// <param name="linkedItems">Linked items.</param>
         /// <returns>Strongly typed POCO model of the generic type.</returns>
-        public async Task<T> GetContentItemModel<T>(object item, IEnumerable linkedItems)
-            => (T)await GetContentItemModel(typeof(T), (JToken)item, (JObject)linkedItems);
+        public async Task<T> GetContentItemModelAsync<T>(object item, IEnumerable linkedItems)
+            => (T)await GetContentItemModelAsync(typeof(T), (JToken)item, (JObject)linkedItems);
 
-        internal async Task<object> GetContentItemModel(Type modelType, JToken serializedItem, JObject linkedItems, Dictionary<string, object> processedItems = null, HashSet<RichTextContentElements> currentlyResolvedRichStrings = null)
+        internal async Task<object> GetContentItemModelAsync(Type modelType, JToken serializedItem, JObject linkedItems, Dictionary<string, object> processedItems = null, HashSet<RichTextContentElements> currentlyResolvedRichStrings = null)
         {
             processedItems ??= new Dictionary<string, object>();
             IContentItemSystemAttributes itemSystemAttributes = serializedItem["system"].ToObject<IContentItemSystemAttributes>(Serializer);
@@ -102,7 +103,7 @@ namespace Kentico.Kontent.Delivery.ContentItems
                 }
                 else
                 {
-                    var value = await GetPropertyValue(elementsData, property, linkedItems, context, itemSystemAttributes, processedItems, richTextPropertiesToBeProcessed);
+                    var value = await GetPropertyValueAsync(elementsData, property, linkedItems, context, itemSystemAttributes, processedItems, richTextPropertiesToBeProcessed);
                     if (value != null)
                     {
                         property.SetValue(instance, value);
@@ -110,14 +111,14 @@ namespace Kentico.Kontent.Delivery.ContentItems
                 }
             }
 
-            // Richtext elements need to be processed last, so in case of circular dependency, content items resolved by
+            // Rich-text elements need to be processed last, so in case of circular dependency, content items resolved by
             // resolvers would have all elements already processed
             currentlyResolvedRichStrings ??= new HashSet<RichTextContentElements>();
             foreach (var property in richTextPropertiesToBeProcessed)
             {
                 var currentValue = property.GetValue(instance)?.ToString();
 
-                var value = await GetRichTextValue(currentValue, elementsData, property, linkedItems, itemSystemAttributes, processedItems, currentlyResolvedRichStrings);
+                var value = await GetRichTextValueAsync(currentValue, elementsData, property, linkedItems, itemSystemAttributes, processedItems, currentlyResolvedRichStrings);
 
                 if (value != null)
                 {
@@ -128,21 +129,21 @@ namespace Kentico.Kontent.Delivery.ContentItems
             return instance;
         }
 
-        private async Task<object> GetRichTextValue(string value, JObject elementsData, PropertyInfo property, JObject linkedItems, IContentItemSystemAttributes itemSystemAttributes, Dictionary<string, object> processedItems, HashSet<RichTextContentElements> currentlyResolvedRichStrings)
+        private async Task<object> GetRichTextValueAsync(string value, JObject elementsData, PropertyInfo property, JObject linkedItems, IContentItemSystemAttributes itemSystemAttributes, Dictionary<string, object> processedItems, HashSet<RichTextContentElements> currentlyResolvedRichStrings)
         {
             var currentlyProcessedString = new RichTextContentElements(itemSystemAttributes?.Codename, property.Name);
             if (currentlyResolvedRichStrings.Contains(currentlyProcessedString))
             {
                 // If this element is already being processed it's necessary to use it as is (with removed inline content items)
                 // otherwise resolving would be stuck in an infinite loop
-                return await RemoveInlineContentItems(value);
+                return await RemoveInlineContentItemsAsync(value);
             }
 
             currentlyResolvedRichStrings.Add(currentlyProcessedString);
 
             var elementData = GetElementData(elementsData, property, itemSystemAttributes);
             var linkedItemsInRichText = GetLinkedItemsInRichText(elementData?.Value);
-            value = await ProcessInlineContentItems(linkedItems, processedItems, value, linkedItemsInRichText, currentlyResolvedRichStrings);
+            value = await ProcessInlineContentItemsAsync(linkedItems, processedItems, value, linkedItemsInRichText, currentlyResolvedRichStrings);
 
             currentlyResolvedRichStrings.Remove(currentlyProcessedString);
 
@@ -185,7 +186,7 @@ namespace Kentico.Kontent.Delivery.ContentItems
 
         private ResolvingContext CreateResolvingContext(JObject linkedItems, Dictionary<string, object> processedItems)
         {
-            async Task<object> GetLinkedItem(string codename)
+            async Task<object> GetLinkedItemAsync(string codename)
             {
                 var linkedItemsElementNode = linkedItems.Properties().FirstOrDefault(p => p.Name == codename)?.First;
                 if (linkedItemsElementNode == null)
@@ -195,17 +196,17 @@ namespace Kentico.Kontent.Delivery.ContentItems
 
                 return processedItems.ContainsKey(codename)
                     ? processedItems[codename]
-                    : await GetContentItemModel(typeof(object), linkedItemsElementNode, linkedItems, processedItems);
+                    : await GetContentItemModelAsync(typeof(object), linkedItemsElementNode, linkedItems, processedItems);
             }
 
             return new ResolvingContext
             {
-                GetLinkedItem = GetLinkedItem,
+                GetLinkedItem = GetLinkedItemAsync,
                 ContentLinkUrlResolver = ContentLinkUrlResolver
             };
         }
 
-        private async Task<object> GetPropertyValue(JObject elementsData, PropertyInfo property, JObject linkedItems, ResolvingContext context, IContentItemSystemAttributes itemSystemAttributes, Dictionary<string, object> processedItems, List<PropertyInfo> richTextPropertiesToBeProcessed)
+        private async Task<object> GetPropertyValueAsync(JObject elementsData, PropertyInfo property, JObject linkedItems, ResolvingContext context, IContentItemSystemAttributes itemSystemAttributes, Dictionary<string, object> processedItems, List<PropertyInfo> richTextPropertiesToBeProcessed)
         {
             var elementDefinition = GetElementData(elementsData, property, itemSystemAttributes);
 
@@ -218,21 +219,21 @@ namespace Kentico.Kontent.Delivery.ContentItems
                 {
                     return (elementValue["type"].ToString()) switch
                     {
-                        "rich_text" => await GetElementModel<RichTextElementValue, string>(property, context, elementValue, valueConverter),
-                        "asset" => await GetElementModel<ContentElementValue<Asset>, Asset>(property, context, elementValue, valueConverter),
-                        "number" => await GetElementModel<ContentElementValue<decimal?>, decimal?>(property, context, elementValue, valueConverter),
-                        "date_time" => await GetElementModel<ContentElementValue<DateTime>, DateTime>(property, context, elementValue, valueConverter),
-                        "multiple_choice" => await GetElementModel<ContentElementValue<List<MultipleChoiceOption>>, List<MultipleChoiceOption>>(property, context, elementValue, valueConverter),
-                        "taxonomy" => await GetElementModel<TaxonomyElementValue, IEnumerable<ITaxonomyTerm>>(property, context, elementValue, valueConverter),
+                        "rich_text" => await GetElementModelAsync<RichTextElementValue, string>(property, context, elementValue, valueConverter),
+                        "asset" => await GetElementModelAsync<ContentElementValue<Asset>, Asset>(property, context, elementValue, valueConverter),
+                        "number" => await GetElementModelAsync<ContentElementValue<decimal?>, decimal?>(property, context, elementValue, valueConverter),
+                        "date_time" => await GetElementModelAsync<ContentElementValue<DateTime>, DateTime>(property, context, elementValue, valueConverter),
+                        "multiple_choice" => await GetElementModelAsync<ContentElementValue<List<MultipleChoiceOption>>, List<MultipleChoiceOption>>(property, context, elementValue, valueConverter),
+                        "taxonomy" => await GetElementModelAsync<TaxonomyElementValue, IEnumerable<ITaxonomyTerm>>(property, context, elementValue, valueConverter),
                         // Custom element, text element, URL slug element
-                        _ => await GetElementModel<ContentElementValue<string>, string>(property, context, elementValue, valueConverter),
+                        _ => await GetElementModelAsync<ContentElementValue<string>, string>(property, context, elementValue, valueConverter),
                     };
                 }
             }
 
             if (property.PropertyType == typeof(string))
             {
-                var (value, isRichText) = await GetStringValue(elementValue);
+                var (value, isRichText) = await GetStringValueAsync(elementValue);
 
                 if (isRichText)
                 {
@@ -249,16 +250,16 @@ namespace Kentico.Kontent.Delivery.ContentItems
 
             if (IsGenericHierarchicalField(property.PropertyType))
             {
-                return await GetLinkedItemsValue(elementValue, linkedItems, property.PropertyType, processedItems);
+                return await GetLinkedItemsValueAsync(elementValue, linkedItems, property.PropertyType, processedItems);
             }
 
             return null;
         }
 
-        private async Task<object> GetElementModel<R, T>(PropertyInfo property, ResolvingContext context, JObject elementValue, IPropertyValueConverter valueConverter) where R : IContentElementValue<T>
+        private async Task<object> GetElementModelAsync<TElement, TElementValue>(PropertyInfo property, ResolvingContext context, JObject elementValue, IPropertyValueConverter valueConverter) where TElement : IContentElementValue<TElementValue>
         {
-            var contentElement = elementValue.ToObject<R>(Serializer);
-            return await ((IPropertyValueConverter<T>)valueConverter).GetPropertyValue(property, contentElement, context);
+            var contentElement = elementValue.ToObject<TElement>(Serializer);
+            return await ((IPropertyValueConverter<TElementValue>)valueConverter).GetPropertyValueAsync(property, contentElement, context);
         }
 
         private (string Name, JObject Value)? GetElementData(JObject elementsData, PropertyInfo property, IContentItemSystemAttributes itemSystemAttributes)
@@ -278,7 +279,7 @@ namespace Kentico.Kontent.Delivery.ContentItems
             => propertyType.IsValueType && !(typeof(Enumerable).IsAssignableFrom(propertyType)
                || (propertyType.IsGenericType && propertyType.GetGenericTypeDefinition() == typeof(IEnumerable<>)));
 
-        private async Task<(string value, bool isRichText)> GetStringValue(JObject elementData)
+        private async Task<(string value, bool isRichText)> GetStringValueAsync(JObject elementData)
         {
             var elementValue = GetRawValue(elementData);
             var value = elementValue?.ToObject<string>(Serializer);
@@ -287,12 +288,12 @@ namespace Kentico.Kontent.Delivery.ContentItems
             // Handle rich_text link resolution
             if (links != null && elementValue != null && ContentLinkResolver != null)
             {
-                value = await ContentLinkResolver.ResolveContentLinks(value, links);
+                value = await ContentLinkResolver.ResolveContentLinksAsync(value, links);
             }
 
             var linkedItemsInRichText = GetLinkedItemsInRichText(elementData);
 
-            // It's clear it's richtext because it contains linked items
+            // It's clear it's rich-text because it contains linked items
             var isRichText = elementValue != null && linkedItemsInRichText != null && InlineContentItemsProcessor != null;
 
             return (value, isRichText);
@@ -301,7 +302,7 @@ namespace Kentico.Kontent.Delivery.ContentItems
         private static JToken GetLinkedItemsInRichText(JObject elementData)
             => elementData?.Property("modular_content")?.Value;
 
-        private async Task<object> GetLinkedItemsValue(JObject elementData, JObject linkedItems, Type propertyType, Dictionary<string, object> processedItems)
+        private async Task<object> GetLinkedItemsValueAsync(JObject elementData, JObject linkedItems, Type propertyType, Dictionary<string, object> processedItems)
         {
             // Create a List<T> based on the generic parameter of the input type (IEnumerable<T> or derived types)
             var genericArgs = propertyType.GetGenericArguments();
@@ -345,7 +346,7 @@ namespace Kentico.Kontent.Delivery.ContentItems
                 else
                 {
                     // This is the entry-point for recursion mentioned above
-                    contentItem = await GetContentItemModel(genericArgs.First(), linkedItemsElementNode, linkedItems, processedItems);
+                    contentItem = await GetContentItemModelAsync(genericArgs.First(), linkedItemsElementNode, linkedItems, processedItems);
 
                     if (!processedItems.ContainsKey(codename))
                     {
@@ -379,7 +380,7 @@ namespace Kentico.Kontent.Delivery.ContentItems
         private static JToken GetRawValue(JObject elementData)
             => elementData?.Property("value")?.Value;
 
-        private async Task<string> ProcessInlineContentItems(JObject linkedItems, Dictionary<string, object> processedItems, string value, JToken linkedItemsInRichText, HashSet<RichTextContentElements> currentlyResolvedRichStrings)
+        private async Task<string> ProcessInlineContentItemsAsync(JObject linkedItems, Dictionary<string, object> processedItems, string value, JToken linkedItemsInRichText, HashSet<RichTextContentElements> currentlyResolvedRichStrings)
         {
             var usedCodenames = linkedItemsInRichText.ToObject<List<string>>(Serializer);
             var contentItemsInRichText = new Dictionary<string, object>();
@@ -404,7 +405,7 @@ namespace Kentico.Kontent.Delivery.ContentItems
                             ?.First;
                         if (linkedItemsElementNode != null)
                         {
-                            contentItem = await GetContentItemModel(typeof(object), linkedItemsElementNode, linkedItems, processedItems, currentlyResolvedRichStrings);
+                            contentItem = await GetContentItemModelAsync(typeof(object), linkedItemsElementNode, linkedItems, processedItems, currentlyResolvedRichStrings);
                             if (!processedItems.ContainsKey(codenameUsed))
                             {
                                 contentItem ??= new UnknownContentItem(linkedItemsElementNode
@@ -424,12 +425,12 @@ namespace Kentico.Kontent.Delivery.ContentItems
                 }
             }
 
-            value = await InlineContentItemsProcessor.Process(value, contentItemsInRichText);
+            value = await InlineContentItemsProcessor.ProcessAsync(value, contentItemsInRichText);
 
             return value;
         }
 
-        private async Task<string> RemoveInlineContentItems(string value)
-            => await InlineContentItemsProcessor.RemoveAll(value);
+        private async Task<string> RemoveInlineContentItemsAsync(string value)
+            => await InlineContentItemsProcessor.RemoveAllAsync(value);
     }
 }

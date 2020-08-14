@@ -168,7 +168,7 @@ namespace Kentico.Kontent.Delivery.Tests
             link.Id = ContentItemIdA;
             var links = new Dictionary<Guid, IContentLink> { { ContentItemIdA, link } };
 
-            return await linkResolver.ResolveContentLinks(text, links);
+            return await linkResolver.ResolveContentLinksAsync(text, links);
         }
 
         private sealed class CustomContentLinkUrlResolver : IContentLinkUrlResolver

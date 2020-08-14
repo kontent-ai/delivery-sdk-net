@@ -13,9 +13,10 @@ namespace Kentico.Kontent.Delivery.Tests
 {
     public class ModelProviderTests
     {
+        /// <summary>
+        /// During processing of inline content items, item which detects circular dependency ( A refs B, B refs A ) should resolve resolved item as if there were no inline content items, which will prevent circular dependency
+        /// </summary>
         [Fact]
-        // During processing of inline content items, item which detects circular dependency ( A refs B, B refs A ) should resolve resolved item
-        // as if there were no inline content items, which will prevent circular dependency
         public async Task RetrievingContentModelWithCircularDependencyDoesNotCycle()
         {
             var typeProvider = A.Fake<ITypeProvider>();
@@ -32,7 +33,7 @@ namespace Kentico.Kontent.Delivery.Tests
             var item = JToken.FromObject(Rt1);
             var linkedItems = JToken.FromObject(LinkedItemsForItemWithTwoReferencedContentItems);
 
-            var result = await retriever.GetContentItemModel<ContentItemWithSingleRte>(item, linkedItems);
+            var result = await retriever.GetContentItemModelAsync<ContentItemWithSingleRte>(item, linkedItems);
 
             Assert.Equal("<span>FirstRT</span><span>SecondRT</span><span>FirstRT</span>", result.Rt);
             Assert.IsType<ContentItemWithSingleRte>(result);
@@ -57,15 +58,17 @@ namespace Kentico.Kontent.Delivery.Tests
             var expectedResult =
                 $"<span>RT</span>Content type '{linkedItems.SelectToken("linkedItemWithNoModel.system.type")}' has no corresponding model.";
 
-            var result = await retriever.GetContentItemModel<ContentItemWithSingleRte>(item, linkedItems);
+            var result = await retriever.GetContentItemModelAsync<ContentItemWithSingleRte>(item, linkedItems);
 
             Assert.Equal(expectedResult, result.Rt);
             Assert.IsType<ContentItemWithSingleRte>(result);
         }
 
+        /// <summary>
+        /// In case item is referencing itself ( A refs A ) we'd like to go through second processing as if there were no inline content items,
+        /// this is same as in other cases, because as soon as we start processing item which is already being processed we remove inline content items.
+        /// </summary>
         [Fact]
-        // In case item is referencing itself ( A refs A ) we'd like to go through second processing as if there were no inline content items,
-        // this is same as in other cases, because as soon as we start processing item which is already being processed we remove inline content items.
         public async Task RetrievingContentModelWithItemInlineReferencingItselfDoesNotCycle()
         {
             var typeProvider = A.Fake<ITypeProvider>();
@@ -82,7 +85,7 @@ namespace Kentico.Kontent.Delivery.Tests
             var item = JToken.FromObject(Rt3);
             var linkedItems = JToken.FromObject(LinkedItemsForItemReferencingItself);
 
-            var result = await retriever.GetContentItemModel<ContentItemWithSingleRte>(item, linkedItems);
+            var result = await retriever.GetContentItemModelAsync<ContentItemWithSingleRte>(item, linkedItems);
 
             Assert.Equal("<span>RT</span><span>RT</span>", result.Rt);
             Assert.IsType<ContentItemWithSingleRte>(result);
@@ -102,7 +105,7 @@ namespace Kentico.Kontent.Delivery.Tests
             A.CallTo(() => typeProvider.GetType("newType")).Returns(null);
             var modelProvider = new ModelProvider(contentLinkUrlResolver, inlineContentItemsProcessor, typeProvider, propertyMapper, new DeliveryJsonSerializer(), new HtmlParser());
 
-            Assert.Null(await modelProvider.GetContentItemModel<object>(item, linkedItems));
+            Assert.Null(await modelProvider.GetContentItemModelAsync<object>(item, linkedItems));
         }
 
         private static readonly object Rt1 = new

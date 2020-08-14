@@ -78,8 +78,8 @@ namespace Kentico.Kontent.Delivery
             var endpointUrl = UrlBuilder.GetItemUrl(codename, parameters);
             var response = await GetDeliveryResponseAsync(endpointUrl);
             var content = await response.GetJsonContentAsync();
-            var model = await ModelProvider.GetContentItemModel<T>(content["item"], content["modular_content"]);
-            return new DeliveryItemResponse<T>(response, model, await GetLinkedItems(content));
+            var model = await ModelProvider.GetContentItemModelAsync<T>(content["item"], content["modular_content"]);
+            return new DeliveryItemResponse<T>(response, model, await GetLinkedItemsAsync(content));
         }
 
         /// <summary>
@@ -95,8 +95,8 @@ namespace Kentico.Kontent.Delivery
             var response = await GetDeliveryResponseAsync(endpointUrl);
             var content = await response.GetJsonContentAsync();
             var pagination = content["pagination"].ToObject<Pagination>(Serializer);
-            var items = ((JArray)content["items"]).Select(async source => await ModelProvider.GetContentItemModel<T>(source, content["modular_content"]));
-            return new DeliveryItemListingResponse<T>(response, (await Task.WhenAll(items)).ToList(), await GetLinkedItems(content), pagination);
+            var items = ((JArray)content["items"]).Select(async source => await ModelProvider.GetContentItemModelAsync<T>(source, content["modular_content"]));
+            return new DeliveryItemListingResponse<T>(response, (await Task.WhenAll(items)).ToList(), await GetLinkedItemsAsync(content), pagination);
         }
 
         /// <summary>
@@ -117,9 +117,9 @@ namespace Kentico.Kontent.Delivery
                 var response = await GetDeliveryResponseAsync(endpointUrl, continuationToken);
                 var content = await response.GetJsonContentAsync();
 
-                var items = ((JArray)content["items"]).Select(async source => await ModelProvider.GetContentItemModel<T>(source, content["modular_content"]));
+                var items = ((JArray)content["items"]).Select(async source => await ModelProvider.GetContentItemModelAsync<T>(source, content["modular_content"]));
 
-                return new DeliveryItemsFeedResponse<T>(response, (await Task.WhenAll(items)).ToList(), await GetLinkedItems(content));
+                return new DeliveryItemsFeedResponse<T>(response, (await Task.WhenAll(items)).ToList(), await GetLinkedItemsAsync(content));
             }
         }
 
@@ -247,16 +247,16 @@ namespace Kentico.Kontent.Delivery
                 var retryPolicy = RetryPolicyProvider.GetRetryPolicy();
                 if (retryPolicy != null)
                 {
-                    var response = await retryPolicy.ExecuteAsync(() => SendHttpMessage(endpointUrl, continuationToken));
-                    return await GetResponseContent(response, endpointUrl);
+                    var response = await retryPolicy.ExecuteAsync(() => SendHttpMessageAsync(endpointUrl, continuationToken));
+                    return await GetResponseContentAsync(response, endpointUrl);
                 }
             }
 
             // Omit using the resilience logic completely.
-            return await GetResponseContent(await SendHttpMessage(endpointUrl, continuationToken), endpointUrl);
+            return await GetResponseContentAsync(await SendHttpMessageAsync(endpointUrl, continuationToken), endpointUrl);
         }
 
-        private Task<HttpResponseMessage> SendHttpMessage(string endpointUrl, string continuationToken = null)
+        private Task<HttpResponseMessage> SendHttpMessageAsync(string endpointUrl, string continuationToken = null)
         {
             var message = new HttpRequestMessage(HttpMethod.Get, endpointUrl);
 
@@ -295,7 +295,7 @@ namespace Kentico.Kontent.Delivery
             return DeliveryOptions.CurrentValue.UsePreviewApi && !string.IsNullOrEmpty(DeliveryOptions.CurrentValue.PreviewApiKey);
         }
 
-        private async Task<ApiResponse> GetResponseContent(HttpResponseMessage httpResponseMessage, string fallbackEndpointUrl)
+        private async Task<ApiResponse> GetResponseContentAsync(HttpResponseMessage httpResponseMessage, string fallbackEndpointUrl)
         {
             if (httpResponseMessage == null) throw new ArgumentNullException(nameof(httpResponseMessage));
             if (httpResponseMessage.StatusCode == HttpStatusCode.OK)
@@ -365,9 +365,9 @@ namespace Kentico.Kontent.Delivery
             }
         }
 
-        private async Task<IList<object>> GetLinkedItems(JObject content)
+        private async Task<IList<object>> GetLinkedItemsAsync(JObject content)
         {
-            var items = ((JObject)content["modular_content"]).Values().Select(async source => await ModelProvider.GetContentItemModel<object>(source, content["modular_content"]));
+            var items = ((JObject)content["modular_content"]).Values().Select(async source => await ModelProvider.GetContentItemModelAsync<object>(source, content["modular_content"]));
 
             return (await Task.WhenAll(items)).ToList();
         }

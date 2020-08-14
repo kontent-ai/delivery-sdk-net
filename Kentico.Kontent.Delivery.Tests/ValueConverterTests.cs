@@ -20,7 +20,7 @@ namespace Kentico.Kontent.Delivery.Tests
     [AttributeUsage(AttributeTargets.Property)]
     public class TestGreeterValueConverterAttribute : Attribute, IPropertyValueConverter<string>
     {
-        public Task<object> GetPropertyValue<TElement>(PropertyInfo property, TElement element, ResolvingContext context) where TElement : IContentElementValue<string>
+        public Task<object> GetPropertyValueAsync<TElement>(PropertyInfo property, TElement element, ResolvingContext context) where TElement : IContentElementValue<string>
         {
             return Task.FromResult((object)$"Hello {element.Value}!");
         }
@@ -29,7 +29,7 @@ namespace Kentico.Kontent.Delivery.Tests
     [AttributeUsage(AttributeTargets.Property)]
     public class NodaTimeValueConverterAttribute : Attribute, IPropertyValueConverter<DateTime>
     {
-        public Task<object> GetPropertyValue<TElement>(PropertyInfo property, TElement element, ResolvingContext context) where TElement : IContentElementValue<DateTime>
+        public Task<object> GetPropertyValueAsync<TElement>(PropertyInfo property, TElement element, ResolvingContext context) where TElement : IContentElementValue<DateTime>
         {
             var udt = DateTime.SpecifyKind(element.Value, DateTimeKind.Utc);
             return Task.FromResult((object)ZonedDateTime.FromDateTimeOffset(udt));

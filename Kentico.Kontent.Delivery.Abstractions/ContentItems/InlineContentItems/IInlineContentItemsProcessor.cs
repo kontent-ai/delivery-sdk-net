@@ -14,13 +14,13 @@ namespace Kentico.Kontent.Delivery.Abstractions
         /// <param name="value">HTML code</param>
         /// <param name="usedContentItems">Content items referenced as inline content items</param>
         /// <returns>HTML with inline content items replaced with resolvers output</returns>
-        Task<string> Process(string value, Dictionary<string, object> usedContentItems);
+        Task<string> ProcessAsync(string value, Dictionary<string, object> usedContentItems);
 
         /// <summary>
         /// Removes all content items from given HTML content.
         /// </summary>
         /// <param name="value">HTML content</param>
         /// <returns>HTML without inline content items</returns>
-        Task<string> RemoveAll(string value);
+        Task<string> RemoveAllAsync(string value);
     }
 }
