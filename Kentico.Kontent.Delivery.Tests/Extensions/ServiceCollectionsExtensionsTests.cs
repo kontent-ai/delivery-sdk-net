@@ -3,7 +3,6 @@ using System.Collections.Generic;
 using System.Collections.ObjectModel;
 using System.IO;
 using Kentico.Kontent.Delivery.Abstractions;
-using Kentico.Kontent.Delivery.Builders.DeliveryClient;
 using Kentico.Kontent.Delivery.ContentItems;
 using Kentico.Kontent.Delivery.ContentItems.ContentLinks;
 using Kentico.Kontent.Delivery.ContentItems.InlineContentItems;
@@ -109,11 +108,8 @@ namespace Kentico.Kontent.Delivery.Tests.Extensions
         [Fact]
         public void AddDeliveryClientFactoryWithDeliveryClient_AllServicesAreRegistered()
         {
-            _serviceCollection.AddDeliveryClient("named", (builder) =>
-            {
-                return builder.BuildWithProjectId(ProjectId)
-                .Build();
-            });
+            _serviceCollection.AddDeliveryClient("named", (builder) => builder.BuildWithProjectId(ProjectId)
+                .Build());
 
             var provider = _serviceCollection.BuildServiceProvider();
             AssertDefaultServiceCollection(provider, _expectedInterfacesWithImplementationFactoryTypes);

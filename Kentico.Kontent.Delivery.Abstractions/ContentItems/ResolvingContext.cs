@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Threading.Tasks;
 
 namespace Kentico.Kontent.Delivery.Abstractions
 {
@@ -10,7 +11,7 @@ namespace Kentico.Kontent.Delivery.Abstractions
         /// <summary>
         /// Gets the content item within current resolving context
         /// </summary>
-        public Func<string, object> GetLinkedItem { get; internal set; }
+        public Func<string, Task<object>> GetLinkedItem { get; internal set; }
 
         /// <summary>
         /// Gets an instance that resolves content links in Rich text element values

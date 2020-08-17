@@ -2,12 +2,12 @@
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
 using System.Linq;
+using System.Threading.Tasks;
 using AngleSharp.Dom;
-using AngleSharp.Dom.Html;
-using AngleSharp.Parser.Html;
+using AngleSharp.Html.Dom;
+using AngleSharp.Html.Parser;
 using Kentico.Kontent.Delivery.Abstractions;
 using Kentico.Kontent.Delivery.Builders.DeliveryClient;
-using Kentico.Kontent.Delivery.Extensions;
 using Microsoft.Extensions.DependencyInjection;
 
 namespace Kentico.Kontent.Delivery.ContentItems.InlineContentItems
@@ -20,7 +20,7 @@ namespace Kentico.Kontent.Delivery.ContentItems.InlineContentItems
         private readonly IDictionary<Type, Func<object, string>> _inlineContentItemsResolvers;
         private readonly HtmlParser _htmlParser;
         private readonly HtmlParser _strictHtmlParser;
-        
+
         internal IReadOnlyDictionary<Type, Func<object, string>> ContentItemResolvers => new ReadOnlyDictionary<Type, Func<object, string>>(_inlineContentItemsResolvers);
 
         /// <summary>
@@ -31,7 +31,7 @@ namespace Kentico.Kontent.Delivery.ContentItems.InlineContentItems
         /// a custom resolver for <see cref="UnretrievedContentItem"/>s used when an item was not retrieved from Delivery API, 
         /// and a resolver for <see cref="UnknownContentItem"/> that a <see cref="IModelProvider"/> was unable to strongly type.
         /// If these resolvers are not specified using <see cref="DeliveryClientBuilder"/> or the <see cref="IServiceCollection"/> registration
-        /// (<see cref="ServiceCollectionExtensions.AddDeliveryInlineContentItemsResolver{TContentItem,TInlineContentItemsResolver}"/>),
+        /// (<see cref="Extensions.ServiceCollectionExtensions.AddDeliveryInlineContentItemsResolver{TContentItem,TInlineContentItemsResolver}"/>),
         /// the default implementations resulting in warning messages will be used.
         /// </remarks>
         /// <param name="inlineContentItemsResolvers">Collection of inline content item resolvers.</param>
@@ -43,6 +43,7 @@ namespace Kentico.Kontent.Delivery.ContentItems.InlineContentItems
                 .ToDictionary<ITypelessInlineContentItemsResolver, Type, Func<object, string>>(
                     descriptor => descriptor.ContentItemType,
                     descriptor => descriptor.ResolveItem);
+            //TODO: inject parser (performance)
             _htmlParser = new HtmlParser();
             _strictHtmlParser = new HtmlParser(new HtmlParserOptions
             {
@@ -56,9 +57,9 @@ namespace Kentico.Kontent.Delivery.ContentItems.InlineContentItems
         /// <param name="value">HTML code</param>
         /// <param name="inlineContentItemMap">Content items referenced as inline content items</param>
         /// <returns>HTML with inline content items replaced with resolvers output</returns>
-        public string Process(string value, Dictionary<string, object> inlineContentItemMap)
+        public async Task<string> ProcessAsync(string value, Dictionary<string, object> inlineContentItemMap)
         {
-            var document = _htmlParser.Parse(value);
+            var document = await _htmlParser.ParseDocumentAsync(value);
             var inlineContentItemElements = GetInlineContentItemElements(document);
 
             foreach (var inlineContentItemElement in inlineContentItemElements)
@@ -80,9 +81,9 @@ namespace Kentico.Kontent.Delivery.ContentItems.InlineContentItems
         /// </summary>
         /// <param name="value">HTML content</param>
         /// <returns>HTML without inline content items</returns>
-        public string RemoveAll(string value)
+        public async Task<string> RemoveAllAsync(string value)
         {
-            var htmlInput = new HtmlParser().Parse(value);
+            var htmlInput = await _htmlParser.ParseDocumentAsync(value);
             List<IElement> inlineContentItems = GetInlineContentItemElements(htmlInput);
             foreach (var contentItem in inlineContentItems)
             {
@@ -91,7 +92,7 @@ namespace Kentico.Kontent.Delivery.ContentItems.InlineContentItems
             return htmlInput.Body.InnerHtml;
         }
 
-        private static List<IElement> GetInlineContentItemElements(IHtmlDocument htmlInput) 
+        private static List<IElement> GetInlineContentItemElements(IHtmlDocument htmlInput)
             => htmlInput
                 .Body
                 .GetElementsByTagName("object")

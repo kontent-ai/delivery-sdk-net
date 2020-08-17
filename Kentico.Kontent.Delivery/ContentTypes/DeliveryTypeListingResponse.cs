@@ -1,33 +1,36 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Threading;
+﻿using System.Collections.Generic;
 using Kentico.Kontent.Delivery.Abstractions;
 using Kentico.Kontent.Delivery.SharedModels;
-using Newtonsoft.Json.Linq;
+using Newtonsoft.Json;
 
 namespace Kentico.Kontent.Delivery.ContentTypes
 {
     /// <inheritdoc cref="IDeliveryTypeListingResponse" />
-    public sealed class DeliveryTypeListingResponse : AbstractResponse, IDeliveryTypeListingResponse
+    internal sealed class DeliveryTypeListingResponse : AbstractResponse, IDeliveryTypeListingResponse
     {
-        private readonly Lazy<Pagination> _pagination;
-        private readonly Lazy<IReadOnlyList<ContentType>> _types;
+        /// <inheritdoc/>
+        public IPagination Pagination
+        {
+            get;
+        }
 
         /// <inheritdoc/>
-        public IPagination Pagination => _pagination.Value;
-
-        /// <inheritdoc/>
-        public IReadOnlyList<IContentType> Types => _types.Value;
+        public IList<IContentType> Types
+        {
+            get;
+        }
 
         /// <summary>
         /// Initializes a new instance of the <see cref="DeliveryTypeListingResponse"/> class.
         /// </summary>
-        /// <param name="response">The response from Kentico Kontent Delivery API that contains a list of content types.</param>
-        internal DeliveryTypeListingResponse(ApiResponse response) : base(response)
+        /// <param name="response">The response from Kentico Kontent Delivery API that contains content types.</param>
+        /// <param name="types">A collection of content types.</param>
+        /// <param name="pagination">Response paging information.</param>
+        [JsonConstructor]
+        internal DeliveryTypeListingResponse(ApiResponse response, IList<IContentType> types, IPagination pagination) : base(response)
         {
-            _pagination = new Lazy<Pagination>(() => response.JsonContent["pagination"].ToObject<Pagination>(), LazyThreadSafetyMode.PublicationOnly);
-            _types = new Lazy<IReadOnlyList<ContentType>>(() => ((JArray)response.JsonContent["types"]).Select(source => new ContentType(source)).ToList().AsReadOnly(), LazyThreadSafetyMode.PublicationOnly);
+            Types = types;
+            Pagination = pagination;
         }
     }
 }

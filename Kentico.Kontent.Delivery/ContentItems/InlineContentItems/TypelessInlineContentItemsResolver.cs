@@ -1,7 +1,6 @@
 ﻿using System;
 using Kentico.Kontent.Delivery.Abstractions;
 using Kentico.Kontent.Delivery.Builders.DeliveryClient;
-using Kentico.Kontent.Delivery.Extensions;
 using Microsoft.Extensions.DependencyInjection;
 
 namespace Kentico.Kontent.Delivery.ContentItems.InlineContentItems
@@ -11,11 +10,11 @@ namespace Kentico.Kontent.Delivery.ContentItems.InlineContentItems
     /// </summary>
     /// <remarks>
     /// This class can be used with other container than <see cref="IServiceCollection"/> to register dependencies required for
-    /// <see cref="InlineContentItemsProcessor"/> instantiation. The <see cref="ServiceCollectionExtensions.AddDeliveryInlineContentItemsResolver{TContentItem}"/>
+    /// <see cref="InlineContentItemsProcessor"/> instantiation. The <see cref="Extensions.ServiceCollectionExtensions.AddDeliveryInlineContentItemsResolver{TContentItem}"/>
     /// or <see cref="IOptionalClientSetup.WithInlineContentItemsResolver{T}"/> should always be used with <see cref="IServiceCollection"/>
     /// or <see cref="DeliveryClientBuilder"/> respectively.
     /// </remarks>
-    public class TypelessInlineContentItemsResolver : ITypelessInlineContentItemsResolver
+    internal class TypelessInlineContentItemsResolver : ITypelessInlineContentItemsResolver
     {
         /// <summary>
         /// Creates new instance of <see cref="TypelessInlineContentItemsResolver"/> for given <paramref name="resolver"/>.

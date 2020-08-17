@@ -1,39 +1,42 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Threading;
+﻿using System.Collections.Generic;
 using Kentico.Kontent.Delivery.Abstractions;
 using Kentico.Kontent.Delivery.SharedModels;
-using Newtonsoft.Json.Linq;
+using Newtonsoft.Json;
 
 namespace Kentico.Kontent.Delivery.TaxonomyGroups
 {
     /// <summary>
     /// Represents a response from Kentico Kontent Delivery API that contains a list of taxonomy groups.
     /// </summary>
-    public sealed class DeliveryTaxonomyListingResponse : AbstractResponse, IDeliveryTaxonomyListingResponse
+    internal sealed class DeliveryTaxonomyListingResponse : AbstractResponse, IDeliveryTaxonomyListingResponse
     {
-        private readonly Lazy<Pagination> _pagination;
-        private readonly Lazy<IReadOnlyList<TaxonomyGroup>> _taxonomies;
-
         /// <summary>
         /// Gets paging information.
         /// </summary>
-        public IPagination Pagination => _pagination.Value;
+        public IPagination Pagination
+        {
+            get;
+        }
 
         /// <summary>
         /// Gets a read-only list of taxonomy groups.
         /// </summary>
-        public IReadOnlyList<ITaxonomyGroup> Taxonomies => _taxonomies.Value;
+        public IList<ITaxonomyGroup> Taxonomies
+        {
+            get;
+        }
 
         /// <summary>
         /// Initializes a new instance of the <see cref="DeliveryTaxonomyListingResponse"/> class.
         /// </summary>
-        /// <param name="response">The response from Kentico Kontent Delivery API that contains a list of taxonomy groups.</param>
-        internal DeliveryTaxonomyListingResponse(ApiResponse response) : base(response)
+        /// <param name="response">The response from Kentico Kontent Delivery API that contains taxonomies.</param>
+        /// <param name="taxonomies">A collection of taxonomies.</param>
+        /// <param name="pagination">Response paging information.</param>
+        [JsonConstructor]
+        internal DeliveryTaxonomyListingResponse(ApiResponse response, IList<ITaxonomyGroup> taxonomies, IPagination pagination) : base(response)
         {
-            _pagination = new Lazy<Pagination>(() => response.JsonContent["pagination"].ToObject<Pagination>(), LazyThreadSafetyMode.PublicationOnly);
-            _taxonomies = new Lazy<IReadOnlyList<TaxonomyGroup>>(() => ((JArray)response.JsonContent["taxonomies"]).Select(source => new TaxonomyGroup(source)).ToList().AsReadOnly(), LazyThreadSafetyMode.PublicationOnly);
+            Taxonomies = taxonomies;
+            Pagination = pagination;
         }
     }
 }

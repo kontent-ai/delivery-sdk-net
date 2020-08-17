@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Linq;
 using System.Net.Http;
+using AngleSharp.Html.Parser;
 using Kentico.Kontent.Delivery.Abstractions;
 using Kentico.Kontent.Delivery.Builders.DeliveryClient;
 using Kentico.Kontent.Delivery.Configuration;
@@ -12,6 +13,7 @@ using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.DependencyInjection.Extensions;
 using Microsoft.Extensions.Options;
+using Newtonsoft.Json;
 
 // see https://docs.microsoft.com/en-us/aspnet/core/fundamentals/dependency-injection?view=aspnetcore-2.2
 namespace Kentico.Kontent.Delivery.Extensions
@@ -39,10 +41,7 @@ namespace Kentico.Kontent.Delivery.Extensions
             {
                 return new ConfigureNamedOptions<DeliveryClientFactoryOptions>(name, options =>
                 {
-                    options.DeliveryClientsActions.Add(() =>
-                    {
-                        return buildDeliveryClient(new DeliveryClientBuilderImplementation());
-                    });
+                    options.DeliveryClientsActions.Add(() => buildDeliveryClient(new DeliveryClientBuilderImplementation()));
                 });
             });
 
@@ -243,6 +242,8 @@ namespace Kentico.Kontent.Delivery.Extensions
             services.TryAddSingleton<IModelProvider, ModelProvider>();
             services.TryAddSingleton<IPropertyMapper, PropertyMapper>();
             services.TryAddSingleton<IRetryPolicyProvider, DefaultRetryPolicyProvider>();
+            services.TryAddSingleton<IHtmlParser, HtmlParser>();
+            services.TryAddSingleton<JsonSerializer>(new DeliveryJsonSerializer());
             services.TryAddSingleton<IDeliveryClient, DeliveryClient>();
             services.TryAddSingleton<IDeliveryClientFactory, DeliveryClientFactory>();
 

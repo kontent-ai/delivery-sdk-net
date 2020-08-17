@@ -5,7 +5,7 @@ namespace Kentico.Kontent.Delivery.SharedModels
     /// <summary>
     /// Represents a successful response from Kentico Kontent Delivery API.
     /// </summary>
-    public abstract class AbstractResponse : IResponse
+    internal abstract class AbstractResponse : IResponse
     {
         /// <summary>
         /// The successful JSON response from Kentico Kontent Delivery API.

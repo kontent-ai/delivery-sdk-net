@@ -2,6 +2,7 @@
 using System.Net.Http;
 using Kentico.Kontent.Delivery.Abstractions;
 using Kentico.Kontent.Delivery.Builders.DeliveryClient;
+using Microsoft.Extensions.Caching.Distributed;
 using Microsoft.Extensions.Caching.Memory;
 using Microsoft.Extensions.Options;
 
@@ -16,7 +17,15 @@ namespace Kentico.Kontent.Delivery.Caching.Tests
         public Scenario(IMemoryCache memoryCache, HttpClient httpClient, DeliveryOptions deliveryOptions, Dictionary<string, int> requestCounter)
         {
             _requestCounter = requestCounter;
-            _cacheManager = new DeliveryCacheManager(memoryCache, Options.Create(new DeliveryCacheOptions()));
+            _cacheManager = new MemoryCacheManager(memoryCache, Options.Create(new DeliveryCacheOptions()));
+            var baseClient = DeliveryClientBuilder.WithOptions(_ => deliveryOptions).WithDeliveryHttpClient(new DeliveryHttpClient(httpClient)).Build();
+            CachingClient = new DeliveryClientCache(_cacheManager, baseClient);
+        }
+
+        public Scenario(IDistributedCache distributedCache, HttpClient httpClient, DeliveryOptions deliveryOptions, Dictionary<string, int> requestCounter)
+        {
+            _requestCounter = requestCounter;
+            _cacheManager = new DistributedCacheManager(distributedCache, Options.Create(new DeliveryCacheOptions()));
             var baseClient = DeliveryClientBuilder.WithOptions(_ => deliveryOptions).WithDeliveryHttpClient(new DeliveryHttpClient(httpClient)).Build();
             CachingClient = new DeliveryClientCache(_cacheManager, baseClient);
         }

@@ -14,6 +14,8 @@ using Kentico.Kontent.Delivery.Urls;
 using Kentico.Kontent.Delivery.Urls.QueryParameters;
 using Kentico.Kontent.Delivery.Urls.QueryParameters.Filters;
 using Microsoft.Extensions.Options;
+using Newtonsoft.Json;
+using Newtonsoft.Json.Linq;
 
 namespace Kentico.Kontent.Delivery
 {
@@ -22,15 +24,16 @@ namespace Kentico.Kontent.Delivery
     /// </summary>
     internal sealed class DeliveryClient : IDeliveryClient
     {
+        private DeliveryEndpointUrlBuilder _urlBuilder;
+
         internal readonly IOptionsMonitor<DeliveryOptions> DeliveryOptions;
         internal readonly IModelProvider ModelProvider;
         internal readonly ITypeProvider TypeProvider;
         internal readonly IRetryPolicyProvider RetryPolicyProvider;
         internal readonly IDeliveryHttpClient DeliveryHttpClient;
+        internal readonly JsonSerializer Serializer;
 
-        private DeliveryEndpointUrlBuilder _urlBuilder;
-
-        private DeliveryEndpointUrlBuilder UrlBuilder
+        internal DeliveryEndpointUrlBuilder UrlBuilder
             => _urlBuilder ??= new DeliveryEndpointUrlBuilder(DeliveryOptions);
 
         /// <summary>
@@ -41,19 +44,21 @@ namespace Kentico.Kontent.Delivery
         /// <param name="retryPolicyProvider">A provider of a retry policy.</param>
         /// <param name="typeProvider">An instance of an object that can map Kentico Kontent content types to CLR types</param>
         /// <param name="deliveryHttpClient">An instance of an object that can send request against Kentico Kontent Delivery API</param>
+        /// <param name="serializer">Default JSON serializer</param>
         public DeliveryClient(
             IOptionsMonitor<DeliveryOptions> deliveryOptions,
             IModelProvider modelProvider = null,
             IRetryPolicyProvider retryPolicyProvider = null,
             ITypeProvider typeProvider = null,
-            IDeliveryHttpClient deliveryHttpClient = null
-        )
+            IDeliveryHttpClient deliveryHttpClient = null,
+            JsonSerializer serializer = null)
         {
             DeliveryOptions = deliveryOptions;
             ModelProvider = modelProvider;
             RetryPolicyProvider = retryPolicyProvider;
             TypeProvider = typeProvider;
             DeliveryHttpClient = deliveryHttpClient;
+            Serializer = serializer;
         }
 
         /// <summary>
@@ -71,9 +76,10 @@ namespace Kentico.Kontent.Delivery
             }
 
             var endpointUrl = UrlBuilder.GetItemUrl(codename, parameters);
-            var response = await GetDeliverResponseAsync(endpointUrl);
-
-            return new DeliveryItemResponse<T>(response, ModelProvider);
+            var response = await GetDeliveryResponseAsync(endpointUrl);
+            var content = await response.GetJsonContentAsync();
+            var model = await ModelProvider.GetContentItemModelAsync<T>(content["item"], content["modular_content"]);
+            return new DeliveryItemResponse<T>(response, model, await GetLinkedItemsAsync(content));
         }
 
         /// <summary>
@@ -86,9 +92,11 @@ namespace Kentico.Kontent.Delivery
         {
             var enhancedParameters = EnsureContentTypeFilter<T>(parameters).ToList();
             var endpointUrl = UrlBuilder.GetItemsUrl(enhancedParameters);
-            var response = await GetDeliverResponseAsync(endpointUrl);
-
-            return new DeliveryItemListingResponse<T>(response, ModelProvider);
+            var response = await GetDeliveryResponseAsync(endpointUrl);
+            var content = await response.GetJsonContentAsync();
+            var pagination = content["pagination"].ToObject<Pagination>(Serializer);
+            var items = ((JArray)content["items"]).Select(async source => await ModelProvider.GetContentItemModelAsync<T>(source, content["modular_content"]));
+            return new DeliveryItemListingResponse<T>(response, (await Task.WhenAll(items)).ToList(), await GetLinkedItemsAsync(content), pagination);
         }
 
         /// <summary>
@@ -106,8 +114,12 @@ namespace Kentico.Kontent.Delivery
 
             async Task<DeliveryItemsFeedResponse<T>> GetItemsBatchAsync(string continuationToken)
             {
-                var response = await GetDeliverResponseAsync(endpointUrl, continuationToken);
-                return new DeliveryItemsFeedResponse<T>(response, ModelProvider);
+                var response = await GetDeliveryResponseAsync(endpointUrl, continuationToken);
+                var content = await response.GetJsonContentAsync();
+
+                var items = ((JArray)content["items"]).Select(async source => await ModelProvider.GetContentItemModelAsync<T>(source, content["modular_content"]));
+
+                return new DeliveryItemsFeedResponse<T>(response, (await Task.WhenAll(items)).ToList(), await GetLinkedItemsAsync(content));
             }
         }
 
@@ -129,9 +141,10 @@ namespace Kentico.Kontent.Delivery
             }
 
             var endpointUrl = UrlBuilder.GetTypeUrl(codename);
-            var response = await GetDeliverResponseAsync(endpointUrl);
+            var response = await GetDeliveryResponseAsync(endpointUrl);
+            var type = (await response.GetJsonContentAsync()).ToObject<ContentType>(Serializer);
 
-            return new DeliveryTypeResponse(response);
+            return new DeliveryTypeResponse(response, type);
         }
 
         /// <summary>
@@ -142,9 +155,11 @@ namespace Kentico.Kontent.Delivery
         public async Task<IDeliveryTypeListingResponse> GetTypesAsync(IEnumerable<IQueryParameter> parameters = null)
         {
             var endpointUrl = UrlBuilder.GetTypesUrl(parameters);
-            var response = await GetDeliverResponseAsync(endpointUrl);
-
-            return new DeliveryTypeListingResponse(response);
+            var response = await GetDeliveryResponseAsync(endpointUrl);
+            var content = await response.GetJsonContentAsync();
+            var pagination = content["pagination"].ToObject<Pagination>(Serializer);
+            var types = content["types"].ToObject<List<ContentType>>(Serializer);
+            return new DeliveryTypeListingResponse(response, types.ToList<IContentType>(), pagination);
         }
 
         /// <summary>
@@ -176,9 +191,10 @@ namespace Kentico.Kontent.Delivery
             }
 
             var endpointUrl = UrlBuilder.GetContentElementUrl(contentTypeCodename, contentElementCodename);
-            var response = await GetDeliverResponseAsync(endpointUrl);
-
-            return new DeliveryElementResponse(response);
+            var response = await GetDeliveryResponseAsync(endpointUrl);
+            var content = await response.GetJsonContentAsync();
+            var element = content.ToObject<IContentElement>(Serializer);
+            return new DeliveryElementResponse(response, element);
         }
 
         /// <summary>
@@ -199,9 +215,9 @@ namespace Kentico.Kontent.Delivery
             }
 
             var endpointUrl = UrlBuilder.GetTaxonomyUrl(codename);
-            var response = await GetDeliverResponseAsync(endpointUrl);
-
-            return new DeliveryTaxonomyResponse(response);
+            var response = await GetDeliveryResponseAsync(endpointUrl);
+            var taxonomy = (await response.GetJsonContentAsync()).ToObject<TaxonomyGroup>(Serializer);
+            return new DeliveryTaxonomyResponse(response, taxonomy);
         }
 
         /// <summary>
@@ -212,12 +228,14 @@ namespace Kentico.Kontent.Delivery
         public async Task<IDeliveryTaxonomyListingResponse> GetTaxonomiesAsync(IEnumerable<IQueryParameter> parameters = null)
         {
             var endpointUrl = UrlBuilder.GetTaxonomiesUrl(parameters);
-            var response = await GetDeliverResponseAsync(endpointUrl);
-
-            return new DeliveryTaxonomyListingResponse(response);
+            var response = await GetDeliveryResponseAsync(endpointUrl);
+            var content = await response.GetJsonContentAsync();
+            var pagination = content["pagination"].ToObject<Pagination>(Serializer);
+            var taxonomies = content["taxonomies"].ToObject<List<TaxonomyGroup>>(Serializer);
+            return new DeliveryTaxonomyListingResponse(response, taxonomies.ToList<ITaxonomyGroup>(), pagination);
         }
 
-        private async Task<ApiResponse> GetDeliverResponseAsync(string endpointUrl, string continuationToken = null)
+        private async Task<ApiResponse> GetDeliveryResponseAsync(string endpointUrl, string continuationToken = null)
         {
             if (DeliveryOptions.CurrentValue.UsePreviewApi && DeliveryOptions.CurrentValue.UseSecureAccess)
             {
@@ -229,16 +247,16 @@ namespace Kentico.Kontent.Delivery
                 var retryPolicy = RetryPolicyProvider.GetRetryPolicy();
                 if (retryPolicy != null)
                 {
-                    var response = await retryPolicy.ExecuteAsync(() => SendHttpMessage(endpointUrl, continuationToken));
-                    return await GetResponseContent(response, endpointUrl);
+                    var response = await retryPolicy.ExecuteAsync(() => SendHttpMessageAsync(endpointUrl, continuationToken));
+                    return await GetResponseContentAsync(response, endpointUrl);
                 }
             }
 
             // Omit using the resilience logic completely.
-            return await GetResponseContent(await SendHttpMessage(endpointUrl, continuationToken), endpointUrl);
+            return await GetResponseContentAsync(await SendHttpMessageAsync(endpointUrl, continuationToken), endpointUrl);
         }
 
-        private Task<HttpResponseMessage> SendHttpMessage(string endpointUrl, string continuationToken = null)
+        private Task<HttpResponseMessage> SendHttpMessageAsync(string endpointUrl, string continuationToken = null)
         {
             var message = new HttpRequestMessage(HttpMethod.Get, endpointUrl);
 
@@ -277,19 +295,16 @@ namespace Kentico.Kontent.Delivery
             return DeliveryOptions.CurrentValue.UsePreviewApi && !string.IsNullOrEmpty(DeliveryOptions.CurrentValue.PreviewApiKey);
         }
 
-        private async Task<ApiResponse> GetResponseContent(HttpResponseMessage httpResponseMessage, string fallbackEndpointUrl)
+        private async Task<ApiResponse> GetResponseContentAsync(HttpResponseMessage httpResponseMessage, string fallbackEndpointUrl)
         {
             if (httpResponseMessage == null) throw new ArgumentNullException(nameof(httpResponseMessage));
             if (httpResponseMessage.StatusCode == HttpStatusCode.OK)
             {
-                var content = httpResponseMessage.Content != null
-                    ? await httpResponseMessage.Content?.ReadAsStringAsync()
-                    : null;
                 var hasStaleContent = HasStaleContent(httpResponseMessage);
                 var continuationToken = httpResponseMessage.Headers.GetContinuationHeader();
                 var requestUri = httpResponseMessage.RequestMessage?.RequestUri?.AbsoluteUri ?? fallbackEndpointUrl;
 
-                return new ApiResponse(content, hasStaleContent, continuationToken, requestUri);
+                return new ApiResponse(httpResponseMessage.Content, hasStaleContent, continuationToken, requestUri);
             }
 
             string faultContent = null;
@@ -348,6 +363,13 @@ namespace Kentico.Kontent.Delivery
             {
                 throw new ArgumentException("Skip parameter is not supported in items feed.");
             }
+        }
+
+        private async Task<IList<object>> GetLinkedItemsAsync(JObject content)
+        {
+            var items = ((JObject)content["modular_content"]).Values().Select(async source => await ModelProvider.GetContentItemModelAsync<object>(source, content["modular_content"]));
+
+            return (await Task.WhenAll(items)).ToList();
         }
     }
 }

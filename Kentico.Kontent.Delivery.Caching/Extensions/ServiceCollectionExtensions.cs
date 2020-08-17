@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Linq;
 using Kentico.Kontent.Delivery.Abstractions;
+using Microsoft.Extensions.Caching.Distributed;
 using Microsoft.Extensions.Caching.Memory;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.DependencyInjection.Extensions;
@@ -28,7 +29,7 @@ namespace Kentico.Kontent.Delivery.Caching.Extensions
 
             return services
                  .RegisterCacheOptions(options)
-                 .RegisterDependencies()
+                 .RegisterDependencies(options.CacheType)
                  .Decorate<IDeliveryClient, DeliveryClientCache>();
         }
 
@@ -48,7 +49,7 @@ namespace Kentico.Kontent.Delivery.Caching.Extensions
 
             services
                 .RegisterCacheOptions(options)
-                .RegisterDependencies()
+                .RegisterDependencies(options.CacheType)
                 .AddTransient<IConfigureOptions<DeliveryClientFactoryOptions>>(sp =>
                 {
                     return new ConfigureNamedOptions<DeliveryClientFactoryOptions>(name, o =>
@@ -76,10 +77,20 @@ namespace Kentico.Kontent.Delivery.Caching.Extensions
             return services;
         }
 
-        private static IServiceCollection RegisterDependencies(this IServiceCollection services)
+        private static IServiceCollection RegisterDependencies(this IServiceCollection services, CacheTypeEnum cacheType)
         {
-            services.TryAddSingleton<IDeliveryCacheManager, DeliveryCacheManager>();
-            services.TryAddSingleton<IMemoryCache, MemoryCache>();
+            switch (cacheType)
+            {
+                case CacheTypeEnum.Memory:
+                    services.TryAddSingleton<IDeliveryCacheManager, MemoryCacheManager>();
+                    services.TryAddSingleton<IMemoryCache, MemoryCache>();
+                    break;
+
+                case CacheTypeEnum.Distributed:
+                    services.TryAddSingleton<IDeliveryCacheManager, DistributedCacheManager>();
+                    services.TryAddSingleton<IDistributedCache, MemoryDistributedCache>();
+                    break;
+            }
 
             return services;
         }

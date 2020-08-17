@@ -1,43 +1,44 @@
 ﻿using Kentico.Kontent.Delivery.Abstractions;
-using Newtonsoft.Json.Linq;
+using Newtonsoft.Json;
+using System;
 using System.Diagnostics;
 
 namespace Kentico.Kontent.Delivery.ContentItems.ContentLinks
 {
     /// <inheritdoc/>
-    [DebuggerDisplay("Codename = {" + nameof(Codename) + "}")]
-    public sealed class ContentLink : IContentLink
+    [DebuggerDisplay("Codename = {" + nameof(IContentLink.Codename) + "}")]
+    internal sealed class ContentLink : IContentLink
     {
         /// <inheritdoc/>
-        public string Id
+        Guid IContentLink.Id
         {
-            get;
+            get; set;
         }
 
         /// <inheritdoc/>
+        [JsonProperty("codename")]
         public string Codename
         {
-            get;
+            get; internal set;
         }
 
         /// <inheritdoc/>
+        [JsonProperty("url_slug")]
         public string UrlSlug
         {
-            get;
+            get; internal set;
         }
 
         /// <inheritdoc/>
+        [JsonProperty("type")]
         public string ContentTypeCodename
         {
-            get;
+            get; internal set;
         }
 
-        internal ContentLink(string id, JToken source)
+        [JsonConstructor]
+        public ContentLink()
         {
-            Id = id;
-            Codename = source.Value<string>("codename");
-            UrlSlug = source.Value<string>("url_slug");
-            ContentTypeCodename = source.Value<string>("type");
         }
     }
 }

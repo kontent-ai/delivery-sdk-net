@@ -111,7 +111,7 @@ namespace Kentico.Kontent.Delivery.Rx
             {
                 while (feed.HasMoreResults)
                 {
-                    foreach (var contentItem in feed.FetchNextBatchAsync().Result)
+                    foreach (var contentItem in feed.FetchNextBatchAsync().Result.Items)
                     {
                         yield return contentItem;
                     }

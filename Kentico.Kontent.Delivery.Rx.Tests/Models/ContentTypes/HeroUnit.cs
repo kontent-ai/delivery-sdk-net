@@ -5,7 +5,7 @@
 // For further modifications of the class, create a separate file with the partial class.
 
 using System.Collections.Generic;
-using Kentico.Kontent.Delivery.ContentItems;
+using Kentico.Kontent.Delivery.Abstractions;
 
 namespace Kentico.Kontent.Delivery.Rx.Tests.Models.ContentTypes
 {
@@ -17,8 +17,8 @@ namespace Kentico.Kontent.Delivery.Rx.Tests.Models.ContentTypes
         public const string MarketingMessageCodename = "marketing_message";
 
         public string Title { get; set; }
-        public IEnumerable<Asset> Image { get; set; }
+        public IEnumerable<IAsset> Image { get; set; }
         public string MarketingMessage { get; set; }
-        public ContentItemSystemAttributes System { get; set; }
+        public IContentItemSystemAttributes System { get; set; }
     }
 }

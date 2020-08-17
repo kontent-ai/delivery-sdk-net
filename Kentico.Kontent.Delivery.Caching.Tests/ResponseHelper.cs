@@ -73,7 +73,8 @@ namespace Kentico.Kontent.Delivery.Caching.Tests
             {
                 id = Guid.NewGuid().ToString(),
                 codename,
-                type = "test_item"
+                type = "test_item",
+                last_modified = "2019-03-27T13:10:01.791Z"
             }
         };
 
@@ -114,6 +115,7 @@ namespace Kentico.Kontent.Delivery.Caching.Tests
             {
                 id = Guid.NewGuid().ToString(),
                 codename,
+                last_modified = "2019-03-27T13:10:01.791Z"
             }
         };
 
@@ -128,7 +130,8 @@ namespace Kentico.Kontent.Delivery.Caching.Tests
             system = new
             {
                 id = Guid.NewGuid().ToString(),
-                codename
+                codename,
+                last_modified = "2019-03-27T13:10:01.791Z"
             }
         };
 

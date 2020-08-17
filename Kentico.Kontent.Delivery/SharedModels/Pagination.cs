@@ -6,7 +6,7 @@ namespace Kentico.Kontent.Delivery.SharedModels
 {
     /// <inheritdoc/>
     [DebuggerDisplay("Count = {" + nameof(Count) + "}, Total = {" + nameof(TotalCount) + "}")]
-    public sealed class Pagination : IPagination
+    internal sealed class Pagination : IPagination
     {
         /// <inheritdoc/>
         public int Skip { get; }
@@ -27,13 +27,13 @@ namespace Kentico.Kontent.Delivery.SharedModels
         /// Initializes a new instance of the <see cref="Pagination"/> class with information from a response.
         /// </summary>
         [JsonConstructor]
-        internal Pagination(int skip, int limit, int count, int? total_count, string next_page)
+        public Pagination(int skip, int limit, int count, int? total_count, string next_page)
         {
             Skip = skip;
             Limit = limit;
             Count = count;
             TotalCount = total_count;
-            NextPageUrl = next_page;
+            NextPageUrl = string.IsNullOrEmpty(next_page) ? null : next_page; // Normalize deserialization
         }
     }
 }

@@ -10,6 +10,6 @@ namespace Kentico.Kontent.Delivery.Abstractions
         /// <summary>
         /// Gets a read-only list of content types.
         /// </summary>
-        IReadOnlyList<IContentType> Types { get; }
+        IList<IContentType> Types { get; }
     }
 }

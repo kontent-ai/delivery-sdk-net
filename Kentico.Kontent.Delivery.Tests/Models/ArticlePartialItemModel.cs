@@ -1,6 +1,5 @@
 ﻿using System.Collections.Generic;
-using Kentico.Kontent.Delivery.ContentItems;
-using Kentico.Kontent.Delivery.TaxonomyGroups;
+using Kentico.Kontent.Delivery.Abstractions;
 
 namespace Kentico.Kontent.Delivery.Tests.Models
 {
@@ -9,7 +8,7 @@ namespace Kentico.Kontent.Delivery.Tests.Models
         public const string Codename = "article";
         public string Title { get; set; }
         public string Summary { get; set; }
-        public IEnumerable<TaxonomyTerm> Personas { get; set; }
-        public ContentItemSystemAttributes System { get; set; }
+        public IEnumerable<ITaxonomyTerm> Personas { get; set; }
+        public IContentItemSystemAttributes System { get; set; }
     }
 }

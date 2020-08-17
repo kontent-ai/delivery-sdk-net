@@ -11,6 +11,7 @@ namespace Kentico.Kontent.Delivery.Tests.Factories
         private static IModelProvider _mockModelProvider = A.Fake<IModelProvider>();
         private static IRetryPolicyProvider _mockResiliencePolicyProvider = A.Fake<IRetryPolicyProvider>();
         private static ITypeProvider _mockTypeProvider = A.Fake<ITypeProvider>();
+        private static readonly DeliveryJsonSerializer _serializer = new DeliveryJsonSerializer();
 
         internal static DeliveryClient GetMockedDeliveryClientWithProjectId(
             Guid projectId,
@@ -29,7 +30,8 @@ namespace Kentico.Kontent.Delivery.Tests.Factories
                 _mockModelProvider,
                 _mockResiliencePolicyProvider,
                 _mockTypeProvider,
-                new DeliveryHttpClient(httpClient)
+                new DeliveryHttpClient(httpClient),
+                _serializer
             );
 
             return client;
@@ -43,7 +45,8 @@ namespace Kentico.Kontent.Delivery.Tests.Factories
                 _mockModelProvider,
                 _mockResiliencePolicyProvider,
                 _mockTypeProvider,
-                deliveryHttpClient
+                deliveryHttpClient,
+                _serializer
             );
 
             return client;

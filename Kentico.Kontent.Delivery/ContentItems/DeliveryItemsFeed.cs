@@ -8,7 +8,7 @@ namespace Kentico.Kontent.Delivery.ContentItems
     /// Represents a feed that can be used to retrieve strongly typed content items from Kentico Kontent Delivery API in smaller batches.
     /// </summary>
     /// <typeparam name="T">The type of content items in the feed.</typeparam>
-    public class DeliveryItemsFeed<T> : IDeliveryItemsFeed<T>
+    internal class DeliveryItemsFeed<T> : IDeliveryItemsFeed<T>
     {
         internal delegate Task<DeliveryItemsFeedResponse<T>> GetFeedResponse(string continuationToken);
 
@@ -24,7 +24,7 @@ namespace Kentico.Kontent.Delivery.ContentItems
         /// Initializes a new instance of <see cref="DeliveryItemsFeed{T}"/> class.
         /// </summary>
         /// <param name="getFeedResponseAsync">Function to retrieve next batch of content items.</param>
-        internal DeliveryItemsFeed(GetFeedResponse getFeedResponseAsync)
+        public DeliveryItemsFeed(GetFeedResponse getFeedResponseAsync)
         {
             _getFeedResponseAsync = getFeedResponseAsync;
         }

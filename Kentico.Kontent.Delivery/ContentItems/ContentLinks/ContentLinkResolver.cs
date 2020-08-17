@@ -1,8 +1,10 @@
 ﻿using System;
+using System.Collections.Generic;
+using System.Linq;
 using System.Net;
 using System.Text.RegularExpressions;
+using System.Threading.Tasks;
 using Kentico.Kontent.Delivery.Abstractions;
-using Newtonsoft.Json.Linq;
 
 namespace Kentico.Kontent.Delivery.ContentItems.ContentLinks
 {
@@ -17,7 +19,7 @@ namespace Kentico.Kontent.Delivery.ContentItems.ContentLinks
             ContentLinkUrlResolver = contentLinkUrlResolver ?? throw new ArgumentNullException(nameof(contentLinkUrlResolver));
         }
 
-        public string ResolveContentLinks(string text, JToken links)
+        public async Task<string> ResolveContentLinksAsync(string text, IDictionary<Guid, IContentLink> links)
         {
             if (text == null)
             {
@@ -34,23 +36,36 @@ namespace Kentico.Kontent.Delivery.ContentItems.ContentLinks
                 return text;
             }
 
-            return ElementRegex.Replace(text, match =>
-            {
-                var contentItemId = match.Groups["id"].Value;
-                var linkSource = links[contentItemId];
+            var matches = ElementRegex.Matches(text);
 
-                if (linkSource == null)
+            static string Replace(string s, int index, int length, string replacement)
+            {
+                return string.Concat(s.Substring(0, index), replacement, s.Substring(index + length));
+            }
+
+            foreach (var match in matches.Cast<Match>().Reverse())
+            {
+                var contentItemId = Guid.Parse(match.Groups["id"].Value);
+                string url;
+                if (links.ContainsKey(contentItemId))
                 {
-                    return ResolveMatch(match, ContentLinkUrlResolver.ResolveBrokenLinkUrl());
+                    var link = links[contentItemId];
+                    link.Id = contentItemId;
+                    url = await ContentLinkUrlResolver.ResolveLinkUrl(link);
+                }
+                else
+                {
+                    url = await ContentLinkUrlResolver.ResolveBrokenLinkUrl();
                 }
 
-                var link = new ContentLink(contentItemId, linkSource);
+                var replacement = ResolveMatch(match, url);
+                text = Replace(text, match.Index, match.Length, replacement);
+            }
 
-                return ResolveMatch(match, ContentLinkUrlResolver.ResolveLinkUrl(link));
-            });
+            return text;
         }
 
-        private string ResolveMatch(Match match, string url)
+        private static string ResolveMatch(Capture match, string url)
         {
             if (string.IsNullOrEmpty(url))
             {
@@ -60,13 +75,14 @@ namespace Kentico.Kontent.Delivery.ContentItems.ContentLinks
             const string needle = "href=\"\"";
             var haystack = match.Value;
             var index = haystack.IndexOf(needle, StringComparison.InvariantCulture);
-            
+
             if (index < 0)
             {
                 return haystack;
             }
 
-            return haystack.Insert(index + 6, WebUtility.HtmlEncode(url)); 
+            var withinHrefIndex = index + needle.Length - "\"".Length;
+            return haystack.Insert(withinHrefIndex, WebUtility.HtmlEncode(url));
         }
     }
 }

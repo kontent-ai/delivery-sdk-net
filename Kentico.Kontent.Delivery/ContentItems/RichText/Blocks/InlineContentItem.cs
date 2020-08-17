@@ -12,7 +12,11 @@ namespace Kentico.Kontent.Delivery.ContentItems.RichText.Blocks
         public object ContentItem
         {
             get;
-            set;
+        }
+
+        public InlineContentItem(object contentItem)
+        {
+            ContentItem = contentItem;
         }
 
         public IEnumerator<object> GetEnumerator()

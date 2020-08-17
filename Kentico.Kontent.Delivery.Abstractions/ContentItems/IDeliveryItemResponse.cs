@@ -16,6 +16,6 @@ namespace Kentico.Kontent.Delivery.Abstractions
         /// <summary>
         /// Gets the linked items and their properties.
         /// </summary>
-        IReadOnlyList<object> LinkedItems { get; }
+        IList<object> LinkedItems { get; }
     }
 }

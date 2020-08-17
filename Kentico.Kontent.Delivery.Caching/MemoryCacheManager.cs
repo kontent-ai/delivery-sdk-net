@@ -13,7 +13,7 @@ namespace Kentico.Kontent.Delivery.Caching
     /// <summary>
     /// Cache responses against the Kentico Kontent Delivery API.
     /// </summary>
-    public sealed class DeliveryCacheManager : IDeliveryCacheManager
+    public sealed class MemoryCacheManager : IDeliveryCacheManager
     {
         private readonly IMemoryCache _memoryCache;
         private readonly DeliveryCacheOptions _cacheOptions;
@@ -21,40 +21,33 @@ namespace Kentico.Kontent.Delivery.Caching
         private readonly ConcurrentDictionary<string, object> _dependencyLocks = new ConcurrentDictionary<string, object>();
 
         /// <summary>
-        /// Initializes a new instance of <see cref="DeliveryCacheManager"/>
+        /// Initializes a new instance of <see cref="MemoryCacheManager"/>
         /// </summary>
         /// <param name="memoryCache">An instance of an object that represent memory cache</param>
         /// <param name="cacheOptions">The settings of the cache</param>
-        public DeliveryCacheManager(IMemoryCache memoryCache, IOptions<DeliveryCacheOptions> cacheOptions)
+        public MemoryCacheManager(IMemoryCache memoryCache, IOptions<DeliveryCacheOptions> cacheOptions)
         {
             _memoryCache = memoryCache;
             _cacheOptions = cacheOptions.Value ?? new DeliveryCacheOptions();
         }
 
-        /// <summary>
-        /// Returns or Adds data to the cache
-        /// </summary>
-        /// <typeparam name="T">A generic type</typeparam>
-        /// <param name="key">A cache key</param>
-        /// <param name="valueFactory">A factory which returns a data</param>
-        /// <param name="shouldCache"></param>
-        /// <param name="dependenciesFactory"></param>
-        /// <returns>The data of generic type</returns>
-        public async Task<T> GetOrAddAsync<T>(string key, Func<Task<T>> valueFactory, Func<T, bool> shouldCache = null, Func<T, IEnumerable<string>> dependenciesFactory = null)
+        /// <inheritdoc />
+        public async Task<T> GetOrAddAsync<T>(string key, Func<Task<T>> valueFactory, Func<T, bool> shouldCache = null, Func<T, IEnumerable<string>> dependenciesFactory = null) where T : class
         {
-            if (await TryGetAsync(key, out T entry))
+            var attempt = await TryGetAsync<T>(key);
+            if (attempt.Success)
             {
-                return entry;
+                return attempt.Value;
             }
 
             var entryLock = _createLocks.GetOrAdd(key, _ => new SemaphoreSlim(1, 1));
             try
             {
                 await entryLock.WaitAsync();
-
-                if (await TryGetAsync(key, out entry))
+                attempt = await TryGetAsync<T>(key);
+                if (attempt.Success)
                 {
-                    return entry;
+                    return attempt.Value;
                 }
 
                 var value = await valueFactory();
@@ -108,28 +101,19 @@ namespace Kentico.Kontent.Delivery.Caching
             }
         }
 
-        /// <summary>
-        /// Tries to return a data
-        /// </summary>
-        /// <typeparam name="T">Generic type</typeparam>
-        /// <param name="key">A cache key</param>
-        /// <param name="value">Returns data in out parameter if are there.</param>
-        /// <returns>Returns true or false.</returns>
-        public Task<bool> TryGetAsync<T>(string key, out T value)
+        /// <inheritdoc />
+        public Task<(bool Success, T Value)> TryGetAsync<T>(string key) where T : class
         {
             if (key == null)
             {
                 throw new ArgumentNullException(nameof(key));
             }
 
-            return Task.FromResult(_memoryCache.TryGetValue(key, out value));
+            var result = _memoryCache.TryGetValue(key, out object value);
+            return Task.FromResult((Success: result, Value: value as T));
         }
 
-        /// <summary>
-        /// Invalidates data by the key
-        /// </summary>
-        /// <param name="key">A cache key</param>
-        /// <returns></returns>
+        /// <inheritdoc />
         public async Task InvalidateDependencyAsync(string key)
         {
             if (key == null)
@@ -137,16 +121,23 @@ namespace Kentico.Kontent.Delivery.Caching
                 throw new ArgumentNullException(nameof(key));
             }
 
-            if (await TryGetAsync(key, out CancellationTokenSource tokenSource))
+            var (Success, Value) = await TryGetAsync<CancellationTokenSource>(key);
+            if (Success)
             {
-                tokenSource.Cancel();
+                if (Value is { })
+                {
+                    // Invalidate by item dependency
+                    Value.Cancel();
+                }
+                else
+                {
+                    // Invalidate the item itself
+                    _memoryCache.Remove(key);
+                }
             }
         }
 
-        /// <summary>
-        /// Clears cache
-        /// </summary>
-        /// <returns></returns>
+        /// <inheritdoc />
         public Task ClearAsync()
         {
             foreach (var key in _createLocks.Keys)

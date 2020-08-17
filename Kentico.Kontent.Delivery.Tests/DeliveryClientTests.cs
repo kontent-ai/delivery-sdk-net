@@ -6,6 +6,7 @@ using System.Linq;
 using System.Net;
 using System.Net.Http;
 using System.Threading.Tasks;
+using AngleSharp.Html.Parser;
 using FakeItEasy;
 using Kentico.Kontent.Delivery.Abstractions;
 using Kentico.Kontent.Delivery.Builders.DeliveryClient;
@@ -41,7 +42,7 @@ namespace Kentico.Kontent.Delivery.Tests
         }
 
         [Fact]
-        public async void GetItemAsync()
+        public async Task GetItemAsync()
         {
             string url = $"{_baseUrl}/items/";
 
@@ -71,7 +72,7 @@ namespace Kentico.Kontent.Delivery.Tests
             Assert.NotEmpty(roastsItem.RelatedArticlesInterface);
             Assert.NotEmpty(beveragesItem.Title);
             Assert.NotEmpty(beveragesItem.BodyCopy);
-            Assert.True(beveragesItem.PostDate.Value != default);
+            Assert.True(beveragesItem.PostDate != null && beveragesItem.PostDate.Value != default);
             Assert.True(beveragesItem.TeaserImage.Any());
             Assert.True(beveragesItem.Personas.Any());
             Assert.True(barraItem.Price > 0);
@@ -80,7 +81,7 @@ namespace Kentico.Kontent.Delivery.Tests
         }
 
         [Fact]
-        public async void GetItemWithImplementedTypes()
+        public async Task GetItemWithImplementedTypes()
         {
             // Arrange
             _mockHttp
@@ -99,7 +100,7 @@ namespace Kentico.Kontent.Delivery.Tests
         }
 
         [Fact]
-        public async void GetPagination()
+        public async Task GetPagination()
         {
             _mockHttp
                 .When($"{_baseUrl}/items")
@@ -117,7 +118,7 @@ namespace Kentico.Kontent.Delivery.Tests
         }
 
         [Fact]
-        public async void AssetPropertiesNotEmpty()
+        public async Task AssetPropertiesNotEmpty()
         {
             _mockHttp
                 .When($"{_baseUrl}/items/coffee_beverages_explained")
@@ -139,7 +140,7 @@ namespace Kentico.Kontent.Delivery.Tests
         }
 
         [Fact]
-        public async void IgnoredSerializationProperties()
+        public async Task IgnoredSerializationProperties()
         {
             _mockHttp
                 .When($"{_baseUrl}/items/coffee_beverages_explained")
@@ -154,13 +155,13 @@ namespace Kentico.Kontent.Delivery.Tests
         }
 
         [Fact]
-        public async void GetItemAsync_NotFound()
+        public async Task GetItemAsync_NotFound()
         {
-            string messsge = "{'message': 'The requested content item unscintillating_hemerocallidaceae_des_iroquois was not found.','request_id': '','error_code': 101,'specific_code': 0}";
+            string message = "{'message': 'The requested content item unscintillating_hemerocallidaceae_des_iroquois was not found.','request_id': '','error_code': 101,'specific_code': 0}";
 
             _mockHttp
                 .When($"{_baseUrl}/items/unscintillating_hemerocallidaceae_des_iroquois")
-                .Respond(HttpStatusCode.NotFound, "application/json", messsge);
+                .Respond(HttpStatusCode.NotFound, "application/json", message);
 
             var client = InitializeDeliveryClientWithACustomTypeProvider(_mockHttp);
 
@@ -169,9 +170,8 @@ namespace Kentico.Kontent.Delivery.Tests
 
 
         [Fact]
-        public async void GetItemAsync_ComplexRichTextTableCell_ParseCorrectly()
+        public async Task GetItemAsync_ComplexRichTextTableCell_ParseCorrectly()
         {
-
             var mockedResponse = await File.ReadAllTextAsync(Path.Combine(Environment.CurrentDirectory, $"Fixtures{Path.DirectorySeparatorChar}DeliveryClient{Path.DirectorySeparatorChar}rich_text_complex_tables.json"));
 
             var expectedValue = JObject.Parse(mockedResponse).SelectToken("item.elements.rich_text.value").ToString();
@@ -191,7 +191,7 @@ namespace Kentico.Kontent.Delivery.Tests
         }
 
         [Fact]
-        public async void GetItemsAsyncWithTypeExtractor()
+        public async Task GetItemsAsyncWithTypeExtractor()
         {
             _mockHttp
                 .When($"{_baseUrl}/items")
@@ -206,7 +206,7 @@ namespace Kentico.Kontent.Delivery.Tests
         }
 
         [Fact]
-        public async void GetItemsAsync()
+        public async Task GetItemsAsync()
         {
             _mockHttp
                 .When($"{_baseUrl}/items")
@@ -245,7 +245,7 @@ namespace Kentico.Kontent.Delivery.Tests
         }
 
         [Fact]
-        public async void GetItemsFeed_SingleBatch_FetchNextBatchAsync()
+        public async Task GetItemsFeed_SingleBatch_FetchNextBatchAsync()
         {
             _mockHttp
                 .When($"{_baseUrl}/items-feed")
@@ -269,7 +269,7 @@ namespace Kentico.Kontent.Delivery.Tests
         }
 
         [Fact]
-        public async void GetItemsFeed_MultipleBatches_FetchNextBatchAsync()
+        public async Task GetItemsFeed_MultipleBatches_FetchNextBatchAsync()
         {
             // Second batch
             _mockHttp
@@ -301,7 +301,7 @@ namespace Kentico.Kontent.Delivery.Tests
         }
 
         [Fact]
-        public async void GetTypeAsync()
+        public async Task GetTypeAsync()
         {
             _mockHttp
                 .When($"{_baseUrl}/types/article")
@@ -326,16 +326,23 @@ namespace Kentico.Kontent.Delivery.Tests
             Assert.Equal("asset", articleType.Elements["teaser_image"].Type);
             Assert.Equal("modular_content", articleType.Elements["related_articles"].Type);
             Assert.Equal("taxonomy", articleType.Elements["personas"].Type);
+            foreach (var element in articleType.Elements)
+            {
+                Assert.NotEmpty(element.Value.Codename);
+            }
 
             Assert.Equal("number", coffeeType.Elements["price"].Type);
             Assert.Equal("taxonomy", coffeeType.Elements["processing"].Type);
 
-            Assert.Equal("personas", taxonomyElement.TaxonomyGroup);
-            Assert.Equal("processing", processingTaxonomyElement.TaxonomyGroup);
+            Assert.IsAssignableFrom<ITaxonomyElement>(taxonomyElement);
+            Assert.Equal("personas", ((ITaxonomyElement)taxonomyElement).TaxonomyGroup);
+
+            Assert.IsAssignableFrom<ITaxonomyElement>(processingTaxonomyElement);
+            Assert.Equal("processing", ((ITaxonomyElement)processingTaxonomyElement).TaxonomyGroup);
         }
 
         [Fact]
-        public async void GetTypeAsync_NotFound()
+        public async Task GetTypeAsync_NotFound()
         {
             string messsge = "{'message': 'The requested content type unequestrian_nonadjournment_sur_achoerodus was not found','request_id': '','error_code': 101,'specific_code': 0}";
 
@@ -349,7 +356,7 @@ namespace Kentico.Kontent.Delivery.Tests
         }
 
         [Fact]
-        public async void GetTypesAsync()
+        public async Task GetTypesAsync()
         {
             _mockHttp
                 .When($"{_baseUrl}/types")
@@ -365,7 +372,7 @@ namespace Kentico.Kontent.Delivery.Tests
         }
 
         [Fact]
-        public async void GetContentElementAsync()
+        public async Task GetContentElementAsync()
         {
             string url = $"{_baseUrl}/types";
 
@@ -378,20 +385,32 @@ namespace Kentico.Kontent.Delivery.Tests
             _mockHttp
                 .When($"{url}/{Coffee.Codename}/elements/{Coffee.ProcessingCodename}")
                 .Respond("application/json", "{'type':'taxonomy','name':'Processing','taxonomy_group':'processing','codename':'processing'}");
+            _mockHttp
+                .When($"{url}/{Tweet.Codename}/elements/{Tweet.ThemeCodename}")
+                .Respond("application/json", "{ 'type': 'multiple_choice', 'name': 'Theme', 'options': [ { 'name': 'Dark', 'codename': 'dark' }, { 'name': 'Light', 'codename': 'light' } ], 'codename': 'theme' }");
 
             var client = InitializeDeliveryClientWithACustomTypeProvider(_mockHttp);
 
             var element = (await client.GetContentElementAsync(Article.Codename, Article.TitleCodename)).Element;
             var personasTaxonomyElement = (await client.GetContentElementAsync(Article.Codename, Article.PersonasCodename)).Element;
             var processingTaxonomyElement = (await client.GetContentElementAsync(Coffee.Codename, Coffee.ProcessingCodename)).Element;
+            var themeMultipleChoiceElement = (await client.GetContentElementAsync(Tweet.Codename, Tweet.ThemeCodename)).Element;
 
+            Assert.IsAssignableFrom<IContentElement>(element);
             Assert.Equal(Article.TitleCodename, element.Codename);
-            Assert.Equal(Article.PersonasCodename, personasTaxonomyElement.TaxonomyGroup);
-            Assert.Equal(Coffee.ProcessingCodename, processingTaxonomyElement.TaxonomyGroup);
+
+            Assert.IsAssignableFrom<ITaxonomyElement>(personasTaxonomyElement);
+            Assert.Equal(Article.PersonasCodename, ((ITaxonomyElement)personasTaxonomyElement).TaxonomyGroup);
+
+            Assert.IsAssignableFrom<ITaxonomyElement>(processingTaxonomyElement);
+            Assert.Equal(Coffee.ProcessingCodename, ((ITaxonomyElement)processingTaxonomyElement).TaxonomyGroup);
+
+            Assert.IsAssignableFrom<IMultipleChoiceElement>(themeMultipleChoiceElement);
+            Assert.NotEmpty(((IMultipleChoiceElement)themeMultipleChoiceElement).Options);
         }
 
         [Fact]
-        public async void GetContentElementsAsync_NotFound()
+        public async Task GetContentElementsAsync_NotFound()
         {
             string url = $"{_baseUrl}/types/anticommunistical_preventure_sur_helxine/elements/unlacerated_topognosis_sur_nonvigilantness";
 
@@ -406,7 +425,7 @@ namespace Kentico.Kontent.Delivery.Tests
         }
 
         [Fact]
-        public async void GetTaxonomyAsync()
+        public async Task GetTaxonomyAsync()
         {
             _mockHttp
                 .When($"{_baseUrl}/taxonomies/personas")
@@ -427,7 +446,7 @@ namespace Kentico.Kontent.Delivery.Tests
         }
 
         [Fact]
-        public async void GetTaxonomyAsync_NotFound()
+        public async Task GetTaxonomyAsync_NotFound()
         {
             string url = $"{_baseUrl}/taxonomies/unequestrian_nonadjournment_sur_achoerodus";
             _mockHttp
@@ -440,7 +459,7 @@ namespace Kentico.Kontent.Delivery.Tests
         }
 
         [Fact]
-        public async void GetTaxonomiesAsync()
+        public async Task GetTaxonomiesAsync()
         {
             _mockHttp
                 .When($"{_baseUrl}/taxonomies")
@@ -456,7 +475,7 @@ namespace Kentico.Kontent.Delivery.Tests
         }
 
         [Fact]
-        public async void QueryParameters()
+        public async Task QueryParameters()
         {
 
             string url = $"{_baseUrl}/items?elements.personas%5Ball%5D=barista%2Ccoffee%2Cblogger&elements.personas%5Bany%5D=barista%2Ccoffee%2Cblogger&system.sitemap_locations%5Bcontains%5D=cafes&elements.product_name=Hario%20V60&elements.price%5Bgt%5D=1000&elements.price%5Bgte%5D=50&system.type%5Bin%5D=cafe%2Ccoffee&elements.price%5Blt%5D=10&elements.price%5Blte%5D=4&elements.country%5Brange%5D=Guatemala%2CNicaragua&depth=2&elements=price%2Cproduct_name&limit=10&order=elements.price%5Bdesc%5D&skip=2&language=en&includeTotalCount";
@@ -493,7 +512,7 @@ namespace Kentico.Kontent.Delivery.Tests
         }
 
         [Fact]
-        public async void GetStrongTypesWithLimitedDepth()
+        public async Task GetStrongTypesWithLimitedDepth()
         {
             _mockHttp
                 .When($"{_baseUrl}/items/on_roasts")
@@ -516,7 +535,7 @@ namespace Kentico.Kontent.Delivery.Tests
         }
 
         [Fact]
-        public async void RecursiveLinkedItems()
+        public async Task RecursiveLinkedItems()
         {
             _mockHttp
                 .When($"{_baseUrl}/items/on_roasts")
@@ -532,7 +551,7 @@ namespace Kentico.Kontent.Delivery.Tests
         }
 
         [Fact]
-        public async void RecursiveInlineLinkedItems()
+        public async Task RecursiveInlineLinkedItems()
         {
             _mockHttp
                 .When($"{_baseUrl}/items/on_roasts")
@@ -548,15 +567,15 @@ namespace Kentico.Kontent.Delivery.Tests
         }
 
         [Fact]
-        public void GetStronglyTypedResponse()
+        public async Task GetStronglyTypedResponse()
         {
             _mockHttp
                 .When($"{_baseUrl}/items/complete_content_item")
-                .Respond("application/json", File.ReadAllText(Path.Combine(Environment.CurrentDirectory, $"Fixtures{Path.DirectorySeparatorChar}DeliveryClient{Path.DirectorySeparatorChar}complete_content_item.json")));
+                .Respond("application/json", await File.ReadAllTextAsync(Path.Combine(Environment.CurrentDirectory, $"Fixtures{Path.DirectorySeparatorChar}DeliveryClient{Path.DirectorySeparatorChar}complete_content_item.json")));
 
             var client = InitializeDeliveryClientWithACustomTypeProvider(_mockHttp);
 
-            var response = client.GetItemAsync<CompleteContentItemModel>("complete_content_item").Result;
+            var response = await client.GetItemAsync<CompleteContentItemModel>("complete_content_item");
             CompleteContentItemModel item = response.Item;
 
             // Assert
@@ -592,11 +611,11 @@ namespace Kentico.Kontent.Delivery.Tests
         }
 
         [Fact]
-        public void GetStronglyTypedGenericWithAttributesResponse()
+        public async Task GetStronglyTypedGenericWithAttributesResponse()
         {
             _mockHttp
                 .When($"{_baseUrl}/items/complete_content_item")
-                .Respond("application/json", File.ReadAllText(Path.Combine(Environment.CurrentDirectory, $"Fixtures{Path.DirectorySeparatorChar}DeliveryClient{Path.DirectorySeparatorChar}complete_content_item.json")));
+                .Respond("application/json", await File.ReadAllTextAsync(Path.Combine(Environment.CurrentDirectory, $"Fixtures{Path.DirectorySeparatorChar}DeliveryClient{Path.DirectorySeparatorChar}complete_content_item.json")));
 
             var client = InitializeDeliveryClientWithCustomModelProvider(_mockHttp, new PropertyMapper());
 
@@ -605,7 +624,7 @@ namespace Kentico.Kontent.Delivery.Tests
                 .ReturnsLazily(() => typeof(ContentItemModelWithAttributes));
             A.CallTo(() => _mockTypeProvider.GetType("homepage")).ReturnsLazily(() => typeof(Homepage));
 
-            ContentItemModelWithAttributes item = (ContentItemModelWithAttributes)client.GetItemAsync<object>("complete_content_item").Result.Item;
+            ContentItemModelWithAttributes item = (ContentItemModelWithAttributes)(await client.GetItemAsync<object>("complete_content_item")).Item;
 
             // Assert
             Assert.Equal("Text field value", item.TextFieldWithADifferentName);
@@ -642,12 +661,12 @@ namespace Kentico.Kontent.Delivery.Tests
 
 
         [Fact]
-        public void GetStronglyTypedItemsResponse()
+        public async Task GetStronglyTypedItemsResponse()
         {
             _mockHttp
                 .When($"{_baseUrl}/items")
                 .WithQueryString("system.type=complete_content_type")
-                .Respond("application/json", File.ReadAllText(Path.Combine(Environment.CurrentDirectory, $"Fixtures{Path.DirectorySeparatorChar}DeliveryClient{Path.DirectorySeparatorChar}complete_content_item_system_type.json")));
+                .Respond("application/json", await File.ReadAllTextAsync(Path.Combine(Environment.CurrentDirectory, $"Fixtures{Path.DirectorySeparatorChar}DeliveryClient{Path.DirectorySeparatorChar}complete_content_item_system_type.json")));
 
             var client = InitializeDeliveryClientWithCustomModelProvider(_mockHttp);
 
@@ -656,7 +675,7 @@ namespace Kentico.Kontent.Delivery.Tests
                 .ReturnsLazily(() => typeof(ContentItemModelWithAttributes));
             A.CallTo(() => _mockTypeProvider.GetType("homepage")).ReturnsLazily(() => typeof(Homepage));
 
-            IReadOnlyList<object> items = client.GetItemsAsync<object>(new EqualsFilter("system.type", "complete_content_type")).Result.Items;
+            IList<object> items = (await client.GetItemsAsync<object>(new EqualsFilter("system.type", "complete_content_type"))).Items;
 
             // Assert
             Assert.True(items.All(i => i.GetType() == typeof(ContentItemModelWithAttributes)));
@@ -687,7 +706,7 @@ namespace Kentico.Kontent.Delivery.Tests
         }
 
         [Fact]
-        public async void GetStronglyTypedItemsFeed_SingleBatch_FetchNextBatchAsync()
+        public async Task GetStronglyTypedItemsFeed_SingleBatch_FetchNextBatchAsync()
         {
             _mockHttp
                 .When($"{_baseUrl}/items-feed")
@@ -714,7 +733,7 @@ namespace Kentico.Kontent.Delivery.Tests
         }
 
         [Fact]
-        public async void GetStronglyTypedItemsFeed_MultipleBatches_FetchNextBatchAsync()
+        public async Task GetStronglyTypedItemsFeed_MultipleBatches_FetchNextBatchAsync()
         {
             // Second batch
             _mockHttp
@@ -749,30 +768,30 @@ namespace Kentico.Kontent.Delivery.Tests
         }
 
         [Fact]
-        public void CastResponse()
+        public async Task CastResponse()
         {
             _mockHttp
                 .When($"{_baseUrl}/items/complete_content_item")
-                .Respond("application/json", File.ReadAllText(Path.Combine(Environment.CurrentDirectory, $"Fixtures{Path.DirectorySeparatorChar}DeliveryClient{Path.DirectorySeparatorChar}complete_content_item.json")));
+                .Respond("application/json", await File.ReadAllTextAsync(Path.Combine(Environment.CurrentDirectory, $"Fixtures{Path.DirectorySeparatorChar}DeliveryClient{Path.DirectorySeparatorChar}complete_content_item.json")));
 
-            var client = InitializeDeliveryClientWithCustomModelProvider(_mockHttp, new PropertyMapper());
+            var client = InitializeDeliveryClientWithCustomModelProvider(_mockHttp, new PropertyMapper(), new CustomTypeProvider());
 
-            var response = client.GetItemAsync<CompleteContentItemModel>("complete_content_item").Result;
+            var response = await client.GetItemAsync<CompleteContentItemModel>("complete_content_item");
 
             // Assert
             Assert.Equal("Text field value", response.Item.TextField);
         }
 
         [Fact]
-        public void CastListingResponse()
+        public async Task CastListingResponse()
         {
             _mockHttp
                 .When($"{_baseUrl}/items")
-                .Respond("application/json", File.ReadAllText(Path.Combine(Environment.CurrentDirectory, $"Fixtures{Path.DirectorySeparatorChar}DeliveryClient{Path.DirectorySeparatorChar}items.json")));
+                .Respond("application/json", await File.ReadAllTextAsync(Path.Combine(Environment.CurrentDirectory, $"Fixtures{Path.DirectorySeparatorChar}DeliveryClient{Path.DirectorySeparatorChar}items.json")));
 
-            var client = InitializeDeliveryClientWithCustomModelProvider(_mockHttp);
+            var client = InitializeDeliveryClientWithCustomModelProvider(_mockHttp, new PropertyMapper(), new CustomTypeProvider());
 
-            var response = client.GetItemsAsync<CompleteContentItemModel>().Result;
+            var response = await client.GetItemsAsync<CompleteContentItemModel>();
 
             // Assert
             Assert.NotNull(response);
@@ -780,7 +799,7 @@ namespace Kentico.Kontent.Delivery.Tests
         }
 
         [Fact]
-        public async void CastItemsFeedResponse()
+        public async Task CastItemsFeedResponse()
         {
             _mockHttp
                 .When($"{_baseUrl}/items-feed")
@@ -797,31 +816,31 @@ namespace Kentico.Kontent.Delivery.Tests
         }
 
         [Fact]
-        public void CastContentItem()
+        public async Task CastContentItem()
         {
             _mockHttp
                 .When($"{_baseUrl}/items/complete_content_item")
-                .Respond("application/json", File.ReadAllText(Path.Combine(Environment.CurrentDirectory, $"Fixtures{Path.DirectorySeparatorChar}DeliveryClient{Path.DirectorySeparatorChar}complete_content_item.json")));
+                .Respond("application/json", await File.ReadAllTextAsync(Path.Combine(Environment.CurrentDirectory, $"Fixtures{Path.DirectorySeparatorChar}DeliveryClient{Path.DirectorySeparatorChar}complete_content_item.json")));
 
-            var client = InitializeDeliveryClientWithCustomModelProvider(_mockHttp, new PropertyMapper());
+            var client = InitializeDeliveryClientWithCustomModelProvider(_mockHttp, new PropertyMapper(), new CustomTypeProvider());
 
-            var item = client.GetItemAsync<CompleteContentItemModel>("complete_content_item").Result.Item;
+            var item = await client.GetItemAsync<CompleteContentItemModel>("complete_content_item");
 
             // Assert
-            Assert.Equal("Text field value", item.TextField);
+            Assert.Equal("Text field value", item.Item.TextField);
         }
 
         [Fact]
-        public void CastContentItems()
+        public async Task CastContentItems()
         {
             _mockHttp
                 .When($"{_baseUrl}/items")
-                .Respond("application/json", File.ReadAllText(Path.Combine(Environment.CurrentDirectory, $"Fixtures{Path.DirectorySeparatorChar}DeliveryClient{Path.DirectorySeparatorChar}items.json")));
+                .Respond("application/json", await File.ReadAllTextAsync(Path.Combine(Environment.CurrentDirectory, $"Fixtures{Path.DirectorySeparatorChar}DeliveryClient{Path.DirectorySeparatorChar}items.json")));
 
-            var client = InitializeDeliveryClientWithCustomModelProvider(_mockHttp);
+            var client = InitializeDeliveryClientWithCustomModelProvider(_mockHttp, new PropertyMapper(), new CustomTypeProvider());
 
             // Act
-            var response = client.GetItemsAsync<CompleteContentItemModel>().Result;
+            var response = await client.GetItemsAsync<CompleteContentItemModel>();
             IEnumerable<CompleteContentItemModel> list = response
                 .Items
                 .Where(i => i.System.Type == "complete_content_type");
@@ -831,11 +850,11 @@ namespace Kentico.Kontent.Delivery.Tests
         }
 
         [Fact]
-        public void LongUrl()
+        public async Task LongUrl()
         {
             _mockHttp
                 .When($"{_baseUrl}/items")
-                .Respond("application/json", File.ReadAllText(Path.Combine(Environment.CurrentDirectory, $"Fixtures{Path.DirectorySeparatorChar}DeliveryClient{Path.DirectorySeparatorChar}items.json")));
+                .Respond("application/json", await File.ReadAllTextAsync(Path.Combine(Environment.CurrentDirectory, $"Fixtures{Path.DirectorySeparatorChar}DeliveryClient{Path.DirectorySeparatorChar}items.json")));
 
             var client = Factories.DeliveryClientFactory.GetMockedDeliveryClientWithProjectId(_guid, _mockHttp);
             var retryPolicy = A.Fake<IRetryPolicy>();
@@ -850,14 +869,14 @@ namespace Kentico.Kontent.Delivery.Tests
             var anyFilter = new AnyFilter("test", Enumerable.Range(0, 1000).Select(i => "test").ToArray());
 
             // Act
-            var response = client.GetItemsAsync<object>(elements, inFilter, allFilter, anyFilter).Result;
+            var response = await client.GetItemsAsync<object>(elements, inFilter, allFilter, anyFilter);
 
             // Assert
             Assert.NotNull(response);
         }
 
         [Fact]
-        public async void TooLongUrlThrows()
+        public async Task TooLongUrlThrows()
         {
             _mockHttp
                 .When($"{_baseUrl}/items")
@@ -876,7 +895,7 @@ namespace Kentico.Kontent.Delivery.Tests
         [InlineData(true, false)]
         [InlineData(false, true)]
         [InlineData(true, true)]
-        public async void PreviewAndSecuredProductionThrowsWhenBothEnabled(bool usePreviewApi,
+        public async Task PreviewAndSecuredProductionThrowsWhenBothEnabled(bool usePreviewApi,
             bool useSecuredProduction)
         {
             if (usePreviewApi)
@@ -924,7 +943,7 @@ namespace Kentico.Kontent.Delivery.Tests
         }
 
         [Fact]
-        public async void SecuredProductionAddCorrectHeader()
+        public async Task SecuredProductionAddCorrectHeader()
         {
             var securityKey = "someKey";
             var options = new DeliveryOptions
@@ -951,7 +970,7 @@ namespace Kentico.Kontent.Delivery.Tests
         }
 
         [Fact]
-        public async void CorrectSdkVersionHeaderAdded()
+        public async Task CorrectSdkVersionHeaderAdded()
         {
             var assembly = typeof(DeliveryClient).Assembly;
             var fileVersionInfo = FileVersionInfo.GetVersionInfo(assembly.Location);
@@ -977,7 +996,7 @@ namespace Kentico.Kontent.Delivery.Tests
         }
 
         [Fact]
-        public async void GetItemAsync_ApiReturnsStaleContent_ResponseIndicatesStaleContent()
+        public async Task GetItemAsync_ApiReturnsStaleContent_ResponseIndicatesStaleContent()
         {
             var headers = new[]
             {
@@ -985,18 +1004,20 @@ namespace Kentico.Kontent.Delivery.Tests
             };
 
             _mockHttp
-                .When($"{_baseUrl}/items/test")
-                .Respond(headers, "application/json", "{ }");
+                .When($"{_baseUrl}/items/coffee_beverages_explained")
+                .Respond(headers, "application/json", await File.ReadAllTextAsync(Path.Combine(Environment.CurrentDirectory,
+                        $"Fixtures{Path.DirectorySeparatorChar}DeliveryClient{Path.DirectorySeparatorChar}coffee_beverages_explained.json")));
 
-            var client = InitializeDeliveryClientWithCustomModelProvider(_mockHttp);
+            var client = InitializeDeliveryClientWithCustomModelProvider(_mockHttp, new PropertyMapper(), new CustomTypeProvider());
 
-            var response = await client.GetItemAsync<object>("test");
+            var response = await client.GetItemAsync<object>("coffee_beverages_explained");
 
             Assert.True(response.ApiResponse.HasStaleContent);
+            Assert.IsType<Article>(response.Item);
         }
 
         [Fact]
-        public async void GetItemAsync_ApiDoesNotReturnStaleContent_ResponseDoesNotIndicateStaleContent()
+        public async Task GetItemAsync_ApiDoesNotReturnStaleContent_ResponseDoesNotIndicateStaleContent()
         {
             var headers = new[]
             {
@@ -1004,18 +1025,20 @@ namespace Kentico.Kontent.Delivery.Tests
             };
 
             _mockHttp
-                .When($"{_baseUrl}/items/test")
-                .Respond(headers, "application/json", "{ }");
+                .When($"{_baseUrl}/items/coffee_beverages_explained")
+                .Respond(headers, "application/json", await File.ReadAllTextAsync(Path.Combine(Environment.CurrentDirectory,
+                        $"Fixtures{Path.DirectorySeparatorChar}DeliveryClient{Path.DirectorySeparatorChar}coffee_beverages_explained.json")));
 
-            var client = InitializeDeliveryClientWithCustomModelProvider(_mockHttp);
+            var client = InitializeDeliveryClientWithCustomModelProvider(_mockHttp, new PropertyMapper(), new CustomTypeProvider());
 
-            var response = await client.GetItemAsync<object>("test");
+            var response = await client.GetItemAsync<object>("coffee_beverages_explained");
 
             Assert.False(response.ApiResponse.HasStaleContent);
+            Assert.IsType<Article>(response.Item);
         }
 
         [Fact]
-        public async void GetItemsAsync_ApiReturnsStaleContent_ResponseIndicatesStaleContent()
+        public async Task GetItemsAsync_ApiReturnsStaleContent_ResponseIndicatesStaleContent()
         {
             var headers = new[]
             {
@@ -1024,17 +1047,19 @@ namespace Kentico.Kontent.Delivery.Tests
 
             _mockHttp
                 .When($"{_baseUrl}/items")
-                .Respond(headers, "application/json", "{ }");
+                .Respond(headers, "application/json", await File.ReadAllTextAsync(Path.Combine(Environment.CurrentDirectory,
+                        $"Fixtures{Path.DirectorySeparatorChar}DeliveryClient{Path.DirectorySeparatorChar}articles.json")));
 
-            var client = InitializeDeliveryClientWithCustomModelProvider(_mockHttp);
+            var client = InitializeDeliveryClientWithCustomModelProvider(_mockHttp, new PropertyMapper(), new CustomTypeProvider());
 
             var response = await client.GetItemsAsync<object>();
 
             Assert.True(response.ApiResponse.HasStaleContent);
+            Assert.True(response.Items.Any());
         }
 
         [Fact]
-        public async void GetItemsAsync_ApiDoesNotReturnStaleContent_ResponseDoesNotIndicateStaleContent()
+        public async Task GetItemsAsync_ApiDoesNotReturnStaleContent_ResponseDoesNotIndicateStaleContent()
         {
             var headers = new[]
             {
@@ -1043,17 +1068,19 @@ namespace Kentico.Kontent.Delivery.Tests
 
             _mockHttp
                 .When($"{_baseUrl}/items")
-                .Respond(headers, "application/json", "{ }");
+                .Respond(headers, "application/json", await File.ReadAllTextAsync(Path.Combine(Environment.CurrentDirectory,
+                        $"Fixtures{Path.DirectorySeparatorChar}DeliveryClient{Path.DirectorySeparatorChar}articles.json")));
 
-            var client = InitializeDeliveryClientWithCustomModelProvider(_mockHttp);
+            var client = InitializeDeliveryClientWithCustomModelProvider(_mockHttp, new PropertyMapper(), new CustomTypeProvider());
 
             var response = await client.GetItemsAsync<object>();
 
             Assert.False(response.ApiResponse.HasStaleContent);
+            Assert.True(response.Items.Any());
         }
 
         [Fact]
-        public async void GetCustomItemAsync_ApiReturnsStaleContent_ResponseIndicatesStaleContent()
+        public async Task GetCustomItemAsync_ApiReturnsStaleContent_ResponseIndicatesStaleContent()
         {
             var headers = new[]
             {
@@ -1061,18 +1088,20 @@ namespace Kentico.Kontent.Delivery.Tests
             };
 
             _mockHttp
-                .When($"{_baseUrl}/items/test")
-                .Respond(headers, "application/json", "{ }");
+                .When($"{_baseUrl}/items/coffee_beverages_explained")
+                .Respond(headers, "application/json", await File.ReadAllTextAsync(Path.Combine(Environment.CurrentDirectory,
+                        $"Fixtures{Path.DirectorySeparatorChar}DeliveryClient{Path.DirectorySeparatorChar}coffee_beverages_explained.json")));
 
-            var client = InitializeDeliveryClientWithCustomModelProvider(_mockHttp);
+            var client = InitializeDeliveryClientWithCustomModelProvider(_mockHttp, new PropertyMapper(), new CustomTypeProvider());
 
-            var response = await client.GetItemAsync<Homepage>("test");
+            var response = await client.GetItemAsync<Homepage>("coffee_beverages_explained");
 
             Assert.True(response.ApiResponse.HasStaleContent);
+            Assert.NotNull(response.Item.System);
         }
 
         [Fact]
-        public async void GetCustomItemAsync_ApiDoesNotReturnStaleContent_ResponseDoesNotIndicateStaleContent()
+        public async Task GetCustomItemAsync_ApiDoesNotReturnStaleContent_ResponseDoesNotIndicateStaleContent()
         {
             var headers = new[]
             {
@@ -1080,18 +1109,20 @@ namespace Kentico.Kontent.Delivery.Tests
             };
 
             _mockHttp
-                .When($"{_baseUrl}/items/test")
-                .Respond(headers, "application/json", "{ }");
+                .When($"{_baseUrl}/items/coffee_beverages_explained")
+                .Respond(headers, "application/json", await File.ReadAllTextAsync(Path.Combine(Environment.CurrentDirectory,
+                        $"Fixtures{Path.DirectorySeparatorChar}DeliveryClient{Path.DirectorySeparatorChar}coffee_beverages_explained.json")));
 
-            var client = InitializeDeliveryClientWithCustomModelProvider(_mockHttp);
+            var client = InitializeDeliveryClientWithCustomModelProvider(_mockHttp, new PropertyMapper(), new CustomTypeProvider());
 
-            var response = await client.GetItemAsync<Homepage>("test");
+            var response = await client.GetItemAsync<Homepage>("coffee_beverages_explained");
 
             Assert.False(response.ApiResponse.HasStaleContent);
+            Assert.NotNull(response.Item.System);
         }
 
         [Fact]
-        public async void GetCustomItemsAsync_ApiReturnsStaleContent_ResponseIndicatesStaleContent()
+        public async Task GetCustomItemsAsync_ApiReturnsStaleContent_ResponseIndicatesStaleContent()
         {
             var headers = new[]
             {
@@ -1100,17 +1131,19 @@ namespace Kentico.Kontent.Delivery.Tests
 
             _mockHttp
                 .When($"{_baseUrl}/items")
-                .Respond(headers, "application/json", "{ }");
+                .Respond(headers, "application/json", await File.ReadAllTextAsync(Path.Combine(Environment.CurrentDirectory,
+                        $"Fixtures{Path.DirectorySeparatorChar}DeliveryClient{Path.DirectorySeparatorChar}articles.json")));
 
-            var client = InitializeDeliveryClientWithCustomModelProvider(_mockHttp);
+            var client = InitializeDeliveryClientWithCustomModelProvider(_mockHttp, new PropertyMapper(), new CustomTypeProvider());
 
-            var response = await client.GetItemsAsync<Homepage>();
+            var response = await client.GetItemsAsync<Article>();
 
             Assert.True(response.ApiResponse.HasStaleContent);
+            Assert.True(response.Items.Any());
         }
 
         [Fact]
-        public async void GetCustomItemsAsync_ApiDoesNotReturnStaleContent_ResponseDoesNotIndicateStaleContent()
+        public async Task GetCustomItemsAsync_ApiDoesNotReturnStaleContent_ResponseDoesNotIndicateStaleContent()
         {
             var headers = new[]
             {
@@ -1119,17 +1152,19 @@ namespace Kentico.Kontent.Delivery.Tests
 
             _mockHttp
                 .When($"{_baseUrl}/items")
-                .Respond(headers, "application/json", "{ }");
+                .Respond(headers, "application/json", await File.ReadAllTextAsync(Path.Combine(Environment.CurrentDirectory,
+                        $"Fixtures{Path.DirectorySeparatorChar}DeliveryClient{Path.DirectorySeparatorChar}articles.json")));
 
-            var client = InitializeDeliveryClientWithCustomModelProvider(_mockHttp);
+            var client = InitializeDeliveryClientWithCustomModelProvider(_mockHttp, new PropertyMapper(), new CustomTypeProvider());
 
-            var response = await client.GetItemsAsync<Homepage>();
+            var response = await client.GetItemsAsync<Article>();
 
             Assert.False(response.ApiResponse.HasStaleContent);
+            Assert.True(response.Items.Any());
         }
 
         [Fact]
-        public async void GetTypeAsync_ApiReturnsStaleContent_ResponseIndicatesStaleContent()
+        public async Task GetTypeAsync_ApiReturnsStaleContent_ResponseIndicatesStaleContent()
         {
             var headers = new[]
             {
@@ -1137,18 +1172,20 @@ namespace Kentico.Kontent.Delivery.Tests
             };
 
             _mockHttp
-                .When($"{_baseUrl}/types/test")
-                .Respond(headers, "application/json", "{ }");
+                .When($"{_baseUrl}/types/article")
+                .Respond(headers, "application/json", await File.ReadAllTextAsync(Path.Combine(Environment.CurrentDirectory,
+                        $"Fixtures{Path.DirectorySeparatorChar}DeliveryClient{Path.DirectorySeparatorChar}article.json")));
 
             var client = InitializeDeliveryClientWithCustomModelProvider(_mockHttp);
 
-            var response = await client.GetTypeAsync("test");
+            var response = await client.GetTypeAsync("article");
 
             Assert.True(response.ApiResponse.HasStaleContent);
+            Assert.Equal("Article", response.Type.System.Name);
         }
 
         [Fact]
-        public async void GetTypeAsync_ApiDoesNotReturnStaleContent_ResponseDoesNotIndicateStaleContent()
+        public async Task GetTypeAsync_ApiDoesNotReturnStaleContent_ResponseDoesNotIndicateStaleContent()
         {
             var headers = new[]
             {
@@ -1156,18 +1193,20 @@ namespace Kentico.Kontent.Delivery.Tests
             };
 
             _mockHttp
-                .When($"{_baseUrl}/types/test")
-                .Respond(headers, "application/json", "{ }");
+                .When($"{_baseUrl}/types/article")
+                .Respond(headers, "application/json", await File.ReadAllTextAsync(Path.Combine(Environment.CurrentDirectory,
+                        $"Fixtures{Path.DirectorySeparatorChar}DeliveryClient{Path.DirectorySeparatorChar}article.json")));
 
             var client = InitializeDeliveryClientWithCustomModelProvider(_mockHttp);
 
-            var response = await client.GetTypeAsync("test");
+            var response = await client.GetTypeAsync("article");
 
             Assert.False(response.ApiResponse.HasStaleContent);
+            Assert.Equal("Article", response.Type.System.Name);
         }
 
         [Fact]
-        public async void GetTypesAsync_ApiReturnsStaleContent_ResponseIndicatesStaleContent()
+        public async Task GetTypesAsync_ApiReturnsStaleContent_ResponseIndicatesStaleContent()
         {
             var headers = new[]
             {
@@ -1176,17 +1215,19 @@ namespace Kentico.Kontent.Delivery.Tests
 
             _mockHttp
                 .When($"{_baseUrl}/types")
-                .Respond(headers, "application/json", "{ }");
+                .Respond(headers, "application/json", await File.ReadAllTextAsync(Path.Combine(Environment.CurrentDirectory,
+                        $"Fixtures{Path.DirectorySeparatorChar}DeliveryClient{Path.DirectorySeparatorChar}types_accessory.json")));
 
             var client = InitializeDeliveryClientWithCustomModelProvider(_mockHttp);
 
             var response = await client.GetTypesAsync();
 
             Assert.True(response.ApiResponse.HasStaleContent);
+            Assert.True(response.Types.Any());
         }
 
         [Fact]
-        public async void GetTypesAsync_ApiDoesNotReturnStaleContent_ResponseDoesNotIndicateStaleContent()
+        public async Task GetTypesAsync_ApiDoesNotReturnStaleContent_ResponseDoesNotIndicateStaleContent()
         {
             var headers = new[]
             {
@@ -1195,17 +1236,19 @@ namespace Kentico.Kontent.Delivery.Tests
 
             _mockHttp
                 .When($"{_baseUrl}/types")
-                .Respond(headers, "application/json", "{ }");
+                .Respond(headers, "application/json", await File.ReadAllTextAsync(Path.Combine(Environment.CurrentDirectory,
+                        $"Fixtures{Path.DirectorySeparatorChar}DeliveryClient{Path.DirectorySeparatorChar}types_accessory.json")));
 
             var client = InitializeDeliveryClientWithCustomModelProvider(_mockHttp);
 
             var response = await client.GetTypesAsync();
 
             Assert.False(response.ApiResponse.HasStaleContent);
+            Assert.True(response.Types.Any());
         }
 
         [Fact]
-        public async void GetTaxonomyAsync_ApiReturnsStaleContent_ResponseIndicatesStaleContent()
+        public async Task GetTaxonomyAsync_ApiReturnsStaleContent_ResponseIndicatesStaleContent()
         {
             var headers = new[]
             {
@@ -1213,18 +1256,20 @@ namespace Kentico.Kontent.Delivery.Tests
             };
 
             _mockHttp
-                .When($"{_baseUrl}/taxonomies/test")
-                .Respond(headers, "application/json", "{ }");
+                .When($"{_baseUrl}/taxonomies/personas")
+                .Respond(headers, "application/json", await File.ReadAllTextAsync(Path.Combine(Environment.CurrentDirectory,
+                        $"Fixtures{Path.DirectorySeparatorChar}DeliveryClient{Path.DirectorySeparatorChar}taxonomies_personas.json")));
 
             var client = InitializeDeliveryClientWithCustomModelProvider(_mockHttp);
 
-            var response = await client.GetTaxonomyAsync("test");
+            var response = await client.GetTaxonomyAsync("personas");
 
             Assert.True(response.ApiResponse.HasStaleContent);
+            Assert.NotNull(response.Taxonomy.System);
         }
 
         [Fact]
-        public async void GetTaxonomyAsync_ApiDoesNotReturnStaleContent_ResponseDoesNotIndicateStaleContent()
+        public async Task GetTaxonomyAsync_ApiDoesNotReturnStaleContent_ResponseDoesNotIndicateStaleContent()
         {
             var headers = new[]
             {
@@ -1232,18 +1277,20 @@ namespace Kentico.Kontent.Delivery.Tests
             };
 
             _mockHttp
-                .When($"{_baseUrl}/taxonomies/test")
-                .Respond(headers, "application/json", "{ }");
+                .When($"{_baseUrl}/taxonomies/personas")
+                .Respond(headers, "application/json", await File.ReadAllTextAsync(Path.Combine(Environment.CurrentDirectory,
+                        $"Fixtures{Path.DirectorySeparatorChar}DeliveryClient{Path.DirectorySeparatorChar}taxonomies_personas.json")));
 
             var client = InitializeDeliveryClientWithCustomModelProvider(_mockHttp);
 
-            var response = await client.GetTaxonomyAsync("test");
+            var response = await client.GetTaxonomyAsync("personas");
 
             Assert.False(response.ApiResponse.HasStaleContent);
+            Assert.NotNull(response.Taxonomy.System);
         }
 
         [Fact]
-        public async void GetTaxonomiesAsync_ApiReturnsStaleContent_ResponseIndicatesStaleContent()
+        public async Task GetTaxonomiesAsync_ApiReturnsStaleContent_ResponseIndicatesStaleContent()
         {
             var headers = new[]
             {
@@ -1252,17 +1299,19 @@ namespace Kentico.Kontent.Delivery.Tests
 
             _mockHttp
                 .When($"{_baseUrl}/taxonomies")
-                .Respond(headers, "application/json", "{ }");
+                .Respond(headers, "application/json", await File.ReadAllTextAsync(Path.Combine(Environment.CurrentDirectory,
+                        $"Fixtures{Path.DirectorySeparatorChar}DeliveryClient{Path.DirectorySeparatorChar}taxonomies_multiple.json")));
 
             var client = InitializeDeliveryClientWithCustomModelProvider(_mockHttp);
 
             var response = await client.GetTaxonomiesAsync();
 
             Assert.True(response.ApiResponse.HasStaleContent);
+            Assert.True(response.Taxonomies.Any());
         }
 
         [Fact]
-        public async void GetTaxonomiesAsync_ApiDoesNotReturnStaleContent_ResponseDoesNotIndicateStaleContent()
+        public async Task GetTaxonomiesAsync_ApiDoesNotReturnStaleContent_ResponseDoesNotIndicateStaleContent()
         {
             var headers = new[]
             {
@@ -1271,17 +1320,19 @@ namespace Kentico.Kontent.Delivery.Tests
 
             _mockHttp
                 .When($"{_baseUrl}/taxonomies")
-                .Respond(headers, "application/json", "{ }");
+                .Respond(headers, "application/json", await File.ReadAllTextAsync(Path.Combine(Environment.CurrentDirectory,
+                        $"Fixtures{Path.DirectorySeparatorChar}DeliveryClient{Path.DirectorySeparatorChar}taxonomies_multiple.json")));
 
             var client = InitializeDeliveryClientWithCustomModelProvider(_mockHttp);
 
             var response = await client.GetTaxonomiesAsync();
 
             Assert.False(response.ApiResponse.HasStaleContent);
+            Assert.True(response.Taxonomies.Any());
         }
 
         [Fact]
-        public async void GetElementAsync_ApiReturnsStaleContent_ResponseIndicatesStaleContent()
+        public async Task GetElementAsync_ApiReturnsStaleContent_ResponseIndicatesStaleContent()
         {
             var headers = new[]
             {
@@ -1290,17 +1341,18 @@ namespace Kentico.Kontent.Delivery.Tests
 
             _mockHttp
                 .When($"{_baseUrl}/types/test/elements/test")
-                .Respond(headers, "application/json", "{ }");
+                .Respond(headers, "application/json", "{'type':'taxonomy','name':'Personas','codename':'Personas','taxonomy_group':'personas'}");
 
             var client = InitializeDeliveryClientWithCustomModelProvider(_mockHttp);
 
             var response = await client.GetContentElementAsync("test", "test");
 
             Assert.True(response.ApiResponse.HasStaleContent);
+            Assert.NotNull(response.Element.Codename);
         }
 
         [Fact]
-        public async void GetElementAsync_ApiDoesNotReturnStaleContent_ResponseDoesNotIndicateStaleContent()
+        public async Task GetElementAsync_ApiDoesNotReturnStaleContent_ResponseDoesNotIndicateStaleContent()
         {
             var headers = new[]
             {
@@ -1309,17 +1361,18 @@ namespace Kentico.Kontent.Delivery.Tests
 
             _mockHttp
                 .When($"{_baseUrl}/types/test/elements/test")
-                .Respond(headers, "application/json", "{ }");
+                .Respond(headers, "application/json", "{'type':'taxonomy','name':'Personas','codename':'Personas','taxonomy_group':'personas'}");
 
             var client = InitializeDeliveryClientWithCustomModelProvider(_mockHttp);
 
             var response = await client.GetContentElementAsync("test", "test");
 
             Assert.False(response.ApiResponse.HasStaleContent);
+            Assert.NotNull(response.Element.Codename);
         }
 
         [Fact]
-        public async void RetryPolicy_WithDefaultOptions_Retries()
+        public async Task RetryPolicy_WithDefaultOptions_Retries()
         {
             _mockHttp
                 .When($"{_baseUrl}/items")
@@ -1336,7 +1389,7 @@ namespace Kentico.Kontent.Delivery.Tests
         }
 
         [Fact]
-        public async void RetryPolicy_Disabled_DoesNotRetry()
+        public async Task RetryPolicy_Disabled_DoesNotRetry()
         {
             _mockHttp
                 .When($"{_baseUrl}/items")
@@ -1357,7 +1410,7 @@ namespace Kentico.Kontent.Delivery.Tests
 
         [Fact]
         [Trait("Issue", "146")]
-        public async void InitializeMultipleInlineContentItemsResolvers()
+        public async Task InitializeMultipleInlineContentItemsResolvers()
         {
             string url = $"{_baseUrl}/items/";
             const string tweetPrefix = "Tweet resolver: ";
@@ -1389,7 +1442,8 @@ namespace Kentico.Kontent.Delivery.Tests
                 _mockContentLinkUrlResolver,
                 null,
                 customTypeProvider,
-                new PropertyMapper());
+                new PropertyMapper(),
+                new DeliveryJsonSerializer(), new HtmlParser());
             var client = Factories.DeliveryClientFactory.GetMockedDeliveryClientWithProjectId(
                 _guid,
                 handler,
@@ -1409,7 +1463,8 @@ namespace Kentico.Kontent.Delivery.Tests
         {
             var typer = typeProvider ?? _mockTypeProvider;
             var mapper = propertyMapper ?? A.Fake<IPropertyMapper>();
-            var modelProvider = new ModelProvider(null, null, typer, mapper);
+            var serializer = new DeliveryJsonSerializer();
+            var modelProvider = new ModelProvider(null, null, typer, mapper, serializer, new HtmlParser());
             var client = Factories.DeliveryClientFactory.GetMockedDeliveryClientWithProjectId(_guid, handler, modelProvider);
 
             var retryPolicy = A.Fake<IRetryPolicy>();

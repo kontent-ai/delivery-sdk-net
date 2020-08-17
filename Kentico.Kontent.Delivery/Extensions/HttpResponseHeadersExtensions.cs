@@ -17,7 +17,7 @@ namespace Kentico.Kontent.Delivery.Extensions
 
         internal static bool TryGetRetryHeader(this HttpResponseHeaders headers, out TimeSpan retryAfter)
         {
-            TimeSpan GetPositiveOrZero(TimeSpan timeSpan) => timeSpan < TimeSpan.Zero ? TimeSpan.Zero : timeSpan;
+            static TimeSpan GetPositiveOrZero(TimeSpan timeSpan) => timeSpan < TimeSpan.Zero ? TimeSpan.Zero : timeSpan;
 
             if (headers?.RetryAfter?.Date != null)
             {

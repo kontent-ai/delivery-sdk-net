@@ -10,6 +10,6 @@ namespace Kentico.Kontent.Delivery.Abstractions
         /// <summary>
         /// List of rich text content blocks
         /// </summary>
-        IEnumerable<IRichTextBlock> Blocks { get; set; }
+        IEnumerable<IRichTextBlock> Blocks { get; }
     }
 }

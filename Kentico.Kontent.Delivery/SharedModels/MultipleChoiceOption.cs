@@ -2,36 +2,26 @@
 using Newtonsoft.Json;
 using System.Diagnostics;
 
-namespace Kentico.Kontent.Delivery.ContentTypes.Element
+namespace Kentico.Kontent.Delivery.SharedModels
 {
     /// <inheritdoc/>
     [DebuggerDisplay("Name = {" + nameof(Name) + "}")]
-    public sealed class MultipleChoiceOption : IMultipleChoiceOption
+    internal sealed class MultipleChoiceOption : IMultipleChoiceOption
     {
         /// <inheritdoc/>
         [JsonProperty("name")]
-        public string Name
-        {
-            get;
-        }
+        public string Name { get; internal set; }
 
         /// <inheritdoc/>
         [JsonProperty("codename")]
-        public string Codename
-        {
-            get;
-        }
+        public string Codename { get; internal set; }
 
         /// <summary>
         /// Initializes a new instance of the <see cref="MultipleChoiceOption"/> class with the specified JSON data.
         /// </summary>
-        /// <param name="name">Name of the option.</param>
-        /// <param name="codename">Code name of the option.</param>
         [JsonConstructor]
-        internal MultipleChoiceOption(string name, string codename)
+        public MultipleChoiceOption()
         {
-            Name = name;
-            Codename = codename;
         }
     }
 }

@@ -10,7 +10,7 @@ namespace Kentico.Kontent.Delivery.Abstractions
         /// <summary>
         /// Gets a dictionary that contains elements of the content type index by their codename.
         /// </summary>
-        IReadOnlyDictionary<string, IContentElement> Elements { get; }
+        IDictionary<string, IContentElement> Elements { get; }
 
         /// <summary>
         /// Gets the system attributes of the content type.

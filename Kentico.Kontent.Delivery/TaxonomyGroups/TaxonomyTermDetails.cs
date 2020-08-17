@@ -1,39 +1,32 @@
 ﻿using System.Collections.Generic;
 using System.Diagnostics;
-using System.Linq;
 using Kentico.Kontent.Delivery.Abstractions;
-using Newtonsoft.Json.Linq;
+using Newtonsoft.Json;
 
 namespace Kentico.Kontent.Delivery.TaxonomyGroups
 {
     /// <inheritdoc/>
     [DebuggerDisplay("Name = {" + nameof(Name) + "}")]
-    public sealed class TaxonomyTermDetails : ITaxonomyTermDetails
+    internal sealed class TaxonomyTermDetails : ITaxonomyTermDetails
     {
-        private readonly JToken _source;
-        private string _name;
-        private string _codename;
-        private IReadOnlyList<TaxonomyTermDetails> _terms;
+        /// <inheritdoc/>
+        [JsonProperty("name")]
+        public string Name { get; internal set; }
 
         /// <inheritdoc/>
-        public string Name
-            => _name ??= _source.Value<string>("name");
+        [JsonProperty("codename")]
+        public string Codename { get; internal set; }
 
         /// <inheritdoc/>
-        public string Codename
-            => _codename ??= _source.Value<string>("codename");
-
-        /// <inheritdoc/>
-        public IReadOnlyList<ITaxonomyTermDetails> Terms
-            => _terms ??= _source["terms"].Select(term => new TaxonomyTermDetails(term)).ToList().AsReadOnly();
+        [JsonProperty("terms")]
+        public IList<ITaxonomyTermDetails> Terms { get; internal set; }
 
         /// <summary>
-        /// Initializes a new instance of the <see cref="TaxonomyTermDetails"/> class.
+        /// Constructor used for deserialization (e.g. for caching purposes), contains no logic.
         /// </summary>
-        /// <param name="source">The JSON data to deserialize.</param>
-        internal TaxonomyTermDetails(JToken source)
+        [JsonConstructor]
+        public TaxonomyTermDetails()
         {
-            _source = source;
         }
     }
 }

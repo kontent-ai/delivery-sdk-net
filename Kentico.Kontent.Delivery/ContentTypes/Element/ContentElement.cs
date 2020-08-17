@@ -1,56 +1,31 @@
-﻿using System.Collections.Generic;
-using System.Linq;
+﻿using System.Diagnostics;
 using Kentico.Kontent.Delivery.Abstractions;
-using Newtonsoft.Json.Linq;
+using Newtonsoft.Json;
 
 namespace Kentico.Kontent.Delivery.ContentTypes.Element
 {
     /// <inheritdoc/>
-    public class ContentElement : IContentElement
+    [DebuggerDisplay("Name = {" + nameof(Name) + "}")]
+    internal class ContentElement : IContentElement
     {
-        internal JToken Source { get; }
-
-        private IReadOnlyList<MultipleChoiceOption> _options;
+        /// <inheritdoc/>
+        [JsonProperty("type")]
+        public string Type { get; internal set; }
 
         /// <inheritdoc/>
-        public string Type => Source["type"]?.Value<string>();
+        [JsonProperty("name")]
+        public string Name { get; internal set; }
 
         /// <inheritdoc/>
-        public string Value => Source["value"] != null ? ((JObject)Source).Property("value").Value.ToString() : null;
-
-        /// <inheritdoc/>
-        public string Name => Source["name"]?.Value<string>();
-
-        /// <inheritdoc/>
-        public string Codename { get; }
-
-        /// <inheritdoc/>
-        public IReadOnlyList<IMultipleChoiceOption> Options
-        {
-            get
-            {
-                if (_options == null)
-                {
-                    var source = Source["options"] ?? new JArray();
-                    _options = source.Select(optionSource => optionSource.ToObject<MultipleChoiceOption>()).ToList().AsReadOnly();
-                }
-
-                return _options;
-            }
-        }
-
-        /// <inheritdoc/>
-        public string TaxonomyGroup => Source["taxonomy_group"]?.Value<string>() ?? string.Empty;
+        [JsonProperty("codename")]
+        public string Codename { get; internal set; }
 
         /// <summary>
-        /// Initializes a new instance of the <see cref="ContentElement"/> class with the specified JSON data.
+        /// Constructor used for deserialization (e.g. for caching purposes), contains no logic.
         /// </summary>
-        /// <param name="source">The JSON data to deserialize.</param>
-        /// <param name="codename">The codename of the content element.</param>
-        internal ContentElement(JToken source, string codename)
+        [JsonConstructor]
+        public ContentElement()
         {
-            Source = source;
-            Codename = codename;
         }
     }
 }

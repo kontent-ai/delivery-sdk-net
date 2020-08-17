@@ -5,8 +5,7 @@
 // For further modifications of the class, create a separate file with the partial class.
 
 using System.Collections.Generic;
-using Kentico.Kontent.Delivery.ContentItems;
-using Kentico.Kontent.Delivery.TaxonomyGroups;
+using Kentico.Kontent.Delivery.Abstractions;
 
 namespace Kentico.Kontent.Delivery.Rx.Tests.Models.ContentTypes
 {
@@ -24,12 +23,12 @@ namespace Kentico.Kontent.Delivery.Rx.Tests.Models.ContentTypes
 
         public string ProductName { get; set; }
         public decimal? Price { get; set; }
-        public IEnumerable<Asset> Image { get; set; }
+        public IEnumerable<IAsset> Image { get; set; }
         public string Manufacturer { get; set; }
-        public IEnumerable<TaxonomyTerm> ProductStatus { get; set; }
+        public IEnumerable<ITaxonomyTerm> ProductStatus { get; set; }
         public string ShortDescription { get; set; }
         public string LongDescription { get; set; }
         public string UrlPattern { get; set; }
-        public ContentItemSystemAttributes System { get; set; }
+        public IContentItemSystemAttributes System { get; set; }
     }
 }

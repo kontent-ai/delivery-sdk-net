@@ -1,6 +1,4 @@
-﻿using System;
-using Kentico.Kontent.Delivery.Abstractions;
-using Newtonsoft.Json;
+﻿using Kentico.Kontent.Delivery.Abstractions;
 
 namespace Kentico.Kontent.Delivery.Urls.QueryParameters
 {
@@ -28,7 +26,7 @@ namespace Kentico.Kontent.Delivery.Urls.QueryParameters
         /// </summary>
         public string GetQueryStringParameter()
         {
-            return $"limit={Uri.EscapeDataString(JsonConvert.ToString(Limit))}";
+            return $"limit={Limit}";
         }
     }
 }

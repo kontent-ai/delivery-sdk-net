@@ -4,6 +4,7 @@ using System.Linq;
 using System.Net.Http;
 using System.Reflection;
 using System.Threading.Tasks;
+using AngleSharp.Html.Parser;
 using FakeItEasy;
 using Kentico.Kontent.Delivery.Abstractions;
 using Kentico.Kontent.Delivery.ContentItems;
@@ -17,26 +18,23 @@ using Xunit;
 namespace Kentico.Kontent.Delivery.Tests
 {
     [AttributeUsage(AttributeTargets.Property)]
-    public class TestGreeterValueConverterAttribute : Attribute, IPropertyValueConverter
+    public class TestGreeterValueConverterAttribute : Attribute, IPropertyValueConverter<string>
     {
-        public object GetPropertyValue(PropertyInfo property, IContentElement elementData, ResolvingContext context)
+        public Task<object> GetPropertyValueAsync<TElement>(PropertyInfo property, TElement element, ResolvingContext context) where TElement : IContentElementValue<string>
         {
-            return $"Hello {elementData.Value}!";
+            return Task.FromResult((object)$"Hello {element.Value}!");
         }
     }
-
 
     [AttributeUsage(AttributeTargets.Property)]
-    public class NodaTimeValueConverterAttribute : Attribute, IPropertyValueConverter
+    public class NodaTimeValueConverterAttribute : Attribute, IPropertyValueConverter<DateTime>
     {
-        public object GetPropertyValue(PropertyInfo property, IContentElement elementData, ResolvingContext context)
+        public Task<object> GetPropertyValueAsync<TElement>(PropertyInfo property, TElement element, ResolvingContext context) where TElement : IContentElementValue<DateTime>
         {
-            var dt = DateTime.Parse(elementData.Value);
-            var udt = DateTime.SpecifyKind(dt, DateTimeKind.Utc);
-            return ZonedDateTime.FromDateTimeOffset(udt);
+            var udt = DateTime.SpecifyKind(element.Value, DateTimeKind.Utc);
+            return Task.FromResult((object)ZonedDateTime.FromDateTimeOffset(udt));
         }
     }
-
 
     public class ValueConverterTests
     {
@@ -106,7 +104,7 @@ namespace Kentico.Kontent.Delivery.Tests
             var retryPolicyProvider = A.Fake<IRetryPolicyProvider>();
             A.CallTo(() => retryPolicyProvider.GetRetryPolicy()).Returns(retryPolicy);
             A.CallTo(() => retryPolicy.ExecuteAsync(A<Func<Task<HttpResponseMessage>>>._)).ReturnsLazily(c => c.GetArgument<Func<Task<HttpResponseMessage>>>(0)());
-            var modelProvider = new ModelProvider(contentLinkUrlResolver, null, new CustomTypeProvider(), new PropertyMapper());
+            var modelProvider = new ModelProvider(contentLinkUrlResolver, null, new CustomTypeProvider(), new PropertyMapper(), new DeliveryJsonSerializer(), new HtmlParser());
             var client = new DeliveryClient(deliveryOptions, modelProvider, retryPolicyProvider, null, deliveryHttpClient);
 
             return client;
