@@ -176,12 +176,12 @@ namespace Kentico.Kontent.Delivery.Tests
             public Func<IContentLink, string> GetLinkUrl = link => $"http://example.org/{link.UrlSlug}";
             public Func<string> GetBrokenLinkUrl = () => "http://example.org/broken";
 
-            public Task<string> ResolveBrokenLinkUrl()
+            public Task<string> ResolveBrokenLinkUrlAsync()
             {
                 return Task.FromResult(GetBrokenLinkUrl());
             }
 
-            public Task<string> ResolveLinkUrl(IContentLink link)
+            public Task<string> ResolveLinkUrlAsync(IContentLink link)
             {
                 return Task.FromResult(GetLinkUrl(link));
             }

@@ -51,11 +51,11 @@ namespace Kentico.Kontent.Delivery.ContentItems.ContentLinks
                 {
                     var link = links[contentItemId];
                     link.Id = contentItemId;
-                    url = await ContentLinkUrlResolver.ResolveLinkUrl(link);
+                    url = await ContentLinkUrlResolver.ResolveLinkUrlAsync(link);
                 }
                 else
                 {
-                    url = await ContentLinkUrlResolver.ResolveBrokenLinkUrl();
+                    url = await ContentLinkUrlResolver.ResolveBrokenLinkUrlAsync();
                 }
 
                 var replacement = ResolveMatch(match, url);
