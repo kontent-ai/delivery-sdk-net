@@ -1,17 +1,12 @@
 ﻿using System;
-using Microsoft.Extensions.DependencyInjection;
 
 namespace Kentico.Kontent.Delivery.Abstractions
 {
     /// <summary>
     /// An interface, implemented to be registered in an collection passed to <see cref="IInlineContentItemsProcessor"/>.
-    /// Such collection provide the processor with generic resolvers for otherwise specific content type of inline content item.
+    /// Such collection provides the processor with generic resolvers for otherwise specific content type of inline content item.
     /// </summary>
     /// <seealso cref="IInlineContentItemsResolver{T}"/>
-    /// <remarks>
-    /// This interface allows containers implementing the <see cref="IServiceCollection"/> interface to
-    /// register dependencies required for <see cref="IInlineContentItemsProcessor"/> instantiation.
-    /// </remarks>
     public interface ITypelessInlineContentItemsResolver
     {
         /// <summary>
