@@ -12,7 +12,7 @@
         /// <param name="value">The filter value.</param>
         public NotEqualsFilter(string elementOrAttributePath, string value) : base(elementOrAttributePath, value)
         {
-            Operator = "!";
+            Operator = "[neq]";
         }
     }
 }
