@@ -210,7 +210,7 @@ namespace Kentico.Kontent.Delivery.Tests
         {
             _mockHttp
                 .When($"{_baseUrl}/items")
-                .WithQueryString("system.type=cafe")
+                .WithQueryString("system.type%5Beq%5D=cafe")
                 .Respond("application/json", await File.ReadAllTextAsync(Path.Combine(Environment.CurrentDirectory, $"Fixtures{Path.DirectorySeparatorChar}DeliveryClient{Path.DirectorySeparatorChar}allendale.json")));
 
             var client = InitializeDeliveryClientWithACustomTypeProvider(_mockHttp);
@@ -668,7 +668,7 @@ namespace Kentico.Kontent.Delivery.Tests
         {
             _mockHttp
                 .When($"{_baseUrl}/items")
-                .WithQueryString("system.type=complete_content_type")
+                .WithQueryString("system.type%5Beq%5D=complete_content_type")
                 .Respond("application/json", await File.ReadAllTextAsync(Path.Combine(Environment.CurrentDirectory, $"Fixtures{Path.DirectorySeparatorChar}DeliveryClient{Path.DirectorySeparatorChar}complete_content_item_system_type.json")));
 
             var client = InitializeDeliveryClientWithCustomModelProvider(_mockHttp);
@@ -713,7 +713,7 @@ namespace Kentico.Kontent.Delivery.Tests
         {
             _mockHttp
                 .When($"{_baseUrl}/items-feed")
-                .WithQueryString("system.type=article&elements=title,summary,personas")
+                .WithQueryString("system.type%5Beq%5D=article&elements=title,summary,personas")
                 .Respond("application/json", await File.ReadAllTextAsync(Path.Combine(Environment.CurrentDirectory, $"Fixtures{Path.DirectorySeparatorChar}DeliveryClient{Path.DirectorySeparatorChar}articles_feed.json")));
 
             var client = InitializeDeliveryClientWithCustomModelProvider(_mockHttp);
@@ -741,14 +741,14 @@ namespace Kentico.Kontent.Delivery.Tests
             // Second batch
             _mockHttp
                 .When($"{_baseUrl}/items-feed")
-                .WithQueryString("system.type=article&elements=title,summary,personas")
+                .WithQueryString("system.type%5Beq%5D=article&elements=title,summary,personas")
                 .WithHeaders("X-Continuation", "token")
                 .Respond("application/json", await File.ReadAllTextAsync(Path.Combine(Environment.CurrentDirectory, $"Fixtures{Path.DirectorySeparatorChar}DeliveryClient{Path.DirectorySeparatorChar}articles_feed_2.json")));
 
             // First batch
             _mockHttp
                 .When($"{_baseUrl}/items-feed")
-                .WithQueryString("system.type=article&elements=title,summary,personas")
+                .WithQueryString("system.type%5Beq%5D=article&elements=title,summary,personas")
                 .Respond(new[] { new KeyValuePair<string, string>("X-Continuation", "token"), }, "application/json", await File.ReadAllTextAsync(Path.Combine(Environment.CurrentDirectory, $"Fixtures{Path.DirectorySeparatorChar}DeliveryClient{Path.DirectorySeparatorChar}articles_feed_1.json")));
 
             var client = InitializeDeliveryClientWithCustomModelProvider(_mockHttp);
@@ -806,7 +806,7 @@ namespace Kentico.Kontent.Delivery.Tests
         {
             _mockHttp
                 .When($"{_baseUrl}/items-feed")
-                .WithQueryString("system.type=article")
+                .WithQueryString("system.type%5Beq%5D=article")
                 .Respond("application/json", await File.ReadAllTextAsync(Path.Combine(Environment.CurrentDirectory, $"Fixtures{Path.DirectorySeparatorChar}DeliveryClient{Path.DirectorySeparatorChar}articles_feed.json")));
 
             var client = InitializeDeliveryClientWithCustomModelProvider(_mockHttp);

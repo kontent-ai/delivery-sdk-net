@@ -91,7 +91,7 @@ namespace Kentico.Kontent.Delivery.Tests.QueryParameters
             var enhancedParams = new List<IQueryParameter>(_client.EnsureContentTypeFilter<TypeWithContentTypeCodename>(existingParams));
 
             Assert.Single(enhancedParams);
-            Assert.True(enhancedParams.Find(x => x.GetQueryStringParameter() == $"system.type={CONTENT_TYPE_CODENAME}") != null);
+            Assert.True(enhancedParams.Find(x => x.GetQueryStringParameter() == $"system.type%5Beq%5D={CONTENT_TYPE_CODENAME}") != null);
         }
     }
 }
