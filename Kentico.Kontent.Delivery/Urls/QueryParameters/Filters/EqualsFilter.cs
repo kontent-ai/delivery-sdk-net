@@ -12,6 +12,7 @@
         /// <param name="value">The filter value.</param>
         public EqualsFilter(string elementOrAttributePath, string value) : base(elementOrAttributePath, value)
         {
+            Operator = "[eq]";
         }
     }
 }
