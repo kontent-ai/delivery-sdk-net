@@ -66,12 +66,6 @@ namespace Kentico.Kontent.Delivery.Tests.Extensions
         }
 
         [Fact]
-        public void AddDeliveryFactoryClientWithNullDeliveryClientBuilder_ThrowsArgumentNullException()
-        {
-            Assert.Throws<ArgumentNullException>(() => _serviceCollection.AddDeliveryClient("named", buildDeliveryClient: null));
-        }
-
-        [Fact]
         public void AddDeliveryFactoryClientWithNullDeliveryOptions_ThrowsArgumentNullException()
         {
             Assert.Throws<ArgumentNullException>(() => _serviceCollection.AddDeliveryClient("named", deliveryOptions: null));
@@ -105,15 +99,15 @@ namespace Kentico.Kontent.Delivery.Tests.Extensions
             AssertDefaultServiceCollection(provider, _expectedInterfacesWithImplementationFactoryTypes);
         }
 
-        [Fact]
-        public void AddDeliveryClientFactoryWithDeliveryClient_AllServicesAreRegistered()
-        {
-            _serviceCollection.AddDeliveryClient("named", (builder) => builder.BuildWithProjectId(ProjectId)
-                .Build());
+        //[Fact]
+        //public void AddDeliveryClientFactoryWithDeliveryClient_AllServicesAreRegistered()
+        //{
+        //    _serviceCollection.AddDeliveryClient("named", (builder) => builder.BuildWithProjectId(ProjectId)
+        //        .Build());
 
-            var provider = _serviceCollection.BuildServiceProvider();
-            AssertDefaultServiceCollection(provider, _expectedInterfacesWithImplementationFactoryTypes);
-        }
+        //    var provider = _serviceCollection.BuildServiceProvider();
+        //    AssertDefaultServiceCollection(provider, _expectedInterfacesWithImplementationFactoryTypes);
+        //}
 
         [Fact]
         public void AddDeliveryClientFactoryWithOptions_DeliveryClientIsRegistered()

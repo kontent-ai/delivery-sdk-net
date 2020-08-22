@@ -9,8 +9,8 @@ namespace Kentico.Kontent.Delivery.Abstractions
     public class DeliveryClientFactoryOptions
     {
         /// <summary>
-        /// Gets a list of operations used to configure an <see cref="IDeliveryClient"/>.
+        /// Gets a list of options used to configure an <see cref="IDeliveryClient"/>.
         /// </summary>
-        public IList<Func<IDeliveryClient>> DeliveryClientsActions { get; } = new List<Func<IDeliveryClient>>();
+        public IList<Func<DeliveryOptions>> DeliveryClientsOptions { get; } = new List<Func<DeliveryOptions>>();
     }
 }
