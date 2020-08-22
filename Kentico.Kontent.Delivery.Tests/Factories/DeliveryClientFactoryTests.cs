@@ -2,7 +2,9 @@
 using FakeItEasy;
 using FluentAssertions;
 using Kentico.Kontent.Delivery.Abstractions;
+using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Options;
+using Newtonsoft.Json;
 using Xunit;
 
 namespace Kentico.Kontent.Delivery.Tests.Factories
@@ -11,7 +13,7 @@ namespace Kentico.Kontent.Delivery.Tests.Factories
     {
         private readonly IOptions<DeliveryOptions> _deliveryOptionsMock;
         private readonly IOptionsMonitor<DeliveryClientFactoryOptions> _deliveryClientFactoryOptionsMock;
-        private readonly IServiceProvider _serviceProviderMock;
+        private readonly IServiceProvider _serviceProvider;
 
         private const string _clientName = "ClientName";
 
@@ -19,40 +21,39 @@ namespace Kentico.Kontent.Delivery.Tests.Factories
         {
             _deliveryOptionsMock = A.Fake<IOptions<DeliveryOptions>>();
             _deliveryClientFactoryOptionsMock = A.Fake<IOptionsMonitor<DeliveryClientFactoryOptions>>();
-            _serviceProviderMock = A.Fake<IServiceProvider>();
+            _serviceProvider = new ServiceCollection().BuildServiceProvider();
         }
-        //[Fact]
-        //public void GetNamedClient_WithCorrectName_GetClient()
-        //{
-        //    var deliveryClient = new DeliveryClient(_deliveryOptionsMock);
-        //    var deliveryClientFactoryOptions = new DeliveryClientFactoryOptions();
-        //    deliveryClientFactoryOptions.DeliveryClientsActions.Add(() => deliveryClient);
 
-        //    A.CallTo(() => _deliveryClientFactoryOptionsMock.Get(_clientName))
-        //        .Returns(deliveryClientFactoryOptions);
+        [Fact]
+        public void GetNamedClient_WithCorrectName_GetClient()
+        {
+            var deliveryClientFactoryOptions = new DeliveryClientFactoryOptions();
+            deliveryClientFactoryOptions.DeliveryClientsOptions.Add(() => _deliveryOptionsMock.Value);
 
-        //    var deliveryClientFactory = new Delivery.DeliveryClientFactory(_deliveryClientFactoryOptionsMock, _serviceProviderMock);
+            A.CallTo(() => _deliveryClientFactoryOptionsMock.Get(_clientName))
+                .Returns(deliveryClientFactoryOptions);
 
-        //    var result = deliveryClientFactory.Get(_clientName);
+            var deliveryClientFactory = new Delivery.DeliveryClientFactory(_deliveryClientFactoryOptionsMock, _serviceProvider);
 
-        //    result.Should().Be(deliveryClient);
-        //}
+            var result = deliveryClientFactory.Get(_clientName);
 
-        //[Fact]
-        //public void GetNamedClient_WithWrongName_GetNull()
-        //{
-        //    var deliveryClient = new DeliveryClient(_deliveryOptionsMock);
-        //    var deliveryClientFactoryOptions = new DeliveryClientFactoryOptions();
-        //    deliveryClientFactoryOptions.DeliveryClientsActions.Add(() => deliveryClient);
+            result.Should().NotBeNull();
+        }
 
-        //    A.CallTo(() => _deliveryClientFactoryOptionsMock.Get(_clientName))
-        //        .Returns(deliveryClientFactoryOptions);
+        [Fact]
+        public void GetNamedClient_WithWrongName_GetNull()
+        {
+            var deliveryClientFactoryOptions = new DeliveryClientFactoryOptions();
+            deliveryClientFactoryOptions.DeliveryClientsOptions.Add(() => _deliveryOptionsMock.Value);
 
-        //    var deliveryClientFactory = new Delivery.DeliveryClientFactory(_deliveryClientFactoryOptionsMock, _serviceProviderMock);
+            A.CallTo(() => _deliveryClientFactoryOptionsMock.Get(_clientName))
+                .Returns(deliveryClientFactoryOptions);
 
-        //    var result = deliveryClientFactory.Get("WrongName");
+            var deliveryClientFactory = new Delivery.DeliveryClientFactory(_deliveryClientFactoryOptionsMock, _serviceProvider);
 
-        //    result.Should().BeNull();
-        //}
+            var result = deliveryClientFactory.Get("WrongName");
+
+            result.Should().BeNull();
+        }
     }
 }

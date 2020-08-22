@@ -1,8 +1,4 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Text;
-
-namespace Kentico.Kontent.Delivery.Abstractions
+﻿namespace Kentico.Kontent.Delivery.Abstractions
 {
     /// <summary>
     /// Defines a method for creating a cache decorator a <see cref="IDeliveryClient"/>

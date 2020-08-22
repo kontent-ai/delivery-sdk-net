@@ -3,7 +3,6 @@ using System.Linq;
 using System.Net.Http;
 using AngleSharp.Html.Parser;
 using Kentico.Kontent.Delivery.Abstractions;
-using Kentico.Kontent.Delivery.Builders.DeliveryClient;
 using Kentico.Kontent.Delivery.Configuration;
 using Kentico.Kontent.Delivery.ContentItems;
 using Kentico.Kontent.Delivery.ContentItems.ContentLinks;
@@ -217,12 +216,6 @@ namespace Kentico.Kontent.Delivery.Extensions
             services.TryAddSingleton<IDeliveryClient, DeliveryClient>();
             services.TryAddSingleton<IDeliveryClientFactory, DeliveryClientFactory>();
 
-            return services;
-        }
-
-        private static IServiceCollection RegisterFactoryDependencies(this IServiceCollection services)
-        {
-            services.TryAddSingleton<IDeliveryClientFactory, DeliveryClientFactory>();
             return services;
         }
 

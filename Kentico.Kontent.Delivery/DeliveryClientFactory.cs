@@ -43,18 +43,21 @@ namespace Kentico.Kontent.Delivery
             if (!_cache.TryGetValue(name, out var client))
             {
                 var deliveryClientFactoryOptions = _optionsMonitor.Get(name);
-                var deliveryClientOptions = deliveryClientFactoryOptions.DeliveryClientsOptions.LastOrDefault()?.Invoke();
-                client = Build(deliveryClientOptions);
-
-                var cacheManagerFactory = _serviceProvider.GetService<IDeliveryCacheManagerFactory>();
-                var cacheManager = cacheManagerFactory?.Get(name);
-                if (cacheManager != null)
+                var deliveryClientOptions = deliveryClientFactoryOptions?.DeliveryClientsOptions.LastOrDefault()?.Invoke();
+                if (deliveryClientOptions != null)
                 {
-                    var deliveryClientCacheFactory = _serviceProvider.GetService<IDeliveryClientCacheFactory>();
-                    client = deliveryClientCacheFactory.Create(cacheManager, client);
-                }
+                    client = Build(deliveryClientOptions);
 
-                _cache.TryAdd(name, client);
+                    var cacheManagerFactory = _serviceProvider.GetService<IDeliveryCacheManagerFactory>();
+                    var cacheManager = cacheManagerFactory?.Get(name);
+                    if (cacheManager != null)
+                    {
+                        var deliveryClientCacheFactory = _serviceProvider.GetService<IDeliveryClientCacheFactory>();
+                        client = deliveryClientCacheFactory.Create(cacheManager, client);
+                    }
+
+                    _cache.TryAdd(name, client);
+                }
             }
 
             return client;

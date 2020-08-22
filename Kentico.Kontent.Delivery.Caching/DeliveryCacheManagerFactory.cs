@@ -4,8 +4,8 @@ using Microsoft.Extensions.Caching.Memory;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Options;
 using System;
+using System.Collections.Concurrent;
 using System.Linq;
-using System.Text;
 
 namespace Kentico.Kontent.Delivery.Caching
 {
@@ -16,7 +16,7 @@ namespace Kentico.Kontent.Delivery.Caching
     {
         private readonly IOptionsMonitor<DeliveryCacheManagerFactoryOptions> _optionsMonitor;
         private readonly IServiceProvider _serviceProvider;
-
+        private readonly ConcurrentDictionary<string, IDeliveryCacheManager> _cache = new ConcurrentDictionary<string, IDeliveryCacheManager>();
         /// <summary>
         /// Initializes a new instance of the <see cref="DeliveryCacheManagerFactory"/> class
         /// </summary>
@@ -40,27 +40,37 @@ namespace Kentico.Kontent.Delivery.Caching
                 throw new ArgumentNullException(nameof(name));
             }
 
-            IDeliveryCacheManager manager = null;
-            var deliveryClientCacheFactoryOptions = _optionsMonitor.Get(name);
-
-            if (deliveryClientCacheFactoryOptions != null)
+            if (!_cache.TryGetValue(name, out var manager))
             {
-                var deliveryClientCacheOptions = deliveryClientCacheFactoryOptions.DeliveryCacheOptions.LastOrDefault()?.Invoke();
+                var deliveryCacheManagerFactoryOptions = _optionsMonitor.Get(name);
+                var deliveryCacheOptions = deliveryCacheManagerFactoryOptions?.DeliveryCacheOptions.LastOrDefault()?.Invoke();
+                if (deliveryCacheOptions != null)
+                {
+                    if (deliveryCacheOptions.CacheType == CacheTypeEnum.Memory)
+                    {
+                        var memoryCache = _serviceProvider.GetService<IMemoryCache>();
+                        manager = new MemoryCacheManager(memoryCache, Options.Create(deliveryCacheOptions));
+                    }
+                    else
+                    {
+                        var distributedCache = _serviceProvider.GetService<IDistributedCache>();
+                        manager = new DistributedCacheManager(distributedCache, Options.Create(deliveryCacheOptions));
+                    }
 
-                if (deliveryClientCacheOptions?.CacheType == CacheTypeEnum.Memory)
-                {
-                    var memoryCache = _serviceProvider.GetService<IMemoryCache>();
-                    manager = new MemoryCacheManager(memoryCache, Options.Create(deliveryClientCacheOptions));
-                }
-                else
-                {
-                    var distributedCache = _serviceProvider.GetService<IDistributedCache>();
-                    manager = new DistributedCacheManager(distributedCache, Options.Create(deliveryClientCacheOptions));
+                    _cache.TryAdd(name, manager);
                 }
             }
 
             return manager;
         }
 
+        /// <summary>
+        /// Returns a <see cref="IDeliveryCacheManager"/>.
+        /// </summary>
+        /// <returns>The <see cref="IDeliveryCacheManager"/> instance that represents cache manager</returns>
+        public IDeliveryCacheManager Get()
+        {
+            return _serviceProvider.GetRequiredService<IDeliveryCacheManager>();
+        }
     }
 }

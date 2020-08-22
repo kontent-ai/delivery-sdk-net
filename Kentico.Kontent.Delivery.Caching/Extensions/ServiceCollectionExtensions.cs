@@ -1,5 +1,4 @@
 ﻿using System;
-using System.Linq;
 using Kentico.Kontent.Delivery.Abstractions;
 using Microsoft.Extensions.Caching.Distributed;
 using Microsoft.Extensions.Caching.Memory;
@@ -76,6 +75,9 @@ namespace Kentico.Kontent.Delivery.Caching.Extensions
 
         private static IServiceCollection RegisterDependencies(this IServiceCollection services, CacheTypeEnum cacheType)
         {
+            services.TryAddSingleton<IDeliveryCacheManagerFactory, DeliveryCacheManagerFactory>();
+            services.TryAddSingleton<IDeliveryClientCacheFactory, DeliveryClientCacheFactory>();
+
             switch (cacheType)
             {
                 case CacheTypeEnum.Memory:
@@ -96,6 +98,7 @@ namespace Kentico.Kontent.Delivery.Caching.Extensions
         {
             services.TryAddSingleton<IDeliveryCacheManagerFactory, DeliveryCacheManagerFactory>();
             services.TryAddSingleton<IDeliveryClientCacheFactory, DeliveryClientCacheFactory>();
+
             switch (cacheType)
             {
                 case CacheTypeEnum.Memory:

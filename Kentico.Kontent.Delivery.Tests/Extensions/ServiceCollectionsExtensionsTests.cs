@@ -37,13 +37,6 @@ namespace Kentico.Kontent.Delivery.Tests.Extensions
             }
         );
 
-        private readonly ReadOnlyDictionary<Type, Type> _expectedInterfacesWithImplementationFactoryTypes = new ReadOnlyDictionary<Type, Type>(
-           new Dictionary<Type, Type>
-           {
-                { typeof(IDeliveryClientFactory), typeof(DeliveryClientFactory) },
-           }
-       );
-
         public static IEnumerable<object[]> DeliveryOptionsConfigurationParameters =>
            new[]
            {
@@ -96,18 +89,20 @@ namespace Kentico.Kontent.Delivery.Tests.Extensions
         {
             _serviceCollection.AddDeliveryClient("named", new DeliveryOptions { ProjectId = ProjectId });
             var provider = _serviceCollection.BuildServiceProvider();
-            AssertDefaultServiceCollection(provider, _expectedInterfacesWithImplementationFactoryTypes);
+            AssertDefaultServiceCollection(provider, _expectedInterfacesWithImplementationTypes);
         }
 
-        //[Fact]
-        //public void AddDeliveryClientFactoryWithDeliveryClient_AllServicesAreRegistered()
-        //{
-        //    _serviceCollection.AddDeliveryClient("named", (builder) => builder.BuildWithProjectId(ProjectId)
-        //        .Build());
+        [Fact]
+        public void AddDeliveryClientFactoryWithDeliveryClient_AllServicesAreRegistered()
+        {
+            _serviceCollection.AddDeliveryClient("named", (builder) => 
+                builder.WithProjectId(ProjectId)
+                       .UseProductionApi()
+                       .Build());
 
-        //    var provider = _serviceCollection.BuildServiceProvider();
-        //    AssertDefaultServiceCollection(provider, _expectedInterfacesWithImplementationFactoryTypes);
-        //}
+            var provider = _serviceCollection.BuildServiceProvider();
+            AssertDefaultServiceCollection(provider, _expectedInterfacesWithImplementationTypes);
+        }
 
         [Fact]
         public void AddDeliveryClientFactoryWithOptions_DeliveryClientIsRegistered()
