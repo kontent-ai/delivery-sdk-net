@@ -3,7 +3,6 @@ using System.Linq;
 using System.Net.Http;
 using AngleSharp.Html.Parser;
 using Kentico.Kontent.Delivery.Abstractions;
-using Kentico.Kontent.Delivery.Builders.DeliveryClient;
 using Kentico.Kontent.Delivery.Configuration;
 using Kentico.Kontent.Delivery.ContentItems;
 using Kentico.Kontent.Delivery.ContentItems.ContentLinks;
@@ -24,33 +23,6 @@ namespace Kentico.Kontent.Delivery.Extensions
     public static class ServiceCollectionExtensions
     {
         /// <summary>
-        /// Registers a delegate that will be used to configure a named <see cref="IDeliveryClient"/> via the <see cref="IDeliveryClientFactory"/>
-        /// </summary>
-        ///<param name="name">The name of the client configuration</param>
-        /// <param name="services">A <see cref="ServiceCollection"/> instance for registering and resolving dependencies.</param>
-        /// <param name="buildDeliveryClient">A function that returns a valid instance of the <see cref="IDeliveryClient"/>.</param>
-        /// <returns>The <paramref name="services"/> instance with <see cref="IDeliveryClient"/> registered in it.</returns>
-        public static IServiceCollection AddDeliveryClient(this IServiceCollection services, string name, Func<IDeliveryClientBuilder, IDeliveryClient> buildDeliveryClient)
-        {
-            if (buildDeliveryClient == null)
-            {
-                throw new ArgumentNullException(nameof(buildDeliveryClient), $"You have to provide a function for creating an instance of a class implementing the {nameof(IDeliveryClient)} interface.");
-            }
-
-            services.AddTransient<IConfigureOptions<DeliveryClientFactoryOptions>>(s =>
-            {
-                return new ConfigureNamedOptions<DeliveryClientFactoryOptions>(name, options =>
-                {
-                    options.DeliveryClientsActions.Add(() => buildDeliveryClient(new DeliveryClientBuilderImplementation()));
-                });
-            });
-
-            return services
-                .Configure<DeliveryClientFactoryOptions>(_ => { })
-                .RegisterFactoryDependencies();
-        }
-
-        /// <summary>
         /// Registers a delegate that will be used to configure a named <see cref="IDeliveryClient"/> via <see cref="IDeliveryClientFactory"/>
         /// </summary>
         ///<param name="name">The name of the client configuration</param>
@@ -68,11 +40,10 @@ namespace Kentico.Kontent.Delivery.Extensions
             {
                 return new ConfigureNamedOptions<DeliveryClientFactoryOptions>(name, options =>
                 {
-                    options.DeliveryClientsActions.Add(() =>
+                    options.DeliveryClientsOptions.Add(() =>
                     {
-                        services.AddDeliveryClient(buildDeliveryOptions);
-                        var serviceProvider = services.BuildServiceProvider();
-                        return serviceProvider.GetService<IDeliveryClient>();
+                        var builder = DeliveryOptionsBuilder.CreateInstance();
+                        return buildDeliveryOptions(builder);
                     });
                 });
 
@@ -80,7 +51,7 @@ namespace Kentico.Kontent.Delivery.Extensions
 
             return services
                 .Configure<DeliveryClientFactoryOptions>(_ => { })
-                .RegisterFactoryDependencies();
+                .RegisterDependencies();
         }
 
         /// <summary>
@@ -101,11 +72,9 @@ namespace Kentico.Kontent.Delivery.Extensions
             {
                 return new ConfigureNamedOptions<DeliveryClientFactoryOptions>(name, options =>
                 {
-                    options.DeliveryClientsActions.Add(() =>
+                    options.DeliveryClientsOptions.Add(() =>
                     {
-                        services.AddDeliveryClient(deliveryOptions);
-                        var serviceProvider = services.BuildServiceProvider();
-                        return serviceProvider.GetService<IDeliveryClient>();
+                        return deliveryOptions;
                     });
                 });
 
@@ -113,7 +82,7 @@ namespace Kentico.Kontent.Delivery.Extensions
 
             return services
                 .Configure<DeliveryClientFactoryOptions>(_ => { })
-                .RegisterFactoryDependencies();
+                .RegisterDependencies();
         }
 
         /// <summary>
@@ -130,11 +99,11 @@ namespace Kentico.Kontent.Delivery.Extensions
             {
                 return new ConfigureNamedOptions<DeliveryClientFactoryOptions>(name, options =>
                 {
-                    options.DeliveryClientsActions.Add(() =>
+                    options.DeliveryClientsOptions.Add(() =>
                     {
-                        services.AddDeliveryClient(configuration, configurationSectionName);
-                        var serviceProvider = services.BuildServiceProvider();
-                        return serviceProvider.GetService<IDeliveryClient>();
+                        var options = new DeliveryOptions();
+                        configuration.GetSection(configurationSectionName).Bind(options);
+                        return options;
                     });
                 });
 
@@ -142,7 +111,7 @@ namespace Kentico.Kontent.Delivery.Extensions
 
             return services
                 .Configure<DeliveryClientFactoryOptions>(_ => { })
-                .RegisterFactoryDependencies();
+                .RegisterDependencies();
         }
 
         /// <summary>
@@ -247,12 +216,6 @@ namespace Kentico.Kontent.Delivery.Extensions
             services.TryAddSingleton<IDeliveryClient, DeliveryClient>();
             services.TryAddSingleton<IDeliveryClientFactory, DeliveryClientFactory>();
 
-            return services;
-        }
-
-        private static IServiceCollection RegisterFactoryDependencies(this IServiceCollection services)
-        {
-            services.TryAddSingleton<IDeliveryClientFactory, DeliveryClientFactory>();
             return services;
         }
 

@@ -1,5 +1,4 @@
 ﻿using System;
-using System.Linq;
 using Kentico.Kontent.Delivery.Abstractions;
 using Microsoft.Extensions.Caching.Distributed;
 using Microsoft.Extensions.Caching.Memory;
@@ -48,17 +47,14 @@ namespace Kentico.Kontent.Delivery.Caching.Extensions
             }
 
             services
-                .RegisterCacheOptions(options)
-                .RegisterDependencies(options.CacheType)
-                .AddTransient<IConfigureOptions<DeliveryClientFactoryOptions>>(sp =>
+                .RegisterNamedDependencies(options.CacheType)
+                .AddTransient<IConfigureOptions<DeliveryCacheManagerFactoryOptions>>(sp =>
                 {
-                    return new ConfigureNamedOptions<DeliveryClientFactoryOptions>(name, o =>
+                    return new ConfigureNamedOptions<DeliveryCacheManagerFactoryOptions>(name, o =>
                     {
-                        var client = o.DeliveryClientsActions.FirstOrDefault()?.Invoke();
-                        o.DeliveryClientsActions.Add(() =>
+                        o.DeliveryCacheOptions.Add(() =>
                         {
-                            var deliveryCacheManager = sp.GetRequiredService<IDeliveryCacheManager>();
-                            return new DeliveryClientCache(deliveryCacheManager, client);
+                            return options;
                         });
                     });
 
@@ -79,6 +75,9 @@ namespace Kentico.Kontent.Delivery.Caching.Extensions
 
         private static IServiceCollection RegisterDependencies(this IServiceCollection services, CacheTypeEnum cacheType)
         {
+            services.TryAddSingleton<IDeliveryCacheManagerFactory, DeliveryCacheManagerFactory>();
+            services.TryAddSingleton<IDeliveryClientCacheFactory, DeliveryClientCacheFactory>();
+
             switch (cacheType)
             {
                 case CacheTypeEnum.Memory:
@@ -88,6 +87,25 @@ namespace Kentico.Kontent.Delivery.Caching.Extensions
 
                 case CacheTypeEnum.Distributed:
                     services.TryAddSingleton<IDeliveryCacheManager, DistributedCacheManager>();
+                    services.TryAddSingleton<IDistributedCache, MemoryDistributedCache>();
+                    break;
+            }
+
+            return services;
+        }
+
+        private static IServiceCollection RegisterNamedDependencies(this IServiceCollection services, CacheTypeEnum cacheType)
+        {
+            services.TryAddSingleton<IDeliveryCacheManagerFactory, DeliveryCacheManagerFactory>();
+            services.TryAddSingleton<IDeliveryClientCacheFactory, DeliveryClientCacheFactory>();
+
+            switch (cacheType)
+            {
+                case CacheTypeEnum.Memory:
+                    services.TryAddSingleton<IMemoryCache, MemoryCache>();
+                    break;
+
+                case CacheTypeEnum.Distributed:
                     services.TryAddSingleton<IDistributedCache, MemoryDistributedCache>();
                     break;
             }

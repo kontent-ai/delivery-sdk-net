@@ -11,7 +11,7 @@ namespace Kentico.Kontent.Delivery.Caching
     /// <summary>
     /// Cache responses against the Kentico Kontent Delivery API.
     /// </summary>
-    public sealed class DistributedCacheManager : IDeliveryCacheManager
+    internal class DistributedCacheManager : IDeliveryCacheManager
     {
         private readonly IDistributedCache _distributedCache;
         private readonly DeliveryCacheOptions _cacheOptions;
@@ -23,7 +23,7 @@ namespace Kentico.Kontent.Delivery.Caching
         /// <param name="cacheOptions">The settings of the cache</param>
         public DistributedCacheManager(IDistributedCache distributedCache, IOptions<DeliveryCacheOptions> cacheOptions)
         {
-            _distributedCache = distributedCache;
+            _distributedCache = distributedCache ?? throw new ArgumentNullException(nameof(distributedCache));
             _cacheOptions = cacheOptions.Value ?? new DeliveryCacheOptions();
         }
 

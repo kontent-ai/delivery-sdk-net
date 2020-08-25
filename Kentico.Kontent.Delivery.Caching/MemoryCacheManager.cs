@@ -13,7 +13,7 @@ namespace Kentico.Kontent.Delivery.Caching
     /// <summary>
     /// Cache responses against the Kentico Kontent Delivery API.
     /// </summary>
-    public sealed class MemoryCacheManager : IDeliveryCacheManager
+    internal class MemoryCacheManager : IDeliveryCacheManager
     {
         private readonly IMemoryCache _memoryCache;
         private readonly DeliveryCacheOptions _cacheOptions;
@@ -27,7 +27,7 @@ namespace Kentico.Kontent.Delivery.Caching
         /// <param name="cacheOptions">The settings of the cache</param>
         public MemoryCacheManager(IMemoryCache memoryCache, IOptions<DeliveryCacheOptions> cacheOptions)
         {
-            _memoryCache = memoryCache;
+            _memoryCache = memoryCache ?? throw new ArgumentNullException(nameof(memoryCache));
             _cacheOptions = cacheOptions.Value ?? new DeliveryCacheOptions();
         }
 
