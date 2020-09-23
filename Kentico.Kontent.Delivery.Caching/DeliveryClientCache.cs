@@ -30,18 +30,6 @@ namespace Kentico.Kontent.Delivery.Caching
         /// </summary>
         /// <typeparam name="T">Type of the code-first model. (Or <see cref="object"/> if the return type is not yet known.)</typeparam>
         /// <param name="codename">The codename of a content item.</param>
-        /// <param name="parameters">An array that contains zero or more query parameters, for example for projection or depth of linked items.</param>
-        /// <returns>The <see cref="IDeliveryItemResponse{T}"/> instance that contains the content item with the specified codename.</returns>
-        public async Task<IDeliveryItemResponse<T>> GetItemAsync<T>(string codename, params IQueryParameter[] parameters)
-        {
-            return await GetItemAsync<T>(codename, (IEnumerable<IQueryParameter>)parameters);
-        }
-
-        /// <summary>
-        /// Gets one strongly typed content item by its codename.
-        /// </summary>
-        /// <typeparam name="T">Type of the code-first model. (Or <see cref="object"/> if the return type is not yet known.)</typeparam>
-        /// <param name="codename">The codename of a content item.</param>
         /// <param name="parameters">A collection of query parameters, for example for projection or depth of linked items.</param>
         /// <returns>The <see cref="IDeliveryItemResponse{T}"/> instance that contains the content item with the specified codename.</returns>
         public async Task<IDeliveryItemResponse<T>> GetItemAsync<T>(string codename, IEnumerable<IQueryParameter> parameters = null)
@@ -52,18 +40,6 @@ namespace Kentico.Kontent.Delivery.Caching
                 () => _deliveryClient.GetItemAsync<T>(codename, queryParameters),
                 response => response != null,
                 CacheHelpers.GetItemDependencies);
-        }
-
-        /// <summary>
-        /// Searches the content repository for items that match the filter criteria.
-        /// Returns strongly typed content items.
-        /// </summary>
-        /// <typeparam name="T">Type of the code-first model. (Or <see cref="object"/> if the return type is not yet known.)</typeparam>
-        /// <param name="parameters">An array that contains zero or more query parameters, for example for filtering, ordering or depth of linked items.</param>
-        /// <returns>The <see cref="IDeliveryItemListingResponse{T}"/> instance that contains the content items. If no query parameters are specified, all content items are returned.</returns>
-        public async Task<IDeliveryItemListingResponse<T>> GetItemsAsync<T>(params IQueryParameter[] parameters)
-        {
-            return await GetItemsAsync<T>((IEnumerable<IQueryParameter>)parameters);
         }
 
         /// <summary>
@@ -80,17 +56,6 @@ namespace Kentico.Kontent.Delivery.Caching
                 () => _deliveryClient.GetItemsAsync<T>(queryParameters),
                 response => response.Items.Any(),
                 CacheHelpers.GetItemsDependencies);
-        }
-
-        /// <summary>
-        /// Returns a feed that is used to traverse through strongly typed content items matching the optional filtering parameters.
-        /// </summary>
-        /// <typeparam name="T">Type of the model. (Or <see cref="object" /> if the return type is not yet known.)</typeparam>
-        /// <param name="parameters">A collection of query parameters, for example, for filtering or ordering.</param>
-        /// <returns>The <see cref="IDeliveryItemsFeed{T}" /> instance that can be used to enumerate through content items. If no query parameters are specified, all content items are enumerated.</returns>
-        public IDeliveryItemsFeed<T> GetItemsFeed<T>(params IQueryParameter[] parameters)
-        {
-            return _deliveryClient.GetItemsFeed<T>(parameters);
         }
 
         /// <summary>
@@ -121,16 +86,6 @@ namespace Kentico.Kontent.Delivery.Caching
         /// <summary>
         /// Returns content types.
         /// </summary>
-        /// <param name="parameters">An array that contains zero or more query parameters, for example for paging.</param>
-        /// <returns>The <see cref="IDeliveryTypeListingResponse"/> instance that represents the content types. If no query parameters are specified, all content types are returned.</returns>
-        public async Task<IDeliveryTypeListingResponse> GetTypesAsync(params IQueryParameter[] parameters)
-        {
-            return await GetTypesAsync((IEnumerable<IQueryParameter>)parameters);
-        }
-
-        /// <summary>
-        /// Returns content types.
-        /// </summary>
         /// <param name="parameters">A collection of query parameters, for example for paging.</param>
         /// <returns>The <see cref="IDeliveryTypeListingResponse"/> instance that represents the content types. If no query parameters are specified, all content types are returned.</returns>
         public async Task<IDeliveryTypeListingResponse> GetTypesAsync(IEnumerable<IQueryParameter> parameters)
@@ -151,7 +106,6 @@ namespace Kentico.Kontent.Delivery.Caching
         /// <returns>A content element with the specified codename that is a part of a content type with the specified codename.</returns>
         public async Task<IDeliveryElementResponse> GetContentElementAsync(string contentTypeCodename, string contentElementCodename)
         {
-
             return await _deliveryCacheManager.GetOrAddAsync(
                 CacheHelpers.GetContentElementKey(contentTypeCodename, contentElementCodename),
                 () => _deliveryClient.GetContentElementAsync(contentTypeCodename, contentElementCodename),
@@ -171,16 +125,6 @@ namespace Kentico.Kontent.Delivery.Caching
                 () => _deliveryClient.GetTaxonomyAsync(codename),
                 response => response != null,
                 CacheHelpers.GetTaxonomyDependencies);
-        }
-
-        /// <summary>
-        /// Returns taxonomy groups.
-        /// </summary>
-        /// <param name="parameters">An array that contains zero or more query parameters, for example, for paging.</param>
-        /// <returns>The <see cref="IDeliveryTaxonomyListingResponse"/> instance that represents the taxonomy groups. If no query parameters are specified, all taxonomy groups are returned.</returns>
-        public async Task<IDeliveryTaxonomyListingResponse> GetTaxonomiesAsync(params IQueryParameter[] parameters)
-        {
-            return await GetTaxonomiesAsync((IEnumerable<IQueryParameter>)parameters);
         }
 
         /// <summary>
