@@ -74,7 +74,7 @@ namespace Kentico.Kontent.Delivery.Caching.Tests
             var firstResponse = await scenario.CachingClient.GetItemAsync<TestItem>(codename);
 
             scenario = scenarioBuilder.WithResponse(url, updatedItem).Build();
-            scenario.InvalidateDependency(CacheHelpers.GetItemTypedKey(codename, Enumerable.Empty<IQueryParameter>()));
+            scenario.InvalidateDependency(CacheHelpers.GetItemKey<TestItem>(codename, Enumerable.Empty<IQueryParameter>()));
             var secondResponse = await scenario.CachingClient.GetItemAsync<TestItem>(codename);
 
             firstResponse.Should().NotBeNull();
@@ -156,6 +156,35 @@ namespace Kentico.Kontent.Delivery.Caching.Tests
             scenario.GetRequestCount(url).Should().Be(2);
         }
 
+        [Theory]
+        [InlineData(CacheTypeEnum.Memory)]
+        [InlineData(CacheTypeEnum.Distributed)]
+        public async Task GetItemTypedAsync_DifferentTypesAreCachedSeparately(CacheTypeEnum cacheType)
+        {
+            const string codename = "codename";
+            var url = $"items/{codename}";
+            var item = CreateItemResponse(CreateItem(codename, "original"));
+
+            var scenarioBuilder = new ScenarioBuilder(cacheType);
+
+            var scenario = scenarioBuilder.WithResponse(url, item).Build();
+            var firstResponse = await scenario.CachingClient.GetItemAsync<object>(codename);
+            var secondResponse = await scenario.CachingClient.GetItemAsync<TestItem>(codename);
+
+            var repeatedFirstResponse = await scenario.CachingClient.GetItemAsync<object>(codename);
+            var repeatedSecondResponse = await scenario.CachingClient.GetItemAsync<TestItem>(codename);
+
+            firstResponse.Should().NotBeNull();
+            firstResponse.Should().BeEquivalentTo(repeatedFirstResponse);
+
+            secondResponse.Should().NotBeNull();
+            secondResponse.Should().BeEquivalentTo(repeatedSecondResponse);
+
+            firstResponse.Should().NotBeEquivalentTo(secondResponse);
+
+            scenario.GetRequestCount(url).Should().Be(2);
+        }
+
         #endregion
 
         #region GetItemsTyped
@@ -199,7 +228,7 @@ namespace Kentico.Kontent.Delivery.Caching.Tests
             var firstResponse = await scenario.CachingClient.GetItemsAsync<TestItem>();
 
             scenario = scenarioBuilder.WithResponse(url, updatedItems).Build();
-            scenario.InvalidateDependency(CacheHelpers.GetItemsTypedKey(Enumerable.Empty<IQueryParameter>()));
+            scenario.InvalidateDependency(CacheHelpers.GetItemsKey<TestItem>(Enumerable.Empty<IQueryParameter>()));
             var secondResponse = await scenario.CachingClient.GetItemsAsync<TestItem>();
 
             firstResponse.Should().NotBeNull();

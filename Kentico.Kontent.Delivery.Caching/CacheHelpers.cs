@@ -42,9 +42,9 @@ namespace Kentico.Kontent.Delivery.Caching
         /// <param name="codename">CodeName</param>
         /// <param name="parameters">Query parameters</param>
         /// <returns>Dependency key</returns>
-        public static string GetItemTypedKey(string codename, IEnumerable<IQueryParameter> parameters)
+        public static string GetItemKey<T>(string codename, IEnumerable<IQueryParameter> parameters)
         {
-            return StringHelpers.Join(new[] { CONTENT_ITEM_TYPED_IDENTIFIER, codename }.Concat(parameters?.Select(x => x.GetQueryStringParameter()) ?? Enumerable.Empty<string>()));
+            return StringHelpers.Join(new[] { typeof(T).GetHashCode().ToString(), CONTENT_ITEM_TYPED_IDENTIFIER, codename }.Concat(parameters?.Select(x => x.GetQueryStringParameter()) ?? Enumerable.Empty<string>()));
         }
 
         /// <summary>
@@ -52,9 +52,9 @@ namespace Kentico.Kontent.Delivery.Caching
         /// </summary>
         /// <param name="parameters">Query parameters</param>
         /// <returns>Dependency keys</returns>
-        public static string GetItemsTypedKey(IEnumerable<IQueryParameter> parameters)
+        public static string GetItemsKey<T>(IEnumerable<IQueryParameter> parameters)
         {
-            return StringHelpers.Join(new[] { CONTENT_ITEM_LISTING_TYPED_IDENTIFIER }.Concat(parameters?.Select(x => x.GetQueryStringParameter()) ?? Enumerable.Empty<string>()));
+            return StringHelpers.Join(new[] { typeof(T).GetHashCode().ToString(), CONTENT_ITEM_LISTING_TYPED_IDENTIFIER }.Concat(parameters?.Select(x => x.GetQueryStringParameter()) ?? Enumerable.Empty<string>()));
         }
 
         /// <summary>
