@@ -1,6 +1,7 @@
 ﻿using System.Linq;
 using FluentAssertions;
 using Kentico.Kontent.Delivery.Abstractions;
+using Kentico.Kontent.Delivery.Caching.Tests.ContentTypes;
 using Kentico.Kontent.Delivery.Urls.QueryParameters;
 using Kentico.Kontent.Delivery.Urls.QueryParameters.Filters;
 using Xunit;
@@ -16,11 +17,12 @@ namespace Kentico.Kontent.Delivery.Caching.Tests
         {
             var keys = new[]
             {
-                CacheHelpers.GetItemTypedKey("codename", Enumerable.Empty<IQueryParameter>()),
-                CacheHelpers.GetItemTypedKey("other_codename", Enumerable.Empty<IQueryParameter>()),
-                CacheHelpers.GetItemTypedKey("codename", new []{new DepthParameter(1)}),
-                CacheHelpers.GetItemTypedKey("codename", new [] {new DepthParameter(2) }),
-                CacheHelpers.GetItemTypedKey("codename", new []{new SystemTypeEqualsFilter("article") })
+                CacheHelpers.GetItemKey<object>("codename", Enumerable.Empty<IQueryParameter>()),
+                CacheHelpers.GetItemKey<object>("other_codename", Enumerable.Empty<IQueryParameter>()),
+                CacheHelpers.GetItemKey<object>("codename", new []{new DepthParameter(1)}),
+                CacheHelpers.GetItemKey<object>("codename", new [] {new DepthParameter(2) }),
+                CacheHelpers.GetItemKey<object>("codename", new []{new SystemTypeEqualsFilter("article") }),
+                CacheHelpers.GetItemKey<Article>("codename", new []{new SystemTypeEqualsFilter("article") })
             };
 
             keys.Distinct().Count().Should().Be(keys.Length);
@@ -31,10 +33,11 @@ namespace Kentico.Kontent.Delivery.Caching.Tests
         {
             var keys = new[]
             {
-                CacheHelpers.GetItemsTypedKey(Enumerable.Empty<IQueryParameter>()),
-                CacheHelpers.GetItemsTypedKey(new []{new DepthParameter(1)}),
-                CacheHelpers.GetItemsTypedKey(new [] {new DepthParameter(2) }),
-                CacheHelpers.GetItemsTypedKey(new []{new SystemTypeEqualsFilter("article") })
+                CacheHelpers.GetItemsKey<object>(Enumerable.Empty<IQueryParameter>()),
+                CacheHelpers.GetItemsKey<object>(new []{new DepthParameter(1)}),
+                CacheHelpers.GetItemsKey<object>(new [] {new DepthParameter(2) }),
+                CacheHelpers.GetItemsKey<object>(new []{new SystemTypeEqualsFilter("article") }) ,
+                CacheHelpers.GetItemsKey<Article>(new []{new SystemTypeEqualsFilter("article") })
             };
 
             keys.Distinct().Count().Should().Be(keys.Length);

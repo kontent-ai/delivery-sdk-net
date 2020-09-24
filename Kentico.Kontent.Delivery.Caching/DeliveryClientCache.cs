@@ -36,7 +36,7 @@ namespace Kentico.Kontent.Delivery.Caching
         {
             var queryParameters = parameters?.ToList();
             return await _deliveryCacheManager.GetOrAddAsync(
-                CacheHelpers.GetItemTypedKey(codename, queryParameters),
+                CacheHelpers.GetItemKey<T>(codename, queryParameters),
                 () => _deliveryClient.GetItemAsync<T>(codename, queryParameters),
                 response => response != null,
                 CacheHelpers.GetItemDependencies);
@@ -52,7 +52,7 @@ namespace Kentico.Kontent.Delivery.Caching
         {
             var queryParameters = parameters?.ToList();
             return await _deliveryCacheManager.GetOrAddAsync(
-                CacheHelpers.GetItemsTypedKey(queryParameters),
+                CacheHelpers.GetItemsKey<T>(queryParameters),
                 () => _deliveryClient.GetItemsAsync<T>(queryParameters),
                 response => response.Items.Any(),
                 CacheHelpers.GetItemsDependencies);
