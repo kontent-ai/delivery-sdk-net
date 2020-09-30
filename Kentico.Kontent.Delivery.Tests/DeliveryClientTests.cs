@@ -981,9 +981,13 @@ namespace Kentico.Kontent.Delivery.Tests
             var sdkVersion = fileVersionInfo.ProductVersion;
             var sdkPackageId = assembly.GetName().Name;
 
+            var sourceAssembly = this.GetType().Assembly;
+            var sourceFileVersionInfo = FileVersionInfo.GetVersionInfo(sourceAssembly.Location);
+            var sourceVersion = sourceFileVersionInfo.ProductVersion;
+
             _mockHttp
                 .Expect($"{_baseUrl}/items")
-                .WithHeaders("X-KC-SDKID", $"nuget.org;{sdkPackageId};{sdkVersion}").WithHeaders("X-KC-SOURCE", "Kentico.Kontent.Delivery.Tests;1.0.0")
+                .WithHeaders("X-KC-SDKID", $"nuget.org;{sdkPackageId};{sdkVersion}").WithHeaders("X-KC-SOURCE", $"Kentico.Kontent.Delivery.Tests;{sourceVersion}")
                 .Respond("application/json", await File.ReadAllTextAsync(Path.Combine(Environment.CurrentDirectory, $"Fixtures{Path.DirectorySeparatorChar}DeliveryClient{Path.DirectorySeparatorChar}items.json")));
 
             var client = Factories.DeliveryClientFactory.GetMockedDeliveryClientWithProjectId(_guid, _mockHttp);
@@ -1012,11 +1016,14 @@ namespace Kentico.Kontent.Delivery.Tests
         [Fact]
         public void SourceTrackingHeaderGeneratedFromAssembly()
         {
+            var assembly = this.GetType().Assembly;
+            var fileVersionInfo = FileVersionInfo.GetVersionInfo(assembly.Location);
+            var sourceVersion = fileVersionInfo.ProductVersion;
             DeliverySourceTrackingHeaderAttribute attr = new DeliverySourceTrackingHeaderAttribute();
 
             var value = HttpRequestHeadersExtensions.GenerateSourceTrackingHeaderValue(GetType().Assembly, attr);
 
-            Assert.Equal("Kentico.Kontent.Delivery.Tests;1.0.0", value);
+            Assert.Equal($"Kentico.Kontent.Delivery.Tests;{sourceVersion}", value);
         }
 
         [Fact]
