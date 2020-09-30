@@ -261,6 +261,7 @@ namespace Kentico.Kontent.Delivery
             var message = new HttpRequestMessage(HttpMethod.Get, endpointUrl);
 
             message.Headers.AddSdkTrackingHeader();
+            message.Headers.AddSourceTrackingHeader();
 
             if (DeliveryOptions.Value.WaitForLoadingNewContent)
             {
