@@ -27,7 +27,7 @@ namespace Kentico.Kontent.Delivery.Tests.Builders.DeliveryClient
         {
             var deliveryClient = (Delivery.DeliveryClient) DeliveryClientBuilder.WithProjectId(ProjectId).Build();
 
-            Assert.Equal(ProjectId, deliveryClient.DeliveryOptions.Value.ProjectId);
+            Assert.Equal(ProjectId, deliveryClient.DeliveryOptions.CurrentValue.ProjectId);
         }
 
         [Fact]
@@ -43,9 +43,9 @@ namespace Kentico.Kontent.Delivery.Tests.Builders.DeliveryClient
                     .Build()
                 ).Build();
 
-            Assert.Equal(ProjectId, deliveryClient.DeliveryOptions.Value.ProjectId);
-            Assert.True(deliveryClient.DeliveryOptions.Value.UsePreviewApi);
-            Assert.Equal(PreviewEndpoint, deliveryClient.DeliveryOptions.Value.PreviewEndpoint);
+            Assert.Equal(ProjectId, deliveryClient.DeliveryOptions.CurrentValue.ProjectId);
+            Assert.True(deliveryClient.DeliveryOptions.CurrentValue.UsePreviewApi);
+            Assert.Equal(PreviewEndpoint, deliveryClient.DeliveryOptions.CurrentValue.PreviewEndpoint);
         }
 
         [Fact]
@@ -76,7 +76,7 @@ namespace Kentico.Kontent.Delivery.Tests.Builders.DeliveryClient
                 .WithTypeProvider(mockTypeProvider)
                 .Build();
 
-            Assert.Equal(ProjectId, deliveryClient.DeliveryOptions.Value.ProjectId);
+            Assert.Equal(ProjectId, deliveryClient.DeliveryOptions.CurrentValue.ProjectId);
             Assert.Equal(mockModelProvider, deliveryClient.ModelProvider);
             Assert.Equal(mockRetryPolicyProvider, deliveryClient.RetryPolicyProvider);
             Assert.Equal(mockTypeProvider, deliveryClient.TypeProvider);
@@ -105,7 +105,7 @@ namespace Kentico.Kontent.Delivery.Tests.Builders.DeliveryClient
                 .Build();
             var actualResolvableInlineContentItemTypes = GetResolvableInlineContentItemTypes(deliveryClient);
 
-            Assert.Equal(ProjectId, deliveryClient.DeliveryOptions.Value.ProjectId);
+            Assert.Equal(ProjectId, deliveryClient.DeliveryOptions.CurrentValue.ProjectId);
             Assert.Equal(expectedResolvableInlineContentItemsTypes, actualResolvableInlineContentItemTypes);
         }
 

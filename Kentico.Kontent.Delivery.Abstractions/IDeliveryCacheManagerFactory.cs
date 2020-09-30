@@ -12,9 +12,9 @@
         /// <returns>The <see cref="IDeliveryCacheManager"/> instance that represents named cache manager</returns>
         IDeliveryCacheManager Get(string name);
 
+        /// <summary>
         /// Returns a <see cref="IDeliveryCacheManager"/>.
         /// </summary>
-        /// <param name="name"></param>
         /// <returns>The <see cref="IDeliveryCacheManager"/> instance that represents cache manager</returns>
         IDeliveryCacheManager Get();
     }
