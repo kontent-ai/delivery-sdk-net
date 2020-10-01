@@ -4,7 +4,6 @@ using Microsoft.Extensions.Caching.Distributed;
 using Microsoft.Extensions.Caching.Memory;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.DependencyInjection.Extensions;
-using Microsoft.Extensions.Options;
 
 namespace Kentico.Kontent.Delivery.Caching.Extensions
 {
@@ -46,66 +45,50 @@ namespace Kentico.Kontent.Delivery.Caching.Extensions
                 throw new ArgumentNullException(nameof(options), "The Delivery cache  options object is not specified.");
             }
 
-            services
-                .RegisterNamedDependencies(options.CacheType)
-                .AddTransient<IConfigureOptions<DeliveryCacheManagerFactoryOptions>>(sp =>
-                {
-                    return new ConfigureNamedOptions<DeliveryCacheManagerFactoryOptions>(name, o =>
-                    {
-                        o.DeliveryCacheOptions.Add(() =>
-                        {
-                            return options;
-                        });
-                    });
-
-                });
-
-            return services;
+            return services
+                .RegisterCacheOptions(options, name)
+                .RegisterDependencies(options.CacheType, name)
+                .Decorate<IDeliveryClientFactory, DeliveryClientCacheFactory>();
         }
 
-        private static IServiceCollection RegisterCacheOptions(this IServiceCollection services, DeliveryCacheOptions options)
+        private static IServiceCollection RegisterCacheOptions(this IServiceCollection services, DeliveryCacheOptions options, string name = null)
         {
-            services.Configure<DeliveryCacheOptions>(o =>
+            void configure(DeliveryCacheOptions o)
             {
                 o.DefaultExpiration = options.DefaultExpiration;
                 o.StaleContentExpiration = options.StaleContentExpiration;
-            });
-            return services;
-        }
-
-        private static IServiceCollection RegisterDependencies(this IServiceCollection services, CacheTypeEnum cacheType)
-        {
-            services.TryAddSingleton<IDeliveryCacheManagerFactory, DeliveryCacheManagerFactory>();
-            services.TryAddSingleton<IDeliveryClientCacheFactory, DeliveryClientCacheFactory>();
-
-            switch (cacheType)
+                o.CacheType = options.CacheType;
+                o.Name = name;
+            }
+            if (name == null)
             {
-                case CacheTypeEnum.Memory:
-                    services.TryAddSingleton<IDeliveryCacheManager, MemoryCacheManager>();
-                    services.TryAddSingleton<IMemoryCache, MemoryCache>();
-                    break;
-
-                case CacheTypeEnum.Distributed:
-                    services.TryAddSingleton<IDeliveryCacheManager, DistributedCacheManager>();
-                    services.TryAddSingleton<IDistributedCache, MemoryDistributedCache>();
-                    break;
+                services.Configure<DeliveryCacheOptions>(configure);
+            }
+            else
+            {
+                services.Configure<DeliveryCacheOptions>(name, configure);
             }
 
             return services;
         }
 
-        private static IServiceCollection RegisterNamedDependencies(this IServiceCollection services, CacheTypeEnum cacheType)
+        private static IServiceCollection RegisterDependencies(this IServiceCollection services, CacheTypeEnum cacheType, string name = null)
         {
-            services.TryAddSingleton<IDeliveryCacheManagerFactory, DeliveryCacheManagerFactory>();
-            services.TryAddSingleton<IDeliveryClientCacheFactory, DeliveryClientCacheFactory>();
-
             switch (cacheType)
             {
                 case CacheTypeEnum.Memory:
+                    if (name == null)
+                    {
+                        services.TryAddSingleton<IDeliveryCacheManager, MemoryCacheManager>();
+                    }
                     services.TryAddSingleton<IMemoryCache, MemoryCache>();
                     break;
 
                 case CacheTypeEnum.Distributed:
+                    if (name == null)
+                    {
+                        services.TryAddSingleton<IDeliveryCacheManager, DistributedCacheManager>();
+                    }
                     services.TryAddSingleton<IDistributedCache, MemoryDistributedCache>();
                     break;
             }

@@ -45,17 +45,10 @@ namespace Kentico.Kontent.Delivery
             {
                 var deliveryClientOptions = _deliveryOptions.Get(name);
 
-                // Validate that the options are configured
+                // Validate that the option object is indeed configured
                 if (deliveryClientOptions.ProjectId != null)
                 {
                     client = Build(deliveryClientOptions, name);
-                    var cacheManagerFactory = _serviceProvider.GetService<IDeliveryCacheManagerFactory>();
-                    var cacheManager = cacheManagerFactory?.Get(name);
-                    if (cacheManager != null)
-                    {
-                        var deliveryClientCacheFactory = _serviceProvider.GetService<IDeliveryClientCacheFactory>();
-                        client = deliveryClientCacheFactory.Create(cacheManager, client);
-                    }
 
                     _cache.TryAdd(name, client);
                 }

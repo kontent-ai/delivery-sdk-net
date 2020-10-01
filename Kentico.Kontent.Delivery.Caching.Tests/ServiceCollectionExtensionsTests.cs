@@ -107,10 +107,7 @@ namespace Kentico.Kontent.Delivery.Caching.Tests
         [InlineData(CacheTypeEnum.Distributed)]
         public void AddDeliveryClientCacheNamedWithDeliveryCacheOptions_ThrowsInvalidOperationException(CacheTypeEnum cacheType)
         {
-            _serviceCollection.AddDeliveryClientCache("named", new DeliveryCacheOptions() { CacheType = cacheType });
-            var sp = _serviceCollection.BuildServiceProvider();
-
-            Assert.Throws<InvalidOperationException>(() => sp.GetRequiredService<IDeliveryClientFactory>());
+            Assert.Throws<MissingTypeRegistrationException>(() => _serviceCollection.AddDeliveryClientCache("named", new DeliveryCacheOptions() { CacheType = cacheType }));
         }
 
         [Fact]
@@ -132,12 +129,9 @@ namespace Kentico.Kontent.Delivery.Caching.Tests
         }
 
         [Fact]
-        public void AddDeliveryClientNamedCacheWitNoPreviousRegistrationDeliveryClient_ThrowsInvalidOperationException()
+        public void AddDeliveryClientNamedCacheWitNoPreviousRegistrationDeliveryClient_ThrowsMissingTypeRegistrationException()
         {
-            _serviceCollection.AddDeliveryClientCache("named", new DeliveryCacheOptions());
-            var sp = _serviceCollection.BuildServiceProvider();
-
-            Assert.Throws<InvalidOperationException>(() => sp.GetRequiredService<IDeliveryClientFactory>());
+            Assert.Throws<MissingTypeRegistrationException>(() => _serviceCollection.AddDeliveryClientCache("named", new DeliveryCacheOptions()));
         }
     }
 }

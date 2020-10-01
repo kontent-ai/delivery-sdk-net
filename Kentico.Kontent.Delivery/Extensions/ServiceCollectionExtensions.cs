@@ -198,11 +198,11 @@ namespace Kentico.Kontent.Delivery.Extensions
             }
             if (name == null)
             {
-                services.Configure((Action<DeliveryOptions>)configure);
+                services.Configure<DeliveryOptions>(configure);
             }
             else
             {
-                services.Configure(name, (Action<DeliveryOptions>)configure);
+                services.Configure<DeliveryOptions>(name, configure);
             }
 
             return services;
