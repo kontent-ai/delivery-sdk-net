@@ -1,10 +1,8 @@
-﻿using FakeItEasy;
-using FluentAssertions;
+﻿using FluentAssertions;
 using Kentico.Kontent.Delivery.Abstractions;
 using Kentico.Kontent.Delivery.Caching.Extensions;
 using Kentico.Kontent.Delivery.Extensions;
 using Microsoft.Extensions.DependencyInjection;
-using Microsoft.Extensions.Options;
 using System;
 using Xunit;
 

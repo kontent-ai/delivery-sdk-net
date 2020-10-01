@@ -13,30 +13,29 @@ namespace Kentico.Kontent.Delivery.Caching
     /// </summary>
     public class DeliveryClientCacheFactory : IDeliveryClientFactory
     {
-        private readonly IDeliveryClientFactory _clientFactory;
+        private readonly IDeliveryClientFactory _innerClientFactory;
         private readonly IOptionsMonitor<DeliveryCacheOptions> _deliveryCacheOptions;
         private readonly IServiceProvider _serviceProvider;
         private readonly ConcurrentDictionary<string, IDeliveryClient> _cache = new ConcurrentDictionary<string, IDeliveryClient>();
 
         /// <summary>
-        /// Initializes a new instance of the <see cref="DeliveryClientCacheFactory"/> class
+        /// Initializes a new instance of the <see cref="DeliveryClientCacheFactory"/> class.
         /// </summary>
-        /// <param name="clientFactory">Factory to be decorated</param>
-        /// <param name="deliveryCacheOptions">Cache configuration options</param>
-        /// <param name="serviceProvider">An <see cref="IServiceProvider"/> instance</param>
-        /// 
+        /// <param name="clientFactory">Factory to be decorated.</param>
+        /// <param name="deliveryCacheOptions">Cache configuration options.</param>
+        /// <param name="serviceProvider">An <see cref="IServiceProvider"/> instance.</param>
         public DeliveryClientCacheFactory(IDeliveryClientFactory clientFactory, IOptionsMonitor<DeliveryCacheOptions> deliveryCacheOptions, IServiceProvider serviceProvider)
         {
-            _clientFactory = clientFactory;
+            _innerClientFactory = clientFactory;
             _deliveryCacheOptions = deliveryCacheOptions;
             _serviceProvider = serviceProvider;
         }
 
         /// <summary>
-        /// Returns a named <see cref="IDeliveryCacheManager"/>.
+        /// Returns a named instance of the <see cref="IDeliveryClient"/> wrapped in a caching layer.
         /// </summary>
-        /// <param name="name">A name of <see cref="IDeliveryCacheManager"/> configuration</param>
-        /// <returns>The <see cref="IDeliveryCacheManager"/> instance that represents named cache manager</returns>
+        /// <param name="name">A name of the configuration to be used to instantiate the client.</param>
+        /// <returns>Returns an <see cref="IDeliveryClient"/> instance with the given name.</returns>
         public IDeliveryClient Get(string name)
         {
             if (name == null)
@@ -46,9 +45,11 @@ namespace Kentico.Kontent.Delivery.Caching
 
             if (!_cache.TryGetValue(name, out var client))
             {
+                client = _innerClientFactory.Get(name);
                 var cacheOptions = _deliveryCacheOptions.Get(name);
                 if (cacheOptions.Name == name)
                 {
+                    // Build caching services according to the options
                     IDeliveryCacheManager manager;
                     if (cacheOptions.CacheType == CacheTypeEnum.Memory)
                     {
@@ -61,7 +62,8 @@ namespace Kentico.Kontent.Delivery.Caching
                         manager = new DistributedCacheManager(distributedCache, Options.Create(cacheOptions));
                     }
 
-                    client = new DeliveryClientCache(manager, _clientFactory.Get(name));
+                    // Decorate the client with a caching layer
+                    client = new DeliveryClientCache(manager, client);
 
                     _cache.TryAdd(name, client);
                 }
@@ -73,7 +75,7 @@ namespace Kentico.Kontent.Delivery.Caching
         /// <inheritdoc />
         public IDeliveryClient Get()
         {
-            return _clientFactory.Get();
+            return _innerClientFactory.Get();
         }
     }
 }

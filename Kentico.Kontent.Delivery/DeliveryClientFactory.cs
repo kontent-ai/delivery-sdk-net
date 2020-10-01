@@ -1,6 +1,5 @@
 ﻿using System;
 using System.Collections.Concurrent;
-using System.Linq;
 using Kentico.Kontent.Delivery.Abstractions;
 using Kentico.Kontent.Delivery.Configuration;
 using Microsoft.Extensions.DependencyInjection;
@@ -19,21 +18,17 @@ namespace Kentico.Kontent.Delivery
         private readonly ConcurrentDictionary<string, IDeliveryClient> _cache = new ConcurrentDictionary<string, IDeliveryClient>();
 
         /// <summary>
-        /// Initializes a new instance of the <see cref="DeliveryClientFactory"/> class
+        /// Initializes a new instance of the <see cref="DeliveryClientFactory"/> class.
         /// </summary>
         /// <param name="deliveryOptions">Used for notifications when <see cref="DeliveryOptions"/> instances change.</param>
-        /// <param name="serviceProvider">A <see cref="IServiceProvider"/> instance</param>
+        /// <param name="serviceProvider">An <see cref="IServiceProvider"/> instance.</param>
         public DeliveryClientFactory(IOptionsMonitor<DeliveryOptions> deliveryOptions, IServiceProvider serviceProvider)
         {
             _deliveryOptions = deliveryOptions;
             _serviceProvider = serviceProvider;
         }
 
-        /// <summary>
-        /// Returns a named <see cref="IDeliveryClient"/>.
-        /// </summary>
-        /// <param name="name">A name of <see cref="IDeliveryClient"/> configuration</param>
-        /// <returns>The <see cref="IDeliveryClient"/> instance that represents named client</returns>
+        /// <inheritdoc />
         public IDeliveryClient Get(string name)
         {
             if (name == null)
@@ -57,10 +52,7 @@ namespace Kentico.Kontent.Delivery
             return client;
         }
 
-        /// <summary>
-        /// Returns an <see cref="IDeliveryClient"/>.
-        /// </summary>
-        /// <returns>The <see cref="IDeliveryClient"/> instance that represents client</returns>
+        /// <inheritdoc />
         public IDeliveryClient Get()
         {
             return _serviceProvider.GetRequiredService<IDeliveryClient>();
