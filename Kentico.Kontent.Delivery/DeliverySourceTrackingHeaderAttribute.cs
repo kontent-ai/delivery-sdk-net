@@ -10,7 +10,7 @@ namespace Kentico.Kontent.Delivery
     public class DeliverySourceTrackingHeaderAttribute : Attribute
     {
         /// <summary>
-        /// Name of the package (e.g. Acme.KenticoKontent.AwesomeTool;1.0.0)
+        /// Name of the package (e.g. Acme.KenticoKontent.AwesomeTool)
         /// </summary>
         public string PackageName { get; }
 
@@ -40,7 +40,7 @@ namespace Kentico.Kontent.Delivery
         public bool LoadFromAssembly { get; }
 
         /// <summary>
-        /// Default constructor ensuring the source information will be extracted from the calling assembly.
+        /// Default constructor ensuring the all source information (package name and version) will be extracted from the calling assembly.
         /// </summary>
         public DeliverySourceTrackingHeaderAttribute()
         {
@@ -48,9 +48,9 @@ namespace Kentico.Kontent.Delivery
         }
 
         /// <summary>
-        /// Default constructor ensuring the source information will be extracted from the calling assembly.
+        /// A constructor allowing to customize the package name and ensuring the version information will be extracted from the calling assembly.
         /// </summary>
-        /// <param name="packageName">Name of the package (e.g. Acme.KenticoKontent.AwesomeTool;1.0.0)</param>
+        /// <param name="packageName">Name of the package (e.g. Acme.KenticoKontent.AwesomeTool)</param>
         public DeliverySourceTrackingHeaderAttribute(string packageName)
         {
             LoadFromAssembly = true;
@@ -58,9 +58,9 @@ namespace Kentico.Kontent.Delivery
         }
 
         /// <summary>
-        /// Constructor allowing to customize the source tracking header.
+        /// Constructor allowing to completely customize the source tracking header.
         /// </summary>
-        /// <param name="packageName">Name of the package (e.g. Acme.KenticoKontent.AwesomeTool;1.0.0)</param>
+        /// <param name="packageName">Name of the package (e.g. Acme.KenticoKontent.AwesomeTool)</param>
         /// <param name="majorVersion">Major version according to https://semver.org/</param>
         /// <param name="minorVersion">Minor version according to https://semver.org/</param>
         /// <param name="patchVersion">Patch version according to https://semver.org/</param>
