@@ -99,13 +99,14 @@ namespace Kentico.Kontent.Delivery.Extensions
             string version;
             if (attribute.LoadFromAssembly)
             {
-                packageName = originatingAssembly.GetName().Name;
+                packageName = attribute.PackageName ?? originatingAssembly.GetName().Name;
                 version = originatingAssembly.GetProducVersion();
             }
             else
             {
                 packageName = attribute.PackageName;
-                version = $"{attribute.MajorVersion}.{attribute.MinorVersion}.{attribute.PatchVersion}";
+                string preRelease = attribute.PreReleaseLabel == null ? "" : $"-{attribute.PreReleaseLabel}";
+                version = $"{attribute.MajorVersion}.{attribute.MinorVersion}.{attribute.PatchVersion}{preRelease}";
             }
             return $"{packageName};{version}";
         }

@@ -30,6 +30,11 @@ namespace Kentico.Kontent.Delivery
         public int PatchVersion { get; }
 
         /// <summary>
+        /// Pre-release label according to https://semver.org/ (will be appended with a hyphen)
+        /// </summary>
+        public string PreReleaseLabel { get; }
+
+        /// <summary>
         /// Determines whether or not to load the version from the calling assembly.
         /// </summary>
         public bool LoadFromAssembly { get; }
@@ -43,19 +48,31 @@ namespace Kentico.Kontent.Delivery
         }
 
         /// <summary>
+        /// Default constructor ensuring the source information will be extracted from the calling assembly.
+        /// </summary>
+        /// <param name="packageName">Name of the package (e.g. Acme.KenticoKontent.AwesomeTool;1.0.0)</param>
+        public DeliverySourceTrackingHeaderAttribute(string packageName)
+        {
+            LoadFromAssembly = true;
+            PackageName = packageName;
+        }
+
+        /// <summary>
         /// Constructor allowing to customize the source tracking header.
         /// </summary>
         /// <param name="packageName">Name of the package (e.g. Acme.KenticoKontent.AwesomeTool;1.0.0)</param>
         /// <param name="majorVersion">Major version according to https://semver.org/</param>
         /// <param name="minorVersion">Minor version according to https://semver.org/</param>
         /// <param name="patchVersion">Patch version according to https://semver.org/</param>
-        public DeliverySourceTrackingHeaderAttribute(string packageName, int majorVersion, int minorVersion, int patchVersion)
+        /// <param name="preReleaseLabel">Pre-release label according to https://semver.org/ (will be appended with a hyphen)</param>
+        public DeliverySourceTrackingHeaderAttribute(string packageName, int majorVersion, int minorVersion, int patchVersion, string preReleaseLabel = null)
         {
             LoadFromAssembly = false;
             PackageName = packageName;
             MajorVersion = majorVersion;
             MinorVersion = minorVersion;
             PatchVersion = patchVersion;
+            PreReleaseLabel = preReleaseLabel;
         }
     }
 }
