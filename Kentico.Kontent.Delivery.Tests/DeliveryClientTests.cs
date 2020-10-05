@@ -12,6 +12,7 @@ using Kentico.Kontent.Delivery.Abstractions;
 using Kentico.Kontent.Delivery.Builders.DeliveryClient;
 using Kentico.Kontent.Delivery.ContentItems;
 using Kentico.Kontent.Delivery.ContentItems.RichText.Blocks;
+using Kentico.Kontent.Delivery.Extensions;
 using Kentico.Kontent.Delivery.Tests.Factories;
 using Kentico.Kontent.Delivery.Tests.Models;
 using Kentico.Kontent.Delivery.Tests.Models.ContentTypes;
@@ -980,9 +981,13 @@ namespace Kentico.Kontent.Delivery.Tests
             var sdkVersion = fileVersionInfo.ProductVersion;
             var sdkPackageId = assembly.GetName().Name;
 
+            var sourceAssembly = this.GetType().Assembly;
+            var sourceFileVersionInfo = FileVersionInfo.GetVersionInfo(sourceAssembly.Location);
+            var sourceVersion = sourceFileVersionInfo.ProductVersion;
+
             _mockHttp
                 .Expect($"{_baseUrl}/items")
-                .WithHeaders("X-KC-SDKID", $"nuget.org;{sdkPackageId};{sdkVersion}")
+                .WithHeaders("X-KC-SDKID", $"nuget.org;{sdkPackageId};{sdkVersion}").WithHeaders("X-KC-SOURCE", $"Kentico.Kontent.Delivery.Tests;{sourceVersion}")
                 .Respond("application/json", await File.ReadAllTextAsync(Path.Combine(Environment.CurrentDirectory, $"Fixtures{Path.DirectorySeparatorChar}DeliveryClient{Path.DirectorySeparatorChar}items.json")));
 
             var client = Factories.DeliveryClientFactory.GetMockedDeliveryClientWithProjectId(_guid, _mockHttp);
@@ -996,6 +1001,29 @@ namespace Kentico.Kontent.Delivery.Tests
             await client.GetItemsAsync<object>();
 
             _mockHttp.VerifyNoOutstandingExpectation();
+        }
+
+        [Fact]
+        public void SourceTrackingHeaderGeneratedFromAttribute()
+        {
+            DeliverySourceTrackingHeaderAttribute attr = new DeliverySourceTrackingHeaderAttribute("CustomModule", 1, 2, 3);
+
+            var value = HttpRequestHeadersExtensions.GenerateSourceTrackingHeaderValue(GetType().Assembly, attr);
+
+            Assert.Equal("CustomModule;1.2.3", value);
+        }
+
+        [Fact]
+        public void SourceTrackingHeaderGeneratedFromAssembly()
+        {
+            var assembly = this.GetType().Assembly;
+            var fileVersionInfo = FileVersionInfo.GetVersionInfo(assembly.Location);
+            var sourceVersion = fileVersionInfo.ProductVersion;
+            DeliverySourceTrackingHeaderAttribute attr = new DeliverySourceTrackingHeaderAttribute();
+
+            var value = HttpRequestHeadersExtensions.GenerateSourceTrackingHeaderValue(GetType().Assembly, attr);
+
+            Assert.Equal($"Kentico.Kontent.Delivery.Tests;{sourceVersion}", value);
         }
 
         [Fact]
