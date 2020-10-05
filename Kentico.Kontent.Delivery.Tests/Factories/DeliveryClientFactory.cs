@@ -26,7 +26,7 @@ namespace Kentico.Kontent.Delivery.Tests.Factories
             var httpClient = httpMessageHandler != null ? httpMessageHandler.ToHttpClient() : MockHttp.ToHttpClient();
 
             var client = new DeliveryClient(
-                DeliveryOptionsFactory.Create(new DeliveryOptions { ProjectId = projectId.ToString() }),
+                DeliveryOptionsFactory.CreateMonitor(new DeliveryOptions { ProjectId = projectId.ToString() }),
                 _mockModelProvider,
                 _mockResiliencePolicyProvider,
                 _mockTypeProvider,
@@ -41,7 +41,7 @@ namespace Kentico.Kontent.Delivery.Tests.Factories
         {
             var deliveryHttpClient = new DeliveryHttpClient(httpMessageHandler != null ? httpMessageHandler.ToHttpClient() : MockHttp.ToHttpClient());
             var client = new DeliveryClient(
-                DeliveryOptionsFactory.Create(options),
+                DeliveryOptionsFactory.CreateMonitor(options),
                 _mockModelProvider,
                 _mockResiliencePolicyProvider,
                 _mockTypeProvider,

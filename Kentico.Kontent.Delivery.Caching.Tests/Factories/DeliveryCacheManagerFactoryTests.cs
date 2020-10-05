@@ -1,21 +1,21 @@
-﻿using FakeItEasy;
-using FluentAssertions;
+﻿using FluentAssertions;
+using Kentico.Kontent.Delivery.Abstractions;
+using Kentico.Kontent.Delivery.Caching.Extensions;
+using Kentico.Kontent.Delivery.Extensions;
 using Microsoft.Extensions.DependencyInjection;
-using Microsoft.Extensions.Options;
+using System;
 using Xunit;
 
 namespace Kentico.Kontent.Delivery.Caching.Tests.Factories
 {
     public class DeliveryCacheManagerFactoryTests
     {
-        private readonly IOptionsMonitor<DeliveryCacheManagerFactoryOptions> _deliveryCacheManagerFactoryOptionsMock;
         private readonly ServiceCollection _serviceCollection;
 
         private const string _clientName = "ClientName";
 
         public DeliveryCacheManagerFactoryTests()
         {
-            _deliveryCacheManagerFactoryOptionsMock = A.Fake<IOptionsMonitor<DeliveryCacheManagerFactoryOptions>>();
             _serviceCollection = new ServiceCollection();
         }
 
@@ -24,23 +24,16 @@ namespace Kentico.Kontent.Delivery.Caching.Tests.Factories
         [InlineData(CacheTypeEnum.Distributed)]
         public void GetNamedDeliveryCacheManager_WithCorrectName_GetDeliveryCacheManager(CacheTypeEnum cacheType)
         {
-            _serviceCollection.AddMemoryCache();
-            _serviceCollection.AddDistributedMemoryCache();
-
-            var deliveryOptions = new DeliveryCacheOptions
+            _serviceCollection.AddDeliveryClient(_clientName, new DeliveryOptions() { ProjectId = Guid.NewGuid().ToString() });
+            _serviceCollection.AddDeliveryClientCache(_clientName, new DeliveryCacheOptions()
             {
                 CacheType = cacheType
-            };
+            });
 
-            var deliveryCacheManagerFactoryOptions = new DeliveryCacheManagerFactoryOptions();
-            deliveryCacheManagerFactoryOptions.DeliveryCacheOptions.Add(() => deliveryOptions);
+            var sp = _serviceCollection.BuildServiceProvider();
+            var factory = sp.GetRequiredService<IDeliveryClientFactory>();
 
-            A.CallTo(() => _deliveryCacheManagerFactoryOptionsMock.Get(_clientName))
-                .Returns(deliveryCacheManagerFactoryOptions);
-
-            var deliveryCacheManagerFactory = new DeliveryCacheManagerFactory(_deliveryCacheManagerFactoryOptionsMock, _serviceCollection.BuildServiceProvider());
-
-            var result = deliveryCacheManagerFactory.Get(_clientName);
+            var result = factory.Get(_clientName);
 
             result.Should().NotBeNull();
         }
@@ -48,22 +41,18 @@ namespace Kentico.Kontent.Delivery.Caching.Tests.Factories
         [Theory]
         [InlineData(CacheTypeEnum.Memory)]
         [InlineData(CacheTypeEnum.Distributed)]
-        public void GetNamedDeliveryCacheManager_WithCorrectName_GetNull(CacheTypeEnum cacheType)
+        public void GetNamedDeliveryCacheManager_WithWrongName_GetNull(CacheTypeEnum cacheType)
         {
-            var deliveryOptions = new DeliveryCacheOptions
+            _serviceCollection.AddDeliveryClient(new DeliveryOptions() { ProjectId = Guid.NewGuid().ToString() });
+            _serviceCollection.AddDeliveryClientCache(new DeliveryCacheOptions()
             {
                 CacheType = cacheType
-            };
+            });
 
-            var deliveryCacheManagerFactoryOptions = new DeliveryCacheManagerFactoryOptions();
-            deliveryCacheManagerFactoryOptions.DeliveryCacheOptions.Add(() => deliveryOptions);
+            var sp = _serviceCollection.BuildServiceProvider();
+            var factory = sp.GetRequiredService<IDeliveryClientFactory>();
 
-            A.CallTo(() => _deliveryCacheManagerFactoryOptionsMock.Get(_clientName))
-                .Returns(deliveryCacheManagerFactoryOptions);
-
-            var deliveryCacheManagerFactory = new DeliveryCacheManagerFactory(_deliveryCacheManagerFactoryOptionsMock, _serviceCollection.BuildServiceProvider());
-
-            var result = deliveryCacheManagerFactory.Get("WrongName");
+            var result = factory.Get("WrongName");
 
             result.Should().BeNull();
         }

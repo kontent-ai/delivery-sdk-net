@@ -11,7 +11,6 @@ using Kentico.Kontent.Delivery.RetryPolicy;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.DependencyInjection.Extensions;
-using Microsoft.Extensions.Options;
 using Newtonsoft.Json;
 
 // see https://docs.microsoft.com/en-us/aspnet/core/fundamentals/dependency-injection?view=aspnetcore-2.2
@@ -36,21 +35,8 @@ namespace Kentico.Kontent.Delivery.Extensions
                 throw new ArgumentNullException(nameof(buildDeliveryOptions), "The function for creating Delivery options is null.");
             }
 
-            services.AddTransient<IConfigureOptions<DeliveryClientFactoryOptions>>(s =>
-            {
-                return new ConfigureNamedOptions<DeliveryClientFactoryOptions>(name, options =>
-                {
-                    options.DeliveryClientsOptions.Add(() =>
-                    {
-                        var builder = DeliveryOptionsBuilder.CreateInstance();
-                        return buildDeliveryOptions(builder);
-                    });
-                });
-
-            });
-
             return services
-                .Configure<DeliveryClientFactoryOptions>(_ => { })
+                .BuildOptions(buildDeliveryOptions, name)
                 .RegisterDependencies();
         }
 
@@ -68,20 +54,8 @@ namespace Kentico.Kontent.Delivery.Extensions
                 throw new ArgumentNullException(nameof(deliveryOptions), "The Delivery options object is not specified.");
             }
 
-            services.AddTransient<IConfigureOptions<DeliveryClientFactoryOptions>>(s =>
-            {
-                return new ConfigureNamedOptions<DeliveryClientFactoryOptions>(name, options =>
-                {
-                    options.DeliveryClientsOptions.Add(() =>
-                    {
-                        return deliveryOptions;
-                    });
-                });
-
-            });
-
             return services
-                .Configure<DeliveryClientFactoryOptions>(_ => { })
+                .RegisterOptions(deliveryOptions, name)
                 .RegisterDependencies();
         }
 
@@ -95,22 +69,8 @@ namespace Kentico.Kontent.Delivery.Extensions
         /// <returns>The <paramref name="services"/> instance with <see cref="IDeliveryClient"/> registered in it</returns>
         public static IServiceCollection AddDeliveryClient(this IServiceCollection services, string name, IConfiguration configuration, string configurationSectionName = "DeliveryOptions")
         {
-            services.AddTransient<IConfigureOptions<DeliveryClientFactoryOptions>>(s =>
-            {
-                return new ConfigureNamedOptions<DeliveryClientFactoryOptions>(name, options =>
-                {
-                    options.DeliveryClientsOptions.Add(() =>
-                    {
-                        var options = new DeliveryOptions();
-                        configuration.GetSection(configurationSectionName).Bind(options);
-                        return options;
-                    });
-                });
-
-            });
-
             return services
-                .Configure<DeliveryClientFactoryOptions>(_ => { })
+                .Configure<DeliveryOptions>(name, configuration.GetSection(configurationSectionName))
                 .RegisterDependencies();
         }
 
@@ -220,9 +180,9 @@ namespace Kentico.Kontent.Delivery.Extensions
         }
 
         // Options here are not validated on purpose, it is left to users to validate them if they want to.
-        private static IServiceCollection RegisterOptions(this IServiceCollection services, DeliveryOptions options)
+        private static IServiceCollection RegisterOptions(this IServiceCollection services, DeliveryOptions options, string name = null)
         {
-            services.Configure<DeliveryOptions>(o =>
+            void Configure(DeliveryOptions o)
             {
                 o.ProjectId = options.ProjectId;
                 o.ProductionEndpoint = options.ProductionEndpoint;
@@ -235,7 +195,15 @@ namespace Kentico.Kontent.Delivery.Extensions
                 o.EnableRetryPolicy = options.EnableRetryPolicy;
                 o.DefaultRetryPolicyOptions = options.DefaultRetryPolicyOptions;
                 o.IncludeTotalCount = options.IncludeTotalCount;
-            });
+            }
+            if (name == null)
+            {
+                services.Configure<DeliveryOptions>(Configure);
+            }
+            else
+            {
+                services.Configure<DeliveryOptions>(name, Configure);
+            }
 
             return services;
         }
@@ -246,12 +214,12 @@ namespace Kentico.Kontent.Delivery.Extensions
                     ? configuration
                     : configuration.GetSection(configurationSectionName));
 
-        private static IServiceCollection BuildOptions(this IServiceCollection services, Func<IDeliveryOptionsBuilder, DeliveryOptions> buildDeliveryOptions)
+        private static IServiceCollection BuildOptions(this IServiceCollection services, Func<IDeliveryOptionsBuilder, DeliveryOptions> buildDeliveryOptions, string name = null)
         {
             var builder = DeliveryOptionsBuilder.CreateInstance();
             var options = buildDeliveryOptions(builder);
 
-            return services.RegisterOptions(options);
+            return services.RegisterOptions(options, name);
         }
     }
 }
