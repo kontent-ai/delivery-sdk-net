@@ -182,7 +182,7 @@ namespace Kentico.Kontent.Delivery.Extensions
         // Options here are not validated on purpose, it is left to users to validate them if they want to.
         private static IServiceCollection RegisterOptions(this IServiceCollection services, DeliveryOptions options, string name = null)
         {
-            void configure(DeliveryOptions o)
+            void Configure(DeliveryOptions o)
             {
                 o.ProjectId = options.ProjectId;
                 o.ProductionEndpoint = options.ProductionEndpoint;
@@ -198,11 +198,11 @@ namespace Kentico.Kontent.Delivery.Extensions
             }
             if (name == null)
             {
-                services.Configure<DeliveryOptions>(configure);
+                services.Configure<DeliveryOptions>(Configure);
             }
             else
             {
-                services.Configure<DeliveryOptions>(name, configure);
+                services.Configure<DeliveryOptions>(name, Configure);
             }
 
             return services;
