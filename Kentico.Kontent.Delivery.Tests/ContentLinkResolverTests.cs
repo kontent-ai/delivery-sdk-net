@@ -128,7 +128,7 @@ namespace Kentico.Kontent.Delivery.Tests
             mockHttp.When(url).
                Respond("application/json", await File.ReadAllTextAsync(Path.Combine(Environment.CurrentDirectory, $"Fixtures{Path.DirectorySeparatorChar}ContentLinkResolver{Path.DirectorySeparatorChar}coffee_processing_techniques.json")));
 
-            var deliveryOptions = DeliveryOptionsFactory.Create(new DeliveryOptions { ProjectId = guid });
+            var deliveryOptions = DeliveryOptionsFactory.CreateMonitor(new DeliveryOptions { ProjectId = guid });
             var options = DeliveryOptionsFactory.Create(new DeliveryOptions { ProjectId = guid });
             var deliveryHttpClient = new DeliveryHttpClient(mockHttp.ToHttpClient());
             var resiliencePolicyProvider = new DefaultRetryPolicyProvider(options);

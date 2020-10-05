@@ -19,9 +19,9 @@ namespace Kentico.Kontent.Delivery.Urls
         private const string UrlTemplateTaxonomy = "/taxonomies/{0}";
         private const string UrlTemplateTaxonomies = "/taxonomies";
 
-        private readonly IOptions<DeliveryOptions> _deliveryOptions;
+        private readonly IOptionsMonitor<DeliveryOptions> _deliveryOptions;
 
-        public DeliveryEndpointUrlBuilder(IOptions<DeliveryOptions> deliveryOptions)
+        public DeliveryEndpointUrlBuilder(IOptionsMonitor<DeliveryOptions> deliveryOptions)
         {
             _deliveryOptions = deliveryOptions;
         }
@@ -139,10 +139,10 @@ namespace Kentico.Kontent.Delivery.Urls
 
         private string AssembleHost()
         {
-            var endpointUrlTemplate = _deliveryOptions.Value.UsePreviewApi
-                            ? _deliveryOptions.Value.PreviewEndpoint
-                            : _deliveryOptions.Value.ProductionEndpoint;
-            var projectId = Uri.EscapeDataString(_deliveryOptions.Value.ProjectId);
+            var endpointUrlTemplate = _deliveryOptions.CurrentValue.UsePreviewApi
+                            ? _deliveryOptions.CurrentValue.PreviewEndpoint
+                            : _deliveryOptions.CurrentValue.ProductionEndpoint;
+            var projectId = Uri.EscapeDataString(_deliveryOptions.CurrentValue.ProjectId);
             var hostUrl = string.Format(endpointUrlTemplate, projectId);
             return hostUrl;
         }
@@ -150,7 +150,7 @@ namespace Kentico.Kontent.Delivery.Urls
         private IEnumerable<string> EnrichParameters(IEnumerable<string> parameters)
         {
             var parameterList = parameters?.ToList() ?? new List<string>();
-            if (_deliveryOptions.Value.IncludeTotalCount && !parameterList.Contains(new IncludeTotalCountParameter().GetQueryStringParameter()))
+            if (_deliveryOptions.CurrentValue.IncludeTotalCount && !parameterList.Contains(new IncludeTotalCountParameter().GetQueryStringParameter()))
             {
                 parameterList.Add(new IncludeTotalCountParameter().GetQueryStringParameter());
             }
@@ -161,7 +161,7 @@ namespace Kentico.Kontent.Delivery.Urls
         private IEnumerable<IQueryParameter> EnrichParameters(IEnumerable<IQueryParameter> parameters)
         {
             var parameterList = parameters?.ToList() ?? new List<IQueryParameter>();
-            if (_deliveryOptions.Value.IncludeTotalCount && !parameterList.Any(x => x is IncludeTotalCountParameter))
+            if (_deliveryOptions.CurrentValue.IncludeTotalCount && !parameterList.Any(x => x is IncludeTotalCountParameter))
             {
                 parameterList.Add(new IncludeTotalCountParameter());
             }
