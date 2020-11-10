@@ -6,6 +6,7 @@
       "codename": "coffee_beverages_explained",
       "language": "en-US",
       "type": "article",
+      "collection": "default",
       "sitemap_locations": [
         "articles"
       ],
@@ -94,6 +95,7 @@
         "codename": "americano",
         "language": "en-US",
         "type": "tweet",
+        "collection": "default",
         "sitemap_locations": [],
         "last_modified": "2017-06-27T13:00:08.2735049Z"
       },
@@ -132,6 +134,7 @@
         "codename": "how_to_make_a_cappuccino",
         "language": "en-US",
         "type": "hosted_video",
+        "collection": "default",
         "sitemap_locations": [],
         "last_modified": "2017-06-27T12:57:16.7333276Z"
       },

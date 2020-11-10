@@ -7,6 +7,7 @@
         "codename": "allendale",
         "language": "en-US",
         "type": "cafe",
+        "collection": "default",
         "sitemap_locations": [
           "cafes",
           "north_america"
@@ -71,6 +72,7 @@
         "codename": "boston",
         "language": "en-US",
         "type": "cafe",
+        "collection": "default",
         "sitemap_locations": [
           "cafes",
           "north_america"
@@ -135,6 +137,7 @@
         "codename": "london_",
         "language": "en-US",
         "type": "cafe",
+        "collection": "default",
         "sitemap_locations": [
           "cafes",
           "europe"
@@ -199,6 +202,7 @@
         "codename": "los_angeles",
         "language": "en-US",
         "type": "cafe",
+        "collection": "default",
         "sitemap_locations": [
           "cafes",
           "north_america"
@@ -263,6 +267,7 @@
         "codename": "madrid",
         "language": "en-US",
         "type": "cafe",
+        "collection": "default",
         "sitemap_locations": [
           "cafes",
           "europe"
@@ -327,6 +332,7 @@
         "codename": "new_york",
         "language": "en-US",
         "type": "cafe",
+        "collection": "default",
         "sitemap_locations": [
           "cafes",
           "north_america"

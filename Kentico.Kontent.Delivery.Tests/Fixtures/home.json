@@ -6,6 +6,7 @@
       "codename": "home",
       "language": "en-US",
       "type": "home",
+      "collection": "default",
       "sitemap_locations": [
         "home"
       ],
@@ -71,6 +72,7 @@
         "codename": "new_york",
         "language": "en-US",
         "type": "cafe",
+        "collection": "default",
         "sitemap_locations": [
           "cafes",
           "north_america"
@@ -135,6 +137,7 @@
         "codename": "boston",
         "language": "en-US",
         "type": "cafe",
+        "collection": "default",
         "sitemap_locations": [
           "cafes",
           "north_america"
@@ -199,6 +202,7 @@
         "codename": "home_page_promotion",
         "language": "en-US",
         "type": "hero_unit",
+        "collection": "default",
         "sitemap_locations": [],
         "last_modified": "2017-03-22T12:40:16.8440029Z"
       },
@@ -238,6 +242,7 @@
         "codename": "our_story",
         "language": "en-US",
         "type": "fact_about_us",
+        "collection": "default",
         "sitemap_locations": [
           "about_us"
         ],
@@ -285,6 +290,7 @@
         "codename": "origins_of_arabica_bourbon",
         "language": "en-US",
         "type": "article",
+        "collection": "default",
         "sitemap_locations": [
           "articles"
         ],
@@ -371,6 +377,7 @@
         "codename": "on_roasts",
         "language": "en-US",
         "type": "article",
+        "collection": "default",
         "sitemap_locations": [
           "articles"
         ],
@@ -460,6 +467,7 @@
         "codename": "allendale",
         "language": "en-US",
         "type": "cafe",
+        "collection": "default",
         "sitemap_locations": [
           "cafes",
           "north_america"
@@ -524,6 +532,7 @@
         "codename": "los_angeles",
         "language": "en-US",
         "type": "cafe",
+        "collection": "default",
         "sitemap_locations": [
           "cafes",
           "north_america"
@@ -588,6 +597,7 @@
         "codename": "coffee_beverages_explained",
         "language": "en-US",
         "type": "article",
+        "collection": "default",
         "sitemap_locations": [
           "articles"
         ],
@@ -673,6 +683,7 @@
         "codename": "donate_with_us",
         "language": "en-US",
         "type": "article",
+        "collection": "default",
         "sitemap_locations": [
           "articles"
         ],
@@ -755,6 +766,7 @@
         "codename": "coffee_processing_techniques",
         "language": "en-US",
         "type": "article",
+        "collection": "default",
         "sitemap_locations": [
           "articles"
         ],
@@ -855,6 +867,7 @@
         "codename": "home_page_hero_unit",
         "language": "en-US",
         "type": "hero_unit",
+        "collection": "default",
         "sitemap_locations": [
           "home"
         ],
