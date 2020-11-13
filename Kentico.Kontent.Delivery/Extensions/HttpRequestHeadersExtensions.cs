@@ -57,19 +57,27 @@ namespace Kentico.Kontent.Delivery.Extensions
         {
             string sdkVersion;
 
-            try
+            if (string.IsNullOrEmpty(assembly.Location))
             {
-                var fileVersionInfo = FileVersionInfo.GetVersionInfo(assembly.Location);
-                sdkVersion = fileVersionInfo.ProductVersion;
+                // Assembly.Location can be empty when publishing to a single file
+                // https://docs.microsoft.com/en-us/dotnet/core/deploying/single-file
+                sdkVersion = assembly.GetCustomAttribute<AssemblyInformationalVersionAttribute>()?.InformationalVersion;
             }
-            catch (FileNotFoundException)
+            else
             {
-                // Invalid Location path of assembly in Android's Xamarin release mode (unchecked "Use a shared runtime" flag)
-                // https://bugzilla.xamarin.com/show_bug.cgi?id=54678
-                sdkVersion = "0.0.0";
+                try
+                {
+                    var fileVersionInfo = FileVersionInfo.GetVersionInfo(assembly.Location);
+                    sdkVersion = fileVersionInfo.ProductVersion;
+                }
+                catch (FileNotFoundException)
+                {
+                    // Invalid Location path of assembly in Android's Xamarin release mode (unchecked "Use a shared runtime" flag)
+                    // https://bugzilla.xamarin.com/show_bug.cgi?id=54678
+                    sdkVersion = "0.0.0";
+                }
             }
-
-            return sdkVersion;
+            return sdkVersion ?? "0.0.0";
         }
 
         internal static string GetSdk()
