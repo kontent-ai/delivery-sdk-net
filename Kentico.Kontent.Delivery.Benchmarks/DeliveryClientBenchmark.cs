@@ -6,9 +6,11 @@ using BenchmarkDotNet.Attributes;
 using RichardSzalay.MockHttp;
 using System.Threading.Tasks;
 using Kentico.Kontent.Delivery.Benchmarks.ContentTypes;
+using BenchmarkDotNet.Jobs;
 
 namespace Kentico.Kontent.Delivery.Benchmarks
 {
+    [SimpleJob(RuntimeMoniker.NetCoreApp50)]
     public class DeliveryClientBenchmark
     {
         private IDeliveryClient _client;
