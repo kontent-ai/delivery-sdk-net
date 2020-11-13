@@ -7,8 +7,8 @@ $openCover = 'C:\ProgramData\chocolatey\lib\opencover.portable\tools\OpenCover.C
 dotnet test
 
 $target = '-target:C:\Program Files\dotnet\dotnet.exe'
-$targetArgs = '-targetargs:"test -c:' + $buildConfig + ' --logger:trx;LogFileName=results.trx /p:DebugType=full"' 
-$filter = '-filter:+[Kentico.Kontent.Delivery*]*-[*Tests]*'
+$targetArgs = '-targetargs:"test -c:' + $buildConfig + ' --logger:trx;LogFileName=results.trx --filter FullyQualifiedName!~Benchmarks /p:DebugType=full"' 
+$filter = '-filter:+[Kentico.Kontent.Delivery*]*-[*Tests]*-[*Benchmarks]*'
 $output = '-output:' + $buildFolder + '\coverage.xml'
 $register = if ($ENV:APPVEYOR -eq $true ) { '-register' } else { '-register:user' } # Magical parameter that breaks things
 
