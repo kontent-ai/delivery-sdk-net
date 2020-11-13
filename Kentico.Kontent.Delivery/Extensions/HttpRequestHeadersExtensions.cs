@@ -119,6 +119,10 @@ namespace Kentico.Kontent.Delivery.Extensions
             return $"{packageName};{version}";
         }
 
+        /// <summary>
+        /// Gets the first assembly in the call chain.
+        /// </summary>
+        /// <returns>The first assembly in the call stack.</returns>
         [MethodImpl(MethodImplOptions.NoInlining)]
         internal static Assembly GetOriginatingAssembly()
         {

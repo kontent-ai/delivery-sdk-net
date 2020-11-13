@@ -10,6 +10,7 @@ using System.Net.Http;
 using System.Text;
 using System.Threading.Tasks;
 using Xunit;
+using Xunit.Abstractions;
 
 namespace Kentico.Kontent.Delivery.Tests
 {
@@ -19,18 +20,20 @@ namespace Kentico.Kontent.Delivery.Tests
         private readonly Guid _guid;
         private readonly string _baseUrl;
         private readonly MockHttpMessageHandler _mockHttp;
+        private readonly ITestOutputHelper _output;
 
-        public TrackingHeaderTests()
+        public TrackingHeaderTests(ITestOutputHelper output)
         {
             _guid = Guid.NewGuid();
             _baseUrl = $"https://deliver.kontent.ai/{_guid.ToString()}";
             _mockHttp = new MockHttpMessageHandler();
+            _output = output;
         }
 
         [Fact]
         public void SourceTrackingHeaderGeneratedFromAttribute()
         {
-            DeliverySourceTrackingHeaderAttribute attr = new DeliverySourceTrackingHeaderAttribute("CustomModule", 1, 2, 3);
+            var attr = new DeliverySourceTrackingHeaderAttribute("CustomModule", 1, 2, 3);
 
             var value = HttpRequestHeadersExtensions.GenerateSourceTrackingHeaderValue(GetType().Assembly, attr);
 
@@ -40,12 +43,12 @@ namespace Kentico.Kontent.Delivery.Tests
         [Fact]
         public void SourceTrackingHeaderGeneratedFromAssembly()
         {
-            var assembly = this.GetType().Assembly;
+            var assembly = GetType().Assembly;
             var fileVersionInfo = FileVersionInfo.GetVersionInfo(assembly.Location);
             var sourceVersion = fileVersionInfo.ProductVersion;
-            DeliverySourceTrackingHeaderAttribute attr = new DeliverySourceTrackingHeaderAttribute();
+            var attr = new DeliverySourceTrackingHeaderAttribute();
 
-            var value = HttpRequestHeadersExtensions.GenerateSourceTrackingHeaderValue(GetType().Assembly, attr);
+            var value = HttpRequestHeadersExtensions.GenerateSourceTrackingHeaderValue(assembly, attr);
 
             Assert.Equal($"Kentico.Kontent.Delivery.Tests;{sourceVersion}", value);
         }
@@ -57,10 +60,12 @@ namespace Kentico.Kontent.Delivery.Tests
             var fileVersionInfo = FileVersionInfo.GetVersionInfo(assembly.Location);
             var sdkVersion = fileVersionInfo.ProductVersion;
             var sdkPackageId = assembly.GetName().Name;
+            _output.WriteLine($"Test SDK version: {sdkVersion}");
 
-            var sourceAssembly = this.GetType().Assembly;
+            var sourceAssembly = HttpRequestHeadersExtensions.GetOriginatingAssembly();
             var sourceFileVersionInfo = FileVersionInfo.GetVersionInfo(sourceAssembly.Location);
             var sourceVersion = sourceFileVersionInfo.ProductVersion;
+            _output.WriteLine($"Test source version: {sourceVersion}");
 
             _mockHttp
                 .Expect($"{_baseUrl}/items")
