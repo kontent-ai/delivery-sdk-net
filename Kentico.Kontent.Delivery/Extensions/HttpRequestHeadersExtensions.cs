@@ -53,7 +53,7 @@ namespace Kentico.Kontent.Delivery.Extensions
             headers.Add(ContinuationHeaderName, continuation);
         }
 
-        internal static string GetProducVersion(this Assembly assembly)
+        internal static string GetProductVersion(this Assembly assembly)
         {
             string sdkVersion;
 
@@ -83,7 +83,7 @@ namespace Kentico.Kontent.Delivery.Extensions
         internal static string GetSdk()
         {
             var assembly = Assembly.GetExecutingAssembly();
-            var sdkVersion = assembly.GetProducVersion();
+            var sdkVersion = assembly.GetProductVersion();
             var sdkPackageId = assembly.GetName().Name;
 
             return $"{PackageRepositoryHost};{sdkPackageId};{sdkVersion}";
@@ -108,7 +108,7 @@ namespace Kentico.Kontent.Delivery.Extensions
             if (attribute.LoadFromAssembly)
             {
                 packageName = attribute.PackageName ?? originatingAssembly.GetName().Name;
-                version = originatingAssembly.GetProducVersion();
+                version = originatingAssembly.GetProductVersion();
             }
             else
             {
