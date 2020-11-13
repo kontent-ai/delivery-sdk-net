@@ -5,7 +5,7 @@
     <Copyright>(c) 2016 Kentico Software. All rights reserved.</Copyright>
     <AssemblyTitle>Kentico Kontent Delivery SDK tests</AssemblyTitle>
     <Authors>Kentico Software</Authors>
-    <TargetFramework>netcoreapp3.1</TargetFramework>
+    <TargetFramework>net5.0</TargetFramework>
     <AssemblyName>Kentico.Kontent.Delivery.Tests</AssemblyName>
     <PackageId>Kentico.Kontent.Delivery.Tests</PackageId>
     <GenerateRuntimeConfigurationFiles>true</GenerateRuntimeConfigurationFiles>

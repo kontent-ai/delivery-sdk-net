@@ -1,7 +1,7 @@
 ﻿<Project Sdk="Microsoft.NET.Sdk">
 
   <PropertyGroup>
-    <TargetFramework>netcoreapp3.1</TargetFramework>
+    <TargetFramework>net5.0</TargetFramework>
     <AssemblyName>Kentico.Kontent.Delivery.Rx.Tests</AssemblyName>
     <PackageId>Kentico.Kontent.Delivery.Rx.Tests</PackageId>
     <IsPackable>false</IsPackable>
