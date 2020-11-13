@@ -6,7 +6,9 @@ using System;
 using System.Collections.Generic;
 using System.Diagnostics;
 using System.IO;
+using System.Linq;
 using System.Net.Http;
+using System.Net.Http.Headers;
 using System.Text;
 using System.Threading.Tasks;
 using Xunit;
@@ -54,18 +56,43 @@ namespace Kentico.Kontent.Delivery.Tests
         }
 
         [Fact]
+        public void HeadersAddedCorrectlyToTheCollection()
+        {
+            // Arrange
+            var assembly = typeof(DeliveryClient).Assembly;
+            var fileVersionInfo = FileVersionInfo.GetVersionInfo(assembly.Location);
+            var sdkVersion = fileVersionInfo.ProductVersion;
+            var sdkPackageId = assembly.GetName().Name;
+
+            var sourceAssembly = HttpRequestHeadersExtensions.GetOriginatingAssembly();
+            var sourceFileVersionInfo = FileVersionInfo.GetVersionInfo(sourceAssembly.Location);
+            var sourceVersion = sourceFileVersionInfo.ProductVersion;
+
+            HttpRequestHeaders headers = new HttpRequestMessage().Headers;
+
+            // Act
+            headers.AddSdkTrackingHeader();
+            headers.AddSourceTrackingHeader();
+
+            var id = headers.GetValues("X-KC-SDKID").FirstOrDefault();
+            var source = headers.GetValues("X-KC-SOURCE").FirstOrDefault();
+
+            // Assert
+            Assert.Equal($"nuget.org;{sdkPackageId};{sdkVersion}", id);
+            Assert.Equal($"Kentico.Kontent.Delivery.Tests;{sourceVersion}", source);
+        }
+
+        [Fact]
         public async Task CorrectSdkVersionHeaderAdded()
         {
             var assembly = typeof(DeliveryClient).Assembly;
             var fileVersionInfo = FileVersionInfo.GetVersionInfo(assembly.Location);
             var sdkVersion = fileVersionInfo.ProductVersion;
             var sdkPackageId = assembly.GetName().Name;
-            _output.WriteLine($"Test SDK version: {sdkVersion}");
 
             var sourceAssembly = HttpRequestHeadersExtensions.GetOriginatingAssembly();
             var sourceFileVersionInfo = FileVersionInfo.GetVersionInfo(sourceAssembly.Location);
             var sourceVersion = sourceFileVersionInfo.ProductVersion;
-            _output.WriteLine($"Test source version: {sourceVersion}");
 
             _mockHttp
                 .Expect($"{_baseUrl}/items")
@@ -80,7 +107,7 @@ namespace Kentico.Kontent.Delivery.Tests
             A.CallTo(() => retryPolicy.ExecuteAsync(A<Func<Task<HttpResponseMessage>>>._))
                 .ReturnsLazily(c => c.GetArgument<Func<Task<HttpResponseMessage>>>(0)());
 
-            await client.GetItemsAsync<object>();
+            await client.GetItemsAsync<object>();            
 
             _mockHttp.VerifyNoOutstandingExpectation();
         }
