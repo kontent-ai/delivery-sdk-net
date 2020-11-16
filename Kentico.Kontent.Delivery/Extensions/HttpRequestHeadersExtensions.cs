@@ -53,29 +53,37 @@ namespace Kentico.Kontent.Delivery.Extensions
             headers.Add(ContinuationHeaderName, continuation);
         }
 
-        internal static string GetProducVersion(this Assembly assembly)
+        internal static string GetProductVersion(this Assembly assembly)
         {
             string sdkVersion;
 
-            try
+            if (string.IsNullOrEmpty(assembly.Location))
             {
-                var fileVersionInfo = FileVersionInfo.GetVersionInfo(assembly.Location);
-                sdkVersion = fileVersionInfo.ProductVersion;
+                // Assembly.Location can be empty when publishing to a single file
+                // https://docs.microsoft.com/en-us/dotnet/core/deploying/single-file
+                sdkVersion = assembly.GetCustomAttribute<AssemblyInformationalVersionAttribute>()?.InformationalVersion;
             }
-            catch (FileNotFoundException)
+            else
             {
-                // Invalid Location path of assembly in Android's Xamarin release mode (unchecked "Use a shared runtime" flag)
-                // https://bugzilla.xamarin.com/show_bug.cgi?id=54678
-                sdkVersion = "0.0.0";
+                try
+                {
+                    var fileVersionInfo = FileVersionInfo.GetVersionInfo(assembly.Location);
+                    sdkVersion = fileVersionInfo.ProductVersion;
+                }
+                catch (FileNotFoundException)
+                {
+                    // Invalid Location path of assembly in Android's Xamarin release mode (unchecked "Use a shared runtime" flag)
+                    // https://bugzilla.xamarin.com/show_bug.cgi?id=54678
+                    sdkVersion = "0.0.0";
+                }
             }
-
-            return sdkVersion;
+            return sdkVersion ?? "0.0.0";
         }
 
         internal static string GetSdk()
         {
             var assembly = Assembly.GetExecutingAssembly();
-            var sdkVersion = assembly.GetProducVersion();
+            var sdkVersion = assembly.GetProductVersion();
             var sdkPackageId = assembly.GetName().Name;
 
             return $"{PackageRepositoryHost};{sdkPackageId};{sdkVersion}";
@@ -100,7 +108,7 @@ namespace Kentico.Kontent.Delivery.Extensions
             if (attribute.LoadFromAssembly)
             {
                 packageName = attribute.PackageName ?? originatingAssembly.GetName().Name;
-                version = originatingAssembly.GetProducVersion();
+                version = originatingAssembly.GetProductVersion();
             }
             else
             {
@@ -111,6 +119,10 @@ namespace Kentico.Kontent.Delivery.Extensions
             return $"{packageName};{version}";
         }
 
+        /// <summary>
+        /// Gets the first assembly in the call chain.
+        /// </summary>
+        /// <returns>The first assembly in the call stack.</returns>
         [MethodImpl(MethodImplOptions.NoInlining)]
         internal static Assembly GetOriginatingAssembly()
         {
