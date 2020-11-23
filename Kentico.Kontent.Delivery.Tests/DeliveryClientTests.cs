@@ -66,6 +66,7 @@ namespace Kentico.Kontent.Delivery.Tests
 
             Assert.Equal("article", beveragesItem.System.Type);
             Assert.Equal("en-US", beveragesItem.System.Language);
+            Assert.Equal("default", beveragesItem.System.Collection);
             Assert.NotEmpty(beveragesItem.System.SitemapLocation);
             Assert.NotEmpty(roastsItem.RelatedArticles);
             Assert.NotEmpty(roastsItem.RelatedArticlesInterface);

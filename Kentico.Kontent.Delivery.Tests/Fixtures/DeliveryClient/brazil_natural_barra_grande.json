@@ -6,6 +6,7 @@
       "codename": "brazil_natural_barra_grande",
       "language": "en-US",
       "type": "coffee",
+      "collection": "default",
       "sitemap_locations": [
         "coffee"
       ],

@@ -7,6 +7,7 @@
         "codename": "article_1",
         "language": "default",
         "type": "article",
+        "collection": "default",
         "sitemap_locations": [],
         "last_modified": "2017-03-02T00:42:14.9675295Z"
       },
@@ -40,6 +41,7 @@
         "codename": "article_2",
         "language": "default",
         "type": "article",
+        "collection": "default",
         "sitemap_locations": [],
         "last_modified": "2017-02-23T00:09:50.4493636Z"
       },
@@ -71,6 +73,7 @@
         "codename": "brno_office",
         "language": "default",
         "type": "office",
+        "collection": "default",
         "sitemap_locations": [
           "about_us"
         ],
@@ -138,6 +141,7 @@
         "codename": "complete_content_item",
         "language": "default",
         "type": "complete_content_type",
+        "collection": "default",
         "sitemap_locations": [],
         "last_modified": "2017-02-22T00:52:03.9370993Z"
       },
@@ -238,6 +242,7 @@
         "codename": "homepage",
         "language": "default",
         "type": "homepage",
+        "collection": "default",
         "sitemap_locations": [],
         "last_modified": "2017-02-21T04:29:42.9564205Z"
       },
@@ -294,6 +299,7 @@
         "codename": "melbourne_office",
         "language": "default",
         "type": "office",
+        "collection": "default",
         "sitemap_locations": [],
         "last_modified": "2017-03-16T22:43:20.7173008Z"
       },
@@ -345,6 +351,7 @@
         "codename": "multiple_modular_content_item",
         "language": "default",
         "type": "multiple_modular_contents",
+        "collection": "default",
         "sitemap_locations": [],
         "last_modified": "2017-02-21T05:19:44.0820982Z"
       },
@@ -377,6 +384,7 @@
         "codename": "n1st_level_modular_content",
         "language": "default",
         "type": "modular_content_type",
+        "collection": "default",
         "sitemap_locations": [
           "about_us",
           "homepage"
@@ -405,6 +413,7 @@
         "codename": "n2nd_level_modular_content",
         "language": "default",
         "type": "modular_content_type",
+        "collection": "default",
         "sitemap_locations": [],
         "last_modified": "2016-08-11T06:57:08.8322664Z"
       },
@@ -430,6 +439,7 @@
         "codename": "n3rd_level_modular_content",
         "language": "default",
         "type": "modular_content_type",
+        "collection": "default",
         "sitemap_locations": [],
         "last_modified": "2017-03-01T03:55:52.8880146Z"
       },
@@ -455,6 +465,7 @@
         "codename": "test",
         "language": "default",
         "type": "",
+        "collection": "default",
         "sitemap_locations": [
           "about_us",
           "contact",
@@ -483,6 +494,7 @@
         "codename": "homepage",
         "language": "default",
         "type": "homepage",
+        "collection": "default",
         "sitemap_locations": [],
         "last_modified": "2017-02-21T04:29:42.9564205Z"
       },
@@ -539,6 +551,7 @@
         "codename": "n1st_level_modular_content",
         "language": "default",
         "type": "modular_content_type",
+        "collection": "default",
         "sitemap_locations": [
           "about_us",
           "homepage"
@@ -567,6 +580,7 @@
         "codename": "n2nd_level_modular_content",
         "language": "default",
         "type": "modular_content_type",
+        "collection": "default",
         "sitemap_locations": [],
         "last_modified": "2016-08-11T06:57:08.8322664Z"
       },
@@ -592,6 +606,7 @@
         "codename": "article_2",
         "language": "default",
         "type": "article",
+        "collection": "default",
         "sitemap_locations": [],
         "last_modified": "2017-02-23T00:09:50.4493636Z"
       },
@@ -623,6 +638,7 @@
         "codename": "n3rd_level_modular_content",
         "language": "default",
         "type": "modular_content_type",
+        "collection": "default",
         "sitemap_locations": [],
         "last_modified": "2017-03-01T03:55:52.8880146Z"
       },

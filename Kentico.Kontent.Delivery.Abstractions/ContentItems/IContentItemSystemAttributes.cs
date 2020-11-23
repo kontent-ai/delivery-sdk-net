@@ -21,5 +21,10 @@ namespace Kentico.Kontent.Delivery.Abstractions
         /// Gets the codename of the content type, for example "article".
         /// </summary>
         string Type { get; }
+
+        /// <summary>
+        /// Gets the codename of the content collection to which the content item belongs
+        /// </summary>
+        public string Collection { get; }
     }
 }

@@ -6,6 +6,7 @@
       "codename": "complete_content_item",
       "language": "default",
       "type": "complete_content_type",
+      "collection": "default",
       "sitemap_locations": [],
       "last_modified": "2017-02-22T00:52:03.9370993Z"
     },
@@ -112,6 +113,7 @@
         "codename": "homepage",
         "language": "default",
         "type": "homepage",
+        "collection": "default",
         "sitemap_locations": [],
         "last_modified": "2017-02-21T04:29:42.9564205Z"
       },

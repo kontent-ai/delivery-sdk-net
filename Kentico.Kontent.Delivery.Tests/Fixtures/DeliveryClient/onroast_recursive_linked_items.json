@@ -6,6 +6,7 @@
       "codename": "on_roasts",
       "language": "en-US",
       "type": "article",
+      "collection": "default",
       "sitemap_locations": [
         "articles"
       ],
@@ -96,6 +97,7 @@
         "codename": "origins_of_arabica_bourbon",
         "language": "en-US",
         "type": "article",
+        "collection": "default",
         "sitemap_locations": [
           "articles"
         ],
@@ -182,6 +184,7 @@
         "codename": "coffee_processing_techniques",
         "language": "en-US",
         "type": "article",
+        "collection": "default",
         "sitemap_locations": [
           "articles"
         ],
@@ -282,6 +285,7 @@
         "codename": "which_brewing_fits_you_",
         "language": "en-US",
         "type": "article",
+        "collection": "default",
         "sitemap_locations": [
           "articles"
         ],
@@ -377,6 +381,7 @@
         "codename": "on_roasts",
         "language": "en-US",
         "type": "article",
+        "collection": "default",
         "sitemap_locations": [
           "articles"
         ],
@@ -466,6 +471,7 @@
         "codename": "a_chemex_method",
         "language": "en-US",
         "type": "hosted_video",
+        "collection": "default",
         "sitemap_locations": [],
         "last_modified": "2017-06-27T12:56:41.1882715Z"
       },

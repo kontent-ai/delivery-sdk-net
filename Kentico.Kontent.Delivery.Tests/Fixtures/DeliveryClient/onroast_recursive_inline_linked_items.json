@@ -6,6 +6,7 @@
       "codename": "on_roasts",
       "language": "en-US",
       "type": "article",
+      "collection": "default",
       "sitemap_locations": [
         "articles"
       ],
@@ -93,6 +94,7 @@
         "codename": "on_roasts",
         "language": "en-US",
         "type": "article",
+        "collection": "default",
         "sitemap_locations": [
           "articles"
         ],

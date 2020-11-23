@@ -7,6 +7,7 @@
         "codename": "about_us",
         "language": "en-US",
         "type": "about_us",
+        "collection": "default",
         "sitemap_locations": [
           "about_us"
         ],
@@ -36,6 +37,7 @@
         "codename": "aeropress",
         "language": "en-US",
         "type": "brewer",
+        "collection": "default",
         "sitemap_locations": [
           "brewers"
         ],
@@ -119,6 +121,7 @@
         "codename": "how_we_source_our_coffees",
         "language": "en-US",
         "type": "fact_about_us",
+        "collection": "default",
         "sitemap_locations": [
           "about_us"
         ],
@@ -160,6 +163,7 @@
         "codename": "how_we_roast_our_coffees",
         "language": "en-US",
         "type": "fact_about_us",
+        "collection": "default",
         "sitemap_locations": [
           "about_us"
         ],
@@ -207,6 +211,7 @@
         "codename": "our_philosophy",
         "language": "en-US",
         "type": "fact_about_us",
+        "collection": "default",
         "sitemap_locations": [
           "about_us"
         ],

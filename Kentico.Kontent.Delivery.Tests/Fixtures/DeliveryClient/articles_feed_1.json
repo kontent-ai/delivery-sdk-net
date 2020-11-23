@@ -7,6 +7,7 @@
         "codename": "coffee_beverages_explained",
         "language": "en-US",
         "type": "article",
+        "collection": "default",
         "sitemap_locations": [],
         "last_modified": "2019-03-27T13:12:58.578Z"
       },
@@ -41,6 +42,7 @@
         "codename": "coffee_processing_techniques",
         "language": "en-US",
         "type": "article",
+        "collection": "default",
         "sitemap_locations": [],
         "last_modified": "2019-03-27T13:13:35.312Z"
       },
@@ -79,6 +81,7 @@
         "codename": "donate_with_us",
         "language": "en-US",
         "type": "article",
+        "collection": "default",
         "sitemap_locations": [],
         "last_modified": "2019-03-27T13:14:07.384Z"
       },
@@ -113,6 +116,7 @@
         "codename": "on_roasts",
         "language": "en-US",
         "type": "article",
+        "collection": "default",
         "sitemap_locations": [],
         "last_modified": "2019-03-27T13:21:11.38Z"
       },
@@ -151,6 +155,7 @@
         "codename": "origins_of_arabica_bourbon",
         "language": "en-US",
         "type": "article",
+        "collection": "default",
         "sitemap_locations": [],
         "last_modified": "2019-03-27T13:21:49.151Z"
       },

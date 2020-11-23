@@ -6,6 +6,7 @@
       "codename": "coffee_processing_techniques",
       "language": "en-US",
       "type": "article",
+      "collection": "default",
       "sitemap_locations": [
         "articles"
       ],
@@ -107,6 +108,7 @@
         "codename": "which_brewing_fits_you_",
         "language": "en-US",
         "type": "article",
+        "collection": "default",
         "sitemap_locations": [
           "articles"
         ],
@@ -202,6 +204,7 @@
         "codename": "on_roasts",
         "language": "en-US",
         "type": "article",
+        "collection": "default",
         "sitemap_locations": [
           "articles"
         ],
