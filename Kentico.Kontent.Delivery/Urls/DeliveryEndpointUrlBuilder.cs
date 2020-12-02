@@ -26,20 +26,9 @@ namespace Kentico.Kontent.Delivery.Urls
             _deliveryOptions = deliveryOptions;
         }
 
-        public string GetItemUrl(string codename, string[] parameters)
-        {
-            return GetUrl(string.Format(UrlTemplateItem, Uri.EscapeDataString(codename)), parameters);
-        }
-
         public string GetItemUrl(string codename, IEnumerable<IQueryParameter> parameters)
         {
             return GetUrl(string.Format(UrlTemplateItem, Uri.EscapeDataString(codename)), parameters);
-        }
-
-        public string GetItemsUrl(string[] parameters)
-        {
-            var enrichedParameters = EnrichParameters(parameters);
-            return GetUrl(UrlTemplateItems, enrichedParameters);
         }
 
         public string GetItemsUrl(IEnumerable<IQueryParameter> parameters)
@@ -48,29 +37,14 @@ namespace Kentico.Kontent.Delivery.Urls
             return GetUrl(UrlTemplateItems, updatedParameters);
         }
 
-        public string GetItemsFeedUrl(string[] parameters)
-        {
-            return GetUrl(UrlTemplateItemsFeed, parameters);
-        }
-
         public string GetItemsFeedUrl(IEnumerable<IQueryParameter> parameters)
         {
             return GetUrl(UrlTemplateItemsFeed, parameters);
         }
 
-        public string GetTypeUrl(string codename)
-        {
-            return GetUrl(string.Format(UrlTemplateType, Uri.EscapeDataString(codename)));
-        }
-
-        public string GetTypeUrl(string codename, IEnumerable<IQueryParameter> parameters)
+        public string GetTypeUrl(string codename, IEnumerable<IQueryParameter> parameters = null)
         {
             return GetUrl(string.Format(UrlTemplateType, Uri.EscapeDataString(codename)), parameters);
-        }
-
-        public string GetTypesUrl(string[] parameters)
-        {
-            return GetUrl(UrlTemplateTypes, parameters);
         }
 
         public string GetTypesUrl(IEnumerable<IQueryParameter> parameters)
@@ -86,11 +60,6 @@ namespace Kentico.Kontent.Delivery.Urls
         public string GetTaxonomyUrl(string codename)
         {
             return GetUrl(string.Format(UrlTemplateTaxonomy, Uri.EscapeDataString(codename)));
-        }
-
-        public string GetTaxonomiesUrl(string[] parameters)
-        {
-            return GetUrl(UrlTemplateTaxonomies, parameters);
         }
 
         public string GetTaxonomiesUrl(IEnumerable<IQueryParameter> parameters)
@@ -145,17 +114,6 @@ namespace Kentico.Kontent.Delivery.Urls
             var projectId = Uri.EscapeDataString(_deliveryOptions.CurrentValue.ProjectId);
             var hostUrl = string.Format(endpointUrlTemplate, projectId);
             return hostUrl;
-        }
-
-        private IEnumerable<string> EnrichParameters(IEnumerable<string> parameters)
-        {
-            var parameterList = parameters?.ToList() ?? new List<string>();
-            if (_deliveryOptions.CurrentValue.IncludeTotalCount && !parameterList.Contains(new IncludeTotalCountParameter().GetQueryStringParameter()))
-            {
-                parameterList.Add(new IncludeTotalCountParameter().GetQueryStringParameter());
-            }
-
-            return parameterList;
         }
 
         private IEnumerable<IQueryParameter> EnrichParameters(IEnumerable<IQueryParameter> parameters)
