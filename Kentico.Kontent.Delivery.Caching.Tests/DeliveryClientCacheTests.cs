@@ -14,8 +14,9 @@ namespace Kentico.Kontent.Delivery.Caching.Tests
         [Theory]
         [InlineData(CacheTypeEnum.Memory, CacheExpirationType.Absolute)]
         [InlineData(CacheTypeEnum.Memory, CacheExpirationType.Sliding)]
-        [InlineData(CacheTypeEnum.Distributed)]
-        public async Task GetItemTypedAsync_ResponseIsCached(CacheTypeEnum cacheType, CacheExpirationType? cacheExpirationType = null)
+        [InlineData(CacheTypeEnum.Distributed, CacheExpirationType.Absolute)]
+        [InlineData(CacheTypeEnum.Distributed, CacheExpirationType.Sliding)]
+        public async Task GetItemTypedAsync_ResponseIsCached(CacheTypeEnum cacheType, CacheExpirationType cacheExpirationType)
         {
             const string codename = "codename";
             var url = $"items/{codename}";
@@ -63,8 +64,9 @@ namespace Kentico.Kontent.Delivery.Caching.Tests
         [Theory]
         [InlineData(CacheTypeEnum.Memory, CacheExpirationType.Absolute)]
         [InlineData(CacheTypeEnum.Memory, CacheExpirationType.Sliding)]
-        [InlineData(CacheTypeEnum.Distributed)]
-        public async Task GetItemTypedAsync_InvalidatedByItemKey(CacheTypeEnum cacheType, CacheExpirationType? cacheExpirationType = null)
+        [InlineData(CacheTypeEnum.Distributed, CacheExpirationType.Absolute)]
+        [InlineData(CacheTypeEnum.Distributed, CacheExpirationType.Sliding)]
+        public async Task GetItemTypedAsync_InvalidatedByItemKey(CacheTypeEnum cacheType, CacheExpirationType cacheExpirationType)
         {
             const string codename = "codename";
             var url = $"items/{codename}";
@@ -168,8 +170,9 @@ namespace Kentico.Kontent.Delivery.Caching.Tests
         [Theory]
         [InlineData(CacheTypeEnum.Memory, CacheExpirationType.Absolute)]
         [InlineData(CacheTypeEnum.Memory, CacheExpirationType.Sliding)]
-        [InlineData(CacheTypeEnum.Distributed)]
-        public async Task GetItemTypedAsync_DifferentTypesAreCachedSeparately(CacheTypeEnum cacheType, CacheExpirationType? cacheExpirationType = null)
+        [InlineData(CacheTypeEnum.Distributed, CacheExpirationType.Absolute)]
+        [InlineData(CacheTypeEnum.Distributed, CacheExpirationType.Sliding)]
+        public async Task GetItemTypedAsync_DifferentTypesAreCachedSeparately(CacheTypeEnum cacheType, CacheExpirationType cacheExpirationType)
         {
             const string codename = "codename";
             var url = $"items/{codename}";
@@ -202,8 +205,9 @@ namespace Kentico.Kontent.Delivery.Caching.Tests
         [Theory]
         [InlineData(CacheTypeEnum.Memory, CacheExpirationType.Absolute)]
         [InlineData(CacheTypeEnum.Memory, CacheExpirationType.Sliding)]
-        [InlineData(CacheTypeEnum.Distributed)]
-        public async Task GetItemsTypedAsync_ResponseIsCached(CacheTypeEnum cacheType, CacheExpirationType? cacheExpirationType = null)
+        [InlineData(CacheTypeEnum.Distributed, CacheExpirationType.Absolute)]
+        [InlineData(CacheTypeEnum.Distributed, CacheExpirationType.Sliding)]
+        public async Task GetItemsTypedAsync_ResponseIsCached(CacheTypeEnum cacheType, CacheExpirationType cacheExpirationType)
         {
             var url = "items";
             var itemB = CreateItem("b", "original");
@@ -226,8 +230,9 @@ namespace Kentico.Kontent.Delivery.Caching.Tests
         [Theory]
         [InlineData(CacheTypeEnum.Memory, CacheExpirationType.Absolute)]
         [InlineData(CacheTypeEnum.Memory, CacheExpirationType.Sliding)]
-        [InlineData(CacheTypeEnum.Distributed)]
-        public async Task GetItemsTypedAsync_InvalidatedByItemsKey(CacheTypeEnum cacheType, CacheExpirationType? cacheExpirationType = null)
+        [InlineData(CacheTypeEnum.Distributed, CacheExpirationType.Absolute)]
+        [InlineData(CacheTypeEnum.Distributed, CacheExpirationType.Sliding)]
+        public async Task GetItemsTypedAsync_InvalidatedByItemsKey(CacheTypeEnum cacheType, CacheExpirationType cacheExpirationType)
         {
             var url = "items";
             var itemB = CreateItem("b", "original");
@@ -281,8 +286,9 @@ namespace Kentico.Kontent.Delivery.Caching.Tests
         [Theory]
         [InlineData(CacheTypeEnum.Memory, CacheExpirationType.Absolute)]
         [InlineData(CacheTypeEnum.Memory, CacheExpirationType.Sliding)]
-        [InlineData(CacheTypeEnum.Distributed)]
-        public async Task GetTypeAsync_ResponseIsCached(CacheTypeEnum cacheType, CacheExpirationType? cacheExpirationType = null)
+        [InlineData(CacheTypeEnum.Distributed, CacheExpirationType.Absolute)]
+        [InlineData(CacheTypeEnum.Distributed, CacheExpirationType.Sliding)]
+        public async Task GetTypeAsync_ResponseIsCached(CacheTypeEnum cacheType, CacheExpirationType cacheExpirationType)
         {
             const string codename = "codename";
             var url = $"types/{codename}";
@@ -334,8 +340,9 @@ namespace Kentico.Kontent.Delivery.Caching.Tests
         [Theory]
         [InlineData(CacheTypeEnum.Memory, CacheExpirationType.Absolute)]
         [InlineData(CacheTypeEnum.Memory, CacheExpirationType.Sliding)]
-        [InlineData(CacheTypeEnum.Distributed)]
-        public async Task GetTypesAsync_ResponseIsCached(CacheTypeEnum cacheType, CacheExpirationType? cacheExpirationType = null)
+        [InlineData(CacheTypeEnum.Distributed, CacheExpirationType.Absolute)]
+        [InlineData(CacheTypeEnum.Distributed, CacheExpirationType.Sliding)]
+        public async Task GetTypesAsync_ResponseIsCached(CacheTypeEnum cacheType, CacheExpirationType cacheExpirationType)
         {
             var url = "types";
             var typeA = CreateType("a");
@@ -387,8 +394,9 @@ namespace Kentico.Kontent.Delivery.Caching.Tests
         [Theory]
         [InlineData(CacheTypeEnum.Memory, CacheExpirationType.Absolute)]
         [InlineData(CacheTypeEnum.Memory, CacheExpirationType.Sliding)]
-        [InlineData(CacheTypeEnum.Distributed)]
-        public async Task GetContentElementAsync_ResponseIsCached(CacheTypeEnum cacheType, CacheExpirationType? cacheExpirationType = null)
+        [InlineData(CacheTypeEnum.Distributed, CacheExpirationType.Absolute)]
+        [InlineData(CacheTypeEnum.Distributed, CacheExpirationType.Sliding)]
+        public async Task GetContentElementAsync_ResponseIsCached(CacheTypeEnum cacheType, CacheExpirationType cacheExpirationType)
         {
             const string typeCodename = "type";
             const string elementCodename = "element";
@@ -442,8 +450,9 @@ namespace Kentico.Kontent.Delivery.Caching.Tests
         [Theory]
         [InlineData(CacheTypeEnum.Memory, CacheExpirationType.Absolute)]
         [InlineData(CacheTypeEnum.Memory, CacheExpirationType.Sliding)]
-        [InlineData(CacheTypeEnum.Distributed)]
-        public async Task GetTaxonomyAsync_ResponseIsCached(CacheTypeEnum cacheType, CacheExpirationType? cacheExpirationType = null)
+        [InlineData(CacheTypeEnum.Distributed, CacheExpirationType.Absolute)]
+        [InlineData(CacheTypeEnum.Distributed, CacheExpirationType.Sliding)]
+        public async Task GetTaxonomyAsync_ResponseIsCached(CacheTypeEnum cacheType, CacheExpirationType cacheExpirationType)
         {
             const string codename = "codename";
             var url = $"taxonomies/{codename}";
@@ -491,8 +500,9 @@ namespace Kentico.Kontent.Delivery.Caching.Tests
         [Theory]
         [InlineData(CacheTypeEnum.Memory, CacheExpirationType.Absolute)]
         [InlineData(CacheTypeEnum.Memory, CacheExpirationType.Sliding)]
-        [InlineData(CacheTypeEnum.Distributed)]
-        public async Task GetTaxonomyAsync_InvalidatedByTaxonomyKey(CacheTypeEnum cacheType, CacheExpirationType? cacheExpirationType = null)
+        [InlineData(CacheTypeEnum.Distributed, CacheExpirationType.Absolute)]
+        [InlineData(CacheTypeEnum.Distributed, CacheExpirationType.Sliding)]
+        public async Task GetTaxonomyAsync_InvalidatedByTaxonomyKey(CacheTypeEnum cacheType, CacheExpirationType cacheExpirationType)
         {
             const string codename = "codename";
             var url = $"taxonomies/{codename}";
@@ -521,8 +531,9 @@ namespace Kentico.Kontent.Delivery.Caching.Tests
         [Theory]
         [InlineData(CacheTypeEnum.Memory, CacheExpirationType.Absolute)]
         [InlineData(CacheTypeEnum.Memory, CacheExpirationType.Sliding)]
-        [InlineData(CacheTypeEnum.Distributed)]
-        public async Task GetTaxonomiesAsync_ResponseIsCached(CacheTypeEnum cacheType, CacheExpirationType? cacheExpirationType = null)
+        [InlineData(CacheTypeEnum.Distributed, CacheExpirationType.Absolute)]
+        [InlineData(CacheTypeEnum.Distributed, CacheExpirationType.Sliding)]
+        public async Task GetTaxonomiesAsync_ResponseIsCached(CacheTypeEnum cacheType, CacheExpirationType cacheExpirationType)
         {
             var url = "taxonomies";
             var taxonomyA = CreateTaxonomy("a", new[] { "term1" });
@@ -545,8 +556,9 @@ namespace Kentico.Kontent.Delivery.Caching.Tests
         [Theory]
         [InlineData(CacheTypeEnum.Memory, CacheExpirationType.Absolute)]
         [InlineData(CacheTypeEnum.Memory, CacheExpirationType.Sliding)]
-        [InlineData(CacheTypeEnum.Distributed)]
-        public async Task GetTaxonomiesAsync_InvalidatedByTaxonomiesKey(CacheTypeEnum cacheType, CacheExpirationType? cacheExpirationType = null)
+        [InlineData(CacheTypeEnum.Distributed, CacheExpirationType.Absolute)]
+        [InlineData(CacheTypeEnum.Distributed, CacheExpirationType.Sliding)]
+        public async Task GetTaxonomiesAsync_InvalidatedByTaxonomiesKey(CacheTypeEnum cacheType, CacheExpirationType cacheExpirationType)
         {
             var url = "taxonomies";
             var taxonomyA = CreateTaxonomy("a", new[] { "term1" });
