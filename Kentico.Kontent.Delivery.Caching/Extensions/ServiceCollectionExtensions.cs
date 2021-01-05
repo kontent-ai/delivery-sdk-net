@@ -57,6 +57,7 @@ namespace Kentico.Kontent.Delivery.Caching.Extensions
             {
                 o.DefaultExpiration = options.DefaultExpiration;
                 o.StaleContentExpiration = options.StaleContentExpiration;
+                o.DefaultExpirationType = options.DefaultExpirationType;
                 o.CacheType = options.CacheType;
                 o.Name = name;
             }
