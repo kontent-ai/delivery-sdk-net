@@ -66,7 +66,16 @@ namespace Kentico.Kontent.Delivery.Caching
                 }
                 else
                 {
-                    valueCacheOptions.SetSlidingExpiration(_cacheOptions.DefaultExpiration);
+                    switch (_cacheOptions.DefaultExpirationType)
+                    {
+                        case CacheExpirationType.Absolute:
+                            valueCacheOptions.SetAbsoluteExpiration(_cacheOptions.DefaultExpiration);
+                            break;
+
+                        case CacheExpirationType.Sliding:
+                            valueCacheOptions.SetSlidingExpiration(_cacheOptions.DefaultExpiration);
+                            break;
+                    }
                 }
 
                 var dependencies = dependenciesFactory?.Invoke(value) ?? new List<string>();

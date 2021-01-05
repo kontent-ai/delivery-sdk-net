@@ -14,6 +14,11 @@ namespace Kentico.Kontent.Delivery.Caching
         public TimeSpan DefaultExpiration { get; set; } = TimeSpan.FromMinutes(10);
 
         /// <summary>
+        /// Gets or sets the default expiration type.
+        /// </summary>
+        public CacheExpirationType DefaultExpirationType { get; set; } = CacheExpirationType.Sliding;
+
+        /// <summary>
         /// Gets or sets expiration time when the response is stale.
         /// </summary>
         public TimeSpan StaleContentExpiration { get; set; } = TimeSpan.FromSeconds(10);

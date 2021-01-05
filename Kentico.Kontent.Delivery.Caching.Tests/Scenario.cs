@@ -14,10 +14,10 @@ namespace Kentico.Kontent.Delivery.Caching.Tests
         private readonly IDeliveryCacheManager _cacheManager;
         public IDeliveryClient CachingClient { get; }
 
-        public Scenario(IMemoryCache memoryCache, HttpClient httpClient, DeliveryOptions deliveryOptions, Dictionary<string, int> requestCounter)
+        public Scenario(IMemoryCache memoryCache, CacheExpirationType cacheExpirationType,  HttpClient httpClient, DeliveryOptions deliveryOptions, Dictionary<string, int> requestCounter)
         {
             _requestCounter = requestCounter;
-            _cacheManager = new MemoryCacheManager(memoryCache, Options.Create(new DeliveryCacheOptions()));
+            _cacheManager = new MemoryCacheManager(memoryCache, Options.Create(new DeliveryCacheOptions { DefaultExpirationType = cacheExpirationType }));
             var baseClient = DeliveryClientBuilder.WithOptions(_ => deliveryOptions).WithDeliveryHttpClient(new DeliveryHttpClient(httpClient)).Build();
             CachingClient = new DeliveryClientCache(_cacheManager, baseClient);
         }
