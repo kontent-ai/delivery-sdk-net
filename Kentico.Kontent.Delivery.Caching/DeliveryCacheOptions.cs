@@ -14,7 +14,7 @@ namespace Kentico.Kontent.Delivery.Caching
         public TimeSpan DefaultExpiration { get; set; } = TimeSpan.FromMinutes(10);
 
         /// <summary>
-        /// Gets or sets default expiration type. This type is not supported by the DistributedCache.
+        /// Gets or sets the default expiration type.
         /// </summary>
         public CacheExpirationType DefaultExpirationType { get; set; } = CacheExpirationType.Sliding;
 

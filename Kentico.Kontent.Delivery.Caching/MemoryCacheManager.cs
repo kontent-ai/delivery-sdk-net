@@ -66,13 +66,15 @@ namespace Kentico.Kontent.Delivery.Caching
                 }
                 else
                 {
-                    if (_cacheOptions.DefaultExpirationType == CacheExpirationType.Absolute)
+                    switch (_cacheOptions.DefaultExpirationType)
                     {
-                        valueCacheOptions.SetAbsoluteExpiration(_cacheOptions.DefaultExpiration);
-                    }
-                    else
-                    {
-                        valueCacheOptions.SetSlidingExpiration(_cacheOptions.DefaultExpiration);
+                        case CacheExpirationType.Absolute:
+                            valueCacheOptions.SetAbsoluteExpiration(_cacheOptions.DefaultExpiration);
+                            break;
+
+                        case CacheExpirationType.Sliding:
+                            valueCacheOptions.SetSlidingExpiration(_cacheOptions.DefaultExpiration);
+                            break;
                     }
                 }
 
