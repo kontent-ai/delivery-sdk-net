@@ -12,16 +12,17 @@ namespace Kentico.Kontent.Delivery.Caching.Tests
         #region GetItemTyped
 
         [Theory]
+        [InlineData(CacheTypeEnum.Memory, CacheExpirationType.Absolute)]
         [InlineData(CacheTypeEnum.Memory)]
         [InlineData(CacheTypeEnum.Distributed)]
-        public async Task GetItemTypedAsync_ResponseIsCached(CacheTypeEnum cacheType)
+        public async Task GetItemTypedAsync_ResponseIsCached(CacheTypeEnum cacheType, CacheExpirationType cacheExpirationType = CacheExpirationType.Sliding)
         {
             const string codename = "codename";
             var url = $"items/{codename}";
             var item = CreateItemResponse(CreateItem(codename, "original"));
             var updatedItem = CreateItemResponse(CreateItem(codename, "updated"));
 
-            var scenarioBuilder = new ScenarioBuilder(cacheType);
+            var scenarioBuilder = new ScenarioBuilder(cacheType, cacheExpirationType);
 
             var scenario = scenarioBuilder.WithResponse(url, item).Build();
             var firstResponse = await scenario.CachingClient.GetItemAsync<TestItem>(codename);
@@ -35,15 +36,16 @@ namespace Kentico.Kontent.Delivery.Caching.Tests
         }
 
         [Theory]
-        [InlineData(CacheTypeEnum.Memory)]
-        public async Task GetItemTypedAsync_InvalidatedByItemDependency(CacheTypeEnum cacheType)
+        [InlineData(CacheTypeEnum.Memory, CacheExpirationType.Absolute)]
+        [InlineData(CacheTypeEnum.Memory, CacheExpirationType.Sliding)]
+        public async Task GetItemTypedAsync_InvalidatedByItemDependency(CacheTypeEnum cacheType, CacheExpirationType cacheExpirationType)
         {
             const string codename = "codename";
             var url = $"items/{codename}";
             var item = CreateItemResponse(CreateItem(codename, "original"));
             var updatedItem = CreateItemResponse(CreateItem(codename, "updated"));
 
-            var scenarioBuilder = new ScenarioBuilder(cacheType);
+            var scenarioBuilder = new ScenarioBuilder(cacheType, cacheExpirationType);
 
             var scenario = scenarioBuilder.WithResponse(url, item).Build();
             var firstResponse = await scenario.CachingClient.GetItemAsync<TestItem>(codename);
@@ -59,16 +61,17 @@ namespace Kentico.Kontent.Delivery.Caching.Tests
         }
 
         [Theory]
+        [InlineData(CacheTypeEnum.Memory, CacheExpirationType.Absolute)]
         [InlineData(CacheTypeEnum.Memory)]
         [InlineData(CacheTypeEnum.Distributed)]
-        public async Task GetItemTypedAsync_InvalidatedByItemKey(CacheTypeEnum cacheType)
+        public async Task GetItemTypedAsync_InvalidatedByItemKey(CacheTypeEnum cacheType, CacheExpirationType cacheExpirationType = CacheExpirationType.Sliding)
         {
             const string codename = "codename";
             var url = $"items/{codename}";
             var item = CreateItemResponse(CreateItem(codename, "original"));
             var updatedItem = CreateItemResponse(CreateItem(codename, "updated"));
 
-            var scenarioBuilder = new ScenarioBuilder(cacheType);
+            var scenarioBuilder = new ScenarioBuilder(cacheType, cacheExpirationType);
 
             var scenario = scenarioBuilder.WithResponse(url, item).Build();
             var firstResponse = await scenario.CachingClient.GetItemAsync<TestItem>(codename);
@@ -83,8 +86,10 @@ namespace Kentico.Kontent.Delivery.Caching.Tests
             scenario.GetRequestCount(url).Should().Be(2);
         }
 
-        [Fact]
-        public async Task GetItemTypedAsync_InvalidatedByLinkedItemDependency()
+        [Theory]
+        [InlineData(CacheExpirationType.Absolute)]
+        [InlineData(CacheExpirationType.Sliding)]
+        public async Task GetItemTypedAsync_InvalidatedByLinkedItemDependency(CacheExpirationType cacheExpirationType)
         {
             const string codename = "codename";
             var url = $"items/{codename}";
@@ -93,7 +98,7 @@ namespace Kentico.Kontent.Delivery.Caching.Tests
             var item = CreateItemResponse(CreateItem(codename, "original"), modularContent);
             var updatedItem = CreateItemResponse(CreateItem(codename, "updated"), modularContent);
 
-            var scenarioBuilder = new ScenarioBuilder();
+            var scenarioBuilder = new ScenarioBuilder(cacheExpirationType: cacheExpirationType);
 
             var scenario = scenarioBuilder.WithResponse(url, item).Build();
             var firstResponse = await scenario.CachingClient.GetItemAsync<TestItem>(codename);
@@ -108,8 +113,10 @@ namespace Kentico.Kontent.Delivery.Caching.Tests
             scenario.GetRequestCount(url).Should().Be(2);
         }
 
-        [Fact]
-        public async Task GetItemTypedAsync_NotInvalidatedByComponentDependency()
+        [Theory]
+        [InlineData(CacheExpirationType.Absolute)]
+        [InlineData(CacheExpirationType.Sliding)]
+        public async Task GetItemTypedAsync_NotInvalidatedByComponentDependency(CacheExpirationType cacheExpirationType)
         {
             const string codename = "codename";
             var url = $"items/{codename}";
@@ -118,7 +125,7 @@ namespace Kentico.Kontent.Delivery.Caching.Tests
             var item = CreateItemResponse(CreateItem(codename, "original"), modularContent);
             var updatedItem = CreateItemResponse(CreateItem(codename, "updated"), modularContent);
 
-            var scenarioBuilder = new ScenarioBuilder();
+            var scenarioBuilder = new ScenarioBuilder(cacheExpirationType: cacheExpirationType);
 
             var scenario = scenarioBuilder.WithResponse(url, item).Build();
             var firstResponse = await scenario.CachingClient.GetItemAsync<TestItem>(codename);
@@ -132,8 +139,10 @@ namespace Kentico.Kontent.Delivery.Caching.Tests
             scenario.GetRequestCount(url).Should().Be(1);
         }
 
-        [Fact]
-        public async Task GetItemTypedAsync_TooManyItems_InvalidatedByItemsDependency()
+        [Theory]
+        [InlineData(CacheExpirationType.Absolute)]
+        [InlineData(CacheExpirationType.Sliding)]
+        public async Task GetItemTypedAsync_TooManyItems_InvalidatedByItemsDependency(CacheExpirationType cacheExpirationType)
         {
             const string codename = "codename";
             var url = $"items/{codename}";
@@ -141,7 +150,7 @@ namespace Kentico.Kontent.Delivery.Caching.Tests
             var item = CreateItemResponse(CreateItem(codename, "original"), modularContent);
             var updatedItem = CreateItemResponse(CreateItem(codename, "updated"), modularContent);
 
-            var scenarioBuilder = new ScenarioBuilder();
+            var scenarioBuilder = new ScenarioBuilder(cacheExpirationType: cacheExpirationType);
 
             var scenario = scenarioBuilder.WithResponse(url, item).Build();
             var firstResponse = await scenario.CachingClient.GetItemAsync<TestItem>(codename);
@@ -157,15 +166,16 @@ namespace Kentico.Kontent.Delivery.Caching.Tests
         }
 
         [Theory]
+        [InlineData(CacheTypeEnum.Memory, CacheExpirationType.Absolute)]
         [InlineData(CacheTypeEnum.Memory)]
         [InlineData(CacheTypeEnum.Distributed)]
-        public async Task GetItemTypedAsync_DifferentTypesAreCachedSeparately(CacheTypeEnum cacheType)
+        public async Task GetItemTypedAsync_DifferentTypesAreCachedSeparately(CacheTypeEnum cacheType, CacheExpirationType cacheExpirationType = CacheExpirationType.Sliding)
         {
             const string codename = "codename";
             var url = $"items/{codename}";
             var item = CreateItemResponse(CreateItem(codename, "original"));
 
-            var scenarioBuilder = new ScenarioBuilder(cacheType);
+            var scenarioBuilder = new ScenarioBuilder(cacheType, cacheExpirationType);
 
             var scenario = scenarioBuilder.WithResponse(url, item).Build();
             var firstResponse = await scenario.CachingClient.GetItemAsync<object>(codename);
@@ -190,16 +200,17 @@ namespace Kentico.Kontent.Delivery.Caching.Tests
         #region GetItemsTyped
 
         [Theory]
+        [InlineData(CacheTypeEnum.Memory, CacheExpirationType.Absolute)]
         [InlineData(CacheTypeEnum.Memory)]
         [InlineData(CacheTypeEnum.Distributed)]
-        public async Task GetItemsTypedAsync_ResponseIsCached(CacheTypeEnum cacheType)
+        public async Task GetItemsTypedAsync_ResponseIsCached(CacheTypeEnum cacheType, CacheExpirationType cacheExpirationType = CacheExpirationType.Sliding)
         {
             var url = "items";
             var itemB = CreateItem("b", "original");
             var items = CreateItemsResponse(new[] { CreateItem("a", "original"), itemB });
             var updatedItems = CreateItemsResponse(new[] { CreateItem("a", "updated"), itemB });
 
-            var scenarioBuilder = new ScenarioBuilder(cacheType);
+            var scenarioBuilder = new ScenarioBuilder(cacheType, cacheExpirationType);
 
             var scenario = scenarioBuilder.WithResponse(url, items).Build();
             var firstResponse = await scenario.CachingClient.GetItemsAsync<TestItem>();
@@ -213,16 +224,17 @@ namespace Kentico.Kontent.Delivery.Caching.Tests
         }
 
         [Theory]
+        [InlineData(CacheTypeEnum.Memory, CacheExpirationType.Absolute)]
         [InlineData(CacheTypeEnum.Memory)]
         [InlineData(CacheTypeEnum.Distributed)]
-        public async Task GetItemsTypedAsync_InvalidatedByItemsKey(CacheTypeEnum cacheType)
+        public async Task GetItemsTypedAsync_InvalidatedByItemsKey(CacheTypeEnum cacheType, CacheExpirationType cacheExpirationType = CacheExpirationType.Sliding)
         {
             var url = "items";
             var itemB = CreateItem("b", "original");
             var items = CreateItemsResponse(new[] { CreateItem("a", "original"), itemB });
             var updatedItems = CreateItemsResponse(new[] { CreateItem("a", "updated"), itemB });
 
-            var scenarioBuilder = new ScenarioBuilder(cacheType);
+            var scenarioBuilder = new ScenarioBuilder(cacheType, cacheExpirationType);
 
             var scenario = scenarioBuilder.WithResponse(url, items).Build();
             var firstResponse = await scenario.CachingClient.GetItemsAsync<TestItem>();
@@ -237,15 +249,17 @@ namespace Kentico.Kontent.Delivery.Caching.Tests
             scenario.GetRequestCount(url).Should().Be(2);
         }
 
-        [Fact]
-        public async Task GetItemsTypedAsync_InvalidatedByItemsDependency()
+        [Theory]
+        [InlineData(CacheExpirationType.Absolute)]
+        [InlineData(CacheExpirationType.Sliding)]
+        public async Task GetItemsTypedAsync_InvalidatedByItemsDependency(CacheExpirationType cacheExpirationType)
         {
             var url = "items";
             var itemB = CreateItem("b", "original");
             var items = CreateItemsResponse(new[] { CreateItem("a", "original"), itemB });
             var updatedItems = CreateItemsResponse(new[] { CreateItem("a", "updated"), itemB });
 
-            var scenarioBuilder = new ScenarioBuilder();
+            var scenarioBuilder = new ScenarioBuilder(cacheExpirationType: cacheExpirationType);
 
             var scenario = scenarioBuilder.WithResponse(url, items).Build();
             var firstResponse = await scenario.CachingClient.GetItemsAsync<TestItem>();
@@ -265,16 +279,17 @@ namespace Kentico.Kontent.Delivery.Caching.Tests
         #region GetType
 
         [Theory]
+        [InlineData(CacheTypeEnum.Memory, CacheExpirationType.Absolute)]
         [InlineData(CacheTypeEnum.Memory)]
         [InlineData(CacheTypeEnum.Distributed)]
-        public async Task GetTypeAsync_ResponseIsCached(CacheTypeEnum cacheType)
+        public async Task GetTypeAsync_ResponseIsCached(CacheTypeEnum cacheType, CacheExpirationType cacheExpirationType = CacheExpirationType.Sliding)
         {
             const string codename = "codename";
             var url = $"types/{codename}";
             var type = CreateType(codename, "Original");
             var updatedType = CreateType(codename, "Updated");
 
-            var scenarioBuilder = new ScenarioBuilder(cacheType);
+            var scenarioBuilder = new ScenarioBuilder(cacheType, cacheExpirationType);
 
             var scenario = scenarioBuilder.WithResponse(url, type).Build();
             var firstResponse = await scenario.CachingClient.GetTypeAsync(codename);
@@ -287,15 +302,17 @@ namespace Kentico.Kontent.Delivery.Caching.Tests
             scenario.GetRequestCount(url).Should().Be(1);
         }
 
-        [Fact]
-        public async Task GetTypeAsync_InvalidatedByTypesDependency()
+        [Theory]
+        [InlineData(CacheExpirationType.Absolute)]
+        [InlineData(CacheExpirationType.Sliding)]
+        public async Task GetTypeAsync_InvalidatedByTypesDependency(CacheExpirationType cacheExpirationType)
         {
             const string codename = "codename";
             var url = $"types/{codename}";
             var type = CreateType(codename, "Original");
             var updatedType = CreateType(codename, "Updated");
 
-            var scenarioBuilder = new ScenarioBuilder();
+            var scenarioBuilder = new ScenarioBuilder(cacheExpirationType: cacheExpirationType);
 
             var scenario = scenarioBuilder.WithResponse(url, type).Build();
             var firstResponse = await scenario.CachingClient.GetTypeAsync(codename);
@@ -315,16 +332,17 @@ namespace Kentico.Kontent.Delivery.Caching.Tests
         #region GetTypes
 
         [Theory]
+        [InlineData(CacheTypeEnum.Memory, CacheExpirationType.Absolute)]
         [InlineData(CacheTypeEnum.Memory)]
         [InlineData(CacheTypeEnum.Distributed)]
-        public async Task GetTypesAsync_ResponseIsCached(CacheTypeEnum cacheType)
+        public async Task GetTypesAsync_ResponseIsCached(CacheTypeEnum cacheType, CacheExpirationType cacheExpirationType = CacheExpirationType.Sliding)
         {
             var url = "types";
             var typeA = CreateType("a");
             var types = CreateTypesResponse(new[] { typeA });
             var updatedTypes = CreateTypesResponse(new[] { typeA, CreateType("b") });
 
-            var scenarioBuilder = new ScenarioBuilder(cacheType);
+            var scenarioBuilder = new ScenarioBuilder(cacheType, cacheExpirationType);
 
             var scenario = scenarioBuilder.WithResponse(url, types).Build();
             var firstResponse = await scenario.CachingClient.GetTypesAsync();
@@ -337,15 +355,17 @@ namespace Kentico.Kontent.Delivery.Caching.Tests
             scenario.GetRequestCount(url).Should().Be(1);
         }
 
-        [Fact]
-        public async Task GetTypesAsync_InvalidatedByTypesDependency()
+        [Theory]
+        [InlineData(CacheExpirationType.Absolute)]
+        [InlineData(CacheExpirationType.Sliding)]
+        public async Task GetTypesAsync_InvalidatedByTypesDependency(CacheExpirationType cacheExpirationType)
         {
             var url = "types";
             var typeA = CreateType("a");
             var types = CreateTypesResponse(new[] { typeA });
             var updatedTypes = CreateTypesResponse(new[] { typeA, CreateType("b") });
 
-            var scenarioBuilder = new ScenarioBuilder();
+            var scenarioBuilder = new ScenarioBuilder(cacheExpirationType: cacheExpirationType);
 
             var scenario = scenarioBuilder.WithResponse(url, types).Build();
             var firstResponse = await scenario.CachingClient.GetTypesAsync();
@@ -365,9 +385,10 @@ namespace Kentico.Kontent.Delivery.Caching.Tests
         #region GetContentElement
 
         [Theory]
+        [InlineData(CacheTypeEnum.Memory, CacheExpirationType.Absolute)]
         [InlineData(CacheTypeEnum.Memory)]
         [InlineData(CacheTypeEnum.Distributed)]
-        public async Task GetContentElementAsync_ResponseIsCached(CacheTypeEnum cacheType)
+        public async Task GetContentElementAsync_ResponseIsCached(CacheTypeEnum cacheType, CacheExpirationType cacheExpirationType = CacheExpirationType.Sliding)
         {
             const string typeCodename = "type";
             const string elementCodename = "element";
@@ -375,7 +396,7 @@ namespace Kentico.Kontent.Delivery.Caching.Tests
             var contentElement = CreateContentElement(elementCodename, "Original");
             var updatedContentElement = CreateContentElement(elementCodename, "Updated");
 
-            var scenarioBuilder = new ScenarioBuilder(cacheType);
+            var scenarioBuilder = new ScenarioBuilder(cacheType, cacheExpirationType);
 
             var scenario = scenarioBuilder.WithResponse(url, contentElement).Build();
             var firstResponse = await scenario.CachingClient.GetContentElementAsync(typeCodename, elementCodename);
@@ -388,8 +409,10 @@ namespace Kentico.Kontent.Delivery.Caching.Tests
             scenario.GetRequestCount(url).Should().Be(1);
         }
 
-        [Fact]
-        public async Task GetContentElementAsync_InvalidatedByTypesDependency()
+        [Theory]
+        [InlineData(CacheExpirationType.Absolute)]
+        [InlineData(CacheExpirationType.Sliding)]
+        public async Task GetContentElementAsync_InvalidatedByTypesDependency(CacheExpirationType cacheExpirationType)
         {
             const string typeCodename = "type";
             const string elementCodename = "element";
@@ -397,7 +420,7 @@ namespace Kentico.Kontent.Delivery.Caching.Tests
             var contentElement = CreateContentElement(elementCodename, "Original");
             var updatedContentElement = CreateContentElement(elementCodename, "Updated");
 
-            var scenarioBuilder = new ScenarioBuilder();
+            var scenarioBuilder = new ScenarioBuilder(cacheExpirationType: cacheExpirationType);
 
             var scenario = scenarioBuilder.WithResponse(url, contentElement).Build();
             var firstResponse = await scenario.CachingClient.GetContentElementAsync(typeCodename, elementCodename);
@@ -417,16 +440,17 @@ namespace Kentico.Kontent.Delivery.Caching.Tests
         #region GetTaxonomy
 
         [Theory]
+        [InlineData(CacheTypeEnum.Memory, CacheExpirationType.Absolute)]
         [InlineData(CacheTypeEnum.Memory)]
         [InlineData(CacheTypeEnum.Distributed)]
-        public async Task GetTaxonomyAsync_ResponseIsCached(CacheTypeEnum cacheType)
+        public async Task GetTaxonomyAsync_ResponseIsCached(CacheTypeEnum cacheType, CacheExpirationType cacheExpirationType = CacheExpirationType.Sliding)
         {
             const string codename = "codename";
             var url = $"taxonomies/{codename}";
             var taxonomy = CreateTaxonomy(codename, new[] { "term1" });
             var updatedTaxonomy = CreateTaxonomy(codename, new[] { "term1", "term2" });
 
-            var scenarioBuilder = new ScenarioBuilder(cacheType);
+            var scenarioBuilder = new ScenarioBuilder(cacheType, cacheExpirationType);
 
             var scenario = scenarioBuilder.WithResponse(url, taxonomy).Build();
             var firstResponse = await scenario.CachingClient.GetTaxonomyAsync(codename);
@@ -439,15 +463,17 @@ namespace Kentico.Kontent.Delivery.Caching.Tests
             scenario.GetRequestCount(url).Should().Be(1);
         }
 
-        [Fact]
-        public async Task GetTaxonomyAsync_InvalidatedByTaxonomyDependency()
+        [Theory]
+        [InlineData(CacheExpirationType.Absolute)]
+        [InlineData(CacheExpirationType.Sliding)]
+        public async Task GetTaxonomyAsync_InvalidatedByTaxonomyDependency(CacheExpirationType cacheExpirationType)
         {
             const string codename = "codename";
             var url = $"taxonomies/{codename}";
             var taxonomy = CreateTaxonomy(codename, new[] { "term1" });
             var updatedTaxonomy = CreateTaxonomy(codename, new[] { "term1", "term2" });
 
-            var scenarioBuilder = new ScenarioBuilder();
+            var scenarioBuilder = new ScenarioBuilder(cacheExpirationType: cacheExpirationType);
 
             var scenario = scenarioBuilder.WithResponse(url, taxonomy).Build();
             var firstResponse = await scenario.CachingClient.GetTaxonomyAsync(codename);
@@ -463,16 +489,17 @@ namespace Kentico.Kontent.Delivery.Caching.Tests
         }
 
         [Theory]
+        [InlineData(CacheTypeEnum.Memory, CacheExpirationType.Absolute)]
         [InlineData(CacheTypeEnum.Memory)]
         [InlineData(CacheTypeEnum.Distributed)]
-        public async Task GetTaxonomyAsync_InvalidatedByTaxonomyKey(CacheTypeEnum cacheType)
+        public async Task GetTaxonomyAsync_InvalidatedByTaxonomyKey(CacheTypeEnum cacheType, CacheExpirationType cacheExpirationType = CacheExpirationType.Sliding)
         {
             const string codename = "codename";
             var url = $"taxonomies/{codename}";
             var taxonomy = CreateTaxonomy(codename, new[] { "term1" });
             var updatedTaxonomy = CreateTaxonomy(codename, new[] { "term1", "term2" });
 
-            var scenarioBuilder = new ScenarioBuilder(cacheType);
+            var scenarioBuilder = new ScenarioBuilder(cacheType, cacheExpirationType);
 
             var scenario = scenarioBuilder.WithResponse(url, taxonomy).Build();
             var firstResponse = await scenario.CachingClient.GetTaxonomyAsync(codename);
@@ -492,16 +519,17 @@ namespace Kentico.Kontent.Delivery.Caching.Tests
         #region GetTaxonomies
 
         [Theory]
+        [InlineData(CacheTypeEnum.Memory, CacheExpirationType.Absolute)]
         [InlineData(CacheTypeEnum.Memory)]
         [InlineData(CacheTypeEnum.Distributed)]
-        public async Task GetTaxonomiesAsync_ResponseIsCached(CacheTypeEnum cacheType)
+        public async Task GetTaxonomiesAsync_ResponseIsCached(CacheTypeEnum cacheType, CacheExpirationType cacheExpirationType = CacheExpirationType.Sliding)
         {
             var url = "taxonomies";
             var taxonomyA = CreateTaxonomy("a", new[] { "term1" });
             var taxonomies = CreateTaxonomiesResponse(new[] { taxonomyA });
             var updatedTaxonomies = CreateTaxonomiesResponse(new[] { taxonomyA, CreateTaxonomy("b", new[] { "term3" }) });
 
-            var scenarioBuilder = new ScenarioBuilder(cacheType);
+            var scenarioBuilder = new ScenarioBuilder(cacheType, cacheExpirationType);
 
             var scenario = scenarioBuilder.WithResponse(url, taxonomies).Build();
             var firstResponse = await scenario.CachingClient.GetTaxonomiesAsync();
@@ -515,16 +543,17 @@ namespace Kentico.Kontent.Delivery.Caching.Tests
         }
 
         [Theory]
+        [InlineData(CacheTypeEnum.Memory, CacheExpirationType.Absolute)]
         [InlineData(CacheTypeEnum.Memory)]
         [InlineData(CacheTypeEnum.Distributed)]
-        public async Task GetTaxonomiesAsync_InvalidatedByTaxonomiesKey(CacheTypeEnum cacheType)
+        public async Task GetTaxonomiesAsync_InvalidatedByTaxonomiesKey(CacheTypeEnum cacheType, CacheExpirationType cacheExpirationType = CacheExpirationType.Sliding)
         {
             var url = "taxonomies";
             var taxonomyA = CreateTaxonomy("a", new[] { "term1" });
             var taxonomies = CreateTaxonomiesResponse(new[] { taxonomyA });
             var updatedTaxonomies = CreateTaxonomiesResponse(new[] { taxonomyA, CreateTaxonomy("b", new[] { "term3" }) });
 
-            var scenarioBuilder = new ScenarioBuilder(cacheType);
+            var scenarioBuilder = new ScenarioBuilder(cacheType, cacheExpirationType);
 
             var scenario = scenarioBuilder.WithResponse(url, taxonomies).Build();
             var firstResponse = await scenario.CachingClient.GetTaxonomiesAsync();
@@ -539,15 +568,17 @@ namespace Kentico.Kontent.Delivery.Caching.Tests
             scenario.GetRequestCount(url).Should().Be(2);
         }
 
-        [Fact]
-        public async Task GetTaxonomiesAsync_InvalidatedByTaxonomiesDependency()
+        [Theory]
+        [InlineData(CacheExpirationType.Absolute)]
+        [InlineData(CacheExpirationType.Sliding)]
+        public async Task GetTaxonomiesAsync_InvalidatedByTaxonomiesDependency(CacheExpirationType cacheExpirationType)
         {
             var url = "taxonomies";
             var taxonomyA = CreateTaxonomy("a", new[] { "term1" });
             var taxonomies = CreateTaxonomiesResponse(new[] { taxonomyA });
             var updatedTaxonomies = CreateTaxonomiesResponse(new[] { taxonomyA, CreateTaxonomy("b", new[] { "term3" }) });
 
-            var scenarioBuilder = new ScenarioBuilder();
+            var scenarioBuilder = new ScenarioBuilder(cacheExpirationType: cacheExpirationType);
 
             var scenario = scenarioBuilder.WithResponse(url, taxonomies).Build();
             var firstResponse = await scenario.CachingClient.GetTaxonomiesAsync();
