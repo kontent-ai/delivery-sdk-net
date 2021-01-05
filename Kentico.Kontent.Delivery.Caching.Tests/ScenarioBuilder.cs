@@ -17,7 +17,7 @@ namespace Kentico.Kontent.Delivery.Caching.Tests
         private readonly string _projectId = Guid.NewGuid().ToString();
         private readonly string _baseUrl;
         private readonly CacheTypeEnum _cacheType;
-        private readonly CacheExpirationType _cacheExpirationType;
+        private readonly CacheExpirationType? _cacheExpirationType;
 
         private readonly MemoryCache _memoryCache = new MemoryCache(Options.Create(new MemoryCacheOptions()));
         private readonly IDistributedCache _distributedCache = new MemoryDistributedCache(Options.Create(new MemoryDistributedCacheOptions()));
@@ -25,7 +25,7 @@ namespace Kentico.Kontent.Delivery.Caching.Tests
 
         private readonly List<(string key, Action<MockHttpMessageHandler> configure)> _configurations = new List<(string key, Action<MockHttpMessageHandler> configure)>();
 
-        public ScenarioBuilder(CacheTypeEnum cacheType = CacheTypeEnum.Memory, CacheExpirationType cacheExpirationType = CacheExpirationType.Sliding)
+        public ScenarioBuilder(CacheTypeEnum cacheType = CacheTypeEnum.Memory, CacheExpirationType? cacheExpirationType = null)
         {
             _baseUrl = $"https://deliver.kontent.ai/{_projectId}/";
             _cacheType = cacheType;
@@ -94,7 +94,8 @@ namespace Kentico.Kontent.Delivery.Caching.Tests
             }
             if (_cacheType == CacheTypeEnum.Memory)
             {
-                return new Scenario(_memoryCache, _cacheExpirationType, mockHttp.ToHttpClient(), new DeliveryOptions { ProjectId = _projectId }, _requestCounter);
+                var cacheExpirationType = _cacheExpirationType.HasValue ? _cacheExpirationType.Value : CacheExpirationType.Sliding;
+                return new Scenario(_memoryCache, cacheExpirationType, mockHttp.ToHttpClient(), new DeliveryOptions { ProjectId = _projectId }, _requestCounter);
             }
             else
             {
