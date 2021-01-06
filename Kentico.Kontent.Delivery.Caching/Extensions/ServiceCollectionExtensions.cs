@@ -53,21 +53,13 @@ namespace Kentico.Kontent.Delivery.Caching.Extensions
 
         private static IServiceCollection RegisterCacheOptions(this IServiceCollection services, DeliveryCacheOptions options, string name = null)
         {
-            void Configure(DeliveryCacheOptions o)
-            {
-                o.DefaultExpiration = options.DefaultExpiration;
-                o.StaleContentExpiration = options.StaleContentExpiration;
-                o.DefaultExpirationType = options.DefaultExpirationType;
-                o.CacheType = options.CacheType;
-                o.Name = name;
-            }
             if (name == null)
             {
-                services.Configure<DeliveryCacheOptions>(Configure);
+                services.Configure<DeliveryCacheOptions>((o) => o.Configure(options));
             }
             else
             {
-                services.Configure<DeliveryCacheOptions>(name, Configure);
+                services.Configure<DeliveryCacheOptions>(name, (o) => o.Configure(options));
             }
 
             return services;

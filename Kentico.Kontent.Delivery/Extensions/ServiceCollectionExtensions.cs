@@ -182,27 +182,13 @@ namespace Kentico.Kontent.Delivery.Extensions
         // Options here are not validated on purpose, it is left to users to validate them if they want to.
         private static IServiceCollection RegisterOptions(this IServiceCollection services, DeliveryOptions options, string name = null)
         {
-            void Configure(DeliveryOptions o)
-            {
-                o.ProjectId = options.ProjectId;
-                o.ProductionEndpoint = options.ProductionEndpoint;
-                o.PreviewEndpoint = options.PreviewEndpoint;
-                o.PreviewApiKey = options.PreviewApiKey;
-                o.UsePreviewApi = options.UsePreviewApi;
-                o.WaitForLoadingNewContent = options.WaitForLoadingNewContent;
-                o.UseSecureAccess = options.UseSecureAccess;
-                o.SecureAccessApiKey = options.SecureAccessApiKey;
-                o.EnableRetryPolicy = options.EnableRetryPolicy;
-                o.DefaultRetryPolicyOptions = options.DefaultRetryPolicyOptions;
-                o.IncludeTotalCount = options.IncludeTotalCount;
-            }
             if (name == null)
             {
-                services.Configure<DeliveryOptions>(Configure);
+                services.Configure<DeliveryOptions>((o) => o.Configure(options));
             }
             else
             {
-                services.Configure<DeliveryOptions>(name, Configure);
+                services.Configure<DeliveryOptions>(name, (o) => o.Configure(options));
             }
 
             return services;

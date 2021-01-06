@@ -34,6 +34,7 @@
   <ItemGroup>
     <PackageReference Include="Autofac" Version="6.0.0" />
     <PackageReference Include="Autofac.Extensions.DependencyInjection" Version="7.1.0" />
+    <PackageReference Include="AutoFixture" Version="4.15.0" />
     <PackageReference Include="Castle.Windsor" Version="5.0.1" />
     <PackageReference Include="Castle.Windsor.MsDependencyInjection" Version="3.4.0" />
     <PackageReference Include="FluentAssertions" Version="5.10.3" />
