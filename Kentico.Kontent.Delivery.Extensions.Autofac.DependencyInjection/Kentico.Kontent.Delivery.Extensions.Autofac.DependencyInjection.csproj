@@ -5,13 +5,13 @@
     <Authors>Kentico Software</Authors>
     <Product>Kentico Kontent</Product>
     <Copyright>© 2020 Kentico Software. All rights reserved.</Copyright>
-    <Description>Kentico Kontent Delivery Caching</Description>
+    <Description>Kentico Kontent Delivery Extensions Autofac Dependency Injection</Description>
     <PackageLicenseExpression>MIT</PackageLicenseExpression>
     <PackageProjectUrl>https://github.com/Kentico/kontent-delivery-sdk-net</PackageProjectUrl>
     <PackageIconUrl>https://github.com/Kentico/Home/blob/master/images/kk-logo-nuget.png?raw=true</PackageIconUrl>
     <RepositoryUrl>https://github.com/Kentico/kontent-delivery-sdk-net.git</RepositoryUrl>
     <RepositoryType>git</RepositoryType>
-    <PackageTags>kentico;mvc;aspnet;aspnetmvc</PackageTags>
+    <PackageTags>kentico;mvc;aspnet;aspnetmvc;extensions</PackageTags>
     <GenerateAssemblyInfo>true</GenerateAssemblyInfo>
     <GenerateDocumentationFile>true</GenerateDocumentationFile>
     <PublishRepositoryUrl>true</PublishRepositoryUrl>
@@ -20,30 +20,22 @@
   </PropertyGroup>
 
   <ItemGroup>
-    <PackageReference Include="Microsoft.Extensions.Caching.Abstractions" Version="3.1.2" />
-    <PackageReference Include="Microsoft.Extensions.Caching.Memory" Version="3.1.2" />
-    <PackageReference Include="Microsoft.Extensions.Options" Version="3.1.2" />
-    <PackageReference Include="Microsoft.SourceLink.GitHub" Version="1.0.0" />
-    <PackageReference Include="Newtonsoft.Json" Version="12.0.3" />
-    <PackageReference Include="Newtonsoft.Json.Bson" Version="1.0.2" />
-    <PackageReference Include="Scrutor" Version="3.2.2" />
-  </ItemGroup>
-
-  <ItemGroup>
-    <ProjectReference Include="..\Kentico.Kontent.Delivery.Abstractions\Kentico.Kontent.Delivery.Abstractions.csproj" />
-  </ItemGroup>
-
-  <ItemGroup>
-    <AssemblyAttribute Include="System.Runtime.CompilerServices.InternalsVisibleToAttribute">
-      <_Parameter1>Kentico.Kontent.Delivery.Caching.Tests</_Parameter1>
-    </AssemblyAttribute>
     <AssemblyAttribute Include="System.Runtime.CompilerServices.InternalsVisibleToAttribute">
       <_Parameter1>Kentico.Kontent.Delivery.Extensions.Autofac.DependencyInjection.Tests</_Parameter1>
     </AssemblyAttribute>
   </ItemGroup>
 
   <ItemGroup>
-    <Folder Include="Helpers\" />
+    <PackageReference Include="Autofac" Version="6.1.0" />
+    <PackageReference Include="Microsoft.Extensions.DependencyInjection" Version="3.1.2" />
+    <PackageReference Include="Microsoft.Extensions.Options" Version="3.1.2" />
+    <PackageReference Include="Microsoft.Extensions.Options.ConfigurationExtensions" Version="3.1.2" />
+  </ItemGroup>
+  
+  <ItemGroup>
+    <ProjectReference Include="..\Kentico.Kontent.Delivery.Abstractions\Kentico.Kontent.Delivery.Abstractions.csproj" />
+    <ProjectReference Include="..\Kentico.Kontent.Delivery.Caching\Kentico.Kontent.Delivery.Caching.csproj" />
+    <ProjectReference Include="..\Kentico.Kontent.Delivery\Kentico.Kontent.Delivery.csproj" />
   </ItemGroup>
 
 </Project>

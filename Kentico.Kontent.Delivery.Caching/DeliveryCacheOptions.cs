@@ -27,10 +27,5 @@ namespace Kentico.Kontent.Delivery.Caching
         /// Determines whether to use <see cref="Microsoft.Extensions.Caching.Distributed.IDistributedCache" /> or <inheritdoc cref="Microsoft.Extensions.Caching.Memory.IMemoryCache"/>
         /// </summary>
         public CacheTypeEnum CacheType { get; set; } = CacheTypeEnum.Memory;
-
-        /// <summary>
-        /// Name of an <see cref="IDeliveryCacheManager"/> instance the options are bound to.
-        /// </summary>
-        internal string Name { get; set; }
     }
 }

@@ -2,8 +2,16 @@
 
 namespace Kentico.Kontent.Delivery.Extensions
 {
-    internal static class DeliveryOptionsExtensions
+    /// <summary>
+    /// Extensions for a <see cref="DeliveryOptions"/>
+    /// </summary>
+    public static class DeliveryOptionsExtensions
     {
+        /// <summary>
+        /// Maps a <see cref="DeliveryOptions"/> to each other.
+        /// </summary>
+        /// <param name="o">A destination.</param>
+        /// <param name="options">A source.</param>
         public static void Configure(this DeliveryOptions o, DeliveryOptions options)
         {
             o.ProjectId = options.ProjectId;
