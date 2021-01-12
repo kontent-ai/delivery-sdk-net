@@ -24,6 +24,8 @@ namespace Kentico.Kontent.Delivery.Caching
         private const string TAXONOMY_GROUP_IDENTIFIER = "taxonomy_group";
         private const string TAXONOMY_GROUP_LISTING_IDENTIFIER = "taxonomy_group_listing";
 
+        private const string LANGUAGE_LISTING_IDENTIFIER = "language_listing";
+
         private const string CONTENT_TYPE_ELEMENT_IDENTIFIER = "content_type_element";
 
         private const string DEPENDENCY_ITEM = "dependency_item";
@@ -31,6 +33,7 @@ namespace Kentico.Kontent.Delivery.Caching
         private const string DEPENDENCY_TYPE_LISTING = "dependency_type_listing";
         private const string DEPENDENCY_TAXONOMY_GROUP = "dependency_taxonomy_group";
         private const string DEPENDENCY_TAXONOMY_GROUP_LISTING = "dependency_taxonomy_group_listing";
+        private const string DEPENDENCY_LANGUAGE_LISTING = "dependency_language_listing";
 
         #endregion
 
@@ -101,6 +104,16 @@ namespace Kentico.Kontent.Delivery.Caching
         }
 
         /// <summary>
+        /// Gets Languages dependency key
+        /// </summary>
+        /// <param name="parameters">Query Parameters</param>
+        /// <returns>Dependency key</returns>
+        public static string GetLanguagesKey(IEnumerable<IQueryParameter> parameters)
+        {
+            return StringHelpers.Join(new[] { LANGUAGE_LISTING_IDENTIFIER }.Concat(parameters?.Select(x => x.GetQueryStringParameter()) ?? Enumerable.Empty<string>()));
+        }
+
+        /// <summary>
         /// Gets a ContentElement dependency key
         /// </summary>
         /// <param name="contentTypeCodename">ContentType codeName</param>
@@ -159,6 +172,15 @@ namespace Kentico.Kontent.Delivery.Caching
         public static string GetTaxonomiesDependencyKey()
         {
             return DEPENDENCY_TAXONOMY_GROUP_LISTING;
+        }
+
+        /// <summary>
+        /// Gets Languages dependency key
+        /// </summary>
+        /// <returns>Dependency key</returns>
+        public static string GetLanguagesDependencyKey()
+        {
+            return DEPENDENCY_LANGUAGE_LISTING;
         }
 
         #endregion
@@ -279,6 +301,18 @@ namespace Kentico.Kontent.Delivery.Caching
         {
             return response?.Taxonomies != null
                 ? new[] { GetTaxonomiesDependencyKey() }
+                : Enumerable.Empty<string>();
+        }
+
+        /// <summary>
+        /// Gets languages dependency keys from response
+        /// </summary>
+        /// <param name="response">Response</param>
+        /// <returns>Dependency keys</returns>
+        public static IEnumerable<string> GetlanguagesDependencies(IDeliveryLanguageListingResponse response)
+        {
+            return response?.Languages != null
+                ? new[] { GetLanguagesDependencyKey() }
                 : Enumerable.Empty<string>();
         }
 

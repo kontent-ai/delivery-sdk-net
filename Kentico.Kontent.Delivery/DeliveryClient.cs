@@ -8,6 +8,7 @@ using Kentico.Kontent.Delivery.Abstractions;
 using Kentico.Kontent.Delivery.ContentItems;
 using Kentico.Kontent.Delivery.ContentTypes;
 using Kentico.Kontent.Delivery.Extensions;
+using Kentico.Kontent.Delivery.Languages;
 using Kentico.Kontent.Delivery.SharedModels;
 using Kentico.Kontent.Delivery.TaxonomyGroups;
 using Kentico.Kontent.Delivery.Urls;
@@ -233,6 +234,21 @@ namespace Kentico.Kontent.Delivery
             var pagination = content["pagination"].ToObject<Pagination>(Serializer);
             var taxonomies = content["taxonomies"].ToObject<List<TaxonomyGroup>>(Serializer);
             return new DeliveryTaxonomyListingResponse(response, taxonomies.ToList<ITaxonomyGroup>(), pagination);
+        }
+
+        /// <summary>
+        /// Returns languages.
+        /// </summary>
+        /// <param name="parameters">A collection of query parameters, for example, for paging.</param>
+        /// <returns>The <see cref="DeliveryLanguageListingResponse"/> instance that represents the languages. If no query parameters are specified, all languages are returned.</returns>
+        public async Task<IDeliveryLanguageListingResponse> GetLanguagesAsync(IEnumerable<IQueryParameter> parameters = null)
+        {
+            var endpointUrl = UrlBuilder.GetLanguagesUrl(parameters);
+            var response = await GetDeliveryResponseAsync(endpointUrl);
+            var content = await response.GetJsonContentAsync();
+            var pagination = content["pagination"].ToObject<Pagination>(Serializer);
+            var languages = content["languages"].ToObject<List<Language>>(Serializer);
+            return new DeliveryLanguageListingResponse(response, languages.ToList<ILanguage>(), pagination);
         }
 
         private async Task<ApiResponse> GetDeliveryResponseAsync(string endpointUrl, string continuationToken = null)
