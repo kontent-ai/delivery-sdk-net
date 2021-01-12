@@ -43,6 +43,12 @@ namespace Kentico.Kontent.Delivery.SharedModels
         /// <inheritdoc/>
         public string RequestUrl { get; }
 
+        /// <inheritdoc/>
+        public bool IsSuccess { get => Error == null; }
+
+        /// <inheritdoc/>
+        public IError Error { get; }
+        
         /// <summary>
         /// Initializes a new instance of the <see cref="ApiResponse"/> class.
         /// </summary>
@@ -50,12 +56,19 @@ namespace Kentico.Kontent.Delivery.SharedModels
         /// <param name="hasStaleContent">Specifies whether content is stale.</param>
         /// <param name="continuationToken">Continuation token to be used for continuing enumeration.</param>
         /// <param name="requestUrl">URL used to retrieve this response.</param>
-        internal ApiResponse(HttpContent httpContent, bool hasStaleContent, string continuationToken, string requestUrl)
+        internal ApiResponse(HttpContent httpContent, bool hasStaleContent, string continuationToken, string requestUrl) : 
+            this(httpContent, hasStaleContent, continuationToken, requestUrl, null)
+        {
+        }
+
+
+        internal ApiResponse(HttpContent httpContent, bool hasStaleContent, string continuationToken, string requestUrl, IError error)
         {
             HttpContent = httpContent;
             HasStaleContent = hasStaleContent;
             ContinuationToken = continuationToken;
             RequestUrl = requestUrl;
+            Error = error;
         }
 
         /// <summary>
@@ -65,13 +78,15 @@ namespace Kentico.Kontent.Delivery.SharedModels
         /// <param name="hasStaleContent">Specifies whether content is stale.</param>
         /// <param name="continuationToken">Continuation token to be used for continuing enumeration.</param>
         /// <param name="requestUrl">URL used to retrieve this response.</param>
+        /// <param name="error">Object that contains info about possible API error</param>
         [JsonConstructor]
-        internal ApiResponse(string content, bool hasStaleContent, string continuationToken, string requestUrl)
+        internal ApiResponse(string content, bool hasStaleContent, string continuationToken, string requestUrl, IError error)
         {
             Content = content;
             HasStaleContent = hasStaleContent;
             ContinuationToken = continuationToken;
             RequestUrl = requestUrl;
+            Error = error;
         }
 
         /// <summary>
@@ -79,7 +94,7 @@ namespace Kentico.Kontent.Delivery.SharedModels
         /// </summary>
         public async Task<JObject> GetJsonContentAsync()
         {
-            if (_jsonContent == null)
+            if (_jsonContent == null && IsSuccess)
             {
                 using var streamReader = new HttpRequestStreamReader(await HttpContent.ReadAsStreamAsync(), Encoding.UTF8);
                 using var jsonReader = new JsonTextReader(streamReader);
