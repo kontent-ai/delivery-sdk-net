@@ -1309,6 +1309,48 @@ namespace Kentico.Kontent.Delivery.Tests
         }
 
         [Fact]
+        public async Task GetLanguagesAsync_ApiReturnsStaleContent_ResponseIndicatesStaleContent()
+        {
+            var headers = new[]
+            {
+                new KeyValuePair<string, string>("X-Stale-Content", "1")
+            };
+
+            _mockHttp
+                .When($"{_baseUrl}/languages")
+                .Respond(headers, "application/json", await File.ReadAllTextAsync(Path.Combine(Environment.CurrentDirectory,
+                        $"Fixtures{Path.DirectorySeparatorChar}DeliveryClient{Path.DirectorySeparatorChar}languages.json")));
+
+            var client = InitializeDeliveryClientWithCustomModelProvider(_mockHttp);
+
+            var response = await client.GetLanguagesAsync();
+
+            Assert.True(response.ApiResponse.HasStaleContent);
+            Assert.True(response.Languages.Any());
+        }
+
+        [Fact]
+        public async Task GetLanguagesAsync_ApiDoesNotReturnStaleContent_ResponseDoesNotIndicateStaleContent()
+        {
+            var headers = new[]
+            {
+                new KeyValuePair<string, string>("X-Stale-Content", "0")
+            };
+
+            _mockHttp
+                .When($"{_baseUrl}/languages")
+                .Respond(headers, "application/json", await File.ReadAllTextAsync(Path.Combine(Environment.CurrentDirectory,
+                        $"Fixtures{Path.DirectorySeparatorChar}DeliveryClient{Path.DirectorySeparatorChar}languages.json")));
+
+            var client = InitializeDeliveryClientWithCustomModelProvider(_mockHttp);
+
+            var response = await client.GetLanguagesAsync();
+
+            Assert.False(response.ApiResponse.HasStaleContent);
+            Assert.True(response.Languages.Any());
+        }
+
+        [Fact]
         public async Task GetElementAsync_ApiReturnsStaleContent_ResponseIndicatesStaleContent()
         {
             var headers = new[]
