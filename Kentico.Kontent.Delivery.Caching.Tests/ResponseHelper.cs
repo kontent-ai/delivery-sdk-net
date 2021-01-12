@@ -55,6 +55,18 @@ namespace Kentico.Kontent.Delivery.Caching.Tests
             }
         };
 
+        internal static object CreateLanguagesResponse(ICollection<object> languages) => new
+        {
+            languages,
+            pagination = new
+            {
+                skip = 0,
+                limit = 0,
+                count = languages.Count,
+                next_page = ""
+            }
+        };
+
         internal static object CreateItem(string codename, string value = null) => new
         {
             elements = new Dictionary<string, object>
@@ -132,6 +144,16 @@ namespace Kentico.Kontent.Delivery.Caching.Tests
                 id = Guid.NewGuid().ToString(),
                 codename,
                 last_modified = "2019-03-27T13:10:01.791Z"
+            }
+        };
+
+        internal static object CreateLanguage(string codename, string name) => new
+        {
+            system = new
+            {
+                id = Guid.NewGuid().ToString(),
+                codename,
+                name
             }
         };
 
