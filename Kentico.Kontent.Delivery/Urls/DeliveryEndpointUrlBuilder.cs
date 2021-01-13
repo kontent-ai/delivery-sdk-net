@@ -18,7 +18,7 @@ namespace Kentico.Kontent.Delivery.Urls
         private const string UrlTemplateElement = "/types/{0}/elements/{1}";
         private const string UrlTemplateTaxonomy = "/taxonomies/{0}";
         private const string UrlTemplateTaxonomies = "/taxonomies";
-        private const string UrlTemplateLangages = "/languages";
+        private const string UrlTemplateLanguages = "/languages";
 
         private readonly IOptionsMonitor<DeliveryOptions> _deliveryOptions;
 
@@ -70,7 +70,7 @@ namespace Kentico.Kontent.Delivery.Urls
 
         public string GetLanguagesUrl(IEnumerable<IQueryParameter> parameters)
         {
-            return GetUrl(UrlTemplateLangages, parameters);
+            return GetUrl(UrlTemplateLanguages, parameters);
         }
 
         private string GetUrl(string path, IEnumerable<IQueryParameter> parameters)
