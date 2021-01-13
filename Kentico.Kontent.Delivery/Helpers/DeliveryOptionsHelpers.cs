@@ -5,7 +5,7 @@ using System;
 namespace Kentico.Kontent.Delivery.Helpers
 {
     /// <summary>
-    /// Helpers for a <see cref="DeliveryOptions"/>
+    /// A class which contains helper methods on <see cref="DeliveryOptions"/>.
     /// </summary>
     public static class DeliveryOptionsHelpers
     {

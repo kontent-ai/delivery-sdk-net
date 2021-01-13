@@ -6,7 +6,7 @@ using Microsoft.Extensions.Options;
 namespace Kentico.Kontent.Delivery.Caching.Factories
 {
     /// <summary>
-    /// A factory for manually create an <see cref="IDeliveryCacheManager"/> instance.
+    /// A factory class for manually create an <see cref="IDeliveryCacheManager"/> instance.
     /// </summary>
     public static class CacheManagerFactory
     {

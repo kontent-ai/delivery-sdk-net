@@ -9,7 +9,7 @@ namespace Kentico.Kontent.Delivery
     /// <summary>
     /// A factory class for <see cref="IDeliveryClient"/>
     /// </summary>
-    public sealed class DeliveryClientFactory : IDeliveryClientFactory
+    public class DeliveryClientFactory : IDeliveryClientFactory
     {
         private readonly IServiceProvider _serviceProvider;
 

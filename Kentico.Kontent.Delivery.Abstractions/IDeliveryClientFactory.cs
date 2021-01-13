@@ -1,7 +1,7 @@
 ﻿namespace Kentico.Kontent.Delivery.Abstractions
 {
     /// <summary>
-    /// Defines a method for getting a named <see cref="IDeliveryClient"/>
+    /// A factory class for <see cref="IDeliveryClient"/>
     /// </summary>
     public interface IDeliveryClientFactory
     {

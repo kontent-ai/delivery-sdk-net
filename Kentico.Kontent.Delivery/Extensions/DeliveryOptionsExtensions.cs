@@ -3,7 +3,7 @@
 namespace Kentico.Kontent.Delivery.Extensions
 {
     /// <summary>
-    /// Extensions for a <see cref="DeliveryOptions"/>
+    /// A class which contains extension methods on <see cref="DeliveryOptions"/>.
     /// </summary>
     public static class DeliveryOptionsExtensions
     {
