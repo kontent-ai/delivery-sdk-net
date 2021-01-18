@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Net;
 using System.Net.Http;
+using System.Text;
 using System.Threading.Tasks;
 using Kentico.Kontent.Delivery.Abstractions;
 using Kentico.Kontent.Delivery.ContentItems;
@@ -13,6 +14,7 @@ using Kentico.Kontent.Delivery.TaxonomyGroups;
 using Kentico.Kontent.Delivery.Urls;
 using Kentico.Kontent.Delivery.Urls.QueryParameters;
 using Kentico.Kontent.Delivery.Urls.QueryParameters.Filters;
+using Microsoft.AspNetCore.WebUtilities;
 using Microsoft.Extensions.Options;
 using Newtonsoft.Json;
 using Newtonsoft.Json.Linq;
@@ -78,7 +80,7 @@ namespace Kentico.Kontent.Delivery
             var endpointUrl = UrlBuilder.GetItemUrl(codename, parameters);
             var response = await GetDeliveryResponseAsync(endpointUrl);
             var content = await response.GetJsonContentAsync();
-            var model = await ModelProvider.GetContentItemModelAsync<T>(content["item"], content["modular_content"]);
+            var model = await ModelProvider.GetContentItemModelAsync<T>(content?["item"], content?["modular_content"]);
             return new DeliveryItemResponse<T>(response, model, await GetLinkedItemsAsync(content));
         }
 
@@ -96,6 +98,7 @@ namespace Kentico.Kontent.Delivery
             var content = await response.GetJsonContentAsync();
             var pagination = content["pagination"].ToObject<Pagination>(Serializer);
             var items = ((JArray)content["items"]).Select(async source => await ModelProvider.GetContentItemModelAsync<T>(source, content["modular_content"]));
+
             return new DeliveryItemListingResponse<T>(response, (await Task.WhenAll(items)).ToList(), await GetLinkedItemsAsync(content), pagination);
         }
 
@@ -142,7 +145,7 @@ namespace Kentico.Kontent.Delivery
 
             var endpointUrl = UrlBuilder.GetTypeUrl(codename);
             var response = await GetDeliveryResponseAsync(endpointUrl);
-            var type = (await response.GetJsonContentAsync()).ToObject<ContentType>(Serializer);
+            var type = (await response.GetJsonContentAsync())?.ToObject<ContentType>(Serializer);
 
             return new DeliveryTypeResponse(response, type);
         }
@@ -193,7 +196,7 @@ namespace Kentico.Kontent.Delivery
             var endpointUrl = UrlBuilder.GetContentElementUrl(contentTypeCodename, contentElementCodename);
             var response = await GetDeliveryResponseAsync(endpointUrl);
             var content = await response.GetJsonContentAsync();
-            var element = content.ToObject<IContentElement>(Serializer);
+            var element = content?.ToObject<IContentElement>(Serializer);
             return new DeliveryElementResponse(response, element);
         }
 
@@ -216,7 +219,7 @@ namespace Kentico.Kontent.Delivery
 
             var endpointUrl = UrlBuilder.GetTaxonomyUrl(codename);
             var response = await GetDeliveryResponseAsync(endpointUrl);
-            var taxonomy = (await response.GetJsonContentAsync()).ToObject<TaxonomyGroup>(Serializer);
+            var taxonomy = (await response.GetJsonContentAsync())?.ToObject<TaxonomyGroup>(Serializer);
             return new DeliveryTaxonomyResponse(response, taxonomy);
         }
 
@@ -308,15 +311,22 @@ namespace Kentico.Kontent.Delivery
                 return new ApiResponse(httpResponseMessage.Content, hasStaleContent, continuationToken, requestUri);
             }
 
-            string faultContent = null;
+            Error error = null;
 
             // The null-coalescing operator causes tests to fail for NREs, hence the "if" statement.
             if (httpResponseMessage?.Content != null)
             {
-                faultContent = await httpResponseMessage.Content.ReadAsStringAsync();
+                using var streamReader = new HttpRequestStreamReader(await httpResponseMessage.Content.ReadAsStreamAsync(), Encoding.UTF8);
+                using var jsonReader = new JsonTextReader(streamReader);
+                error = Serializer.Deserialize<Error>(jsonReader);
             }
 
-            throw new DeliveryException(httpResponseMessage, $"There was an error while fetching content:\nStatus:{httpResponseMessage.StatusCode}\nReason:{httpResponseMessage.ReasonPhrase}\n\n{faultContent}");
+            if(error != null)
+            {
+                return new ApiResponse(httpResponseMessage.Content, false, null, null, error);
+            }
+
+            throw new DeliveryException(httpResponseMessage);
         }
 
         private bool HasStaleContent(HttpResponseMessage httpResponseMessage)
@@ -368,9 +378,9 @@ namespace Kentico.Kontent.Delivery
 
         private async Task<IList<object>> GetLinkedItemsAsync(JObject content)
         {
-            var items = ((JObject)content["modular_content"]).Values().Select(async source => await ModelProvider.GetContentItemModelAsync<object>(source, content["modular_content"]));
+            var items = ((JObject)content?["modular_content"])?.Values()?.Select(async source => await ModelProvider.GetContentItemModelAsync<object>(source, content?["modular_content"]));
 
-            return (await Task.WhenAll(items)).ToList();
+            return items == null ? null : (await Task.WhenAll(items)).ToList();
         }
     }
 }

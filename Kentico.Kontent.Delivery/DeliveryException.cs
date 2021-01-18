@@ -1,7 +1,6 @@
 ﻿using System;
 using System.Net;
 using System.Net.Http;
-using Newtonsoft.Json.Linq;
 
 namespace Kentico.Kontent.Delivery
 {
@@ -24,19 +23,10 @@ namespace Kentico.Kontent.Delivery
         /// Initializes a new instance of the <see cref="DeliveryException"/> class with information from an error response.
         /// </summary>
         /// <param name="response">The unsuccessful response.</param>
-        /// <param name="responseStr">The error response.</param>
-        public DeliveryException(HttpResponseMessage response, string responseStr)
+        public DeliveryException(HttpResponseMessage response)
         {
-            StatusCode = response.StatusCode;
-
-            try
-            {
-                Message = JObject.Parse(responseStr)["message"].ToString();
-            }
-            catch (Exception)
-            {
-                Message = $"Unknown error. HTTP status code: {StatusCode}. Reason phrase: {response.ReasonPhrase}.";
-            }
+            StatusCode = (HttpStatusCode)(response?.StatusCode);
+            Message = $"Unknown error. HTTP status code: {response?.StatusCode}. Reason phrase: {response?.ReasonPhrase}.";
         }
     }
 }
