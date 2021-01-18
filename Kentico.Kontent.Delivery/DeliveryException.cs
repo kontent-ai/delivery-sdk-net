@@ -1,7 +1,6 @@
 ﻿using System;
 using System.Net;
 using System.Net.Http;
-using Newtonsoft.Json.Linq;
 
 namespace Kentico.Kontent.Delivery
 {
@@ -26,6 +25,7 @@ namespace Kentico.Kontent.Delivery
         /// <param name="response">The unsuccessful response.</param>
         public DeliveryException(HttpResponseMessage response)
         {
+            StatusCode = (HttpStatusCode)(response?.StatusCode);
             Message = $"Unknown error. HTTP status code: {response?.StatusCode}. Reason phrase: {response?.ReasonPhrase}.";
         }
     }
