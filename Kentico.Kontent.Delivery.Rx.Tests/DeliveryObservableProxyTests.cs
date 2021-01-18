@@ -171,6 +171,16 @@ namespace Kentico.Kontent.Delivery.Rx.Tests
             Assert.All(taxonomies, taxonomy => Assert.NotNull(taxonomy.Terms));
         }
 
+        [Fact]
+        public void LanguagesRetrieved()
+        {
+            var observable = new DeliveryObservableProxy(GetDeliveryClient(MockLanguages)).GetLanguagesObservable(new SkipParameter(1));
+            var languages = observable.ToEnumerable().ToList();
+
+            Assert.NotEmpty(languages);
+            Assert.All(languages, language => Assert.NotNull(language.System));
+        }
+
         private IDeliveryClient GetDeliveryClient(Action mockAction)
         {
             mockAction();
@@ -261,6 +271,13 @@ namespace Kentico.Kontent.Delivery.Rx.Tests
             _mockHttp.When($"{_baseUrl}/taxonomies")
                 .WithQueryString("skip=1")
                 .Respond("application/json", File.ReadAllText(Path.Combine(Environment.CurrentDirectory, $"Fixtures{Path.DirectorySeparatorChar}taxonomies_multiple.json")));
+        }
+
+        private void MockLanguages()
+        {
+            _mockHttp.When($"{_baseUrl}/languages")
+                .WithQueryString("skip=1")
+                .Respond("application/json", File.ReadAllText(Path.Combine(Environment.CurrentDirectory, $"Fixtures{Path.DirectorySeparatorChar}languages.json")));
         }
 
         private static void AssertArticlePropertiesNotNull(Article item)

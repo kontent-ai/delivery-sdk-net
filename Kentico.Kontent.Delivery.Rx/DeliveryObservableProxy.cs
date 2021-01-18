@@ -189,6 +189,26 @@ namespace Kentico.Kontent.Delivery.Rx
             return (DeliveryClient?.GetTaxonomiesAsync(parameters))?.Result?.Taxonomies?.ToObservable();
         }
 
+        /// <summary>
+        /// Returns an observable of languages.
+        /// </summary>
+        /// <param name="parameters">A collection of query parameters, for example, for paging.</param>
+        /// <returns>The <see cref="IObservable{ILanguage}"/> that represents the language. If no query parameters are specified, all languages are returned.</returns>
+        public IObservable<ILanguage> GetLanguagesObservable(IEnumerable<IQueryParameter> parameters)
+        {
+            return (DeliveryClient?.GetLanguagesAsync(parameters))?.Result?.Languages?.ToObservable();
+        }
+
+        /// <summary>
+        /// Returns an observable of languages.
+        /// </summary>
+        /// <param name="parameters">A collection of query parameters, for example, for paging.</param>
+        /// <returns>The <see cref="IObservable{ILanguage}"/> that represents the language. If no query parameters are specified, all languages are returned.</returns>
+        public IObservable<ILanguage> GetLanguagesObservable(params IQueryParameter[] parameters)
+        {
+            return GetLanguagesObservable((IEnumerable<IQueryParameter>)parameters);
+        }
+
         #endregion
         #region "Private methods"
 

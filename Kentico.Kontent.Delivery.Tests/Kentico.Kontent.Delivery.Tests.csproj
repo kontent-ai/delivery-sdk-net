@@ -63,6 +63,9 @@
   </ItemGroup>
 
   <ItemGroup>
+    <None Update="Fixtures\DeliveryClient\languages.json">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </None>
     <None Update="Fixtures\DeliveryClient\articles_feed_2.json">
       <CopyToOutputDirectory>Always</CopyToOutputDirectory>
     </None>

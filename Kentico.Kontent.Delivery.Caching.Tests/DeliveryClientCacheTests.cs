@@ -606,5 +606,86 @@ namespace Kentico.Kontent.Delivery.Caching.Tests
         }
 
         #endregion
+
+        #region GetLanguages
+
+        [Theory]
+        [InlineData(CacheTypeEnum.Memory, CacheExpirationType.Absolute)]
+        [InlineData(CacheTypeEnum.Memory, CacheExpirationType.Sliding)]
+        [InlineData(CacheTypeEnum.Distributed, CacheExpirationType.Absolute)]
+        [InlineData(CacheTypeEnum.Distributed, CacheExpirationType.Sliding)]
+        public async Task GetLanguagesAsync_ResponseIsCached(CacheTypeEnum cacheType, CacheExpirationType cacheExpirationType)
+        {
+            var url = "languages";
+            var languageA = CreateLanguage("language_codename", "language name");
+            var languages = CreateLanguagesResponse(new[] { languageA });
+            var updatedLanguages = CreateLanguagesResponse(new[] { languageA, CreateLanguage("second_language_codename", "Second language") });
+
+            var scenarioBuilder = new ScenarioBuilder(cacheType, cacheExpirationType);
+
+            var scenario = scenarioBuilder.WithResponse(url, languages).Build();
+            var firstResponse = await scenario.CachingClient.GetLanguagesAsync();
+
+            scenario = scenarioBuilder.WithResponse(url, updatedLanguages).Build();
+            var secondResponse = await scenario.CachingClient.GetLanguagesAsync();
+
+            firstResponse.Should().NotBeNull();
+            firstResponse.Should().BeEquivalentTo(secondResponse, o => o.DateTimesBsonCorrection());
+            scenario.GetRequestCount(url).Should().Be(1);
+        }
+
+        [Theory]
+        [InlineData(CacheTypeEnum.Memory, CacheExpirationType.Absolute)]
+        [InlineData(CacheTypeEnum.Memory, CacheExpirationType.Sliding)]
+        [InlineData(CacheTypeEnum.Distributed, CacheExpirationType.Absolute)]
+        [InlineData(CacheTypeEnum.Distributed, CacheExpirationType.Sliding)]
+        public async Task GetLanguagesAsync_InvalidatedByLanguagesKey(CacheTypeEnum cacheType, CacheExpirationType cacheExpirationType)
+        {
+            var url = "languages";
+            var languageA = CreateLanguage("language_codename", "language name");
+            var languages = CreateLanguagesResponse(new[] { languageA });
+            var updatedLanguages = CreateLanguagesResponse(new[] { languageA, CreateLanguage("second_language_codename", "Second language") });
+
+            var scenarioBuilder = new ScenarioBuilder(cacheType, cacheExpirationType);
+
+            var scenario = scenarioBuilder.WithResponse(url, languages).Build();
+            var firstResponse = await scenario.CachingClient.GetLanguagesAsync();
+
+            scenario = scenarioBuilder.WithResponse(url, updatedLanguages).Build();
+            scenario.InvalidateDependency(CacheHelpers.GetLanguagesKey(null));
+            var secondResponse = await scenario.CachingClient.GetLanguagesAsync();
+
+            firstResponse.Should().NotBeNull();
+            secondResponse.Should().NotBeNull();
+            firstResponse.Should().NotBeEquivalentTo(secondResponse);
+            scenario.GetRequestCount(url).Should().Be(2);
+        }
+
+        [Theory]
+        [InlineData(CacheExpirationType.Absolute)]
+        [InlineData(CacheExpirationType.Sliding)]
+        public async Task GetLanguagesAsync_InvalidatedByLanguagesDependency(CacheExpirationType cacheExpirationType)
+        {
+            var url = "languages";
+            var languageA = CreateLanguage("language_codename", "language name");
+            var languages = CreateLanguagesResponse(new[] { languageA });
+            var updatedLanguages = CreateLanguagesResponse(new[] { languageA, CreateLanguage("second_language_codename", "Second language") });
+
+            var scenarioBuilder = new ScenarioBuilder(cacheExpirationType: cacheExpirationType);
+
+            var scenario = scenarioBuilder.WithResponse(url, languages).Build();
+            var firstResponse = await scenario.CachingClient.GetLanguagesAsync();
+
+            scenario = scenarioBuilder.WithResponse(url, updatedLanguages).Build();
+            scenario.InvalidateDependency(CacheHelpers.GetLanguagesDependencyKey());
+            var secondResponse = await scenario.CachingClient.GetLanguagesAsync();
+
+            firstResponse.Should().NotBeNull();
+            secondResponse.Should().NotBeNull();
+            firstResponse.Should().NotBeEquivalentTo(secondResponse);
+            scenario.GetRequestCount(url).Should().Be(2);
+        }
+
+        #endregion
     }
 }

@@ -68,5 +68,13 @@ namespace Kentico.Kontent.Delivery.Abstractions
         /// <param name="parameters">A collection of query parameters, for example, for paging.</param>
         /// <returns>The <see cref="IDeliveryTaxonomyListingResponse"/> instance that represents the taxonomy groups. If no query parameters are specified, all taxonomy groups are returned.</returns>
         Task<IDeliveryTaxonomyListingResponse> GetTaxonomiesAsync(IEnumerable<IQueryParameter> parameters = null);
+
+
+        /// <summary>
+        /// Returns all active languages assigned to a given project and matching the optional filtering parameters.
+        /// </summary>
+        /// <param name="parameters">A collection of query parameters, for example, for paging.</param>
+        /// <returns>The <see cref="IDeliveryLanguageListingResponse"/> instance that represents the languages. If no query parameters are specified, all languages are returned.</returns>
+        Task<IDeliveryLanguageListingResponse> GetLanguagesAsync(IEnumerable<IQueryParameter> parameters = null);
     }
 }
