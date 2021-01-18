@@ -26,5 +26,15 @@
         /// Gets the URL used to retrieve this response for debugging purposes.
         /// </summary>
         string RequestUrl { get; }
+
+        /// <summary>
+        /// Indicates whether a call to Kentico Kontent Delivery API was successful or not.
+        /// </summary>
+        bool IsSuccess { get; }
+
+        /// <summary>
+        /// Gets error object with message, error code.
+        /// </summary>
+        IError Error { get; }
     }
 }

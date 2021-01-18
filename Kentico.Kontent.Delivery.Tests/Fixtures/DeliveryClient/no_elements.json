@@ -1,0 +1,26 @@
+{
+  "items": [
+    {
+      "system": {
+        "id": "3eb5191f-4ce1-4965-bffb-87d8f3cdca08",
+        "name": "New York",
+        "codename": "new_york",
+        "language": "en-US",
+        "type": "cafe",
+        "collection": "default",
+        "sitemap_locations": [
+          "cafes",
+          "north_america"
+        ],
+        "last_modified": "2016-09-05T14:14:08.4285085Z"
+      }
+    }
+  ],
+  "modular_content": {},
+  "pagination": {
+    "skip": 0,
+    "limit": 0,
+    "count": 6,
+    "next_page": ""
+  }
+}
