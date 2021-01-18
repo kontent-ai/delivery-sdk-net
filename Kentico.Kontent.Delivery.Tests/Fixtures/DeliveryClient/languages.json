@@ -1,0 +1,31 @@
+﻿{
+  "languages": [
+    {
+      "system": {
+        "id": "00000000-0000-0000-0000-000000000000",
+        "name": "Default project language",
+        "codename": "default"
+      }
+    },
+    {
+      "system": {
+        "id": "8fab3c4c-2ba4-47a9-8e53-df8e6154054f",
+        "name": "First Lanugage",
+        "codename": "first_language"
+      }
+    },
+    {
+      "system": {
+        "id": "24d5aaa6-a0db-4e20-8c11-6eb272bbe168",
+        "name": "Second Language",
+        "codename": "second_language"
+      }
+    }
+  ],
+  "pagination": {
+    "skip": 0,
+    "limit": 0,
+    "count": 59,
+    "next_page": ""
+  }
+}

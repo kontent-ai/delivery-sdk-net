@@ -141,5 +141,20 @@ namespace Kentico.Kontent.Delivery.Caching
                 response => response.Taxonomies.Any(),
                 CacheHelpers.GetTaxonomiesDependencies);
         }
+
+        /// <summary>
+        /// Returns languages.
+        /// </summary>
+        /// <param name="parameters">A collection of query parameters, for example, for paging.</param>
+        /// <returns>The <see cref="IDeliveryLanguageListingResponse"/> instance that represents the languages. If no query parameters are specified, all languages are returned.</returns>
+        public async Task<IDeliveryLanguageListingResponse> GetLanguagesAsync(IEnumerable<IQueryParameter> parameters = null)
+        {
+            var queryParameters = parameters?.ToList();
+            return await _deliveryCacheManager.GetOrAddAsync(
+                CacheHelpers.GetLanguagesKey(queryParameters),
+                () => _deliveryClient.GetLanguagesAsync(queryParameters),
+                response => response.Languages.Any(),
+                CacheHelpers.GetLanguagesDependencies);
+        }
     }
 }

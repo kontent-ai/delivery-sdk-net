@@ -12,6 +12,7 @@
     <None Remove="Fixtures\articles.json" />
     <None Remove="Fixtures\coffee_beverages_explained.json" />
     <None Remove="Fixtures\items.json" />
+    <None Remove="Fixtures\languages.json" />
     <None Remove="Fixtures\taxonomies_multiple.json" />
     <None Remove="Fixtures\taxonomies_personas.json" />
     <None Remove="Fixtures\types.json" />
@@ -19,6 +20,9 @@
 
   <ItemGroup>
     <Content Include="Fixtures\article-type.json">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </Content>
+    <Content Include="Fixtures\languages.json">
       <CopyToOutputDirectory>Always</CopyToOutputDirectory>
     </Content>
     <Content Include="Fixtures\articles.json">
