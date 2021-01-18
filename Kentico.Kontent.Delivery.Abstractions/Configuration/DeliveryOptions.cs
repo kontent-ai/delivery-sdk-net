@@ -67,5 +67,10 @@
         /// This behavior can also be enabled for individual requests with the IncludeTotalCountParameter.
         /// </summary>
         public bool IncludeTotalCount { get; set; }
+
+        /// <summary>
+        /// A name of the options.
+        /// </summary>
+        internal string Name { get; set; }
     }
 }

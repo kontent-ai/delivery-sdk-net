@@ -21,9 +21,7 @@ namespace Kentico.Kontent.Delivery.Tests.Factories
         {
             var deliveryClientFactory = new Delivery.DeliveryClientFactory(_serviceCollection.BuildServiceProvider());
 
-            var result = deliveryClientFactory.Get("clientName");
-
-            result.Should().BeNull();
+            Assert.Throws<NotImplementedException>(() => deliveryClientFactory.Get("clientName"));
         }
 
         [Fact]

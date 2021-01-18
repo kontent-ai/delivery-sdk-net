@@ -1,6 +1,4 @@
-﻿using Autofac;
-using Autofac.Core.Registration;
-using Kentico.Kontent.Delivery.Abstractions;
+﻿using Kentico.Kontent.Delivery.Abstractions;
 using Kentico.Kontent.Delivery.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Options;
@@ -8,13 +6,13 @@ using Newtonsoft.Json;
 using System;
 using System.Collections.Concurrent;
 
-namespace Kentico.Kontent.Delivery.Extensions.Autofac.DependencyInjection
+namespace Kentico.Kontent.Delivery.Extensions.DependencyInjection
 {
-    internal class DeliveryClientFactory : IDeliveryClientFactory
+    internal class NamedDeliveryClientFactory : IDeliveryClientFactory
     {
         private readonly IOptionsMonitor<DeliveryOptions> _deliveryOptions;
         private readonly IServiceProvider _serviceProvider;
-        private readonly IComponentContext _componentContext;
+        private readonly ICustomServiceProvider _customServiceProvider;
         private readonly ConcurrentDictionary<string, IDeliveryClient> _cache = new ConcurrentDictionary<string, IDeliveryClient>();
 
         /// <summary>
@@ -22,13 +20,13 @@ namespace Kentico.Kontent.Delivery.Extensions.Autofac.DependencyInjection
         /// </summary>
         /// <param name="deliveryOptions">Used for notifications when <see cref="DeliveryOptions"/> instances change.</param>
         /// <param name="serviceProvider">An <see cref="IServiceProvider"/> instance.</param>
-        /// <param name="componentContext">An autofac component context.</param>
-        public DeliveryClientFactory(IOptionsMonitor<DeliveryOptions> deliveryOptions, IServiceProvider serviceProvider,
-            IComponentContext componentContext)
+        /// <param name="customServiceProvider">A custom service provider.</param>
+        public NamedDeliveryClientFactory(IOptionsMonitor<DeliveryOptions> deliveryOptions, IServiceProvider serviceProvider,
+            ICustomServiceProvider customServiceProvider)
         {
             _deliveryOptions = deliveryOptions;
             _serviceProvider = serviceProvider;
-            _componentContext = componentContext;
+            _customServiceProvider = customServiceProvider;
         }
 
         /// <inheritdoc />
@@ -42,9 +40,7 @@ namespace Kentico.Kontent.Delivery.Extensions.Autofac.DependencyInjection
             if (!_cache.TryGetValue(name, out var client))
             {
                 var deliveryClientOptions = _deliveryOptions.Get(name);
-
-                // Validate that the option object is indeed configured
-                if (deliveryClientOptions.ProjectId != null)
+                if (deliveryClientOptions.Name == name)
                 {
                     client = Build(deliveryClientOptions, name);
 
@@ -59,7 +55,7 @@ namespace Kentico.Kontent.Delivery.Extensions.Autofac.DependencyInjection
 
         private IDeliveryClient Build(DeliveryOptions options, string name)
         {
-            return Delivery.DeliveryClientFactory.Create(
+            return DeliveryClientFactory.Create(
                 new DeliveryOptionsMonitor(options, name),
                 GetNamedServiceOrDefault<IModelProvider>(name),
                 GetNamedServiceOrDefault<IRetryPolicyProvider>(name),
@@ -70,14 +66,13 @@ namespace Kentico.Kontent.Delivery.Extensions.Autofac.DependencyInjection
 
         private T GetNamedServiceOrDefault<T>(string name)
         {
-            try
+            var service = _customServiceProvider.GetService<T>(name);
+            if (service == null)
             {
-                return _componentContext.ResolveNamed<T>(name);
+                service = GetService<T>();
             }
-            catch (ComponentNotRegisteredException)
-            {
-                return GetService<T>();
-            }
+
+            return service;
         }
 
         private T GetService<T>()

@@ -60,7 +60,7 @@ namespace Kentico.Kontent.Delivery.Caching.Tests
         [Theory]
         [InlineData(CacheTypeEnum.Memory)]
         [InlineData(CacheTypeEnum.Distributed)]
-        public void AddDeliveryClient_CacheWithDeliveryCacheOptions_GetNull(CacheTypeEnum cacheType)
+        public void AddDeliveryClient_CacheWithDeliveryCacheOptions_ThrowsNotImeplementException(CacheTypeEnum cacheType)
         {
             _serviceCollection.AddDeliveryClient(new DeliveryOptions() { ProjectId = Guid.NewGuid().ToString() });
             _serviceCollection.AddDeliveryClientCache(new DeliveryCacheOptions()
@@ -71,9 +71,7 @@ namespace Kentico.Kontent.Delivery.Caching.Tests
             var sp = _serviceCollection.BuildServiceProvider();
             var factory = sp.GetRequiredService<IDeliveryClientFactory>();
 
-            var client = factory.Get("WrongName");
-
-            client.Should().BeNull();
+            Assert.Throws<NotImplementedException>(() => factory.Get("WrongName"));
         }
     }
 }

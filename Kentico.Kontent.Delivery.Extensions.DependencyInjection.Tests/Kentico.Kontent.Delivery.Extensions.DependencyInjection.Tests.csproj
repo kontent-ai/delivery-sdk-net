@@ -23,7 +23,7 @@
 
   <ItemGroup>
     <ProjectReference Include="..\Kentico.Kontent.Delivery.Abstractions\Kentico.Kontent.Delivery.Abstractions.csproj" />
-    <ProjectReference Include="..\Kentico.Kontent.Delivery.Extensions.Autofac.DependencyInjection\Kentico.Kontent.Delivery.Extensions.Autofac.DependencyInjection.csproj" />
+    <ProjectReference Include="..\Kentico.Kontent.Delivery.Extensions.DependencyInjection\Kentico.Kontent.Delivery.Extensions.DependencyInjection.csproj" />
   </ItemGroup>
 
 </Project>

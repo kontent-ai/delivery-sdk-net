@@ -7,13 +7,13 @@ using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Options;
 using Xunit;
 
-namespace Kentico.Kontent.Delivery.Extensions.Autofac.DependencyInjection.Tests
+namespace Kentico.Kontent.Delivery.Extensions.DependencyInjection.Tests
 {
     public class DeliveryClientCacheFactoryTests
     {
         private readonly IOptionsMonitor<DeliveryCacheOptions> _deliveryCacheOptionsMock;
         private readonly IDeliveryClientFactory _innerDeliveryClientFactoryMock;
-        private readonly IComponentContext _container;
+        private readonly ICustomServiceProvider _autofacServiceProvider;
         private readonly IServiceCollection _serviceCollection;
 
         private const string _clientName = "ClientName";
@@ -22,7 +22,7 @@ namespace Kentico.Kontent.Delivery.Extensions.Autofac.DependencyInjection.Tests
         {
             _deliveryCacheOptionsMock = A.Fake<IOptionsMonitor<DeliveryCacheOptions>>();
             _innerDeliveryClientFactoryMock = A.Fake<IDeliveryClientFactory>();
-            _container = A.Fake<IComponentContext>();
+            _autofacServiceProvider = A.Fake<ICustomServiceProvider>();
             _serviceCollection = new ServiceCollection()
                 .AddMemoryCache();
         }
@@ -34,7 +34,7 @@ namespace Kentico.Kontent.Delivery.Extensions.Autofac.DependencyInjection.Tests
             A.CallTo(() => _deliveryCacheOptionsMock.Get(_clientName))
                 .Returns(deliveryCacheOptions);
 
-            var deliveryClientFactory = new DeliveryClientCacheFactory(_innerDeliveryClientFactoryMock, _deliveryCacheOptionsMock, _serviceCollection.BuildServiceProvider(), _container);
+            var deliveryClientFactory = new NamedDeliveryClientCacheFactory(_innerDeliveryClientFactoryMock, _deliveryCacheOptionsMock, _serviceCollection.BuildServiceProvider(), _autofacServiceProvider);
 
             var result = deliveryClientFactory.Get(_clientName);
 
@@ -48,7 +48,7 @@ namespace Kentico.Kontent.Delivery.Extensions.Autofac.DependencyInjection.Tests
             A.CallTo(() => _deliveryCacheOptionsMock.Get(_clientName))
                 .Returns(deliveryCacheOptions);
 
-            var deliveryClientFactory = new DeliveryClientCacheFactory(_innerDeliveryClientFactoryMock, _deliveryCacheOptionsMock, _serviceCollection.BuildServiceProvider(), _container);
+            var deliveryClientFactory = new NamedDeliveryClientCacheFactory(_innerDeliveryClientFactoryMock, _deliveryCacheOptionsMock, _serviceCollection.BuildServiceProvider(), _autofacServiceProvider);
 
             var result = deliveryClientFactory.Get("WrongName");
 

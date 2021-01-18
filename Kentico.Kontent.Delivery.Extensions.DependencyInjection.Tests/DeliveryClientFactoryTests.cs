@@ -1,5 +1,4 @@
-﻿using Autofac;
-using FakeItEasy;
+﻿using FakeItEasy;
 using FluentAssertions;
 using Kentico.Kontent.Delivery.Abstractions;
 using Microsoft.Extensions.DependencyInjection;
@@ -7,12 +6,12 @@ using Microsoft.Extensions.Options;
 using System;
 using Xunit;
 
-namespace Kentico.Kontent.Delivery.Extensions.Autofac.DependencyInjection.Tests
+namespace Kentico.Kontent.Delivery.Extensions.DependencyInjection.Tests
 {
     public class DeliveryClientFactoryTests
     {
         private readonly IOptionsMonitor<DeliveryOptions> _deliveryOptionsMock;
-        private IComponentContext _componentContext;
+        private ICustomServiceProvider _autofacServiceProvider;
         private readonly IServiceProvider _serviceProvider;
 
         private const string _clientName = "ClientName";
@@ -20,18 +19,18 @@ namespace Kentico.Kontent.Delivery.Extensions.Autofac.DependencyInjection.Tests
         public DeliveryClientFactoryTests()
         {
             _deliveryOptionsMock = A.Fake<IOptionsMonitor<DeliveryOptions>>();
-            _componentContext = A.Fake<IComponentContext>();
+            _autofacServiceProvider = A.Fake<ICustomServiceProvider>();
             _serviceProvider = new ServiceCollection().BuildServiceProvider();
         }
 
         [Fact]
         public void GetNamedClient_WithCorrectName_GetClient()
         {
-            var deliveryOptions = new DeliveryOptions() { ProjectId = Guid.NewGuid().ToString() };
+            var deliveryOptions = new DeliveryOptions() { ProjectId = Guid.NewGuid().ToString(), Name = _clientName };
             A.CallTo(() => _deliveryOptionsMock.Get(_clientName))
                 .Returns(deliveryOptions);
 
-            var deliveryClientFactory = new DeliveryClientFactory(_deliveryOptionsMock, _serviceProvider, _componentContext);
+            var deliveryClientFactory = new NamedDeliveryClientFactory(_deliveryOptionsMock, _serviceProvider, _autofacServiceProvider);
 
             var result = deliveryClientFactory.Get(_clientName);
 
@@ -45,7 +44,7 @@ namespace Kentico.Kontent.Delivery.Extensions.Autofac.DependencyInjection.Tests
             A.CallTo(() => _deliveryOptionsMock.Get(_clientName))
                 .Returns(deliveryOptions);
 
-            var deliveryClientFactory = new DeliveryClientFactory(_deliveryOptionsMock, _serviceProvider, _componentContext);
+            var deliveryClientFactory = new NamedDeliveryClientFactory(_deliveryOptionsMock, _serviceProvider, _autofacServiceProvider);
 
             var result = deliveryClientFactory.Get("WrongName");
 

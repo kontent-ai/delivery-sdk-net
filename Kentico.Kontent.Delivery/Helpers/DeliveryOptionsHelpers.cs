@@ -12,7 +12,7 @@ namespace Kentico.Kontent.Delivery.Helpers
         /// <summary>
         /// Builds the <see cref="DeliveryOptions"/> instance from the delegate.
         /// </summary>
-        /// <param name="buildDeliveryOptions"></param>
+        /// <param name="buildDeliveryOptions">A delegate which returns a <see cref="DeliveryOptions"/> instance.</param>
         /// <returns></returns>
         public static DeliveryOptions Build(Func<IDeliveryOptionsBuilder, DeliveryOptions> buildDeliveryOptions)
         {

@@ -21,7 +21,7 @@
 
   <ItemGroup>
     <AssemblyAttribute Include="System.Runtime.CompilerServices.InternalsVisibleToAttribute">
-      <_Parameter1>Kentico.Kontent.Delivery.Extensions.Autofac.DependencyInjection.Tests</_Parameter1>
+      <_Parameter1>Kentico.Kontent.Delivery.Extensions.DependencyInjection.Tests</_Parameter1>
     </AssemblyAttribute>
   </ItemGroup>
 
