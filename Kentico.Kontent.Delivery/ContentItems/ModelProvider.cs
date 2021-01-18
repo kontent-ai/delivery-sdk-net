@@ -79,7 +79,7 @@ namespace Kentico.Kontent.Delivery.ContentItems
         internal async Task<object> GetContentItemModelAsync(Type modelType, JToken serializedItem, JObject linkedItems, Dictionary<string, object> processedItems = null, HashSet<RichTextContentElements> currentlyResolvedRichStrings = null)
         {
             processedItems ??= new Dictionary<string, object>();
-            IContentItemSystemAttributes itemSystemAttributes = serializedItem["system"].ToObject<IContentItemSystemAttributes>(Serializer);
+            IContentItemSystemAttributes itemSystemAttributes = serializedItem?["system"]?.ToObject<IContentItemSystemAttributes>(Serializer);
 
             var instance = CreateInstance(modelType, ref itemSystemAttributes, ref processedItems);
             if (instance == null)
@@ -155,16 +155,16 @@ namespace Kentico.Kontent.Delivery.ContentItems
             if (detectedModelType == typeof(object) || detectedModelType.IsInterface)
             {
                 // Try to find a more specific type or a type that can be instantiated
-                detectedModelType = TypeProvider?.GetType(itemSystemAttributes.Type);
+                detectedModelType = TypeProvider?.GetType(itemSystemAttributes?.Type);
             }
 
-            if (detectedModelType == null)
+            if (detectedModelType == null || itemSystemAttributes == null)
             {
                 return null;
             }
 
             var instance = Activator.CreateInstance(detectedModelType);
-            if (!processedItems.ContainsKey(itemSystemAttributes.Codename))
+            if (!processedItems.ContainsKey(itemSystemAttributes?.Codename))
             {
                 processedItems.Add(itemSystemAttributes.Codename, instance);
             }
@@ -174,10 +174,10 @@ namespace Kentico.Kontent.Delivery.ContentItems
 
         private static JObject GetElementData(JToken serializedItem)
         {
-            var elementsData = (JObject)serializedItem["elements"];
+            var elementsData = (JObject)serializedItem?["elements"];
             if (elementsData == null)
             {
-                throw new InvalidOperationException("Missing elements node in the content item data.");
+                return null;
             }
 
             return elementsData;
@@ -263,7 +263,7 @@ namespace Kentico.Kontent.Delivery.ContentItems
         }
 
         private (string Name, JObject Value)? GetElementData(JObject elementsData, PropertyInfo property, IContentItemSystemAttributes itemSystemAttributes)
-        => elementsData.Properties()?.Where(p => PropertyMapper.IsMatch(property, p.Name, itemSystemAttributes?.Type)).Select(p => (p.Name, (JObject)p.Value)).FirstOrDefault();
+        => elementsData?.Properties()?.Where(p => PropertyMapper.IsMatch(property, p.Name, itemSystemAttributes?.Type)).Select(p => (p.Name, (JObject)p.Value)).FirstOrDefault();
 
         private static bool IsGenericHierarchicalField(Type fieldType)
         {

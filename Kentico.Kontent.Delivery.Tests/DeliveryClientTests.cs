@@ -61,9 +61,14 @@ namespace Kentico.Kontent.Delivery.Tests
 
             var beveragesResponse = await client.GetItemAsync<Article>("coffee_beverages_explained");
             var beveragesItem = beveragesResponse.Item;
-            var barraItem = (await client.GetItemAsync<Coffee>("brazil_natural_barra_grande")).Item;
-            var roastsItem = (await client.GetItemAsync<Article>("on_roasts")).Item;
+            var barraResponse = await client.GetItemAsync<Coffee>("brazil_natural_barra_grande");
+            var barraItem = barraResponse.Item;
+            var roastsResponse = await client.GetItemAsync<Article>("on_roasts");
+            var roastsItem = roastsResponse.Item;
 
+            Assert.True(beveragesResponse?.ApiResponse?.IsSuccess);
+            Assert.True(barraResponse?.ApiResponse?.IsSuccess);
+            Assert.True(roastsResponse?.ApiResponse?.IsSuccess);
             Assert.Equal("article", beveragesItem.System.Type);
             Assert.Equal("en-US", beveragesItem.System.Language);
             Assert.Equal("default", beveragesItem.System.Collection);
@@ -95,6 +100,7 @@ namespace Kentico.Kontent.Delivery.Tests
             var beveragesResponse = await client.GetItemAsync<ArticleWithImplementedTypes>("coffee_beverages_explained");
 
             // Assert
+            Assert.True(beveragesResponse?.ApiResponse?.IsSuccess);
             Assert.NotEmpty(beveragesResponse.Item.TeaserImage);
             Assert.NotEmpty(beveragesResponse.Item.Personas);
         }
@@ -157,7 +163,7 @@ namespace Kentico.Kontent.Delivery.Tests
         [Fact]
         public async Task GetItemAsync_NotFound()
         {
-            string message = "{'message': 'The requested content item unscintillating_hemerocallidaceae_des_iroquois was not found.','request_id': '','error_code': 101,'specific_code': 0}";
+            string message = "{'message': 'The requested content item unscintillating_hemerocallidaceae_des_iroquois was not found.','request_id': '','error_code': 100,'specific_code': 0}";
 
             _mockHttp
                 .When($"{_baseUrl}/items/unscintillating_hemerocallidaceae_des_iroquois")
@@ -165,9 +171,16 @@ namespace Kentico.Kontent.Delivery.Tests
 
             var client = InitializeDeliveryClientWithACustomTypeProvider(_mockHttp);
 
-            await Assert.ThrowsAsync<DeliveryException>(async () => await client.GetItemAsync<object>("unscintillating_hemerocallidaceae_des_iroquois"));
-        }
+            var result = await client.GetItemAsync<Article>("unscintillating_hemerocallidaceae_des_iroquois");
 
+            Assert.Null(result.Item);
+            Assert.NotNull(result.ApiResponse.Error);
+            Assert.False(result.ApiResponse.IsSuccess);
+            Assert.Equal(100, result.ApiResponse.Error.ErrorCode);
+            Assert.Equal("The requested content item unscintillating_hemerocallidaceae_des_iroquois was not found.", result?.ApiResponse?.Error?.Message);
+            Assert.Equal(string.Empty, result.ApiResponse.Error.RequestId);
+            Assert.Equal(0, result.ApiResponse.Error.SpecificCode);
+        }
 
         [Fact]
         public async Task GetItemAsync_ComplexRichTextTableCell_ParseCorrectly()
@@ -217,6 +230,7 @@ namespace Kentico.Kontent.Delivery.Tests
 
             var response = await client.GetItemsAsync<object>(new EqualsFilter("system.type", "cafe"));
 
+            Assert.True(response?.ApiResponse?.IsSuccess);
             Assert.NotEmpty(response.Items);
         }
 
@@ -313,12 +327,17 @@ namespace Kentico.Kontent.Delivery.Tests
 
             var client = InitializeDeliveryClientWithACustomTypeProvider(_mockHttp);
 
-            var articleType = (await client.GetTypeAsync("article")).Type;
-            var coffeeType = (await client.GetTypeAsync("coffee")).Type;
+            var articleTypeResponse = await client.GetTypeAsync("article");
+            var articleType = articleTypeResponse.Type;
+
+            var coffeeTypeResponse = await client.GetTypeAsync("coffee");
+            var coffeeType = coffeeTypeResponse.Type;
 
             var taxonomyElement = articleType.Elements["personas"];
             var processingTaxonomyElement = coffeeType.Elements["processing"];
 
+            Assert.True(articleTypeResponse?.ApiResponse?.IsSuccess);
+            Assert.True(coffeeTypeResponse?.ApiResponse?.IsSuccess);
             Assert.Equal("article", articleType.System.Codename);
             Assert.Equal("text", articleType.Elements["title"].Type);
             Assert.Equal("rich_text", articleType.Elements["body_copy"].Type);
@@ -352,7 +371,41 @@ namespace Kentico.Kontent.Delivery.Tests
 
             var client = InitializeDeliveryClientWithACustomTypeProvider(_mockHttp);
 
-            await Assert.ThrowsAsync<DeliveryException>(async () => await client.GetTypeAsync("unequestrian_nonadjournment_sur_achoerodus"));
+            var result = await client.GetTypeAsync("unequestrian_nonadjournment_sur_achoerodus");
+
+            Assert.Null(result?.Type);
+            Assert.NotNull(result?.ApiResponse?.Error);
+            Assert.Equal(101, result?.ApiResponse?.Error?.ErrorCode);
+            Assert.False(result?.ApiResponse?.IsSuccess);
+            Assert.Equal("The requested content type unequestrian_nonadjournment_sur_achoerodus was not found", result?.ApiResponse?.Error?.Message);
+            Assert.Equal(string.Empty, result?.ApiResponse?.Error?.RequestId);
+            Assert.Equal(0, result?.ApiResponse?.Error?.SpecificCode);
+        }
+
+        [Fact]
+        public async Task GetItemsAsync_NoElements()
+        {
+            _mockHttp
+                .When($"{_baseUrl}/items")
+                .WithQueryString("system.type%5Beq%5D=cafe")
+                .Respond("application/json", await File.ReadAllTextAsync(Path.Combine(Environment.CurrentDirectory, $"Fixtures{Path.DirectorySeparatorChar}DeliveryClient{Path.DirectorySeparatorChar}no_elements.json")));
+
+            var client = InitializeDeliveryClientWithACustomTypeProvider(_mockHttp);
+
+            var response = await client.GetItemsAsync<Cafe>(new EqualsFilter("system.type", "cafe"));
+
+            Assert.Collection(response.Items, item =>
+            {
+                Assert.Null(item.City);
+                Assert.Null(item.Country);
+                Assert.Null(item.Email);
+                Assert.Null(item.Phone);
+                Assert.Null(item.Photo);
+                Assert.Null(item.Sitemap);
+                Assert.Null(item.State);
+                Assert.Null(item.Street);
+                Assert.NotNull(item.System);
+            });
         }
 
         [Fact]
@@ -367,6 +420,7 @@ namespace Kentico.Kontent.Delivery.Tests
 
             var response = await client.GetTypesAsync(new SkipParameter(1));
 
+            Assert.True(response?.ApiResponse?.IsSuccess);
             Assert.NotNull(response.ApiResponse.RequestUrl);
             Assert.NotEmpty(response.Types);
         }
@@ -391,20 +445,28 @@ namespace Kentico.Kontent.Delivery.Tests
 
             var client = InitializeDeliveryClientWithACustomTypeProvider(_mockHttp);
 
-            var element = (await client.GetContentElementAsync(Article.Codename, Article.TitleCodename)).Element;
-            var personasTaxonomyElement = (await client.GetContentElementAsync(Article.Codename, Article.PersonasCodename)).Element;
-            var processingTaxonomyElement = (await client.GetContentElementAsync(Coffee.Codename, Coffee.ProcessingCodename)).Element;
-            var themeMultipleChoiceElement = (await client.GetContentElementAsync(Tweet.Codename, Tweet.ThemeCodename)).Element;
+            var elementResponse = await client.GetContentElementAsync(Article.Codename, Article.TitleCodename);
+            var element = elementResponse.Element;
+            var personasTaxonomyElementResponse = await client.GetContentElementAsync(Article.Codename, Article.PersonasCodename);
+            var personasTaxonomyElement = personasTaxonomyElementResponse.Element;
+            var processingTaxonomyElementResponse = await client.GetContentElementAsync(Coffee.Codename, Coffee.ProcessingCodename);
+            var processingTaxonomyElement = processingTaxonomyElementResponse.Element;
+            var themeMultipleChoiceElementResponse = await client.GetContentElementAsync(Tweet.Codename, Tweet.ThemeCodename);
+            var themeMultipleChoiceElement = themeMultipleChoiceElementResponse.Element;
 
+            Assert.True(elementResponse?.ApiResponse?.IsSuccess);
             Assert.IsAssignableFrom<IContentElement>(element);
             Assert.Equal(Article.TitleCodename, element.Codename);
 
+            Assert.True(personasTaxonomyElementResponse?.ApiResponse?.IsSuccess);
             Assert.IsAssignableFrom<ITaxonomyElement>(personasTaxonomyElement);
             Assert.Equal(Article.PersonasCodename, ((ITaxonomyElement)personasTaxonomyElement).TaxonomyGroup);
 
+            Assert.True(processingTaxonomyElementResponse?.ApiResponse?.IsSuccess);
             Assert.IsAssignableFrom<ITaxonomyElement>(processingTaxonomyElement);
             Assert.Equal(Coffee.ProcessingCodename, ((ITaxonomyElement)processingTaxonomyElement).TaxonomyGroup);
 
+            Assert.True(themeMultipleChoiceElementResponse?.ApiResponse?.IsSuccess);
             Assert.IsAssignableFrom<IMultipleChoiceElement>(themeMultipleChoiceElement);
             Assert.NotEmpty(((IMultipleChoiceElement)themeMultipleChoiceElement).Options);
         }
@@ -414,14 +476,21 @@ namespace Kentico.Kontent.Delivery.Tests
         {
             string url = $"{_baseUrl}/types/anticommunistical_preventure_sur_helxine/elements/unlacerated_topognosis_sur_nonvigilantness";
 
-            string messsge = "{'message': 'The requested content type anticommunistical_preventure_sur_helxine was not found.','request_id': '','error_code': 101,'specific_code': 0}";
+            string messsge = "{'message': 'The requested content element unlacerated_topognosis_sur_nonvigilantness was not found in content type anticommunistical_preventure_sur_helxine','request_id': '','error_code': 102,'specific_code': 0}";
             _mockHttp
                 .When($"{url}")
                 .Respond(HttpStatusCode.NotFound, "application/json", messsge);
 
             var client = InitializeDeliveryClientWithACustomTypeProvider(_mockHttp);
 
-            await Assert.ThrowsAsync<DeliveryException>(async () => await client.GetContentElementAsync("anticommunistical_preventure_sur_helxine", "unlacerated_topognosis_sur_nonvigilantness"));
+            var result = await client.GetContentElementAsync("anticommunistical_preventure_sur_helxine", "unlacerated_topognosis_sur_nonvigilantness");
+
+            Assert.NotNull(result?.ApiResponse?.Error);
+            Assert.Equal(102, result?.ApiResponse?.Error?.ErrorCode);
+            Assert.False(result?.ApiResponse?.IsSuccess);
+            Assert.Equal("The requested content element unlacerated_topognosis_sur_nonvigilantness was not found in content type anticommunistical_preventure_sur_helxine", result?.ApiResponse?.Error?.Message);
+            Assert.Equal(string.Empty, result?.ApiResponse?.Error?.RequestId);
+            Assert.Equal(0, result?.ApiResponse?.Error?.SpecificCode);
         }
 
         [Fact]
@@ -433,10 +502,12 @@ namespace Kentico.Kontent.Delivery.Tests
 
             var client = InitializeDeliveryClientWithACustomTypeProvider(_mockHttp);
 
-            var taxonomy = (await client.GetTaxonomyAsync("personas")).Taxonomy;
+            var response = await client.GetTaxonomyAsync("personas");
+            var taxonomy = response.Taxonomy;
             var personasTerms = taxonomy.Terms.ToList();
             var coffeeExpertTerms = personasTerms[0].Terms.ToList();
 
+            Assert.True(response?.ApiResponse?.IsSuccess);
             Assert.Equal("personas", taxonomy.System.Codename);
             Assert.Equal("Personas", taxonomy.System.Name);
             Assert.Equal("coffee_expert", personasTerms[0].Codename);
@@ -451,11 +522,18 @@ namespace Kentico.Kontent.Delivery.Tests
             string url = $"{_baseUrl}/taxonomies/unequestrian_nonadjournment_sur_achoerodus";
             _mockHttp
                 .When($"{url}")
-                .Respond(HttpStatusCode.NotFound, "application/json", "{'message':'The requested taxonomy group unequestrian_nonadjournment_sur_achoerodus was not found.'}");
+                .Respond(HttpStatusCode.NotFound, "application/json", "{'message':'The requested taxonomy group unequestrian_nonadjournment_sur_achoerodus was not found.','request_id': '','error_code': 104,'specific_code': 0}");
 
             var client = InitializeDeliveryClientWithACustomTypeProvider(_mockHttp);
 
-            await Assert.ThrowsAsync<DeliveryException>(async () => await client.GetTaxonomyAsync("unequestrian_nonadjournment_sur_achoerodus"));
+            var result = await client.GetTaxonomyAsync("unequestrian_nonadjournment_sur_achoerodus");
+
+            Assert.NotNull(result?.ApiResponse?.Error);
+            Assert.Equal(104, result?.ApiResponse?.Error?.ErrorCode);
+            Assert.False(result?.ApiResponse?.IsSuccess);
+            Assert.Equal("The requested taxonomy group unequestrian_nonadjournment_sur_achoerodus was not found.", result?.ApiResponse?.Error?.Message);
+            Assert.Equal(string.Empty, result?.ApiResponse?.Error?.RequestId);
+            Assert.Equal(0, result?.ApiResponse?.Error?.SpecificCode);
         }
 
         [Fact]
@@ -470,6 +548,7 @@ namespace Kentico.Kontent.Delivery.Tests
 
             var response = await client.GetTaxonomiesAsync(new SkipParameter(1));
 
+            Assert.True(response?.ApiResponse?.IsSuccess);
             Assert.NotNull(response.ApiResponse.RequestUrl);
             Assert.NotEmpty(response.Taxonomies);
         }
