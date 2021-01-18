@@ -154,7 +154,7 @@ namespace Kentico.Kontent.Delivery.Caching
                 CacheHelpers.GetLanguagesKey(queryParameters),
                 () => _deliveryClient.GetLanguagesAsync(queryParameters),
                 response => response.Languages.Any(),
-                CacheHelpers.GetlanguagesDependencies);
+                CacheHelpers.GetLanguagesDependencies);
         }
     }
 }

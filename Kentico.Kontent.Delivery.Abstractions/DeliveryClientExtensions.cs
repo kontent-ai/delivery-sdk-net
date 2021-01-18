@@ -67,7 +67,7 @@ namespace Kentico.Kontent.Delivery.Abstractions
         }
 
         /// <summary>
-        /// Returns languages.
+        /// Returns all active languages assigned to a given project and matching the optional filtering parameters.
         /// </summary>
         /// <param name="client">An instance of the <see cref="IDeliveryClient"/></param>
         /// <param name="parameters">An array that contains zero or more query parameters, for example, for paging.</param>

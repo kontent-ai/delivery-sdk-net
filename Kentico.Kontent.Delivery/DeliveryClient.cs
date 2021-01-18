@@ -237,7 +237,7 @@ namespace Kentico.Kontent.Delivery
         }
 
         /// <summary>
-        /// Returns languages.
+        /// Returns all active languages assigned to a given project and matching the optional filtering parameters.
         /// </summary>
         /// <param name="parameters">A collection of query parameters, for example, for paging.</param>
         /// <returns>The <see cref="DeliveryLanguageListingResponse"/> instance that represents the languages. If no query parameters are specified, all languages are returned.</returns>

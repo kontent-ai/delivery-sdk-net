@@ -309,7 +309,7 @@ namespace Kentico.Kontent.Delivery.Caching
         /// </summary>
         /// <param name="response">Response</param>
         /// <returns>Dependency keys</returns>
-        public static IEnumerable<string> GetlanguagesDependencies(IDeliveryLanguageListingResponse response)
+        public static IEnumerable<string> GetLanguagesDependencies(IDeliveryLanguageListingResponse response)
         {
             return response?.Languages != null
                 ? new[] { GetLanguagesDependencyKey() }
