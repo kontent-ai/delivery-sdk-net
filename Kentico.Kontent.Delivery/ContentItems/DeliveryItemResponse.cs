@@ -25,11 +25,5 @@ namespace Kentico.Kontent.Delivery.ContentItems
         {
             Item = item;
         }
-
-        /// <summary>
-        /// Implicitly converts the specified <paramref name="response"/> to a content item.
-        /// </summary>
-        /// <param name="response">The response to convert.</param>
-        public static implicit operator T(DeliveryItemResponse<T> response) => response.Item;
     }
 }
