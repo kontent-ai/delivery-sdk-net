@@ -12,7 +12,7 @@ namespace Kentico.Kontent.Delivery
     public class DeliveryClientFactory : IDeliveryClientFactory
     {
         private readonly IServiceProvider _serviceProvider;
-        private string _notImplementExceptionMessage = "The default implementation does not support retrieving clients by name.Use the Kentico.Kontent.Delivery.Extensions.Autofac.DependencyInjection or implement your own factory.";
+        private string _notImplementExceptionMessage = "The default implementation does not support retrieving clients by name. Please use the Kentico.Kontent.Delivery.Extensions.Autofac.DependencyInjection or implement your own factory.";
         
         /// <summary>
         /// Initializes a new instance of the <see cref="DeliveryClientFactory"/> class.
