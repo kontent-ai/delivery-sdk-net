@@ -1,9 +1,15 @@
-﻿using Kentico.Kontent.Delivery.Abstractions;
-
-namespace Kentico.Kontent.Delivery.Extensions
+﻿namespace Kentico.Kontent.Delivery.Abstractions.Extensions
 {
-    internal static class DeliveryOptionsExtensions
+    /// <summary>
+    /// A class which contains extension methods on <see cref="DeliveryOptions"/>.
+    /// </summary>
+    public static class DeliveryOptionsExtensions
     {
+        /// <summary>
+        /// Maps one <see cref="DeliveryOptions"/> object to another.
+        /// </summary>
+        /// <param name="o">A destination.</param>
+        /// <param name="options">A source.</param>
         public static void Configure(this DeliveryOptions o, DeliveryOptions options)
         {
             o.ProjectId = options.ProjectId;
@@ -17,6 +23,7 @@ namespace Kentico.Kontent.Delivery.Extensions
             o.EnableRetryPolicy = options.EnableRetryPolicy;
             o.DefaultRetryPolicyOptions = options.DefaultRetryPolicyOptions;
             o.IncludeTotalCount = options.IncludeTotalCount;
+            o.Name = options.Name;
         }
     }
 }

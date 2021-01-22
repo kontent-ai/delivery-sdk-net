@@ -26,62 +26,21 @@ namespace Kentico.Kontent.Delivery.Caching.Extensions
             }
 
             return services
-                 .RegisterCacheOptions(options)
+                 .Configure<DeliveryCacheOptions>((o) => o.Configure(options))
                  .RegisterDependencies(options.CacheType)
                  .Decorate<IDeliveryClient, DeliveryClientCache>();
         }
-
-        /// <summary>
-        ///  Registers a delegate that will be used to configure a cached <see cref="IDeliveryClient"/>.
-        /// </summary>
-        /// <param name="services">A <see cref="IServiceCollection"/> instance for registering and resolving dependencies.</param>
-        /// <param name="name">A name of named client which want to use cached <see cref="IDeliveryClient"/></param>
-        /// <param name="options">A <see cref="DeliveryCacheOptions"/> instance. </param> 
-        /// <returns>The <paramref name="services"/> instance with cache services registered in it</returns>
-        public static IServiceCollection AddDeliveryClientCache(this IServiceCollection services, string name, DeliveryCacheOptions options)
-        {
-            if (options == null)
-            {
-                throw new ArgumentNullException(nameof(options), "The Delivery cache  options object is not specified.");
-            }
-
-            return services
-                .RegisterCacheOptions(options, name)
-                .RegisterDependencies(options.CacheType, name)
-                .Decorate<IDeliveryClientFactory, DeliveryClientCacheFactory>();
-        }
-
-        private static IServiceCollection RegisterCacheOptions(this IServiceCollection services, DeliveryCacheOptions options, string name = null)
-        {
-            if (name == null)
-            {
-                services.Configure<DeliveryCacheOptions>((o) => o.Configure(options));
-            }
-            else
-            {
-                services.Configure<DeliveryCacheOptions>(name, (o) => o.Configure(options));
-            }
-
-            return services;
-        }
-
-        private static IServiceCollection RegisterDependencies(this IServiceCollection services, CacheTypeEnum cacheType, string name = null)
+        private static IServiceCollection RegisterDependencies(this IServiceCollection services, CacheTypeEnum cacheType)
         {
             switch (cacheType)
             {
                 case CacheTypeEnum.Memory:
-                    if (name == null)
-                    {
-                        services.TryAddSingleton<IDeliveryCacheManager, MemoryCacheManager>();
-                    }
+                    services.TryAddSingleton<IDeliveryCacheManager, MemoryCacheManager>();
                     services.TryAddSingleton<IMemoryCache, MemoryCache>();
                     break;
 
                 case CacheTypeEnum.Distributed:
-                    if (name == null)
-                    {
-                        services.TryAddSingleton<IDeliveryCacheManager, DistributedCacheManager>();
-                    }
+                    services.TryAddSingleton<IDeliveryCacheManager, DistributedCacheManager>();
                     services.TryAddSingleton<IDistributedCache, MemoryDistributedCache>();
                     break;
             }

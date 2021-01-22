@@ -67,5 +67,10 @@
         /// This behavior can also be enabled for individual requests with the IncludeTotalCountParameter.
         /// </summary>
         public bool IncludeTotalCount { get; set; }
+
+        /// <summary>
+        /// The name of the service configuration this options object is related to.
+        /// </summary>
+        internal string Name { get; set; }
     }
 }

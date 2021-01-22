@@ -1,7 +1,7 @@
 ﻿namespace Kentico.Kontent.Delivery.Abstractions
 {
     /// <summary>
-    /// Defines a methods for getting a <see cref="IDeliveryClient"/>
+    /// A factory class for <see cref="IDeliveryClient"/>
     /// </summary>
     public interface IDeliveryClientFactory
     {
@@ -12,10 +12,10 @@
         /// <returns>Returns an <see cref="IDeliveryClient"/> instance with the given name.</returns>
         IDeliveryClient Get(string name);
 
-        /// <summary>
-        /// Returns a default instance of the <see cref="IDeliveryClient"/>.
-        /// </summary>
-        /// <returns>Returns a default instance of the <see cref="IDeliveryClient"/>.</returns>
+        /// <summary>	
+        /// Returns a default instance of the <see cref="IDeliveryClient"/>.	
+        /// </summary>	
+        /// <returns>Returns a default instance of the <see cref="IDeliveryClient"/>.</returns>	
         IDeliveryClient Get();
     }
 }

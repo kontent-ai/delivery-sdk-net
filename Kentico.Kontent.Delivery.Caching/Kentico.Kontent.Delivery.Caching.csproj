@@ -37,6 +37,12 @@
     <AssemblyAttribute Include="System.Runtime.CompilerServices.InternalsVisibleToAttribute">
       <_Parameter1>Kentico.Kontent.Delivery.Caching.Tests</_Parameter1>
     </AssemblyAttribute>
+    <AssemblyAttribute Include="System.Runtime.CompilerServices.InternalsVisibleToAttribute">
+      <_Parameter1>Kentico.Kontent.Delivery.Extensions.DependencyInjection.Tests</_Parameter1>
+    </AssemblyAttribute>
+    <AssemblyAttribute Include="System.Runtime.CompilerServices.InternalsVisibleToAttribute">
+      <_Parameter1>Kentico.Kontent.Delivery.Extensions.DependencyInjection</_Parameter1>
+    </AssemblyAttribute>
   </ItemGroup>
 
 </Project>

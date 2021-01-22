@@ -26,6 +26,18 @@ namespace Kentico.Kontent.Delivery.Caching.Tests
             Assert.Throws<MissingTypeRegistrationException>(() => _serviceCollection.AddDeliveryClientCache(new DeliveryCacheOptions() { CacheType = cacheType }));
         }
 
+        [Fact]
+        public void AddDeliveryClientCacheWithNullDeliveryCacheOptions_ThrowsArgumentNullException()
+        {
+            Assert.Throws<ArgumentNullException>(() => _serviceCollection.AddDeliveryClientCache(null));
+        }
+
+        [Fact]
+        public void AddDeliveryClientCacheWitNoPreviousRegistrationDeliveryClient_ThrowsMissingTypeRegistrationException()
+        {
+            Assert.Throws<MissingTypeRegistrationException>(() => _serviceCollection.AddDeliveryClientCache(new DeliveryCacheOptions()));
+        }
+
         [Theory]
         [InlineData(CacheTypeEnum.Memory)]
         [InlineData(CacheTypeEnum.Distributed)]
@@ -48,7 +60,7 @@ namespace Kentico.Kontent.Delivery.Caching.Tests
         [Theory]
         [InlineData(CacheTypeEnum.Memory)]
         [InlineData(CacheTypeEnum.Distributed)]
-        public void AddDeliveryClient_CacheWithDeliveryCacheOptions_GetNull(CacheTypeEnum cacheType)
+        public void AddDeliveryClient_CacheWithDeliveryCacheOptions_ThrowsNotImeplementException(CacheTypeEnum cacheType)
         {
             _serviceCollection.AddDeliveryClient(new DeliveryOptions() { ProjectId = Guid.NewGuid().ToString() });
             _serviceCollection.AddDeliveryClientCache(new DeliveryCacheOptions()
@@ -59,79 +71,7 @@ namespace Kentico.Kontent.Delivery.Caching.Tests
             var sp = _serviceCollection.BuildServiceProvider();
             var factory = sp.GetRequiredService<IDeliveryClientFactory>();
 
-            var client = factory.Get("WrongName");
-
-            client.Should().BeNull();
-        }
-
-        [Theory]
-        [InlineData(CacheTypeEnum.Memory)]
-        [InlineData(CacheTypeEnum.Distributed)]
-        public void AddDeliveryNamedClient_CacheWithDeliveryCacheOptions_GetNamedClient(CacheTypeEnum cacheType)
-        {
-            _serviceCollection.AddDeliveryClient("named", new DeliveryOptions() { ProjectId = Guid.NewGuid().ToString() });
-            _serviceCollection.AddDeliveryClientCache("named", new DeliveryCacheOptions()
-            {
-                CacheType = cacheType
-            });
-
-            var sp = _serviceCollection.BuildServiceProvider();
-            var factory = sp.GetRequiredService<IDeliveryClientFactory>();
-
-            var client = factory.Get("named");
-
-            client.Should().NotBeNull();
-        }
-
-        [Theory]
-        [InlineData(CacheTypeEnum.Memory)]
-        [InlineData(CacheTypeEnum.Distributed)]
-        public void AddDeliveryNamedClient_CacheWithDeliveryCacheOptions_GetNull(CacheTypeEnum cacheType)
-        {
-            _serviceCollection.AddDeliveryClient("named", new DeliveryOptions() { ProjectId = Guid.NewGuid().ToString() });
-            _serviceCollection.AddDeliveryClientCache("named", new DeliveryCacheOptions()
-            {
-                CacheType = cacheType
-            });
-
-            var sp = _serviceCollection.BuildServiceProvider();
-            var factory = sp.GetRequiredService<IDeliveryClientFactory>();
-
-            var client = factory.Get("WrongName");
-
-            client.Should().BeNull();
-        }
-
-        [Theory]
-        [InlineData(CacheTypeEnum.Memory)]
-        [InlineData(CacheTypeEnum.Distributed)]
-        public void AddDeliveryClientCacheNamedWithDeliveryCacheOptions_ThrowsInvalidOperationException(CacheTypeEnum cacheType)
-        {
-            Assert.Throws<MissingTypeRegistrationException>(() => _serviceCollection.AddDeliveryClientCache("named", new DeliveryCacheOptions() { CacheType = cacheType }));
-        }
-
-        [Fact]
-        public void AddDeliveryClientCacheWithNullDeliveryCacheOptions_ThrowsArgumentNullException()
-        {
-            Assert.Throws<ArgumentNullException>(() => _serviceCollection.AddDeliveryClientCache(null));
-        }
-
-        [Fact]
-        public void AddDeliveryClientCacheNamedWithNullDeliveryCacheOptions_ThrowsArgumentNullException()
-        {
-            Assert.Throws<ArgumentNullException>(() => _serviceCollection.AddDeliveryClientCache("named", null));
-        }
-
-        [Fact]
-        public void AddDeliveryClientCacheWitNoPreviousRegistrationDeliveryClient_ThrowsMissingTypeRegistrationException()
-        {
-            Assert.Throws<MissingTypeRegistrationException>(() => _serviceCollection.AddDeliveryClientCache(new DeliveryCacheOptions()));
-        }
-
-        [Fact]
-        public void AddDeliveryClientNamedCacheWitNoPreviousRegistrationDeliveryClient_ThrowsMissingTypeRegistrationException()
-        {
-            Assert.Throws<MissingTypeRegistrationException>(() => _serviceCollection.AddDeliveryClientCache("named", new DeliveryCacheOptions()));
+            Assert.Throws<NotImplementedException>(() => factory.Get("WrongName"));
         }
     }
 }

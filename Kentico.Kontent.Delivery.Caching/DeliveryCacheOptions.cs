@@ -29,7 +29,7 @@ namespace Kentico.Kontent.Delivery.Caching
         public CacheTypeEnum CacheType { get; set; } = CacheTypeEnum.Memory;
 
         /// <summary>
-        /// Name of an <see cref="IDeliveryCacheManager"/> instance the options are bound to.
+        /// The name of the service configuration this options object is related to.
         /// </summary>
         internal string Name { get; set; }
     }

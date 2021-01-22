@@ -33,7 +33,6 @@ namespace Kentico.Kontent.Delivery.Tests.Extensions
                 { typeof(IPropertyMapper), typeof(PropertyMapper) },
                 { typeof(IRetryPolicyProvider), typeof(DefaultRetryPolicyProvider) },
                 { typeof(IDeliveryClient), typeof(DeliveryClient) },
-                { typeof(IDeliveryClientFactory), typeof(DeliveryClientFactory) },
             }
         );
 
@@ -50,18 +49,6 @@ namespace Kentico.Kontent.Delivery.Tests.Extensions
         public ServiceCollectionsExtensionsTests()
         {
             _serviceCollection = new ServiceCollection();
-        }
-
-        [Fact]
-        public void AddDeliveryFactoryClientWithNullDeliveryOptionsBuilder_ThrowsArgumentNullException()
-        {
-            Assert.Throws<ArgumentNullException>(() => _serviceCollection.AddDeliveryClient("named", buildDeliveryOptions: null));
-        }
-
-        [Fact]
-        public void AddDeliveryFactoryClientWithNullDeliveryOptions_ThrowsArgumentNullException()
-        {
-            Assert.Throws<ArgumentNullException>(() => _serviceCollection.AddDeliveryClient("named", deliveryOptions: null));
         }
 
         [Fact]
@@ -82,38 +69,6 @@ namespace Kentico.Kontent.Delivery.Tests.Extensions
             _serviceCollection.AddDeliveryClient(new DeliveryOptions { ProjectId = ProjectId });
             var provider = _serviceCollection.BuildServiceProvider();
             AssertDefaultServiceCollection(provider, _expectedInterfacesWithImplementationTypes);
-        }
-
-        [Fact]
-        public void AddDeliveryClientFactoryWithOptions_AllServicesAreRegistered()
-        {
-            _serviceCollection.AddDeliveryClient("named", new DeliveryOptions { ProjectId = ProjectId });
-            var provider = _serviceCollection.BuildServiceProvider();
-            AssertDefaultServiceCollection(provider, _expectedInterfacesWithImplementationTypes);
-        }
-
-        [Fact]
-        public void AddDeliveryClientFactoryWithDeliveryClient_AllServicesAreRegistered()
-        {
-            _serviceCollection.AddDeliveryClient("named", (builder) => 
-                builder.WithProjectId(ProjectId)
-                       .UseProductionApi()
-                       .Build());
-
-            var provider = _serviceCollection.BuildServiceProvider();
-            AssertDefaultServiceCollection(provider, _expectedInterfacesWithImplementationTypes);
-        }
-
-        [Fact]
-        public void AddDeliveryClientFactoryWithOptions_DeliveryClientIsRegistered()
-        {
-            _serviceCollection.AddDeliveryClient("named", new DeliveryOptions { ProjectId = ProjectId });
-            var provider = _serviceCollection.BuildServiceProvider();
-            var deliveryClientFactory = provider.GetRequiredService<IDeliveryClientFactory>();
-
-            var deliveryClient = deliveryClientFactory.Get("named");
-
-            Assert.NotNull(deliveryClient);
         }
 
         [Theory]

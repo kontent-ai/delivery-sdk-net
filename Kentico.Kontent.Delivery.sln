@@ -26,7 +26,11 @@ Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Kentico.Kontent.ImageTransf
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Kentico.Kontent.ImageTransformation.Tests", "Kentico.Kontent.ImageTransformation.Tests\Kentico.Kontent.ImageTransformation.Tests.csproj", "{8942D9E3-A966-406C-AA19-2B85286744C9}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Kentico.Kontent.Delivery.Benchmarks", "Kentico.Kontent.Delivery.Benchmarks\Kentico.Kontent.Delivery.Benchmarks.csproj", "{FAA8F5E9-A262-4F7E-AD38-E72B8A5137F6}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Kentico.Kontent.Delivery.Benchmarks", "Kentico.Kontent.Delivery.Benchmarks\Kentico.Kontent.Delivery.Benchmarks.csproj", "{FAA8F5E9-A262-4F7E-AD38-E72B8A5137F6}"
+EndProject
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Kentico.Kontent.Delivery.Extensions.DependencyInjection", "Kentico.Kontent.Delivery.Extensions.DependencyInjection\Kentico.Kontent.Delivery.Extensions.DependencyInjection.csproj", "{26270FC5-DB28-4106-A2FA-5402829FEDFA}"
+EndProject
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Kentico.Kontent.Delivery.Extensions.DependencyInjection.Tests", "Kentico.Kontent.Delivery.Extensions.DependencyInjection.Tests\Kentico.Kontent.Delivery.Extensions.DependencyInjection.Tests.csproj", "{1582662E-39EA-426F-AE11-AC10E87B4791}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
@@ -74,6 +78,14 @@ Global
 		{FAA8F5E9-A262-4F7E-AD38-E72B8A5137F6}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{FAA8F5E9-A262-4F7E-AD38-E72B8A5137F6}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{FAA8F5E9-A262-4F7E-AD38-E72B8A5137F6}.Release|Any CPU.Build.0 = Release|Any CPU
+		{26270FC5-DB28-4106-A2FA-5402829FEDFA}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{26270FC5-DB28-4106-A2FA-5402829FEDFA}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{26270FC5-DB28-4106-A2FA-5402829FEDFA}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{26270FC5-DB28-4106-A2FA-5402829FEDFA}.Release|Any CPU.Build.0 = Release|Any CPU
+		{1582662E-39EA-426F-AE11-AC10E87B4791}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{1582662E-39EA-426F-AE11-AC10E87B4791}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{1582662E-39EA-426F-AE11-AC10E87B4791}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{1582662E-39EA-426F-AE11-AC10E87B4791}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE

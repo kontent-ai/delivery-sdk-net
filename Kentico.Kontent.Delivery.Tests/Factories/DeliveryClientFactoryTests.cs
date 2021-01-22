@@ -1,52 +1,41 @@
 ﻿using System;
-using FakeItEasy;
 using FluentAssertions;
 using Kentico.Kontent.Delivery.Abstractions;
 using Microsoft.Extensions.DependencyInjection;
-using Microsoft.Extensions.Options;
 using Xunit;
+using Kentico.Kontent.Delivery.Extensions;
 
 namespace Kentico.Kontent.Delivery.Tests.Factories
 {
     public class DeliveryClientFactoryTests
     {
-        private readonly IOptionsMonitor<DeliveryOptions> _deliveryOptionsMock;
-        private readonly IServiceProvider _serviceProvider;
-
-        private const string _clientName = "ClientName";
+        private readonly ServiceCollection _serviceCollection;
 
         public DeliveryClientFactoryTests()
         {
-            _deliveryOptionsMock = A.Fake<IOptionsMonitor<DeliveryOptions>>();
-            _serviceProvider = new ServiceCollection().BuildServiceProvider();
+            _serviceCollection = new ServiceCollection();
         }
 
         [Fact]
-        public void GetNamedClient_WithCorrectName_GetClient()
+        public void GetNamedClient_GetNull()
         {
-            var deliveryOptions = new DeliveryOptions() { ProjectId = Guid.NewGuid().ToString() };
-            A.CallTo(() => _deliveryOptionsMock.Get(_clientName))
-                .Returns(deliveryOptions);
+            var deliveryClientFactory = new Delivery.DeliveryClientFactory(_serviceCollection.BuildServiceProvider());
 
-            var deliveryClientFactory = new Delivery.DeliveryClientFactory(_deliveryOptionsMock, _serviceProvider);
+            Assert.Throws<NotImplementedException>(() => deliveryClientFactory.Get("clientName"));
+        }
 
-            var result = deliveryClientFactory.Get(_clientName);
+        [Fact]
+        public void GetClient_GetClient()
+        {
+            _serviceCollection.AddDeliveryClient(new DeliveryOptions
+            {
+                ProjectId = Guid.NewGuid().ToString()
+            });
+            var deliveryClientFactory = new Delivery.DeliveryClientFactory(_serviceCollection.BuildServiceProvider());
+
+            var result = deliveryClientFactory.Get();
 
             result.Should().NotBeNull();
-        }
-
-        [Fact]
-        public void GetNamedClient_WithWrongName_GetNull()
-        {
-            var deliveryOptions = new DeliveryOptions() { ProjectId = Guid.NewGuid().ToString() };
-            A.CallTo(() => _deliveryOptionsMock.Get(_clientName))
-                .Returns(deliveryOptions);
-
-            var deliveryClientFactory = new Delivery.DeliveryClientFactory(_deliveryOptionsMock, _serviceProvider);
-
-            var result = deliveryClientFactory.Get("WrongName");
-
-            result.Should().BeNull();
         }
     }
 }
