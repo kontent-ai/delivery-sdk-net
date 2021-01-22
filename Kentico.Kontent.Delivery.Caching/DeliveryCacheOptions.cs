@@ -29,7 +29,7 @@ namespace Kentico.Kontent.Delivery.Caching
         public CacheTypeEnum CacheType { get; set; } = CacheTypeEnum.Memory;
 
         /// <summary>
-        /// A name of the options.
+        /// The name of the service configuration this options object is related to.
         /// </summary>
         internal string Name { get; set; }
     }

@@ -69,7 +69,7 @@
         public bool IncludeTotalCount { get; set; }
 
         /// <summary>
-        /// A name of the options.
+        /// The name of the service configuration this options object is related to.
         /// </summary>
         internal string Name { get; set; }
     }

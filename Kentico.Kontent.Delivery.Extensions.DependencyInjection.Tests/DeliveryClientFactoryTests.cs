@@ -11,7 +11,7 @@ namespace Kentico.Kontent.Delivery.Extensions.DependencyInjection.Tests
     public class DeliveryClientFactoryTests
     {
         private readonly IOptionsMonitor<DeliveryOptions> _deliveryOptionsMock;
-        private ICustomServiceProvider _autofacServiceProvider;
+        private INamedServiceProvider _autofacServiceProvider;
         private readonly IServiceProvider _serviceProvider;
 
         private const string _clientName = "ClientName";
@@ -19,7 +19,7 @@ namespace Kentico.Kontent.Delivery.Extensions.DependencyInjection.Tests
         public DeliveryClientFactoryTests()
         {
             _deliveryOptionsMock = A.Fake<IOptionsMonitor<DeliveryOptions>>();
-            _autofacServiceProvider = A.Fake<ICustomServiceProvider>();
+            _autofacServiceProvider = A.Fake<INamedServiceProvider>();
             _serviceProvider = new ServiceCollection().BuildServiceProvider();
         }
 

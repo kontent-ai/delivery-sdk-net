@@ -2,7 +2,7 @@
 
 namespace Kentico.Kontent.Delivery.Extensions.DependencyInjection.CustomServiceProviders
 {
-    internal class AutofacServiceProvider : ICustomServiceProvider
+    internal class AutofacServiceProvider : INamedServiceProvider
     {
         private readonly IComponentContext _container;
 

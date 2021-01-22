@@ -14,7 +14,7 @@ namespace Kentico.Kontent.Delivery.Extensions.DependencyInjection
     {
         private readonly IOptionsMonitor<DeliveryCacheOptions> _deliveryCacheOptions;
         private readonly IServiceProvider _serviceProvider;
-        private readonly ICustomServiceProvider _customServiceProvider;
+        private readonly INamedServiceProvider _customServiceProvider;
         private readonly IDeliveryClientFactory _innerDeliveryClientFactory;
         private readonly ConcurrentDictionary<string, IDeliveryClient> _cache = new ConcurrentDictionary<string, IDeliveryClient>();
 
@@ -25,7 +25,7 @@ namespace Kentico.Kontent.Delivery.Extensions.DependencyInjection
         /// <param name="deliveryCacheOptions">Cache configuration options.</param>
         /// <param name="serviceProvider">An <see cref="IServiceProvider"/> instance.</param>
         /// <param name="customServiceProvider">A custom service provider.</param>
-        public NamedDeliveryClientCacheFactory(IDeliveryClientFactory deliveryClientFactory, IOptionsMonitor<DeliveryCacheOptions> deliveryCacheOptions, IServiceProvider serviceProvider, ICustomServiceProvider customServiceProvider)
+        public NamedDeliveryClientCacheFactory(IDeliveryClientFactory deliveryClientFactory, IOptionsMonitor<DeliveryCacheOptions> deliveryCacheOptions, IServiceProvider serviceProvider, INamedServiceProvider customServiceProvider)
         {
             _deliveryCacheOptions = deliveryCacheOptions;
             _serviceProvider = serviceProvider;

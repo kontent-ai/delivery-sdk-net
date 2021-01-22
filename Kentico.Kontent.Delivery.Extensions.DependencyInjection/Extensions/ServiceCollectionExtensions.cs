@@ -117,7 +117,7 @@ namespace Kentico.Kontent.Delivery.Extensions.DependencyInjection.Extensions
         {
             if (customServiceProviderType == CustomServiceProviderType.Autofac)
             {
-                services.TryAddSingleton<ICustomServiceProvider, AutofacServiceProvider>();
+                services.TryAddSingleton<INamedServiceProvider, AutofacServiceProvider>();
             }
 
             services.AddSingleton<IDeliveryClientFactory, NamedDeliveryClientFactory>();

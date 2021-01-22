@@ -13,7 +13,7 @@ namespace Kentico.Kontent.Delivery.Extensions.DependencyInjection.Tests
     {
         private readonly IOptionsMonitor<DeliveryCacheOptions> _deliveryCacheOptionsMock;
         private readonly IDeliveryClientFactory _innerDeliveryClientFactoryMock;
-        private readonly ICustomServiceProvider _autofacServiceProvider;
+        private readonly INamedServiceProvider _autofacServiceProvider;
         private readonly IServiceCollection _serviceCollection;
 
         private const string _clientName = "ClientName";
@@ -22,7 +22,7 @@ namespace Kentico.Kontent.Delivery.Extensions.DependencyInjection.Tests
         {
             _deliveryCacheOptionsMock = A.Fake<IOptionsMonitor<DeliveryCacheOptions>>();
             _innerDeliveryClientFactoryMock = A.Fake<IDeliveryClientFactory>();
-            _autofacServiceProvider = A.Fake<ICustomServiceProvider>();
+            _autofacServiceProvider = A.Fake<INamedServiceProvider>();
             _serviceCollection = new ServiceCollection()
                 .AddMemoryCache();
         }

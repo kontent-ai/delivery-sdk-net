@@ -6,7 +6,7 @@
     public static class DeliveryCacheOptionsExtensions
     {
         /// <summary>
-        /// Maps a <see cref="DeliveryCacheOptions"/> to each other.
+        /// Maps one <see cref="DeliveryCacheOptions"/> object to another.
         /// </summary>
         /// <param name="o">A destination.</param>
         /// <param name="options">A source.</param>

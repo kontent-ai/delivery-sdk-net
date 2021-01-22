@@ -12,14 +12,14 @@ namespace Kentico.Kontent.Delivery.Extensions.DependencyInjection.Tests
     public class ServiceCollectionExtensionsTests
     {
         private readonly IServiceCollection _serviceCollection;
-        private readonly ICustomServiceProvider _customServiceProvider;
+        private readonly INamedServiceProvider _customServiceProvider;
 
         public ServiceCollectionExtensionsTests()
         {
             _serviceCollection = new ServiceCollection()
                 .AddMemoryCache()
                 .AddDistributedMemoryCache();
-            _customServiceProvider = A.Fake<ICustomServiceProvider>();
+            _customServiceProvider = A.Fake<INamedServiceProvider>();
         }
 
         [Theory]

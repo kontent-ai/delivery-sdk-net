@@ -12,7 +12,7 @@ namespace Kentico.Kontent.Delivery.Extensions.DependencyInjection
     {
         private readonly IOptionsMonitor<DeliveryOptions> _deliveryOptions;
         private readonly IServiceProvider _serviceProvider;
-        private readonly ICustomServiceProvider _customServiceProvider;
+        private readonly INamedServiceProvider _customServiceProvider;
         private readonly ConcurrentDictionary<string, IDeliveryClient> _cache = new ConcurrentDictionary<string, IDeliveryClient>();
 
         /// <summary>
@@ -22,7 +22,7 @@ namespace Kentico.Kontent.Delivery.Extensions.DependencyInjection
         /// <param name="serviceProvider">An <see cref="IServiceProvider"/> instance.</param>
         /// <param name="customServiceProvider">A custom service provider.</param>
         public NamedDeliveryClientFactory(IOptionsMonitor<DeliveryOptions> deliveryOptions, IServiceProvider serviceProvider,
-            ICustomServiceProvider customServiceProvider)
+            INamedServiceProvider customServiceProvider)
         {
             _deliveryOptions = deliveryOptions;
             _serviceProvider = serviceProvider;
