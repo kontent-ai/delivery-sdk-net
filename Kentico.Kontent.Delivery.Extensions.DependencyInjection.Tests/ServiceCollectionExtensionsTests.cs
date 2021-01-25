@@ -1,7 +1,6 @@
 ﻿using Kentico.Kontent.Delivery.Abstractions;
 using Kentico.Kontent.Delivery.Caching;
 using Microsoft.Extensions.DependencyInjection;
-using Kentico.Kontent.Delivery.Extensions.DependencyInjection.Extensions;
 using System;
 using Xunit;
 using FluentAssertions;
@@ -12,14 +11,14 @@ namespace Kentico.Kontent.Delivery.Extensions.DependencyInjection.Tests
     public class ServiceCollectionExtensionsTests
     {
         private readonly IServiceCollection _serviceCollection;
-        private readonly INamedServiceProvider _customServiceProvider;
+        private readonly INamedServiceProvider _namedServiceProvider;
 
         public ServiceCollectionExtensionsTests()
         {
             _serviceCollection = new ServiceCollection()
                 .AddMemoryCache()
                 .AddDistributedMemoryCache();
-            _customServiceProvider = A.Fake<INamedServiceProvider>();
+            _namedServiceProvider = A.Fake<INamedServiceProvider>();
         }
 
         [Theory]
@@ -27,7 +26,7 @@ namespace Kentico.Kontent.Delivery.Extensions.DependencyInjection.Tests
         [InlineData(CacheTypeEnum.Distributed)]
         public void AddDeliveryNamedClient_CacheWithDeliveryCacheOptions_GetNamedClient(CacheTypeEnum cacheType)
         {
-            _serviceCollection.AddSingleton(_customServiceProvider);
+            _serviceCollection.AddSingleton(_namedServiceProvider);
             _serviceCollection.AddDeliveryClient("named", new DeliveryOptions() { ProjectId = Guid.NewGuid().ToString() });
             _serviceCollection.AddDeliveryClientCache("named", new DeliveryCacheOptions()
             {
@@ -47,7 +46,7 @@ namespace Kentico.Kontent.Delivery.Extensions.DependencyInjection.Tests
         [InlineData(CacheTypeEnum.Distributed)]
         public void AddDeliveryNamedClient_CacheWithDeliveryCacheOptions_GetNull(CacheTypeEnum cacheType)
         {
-            _serviceCollection.AddSingleton(_customServiceProvider);
+            _serviceCollection.AddSingleton(_namedServiceProvider);
             _serviceCollection.AddDeliveryClient("named", new DeliveryOptions() { ProjectId = Guid.NewGuid().ToString() });
             _serviceCollection.AddDeliveryClientCache("named", new DeliveryCacheOptions()
             {
@@ -67,7 +66,7 @@ namespace Kentico.Kontent.Delivery.Extensions.DependencyInjection.Tests
         [InlineData(CacheTypeEnum.Distributed)]
         public void AddDeliveryNamedClient_CacheWithDeliveryCacheOptions_GetNoNamedClientNull(CacheTypeEnum cacheType)
         {
-            _serviceCollection.AddSingleton(_customServiceProvider);
+            _serviceCollection.AddSingleton(_namedServiceProvider);
             _serviceCollection.AddDeliveryClient("named", new DeliveryOptions() { ProjectId = Guid.NewGuid().ToString() });
             _serviceCollection.AddDeliveryClientCache("named", new DeliveryCacheOptions()
             {
@@ -85,7 +84,7 @@ namespace Kentico.Kontent.Delivery.Extensions.DependencyInjection.Tests
         [Fact]
         public void AddDeliveryNamedClient_DeliveryOptions_GetNamedClient()
         {
-            _serviceCollection.AddSingleton(_customServiceProvider);
+            _serviceCollection.AddSingleton(_namedServiceProvider);
             _serviceCollection.AddDeliveryClient("named", new DeliveryOptions() { ProjectId = Guid.NewGuid().ToString() });
             var sp = _serviceCollection.BuildServiceProvider();
 
@@ -98,7 +97,7 @@ namespace Kentico.Kontent.Delivery.Extensions.DependencyInjection.Tests
         [Fact]
         public void AddDeliveryNamedClient_DeliveryOptions_GetNull()
         {
-            _serviceCollection.AddSingleton(_customServiceProvider);
+            _serviceCollection.AddSingleton(_namedServiceProvider);
             _serviceCollection.AddDeliveryClient("named", new DeliveryOptions() { ProjectId = Guid.NewGuid().ToString() });
             var sp = _serviceCollection.BuildServiceProvider();
 
@@ -111,7 +110,7 @@ namespace Kentico.Kontent.Delivery.Extensions.DependencyInjection.Tests
         [Fact]
         public void AddDeliveryNamedClient_DeliveryOptions_GetNoNamedClientNull()
         {
-            _serviceCollection.AddSingleton(_customServiceProvider);
+            _serviceCollection.AddSingleton(_namedServiceProvider);
             _serviceCollection.AddDeliveryClient("named", new DeliveryOptions() { ProjectId = Guid.NewGuid().ToString() });
             var sp = _serviceCollection.BuildServiceProvider();
 
@@ -124,9 +123,9 @@ namespace Kentico.Kontent.Delivery.Extensions.DependencyInjection.Tests
         [Fact]
         public void AddDeliveryNamedClient_WithNamedTypeProvider_GetNamedTypeProvider()
         {
-            A.CallTo(() => _customServiceProvider.GetService<ITypeProvider>("named"))
+            A.CallTo(() => _namedServiceProvider.GetService<ITypeProvider>("named"))
                 .Returns(new FakeNamedTypeProvider());
-            _serviceCollection.AddSingleton(_customServiceProvider);
+            _serviceCollection.AddSingleton(_namedServiceProvider);
             _serviceCollection.AddDeliveryClient("named", new DeliveryOptions() { ProjectId = Guid.NewGuid().ToString() });
             var sp = _serviceCollection.BuildServiceProvider();
 
@@ -141,10 +140,10 @@ namespace Kentico.Kontent.Delivery.Extensions.DependencyInjection.Tests
         [Fact]
         public void AddDeliveryNamedClient_WithTypeProvider_GetTypeProvider()
         {
-            A.CallTo(() => _customServiceProvider.GetService<ITypeProvider>("named"))
+            A.CallTo(() => _namedServiceProvider.GetService<ITypeProvider>("named"))
                 .Returns(null);
             _serviceCollection.AddSingleton<ITypeProvider, FakeTypeProvider>();
-            _serviceCollection.AddSingleton(_customServiceProvider);
+            _serviceCollection.AddSingleton(_namedServiceProvider);
             _serviceCollection.AddDeliveryClient("named", new DeliveryOptions() { ProjectId = Guid.NewGuid().ToString() });
             var sp = _serviceCollection.BuildServiceProvider();
 
@@ -159,10 +158,10 @@ namespace Kentico.Kontent.Delivery.Extensions.DependencyInjection.Tests
         [Fact]
         public void AddDeliveryNamedClient_WithNamedAndNoNamedTypeProvider_GetNamedTypePovider()
         {
-            A.CallTo(() => _customServiceProvider.GetService<ITypeProvider>("named"))
+            A.CallTo(() => _namedServiceProvider.GetService<ITypeProvider>("named"))
                 .Returns(new FakeNamedTypeProvider());
             _serviceCollection.AddSingleton<ITypeProvider, FakeTypeProvider>();
-            _serviceCollection.AddSingleton(_customServiceProvider);
+            _serviceCollection.AddSingleton(_namedServiceProvider);
             _serviceCollection.AddDeliveryClient("named", new DeliveryOptions() { ProjectId = Guid.NewGuid().ToString() });
             var sp = _serviceCollection.BuildServiceProvider();
 

@@ -10,9 +10,8 @@ using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.DependencyInjection.Extensions;
 using Kentico.Kontent.Delivery.Abstractions.Extensions;
 using System;
-using Kentico.Kontent.Delivery.Extensions.DependencyInjection.CustomServiceProviders;
 
-namespace Kentico.Kontent.Delivery.Extensions.DependencyInjection.Extensions
+namespace Kentico.Kontent.Delivery.Extensions.DependencyInjection
 {
     /// <summary>
     /// A class which contains extension methods on <see cref="IServiceCollection"/> for registering an <see cref="IDeliveryClient"/> instance.
@@ -25,9 +24,9 @@ namespace Kentico.Kontent.Delivery.Extensions.DependencyInjection.Extensions
         ///<param name="name">The name of the client configuration</param>
         /// <param name="services">A <see cref="ServiceCollection"/> instance for registering and resolving dependencies.</param>
         /// <param name="buildDeliveryOptions">A function that is provided with an instance of <see cref="DeliveryOptionsBuilder"/>and expected to return a valid instance of <see cref="DeliveryOptions"/>.</param>
-        /// <param name="customServiceProviderType">A custom service provider type.</param>
+        /// <param name="namedServiceProviderType">A named service provider type.</param>
         /// <returns>The <paramref name="services"/> instance with <see cref="IDeliveryClient"/> registered in it</returns>
-        public static IServiceCollection AddDeliveryClient(this IServiceCollection services, string name, Func<IDeliveryOptionsBuilder, DeliveryOptions> buildDeliveryOptions, CustomServiceProviderType customServiceProviderType = CustomServiceProviderType.None)
+        public static IServiceCollection AddDeliveryClient(this IServiceCollection services, string name, Func<IDeliveryOptionsBuilder, DeliveryOptions> buildDeliveryOptions, NamedServiceProviderType namedServiceProviderType = NamedServiceProviderType.None)
         {
             if (buildDeliveryOptions == null)
             {
@@ -40,7 +39,7 @@ namespace Kentico.Kontent.Delivery.Extensions.DependencyInjection.Extensions
             return services
                 .RegisterOptions(options, name)
                 .RegisterDependencies(true)
-                .RegisterNamedServices(customServiceProviderType);
+                .RegisterNamedServices(namedServiceProviderType);
         }
 
         /// <summary>
@@ -49,9 +48,9 @@ namespace Kentico.Kontent.Delivery.Extensions.DependencyInjection.Extensions
         ///<param name="name">The name of the client configuration</param>
         /// <param name="services">A <see cref="ServiceCollection"/> instance for registering and resolving dependencies.</param>
         /// <param name="deliveryOptions">A <see cref="DeliveryOptions"/> instance.  Options themselves are not further validated (see <see cref="DeliveryOptionsValidator.Validate"/>).</param>
-        /// <param name="customServiceProviderType">A custom service provider type.</param>
+        /// <param name="namedServiceProviderType">A named service provider type.</param>
         /// <returns>The <paramref name="services"/> instance with <see cref="IDeliveryClient"/> registered in it</returns>
-        public static IServiceCollection AddDeliveryClient(this IServiceCollection services, string name, DeliveryOptions deliveryOptions, CustomServiceProviderType customServiceProviderType = CustomServiceProviderType.None)
+        public static IServiceCollection AddDeliveryClient(this IServiceCollection services, string name, DeliveryOptions deliveryOptions, NamedServiceProviderType namedServiceProviderType = NamedServiceProviderType.None)
         {
             if (deliveryOptions == null)
             {
@@ -63,7 +62,7 @@ namespace Kentico.Kontent.Delivery.Extensions.DependencyInjection.Extensions
             return services
                 .RegisterOptions(deliveryOptions, name)
                 .RegisterDependencies(true)
-                .RegisterNamedServices(customServiceProviderType);
+                .RegisterNamedServices(namedServiceProviderType);
         }
 
         /// <summary>
@@ -73,17 +72,18 @@ namespace Kentico.Kontent.Delivery.Extensions.DependencyInjection.Extensions
         /// <param name="name">The name of the client configuration</param>
         /// <param name="configuration">A set of key/value application configuration properties.</param>
         /// <param name="configurationSectionName">The section name of the configuration that keeps the <see cref="DeliveryOptions"/> properties. The default value is DeliveryOptions.</param>
-        /// <param name="customServiceProviderType">A custom service provider type.</param>
+        /// <param name="namedServiceProviderType">A named service provider type.</param>
         /// <returns>The <paramref name="services"/> instance with <see cref="IDeliveryClient"/> registered in it</returns>
-        public static IServiceCollection AddDeliveryClient(this IServiceCollection services, string name, IConfiguration configuration, string configurationSectionName = "DeliveryOptions", CustomServiceProviderType customServiceProviderType = CustomServiceProviderType.None)
+        public static IServiceCollection AddDeliveryClient(this IServiceCollection services, string name, IConfiguration configuration, string configurationSectionName = "DeliveryOptions", NamedServiceProviderType namedServiceProviderType = NamedServiceProviderType.None)
         {
-            var options = (DeliveryOptions)configuration.GetSection(configurationSectionName);
+            var options = new DeliveryOptions();
+            configuration.GetSection(configurationSectionName).Bind(options);
             options.Name = name;
 
             return services
                 .RegisterOptions(options, name)
                 .RegisterDependencies(true)
-                .RegisterNamedServices(customServiceProviderType);
+                .RegisterNamedServices(namedServiceProviderType);
         }
 
         /// <summary>
@@ -113,9 +113,9 @@ namespace Kentico.Kontent.Delivery.Extensions.DependencyInjection.Extensions
             return services.Decorate<IDeliveryClientFactory, NamedDeliveryClientCacheFactory>();
         }
 
-        private static IServiceCollection RegisterNamedServices(this IServiceCollection services, CustomServiceProviderType customServiceProviderType)
+        private static IServiceCollection RegisterNamedServices(this IServiceCollection services, NamedServiceProviderType namedServiceProviderType)
         {
-            if (customServiceProviderType == CustomServiceProviderType.Autofac)
+            if (namedServiceProviderType == NamedServiceProviderType.Autofac)
             {
                 services.TryAddSingleton<INamedServiceProvider, AutofacServiceProvider>();
             }
