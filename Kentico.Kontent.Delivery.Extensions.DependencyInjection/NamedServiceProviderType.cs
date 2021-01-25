@@ -1,9 +1,9 @@
 ﻿namespace Kentico.Kontent.Delivery.Extensions.DependencyInjection
 {
     /// <summary>
-    /// An enum represents a type of custom service provider.
+    /// An enum represents a type of named service provider.
     /// </summary>
-    public enum CustomServiceProviderType
+    public enum NamedServiceProviderType
     {
         /// <summary>
         /// No custom service provider.

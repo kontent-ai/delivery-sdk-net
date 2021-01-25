@@ -12,7 +12,7 @@ namespace Kentico.Kontent.Delivery.Extensions.DependencyInjection
     {
         private readonly IOptionsMonitor<DeliveryOptions> _deliveryOptions;
         private readonly IServiceProvider _serviceProvider;
-        private readonly INamedServiceProvider _customServiceProvider;
+        private readonly INamedServiceProvider _namedServiceProvider;
         private readonly ConcurrentDictionary<string, IDeliveryClient> _cache = new ConcurrentDictionary<string, IDeliveryClient>();
 
         /// <summary>
@@ -20,13 +20,13 @@ namespace Kentico.Kontent.Delivery.Extensions.DependencyInjection
         /// </summary>
         /// <param name="deliveryOptions">Used for notifications when <see cref="DeliveryOptions"/> instances change.</param>
         /// <param name="serviceProvider">An <see cref="IServiceProvider"/> instance.</param>
-        /// <param name="customServiceProvider">A custom service provider.</param>
+        /// <param name="namedServiceProvider">A named service provider.</param>
         public NamedDeliveryClientFactory(IOptionsMonitor<DeliveryOptions> deliveryOptions, IServiceProvider serviceProvider,
-            INamedServiceProvider customServiceProvider)
+            INamedServiceProvider namedServiceProvider)
         {
             _deliveryOptions = deliveryOptions;
             _serviceProvider = serviceProvider;
-            _customServiceProvider = customServiceProvider;
+            _namedServiceProvider = namedServiceProvider;
         }
 
         /// <inheritdoc />
@@ -66,7 +66,7 @@ namespace Kentico.Kontent.Delivery.Extensions.DependencyInjection
 
         private T GetNamedServiceOrDefault<T>(string name)
         {
-            var service = _customServiceProvider.GetService<T>(name);
+            var service = _namedServiceProvider.GetService<T>(name);
             if (service == null)
             {
                 service = GetService<T>();
