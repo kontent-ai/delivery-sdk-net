@@ -2,7 +2,8 @@ version: 2
 jobs:
   build:
     docker:
-      - image: mcr.microsoft.com/dotnet/sdk:5.0
+    # Fixes the CA issue https://github.com/NuGet/Home/issues/10491
+      - image: mcr.microsoft.com/dotnet/sdk:5.0.102-ca-patch-buster-slim
     steps:
       - checkout
       - run:
