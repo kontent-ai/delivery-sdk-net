@@ -45,6 +45,12 @@ namespace Kentico.Kontent.Delivery.Extensions.DependencyInjection.Tests
                 client.Should().NotBeNull();
             }
 
+            [Fact]
+            public void AddDeliveryClient_NullCacheOption_ThrowsArgumentNullException()
+            {
+                Assert.Throws<ArgumentNullException>(() => _serviceCollection.AddDeliveryClientCache(_correctName, null));
+            }
+
             [Theory]
             [InlineData(CacheTypeEnum.Memory)]
             [InlineData(CacheTypeEnum.Distributed)]

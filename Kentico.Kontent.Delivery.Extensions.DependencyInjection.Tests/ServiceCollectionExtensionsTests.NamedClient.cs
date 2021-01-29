@@ -40,6 +40,12 @@ namespace Kentico.Kontent.Delivery.Extensions.DependencyInjection.Tests
             }
 
             [Fact]
+            public void AddDeliveryClient_NullOptions_ThrowsArgumentNullException()
+            {
+                Assert.Throws<ArgumentNullException>(() => _serviceCollection.AddDeliveryClient(_correctName, deliveryOptions: null));
+            }
+
+            [Fact]
             public void AddDeliveryClient_Options_GetClientWithWrongName_ReturnsNull()
             {
                 _serviceCollection.AddDeliveryClient(_correctName, _deliveryOptions);
@@ -109,6 +115,12 @@ namespace Kentico.Kontent.Delivery.Extensions.DependencyInjection.Tests
                 var client = factory.Get(_correctName);
 
                 client.Should().NotBeNull();
+            }
+
+            [Fact]
+            public void AddDeliveryClient_NullOptionsBuilder_ThrowsArgumentNullException()
+            {
+                Assert.Throws<ArgumentNullException>(() => _serviceCollection.AddDeliveryClient(_correctName, buildDeliveryOptions: null));
             }
 
             [Fact]
