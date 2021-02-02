@@ -8,7 +8,8 @@
       "type": "complete_content_type",
       "collection": "default",
       "sitemap_locations": [],
-      "last_modified": "2017-02-22T00:52:03.9370993Z"
+      "last_modified": "2017-02-22T00:52:03.9370993Z",
+      "workflow_step": "published"
     },
     "elements": {
       "text_field": {
@@ -102,7 +103,7 @@
         "type": "custom",
         "name": "ColorPicker",
         "value": "#d7e119"
-      } 
+      }
     }
   },
   "modular_content": {
@@ -115,7 +116,8 @@
         "type": "homepage",
         "collection": "default",
         "sitemap_locations": [],
-        "last_modified": "2017-02-21T04:29:42.9564205Z"
+        "last_modified": "2017-02-21T04:29:42.9564205Z",
+        "workflow_step": "published"
       },
       "elements": {
         "call_to_action": {

@@ -37,10 +37,14 @@ namespace Kentico.Kontent.Delivery.ContentItems
         /// <inheritdoc/>
         [JsonProperty("language")]
         public string Language { get; internal set; }
-        
+
         /// <inheritdoc/>
         [JsonProperty("collection")]
         public string Collection { get; internal set; }
+
+        /// <inheritdoc/>
+        [JsonProperty("workflow_step")]
+        public string WorkflowStep { get; internal set; }
 
         /// <summary>
         /// Initializes a new instance of the <see cref="ContentItemSystemAttributes"/> class.
