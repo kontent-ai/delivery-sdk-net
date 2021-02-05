@@ -92,11 +92,13 @@ namespace Kentico.Kontent.Delivery.Extensions
         internal static string GetSource()
         {
             Assembly originatingAssembly = GetOriginatingAssembly();
-
-            var attribute = originatingAssembly.GetCustomAttributes<DeliverySourceTrackingHeaderAttribute>().FirstOrDefault();
-            if (attribute != null)
+            if (originatingAssembly != null)
             {
-                return GenerateSourceTrackingHeaderValue(originatingAssembly, attribute);
+                var attribute = originatingAssembly.GetCustomAttributes<DeliverySourceTrackingHeaderAttribute>().FirstOrDefault();
+                if (attribute != null)
+                {
+                    return GenerateSourceTrackingHeaderValue(originatingAssembly, attribute);
+                }
             }
             return null;
         }
@@ -127,10 +129,11 @@ namespace Kentico.Kontent.Delivery.Extensions
         internal static Assembly GetOriginatingAssembly()
         {
             var executingAssembly = Assembly.GetExecutingAssembly();
+            // Get the whole stack trace, get involved assemblies, and determine which one references this SDK
             var callerAssemblies = new StackTrace().GetFrames()
                         .Select(x => x.GetMethod().ReflectedType?.Assembly).Distinct().OfType<Assembly>()
                         .Where(x => x.GetReferencedAssemblies().Any(y => y.FullName == executingAssembly.FullName));
-            var originatingAssembly = callerAssemblies.Last();
+            var originatingAssembly = callerAssemblies.Any() ? callerAssemblies.Last() : null;
             return originatingAssembly;
         }
     }
