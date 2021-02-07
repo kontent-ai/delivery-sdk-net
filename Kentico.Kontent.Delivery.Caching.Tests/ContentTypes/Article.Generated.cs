@@ -35,7 +35,7 @@ namespace Kentico.Kontent.Delivery.Caching.Tests.ContentTypes
         public const string TitleCodename = "title";
         public const string UrlPatternCodename = "url_pattern";
 
-        public string BodyCopy { get; set; }
+        public IRichTextContent BodyCopy { get; set; }
         public string MetadataMetaDescription { get; set; }
         public string MetadataMetaTitle { get; set; }
         public string MetadataOgDescription { get; set; }

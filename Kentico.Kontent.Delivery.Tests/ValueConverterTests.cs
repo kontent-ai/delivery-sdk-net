@@ -88,8 +88,8 @@ namespace Kentico.Kontent.Delivery.Tests
             // Try to get recursive linked items on_roasts -> item -> on_roasts
             var article = await client.GetItemAsync<Article>("coffee_beverages_explained", new DepthParameter(15));
 
-            var hostedVideo = article.Item.BodyCopyRichText.Blocks.FirstOrDefault(b => (b as IInlineContentItem)?.ContentItem is HostedVideo);
-            var tweet = article.Item.BodyCopyRichText.Blocks.FirstOrDefault(b => (b as IInlineContentItem)?.ContentItem is Tweet);
+            var hostedVideo = article.Item.BodyCopyRichText.FirstOrDefault(b => (b as IInlineContentItem)?.ContentItem is HostedVideo);
+            var tweet = article.Item.BodyCopyRichText.FirstOrDefault(b => (b as IInlineContentItem)?.ContentItem is Tweet);
 
             Assert.NotNull(hostedVideo);
             Assert.NotNull(tweet);
