@@ -94,7 +94,7 @@ namespace Kentico.Kontent.Delivery.Urls
 
             if (url.Length > UrlMaxLength)
             {
-                throw new UriFormatException("The request url is too long. Split your query into multiple calls.");
+                throw new UriFormatException("The request URL is too long. Split your query into multiple calls.");
             }
 
             return url;
@@ -114,11 +114,11 @@ namespace Kentico.Kontent.Delivery.Urls
 
         private string AssembleHost()
         {
-            var endpointUrlTemplate = _deliveryOptions.CurrentValue.UsePreviewApi
+            var endpointUrl = _deliveryOptions.CurrentValue.UsePreviewApi
                             ? _deliveryOptions.CurrentValue.PreviewEndpoint
                             : _deliveryOptions.CurrentValue.ProductionEndpoint;
             var projectId = Uri.EscapeDataString(_deliveryOptions.CurrentValue.ProjectId);
-            var hostUrl = string.Format(endpointUrlTemplate, projectId);
+            var hostUrl = endpointUrl + projectId;
             return hostUrl;
         }
 
