@@ -39,7 +39,7 @@ namespace Kentico.Kontent.Delivery.Urls
         }
 
         /// <summary>
-        /// Initializes the URL builder using <see cref="IOptionsMonitor{TOptions}"/>. Ideal for web-based scenarios, scenarios with changing 
+        /// Initializes the URL builder using <see cref="IOptionsMonitor{TOptions}"/>. Ideal for web-based scenarios and scenarios with dynamically changing configuration.
         /// </summary>
         /// <param name="deliveryOptions">The configuration wrapped in a notification object.</param>
         public DeliveryEndpointUrlBuilder(IOptionsMonitor<DeliveryOptions> deliveryOptions)
@@ -48,7 +48,7 @@ namespace Kentico.Kontent.Delivery.Urls
         }
 
         /// <summary>
-        /// Initializes the URL builder using <see cref="IOptionsMonitor{TOptions}"/>. Ideal for web-based scenarios.
+        /// Initializes the URL builder using <see cref="IOptionsMonitor{TOptions}"/>. Ideal for simple scenarios where hot reloading of configuration is not required.
         /// </summary>
         /// <param name="deliveryOptions">The configuration object.</param>
         public DeliveryEndpointUrlBuilder(DeliveryOptions deliveryOptions)
