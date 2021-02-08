@@ -10,7 +10,8 @@
         "sitemap_locations": [
           "articles"
         ],
-        "last_modified": "2017-12-08T08:35:27.1009654Z"
+        "last_modified": "2017-12-08T08:35:27.1009654Z",
+        "workflow_step": "published"
       },
       "elements": {
         "personas": {
@@ -161,7 +162,8 @@
         "sitemap_locations": [
           "articles"
         ],
-        "last_modified": "2017-12-08T08:37:13.6773134Z"
+        "last_modified": "2017-12-08T08:37:13.6773134Z",
+        "workflow_step": "published"
       },
       "elements": {
         "personas": {
@@ -327,7 +329,8 @@
         "sitemap_locations": [
           "articles"
         ],
-        "last_modified": "2017-12-08T08:40:45.7289755Z"
+        "last_modified": "2017-12-08T08:40:45.7289755Z",
+        "workflow_step": "published"
       },
       "elements": {
         "personas": {
@@ -475,7 +478,8 @@
         "sitemap_locations": [
           "articles"
         ],
-        "last_modified": "2017-12-08T08:49:53.6039943Z"
+        "last_modified": "2017-12-08T08:49:53.6039943Z",
+        "workflow_step": "published"
       },
       "elements": {
         "personas": {
@@ -630,7 +634,8 @@
         "sitemap_locations": [
           "articles"
         ],
-        "last_modified": "2017-12-08T08:50:50.6091672Z"
+        "last_modified": "2017-12-08T08:50:50.6091672Z",
+        "workflow_step": "published"
       },
       "elements": {
         "personas": {
@@ -782,7 +787,8 @@
         "sitemap_locations": [
           "articles"
         ],
-        "last_modified": "2017-12-08T09:01:44.4223969Z"
+        "last_modified": "2017-12-08T09:01:44.4223969Z",
+        "workflow_step": "published"
       },
       "elements": {
         "personas": {
@@ -943,7 +949,8 @@
         "language": "en-US",
         "type": "hosted_video",
         "sitemap_locations": [],
-        "last_modified": "2017-06-27T12:56:41.1882715Z"
+        "last_modified": "2017-06-27T12:56:41.1882715Z",
+        "workflow_step": "published"
       },
       "elements": {
         "video_id": {
@@ -971,7 +978,8 @@
         "language": "en-US",
         "type": "tweet",
         "sitemap_locations": [],
-        "last_modified": "2017-06-27T13:00:08.2735049Z"
+        "last_modified": "2017-06-27T13:00:08.2735049Z",
+        "workflow_step": "published"
       },
       "elements": {
         "tweet_link": {
@@ -1011,7 +1019,8 @@
         "sitemap_locations": [
           "articles"
         ],
-        "last_modified": "2017-12-08T08:37:13.6773134Z"
+        "last_modified": "2017-12-08T08:37:13.6773134Z",
+        "workflow_step": "published"
       },
       "elements": {
         "personas": {
@@ -1175,7 +1184,8 @@
         "language": "en-US",
         "type": "hosted_video",
         "sitemap_locations": [],
-        "last_modified": "2017-06-27T12:57:16.7333276Z"
+        "last_modified": "2017-06-27T12:57:16.7333276Z",
+        "workflow_step": "published"
       },
       "elements": {
         "video_id": {
@@ -1205,7 +1215,8 @@
         "sitemap_locations": [
           "articles"
         ],
-        "last_modified": "2017-12-08T08:49:53.6039943Z"
+        "last_modified": "2017-12-08T08:49:53.6039943Z",
+        "workflow_step": "published"
       },
       "elements": {
         "personas": {
@@ -1360,7 +1371,8 @@
         "sitemap_locations": [
           "articles"
         ],
-        "last_modified": "2017-12-08T08:50:50.6091672Z"
+        "last_modified": "2017-12-08T08:50:50.6091672Z",
+        "workflow_step": "published"
       },
       "elements": {
         "personas": {
@@ -1512,7 +1524,8 @@
         "sitemap_locations": [
           "articles"
         ],
-        "last_modified": "2017-12-08T09:01:44.4223969Z"
+        "last_modified": "2017-12-08T09:01:44.4223969Z",
+        "workflow_step": "published"
       },
       "elements": {
         "personas": {
