@@ -68,7 +68,7 @@ namespace Kentico.Kontent.Delivery.Urls
         }
 
         /// <summary>
-        /// Generates an URL for retrieving multiple content items.
+        /// Generates a URL for retrieving multiple content items.
         /// </summary>
         /// <param name="parameters">Filtering parameters.</param>
         /// <returns>A valid URL containing correctly formatted parameters.</returns>
