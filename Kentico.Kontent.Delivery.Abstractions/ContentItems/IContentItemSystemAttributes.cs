@@ -23,12 +23,12 @@ namespace Kentico.Kontent.Delivery.Abstractions
         string Type { get; }
 
         /// <summary>
-        /// Gets the codename of the content collection to which the content item belongs
+        /// Gets the codename of the content collection to which the content item belongs.
         /// </summary>
         public string Collection { get; }
 
         /// <summary>
-        /// Gets the codename of the workflow step to which item is assigned to 
+        /// Gets the codename of the workflow step which the content item is assigned to .
         /// </summary>
         public string WorkflowStep { get; }
     }
