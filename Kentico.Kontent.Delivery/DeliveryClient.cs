@@ -345,7 +345,7 @@ namespace Kentico.Kontent.Delivery
             throw new DeliveryException(httpResponseMessage);
         }
 
-        private bool HasStaleContent(HttpResponseMessage httpResponseMessage)
+        private static bool HasStaleContent(HttpResponseMessage httpResponseMessage)
         {
             return httpResponseMessage.Headers.TryGetValues("X-Stale-Content", out var values) && values.Contains("1", StringComparer.Ordinal);
         }
