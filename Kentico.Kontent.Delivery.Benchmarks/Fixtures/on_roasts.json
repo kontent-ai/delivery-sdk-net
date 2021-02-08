@@ -7,7 +7,8 @@
       "language": "en-US",
       "type": "article",
       "sitemap_locations": [],
-      "last_modified": "2019-03-27T13:21:11.38Z"
+      "last_modified": "2019-03-27T13:21:11.38Z",
+      "workflow_step": "published"
     },
     "elements": {
       "title": {
@@ -178,7 +179,8 @@
         "language": "en-US",
         "type": "article",
         "sitemap_locations": [],
-        "last_modified": "2019-03-27T13:13:35.312Z"
+        "last_modified": "2019-03-27T13:13:35.312Z",
+        "workflow_step": "published"
       },
       "elements": {
         "title": {
@@ -359,7 +361,8 @@
         "language": "en-US",
         "type": "article",
         "sitemap_locations": [],
-        "last_modified": "2019-03-27T13:21:49.151Z"
+        "last_modified": "2019-03-27T13:21:49.151Z",
+        "workflow_step": "published"
       },
       "elements": {
         "title": {

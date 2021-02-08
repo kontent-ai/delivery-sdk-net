@@ -9,7 +9,8 @@
       "sitemap_locations": [
         "articles"
       ],
-      "last_modified": "2017-06-27T13:01:54.5735581Z"
+      "last_modified": "2017-06-27T13:01:54.5735581Z",
+      "workflow_step": "published"
     },
     "elements": {
       "personas": {
@@ -93,7 +94,8 @@
         "language": "en-US",
         "type": "tweet",
         "sitemap_locations": [],
-        "last_modified": "2017-06-27T13:00:08.2735049Z"
+        "last_modified": "2017-06-27T13:00:08.2735049Z",
+        "workflow_step": "published"
       },
       "elements": {
         "tweet_link": {
@@ -131,7 +133,8 @@
         "language": "en-US",
         "type": "hosted_video",
         "sitemap_locations": [],
-        "last_modified": "2017-06-27T12:57:16.7333276Z"
+        "last_modified": "2017-06-27T12:57:16.7333276Z",
+        "workflow_step": "published"
       },
       "elements": {
         "video_id": {
