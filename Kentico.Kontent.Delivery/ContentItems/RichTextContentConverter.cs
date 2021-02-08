@@ -41,7 +41,7 @@ namespace Kentico.Kontent.Delivery.ContentItems
                 value = await new ContentLinkResolver(context.ContentLinkUrlResolver).ResolveContentLinksAsync(value, links);
             }
 
-            var blocks = new List<IRichTextBlock>();
+            var blocks = new RichTextContent();
             var htmlInput = await Parser.ParseDocumentAsync(value);
             foreach (var block in htmlInput.Body.Children)
             {
@@ -65,7 +65,7 @@ namespace Kentico.Kontent.Delivery.ContentItems
                 }
             }
 
-            return new RichTextContent(blocks);
+            return blocks;
         }
     }
 }

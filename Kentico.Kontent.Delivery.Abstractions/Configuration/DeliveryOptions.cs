@@ -7,15 +7,13 @@
     {
         /// <summary>
         /// Gets or sets the format of the Production API endpoint address.
-        /// The project identifier will be inserted at the position of the first format item "{0}".
         /// </summary>
-        public string ProductionEndpoint { get; set; } = "https://deliver.kontent.ai/{0}";
+        public string ProductionEndpoint { get; set; } = "https://deliver.kontent.ai/";
 
         /// <summary>
         /// Gets or sets the format of the Preview API endpoint address.
-        /// The project identifier will be inserted at the position of the first format item "{0}".
         /// </summary>
-        public string PreviewEndpoint { get; set; } = "https://preview-deliver.kontent.ai/{0}";
+        public string PreviewEndpoint { get; set; } = "https://preview-deliver.kontent.ai/";
 
         /// <summary>
         /// Gets or sets the project identifier.
