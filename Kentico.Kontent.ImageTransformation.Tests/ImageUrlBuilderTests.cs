@@ -1,8 +1,9 @@
-﻿using System;
+﻿using Kentico.Kontent.ImageTransformation;
+using System;
 using System.Collections.Generic;
 using Xunit;
 
-namespace Kentico.Kontent.ImageTransformation.Tests
+namespace Kentico.Kontent.Urls.Tests
 {
     public class ImageUrlBuilderTests
     {

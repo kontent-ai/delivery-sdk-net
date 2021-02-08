@@ -12,13 +12,13 @@ namespace Kentico.Kontent.ImageTransformation
     public sealed class ImageUrlBuilder
     {
         private readonly Uri _assetUrl;
-        private readonly Dictionary<string, StringValues> _queryParameters = new Dictionary<string, StringValues>();
+        private readonly Dictionary<string, StringValues> _queryParameters = new();
         private string Query => _queryParameters.Any() ? $"?{string.Join("&", _queryParameters.Select(x => $"{x.Key}={x.Value}"))}" : "";
 
         /// <summary>
         /// Gets the <see cref="T:System.Uri"/> instance with applied transformations.
         /// </summary>
-        public Uri Url => new Uri(_assetUrl, Query);
+        public Uri Url => new(_assetUrl, Query);
 
         /// <summary>
         /// Initializes a new instance of the ImageUrlBuilder class with the specified URI

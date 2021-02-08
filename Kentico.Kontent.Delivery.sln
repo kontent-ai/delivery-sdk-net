@@ -22,9 +22,9 @@ Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Solution Items", "Solution 
 		Directory.Build.props = Directory.Build.props
 	EndProjectSection
 EndProject
-Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Kentico.Kontent.ImageTransformation", "Kentico.Kontent.ImageTransformation\Kentico.Kontent.ImageTransformation.csproj", "{F1C64D17-1C3E-4F35-9038-5D16C18DDC08}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Kentico.Kontent.Urls", "Kentico.Kontent.ImageTransformation\Kentico.Kontent.Urls.csproj", "{F1C64D17-1C3E-4F35-9038-5D16C18DDC08}"
 EndProject
-Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Kentico.Kontent.ImageTransformation.Tests", "Kentico.Kontent.ImageTransformation.Tests\Kentico.Kontent.ImageTransformation.Tests.csproj", "{8942D9E3-A966-406C-AA19-2B85286744C9}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Kentico.Kontent.Urls.Tests", "Kentico.Kontent.ImageTransformation.Tests\Kentico.Kontent.Urls.Tests.csproj", "{8942D9E3-A966-406C-AA19-2B85286744C9}"
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Kentico.Kontent.Delivery.Benchmarks", "Kentico.Kontent.Delivery.Benchmarks\Kentico.Kontent.Delivery.Benchmarks.csproj", "{FAA8F5E9-A262-4F7E-AD38-E72B8A5137F6}"
 EndProject
