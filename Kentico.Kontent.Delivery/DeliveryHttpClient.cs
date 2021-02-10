@@ -1,6 +1,7 @@
 ﻿using System.Net.Http;
 using System.Threading.Tasks;
 using Kentico.Kontent.Delivery.Abstractions;
+using Kentico.Kontent.Delivery.Extensions;
 
 namespace Kentico.Kontent.Delivery
 {
@@ -18,6 +19,9 @@ namespace Kentico.Kontent.Delivery
         public DeliveryHttpClient(HttpClient httpClient = null)
         {
             _httpClient = httpClient ?? new HttpClient();
+
+            _httpClient.DefaultRequestHeaders.AddSdkTrackingHeader();
+            _httpClient.DefaultRequestHeaders.AddSourceTrackingHeader();
         }
 
         /// <summary>
