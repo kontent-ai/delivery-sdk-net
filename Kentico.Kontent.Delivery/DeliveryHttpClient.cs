@@ -15,7 +15,7 @@ namespace Kentico.Kontent.Delivery
         /// <summary>
         /// Initializes a new instance of the <see cref="IDeliveryHttpClient"/> class.
         /// </summary>
-        /// <param name="httpClient">Http client instance</param>
+        /// <param name="httpClient">An HTTP client instance (this can be provided manually or via DI - for example by the HttpClientFactory)</param>
         public DeliveryHttpClient(HttpClient httpClient = null)
         {
             _httpClient = httpClient ?? new HttpClient();

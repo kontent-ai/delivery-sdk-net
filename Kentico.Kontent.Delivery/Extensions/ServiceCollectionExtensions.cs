@@ -109,7 +109,7 @@ namespace Kentico.Kontent.Delivery.Extensions
 
             services.TryAddSingleton<IContentLinkUrlResolver, DefaultContentLinkUrlResolver>();
             services.TryAddSingleton<ITypeProvider, TypeProvider>();
-            services.TryAddSingleton<IDeliveryHttpClient>(new DeliveryHttpClient(new HttpClient()));
+            services.TryAddSingleton<IDeliveryHttpClient, DeliveryHttpClient>();
             services.TryAddDeliveryInlineContentItemsResolver<object, ReplaceWithWarningAboutRegistrationResolver>();
             services.TryAddDeliveryInlineContentItemsResolver<UnretrievedContentItem, ReplaceWithWarningAboutUnretrievedItemResolver>();
             services.TryAddDeliveryInlineContentItemsResolver<UnknownContentItem, ReplaceWithWarningAboutUnknownItemResolver>();
