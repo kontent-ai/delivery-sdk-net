@@ -27,7 +27,7 @@ namespace Kentico.Kontent.Delivery.ContentItems
         /// </summary>
         /// <param name="response">The response from Kentico Kontent Delivery API that contains content items.</param>
         /// <param name="items">A collection of content items of a specific type.</param>
-        /// <param name="linkedItems">Collection of linked content items.</param>
+        /// <param name="linkedItems">A delegate to resolve linked items.</param>
         /// <param name="pagination">Response paging information.</param>
         [JsonConstructor]
         internal DeliveryItemListingResponse(ApiResponse response, IList<T> items, Func<Task<IList<object>>> linkedItems, IPagination pagination) : base(response, linkedItems)
