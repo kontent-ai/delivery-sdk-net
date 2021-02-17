@@ -21,9 +21,8 @@ namespace Kentico.Kontent.Delivery.ContentItems
         /// </summary>
         /// <param name="response">The response from Kentico Kontent Delivery API that contains a content item.</param>
         /// <param name="item">Content item of a specific type.</param>
-        /// <param name="linkedItems">A delegate to resolve linked items.</param>
         [JsonConstructor]
-        internal DeliveryItemResponse(ApiResponse response, T item, Func<Task<IList<object>>> linkedItems) : base(response, linkedItems)
+        internal DeliveryItemResponse(ApiResponse response, T item) : base(response)
         {
             Item = item;
         }

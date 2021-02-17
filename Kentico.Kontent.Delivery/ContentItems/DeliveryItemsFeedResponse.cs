@@ -17,8 +17,7 @@ namespace Kentico.Kontent.Delivery.ContentItems
         /// </summary>
         /// <param name="response">The response from Kentico Kontent Delivery API that contains a list of content items.</param>
         /// <param name="items">A list of content items.</param>
-        /// <param name="linkedItems">A delegate to resolve linked items.</param>
-        internal DeliveryItemsFeedResponse(ApiResponse response, IList<T> items, Func<Task<IList<object>>> linkedItems) : base(response, linkedItems)
+        internal DeliveryItemsFeedResponse(ApiResponse response, IList<T> items) : base(response)
         {
             Items = items;
         }

@@ -18,11 +18,6 @@ namespace Kentico.Kontent.Delivery.Abstractions
         /// <summary>
         /// Gets the linked items and their properties.
         /// </summary>
-        Task<IList<object>> LinkedItems { get; }
-
-        /// <summary>
-        /// Gets the linked items and their properties.
-        /// </summary>
-        Task<dynamic> LinkedItemsDynamic { get; }
+        dynamic LinkedItems { get; }
     }
 }

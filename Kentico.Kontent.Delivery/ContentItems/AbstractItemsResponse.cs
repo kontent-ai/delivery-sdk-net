@@ -11,31 +11,24 @@ namespace Kentico.Kontent.Delivery.ContentItems
     /// </summary>
     internal abstract class AbstractItemsResponse : AbstractResponse
     {
-        private Lazy<Task<IList<object>>> _linkedItems;
-        private Lazy<Task<dynamic>> _linkedItemsDynamic;
+        private Lazy<dynamic> _linkedItems;
 
         /// <summary>
         /// Gets the linked items and their properties.
         /// </summary>
-        public Task<IList<object>> LinkedItems => _linkedItems.Value;
-
-        /// <summary>
-        /// Gets the linked items and their properties.
-        /// </summary>
-        public Task<dynamic> LinkedItemsDynamic => _linkedItemsDynamic.Value;
+        public dynamic LinkedItems => _linkedItems.Value;
 
         /// <summary>
         /// Initializes a new instance of the <see cref="AbstractItemsResponse"/> class.
         /// </summary>
         /// <param name="response">The response from Kentico Kontent Delivery API that contains a content item.</param>
-        /// <param name="linkedItems">A delegate to resolve linked items.</param>
-        protected AbstractItemsResponse(ApiResponse response, Func<Task<IList<object>>> linkedItems) : base(response)
+        protected AbstractItemsResponse(ApiResponse response) : base(response)
         {
-            _linkedItems = new Lazy<Task<IList<object>>>(async () => await linkedItems());
-            _linkedItemsDynamic = new Lazy<Task<dynamic>>(async () =>
+            _linkedItems = new Lazy<dynamic>(() =>
             {
-                var content = await response.GetJsonContentAsync();
-                return (JObject)content["modular_content"].DeepClone();
+                var content = JObject.Parse(ApiResponse.Content ?? "{}");
+                var modularContent = (JObject)content["modular_content"].DeepClone();
+                return modularContent;
             });
         }
     }
