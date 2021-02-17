@@ -15,7 +15,7 @@ namespace Kentico.Kontent.Delivery.ContentItems
         /// <summary>
         /// Gets the linked items and their properties.
         /// </summary>
-        public dynamic LinkedItems { get; }
+        public dynamic LinkedItems => _linkedItems.Value;
 
         /// <summary>
         /// Initializes a new instance of the <see cref="AbstractItemsResponse"/> class.
