@@ -1,4 +1,6 @@
-﻿using System.Collections.Generic;
+﻿using System;
+using System.Collections.Generic;
+using System.Threading.Tasks;
 using Kentico.Kontent.Delivery.Abstractions;
 using Kentico.Kontent.Delivery.SharedModels;
 using Newtonsoft.Json;
@@ -28,7 +30,7 @@ namespace Kentico.Kontent.Delivery.ContentItems
         /// <param name="linkedItems">Collection of linked content items.</param>
         /// <param name="pagination">Response paging information.</param>
         [JsonConstructor]
-        internal DeliveryItemListingResponse(ApiResponse response, IList<T> items, IList<object> linkedItems, IPagination pagination) : base(response, linkedItems)
+        internal DeliveryItemListingResponse(ApiResponse response, IList<T> items, Func<Task<IList<object>>> linkedItems, IPagination pagination) : base(response, linkedItems)
         {
             Items = items;
             Pagination = pagination;

@@ -1,4 +1,6 @@
-﻿using System.Collections.Generic;
+﻿using System;
+using System.Collections.Generic;
+using System.Threading.Tasks;
 using Kentico.Kontent.Delivery.Abstractions;
 using Kentico.Kontent.Delivery.SharedModels;
 using Newtonsoft.Json;
@@ -21,7 +23,7 @@ namespace Kentico.Kontent.Delivery.ContentItems
         /// <param name="item">Content item of a specific type.</param>
         /// <param name="linkedItems">Collection of linked content items.</param>
         [JsonConstructor]
-        internal DeliveryItemResponse(ApiResponse response, T item, IList<object> linkedItems) : base(response, linkedItems)
+        internal DeliveryItemResponse(ApiResponse response, T item, Func<Task<IList<object>>> linkedItems) : base(response, linkedItems)
         {
             Item = item;
         }

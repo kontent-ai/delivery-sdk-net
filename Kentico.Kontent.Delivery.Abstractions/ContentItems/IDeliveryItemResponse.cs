@@ -1,4 +1,6 @@
-﻿using System.Collections.Generic;
+﻿using System;
+using System.Collections.Generic;
+using System.Threading.Tasks;
 
 namespace Kentico.Kontent.Delivery.Abstractions
 {
@@ -16,6 +18,11 @@ namespace Kentico.Kontent.Delivery.Abstractions
         /// <summary>
         /// Gets the linked items and their properties.
         /// </summary>
-        IList<object> LinkedItems { get; }
+        Lazy<Task<IList<object>>> LinkedItems { get; }
+
+        /// <summary>
+        /// Gets the linked items and their properties.
+        /// </summary>
+        Lazy<Task<dynamic>> LinkedItemsDynamic { get; }
     }
 }
