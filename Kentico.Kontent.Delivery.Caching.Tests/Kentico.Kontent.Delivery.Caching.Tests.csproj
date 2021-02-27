@@ -2,8 +2,6 @@
 
   <PropertyGroup>
     <TargetFramework>net5.0</TargetFramework>
-    <AssemblyName>Kentico.Kontent.Delivery.Caching.Tests</AssemblyName>
-    <PackageId>Kentico.Kontent.Delivery.Caching.Tests</PackageId>
     <IsPackable>false</IsPackable>
   </PropertyGroup>
 

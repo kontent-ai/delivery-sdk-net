@@ -1,17 +1,8 @@
 ﻿<Project Sdk="Microsoft.NET.Sdk">
 
   <PropertyGroup>
-    <Description>Kentico Kontent Delivery SDK tests validate that the client is compatible with the current version of Kentico Kontent Deliver API.</Description>
-    <Copyright>(c) 2016 Kentico Software. All rights reserved.</Copyright>
-    <AssemblyTitle>Kentico Kontent Delivery SDK tests</AssemblyTitle>
-    <Authors>Kentico Software</Authors>
     <TargetFramework>net5.0</TargetFramework>
-    <AssemblyName>Kentico.Kontent.Delivery.Tests</AssemblyName>
-    <PackageId>Kentico.Kontent.Delivery.Tests</PackageId>
-    <GenerateRuntimeConfigurationFiles>true</GenerateRuntimeConfigurationFiles>
-    <PackageLicenseUrl>https://github.com/Kentico/kontent-delivery-sdk-net/blob/master/LICENSE</PackageLicenseUrl>
-    <RepositoryType>git</RepositoryType>
-    <RepositoryUrl>https://github.com/Kentico/kontent-delivery-sdk-net.git</RepositoryUrl>
+    <IsPackable>false</IsPackable>
     <GenerateAssemblyTitleAttribute>false</GenerateAssemblyTitleAttribute>
     <GenerateAssemblyDescriptionAttribute>false</GenerateAssemblyDescriptionAttribute>
     <GenerateAssemblyCompanyAttribute>false</GenerateAssemblyCompanyAttribute>
