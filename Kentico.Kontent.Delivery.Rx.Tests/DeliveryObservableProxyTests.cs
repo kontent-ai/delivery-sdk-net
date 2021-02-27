@@ -10,9 +10,9 @@ using FakeItEasy;
 using Kentico.Kontent.Delivery.Abstractions;
 using Kentico.Kontent.Delivery.ContentItems;
 using Kentico.Kontent.Delivery.Rx.Tests.Models.ContentTypes;
-using Kentico.Kontent.Delivery.Tests.Factories;
 using Kentico.Kontent.Delivery.Urls.QueryParameters;
 using Kentico.Kontent.Delivery.Urls.QueryParameters.Filters;
+using Microsoft.Extensions.Options;
 using RichardSzalay.MockHttp;
 using Xunit;
 
@@ -180,12 +180,18 @@ namespace Kentico.Kontent.Delivery.Rx.Tests
             Assert.NotEmpty(languages);
             Assert.All(languages, language => Assert.NotNull(language.System));
         }
+        public static IOptionsMonitor<DeliveryOptions> CreateMonitor(DeliveryOptions options)
+        {
+            var mock = A.Fake<IOptionsMonitor<DeliveryOptions>>();
+            A.CallTo(() => mock.CurrentValue).Returns(options);
+            return mock;
+        }
 
         private IDeliveryClient GetDeliveryClient(Action mockAction)
         {
             mockAction();
             var deliveryHttpClient = new DeliveryHttpClient(_mockHttp.ToHttpClient());
-            var deliveryOptions = DeliveryOptionsFactory.CreateMonitor(new DeliveryOptions { ProjectId = _guid });
+            var deliveryOptions = CreateMonitor(new DeliveryOptions { ProjectId = _guid });
             var contentLinkUrlResolver = A.Fake<IContentLinkUrlResolver>();
             var contentItemsProcessor = A.Fake<IInlineContentItemsProcessor>();
             var contentPropertyMapper = new PropertyMapper();
