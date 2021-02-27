@@ -1,6 +1,7 @@
 ﻿using System.Net.Http;
 using System.Threading.Tasks;
 using Kentico.Kontent.Delivery.Abstractions;
+using Kentico.Kontent.Delivery.Extensions;
 
 namespace Kentico.Kontent.Delivery
 {
@@ -14,10 +15,13 @@ namespace Kentico.Kontent.Delivery
         /// <summary>
         /// Initializes a new instance of the <see cref="IDeliveryHttpClient"/> class.
         /// </summary>
-        /// <param name="httpClient">Http client instance</param>
+        /// <param name="httpClient">An HTTP client instance (this can be provided manually or via DI - for example by the HttpClientFactory)</param>
         public DeliveryHttpClient(HttpClient httpClient = null)
         {
             _httpClient = httpClient ?? new HttpClient();
+
+            _httpClient.DefaultRequestHeaders.AddSdkTrackingHeader();
+            _httpClient.DefaultRequestHeaders.AddSourceTrackingHeader();
         }
 
         /// <summary>
