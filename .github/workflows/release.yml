@@ -25,7 +25,7 @@ jobs:
     - name: Build
       run: dotnet build --no-restore --configuration Release
     - name: Test
-      run: dotnet test --no-build --verbosity normal --configuration Release /p:CollectCoverage=true /p:CoverletOutputFormat=opencover
+      run: dotnet test --no-build --verbosity normal --configuration Release /p:CollectCoverage=true /p:CoverletOutputFormat=opencover /p:Exclude=\"[*Tests],[*Benchmarks]\"
     - name: Codecov
       uses: codecov/codecov-action@v1.2.1    
     - name: Pack
