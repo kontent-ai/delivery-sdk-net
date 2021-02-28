@@ -20,8 +20,8 @@ jobs:
     - name: Restore dependencies
       run: dotnet restore
     - name: Build
-      run: dotnet build --no-restore
+      run: dotnet build --no-restore /p:ContinuousIntegrationBuild=true
     - name: Test
-      run: dotnet test --no-build --verbosity normal /p:CollectCoverage=true /p:CoverletOutputFormat=opencover /p:Exclude=\"[*Tests],[*Benchmarks]\"
+      run: dotnet test --no-build --verbosity normal /p:CollectCoverage=true /p:CoverletOutputFormat=opencover
     - name: Codecov
-      uses: codecov/codecov-action@v1.2.1
+      uses: codecov/codecov-action@v1
