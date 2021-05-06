@@ -1,0 +1,172 @@
+﻿{
+  "item": {
+    "system": {
+      "id": "80c7074b-3da1-4e1d-882b-c5716ebb4d25",
+      "name": "Kenya Gakuyuni AA",
+      "codename": "kenya_gakuyuni_aa",
+      "language": "en-US",
+      "type": "coffee",
+      "sitemap_locations": [
+        "coffee"
+      ],
+      "last_modified": "2017-12-08T08:48:50.085Z",
+      "collection": "default",
+      "workflow_step": "published"
+    },
+    "elements": {
+      "product_name": {
+        "type": "text",
+        "name": "Product name",
+        "value": "Kenya Gakuyuni AA"
+      },
+      "price": {
+        "type": "number",
+        "name": "Price",
+        "value": 10.5
+      },
+      "image": {
+        "type": "asset",
+        "name": "Image",
+        "value": [
+          {
+            "name": "kenya.jpg",
+            "type": "image/jpeg",
+            "size": 74683,
+            "description": "Kenya Gakuyuni AA Coffee Beans",
+            "url": "https://assets-us-01.kc-usercontent.com:443/cbf6934c-956f-0006-799e-42054f50c3a6/0013263e-f2a9-40b1-9a3e-7ab6510bafe5/kenya.jpg"
+          }
+        ]
+      },
+      "short_description": {
+        "type": "rich_text",
+        "name": "Short description",
+        "images": {},
+        "links": {},
+        "modular_content": [],
+        "value": "<p>Plums, rhubarb, tangerines? Yes, that's the taste of Kenya Gakuyuni AA, made from the Arabica coffee plant.</p>"
+      },
+      "long_description": {
+        "type": "rich_text",
+        "name": "Long description",
+        "images": {},
+        "links": {},
+        "modular_content": [],
+        "value": "<p>What are the best beans for filtered coffees, you may ask? Well, what about a coffee with the sweet flavor of acidity, where you can also taste plums, rhubarb, or tangerines? Yes, this amazing coffee comes from Mt. Kenya in the Ngariama region of Kenya and will fulfill all your needs.</p>\n<p>Gakuyuni AA is made by a small business where they grow a hybrid variety of the Arabica coffee plant, so you can be assured that you are drinking a rare and unique coffee.</p>"
+      },
+      "product_status": {
+        "type": "taxonomy",
+        "name": "Product status",
+        "taxonomy_group": "product_status",
+        "value": [
+          {
+            "name": "Bestseller",
+            "codename": "bestseller"
+          }
+        ]
+      },
+      "farm": {
+        "type": "text",
+        "name": "Farm",
+        "value": "Gakuyuni, Thirikwa Farmers Cooperative Society"
+      },
+      "country": {
+        "type": "text",
+        "name": "Country",
+        "value": "Kenya"
+      },
+      "variety": {
+        "type": "text",
+        "name": "Variety",
+        "value": "SL28 / SL34"
+      },
+      "altitude": {
+        "type": "text",
+        "name": "Altitude",
+        "value": "5300"
+      },
+      "url_pattern": {
+        "type": "url_slug",
+        "name": "URL pattern",
+        "value": "kenya-gakuyuni-aa"
+      },
+      "processing": {
+        "type": "taxonomy",
+        "name": "Processing",
+        "taxonomy_group": "processing",
+        "value": [
+          {
+            "name": "Wet (Washed)",
+            "codename": "wet__washed_"
+          }
+        ]
+      },
+      "metadata__meta_title": {
+        "type": "text",
+        "name": "Meta title",
+        "value": "Kenya Gakuyuni AA"
+      },
+      "metadata__meta_description": {
+        "type": "text",
+        "name": "Meta description",
+        "value": "Plums, rhubarb, tangerines? Yes, that's the taste of Kenya Gakuyuni AA, made from the Arabica coffee plant."
+      },
+      "metadata__og_title": {
+        "type": "text",
+        "name": "og:title",
+        "value": "Kenya Gakuyuni AA"
+      },
+      "metadata__og_description": {
+        "type": "text",
+        "name": "og:description",
+        "value": "Plums, rhubarb, tangerines? Yes, that's the taste of Kenya Gakuyuni AA, made from the Arabica coffee plant."
+      },
+      "metadata__og_image": {
+        "type": "asset",
+        "name": "og:image",
+        "value": [
+          {
+            "name": "kenya.jpg",
+            "type": "image/jpeg",
+            "size": 74683,
+            "description": "Kenya Gakuyuni AA Coffee Beans",
+            "url": "https://assets-us-01.kc-usercontent.com:443/cbf6934c-956f-0006-799e-42054f50c3a6/0013263e-f2a9-40b1-9a3e-7ab6510bafe5/kenya.jpg"
+          }
+        ]
+      },
+      "metadata__twitter_site": {
+        "type": "text",
+        "name": "twitter:site",
+        "value": "Dancing Goat"
+      },
+      "metadata__twitter_creator": {
+        "type": "text",
+        "name": "twitter:creator",
+        "value": "@kenticoCloud"
+      },
+      "metadata__twitter_title": {
+        "type": "text",
+        "name": "twitter:title",
+        "value": "Kenya Gakuyuni AA"
+      },
+      "metadata__twitter_description": {
+        "type": "text",
+        "name": "twitter:description",
+        "value": "Plums, rhubarb, tangerines? Yes, that's the taste of Kenya Gakuyuni AA, made from the Arabica coffee plant."
+      },
+      "metadata__twitter_image": {
+        "type": "asset",
+        "name": "twitter:image",
+        "value": [
+          {
+            "name": "kenya.jpg",
+            "type": "image/jpeg",
+            "size": 74683,
+            "description": "Kenya Gakuyuni AA Coffee Beans",
+            "url": "https://assets-us-01.kc-usercontent.com:443/cbf6934c-956f-0006-799e-42054f50c3a6/0013263e-f2a9-40b1-9a3e-7ab6510bafe5/kenya.jpg"
+          }
+        ]
+      }
+    }
+  },
+  "modular_content": {}
+}
