@@ -10,7 +10,7 @@ using BenchmarkDotNet.Jobs;
 
 namespace Kentico.Kontent.Delivery.Benchmarks
 {
-    [SimpleJob(RuntimeMoniker.NetCoreApp50)]
+    [SimpleJob(RuntimeMoniker.Net50)]
     public class DeliveryClientBenchmark
     {
         private IDeliveryClient _client;

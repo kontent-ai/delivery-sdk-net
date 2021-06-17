@@ -17,9 +17,7 @@ namespace Kentico.Kontent.Delivery.Benchmarks
             var runFolder = DateTime.UtcNow.ToString("dd-MM-yyyy_hh-MM-ss");
             ArtifactsPath = Path.Combine(rootFolder, BenchmarkArtifactsFolder, runFolder);
 
-            //TODO: replace when fixed https://github.com/dotnet/BenchmarkDotNet/issues/1452
-            Add(MemoryDiagnoser.Default);
-            //AddDiagnoser(MemoryDiagnoser.Default);
+            AddDiagnoser(MemoryDiagnoser.Default);
         }
     }
 }
