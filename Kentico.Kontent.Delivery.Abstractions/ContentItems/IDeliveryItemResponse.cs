@@ -12,10 +12,5 @@ namespace Kentico.Kontent.Delivery.Abstractions
         /// Gets the content item.
         /// </summary>
         T Item { get; }
-
-        /// <summary>
-        /// Gets the linked items and their properties.
-        /// </summary>
-        public dynamic LinkedItems { get; }
     }
 }
