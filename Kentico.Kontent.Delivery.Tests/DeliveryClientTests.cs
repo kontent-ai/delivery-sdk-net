@@ -1550,6 +1550,45 @@ namespace Kentico.Kontent.Delivery.Tests
             Assert.Contains(hostedVideoPrefix, article.Item.BodyCopy);
         }
 
+        [Fact]
+        public async Task RetrieveContentItem_GetLinkedItems_TypeItemsManually()
+        {
+            _mockHttp
+               .When($"{_baseUrl}/items/coffee_beverages_explained")
+               .Respond("application/json", await File.ReadAllTextAsync(Path.Combine(Environment.CurrentDirectory, $"Fixtures{Path.DirectorySeparatorChar}DeliveryClient{Path.DirectorySeparatorChar}coffee_beverages_explained.json")));
+
+            var client = InitializeDeliveryClientWithCustomModelProvider(_mockHttp, new PropertyMapper(), new CustomTypeProvider());
+
+            var response = await client.GetItemAsync<object>("coffee_beverages_explained");
+
+            var content = JObject.Parse(response.ApiResponse.Content ?? "{}");
+
+            dynamic linkedItems = content["modular_content"].DeepClone();
+
+            Assert.NotNull(linkedItems);
+
+            var linkedItemsTyped = (linkedItems as JObject).Values();
+            Assert.NotNull(linkedItemsTyped);
+            Assert.Equal(2, linkedItemsTyped.Count());
+
+            var itemTasks = linkedItemsTyped?.Select
+            (
+                async source =>
+                {
+                    return await client.ModelProvider.GetContentItemModelAsync<object>(source, linkedItems);
+                }
+            );
+            var items = (await Task.WhenAll(itemTasks)).ToList();
+            Assert.Equal(2, items.Count());
+            
+            var tweetItem = items[0];
+            var hostedVideoItem = items[1];
+            Assert.Equal(tweetItem.GetType(), typeof(Tweet));
+            Assert.Equal(hostedVideoItem.GetType(), typeof(HostedVideo));
+            Assert.Equal("https://twitter.com/DeCubaNorwich/status/879265763978358784", (tweetItem as Tweet).TweetLink);
+            Assert.Equal("2Ao5b6uqI40", (hostedVideoItem as HostedVideo).VideoId);
+        }
+
         private DeliveryClient InitializeDeliveryClientWithACustomTypeProvider(MockHttpMessageHandler handler)
         {
             var customTypeProvider = new CustomTypeProvider();

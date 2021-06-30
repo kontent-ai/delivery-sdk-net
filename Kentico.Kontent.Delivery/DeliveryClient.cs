@@ -388,12 +388,5 @@ namespace Kentico.Kontent.Delivery
                 throw new ArgumentException("Skip parameter is not supported in items feed.");
             }
         }
-
-        private async Task<IList<object>> GetLinkedItemsAsync(JObject content)
-        {
-            var items = ((JObject)content?["modular_content"])?.Values()?.Select(async source => await ModelProvider.GetContentItemModelAsync<object>(source, content?["modular_content"]));
-
-            return items == null ? null : (await Task.WhenAll(items)).ToList();
-        }
     }
 }
