@@ -7,8 +7,8 @@
 
 | Paradigm        | Package | Downloads | Compatibility | Documentation |
 | ------------- |:-------------:| :-------------:|  :-------------:|  :-------------:|
-| Async         | [![NuGet](https://img.shields.io/nuget/v/Kentico.Kontent.Delivery.svg)](https://www.nuget.org/packages/Kentico.Kontent.Delivery) | [![NuGet](https://img.shields.io/nuget/dt/Kentico.Kontent.delivery.svg)](https://www.nuget.org/packages/Kentico.Kontent.Delivery) | [`netstandard2.0`](https://docs.microsoft.com/en-us/dotnet/standard/net-standard) | [📖](#using-the-deliveryclient) |
-| Reactive      | [![NuGet](https://img.shields.io/nuget/v/Kentico.Kontent.Delivery.Rx.svg)](https://www.nuget.org/packages/Kentico.Kontent.Delivery.Rx) | [![NuGet](https://img.shields.io/nuget/dt/Kentico.Kontent.delivery.Rx.svg)](https://www.nuget.org/packages/Kentico.Kontent.Delivery.Rx) | [`netstandard2.0`](https://docs.microsoft.com/en-us/dotnet/standard/net-standard) | [📖](../../wiki/Using-the-Kentico.Kontent.Delivery.Rx-reactive-library) |
+| Async         | [![NuGet](https://img.shields.io/nuget/v/Kentico.Kontent.Delivery.svg)](https://www.nuget.org/packages/Kentico.Kontent.Delivery) | [![NuGet](https://img.shields.io/nuget/dt/Kentico.Kontent.delivery.svg)](https://www.nuget.org/packages/Kentico.Kontent.Delivery) | [`netstandard2.0`](https://docs.microsoft.com/en-us/dotnet/standard/net-standard) | [📖 Wiki](../../wiki) |
+| Reactive      | [![NuGet](https://img.shields.io/nuget/v/Kentico.Kontent.Delivery.Rx.svg)](https://www.nuget.org/packages/Kentico.Kontent.Delivery.Rx) | [![NuGet](https://img.shields.io/nuget/dt/Kentico.Kontent.delivery.Rx.svg)](https://www.nuget.org/packages/Kentico.Kontent.Delivery.Rx) | [`netstandard2.0`](https://docs.microsoft.com/en-us/dotnet/standard/net-standard) | [📖 Wiki](../../wiki/Using-the-Kentico.Kontent.Delivery.Rx-reactive-library) |
 
 ## Summary
 
