@@ -13,13 +13,13 @@ namespace Kentico.Kontent.Delivery.Configuration
         /// <summary>
         /// Use project identifier.
         /// </summary>
-        /// <param name="projectId">The identifier of a Kentico Kontent project.</param>
+        /// <param name="projectId">The identifier of a Kontent project.</param>
         IDeliveryApiConfiguration WithProjectId(string projectId);
 
         /// <summary>
         /// Use project identifier.
         /// </summary>
-        /// <param name="projectId">The identifier of a Kentico Kontent project.</param>
+        /// <param name="projectId">The identifier of a Kontent project.</param>
         IDeliveryApiConfiguration WithProjectId(Guid projectId);
     }
 

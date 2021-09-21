@@ -3,9 +3,9 @@
   <PropertyGroup>
     <TargetFramework>netstandard2.0</TargetFramework>
     <Authors>Kentico Software</Authors>
-    <Product>Kentico Kontent</Product>
-    <Copyright>© 2020 Kentico Software. All rights reserved.</Copyright>
-    <Description>Kentico Kontent Delivery Caching</Description>
+    <Product>Kontent by Kentico</Product>
+    <Copyright>© 2021 Kentico Software. All rights reserved.</Copyright>
+    <Description>Kontent Delivery Caching</Description>
     <PackageLicenseExpression>MIT</PackageLicenseExpression>
     <PackageProjectUrl>https://github.com/Kentico/kontent-delivery-sdk-net</PackageProjectUrl>
     <PackageIconUrl>https://github.com/Kentico/Home/blob/master/images/kk-logo-nuget.png?raw=true</PackageIconUrl>

@@ -1,7 +1,7 @@
 ﻿namespace Kentico.Kontent.Delivery.Abstractions
 {
     /// <summary>
-    /// Represents a response from Kentico Kontent Delivery API that contains a taxonomy group.
+    /// Represents a response from Kontent Delivery API that contains a taxonomy group.
     /// </summary>
     public interface IDeliveryTaxonomyResponse : IResponse
     {

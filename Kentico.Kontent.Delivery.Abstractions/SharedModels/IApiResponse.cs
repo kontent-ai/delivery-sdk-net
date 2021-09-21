@@ -1,7 +1,7 @@
 ﻿namespace Kentico.Kontent.Delivery.Abstractions
 {
     /// <summary>
-    /// Represents a successful JSON response from Kentico Kontent Delivery API.
+    /// Represents a successful JSON response from Kontent Delivery API.
     /// </summary>
     public interface IApiResponse
     {
@@ -11,7 +11,7 @@
         string Content { get; }
 
         /// <summary>
-        /// Gets the continuation token to be used for continuing enumeration of the Kentico Kontent Delivery API.
+        /// Gets the continuation token to be used for continuing enumeration of the Kontent Delivery API.
         /// </summary>
         string ContinuationToken { get; }
 
@@ -28,7 +28,7 @@
         string RequestUrl { get; }
 
         /// <summary>
-        /// Indicates whether a call to Kentico Kontent Delivery API was successful or not.
+        /// Indicates whether a call to Kontent Delivery API was successful or not.
         /// </summary>
         bool IsSuccess { get; }
 
