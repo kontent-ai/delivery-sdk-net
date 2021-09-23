@@ -14,10 +14,14 @@
 
   <ItemGroup>
     <None Remove="Fixtures\home.json" />
+    <None Remove="Fixtures\home_depth0.json" />
   </ItemGroup>
 
   <ItemGroup>
     <Content Include="Fixtures\home.json">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </Content>
+    <Content Include="Fixtures\home_depth0.json">
       <CopyToOutputDirectory>Always</CopyToOutputDirectory>
     </Content>
   </ItemGroup>

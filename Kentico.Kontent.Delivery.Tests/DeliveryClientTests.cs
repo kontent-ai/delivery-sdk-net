@@ -105,7 +105,48 @@ namespace Kentico.Kontent.Delivery.Tests
             Assert.NotEmpty(beveragesResponse.Item.TeaserImage);
             Assert.NotEmpty(beveragesResponse.Item.Personas);
         }
+        [Fact]
+        public async Task GetLinkedItemsWithDepthZeroReturnsCodenames()
+        {
+            // Arrange
+            _mockHttp
+                .When($"{_baseUrl}/items/home")
+                .Respond("application/json",
+                    await File.ReadAllTextAsync(Path.Combine(Environment.CurrentDirectory,
+                        $"Fixtures{Path.DirectorySeparatorChar}home_depth0.json")));
+            var client = InitializeDeliveryClientWithCustomModelProvider(_mockHttp, new PropertyMapper(), new CustomTypeProvider());
 
+            // Act
+            var homeResponse = await client.GetItemAsync<Home>("home");
+
+            // Assert
+            Assert.True(homeResponse?.ApiResponse?.IsSuccess);
+            Assert.NotEmpty(homeResponse.Item.HeroUnit);
+            Assert.Equal(2, homeResponse.Item.HeroUnit.Count());
+            Assert.True(homeResponse.Item.HeroUnit.First() is string);
+            Assert.Equal("home_page_hero_unit", homeResponse.Item.HeroUnit.First());
+        }
+        [Fact]
+        public async Task GetLinkedItemsWithDepthOneReturnsObjects()
+        {
+            // Arrange
+            _mockHttp
+                .When($"{_baseUrl}/items/home")
+                .Respond("application/json",
+                    await File.ReadAllTextAsync(Path.Combine(Environment.CurrentDirectory,
+                        $"Fixtures{Path.DirectorySeparatorChar}home.json")));
+            var client = InitializeDeliveryClientWithCustomModelProvider(_mockHttp, new PropertyMapper(), new CustomTypeProvider());
+
+            // Act
+            var homeResponse = await client.GetItemAsync<Home>("home");
+
+            // Assert
+            Assert.True(homeResponse?.ApiResponse?.IsSuccess);
+            Assert.NotEmpty(homeResponse.Item.HeroUnit);
+            Assert.Equal(2, homeResponse.Item.HeroUnit.Count());
+            Assert.True(homeResponse.Item.HeroUnit.First() is HeroUnit);
+            Assert.Equal("home_page_hero_unit", ((HeroUnit)homeResponse.Item.HeroUnit.First()).System.Codename);
+        }
         [Fact]
         public async Task GetPagination()
         {

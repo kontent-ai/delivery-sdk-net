@@ -1,0 +1,148 @@
+{
+  "item": {
+      "system": {
+          "id": "1bd6ba00-4bf2-4a2b-8334-917faa686f66",
+          "name": "Home",
+          "codename": "home",
+          "language": "en-US",
+          "type": "home",
+          "collection": "default",
+          "sitemap_locations": [],
+          "last_modified": "2019-03-27T13:16:25.038Z",
+          "workflow_step": "published"
+      },
+      "elements": {
+          "hero_unit": {
+              "type": "modular_content",
+              "name": "Hero unit",
+              "value": [
+                  "home_page_hero_unit",
+                  "home_page_promotion"
+              ]
+          },
+          "articles": {
+              "type": "modular_content",
+              "name": "Articles",
+              "value": [
+                  "coffee_beverages_explained",
+                  "donate_with_us",
+                  "origins_of_arabica_bourbon",
+                  "on_roasts",
+                  "coffee_processing_techniques"
+              ]
+          },
+          "our_story": {
+              "type": "modular_content",
+              "name": "Our story",
+              "value": [
+                  "our_story"
+              ]
+          },
+          "cafes": {
+              "type": "modular_content",
+              "name": "Cafes",
+              "value": [
+                  "allendale",
+                  "boston",
+                  "los_angeles",
+                  "new_york"
+              ]
+          },
+          "contact": {
+              "type": "rich_text",
+              "name": "Contact",
+              "images": {},
+              "links": {},
+              "modular_content": [],
+              "value": "<h3>Contact</h3>\n<p>(+1) 123-456-7890</p>\n<p><a href=\"http://dancinggoat@localhost.local\">dancinggoat@localhost.local</a></p>\n<p><br></p>\n<p>Dancing Goat Ltd<br>\n62 E Lake St Chicago,<br>\nIllinois 60601, USA</p>"
+          },
+          "url_pattern": {
+              "type": "url_slug",
+              "name": "URL pattern",
+              "value": "dancing-goat-freshest-coffee-on-the-block"
+          },
+          "sitemap": {
+              "type": "taxonomy",
+              "name": "Sitemap",
+              "taxonomy_group": "sitemap_538125f",
+              "value": [
+                  {
+                      "name": "Home",
+                      "codename": "home"
+                  }
+              ]
+          },
+          "metadata__meta_title": {
+              "type": "text",
+              "name": "Meta title",
+              "value": "Dancing Goat–Freshest coffee on the block!"
+          },
+          "metadata__meta_description": {
+              "type": "text",
+              "name": "Meta description",
+              "value": "Visit your local Goat for the best beans in your town."
+          },
+          "metadata__og_title": {
+              "type": "text",
+              "name": "og:title",
+              "value": "Dancing Goat–Freshest coffee on the block!"
+          },
+          "metadata__og_description": {
+              "type": "text",
+              "name": "og:description",
+              "value": "Visit your local Goat for the best beans in your town."
+          },
+          "metadata__og_image": {
+              "type": "asset",
+              "name": "og:image",
+              "value": [
+                  {
+                      "name": "cafe01.jpg",
+                      "description": "Dancing Goat Café - London",
+                      "type": "image/jpeg",
+                      "size": 493724,
+                      "url": "https://assets-us-01.kc-usercontent.com:443/bec62227-085f-0009-a83e-886d318384d1/8fccb3b9-a507-48cc-bccd-0639d7fb69ec/cafe01.jpg",
+                      "width": 849,
+                      "height": 565
+                  }
+              ]
+          },
+          "metadata__twitter_site": {
+              "type": "text",
+              "name": "twitter:site",
+              "value": "Dancing Goat"
+          },
+          "metadata__twitter_creator": {
+              "type": "text",
+              "name": "twitter:creator",
+              "value": "@kenticoCloud"
+          },
+          "metadata__twitter_title": {
+              "type": "text",
+              "name": "twitter:title",
+              "value": "Dancing Goat–Freshest coffee on the block!"
+          },
+          "metadata__twitter_description": {
+              "type": "text",
+              "name": "twitter:description",
+              "value": "Visit your local Goat for the best beans in your town."
+          },
+          "metadata__twitter_image": {
+              "type": "asset",
+              "name": "twitter:image",
+              "value": [
+                  {
+                      "name": "cafe01.jpg",
+                      "description": "Dancing Goat Café - London",
+                      "type": "image/jpeg",
+                      "size": 493724,
+                      "url": "https://assets-us-01.kc-usercontent.com:443/bec62227-085f-0009-a83e-886d318384d1/8fccb3b9-a507-48cc-bccd-0639d7fb69ec/cafe01.jpg",
+                      "width": 849,
+                      "height": 565
+                  }
+              ]
+          }
+      }
+  },
+  "modular_content": {}
+}

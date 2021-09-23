@@ -318,7 +318,6 @@ namespace Kentico.Kontent.Delivery.ContentItems
             var codeNamesWithLinkedItems = GetRawValue(elementData)
                 ?.ToObject<List<string>>(Serializer)
                 ?.Select(codename => (codename, linkedItems.Properties().FirstOrDefault(p => p.Name == codename)?.First))
-                .Where(pair => pair.First != null)
                 .ToArray()
                 ?? Array.Empty<(string, JToken)>();
 
@@ -347,14 +346,21 @@ namespace Kentico.Kontent.Delivery.ContentItems
                 {
                     // This is the entry-point for recursion mentioned above
                     contentItem = await GetContentItemModelAsync(genericArgs.First(), linkedItemsElementNode, linkedItems, processedItems);
-
+                    // return just the codename if the linked item wasn't returned due to depth limits
+                    if (contentItem == null)
+                    {
+                        contentItem = codename;
+                    }
                     if (!processedItems.ContainsKey(codename))
                     {
                         processedItems.Add(codename, contentItem);
                     }
                 }
-
-                addMethod.Invoke(contentItems, new[] { contentItem });
+                if (genericArgs.First().IsInstanceOfType(contentItem))
+                {
+                    //ignore content items that not the right type for the collection
+                    addMethod.Invoke(contentItems, new[] { contentItem });
+                }
             }
 
             return contentItems;
