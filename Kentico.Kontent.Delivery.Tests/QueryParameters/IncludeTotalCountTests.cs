@@ -8,6 +8,7 @@ using Newtonsoft.Json;
 using Newtonsoft.Json.Linq;
 using RichardSzalay.MockHttp;
 using Xunit;
+using Xunit.Abstractions;
 
 namespace Kentico.Kontent.Delivery.Tests.QueryParameters
 {
@@ -22,6 +23,13 @@ namespace Kentico.Kontent.Delivery.Tests.QueryParameters
             EnableRetryPolicy = false,
             IncludeTotalCount = true
         };
+
+        private ITestOutputHelper _testOutputHelper;
+
+        public IncludeTotalCountTests(ITestOutputHelper testOutputHelper)
+        {
+            _testOutputHelper = testOutputHelper;
+        }
 
         [Fact]
         public void PaginationResponse_WithoutTotalCount_DeserializedCorrectly()
@@ -82,6 +90,7 @@ namespace Kentico.Kontent.Delivery.Tests.QueryParameters
                 .WithExactQueryString("system.type=cafe&includeTotalCount")
                 .Respond("application/json", responseJson);
             var client = Factories.DeliveryClientFactory.GetMockedDeliveryClientWithOptions(Options, _mockHttp);
+            _testOutputHelper.WriteLine($"Type provider type: {client.TypeProvider.GetType().FullName}");
             A.CallTo(() => client.TypeProvider.GetCodename(typeof(Cafe))).Returns("cafe");
 
             await client.GetItemsAsync<Cafe>();
