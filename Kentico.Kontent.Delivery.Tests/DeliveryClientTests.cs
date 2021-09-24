@@ -670,7 +670,9 @@ namespace Kentico.Kontent.Delivery.Tests
 
             Assert.NotNull(onRoastsItem.TeaserImage.First().Description);
             Assert.Equal(2, onRoastsItem.RelatedArticles.Count());
-            Assert.Empty(((Article)onRoastsItem.RelatedArticles.First()).RelatedArticles);
+            Assert.Equal(2, ((Article)onRoastsItem.RelatedArticles.First()).RelatedArticles.Count());
+            Assert.Equal(onRoastsItem, ((Article)onRoastsItem.RelatedArticles.First()).RelatedArticles.First() );
+            Assert.Equal("which_brewing_fits_you_", ((Article)onRoastsItem.RelatedArticles.First()).RelatedArticles.ElementAt(1) );
             Assert.Empty(((Article)onRoastsItem.RelatedArticles.ElementAt(1)).RelatedArticles);
         }
 
