@@ -12,7 +12,7 @@
 
 ## Summary
 
-The Kontent Delivery .NET SDK is a client library that lets you easily retrieve content from Kontent by Kentico.
+The Kontent Delivery .NET SDK is a client library that lets you easily retrieve content from [Kontent by Kentico](https://kontent.ai).
 
 ### Getting started
 
@@ -110,7 +110,7 @@ See [Working with Strongly Typed Models](../../wiki/Working-with-strongly-typed-
 ## Further information
 
 For more developer resources, visit:
-* [✔️ Best practices for Delivery SDK for .NET](../../wiki)
+* [✔️ Best practices for Kontent Delivery SDK for .NET](../../wiki)
 * Kontent Docs:
   * [.NET Tutorials](https://docs.kontent.ai/tutorials/develop-apps?tech=dotnet)
   * [API Reference](https://docs.kontent.ai/reference)
