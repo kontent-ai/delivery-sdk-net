@@ -25,7 +25,7 @@ PM> Install-Package Kentico.Kontent.Delivery
 Installation via .NET CLI:
 
 ```console
-> dotnet add package Kentico.Kontent.Delivery 
+> dotnet add <TARGET PROJECT> package Kentico.Kontent.Delivery 
 ```
 
 ## Usage
