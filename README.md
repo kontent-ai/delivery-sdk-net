@@ -1,4 +1,4 @@
-# Kentico Kontent Delivery .NET SDK
+# Kontent Delivery .NET SDK
 
 [![Build & Test](https://github.com/Kentico/kontent-delivery-sdk-net/actions/workflows/integrate.yml/badge.svg)](https://github.com/Kentico/kontent-delivery-sdk-net/actions/workflows/integrate.yml)
 [![codecov](https://codecov.io/gh/Kentico/kontent-delivery-sdk-net/branch/master/graph/badge.svg)](https://codecov.io/gh/Kentico/kontent-delivery-sdk-net)
@@ -12,7 +12,7 @@
 
 ## Summary
 
-The Kentico Kontent Delivery .NET SDK is a client library that lets you easily retrieve content from Kentico Kontent.
+The Kontent Delivery .NET SDK is a client library that lets you easily retrieve content from [Kontent by Kentico](https://kontent.ai).
 
 ### Getting started
 
@@ -30,7 +30,7 @@ Installation via .NET CLI:
 
 ## Usage
 
-To retrieve content from your Kentico Kontent projects, you'll be using an implementation of the `IDeliveryClient` interface. This is the main interface of the SDK. Here's how you can instantiate and use the Delivery client either [with DI/IoC](#use-dependency-injection-ideal-for-aspnet-core-web-apps "Usage with dependency injection") or [without DI/IoC](#usage-without-iocdi-containers-ideal-for-console-apps-unit-tests "Usage without dependency injection").
+To retrieve content from your Kontent projects, you'll be using an implementation of the `IDeliveryClient` interface. This is the main interface of the SDK. Here's how you can instantiate and use the Delivery client either [with DI/IoC](#use-dependency-injection-ideal-for-aspnet-core-web-apps "Usage with dependency injection") or [without DI/IoC](#usage-without-iocdi-containers-ideal-for-console-apps-unit-tests "Usage without dependency injection").
 
 ### Use dependency injection (ideal for ASP.NET Core web apps)
 
@@ -61,12 +61,12 @@ In this case, the SDK reads the configuration from the `DeliveryOptions` section
 
 To see a complete working example, go to one of our sample apps:
 
-- [Kentico Kontent ASP.NET Core MVC](https://github.com/Kentico/kontent-sample-app-net) or
-- [Kentico Kontent ASP.NET Core Razor Pages](https://github.com/Kentico/kontent-sample-app-razorpages)
+- [Kontent ASP.NET Core MVC](https://github.com/Kentico/kontent-sample-app-net) or
+- [Kontent ASP.NET Core Razor Pages](https://github.com/Kentico/kontent-sample-app-razorpages)
 
 To spin up a fully configured blank site quickly, use the:
 
-- [Kentico Kontent ASP.NET Core MVC boilerplate](https://github.com/Kentico/kontent-boilerplate-net)
+- [Kontent ASP.NET Core MVC boilerplate](https://github.com/Kentico/kontent-boilerplate-net)
 
 ### Usage without IoC/DI containers (ideal for console apps, unit tests...)
 
@@ -96,7 +96,7 @@ public class Article
 }
 ```
 
-Call the `IDeliveryClient` to retrieve data from Kentico Kontent:
+Call the `IDeliveryClient` to retrieve data from Kontent:
 
 ```csharp
 // Retrieving a single content item
@@ -110,8 +110,8 @@ See [Working with Strongly Typed Models](../../wiki/Working-with-strongly-typed-
 ## Further information
 
 For more developer resources, visit:
-* [✔️ Best practices for Delivery SDK for .NET](../../wiki)
-* Kentico Kontent Docs:
+* [✔️ Best practices for Kontent Delivery SDK for .NET](../../wiki)
+* Kontent Docs:
   * [.NET Tutorials](https://docs.kontent.ai/tutorials/develop-apps?tech=dotnet)
   * [API Reference](https://docs.kontent.ai/reference)
 

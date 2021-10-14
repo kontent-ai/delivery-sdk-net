@@ -6,7 +6,7 @@ using Newtonsoft.Json;
 namespace Kentico.Kontent.Delivery.ContentItems
 {
     /// <summary>
-    /// Default provider for mapping Kentico Kontent content item fields to model properties.
+    /// Default provider for mapping Kontent content item fields to model properties.
     /// </summary>
     internal class PropertyMapper : IPropertyMapper
     {

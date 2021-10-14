@@ -3,7 +3,7 @@
 namespace Kentico.Kontent.Delivery.Abstractions
 {
     /// <summary>
-    /// Defines the contract for mapping Kentico Kontent content item fields to model properties.
+    /// Defines the contract for mapping Kontent content item fields to model properties.
     /// </summary>
     public interface IPropertyMapper
     {

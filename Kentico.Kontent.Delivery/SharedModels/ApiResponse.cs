@@ -10,7 +10,7 @@ using System.Threading.Tasks;
 namespace Kentico.Kontent.Delivery.SharedModels
 {
     /// <summary>
-    /// Represents a successful JSON response from Kentico Kontent Delivery API.
+    /// Represents a successful JSON response from Kontent Delivery API.
     /// </summary>
     [DebuggerDisplay("Url = {" + nameof(RequestUrl) + "}")]
     internal sealed class ApiResponse : IApiResponse

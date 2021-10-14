@@ -7,7 +7,7 @@ using Microsoft.Extensions.Primitives;
 namespace Kentico.Kontent.ImageTransformation
 {
     /// <summary>
-    /// Provides a builder for Image Transformations for Kentico Kontent Delivery API.
+    /// Provides a builder for Image Transformations for Kontent Delivery API.
     /// </summary>
     public sealed class ImageUrlBuilder
     {

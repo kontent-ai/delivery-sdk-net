@@ -1,7 +1,7 @@
 ﻿namespace Kentico.Kontent.Delivery.Abstractions
 {
     /// <summary>
-    /// Represents a faulty JSON response from Kentico Kontent Delivery API.
+    /// Represents a faulty JSON response from Kontent Delivery API.
     /// </summary>
     public interface IError
     {
@@ -16,7 +16,7 @@
         string RequestId { get; }
 
         /// <summary>
-        /// Gets Kentico Kontent Delivery API error code. Check the Message property for more information
+        /// Gets Kontent Delivery API error code. Check the Message property for more information
         /// </summary>
         int ErrorCode { get; }
 

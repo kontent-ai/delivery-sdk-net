@@ -3,7 +3,7 @@
 namespace Kentico.Kontent.Delivery.Abstractions
 {
     /// <summary>
-    /// Represents a response from Kentico Kontent Delivery API that contains a list of content items.
+    /// Represents a response from Kontent Delivery API that contains a list of content items.
     /// </summary>
     /// <typeparam name="T">The type of content items in the response.</typeparam>
     public interface IDeliveryItemListingResponse<T> : IResponse, IPageable

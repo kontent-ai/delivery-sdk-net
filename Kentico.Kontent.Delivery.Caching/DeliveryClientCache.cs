@@ -7,7 +7,7 @@ using Kentico.Kontent.Delivery.Abstractions;
 namespace Kentico.Kontent.Delivery.Caching
 {
     /// <summary>
-    /// Executes requests with cache against the Kentico Kontent Delivery API.
+    /// Executes requests with cache against the Kontent Delivery API.
     /// </summary>
     public class DeliveryClientCache : IDeliveryClient
     {

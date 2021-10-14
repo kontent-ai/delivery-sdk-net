@@ -14,14 +14,14 @@ namespace Kentico.Kontent.Delivery.Builders.DeliveryClient
         /// <summary>
         /// Use project identifier.
         /// </summary>
-        /// <param name="projectId">The identifier of a Kentico Kontent project.</param>
+        /// <param name="projectId">The identifier of a Kontent project.</param>
         public static IOptionalClientSetup WithProjectId(string projectId)
             => Builder.BuildWithProjectId(projectId);
 
         /// <summary>
         /// Use project identifier.
         /// </summary>
-        /// <param name="projectId">The identifier of a Kentico Kontent project.</param>
+        /// <param name="projectId">The identifier of a Kontent project.</param>
         public static IOptionalClientSetup WithProjectId(Guid projectId)
             => Builder.BuildWithProjectId(projectId);
 
