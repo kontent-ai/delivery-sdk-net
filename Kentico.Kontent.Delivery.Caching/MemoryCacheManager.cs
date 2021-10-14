@@ -11,7 +11,7 @@ using Microsoft.Extensions.Primitives;
 namespace Kentico.Kontent.Delivery.Caching
 {
     /// <summary>
-    /// Cache responses against the Kentico Kontent Delivery API.
+    /// Cache responses against the Kontent Delivery API.
     /// </summary>
     internal class MemoryCacheManager : IDeliveryCacheManager
     {

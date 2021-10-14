@@ -6,7 +6,7 @@
     public interface IResponse
     {
         /// <summary>
-        /// A successful JSON response from the Kentico Kontent Delivery API.
+        /// A successful JSON response from the Kontent Delivery API.
         /// </summary>
         public IApiResponse ApiResponse { get; }
     }

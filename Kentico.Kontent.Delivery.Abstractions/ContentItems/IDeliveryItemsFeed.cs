@@ -3,7 +3,7 @@
 namespace Kentico.Kontent.Delivery.Abstractions
 {
     /// <summary>
-    /// Represents a feed that can be used to retrieve strongly typed content items from Kentico Kontent Delivery API in smaller batches.
+    /// Represents a feed that can be used to retrieve strongly typed content items from Kontent Delivery API in smaller batches.
     /// </summary>
     /// <typeparam name="T">The type of content items in the feed.</typeparam>
     public interface IDeliveryItemsFeed<T>

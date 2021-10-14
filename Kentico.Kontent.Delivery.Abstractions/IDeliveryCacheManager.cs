@@ -5,7 +5,7 @@ using System.Threading.Tasks;
 namespace Kentico.Kontent.Delivery.Abstractions
 {
     /// <summary>
-    /// Cache responses against the Kentico Kontent Delivery API.
+    /// Cache responses against the Kontent Delivery API.
     /// </summary>
     public interface IDeliveryCacheManager
     {

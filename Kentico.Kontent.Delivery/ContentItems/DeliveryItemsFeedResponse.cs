@@ -13,7 +13,7 @@ namespace Kentico.Kontent.Delivery.ContentItems
         /// <summary>
         /// Initializes a new instance of the <see cref="DeliveryItemsFeedResponse{T}"/> class.
         /// </summary>
-        /// <param name="response">The response from Kentico Kontent Delivery API that contains a list of content items.</param>
+        /// <param name="response">The response from Kontent Delivery API that contains a list of content items.</param>
         /// <param name="items">A list of content items.</param>
         internal DeliveryItemsFeedResponse(ApiResponse response, IList<T> items) : base(response)
         {

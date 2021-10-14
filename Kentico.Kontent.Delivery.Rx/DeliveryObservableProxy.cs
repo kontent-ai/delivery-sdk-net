@@ -7,7 +7,7 @@ using Kentico.Kontent.Delivery.Abstractions;
 namespace Kentico.Kontent.Delivery.Rx
 {
     /// <summary>
-    /// A class that enables a reactive way of consuming data from Kentico Kontent
+    /// A class that enables a reactive way of consuming data from Kontent
     /// </summary>
     public class DeliveryObservableProxy
     {
@@ -23,7 +23,7 @@ namespace Kentico.Kontent.Delivery.Rx
         #region "Constructors"
 
         /// <summary>
-        /// Creates an object that enables reactive way of consuming data from Kentico Kontent
+        /// Creates an object that enables reactive way of consuming data from Kontent
         /// </summary>
         /// <param name="deliveryClient">A <see cref="IDeliveryClient"/> instance.</param>
         public DeliveryObservableProxy(IDeliveryClient deliveryClient)

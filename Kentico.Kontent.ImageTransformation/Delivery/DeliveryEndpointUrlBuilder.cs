@@ -8,7 +8,7 @@ using Microsoft.Extensions.Options;
 namespace Kentico.Kontent.Delivery.Urls
 {
     /// <summary>
-    /// Facilitates the generation of valid URLs for Kentico Kontent Delivery API
+    /// Facilitates the generation of valid URLs for Kontent Delivery API
     /// </summary>
     public class DeliveryEndpointUrlBuilder
     {

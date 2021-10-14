@@ -5,7 +5,7 @@ using System.Net.Http;
 namespace Kentico.Kontent.Delivery
 {
     /// <summary>
-    /// Represents an error response from the Kentico Kontent Delivery API.
+    /// Represents an error response from the Kontent Delivery API.
     /// </summary>
     public sealed class DeliveryException : Exception
     {

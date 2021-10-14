@@ -4,7 +4,7 @@ using System.Threading.Tasks;
 namespace Kentico.Kontent.Delivery.Abstractions
 {
     /// <summary>
-    /// Defines members necessary for retrieving content and its metadata from the Kentico Kontent Delivery service.
+    /// Defines members necessary for retrieving content and its metadata from the Kontent Delivery service.
     /// </summary>
     public interface IDeliveryClient
     {

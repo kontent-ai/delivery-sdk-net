@@ -3,7 +3,7 @@
 namespace Kentico.Kontent.Delivery.Abstractions
 {
     /// <summary>
-    /// Represents extended system attributes of any object in Kentico Kontent.
+    /// Represents extended system attributes of any object in Kontent.
     /// </summary>
     public interface ISystemAttributes : ISystemBaseAttributes
     {

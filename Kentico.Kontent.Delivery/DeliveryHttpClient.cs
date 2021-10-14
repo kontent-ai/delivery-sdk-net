@@ -6,7 +6,7 @@ using Kentico.Kontent.Delivery.Extensions;
 namespace Kentico.Kontent.Delivery
 {
     /// <summary>
-    /// Executes Http requests against the Kentico Kontent Delivery API.
+    /// Executes Http requests against the Kontent Delivery API.
     /// </summary>
     public class DeliveryHttpClient : IDeliveryHttpClient
     {
@@ -25,10 +25,10 @@ namespace Kentico.Kontent.Delivery
         }
 
         /// <summary>
-        /// Returns a response message from Kentico Kontent Delivery API.
+        /// Returns a response message from Kontent Delivery API.
         /// </summary>
         /// <param name="message">HttpRequestMessage instance represents the request message</param>
-        /// <returns>Returns a HttpResponseMessage from Kentico Kontent Delivery API</returns>
+        /// <returns>Returns a HttpResponseMessage from Kontent Delivery API</returns>
         public async Task<HttpResponseMessage> SendHttpMessageAsync(HttpRequestMessage message)
         {
             return await _httpClient.SendAsync(message);

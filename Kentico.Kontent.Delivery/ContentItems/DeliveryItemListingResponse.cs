@@ -23,7 +23,7 @@ namespace Kentico.Kontent.Delivery.ContentItems
         /// <summary>
         /// Initializes a new instance of the <see cref="DeliveryItemListingResponse{T}"/> class.
         /// </summary>
-        /// <param name="response">The response from Kentico Kontent Delivery API that contains content items.</param>
+        /// <param name="response">The response from Kontent Delivery API that contains content items.</param>
         /// <param name="items">A collection of content items of a specific type.</param>
         /// <param name="pagination">Response paging information.</param>
         [JsonConstructor]

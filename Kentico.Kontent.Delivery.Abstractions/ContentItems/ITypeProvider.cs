@@ -3,7 +3,7 @@
 namespace Kentico.Kontent.Delivery.Abstractions
 {
     /// <summary>
-    /// Defines the contract for mapping Kentico Kontent content types to CLR types.
+    /// Defines the contract for mapping Kontent content types to CLR types.
     /// </summary>
     public interface ITypeProvider
     {
