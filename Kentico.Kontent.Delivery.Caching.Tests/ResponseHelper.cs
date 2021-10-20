@@ -25,6 +25,26 @@ namespace Kentico.Kontent.Delivery.Caching.Tests
             }
         };
 
+        /// <summary>
+        /// creates a response with the pagniation values set
+        /// </summary>
+        /// <param name="items"></param>
+        /// <param name="modularContent"></param>
+        /// <param name="pagination"></param>
+        /// <returns></returns>
+        internal static object CreatePagedItemsResponse(ICollection<object> items, IEnumerable<(string codename, object item)> modularContent = null, object pagination= null) => new
+        {
+            items,
+            modular_content = modularContent?.ToDictionary(x => x.codename, x => x.item) ?? new Dictionary<string, object>(),
+            pagination = (pagination!=null)? pagination: new
+            {
+                skip = 0,
+                limit = 0,
+                count = items.Count,
+                next_page = ""
+            }
+        };
+
         internal static object CreateItemsFeedResponse(ICollection<object> items, IEnumerable<(string codename, object item)> modularContent = null) => new
         {
             items,
