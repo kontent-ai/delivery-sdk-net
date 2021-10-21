@@ -2,6 +2,7 @@
 using System.Threading.Tasks;
 using FluentAssertions;
 using Kentico.Kontent.Delivery.Abstractions;
+using Kentico.Kontent.Delivery.SharedModels;
 using Xunit;
 using static Kentico.Kontent.Delivery.Caching.Tests.ResponseHelper;
 
@@ -226,6 +227,32 @@ namespace Kentico.Kontent.Delivery.Caching.Tests
             firstResponse.Should().BeEquivalentTo(secondResponse);
             scenario.GetRequestCount(url).Should().Be(1);
         }
+
+
+
+        [Theory]
+        [InlineData(CacheTypeEnum.Memory, CacheExpirationType.Absolute)]
+        [InlineData(CacheTypeEnum.Memory, CacheExpirationType.Sliding)]
+        [InlineData(CacheTypeEnum.Distributed, CacheExpirationType.Absolute)]
+        [InlineData(CacheTypeEnum.Distributed, CacheExpirationType.Sliding)]
+        public async Task GetPagedItemsTypedAsync_ResponseIsCached(CacheTypeEnum cacheType, CacheExpirationType cacheExpirationType)
+        {
+            var url = "items";
+            IPagination pagination = new Pagination(2, 100, 10, 68, "https://testme");
+
+            var itemB = CreateItem("b", "original");
+            var items = CreatePagedItemsResponse(new[] { CreateItem("a", "original"), itemB }, null, pagination);
+
+            var scenarioBuilder = new ScenarioBuilder(cacheType, cacheExpirationType);
+
+            var scenario = scenarioBuilder.WithResponse(url, items).Build();
+            var firstResponse = await scenario.CachingClient.GetItemsAsync<TestItem>();
+            
+            firstResponse.Should().NotBeNull();
+            scenario.GetRequestCount(url).Should().Be(1);
+            firstResponse.Pagination.Should().BeEquivalentTo(pagination);
+        }
+
 
         [Theory]
         [InlineData(CacheTypeEnum.Memory, CacheExpirationType.Absolute)]
