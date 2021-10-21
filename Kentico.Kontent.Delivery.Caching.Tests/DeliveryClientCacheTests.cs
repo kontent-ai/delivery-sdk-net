@@ -228,8 +228,6 @@ namespace Kentico.Kontent.Delivery.Caching.Tests
             scenario.GetRequestCount(url).Should().Be(1);
         }
 
-
-
         [Theory]
         [InlineData(CacheTypeEnum.Memory, CacheExpirationType.Absolute)]
         [InlineData(CacheTypeEnum.Memory, CacheExpirationType.Sliding)]
@@ -238,7 +236,7 @@ namespace Kentico.Kontent.Delivery.Caching.Tests
         public async Task GetPagedItemsTypedAsync_ResponseIsCached(CacheTypeEnum cacheType, CacheExpirationType cacheExpirationType)
         {
             var url = "items";
-            IPagination pagination = new Pagination(2, 100, 10, 68, "https://testme");
+            var pagination = new Pagination(2, 100, 10, 68, "https://testme");
 
             var itemB = CreateItem("b", "original");
             var items = CreatePagedItemsResponse(new[] { CreateItem("a", "original"), itemB }, null, pagination);
@@ -252,7 +250,6 @@ namespace Kentico.Kontent.Delivery.Caching.Tests
             scenario.GetRequestCount(url).Should().Be(1);
             firstResponse.Pagination.Should().BeEquivalentTo(pagination);
         }
-
 
         [Theory]
         [InlineData(CacheTypeEnum.Memory, CacheExpirationType.Absolute)]
