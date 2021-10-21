@@ -334,7 +334,7 @@ namespace Kentico.Kontent.Delivery
                 error = Serializer.Deserialize<Error>(jsonReader);
             }
 
-            if(error != null)
+            if (error != null)
             {
                 return new ApiResponse(httpResponseMessage.Content, false, null, null, error);
             }

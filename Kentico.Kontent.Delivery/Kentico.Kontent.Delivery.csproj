@@ -38,7 +38,7 @@
 
   <ItemGroup>
     <ProjectReference Include="..\Kentico.Kontent.Delivery.Abstractions\Kentico.Kontent.Delivery.Abstractions.csproj" />
-    <ProjectReference Include="..\Kentico.Kontent.ImageTransformation\Kentico.Kontent.Urls.csproj" />
+    <ProjectReference Include="..\Kentico.Kontent.Delivery.Urls\Kentico.Kontent.Delivery.Urls.csproj" />
   </ItemGroup>
 
 </Project>

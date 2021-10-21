@@ -1,4 +1,4 @@
-﻿namespace Kentico.Kontent.ImageTransformation
+﻿namespace Kentico.Kontent.Delivery.Urls.ImageTransformation
 {
     /// <summary>
     /// Types of image compression.
