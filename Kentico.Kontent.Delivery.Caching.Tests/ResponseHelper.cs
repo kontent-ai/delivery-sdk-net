@@ -26,12 +26,12 @@ namespace Kentico.Kontent.Delivery.Caching.Tests
         };
 
         /// <summary>
-        /// creates a response with the pagniation values set
+        /// Creates a response based on passed data.
         /// </summary>
-        /// <param name="items"></param>
-        /// <param name="modularContent"></param>
-        /// <param name="pagination"></param>
-        /// <returns></returns>
+        /// <param name="items">Items to be used in response.</param>
+        /// <param name="modularContent">Modular content to be used in response.</param>
+        /// <param name="pagination">Pagination to be used in response.</param>
+        /// <returns>Response model based on parameters items, modular_content and pagination. If <c>modularContent</c> is null or not passed, response will contain empty modular content data. If <c>pagination</c> is null or not passed, response will contain empty paging data with proper items count value.</returns>
         internal static object CreatePagedItemsResponse(ICollection<object> items, IEnumerable<(string codename, object item)> modularContent = null, object pagination= null) => new
         {
             items,

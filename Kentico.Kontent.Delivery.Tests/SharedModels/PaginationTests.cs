@@ -1,4 +1,5 @@
-﻿using Kentico.Kontent.Delivery.Caching.Extensions;
+﻿using System;
+using Kentico.Kontent.Delivery.Caching.Extensions;
 using Kentico.Kontent.Delivery.SharedModels;
 using Newtonsoft.Json;
 using Xunit;
@@ -8,7 +9,9 @@ namespace Kentico.Kontent.Delivery.Tests.SharedModels
     public class PaginationTests
     {
         [Fact]
-        public void SerialisePagination_AndThen_DeserialiseToCheck_ValuesMatch_UsingStandardSerialisation()
+        public void SerializePagination_AndThen_DeserializeToCheck_ValuesMatch_UsingBsonSerialization()
+        {
+        private void ExecuteTestsScenario(Func<Pagination,Pagination> serializeThenDeserialize)
         {
             var pagination = new Pagination(2, 500, 10, 65, "https://nextpageUrl");
             var json = JsonConvert.SerializeObject(pagination);
@@ -22,7 +25,6 @@ namespace Kentico.Kontent.Delivery.Tests.SharedModels
         [Fact]
         public void SerialisePagination_AndThen_DeserialiseToCheck_ValuesMatch_UsingBsonSerialisation()
         {
-            var pagination = new Pagination(2, 500, 10, 65, "https://nextpageUrl");
             var data = pagination.ToBson();
             //convert back
             var deserialisedPagination = data.FromBson<Pagination>();

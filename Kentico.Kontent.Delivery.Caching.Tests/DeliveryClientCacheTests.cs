@@ -199,8 +199,6 @@ namespace Kentico.Kontent.Delivery.Caching.Tests
             scenario.GetRequestCount(url).Should().Be(1);
         }
 
-
-
         [Theory]
         [InlineData(CacheTypeEnum.Memory, CacheExpirationType.Absolute)]
         [InlineData(CacheTypeEnum.Memory, CacheExpirationType.Sliding)]
@@ -220,7 +218,6 @@ namespace Kentico.Kontent.Delivery.Caching.Tests
             scenario.GetRequestCount(url).Should().Be(1);
             firstResponse.Pagination.Should().BeEquivalentTo(pagination);
         }
-
 
         [Theory]
         [InlineData(CacheTypeEnum.Memory, CacheExpirationType.Absolute)]
