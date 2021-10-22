@@ -36,7 +36,7 @@ namespace Kentico.Kontent.Delivery.Caching.Tests
         {
             items,
             modular_content = modularContent?.ToDictionary(x => x.codename, x => x.item) ?? new Dictionary<string, object>(),
-            pagination = (pagination!=null)? pagination: new
+            pagination = pagination ?? new
             {
                 skip = 0,
                 limit = 0,
