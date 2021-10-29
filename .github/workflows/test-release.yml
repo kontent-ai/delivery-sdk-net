@@ -1,4 +1,4 @@
-name: Publish to NuGet
+name: Test preparation publish to NuGet (#292)
 
 on:
   push:
