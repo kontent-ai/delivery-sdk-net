@@ -18,9 +18,9 @@ jobs:
     - name: Restore dependencies
       run: dotnet restore
     - name: Build
-      run: dotnet build --no-restore --configuration Release /p:ContinuousIntegrationBuild=true /p:Version="15.0.1-test${{ env.GITHUB_RUN_NUMBER }}"
+      run: dotnet build --no-restore --configuration Release /p:ContinuousIntegrationBuild=true /p:Version="15.0.1-test${{ github.run_number }}"
     - name: Pack
-      run: dotnet pack --no-build --include-symbols --verbosity normal --configuration Release --output ./artifacts /p:PackageVersion="15.0.1-test${{ env.GITHUB_RUN_NUMBER }}"
+      run: dotnet pack --no-build --include-symbols --verbosity normal --configuration Release --output ./artifacts /p:PackageVersion="15.0.1-test${{ github.run_number }}"
     - name: Upload artifacts
       uses: actions/upload-artifact@v2
       with:
