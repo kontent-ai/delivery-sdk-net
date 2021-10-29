@@ -18,9 +18,11 @@ namespace Kentico.Kontent.Delivery.SharedModels
         public int Count { get; }
 
         /// <inheritdoc/>
+        [JsonProperty("total_count")]
         public int? TotalCount { get; }
 
         /// <inheritdoc/>
+        [JsonProperty("next_page")]
         public string NextPageUrl { get; }
 
         /// <summary>

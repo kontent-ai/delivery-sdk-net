@@ -2,6 +2,7 @@
 using System.Threading.Tasks;
 using FluentAssertions;
 using Kentico.Kontent.Delivery.Abstractions;
+using Kentico.Kontent.Delivery.SharedModels;
 using Xunit;
 using static Kentico.Kontent.Delivery.Caching.Tests.ResponseHelper;
 
@@ -22,20 +23,16 @@ namespace Kentico.Kontent.Delivery.Caching.Tests
             var url = $"items/{codename}";
             var item = CreateItemResponse(CreateItem(codename, "original"));
             var updatedItem = CreateItemResponse(CreateItem(codename, "updated"));
-
             var scenarioBuilder = new ScenarioBuilder(cacheType, cacheExpirationType);
-
             var scenario = scenarioBuilder.WithResponse(url, item).Build();
             var firstResponse = await scenario.CachingClient.GetItemAsync<TestItem>(codename);
-
             scenario = scenarioBuilder.WithResponse(url, updatedItem).Build();
             var secondResponse = await scenario.CachingClient.GetItemAsync<TestItem>(codename);
-
+            //Check
             firstResponse.Should().NotBeNull();
             firstResponse.Should().BeEquivalentTo(secondResponse);
             scenario.GetRequestCount(url).Should().Be(1);
         }
-
         [Theory]
         [InlineData(CacheTypeEnum.Memory, CacheExpirationType.Absolute)]
         [InlineData(CacheTypeEnum.Memory, CacheExpirationType.Sliding)]
@@ -45,22 +42,18 @@ namespace Kentico.Kontent.Delivery.Caching.Tests
             var url = $"items/{codename}";
             var item = CreateItemResponse(CreateItem(codename, "original"));
             var updatedItem = CreateItemResponse(CreateItem(codename, "updated"));
-
             var scenarioBuilder = new ScenarioBuilder(cacheType, cacheExpirationType);
-
             var scenario = scenarioBuilder.WithResponse(url, item).Build();
             var firstResponse = await scenario.CachingClient.GetItemAsync<TestItem>(codename);
-
             scenario = scenarioBuilder.WithResponse(url, updatedItem).Build();
             scenario.InvalidateDependency(CacheHelpers.GetItemDependencyKey(codename));
             var secondResponse = await scenario.CachingClient.GetItemAsync<TestItem>(codename);
-
+            //Check
             firstResponse.Should().NotBeNull();
             secondResponse.Should().NotBeNull();
             firstResponse.Should().NotBeEquivalentTo(secondResponse);
             scenario.GetRequestCount(url).Should().Be(2);
         }
-
         [Theory]
         [InlineData(CacheTypeEnum.Memory, CacheExpirationType.Absolute)]
         [InlineData(CacheTypeEnum.Memory, CacheExpirationType.Sliding)]
@@ -72,16 +65,13 @@ namespace Kentico.Kontent.Delivery.Caching.Tests
             var url = $"items/{codename}";
             var item = CreateItemResponse(CreateItem(codename, "original"));
             var updatedItem = CreateItemResponse(CreateItem(codename, "updated"));
-
             var scenarioBuilder = new ScenarioBuilder(cacheType, cacheExpirationType);
-
             var scenario = scenarioBuilder.WithResponse(url, item).Build();
             var firstResponse = await scenario.CachingClient.GetItemAsync<TestItem>(codename);
-
             scenario = scenarioBuilder.WithResponse(url, updatedItem).Build();
             scenario.InvalidateDependency(CacheHelpers.GetItemKey<TestItem>(codename, Enumerable.Empty<IQueryParameter>()));
             var secondResponse = await scenario.CachingClient.GetItemAsync<TestItem>(codename);
-
+            //Check
             firstResponse.Should().NotBeNull();
             secondResponse.Should().NotBeNull();
             firstResponse.Should().NotBeEquivalentTo(secondResponse);
@@ -99,16 +89,13 @@ namespace Kentico.Kontent.Delivery.Caching.Tests
             var modularContent = new[] { (modularCodename, CreateItem(modularCodename)) };
             var item = CreateItemResponse(CreateItem(codename, "original"), modularContent);
             var updatedItem = CreateItemResponse(CreateItem(codename, "updated"), modularContent);
-
             var scenarioBuilder = new ScenarioBuilder(cacheExpirationType: cacheExpirationType);
-
             var scenario = scenarioBuilder.WithResponse(url, item).Build();
             var firstResponse = await scenario.CachingClient.GetItemAsync<TestItem>(codename);
-
             scenario = scenarioBuilder.WithResponse(url, updatedItem).Build();
             scenario.InvalidateDependency(CacheHelpers.GetItemDependencyKey(modularCodename));
             var secondResponse = await scenario.CachingClient.GetItemAsync<TestItem>(codename);
-
+            //Check
             firstResponse.Should().NotBeNull();
             secondResponse.Should().NotBeNull();
             firstResponse.Should().NotBeEquivalentTo(secondResponse);
@@ -126,16 +113,13 @@ namespace Kentico.Kontent.Delivery.Caching.Tests
             var modularContent = new[] { component };
             var item = CreateItemResponse(CreateItem(codename, "original"), modularContent);
             var updatedItem = CreateItemResponse(CreateItem(codename, "updated"), modularContent);
-
             var scenarioBuilder = new ScenarioBuilder(cacheExpirationType: cacheExpirationType);
-
             var scenario = scenarioBuilder.WithResponse(url, item).Build();
             var firstResponse = await scenario.CachingClient.GetItemAsync<TestItem>(codename);
-
             scenario = scenarioBuilder.WithResponse(url, updatedItem).Build();
             scenario.InvalidateDependency(CacheHelpers.GetItemDependencyKey(component.codename));
             var secondResponse = await scenario.CachingClient.GetItemAsync<TestItem>(codename);
-
+            //Check
             firstResponse.Should().NotBeNull();
             firstResponse.Should().BeEquivalentTo(secondResponse);
             scenario.GetRequestCount(url).Should().Be(1);
@@ -151,16 +135,13 @@ namespace Kentico.Kontent.Delivery.Caching.Tests
             var modularContent = Enumerable.Range(1, 51).Select(i => $"modular_{i}").Select(cn => (cn, CreateItem(cn))).ToList();
             var item = CreateItemResponse(CreateItem(codename, "original"), modularContent);
             var updatedItem = CreateItemResponse(CreateItem(codename, "updated"), modularContent);
-
             var scenarioBuilder = new ScenarioBuilder(cacheExpirationType: cacheExpirationType);
-
             var scenario = scenarioBuilder.WithResponse(url, item).Build();
             var firstResponse = await scenario.CachingClient.GetItemAsync<TestItem>(codename);
-
             scenario = scenarioBuilder.WithResponse(url, updatedItem).Build();
             scenario.InvalidateDependency(CacheHelpers.GetItemsDependencyKey());
             var secondResponse = await scenario.CachingClient.GetItemAsync<TestItem>(codename);
-
+            //Check
             firstResponse.Should().NotBeNull();
             secondResponse.Should().NotBeNull();
             firstResponse.Should().NotBeEquivalentTo(secondResponse);
@@ -177,24 +158,18 @@ namespace Kentico.Kontent.Delivery.Caching.Tests
             const string codename = "codename";
             var url = $"items/{codename}";
             var item = CreateItemResponse(CreateItem(codename, "original"));
-
             var scenarioBuilder = new ScenarioBuilder(cacheType, cacheExpirationType);
-
             var scenario = scenarioBuilder.WithResponse(url, item).Build();
             var firstResponse = await scenario.CachingClient.GetItemAsync<object>(codename);
             var secondResponse = await scenario.CachingClient.GetItemAsync<TestItem>(codename);
-
             var repeatedFirstResponse = await scenario.CachingClient.GetItemAsync<object>(codename);
             var repeatedSecondResponse = await scenario.CachingClient.GetItemAsync<TestItem>(codename);
-
+            //Check
             firstResponse.Should().NotBeNull();
             firstResponse.Should().BeEquivalentTo(repeatedFirstResponse);
-
             secondResponse.Should().NotBeNull();
             secondResponse.Should().BeEquivalentTo(repeatedSecondResponse);
-
             firstResponse.Should().NotBeEquivalentTo(secondResponse);
-
             scenario.GetRequestCount(url).Should().Be(2);
         }
 
@@ -213,18 +188,35 @@ namespace Kentico.Kontent.Delivery.Caching.Tests
             var itemB = CreateItem("b", "original");
             var items = CreateItemsResponse(new[] { CreateItem("a", "original"), itemB });
             var updatedItems = CreateItemsResponse(new[] { CreateItem("a", "updated"), itemB });
-
             var scenarioBuilder = new ScenarioBuilder(cacheType, cacheExpirationType);
-
             var scenario = scenarioBuilder.WithResponse(url, items).Build();
             var firstResponse = await scenario.CachingClient.GetItemsAsync<TestItem>();
-
             scenario = scenarioBuilder.WithResponse(url, updatedItems).Build();
             var secondResponse = await scenario.CachingClient.GetItemsAsync<TestItem>();
-
+            //Check
             firstResponse.Should().NotBeNull();
             firstResponse.Should().BeEquivalentTo(secondResponse);
             scenario.GetRequestCount(url).Should().Be(1);
+        }
+
+        [Theory]
+        [InlineData(CacheTypeEnum.Memory, CacheExpirationType.Absolute)]
+        [InlineData(CacheTypeEnum.Memory, CacheExpirationType.Sliding)]
+        [InlineData(CacheTypeEnum.Distributed, CacheExpirationType.Absolute)]
+        [InlineData(CacheTypeEnum.Distributed, CacheExpirationType.Sliding)]
+        public async Task GetPagedItemsTypedAsync_ResponseIsCached(CacheTypeEnum cacheType, CacheExpirationType cacheExpirationType)
+        {
+            var url = "items";
+            var pagination = new Pagination(2, 100, 10, 68, "https://testme");
+            var itemB = CreateItem("b", "original");
+            var items = CreatePagedItemsResponse(new[] { CreateItem("a", "original"), itemB }, null, pagination);
+            var scenarioBuilder = new ScenarioBuilder(cacheType, cacheExpirationType);
+            var scenario = scenarioBuilder.WithResponse(url, items).Build();
+            var firstResponse = await scenario.CachingClient.GetItemsAsync<TestItem>();
+            //Check
+            firstResponse.Should().NotBeNull();
+            scenario.GetRequestCount(url).Should().Be(1);
+            firstResponse.Pagination.Should().BeEquivalentTo(pagination);
         }
 
         [Theory]
@@ -238,16 +230,13 @@ namespace Kentico.Kontent.Delivery.Caching.Tests
             var itemB = CreateItem("b", "original");
             var items = CreateItemsResponse(new[] { CreateItem("a", "original"), itemB });
             var updatedItems = CreateItemsResponse(new[] { CreateItem("a", "updated"), itemB });
-
             var scenarioBuilder = new ScenarioBuilder(cacheType, cacheExpirationType);
-
             var scenario = scenarioBuilder.WithResponse(url, items).Build();
             var firstResponse = await scenario.CachingClient.GetItemsAsync<TestItem>();
-
             scenario = scenarioBuilder.WithResponse(url, updatedItems).Build();
             scenario.InvalidateDependency(CacheHelpers.GetItemsKey<TestItem>(Enumerable.Empty<IQueryParameter>()));
             var secondResponse = await scenario.CachingClient.GetItemsAsync<TestItem>();
-
+            //Check
             firstResponse.Should().NotBeNull();
             secondResponse.Should().NotBeNull();
             firstResponse.Should().NotBeEquivalentTo(secondResponse);
@@ -263,16 +252,13 @@ namespace Kentico.Kontent.Delivery.Caching.Tests
             var itemB = CreateItem("b", "original");
             var items = CreateItemsResponse(new[] { CreateItem("a", "original"), itemB });
             var updatedItems = CreateItemsResponse(new[] { CreateItem("a", "updated"), itemB });
-
             var scenarioBuilder = new ScenarioBuilder(cacheExpirationType: cacheExpirationType);
-
             var scenario = scenarioBuilder.WithResponse(url, items).Build();
             var firstResponse = await scenario.CachingClient.GetItemsAsync<TestItem>();
-
             scenario = scenarioBuilder.WithResponse(url, updatedItems).Build();
             scenario.InvalidateDependency(CacheHelpers.GetItemsDependencyKey());
             var secondResponse = await scenario.CachingClient.GetItemsAsync<TestItem>();
-
+            //Check
             firstResponse.Should().NotBeNull();
             secondResponse.Should().NotBeNull();
             firstResponse.Should().NotBeEquivalentTo(secondResponse);
