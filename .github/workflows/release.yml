@@ -29,7 +29,7 @@ jobs:
     - name: Codecov
       uses: codecov/codecov-action@v1
     - name: Pack
-      run: dotnet pack --no-build --include-symbols --verbosity normal --configuration Release --output ./artifacts /p:PackageVersion="${{ steps.get_version.outputs.version-without-v }}"
+      run: dotnet pack --no-build --include-symbols --verbosity normal --configuration Release --output ./artifacts /p:Version="${{ steps.get_version.outputs.version-without-v }}" /p:PackageVersion="${{ steps.get_version.outputs.version-without-v }}"
     - name: Upload artifacts
       uses: actions/upload-artifact@v2
       with:
