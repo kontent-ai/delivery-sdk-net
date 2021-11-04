@@ -17,7 +17,7 @@ jobs:
       - name: Restore dependencies
         run: dotnet restore
       - name: Build
-        run: dotnet build --no-restore --configuration Release /p:ContinuousIntegrationBuild=true /p:Version="${{ steps.get_version.outputs.version-without-v }}"
+        run: dotnet build --no-restore --configuration Release /p:ContinuousIntegrationBuild=true
       - name: Test
         run: dotnet test --no-build --verbosity normal --configuration Release /p:CollectCoverage=true /p:CoverletOutputFormat=opencover
       - name: Codecov
