@@ -5,10 +5,10 @@
 [![Stack Overflow](https://img.shields.io/badge/Stack%20Overflow-ASK%20NOW-FE7A16.svg?logo=stackoverflow&logoColor=white)](https://stackoverflow.com/tags/kentico-kontent)
 [![Discord](https://img.shields.io/discord/821885171984891914?label=Discord&logo=Discord&logoColor=white)](https://discord.gg/SKCxwPtevJ)
 
-| Paradigm        | Package | Downloads | Compatibility | Documentation |
-| ------------- |:-------------:| :-------------:|  :-------------:|  :-------------:|
-| Async         | [![NuGet](https://img.shields.io/nuget/v/Kentico.Kontent.Delivery.svg)](https://www.nuget.org/packages/Kentico.Kontent.Delivery) | [![NuGet](https://img.shields.io/nuget/dt/Kentico.Kontent.delivery.svg)](https://www.nuget.org/packages/Kentico.Kontent.Delivery) | [`netstandard2.0`](https://docs.microsoft.com/en-us/dotnet/standard/net-standard) | [📖 Wiki](../../wiki) |
-| Reactive      | [![NuGet](https://img.shields.io/nuget/v/Kentico.Kontent.Delivery.Rx.svg)](https://www.nuget.org/packages/Kentico.Kontent.Delivery.Rx) | [![NuGet](https://img.shields.io/nuget/dt/Kentico.Kontent.delivery.Rx.svg)](https://www.nuget.org/packages/Kentico.Kontent.Delivery.Rx) | [`netstandard2.0`](https://docs.microsoft.com/en-us/dotnet/standard/net-standard) | [📖 Wiki](../../wiki/Using-the-Kentico.Kontent.Delivery.Rx-reactive-library) |
+| Paradigm |                                                                Package                                                                 |                                                                Downloads                                                                |                        Compatibility                         |                                Documentation                                 |
+| -------- | :------------------------------------------------------------------------------------------------------------------------------------: | :-------------------------------------------------------------------------------------------------------------------------------------: | :----------------------------------------------------------: | :--------------------------------------------------------------------------: |
+| Async    |    [![NuGet](https://img.shields.io/nuget/v/Kentico.Kontent.Delivery.svg)](https://www.nuget.org/packages/Kentico.Kontent.Delivery)    |    [![NuGet](https://img.shields.io/nuget/dt/Kentico.Kontent.delivery.svg)](https://www.nuget.org/packages/Kentico.Kontent.Delivery)    | [`net6.0`](https://dotnet.microsoft.com/download/dotnet/6.0) |                            [📖 Wiki](../../wiki)                             |
+| Reactive | [![NuGet](https://img.shields.io/nuget/v/Kentico.Kontent.Delivery.Rx.svg)](https://www.nuget.org/packages/Kentico.Kontent.Delivery.Rx) | [![NuGet](https://img.shields.io/nuget/dt/Kentico.Kontent.delivery.Rx.svg)](https://www.nuget.org/packages/Kentico.Kontent.Delivery.Rx) | [`net6.0`](https://dotnet.microsoft.com/download/dotnet/6.0) | [📖 Wiki](../../wiki/Using-the-Kentico.Kontent.Delivery.Rx-reactive-library) |
 
 ## Summary
 
@@ -19,13 +19,13 @@ The Kontent Delivery .NET SDK is a client library that lets you easily retrieve 
 Installation via Package Manager Console in Visual Studio:
 
 ```powershell
-PM> Install-Package Kentico.Kontent.Delivery 
+PM> Install-Package Kentico.Kontent.Delivery
 ```
 
 Installation via .NET CLI:
 
 ```console
-> dotnet add <TARGET PROJECT> package Kentico.Kontent.Delivery 
+> dotnet add <TARGET PROJECT> package Kentico.Kontent.Delivery
 ```
 
 ## Usage
@@ -86,7 +86,7 @@ IDeliveryClient _client = DeliveryClientBuilder
 Use the [.NET code generator](https://github.com/Kentico/kontent-generators-net) to generate POCO models:
 
 ```csharp
-public class Article 
+public class Article
 {
         public string Title { get; set; }
         public string Summary { get; set; }
@@ -110,12 +110,12 @@ See [Working with Strongly Typed Models](../../wiki/Working-with-strongly-typed-
 ## Further information
 
 For more developer resources, visit:
-* [✔️ Best practices for Kontent Delivery SDK for .NET](../../wiki)
-* Kontent Docs:
-  * [.NET Tutorials](https://docs.kontent.ai/tutorials/develop-apps?tech=dotnet)
-  * [API Reference](https://docs.kontent.ai/reference)
+
+- [✔️ Best practices for Kontent Delivery SDK for .NET](../../wiki)
+- Kontent Docs:
+  - [.NET Tutorials](https://docs.kontent.ai/tutorials/develop-apps?tech=dotnet)
+  - [API Reference](https://docs.kontent.ai/reference)
 
 ## Get involved
 
 Check out the [contributing](CONTRIBUTING.md) page to see the best places to file issues, start discussions, and begin contributing.
-
