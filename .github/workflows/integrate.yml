@@ -2,7 +2,7 @@ name: Build & Test
 
 on:
   push:
-    branches: [ master ]
+    branches: [ master, net6 ]
   pull_request:
     branches: [ master ]
 
