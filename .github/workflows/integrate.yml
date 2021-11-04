@@ -2,6 +2,7 @@ name: Build & Test
 
 on:
   push:
+    # TODO remove net6 after 6.0 is released
     branches: [ master, net6 ]
   pull_request:
     branches: [ master ]
