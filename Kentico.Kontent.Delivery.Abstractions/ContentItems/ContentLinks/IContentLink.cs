@@ -1,6 +1,6 @@
 ﻿using System;
 
-namespace Kentico.Kontent.Delivery.Abstractions
+namespace Kentico.Kontent.Delivery.Abstractions.ContentItems.ContentLinks
 {
     /// <summary>
     /// Represents a link to a content item in a Rich text element.

@@ -1,6 +1,7 @@
 ﻿using System;
 using Kentico.Kontent.Delivery.Urls.QueryParameters;
 using Kentico.Kontent.Delivery.Abstractions;
+using Kentico.Kontent.Delivery.Abstractions.Configuration;
 
 
 namespace Kentico.Kontent.Delivery.Configuration

@@ -2,6 +2,8 @@
 using Kentico.Kontent.Delivery.SharedModels;
 using Newtonsoft.Json;
 using System.Collections.Generic;
+using Kentico.Kontent.Delivery.Abstractions.Languages;
+using Kentico.Kontent.Delivery.Abstractions.SharedModels;
 
 namespace Kentico.Kontent.Delivery.Languages
 {

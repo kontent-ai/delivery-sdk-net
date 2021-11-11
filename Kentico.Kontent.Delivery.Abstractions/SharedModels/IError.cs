@@ -1,4 +1,4 @@
-﻿namespace Kentico.Kontent.Delivery.Abstractions
+﻿namespace Kentico.Kontent.Delivery.Abstractions.SharedModels
 {
     /// <summary>
     /// Represents a faulty JSON response from Kontent Delivery API.

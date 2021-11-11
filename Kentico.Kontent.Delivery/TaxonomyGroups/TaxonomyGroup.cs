@@ -1,6 +1,8 @@
 ﻿using System.Collections.Generic;
 using System.Diagnostics;
 using Kentico.Kontent.Delivery.Abstractions;
+using Kentico.Kontent.Delivery.Abstractions.ContentTypes;
+using Kentico.Kontent.Delivery.Abstractions.TaxonomyGroups;
 using Newtonsoft.Json;
 
 namespace Kentico.Kontent.Delivery.TaxonomyGroups
