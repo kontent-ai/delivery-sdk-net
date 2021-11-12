@@ -2,8 +2,7 @@ name: Build & Test
 
 on:
   push:
-    # TODO remove net6 after 6.0 is released
-    branches: [ master, net6 ]
+    branches: [ master, vNext ]
   pull_request:
     branches: [ master ]
 
@@ -18,7 +17,6 @@ jobs:
       uses: actions/setup-dotnet@v1
       with:
         dotnet-version: 6.0.x
-        include-prerelease: true
     - name: Restore dependencies
       run: dotnet restore
     - name: Build
