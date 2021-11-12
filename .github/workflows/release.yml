@@ -14,8 +14,6 @@ jobs:
         uses: actions/setup-dotnet@v1
         with:
           dotnet-version: 6.0.x
-          # Remove after .NET 6.0 is released
-          include-prerelease: true
       - name: Restore dependencies
         run: dotnet restore
       - name: Build
@@ -36,8 +34,6 @@ jobs:
       uses: actions/setup-dotnet@v1
       with:
         dotnet-version: 6.0.x
-        # Remove after .NET 6.0 is released
-        include-prerelease: true
     - name: Extract version from tag
       id: get_version
       uses: battila7/get-version-action@v2
