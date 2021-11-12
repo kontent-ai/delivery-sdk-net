@@ -1,4 +1,6 @@
-﻿namespace Kentico.Kontent.Delivery.Abstractions
+﻿using Kentico.Kontent.Delivery.Abstractions.SharedModels;
+
+namespace Kentico.Kontent.Delivery.Abstractions.TaxonomyGroups
 {
     /// <summary>
     /// Represents a response from Kontent Delivery API that contains a taxonomy group.

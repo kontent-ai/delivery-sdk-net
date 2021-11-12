@@ -1,6 +1,7 @@
 ﻿using System;
 using FluentAssertions;
 using Kentico.Kontent.Delivery.Abstractions;
+using Kentico.Kontent.Delivery.Abstractions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Xunit;
 using Kentico.Kontent.Delivery.Extensions;

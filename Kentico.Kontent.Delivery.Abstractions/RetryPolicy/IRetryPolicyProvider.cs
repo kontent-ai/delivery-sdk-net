@@ -1,4 +1,4 @@
-﻿namespace Kentico.Kontent.Delivery.Abstractions
+﻿namespace Kentico.Kontent.Delivery.Abstractions.RetryPolicy
 {
     /// <summary>
     /// Provides a retry policy for <see cref="IDeliveryClient"/>.

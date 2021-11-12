@@ -23,7 +23,7 @@
   </ItemGroup>
 
   <ItemGroup>
-    <ProjectReference Include="..\Kentico.Kontent.ImageTransformation\Kentico.Kontent.Urls.csproj" />
+    <ProjectReference Include="..\Kentico.Kontent.Delivery.Urls\Kentico.Kontent.Delivery.Urls.csproj" />
   </ItemGroup>
 
 </Project>

@@ -2,6 +2,9 @@
 using System.Net.Http;
 using FakeItEasy;
 using Kentico.Kontent.Delivery.Abstractions;
+using Kentico.Kontent.Delivery.Abstractions.Configuration;
+using Kentico.Kontent.Delivery.Abstractions.ContentItems;
+using Kentico.Kontent.Delivery.Abstractions.RetryPolicy;
 using RichardSzalay.MockHttp;
 
 namespace Kentico.Kontent.Delivery.Tests.Factories

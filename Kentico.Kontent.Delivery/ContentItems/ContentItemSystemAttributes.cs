@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using System.Diagnostics;
 using Kentico.Kontent.Delivery.Abstractions;
+using Kentico.Kontent.Delivery.Abstractions.ContentItems;
 using Newtonsoft.Json;
 
 namespace Kentico.Kontent.Delivery.ContentItems
