@@ -1,4 +1,5 @@
 ﻿using Kentico.Kontent.Delivery.Abstractions;
+using Kentico.Kontent.Delivery.Abstractions.ContentItems.Elements;
 using Newtonsoft.Json;
 
 namespace Kentico.Kontent.Delivery.ContentItems.Elements

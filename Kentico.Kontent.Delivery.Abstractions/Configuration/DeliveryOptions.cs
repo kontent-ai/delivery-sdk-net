@@ -1,4 +1,4 @@
-﻿namespace Kentico.Kontent.Delivery.Abstractions
+﻿namespace Kentico.Kontent.Delivery.Abstractions.Configuration
 {
     /// <summary>
     /// Represents configuration of the <see cref="IDeliveryClient"/>.

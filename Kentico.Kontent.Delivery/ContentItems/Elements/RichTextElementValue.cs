@@ -2,6 +2,9 @@
 using Newtonsoft.Json;
 using System;
 using System.Collections.Generic;
+using Kentico.Kontent.Delivery.Abstractions.ContentItems.ContentLinks;
+using Kentico.Kontent.Delivery.Abstractions.ContentItems.Elements;
+using Kentico.Kontent.Delivery.Abstractions.ContentItems.RichText.Blocks;
 
 namespace Kentico.Kontent.Delivery.ContentItems.Elements
 {

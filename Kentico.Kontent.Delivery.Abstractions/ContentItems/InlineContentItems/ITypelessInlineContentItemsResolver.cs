@@ -1,6 +1,6 @@
 ﻿using System;
 
-namespace Kentico.Kontent.Delivery.Abstractions
+namespace Kentico.Kontent.Delivery.Abstractions.ContentItems.InlineContentItems
 {
     /// <summary>
     /// An interface, implemented to be registered in an collection passed to <see cref="IInlineContentItemsProcessor"/>.

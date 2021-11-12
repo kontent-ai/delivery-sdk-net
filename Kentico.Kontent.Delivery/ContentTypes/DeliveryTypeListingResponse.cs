@@ -1,5 +1,7 @@
 ﻿using System.Collections.Generic;
 using Kentico.Kontent.Delivery.Abstractions;
+using Kentico.Kontent.Delivery.Abstractions.ContentTypes;
+using Kentico.Kontent.Delivery.Abstractions.SharedModels;
 using Kentico.Kontent.Delivery.SharedModels;
 using Newtonsoft.Json;
 

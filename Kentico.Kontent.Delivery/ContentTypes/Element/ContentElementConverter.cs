@@ -1,6 +1,7 @@
 ﻿using Newtonsoft.Json;
 using Kentico.Kontent.Delivery.Abstractions;
 using System;
+using Kentico.Kontent.Delivery.Abstractions.ContentTypes.Element;
 using Newtonsoft.Json.Linq;
 
 namespace Kentico.Kontent.Delivery.ContentTypes.Element

@@ -1,6 +1,8 @@
 ﻿using System;
 using System.Collections.Generic;
 using Kentico.Kontent.Delivery.Abstractions;
+using Kentico.Kontent.Delivery.Abstractions.ContentItems;
+using Kentico.Kontent.Delivery.Abstractions.SharedModels;
 using Newtonsoft.Json;
 
 namespace Kentico.Kontent.Delivery.Tests.Models

@@ -1,6 +1,7 @@
 ﻿using Kentico.Kontent.Delivery.Abstractions;
 using Kentico.Kontent.Delivery.Configuration;
 using System;
+using Kentico.Kontent.Delivery.Abstractions.Configuration;
 
 namespace Kentico.Kontent.Delivery.Helpers
 {

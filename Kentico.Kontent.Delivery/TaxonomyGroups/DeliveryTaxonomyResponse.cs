@@ -1,4 +1,5 @@
 ﻿using Kentico.Kontent.Delivery.Abstractions;
+using Kentico.Kontent.Delivery.Abstractions.TaxonomyGroups;
 using Kentico.Kontent.Delivery.ContentTypes;
 using Kentico.Kontent.Delivery.SharedModels;
 using Newtonsoft.Json;

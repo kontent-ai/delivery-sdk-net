@@ -2,6 +2,7 @@
 using FakeItEasy;
 using FluentAssertions;
 using Kentico.Kontent.Delivery.Abstractions;
+using Kentico.Kontent.Delivery.Abstractions.Configuration;
 using Kentico.Kontent.Delivery.SharedModels;
 using Kentico.Kontent.Delivery.Tests.Models.ContentTypes;
 using Newtonsoft.Json;

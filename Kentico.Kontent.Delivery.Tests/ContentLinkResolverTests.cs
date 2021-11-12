@@ -4,6 +4,8 @@ using System.IO;
 using System.Threading.Tasks;
 using AngleSharp.Html.Parser;
 using Kentico.Kontent.Delivery.Abstractions;
+using Kentico.Kontent.Delivery.Abstractions.Configuration;
+using Kentico.Kontent.Delivery.Abstractions.ContentItems.ContentLinks;
 using Kentico.Kontent.Delivery.ContentItems;
 using Kentico.Kontent.Delivery.ContentItems.ContentLinks;
 using Kentico.Kontent.Delivery.RetryPolicy;

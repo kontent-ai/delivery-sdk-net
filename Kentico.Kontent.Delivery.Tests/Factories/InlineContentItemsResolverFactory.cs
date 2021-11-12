@@ -1,5 +1,6 @@
 ﻿using System;
 using Kentico.Kontent.Delivery.Abstractions;
+using Kentico.Kontent.Delivery.Abstractions.ContentItems.InlineContentItems;
 
 namespace Kentico.Kontent.Delivery.Tests.Factories
 {
