@@ -3,6 +3,7 @@ using System.Collections.Concurrent;
 using System.Collections.Generic;
 using System.Linq;
 using Kentico.Kontent.Delivery.Abstractions;
+using Kentico.Kontent.Delivery.Abstractions.ContentTypes.Element;
 using Kentico.Kontent.Delivery.ContentTypes.Element;
 using Microsoft.Extensions.DependencyInjection;
 using Newtonsoft.Json.Serialization;

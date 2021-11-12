@@ -1,6 +1,7 @@
 ﻿using System;
 using Kentico.Kontent.Delivery.Abstractions;
-using DefaultRetryPolicyOptions = Kentico.Kontent.Delivery.Abstractions.DefaultRetryPolicyOptions;
+using Kentico.Kontent.Delivery.Abstractions.Configuration;
+using DefaultRetryPolicyOptions = Kentico.Kontent.Delivery.Abstractions.Configuration.DefaultRetryPolicyOptions;
 
 namespace Kentico.Kontent.Delivery.Configuration
 {

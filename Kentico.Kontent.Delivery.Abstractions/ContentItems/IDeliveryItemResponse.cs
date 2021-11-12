@@ -1,6 +1,6 @@
-﻿using System.Collections.Generic;
+﻿using Kentico.Kontent.Delivery.Abstractions.SharedModels;
 
-namespace Kentico.Kontent.Delivery.Abstractions
+namespace Kentico.Kontent.Delivery.Abstractions.ContentItems
 {
     /// <summary>
     /// Represents a response from Kontent Delivery API that contains a content item.

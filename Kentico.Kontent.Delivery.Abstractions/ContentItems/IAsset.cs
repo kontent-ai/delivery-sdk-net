@@ -1,4 +1,4 @@
-﻿namespace Kentico.Kontent.Delivery.Abstractions
+﻿namespace Kentico.Kontent.Delivery.Abstractions.ContentItems
 {
     /// <summary>
     /// Represents a digital asset, such as a document or image.

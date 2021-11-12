@@ -1,6 +1,7 @@
 ﻿using System.Collections.Generic;
+using Kentico.Kontent.Delivery.Abstractions.ContentTypes.Element;
 
-namespace Kentico.Kontent.Delivery.Abstractions
+namespace Kentico.Kontent.Delivery.Abstractions.ContentTypes
 {
     /// <summary>
     /// Represents a content type.

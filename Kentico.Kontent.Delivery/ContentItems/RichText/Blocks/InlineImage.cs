@@ -3,6 +3,7 @@ using Kentico.Kontent.Delivery.ContentItems.RichText.Attributes;
 using Newtonsoft.Json;
 using System;
 using System.Diagnostics;
+using Kentico.Kontent.Delivery.Abstractions.ContentItems.RichText.Blocks;
 
 namespace Kentico.Kontent.Delivery.ContentItems.RichText.Blocks
 {

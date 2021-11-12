@@ -5,6 +5,9 @@ using Microsoft.Extensions.Options;
 using Newtonsoft.Json;
 using System;
 using System.Collections.Concurrent;
+using Kentico.Kontent.Delivery.Abstractions.Configuration;
+using Kentico.Kontent.Delivery.Abstractions.ContentItems;
+using Kentico.Kontent.Delivery.Abstractions.RetryPolicy;
 
 namespace Kentico.Kontent.Delivery.Extensions.DependencyInjection
 {

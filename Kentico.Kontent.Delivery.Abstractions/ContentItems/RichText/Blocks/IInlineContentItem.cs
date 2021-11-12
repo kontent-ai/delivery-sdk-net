@@ -1,4 +1,4 @@
-﻿namespace Kentico.Kontent.Delivery.Abstractions
+﻿namespace Kentico.Kontent.Delivery.Abstractions.ContentItems.RichText.Blocks
 {
     /// <summary>
     /// Represents inline content item block within rich text

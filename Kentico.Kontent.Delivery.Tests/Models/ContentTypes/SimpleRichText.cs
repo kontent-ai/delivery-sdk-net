@@ -1,4 +1,5 @@
 ﻿using Kentico.Kontent.Delivery.Abstractions;
+using Kentico.Kontent.Delivery.Abstractions.ContentItems.RichText;
 using Newtonsoft.Json;
 
 namespace Kentico.Kontent.Delivery.Tests.Models.ContentTypes

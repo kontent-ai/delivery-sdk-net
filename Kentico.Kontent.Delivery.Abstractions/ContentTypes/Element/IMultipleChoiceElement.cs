@@ -1,6 +1,7 @@
 ﻿using System.Collections.Generic;
+using Kentico.Kontent.Delivery.Abstractions.SharedModels;
 
-namespace Kentico.Kontent.Delivery.Abstractions
+namespace Kentico.Kontent.Delivery.Abstractions.ContentTypes.Element
 {
     interface IMultipleChoiceElement : IContentElement
     {

@@ -1,17 +1,19 @@
-﻿using Kentico.Kontent.Delivery.Abstractions;
+﻿using System;
+using Kentico.Kontent.Delivery.Abstractions;
+using Kentico.Kontent.Delivery.Abstractions.Configuration;
+using Kentico.Kontent.Delivery.Abstractions.Extensions;
 using Kentico.Kontent.Delivery.Caching;
 using Kentico.Kontent.Delivery.Caching.Extensions;
 using Kentico.Kontent.Delivery.Configuration;
+using Kentico.Kontent.Delivery.Extensions.DependencyInjection.NamedServiceProviders;
 using Kentico.Kontent.Delivery.Helpers;
 using Microsoft.Extensions.Caching.Distributed;
 using Microsoft.Extensions.Caching.Memory;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.DependencyInjection.Extensions;
-using Kentico.Kontent.Delivery.Abstractions.Extensions;
-using System;
 
-namespace Kentico.Kontent.Delivery.Extensions.DependencyInjection
+namespace Kentico.Kontent.Delivery.Extensions.DependencyInjection.Extensions
 {
     /// <summary>
     /// A class which contains extension methods on <see cref="IServiceCollection"/> for registering an <see cref="IDeliveryClient"/> instance.

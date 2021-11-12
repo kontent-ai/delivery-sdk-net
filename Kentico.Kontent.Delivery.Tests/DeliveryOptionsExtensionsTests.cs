@@ -3,6 +3,7 @@ using FluentAssertions;
 using Kentico.Kontent.Delivery.Abstractions;
 using Kentico.Kontent.Delivery.Abstractions.Extensions;
 using System.Collections.Generic;
+using Kentico.Kontent.Delivery.Abstractions.Configuration;
 using Xunit;
 
 namespace Kentico.Kontent.Delivery.Tests
