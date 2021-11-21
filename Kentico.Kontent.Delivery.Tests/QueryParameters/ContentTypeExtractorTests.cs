@@ -2,8 +2,6 @@
 using AngleSharp.Html.Parser;
 using FakeItEasy;
 using Kentico.Kontent.Delivery.Abstractions;
-using Kentico.Kontent.Delivery.Abstractions.Configuration;
-using Kentico.Kontent.Delivery.Abstractions.ContentItems;
 using Kentico.Kontent.Delivery.ContentItems;
 using Kentico.Kontent.Delivery.Tests.Factories;
 using Kentico.Kontent.Delivery.Urls.QueryParameters;

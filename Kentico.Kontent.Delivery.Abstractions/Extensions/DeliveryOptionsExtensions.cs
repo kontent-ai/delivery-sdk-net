@@ -1,6 +1,4 @@
-﻿using Kentico.Kontent.Delivery.Abstractions.Configuration;
-
-namespace Kentico.Kontent.Delivery.Abstractions.Extensions
+﻿namespace Kentico.Kontent.Delivery.Abstractions.Extensions
 {
     /// <summary>
     /// A class which contains extension methods on <see cref="DeliveryOptions"/>.

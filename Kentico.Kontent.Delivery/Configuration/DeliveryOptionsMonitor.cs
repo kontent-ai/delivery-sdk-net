@@ -1,7 +1,6 @@
 ﻿using Kentico.Kontent.Delivery.Abstractions;
 using Microsoft.Extensions.Options;
 using System;
-using Kentico.Kontent.Delivery.Abstractions.Configuration;
 
 namespace Kentico.Kontent.Delivery.Configuration
 {

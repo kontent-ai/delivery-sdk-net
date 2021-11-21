@@ -1,6 +1,4 @@
-﻿using Kentico.Kontent.Delivery.Abstractions.SharedModels;
-
-namespace Kentico.Kontent.Delivery.Abstractions.Languages
+﻿namespace Kentico.Kontent.Delivery.Abstractions
 {
     /// <summary>
     /// Represents system attributes of a language.

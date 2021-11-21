@@ -1,8 +1,7 @@
 ﻿using System.Reflection;
 using System.Threading.Tasks;
-using Kentico.Kontent.Delivery.Abstractions.ContentItems.Elements;
 
-namespace Kentico.Kontent.Delivery.Abstractions.ContentItems
+namespace Kentico.Kontent.Delivery.Abstractions
 {
     /// <summary>
     /// Provides value conversion for the given property

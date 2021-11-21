@@ -1,6 +1,5 @@
 ﻿using System.ComponentModel.DataAnnotations;
 using Kentico.Kontent.Delivery.Abstractions;
-using Kentico.Kontent.Delivery.Abstractions.ContentItems.RichText.Blocks;
 using Kentico.Kontent.Delivery.ContentItems.RichText.Attributes;
 
 namespace Kentico.Kontent.Delivery.ContentItems.RichText.Blocks

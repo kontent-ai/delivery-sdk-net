@@ -4,8 +4,6 @@ using System.Net;
 using System.Net.Http;
 using System.Threading.Tasks;
 using Kentico.Kontent.Delivery.Abstractions;
-using Kentico.Kontent.Delivery.Abstractions.Configuration;
-using Kentico.Kontent.Delivery.Abstractions.RetryPolicy;
 using Kentico.Kontent.Delivery.Extensions;
 
 namespace Kentico.Kontent.Delivery.RetryPolicy

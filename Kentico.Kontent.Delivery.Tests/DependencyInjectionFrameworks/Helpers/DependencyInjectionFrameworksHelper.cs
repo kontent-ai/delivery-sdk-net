@@ -4,7 +4,6 @@ using Autofac.Extensions.DependencyInjection;
 using Castle.Windsor;
 using Castle.Windsor.MsDependencyInjection;
 using Kentico.Kontent.Delivery.Abstractions;
-using Kentico.Kontent.Delivery.Abstractions.Configuration;
 using Kentico.Kontent.Delivery.Extensions;
 using Kentico.Kontent.Delivery.Tests.Factories;
 using Kentico.Kontent.Delivery.Tests.Models.ContentTypes;

@@ -1,6 +1,6 @@
 ﻿using Autofac;
 
-namespace Kentico.Kontent.Delivery.Extensions.DependencyInjection.NamedServiceProviders
+namespace Kentico.Kontent.Delivery.Extensions.DependencyInjection
 {
     internal class AutofacServiceProvider : INamedServiceProvider
     {

@@ -1,4 +1,4 @@
-﻿namespace Kentico.Kontent.Delivery.Abstractions.ContentItems
+﻿namespace Kentico.Kontent.Delivery.Abstractions
 {
     /// <summary>
     /// A class that represents a generic image asset.

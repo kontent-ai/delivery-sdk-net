@@ -7,7 +7,6 @@ using RichardSzalay.MockHttp;
 using System.Threading.Tasks;
 using Kentico.Kontent.Delivery.Benchmarks.ContentTypes;
 using BenchmarkDotNet.Jobs;
-using Kentico.Kontent.Delivery.Abstractions.ContentItems;
 
 namespace Kentico.Kontent.Delivery.Benchmarks
 {

@@ -5,7 +5,6 @@ using System.Net;
 using System.Text.RegularExpressions;
 using System.Threading.Tasks;
 using Kentico.Kontent.Delivery.Abstractions;
-using Kentico.Kontent.Delivery.Abstractions.ContentItems.ContentLinks;
 
 namespace Kentico.Kontent.Delivery.ContentItems.ContentLinks
 {

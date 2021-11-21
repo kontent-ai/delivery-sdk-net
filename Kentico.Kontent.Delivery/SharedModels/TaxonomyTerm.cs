@@ -1,7 +1,6 @@
 ﻿using Kentico.Kontent.Delivery.Abstractions;
 using Newtonsoft.Json;
 using System.Diagnostics;
-using Kentico.Kontent.Delivery.Abstractions.SharedModels;
 
 namespace Kentico.Kontent.Delivery.SharedModels
 {

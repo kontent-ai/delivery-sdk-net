@@ -1,5 +1,4 @@
 ﻿using Kentico.Kontent.Delivery.Abstractions;
-using Kentico.Kontent.Delivery.Abstractions.Configuration;
 
 namespace Kentico.Kontent.Delivery.Urls.QueryParameters
 {

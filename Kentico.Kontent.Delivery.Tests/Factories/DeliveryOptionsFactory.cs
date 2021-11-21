@@ -1,6 +1,5 @@
 ﻿using FakeItEasy;
 using Kentico.Kontent.Delivery.Abstractions;
-using Kentico.Kontent.Delivery.Abstractions.Configuration;
 using Microsoft.Extensions.Options;
 
 namespace Kentico.Kontent.Delivery.Tests.Factories

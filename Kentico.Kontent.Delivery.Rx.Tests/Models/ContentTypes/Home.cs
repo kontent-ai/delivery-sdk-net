@@ -6,7 +6,6 @@
 
 using System.Collections.Generic;
 using Kentico.Kontent.Delivery.Abstractions;
-using Kentico.Kontent.Delivery.Abstractions.ContentItems;
 
 namespace Kentico.Kontent.Delivery.Rx.Tests.Models.ContentTypes
 {

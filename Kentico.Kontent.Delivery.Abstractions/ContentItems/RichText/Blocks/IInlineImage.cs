@@ -1,6 +1,6 @@
 ﻿using System;
 
-namespace Kentico.Kontent.Delivery.Abstractions.ContentItems.RichText.Blocks
+namespace Kentico.Kontent.Delivery.Abstractions
 {
     /// <summary>
     /// Represents inline image block within rich text

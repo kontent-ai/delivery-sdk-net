@@ -1,7 +1,6 @@
 ﻿using System.Collections.Generic;
-using Kentico.Kontent.Delivery.Abstractions.SharedModels;
 
-namespace Kentico.Kontent.Delivery.Abstractions.TaxonomyGroups
+namespace Kentico.Kontent.Delivery.Abstractions
 {
     /// <summary>
     /// Represents a response from Kontent Delivery API that contains a list of taxonomy groups.

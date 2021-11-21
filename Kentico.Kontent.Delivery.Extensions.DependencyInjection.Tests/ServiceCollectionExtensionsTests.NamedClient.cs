@@ -4,9 +4,6 @@ using Kentico.Kontent.Delivery.Abstractions;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using System;
-using Kentico.Kontent.Delivery.Abstractions.Configuration;
-using Kentico.Kontent.Delivery.Abstractions.ContentItems;
-using Kentico.Kontent.Delivery.Extensions.DependencyInjection.Extensions;
 using Xunit;
 
 namespace Kentico.Kontent.Delivery.Extensions.DependencyInjection.Tests

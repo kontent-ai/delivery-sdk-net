@@ -1,6 +1,6 @@
 ﻿using System.Collections.Generic;
 
-namespace Kentico.Kontent.Delivery.Abstractions.TaxonomyGroups
+namespace Kentico.Kontent.Delivery.Abstractions
 {
     /// <summary>
     /// Represents a taxonomy term with child terms.
