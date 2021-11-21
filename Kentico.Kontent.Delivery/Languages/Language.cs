@@ -1,7 +1,6 @@
 ﻿using Kentico.Kontent.Delivery.Abstractions;
 using Newtonsoft.Json;
 using System.Diagnostics;
-using Kentico.Kontent.Delivery.Abstractions.Languages;
 
 namespace Kentico.Kontent.Delivery.Languages
 {

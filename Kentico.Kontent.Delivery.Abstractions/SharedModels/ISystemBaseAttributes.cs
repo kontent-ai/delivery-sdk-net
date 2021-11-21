@@ -1,4 +1,4 @@
-﻿namespace Kentico.Kontent.Delivery.Abstractions.SharedModels
+﻿namespace Kentico.Kontent.Delivery.Abstractions
 {
     /// <summary>
     /// Represents system base attributes of any object in Kontent.

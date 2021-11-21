@@ -1,7 +1,5 @@
 ﻿using System.Linq;
 using Kentico.Kontent.Delivery.Abstractions;
-using Kentico.Kontent.Delivery.Abstractions.Configuration;
-using Kentico.Kontent.Delivery.Abstractions.ContentItems;
 using Kentico.Kontent.Delivery.ContentItems;
 using Kentico.Kontent.Delivery.ContentItems.ContentLinks;
 using Kentico.Kontent.Delivery.ContentItems.InlineContentItems;

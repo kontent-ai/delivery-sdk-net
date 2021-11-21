@@ -1,4 +1,4 @@
-﻿namespace Kentico.Kontent.Delivery.Abstractions.ContentItems.Elements
+﻿namespace Kentico.Kontent.Delivery.Abstractions
 {
     /// <summary>
     /// Represents a content element.

@@ -2,7 +2,6 @@
 using Newtonsoft.Json;
 using System;
 using System.Diagnostics;
-using Kentico.Kontent.Delivery.Abstractions.ContentItems.ContentLinks;
 
 namespace Kentico.Kontent.Delivery.ContentItems.ContentLinks
 {

@@ -1,8 +1,7 @@
 ﻿using System;
 using System.Threading.Tasks;
-using Kentico.Kontent.Delivery.Abstractions.ContentItems.ContentLinks;
 
-namespace Kentico.Kontent.Delivery.Abstractions.ContentItems
+namespace Kentico.Kontent.Delivery.Abstractions
 {
     /// <summary>
     /// Context of the current resolving process

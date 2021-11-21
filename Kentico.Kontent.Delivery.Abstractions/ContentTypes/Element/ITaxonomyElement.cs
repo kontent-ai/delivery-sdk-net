@@ -1,4 +1,4 @@
-﻿namespace Kentico.Kontent.Delivery.Abstractions.ContentTypes.Element
+﻿namespace Kentico.Kontent.Delivery.Abstractions
 {
     interface ITaxonomyElement : IContentElement
     {

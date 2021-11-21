@@ -1,4 +1,4 @@
-﻿namespace Kentico.Kontent.Delivery.Abstractions.SharedModels
+﻿namespace Kentico.Kontent.Delivery.Abstractions
 {
     /// <summary>
     /// Represents an option of a Multiple choice content element.

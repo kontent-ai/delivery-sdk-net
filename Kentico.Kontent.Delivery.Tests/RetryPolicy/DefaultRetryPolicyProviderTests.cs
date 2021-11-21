@@ -1,6 +1,5 @@
 ﻿using System;
 using Kentico.Kontent.Delivery.Abstractions;
-using Kentico.Kontent.Delivery.Abstractions.Configuration;
 using Kentico.Kontent.Delivery.RetryPolicy;
 using Microsoft.Extensions.Options;
 using Xunit;

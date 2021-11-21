@@ -7,8 +7,6 @@ using AngleSharp.Dom;
 using AngleSharp.Html.Dom;
 using AngleSharp.Html.Parser;
 using Kentico.Kontent.Delivery.Abstractions;
-using Kentico.Kontent.Delivery.Abstractions.ContentItems;
-using Kentico.Kontent.Delivery.Abstractions.ContentItems.InlineContentItems;
 using Kentico.Kontent.Delivery.Builders.DeliveryClient;
 using Microsoft.Extensions.DependencyInjection;
 

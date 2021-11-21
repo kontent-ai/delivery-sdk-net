@@ -1,7 +1,7 @@
 ﻿using System.Collections;
 using System.Threading.Tasks;
 
-namespace Kentico.Kontent.Delivery.Abstractions.ContentItems
+namespace Kentico.Kontent.Delivery.Abstractions
 {
     /// <summary>
     /// Defines the contract for mapping content items to models.

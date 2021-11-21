@@ -1,8 +1,4 @@
 ﻿using System.Threading.Tasks;
-using Kentico.Kontent.Delivery.Abstractions.ContentItems;
-using Kentico.Kontent.Delivery.Abstractions.ContentTypes;
-using Kentico.Kontent.Delivery.Abstractions.Languages;
-using Kentico.Kontent.Delivery.Abstractions.TaxonomyGroups;
 
 namespace Kentico.Kontent.Delivery.Abstractions
 {

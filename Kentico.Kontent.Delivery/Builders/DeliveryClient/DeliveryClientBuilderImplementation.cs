@@ -1,10 +1,5 @@
 ﻿using System;
 using Kentico.Kontent.Delivery.Abstractions;
-using Kentico.Kontent.Delivery.Abstractions.Configuration;
-using Kentico.Kontent.Delivery.Abstractions.ContentItems;
-using Kentico.Kontent.Delivery.Abstractions.ContentItems.ContentLinks;
-using Kentico.Kontent.Delivery.Abstractions.ContentItems.InlineContentItems;
-using Kentico.Kontent.Delivery.Abstractions.RetryPolicy;
 using Kentico.Kontent.Delivery.Configuration;
 using Kentico.Kontent.Delivery.Extensions;
 using Microsoft.Extensions.DependencyInjection;

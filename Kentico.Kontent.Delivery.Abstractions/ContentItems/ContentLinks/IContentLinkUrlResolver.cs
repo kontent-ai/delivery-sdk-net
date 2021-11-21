@@ -1,6 +1,6 @@
 ﻿using System.Threading.Tasks;
 
-namespace Kentico.Kontent.Delivery.Abstractions.ContentItems.ContentLinks
+namespace Kentico.Kontent.Delivery.Abstractions
 {
     /// <summary>
     /// Defines the contract to resolve content links in Rich text element values.

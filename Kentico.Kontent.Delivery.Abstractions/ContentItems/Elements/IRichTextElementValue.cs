@@ -1,9 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
-using Kentico.Kontent.Delivery.Abstractions.ContentItems.ContentLinks;
-using Kentico.Kontent.Delivery.Abstractions.ContentItems.RichText.Blocks;
 
-namespace Kentico.Kontent.Delivery.Abstractions.ContentItems.Elements
+namespace Kentico.Kontent.Delivery.Abstractions
 {
     /// <summary>
     /// An element representing a rich-text value. In addition to formatted text, 

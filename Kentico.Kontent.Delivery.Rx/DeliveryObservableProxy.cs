@@ -3,10 +3,6 @@ using System.Collections.Generic;
 using System.Reactive.Disposables;
 using System.Reactive.Linq;
 using Kentico.Kontent.Delivery.Abstractions;
-using Kentico.Kontent.Delivery.Abstractions.ContentTypes;
-using Kentico.Kontent.Delivery.Abstractions.ContentTypes.Element;
-using Kentico.Kontent.Delivery.Abstractions.Languages;
-using Kentico.Kontent.Delivery.Abstractions.TaxonomyGroups;
 
 namespace Kentico.Kontent.Delivery.Rx
 {

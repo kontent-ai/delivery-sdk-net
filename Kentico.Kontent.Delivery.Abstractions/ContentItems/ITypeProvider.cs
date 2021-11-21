@@ -1,6 +1,6 @@
 ﻿using System;
 
-namespace Kentico.Kontent.Delivery.Abstractions.ContentItems
+namespace Kentico.Kontent.Delivery.Abstractions
 {
     /// <summary>
     /// Defines the contract for mapping Kontent content types to CLR types.
