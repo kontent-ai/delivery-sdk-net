@@ -1,4 +1,4 @@
-﻿namespace Kentico.Kontent.Delivery.Abstractions.Extensions
+﻿namespace Kentico.Kontent.Delivery.Abstractions
 {
     /// <summary>
     /// A class which contains extension methods on <see cref="DeliveryOptions"/>.

@@ -8,7 +8,6 @@ using Microsoft.Extensions.Caching.Memory;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.DependencyInjection.Extensions;
-using Kentico.Kontent.Delivery.Abstractions.Extensions;
 using System;
 
 namespace Kentico.Kontent.Delivery.Extensions.DependencyInjection
