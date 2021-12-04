@@ -23,8 +23,8 @@ namespace Kentico.Kontent.Delivery.Abstractions
         string Type { get; }
 
         /// <summary>
-        /// Gets the asset renditions list.
+        /// Dictionary of asset renditions.
         /// </summary>
-        IEnumerable<IAssetRendition> Renditions { get; }
+        Dictionary<string, IAssetRendition> Renditions { get; }
     }
 }
