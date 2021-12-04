@@ -141,9 +141,15 @@ namespace Kentico.Kontent.Delivery.Tests
             Assert.NotNull(model.TeaserImage.FirstOrDefault()?.Name);
             Assert.NotNull(model.TeaserImage.FirstOrDefault()?.Type);
             Assert.NotNull(model.TeaserImage.FirstOrDefault()?.Url);
-            //TODO: generate data for rendition and add asertions like Assert.NotNull(model.TeaserImage.FirstOrDefault()?.Renditions);
-            Assert.True(model.TeaserImage.FirstOrDefault()?.Width > 0);
-            Assert.True(model.TeaserImage.FirstOrDefault()?.Height > 0);
+            Assert.NotEqual(0, model.TeaserImage.FirstOrDefault()?.Width);
+            Assert.NotEqual(0, model.TeaserImage.FirstOrDefault()?.Height);
+            Assert.NotNull(model.TeaserImage.FirstOrDefault()?.Renditions);
+            Assert.NotEmpty(model.TeaserImage.First().Renditions);
+            Assert.NotNull(model.TeaserImage.First().Renditions["default"].RenditionId);
+            Assert.NotNull(model.TeaserImage.First().Renditions["default"].PresetId);
+            Assert.NotEqual(0, model.TeaserImage.First().Renditions["default"].Width);
+            Assert.NotEqual(0, model.TeaserImage.First().Renditions["default"].Height);
+            Assert.NotNull(model.TeaserImage.First().Renditions["default"].Query);
             Assert.NotNull(response.ApiResponse.RequestUrl);
         }
 

@@ -38,7 +38,7 @@ namespace Kentico.Kontent.Delivery.ContentItems
         public int Height { get; internal set; }
         
         [JsonProperty("renditions")]
-        public IEnumerable<IAssetRendition> Renditions { get; internal set; }
+        public Dictionary<string, IAssetRendition> Renditions { get; internal set; }
 
         /// <summary>
         /// Initializes a new instance of the <see cref="Asset"/> class.
