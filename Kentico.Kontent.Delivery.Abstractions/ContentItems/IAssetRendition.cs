@@ -1,6 +1,4 @@
-﻿using System;
-
-namespace Kentico.Kontent.Delivery.Abstractions
+﻿namespace Kentico.Kontent.Delivery.Abstractions
 {
     /// <summary>
     /// Represents asset rendition data.
@@ -18,17 +16,17 @@ namespace Kentico.Kontent.Delivery.Abstractions
         string PresetId { get; }
 
         /// <summary>
-        /// Gets image asset width in pixels.
+        /// Gets rendition width in pixels.
         /// </summary>
         int Width { get; }
 
         /// <summary>
-        /// Gets image asset height in pixels.
+        /// Gets rendition height in pixels.
         /// </summary>
         int Height { get; }
         
         /// <summary>
-        /// Gets query string parameters needed for image transformations.
+        /// Gets query string parameters used for image transformations.
         /// </summary>
         string Query { get;}
     }
