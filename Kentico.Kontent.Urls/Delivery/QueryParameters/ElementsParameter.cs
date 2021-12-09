@@ -3,7 +3,7 @@ using System.Collections.Generic;
 using System.Linq;
 using Kentico.Kontent.Delivery.Abstractions;
 
-namespace Kentico.Kontent.Urls.QueryParameters
+namespace Kentico.Kontent.Urls.Delivery.QueryParameters
 {
     /// <summary>
     /// Specifies the content elements to retrieve.

@@ -1,5 +1,5 @@
 ﻿using System;
-using Kentico.Kontent.Urls.QueryParameters;
+using Kentico.Kontent.Urls.Delivery.QueryParameters;
 using Kentico.Kontent.Delivery.Abstractions;
 
 

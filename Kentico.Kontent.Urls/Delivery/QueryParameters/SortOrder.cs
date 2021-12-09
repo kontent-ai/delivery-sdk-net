@@ -1,4 +1,4 @@
-﻿namespace Kentico.Kontent.Urls.QueryParameters
+﻿namespace Kentico.Kontent.Urls.Delivery.QueryParameters
 {
     /// <summary>
     /// Specifies the order in which content items are sorted.
