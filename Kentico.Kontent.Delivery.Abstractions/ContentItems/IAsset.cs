@@ -5,7 +5,7 @@ namespace Kentico.Kontent.Delivery.Abstractions
     /// <summary>
     /// Represents a digital asset, such as a document or image.
     /// </summary>
-    public interface IAsset: IImage
+    public interface IAsset : IImage
     {
         /// <summary>
         /// Gets the name of the asset.
