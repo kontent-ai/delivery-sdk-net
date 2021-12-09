@@ -10,7 +10,7 @@ using Kentico.Kontent.Delivery.Abstractions;
 using Kentico.Kontent.Delivery.ContentItems;
 using Kentico.Kontent.Delivery.Tests.Factories;
 using Kentico.Kontent.Delivery.Tests.Models.ContentTypes;
-using Kentico.Kontent.Urls.QueryParameters;
+using Kentico.Kontent.Urls.Delivery.QueryParameters;
 using NodaTime;
 using RichardSzalay.MockHttp;
 using Xunit;
