@@ -52,6 +52,9 @@
                     "brand_segment",
                     "brand_become_a_distributor",
                     "brand_news_article_page"
+                    //TODO in verified test case case, codename "test" comes here, right ?
+                    //I mean the one that should be mapped into different class than inside of "our_solutions_for_y" > "teaser_items" > "test"
+                    //Or should it come as separated element ?
                 ]
             },
             "slug": {
