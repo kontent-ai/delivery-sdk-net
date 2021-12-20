@@ -9,7 +9,7 @@ namespace Kentico.Kontent.Delivery.Tests.Models.ContentTypes
     {
         private static readonly Dictionary<Type, string> _codenames = new Dictionary<Type, string>
         {
-            //TODO please fill types as in your issue
+            //TODO could you please fill types mappings that you use ? See CustomTypeProvider class in this namespace as example
         };
 
         public Type GetType(string contentType)
