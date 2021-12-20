@@ -41,6 +41,26 @@ namespace Kentico.Kontent.Delivery.Tests
         }
 
         [Fact]
+        public async Task GetItemAsync_307()
+        {
+            string url = $"{_baseUrl}/items/";
+
+            _mockHttp
+                .When($"{url}home_brand_307")
+                .Respond("application/json",
+                    await File.ReadAllTextAsync(Path.Combine(Environment.CurrentDirectory,
+                        $"Fixtures{Path.DirectorySeparatorChar}DeliveryClient{Path.DirectorySeparatorChar}home_brand_307.json")));
+            
+            var client =
+                InitializeDeliveryClientWithCustomModelProvider(_mockHttp, new PropertyMapper(),
+                    new CustomTypeProvider_307());
+
+            var response = await client.GetItemAsync<object>("home_brand_307");
+            
+            //Some asserts
+        }
+
+        [Fact]
         public async Task GetItemAsync()
         {
             string url = $"{_baseUrl}/items/";

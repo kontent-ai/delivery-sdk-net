@@ -1,0 +1,1000 @@
+{
+    "item": {
+        "system": {
+            "id": "af766e19-7f07-4352-9183-8ee71e908a97",
+            "name": "brand Home Page",
+            "codename": "home_brand_307",
+            "language": "en-US",
+            "type": "brand_homepage",
+            "collection": "default",
+            "sitemap_locations": [],
+            "last_modified": "2021-12-02T13:22:14.5537865Z",
+            "workflow_step": "published"
+        },
+        "elements": {
+            "title": {
+                "type": "text",
+                "name": "Title",
+                "value": "brand Home Page"
+            },
+            "grid": {
+                "type": "modular_content",
+                "name": "Grid",
+                "value": [
+                    "our_solutions_for_pass_prds_grid"
+                ]
+            },
+            "banner_with_teasers": {
+                "type": "modular_content",
+                "name": "Banner with Teasers",
+                "value": [
+                    "our_solutions_for_y"
+                ]
+            },
+            "banner_cta": {
+                "type": "modular_content",
+                "name": "Banner/CTA",
+                "value": [
+                    "discover_our_international_network"
+                ]
+            },
+            "partnership_events": {
+                "type": "modular_content",
+                "name": "Partnership Events",
+                "value": []
+            },
+            "subpages": {
+                "type": "modular_content",
+                "name": "Subpages",
+                "value": [
+                    "brand_about_us",
+                    "brand_products",
+                    "brand_segment",
+                    "brand_become_a_distributor",
+                    "brand_news_article_page"
+                ]
+            },
+            "slug": {
+                "type": "url_slug",
+                "name": "Slug",
+                "value": "home_brand_307"
+            },
+            "teaser__icon": {
+                "type": "asset",
+                "name": "Icon",
+                "value": [
+                    {
+                        "name": "become_a_lubricant_expert.svg",
+                        "description": "become a lubricant expert",
+                        "type": "image/svg+xml",
+                        "size": 6478,
+                        "url": "x"
+                    }
+                ]
+            },
+            "teaser__title": {
+                "type": "text",
+                "name": "Title",
+                "value": "Home page"
+            },
+            "teaser__intro_text": {
+                "type": "text",
+                "name": "Intro Text",
+                "value": "This is a teaser of the home page"
+            },
+            "teaser__link": {
+                "type": "modular_content",
+                "name": "Link",
+                "value": [
+                    "link_home"
+                ]
+            }
+        }
+    },
+    "modular_content": {
+        "cd73a808_8e27_012a_7bfc_0dd098aced03": {
+            "system": {
+                "id": "cd73a808-8e27-012a-7bfc-0dd098aced03",
+                "name": "cd73a808-8e27-012a-7bfc-0dd098aced03",
+                "codename": "cd73a808_8e27_012a_7bfc_0dd098aced03",
+                "language": "en-US",
+                "type": "media_component",
+                "collection": "default",
+                "sitemap_locations": [],
+                "last_modified": "2021-12-02T10:07:09.1032626Z"
+            },
+            "elements": {
+                "caption": {
+                    "type": "text",
+                    "name": "Caption",
+                    "value": "Picture caption lorem ipsum."
+                },
+                "media": {
+                    "type": "asset",
+                    "name": "Media",
+                    "value": [
+                        {
+                            "name": "About Us Top Banner.png",
+                            "description": null,
+                            "type": "image/png",
+                            "size": 845790,
+                            "url": "x",
+                            "width": 1600,
+                            "height": 649,
+                            "renditions": {}
+                        }
+                    ]
+                },
+                "styling__empty_space_bottom": {
+                    "type": "multiple_choice",
+                    "name": "Add Empty Space at the bottom",
+                    "value": []
+                },
+                "styling__theme": {
+                    "type": "multiple_choice",
+                    "name": "Light or Dark Theme",
+                    "value": []
+                }
+            }
+        },
+        "discover_our_international_network": {
+            "system": {
+                "id": "c32e7e21-07a5-43f3-b6d2-7820623876c6",
+                "name": "Discover our international network",
+                "codename": "discover_our_international_network",
+                "language": "en-US",
+                "type": "banner___cta_component",
+                "collection": "default",
+                "sitemap_locations": [],
+                "last_modified": "2021-11-17T13:15:02.8725739Z",
+                "workflow_step": "published"
+            },
+            "elements": {
+                "title": {
+                    "type": "text",
+                    "name": "Title",
+                    "value": "Discover our international distributed partner network"
+                },
+                "subtitle": {
+                    "type": "rich_text",
+                    "name": "Subtitle",
+                    "images": {},
+                    "links": {},
+                    "modular_content": [],
+                    "value": "<p><br></p>"
+                },
+                "image": {
+                    "type": "asset",
+                    "name": "Image",
+                    "value": [
+                        {
+                            "name": "partner_network.png",
+                            "description": null,
+                            "type": "image/png",
+                            "size": 1324134,
+                            "url": "x",
+                            "width": 1600,
+                            "height": 649,
+                            "renditions": {}
+                        }
+                    ]
+                },
+                "link": {
+                    "type": "modular_content",
+                    "name": "Link",
+                    "value": []
+                },
+                "filter_for_lister_page": {
+                    "type": "text",
+                    "name": "Filter For Lister Page",
+                    "value": ""
+                },
+                "button_text": {
+                    "type": "text",
+                    "name": "Button Text",
+                    "value": "Find a sales point"
+                },
+                "subject_title": {
+                    "type": "text",
+                    "name": "Subject Title",
+                    "value": ""
+                },
+                "text": {
+                    "type": "rich_text",
+                    "name": "Text",
+                    "images": {},
+                    "links": {},
+                    "modular_content": [],
+                    "value": "<p><br></p>"
+                },
+                "type": {
+                    "type": "multiple_choice",
+                    "name": "Type",
+                    "value": [
+                        {
+                            "name": "Text block with background image full left",
+                            "codename": "text_block_with_background_image_full_left"
+                        }
+                    ]
+                },
+                "styling__empty_space_bottom": {
+                    "type": "multiple_choice",
+                    "name": "Add Empty Space at the bottom",
+                    "value": []
+                },
+                "styling__theme": {
+                    "type": "multiple_choice",
+                    "name": "Light or Dark Theme",
+                    "value": []
+                }
+            }
+        },
+        "link_home": {
+            "system": {
+                "id": "5fe2ac1e-9677-47c6-a738-9022813c9bc3",
+                "name": "Link - Home",
+                "codename": "link_home",
+                "language": "en-US",
+                "type": "link_component",
+                "collection": "default",
+                "sitemap_locations": [],
+                "last_modified": "2021-11-09T09:58:56.4153988Z",
+                "workflow_step": "published"
+            },
+            "elements": {
+                "text": {
+                    "type": "text",
+                    "name": "Text",
+                    "value": "Link to home page"
+                },
+                "target": {
+                    "type": "modular_content",
+                    "name": "Target",
+                    "value": [
+                        "home_brand_307"
+                    ]
+                }
+            }
+        },
+        "n109c1a34_6e0a_0152_b520_b3d215bfac4c": {
+            "system": {
+                "id": "109c1a34-6e0a-0152-b520-b3d215bfac4c",
+                "name": "109c1a34-6e0a-0152-b520-b3d215bfac4c",
+                "codename": "n109c1a34_6e0a_0152_b520_b3d215bfac4c",
+                "language": "en-US",
+                "type": "quote_component",
+                "collection": "default",
+                "sitemap_locations": [],
+                "last_modified": "2021-12-02T10:07:09.1032626Z"
+            },
+            "elements": {
+                "personal_info": {
+                    "type": "text",
+                    "name": "Personal info",
+                    "value": ""
+                },
+                "text": {
+                    "type": "text",
+                    "name": "Text",
+                    "value": "Lorem Ipsum"
+                },
+                "styling__empty_space_bottom": {
+                    "type": "multiple_choice",
+                    "name": "Add Empty Space at the bottom",
+                    "value": []
+                },
+                "name": {
+                    "type": "text",
+                    "name": "Name",
+                    "value": "Jane Doe"
+                },
+                "image": {
+                    "type": "asset",
+                    "name": "Image",
+                    "value": []
+                },
+                "styling__theme": {
+                    "type": "multiple_choice",
+                    "name": "Light or Dark Theme",
+                    "value": []
+                }
+            }
+        },
+        "n55fd562a_9573_017a_6b7d_5be63f7705d5": {
+            "system": {
+                "id": "55fd562a-9573-017a-6b7d-5be63f7705d5",
+                "name": "55fd562a-9573-017a-6b7d-5be63f7705d5",
+                "codename": "n55fd562a_9573_017a_6b7d_5be63f7705d5",
+                "language": "en-US",
+                "type": "media_grid_component",
+                "collection": "default",
+                "sitemap_locations": [],
+                "last_modified": "2021-12-02T10:07:09.1032626Z"
+            },
+            "elements": {
+                "grid_items": {
+                    "type": "modular_content",
+                    "name": "Grid Items",
+                    "value": []
+                },
+                "title": {
+                    "type": "text",
+                    "name": "Title",
+                    "value": ""
+                }
+            }
+        },
+        "our_solutions_for_pass_prds_grid": {
+            "system": {
+                "id": "abfbbb6d-7a7e-44c0-8c08-9dc71469c29c",
+                "name": "Our solutions for pass prds Grid",
+                "codename": "our_solutions_for_pass_prds_grid",
+                "language": "en-US",
+                "type": "banner_cta_grid_component",
+                "collection": "default",
+                "sitemap_locations": [],
+                "last_modified": "2021-11-25T10:44:08.4930996Z",
+                "workflow_step": "published"
+            },
+            "elements": {
+                "title": {
+                    "type": "text",
+                    "name": "Title",
+                    "value": ""
+                },
+                "grid_items": {
+                    "type": "modular_content",
+                    "name": "Grid items",
+                    "value": [
+                        "pass_car_banner",
+                        "pass_car_banner_2"
+                    ]
+                },
+                "styling__empty_space_bottom": {
+                    "type": "multiple_choice",
+                    "name": "Add Empty Space at the bottom",
+                    "value": [
+                        {
+                            "name": "Yes",
+                            "codename": "yes"
+                        }
+                    ]
+                },
+                "styling__theme": {
+                    "type": "multiple_choice",
+                    "name": "Light or Dark Theme",
+                    "value": []
+                }
+            }
+        },
+        "our_solutions_for_y": {
+            "system": {
+                "id": "f457c3df-8c71-4820-93a3-0e5db8c9f2be",
+                "name": "Our solutions for y",
+                "codename": "our_solutions_for_y",
+                "language": "en-US",
+                "type": "banner_with_teasers_component",
+                "collection": "default",
+                "sitemap_locations": [],
+                "last_modified": "2021-12-14T09:04:36.3990355Z",
+                "workflow_step": "published"
+            },
+            "elements": {
+                "image": {
+                    "type": "asset",
+                    "name": "Image",
+                    "value": [
+                        {
+                            "name": "our_solutions_for_y.png",
+                            "description": "Our solutions for y",
+                            "type": "image/png",
+                            "size": 79758,
+                            "url": "x",
+                            "width": 375,
+                            "height": 161,
+                            "renditions": {}
+                        }
+                    ]
+                },
+                "title": {
+                    "type": "text",
+                    "name": "Title",
+                    "value": "Our solutions for y"
+                },
+                "subtitle": {
+                    "type": "text",
+                    "name": "Subtitle",
+                    "value": ""
+                },
+                "intro_text": {
+                    "type": "text",
+                    "name": "Intro Text",
+                    "value": "This product rapidly reaches the turbo charger and efficiently cools and lorem ipsum dolor sit amet. You can ad a second sentence for third line of content."
+                },
+                "link": {
+                    "type": "modular_content",
+                    "name": "Link",
+                    "value": [
+                        "link_home"
+                    ]
+                },
+                "teaser_items": {
+                    "type": "modular_content",
+                    "name": "Teaser Items",
+                    "value": [
+                        "become_a_lubricant_expert",
+                        "become_a_lubricant_expert_2",
+                        "test"
+                    ]
+                },
+                "teaser_link_text": {
+                    "type": "text",
+                    "name": "Teaser Link Text",
+                    "value": "Know more"
+                },
+                "styling__empty_space_bottom": {
+                    "type": "multiple_choice",
+                    "name": "Add Empty Space at the bottom",
+                    "value": []
+                },
+                "styling__theme": {
+                    "type": "multiple_choice",
+                    "name": "Light or Dark Theme",
+                    "value": []
+                }
+            }
+        },
+        "brand_about_us": {
+            "system": {
+                "id": "85b50c15-ab0f-499d-9f4b-8ed086c213b0",
+                "name": "brand About Us",
+                "codename": "brand_about_us",
+                "language": "en-US",
+                "type": "about_page",
+                "collection": "default",
+                "sitemap_locations": [],
+                "last_modified": "2021-12-02T10:52:06.2144145Z",
+                "workflow_step": "published"
+            },
+            "elements": {
+                "title": {
+                    "type": "text",
+                    "name": "Title",
+                    "value": "About Us"
+                },
+                "slug": {
+                    "type": "url_slug",
+                    "name": "Slug",
+                    "value": "about-us"
+                },
+                "top_banner_cta": {
+                    "type": "modular_content",
+                    "name": "Top Banner/CTA",
+                    "value": [
+                        "about_us_header_banner_cta"
+                    ]
+                },
+                "intro_text": {
+                    "type": "modular_content",
+                    "name": "Intro Text",
+                    "value": [
+                        "test_richtext_component"
+                    ]
+                },
+                "key_arguments": {
+                    "type": "modular_content",
+                    "name": "Key Arguments",
+                    "value": [
+                        "other_services",
+                        "another_service"
+                    ]
+                },
+                "middle_banners_ctas": {
+                    "type": "modular_content",
+                    "name": "Middle Banners/CTAs",
+                    "value": [
+                        "brand_multifactor_product_serum_banner",
+                        "brand_multifactor_product_serum_more"
+                    ]
+                },
+                "about_numbers": {
+                    "type": "modular_content",
+                    "name": "About Numbers",
+                    "value": [
+                        "about_numbers_test"
+                    ]
+                },
+                "bottom_banners_ctas": {
+                    "type": "modular_content",
+                    "name": "Bottom Banners/CTAs",
+                    "value": [
+                        "interested_in_working_with_us_cta",
+                        "discover_our_open_positions_banner"
+                    ]
+                },
+                "addthis": {
+                    "type": "modular_content",
+                    "name": "AddThis",
+                    "value": []
+                },
+                "seo__description": {
+                    "type": "text",
+                    "name": "Description",
+                    "value": ""
+                },
+                "options__show_in_navigation": {
+                    "type": "multiple_choice",
+                    "name": "Show in navigation",
+                    "value": [
+                        {
+                            "name": "Yes",
+                            "codename": "yes"
+                        }
+                    ]
+                },
+                "options__nested_content_types": {
+                    "type": "text",
+                    "name": "Nested content types",
+                    "value": ""
+                },
+                "subpages": {
+                    "type": "modular_content",
+                    "name": "Subpages",
+                    "value": []
+                },
+                "add_this": {
+                    "type": "modular_content",
+                    "name": "Add This",
+                    "value": []
+                },
+                "teaser__icon": {
+                    "type": "asset",
+                    "name": "Icon",
+                    "value": []
+                },
+                "teaser__title": {
+                    "type": "text",
+                    "name": "Title",
+                    "value": "About"
+                },
+                "teaser__intro_text": {
+                    "type": "text",
+                    "name": "Intro Text",
+                    "value": ""
+                },
+                "teaser__link": {
+                    "type": "modular_content",
+                    "name": "Link",
+                    "value": []
+                }
+            }
+        },
+        "brand_become_a_distributor": {
+            "system": {
+                "id": "9f546bb5-8372-4a7e-a1da-613eb1c6c7c9",
+                "name": "brand Become a Distributor",
+                "codename": "brand_become_a_distributor",
+                "language": "en-US",
+                "type": "become_a_distributor_page",
+                "collection": "default",
+                "sitemap_locations": [],
+                "last_modified": "2021-12-09T13:58:39.3741776Z",
+                "workflow_step": "published"
+            },
+            "elements": {
+                "title": {
+                    "type": "text",
+                    "name": "Title",
+                    "value": "Become a Distributor"
+                },
+                "slug": {
+                    "type": "url_slug",
+                    "name": "Slug",
+                    "value": "become-a-distributor"
+                },
+                "top_banner_cta": {
+                    "type": "modular_content",
+                    "name": "Top Banner / Cta",
+                    "value": [
+                        "interested_in_working_with_us"
+                    ]
+                },
+                "information_card_grid": {
+                    "type": "modular_content",
+                    "name": "Information Card Grid",
+                    "value": [
+                        "how_do_we_support_our_partners"
+                    ]
+                },
+                "our_services": {
+                    "type": "modular_content",
+                    "name": "Our Services",
+                    "value": [
+                        "our_services",
+                        "other_services_666bdd9"
+                    ]
+                },
+                "middle_banner_cta": {
+                    "type": "modular_content",
+                    "name": "Middle Banner / Cta",
+                    "value": [
+                        "interested_in_working_with_us_13085f6"
+                    ]
+                },
+                "usps_and_images": {
+                    "type": "modular_content",
+                    "name": "Usps and Images",
+                    "value": [
+                        "your_branding_combined_with_our_a_brand",
+                        "we_share_our_expertise_with_you"
+                    ]
+                },
+                "seo__description": {
+                    "type": "text",
+                    "name": "Description",
+                    "value": ""
+                },
+                "options__show_in_navigation": {
+                    "type": "multiple_choice",
+                    "name": "Show in navigation",
+                    "value": []
+                },
+                "options__nested_content_types": {
+                    "type": "text",
+                    "name": "Nested content types",
+                    "value": ""
+                },
+                "subpages": {
+                    "type": "modular_content",
+                    "name": "Subpages",
+                    "value": []
+                },
+                "teaser__icon": {
+                    "type": "asset",
+                    "name": "Icon",
+                    "value": []
+                },
+                "teaser__title": {
+                    "type": "text",
+                    "name": "Title",
+                    "value": ""
+                },
+                "teaser__intro_text": {
+                    "type": "text",
+                    "name": "Intro Text",
+                    "value": ""
+                },
+                "teaser__link": {
+                    "type": "modular_content",
+                    "name": "Link",
+                    "value": []
+                }
+            }
+        },
+        "brand_news_article_page": {
+            "system": {
+                "id": "b1aa21f8-6b1b-471a-aaf9-c1e0a9f6ca6c",
+                "name": "brand News Article Page",
+                "codename": "brand_news_article_page",
+                "language": "en-US",
+                "type": "news_article_page",
+                "collection": "default",
+                "sitemap_locations": [],
+                "last_modified": "2021-12-02T10:07:09.1032626Z",
+                "workflow_step": "published"
+            },
+            "elements": {
+                "title": {
+                    "type": "text",
+                    "name": "Title",
+                    "value": "News Article"
+                },
+                "slug": {
+                    "type": "url_slug",
+                    "name": "Slug",
+                    "value": "news-article"
+                },
+                "header_image": {
+                    "type": "asset",
+                    "name": "Header Image",
+                    "value": [
+                        {
+                            "name": "brand Multifactor product Serum 2.png",
+                            "description": null,
+                            "type": "image/png",
+                            "size": 1179374,
+                            "url": "x",
+                            "width": 1600,
+                            "height": 543,
+                            "renditions": {}
+                        }
+                    ]
+                },
+                "category_tag": {
+                    "type": "modular_content",
+                    "name": "Category Tag",
+                    "value": [
+                        "category_tag"
+                    ]
+                },
+                "marketing_tag": {
+                    "type": "modular_content",
+                    "name": "Marketing Tag",
+                    "value": [
+                        "marketing_tag"
+                    ]
+                },
+                "date": {
+                    "type": "date_time",
+                    "name": "Date",
+                    "value": "2021-11-30T00:00:00Z"
+                },
+                "article_body": {
+                    "type": "rich_text",
+                    "name": "Article Body",
+                    "images": {},
+                    "links": {},
+                    "modular_content": [
+                        "n109c1a34_6e0a_0152_b520_b3d215bfac4c",
+                        "cd73a808_8e27_012a_7bfc_0dd098aced03",
+                        "n55fd562a_9573_017a_6b7d_5be63f7705d5"
+                    ],
+                    "value": "<p>This can be an introduction - or just a text component. Important here is to not display the text over the complete width of the screen because this will make the text not so easy and nice to read. That’s why we go for a 8/4 text-occupation grid.&nbsp;</p>\n<p><br></p>\n<p>Lorem ipsum dolor sit amet. You can add another sentence here. Don’t hesitate to reach out to us! Send us an open application and your motivation, and we’ll get back to you soon!</p>\n<p><br></p>\n<h2>In-text subtitle</h2>\n<p><br></p>\n<p>This can be an paragraph - or just a text component. Important here is to not display the text over the complete width of the screen because this will make the text not so easy and nice to read. That’s why we go for a 8/4 text-occupation grid. This can be an paragraph - or just a text component. Important here is to not display the text over the complete width of the screen because this will make the text not so easy and nice to read. That’s why we go for a 8/4 text-occupation grid.&nbsp;</p>\n<p><br></p>\n<p>This can be an paragraph - or just a text component. Important here is to not display the text over the complete width of the screen because this will make the text not so easy and nice to read. That’s why we go for a 8/4 text-occupation grid. Lorem ipsum dolor sit amet. You can add another sentence here. Don’t hesitate to reach out to us! Send us an open application and your motivation, and we’ll get back to you soon!</p>\n<p><br></p>\n<object type=\"application/kenticocloud\" data-type=\"item\" data-rel=\"component\" data-codename=\"n109c1a34_6e0a_0152_b520_b3d215bfac4c\"></object>\n<h2>In-text subtitle</h2>\n<p><br></p>\n<p>This can be an paragraph - or just a text component. Important here is to not display the text over the complete width of the screen because this will make the text not so easy and nice to read. That’s why we go for a 8/4 text-occupation grid. This can be an paragraph - or just a text component. Important here is to not display the text over the complete width of the screen because this will make the text not so easy and nice to read. That’s why we go for a 8/4 text-occupation grid.&nbsp;</p>\n<object type=\"application/kenticocloud\" data-type=\"item\" data-rel=\"component\" data-codename=\"cd73a808_8e27_012a_7bfc_0dd098aced03\"></object>\n<h2>In-text subtitle</h2>\n<p><br></p>\n<p>This can be an paragraph - or just a text component. Important here is to not display the text over the complete width of the screen because this will make the text not so easy and nice to read. That’s why we go for a 8/4 text-occupation grid. This can be an paragraph - or just a text component. Important here is to not display the text over the complete width of the screen because this will make the text not so easy and nice to read. That’s why we go for a 8/4 text-occupation grid.&nbsp;</p>\n<p><br></p>\n<object type=\"application/kenticocloud\" data-type=\"item\" data-rel=\"component\" data-codename=\"n55fd562a_9573_017a_6b7d_5be63f7705d5\"></object>"
+                },
+                "seo__description": {
+                    "type": "text",
+                    "name": "Description",
+                    "value": ""
+                },
+                "options__show_in_navigation": {
+                    "type": "multiple_choice",
+                    "name": "Show in navigation",
+                    "value": []
+                },
+                "options__nested_content_types": {
+                    "type": "text",
+                    "name": "Nested content types",
+                    "value": ""
+                },
+                "subpages": {
+                    "type": "modular_content",
+                    "name": "Subpages",
+                    "value": []
+                },
+                "add_this": {
+                    "type": "modular_content",
+                    "name": "Add This",
+                    "value": []
+                },
+                "teaser__icon": {
+                    "type": "asset",
+                    "name": "Icon",
+                    "value": []
+                },
+                "teaser__title": {
+                    "type": "text",
+                    "name": "Title",
+                    "value": ""
+                },
+                "teaser__intro_text": {
+                    "type": "text",
+                    "name": "Intro Text",
+                    "value": ""
+                },
+                "teaser__link": {
+                    "type": "modular_content",
+                    "name": "Link",
+                    "value": []
+                }
+            }
+        },
+        "brand_products": {
+            "system": {
+                "id": "04ade62d-6170-4385-9eaa-7d5f75bd8f55",
+                "name": "brand Product Lister",
+                "codename": "brand_products",
+                "language": "en-US",
+                "type": "lister",
+                "collection": "default",
+                "sitemap_locations": [],
+                "last_modified": "2021-11-15T10:21:10.9173681Z",
+                "workflow_step": "published"
+            },
+            "elements": {
+                "title": {
+                    "type": "text",
+                    "name": "Title",
+                    "value": "Products"
+                },
+                "slug": {
+                    "type": "url_slug",
+                    "name": "Slug",
+                    "value": "products"
+                },
+                "dataview": {
+                    "type": "multiple_choice",
+                    "name": "Dataview",
+                    "value": [
+                        {
+                            "name": "Products Lister",
+                            "codename": "webproductlister"
+                        }
+                    ]
+                },
+                "pre_filter": {
+                    "type": "text",
+                    "name": "Pre-filter",
+                    "value": ""
+                },
+                "lister_translations": {
+                    "type": "modular_content",
+                    "name": "Lister Translations",
+                    "value": [
+                        "products___search_and_browse___translations"
+                    ]
+                },
+                "card_translations": {
+                    "type": "modular_content",
+                    "name": "Card Translations",
+                    "value": [
+                        "untitled_content_item"
+                    ]
+                },
+                "seo__description": {
+                    "type": "text",
+                    "name": "Description",
+                    "value": ""
+                },
+                "options__show_in_navigation": {
+                    "type": "multiple_choice",
+                    "name": "Show in navigation",
+                    "value": [
+                        {
+                            "name": "Yes",
+                            "codename": "yes"
+                        }
+                    ]
+                },
+                "options__nested_content_types": {
+                    "type": "text",
+                    "name": "Nested content types",
+                    "value": ""
+                },
+                "subpages": {
+                    "type": "modular_content",
+                    "name": "Subpages",
+                    "value": []
+                },
+                "teaser__icon": {
+                    "type": "asset",
+                    "name": "Icon",
+                    "value": []
+                },
+                "teaser__title": {
+                    "type": "text",
+                    "name": "Title",
+                    "value": ""
+                },
+                "teaser__intro_text": {
+                    "type": "text",
+                    "name": "Intro Text",
+                    "value": ""
+                },
+                "teaser__link": {
+                    "type": "modular_content",
+                    "name": "Link",
+                    "value": []
+                }
+            }
+        },
+        "brand_segment": {
+            "system": {
+                "id": "4879fdfe-4bf9-4f4a-bb17-48ed2b376a3a",
+                "name": "brand Segment",
+                "codename": "brand_segment",
+                "language": "en-US",
+                "type": "segment_page",
+                "collection": "default",
+                "sitemap_locations": [],
+                "last_modified": "2021-11-30T14:50:56.2144339Z",
+                "workflow_step": "published"
+            },
+            "elements": {
+                "title": {
+                    "type": "text",
+                    "name": "Title",
+                    "value": "Segment"
+                },
+                "slug": {
+                    "type": "url_slug",
+                    "name": "Slug",
+                    "value": "segment"
+                },
+                "top_banner_cta": {
+                    "type": "modular_content",
+                    "name": "Top Banner / Cta",
+                    "value": [
+                        "pas_car_lubricants"
+                    ]
+                },
+                "intro_text": {
+                    "type": "rich_text",
+                    "name": "Intro Text",
+                    "images": {},
+                    "links": {},
+                    "modular_content": [],
+                    "value": "<h2>Description</h2>\n<p>A dedicated range to support lubrication needs of performance oriented track day and motorsport vehicles competing at the highest level. Lorem ipsum dolor sit amet. A dedicated range to support lubrication needs of performance oriented track day and motorsport vehicles competing at the highest level. Lorem ipsum dolor sit amet.</p>"
+                },
+                "grid": {
+                    "type": "modular_content",
+                    "name": "Grid",
+                    "value": [
+                        "untitled_content_item_42a891c"
+                    ]
+                },
+                "product_filter_lister": {
+                    "type": "modular_content",
+                    "name": "Product Filter Lister",
+                    "value": []
+                },
+                "middle_banner_cta": {
+                    "type": "modular_content",
+                    "name": "Middle Banner / Cta",
+                    "value": [
+                        "adaptive_shield_technology"
+                    ]
+                },
+                "bottom_banner_cta": {
+                    "type": "modular_content",
+                    "name": "Bottom Banner / Cta",
+                    "value": []
+                },
+                "seo__description": {
+                    "type": "text",
+                    "name": "Description",
+                    "value": ""
+                },
+                "options__show_in_navigation": {
+                    "type": "multiple_choice",
+                    "name": "Show in navigation",
+                    "value": [
+                        {
+                            "name": "Yes",
+                            "codename": "yes"
+                        }
+                    ]
+                },
+                "options__nested_content_types": {
+                    "type": "text",
+                    "name": "Nested content types",
+                    "value": ""
+                },
+                "subpages": {
+                    "type": "modular_content",
+                    "name": "Subpages",
+                    "value": []
+                },
+                "teaser__icon": {
+                    "type": "asset",
+                    "name": "Icon",
+                    "value": []
+                },
+                "teaser__title": {
+                    "type": "text",
+                    "name": "Title",
+                    "value": ""
+                },
+                "teaser__intro_text": {
+                    "type": "text",
+                    "name": "Intro Text",
+                    "value": ""
+                },
+                "teaser__link": {
+                    "type": "modular_content",
+                    "name": "Link",
+                    "value": []
+                }
+            }
+        }
+    }
+}
