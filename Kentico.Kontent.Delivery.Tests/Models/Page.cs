@@ -1,6 +1,7 @@
-﻿namespace Kentico.Kontent.Delivery.Tests.Models;
-
-public class Page
+﻿namespace Kentico.Kontent.Delivery.Tests.Models
 {
-    public string Title { get; set; }
+    public class Page
+    {
+        public string Title { get; set; }
+    }
 }
