@@ -53,10 +53,7 @@ namespace Kentico.Kontent.Delivery.Tests
                 InitializeDeliveryClientWithCustomModelProvider(_mockHttp, new PropertyMapper(),
                     new CustomTypeProvider_307());
 
-            //TODO type of model class needs to be filled here
-            var response = await client.GetItemAsync<object>("home_brand_307");
-            
-            //TODO Some asserts are to be put here. I think that a good verification would be to verify that properties of response are of correct class type, right ?
+            var response = await Assert.ThrowsAsync<ArgumentException>(async () => await client.GetItemAsync<Homepage>("home_brand_307"));
         }
 
         [Fact]
