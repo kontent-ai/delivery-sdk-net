@@ -53,7 +53,8 @@ namespace Kentico.Kontent.Delivery.Tests
                 InitializeDeliveryClientWithCustomModelProvider(_mockHttp, new PropertyMapper(),
                     new CustomTypeProvider_307());
 
-            var response = await Assert.ThrowsAsync<ArgumentException>(async () => await client.GetItemAsync<Homepage>("home_brand_307"));
+            var response = await client.GetItemAsync<Homepage>("home_brand_307");
+            Assert.NotEmpty(response.Item.Partnerships);
         }
 
         [Fact]
