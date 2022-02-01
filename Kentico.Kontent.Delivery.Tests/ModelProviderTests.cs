@@ -28,12 +28,12 @@ namespace Kentico.Kontent.Delivery.Tests
             var processor = InlineContentItemsProcessorFactory
                 .WithResolver(ResolveItemWithSingleRte)
                 .Build();
-            var retriever = new ModelProvider(contentLinkUrlResolver, processor, typeProvider, propertyMapper, new DeliveryJsonSerializer(), new HtmlParser());
+            var retriever = new ModelProvider(contentLinkUrlResolver, processor, propertyMapper, new DeliveryJsonSerializer(), new HtmlParser());
 
             var item = JToken.FromObject(Rt1);
             var linkedItems = JToken.FromObject(LinkedItemsForItemWithTwoReferencedContentItems);
 
-            var result = await retriever.GetContentItemModelAsync<ContentItemWithSingleRte>(item, linkedItems);
+            var result = await retriever.GetContentItemModelAsync<ContentItemWithSingleRte>(item, linkedItems, typeProvider);
 
             Assert.Equal("<span>FirstRT</span><span>SecondRT</span><span>FirstRT</span>", result.Rt);
             Assert.IsType<ContentItemWithSingleRte>(result);
@@ -51,14 +51,14 @@ namespace Kentico.Kontent.Delivery.Tests
             var processor = InlineContentItemsProcessorFactory
                 .WithResolver(factory => factory.ResolveTo<UnknownContentItem>(unknownItem => $"Content type '{unknownItem.Type}' has no corresponding model."))
                 .Build();
-            var retriever = new ModelProvider(contentLinkUrlResolver, processor, typeProvider, propertyMapper, new DeliveryJsonSerializer(), new HtmlParser());
+            var retriever = new ModelProvider(contentLinkUrlResolver, processor, propertyMapper, new DeliveryJsonSerializer(), new HtmlParser());
 
             var item = JToken.FromObject(Rt5);
             var linkedItems = JToken.FromObject(LinkedItemWithNoModel);
             var expectedResult =
                 $"<span>RT</span>Content type '{linkedItems.SelectToken("linkedItemWithNoModel.system.type")}' has no corresponding model.";
 
-            var result = await retriever.GetContentItemModelAsync<ContentItemWithSingleRte>(item, linkedItems);
+            var result = await retriever.GetContentItemModelAsync<ContentItemWithSingleRte>(item, linkedItems, typeProvider);
 
             Assert.Equal(expectedResult, result.Rt);
             Assert.IsType<ContentItemWithSingleRte>(result);
@@ -80,12 +80,12 @@ namespace Kentico.Kontent.Delivery.Tests
             var processor = InlineContentItemsProcessorFactory
                 .WithResolver(ResolveItemWithSingleRte)
                 .Build();
-            var retriever = new ModelProvider(contentLinkUrlResolver, processor, typeProvider, propertyMapper, new DeliveryJsonSerializer(), new HtmlParser());
+            var retriever = new ModelProvider(contentLinkUrlResolver, processor, propertyMapper, new DeliveryJsonSerializer(), new HtmlParser());
 
             var item = JToken.FromObject(Rt3);
             var linkedItems = JToken.FromObject(LinkedItemsForItemReferencingItself);
 
-            var result = await retriever.GetContentItemModelAsync<ContentItemWithSingleRte>(item, linkedItems);
+            var result = await retriever.GetContentItemModelAsync<ContentItemWithSingleRte>(item, linkedItems, typeProvider);
 
             Assert.Equal("<span>RT</span><span>RT</span>", result.Rt);
             Assert.IsType<ContentItemWithSingleRte>(result);
@@ -103,9 +103,9 @@ namespace Kentico.Kontent.Delivery.Tests
             var typeProvider = A.Fake<ITypeProvider>();
             var propertyMapper = A.Fake<IPropertyMapper>();
             A.CallTo(() => typeProvider.GetType("newType")).Returns(null);
-            var modelProvider = new ModelProvider(contentLinkUrlResolver, inlineContentItemsProcessor, typeProvider, propertyMapper, new DeliveryJsonSerializer(), new HtmlParser());
+            var modelProvider = new ModelProvider(contentLinkUrlResolver, inlineContentItemsProcessor, propertyMapper, new DeliveryJsonSerializer(), new HtmlParser());
 
-            Assert.Null(await modelProvider.GetContentItemModelAsync<object>(item, linkedItems));
+            Assert.Null(await modelProvider.GetContentItemModelAsync<object>(item, linkedItems, typeProvider));
         }
 
         private static readonly object Rt1 = new

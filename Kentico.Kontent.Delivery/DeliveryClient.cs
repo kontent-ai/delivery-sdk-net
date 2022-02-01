@@ -81,7 +81,7 @@ namespace Kentico.Kontent.Delivery
             var endpointUrl = UrlBuilder.GetItemUrl(codename, parameters);
             var response = await GetDeliveryResponseAsync(endpointUrl);
             var content = await response.GetJsonContentAsync();
-            var model = await ModelProvider.GetContentItemModelAsync<T>(content?["item"], content?["modular_content"]);
+            var model = await ModelProvider.GetContentItemModelAsync<T>(content?["item"], content?["modular_content"], TypeProvider);
             return new DeliveryItemResponse<T>(response, model);
         }
 
@@ -98,7 +98,7 @@ namespace Kentico.Kontent.Delivery
             var response = await GetDeliveryResponseAsync(endpointUrl);
             var content = await response.GetJsonContentAsync();
             var pagination = content["pagination"].ToObject<Pagination>(Serializer);
-            var items = ((JArray)content["items"]).Select(async source => await ModelProvider.GetContentItemModelAsync<T>(source, content["modular_content"]));
+            var items = ((JArray)content["items"]).Select(async source => await ModelProvider.GetContentItemModelAsync<T>(source, content["modular_content"], TypeProvider));
 
             return new DeliveryItemListingResponse<T>(response, (await Task.WhenAll(items)).ToList(), pagination);
         }
@@ -121,7 +121,7 @@ namespace Kentico.Kontent.Delivery
                 var response = await GetDeliveryResponseAsync(endpointUrl, continuationToken);
                 var content = await response.GetJsonContentAsync();
 
-                var items = ((JArray)content["items"]).Select(async source => await ModelProvider.GetContentItemModelAsync<T>(source, content["modular_content"]));
+                var items = ((JArray)content["items"]).Select(async source => await ModelProvider.GetContentItemModelAsync<T>(source, content["modular_content"], TypeProvider));
 
                 return new DeliveryItemsFeedResponse<T>(response, (await Task.WhenAll(items)).ToList());
             }

@@ -1582,12 +1582,12 @@ namespace Kentico.Kontent.Delivery.Tests
             (
                 async source =>
                 {
-                    return await client.ModelProvider.GetContentItemModelAsync<object>(source, linkedItems);
+                    return await client.ModelProvider.GetContentItemModelAsync<object>(source, linkedItems, client.TypeProvider);
                 }
             );
             var items = (await Task.WhenAll(itemTasks)).ToList();
             Assert.Equal(2, items.Count());
-            
+
             var tweetItem = items[0];
             var hostedVideoItem = items[1];
             Assert.Equal(tweetItem.GetType(), typeof(Tweet));
@@ -1602,7 +1602,6 @@ namespace Kentico.Kontent.Delivery.Tests
             var modelProvider = new ModelProvider(
                 _mockContentLinkUrlResolver,
                 null,
-                customTypeProvider,
                 new PropertyMapper(),
                 new DeliveryJsonSerializer(), new HtmlParser());
             var client = Factories.DeliveryClientFactory.GetMockedDeliveryClientWithProjectId(
@@ -1625,8 +1624,8 @@ namespace Kentico.Kontent.Delivery.Tests
             var typer = typeProvider ?? _mockTypeProvider;
             var mapper = propertyMapper ?? A.Fake<IPropertyMapper>();
             var serializer = new DeliveryJsonSerializer();
-            var modelProvider = new ModelProvider(null, null, typer, mapper, serializer, new HtmlParser());
-            var client = Factories.DeliveryClientFactory.GetMockedDeliveryClientWithProjectId(_guid, handler, modelProvider);
+            var modelProvider = new ModelProvider(null, null, mapper, serializer, new HtmlParser());
+            var client = Factories.DeliveryClientFactory.GetMockedDeliveryClientWithProjectId(_guid, handler, modelProvider, typeProvider: typer);
 
             var retryPolicy = A.Fake<IRetryPolicy>();
             A.CallTo(() => client.RetryPolicyProvider.GetRetryPolicy())
