@@ -30,6 +30,8 @@ namespace Kentico.Kontent.Delivery.Extensions.DependencyInjection.Tests.Integrat
                     // https://stackoverflow.com/questions/26126873/autofac-sub-dependencies-chain-registration
 
                     builder.RegisterType<ProjectAProvider>().Named<ITypeProvider>(ClientAName);
+                    builder.RegisterType<ModelProvider>().Named<IModelProvider>(ClientAName)
+                        .WithParameter(Autofac.Core.ResolvedParameter.ForNamed<ITypeProvider>(ClientAName));
                     builder.RegisterType<ProjectBProvider>().Named<ITypeProvider>(ClientBName);
                 })
                 .ConfigureServices((_, services) =>
@@ -54,9 +56,8 @@ namespace Kentico.Kontent.Delivery.Extensions.DependencyInjection.Tests.Integrat
 
             var deliveryClientFactory = host.Services.GetRequiredService<IDeliveryClientFactory>();
 
-            // clientA + client B does not have set custom type provider under ModelProvider
+            // clientA does have set custom type provider under ModelProvider
             var clientA = deliveryClientFactory.Get(ClientAName);
-            var clientB = deliveryClientFactory.Get(ClientBName);
 
             // direct client does have set custom type provider under ModelProvider
             var directClient = DeliveryClientBuilder
