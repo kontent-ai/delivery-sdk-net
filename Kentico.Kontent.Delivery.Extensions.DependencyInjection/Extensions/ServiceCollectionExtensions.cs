@@ -35,10 +35,7 @@ namespace Kentico.Kontent.Delivery.Extensions.DependencyInjection
             var options = DeliveryOptionsHelpers.Build(buildDeliveryOptions);
             options.Name = name;
 
-            return services
-                .RegisterOptions(options, name)
-                .RegisterDependencies(true)
-                .RegisterNamedServices(namedServiceProviderType);
+            return AddDeliveryClient(services, name, options, namedServiceProviderType);
         }
 
         /// <summary>
@@ -60,8 +57,8 @@ namespace Kentico.Kontent.Delivery.Extensions.DependencyInjection
 
             return services
                 .RegisterOptions(deliveryOptions, name)
-                .RegisterDependencies(true)
-                .RegisterNamedServices(namedServiceProviderType);
+                .RegisterNamedServices(namedServiceProviderType)
+                .RegisterDependencies(name);
         }
 
         /// <summary>
@@ -79,10 +76,7 @@ namespace Kentico.Kontent.Delivery.Extensions.DependencyInjection
             configuration.GetSection(configurationSectionName).Bind(options);
             options.Name = name;
 
-            return services
-                .RegisterOptions(options, name)
-                .RegisterDependencies(true)
-                .RegisterNamedServices(namedServiceProviderType);
+            return AddDeliveryClient(services, name, options, namedServiceProviderType);
         }
 
         /// <summary>

@@ -99,11 +99,11 @@ namespace Kentico.Kontent.Delivery.Extensions
         /// Registers <see cref="IDeliveryClient"/> dependencies.
         /// </summary>
         /// <param name="services">A <see cref="ServiceCollection"/> instance for registering and resolving dependencies.</param>
-        /// <param name="isNamedRegistration">A parameter indicates if the registration is for a named client.</param>
+        /// <param name="name">A parameter indicates if the registration is for a named client.</param>
         /// <returns>The <paramref name="services"/> instance with <see cref="IDeliveryClient"/> dependencies.</returns>
-        public static IServiceCollection RegisterDependencies(this IServiceCollection services, bool isNamedRegistration = false)
+        public static IServiceCollection RegisterDependencies(this IServiceCollection services, string name = null)
         {
-            if (!isNamedRegistration)
+            if (name != null)
                 services.TryAddSingleton<IDeliveryClient, DeliveryClient>();
 
             services.TryAddSingleton<IContentLinkUrlResolver, DefaultContentLinkUrlResolver>();
