@@ -114,9 +114,9 @@ See [Working with Strongly Typed Models](../../wiki/Working-with-strongly-typed-
 For more developer resources, visit:
 
 - [✔️ Best practices for Kontent Delivery SDK for .NET](../../wiki)
-- Kontent Docs:
-  - [.NET Tutorials](https://docs.kontent.ai/tutorials/develop-apps?tech=dotnet)
-  - [API Reference](https://docs.kontent.ai/reference)
+- Kontent Learn:
+  - [.NET Tutorials](https://kontent.ai/learn/tutorials/develop-apps?tech=dotnet)
+  - [API Reference](https://kontent.ai/learn/reference)
 
 ## Get involved
 
