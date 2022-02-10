@@ -1,4 +1,5 @@
 using System;
+using System.Linq;
 using System.Reflection;
 using Kentico.Kontent.Delivery.Abstractions;
 using Newtonsoft.Json;
@@ -24,6 +25,13 @@ namespace Kentico.Kontent.Delivery.ContentItems
             {
                 // If JsonIgnore is set, do not match
                 return false;
+            }
+
+            PropertyNameAttribute fieldNameAttr = modelProperty.GetCustomAttribute<PropertyNameAttribute>();
+            if (fieldNameAttr != null)
+            {
+                // Try to get the name of the field from the field name attribute
+                return fieldName.Equals(fieldNameAttr.PropertyName, StringComparison.Ordinal);
             }
 
             JsonPropertyAttribute propertyAttr = modelProperty.GetCustomAttribute<JsonPropertyAttribute>();

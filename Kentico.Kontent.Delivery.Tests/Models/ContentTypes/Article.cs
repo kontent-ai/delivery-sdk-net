@@ -1,5 +1,6 @@
 using System.Collections.Generic;
 using Kentico.Kontent.Delivery.Abstractions;
+using Kentico.Kontent.Delivery.ContentItems;
 using Newtonsoft.Json;
 using NodaTime;
 
@@ -7,10 +8,10 @@ namespace Kentico.Kontent.Delivery.Tests.Models.ContentTypes
 {
     public partial class Article : IArticle
     {
-        [JsonProperty("body_copy")]
+        [PropertyName("body_copy")]
         public IRichTextContent BodyCopyRichText { get; set; }
 
-        [JsonProperty("title")]
+        [PropertyName("title")]
         [TestGreeterValueConverter]
         public string TitleConverted { get; set; }
 
@@ -22,11 +23,15 @@ namespace Kentico.Kontent.Delivery.Tests.Models.ContentTypes
         [TestGreeterValueConverter]
         public string TitleNotIgnored { get; set; }
 
-        [JsonProperty("post_date")]
+        [PropertyName("post_date")]
         [NodaTimeValueConverter]
         public ZonedDateTime PostDateNodaTime { get; set; }
 
-        [JsonProperty("related_articles")]
-        public IEnumerable<IArticle> RelatedArticlesInterface { get; set; }
+        [PropertyName("related_articles")]
+        public List<IArticle> RelatedArticlesInterface { get; set; }
+        
+        [PropertyName("related_articles")]
+        [TestLinkedItemCodenamesValueConverter]
+        public List<string> RelatedArticleCodenames { get; set; }
     }
 }

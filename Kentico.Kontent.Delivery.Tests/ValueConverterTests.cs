@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Collections.Generic;
 using System.IO;
 using System.Linq;
 using System.Net.Http;
@@ -27,6 +28,15 @@ namespace Kentico.Kontent.Delivery.Tests
     }
 
     [AttributeUsage(AttributeTargets.Property)]
+    public class TestLinkedItemCodenamesValueConverterAttribute : Attribute, IPropertyValueConverter<List<string>>
+    {
+        public Task<object> GetPropertyValueAsync<TElement>(PropertyInfo property, TElement element, ResolvingContext context) where TElement : IContentElementValue<List<string>>
+        {
+            return Task.FromResult((object)element.Value);
+        }
+    }
+
+    [AttributeUsage(AttributeTargets.Property)]
     public class NodaTimeValueConverterAttribute : Attribute, IPropertyValueConverter<DateTime>
     {
         public Task<object> GetPropertyValueAsync<TElement>(PropertyInfo property, TElement element, ResolvingContext context) where TElement : IContentElementValue<DateTime>
@@ -48,12 +58,26 @@ namespace Kentico.Kontent.Delivery.Tests
         }
 
         [Fact]
-        public async void GreeterPropertyValueConverter()
+        public async void LinkedItemCodenamesValueConverter()
         {
             var mockHttp = new MockHttpMessageHandler();
             string url = $"{_baseUrl}/items/on_roasts";
             mockHttp.When(url).
                Respond("application/json", await File.ReadAllTextAsync(Path.Combine(Environment.CurrentDirectory, $"Fixtures{Path.DirectorySeparatorChar}ContentLinkResolver{Path.DirectorySeparatorChar}on_roasts.json")));
+            DeliveryClient client = InitializeDeliveryClient(mockHttp);
+
+            var article = await client.GetItemAsync<Article>("on_roasts");
+
+            Assert.Equal(new[]{"coffee_processing_techniques", "origins_of_arabica_bourbon"}, article.Item.RelatedArticleCodenames);
+        }
+
+        [Fact]
+        public async void GreeterPropertyValueConverter()
+        {
+            var mockHttp = new MockHttpMessageHandler();
+            string url = $"{_baseUrl}/items/on_roasts";
+            mockHttp.When(url).
+                Respond("application/json", await File.ReadAllTextAsync(Path.Combine(Environment.CurrentDirectory, $"Fixtures{Path.DirectorySeparatorChar}ContentLinkResolver{Path.DirectorySeparatorChar}on_roasts.json")));
             DeliveryClient client = InitializeDeliveryClient(mockHttp);
 
             var article = await client.GetItemAsync<Article>("on_roasts");
