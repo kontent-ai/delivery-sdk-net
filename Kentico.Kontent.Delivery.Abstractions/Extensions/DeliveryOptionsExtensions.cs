@@ -24,6 +24,7 @@
             o.DefaultRetryPolicyOptions = options.DefaultRetryPolicyOptions;
             o.IncludeTotalCount = options.IncludeTotalCount;
             o.Name = options.Name;
+            o.DefaultRenditionPreset = options.DefaultRenditionPreset;
         }
     }
 }

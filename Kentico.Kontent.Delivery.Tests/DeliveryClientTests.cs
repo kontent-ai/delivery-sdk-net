@@ -125,7 +125,7 @@ namespace Kentico.Kontent.Delivery.Tests
         }
 
         [Fact]
-        public async Task AssetPropertiesNotEmpty()
+        public async Task GetItemAsync_AssetElement_PropertiesHaveCorrectValues()
         {
             _mockHttp
                 .When($"{_baseUrl}/items/coffee_beverages_explained")
@@ -135,21 +135,24 @@ namespace Kentico.Kontent.Delivery.Tests
 
             var response = await client.GetItemAsync<Article>("coffee_beverages_explained");
 
-            var model = response.Item;
+            var teaserImage = response.Item.TeaserImage.FirstOrDefault();
+            Assert.NotNull(teaserImage);
+            Assert.Equal("Professional Espresso Machine", teaserImage.Description);
+            Assert.Equal("coffee-beverages-explained-1080px.jpg", teaserImage.Name);
+            Assert.Equal("image/jpeg", teaserImage.Type);
+            Assert.Equal("https://assets.kenticocloud.com:443/975bf280-fd91-488c-994c-2f04416e5ee3/e700596b-03b0-4cee-ac5c-9212762c027a/coffee-beverages-explained-1080px.jpg", teaserImage.Url);
+            Assert.Equal(800, teaserImage.Width);
+            Assert.Equal(600, teaserImage.Height);
+            Assert.NotNull(teaserImage.Renditions);
+            Assert.NotEmpty(teaserImage.Renditions);
 
-            Assert.NotNull(model.TeaserImage.FirstOrDefault()?.Description);
-            Assert.NotNull(model.TeaserImage.FirstOrDefault()?.Name);
-            Assert.NotNull(model.TeaserImage.FirstOrDefault()?.Type);
-            Assert.NotNull(model.TeaserImage.FirstOrDefault()?.Url);
-            Assert.NotEqual(0, model.TeaserImage.FirstOrDefault()?.Width);
-            Assert.NotEqual(0, model.TeaserImage.FirstOrDefault()?.Height);
-            Assert.NotNull(model.TeaserImage.FirstOrDefault()?.Renditions);
-            Assert.NotEmpty(model.TeaserImage.First().Renditions);
-            Assert.NotNull(model.TeaserImage.First().Renditions["default"].RenditionId);
-            Assert.NotNull(model.TeaserImage.First().Renditions["default"].PresetId);
-            Assert.NotEqual(0, model.TeaserImage.First().Renditions["default"].Width);
-            Assert.NotEqual(0, model.TeaserImage.First().Renditions["default"].Height);
-            Assert.NotNull(model.TeaserImage.First().Renditions["default"].Query);
+            var defaultRendition = response.Item.TeaserImage.First().Renditions["default"];
+            Assert.NotNull(defaultRendition);
+            Assert.Equal("d44a2887-74cc-4ab0-8376-ae96f3f534e5", defaultRendition.RenditionId);
+            Assert.Equal("a6d98cd5-8b2c-4e50-99c9-15192bce2490", defaultRendition.PresetId);
+            Assert.Equal(200, defaultRendition.Width);
+            Assert.Equal(150, defaultRendition.Height);
+            Assert.Equal("w=200&h=150&fit=clip&rect=7,23,300,200", defaultRendition.Query);
             Assert.NotNull(response.ApiResponse.RequestUrl);
         }
 
@@ -1604,7 +1607,9 @@ namespace Kentico.Kontent.Delivery.Tests
                 null,
                 customTypeProvider,
                 new PropertyMapper(),
-                new DeliveryJsonSerializer(), new HtmlParser());
+                new DeliveryJsonSerializer(),
+                new HtmlParser(),
+                DeliveryOptionsFactory.CreateMonitor(_guid));
             var client = Factories.DeliveryClientFactory.GetMockedDeliveryClientWithProjectId(
                 _guid,
                 handler,
@@ -1625,7 +1630,7 @@ namespace Kentico.Kontent.Delivery.Tests
             var typer = typeProvider ?? _mockTypeProvider;
             var mapper = propertyMapper ?? A.Fake<IPropertyMapper>();
             var serializer = new DeliveryJsonSerializer();
-            var modelProvider = new ModelProvider(null, null, typer, mapper, serializer, new HtmlParser());
+            var modelProvider = new ModelProvider(null, null, typer, mapper, serializer, new HtmlParser(), DeliveryOptionsFactory.CreateMonitor(_guid));
             var client = Factories.DeliveryClientFactory.GetMockedDeliveryClientWithProjectId(_guid, handler, modelProvider);
 
             var retryPolicy = A.Fake<IRetryPolicy>();

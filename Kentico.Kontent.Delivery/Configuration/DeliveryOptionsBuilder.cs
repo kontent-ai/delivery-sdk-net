@@ -98,6 +98,13 @@ namespace Kentico.Kontent.Delivery.Configuration
             return this;
         }
 
+        IOptionalDeliveryConfiguration IOptionalDeliveryConfiguration.WithDefaultRenditionPreset(string presetCodename)
+        {
+            _deliveryOptions.DefaultRenditionPreset = presetCodename;
+            
+            return this;
+        }
+
         private void SetCustomEndpoint(string endpoint)
         {
             if (_deliveryOptions.UsePreviewApi)

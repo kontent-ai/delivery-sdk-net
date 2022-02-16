@@ -21,7 +21,7 @@ namespace Kentico.Kontent.Delivery.Tests.Factories
             var httpClient = GetHttpClient(httpMessageHandler);
 
             var client = new DeliveryClient(
-                DeliveryOptionsFactory.CreateMonitor(new DeliveryOptions { ProjectId = projectId.ToString() }),
+                DeliveryOptionsFactory.CreateMonitor(projectId),
                 modelProvider ?? A.Fake<IModelProvider>(),
                 resiliencePolicyProvider ?? A.Fake<IRetryPolicyProvider>(),
                 typeProvider ?? A.Fake<ITypeProvider>(),

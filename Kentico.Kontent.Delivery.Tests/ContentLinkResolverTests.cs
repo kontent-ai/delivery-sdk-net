@@ -134,7 +134,7 @@ namespace Kentico.Kontent.Delivery.Tests
             var resiliencePolicyProvider = new DefaultRetryPolicyProvider(options);
             var contentLinkUrlResolver = new CustomContentLinkUrlResolver();
             var contentItemsProcessor = InlineContentItemsProcessorFactory.Create();
-            var modelProvider = new ModelProvider(contentLinkUrlResolver, contentItemsProcessor, new CustomTypeProvider(), new PropertyMapper(), new DeliveryJsonSerializer(), new HtmlParser());
+            var modelProvider = new ModelProvider(contentLinkUrlResolver, contentItemsProcessor, new CustomTypeProvider(), new PropertyMapper(), new DeliveryJsonSerializer(), new HtmlParser(), deliveryOptions);
             var client = new DeliveryClient(
                 deliveryOptions,
                 modelProvider,
