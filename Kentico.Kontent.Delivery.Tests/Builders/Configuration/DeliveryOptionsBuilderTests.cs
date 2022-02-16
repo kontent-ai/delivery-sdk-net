@@ -26,7 +26,7 @@ namespace Kentico.Kontent.Delivery.Tests.Builders.Configuration
                 .UseProductionApi()
                 .Build();
 
-            Assert.Equal(deliveryOptions.ProjectId, ProjectId);
+            Assert.Equal(ProjectId, deliveryOptions.ProjectId);
             Assert.False(deliveryOptions.UsePreviewApi);
             Assert.False(deliveryOptions.UseSecureAccess);
         }
@@ -71,7 +71,7 @@ namespace Kentico.Kontent.Delivery.Tests.Builders.Configuration
                 .WithDefaultRetryPolicyOptions(retryOptions)
                 .Build();
 
-            Assert.Equal(deliveryOptions.DefaultRetryPolicyOptions, retryOptions);
+            Assert.Equal(retryOptions, deliveryOptions.DefaultRetryPolicyOptions);
         }
 
         [Fact]
@@ -136,7 +136,7 @@ namespace Kentico.Kontent.Delivery.Tests.Builders.Configuration
                 .WithCustomEndpoint(customEndpoint)
                 .Build();
 
-           Assert.Equal(deliveryOptions.PreviewEndpoint, customEndpoint);
+           Assert.Equal(customEndpoint, deliveryOptions.PreviewEndpoint);
         }
 
         [Fact]
@@ -151,7 +151,7 @@ namespace Kentico.Kontent.Delivery.Tests.Builders.Configuration
                 .WithCustomEndpoint(customEndpoint)
                 .Build();
 
-            Assert.Equal(deliveryOptions.ProductionEndpoint, customEndpoint);
+            Assert.Equal(customEndpoint, deliveryOptions.ProductionEndpoint);
         }
 
         [Fact]
@@ -167,7 +167,7 @@ namespace Kentico.Kontent.Delivery.Tests.Builders.Configuration
                 .WithCustomEndpoint(uri)
                 .Build();
 
-            Assert.Equal(deliveryOptions.PreviewEndpoint, customEndpoint);
+            Assert.Equal(customEndpoint, deliveryOptions.PreviewEndpoint);
         }
 
         [Fact]
@@ -183,7 +183,22 @@ namespace Kentico.Kontent.Delivery.Tests.Builders.Configuration
                 .WithCustomEndpoint(uri)
                 .Build();
 
-            Assert.Equal(deliveryOptions.ProductionEndpoint, customEndpoint);
+            Assert.Equal(customEndpoint, deliveryOptions.ProductionEndpoint);
+        }
+        
+        [Fact]
+        public void BuildWithDefaultRenditionPreset()
+        {
+            const string renditionPreset = "mobile";
+
+            var deliveryOptions = DeliveryOptionsBuilder
+                .CreateInstance()
+                .WithProjectId(ProjectId)
+                .UseProductionApi()
+                .WithDefaultRenditionPreset(renditionPreset)
+                .Build();
+
+            Assert.Equal(renditionPreset, deliveryOptions.DefaultRenditionPreset);
         }
     }
 }

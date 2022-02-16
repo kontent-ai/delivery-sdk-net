@@ -10,6 +10,7 @@ using Kentico.Kontent.Delivery.ContentItems.ContentLinks;
 using Kentico.Kontent.Delivery.ContentItems.Elements;
 using Kentico.Kontent.Delivery.ContentItems.InlineContentItems;
 using Kentico.Kontent.Delivery.SharedModels;
+using Microsoft.Extensions.Options;
 using Newtonsoft.Json;
 using Newtonsoft.Json.Linq;
 
@@ -34,6 +35,8 @@ namespace Kentico.Kontent.Delivery.ContentItems
 
         internal IHtmlParser HtmlParser { get; }
 
+        internal IOptionsMonitor<DeliveryOptions> DeliveryOptions { get; }
+
         private ContentLinkResolver ContentLinkResolver
         {
             get
@@ -56,7 +59,8 @@ namespace Kentico.Kontent.Delivery.ContentItems
             ITypeProvider typeProvider,
             IPropertyMapper propertyMapper,
             JsonSerializer serializer,
-            IHtmlParser htmlParser)
+            IHtmlParser htmlParser,
+            IOptionsMonitor<DeliveryOptions> deliveryOptions)
         {
             ContentLinkUrlResolver = contentLinkUrlResolver;
             InlineContentItemsProcessor = inlineContentItemsProcessor;
@@ -64,6 +68,7 @@ namespace Kentico.Kontent.Delivery.ContentItems
             PropertyMapper = propertyMapper;
             Serializer = serializer;
             HtmlParser = htmlParser;
+            DeliveryOptions = deliveryOptions;
         }
 
         /// <summary>
@@ -220,7 +225,7 @@ namespace Kentico.Kontent.Delivery.ContentItems
                     return (elementValue["type"].ToString()) switch
                     {
                         "rich_text" => await GetElementModelAsync<RichTextElementValue, string>(property, context, elementValue, valueConverter),
-                        "asset" => await GetElementModelAsync<ContentElementValue<Asset>, Asset>(property, context, elementValue, valueConverter),
+                        "asset" => await GetElementModelAsync<AssetElementValue, IEnumerable<IAsset>>(property, context, elementValue, valueConverter),
                         "number" => await GetElementModelAsync<ContentElementValue<decimal?>, decimal?>(property, context, elementValue, valueConverter),
                         "date_time" => await GetElementModelAsync<ContentElementValue<DateTime>, DateTime>(property, context, elementValue, valueConverter),
                         "multiple_choice" => await GetElementModelAsync<ContentElementValue<List<MultipleChoiceOption>>, List<MultipleChoiceOption>>(property, context, elementValue, valueConverter),
@@ -374,6 +379,11 @@ namespace Kentico.Kontent.Delivery.ContentItems
                 return new RichTextContentConverter(HtmlParser);
             }
 
+            if (property.PropertyType == typeof(IEnumerable<IAsset>))
+            {
+                return new AssetValueConverter(DeliveryOptions);
+            }
+            
             return null;
         }
 

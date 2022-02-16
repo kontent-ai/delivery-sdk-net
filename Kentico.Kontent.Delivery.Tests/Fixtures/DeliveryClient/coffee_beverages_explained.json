@@ -40,8 +40,8 @@
             "size": 90895,
             "description": "Professional Espresso Machine",
             "url": "https://assets.kenticocloud.com:443/975bf280-fd91-488c-994c-2f04416e5ee3/e700596b-03b0-4cee-ac5c-9212762c027a/coffee-beverages-explained-1080px.jpg",
-            "width": 60,
-            "height": 60,
+            "width": 800,
+            "height": 600,
             "renditions": {
               "default": {
                 "rendition_id": "d44a2887-74cc-4ab0-8376-ae96f3f534e5",

@@ -67,6 +67,12 @@
         public bool IncludeTotalCount { get; set; }
 
         /// <summary>
+        /// Gets or sets a value of codename for the rendition preset to be applied by default to the base asset URL path.
+        /// If no value is specified, asset URLs will always point to non-customized variant of the image.
+        /// </summary>
+        public string DefaultRenditionPreset { get; set; }
+
+        /// <summary>
         /// The name of the service configuration this options object is related to.
         /// </summary>
         internal string Name { get; set; }
