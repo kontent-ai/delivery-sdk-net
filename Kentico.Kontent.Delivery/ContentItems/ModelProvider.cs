@@ -381,7 +381,7 @@ namespace Kentico.Kontent.Delivery.ContentItems
 
             if (property.PropertyType == typeof(IEnumerable<IAsset>))
             {
-                return new AssetValueConverter(DeliveryOptions);
+                return new AssetElementValueConverter(DeliveryOptions);
             }
             
             return null;

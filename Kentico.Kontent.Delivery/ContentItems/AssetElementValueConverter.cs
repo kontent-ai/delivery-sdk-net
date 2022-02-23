@@ -9,11 +9,11 @@ using Microsoft.Extensions.Options;
 
 namespace Kentico.Kontent.Delivery.ContentItems
 {
-    internal class AssetValueConverter : IPropertyValueConverter<IEnumerable<IAsset>>
+    internal class AssetElementValueConverter : IPropertyValueConverter<IEnumerable<IAsset>>
     {
         public IOptionsMonitor<DeliveryOptions> Options { get; }
 
-        public AssetValueConverter(IOptionsMonitor<DeliveryOptions> options)
+        public AssetElementValueConverter(IOptionsMonitor<DeliveryOptions> options)
         {
             Options = options;
         }
@@ -40,13 +40,13 @@ namespace Kentico.Kontent.Delivery.ContentItems
                     Renditions = asset.Renditions,
                     Size = asset.Size,
                     Type = asset.Type,
-                    Url = ResolvedAssetUrl(asset),
+                    Url = ResolveAssetUrl(asset),
                 })
                 .Cast<IAsset>()
                 .ToList();
         }
 
-        private string ResolvedAssetUrl(IAsset asset)
+        private string ResolveAssetUrl(IAsset asset)
         {
             var renditionPresetToBeApplied = Options.CurrentValue.DefaultRenditionPreset;
             if (renditionPresetToBeApplied == null || asset.Renditions == null)
