@@ -32,15 +32,16 @@ namespace Kentico.Kontent.Delivery.ContentItems
         /// <summary>
         /// Retrieves the next feed batch if available.
         /// </summary>
+        /// <param name="continuationToken">Optional explicit continuation token that allows you to get the next batch from a specific point in the feed.</param>
         /// <returns>Instance of <see cref="DeliveryItemsFeedResponse{T}"/> class that contains a list of strongly typed content items.</returns>
-        public async Task<IDeliveryItemsFeedResponse<T>> FetchNextBatchAsync()
+        public async Task<IDeliveryItemsFeedResponse<T>> FetchNextBatchAsync(string continuationToken = null)
         {
             if (!HasMoreResults)
             {
                 throw new InvalidOperationException("The feed has already been enumerated and there are no more results.");
             }
 
-            var response = await _getFeedResponseAsync(_continuationToken);
+            var response = await _getFeedResponseAsync(continuationToken ?? _continuationToken);
             _continuationToken = response.ApiResponse.ContinuationToken;
             HasMoreResults = !string.IsNullOrEmpty(response.ApiResponse.ContinuationToken);
 
