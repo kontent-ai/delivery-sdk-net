@@ -284,7 +284,7 @@ namespace Kentico.Kontent.Delivery.Tests
         }
 
         [Fact]
-        public async Task GetItemsFeed_SingleBatch_FetchNextBatchAsync_ContinuationToken()
+        public async Task GetItemsFeed_SingleBatchWithContinuationToken_FetchNextBatchAsync()
         {
             // Single batch with specific continuation token.
             _mockHttp
