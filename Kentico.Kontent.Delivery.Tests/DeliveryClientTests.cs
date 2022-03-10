@@ -284,6 +284,32 @@ namespace Kentico.Kontent.Delivery.Tests
         }
 
         [Fact]
+        public async Task GetItemsFeed_SingleBatchWithContinuationToken_FetchNextBatchAsync()
+        {
+            // Single batch with specific continuation token.
+            _mockHttp
+                .When($"{_baseUrl}/items-feed")
+                .WithQueryString("system.type=article")
+                .WithHeaders("X-Continuation", "token")
+                .Respond("application/json", await File.ReadAllTextAsync(Path.Combine(Environment.CurrentDirectory, $"Fixtures{Path.DirectorySeparatorChar}DeliveryClient{Path.DirectorySeparatorChar}articles_feed.json")));
+
+            var client = InitializeDeliveryClientWithACustomTypeProvider(_mockHttp);
+
+            var feed = client.GetItemsFeed<Article>();
+            var items = new List<Article>();
+            var timesCalled = 0;
+            while (feed.HasMoreResults)
+            {
+                timesCalled++;
+                var response = await feed.FetchNextBatchAsync("token");
+                items.AddRange(response.Items);
+            }
+
+            Assert.Equal(6, items.Count);
+            Assert.Equal(1, timesCalled);
+        }
+
+        [Fact]
         public async Task GetItemsFeed_MultipleBatches_FetchNextBatchAsync()
         {
             // Second batch
