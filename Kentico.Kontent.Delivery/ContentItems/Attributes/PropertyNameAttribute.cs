@@ -1,6 +1,6 @@
 ﻿using System;
 
-namespace Kentico.Kontent.Delivery.ContentItems
+namespace Kentico.Kontent.Delivery.ContentItems.Attributes
 {
     /// <summary>
     /// Instructs the <see cref="PropertyMapper"/> to always map to the property with the specified name.

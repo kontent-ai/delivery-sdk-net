@@ -1,6 +1,6 @@
 using System.Collections.Generic;
 using Kentico.Kontent.Delivery.Abstractions;
-using Kentico.Kontent.Delivery.ContentItems;
+using Kentico.Kontent.Delivery.ContentItems.Attributes;
 using Newtonsoft.Json;
 using NodaTime;
 
@@ -29,7 +29,7 @@ namespace Kentico.Kontent.Delivery.Tests.Models.ContentTypes
 
         [PropertyName("related_articles")]
         public List<IArticle> RelatedArticlesInterface { get; set; }
-        
+
         [PropertyName("related_articles")]
         [TestLinkedItemCodenamesValueConverter]
         public List<string> RelatedArticleCodenames { get; set; }
