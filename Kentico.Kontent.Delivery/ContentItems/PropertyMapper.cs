@@ -27,13 +27,13 @@ namespace Kentico.Kontent.Delivery.ContentItems
                 return false;
             }
 
-            var propertyName = GetPropertyName(modelProperty);
+            var propertyName = GetPropertyNameFromAttribute(modelProperty);
             return propertyName != null
                 ? fieldName.Equals(propertyName, StringComparison.Ordinal)
                 : fieldName.Replace("_", "").Equals(modelProperty.Name, StringComparison.OrdinalIgnoreCase); // Default mapping
         }
 
-        private static string GetPropertyName(PropertyInfo modelProperty)
+        private static string GetPropertyNameFromAttribute(PropertyInfo modelProperty)
             => modelProperty.GetCustomAttribute<PropertyNameAttribute>()?.PropertyName  // Try to get the name of the property name attribute
             ?? modelProperty.GetCustomAttribute<JsonPropertyAttribute>()?.PropertyName; // Try to get the name of JSON serialization property
     }
