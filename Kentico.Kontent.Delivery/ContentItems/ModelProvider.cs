@@ -225,7 +225,6 @@ namespace Kentico.Kontent.Delivery.ContentItems
                         "date_time" => await GetElementModelAsync<ContentElementValue<DateTime>, DateTime>(property, context, elementValue, valueConverter),
                         "multiple_choice" => await GetElementModelAsync<ContentElementValue<List<MultipleChoiceOption>>, List<MultipleChoiceOption>>(property, context, elementValue, valueConverter),
                         "taxonomy" => await GetElementModelAsync<TaxonomyElementValue, IEnumerable<ITaxonomyTerm>>(property, context, elementValue, valueConverter),
-                        "modular_content" => await GetElementModelAsync<ContentElementValue<List<string>>, List<string>>(property, context, elementValue, valueConverter),
                         // Custom element, text element, URL slug element
                         _ => await GetElementModelAsync<ContentElementValue<string>, string>(property, context, elementValue, valueConverter),
                     };
