@@ -1,6 +1,7 @@
 using System;
 using System.Reflection;
 using Kentico.Kontent.Delivery.Abstractions;
+using Kentico.Kontent.Delivery.ContentItems.Attributes;
 using Newtonsoft.Json;
 
 namespace Kentico.Kontent.Delivery.ContentItems
@@ -26,15 +27,14 @@ namespace Kentico.Kontent.Delivery.ContentItems
                 return false;
             }
 
-            JsonPropertyAttribute propertyAttr = modelProperty.GetCustomAttribute<JsonPropertyAttribute>();
-            if (propertyAttr != null)
-            {
-                // Try to get the name of the field from the JSON serialization property
-                return fieldName.Equals(propertyAttr.PropertyName, StringComparison.Ordinal);
-            }
-
-            // Default mapping
-            return fieldName.Replace("_", "").Equals(modelProperty.Name, StringComparison.OrdinalIgnoreCase);
+            var propertyName = GetPropertyNameFromAttribute(modelProperty);
+            return propertyName != null
+                ? fieldName.Equals(propertyName, StringComparison.Ordinal)
+                : fieldName.Replace("_", "").Equals(modelProperty.Name, StringComparison.OrdinalIgnoreCase); // Default mapping
         }
+
+        private static string GetPropertyNameFromAttribute(PropertyInfo modelProperty)
+            => modelProperty.GetCustomAttribute<PropertyNameAttribute>()?.PropertyName  // Try to get the name of the property name attribute
+            ?? modelProperty.GetCustomAttribute<JsonPropertyAttribute>()?.PropertyName; // Try to get the name of JSON serialization property
     }
 }
