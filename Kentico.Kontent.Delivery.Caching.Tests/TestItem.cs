@@ -1,5 +1,6 @@
-﻿using Kentico.Kontent.Delivery.Abstractions;
-using Kentico.Kontent.Delivery.ContentItems.Attributes;
+﻿using System;
+using Kentico.Kontent.Delivery.Abstractions;
+using Kentico.Kontent.Delivery.ContentItems;
 
 namespace Kentico.Kontent.Delivery.Caching.Tests
 {
