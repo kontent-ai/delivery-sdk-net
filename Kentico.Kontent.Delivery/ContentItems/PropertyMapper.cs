@@ -1,4 +1,5 @@
 using System;
+using System.Linq;
 using System.Reflection;
 using Kentico.Kontent.Delivery.Abstractions;
 using Newtonsoft.Json;
@@ -26,14 +27,22 @@ namespace Kentico.Kontent.Delivery.ContentItems
                 return false;
             }
 
-            var propertyName = GetPropertyName(modelProperty);
-            return propertyName != null
-                ? fieldName.Equals(propertyName, StringComparison.Ordinal)
-                : fieldName.Replace("_", "").Equals(modelProperty.Name, StringComparison.OrdinalIgnoreCase); // Default mapping
-        }
+            PropertyNameAttribute fieldNameAttr = modelProperty.GetCustomAttribute<PropertyNameAttribute>();
+            if (fieldNameAttr != null)
+            {
+                // Try to get the name of the field from the field name attribute
+                return fieldName.Equals(fieldNameAttr.PropertyName, StringComparison.Ordinal);
+            }
 
-        private static string GetPropertyName(PropertyInfo modelProperty)
-            => modelProperty.GetCustomAttribute<PropertyNameAttribute>()?.PropertyName  // Try to get the name of the field name attribute
-            ?? modelProperty.GetCustomAttribute<JsonPropertyAttribute>()?.PropertyName; // Try to get the name of JSON serialization property
+            JsonPropertyAttribute propertyAttr = modelProperty.GetCustomAttribute<JsonPropertyAttribute>();
+            if (propertyAttr != null)
+            {
+                // Try to get the name of the field from the JSON serialization property
+                return fieldName.Equals(propertyAttr.PropertyName, StringComparison.Ordinal);
+            }
+
+            // Default mapping
+            return fieldName.Replace("_", "").Equals(modelProperty.Name, StringComparison.OrdinalIgnoreCase);
+        }
     }
 }
