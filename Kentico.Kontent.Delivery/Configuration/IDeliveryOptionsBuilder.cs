@@ -1,5 +1,5 @@
 ﻿using System;
-using Kentico.Kontent.Delivery.Urls.QueryParameters;
+using Kentico.Kontent.Urls.Delivery.QueryParameters;
 using Kentico.Kontent.Delivery.Abstractions;
 
 
@@ -95,6 +95,15 @@ namespace Kentico.Kontent.Delivery.Configuration
         /// </remarks>
         /// <param name="customEndpoint">A custom endpoint URI.</param>
         IOptionalDeliveryConfiguration WithCustomEndpoint(Uri customEndpoint);
+
+        /// <summary>
+        /// Apply rendition of given preset to the asset URLs by default.
+        /// </summary>
+        /// <remarks> 
+        /// If not configured, asset URLs will always point to non-customized variant of the image.
+        /// </remarks>
+        /// <param name="presetCodename">Codename of the rendition preset to be applied automatically.</param>
+        IOptionalDeliveryConfiguration WithDefaultRenditionPreset(string presetCodename);
     }
 
     /// <summary>

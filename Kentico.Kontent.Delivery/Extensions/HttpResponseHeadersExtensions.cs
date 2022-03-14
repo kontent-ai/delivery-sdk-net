@@ -31,6 +31,7 @@ namespace Kentico.Kontent.Delivery.Extensions
                 return true;
             }
 
+            retryAfter = TimeSpan.Zero;
             return false;
         }
     }

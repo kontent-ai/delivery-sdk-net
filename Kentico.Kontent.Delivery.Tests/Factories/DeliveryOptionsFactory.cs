@@ -1,4 +1,5 @@
-﻿using FakeItEasy;
+﻿using System;
+using FakeItEasy;
 using Kentico.Kontent.Delivery.Abstractions;
 using Microsoft.Extensions.Options;
 
@@ -11,6 +12,11 @@ namespace Kentico.Kontent.Delivery.Tests.Factories
             var mock = A.Fake<IOptionsMonitor<DeliveryOptions>>();
             A.CallTo(() => mock.CurrentValue).Returns(options);
             return mock;
+        }
+        
+        public static IOptionsMonitor<DeliveryOptions> CreateMonitor(Guid projectId)
+        {
+            return CreateMonitor(new DeliveryOptions { ProjectId = projectId.ToString() });
         }
 
         public static IOptions<DeliveryOptions> Create(DeliveryOptions options)

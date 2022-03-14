@@ -12,9 +12,9 @@ using Kentico.Kontent.Delivery.Extensions;
 using Kentico.Kontent.Delivery.Languages;
 using Kentico.Kontent.Delivery.SharedModels;
 using Kentico.Kontent.Delivery.TaxonomyGroups;
-using Kentico.Kontent.Delivery.Urls;
-using Kentico.Kontent.Delivery.Urls.QueryParameters;
-using Kentico.Kontent.Delivery.Urls.QueryParameters.Filters;
+using Kentico.Kontent.Urls.Delivery;
+using Kentico.Kontent.Urls.Delivery.QueryParameters;
+using Kentico.Kontent.Urls.Delivery.QueryParameters.Filters;
 using Microsoft.AspNetCore.WebUtilities;
 using Microsoft.Extensions.Options;
 using Newtonsoft.Json;
@@ -334,7 +334,7 @@ namespace Kentico.Kontent.Delivery
                 error = Serializer.Deserialize<Error>(jsonReader);
             }
 
-            if(error != null)
+            if (error != null)
             {
                 return new ApiResponse(httpResponseMessage.Content, false, null, null, error);
             }

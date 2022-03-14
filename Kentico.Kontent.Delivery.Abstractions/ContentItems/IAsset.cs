@@ -1,9 +1,11 @@
-﻿namespace Kentico.Kontent.Delivery.Abstractions
+﻿using System.Collections.Generic;
+
+namespace Kentico.Kontent.Delivery.Abstractions
 {
     /// <summary>
     /// Represents a digital asset, such as a document or image.
     /// </summary>
-    public interface IAsset: IImage
+    public interface IAsset : IImage
     {
         /// <summary>
         /// Gets the name of the asset.
@@ -19,5 +21,10 @@
         /// Gets the media type of the asset, for example "image/jpeg".
         /// </summary>
         string Type { get; }
+
+        /// <summary>
+        /// Gets dictionary of asset renditions.
+        /// </summary>
+        Dictionary<string, IAssetRendition> Renditions { get; }
     }
 }

@@ -9,7 +9,6 @@ using Kentico.Kontent.Delivery.ContentItems.ContentLinks;
 using Kentico.Kontent.Delivery.ContentItems.InlineContentItems;
 using Kentico.Kontent.Delivery.Helpers;
 using Kentico.Kontent.Delivery.RetryPolicy;
-using Kentico.Kontent.Delivery.Abstractions.Extensions;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.DependencyInjection.Extensions;

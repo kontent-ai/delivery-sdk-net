@@ -1,7 +1,7 @@
 <Project Sdk="Microsoft.NET.Sdk">
 
   <PropertyGroup>
-    <TargetFramework>netstandard2.0</TargetFramework>
+    <TargetFrameworks>netstandard2.0;net6.0</TargetFrameworks>
     <Authors>Kentico Software</Authors>
     <Product>Kontent by Kentico</Product>
     <Copyright>© 2021 Kentico Software. All rights reserved.</Copyright>

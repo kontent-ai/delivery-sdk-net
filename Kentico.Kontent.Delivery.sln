@@ -22,15 +22,17 @@ Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Solution Items", "Solution 
 		Directory.Build.props = Directory.Build.props
 	EndProjectSection
 EndProject
-Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Kentico.Kontent.Urls", "Kentico.Kontent.ImageTransformation\Kentico.Kontent.Urls.csproj", "{F1C64D17-1C3E-4F35-9038-5D16C18DDC08}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Kentico.Kontent.Urls", "Kentico.Kontent.Urls\Kentico.Kontent.Urls.csproj", "{F1C64D17-1C3E-4F35-9038-5D16C18DDC08}"
 EndProject
-Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Kentico.Kontent.Urls.Tests", "Kentico.Kontent.ImageTransformation.Tests\Kentico.Kontent.Urls.Tests.csproj", "{8942D9E3-A966-406C-AA19-2B85286744C9}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Kentico.Kontent.Urls.Tests", "Kentico.Kontent.Urls.Tests\Kentico.Kontent.Urls.Tests.csproj", "{8942D9E3-A966-406C-AA19-2B85286744C9}"
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Kentico.Kontent.Delivery.Benchmarks", "Kentico.Kontent.Delivery.Benchmarks\Kentico.Kontent.Delivery.Benchmarks.csproj", "{FAA8F5E9-A262-4F7E-AD38-E72B8A5137F6}"
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Kentico.Kontent.Delivery.Extensions.DependencyInjection", "Kentico.Kontent.Delivery.Extensions.DependencyInjection\Kentico.Kontent.Delivery.Extensions.DependencyInjection.csproj", "{26270FC5-DB28-4106-A2FA-5402829FEDFA}"
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Kentico.Kontent.Delivery.Extensions.DependencyInjection.Tests", "Kentico.Kontent.Delivery.Extensions.DependencyInjection.Tests\Kentico.Kontent.Delivery.Extensions.DependencyInjection.Tests.csproj", "{1582662E-39EA-426F-AE11-AC10E87B4791}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Kentico.Kontent.Delivery.Abstractions.Tests", "Kentico.Kontent.Delivery.Abstractions.Tests\Kentico.Kontent.Delivery.Abstractions.Tests.csproj", "{F82D45A6-B0F5-4E40-A43B-4AFFF23EAF96}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
@@ -86,6 +88,10 @@ Global
 		{1582662E-39EA-426F-AE11-AC10E87B4791}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{1582662E-39EA-426F-AE11-AC10E87B4791}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{1582662E-39EA-426F-AE11-AC10E87B4791}.Release|Any CPU.Build.0 = Release|Any CPU
+		{F82D45A6-B0F5-4E40-A43B-4AFFF23EAF96}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{F82D45A6-B0F5-4E40-A43B-4AFFF23EAF96}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{F82D45A6-B0F5-4E40-A43B-4AFFF23EAF96}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{F82D45A6-B0F5-4E40-A43B-4AFFF23EAF96}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE

@@ -4,8 +4,8 @@ using FakeItEasy;
 using Kentico.Kontent.Delivery.Abstractions;
 using Kentico.Kontent.Delivery.ContentItems;
 using Kentico.Kontent.Delivery.Tests.Factories;
-using Kentico.Kontent.Delivery.Urls.QueryParameters;
-using Kentico.Kontent.Delivery.Urls.QueryParameters.Filters;
+using Kentico.Kontent.Urls.Delivery.QueryParameters;
+using Kentico.Kontent.Urls.Delivery.QueryParameters.Filters;
 using Xunit;
 
 namespace Kentico.Kontent.Delivery.Tests.QueryParameters
@@ -25,7 +25,7 @@ namespace Kentico.Kontent.Delivery.Tests.QueryParameters
             A.CallTo(() => contentTypeProvider.GetCodename(typeof(TypeWithoutContentTypeCodename))).Returns(null);
 
             var deliveryOptions = DeliveryOptionsFactory.CreateMonitor(new DeliveryOptions { ProjectId = FAKE_PROJECT_ID });
-            var modelProvider = new ModelProvider(null, null, contentTypeProvider, null, new DeliveryJsonSerializer(), new HtmlParser());
+            var modelProvider = new ModelProvider(null, null, contentTypeProvider, null, new DeliveryJsonSerializer(), new HtmlParser(), deliveryOptions);
             _client = new DeliveryClient(
                 deliveryOptions,
                 modelProvider,

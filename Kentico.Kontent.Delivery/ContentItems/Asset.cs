@@ -1,4 +1,5 @@
-﻿using Kentico.Kontent.Delivery.Abstractions;
+﻿using System.Collections.Generic;
+using Kentico.Kontent.Delivery.Abstractions;
 using Newtonsoft.Json;
 using System.Diagnostics;
 
@@ -35,6 +36,10 @@ namespace Kentico.Kontent.Delivery.ContentItems
         /// <inheritdoc/>
         [JsonProperty("height")]
         public int Height { get; internal set; }
+        
+        /// <inheritdoc/>
+        [JsonProperty("renditions")]
+        public Dictionary<string, IAssetRendition> Renditions { get; internal set; }
 
         /// <summary>
         /// Initializes a new instance of the <see cref="Asset"/> class.

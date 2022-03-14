@@ -11,7 +11,7 @@ using Kentico.Kontent.Delivery.Abstractions;
 using Kentico.Kontent.Delivery.ContentItems;
 using Kentico.Kontent.Delivery.Tests.Factories;
 using Kentico.Kontent.Delivery.Tests.Models.ContentTypes;
-using Kentico.Kontent.Delivery.Urls.QueryParameters;
+using Kentico.Kontent.Urls.Delivery.QueryParameters;
 using NodaTime;
 using RichardSzalay.MockHttp;
 using Xunit;
@@ -61,9 +61,8 @@ namespace Kentico.Kontent.Delivery.Tests
         public async void LinkedItemCodenamesValueConverter()
         {
             var mockHttp = new MockHttpMessageHandler();
-            string url = $"{_baseUrl}/items/on_roasts";
-            mockHttp.When(url).
-               Respond("application/json", await File.ReadAllTextAsync(Path.Combine(Environment.CurrentDirectory, $"Fixtures{Path.DirectorySeparatorChar}ContentLinkResolver{Path.DirectorySeparatorChar}on_roasts.json")));
+            mockHttp.When($"{_baseUrl}/items/on_roasts")
+                .Respond("application/json", await File.ReadAllTextAsync(Path.Combine(Environment.CurrentDirectory, $"Fixtures{Path.DirectorySeparatorChar}ContentLinkResolver{Path.DirectorySeparatorChar}on_roasts.json")));
             DeliveryClient client = InitializeDeliveryClient(mockHttp);
 
             var article = await client.GetItemAsync<Article>("on_roasts");
@@ -89,9 +88,8 @@ namespace Kentico.Kontent.Delivery.Tests
         public async void NodaTimePropertyValueConverter()
         {
             var mockHttp = new MockHttpMessageHandler();
-            string url = $"{_baseUrl}/items/on_roasts";
-            mockHttp.When(url).
-               Respond("application/json", await File.ReadAllTextAsync(Path.Combine(Environment.CurrentDirectory, $"Fixtures{Path.DirectorySeparatorChar}ContentLinkResolver{Path.DirectorySeparatorChar}on_roasts.json")));
+            mockHttp.When($"{_baseUrl}/items/on_roasts")
+                .Respond("application/json", await File.ReadAllTextAsync(Path.Combine(Environment.CurrentDirectory, $"Fixtures{Path.DirectorySeparatorChar}ContentLinkResolver{Path.DirectorySeparatorChar}on_roasts.json")));
             DeliveryClient client = InitializeDeliveryClient(mockHttp);
 
             var article = await client.GetItemAsync<Article>("on_roasts");
@@ -103,10 +101,9 @@ namespace Kentico.Kontent.Delivery.Tests
         public async void RichTextViaValueConverter()
         {
             var mockHttp = new MockHttpMessageHandler();
-            string url = $"{_baseUrl}/items/coffee_beverages_explained";
-            mockHttp.When(url).
-               WithQueryString("depth=15").
-               Respond("application/json", await File.ReadAllTextAsync(Path.Combine(Environment.CurrentDirectory, $"Fixtures{Path.DirectorySeparatorChar}ContentLinkResolver{Path.DirectorySeparatorChar}coffee_beverages_explained.json")));
+            mockHttp.When($"{_baseUrl}/items/coffee_beverages_explained")
+                .WithQueryString("depth=15")
+                .Respond("application/json", await File.ReadAllTextAsync(Path.Combine(Environment.CurrentDirectory, $"Fixtures{Path.DirectorySeparatorChar}ContentLinkResolver{Path.DirectorySeparatorChar}coffee_beverages_explained.json")));
             DeliveryClient client = InitializeDeliveryClient(mockHttp);
 
             // Try to get recursive linked items on_roasts -> item -> on_roasts
@@ -118,17 +115,76 @@ namespace Kentico.Kontent.Delivery.Tests
             Assert.NotNull(hostedVideo);
             Assert.NotNull(tweet);
         }
+        
+        [Fact]
+        public async Task AssetElementValueConverter_NoPresetSpecifiedInConfig_AssetUrlIsUntouched()
+        {
+            var mockHttp = new MockHttpMessageHandler();
+            mockHttp
+                .When($"{_baseUrl}/items/coffee_beverages_explained")
+                .Respond("application/json", await File.ReadAllTextAsync(Path.Combine(Environment.CurrentDirectory, $"Fixtures{Path.DirectorySeparatorChar}DeliveryClient{Path.DirectorySeparatorChar}coffee_beverages_explained.json")));
 
-        private DeliveryClient InitializeDeliveryClient(MockHttpMessageHandler mockHttp)
+            var client = InitializeDeliveryClient(mockHttp);
+
+            var response = await client.GetItemAsync<Article>("coffee_beverages_explained");
+            var teaserImage = response.Item.TeaserImage.FirstOrDefault();
+
+            var assetUrl = "https://assets.kenticocloud.com:443/975bf280-fd91-488c-994c-2f04416e5ee3/e700596b-03b0-4cee-ac5c-9212762c027a/coffee-beverages-explained-1080px.jpg";
+
+            Assert.Equal(assetUrl, teaserImage.Url);
+        }
+        
+        [Fact]
+        public async Task AssetElementValueConverter_DefaultPresetSpecifiedInConfig_AssetUrlContainsDefaultRenditionQuery()
+        {
+            var mockHttp = new MockHttpMessageHandler();
+            mockHttp
+                .When($"{_baseUrl}/items/coffee_beverages_explained")
+                .Respond("application/json", await File.ReadAllTextAsync(Path.Combine(Environment.CurrentDirectory, $"Fixtures{Path.DirectorySeparatorChar}DeliveryClient{Path.DirectorySeparatorChar}coffee_beverages_explained.json")));
+
+            var defaultRenditionPreset = "default";
+
+            var client = InitializeDeliveryClient(mockHttp, new DeliveryOptions { ProjectId = _guid, DefaultRenditionPreset = defaultRenditionPreset});
+
+            var response = await client.GetItemAsync<Article>("coffee_beverages_explained");
+            var teaserImage = response.Item.TeaserImage.FirstOrDefault();
+
+            var assetUrl = "https://assets.kenticocloud.com:443/975bf280-fd91-488c-994c-2f04416e5ee3/e700596b-03b0-4cee-ac5c-9212762c027a/coffee-beverages-explained-1080px.jpg";
+            var defaultRenditionQuery = "w=200&h=150&fit=clip&rect=7,23,300,200";
+
+            Assert.Equal($"{assetUrl}?{defaultRenditionQuery}", teaserImage.Url);
+        }
+        
+        [Fact]
+        public async Task AssetElementValueConverter_MobilePresetSpecifiedInConfig_AssetUrlIsUntouchedAsThereIsNoMobileRenditionSpecified()
+        {
+            var mockHttp = new MockHttpMessageHandler();
+            mockHttp
+                .When($"{_baseUrl}/items/coffee_beverages_explained")
+                .Respond("application/json", await File.ReadAllTextAsync(Path.Combine(Environment.CurrentDirectory, $"Fixtures{Path.DirectorySeparatorChar}DeliveryClient{Path.DirectorySeparatorChar}coffee_beverages_explained.json")));
+
+            var defaultRenditionPreset = "mobile";
+
+            var client = InitializeDeliveryClient(mockHttp, new DeliveryOptions { ProjectId = _guid, DefaultRenditionPreset = defaultRenditionPreset});
+            
+            var response = await client.GetItemAsync<Article>("coffee_beverages_explained");
+            var teaserImage = response.Item.TeaserImage.FirstOrDefault();
+
+            var assetUrl = "https://assets.kenticocloud.com:443/975bf280-fd91-488c-994c-2f04416e5ee3/e700596b-03b0-4cee-ac5c-9212762c027a/coffee-beverages-explained-1080px.jpg";
+
+            Assert.Equal(assetUrl, teaserImage.Url);
+        }
+
+        private DeliveryClient InitializeDeliveryClient(MockHttpMessageHandler mockHttp, DeliveryOptions options = null)
         {
             var deliveryHttpClient = new DeliveryHttpClient(mockHttp.ToHttpClient());
             var contentLinkUrlResolver = A.Fake<IContentLinkUrlResolver>();
-            var deliveryOptions = DeliveryOptionsFactory.CreateMonitor(new DeliveryOptions { ProjectId = _guid });
+            var deliveryOptions = DeliveryOptionsFactory.CreateMonitor(options ?? new DeliveryOptions { ProjectId = _guid });
             var retryPolicy = A.Fake<IRetryPolicy>();
             var retryPolicyProvider = A.Fake<IRetryPolicyProvider>();
             A.CallTo(() => retryPolicyProvider.GetRetryPolicy()).Returns(retryPolicy);
             A.CallTo(() => retryPolicy.ExecuteAsync(A<Func<Task<HttpResponseMessage>>>._)).ReturnsLazily(c => c.GetArgument<Func<Task<HttpResponseMessage>>>(0)());
-            var modelProvider = new ModelProvider(contentLinkUrlResolver, null, new CustomTypeProvider(), new PropertyMapper(), new DeliveryJsonSerializer(), new HtmlParser());
+            var modelProvider = new ModelProvider(contentLinkUrlResolver, null, new CustomTypeProvider(), new PropertyMapper(), new DeliveryJsonSerializer(), new HtmlParser(), deliveryOptions);
             var client = new DeliveryClient(deliveryOptions, modelProvider, retryPolicyProvider, null, deliveryHttpClient);
 
             return client;

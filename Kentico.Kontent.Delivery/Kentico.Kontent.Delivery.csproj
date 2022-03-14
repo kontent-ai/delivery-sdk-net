@@ -1,7 +1,7 @@
 ﻿<Project Sdk="Microsoft.NET.Sdk">
 
   <PropertyGroup>
-    <TargetFramework>netstandard2.0</TargetFramework>
+    <TargetFrameworks>netstandard2.0;net6.0</TargetFrameworks>
     <Authors>Kentico Software</Authors>
     <Product>Kontent by Kentico</Product>
     <Copyright>© 2021 Kentico Software. All rights reserved.</Copyright>
@@ -38,7 +38,7 @@
 
   <ItemGroup>
     <ProjectReference Include="..\Kentico.Kontent.Delivery.Abstractions\Kentico.Kontent.Delivery.Abstractions.csproj" />
-    <ProjectReference Include="..\Kentico.Kontent.ImageTransformation\Kentico.Kontent.Urls.csproj" />
+    <ProjectReference Include="..\Kentico.Kontent.Urls\Kentico.Kontent.Urls.csproj" />
   </ItemGroup>
 
 </Project>
