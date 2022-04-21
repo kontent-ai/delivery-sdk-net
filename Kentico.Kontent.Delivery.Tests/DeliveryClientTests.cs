@@ -244,6 +244,25 @@ namespace Kentico.Kontent.Delivery.Tests
             Assert.True(response?.ApiResponse?.IsSuccess);
             Assert.NotEmpty(response.Items);
         }
+        
+        [Fact]
+        public async Task GetItemsAsync_InvalidProjectId_RespondsWithApiError()
+        {
+            var deliveryApiMockedResponse = await File.ReadAllTextAsync(Path.Combine(Environment.CurrentDirectory, $"Fixtures{Path.DirectorySeparatorChar}DeliveryClient{Path.DirectorySeparatorChar}apiError_invalid_project.json"));
+            deliveryApiMockedResponse = deliveryApiMockedResponse.Replace("{PROJECT_ID}", _guid.ToString());
+            
+            _mockHttp
+                .When($"{_baseUrl}/items")
+                .Respond(HttpStatusCode.NotFound, "application/json",deliveryApiMockedResponse);
+
+            var client = InitializeDeliveryClientWithACustomTypeProvider(_mockHttp);
+
+            var response = await client.GetItemsAsync<object>();
+
+            Assert.False(response?.ApiResponse?.IsSuccess);
+            Assert.NotNull(response?.ApiResponse?.Error);
+            //TODO maybe assertions should be more detailed (what error code, message ...)
+        }
 
         [Fact]
         public void GetItemsFeed_DepthParameter_ThrowsArgumentException()

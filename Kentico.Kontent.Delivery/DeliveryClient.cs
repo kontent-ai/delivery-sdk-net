@@ -97,6 +97,12 @@ namespace Kentico.Kontent.Delivery
             var endpointUrl = UrlBuilder.GetItemsUrl(enhancedParameters);
             var response = await GetDeliveryResponseAsync(endpointUrl);
             var content = await response.GetJsonContentAsync();
+
+            if (!response.IsSuccess)
+            {
+                return new DeliveryItemListingResponse<T>(response, null,null);
+            }
+            
             var pagination = content["pagination"].ToObject<Pagination>(Serializer);
             var items = ((JArray)content["items"]).Select(async source => await ModelProvider.GetContentItemModelAsync<T>(source, content["modular_content"]));
 
