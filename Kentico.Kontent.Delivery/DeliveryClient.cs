@@ -240,6 +240,12 @@ namespace Kentico.Kontent.Delivery
             var endpointUrl = UrlBuilder.GetTaxonomiesUrl(parameters);
             var response = await GetDeliveryResponseAsync(endpointUrl);
             var content = await response.GetJsonContentAsync();
+            
+            if (!response.IsSuccess)
+            {
+                return new DeliveryTaxonomyListingResponse(response, null,null);
+            }
+            
             var pagination = content["pagination"].ToObject<Pagination>(Serializer);
             var taxonomies = content["taxonomies"].ToObject<List<TaxonomyGroup>>(Serializer);
             return new DeliveryTaxonomyListingResponse(response, taxonomies.ToList<ITaxonomyGroup>(), pagination);
