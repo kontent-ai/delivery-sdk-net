@@ -11,6 +11,7 @@ using Kentico.Kontent.Delivery.Abstractions;
 using Kentico.Kontent.Delivery.Builders.DeliveryClient;
 using Kentico.Kontent.Delivery.ContentItems;
 using Kentico.Kontent.Delivery.ContentItems.RichText.Blocks;
+using Kentico.Kontent.Delivery.SharedModels;
 using Kentico.Kontent.Delivery.Tests.Factories;
 using Kentico.Kontent.Delivery.Tests.Models;
 using Kentico.Kontent.Delivery.Tests.Models.ContentTypes;
@@ -172,25 +173,27 @@ namespace Kentico.Kontent.Delivery.Tests
         }
 
         [Fact]
-        public async Task GetItemAsync_NotFound()
+        public async Task GetItemAsync_NotFound_RespondsWithApiError()
         {
-            string message = "{'message': 'The requested content item unscintillating_hemerocallidaceae_des_iroquois was not found.','request_id': '','error_code': 100,'specific_code': 0}";
+            var expectedError = new Error()
+            {
+                Message = "The requested content item unscintillating_hemerocallidaceae_des_iroquois was not found.",
+                RequestId = "",
+                ErrorCode = 100,
+                SpecificCode = 0
+            };
+            var expectedResponse = CreateApiErrorResponse(expectedError);
 
             _mockHttp
                 .When($"{_baseUrl}/items/unscintillating_hemerocallidaceae_des_iroquois")
-                .Respond(HttpStatusCode.NotFound, "application/json", message);
+                .Respond(HttpStatusCode.NotFound, "application/json", expectedResponse);
 
             var client = InitializeDeliveryClientWithACustomTypeProvider(_mockHttp);
 
-            var result = await client.GetItemAsync<Article>("unscintillating_hemerocallidaceae_des_iroquois");
+            var actualResponse = await client.GetItemAsync<Article>("unscintillating_hemerocallidaceae_des_iroquois");
 
-            Assert.Null(result.Item);
-            Assert.NotNull(result.ApiResponse.Error);
-            Assert.False(result.ApiResponse.IsSuccess);
-            Assert.Equal(100, result.ApiResponse.Error.ErrorCode);
-            Assert.Equal("The requested content item unscintillating_hemerocallidaceae_des_iroquois was not found.", result?.ApiResponse?.Error?.Message);
-            Assert.Equal(string.Empty, result.ApiResponse.Error.RequestId);
-            Assert.Equal(0, result.ApiResponse.Error.SpecificCode);
+            AssertErrorResponse(actualResponse, expectedError);
+            Assert.Null(actualResponse.Item);
         }
 
         [Fact]
@@ -248,22 +251,21 @@ namespace Kentico.Kontent.Delivery.Tests
         [Fact]
         public async Task GetItemsAsync_InvalidProjectId_RespondsWithApiError()
         {
-            var deliveryApiMockedResponse = await File.ReadAllTextAsync(Path.Combine(Environment.CurrentDirectory, $"Fixtures{Path.DirectorySeparatorChar}DeliveryClient{Path.DirectorySeparatorChar}apiError_invalid_project.json"));
-            deliveryApiMockedResponse = deliveryApiMockedResponse.Replace("{PROJECT_ID}", _guid.ToString());
-            
+            var expectedError = CreateInvalidProjectIdApiError();
+            var response = CreateApiErrorResponse(expectedError);
+
             _mockHttp
                 .When($"{_baseUrl}/items")
-                .Respond(HttpStatusCode.NotFound, "application/json",deliveryApiMockedResponse);
+                .Respond(HttpStatusCode.NotFound, "application/json", response);
 
             var client = InitializeDeliveryClientWithACustomTypeProvider(_mockHttp);
 
-            var response = await client.GetItemsAsync<object>();
-
-            Assert.False(response?.ApiResponse?.IsSuccess);
-            Assert.NotNull(response?.ApiResponse?.Error);
-            //TODO maybe assertions should be more detailed (what error code, message ...)
+            var actualResponse = await client.GetItemsAsync<object>();
+                
+            AssertErrorResponse(actualResponse, expectedError);
+            Assert.Null(actualResponse.Items);
         }
-
+        
         [Fact]
         public void GetItemsFeed_DepthParameter_ThrowsArgumentException()
         {
@@ -607,6 +609,24 @@ namespace Kentico.Kontent.Delivery.Tests
             Assert.True(response?.ApiResponse?.IsSuccess);
             Assert.NotNull(response.ApiResponse.RequestUrl);
             Assert.NotEmpty(response.Taxonomies);
+        }
+        
+        [Fact]
+        public async Task GetTaxonomiesAsync_InvalidProjectId_RespondsWithApiError()
+        {
+            var expectedError = CreateInvalidProjectIdApiError();
+            var response = CreateApiErrorResponse(expectedError);
+
+            _mockHttp
+                .When($"{_baseUrl}/taxonomies")
+                .Respond(HttpStatusCode.NotFound, "application/json", response);
+
+            var client = InitializeDeliveryClientWithACustomTypeProvider(_mockHttp);
+
+            var actualResponse = await client.GetTaxonomiesAsync();
+                
+            AssertErrorResponse(actualResponse, expectedError);
+            Assert.Null(actualResponse.Taxonomies);
         }
 
         [Fact]
@@ -1685,6 +1705,29 @@ namespace Kentico.Kontent.Delivery.Tests
                 .ReturnsLazily(c => c.GetArgument<Func<Task<HttpResponseMessage>>>(0)());
 
             return client;
+        }
+        
+        private  Error CreateInvalidProjectIdApiError() => new Error()
+        {
+            ErrorCode = 105,
+            RequestId = "",
+            SpecificCode = 0,
+            Message = $"Project with the ID '{_guid.ToString()}' does not exist. Check for the correct project ID in the API keys section of the UI. See https://kontent.ai/learn/reference/delivery-api for more details."
+        };
+
+        private static string CreateApiErrorResponse(Error error)
+           => $"{{\"message\": \"{error.Message}\",\"request_id\": \"{error.RequestId}\",\"error_code\": {error.ErrorCode},\"specific_code\": {error.SpecificCode}}}";
+
+        private static void AssertErrorResponse(IResponse actualResponse, IError expectedError)
+        {
+            var actualError = actualResponse.ApiResponse.Error;
+            
+            Assert.NotNull(actualResponse.ApiResponse.Error);
+            Assert.False(actualResponse.ApiResponse.IsSuccess);
+            Assert.Equal(expectedError.Message, actualError.Message);
+            Assert.Equal(expectedError.ErrorCode, actualError.ErrorCode);
+            Assert.Equal(expectedError.RequestId, actualError.RequestId);
+            Assert.Equal(expectedError.SpecificCode, actualError.SpecificCode);
         }
     }
 }

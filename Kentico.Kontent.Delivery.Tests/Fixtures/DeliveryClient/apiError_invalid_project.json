@@ -1,7 +1,0 @@
-﻿{
-    "errors": [
-        {
-            "message": "Project with the ID '{PROJECT_ID}' does not exist. Check for the correct project ID in the API keys section of the UI."
-        }
-    ]
-}

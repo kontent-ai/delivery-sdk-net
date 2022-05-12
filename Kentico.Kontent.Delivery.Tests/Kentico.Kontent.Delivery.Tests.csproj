@@ -14,9 +14,6 @@
 
   <ItemGroup>
     <None Remove="Fixtures\home.json" />
-    <None Update="Fixtures\DeliveryClient\apiError_invalid_project.json">
-      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
-    </None>
   </ItemGroup>
 
   <ItemGroup>
