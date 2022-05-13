@@ -61,7 +61,6 @@ namespace Kentico.Kontent.Delivery.SharedModels
         {
         }
 
-
         internal ApiResponse(HttpContent httpContent, bool hasStaleContent, string continuationToken, string requestUrl, IError error)
         {
             HttpContent = httpContent;

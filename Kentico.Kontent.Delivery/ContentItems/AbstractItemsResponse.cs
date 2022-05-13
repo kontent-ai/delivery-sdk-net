@@ -1,4 +1,5 @@
-﻿using Kentico.Kontent.Delivery.SharedModels;
+﻿using Kentico.Kontent.Delivery.Abstractions;
+using Kentico.Kontent.Delivery.SharedModels;
 
 namespace Kentico.Kontent.Delivery.ContentItems
 {
@@ -11,6 +12,6 @@ namespace Kentico.Kontent.Delivery.ContentItems
         /// Initializes a new instance of the <see cref="AbstractItemsResponse"/> class.
         /// </summary>
         /// <param name="response">The response from Kontent Delivery API that contains a content item.</param>
-        protected AbstractItemsResponse(ApiResponse response) : base(response) { }
+        protected AbstractItemsResponse(IApiResponse response) : base(response) { }
     }
 }
