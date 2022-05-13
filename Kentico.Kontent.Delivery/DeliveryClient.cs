@@ -96,13 +96,13 @@ namespace Kentico.Kontent.Delivery
             var enhancedParameters = EnsureContentTypeFilter<T>(parameters).ToList();
             var endpointUrl = UrlBuilder.GetItemsUrl(enhancedParameters);
             var response = await GetDeliveryResponseAsync(endpointUrl);
-            var content = await response.GetJsonContentAsync();
-
+            
             if (!response.IsSuccess)
             {
                 return new DeliveryItemListingResponse<T>(response, null,null);
             }
             
+            var content = await response.GetJsonContentAsync();
             var pagination = content["pagination"].ToObject<Pagination>(Serializer);
             var items = ((JArray)content["items"]).Select(async source => await ModelProvider.GetContentItemModelAsync<T>(source, content["modular_content"]));
 
@@ -125,6 +125,12 @@ namespace Kentico.Kontent.Delivery
             async Task<DeliveryItemsFeedResponse<T>> GetItemsBatchAsync(string continuationToken)
             {
                 var response = await GetDeliveryResponseAsync(endpointUrl, continuationToken);
+                
+                if (!response.IsSuccess)
+                {
+                    return new DeliveryItemsFeedResponse<T>(response, null);
+                }
+                
                 var content = await response.GetJsonContentAsync();
 
                 var items = ((JArray)content["items"]).Select(async source => await ModelProvider.GetContentItemModelAsync<T>(source, content["modular_content"]));
@@ -166,6 +172,12 @@ namespace Kentico.Kontent.Delivery
         {
             var endpointUrl = UrlBuilder.GetTypesUrl(parameters);
             var response = await GetDeliveryResponseAsync(endpointUrl);
+
+            if (!response.IsSuccess)
+            {
+                return new DeliveryTypeListingResponse(response, null, null);
+            }
+            
             var content = await response.GetJsonContentAsync();
             var pagination = content["pagination"].ToObject<Pagination>(Serializer);
             var types = content["types"].ToObject<List<ContentType>>(Serializer);
@@ -260,6 +272,12 @@ namespace Kentico.Kontent.Delivery
         {
             var endpointUrl = UrlBuilder.GetLanguagesUrl(parameters);
             var response = await GetDeliveryResponseAsync(endpointUrl);
+            
+            if (!response.IsSuccess)
+            {
+                return new DeliveryLanguageListingResponse(response, null,null);
+            }
+            
             var content = await response.GetJsonContentAsync();
             var pagination = content["pagination"].ToObject<Pagination>(Serializer);
             var languages = content["languages"].ToObject<List<Language>>(Serializer);

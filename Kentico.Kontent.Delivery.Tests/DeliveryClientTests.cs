@@ -371,6 +371,24 @@ namespace Kentico.Kontent.Delivery.Tests
             Assert.Equal(6, items.Count);
             Assert.Equal(2, timesCalled);
         }
+        
+        [Fact]
+        public async Task GetItemsFeedAsync_InvalidProjectId_RespondsWithApiError()
+        {
+            var expectedError = CreateInvalidProjectIdApiError();
+            var response = CreateApiErrorResponse(expectedError);
+
+            _mockHttp
+                .When($"{_baseUrl}/items-feed")
+                .Respond(HttpStatusCode.NotFound, "application/json", response);
+
+            var client = InitializeDeliveryClientWithACustomTypeProvider(_mockHttp);
+
+            var actualResponse = await client.GetItemsFeed<object>().FetchNextBatchAsync();
+                
+            AssertErrorResponse(actualResponse, expectedError);
+            Assert.Null(actualResponse.Items);
+        }
 
         [Fact]
         public async Task GetTypeAsync()
@@ -1394,6 +1412,24 @@ namespace Kentico.Kontent.Delivery.Tests
             Assert.False(response.ApiResponse.HasStaleContent);
             Assert.True(response.Types.Any());
         }
+        
+        [Fact]
+        public async Task GetTypesAsync_InvalidProjectId_RespondsWithApiError()
+        {
+            var expectedError = CreateInvalidProjectIdApiError();
+            var response = CreateApiErrorResponse(expectedError);
+
+            _mockHttp
+                .When($"{_baseUrl}/types")
+                .Respond(HttpStatusCode.NotFound, "application/json", response);
+
+            var client = InitializeDeliveryClientWithACustomTypeProvider(_mockHttp);
+
+            var actualResponse = await client.GetTypesAsync();
+                
+            AssertErrorResponse(actualResponse, expectedError);
+            Assert.Null(actualResponse.Types);
+        }
 
         [Fact]
         public async Task GetTaxonomyAsync_ApiReturnsStaleContent_ResponseIndicatesStaleContent()
@@ -1519,6 +1555,25 @@ namespace Kentico.Kontent.Delivery.Tests
 
             Assert.False(response.ApiResponse.HasStaleContent);
             Assert.True(response.Languages.Any());
+        }
+        
+        [Fact]
+        public async Task GetLanguagesAsync_InvalidProjectId_RespondsWithApiError()
+        {
+            var expectedError = CreateInvalidProjectIdApiError();
+            var response = CreateApiErrorResponse(expectedError);
+
+            _mockHttp
+                .When($"{_baseUrl}/languages")
+                .Respond(HttpStatusCode.NotFound, "application/json", response);
+
+            var client = InitializeDeliveryClientWithACustomTypeProvider(_mockHttp);
+
+            var actualResponse = await client.GetLanguagesAsync();
+                
+            AssertErrorResponse(actualResponse, expectedError);
+            Assert.Null(actualResponse.Languages);
+            Assert.Null(actualResponse.Pagination);
         }
 
         [Fact]
