@@ -195,6 +195,24 @@ namespace Kentico.Kontent.Delivery.Tests
             AssertErrorResponse(actualResponse, expectedError);
             Assert.Null(actualResponse.Item);
         }
+        
+        [Fact]
+        public async Task GetItemAsync_InvalidProjectId_RespondsWithApiError()
+        {
+            var expectedError = CreateInvalidProjectIdApiError();
+            var response = CreateApiErrorResponse(expectedError);
+
+            _mockHttp
+                .When($"{_baseUrl}/items/coffee_beverages_explained")
+                .Respond(HttpStatusCode.NotFound, "application/json", response);
+
+            var client = InitializeDeliveryClientWithACustomTypeProvider(_mockHttp);
+
+            var actualResponse = await client.GetItemAsync<object>("coffee_beverages_explained");
+                
+            AssertErrorResponse(actualResponse, expectedError);
+            Assert.Null(actualResponse.Item);
+        }
 
         [Fact]
         public async Task GetItemAsync_ComplexRichTextTableCell_ParseCorrectly()
@@ -264,6 +282,7 @@ namespace Kentico.Kontent.Delivery.Tests
                 
             AssertErrorResponse(actualResponse, expectedError);
             Assert.Null(actualResponse.Items);
+            Assert.Null(actualResponse.Pagination);
         }
         
         [Fact]
@@ -373,7 +392,7 @@ namespace Kentico.Kontent.Delivery.Tests
         }
         
         [Fact]
-        public async Task GetItemsFeedAsync_InvalidProjectId_RespondsWithApiError()
+        public async Task GetItemsFeed_InvalidProjectId_RespondsWithApiError()
         {
             var expectedError = CreateInvalidProjectIdApiError();
             var response = CreateApiErrorResponse(expectedError);
@@ -435,27 +454,47 @@ namespace Kentico.Kontent.Delivery.Tests
             Assert.IsAssignableFrom<ITaxonomyElement>(processingTaxonomyElement);
             Assert.Equal("processing", ((ITaxonomyElement)processingTaxonomyElement).TaxonomyGroup);
         }
-
+        
         [Fact]
-        public async Task GetTypeAsync_NotFound()
+        public async Task GetTypeAsync_NotFound_RespondsWithApiError()
         {
-            string messsge = "{'message': 'The requested content type unequestrian_nonadjournment_sur_achoerodus was not found','request_id': '','error_code': 101,'specific_code': 0}";
+            var expectedError = new Error()
+            {
+                Message = "The requested content type unequestrian_nonadjournment_sur_achoerodus was not found.",
+                RequestId = "",
+                ErrorCode = 100,
+                SpecificCode = 0
+            };
+            var expectedResponse = CreateApiErrorResponse(expectedError);
 
             _mockHttp
                 .When($"{_baseUrl}/types/unequestrian_nonadjournment_sur_achoerodus")
-                .Respond(HttpStatusCode.NotFound, "application/json", messsge);
+                .Respond(HttpStatusCode.NotFound, "application/json", expectedResponse);
 
             var client = InitializeDeliveryClientWithACustomTypeProvider(_mockHttp);
 
-            var result = await client.GetTypeAsync("unequestrian_nonadjournment_sur_achoerodus");
+            var actualResponse = await client.GetTypeAsync("unequestrian_nonadjournment_sur_achoerodus");
 
-            Assert.Null(result?.Type);
-            Assert.NotNull(result?.ApiResponse?.Error);
-            Assert.Equal(101, result?.ApiResponse?.Error?.ErrorCode);
-            Assert.False(result?.ApiResponse?.IsSuccess);
-            Assert.Equal("The requested content type unequestrian_nonadjournment_sur_achoerodus was not found", result?.ApiResponse?.Error?.Message);
-            Assert.Equal(string.Empty, result?.ApiResponse?.Error?.RequestId);
-            Assert.Equal(0, result?.ApiResponse?.Error?.SpecificCode);
+            AssertErrorResponse(actualResponse, expectedError);
+            Assert.Null(actualResponse.Type);
+        }
+        
+        [Fact]
+        public async Task GetTypeAsync_InvalidProjectId_RespondsWithApiError()
+        {
+            var expectedError = CreateInvalidProjectIdApiError();
+            var response = CreateApiErrorResponse(expectedError);
+
+            _mockHttp
+                .When($"{_baseUrl}/types/unequestrian_nonadjournment_sur_achoerodus")
+                .Respond(HttpStatusCode.NotFound, "application/json", response);
+
+            var client = InitializeDeliveryClientWithACustomTypeProvider(_mockHttp);
+
+            var actualResponse = await client.GetTypeAsync("unequestrian_nonadjournment_sur_achoerodus");
+                
+            AssertErrorResponse(actualResponse, expectedError);
+            Assert.Null(actualResponse.Type);
         }
 
         [Fact]
@@ -645,6 +684,7 @@ namespace Kentico.Kontent.Delivery.Tests
                 
             AssertErrorResponse(actualResponse, expectedError);
             Assert.Null(actualResponse.Taxonomies);
+            Assert.Null(actualResponse.Pagination);
         }
 
         [Fact]
@@ -1429,6 +1469,7 @@ namespace Kentico.Kontent.Delivery.Tests
                 
             AssertErrorResponse(actualResponse, expectedError);
             Assert.Null(actualResponse.Types);
+            Assert.Null(actualResponse.Pagination);
         }
 
         [Fact]
@@ -1614,6 +1655,24 @@ namespace Kentico.Kontent.Delivery.Tests
 
             Assert.False(response.ApiResponse.HasStaleContent);
             Assert.NotNull(response.Element.Codename);
+        }
+        
+        [Fact]
+        public async Task GetElementAsync_InvalidProjectId_RespondsWithApiError()
+        {
+            var expectedError = CreateInvalidProjectIdApiError();
+            var response = CreateApiErrorResponse(expectedError);
+
+            _mockHttp
+                .When($"{_baseUrl}/types/test/elements/test")
+                .Respond(HttpStatusCode.NotFound, "application/json", response);
+
+            var client = InitializeDeliveryClientWithACustomTypeProvider(_mockHttp);
+
+            var actualResponse = await client.GetContentElementAsync("test", "test");
+                
+            AssertErrorResponse(actualResponse, expectedError);
+            Assert.Null(actualResponse.Element);
         }
 
         [Fact]
