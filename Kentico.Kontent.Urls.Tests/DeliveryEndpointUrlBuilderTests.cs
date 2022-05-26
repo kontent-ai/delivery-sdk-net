@@ -9,7 +9,7 @@ namespace Kentico.Kontent.Urls.Tests;
 public class DeliveryEndpointUrlBuilderTests
 {
     //as this is only place where mock would be used, just fake implementation class is created
-    //if more mocking is to be used, please use mocking library like NSubstitute instead
+    //if more mocking is to be used, please consider usage mocking library package like NSubstitute instead
     private class FakeOptionsMonitor<T> : IOptionsMonitor<T>
     {
         public T CurrentValue { get; }
