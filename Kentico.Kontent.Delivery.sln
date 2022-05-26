@@ -34,6 +34,8 @@ Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Kentico.Kontent.Delivery.Ex
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Kentico.Kontent.Delivery.Abstractions.Tests", "Kentico.Kontent.Delivery.Abstractions.Tests\Kentico.Kontent.Delivery.Abstractions.Tests.csproj", "{F82D45A6-B0F5-4E40-A43B-4AFFF23EAF96}"
 EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "DeliverySDKWithAutofac", "DeliverySDKWithAutofac\DeliverySDKWithAutofac.csproj", "{6B78187D-D693-4A38-B14A-64D0AF6B09D3}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -92,6 +94,10 @@ Global
 		{F82D45A6-B0F5-4E40-A43B-4AFFF23EAF96}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{F82D45A6-B0F5-4E40-A43B-4AFFF23EAF96}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{F82D45A6-B0F5-4E40-A43B-4AFFF23EAF96}.Release|Any CPU.Build.0 = Release|Any CPU
+		{6B78187D-D693-4A38-B14A-64D0AF6B09D3}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{6B78187D-D693-4A38-B14A-64D0AF6B09D3}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{6B78187D-D693-4A38-B14A-64D0AF6B09D3}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{6B78187D-D693-4A38-B14A-64D0AF6B09D3}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
