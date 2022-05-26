@@ -25,7 +25,11 @@ using IHost host = Host.CreateDefaultBuilder(args)
     .ConfigureContainer<ContainerBuilder>(builder =>
     {
         builder.RegisterType<ProjectAProvider>().Named<ITypeProvider>(ClientA);
+        builder.RegisterType<ModelProvider>().Named<IModelProvider>(ClientA) 
+            .WithParameter(Autofac.Core.ResolvedParameter.ForNamed<ITypeProvider>(ClientA));
         builder.RegisterType<ProjectBProvider>().Named<ITypeProvider>(ClientB);
+        builder.RegisterType<ModelProvider>().Named<IModelProvider>(ClientB) 
+            .WithParameter(Autofac.Core.ResolvedParameter.ForNamed<ITypeProvider>(ClientB));
     })
     .ConfigureServices((_, services) =>
     {
