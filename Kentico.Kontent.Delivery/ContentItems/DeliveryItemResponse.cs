@@ -24,5 +24,13 @@ namespace Kentico.Kontent.Delivery.ContentItems
         {
             Item = item;
         }
+        
+        /// <summary>
+        /// Initializes a new instance of the <see cref="DeliveryItemResponse{T}"/> class.
+        /// </summary>
+        /// <param name="response">The response from Kontent Delivery API that contains a content item.</param>
+        internal DeliveryItemResponse(ApiResponse response) : base(response)
+        {
+        }
     }
 }

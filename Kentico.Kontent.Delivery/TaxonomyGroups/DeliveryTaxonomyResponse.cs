@@ -24,5 +24,13 @@ namespace Kentico.Kontent.Delivery.TaxonomyGroups
         {
             Taxonomy = taxonomy;
         }
+        
+        /// <summary>
+        /// Initializes a new instance of the <see cref="DeliveryTypeResponse"/> class.
+        /// </summary>
+        /// <param name="response">The response from Kontent Delivery API that contains a taxonomy group.</param>
+        internal DeliveryTaxonomyResponse(ApiResponse response) : base(response)
+        {
+        }
     }
 }

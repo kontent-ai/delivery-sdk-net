@@ -80,6 +80,12 @@ namespace Kentico.Kontent.Delivery
 
             var endpointUrl = UrlBuilder.GetItemUrl(codename, parameters);
             var response = await GetDeliveryResponseAsync(endpointUrl);
+            
+            if (!response.IsSuccess)
+            {
+                return new DeliveryItemResponse<T>(response);
+            }
+
             var content = await response.GetJsonContentAsync();
             var model = await ModelProvider.GetContentItemModelAsync<T>(content?["item"], content?["modular_content"]);
             return new DeliveryItemResponse<T>(response, model);
@@ -158,6 +164,12 @@ namespace Kentico.Kontent.Delivery
 
             var endpointUrl = UrlBuilder.GetTypeUrl(codename);
             var response = await GetDeliveryResponseAsync(endpointUrl);
+
+            if (!response.IsSuccess)
+            {
+                return new DeliveryTypeResponse(response);
+            }
+
             var type = (await response.GetJsonContentAsync())?.ToObject<ContentType>(Serializer);
 
             return new DeliveryTypeResponse(response, type);
@@ -214,6 +226,12 @@ namespace Kentico.Kontent.Delivery
 
             var endpointUrl = UrlBuilder.GetContentElementUrl(contentTypeCodename, contentElementCodename);
             var response = await GetDeliveryResponseAsync(endpointUrl);
+
+            if (!response.IsSuccess)
+            {
+                return new DeliveryElementResponse(response);
+            }
+
             var content = await response.GetJsonContentAsync();
             var element = content?.ToObject<IContentElement>(Serializer);
             return new DeliveryElementResponse(response, element);
@@ -238,6 +256,12 @@ namespace Kentico.Kontent.Delivery
 
             var endpointUrl = UrlBuilder.GetTaxonomyUrl(codename);
             var response = await GetDeliveryResponseAsync(endpointUrl);
+
+            if (!response.IsSuccess)
+            {
+                return new DeliveryTaxonomyResponse(response);
+            }
+
             var taxonomy = (await response.GetJsonContentAsync())?.ToObject<TaxonomyGroup>(Serializer);
             return new DeliveryTaxonomyResponse(response, taxonomy);
         }
