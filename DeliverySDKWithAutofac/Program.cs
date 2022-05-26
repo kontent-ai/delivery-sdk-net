@@ -25,11 +25,12 @@ using IHost host = Host.CreateDefaultBuilder(args)
     .ConfigureContainer<ContainerBuilder>(builder =>
     {
         builder.RegisterType<ProjectAProvider>().Named<ITypeProvider>(ClientA);
-        builder.RegisterType<ModelProvider>().Named<IModelProvider>(ClientA) 
-            .WithParameter(Autofac.Core.ResolvedParameter.ForNamed<ITypeProvider>(ClientA));
+        // Model provider is not accessible
+        // builder.RegisterType<ModelProvider>().Named<IModelProvider>(ClientA) 
+        //     .WithParameter(Autofac.Core.ResolvedParameter.ForNamed<ITypeProvider>(ClientA));
         builder.RegisterType<ProjectBProvider>().Named<ITypeProvider>(ClientB);
-        builder.RegisterType<ModelProvider>().Named<IModelProvider>(ClientB) 
-            .WithParameter(Autofac.Core.ResolvedParameter.ForNamed<ITypeProvider>(ClientB));
+        // builder.RegisterType<ModelProvider>().Named<IModelProvider>(ClientB) 
+        //     .WithParameter(Autofac.Core.ResolvedParameter.ForNamed<ITypeProvider>(ClientB));
     })
     .ConfigureServices((_, services) =>
     {
@@ -48,19 +49,24 @@ using IHost host = Host.CreateDefaultBuilder(args)
                     .UseProductionApi()
                     .Build(),
             NamedServiceProviderType.Autofac);
+
+        services.AddSingleton<IMyDeliveryServiceProject1, MyDeliveryService>(service => {
+            return new MyDeliveryService(ClientAProjectId, new ProjectAProvider());
+        });
+        services.AddSingleton<IMyDeliveryServiceProject2, MyDeliveryService>(service => {
+            return new MyDeliveryService(ClientBProjectId, new ProjectBProvider());
+        });
     })
     .Build();
 
 
-var deliveryClientFactory = host.Services.GetRequiredService<IDeliveryClientFactory>();
+var deliveryServiceProject1 = host.Services.GetRequiredService<IMyDeliveryServiceProject1>();
+var deliveryServiceProject2 = host.Services.GetRequiredService<IMyDeliveryServiceProject2>();
 
-var clientA = deliveryClientFactory.Get(ClientA);
-var clientB = deliveryClientFactory.Get(ClientB);
-
-var itemsA = await clientA
+var itemsA =  await deliveryServiceProject1.client
     .GetItemsAsync<Article>(new SystemTypeEqualsFilter("article"), new DepthParameter(2));
 
-var itemsB = await clientB
+var itemsB = await deliveryServiceProject2.client
     .GetItemsAsync<Movie>(new SystemTypeEqualsFilter("movie"), new DepthParameter(2));
 
 foreach (var item in itemsA.Items)
