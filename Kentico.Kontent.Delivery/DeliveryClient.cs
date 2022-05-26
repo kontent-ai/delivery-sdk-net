@@ -99,7 +99,7 @@ namespace Kentico.Kontent.Delivery
             
             if (!response.IsSuccess)
             {
-                return new DeliveryItemListingResponse<T>(response, null,null);
+                return new DeliveryItemListingResponse<T>(response);
             }
             
             var content = await response.GetJsonContentAsync();
@@ -128,7 +128,7 @@ namespace Kentico.Kontent.Delivery
                 
                 if (!response.IsSuccess)
                 {
-                    return new DeliveryItemsFeedResponse<T>(response, null);
+                    return new DeliveryItemsFeedResponse<T>(response);
                 }
                 
                 var content = await response.GetJsonContentAsync();
@@ -175,7 +175,7 @@ namespace Kentico.Kontent.Delivery
 
             if (!response.IsSuccess)
             {
-                return new DeliveryTypeListingResponse(response, null, null);
+                return new DeliveryTypeListingResponse(response);
             }
             
             var content = await response.GetJsonContentAsync();
@@ -251,13 +251,13 @@ namespace Kentico.Kontent.Delivery
         {
             var endpointUrl = UrlBuilder.GetTaxonomiesUrl(parameters);
             var response = await GetDeliveryResponseAsync(endpointUrl);
-            var content = await response.GetJsonContentAsync();
             
             if (!response.IsSuccess)
             {
-                return new DeliveryTaxonomyListingResponse(response, null,null);
+                return new DeliveryTaxonomyListingResponse(response);
             }
             
+            var content = await response.GetJsonContentAsync();
             var pagination = content["pagination"].ToObject<Pagination>(Serializer);
             var taxonomies = content["taxonomies"].ToObject<List<TaxonomyGroup>>(Serializer);
             return new DeliveryTaxonomyListingResponse(response, taxonomies.ToList<ITaxonomyGroup>(), pagination);
@@ -275,7 +275,7 @@ namespace Kentico.Kontent.Delivery
             
             if (!response.IsSuccess)
             {
-                return new DeliveryLanguageListingResponse(response, null,null);
+                return new DeliveryLanguageListingResponse(response);
             }
             
             var content = await response.GetJsonContentAsync();
