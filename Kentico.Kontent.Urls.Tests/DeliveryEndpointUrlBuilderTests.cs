@@ -34,7 +34,6 @@ public class DeliveryEndpointUrlBuilderTests
     public void GetLanguagesUrl_ConstructedWithDeliveryOptions_GetsLanguagesUrl()
     {
         var options = new DeliveryOptions() { ProjectId = Guid.NewGuid().ToString() };
-
         var deliveryEndpointUrlBuilder = new DeliveryEndpointUrlBuilder(options);
 
         var actualLanguagesUrl = deliveryEndpointUrlBuilder.GetLanguagesUrl(new IQueryParameter[] { });
@@ -48,7 +47,6 @@ public class DeliveryEndpointUrlBuilderTests
     {
         var options = new DeliveryOptions() { ProjectId = Guid.NewGuid().ToString() };
         var optionsMonitor = new FakeOptionsMonitor<DeliveryOptions>(options);
-
         var deliveryEndpointUrlBuilder = new DeliveryEndpointUrlBuilder(optionsMonitor);
 
         var actualLanguagesUrl = deliveryEndpointUrlBuilder.GetLanguagesUrl(new IQueryParameter[] { });
