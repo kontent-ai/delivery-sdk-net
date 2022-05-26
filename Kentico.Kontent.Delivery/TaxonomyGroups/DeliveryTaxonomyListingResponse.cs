@@ -38,5 +38,14 @@ namespace Kentico.Kontent.Delivery.TaxonomyGroups
             Taxonomies = taxonomies;
             Pagination = pagination;
         }
+        
+        /// <summary>
+        /// Initializes a new instance of the <see cref="DeliveryTaxonomyListingResponse"/> class.
+        /// </summary>
+        /// <param name="response">The response from Kontent Delivery API that contains taxonomies.</param>
+        [JsonConstructor]
+        internal DeliveryTaxonomyListingResponse(ApiResponse response) : base(response)
+        {
+        }
     }
 }
