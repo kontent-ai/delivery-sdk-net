@@ -146,7 +146,7 @@ namespace Kentico.Kontent.Delivery
 
             var endpointUrl = UrlBuilder.GetTypeUrl(codename);
             var response = await GetDeliveryResponseAsync(endpointUrl);
-            var type = (await response.GetJsonContentAsync()).ToObject<ContentType>(Serializer);
+            var type = (await response.GetJsonContentAsync())?.ToObject<ContentType>(Serializer);
 
             return new DeliveryTypeResponse(response, type);
         }
