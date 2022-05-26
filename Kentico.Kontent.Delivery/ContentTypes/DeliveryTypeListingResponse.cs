@@ -37,7 +37,6 @@ namespace Kentico.Kontent.Delivery.ContentTypes
         /// Initializes a new instance of the <see cref="DeliveryTypeListingResponse"/> class.
         /// </summary>
         /// <param name="response">The response from Kontent Delivery API that contains content types.</param>
-        [JsonConstructor]
         internal DeliveryTypeListingResponse(ApiResponse response) : base(response)
         {
         }

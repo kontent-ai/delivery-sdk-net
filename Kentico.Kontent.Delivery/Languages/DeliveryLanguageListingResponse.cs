@@ -37,7 +37,6 @@ namespace Kentico.Kontent.Delivery.Languages
         /// Initializes a new instance of the <see cref="DeliveryLanguageListingResponse"/> class.
         /// </summary>
         /// <param name="response">The response from Kontent Delivery API that contains languages.</param>
-        [JsonConstructor]
         internal DeliveryLanguageListingResponse(ApiResponse response) : base(response)
         {
         }
