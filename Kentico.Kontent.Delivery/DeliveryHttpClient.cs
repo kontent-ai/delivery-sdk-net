@@ -5,6 +5,22 @@ using Kentico.Kontent.Delivery.Extensions;
 
 namespace Kentico.Kontent.Delivery
 {
+    // TODO 312 - Add support for multiple clients
+    // public class DeliveryHttpClientFactory : IDeliveryHttpClientFactory
+    // {
+    //     private IHttpClientFactory _httpClientFatory;
+
+    //     public DeliveryHttpClientFactory(IHttpClientFactory httpClientFactory)
+    //     {
+    //         HttpClientFactory = httpClientFactory;
+    //     }
+
+    //     public IDeliveryHttpClient Get()
+    //     {
+    //         return new DeliverHttpClient(HttpClientFactory.Get())
+    //     }
+    // }
+
     /// <summary>
     /// Executes Http requests against the Kontent Delivery API.
     /// </summary>

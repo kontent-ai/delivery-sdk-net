@@ -21,52 +21,51 @@ const string ClientB = "ClientB";
 const string ClientBProjectId = "b259760f-81c5-013a-05e7-69efb4b954e5";
 
 using IHost host = Host.CreateDefaultBuilder(args)
-    .UseServiceProviderFactory(new AutofacServiceProviderFactory())
-    .ConfigureContainer<ContainerBuilder>(builder =>
+    .ConfigureServices((config, services) =>
     {
-        builder.RegisterType<ProjectAProvider>().Named<ITypeProvider>(ClientA);
-        // Model provider is not accessible
-        // builder.RegisterType<ModelProvider>().Named<IModelProvider>(ClientA) 
-        //     .WithParameter(Autofac.Core.ResolvedParameter.ForNamed<ITypeProvider>(ClientA));
-        builder.RegisterType<ProjectBProvider>().Named<ITypeProvider>(ClientB);
-        // builder.RegisterType<ModelProvider>().Named<IModelProvider>(ClientB) 
-        //     .WithParameter(Autofac.Core.ResolvedParameter.ForNamed<ITypeProvider>(ClientB));
-    })
-    .ConfigureServices((_, services) =>
-    {
-        services.AddAutofac();
+        // services.AddAutofac();
 
-        services.AddDeliveryClient(
-            ClientA, builder =>
-            builder.WithProjectId(ClientAProjectId)
-                .UseProductionApi()
-                .Build(),
-            NamedServiceProviderType.Autofac);
+        // Deprecate all autofac implementation and 
+        // Mind this wiki to add info https://github.com/Kentico/kontent-delivery-sdk-net/wiki/Accessing-Data-From-Multiple-Projects
 
-        services.AddDeliveryClient(
-            ClientB, builder =>
-                builder.WithProjectId(ClientBProjectId)
-                    .UseProductionApi()
-                    .Build(),
-            NamedServiceProviderType.Autofac);
+        // For 1 delivery client
+        // TODO deprecate method with name attribute
+        // Create new overload without the name 
+        // services.AddDeliveryClient(
+        //     builder =>
+        //     builder.WithProjectId(ClientAProjectId)
+        //         .UseProductionApi()
+        //         .Build());
 
-        services.AddSingleton<IMyDeliveryServiceProject1, MyDeliveryService>(service => {
-            return new MyDeliveryService(ClientAProjectId, new ProjectAProvider());
-        });
-        services.AddSingleton<IMyDeliveryServiceProject2, MyDeliveryService>(service => {
-            return new MyDeliveryService(ClientBProjectId, new ProjectBProvider());
-        });
+        // For multiple clients
+        // TODO introduce AddDeliveryClientFactory extension methos
+        // TODO Adjust DeliveryClientFactory 
+        // TODO deprecate Name client factoy implementations (of IdeliveryClientFactory) => NamedDeliveryClientFactory, NamedDeliveryClientCacheFactory
+        // services.AddDeliveryClientFactory(builder => builder
+        // .AddDeliveryClient("A", builder => builder.WithProjectId(ClientAProjectId)
+        //         .UseProductionApi()
+        //         .Build())
+        // .AddDeliveryClient("B", builder => builder.WithProjectId(ClientBProjectId)
+        //         .UseProductionApi()
+        //         .Build()));
+
+        // For multiple clients from appsettings.json
+        // services.AddDeliveryClientFactory(config.getSection <Dictionary<string, DeliveryOptions>>("MultipleDeliveryOptions"));
+        
+        // Validate with different HttpClients
+        // https://github.com/Kentico/kontent-delivery-sdk-net/wiki/Registering-the-DeliveryClient-to-the-IServiceCollection-in-ASP.NET-Core#registering-multiple-clients
+        // validate with HttpCLientFactory
+        // Mind the support netstandard 2.0 + net 6.0 - probably split out to separate issue depending on netstandard 2.0 support drop
     })
     .Build();
 
 
-var deliveryServiceProject1 = host.Services.GetRequiredService<IMyDeliveryServiceProject1>();
-var deliveryServiceProject2 = host.Services.GetRequiredService<IMyDeliveryServiceProject2>();
+var deliveryClientFactory = host.Services.GetRequiredService<IDeliveryClientFactory>();
 
-var itemsA =  await deliveryServiceProject1.client
+var itemsA = await deliveryClientFactory.Get("A")
     .GetItemsAsync<Article>(new SystemTypeEqualsFilter("article"), new DepthParameter(2));
 
-var itemsB = await deliveryServiceProject2.client
+var itemsB = await deliveryClientFactory.Get("B")
     .GetItemsAsync<Movie>(new SystemTypeEqualsFilter("movie"), new DepthParameter(2));
 
 foreach (var item in itemsA.Items)
