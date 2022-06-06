@@ -1,4 +1,5 @@
 ﻿using Kentico.Kontent.Delivery.Abstractions;
+using Kentico.Kontent.Delivery.Builders.DeliveryClient;
 using Kentico.Kontent.Delivery.Caching;
 using Kentico.Kontent.Delivery.Caching.Extensions;
 using Kentico.Kontent.Delivery.Configuration;
@@ -17,6 +18,22 @@ namespace Kentico.Kontent.Delivery.Extensions.DependencyInjection
     /// </summary>
     public static class ServiceCollectionExtensions
     {
+
+        // TODO 312
+        public static IServiceCollection AddDeliveryClientFactory(this IServiceCollection services, Func<IDeliveryClientBuilder, DeliveryOptions> buildDeliveryOptions)
+        {
+            if (buildDeliveryOptions == null)
+            {
+                throw new ArgumentNullException(nameof(buildDeliveryOptions), "The function for creating Delivery options is null.");
+            }
+
+            // TODO 312 - extend for multiple clients
+            // var options = DeliveryOptionsHelpers.Build(buildDeliveryOptions);
+
+            // TODO 312 - extend for multiple clients
+            return null;
+        }
+
         /// <summary>
         /// Registers a delegate that will be used to configure a named <see cref="IDeliveryClient"/> via <see cref="IDeliveryClientFactory"/>
         /// </summary>

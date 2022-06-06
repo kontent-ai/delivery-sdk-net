@@ -4,12 +4,14 @@ using Autofac;
 using Autofac.Extensions.DependencyInjection;
 using DeliverySDKWithAutofac;
 using Kentico.Kontent.Delivery.Abstractions;
+using Kentico.Kontent.Delivery.Extensions;
 using Kentico.Kontent.Delivery.Extensions.DependencyInjection;
 using Kentico.Kontent.Urls.Delivery.QueryParameters;
 using Kentico.Kontent.Urls.Delivery.QueryParameters.Filters;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
-using AutofacServiceProviderFactory = Autofac.Extensions.DependencyInjection.AutofacServiceProviderFactory;
+using Kentico.Kontent.Delivery.Extensions.DependencyInjection;
+using System;
 
 Console.WriteLine("App starting");
 
@@ -29,29 +31,38 @@ using IHost host = Host.CreateDefaultBuilder(args)
         // Mind this wiki to add info https://github.com/Kentico/kontent-delivery-sdk-net/wiki/Accessing-Data-From-Multiple-Projects
 
         // For 1 delivery client
-        // TODO deprecate method with name attribute
-        // Create new overload without the name 
-        // services.AddDeliveryClient(
-        //     builder =>
-        //     builder.WithProjectId(ClientAProjectId)
-        //         .UseProductionApi()
-        //         .Build());
+        // TODO 312 deprecate method with name attribute
+        // TODO 312 Create new overload without the name 
+        services.AddDeliveryClient(
+            builder =>
+            builder.WithProjectId(ClientAProjectId)
+                .UseProductionApi()
+                .Build());
 
         // For multiple clients
-        // TODO introduce AddDeliveryClientFactory extension methos
-        // TODO Adjust DeliveryClientFactory 
-        // TODO deprecate Name client factoy implementations (of IdeliveryClientFactory) => NamedDeliveryClientFactory, NamedDeliveryClientCacheFactory
-        // services.AddDeliveryClientFactory(builder => builder
-        // .AddDeliveryClient("A", builder => builder.WithProjectId(ClientAProjectId)
-        //         .UseProductionApi()
-        //         .Build())
-        // .AddDeliveryClient("B", builder => builder.WithProjectId(ClientBProjectId)
-        //         .UseProductionApi()
-        //         .Build()));
+        // TODO 312 introduce AddDeliveryClientFactory extension method
+        // TODO 312 Adjust DeliveryClientFactory 
+        // TODO 312 deprecate Name client factoy implementations (of IdeliveryClientFactory) => NamedDeliveryClientFactory, NamedDeliveryClientCacheFactory
+        // services.AddDeliveryClientFactory(builder =>
+        //             builder
+        //             .AddDeliveryClient(
+        //                 "A",
+        //                 builder =>
+        //                     builder.WithProjectId(ClientAProjectId)
+        //                     .UseProductionApi()
+        //                     .Build())
+        //             .AddDeliveryClient(
+        //                 "B",
+        //                 builder =>
+        //                     builder.WithProjectId(ClientBProjectId)
+        //                     .UseProductionApi()
+        //                     .Build())
+        //                     .Build()
+        //             );
 
         // For multiple clients from appsettings.json
         // services.AddDeliveryClientFactory(config.getSection <Dictionary<string, DeliveryOptions>>("MultipleDeliveryOptions"));
-        
+
         // Validate with different HttpClients
         // https://github.com/Kentico/kontent-delivery-sdk-net/wiki/Registering-the-DeliveryClient-to-the-IServiceCollection-in-ASP.NET-Core#registering-multiple-clients
         // validate with HttpCLientFactory

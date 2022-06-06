@@ -5,6 +5,7 @@
     /// </summary>
     public interface IDeliveryClientFactory
     {
+        // TODO 312 - extend for multiple clients
         /// <summary>
         /// Returns a named instance of the <see cref="IDeliveryClient"/>.
         /// </summary>
