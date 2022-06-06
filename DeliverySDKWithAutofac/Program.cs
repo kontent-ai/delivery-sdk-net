@@ -33,42 +33,68 @@ using IHost host = Host.CreateDefaultBuilder(args)
         // For 1 delivery client
         // TODO 312 deprecate method with name attribute
         // TODO 312 Create new overload without the name 
-        services.AddDeliveryClient(
-            builder =>
-            builder.WithProjectId(ClientAProjectId)
-                .UseProductionApi()
-                .Build());
+        // services.AddDeliveryClient(
+        //     builder =>
+        //     builder.WithProjectId(ClientAProjectId)
+        //         .UseProductionApi()
+        //         .Build());
+
 
         // For multiple clients
         // TODO 312 introduce AddDeliveryClientFactory extension method
         // TODO 312 Adjust DeliveryClientFactory 
         // TODO 312 deprecate Name client factoy implementations (of IdeliveryClientFactory) => NamedDeliveryClientFactory, NamedDeliveryClientCacheFactory
-        // services.AddDeliveryClientFactory(builder =>
-        //             builder
-        //             .AddDeliveryClient(
-        //                 "A",
-        //                 builder =>
-        //                     builder.WithProjectId(ClientAProjectId)
-        //                     .UseProductionApi()
-        //                     .Build())
-        //             .AddDeliveryClient(
-        //                 "B",
-        //                 builder =>
-        //                     builder.WithProjectId(ClientBProjectId)
-        //                     .UseProductionApi()
-        //                     .Build())
-        //                     .Build()
-        //             );
+        // TODO 312 DeliveryClientFactoryBuilder->DeliveryClientBuilder->DeliveryOptionsBuilder
 
-        // For multiple clients from appsettings.json
-        // services.AddDeliveryClientFactory(config.getSection <Dictionary<string, DeliveryOptions>>("MultipleDeliveryOptions"));
+        services.AddDeliveryClientFactory(
+            factoryBuilder => factoryBuilder
+                .AddDeliveryClient(
+                ClientA,
+                deliveryClientBuilder => deliveryClientBuilder.BuildWithDeliveryOptions(
+                    deliveryOptionsBuilder =>
+                        deliveryOptionsBuilder.WithProjectId(ClientAProjectId)
+                            .UseProductionApi()
+                            .Build())
+                    .WithTypeProvider(new ProjectAProvider())
+                    .Build())
+                .AddDeliveryClient(
+                ClientB,
+                deliveryClientBuilder => deliveryClientBuilder.BuildWithDeliveryOptions(
+                    deliveryOptionsBuilder =>
+                        deliveryOptionsBuilder.WithProjectId(ClientAProjectId)
+                            .UseProductionApi()
+                            .Build())
+                    .WithTypeProvider(new ProjectBProvider())
+                    .Build())
+                .Build()
+            );
+    }).Build();
 
-        // Validate with different HttpClients
-        // https://github.com/Kentico/kontent-delivery-sdk-net/wiki/Registering-the-DeliveryClient-to-the-IServiceCollection-in-ASP.NET-Core#registering-multiple-clients
-        // validate with HttpCLientFactory
-        // Mind the support netstandard 2.0 + net 6.0 - probably split out to separate issue depending on netstandard 2.0 support drop
-    })
-    .Build();
+
+// services.AddDeliveryClientFactory(builder =>
+//             builder.BuildWithProjectId()
+//             .AddDeliveryClient(
+//                     "A",
+//                     builder =>
+//                         builder.witOptions(config.getSection("MultipleDeliveryOptions.A")))
+//                 )
+//                 .WithTypeProvider<ProjectAProvider>()
+//             .AddDeliveryClient(
+//                 "B",
+//                 builder =>
+//                     builder.WithProjectId(ClientBProjectId)
+//                     .UseProductionApi()
+//                     .Build())
+//                     .Build()
+//             );
+
+// For multiple clients from appsettings.json
+// services.AddDeliveryClientFactory(config.getSection <Dictionary<string, DeliveryOptions>>("MultipleDeliveryOptions"));
+
+// Validate with different HttpClients
+// https://github.com/Kentico/kontent-delivery-sdk-net/wiki/Registering-the-DeliveryClient-to-the-IServiceCollection-in-ASP.NET-Core#registering-multiple-clients
+// validate with HttpCLientFactory
+// Mind the support netstandard 2.0 + net 6.0 - probably split out to separate issue depending on netstandard 2.0 support drop
 
 
 var deliveryClientFactory = host.Services.GetRequiredService<IDeliveryClientFactory>();

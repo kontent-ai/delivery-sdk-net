@@ -1,5 +1,6 @@
 ﻿using Kentico.Kontent.Delivery.Abstractions;
 using Kentico.Kontent.Delivery.Builders.DeliveryClient;
+using Kentico.Kontent.Delivery.Builders.DeliveryClientFactory;
 using Kentico.Kontent.Delivery.Caching;
 using Kentico.Kontent.Delivery.Caching.Extensions;
 using Kentico.Kontent.Delivery.Configuration;
@@ -20,18 +21,18 @@ namespace Kentico.Kontent.Delivery.Extensions.DependencyInjection
     {
 
         // TODO 312
-        public static IServiceCollection AddDeliveryClientFactory(this IServiceCollection services, Func<IDeliveryClientBuilder, DeliveryOptions> buildDeliveryOptions)
+        public static IServiceCollection AddDeliveryClientFactory(this IServiceCollection services, Func<IDeliveryClientFactoryBuilder, IDeliveryClientFactory> buildDeliveryClientFactory)
         {
-            if (buildDeliveryOptions == null)
+            if (buildDeliveryClientFactory == null)
             {
-                throw new ArgumentNullException(nameof(buildDeliveryOptions), "The function for creating Delivery options is null.");
+                throw new ArgumentNullException(nameof(buildDeliveryClientFactory), "The function for creating Delivery client factory is null.");
             }
 
-            // TODO 312 - extend for multiple clients
-            // var options = DeliveryOptionsHelpers.Build(buildDeliveryOptions);
+            var factory = buildDeliveryClientFactory(new DeliveryClientFactoryBuilder());
 
-            // TODO 312 - extend for multiple clients
-            return null;
+            services.TryAddSingleton<IDeliveryClientFactory>(factory);
+
+            return services;
         }
 
         /// <summary>

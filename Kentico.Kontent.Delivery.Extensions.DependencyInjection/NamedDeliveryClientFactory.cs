@@ -1,4 +1,5 @@
 ﻿using Kentico.Kontent.Delivery.Abstractions;
+using Kentico.Kontent.Delivery.Builders.DeliveryClient;
 using Kentico.Kontent.Delivery.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Options;
@@ -14,6 +15,7 @@ namespace Kentico.Kontent.Delivery.Extensions.DependencyInjection
         private readonly IServiceProvider _serviceProvider;
         private readonly INamedServiceProvider _namedServiceProvider;
         private readonly ConcurrentDictionary<string, IDeliveryClient> _cache = new ConcurrentDictionary<string, IDeliveryClient>();
+        private readonly ConcurrentDictionary<string, Func<IDeliveryClientBuilder, IDeliveryClient>> _builders = new ConcurrentDictionary<string, Func<IDeliveryClientBuilder, IDeliveryClient>>();
 
         /// <summary>
         /// Initializes a new instance of the <see cref="DeliveryClientFactory"/> class.
@@ -21,6 +23,7 @@ namespace Kentico.Kontent.Delivery.Extensions.DependencyInjection
         /// <param name="deliveryOptions">Used for notifications when <see cref="DeliveryOptions"/> instances change.</param>
         /// <param name="serviceProvider">An <see cref="IServiceProvider"/> instance.</param>
         /// <param name="namedServiceProvider">A named service provider.</param>
+        [Obsolete("Use other constructor instead.")]
         public NamedDeliveryClientFactory(IOptionsMonitor<DeliveryOptions> deliveryOptions, IServiceProvider serviceProvider,
             INamedServiceProvider namedServiceProvider)
         {
@@ -28,6 +31,8 @@ namespace Kentico.Kontent.Delivery.Extensions.DependencyInjection
             _serviceProvider = serviceProvider;
             _namedServiceProvider = namedServiceProvider;
         }
+
+        public NamedDeliveryClientFactory() { }
 
         /// <inheritdoc />
         public IDeliveryClient Get(string name)
@@ -39,42 +44,25 @@ namespace Kentico.Kontent.Delivery.Extensions.DependencyInjection
 
             if (!_cache.TryGetValue(name, out var client))
             {
-                var deliveryClientOptions = _deliveryOptions.Get(name);
-                if (deliveryClientOptions.Name == name)
+                if (!_builders.TryGetValue(name, out var builder))
                 {
-                    client = Build(deliveryClientOptions, name);
-
-                    _cache.TryAdd(name, client);
+                    // TODO fix this
+                    return null;
                 }
+                // TODO 312 else statements
             }
 
             return client;
         }
 
+
+        // TODO log warning for registering client with the same name
+        public void Set(string name, Func<IDeliveryClientBuilder, IDeliveryClient> clientBuilder) => _builders.AddOrUpdate(name, clientBuilder, (key, oldValue) => clientBuilder);
+        [Obsolete("If you want to use single delivery client use AddDeliveryClient when registering")]
         public IDeliveryClient Get() => GetService<IDeliveryClient>();
 
-        private IDeliveryClient Build(DeliveryOptions options, string name)
-        {
-            return DeliveryClientFactory.Create(
-                new DeliveryOptionsMonitor(options, name),
-                GetNamedServiceOrDefault<IModelProvider>(name),
-                GetNamedServiceOrDefault<IRetryPolicyProvider>(name),
-                GetNamedServiceOrDefault<ITypeProvider>(name),
-                GetNamedServiceOrDefault<IDeliveryHttpClient>(name),
-                GetNamedServiceOrDefault<JsonSerializer>(name));
-        }
 
-        private T GetNamedServiceOrDefault<T>(string name)
-        {
-            var service = _namedServiceProvider.GetService<T>(name);
-            if (service == null)
-            {
-                service = GetService<T>();
-            }
-
-            return service;
-        }
-
+        [Obsolete("If you want to use single delivery client use AddDeliveryClient when registering")]
         private T GetService<T>()
         {
             return _serviceProvider.GetService<T>();
