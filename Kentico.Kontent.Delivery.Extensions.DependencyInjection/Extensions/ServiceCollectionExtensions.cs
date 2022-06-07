@@ -20,7 +20,12 @@ namespace Kentico.Kontent.Delivery.Extensions.DependencyInjection
     public static class ServiceCollectionExtensions
     {
 
-        // TODO 312
+        /// <summary>
+        /// Registers a delegate that will be used to configure a named <see cref="IDeliveryClient"/> via <see cref="IDeliveryClientFactory"/>
+        /// </summary>
+        /// <param name="services">A <see cref="ServiceCollection"/> instance for registering and resolving dependencies.</param>
+        /// <param name="buildDeliveryClientFactory">A function that is provided with an instance of <see cref="IDeliveryClientFactoryBuilder"/>and expected to return a valid instance of <see cref="IDeliveryClientFactory"/>.</param>
+        /// <returns>The <paramref name="services"/> instance with <see cref="IDeliveryClientFactory"/> registered in it</returns>
         public static IServiceCollection AddDeliveryClientFactory(this IServiceCollection services, Func<IDeliveryClientFactoryBuilder, IDeliveryClientFactory> buildDeliveryClientFactory)
         {
             if (buildDeliveryClientFactory == null)
@@ -28,7 +33,7 @@ namespace Kentico.Kontent.Delivery.Extensions.DependencyInjection
                 throw new ArgumentNullException(nameof(buildDeliveryClientFactory), "The function for creating Delivery client factory is null.");
             }
 
-            var factory = buildDeliveryClientFactory(new DeliveryClientFactoryBuilder());
+            var factory = buildDeliveryClientFactory(new DeliveryClientDictionaryFactoryBuilder());
 
             services.TryAddSingleton<IDeliveryClientFactory>(factory);
 
@@ -43,6 +48,7 @@ namespace Kentico.Kontent.Delivery.Extensions.DependencyInjection
         /// <param name="buildDeliveryOptions">A function that is provided with an instance of <see cref="DeliveryOptionsBuilder"/>and expected to return a valid instance of <see cref="DeliveryOptions"/>.</param>
         /// <param name="namedServiceProviderType">A named service provider type.</param>
         /// <returns>The <paramref name="services"/> instance with <see cref="IDeliveryClient"/> registered in it</returns>
+        [Obsolete("Use AddDeliveryClientFactory for multiple clients.")]
         public static IServiceCollection AddDeliveryClient(this IServiceCollection services, string name, Func<IDeliveryOptionsBuilder, DeliveryOptions> buildDeliveryOptions, NamedServiceProviderType namedServiceProviderType = NamedServiceProviderType.None)
         {
             if (buildDeliveryOptions == null)
@@ -59,6 +65,7 @@ namespace Kentico.Kontent.Delivery.Extensions.DependencyInjection
                 .RegisterNamedServices(namedServiceProviderType);
         }
 
+        [Obsolete("Use AddDeliveryClientFactory for multiple clients.")]
         /// <summary>
         /// Registers a delegate that will be used to configure a named <see cref="IDeliveryClient"/> via <see cref="IDeliveryClientFactory"/>
         /// </summary>
@@ -82,6 +89,7 @@ namespace Kentico.Kontent.Delivery.Extensions.DependencyInjection
                 .RegisterNamedServices(namedServiceProviderType);
         }
 
+        [Obsolete("Use AddDeliveryClientFactory for multiple clients.")]
         /// <summary>
         /// Registers a delegate that will be used to configure a named <see cref="IDeliveryClient"/> via <see cref="IDeliveryClientFactory"/>
         /// </summary>
@@ -130,6 +138,7 @@ namespace Kentico.Kontent.Delivery.Extensions.DependencyInjection
             return services.Decorate<IDeliveryClientFactory, NamedDeliveryClientCacheFactory>();
         }
 
+        [Obsolete("#312")]
         private static IServiceCollection RegisterNamedServices(this IServiceCollection services, NamedServiceProviderType namedServiceProviderType)
         {
             if (namedServiceProviderType == NamedServiceProviderType.Autofac)

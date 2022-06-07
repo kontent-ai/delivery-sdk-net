@@ -10,8 +10,8 @@ using Kentico.Kontent.Urls.Delivery.QueryParameters;
 using Kentico.Kontent.Urls.Delivery.QueryParameters.Filters;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
-using Kentico.Kontent.Delivery.Extensions.DependencyInjection;
 using System;
+using Kentico.Kontent.Delivery.Configuration;
 
 Console.WriteLine("App starting");
 
@@ -49,44 +49,26 @@ using IHost host = Host.CreateDefaultBuilder(args)
         services.AddDeliveryClientFactory(
             factoryBuilder => factoryBuilder
                 .AddDeliveryClient(
-                ClientA,
-                deliveryClientBuilder => deliveryClientBuilder.BuildWithDeliveryOptions(
-                    deliveryOptionsBuilder =>
-                        deliveryOptionsBuilder.WithProjectId(ClientAProjectId)
-                            .UseProductionApi()
-                            .Build())
-                    .WithTypeProvider(new ProjectAProvider())
-                    .Build())
+                    ClientA,
+                    deliveryOptionBuilder => deliveryOptionBuilder
+                        .WithProjectId(ClientAProjectId)
+                        .UseProductionApi()
+                        .Build(),
+                    optionalClientSetup => 
+                        optionalClientSetup.WithTypeProvider(new ProjectAProvider())
+                )
                 .AddDeliveryClient(
-                ClientB,
-                deliveryClientBuilder => deliveryClientBuilder.BuildWithDeliveryOptions(
-                    deliveryOptionsBuilder =>
-                        deliveryOptionsBuilder.WithProjectId(ClientAProjectId)
-                            .UseProductionApi()
-                            .Build())
-                    .WithTypeProvider(new ProjectBProvider())
-                    .Build())
+                    ClientB,
+                    deliveryOptionBuilder => deliveryOptionBuilder
+                        .WithProjectId(ClientBProjectId)
+                        .UseProductionApi()
+                        .Build(),
+                    optionalClientSetup  => 
+                        optionalClientSetup.WithTypeProvider(new ProjectBProvider())
+                )
                 .Build()
             );
     }).Build();
-
-
-// services.AddDeliveryClientFactory(builder =>
-//             builder.BuildWithProjectId()
-//             .AddDeliveryClient(
-//                     "A",
-//                     builder =>
-//                         builder.witOptions(config.getSection("MultipleDeliveryOptions.A")))
-//                 )
-//                 .WithTypeProvider<ProjectAProvider>()
-//             .AddDeliveryClient(
-//                 "B",
-//                 builder =>
-//                     builder.WithProjectId(ClientBProjectId)
-//                     .UseProductionApi()
-//                     .Build())
-//                     .Build()
-//             );
 
 // For multiple clients from appsettings.json
 // services.AddDeliveryClientFactory(config.getSection <Dictionary<string, DeliveryOptions>>("MultipleDeliveryOptions"));
@@ -99,10 +81,10 @@ using IHost host = Host.CreateDefaultBuilder(args)
 
 var deliveryClientFactory = host.Services.GetRequiredService<IDeliveryClientFactory>();
 
-var itemsA = await deliveryClientFactory.Get("A")
+var itemsA = await deliveryClientFactory.Get(ClientA)
     .GetItemsAsync<Article>(new SystemTypeEqualsFilter("article"), new DepthParameter(2));
 
-var itemsB = await deliveryClientFactory.Get("B")
+var itemsB = await deliveryClientFactory.Get(ClientB)
     .GetItemsAsync<Movie>(new SystemTypeEqualsFilter("movie"), new DepthParameter(2));
 
 foreach (var item in itemsA.Items)

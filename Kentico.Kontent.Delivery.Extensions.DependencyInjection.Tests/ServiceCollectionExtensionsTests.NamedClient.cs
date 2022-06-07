@@ -8,6 +8,8 @@ using Xunit;
 
 namespace Kentico.Kontent.Delivery.Extensions.DependencyInjection.Tests
 {
+    [Obsolete("#312")]
+
     public partial class ServiceCollectionExtensionsTests
     {
         public class NamedClient
