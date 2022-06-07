@@ -10,6 +10,11 @@ namespace Kentico.Kontent.Delivery.Extensions.DependencyInjection
 
         public DeliveryClientDictionaryFactory(ConcurrentDictionary<string, IDeliveryClient> clients)
         {
+            if (clients == null)
+            {
+                throw new ArgumentNullException(nameof(clients));
+            }
+            
             _clients = new(clients);
         }
 
