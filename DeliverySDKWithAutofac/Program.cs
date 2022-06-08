@@ -1,17 +1,15 @@
 ﻿// See https://aka.ms/new-console-template for more information
 
-using Autofac;
-using Autofac.Extensions.DependencyInjection;
+using System.Configuration;
 using DeliverySDKWithAutofac;
 using Kentico.Kontent.Delivery.Abstractions;
 using Kentico.Kontent.Delivery.Extensions;
 using Kentico.Kontent.Delivery.Extensions.DependencyInjection;
 using Kentico.Kontent.Urls.Delivery.QueryParameters;
 using Kentico.Kontent.Urls.Delivery.QueryParameters.Filters;
+using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
-using System;
-using Kentico.Kontent.Delivery.Configuration;
 
 Console.WriteLine("App starting");
 
@@ -22,7 +20,8 @@ const string ClientAProjectId = "f249eb83-18fd-01b8-2db7-c561bcb1ed1e";
 const string ClientB = "ClientB";
 const string ClientBProjectId = "b259760f-81c5-013a-05e7-69efb4b954e5";
 
-using IHost host = Host.CreateDefaultBuilder(args)
+using IHost host = Host
+    .CreateDefaultBuilder(args)
     .ConfigureServices((config, services) =>
     {
         // services.AddAutofac();
@@ -54,7 +53,7 @@ using IHost host = Host.CreateDefaultBuilder(args)
                         .WithProjectId(ClientAProjectId)
                         .UseProductionApi()
                         .Build(),
-                    optionalClientSetup => 
+                    optionalClientSetup =>
                         optionalClientSetup.WithTypeProvider(new ProjectAProvider())
                 )
                 .AddDeliveryClient(
@@ -63,8 +62,26 @@ using IHost host = Host.CreateDefaultBuilder(args)
                         .WithProjectId(ClientBProjectId)
                         .UseProductionApi()
                         .Build(),
-                    optionalClientSetup  => 
+                    optionalClientSetup =>
                         optionalClientSetup.WithTypeProvider(new ProjectBProvider())
+                )
+                .AddDeliveryClient(
+                    "C",
+                    _ =>
+                    {
+                        var options = new DeliveryOptions();
+                        config.Configuration.GetSection("MultipleDeliveryOptions:C").Bind(options);
+                        return options;
+                    }
+                )
+                .AddDeliveryClient(
+                    "D",
+                    _ =>
+                    {
+                        var options = new DeliveryOptions();
+                        config.Configuration.GetSection("MultipleDeliveryOptions:D").Bind(options);
+                        return options;
+                    }
                 )
                 .Build()
             );
