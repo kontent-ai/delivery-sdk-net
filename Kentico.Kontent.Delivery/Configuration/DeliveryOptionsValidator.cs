@@ -38,7 +38,7 @@ namespace Kentico.Kontent.Delivery.Configuration
 
             if (!Guid.TryParse(projectId, out var projectIdGuid))
             {
-                throw new ArgumentException("Kontent project identifier '{ProjectId}' is not valid. Perhaps you have passed an API key instead?", nameof(projectId));
+                throw new ArgumentException($"Kontent project identifier '{projectId}' is not valid. Perhaps you have passed an API key instead?", nameof(projectId));
             }
 
             ValidateProjectId(projectIdGuid);
