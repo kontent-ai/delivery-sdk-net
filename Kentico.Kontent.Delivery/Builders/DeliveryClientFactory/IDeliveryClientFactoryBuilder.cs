@@ -9,7 +9,7 @@ namespace Kentico.Kontent.Delivery.Builders.DeliveryClientFactory
     // TODO 312 decide whether this lib is the best for this interface (currently here because of IDeliveryClientBuilder dependency)
     public interface IDeliveryClientFactoryBuilder
     {
-        public IDeliveryClientFactoryBuilder AddDeliveryClient(string name, Func<IDeliveryOptionsBuilder, DeliveryOptions> deliveryOptionsBuilder, Func<IOptionalClientSetup, IOptionalClientSetup> deliveryClientBuilder);
+        public IDeliveryClientFactoryBuilder AddDeliveryClient(string name, Func<IDeliveryOptionsBuilder, DeliveryOptions> deliveryOptionsBuilder, Func<IOptionalClientSetup, IOptionalClientSetup> optionalClientSetup = null);
 
         public IDeliveryClientFactory Build();
     }

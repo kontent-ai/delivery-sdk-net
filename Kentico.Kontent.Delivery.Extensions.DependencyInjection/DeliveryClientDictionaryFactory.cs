@@ -26,6 +26,11 @@ namespace Kentico.Kontent.Delivery.Extensions.DependencyInjection
                 throw new ArgumentNullException(nameof(name));
             }
 
+            if(string.IsNullOrEmpty(name))
+            {
+                throw new ArgumentException("Name cannot be empty", nameof(name));
+            }
+
             if (!_clients.TryGetValue(name, out var client))
             {
                 // TODO 312 - add some love
