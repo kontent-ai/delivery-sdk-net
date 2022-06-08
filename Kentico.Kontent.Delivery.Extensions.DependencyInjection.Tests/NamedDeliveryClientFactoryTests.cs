@@ -8,6 +8,7 @@ using Xunit;
 
 namespace Kentico.Kontent.Delivery.Extensions.DependencyInjection.Tests
 {
+    [Obsolete("#312")]
     public class DeliveryClientFactoryTests
     {
         private readonly IOptionsMonitor<DeliveryOptions> _deliveryOptionsMock;

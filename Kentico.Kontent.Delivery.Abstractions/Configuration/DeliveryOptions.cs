@@ -1,4 +1,6 @@
-﻿namespace Kentico.Kontent.Delivery.Abstractions
+﻿using System;
+
+namespace Kentico.Kontent.Delivery.Abstractions
 {
     /// <summary>
     /// Represents configuration of the <see cref="IDeliveryClient"/>.
@@ -72,6 +74,7 @@
         /// </summary>
         public string DefaultRenditionPreset { get; set; }
 
+        [Obsolete("#312")]
         /// <summary>
         /// The name of the service configuration this options object is related to.
         /// </summary>

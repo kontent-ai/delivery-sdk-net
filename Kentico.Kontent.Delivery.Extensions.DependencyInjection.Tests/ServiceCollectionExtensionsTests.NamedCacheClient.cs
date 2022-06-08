@@ -11,6 +11,7 @@ namespace Kentico.Kontent.Delivery.Extensions.DependencyInjection.Tests
 {
     public partial class ServiceCollectionExtensionsTests
     {
+        [Obsolete("#312")]
         public class NamedCacheClient
         {
             private readonly IServiceCollection _serviceCollection;

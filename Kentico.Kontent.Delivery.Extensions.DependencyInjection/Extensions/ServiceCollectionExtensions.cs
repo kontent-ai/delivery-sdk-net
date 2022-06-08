@@ -48,7 +48,7 @@ namespace Kentico.Kontent.Delivery.Extensions.DependencyInjection
         /// <param name="buildDeliveryOptions">A function that is provided with an instance of <see cref="DeliveryOptionsBuilder"/>and expected to return a valid instance of <see cref="DeliveryOptions"/>.</param>
         /// <param name="namedServiceProviderType">A named service provider type.</param>
         /// <returns>The <paramref name="services"/> instance with <see cref="IDeliveryClient"/> registered in it</returns>
-        [Obsolete("Use AddDeliveryClientFactory for multiple clients.")]
+        [Obsolete("#312 Use AddDeliveryClientFactory for multiple clients.")]
         public static IServiceCollection AddDeliveryClient(this IServiceCollection services, string name, Func<IDeliveryOptionsBuilder, DeliveryOptions> buildDeliveryOptions, NamedServiceProviderType namedServiceProviderType = NamedServiceProviderType.None)
         {
             if (buildDeliveryOptions == null)
@@ -65,7 +65,6 @@ namespace Kentico.Kontent.Delivery.Extensions.DependencyInjection
                 .RegisterNamedServices(namedServiceProviderType);
         }
 
-        [Obsolete("Use AddDeliveryClientFactory for multiple clients.")]
         /// <summary>
         /// Registers a delegate that will be used to configure a named <see cref="IDeliveryClient"/> via <see cref="IDeliveryClientFactory"/>
         /// </summary>
@@ -74,6 +73,7 @@ namespace Kentico.Kontent.Delivery.Extensions.DependencyInjection
         /// <param name="deliveryOptions">A <see cref="DeliveryOptions"/> instance.  Options themselves are not further validated (see <see cref="DeliveryOptionsValidator.Validate"/>).</param>
         /// <param name="namedServiceProviderType">A named service provider type.</param>
         /// <returns>The <paramref name="services"/> instance with <see cref="IDeliveryClient"/> registered in it</returns>
+        [Obsolete("#312 Use AddDeliveryClientFactory for multiple clients.")]
         public static IServiceCollection AddDeliveryClient(this IServiceCollection services, string name, DeliveryOptions deliveryOptions, NamedServiceProviderType namedServiceProviderType = NamedServiceProviderType.None)
         {
             if (deliveryOptions == null)
@@ -89,7 +89,6 @@ namespace Kentico.Kontent.Delivery.Extensions.DependencyInjection
                 .RegisterNamedServices(namedServiceProviderType);
         }
 
-        [Obsolete("Use AddDeliveryClientFactory for multiple clients.")]
         /// <summary>
         /// Registers a delegate that will be used to configure a named <see cref="IDeliveryClient"/> via <see cref="IDeliveryClientFactory"/>
         /// </summary>
@@ -99,6 +98,7 @@ namespace Kentico.Kontent.Delivery.Extensions.DependencyInjection
         /// <param name="configurationSectionName">The section name of the configuration that keeps the <see cref="DeliveryOptions"/> properties. The default value is DeliveryOptions.</param>
         /// <param name="namedServiceProviderType">A named service provider type.</param>
         /// <returns>The <paramref name="services"/> instance with <see cref="IDeliveryClient"/> registered in it</returns>
+        [Obsolete("#312 Use AddDeliveryClientFactory for multiple clients.")]
         public static IServiceCollection AddDeliveryClient(this IServiceCollection services, string name, IConfiguration configuration, string configurationSectionName = "DeliveryOptions", NamedServiceProviderType namedServiceProviderType = NamedServiceProviderType.None)
         {
             var options = new DeliveryOptions();

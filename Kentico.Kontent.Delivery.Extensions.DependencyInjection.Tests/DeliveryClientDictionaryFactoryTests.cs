@@ -46,8 +46,6 @@ namespace Kentico.Kontent.Delivery.Extensions.DependencyInjection.Tests
             var fakeClient = A.Fake<IDeliveryClient>();
             var deliveryClientFactory = new DeliveryClientDictionaryFactory(_dictionary);
 
-            // TODO 312 exception/null
-            // result.Should().NotNull();
             Assert.Throws<ArgumentException>(() => deliveryClientFactory.Get("wrongName"));
         }
 

@@ -1,4 +1,4 @@
-﻿using Autofac;
+﻿using System;
 using FakeItEasy;
 using FluentAssertions;
 using Kentico.Kontent.Delivery.Abstractions;
@@ -9,6 +9,7 @@ using Xunit;
 
 namespace Kentico.Kontent.Delivery.Extensions.DependencyInjection.Tests
 {
+    [Obsolete("#312")]
     public class DeliveryClientCacheFactoryTests
     {
         private readonly IOptionsMonitor<DeliveryCacheOptions> _deliveryCacheOptionsMock;
