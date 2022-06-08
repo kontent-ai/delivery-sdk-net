@@ -102,7 +102,7 @@ namespace Kentico.Kontent.Delivery.Extensions.DependencyInjection.Tests
                 var services = _serviceCollection.BuildServiceProvider();
                 var factory = services.GetRequiredService<IDeliveryClientFactory>();
 
-                Assert.Throws<ArgumentException>(() => factory.Get());
+                Assert.Throws<NotImplementedException>(() => factory.Get());
             }
 
             [Fact]
