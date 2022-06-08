@@ -18,7 +18,7 @@ namespace Kentico.Kontent.Delivery.ContentItems
             Options = options;
         }
 
-        public async Task<object> GetPropertyValueAsync<TElement>(PropertyInfo property, TElement contentElement, ResolvingContext context) where TElement : IContentElementValue<IEnumerable<IAsset>>
+        public Task<object> GetPropertyValueAsync<TElement>(PropertyInfo property, TElement contentElement, ResolvingContext context) where TElement : IContentElementValue<IEnumerable<IAsset>>
         {
             if (!typeof(IEnumerable<IAsset>).IsAssignableFrom(property.PropertyType))
             {
@@ -30,7 +30,7 @@ namespace Kentico.Kontent.Delivery.ContentItems
                 return null;
             }
 
-            return assetElementValue.Value
+            var assets = assetElementValue.Value
                 .Select(asset => new Asset
                 {
                     Description = asset.Description,
@@ -44,6 +44,8 @@ namespace Kentico.Kontent.Delivery.ContentItems
                 })
                 .Cast<IAsset>()
                 .ToList();
+
+            return Task.FromResult((object)assets);
         }
 
         private string ResolveAssetUrl(IAsset asset)
