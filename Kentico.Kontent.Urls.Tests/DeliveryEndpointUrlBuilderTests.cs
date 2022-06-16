@@ -31,7 +31,7 @@ public class DeliveryEndpointUrlBuilderTests
     }
     
     [Fact]
-    public void GetItemUrl_ConstructedWithDeliveryOptions_GetsItemUrl()
+    public void GetItemUrl_ConstructedWithDeliveryOptions_ReturnsItemUrl()
     {
         var options = new DeliveryOptions() { ProjectId = Guid.NewGuid().ToString() };
         var deliveryEndpointUrlBuilder = new DeliveryEndpointUrlBuilder(options);
@@ -43,7 +43,7 @@ public class DeliveryEndpointUrlBuilderTests
     }
     
     [Fact]
-    public void GetItemUrl_ConstructedWithDeliveryOptionsMonitor_GetsItemUrl()
+    public void GetItemUrl_ConstructedWithDeliveryOptionsMonitor_ReturnsItemUrl()
     {
         var options = new DeliveryOptions() { ProjectId = Guid.NewGuid().ToString() };
         var optionsMonitor = new FakeOptionsMonitor<DeliveryOptions>(options);
@@ -56,7 +56,7 @@ public class DeliveryEndpointUrlBuilderTests
     }
     
     [Fact]
-    public void GetItemsUrl_ConstructedWithDeliveryOptionsMonitor_GetsItemsUrl()
+    public void GetItemsUrl_ReturnsItemsUrl()
     {
         var options = new DeliveryOptions() { ProjectId = Guid.NewGuid().ToString() };
         var optionsMonitor = new FakeOptionsMonitor<DeliveryOptions>(options);
@@ -69,7 +69,7 @@ public class DeliveryEndpointUrlBuilderTests
     }
     
     [Fact]
-    public void GetItemsFeedUrl_ConstructedWithDeliveryOptionsMonitor_GetsItemsFeedUrl()
+    public void GetItemsFeedUrl_ReturnsItemsFeedUrl()
     {
         var options = new DeliveryOptions() { ProjectId = Guid.NewGuid().ToString() };
         var optionsMonitor = new FakeOptionsMonitor<DeliveryOptions>(options);
@@ -82,7 +82,33 @@ public class DeliveryEndpointUrlBuilderTests
     }
     
     [Fact]
-    public void GetContentElementUrl_ConstructedWithDeliveryOptionsMonitor_GetsContentElementUrl()
+    public void GetTypeUrl_ReturnsTypeUrl()
+    {
+        var options = new DeliveryOptions() { ProjectId = Guid.NewGuid().ToString() };
+        var optionsMonitor = new FakeOptionsMonitor<DeliveryOptions>(options);
+        var deliveryEndpointUrlBuilder = new DeliveryEndpointUrlBuilder(optionsMonitor);
+
+        var actualTypeUrl = deliveryEndpointUrlBuilder.GetTypeUrl("type_codename", new IQueryParameter[] { });
+
+        var expectedTypeUrl = $"https://deliver.kontent.ai:443/{options.ProjectId}/types/type_codename";
+        Assert.Equal(expectedTypeUrl, actualTypeUrl);
+    }
+    
+    [Fact]
+    public void GetTypesUrl_ReturnsTypesUrl()
+    {
+        var options = new DeliveryOptions() { ProjectId = Guid.NewGuid().ToString() };
+        var optionsMonitor = new FakeOptionsMonitor<DeliveryOptions>(options);
+        var deliveryEndpointUrlBuilder = new DeliveryEndpointUrlBuilder(optionsMonitor);
+
+        var actualTypesUrl = deliveryEndpointUrlBuilder.GetTypesUrl(new IQueryParameter[] { });
+
+        var expectedTypesUrl = $"https://deliver.kontent.ai:443/{options.ProjectId}/types";
+        Assert.Equal(expectedTypesUrl, actualTypesUrl);
+    }
+    
+    [Fact]
+    public void GetContentElementUrl_ReturnsContentElementUrl()
     {
         var options = new DeliveryOptions() { ProjectId = Guid.NewGuid().ToString() };
         var optionsMonitor = new FakeOptionsMonitor<DeliveryOptions>(options);
@@ -96,7 +122,7 @@ public class DeliveryEndpointUrlBuilderTests
     }
     
     [Fact]
-    public void GetTaxonomyUrl_ConstructedWithDeliveryOptionsMonitor_GetsTaxonomyUrl()
+    public void GetTaxonomyUrl_ReturnsTaxonomyUrl()
     {
         var options = new DeliveryOptions() { ProjectId = Guid.NewGuid().ToString() };
         var optionsMonitor = new FakeOptionsMonitor<DeliveryOptions>(options);
@@ -109,7 +135,7 @@ public class DeliveryEndpointUrlBuilderTests
     }
     
     [Fact]
-    public void GetTaxonomiesUrl_ConstructedWithDeliveryOptionsMonitor_GetsTaxonomiesUrl()
+    public void GetTaxonomiesUrl_ReturnsTaxonomiesUrl()
     {
         var options = new DeliveryOptions() { ProjectId = Guid.NewGuid().ToString() };
         var optionsMonitor = new FakeOptionsMonitor<DeliveryOptions>(options);
@@ -122,7 +148,7 @@ public class DeliveryEndpointUrlBuilderTests
     }
     
     [Fact]
-    public void GetLanguagesUrl_ConstructedWithDeliveryOptionsMonitor_GetsLanguagesUrl()
+    public void GetLanguagesUrl_ReturnsLanguagesUrl()
     {
         var options = new DeliveryOptions() { ProjectId = Guid.NewGuid().ToString() };
         var optionsMonitor = new FakeOptionsMonitor<DeliveryOptions>(options);
