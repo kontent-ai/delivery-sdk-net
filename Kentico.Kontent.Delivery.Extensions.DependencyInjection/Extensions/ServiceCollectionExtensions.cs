@@ -35,6 +35,7 @@ namespace Kentico.Kontent.Delivery.Extensions.DependencyInjection
 
             var factory = buildDeliveryClientFactory(new DeliveryClientDictionaryFactoryBuilder());
 
+            // TODO 312 - TyAdd or Add with exception?
             services.TryAddSingleton<IDeliveryClientFactory>(factory);
 
             return services;

@@ -1,8 +1,11 @@
-﻿namespace Kentico.Kontent.Delivery.Extensions.DependencyInjection
+﻿using System;
+
+namespace Kentico.Kontent.Delivery.Extensions.DependencyInjection
 {
     /// <summary>
     /// An enum represents a type of named service provider.
     /// </summary>
+    [Obsolete("#312")]
     public enum NamedServiceProviderType
     {
         /// <summary>

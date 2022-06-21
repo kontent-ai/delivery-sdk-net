@@ -40,8 +40,6 @@ namespace Kentico.Kontent.Delivery.Extensions.DependencyInjection
             return client;
         }
 
-
-        // TODO log warning for registering client with the same name
         public IDeliveryClient Get() => throw new NotImplementedException("If you want to use single delivery client use AddDeliveryClient when registering");
     }
 }
