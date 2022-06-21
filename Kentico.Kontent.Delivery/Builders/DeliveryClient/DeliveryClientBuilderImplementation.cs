@@ -33,7 +33,7 @@ namespace Kentico.Kontent.Delivery.Builders.DeliveryClient
                     .UseProductionApi()
                     .Build());
 
-        IOptionalClientSetup IOptionalClientSetup.WithDeliveryHttpClient(IDeliveryHttpClient  deliveryHttpClient)
+        IOptionalClientSetup IOptionalClientSetup.WithDeliveryHttpClient(IDeliveryHttpClient deliveryHttpClient)
             => RegisterOrThrow(deliveryHttpClient, nameof(deliveryHttpClient));
 
         IOptionalClientSetup IOptionalClientSetup.WithContentLinkUrlResolver(IContentLinkUrlResolver contentLinkUrlResolver)
@@ -57,8 +57,12 @@ namespace Kentico.Kontent.Delivery.Builders.DeliveryClient
         IOptionalClientSetup IOptionalClientSetup.WithPropertyMapper(IPropertyMapper propertyMapper)
             => RegisterOrThrow(propertyMapper, nameof(propertyMapper));
 
+        IOptionalClientSetup WithCacheManager(IDeliveryCacheManager cacheManager)
+                  => RegisterOrThrow(cacheManager, nameof(cacheManager));
+
         IDeliveryClient IDeliveryClientBuild.Build()
         {
+            // TODO 312 - If there is an IDeliveryCacheManager being registered use Kentico.Kontent.Delivery.Caching.Extensions.ServiceCollectionExtensions.AddDeliveryClientCache but is is not possible because it not in this package (it is in *.Caching)
             _serviceCollection.AddDeliveryClient(_deliveryOptions);
             var serviceProvider = _serviceCollection.BuildServiceProvider();
             var client = serviceProvider.GetService<IDeliveryClient>();

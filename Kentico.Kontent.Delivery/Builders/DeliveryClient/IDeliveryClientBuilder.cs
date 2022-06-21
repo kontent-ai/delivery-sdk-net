@@ -72,6 +72,9 @@ namespace Kentico.Kontent.Delivery.Builders.DeliveryClient
         /// </summary>
         /// <param name="propertyMapper">An instance of the <see cref="IPropertyMapper"/>.</param>
         IOptionalClientSetup WithPropertyMapper(IPropertyMapper propertyMapper);
+        
+        // TODO 312 (name because of Kentico.Kontent.Delivery.Caching.Extensions.ServiceCollectionExtensions.AddDeliveryClientCache)
+        IOptionalClientSetup WithDeliveryClientCache(IDeliveryCacheManager cacheManager);
     }
 
     /// <summary>
