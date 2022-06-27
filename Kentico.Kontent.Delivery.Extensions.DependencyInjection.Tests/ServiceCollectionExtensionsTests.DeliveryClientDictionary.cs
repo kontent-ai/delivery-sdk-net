@@ -1,6 +1,10 @@
 ﻿using FakeItEasy;
 using FluentAssertions;
 using Kentico.Kontent.Delivery.Abstractions;
+using Kentico.Kontent.Delivery.Caching;
+using Kentico.Kontent.Delivery.Caching.Factories;
+using Microsoft.Extensions.Caching.Distributed;
+using Microsoft.Extensions.Caching.Memory;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Options;
@@ -61,6 +65,75 @@ namespace Kentico.Kontent.Delivery.Extensions.DependencyInjection.Tests
                 var client = factory.Get(_correctName);
 
                 client.Should().NotBeNull();
+            }
+
+            [Fact]
+            public void AddDeliveryClientFactory_AddDeliveryClient_ReturnsCorrectTypeOfClient()
+            {
+                _serviceCollection.AddDeliveryClientDictionaryFactory(
+                    factoryBuilder => factoryBuilder.AddDeliveryClient(
+                        _correctName,
+                        _ => _deliveryOptions
+                        ).Build()
+                    );
+
+                var services = _serviceCollection.BuildServiceProvider();
+                var factory = services.GetRequiredService<IDeliveryClientFactory>();
+
+                var client = factory.Get(_correctName);
+
+                client.Should().BeOfType<DeliveryClient>();
+            }
+
+            [Fact]
+            public void AddDeliveryClientFactory_AddDeliveryClientDistributedCache_ReturnsCorrectTypeOfClient()
+            {
+                var clientName = "MemoryDistributedCache";
+                _serviceCollection.AddDeliveryClientDictionaryFactory(
+                    factoryBuilder => factoryBuilder.AddDeliveryClientCache(
+                        clientName,
+                        deliveryOptionBuilder => _deliveryOptions,
+                        CacheManagerFactory.Create(
+                            new MemoryDistributedCache(Options.Create(new MemoryDistributedCacheOptions())),
+                            Options.Create(new DeliveryCacheOptions
+                            {
+                                CacheType = CacheTypeEnum.Distributed
+                            })
+                        )
+                    ).Build()
+                );
+
+                var services = _serviceCollection.BuildServiceProvider();
+                var factory = services.GetRequiredService<IDeliveryClientFactory>();
+
+                var client = factory.Get(clientName);
+                client.Should().BeOfType<DeliveryClientCache>();
+            }
+
+            [Fact]
+            public void AddDeliveryClientFactory_AddDeliveryClientMemoryCache_ReturnsCorrectTypeOfClient()
+            {
+                var clientName = "MemoryCache";
+                _serviceCollection.AddDeliveryClientDictionaryFactory(
+                    factoryBuilder => factoryBuilder.AddDeliveryClientCache(
+                        clientName,
+                        deliveryOptionBuilder => _deliveryOptions,
+                        CacheManagerFactory.Create(
+                        new MemoryCache(new MemoryCacheOptions()),
+                        Options.Create(
+                            new DeliveryCacheOptions
+                            {
+                                CacheType = CacheTypeEnum.Memory
+                            })
+                        )
+                    ).Build()
+                );
+
+                var services = _serviceCollection.BuildServiceProvider();
+                var factory = services.GetRequiredService<IDeliveryClientFactory>();
+
+                var client = factory.Get(clientName);
+                client.Should().BeOfType<DeliveryClientCache>();
             }
 
             [Fact]
@@ -168,7 +241,7 @@ namespace Kentico.Kontent.Delivery.Extensions.DependencyInjection.Tests
             }
 
             [Fact]
-            public void AddDeliveryClientFactory_WithTwoCLientsWithCustomTypeProvider_ServicesCorrectlyRegistered()
+            public void AddDeliveryClientFactory_WithTwoClientsWithCustomTypeProvider_ServicesCorrectlyRegistered()
             {
                 var typeProviderA = A.Fake<ITypeProvider>();
                 var typeProviderB = A.Fake<ITypeProvider>();
