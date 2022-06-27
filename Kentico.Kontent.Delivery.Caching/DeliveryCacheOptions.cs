@@ -31,6 +31,7 @@ namespace Kentico.Kontent.Delivery.Caching
         /// <summary>
         /// The name of the service configuration this options object is related to.
         /// </summary>
+        [Obsolete("#312")]
         internal string Name { get; set; }
     }
 }

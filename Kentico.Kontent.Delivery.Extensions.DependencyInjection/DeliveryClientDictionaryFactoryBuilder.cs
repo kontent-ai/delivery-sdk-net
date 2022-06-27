@@ -3,6 +3,7 @@ using System.Collections.Concurrent;
 using Kentico.Kontent.Delivery.Abstractions;
 using Kentico.Kontent.Delivery.Builders.DeliveryClient;
 using Kentico.Kontent.Delivery.Builders.DeliveryClientFactory;
+using Kentico.Kontent.Delivery.Caching;
 using Kentico.Kontent.Delivery.Configuration;
 
 namespace Kentico.Kontent.Delivery.Extensions.DependencyInjection
@@ -24,10 +25,32 @@ namespace Kentico.Kontent.Delivery.Extensions.DependencyInjection
                 throw new ArgumentNullException(nameof(deliveryOptionsBuilder));
             }
 
-            var setup = DeliveryClientBuilder.WithOptions(deliveryOptionsBuilder);
-            var client = optionalClientSetup != null ? optionalClientSetup(setup).Build() : setup.Build();
-            // TODO 312 - warning/exception for rewriting the same client
-            _clients.AddOrUpdate(name, client, (key, oldValue) => client);
+            var client = BuildDeliveryClient(deliveryOptionsBuilder, optionalClientSetup);
+            RegisterClient(name, client);
+
+            return this;
+        }
+
+        public IDeliveryClientFactoryBuilder AddDeliveryClientCache(string name, Func<IDeliveryOptionsBuilder, DeliveryOptions> deliveryOptionsBuilder, IDeliveryCacheManager cacheManager, Func<IOptionalClientSetup, IOptionalClientSetup> optionalClientSetup = null)
+        {
+            if (string.IsNullOrEmpty(name))
+            {
+                throw new ArgumentNullException(nameof(name));
+            }
+
+            if (deliveryOptionsBuilder == null)
+            {
+                throw new ArgumentNullException(nameof(deliveryOptionsBuilder));
+            }
+
+            if (cacheManager == null)
+            {
+                throw new ArgumentNullException(nameof(cacheManager));
+            }
+
+            var client = BuildDeliveryClient(deliveryOptionsBuilder, optionalClientSetup);
+            var clientCache = new DeliveryClientCache(cacheManager, client);
+            RegisterClient(name, clientCache);
 
             return this;
         }
@@ -35,6 +58,18 @@ namespace Kentico.Kontent.Delivery.Extensions.DependencyInjection
         public IDeliveryClientFactory Build()
         {
             return new DeliveryClientDictionaryFactory(_clients);
+        }
+
+        private IDeliveryClient BuildDeliveryClient(Func<IDeliveryOptionsBuilder, DeliveryOptions> deliveryOptionsBuilder, Func<IOptionalClientSetup, IOptionalClientSetup> optionalClientSetup)
+        {
+            var setup = DeliveryClientBuilder.WithOptions(deliveryOptionsBuilder);
+            return optionalClientSetup != null ? optionalClientSetup(setup).Build() : setup.Build();
+        }
+
+        private void RegisterClient(string name, IDeliveryClient client)
+        {
+            // TODO 312 - warning/exception for rewriting the same client
+            _clients.AddOrUpdate(name, client, (key, oldValue) => client);
         }
     }
 }

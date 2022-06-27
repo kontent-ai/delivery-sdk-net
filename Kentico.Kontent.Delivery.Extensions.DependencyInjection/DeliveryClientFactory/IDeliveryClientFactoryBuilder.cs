@@ -1,6 +1,7 @@
 using System;
 using Kentico.Kontent.Delivery.Abstractions;
 using Kentico.Kontent.Delivery.Builders.DeliveryClient;
+using Kentico.Kontent.Delivery.Caching;
 using Kentico.Kontent.Delivery.Configuration;
 
 namespace Kentico.Kontent.Delivery.Builders.DeliveryClientFactory
@@ -10,6 +11,8 @@ namespace Kentico.Kontent.Delivery.Builders.DeliveryClientFactory
     public interface IDeliveryClientFactoryBuilder
     {
         public IDeliveryClientFactoryBuilder AddDeliveryClient(string name, Func<IDeliveryOptionsBuilder, DeliveryOptions> deliveryOptionsBuilder, Func<IOptionalClientSetup, IOptionalClientSetup> optionalClientSetup = null);
+        
+        public IDeliveryClientFactoryBuilder AddDeliveryClientCache(string name, Func<IDeliveryOptionsBuilder, DeliveryOptions> deliveryOptionsBuilder, IDeliveryCacheManager cacheManager, Func<IOptionalClientSetup, IOptionalClientSetup> optionalClientSetup = null);
 
         public IDeliveryClientFactory Build();
     }
