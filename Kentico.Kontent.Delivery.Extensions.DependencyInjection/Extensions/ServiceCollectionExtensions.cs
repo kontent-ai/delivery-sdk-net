@@ -26,7 +26,7 @@ namespace Kentico.Kontent.Delivery.Extensions.DependencyInjection
         /// <param name="services">A <see cref="ServiceCollection"/> instance for registering and resolving dependencies.</param>
         /// <param name="buildDeliveryClientFactory">A function that is provided with an instance of <see cref="IDeliveryClientFactoryBuilder"/>and expected to return a valid instance of <see cref="IDeliveryClientFactory"/>.</param>
         /// <returns>The <paramref name="services"/> instance with <see cref="IDeliveryClientFactory"/> registered in it</returns>
-        public static IServiceCollection AddDeliveryClientFactory(this IServiceCollection services, Func<IDeliveryClientFactoryBuilder, IDeliveryClientFactory> buildDeliveryClientFactory)
+        public static IServiceCollection AddDeliveryClientDictionaryFactory(this IServiceCollection services, Func<IDeliveryClientFactoryBuilder, IDeliveryClientFactory> buildDeliveryClientFactory)
         {
             if (buildDeliveryClientFactory == null)
             {

@@ -45,7 +45,7 @@ using IHost host = Host
         // TODO 312 deprecate Name client factoy implementations (of IdeliveryClientFactory) => NamedDeliveryClientFactory, NamedDeliveryClientCacheFactory
         // TODO 312 DeliveryClientFactoryBuilder->DeliveryClientBuilder->DeliveryOptionsBuilder
 
-        services.AddDeliveryClientFactory(
+        services.AddDeliveryClientDictionaryFactory(
             factoryBuilder => factoryBuilder
                 .AddDeliveryClient(
                     ClientA,
