@@ -1,15 +1,18 @@
 ﻿// See https://aka.ms/new-console-template for more information
 
-using System.Configuration;
 using DeliverySDKWithAutofac;
 using Kentico.Kontent.Delivery.Abstractions;
-using Kentico.Kontent.Delivery.Extensions;
+using Kentico.Kontent.Delivery.Caching;
+using Kentico.Kontent.Delivery.Caching.Factories;
 using Kentico.Kontent.Delivery.Extensions.DependencyInjection;
 using Kentico.Kontent.Urls.Delivery.QueryParameters;
 using Kentico.Kontent.Urls.Delivery.QueryParameters.Filters;
+using Microsoft.Extensions.Caching.Distributed;
+using Microsoft.Extensions.Caching.Memory;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
+using Microsoft.Extensions.Options;
 
 Console.WriteLine("App starting");
 
@@ -82,6 +85,36 @@ using IHost host = Host
                         config.Configuration.GetSection("MultipleDeliveryOptions:D").Bind(options);
                         return options;
                     }
+                )
+                .AddDeliveryClientCache(
+                    "MemoryCache",
+                    deliveryOptionBuilder => deliveryOptionBuilder
+                        .WithProjectId(ClientAProjectId)
+                        .UseProductionApi()
+                        .Build(),
+                    CacheManagerFactory.Create(
+                        new MemoryCache(new MemoryCacheOptions()),
+                        Options.Create(new DeliveryCacheOptions
+                        {
+                            CacheType = CacheTypeEnum.Memory
+                        })),
+                    optionalClientSetup =>
+                        optionalClientSetup.WithTypeProvider(new ProjectAProvider())
+                )
+                .AddDeliveryClientCache(
+                    "MemoryDistributedCache",
+                    deliveryOptionBuilder => deliveryOptionBuilder
+                        .WithProjectId(ClientAProjectId)
+                        .UseProductionApi()
+                        .Build(),
+                    CacheManagerFactory.Create(
+                        new MemoryDistributedCache(Options.Create(new MemoryDistributedCacheOptions())),
+                        Options.Create(new DeliveryCacheOptions
+                        {
+                            CacheType = CacheTypeEnum.Distributed
+                        })),
+                    optionalClientSetup =>
+                        optionalClientSetup.WithTypeProvider(new ProjectAProvider())
                 )
                 .Build()
             );
