@@ -8,7 +8,7 @@ using Kentico.Kontent.Delivery.Configuration;
 
 namespace Kentico.Kontent.Delivery.Extensions.DependencyInjection
 {
-    internal class DeliveryClientDictionaryFactoryBuilder : IDeliveryClientFactoryBuilder
+    internal class DeliveryClientFactoryBuilder : IDeliveryClientFactoryBuilder
     {
         // TODO 312 OK to instantiate this way?
         private readonly ConcurrentDictionary<string, IDeliveryClient> _clients = new();
@@ -57,7 +57,7 @@ namespace Kentico.Kontent.Delivery.Extensions.DependencyInjection
 
         public IDeliveryClientFactory Build()
         {
-            return new DeliveryClientDictionaryFactory(_clients);
+            return new DeliveryClientFactory(_clients);
         }
 
         private IDeliveryClient BuildDeliveryClient(Func<IDeliveryOptionsBuilder, DeliveryOptions> deliveryOptionsBuilder, Func<IOptionalClientSetup, IOptionalClientSetup> optionalClientSetup)

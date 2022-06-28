@@ -4,11 +4,11 @@ using System.Collections.Concurrent;
 
 namespace Kentico.Kontent.Delivery.Extensions.DependencyInjection
 {
-    internal class DeliveryClientDictionaryFactory : IDeliveryClientFactory
+    internal class DeliveryClientFactory : IDeliveryClientFactory
     {
         private readonly ConcurrentDictionary<string, IDeliveryClient> _clients = new ConcurrentDictionary<string, IDeliveryClient>();
 
-        public DeliveryClientDictionaryFactory(ConcurrentDictionary<string, IDeliveryClient> clients)
+        public DeliveryClientFactory(ConcurrentDictionary<string, IDeliveryClient> clients)
         {
             if (clients == null)
             {

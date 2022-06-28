@@ -26,14 +26,14 @@ namespace Kentico.Kontent.Delivery.Extensions.DependencyInjection
         /// <param name="services">A <see cref="ServiceCollection"/> instance for registering and resolving dependencies.</param>
         /// <param name="buildDeliveryClientFactory">A function that is provided with an instance of <see cref="IDeliveryClientFactoryBuilder"/>and expected to return a valid instance of <see cref="IDeliveryClientFactory"/>.</param>
         /// <returns>The <paramref name="services"/> instance with <see cref="IDeliveryClientFactory"/> registered in it</returns>
-        public static IServiceCollection AddDeliveryClientDictionaryFactory(this IServiceCollection services, Func<IDeliveryClientFactoryBuilder, IDeliveryClientFactory> buildDeliveryClientFactory)
+        public static IServiceCollection AddDeliveryClientFactory(this IServiceCollection services, Func<IDeliveryClientFactoryBuilder, IDeliveryClientFactory> buildDeliveryClientFactory)
         {
             if (buildDeliveryClientFactory == null)
             {
                 throw new ArgumentNullException(nameof(buildDeliveryClientFactory), "The function for creating Delivery client factory is null.");
             }
 
-            var factory = buildDeliveryClientFactory(new DeliveryClientDictionaryFactoryBuilder());
+            var factory = buildDeliveryClientFactory(new DeliveryClientFactoryBuilder());
 
             // TODO 312 - TyAdd or Add with exception?
             services.TryAddSingleton<IDeliveryClientFactory>(factory);

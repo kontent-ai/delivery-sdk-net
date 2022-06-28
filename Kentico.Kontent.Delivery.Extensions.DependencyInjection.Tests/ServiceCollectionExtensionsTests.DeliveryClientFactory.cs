@@ -13,10 +13,9 @@ using Xunit;
 
 namespace Kentico.Kontent.Delivery.Extensions.DependencyInjection.Tests
 {
-
     public partial class ServiceCollectionExtensionsTests
     {
-        public class DeliveryClientDictionary
+        public class DeliveryClientFactory
         {
             private readonly IServiceCollection _serviceCollection;
             private readonly IConfiguration _configuration;
@@ -24,7 +23,7 @@ namespace Kentico.Kontent.Delivery.Extensions.DependencyInjection.Tests
             private readonly string _correctName = "correctName";
             private readonly string _wrongName = "wrongName";
 
-            public DeliveryClientDictionary()
+            public DeliveryClientFactory()
             {
                 _serviceCollection = new ServiceCollection();
                 _configuration = A.Fake<IConfiguration>();
@@ -33,26 +32,26 @@ namespace Kentico.Kontent.Delivery.Extensions.DependencyInjection.Tests
             [Fact]
             public void AddDeliveryClientFactory_RegisterCorrectType()
             {
-                _serviceCollection.AddDeliveryClientDictionaryFactory(
+                _serviceCollection.AddDeliveryClientFactory(
                     factoryBuilder => factoryBuilder.Build()
                 );
 
                 var services = _serviceCollection.BuildServiceProvider();
                 var factory = services.GetRequiredService<IDeliveryClientFactory>();
 
-                factory.Should().BeOfType<DeliveryClientDictionaryFactory>();
+                factory.Should().BeOfType<DependencyInjection.DeliveryClientFactory>();
             }
 
             [Fact]
             public void AddDeliveryClientFactory_NullConfig_ThrowsArgumentNullException()
             {
-                Assert.Throws<ArgumentNullException>(() => _serviceCollection.AddDeliveryClientDictionaryFactory(null));
+                Assert.Throws<ArgumentNullException>(() => _serviceCollection.AddDeliveryClientFactory(null));
             }
 
             [Fact]
             public void AddDeliveryClientFactory_GetClient_ReturnsClient()
             {
-                _serviceCollection.AddDeliveryClientDictionaryFactory(
+                _serviceCollection.AddDeliveryClientFactory(
                     factoryBuilder => factoryBuilder.AddDeliveryClient(
                         _correctName,
                         _ => _deliveryOptions
@@ -70,7 +69,7 @@ namespace Kentico.Kontent.Delivery.Extensions.DependencyInjection.Tests
             [Fact]
             public void AddDeliveryClientFactory_AddDeliveryClient_ReturnsCorrectTypeOfClient()
             {
-                _serviceCollection.AddDeliveryClientDictionaryFactory(
+                _serviceCollection.AddDeliveryClientFactory(
                     factoryBuilder => factoryBuilder.AddDeliveryClient(
                         _correctName,
                         _ => _deliveryOptions
@@ -89,7 +88,7 @@ namespace Kentico.Kontent.Delivery.Extensions.DependencyInjection.Tests
             public void AddDeliveryClientFactory_AddDeliveryClientDistributedCache_ReturnsCorrectTypeOfClient()
             {
                 var clientName = "MemoryDistributedCache";
-                _serviceCollection.AddDeliveryClientDictionaryFactory(
+                _serviceCollection.AddDeliveryClientFactory(
                     factoryBuilder => factoryBuilder.AddDeliveryClientCache(
                         clientName,
                         deliveryOptionBuilder => _deliveryOptions,
@@ -114,7 +113,7 @@ namespace Kentico.Kontent.Delivery.Extensions.DependencyInjection.Tests
             public void AddDeliveryClientFactory_AddDeliveryClientMemoryCache_ReturnsCorrectTypeOfClient()
             {
                 var clientName = "MemoryCache";
-                _serviceCollection.AddDeliveryClientDictionaryFactory(
+                _serviceCollection.AddDeliveryClientFactory(
                     factoryBuilder => factoryBuilder.AddDeliveryClientCache(
                         clientName,
                         deliveryOptionBuilder => _deliveryOptions,
@@ -139,20 +138,20 @@ namespace Kentico.Kontent.Delivery.Extensions.DependencyInjection.Tests
             [Fact]
             public void AddDeliveryClientFactory_NullOptions_ThrowsArgumentNullException()
             {
-                Assert.Throws<ArgumentNullException>(() => _serviceCollection.AddDeliveryClientDictionaryFactory(factoryBuilder => factoryBuilder.AddDeliveryClient(_correctName, null).Build()));
+                Assert.Throws<ArgumentNullException>(() => _serviceCollection.AddDeliveryClientFactory(factoryBuilder => factoryBuilder.AddDeliveryClient(_correctName, null).Build()));
             }
 
             [Fact]
             public void AddDeliveryClientFactory_NullName_ThrowsArgumentNullException()
             {
-                Assert.Throws<ArgumentNullException>(() => _serviceCollection.AddDeliveryClientDictionaryFactory(factoryBuilder => factoryBuilder.AddDeliveryClient(null, _ => _deliveryOptions).Build()));
+                Assert.Throws<ArgumentNullException>(() => _serviceCollection.AddDeliveryClientFactory(factoryBuilder => factoryBuilder.AddDeliveryClient(null, _ => _deliveryOptions).Build()));
             }
 
 
             [Fact]
             public void AddDeliveryClientFactory_GetClientWithWrongName_ThrowsArgumentException()
             {
-                _serviceCollection.AddDeliveryClientDictionaryFactory(
+                _serviceCollection.AddDeliveryClientFactory(
                     factoryBuilder => factoryBuilder.AddDeliveryClient(
                         _correctName,
                         _ => _deliveryOptions
@@ -168,7 +167,7 @@ namespace Kentico.Kontent.Delivery.Extensions.DependencyInjection.Tests
             [Fact]
             public void AddDeliveryClientFactory_GetClientWithNoName_ThrowsNotImplementedException()
             {
-                _serviceCollection.AddDeliveryClientDictionaryFactory(
+                _serviceCollection.AddDeliveryClientFactory(
                     factoryBuilder => factoryBuilder.Build()
                 );
 
@@ -181,7 +180,7 @@ namespace Kentico.Kontent.Delivery.Extensions.DependencyInjection.Tests
             [Fact]
             public void AddDeliveryClientFactory_GetClientWithNullName_ThrowsArgumentNullException()
             {
-                _serviceCollection.AddDeliveryClientDictionaryFactory(
+                _serviceCollection.AddDeliveryClientFactory(
                     factoryBuilder => factoryBuilder.Build()
                 );
 
@@ -194,7 +193,7 @@ namespace Kentico.Kontent.Delivery.Extensions.DependencyInjection.Tests
             [Fact]
             public void AddDeliveryClientFactory_GetClientWithEmptyName_ThrowsArgumentException()
             {
-                _serviceCollection.AddDeliveryClientDictionaryFactory(
+                _serviceCollection.AddDeliveryClientFactory(
                     factoryBuilder => factoryBuilder.Build()
                 );
 
@@ -209,7 +208,7 @@ namespace Kentico.Kontent.Delivery.Extensions.DependencyInjection.Tests
             {
                 var typeProvider = A.Fake<ITypeProvider>();
 
-                _serviceCollection.AddDeliveryClientDictionaryFactory(
+                _serviceCollection.AddDeliveryClientFactory(
                     factoryBuilder => factoryBuilder
                     .AddDeliveryClient(
                         _correctName,
@@ -250,7 +249,7 @@ namespace Kentico.Kontent.Delivery.Extensions.DependencyInjection.Tests
                 var projectAID = "923850ac-5869-4743-8414-eb278e7beb69";
                 var projectBID = "88d518c5-db60-432d-918a-14dba79c63ac";
 
-                _serviceCollection.AddDeliveryClientDictionaryFactory(
+                _serviceCollection.AddDeliveryClientFactory(
                     factoryBuilder => factoryBuilder
                     .AddDeliveryClient(
                         clientAName,

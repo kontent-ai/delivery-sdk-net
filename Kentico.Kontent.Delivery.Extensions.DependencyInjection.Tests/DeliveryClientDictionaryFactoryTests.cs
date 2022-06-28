@@ -26,14 +26,14 @@ namespace Kentico.Kontent.Delivery.Extensions.DependencyInjection.Tests
         [Fact]
         public void CreateFactory_NoClient_RaiseArgumentNullException()
         {
-            Assert.Throws<ArgumentNullException>(() => new DeliveryClientDictionaryFactory(null));
+            Assert.Throws<ArgumentNullException>(() => new DeliveryClientFactory(null));
         }
 
         [Fact]
         public void GetNamedClient_WithCorrectName_GetClient()
         {
             var fakeClient = A.Fake<IDeliveryClient>();
-            var deliveryClientFactory = new DeliveryClientDictionaryFactory(_dictionary);
+            var deliveryClientFactory = new DeliveryClientFactory(_dictionary);
 
             var result = deliveryClientFactory.Get(_clientName);
 
@@ -44,7 +44,7 @@ namespace Kentico.Kontent.Delivery.Extensions.DependencyInjection.Tests
         public void GetNamedClient_WithWrongName_RaiseArgumentException()
         {
             var fakeClient = A.Fake<IDeliveryClient>();
-            var deliveryClientFactory = new DeliveryClientDictionaryFactory(_dictionary);
+            var deliveryClientFactory = new DeliveryClientFactory(_dictionary);
 
             Assert.Throws<ArgumentException>(() => deliveryClientFactory.Get("wrongName"));
         }
@@ -53,7 +53,7 @@ namespace Kentico.Kontent.Delivery.Extensions.DependencyInjection.Tests
         public void GetClient_NoName_RaiseNotImplementedException()
         {
             var fakeClient = A.Fake<IDeliveryClient>();
-            var deliveryClientFactory = new DeliveryClientDictionaryFactory(_dictionary);
+            var deliveryClientFactory = new DeliveryClientFactory(_dictionary);
 
             Assert.Throws<NotImplementedException>(() => deliveryClientFactory.Get());
         }
