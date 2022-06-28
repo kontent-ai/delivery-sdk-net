@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Threading.Tasks;
 using Kentico.Kontent.Delivery.Abstractions;
+using Kentico.Kontent.Delivery.SharedModels;
 
 namespace Kentico.Kontent.Delivery.ContentItems
 {
@@ -42,6 +43,12 @@ namespace Kentico.Kontent.Delivery.ContentItems
             }
 
             var response = await _getFeedResponseAsync(continuationToken ?? _continuationToken);
+
+            if (!response.ApiResponse.IsSuccess)
+            {
+                return new DeliveryItemsFeedResponse<T>(response.ApiResponse, null);
+            }
+            
             _continuationToken = response.ApiResponse.ContinuationToken;
             HasMoreResults = !string.IsNullOrEmpty(response.ApiResponse.ContinuationToken);
 

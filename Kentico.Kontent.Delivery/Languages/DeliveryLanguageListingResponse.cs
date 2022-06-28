@@ -32,5 +32,13 @@ namespace Kentico.Kontent.Delivery.Languages
             Languages = languages;
             Pagination = pagination;
         }
+        
+        /// <summary>
+        /// Initializes a new instance of the <see cref="DeliveryLanguageListingResponse"/> class.
+        /// </summary>
+        /// <param name="response">The response from Kontent Delivery API that contains languages.</param>
+        internal DeliveryLanguageListingResponse(ApiResponse response) : base(response)
+        {
+        }
     }
 }

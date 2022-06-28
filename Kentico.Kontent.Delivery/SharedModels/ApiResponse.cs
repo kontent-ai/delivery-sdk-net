@@ -61,7 +61,6 @@ namespace Kentico.Kontent.Delivery.SharedModels
         {
         }
 
-
         internal ApiResponse(HttpContent httpContent, bool hasStaleContent, string continuationToken, string requestUrl, IError error)
         {
             HttpContent = httpContent;
@@ -94,7 +93,7 @@ namespace Kentico.Kontent.Delivery.SharedModels
         /// </summary>
         public async Task<JObject> GetJsonContentAsync()
         {
-            if (_jsonContent == null && IsSuccess)
+            if (_jsonContent == null)
             {
                 using var streamReader = new HttpRequestStreamReader(await HttpContent.ReadAsStreamAsync(), Encoding.UTF8);
                 using var jsonReader = new JsonTextReader(streamReader);

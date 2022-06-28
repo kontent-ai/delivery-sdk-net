@@ -30,7 +30,7 @@ namespace Kentico.Kontent.Urls.Delivery
         {
             get
             {
-                return _deliveryOptionsMonitor.CurrentValue ?? deliveryOptions;
+                return _deliveryOptionsMonitor?.CurrentValue ?? deliveryOptions;
             }
             set
             {
@@ -51,6 +51,7 @@ namespace Kentico.Kontent.Urls.Delivery
         /// Initializes the URL builder using <see cref="IOptionsMonitor{TOptions}"/>. Ideal for simple scenarios where hot reloading of configuration is not required.
         /// </summary>
         /// <param name="deliveryOptions">The configuration object.</param>
+        [Obsolete("Use constructor DeliveryEndpointUrlBuilder(IOptionsMonitor<DeliveryOptions> deliveryOptions) for instance with DeliveryOptionsMonitor instead./> ")]
         public DeliveryEndpointUrlBuilder(DeliveryOptions deliveryOptions)
         {
             CurrentDeliveryOptions = deliveryOptions;

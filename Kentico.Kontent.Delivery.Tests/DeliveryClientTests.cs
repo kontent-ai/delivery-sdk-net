@@ -11,6 +11,7 @@ using Kentico.Kontent.Delivery.Abstractions;
 using Kentico.Kontent.Delivery.Builders.DeliveryClient;
 using Kentico.Kontent.Delivery.ContentItems;
 using Kentico.Kontent.Delivery.ContentItems.RichText.Blocks;
+using Kentico.Kontent.Delivery.SharedModels;
 using Kentico.Kontent.Delivery.Tests.Factories;
 using Kentico.Kontent.Delivery.Tests.Models;
 using Kentico.Kontent.Delivery.Tests.Models.ContentTypes;
@@ -172,25 +173,45 @@ namespace Kentico.Kontent.Delivery.Tests
         }
 
         [Fact]
-        public async Task GetItemAsync_NotFound()
+        public async Task GetItemAsync_NotFound_RespondsWithApiError()
         {
-            string message = "{'message': 'The requested content item unscintillating_hemerocallidaceae_des_iroquois was not found.','request_id': '','error_code': 100,'specific_code': 0}";
+            var expectedError = new Error()
+            {
+                Message = "The requested content item unscintillating_hemerocallidaceae_des_iroquois was not found.",
+                RequestId = "",
+                ErrorCode = 100,
+                SpecificCode = 0
+            };
+            var expectedResponse = CreateApiErrorResponse(expectedError);
 
             _mockHttp
                 .When($"{_baseUrl}/items/unscintillating_hemerocallidaceae_des_iroquois")
-                .Respond(HttpStatusCode.NotFound, "application/json", message);
+                .Respond(HttpStatusCode.NotFound, "application/json", expectedResponse);
 
             var client = InitializeDeliveryClientWithACustomTypeProvider(_mockHttp);
 
-            var result = await client.GetItemAsync<Article>("unscintillating_hemerocallidaceae_des_iroquois");
+            var actualResponse = await client.GetItemAsync<Article>("unscintillating_hemerocallidaceae_des_iroquois");
 
-            Assert.Null(result.Item);
-            Assert.NotNull(result.ApiResponse.Error);
-            Assert.False(result.ApiResponse.IsSuccess);
-            Assert.Equal(100, result.ApiResponse.Error.ErrorCode);
-            Assert.Equal("The requested content item unscintillating_hemerocallidaceae_des_iroquois was not found.", result?.ApiResponse?.Error?.Message);
-            Assert.Equal(string.Empty, result.ApiResponse.Error.RequestId);
-            Assert.Equal(0, result.ApiResponse.Error.SpecificCode);
+            AssertErrorResponse(actualResponse, expectedError);
+            Assert.Null(actualResponse.Item);
+        }
+        
+        [Fact]
+        public async Task GetItemAsync_InvalidProjectId_RespondsWithApiError()
+        {
+            var expectedError = CreateInvalidProjectIdApiError();
+            var response = CreateApiErrorResponse(expectedError);
+
+            _mockHttp
+                .When($"{_baseUrl}/items/coffee_beverages_explained")
+                .Respond(HttpStatusCode.NotFound, "application/json", response);
+
+            var client = InitializeDeliveryClientWithACustomTypeProvider(_mockHttp);
+
+            var actualResponse = await client.GetItemAsync<object>("coffee_beverages_explained");
+                
+            AssertErrorResponse(actualResponse, expectedError);
+            Assert.Null(actualResponse.Item);
         }
 
         [Fact]
@@ -244,7 +265,26 @@ namespace Kentico.Kontent.Delivery.Tests
             Assert.True(response?.ApiResponse?.IsSuccess);
             Assert.NotEmpty(response.Items);
         }
+        
+        [Fact]
+        public async Task GetItemsAsync_InvalidProjectId_RespondsWithApiError()
+        {
+            var expectedError = CreateInvalidProjectIdApiError();
+            var response = CreateApiErrorResponse(expectedError);
 
+            _mockHttp
+                .When($"{_baseUrl}/items")
+                .Respond(HttpStatusCode.NotFound, "application/json", response);
+
+            var client = InitializeDeliveryClientWithACustomTypeProvider(_mockHttp);
+
+            var actualResponse = await client.GetItemsAsync<object>();
+                
+            AssertErrorResponse(actualResponse, expectedError);
+            Assert.Null(actualResponse.Items);
+            Assert.Null(actualResponse.Pagination);
+        }
+        
         [Fact]
         public void GetItemsFeed_DepthParameter_ThrowsArgumentException()
         {
@@ -350,6 +390,24 @@ namespace Kentico.Kontent.Delivery.Tests
             Assert.Equal(6, items.Count);
             Assert.Equal(2, timesCalled);
         }
+        
+        [Fact]
+        public async Task GetItemsFeed_InvalidProjectId_RespondsWithApiError()
+        {
+            var expectedError = CreateInvalidProjectIdApiError();
+            var response = CreateApiErrorResponse(expectedError);
+
+            _mockHttp
+                .When($"{_baseUrl}/items-feed")
+                .Respond(HttpStatusCode.NotFound, "application/json", response);
+
+            var client = InitializeDeliveryClientWithACustomTypeProvider(_mockHttp);
+
+            var actualResponse = await client.GetItemsFeed<object>().FetchNextBatchAsync();
+                
+            AssertErrorResponse(actualResponse, expectedError);
+            Assert.Null(actualResponse.Items);
+        }
 
         [Fact]
         public async Task GetTypeAsync()
@@ -396,27 +454,47 @@ namespace Kentico.Kontent.Delivery.Tests
             Assert.IsAssignableFrom<ITaxonomyElement>(processingTaxonomyElement);
             Assert.Equal("processing", ((ITaxonomyElement)processingTaxonomyElement).TaxonomyGroup);
         }
-
+        
         [Fact]
-        public async Task GetTypeAsync_NotFound()
+        public async Task GetTypeAsync_NotFound_RespondsWithApiError()
         {
-            string messsge = "{'message': 'The requested content type unequestrian_nonadjournment_sur_achoerodus was not found','request_id': '','error_code': 101,'specific_code': 0}";
+            var expectedError = new Error()
+            {
+                Message = "The requested content type unequestrian_nonadjournment_sur_achoerodus was not found.",
+                RequestId = "",
+                ErrorCode = 100,
+                SpecificCode = 0
+            };
+            var expectedResponse = CreateApiErrorResponse(expectedError);
 
             _mockHttp
                 .When($"{_baseUrl}/types/unequestrian_nonadjournment_sur_achoerodus")
-                .Respond(HttpStatusCode.NotFound, "application/json", messsge);
+                .Respond(HttpStatusCode.NotFound, "application/json", expectedResponse);
 
             var client = InitializeDeliveryClientWithACustomTypeProvider(_mockHttp);
 
-            var result = await client.GetTypeAsync("unequestrian_nonadjournment_sur_achoerodus");
+            var actualResponse = await client.GetTypeAsync("unequestrian_nonadjournment_sur_achoerodus");
 
-            Assert.Null(result?.Type);
-            Assert.NotNull(result?.ApiResponse?.Error);
-            Assert.Equal(101, result?.ApiResponse?.Error?.ErrorCode);
-            Assert.False(result?.ApiResponse?.IsSuccess);
-            Assert.Equal("The requested content type unequestrian_nonadjournment_sur_achoerodus was not found", result?.ApiResponse?.Error?.Message);
-            Assert.Equal(string.Empty, result?.ApiResponse?.Error?.RequestId);
-            Assert.Equal(0, result?.ApiResponse?.Error?.SpecificCode);
+            AssertErrorResponse(actualResponse, expectedError);
+            Assert.Null(actualResponse.Type);
+        }
+        
+        [Fact]
+        public async Task GetTypeAsync_InvalidProjectId_RespondsWithApiError()
+        {
+            var expectedError = CreateInvalidProjectIdApiError();
+            var response = CreateApiErrorResponse(expectedError);
+
+            _mockHttp
+                .When($"{_baseUrl}/types/unequestrian_nonadjournment_sur_achoerodus")
+                .Respond(HttpStatusCode.NotFound, "application/json", response);
+
+            var client = InitializeDeliveryClientWithACustomTypeProvider(_mockHttp);
+
+            var actualResponse = await client.GetTypeAsync("unequestrian_nonadjournment_sur_achoerodus");
+                
+            AssertErrorResponse(actualResponse, expectedError);
+            Assert.Null(actualResponse.Type);
         }
 
         [Fact]
@@ -588,6 +666,25 @@ namespace Kentico.Kontent.Delivery.Tests
             Assert.True(response?.ApiResponse?.IsSuccess);
             Assert.NotNull(response.ApiResponse.RequestUrl);
             Assert.NotEmpty(response.Taxonomies);
+        }
+        
+        [Fact]
+        public async Task GetTaxonomiesAsync_InvalidProjectId_RespondsWithApiError()
+        {
+            var expectedError = CreateInvalidProjectIdApiError();
+            var response = CreateApiErrorResponse(expectedError);
+
+            _mockHttp
+                .When($"{_baseUrl}/taxonomies")
+                .Respond(HttpStatusCode.NotFound, "application/json", response);
+
+            var client = InitializeDeliveryClientWithACustomTypeProvider(_mockHttp);
+
+            var actualResponse = await client.GetTaxonomiesAsync();
+                
+            AssertErrorResponse(actualResponse, expectedError);
+            Assert.Null(actualResponse.Taxonomies);
+            Assert.Null(actualResponse.Pagination);
         }
 
         [Fact]
@@ -1355,6 +1452,25 @@ namespace Kentico.Kontent.Delivery.Tests
             Assert.False(response.ApiResponse.HasStaleContent);
             Assert.True(response.Types.Any());
         }
+        
+        [Fact]
+        public async Task GetTypesAsync_InvalidProjectId_RespondsWithApiError()
+        {
+            var expectedError = CreateInvalidProjectIdApiError();
+            var response = CreateApiErrorResponse(expectedError);
+
+            _mockHttp
+                .When($"{_baseUrl}/types")
+                .Respond(HttpStatusCode.NotFound, "application/json", response);
+
+            var client = InitializeDeliveryClientWithACustomTypeProvider(_mockHttp);
+
+            var actualResponse = await client.GetTypesAsync();
+                
+            AssertErrorResponse(actualResponse, expectedError);
+            Assert.Null(actualResponse.Types);
+            Assert.Null(actualResponse.Pagination);
+        }
 
         [Fact]
         public async Task GetTaxonomyAsync_ApiReturnsStaleContent_ResponseIndicatesStaleContent()
@@ -1481,6 +1597,25 @@ namespace Kentico.Kontent.Delivery.Tests
             Assert.False(response.ApiResponse.HasStaleContent);
             Assert.True(response.Languages.Any());
         }
+        
+        [Fact]
+        public async Task GetLanguagesAsync_InvalidProjectId_RespondsWithApiError()
+        {
+            var expectedError = CreateInvalidProjectIdApiError();
+            var response = CreateApiErrorResponse(expectedError);
+
+            _mockHttp
+                .When($"{_baseUrl}/languages")
+                .Respond(HttpStatusCode.NotFound, "application/json", response);
+
+            var client = InitializeDeliveryClientWithACustomTypeProvider(_mockHttp);
+
+            var actualResponse = await client.GetLanguagesAsync();
+                
+            AssertErrorResponse(actualResponse, expectedError);
+            Assert.Null(actualResponse.Languages);
+            Assert.Null(actualResponse.Pagination);
+        }
 
         [Fact]
         public async Task GetElementAsync_ApiReturnsStaleContent_ResponseIndicatesStaleContent()
@@ -1520,6 +1655,24 @@ namespace Kentico.Kontent.Delivery.Tests
 
             Assert.False(response.ApiResponse.HasStaleContent);
             Assert.NotNull(response.Element.Codename);
+        }
+        
+        [Fact]
+        public async Task GetElementAsync_InvalidProjectId_RespondsWithApiError()
+        {
+            var expectedError = CreateInvalidProjectIdApiError();
+            var response = CreateApiErrorResponse(expectedError);
+
+            _mockHttp
+                .When($"{_baseUrl}/types/test/elements/test")
+                .Respond(HttpStatusCode.NotFound, "application/json", response);
+
+            var client = InitializeDeliveryClientWithACustomTypeProvider(_mockHttp);
+
+            var actualResponse = await client.GetContentElementAsync("test", "test");
+                
+            AssertErrorResponse(actualResponse, expectedError);
+            Assert.Null(actualResponse.Element);
         }
 
         [Fact]
@@ -1666,6 +1819,29 @@ namespace Kentico.Kontent.Delivery.Tests
                 .ReturnsLazily(c => c.GetArgument<Func<Task<HttpResponseMessage>>>(0)());
 
             return client;
+        }
+        
+        private  Error CreateInvalidProjectIdApiError() => new Error()
+        {
+            ErrorCode = 105,
+            RequestId = "",
+            SpecificCode = 0,
+            Message = $"Project with the ID '{_guid.ToString()}' does not exist. Check for the correct project ID in the API keys section of the UI. See https://kontent.ai/learn/reference/delivery-api for more details."
+        };
+
+        private static string CreateApiErrorResponse(Error error)
+           => $"{{\"message\": \"{error.Message}\",\"request_id\": \"{error.RequestId}\",\"error_code\": {error.ErrorCode},\"specific_code\": {error.SpecificCode}}}";
+
+        private static void AssertErrorResponse(IResponse actualResponse, IError expectedError)
+        {
+            var actualError = actualResponse.ApiResponse.Error;
+            
+            Assert.NotNull(actualResponse.ApiResponse.Error);
+            Assert.False(actualResponse.ApiResponse.IsSuccess);
+            Assert.Equal(expectedError.Message, actualError.Message);
+            Assert.Equal(expectedError.ErrorCode, actualError.ErrorCode);
+            Assert.Equal(expectedError.RequestId, actualError.RequestId);
+            Assert.Equal(expectedError.SpecificCode, actualError.SpecificCode);
         }
     }
 }

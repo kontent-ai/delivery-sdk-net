@@ -1,5 +1,4 @@
-﻿using System.Collections.Generic;
-using Kentico.Kontent.Delivery.Abstractions;
+﻿using Kentico.Kontent.Delivery.Abstractions;
 using Kentico.Kontent.Delivery.SharedModels;
 using Newtonsoft.Json;
 
@@ -23,6 +22,14 @@ namespace Kentico.Kontent.Delivery.ContentItems
         internal DeliveryItemResponse(ApiResponse response, T item) : base(response)
         {
             Item = item;
+        }
+        
+        /// <summary>
+        /// Initializes a new instance of the <see cref="DeliveryItemResponse{T}"/> class.
+        /// </summary>
+        /// <param name="response">The response from Kontent Delivery API that contains a content item.</param>
+        internal DeliveryItemResponse(ApiResponse response) : base(response)
+        {
         }
     }
 }
