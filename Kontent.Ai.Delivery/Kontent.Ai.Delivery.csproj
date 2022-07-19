@@ -37,8 +37,8 @@
   </ItemGroup>
 
   <ItemGroup>
-    <ProjectReference Include="..\Kontent.Ai.Delivery.Abstractions\Kentico.Kontent.Delivery.Abstractions.csproj" />
-    <ProjectReference Include="..\Kontent.Ai.Urls\Kentico.Kontent.Urls.csproj" />
+    <ProjectReference Include="..\Kontent.Ai.Delivery.Abstractions\Kontent.Ai.Delivery.Abstractions.csproj" />
+    <ProjectReference Include="..\Kontent.Ai.Urls\Kontent.Ai.Urls.csproj" />
   </ItemGroup>
 
 </Project>
