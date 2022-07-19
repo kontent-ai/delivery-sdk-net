@@ -4,7 +4,7 @@ using System.Reflection;
 using Xunit;
 using Xunit.Abstractions;
 
-namespace Kentico.Kontent.Delivery.Abstractions.Tests;
+namespace Kontent.Ai.Delivery.Abstractions.Tests;
 
 public class CheckNamespaces
 {
@@ -16,13 +16,13 @@ public class CheckNamespaces
     }
 
     /// <summary>
-    /// See Kentico.Kontent.Delivery.Abstractions Readme for more information.
+    /// See Kontent.Ai.Delivery.Abstractions Readme for more information.
     /// </summary>
     [Fact]
     public void AllNamespacecAreCorrect()
     {
-        var abstractionTypes = Assembly.LoadFrom("Kentico.Kontent.Delivery.Abstractions.dll");
+        var abstractionTypes = Assembly.LoadFrom("Kontent.Ai.Delivery.Abstractions.dll");
 
-        Assert.All(abstractionTypes.GetTypes(), t => Assert.Equal("Kentico.Kontent.Delivery.Abstractions", t.Namespace));
+        Assert.All(abstractionTypes.GetTypes(), t => Assert.Equal("Kontent.Ai.Delivery.Abstractions", t.Namespace));
     }
 }

@@ -1,8 +1,8 @@
 ﻿using System.Collections.Generic;
-using Kentico.Kontent.Delivery.Abstractions;
+using Kontent.Ai.Delivery.Abstractions;
 using Newtonsoft.Json;
 
-namespace Kentico.Kontent.Delivery.ContentItems.RichText
+namespace Kontent.Ai.Delivery.ContentItems.RichText
 {
     internal class RichTextContent : List<IRichTextBlock>, IRichTextContent
     {

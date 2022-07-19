@@ -2,16 +2,16 @@
 
   <PropertyGroup>
     <TargetFrameworks>netstandard2.0;net6.0</TargetFrameworks>
-    <Authors>Kentico Software</Authors>
-    <Product>Kontent by Kentico</Product>
-    <Copyright>© 2021 Kentico Software. All rights reserved.</Copyright>
+    <Authors>Kontent s.r.o.</Authors>
+    <Product>Kontent.ai</Product>
+    <Copyright>© 2022 Kontent s.r.o. All rights reserved.</Copyright>
     <Description>Kontent Delivery SDK</Description>
     <PackageLicenseExpression>MIT</PackageLicenseExpression>
-    <PackageProjectUrl>https://github.com/Kentico/kontent-delivery-sdk-net</PackageProjectUrl>
-    <PackageIconUrl>https://github.com/Kentico/Home/blob/master/images/kk-logo-nuget.png?raw=true</PackageIconUrl>
-    <RepositoryUrl>https://github.com/Kentico/kontent-delivery-sdk-net.git</RepositoryUrl>
+    <PackageProjectUrl>https://github.com/kontent-ai/delivery-sdk-net</PackageProjectUrl>
+    <PackageIconUrl>https://github.com/kontent-ai/.github/blob/main/logos/kai-logo-symbol-color-rgb.png?raw=true</PackageIconUrl>
+    <RepositoryUrl>https://github.com/kontent-ai/delivery-sdk-net.git</RepositoryUrl>
     <RepositoryType>git</RepositoryType>
-    <PackageTags>kentico;mvc;aspnet;aspnetmvc;reactive;rx</PackageTags>
+    <PackageTags>kontent-ai;mvc;aspnet;aspnetmvc;reactive;rx</PackageTags>
     <GenerateAssemblyInfo>true</GenerateAssemblyInfo>
     <GenerateDocumentationFile>true</GenerateDocumentationFile>
     <PublishRepositoryUrl>true</PublishRepositoryUrl>
@@ -27,8 +27,8 @@
   </ItemGroup>
 
   <ItemGroup>
-    <ProjectReference Include="..\Kentico.Kontent.Delivery.Abstractions\Kentico.Kontent.Delivery.Abstractions.csproj" />
-    <ProjectReference Include="..\Kentico.Kontent.Delivery\Kentico.Kontent.Delivery.csproj" />
+    <ProjectReference Include="..\Kontent.Ai.Delivery.Abstractions\Kontent.Ai.Delivery.Abstractions.csproj" />
+    <ProjectReference Include="..\Kontent.Ai.Delivery\Kontent.Ai.Delivery.csproj" />
   </ItemGroup>
 
 </Project>

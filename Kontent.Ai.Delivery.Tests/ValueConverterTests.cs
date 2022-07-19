@@ -7,16 +7,16 @@ using System.Reflection;
 using System.Threading.Tasks;
 using AngleSharp.Html.Parser;
 using FakeItEasy;
-using Kentico.Kontent.Delivery.Abstractions;
-using Kentico.Kontent.Delivery.ContentItems;
-using Kentico.Kontent.Delivery.Tests.Factories;
-using Kentico.Kontent.Delivery.Tests.Models.ContentTypes;
-using Kentico.Kontent.Urls.Delivery.QueryParameters;
+using Kontent.Ai.Delivery.Abstractions;
+using Kontent.Ai.Delivery.ContentItems;
+using Kontent.Ai.Delivery.Tests.Factories;
+using Kontent.Ai.Delivery.Tests.Models.ContentTypes;
+using Kontent.Ai.Urls.Delivery.QueryParameters;
 using NodaTime;
 using RichardSzalay.MockHttp;
 using Xunit;
 
-namespace Kentico.Kontent.Delivery.Tests
+namespace Kontent.Ai.Delivery.Tests
 {
     [AttributeUsage(AttributeTargets.Property)]
     public class TestGreeterValueConverterAttribute : Attribute, IPropertyValueConverter<string>
@@ -129,7 +129,7 @@ namespace Kentico.Kontent.Delivery.Tests
             var response = await client.GetItemAsync<Article>("coffee_beverages_explained");
             var teaserImage = response.Item.TeaserImage.FirstOrDefault();
 
-            var assetUrl = "https://assets.kenticocloud.com:443/975bf280-fd91-488c-994c-2f04416e5ee3/e700596b-03b0-4cee-ac5c-9212762c027a/coffee-beverages-explained-1080px.jpg";
+            var assetUrl = "https://assets.kontent.ai:443/975bf280-fd91-488c-994c-2f04416e5ee3/e700596b-03b0-4cee-ac5c-9212762c027a/coffee-beverages-explained-1080px.jpg";
 
             Assert.Equal(assetUrl, teaserImage.Url);
         }
@@ -149,7 +149,7 @@ namespace Kentico.Kontent.Delivery.Tests
             var response = await client.GetItemAsync<Article>("coffee_beverages_explained");
             var teaserImage = response.Item.TeaserImage.FirstOrDefault();
 
-            var assetUrl = "https://assets.kenticocloud.com:443/975bf280-fd91-488c-994c-2f04416e5ee3/e700596b-03b0-4cee-ac5c-9212762c027a/coffee-beverages-explained-1080px.jpg";
+            var assetUrl = "https://assets.kontent.ai:443/975bf280-fd91-488c-994c-2f04416e5ee3/e700596b-03b0-4cee-ac5c-9212762c027a/coffee-beverages-explained-1080px.jpg";
             var defaultRenditionQuery = "w=200&h=150&fit=clip&rect=7,23,300,200";
 
             Assert.Equal($"{assetUrl}?{defaultRenditionQuery}", teaserImage.Url);
@@ -170,7 +170,7 @@ namespace Kentico.Kontent.Delivery.Tests
             var response = await client.GetItemAsync<Article>("coffee_beverages_explained");
             var teaserImage = response.Item.TeaserImage.FirstOrDefault();
 
-            var assetUrl = "https://assets.kenticocloud.com:443/975bf280-fd91-488c-994c-2f04416e5ee3/e700596b-03b0-4cee-ac5c-9212762c027a/coffee-beverages-explained-1080px.jpg";
+            var assetUrl = "https://assets.kontent.ai:443/975bf280-fd91-488c-994c-2f04416e5ee3/e700596b-03b0-4cee-ac5c-9212762c027a/coffee-beverages-explained-1080px.jpg";
 
             Assert.Equal(assetUrl, teaserImage.Url);
         }

@@ -3,14 +3,14 @@ using System.IO;
 using System.Net.Http;
 using System.Threading.Tasks;
 using FakeItEasy;
-using Kentico.Kontent.Delivery.Abstractions;
-using Kentico.Kontent.Delivery.Builders.DeliveryClient;
-using Kentico.Kontent.Delivery.Configuration;
-using Kentico.Kontent.Delivery.Tests.Models.ContentTypes;
+using Kontent.Ai.Delivery.Abstractions;
+using Kontent.Ai.Delivery.Builders.DeliveryClient;
+using Kontent.Ai.Delivery.Configuration;
+using Kontent.Ai.Delivery.Tests.Models.ContentTypes;
 using RichardSzalay.MockHttp;
 using Xunit;
 
-namespace Kentico.Kontent.Delivery.Tests
+namespace Kontent.Ai.Delivery.Tests
 {
     /// <summary>
     /// Sample test mocking HTTP client

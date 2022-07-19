@@ -1,12 +1,12 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Threading.Tasks;
-using Kentico.Kontent.Delivery.Abstractions;
-using Kentico.Kontent.Delivery.Caching.Extensions;
+using Kontent.Ai.Delivery.Abstractions;
+using Kontent.Ai.Delivery.Caching.Extensions;
 using Microsoft.Extensions.Caching.Distributed;
 using Microsoft.Extensions.Options;
 
-namespace Kentico.Kontent.Delivery.Caching
+namespace Kontent.Ai.Delivery.Caching
 {
     /// <summary>
     /// Cache responses against the Kontent Delivery API.

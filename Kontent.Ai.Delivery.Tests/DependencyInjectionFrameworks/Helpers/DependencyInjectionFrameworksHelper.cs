@@ -3,17 +3,17 @@ using Autofac;
 using Autofac.Extensions.DependencyInjection;
 using Castle.Windsor;
 using Castle.Windsor.MsDependencyInjection;
-using Kentico.Kontent.Delivery.Abstractions;
-using Kentico.Kontent.Delivery.Extensions;
-using Kentico.Kontent.Delivery.Tests.Factories;
-using Kentico.Kontent.Delivery.Tests.Models.ContentTypes;
+using Kontent.Ai.Delivery.Abstractions;
+using Kontent.Ai.Delivery.Extensions;
+using Kontent.Ai.Delivery.Tests.Factories;
+using Kontent.Ai.Delivery.Tests.Models.ContentTypes;
 using Microsoft.Extensions.DependencyInjection;
 using SimpleInjector;
 using SimpleInjector.Lifestyles;
 using Unity;
 using Unity.Microsoft.DependencyInjection;
 
-namespace Kentico.Kontent.Delivery.Tests.DependencyInjectionFrameworks.Helpers
+namespace Kontent.Ai.Delivery.Tests.DependencyInjectionFrameworks.Helpers
 {
     internal static class DependencyInjectionFrameworksHelper
     {

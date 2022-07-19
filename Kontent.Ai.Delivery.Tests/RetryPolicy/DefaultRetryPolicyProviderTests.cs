@@ -1,10 +1,10 @@
 ﻿using System;
-using Kentico.Kontent.Delivery.Abstractions;
-using Kentico.Kontent.Delivery.RetryPolicy;
+using Kontent.Ai.Delivery.Abstractions;
+using Kontent.Ai.Delivery.RetryPolicy;
 using Microsoft.Extensions.Options;
 using Xunit;
 
-namespace Kentico.Kontent.Delivery.Tests.RetryPolicy
+namespace Kontent.Ai.Delivery.Tests.RetryPolicy
 {
     public class DefaultRetryPolicyProviderTests
     {

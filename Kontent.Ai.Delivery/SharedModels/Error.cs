@@ -1,7 +1,7 @@
-﻿using Kentico.Kontent.Delivery.Abstractions;
+﻿using Kontent.Ai.Delivery.Abstractions;
 using Newtonsoft.Json;
 
-namespace Kentico.Kontent.Delivery.SharedModels
+namespace Kontent.Ai.Delivery.SharedModels
 {
     internal sealed class Error : IError
     {

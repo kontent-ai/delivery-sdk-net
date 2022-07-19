@@ -1,4 +1,4 @@
-﻿namespace Kentico.Kontent.Delivery.Caching.Extensions
+﻿namespace Kontent.Ai.Delivery.Caching.Extensions
 {
     /// <summary>
     /// Extensions for a <see cref="DeliveryCacheOptions"/>.

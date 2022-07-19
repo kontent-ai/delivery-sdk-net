@@ -1,6 +1,6 @@
-﻿using Kentico.Kontent.Delivery.Abstractions;
-using Kentico.Kontent.Delivery.Caching;
-using Kentico.Kontent.Delivery.Caching.Factories;
+﻿using Kontent.Ai.Delivery.Abstractions;
+using Kontent.Ai.Delivery.Caching;
+using Kontent.Ai.Delivery.Caching.Factories;
 using Microsoft.Extensions.Caching.Distributed;
 using Microsoft.Extensions.Caching.Memory;
 using Microsoft.Extensions.DependencyInjection;
@@ -8,7 +8,7 @@ using Microsoft.Extensions.Options;
 using System;
 using System.Collections.Concurrent;
 
-namespace Kentico.Kontent.Delivery.Extensions.DependencyInjection
+namespace Kontent.Ai.Delivery.Extensions.DependencyInjection
 {
     internal class NamedDeliveryClientCacheFactory : IDeliveryClientFactory
     {

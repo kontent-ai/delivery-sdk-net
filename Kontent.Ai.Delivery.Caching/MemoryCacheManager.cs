@@ -3,12 +3,12 @@ using System.Collections.Concurrent;
 using System.Collections.Generic;
 using System.Threading;
 using System.Threading.Tasks;
-using Kentico.Kontent.Delivery.Abstractions;
+using Kontent.Ai.Delivery.Abstractions;
 using Microsoft.Extensions.Caching.Memory;
 using Microsoft.Extensions.Options;
 using Microsoft.Extensions.Primitives;
 
-namespace Kentico.Kontent.Delivery.Caching
+namespace Kontent.Ai.Delivery.Caching
 {
     /// <summary>
     /// Cache responses against the Kontent Delivery API.

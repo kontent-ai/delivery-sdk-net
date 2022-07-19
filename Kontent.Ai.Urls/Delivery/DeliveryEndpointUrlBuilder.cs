@@ -1,11 +1,11 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
-using Kentico.Kontent.Delivery.Abstractions;
-using Kentico.Kontent.Urls.Delivery.QueryParameters;
+using Kontent.Ai.Delivery.Abstractions;
+using Kontent.Ai.Urls.Delivery.QueryParameters;
 using Microsoft.Extensions.Options;
 
-namespace Kentico.Kontent.Urls.Delivery
+namespace Kontent.Ai.Urls.Delivery
 {
     /// <summary>
     /// Facilitates the generation of valid URLs for Kontent Delivery API

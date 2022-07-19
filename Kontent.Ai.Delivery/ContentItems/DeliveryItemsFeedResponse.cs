@@ -1,7 +1,7 @@
 ﻿using System.Collections.Generic;
-using Kentico.Kontent.Delivery.Abstractions;
+using Kontent.Ai.Delivery.Abstractions;
 
-namespace Kentico.Kontent.Delivery.ContentItems
+namespace Kontent.Ai.Delivery.ContentItems
 {
     /// <inheritdoc cref="IDeliveryItemsFeedResponse{T}" />
     internal class DeliveryItemsFeedResponse<T> : AbstractItemsResponse, IDeliveryItemsFeedResponse<T>

@@ -1,6 +1,6 @@
 ﻿using Newtonsoft.Json;
 
-namespace Kentico.Kontent.Delivery
+namespace Kontent.Ai.Delivery
 {
     internal sealed class DeliveryJsonSerializer : JsonSerializer
     {

@@ -7,21 +7,21 @@ using System.Net.Http;
 using System.Threading.Tasks;
 using AngleSharp.Html.Parser;
 using FakeItEasy;
-using Kentico.Kontent.Delivery.Abstractions;
-using Kentico.Kontent.Delivery.Builders.DeliveryClient;
-using Kentico.Kontent.Delivery.ContentItems;
-using Kentico.Kontent.Delivery.ContentItems.RichText.Blocks;
-using Kentico.Kontent.Delivery.SharedModels;
-using Kentico.Kontent.Delivery.Tests.Factories;
-using Kentico.Kontent.Delivery.Tests.Models;
-using Kentico.Kontent.Delivery.Tests.Models.ContentTypes;
-using Kentico.Kontent.Urls.Delivery.QueryParameters;
-using Kentico.Kontent.Urls.Delivery.QueryParameters.Filters;
+using Kontent.Ai.Delivery.Abstractions;
+using Kontent.Ai.Delivery.Builders.DeliveryClient;
+using Kontent.Ai.Delivery.ContentItems;
+using Kontent.Ai.Delivery.ContentItems.RichText.Blocks;
+using Kontent.Ai.Delivery.SharedModels;
+using Kontent.Ai.Delivery.Tests.Factories;
+using Kontent.Ai.Delivery.Tests.Models;
+using Kontent.Ai.Delivery.Tests.Models.ContentTypes;
+using Kontent.Ai.Urls.Delivery.QueryParameters;
+using Kontent.Ai.Urls.Delivery.QueryParameters.Filters;
 using Newtonsoft.Json.Linq;
 using RichardSzalay.MockHttp;
 using Xunit;
 
-namespace Kentico.Kontent.Delivery.Tests
+namespace Kontent.Ai.Delivery.Tests
 {
     public class DeliveryClientTests
     {
@@ -141,7 +141,7 @@ namespace Kentico.Kontent.Delivery.Tests
             Assert.Equal("Professional Espresso Machine", teaserImage.Description);
             Assert.Equal("coffee-beverages-explained-1080px.jpg", teaserImage.Name);
             Assert.Equal("image/jpeg", teaserImage.Type);
-            Assert.Equal("https://assets.kenticocloud.com:443/975bf280-fd91-488c-994c-2f04416e5ee3/e700596b-03b0-4cee-ac5c-9212762c027a/coffee-beverages-explained-1080px.jpg", teaserImage.Url);
+            Assert.Equal("https://assets.kontent.ai:443/975bf280-fd91-488c-994c-2f04416e5ee3/e700596b-03b0-4cee-ac5c-9212762c027a/coffee-beverages-explained-1080px.jpg", teaserImage.Url);
             Assert.Equal(800, teaserImage.Width);
             Assert.Equal(600, teaserImage.Height);
             Assert.NotNull(teaserImage.Renditions);
@@ -830,7 +830,7 @@ namespace Kentico.Kontent.Delivery.Tests
             Assert.Equal("Fire.jpg", item.AssetField.First().Name);
             Assert.Equal(129170, item.AssetField.First().Size);
             Assert.Equal(
-                "https://assets.kenticocloud.com:443/e1167a11-75af-4a08-ad84-0582b463b010/64096741-b658-46ee-b148-b287fe03ea16/Fire.jpg",
+                "https://assets.kontent.ai:443/e1167a11-75af-4a08-ad84-0582b463b010/64096741-b658-46ee-b148-b287fe03ea16/Fire.jpg",
                 item.AssetField.First().Url);
 
             Assert.Single(item.LinkedItemsField);
@@ -878,7 +878,7 @@ namespace Kentico.Kontent.Delivery.Tests
             Assert.Equal("Fire.jpg", item.AssetFieldWithADifferentName.First().Name);
             Assert.Equal(129170, item.AssetFieldWithADifferentName.First().Size);
             Assert.Equal(
-                "https://assets.kenticocloud.com:443/e1167a11-75af-4a08-ad84-0582b463b010/64096741-b658-46ee-b148-b287fe03ea16/Fire.jpg",
+                "https://assets.kontent.ai:443/e1167a11-75af-4a08-ad84-0582b463b010/64096741-b658-46ee-b148-b287fe03ea16/Fire.jpg",
                 item.AssetFieldWithADifferentName.First().Url);
 
             Assert.Single(item.LinkedItemsFieldWithADifferentName);

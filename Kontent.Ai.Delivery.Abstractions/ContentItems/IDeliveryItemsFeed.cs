@@ -1,6 +1,6 @@
 ﻿using System.Threading.Tasks;
 
-namespace Kentico.Kontent.Delivery.Abstractions
+namespace Kontent.Ai.Delivery.Abstractions
 {
     /// <summary>
     /// Represents a feed that can be used to retrieve strongly typed content items from Kontent Delivery API in smaller batches.

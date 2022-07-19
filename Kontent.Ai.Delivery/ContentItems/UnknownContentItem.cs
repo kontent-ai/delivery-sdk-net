@@ -1,4 +1,4 @@
-﻿namespace Kentico.Kontent.Delivery.ContentItems
+﻿namespace Kontent.Ai.Delivery.ContentItems
 {
     /// <summary>
     /// Type used to identify inline content items which don't have corresponding model.

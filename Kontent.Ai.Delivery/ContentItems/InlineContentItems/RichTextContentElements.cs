@@ -1,6 +1,6 @@
 using System.Diagnostics;
 
-namespace Kentico.Kontent.Delivery.ContentItems.InlineContentItems
+namespace Kontent.Ai.Delivery.ContentItems.InlineContentItems
 {
     /// <summary>
     /// Structure holding identifier of specific richtext element used in content item.

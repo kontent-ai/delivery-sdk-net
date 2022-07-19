@@ -1,6 +1,6 @@
 ﻿using System.Collections.Generic;
 
-namespace Kentico.Kontent.Delivery.Abstractions
+namespace Kontent.Ai.Delivery.Abstractions
 {
     /// <summary>
     /// An object representing a taxonomy element value.

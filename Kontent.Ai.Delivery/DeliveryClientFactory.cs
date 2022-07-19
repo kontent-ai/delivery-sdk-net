@@ -1,10 +1,10 @@
 ﻿using System;
-using Kentico.Kontent.Delivery.Abstractions;
+using Kontent.Ai.Delivery.Abstractions;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Options;
 using Newtonsoft.Json;
 
-namespace Kentico.Kontent.Delivery
+namespace Kontent.Ai.Delivery
 {
     /// <summary>
     /// A factory class for <see cref="IDeliveryClient"/>
@@ -12,7 +12,7 @@ namespace Kentico.Kontent.Delivery
     public class DeliveryClientFactory : IDeliveryClientFactory
     {
         private readonly IServiceProvider _serviceProvider;
-        private string _notImplementExceptionMessage = "The default implementation does not support retrieving clients by name. Please use the Kentico.Kontent.Delivery.Extensions.Autofac.DependencyInjection or implement your own factory.";
+        private string _notImplementExceptionMessage = "The default implementation does not support retrieving clients by name. Please use the Kontent.Ai.Delivery.Extensions.Autofac.DependencyInjection or implement your own factory.";
         
         /// <summary>
         /// Initializes a new instance of the <see cref="DeliveryClientFactory"/> class.

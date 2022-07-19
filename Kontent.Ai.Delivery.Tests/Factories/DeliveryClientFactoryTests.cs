@@ -1,11 +1,11 @@
 ﻿using System;
 using FluentAssertions;
-using Kentico.Kontent.Delivery.Abstractions;
+using Kontent.Ai.Delivery.Abstractions;
 using Microsoft.Extensions.DependencyInjection;
 using Xunit;
-using Kentico.Kontent.Delivery.Extensions;
+using Kontent.Ai.Delivery.Extensions;
 
-namespace Kentico.Kontent.Delivery.Tests.Factories
+namespace Kontent.Ai.Delivery.Tests.Factories
 {
     public class DeliveryClientFactoryTests
     {

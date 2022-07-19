@@ -1,6 +1,6 @@
-﻿using Kentico.Kontent.Delivery.Abstractions;
+﻿using Kontent.Ai.Delivery.Abstractions;
 
-namespace Kentico.Kontent.Delivery.ContentItems.InlineContentItems
+namespace Kontent.Ai.Delivery.ContentItems.InlineContentItems
 {
     internal class ReplaceWithWarningAboutUnknownItemResolver : IInlineContentItemsResolver<UnknownContentItem>
     {

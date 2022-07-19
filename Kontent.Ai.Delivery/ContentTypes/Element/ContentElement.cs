@@ -1,8 +1,8 @@
 ﻿using System.Diagnostics;
-using Kentico.Kontent.Delivery.Abstractions;
+using Kontent.Ai.Delivery.Abstractions;
 using Newtonsoft.Json;
 
-namespace Kentico.Kontent.Delivery.ContentTypes.Element
+namespace Kontent.Ai.Delivery.ContentTypes.Element
 {
     /// <inheritdoc/>
     [DebuggerDisplay("Name = {" + nameof(Name) + "}")]

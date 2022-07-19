@@ -63,7 +63,7 @@
               "type": "image/jpeg",
               "size": 72879,
               "description": "AeroPress Coffee Maker",
-              "url": "https://assets.kenticocloud.com:443/975bf280-fd91-488c-994c-2f04416e5ee3/3eee7d6e-0542-48ca-ab1e-35657f36dcfd/aeropress.jpg"
+              "url": "https://assets.kontent.ai:443/975bf280-fd91-488c-994c-2f04416e5ee3/3eee7d6e-0542-48ca-ab1e-35657f36dcfd/aeropress.jpg"
             }
           ]
         },
@@ -150,7 +150,7 @@
               "type": "image/jpeg",
               "size": 46469,
               "description": "Coffee Berries",
-              "url": "https://assets.kenticocloud.com:443/975bf280-fd91-488c-994c-2f04416e5ee3/3e76909f-599f-4742-b472-77fd4b510e92/sources.jpg"
+              "url": "https://assets.kontent.ai:443/975bf280-fd91-488c-994c-2f04416e5ee3/3e76909f-599f-4742-b472-77fd4b510e92/sources.jpg"
             }
           ]
         }
@@ -198,7 +198,7 @@
               "type": "image/jpeg",
               "size": 50240,
               "description": "Coffee Roaster",
-              "url": "https://assets.kenticocloud.com:443/975bf280-fd91-488c-994c-2f04416e5ee3/66d73245-10e5-4478-93e7-5609fee3cdf7/roaster.jpg"
+              "url": "https://assets.kontent.ai:443/975bf280-fd91-488c-994c-2f04416e5ee3/66d73245-10e5-4478-93e7-5609fee3cdf7/roaster.jpg"
             }
           ]
         }
@@ -240,7 +240,7 @@
               "type": "image/jpeg",
               "size": 56264,
               "description": "Dancing Goat Café - Los Angeles",
-              "url": "https://assets.kenticocloud.com:443/975bf280-fd91-488c-994c-2f04416e5ee3/512047f1-2f7f-45fd-9e90-e71b8feae017/about.jpg"
+              "url": "https://assets.kontent.ai:443/975bf280-fd91-488c-994c-2f04416e5ee3/512047f1-2f7f-45fd-9e90-e71b8feae017/about.jpg"
             }
           ]
         }
@@ -251,6 +251,6 @@
     "skip": 1,
     "limit": 2,
     "count": 2,
-    "next_page": "https://deliver.kenticocloud.com/975bf280-fd91-488c-994c-2f04416e5ee3/items?limit=2&skip=3"
+    "next_page": "https://deliver.kontent.ai/975bf280-fd91-488c-994c-2f04416e5ee3/items?limit=2&skip=3"
   }
 }

@@ -1,10 +1,10 @@
 ﻿using System;
 using System.Net.Http;
 using FakeItEasy;
-using Kentico.Kontent.Delivery.Abstractions;
+using Kontent.Ai.Delivery.Abstractions;
 using RichardSzalay.MockHttp;
 
-namespace Kentico.Kontent.Delivery.Tests.Factories
+namespace Kontent.Ai.Delivery.Tests.Factories
 {
     internal static class DeliveryClientFactory
     {

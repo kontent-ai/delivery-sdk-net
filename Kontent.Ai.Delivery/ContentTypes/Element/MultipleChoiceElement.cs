@@ -1,8 +1,8 @@
-﻿using Kentico.Kontent.Delivery.Abstractions;
+﻿using Kontent.Ai.Delivery.Abstractions;
 using Newtonsoft.Json;
 using System.Collections.Generic;
 
-namespace Kentico.Kontent.Delivery.ContentTypes.Element
+namespace Kontent.Ai.Delivery.ContentTypes.Element
 {
     internal class MultipleChoiceElement : ContentElement, IMultipleChoiceElement
     {

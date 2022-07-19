@@ -1,9 +1,9 @@
-﻿using Kentico.Kontent.Delivery.Abstractions;
+﻿using Kontent.Ai.Delivery.Abstractions;
 using Newtonsoft.Json;
 using System;
 using System.Diagnostics;
 
-namespace Kentico.Kontent.Delivery.ContentItems.ContentLinks
+namespace Kontent.Ai.Delivery.ContentItems.ContentLinks
 {
     /// <inheritdoc/>
     [DebuggerDisplay("Codename = {" + nameof(IContentLink.Codename) + "}")]

@@ -6,7 +6,7 @@ using System.Net.Http.Headers;
 using System.Reflection;
 using System.Runtime.CompilerServices;
 
-namespace Kentico.Kontent.Delivery.Extensions
+namespace Kontent.Ai.Delivery.Extensions
 {
     internal static class HttpRequestHeadersExtensions
     {
@@ -26,7 +26,7 @@ namespace Kentico.Kontent.Delivery.Extensions
         }
 
         /// <summary>
-        /// Adds a tracking header according to https://github.com/Kentico/Home/wiki/Guidelines-for-Kontent-related-tools#analytics
+        /// Adds a tracking header according to https://kontent-ai.github.io/articles/Guidelines-for-Kontent.ai-related-tools.html#analytics
         /// </summary>
         /// <param name="headers">Collection of headers</param>
         internal static void AddSourceTrackingHeader(this HttpRequestHeaders headers)

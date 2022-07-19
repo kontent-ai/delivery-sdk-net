@@ -4,12 +4,12 @@ using System.Linq;
 using System.Reflection;
 using System.Threading.Tasks;
 using AngleSharp.Html.Parser;
-using Kentico.Kontent.Delivery.Abstractions;
-using Kentico.Kontent.Delivery.ContentItems.ContentLinks;
-using Kentico.Kontent.Delivery.ContentItems.RichText;
-using Kentico.Kontent.Delivery.ContentItems.RichText.Blocks;
+using Kontent.Ai.Delivery.Abstractions;
+using Kontent.Ai.Delivery.ContentItems.ContentLinks;
+using Kontent.Ai.Delivery.ContentItems.RichText;
+using Kontent.Ai.Delivery.ContentItems.RichText.Blocks;
 
-namespace Kentico.Kontent.Delivery.ContentItems
+namespace Kontent.Ai.Delivery.ContentItems
 {
     internal class RichTextContentConverter : IPropertyValueConverter<string>
     {

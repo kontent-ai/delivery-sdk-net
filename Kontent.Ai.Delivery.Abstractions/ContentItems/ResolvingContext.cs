@@ -1,7 +1,7 @@
 ﻿using System;
 using System.Threading.Tasks;
 
-namespace Kentico.Kontent.Delivery.Abstractions
+namespace Kontent.Ai.Delivery.Abstractions
 {
     /// <summary>
     /// Context of the current resolving process

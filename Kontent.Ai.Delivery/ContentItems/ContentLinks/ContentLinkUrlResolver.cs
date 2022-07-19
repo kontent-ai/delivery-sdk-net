@@ -1,7 +1,7 @@
-﻿using Kentico.Kontent.Delivery.Abstractions;
+﻿using Kontent.Ai.Delivery.Abstractions;
 using System.Threading.Tasks;
 
-namespace Kentico.Kontent.Delivery.ContentItems.ContentLinks
+namespace Kontent.Ai.Delivery.ContentItems.ContentLinks
 {
     internal class DefaultContentLinkUrlResolver : IContentLinkUrlResolver
     {

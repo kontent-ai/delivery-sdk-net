@@ -1,8 +1,8 @@
-﻿using Kentico.Kontent.Delivery.Extensions;
+﻿using Kontent.Ai.Delivery.Extensions;
 using System.Diagnostics;
 using Xunit;
 
-namespace Kentico.Kontent.Delivery.Tests
+namespace Kontent.Ai.Delivery.Tests
 {
     public class TrackingHeaderTests
     {
@@ -26,7 +26,7 @@ namespace Kentico.Kontent.Delivery.Tests
 
             var value = HttpRequestHeadersExtensions.GenerateSourceTrackingHeaderValue(assembly, attr);
 
-            Assert.Equal($"Kentico.Kontent.Delivery.Tests;{sourceVersion}", value);
+            Assert.Equal($"Kontent.Ai.Delivery.Tests;{sourceVersion}", value);
         }
 
         [Fact]
@@ -40,7 +40,7 @@ namespace Kentico.Kontent.Delivery.Tests
             var source = HttpRequestHeadersExtensions.GetSource();
 
             // Assert
-            Assert.Equal($"Kentico.Kontent.Delivery.Tests;{sourceVersion}", source);
+            Assert.Equal($"Kontent.Ai.Delivery.Tests;{sourceVersion}", source);
         }
     }
 }

@@ -1,9 +1,9 @@
 ﻿using System;
-using Kentico.Kontent.Delivery.Abstractions;
-using Kentico.Kontent.Delivery.Builders.DeliveryClient;
+using Kontent.Ai.Delivery.Abstractions;
+using Kontent.Ai.Delivery.Builders.DeliveryClient;
 using Microsoft.Extensions.DependencyInjection;
 
-namespace Kentico.Kontent.Delivery.ContentItems.InlineContentItems
+namespace Kontent.Ai.Delivery.ContentItems.InlineContentItems
 {
     /// <summary>
     /// Strips an <see cref="IInlineContentItemsResolver{T}"/> of its generic type, so it can be used generically by <see cref="InlineContentItemsProcessor"/>.

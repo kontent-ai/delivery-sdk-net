@@ -1,6 +1,6 @@
-﻿using Kentico.Kontent.Delivery.Abstractions;
+﻿using Kontent.Ai.Delivery.Abstractions;
 
-namespace Kentico.Kontent.Urls.Delivery.QueryParameters
+namespace Kontent.Ai.Urls.Delivery.QueryParameters
 {
     /// <summary>
     /// Specifies the maximum number of content items to return.

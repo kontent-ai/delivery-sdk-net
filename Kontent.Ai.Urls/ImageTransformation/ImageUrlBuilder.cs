@@ -4,7 +4,7 @@ using System.Globalization;
 using System.Linq;
 using Microsoft.Extensions.Primitives;
 
-namespace Kentico.Kontent.Urls.ImageTransformation
+namespace Kontent.Ai.Urls.ImageTransformation
 {
     /// <summary>
     /// Provides a builder for Image Transformations for Kontent Delivery API.

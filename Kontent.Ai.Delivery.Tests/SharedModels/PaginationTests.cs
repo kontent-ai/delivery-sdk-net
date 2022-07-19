@@ -1,10 +1,10 @@
 ﻿using System;
-using Kentico.Kontent.Delivery.Caching.Extensions;
-using Kentico.Kontent.Delivery.SharedModels;
+using Kontent.Ai.Delivery.Caching.Extensions;
+using Kontent.Ai.Delivery.SharedModels;
 using Newtonsoft.Json;
 using Xunit;
 
-namespace Kentico.Kontent.Delivery.Tests.SharedModels
+namespace Kontent.Ai.Delivery.Tests.SharedModels
 {
     public class PaginationTests
     {

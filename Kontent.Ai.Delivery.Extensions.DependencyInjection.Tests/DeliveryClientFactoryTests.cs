@@ -1,12 +1,12 @@
 ﻿using FakeItEasy;
 using FluentAssertions;
-using Kentico.Kontent.Delivery.Abstractions;
+using Kontent.Ai.Delivery.Abstractions;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Options;
 using System;
 using Xunit;
 
-namespace Kentico.Kontent.Delivery.Extensions.DependencyInjection.Tests
+namespace Kontent.Ai.Delivery.Extensions.DependencyInjection.Tests
 {
     public class DeliveryClientFactoryTests
     {

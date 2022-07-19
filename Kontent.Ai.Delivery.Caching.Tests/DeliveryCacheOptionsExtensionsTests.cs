@@ -1,11 +1,11 @@
 ﻿using AutoFixture;
 using FluentAssertions;
-using Kentico.Kontent.Delivery.Caching.Extensions;
+using Kontent.Ai.Delivery.Caching.Extensions;
 using System;
 using System.Collections.Generic;
 using Xunit;
 
-namespace Kentico.Kontent.Delivery.Caching.Tests
+namespace Kontent.Ai.Delivery.Caching.Tests
 {
     public class DeliveryCacheOptionsExtensionsTests
     {

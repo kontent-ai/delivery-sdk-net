@@ -1,7 +1,7 @@
 using System.Collections.Generic;
 using System.Threading.Tasks;
 
-namespace Kentico.Kontent.Delivery.Abstractions
+namespace Kontent.Ai.Delivery.Abstractions
 {
     /// <summary>
     /// Defines members necessary for retrieving content and its metadata from the Kontent Delivery service.

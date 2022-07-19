@@ -1,4 +1,4 @@
-﻿namespace Kentico.Kontent.Delivery.Abstractions
+﻿namespace Kontent.Ai.Delivery.Abstractions
 {
     /// <summary>
     /// A base interface for all response envelopes.

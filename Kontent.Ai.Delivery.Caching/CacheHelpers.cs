@@ -1,10 +1,10 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
-using Kentico.Kontent.Delivery.Abstractions;
+using Kontent.Ai.Delivery.Abstractions;
 using Newtonsoft.Json.Linq;
 
-namespace Kentico.Kontent.Delivery.Caching
+namespace Kontent.Ai.Delivery.Caching
 {
     /// <summary>
     /// A helper for creating cache dependency keys

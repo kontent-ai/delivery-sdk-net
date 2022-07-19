@@ -1,9 +1,9 @@
 ﻿using System;
 using System.Collections.Generic;
-using Kentico.Kontent.Delivery.Abstractions;
-using Kentico.Kontent.Delivery.ContentItems.InlineContentItems;
+using Kontent.Ai.Delivery.Abstractions;
+using Kontent.Ai.Delivery.ContentItems.InlineContentItems;
 
-namespace Kentico.Kontent.Delivery.Tests.Factories
+namespace Kontent.Ai.Delivery.Tests.Factories
 {
     internal class InlineContentItemsProcessorFactory
     {

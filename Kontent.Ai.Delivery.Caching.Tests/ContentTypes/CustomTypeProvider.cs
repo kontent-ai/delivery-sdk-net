@@ -1,9 +1,9 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
-using Kentico.Kontent.Delivery.Abstractions;
+using Kontent.Ai.Delivery.Abstractions;
 
-namespace Kentico.Kontent.Delivery.Caching.Tests.ContentTypes
+namespace Kontent.Ai.Delivery.Caching.Tests.ContentTypes
 {
     public class CustomTypeProvider : ITypeProvider
     {

@@ -1,4 +1,4 @@
-<Project Sdk="Microsoft.NET.Sdk">
+﻿<Project Sdk="Microsoft.NET.Sdk">
 
   <PropertyGroup>
     <TargetFrameworks>net5.0;net6.0</TargetFrameworks>
@@ -23,7 +23,7 @@
   </ItemGroup>
 
   <ItemGroup>
-    <ProjectReference Include="..\Kentico.Kontent.Urls\Kentico.Kontent.Urls.csproj" />
+    <ProjectReference Include="..\Kontent.Ai.Urls\Kontent.Ai.Urls.csproj" />
   </ItemGroup>
 
 </Project>

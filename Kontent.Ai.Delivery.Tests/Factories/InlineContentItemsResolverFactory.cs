@@ -1,7 +1,7 @@
 ﻿using System;
-using Kentico.Kontent.Delivery.Abstractions;
+using Kontent.Ai.Delivery.Abstractions;
 
-namespace Kentico.Kontent.Delivery.Tests.Factories
+namespace Kontent.Ai.Delivery.Tests.Factories
 {
     internal class InlineContentItemsResolverFactory
     {

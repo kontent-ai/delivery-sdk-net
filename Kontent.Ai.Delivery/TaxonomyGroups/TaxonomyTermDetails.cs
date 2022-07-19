@@ -1,9 +1,9 @@
 ﻿using System.Collections.Generic;
 using System.Diagnostics;
-using Kentico.Kontent.Delivery.Abstractions;
+using Kontent.Ai.Delivery.Abstractions;
 using Newtonsoft.Json;
 
-namespace Kentico.Kontent.Delivery.TaxonomyGroups
+namespace Kontent.Ai.Delivery.TaxonomyGroups
 {
     /// <inheritdoc/>
     [DebuggerDisplay("Name = {" + nameof(Name) + "}")]

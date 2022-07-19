@@ -1,9 +1,9 @@
 ﻿using System;
 using FakeItEasy;
-using Kentico.Kontent.Delivery.Abstractions;
+using Kontent.Ai.Delivery.Abstractions;
 using Microsoft.Extensions.Options;
 
-namespace Kentico.Kontent.Delivery.Tests.Factories
+namespace Kontent.Ai.Delivery.Tests.Factories
 {
     public static class DeliveryOptionsFactory
     { 

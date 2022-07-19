@@ -6,11 +6,11 @@ using System.Net;
 using System.Net.Http;
 using System.Net.Http.Headers;
 using System.Threading.Tasks;
-using Kentico.Kontent.Delivery.Abstractions;
-using Kentico.Kontent.Delivery.RetryPolicy;
+using Kontent.Ai.Delivery.Abstractions;
+using Kontent.Ai.Delivery.RetryPolicy;
 using Xunit;
 
-namespace Kentico.Kontent.Delivery.Tests.RetryPolicy
+namespace Kontent.Ai.Delivery.Tests.RetryPolicy
 {
     public class DefaultRetryPolicyTests
     {

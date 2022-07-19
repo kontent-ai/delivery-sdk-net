@@ -3,13 +3,13 @@ using System.Reflection;
 using System.Threading.Tasks;
 using AngleSharp.Html.Parser;
 using FakeItEasy;
-using Kentico.Kontent.Delivery.Abstractions;
-using Kentico.Kontent.Delivery.ContentItems;
-using Kentico.Kontent.Delivery.Tests.Factories;
+using Kontent.Ai.Delivery.Abstractions;
+using Kontent.Ai.Delivery.ContentItems;
+using Kontent.Ai.Delivery.Tests.Factories;
 using Newtonsoft.Json.Linq;
 using Xunit;
 
-namespace Kentico.Kontent.Delivery.Tests
+namespace Kontent.Ai.Delivery.Tests
 {
     public class ModelProviderTests
     {
@@ -94,7 +94,7 @@ namespace Kentico.Kontent.Delivery.Tests
             Assert.IsType<ContentItemWithSingleRte>(result);
         }
 
-        /// <seealso href="https://github.com/Kentico/kontent-delivery-sdk-net/issues/126"/>
+        /// <seealso href="https://github.com/kontent-ai/delivery-sdk-net/issues/126"/>
         [Fact]
         public async Task GetContentItemModelRetrievingContentModelWithUnknownTypeReturnNull()
         {

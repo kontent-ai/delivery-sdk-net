@@ -2,9 +2,9 @@
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
-using Kentico.Kontent.Delivery.Abstractions;
+using Kontent.Ai.Delivery.Abstractions;
 
-namespace Kentico.Kontent.Delivery.Caching
+namespace Kontent.Ai.Delivery.Caching
 {
     /// <summary>
     /// Executes requests with cache against the Kontent Delivery API.

@@ -7,16 +7,16 @@ using System.Reactive.Linq;
 using System.Threading.Tasks;
 using AngleSharp.Html.Parser;
 using FakeItEasy;
-using Kentico.Kontent.Delivery.Abstractions;
-using Kentico.Kontent.Delivery.ContentItems;
-using Kentico.Kontent.Delivery.Rx.Tests.Models.ContentTypes;
-using Kentico.Kontent.Urls.Delivery.QueryParameters;
-using Kentico.Kontent.Urls.Delivery.QueryParameters.Filters;
+using Kontent.Ai.Delivery.Abstractions;
+using Kontent.Ai.Delivery.ContentItems;
+using Kontent.Ai.Delivery.Rx.Tests.Models.ContentTypes;
+using Kontent.Ai.Urls.Delivery.QueryParameters;
+using Kontent.Ai.Urls.Delivery.QueryParameters.Filters;
 using Microsoft.Extensions.Options;
 using RichardSzalay.MockHttp;
 using Xunit;
 
-namespace Kentico.Kontent.Delivery.Rx.Tests
+namespace Kontent.Ai.Delivery.Rx.Tests
 {
     public class DeliveryObservableProxyTests
     {

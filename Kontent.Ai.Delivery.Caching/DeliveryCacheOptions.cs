@@ -1,7 +1,7 @@
 ﻿using System;
-using Kentico.Kontent.Delivery.Abstractions;
+using Kontent.Ai.Delivery.Abstractions;
 
-namespace Kentico.Kontent.Delivery.Caching
+namespace Kontent.Ai.Delivery.Caching
 {
     /// <summary>
     /// Represents configuration of the <see cref="IDeliveryCacheManager"/>

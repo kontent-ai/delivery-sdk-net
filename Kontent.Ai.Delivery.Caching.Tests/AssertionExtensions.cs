@@ -2,7 +2,7 @@
 using FluentAssertions.Equivalency;
 using System;
 
-namespace Kentico.Kontent.Delivery.Caching.Tests
+namespace Kontent.Ai.Delivery.Caching.Tests
 {
     public static class AssertionExtensions
     {

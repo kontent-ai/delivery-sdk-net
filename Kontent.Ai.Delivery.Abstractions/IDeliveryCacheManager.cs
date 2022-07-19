@@ -2,7 +2,7 @@
 using System.Collections.Generic;
 using System.Threading.Tasks;
 
-namespace Kentico.Kontent.Delivery.Abstractions
+namespace Kontent.Ai.Delivery.Abstractions
 {
     /// <summary>
     /// Cache responses against the Kontent Delivery API.

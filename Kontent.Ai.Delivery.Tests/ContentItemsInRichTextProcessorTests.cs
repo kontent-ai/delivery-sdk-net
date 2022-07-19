@@ -1,11 +1,11 @@
 ﻿using System.Collections.Generic;
 using System.Threading.Tasks;
-using Kentico.Kontent.Delivery.Abstractions;
-using Kentico.Kontent.Delivery.ContentItems;
-using Kentico.Kontent.Delivery.Tests.Factories;
+using Kontent.Ai.Delivery.Abstractions;
+using Kontent.Ai.Delivery.ContentItems;
+using Kontent.Ai.Delivery.Tests.Factories;
 using Xunit;
 
-namespace Kentico.Kontent.Delivery.Tests
+namespace Kontent.Ai.Delivery.Tests
 {
     public class ContentItemsInRichTextProcessorTests
     {
@@ -500,7 +500,7 @@ namespace Kentico.Kontent.Delivery.Tests
             Assert.Equal($"<div>{typeof(DummyImageItem)}</div>" + plainHtml + $"<div>{typeof(DummyItem)}</div>", result);
         }
 
-        /// <seealso href="https://github.com/Kentico/kontent-delivery-sdk-net/issues/153"/>
+        /// <seealso href="https://github.com/kontent-ai/delivery-sdk-net/issues/153"/>
         [Fact]
         public async Task ContentItemWithDefaultResolverReturnsContentItemDirectlyInResolvedContentItemDataItemProperty()
         {

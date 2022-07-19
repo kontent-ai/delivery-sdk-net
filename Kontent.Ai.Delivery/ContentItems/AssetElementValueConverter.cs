@@ -3,11 +3,11 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Reflection;
 using System.Threading.Tasks;
-using Kentico.Kontent.Delivery.Abstractions;
-using Kentico.Kontent.Delivery.ContentItems.Elements;
+using Kontent.Ai.Delivery.Abstractions;
+using Kontent.Ai.Delivery.ContentItems.Elements;
 using Microsoft.Extensions.Options;
 
-namespace Kentico.Kontent.Delivery.ContentItems
+namespace Kontent.Ai.Delivery.ContentItems
 {
     internal class AssetElementValueConverter : IPropertyValueConverter<IEnumerable<IAsset>>
     {

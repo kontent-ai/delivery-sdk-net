@@ -1,6 +1,6 @@
 ﻿using System.Threading.Tasks;
 
-namespace Kentico.Kontent.Delivery.Abstractions
+namespace Kontent.Ai.Delivery.Abstractions
 {
     /// <summary>
     /// Extra overloads of the <see cref="IDeliveryClient"/> for the consumer's convenience. 

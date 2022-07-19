@@ -1,8 +1,8 @@
 ﻿using System;
 using System.Linq;
-using Kentico.Kontent.Delivery.Abstractions;
+using Kontent.Ai.Delivery.Abstractions;
 
-namespace Kentico.Kontent.Urls.Delivery.QueryParameters.Filters
+namespace Kontent.Ai.Urls.Delivery.QueryParameters.Filters
 {
     /// <summary>
     /// Provides the base class for filter implementations.

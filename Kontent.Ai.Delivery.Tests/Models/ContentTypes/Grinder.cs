@@ -1,4 +1,4 @@
-namespace Kentico.Kontent.Delivery.Tests.Models.ContentTypes
+namespace Kontent.Ai.Delivery.Tests.Models.ContentTypes
 {
     public partial class Grinder
     {

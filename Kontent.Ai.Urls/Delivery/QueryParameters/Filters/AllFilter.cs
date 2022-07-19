@@ -1,4 +1,4 @@
-﻿namespace Kentico.Kontent.Urls.Delivery.QueryParameters.Filters
+﻿namespace Kontent.Ai.Urls.Delivery.QueryParameters.Filters
 {
     /// <summary>
     /// Represents a filter that matches a content item if the specified content element or system attribute has a value that contains all the specified values.

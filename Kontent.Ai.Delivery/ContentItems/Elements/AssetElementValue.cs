@@ -1,7 +1,7 @@
-﻿using Kentico.Kontent.Delivery.Abstractions;
+﻿using Kontent.Ai.Delivery.Abstractions;
 using System.Collections.Generic;
 
-namespace Kentico.Kontent.Delivery.ContentItems.Elements
+namespace Kontent.Ai.Delivery.ContentItems.Elements
 {
     internal class AssetElementValue : ContentElementValue<IEnumerable<IAsset>>, IAssetElementValue
     {

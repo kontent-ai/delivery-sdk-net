@@ -3,16 +3,16 @@ using System.Collections.Generic;
 using System.IO;
 using System.Threading.Tasks;
 using AngleSharp.Html.Parser;
-using Kentico.Kontent.Delivery.Abstractions;
-using Kentico.Kontent.Delivery.ContentItems;
-using Kentico.Kontent.Delivery.ContentItems.ContentLinks;
-using Kentico.Kontent.Delivery.RetryPolicy;
-using Kentico.Kontent.Delivery.Tests.Factories;
-using Kentico.Kontent.Delivery.Tests.Models.ContentTypes;
+using Kontent.Ai.Delivery.Abstractions;
+using Kontent.Ai.Delivery.ContentItems;
+using Kontent.Ai.Delivery.ContentItems.ContentLinks;
+using Kontent.Ai.Delivery.RetryPolicy;
+using Kontent.Ai.Delivery.Tests.Factories;
+using Kontent.Ai.Delivery.Tests.Models.ContentTypes;
 using RichardSzalay.MockHttp;
 using Xunit;
 
-namespace Kentico.Kontent.Delivery.Tests
+namespace Kontent.Ai.Delivery.Tests
 {
     public class ContentLinkResolverTests
     {
@@ -70,9 +70,9 @@ namespace Kentico.Kontent.Delivery.Tests
         [Fact]
         public async Task ExternalLinksArePreserved()
         {
-            var result = await ResolveContentLinks("Learn <a href=\"https://www.kentico.com\">more</a>.");
+            var result = await ResolveContentLinks("Learn <a href=\"https://www.kontent.ai\">more</a>.");
 
-            Assert.Equal("Learn <a href=\"https://www.kentico.com\">more</a>.", result);
+            Assert.Equal("Learn <a href=\"https://www.kontent.ai\">more</a>.", result);
         }
 
         [Fact]

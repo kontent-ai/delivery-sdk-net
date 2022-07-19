@@ -1,7 +1,7 @@
 ﻿using System;
-using Kentico.Kontent.Delivery.Abstractions;
+using Kontent.Ai.Delivery.Abstractions;
 
-namespace Kentico.Kontent.Delivery.ContentItems
+namespace Kontent.Ai.Delivery.ContentItems
 {
     internal class TypeProvider : ITypeProvider
     {

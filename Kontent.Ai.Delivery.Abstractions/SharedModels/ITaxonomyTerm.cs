@@ -1,4 +1,4 @@
-﻿namespace Kentico.Kontent.Delivery.Abstractions
+﻿namespace Kontent.Ai.Delivery.Abstractions
 {
     /// <summary>
     /// Represents a taxonomy term assigned to a Taxonomy element.

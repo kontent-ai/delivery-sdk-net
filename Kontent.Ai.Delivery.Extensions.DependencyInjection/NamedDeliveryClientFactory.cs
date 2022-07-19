@@ -1,12 +1,12 @@
-﻿using Kentico.Kontent.Delivery.Abstractions;
-using Kentico.Kontent.Delivery.Configuration;
+﻿using Kontent.Ai.Delivery.Abstractions;
+using Kontent.Ai.Delivery.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Options;
 using Newtonsoft.Json;
 using System;
 using System.Collections.Concurrent;
 
-namespace Kentico.Kontent.Delivery.Extensions.DependencyInjection
+namespace Kontent.Ai.Delivery.Extensions.DependencyInjection
 {
     internal class NamedDeliveryClientFactory : IDeliveryClientFactory
     {

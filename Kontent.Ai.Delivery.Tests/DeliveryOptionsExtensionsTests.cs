@@ -1,10 +1,10 @@
 ﻿using AutoFixture;
 using FluentAssertions;
-using Kentico.Kontent.Delivery.Abstractions;
+using Kontent.Ai.Delivery.Abstractions;
 using System.Collections.Generic;
 using Xunit;
 
-namespace Kentico.Kontent.Delivery.Tests
+namespace Kontent.Ai.Delivery.Tests
 {
     public class DeliveryOptionsExtensionsTests
     {

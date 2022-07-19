@@ -2,7 +2,7 @@
 using System.Net;
 using System.Net.Http;
 
-namespace Kentico.Kontent.Delivery
+namespace Kontent.Ai.Delivery
 {
     /// <summary>
     /// Represents an error response from the Kontent Delivery API.

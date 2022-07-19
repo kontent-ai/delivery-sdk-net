@@ -1,15 +1,15 @@
 ﻿using System;
 using System.IO;
 using System.Linq;
-using Kentico.Kontent.Delivery.Builders.DeliveryClient;
-using Kentico.Kontent.Delivery.Caching.Extensions;
-using Kentico.Kontent.Delivery.Caching.Tests.ContentTypes;
-using Kentico.Kontent.Delivery.ContentItems;
+using Kontent.Ai.Delivery.Builders.DeliveryClient;
+using Kontent.Ai.Delivery.Caching.Extensions;
+using Kontent.Ai.Delivery.Caching.Tests.ContentTypes;
+using Kontent.Ai.Delivery.ContentItems;
 using RichardSzalay.MockHttp;
 using FluentAssertions;
 using Xunit;
 
-namespace Kentico.Kontent.Delivery.Caching.Tests
+namespace Kontent.Ai.Delivery.Caching.Tests
 {
     public class BinarySerializationTests
     {

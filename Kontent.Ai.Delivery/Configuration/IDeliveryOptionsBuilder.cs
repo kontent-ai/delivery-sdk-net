@@ -1,9 +1,9 @@
 ﻿using System;
-using Kentico.Kontent.Urls.Delivery.QueryParameters;
-using Kentico.Kontent.Delivery.Abstractions;
+using Kontent.Ai.Urls.Delivery.QueryParameters;
+using Kontent.Ai.Delivery.Abstractions;
 
 
-namespace Kentico.Kontent.Delivery.Configuration
+namespace Kontent.Ai.Delivery.Configuration
 {
     /// <summary>
     /// A builder abstraction of mandatory setup of <see cref="DeliveryOptions"/> instances.

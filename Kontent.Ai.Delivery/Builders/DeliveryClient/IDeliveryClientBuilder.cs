@@ -1,8 +1,8 @@
 ﻿using System;
-using Kentico.Kontent.Delivery.Abstractions;
-using Kentico.Kontent.Delivery.Configuration;
+using Kontent.Ai.Delivery.Abstractions;
+using Kontent.Ai.Delivery.Configuration;
 
-namespace Kentico.Kontent.Delivery.Builders.DeliveryClient
+namespace Kontent.Ai.Delivery.Builders.DeliveryClient
 {
     /// <summary>
     /// A builder abstraction of mandatory setup of <see cref="IDeliveryClient"/> instances.

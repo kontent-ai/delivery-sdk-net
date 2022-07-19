@@ -1,8 +1,8 @@
-﻿using Kentico.Kontent.Delivery.Abstractions;
+﻿using Kontent.Ai.Delivery.Abstractions;
 using Newtonsoft.Json;
 using System.Diagnostics;
 
-namespace Kentico.Kontent.Delivery.Languages
+namespace Kontent.Ai.Delivery.Languages
 {
     /// <inheritdoc/>
     [DebuggerDisplay("Name = {" + nameof(System) + "." + nameof(ILanguageSystemAttributes.Name) + "}")]

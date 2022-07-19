@@ -1,9 +1,9 @@
 ﻿using System;
 using System.Collections;
 using System.Threading.Tasks;
-using Kentico.Kontent.Delivery.Abstractions;
+using Kontent.Ai.Delivery.Abstractions;
 
-namespace Kentico.Kontent.Delivery.Tests.DependencyInjectionFrameworks.Helpers
+namespace Kontent.Ai.Delivery.Tests.DependencyInjectionFrameworks.Helpers
 {
     internal class FakeModelProvider : IModelProvider
     {

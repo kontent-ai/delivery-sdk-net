@@ -1,10 +1,10 @@
 using System.Collections.Generic;
-using Kentico.Kontent.Delivery.Abstractions;
-using Kentico.Kontent.Delivery.ContentItems.Attributes;
+using Kontent.Ai.Delivery.Abstractions;
+using Kontent.Ai.Delivery.ContentItems.Attributes;
 using Newtonsoft.Json;
 using NodaTime;
 
-namespace Kentico.Kontent.Delivery.Tests.Models.ContentTypes
+namespace Kontent.Ai.Delivery.Tests.Models.ContentTypes
 {
     public partial class Article : IArticle
     {

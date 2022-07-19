@@ -1,12 +1,12 @@
 ﻿using System.Linq;
 using System.Threading.Tasks;
 using FluentAssertions;
-using Kentico.Kontent.Delivery.Abstractions;
-using Kentico.Kontent.Delivery.SharedModels;
+using Kontent.Ai.Delivery.Abstractions;
+using Kontent.Ai.Delivery.SharedModels;
 using Xunit;
-using static Kentico.Kontent.Delivery.Caching.Tests.ResponseHelper;
+using static Kontent.Ai.Delivery.Caching.Tests.ResponseHelper;
 
-namespace Kentico.Kontent.Delivery.Caching.Tests
+namespace Kontent.Ai.Delivery.Caching.Tests
 {
     public class DeliveryClientCacheTests
     {

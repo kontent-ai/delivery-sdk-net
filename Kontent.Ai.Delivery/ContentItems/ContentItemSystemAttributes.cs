@@ -1,10 +1,10 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Diagnostics;
-using Kentico.Kontent.Delivery.Abstractions;
+using Kontent.Ai.Delivery.Abstractions;
 using Newtonsoft.Json;
 
-namespace Kentico.Kontent.Delivery.ContentItems
+namespace Kontent.Ai.Delivery.ContentItems
 {
     /// <inheritdoc/>
     [DebuggerDisplay("Id = {" + nameof(Id) + "}")]

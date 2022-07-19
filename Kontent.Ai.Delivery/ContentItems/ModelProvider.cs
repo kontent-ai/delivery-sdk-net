@@ -5,16 +5,16 @@ using System.Linq;
 using System.Reflection;
 using System.Threading.Tasks;
 using AngleSharp.Html.Parser;
-using Kentico.Kontent.Delivery.Abstractions;
-using Kentico.Kontent.Delivery.ContentItems.ContentLinks;
-using Kentico.Kontent.Delivery.ContentItems.Elements;
-using Kentico.Kontent.Delivery.ContentItems.InlineContentItems;
-using Kentico.Kontent.Delivery.SharedModels;
+using Kontent.Ai.Delivery.Abstractions;
+using Kontent.Ai.Delivery.ContentItems.ContentLinks;
+using Kontent.Ai.Delivery.ContentItems.Elements;
+using Kontent.Ai.Delivery.ContentItems.InlineContentItems;
+using Kontent.Ai.Delivery.SharedModels;
 using Microsoft.Extensions.Options;
 using Newtonsoft.Json;
 using Newtonsoft.Json.Linq;
 
-namespace Kentico.Kontent.Delivery.ContentItems
+namespace Kontent.Ai.Delivery.ContentItems
 {
     /// <summary>
     /// A default provider for mapping content items to models.

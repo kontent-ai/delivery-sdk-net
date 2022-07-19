@@ -2,7 +2,7 @@
 using System.Linq;
 using System.Net.Http.Headers;
 
-namespace Kentico.Kontent.Delivery.Extensions
+namespace Kontent.Ai.Delivery.Extensions
 {
     internal static class HttpResponseHeadersExtensions
     {

@@ -2,7 +2,7 @@
 using BenchmarkDotNet.Running;
 using Xunit;
 
-namespace Kentico.Kontent.Delivery.Benchmarks
+namespace Kontent.Ai.Delivery.Benchmarks
 {
     public class Harness
     {

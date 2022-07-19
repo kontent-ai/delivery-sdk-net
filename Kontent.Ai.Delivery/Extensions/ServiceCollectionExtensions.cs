@@ -2,20 +2,20 @@
 using System.Linq;
 using System.Net.Http;
 using AngleSharp.Html.Parser;
-using Kentico.Kontent.Delivery.Abstractions;
-using Kentico.Kontent.Delivery.Configuration;
-using Kentico.Kontent.Delivery.ContentItems;
-using Kentico.Kontent.Delivery.ContentItems.ContentLinks;
-using Kentico.Kontent.Delivery.ContentItems.InlineContentItems;
-using Kentico.Kontent.Delivery.Helpers;
-using Kentico.Kontent.Delivery.RetryPolicy;
+using Kontent.Ai.Delivery.Abstractions;
+using Kontent.Ai.Delivery.Configuration;
+using Kontent.Ai.Delivery.ContentItems;
+using Kontent.Ai.Delivery.ContentItems.ContentLinks;
+using Kontent.Ai.Delivery.ContentItems.InlineContentItems;
+using Kontent.Ai.Delivery.Helpers;
+using Kontent.Ai.Delivery.RetryPolicy;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.DependencyInjection.Extensions;
 using Newtonsoft.Json;
 
 // see https://docs.microsoft.com/en-us/aspnet/core/fundamentals/dependency-injection?view=aspnetcore-2.2
-namespace Kentico.Kontent.Delivery.Extensions
+namespace Kontent.Ai.Delivery.Extensions
 {
     /// <summary>
     /// A class which contains extension methods on <see cref="IServiceCollection"/> for registering an <see cref="IDeliveryClient"/> instance.

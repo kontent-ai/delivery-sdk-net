@@ -1,4 +1,4 @@
-﻿namespace Kentico.Kontent.Delivery.Abstractions
+﻿namespace Kontent.Ai.Delivery.Abstractions
 {
     /// <summary>
     /// An interface, implemented to be registered as resolver for specific content type of inline content item

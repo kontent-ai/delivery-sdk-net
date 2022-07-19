@@ -1,9 +1,9 @@
-﻿using Kentico.Kontent.Delivery.Abstractions;
+﻿using Kontent.Ai.Delivery.Abstractions;
 using Microsoft.Extensions.Caching.Distributed;
 using Microsoft.Extensions.Caching.Memory;
 using Microsoft.Extensions.Options;
 
-namespace Kentico.Kontent.Delivery.Caching.Factories
+namespace Kontent.Ai.Delivery.Caching.Factories
 {
     /// <summary>
     /// A factory class for manually create an <see cref="IDeliveryCacheManager"/> instance.

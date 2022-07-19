@@ -1,8 +1,8 @@
-﻿using Kentico.Kontent.Delivery.Abstractions;
-using Kentico.Kontent.Delivery.Configuration;
+﻿using Kontent.Ai.Delivery.Abstractions;
+using Kontent.Ai.Delivery.Configuration;
 using System;
 
-namespace Kentico.Kontent.Delivery.Helpers
+namespace Kontent.Ai.Delivery.Helpers
 {
     /// <summary>
     /// A class which contains helper methods on <see cref="DeliveryOptions"/>.

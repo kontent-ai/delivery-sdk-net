@@ -27,8 +27,8 @@
   </ItemGroup>
 
   <ItemGroup>
-    <ProjectReference Include="..\Kentico.Kontent.Delivery.Caching\Kentico.Kontent.Delivery.Caching.csproj" />
-    <ProjectReference Include="..\Kentico.Kontent.Delivery\Kentico.Kontent.Delivery.csproj" />
+    <ProjectReference Include="..\Kontent.Ai.Delivery.Caching\Kontent.Ai.Delivery.Caching.csproj" />
+    <ProjectReference Include="..\Kontent.Ai.Delivery\Kontent.Ai.Delivery.csproj" />
   </ItemGroup>
 
   <ItemGroup>
@@ -42,7 +42,7 @@
 
   <ItemGroup>
     <AssemblyAttribute Include="System.Runtime.CompilerServices.InternalsVisibleToAttribute">
-      <_Parameter1>Kentico.Kontent.Delivery.Caching.Tests</_Parameter1>
+      <_Parameter1>Kontent.Ai.Delivery.Caching.Tests</_Parameter1>
     </AssemblyAttribute>
   </ItemGroup>
 

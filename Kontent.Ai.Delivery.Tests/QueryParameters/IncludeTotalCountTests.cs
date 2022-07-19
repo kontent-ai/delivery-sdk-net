@@ -1,15 +1,15 @@
 ﻿using System;
 using FakeItEasy;
 using FluentAssertions;
-using Kentico.Kontent.Delivery.Abstractions;
-using Kentico.Kontent.Delivery.SharedModels;
-using Kentico.Kontent.Delivery.Tests.Models.ContentTypes;
+using Kontent.Ai.Delivery.Abstractions;
+using Kontent.Ai.Delivery.SharedModels;
+using Kontent.Ai.Delivery.Tests.Models.ContentTypes;
 using Newtonsoft.Json;
 using Newtonsoft.Json.Linq;
 using RichardSzalay.MockHttp;
 using Xunit;
 
-namespace Kentico.Kontent.Delivery.Tests.QueryParameters
+namespace Kontent.Ai.Delivery.Tests.QueryParameters
 {
     public class IncludeTotalCountTests
     {

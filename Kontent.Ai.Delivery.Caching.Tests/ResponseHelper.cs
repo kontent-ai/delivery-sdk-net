@@ -2,7 +2,7 @@
 using System.Collections.Generic;
 using System.Linq;
 
-namespace Kentico.Kontent.Delivery.Caching.Tests
+namespace Kontent.Ai.Delivery.Caching.Tests
 {
     public static class ResponseHelper
     {

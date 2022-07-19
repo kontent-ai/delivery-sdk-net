@@ -1,6 +1,6 @@
-﻿using Kentico.Kontent.Delivery.Abstractions;
+﻿using Kontent.Ai.Delivery.Abstractions;
 
-namespace Kentico.Kontent.Delivery.ContentItems.InlineContentItems
+namespace Kontent.Ai.Delivery.ContentItems.InlineContentItems
 {
     /// <summary>
     /// Resolver which is replacing content items in richtext with warning message about insufficient depth for content item. Used as default for unretrieved content items resolver on Preview environment.

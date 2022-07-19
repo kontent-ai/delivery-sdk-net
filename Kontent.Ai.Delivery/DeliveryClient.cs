@@ -5,22 +5,22 @@ using System.Net;
 using System.Net.Http;
 using System.Text;
 using System.Threading.Tasks;
-using Kentico.Kontent.Delivery.Abstractions;
-using Kentico.Kontent.Delivery.ContentItems;
-using Kentico.Kontent.Delivery.ContentTypes;
-using Kentico.Kontent.Delivery.Extensions;
-using Kentico.Kontent.Delivery.Languages;
-using Kentico.Kontent.Delivery.SharedModels;
-using Kentico.Kontent.Delivery.TaxonomyGroups;
-using Kentico.Kontent.Urls.Delivery;
-using Kentico.Kontent.Urls.Delivery.QueryParameters;
-using Kentico.Kontent.Urls.Delivery.QueryParameters.Filters;
+using Kontent.Ai.Delivery.Abstractions;
+using Kontent.Ai.Delivery.ContentItems;
+using Kontent.Ai.Delivery.ContentTypes;
+using Kontent.Ai.Delivery.Extensions;
+using Kontent.Ai.Delivery.Languages;
+using Kontent.Ai.Delivery.SharedModels;
+using Kontent.Ai.Delivery.TaxonomyGroups;
+using Kontent.Ai.Urls.Delivery;
+using Kontent.Ai.Urls.Delivery.QueryParameters;
+using Kontent.Ai.Urls.Delivery.QueryParameters.Filters;
 using Microsoft.AspNetCore.WebUtilities;
 using Microsoft.Extensions.Options;
 using Newtonsoft.Json;
 using Newtonsoft.Json.Linq;
 
-namespace Kentico.Kontent.Delivery
+namespace Kontent.Ai.Delivery
 {
     /// <summary>
     /// Executes requests against the Kontent Delivery API.

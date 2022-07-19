@@ -1,10 +1,10 @@
 ﻿using System;
-using Kentico.Kontent.Delivery.Abstractions;
-using Kentico.Kontent.Urls.Delivery;
+using Kontent.Ai.Delivery.Abstractions;
+using Kontent.Ai.Urls.Delivery;
 using Microsoft.Extensions.Options;
 using Xunit;
 
-namespace Kentico.Kontent.Urls.Tests;
+namespace Kontent.Ai.Urls.Tests;
 
 public class DeliveryEndpointUrlBuilderTests
 {

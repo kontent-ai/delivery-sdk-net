@@ -2,7 +2,7 @@
 using Newtonsoft.Json;
 using Newtonsoft.Json.Bson;
 
-namespace Kentico.Kontent.Delivery.Caching.Extensions
+namespace Kontent.Ai.Delivery.Caching.Extensions
 {
     /// <summary>
     /// JSON/BSON serialization extensions.

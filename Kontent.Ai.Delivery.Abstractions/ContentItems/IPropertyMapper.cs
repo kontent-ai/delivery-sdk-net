@@ -1,6 +1,6 @@
 ﻿using System.Reflection;
 
-namespace Kentico.Kontent.Delivery.Abstractions
+namespace Kontent.Ai.Delivery.Abstractions
 {
     /// <summary>
     /// Defines the contract for mapping Kontent content item fields to model properties.

@@ -1,7 +1,7 @@
-﻿using Kentico.Kontent.Delivery.Abstractions;
-using Kentico.Kontent.Delivery.ContentItems.Attributes;
+﻿using Kontent.Ai.Delivery.Abstractions;
+using Kontent.Ai.Delivery.ContentItems.Attributes;
 
-namespace Kentico.Kontent.Delivery.Caching.Tests
+namespace Kontent.Ai.Delivery.Caching.Tests
 {
     public class TestItem
     {

@@ -1,4 +1,4 @@
-﻿using Kentico.Kontent.Delivery.Abstractions;
+﻿using Kontent.Ai.Delivery.Abstractions;
 using Microsoft.AspNetCore.WebUtilities;
 using Newtonsoft.Json;
 using Newtonsoft.Json.Linq;
@@ -7,7 +7,7 @@ using System.Net.Http;
 using System.Text;
 using System.Threading.Tasks;
 
-namespace Kentico.Kontent.Delivery.SharedModels
+namespace Kontent.Ai.Delivery.SharedModels
 {
     /// <summary>
     /// Represents a successful JSON response from Kontent Delivery API.

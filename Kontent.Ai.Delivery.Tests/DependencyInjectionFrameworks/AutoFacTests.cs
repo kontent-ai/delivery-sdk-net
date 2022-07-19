@@ -1,9 +1,9 @@
-﻿using Kentico.Kontent.Delivery.Abstractions;
-using Kentico.Kontent.Delivery.Tests.DependencyInjectionFrameworks.Helpers;
+﻿using Kontent.Ai.Delivery.Abstractions;
+using Kontent.Ai.Delivery.Tests.DependencyInjectionFrameworks.Helpers;
 using Microsoft.Extensions.DependencyInjection;
 using Xunit;
 
-namespace Kentico.Kontent.Delivery.Tests.DependencyInjectionFrameworks
+namespace Kontent.Ai.Delivery.Tests.DependencyInjectionFrameworks
 {
     [Collection("DI Tests")]
     public class AutoFacTests

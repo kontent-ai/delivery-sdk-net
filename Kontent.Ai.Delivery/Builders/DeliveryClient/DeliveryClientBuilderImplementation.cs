@@ -1,10 +1,10 @@
 ﻿using System;
-using Kentico.Kontent.Delivery.Abstractions;
-using Kentico.Kontent.Delivery.Configuration;
-using Kentico.Kontent.Delivery.Extensions;
+using Kontent.Ai.Delivery.Abstractions;
+using Kontent.Ai.Delivery.Configuration;
+using Kontent.Ai.Delivery.Extensions;
 using Microsoft.Extensions.DependencyInjection;
 
-namespace Kentico.Kontent.Delivery.Builders.DeliveryClient
+namespace Kontent.Ai.Delivery.Builders.DeliveryClient
 {
     internal sealed class DeliveryClientBuilderImplementation : IDeliveryClientBuilder, IOptionalClientSetup
     {

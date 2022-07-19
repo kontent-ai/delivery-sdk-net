@@ -1,9 +1,9 @@
 ﻿using System;
 using System.Threading.Tasks;
-using Kentico.Kontent.Delivery.Abstractions;
-using Kentico.Kontent.Delivery.SharedModels;
+using Kontent.Ai.Delivery.Abstractions;
+using Kontent.Ai.Delivery.SharedModels;
 
-namespace Kentico.Kontent.Delivery.ContentItems
+namespace Kontent.Ai.Delivery.ContentItems
 {
     /// <summary>
     /// Represents a feed that can be used to retrieve strongly typed content items from Kontent Delivery API in smaller batches.

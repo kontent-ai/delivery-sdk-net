@@ -1,8 +1,8 @@
 ﻿using System;
-using Kentico.Kontent.Delivery.Abstractions;
+using Kontent.Ai.Delivery.Abstractions;
 using Microsoft.Extensions.Options;
 
-namespace Kentico.Kontent.Delivery.RetryPolicy
+namespace Kontent.Ai.Delivery.RetryPolicy
 {
     internal class DefaultRetryPolicyProvider : IRetryPolicyProvider
     {

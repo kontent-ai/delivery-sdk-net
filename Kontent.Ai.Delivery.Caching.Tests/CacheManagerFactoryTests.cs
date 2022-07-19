@@ -1,12 +1,12 @@
 ﻿using FakeItEasy;
 using FluentAssertions;
-using Kentico.Kontent.Delivery.Caching.Factories;
+using Kontent.Ai.Delivery.Caching.Factories;
 using Microsoft.Extensions.Caching.Distributed;
 using Microsoft.Extensions.Caching.Memory;
 using Microsoft.Extensions.Options;
 using Xunit;
 
-namespace Kentico.Kontent.Delivery.Caching.Tests
+namespace Kontent.Ai.Delivery.Caching.Tests
 {
     public class CacheManagerFactoryTests
     {

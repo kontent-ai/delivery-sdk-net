@@ -6,11 +6,11 @@ using System.Threading.Tasks;
 using AngleSharp.Dom;
 using AngleSharp.Html.Dom;
 using AngleSharp.Html.Parser;
-using Kentico.Kontent.Delivery.Abstractions;
-using Kentico.Kontent.Delivery.Builders.DeliveryClient;
+using Kontent.Ai.Delivery.Abstractions;
+using Kontent.Ai.Delivery.Builders.DeliveryClient;
 using Microsoft.Extensions.DependencyInjection;
 
-namespace Kentico.Kontent.Delivery.ContentItems.InlineContentItems
+namespace Kontent.Ai.Delivery.ContentItems.InlineContentItems
 {
     /// <summary>
     /// Processor responsible for parsing HTML input and resolving inline content items referenced in them using registered resolvers

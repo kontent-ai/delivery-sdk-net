@@ -1,4 +1,4 @@
-namespace Kentico.Kontent.Delivery.Caching.Tests.ContentTypes
+namespace Kontent.Ai.Delivery.Caching.Tests.ContentTypes
 {
     public partial class Coffee
     {

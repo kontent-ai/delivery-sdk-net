@@ -1,6 +1,6 @@
 ﻿using System;
 
-namespace Kentico.Kontent.Delivery.Benchmarks
+namespace Kontent.Ai.Delivery.Benchmarks
 {
     internal static class Benchmarks
     {

@@ -1,9 +1,9 @@
 ﻿using System;
-using Kentico.Kontent.Delivery.Abstractions;
-using Kentico.Kontent.Delivery.Configuration;
+using Kontent.Ai.Delivery.Abstractions;
+using Kontent.Ai.Delivery.Configuration;
 using Xunit;
 
-namespace Kentico.Kontent.Delivery.Tests.Builders.Configuration
+namespace Kontent.Ai.Delivery.Tests.Builders.Configuration
 {
     public class DeliveryOptionsValidatorTests
     {

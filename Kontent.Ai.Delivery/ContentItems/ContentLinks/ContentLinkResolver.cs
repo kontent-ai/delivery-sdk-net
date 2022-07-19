@@ -4,9 +4,9 @@ using System.Linq;
 using System.Net;
 using System.Text.RegularExpressions;
 using System.Threading.Tasks;
-using Kentico.Kontent.Delivery.Abstractions;
+using Kontent.Ai.Delivery.Abstractions;
 
-namespace Kentico.Kontent.Delivery.ContentItems.ContentLinks
+namespace Kontent.Ai.Delivery.ContentItems.ContentLinks
 {
     internal sealed class ContentLinkResolver
     {

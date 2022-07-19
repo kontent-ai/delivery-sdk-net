@@ -1,12 +1,12 @@
 ﻿using System.Linq;
 using FluentAssertions;
-using Kentico.Kontent.Delivery.Abstractions;
-using Kentico.Kontent.Delivery.Caching.Tests.ContentTypes;
-using Kentico.Kontent.Urls.Delivery.QueryParameters;
-using Kentico.Kontent.Urls.Delivery.QueryParameters.Filters;
+using Kontent.Ai.Delivery.Abstractions;
+using Kontent.Ai.Delivery.Caching.Tests.ContentTypes;
+using Kontent.Ai.Urls.Delivery.QueryParameters;
+using Kontent.Ai.Urls.Delivery.QueryParameters.Filters;
 using Xunit;
 
-namespace Kentico.Kontent.Delivery.Caching.Tests
+namespace Kontent.Ai.Delivery.Caching.Tests
 {
     public class CacheHelpersTests
     {

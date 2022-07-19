@@ -1,16 +1,16 @@
 ﻿using System;
 
-namespace Kentico.Kontent.Delivery
+namespace Kontent.Ai.Delivery
 {
     /// <summary>
     /// An attribute allowing library authors to set a custom tracking header in order to be able to gather analytics about their plug-ins.
-    /// See https://github.com/Kentico/Home/wiki/Guidelines-for-Kontent-related-tools#analytics for more info.
+    /// See https://kontent-ai.github.io/articles/Guidelines-for-Kontent.ai-related-tools.html#analytics for more info.
     /// </summary>
     [AttributeUsage(AttributeTargets.Assembly)]
     public class DeliverySourceTrackingHeaderAttribute : Attribute
     {
         /// <summary>
-        /// Name of the package (e.g. Acme.KenticoKontent.AwesomeTool)
+        /// Name of the package (e.g. Acme.Kontent.Ai.AwesomeTool)
         /// </summary>
         public string PackageName { get; }
 
@@ -50,7 +50,7 @@ namespace Kentico.Kontent.Delivery
         /// <summary>
         /// A constructor allowing to customize the package name and ensuring the version information will be extracted from the calling assembly.
         /// </summary>
-        /// <param name="packageName">Name of the package (e.g. Acme.KenticoKontent.AwesomeTool)</param>
+        /// <param name="packageName">Name of the package (e.g. Acme.Kontent.Ai.AwesomeTool)</param>
         public DeliverySourceTrackingHeaderAttribute(string packageName)
         {
             LoadFromAssembly = true;
@@ -60,7 +60,7 @@ namespace Kentico.Kontent.Delivery
         /// <summary>
         /// Constructor allowing to completely customize the source tracking header.
         /// </summary>
-        /// <param name="packageName">Name of the package (e.g. Acme.KenticoKontent.AwesomeTool)</param>
+        /// <param name="packageName">Name of the package (e.g. Acme.Kontent.Ai.AwesomeTool)</param>
         /// <param name="majorVersion">Major version according to https://semver.org/</param>
         /// <param name="minorVersion">Minor version according to https://semver.org/</param>
         /// <param name="patchVersion">Patch version according to https://semver.org/</param>

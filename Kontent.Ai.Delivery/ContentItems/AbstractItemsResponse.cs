@@ -1,7 +1,7 @@
-﻿using Kentico.Kontent.Delivery.Abstractions;
-using Kentico.Kontent.Delivery.SharedModels;
+﻿using Kontent.Ai.Delivery.Abstractions;
+using Kontent.Ai.Delivery.SharedModels;
 
-namespace Kentico.Kontent.Delivery.ContentItems
+namespace Kontent.Ai.Delivery.ContentItems
 {
     /// <summary>
     /// Response object with built-in linked items resolution.

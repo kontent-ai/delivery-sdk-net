@@ -2,17 +2,17 @@
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
 using System.IO;
-using Kentico.Kontent.Delivery.Abstractions;
-using Kentico.Kontent.Delivery.ContentItems;
-using Kentico.Kontent.Delivery.ContentItems.ContentLinks;
-using Kentico.Kontent.Delivery.ContentItems.InlineContentItems;
-using Kentico.Kontent.Delivery.Extensions;
-using Kentico.Kontent.Delivery.RetryPolicy;
+using Kontent.Ai.Delivery.Abstractions;
+using Kontent.Ai.Delivery.ContentItems;
+using Kontent.Ai.Delivery.ContentItems.ContentLinks;
+using Kontent.Ai.Delivery.ContentItems.InlineContentItems;
+using Kontent.Ai.Delivery.Extensions;
+using Kontent.Ai.Delivery.RetryPolicy;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Xunit;
 
-namespace Kentico.Kontent.Delivery.Tests.Extensions
+namespace Kontent.Ai.Delivery.Tests.Extensions
 {
     public class ServiceCollectionsExtensionsTests
     {

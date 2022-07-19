@@ -1,8 +1,8 @@
-﻿using Kentico.Kontent.Delivery.Abstractions;
+﻿using Kontent.Ai.Delivery.Abstractions;
 using Newtonsoft.Json;
 using System.Diagnostics;
 
-namespace Kentico.Kontent.Delivery.SharedModels
+namespace Kontent.Ai.Delivery.SharedModels
 {
     /// <inheritdoc/>
     [DebuggerDisplay("Count = {" + nameof(Count) + "}, Total = {" + nameof(TotalCount) + "}")]

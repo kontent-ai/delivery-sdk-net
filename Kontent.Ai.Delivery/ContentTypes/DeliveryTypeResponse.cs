@@ -1,8 +1,8 @@
-﻿using Kentico.Kontent.Delivery.Abstractions;
-using Kentico.Kontent.Delivery.SharedModels;
+﻿using Kontent.Ai.Delivery.Abstractions;
+using Kontent.Ai.Delivery.SharedModels;
 using Newtonsoft.Json;
 
-namespace Kentico.Kontent.Delivery.ContentTypes
+namespace Kontent.Ai.Delivery.ContentTypes
 {
     /// <inheritdoc cref="IDeliveryTypeResponse" />
     internal sealed class DeliveryTypeResponse : AbstractResponse, IDeliveryTypeResponse

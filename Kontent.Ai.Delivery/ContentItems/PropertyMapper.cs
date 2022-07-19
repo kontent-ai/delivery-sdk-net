@@ -1,10 +1,10 @@
 using System;
 using System.Reflection;
-using Kentico.Kontent.Delivery.Abstractions;
-using Kentico.Kontent.Delivery.ContentItems.Attributes;
+using Kontent.Ai.Delivery.Abstractions;
+using Kontent.Ai.Delivery.ContentItems.Attributes;
 using Newtonsoft.Json;
 
-namespace Kentico.Kontent.Delivery.ContentItems
+namespace Kontent.Ai.Delivery.ContentItems
 {
     /// <summary>
     /// Default provider for mapping Kontent content item fields to model properties.

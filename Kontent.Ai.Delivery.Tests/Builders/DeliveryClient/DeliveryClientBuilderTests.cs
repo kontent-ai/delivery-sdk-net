@@ -1,16 +1,16 @@
 ﻿using System;
 using System.Collections.Generic;
 using FakeItEasy;
-using Kentico.Kontent.Delivery.Abstractions;
-using Kentico.Kontent.Delivery.Builders.DeliveryClient;
-using Kentico.Kontent.Delivery.ContentItems;
-using Kentico.Kontent.Delivery.ContentItems.InlineContentItems;
-using Kentico.Kontent.Delivery.Tests.DependencyInjectionFrameworks.Helpers;
-using Kentico.Kontent.Delivery.Tests.Models;
+using Kontent.Ai.Delivery.Abstractions;
+using Kontent.Ai.Delivery.Builders.DeliveryClient;
+using Kontent.Ai.Delivery.ContentItems;
+using Kontent.Ai.Delivery.ContentItems.InlineContentItems;
+using Kontent.Ai.Delivery.Tests.DependencyInjectionFrameworks.Helpers;
+using Kontent.Ai.Delivery.Tests.Models;
 using RichardSzalay.MockHttp;
 using Xunit;
 
-namespace Kentico.Kontent.Delivery.Tests.Builders.DeliveryClient
+namespace Kontent.Ai.Delivery.Tests.Builders.DeliveryClient
 {
     public class DeliveryClientBuilderTests
     {

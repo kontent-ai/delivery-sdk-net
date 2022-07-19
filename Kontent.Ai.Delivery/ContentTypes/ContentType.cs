@@ -1,11 +1,11 @@
 ﻿using System.Collections.Generic;
 using System.Diagnostics;
 using System.Linq;
-using Kentico.Kontent.Delivery.Abstractions;
-using Kentico.Kontent.Delivery.ContentTypes.Element;
+using Kontent.Ai.Delivery.Abstractions;
+using Kontent.Ai.Delivery.ContentTypes.Element;
 using Newtonsoft.Json;
 
-namespace Kentico.Kontent.Delivery.ContentTypes
+namespace Kontent.Ai.Delivery.ContentTypes
 {
     /// <inheritdoc/>
     [DebuggerDisplay("Name = {" + nameof(System) + "." + nameof(IContentTypeSystemAttributes.Name) + "}")]

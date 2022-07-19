@@ -1,9 +1,9 @@
-﻿using Kentico.Kontent.Delivery.Abstractions;
-using Kentico.Kontent.Delivery.SharedModels;
+﻿using Kontent.Ai.Delivery.Abstractions;
+using Kontent.Ai.Delivery.SharedModels;
 using Newtonsoft.Json;
 using System.Collections.Generic;
 
-namespace Kentico.Kontent.Delivery.Languages
+namespace Kontent.Ai.Delivery.Languages
 {
     /// <inheritdoc cref="IDeliveryLanguageListingResponse" />
     internal sealed class DeliveryLanguageListingResponse : AbstractResponse, IDeliveryLanguageListingResponse

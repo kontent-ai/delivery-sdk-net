@@ -1,7 +1,7 @@
 ﻿using System;
 using Microsoft.Extensions.DependencyInjection;
 
-namespace Kentico.Kontent.Delivery
+namespace Kontent.Ai.Delivery
 {
     /// <summary>
     /// Collection of all types from <see cref="Delivery"/> registered as implemented interfaces.

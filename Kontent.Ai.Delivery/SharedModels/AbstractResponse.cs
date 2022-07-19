@@ -1,6 +1,6 @@
-﻿using Kentico.Kontent.Delivery.Abstractions;
+﻿using Kontent.Ai.Delivery.Abstractions;
 
-namespace Kentico.Kontent.Delivery.SharedModels
+namespace Kontent.Ai.Delivery.SharedModels
 {
     /// <summary>
     /// Represents a successful response from Kontent Delivery API.

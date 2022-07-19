@@ -3,7 +3,7 @@ using System.IO;
 using BenchmarkDotNet.Configs;
 using BenchmarkDotNet.Diagnosers;
 
-namespace Kentico.Kontent.Delivery.Benchmarks
+namespace Kontent.Ai.Delivery.Benchmarks
 {
     internal class BenchmarkConfig : ManualConfig
     {

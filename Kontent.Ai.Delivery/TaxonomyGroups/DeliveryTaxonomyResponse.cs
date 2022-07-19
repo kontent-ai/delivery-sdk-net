@@ -1,9 +1,9 @@
-﻿using Kentico.Kontent.Delivery.Abstractions;
-using Kentico.Kontent.Delivery.ContentTypes;
-using Kentico.Kontent.Delivery.SharedModels;
+﻿using Kontent.Ai.Delivery.Abstractions;
+using Kontent.Ai.Delivery.ContentTypes;
+using Kontent.Ai.Delivery.SharedModels;
 using Newtonsoft.Json;
 
-namespace Kentico.Kontent.Delivery.TaxonomyGroups
+namespace Kontent.Ai.Delivery.TaxonomyGroups
 {
     /// <inheritdoc cref="IDeliveryTaxonomyResponse" />
     internal sealed class DeliveryTaxonomyResponse : AbstractResponse, IDeliveryTaxonomyResponse

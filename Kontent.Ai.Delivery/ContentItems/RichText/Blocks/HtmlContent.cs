@@ -1,8 +1,8 @@
 ﻿using System.ComponentModel.DataAnnotations;
-using Kentico.Kontent.Delivery.Abstractions;
-using Kentico.Kontent.Delivery.ContentItems.RichText.Attributes;
+using Kontent.Ai.Delivery.Abstractions;
+using Kontent.Ai.Delivery.ContentItems.RichText.Attributes;
 
-namespace Kentico.Kontent.Delivery.ContentItems.RichText.Blocks
+namespace Kontent.Ai.Delivery.ContentItems.RichText.Blocks
 {
     [DisableHtmlEncode]
     internal class HtmlContent : IHtmlContent

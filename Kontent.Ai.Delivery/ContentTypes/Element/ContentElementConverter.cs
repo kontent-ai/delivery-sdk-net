@@ -1,9 +1,9 @@
 ﻿using Newtonsoft.Json;
-using Kentico.Kontent.Delivery.Abstractions;
+using Kontent.Ai.Delivery.Abstractions;
 using System;
 using Newtonsoft.Json.Linq;
 
-namespace Kentico.Kontent.Delivery.ContentTypes.Element
+namespace Kontent.Ai.Delivery.ContentTypes.Element
 {
     /// <summary>
     /// Serializes content element definitions into specific types

@@ -4,7 +4,7 @@ using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Http.Features;
 
-namespace Kentico.Kontent.Delivery.Tests.DependencyInjectionFrameworks.Helpers
+namespace Kontent.Ai.Delivery.Tests.DependencyInjectionFrameworks.Helpers
 {
     internal class FakeApplicationBuilder : IApplicationBuilder
     {

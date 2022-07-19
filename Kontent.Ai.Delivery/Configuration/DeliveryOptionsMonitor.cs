@@ -1,8 +1,8 @@
-﻿using Kentico.Kontent.Delivery.Abstractions;
+﻿using Kontent.Ai.Delivery.Abstractions;
 using Microsoft.Extensions.Options;
 using System;
 
-namespace Kentico.Kontent.Delivery.Configuration
+namespace Kontent.Ai.Delivery.Configuration
 {
     /// <inheritdoc/>
     public class DeliveryOptionsMonitor : IOptionsMonitor<DeliveryOptions>

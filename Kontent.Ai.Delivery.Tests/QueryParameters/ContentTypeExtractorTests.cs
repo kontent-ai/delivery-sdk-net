@@ -1,14 +1,14 @@
 ﻿using System.Collections.Generic;
 using AngleSharp.Html.Parser;
 using FakeItEasy;
-using Kentico.Kontent.Delivery.Abstractions;
-using Kentico.Kontent.Delivery.ContentItems;
-using Kentico.Kontent.Delivery.Tests.Factories;
-using Kentico.Kontent.Urls.Delivery.QueryParameters;
-using Kentico.Kontent.Urls.Delivery.QueryParameters.Filters;
+using Kontent.Ai.Delivery.Abstractions;
+using Kontent.Ai.Delivery.ContentItems;
+using Kontent.Ai.Delivery.Tests.Factories;
+using Kontent.Ai.Urls.Delivery.QueryParameters;
+using Kontent.Ai.Urls.Delivery.QueryParameters.Filters;
 using Xunit;
 
-namespace Kentico.Kontent.Delivery.Tests.QueryParameters
+namespace Kontent.Ai.Delivery.Tests.QueryParameters
 {
     public class ContentTypeExtractorTests
     {

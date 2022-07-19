@@ -2,9 +2,9 @@
 using System.Collections.Generic;
 using System.Reactive.Disposables;
 using System.Reactive.Linq;
-using Kentico.Kontent.Delivery.Abstractions;
+using Kontent.Ai.Delivery.Abstractions;
 
-namespace Kentico.Kontent.Delivery.Rx
+namespace Kontent.Ai.Delivery.Rx
 {
     /// <summary>
     /// A class that enables a reactive way of consuming data from Kontent

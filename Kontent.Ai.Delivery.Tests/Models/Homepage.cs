@@ -1,7 +1,7 @@
 using System.Collections.Generic;
-using Kentico.Kontent.Delivery.Abstractions;
+using Kontent.Ai.Delivery.Abstractions;
 
-namespace Kentico.Kontent.Delivery.Tests.Models
+namespace Kontent.Ai.Delivery.Tests.Models
 {
     public class Homepage
     {

@@ -1,4 +1,4 @@
-﻿namespace Kentico.Kontent.Urls.ImageTransformation
+﻿namespace Kontent.Ai.Urls.ImageTransformation
 {
     /// <summary>
     /// Specifies the possible modes for fit transformation.

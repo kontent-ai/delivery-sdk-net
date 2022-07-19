@@ -1,4 +1,4 @@
-﻿namespace Kentico.Kontent.Delivery.Caching
+﻿namespace Kontent.Ai.Delivery.Caching
 {
     /// <summary>
     /// Determines whether to use <see cref="Microsoft.Extensions.Caching.Distributed.IDistributedCache" /> or <inheritdoc cref="Microsoft.Extensions.Caching.Memory.IMemoryCache"/>

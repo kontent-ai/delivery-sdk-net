@@ -1,4 +1,4 @@
-﻿namespace Kentico.Kontent.Urls.Delivery.QueryParameters.Filters
+﻿namespace Kontent.Ai.Urls.Delivery.QueryParameters.Filters
 {
     /// <summary>
     /// Represents a filter that matches a content item of the given content type.

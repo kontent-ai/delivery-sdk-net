@@ -1,4 +1,4 @@
-﻿namespace Kentico.Kontent.Delivery.Extensions.DependencyInjection
+﻿namespace Kontent.Ai.Delivery.Extensions.DependencyInjection
 {
     /// <summary>
     /// Represents a contract for retrieving named dependencies.

@@ -1,8 +1,8 @@
 ﻿using System;
-using Kentico.Kontent.Delivery.Abstractions;
-using Kentico.Kontent.Delivery.Tests.Models.ContentTypes;
+using Kontent.Ai.Delivery.Abstractions;
+using Kontent.Ai.Delivery.Tests.Models.ContentTypes;
 
-namespace Kentico.Kontent.Delivery.Tests.DependencyInjectionFrameworks.Helpers
+namespace Kontent.Ai.Delivery.Tests.DependencyInjectionFrameworks.Helpers
 {
     internal class FakeTweetResolver : IInlineContentItemsResolver<Tweet>
     {

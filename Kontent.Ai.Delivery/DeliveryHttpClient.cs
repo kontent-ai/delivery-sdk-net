@@ -1,9 +1,9 @@
 ﻿using System.Net.Http;
 using System.Threading.Tasks;
-using Kentico.Kontent.Delivery.Abstractions;
-using Kentico.Kontent.Delivery.Extensions;
+using Kontent.Ai.Delivery.Abstractions;
+using Kontent.Ai.Delivery.Extensions;
 
-namespace Kentico.Kontent.Delivery
+namespace Kontent.Ai.Delivery
 {
     /// <summary>
     /// Executes Http requests against the Kontent Delivery API.

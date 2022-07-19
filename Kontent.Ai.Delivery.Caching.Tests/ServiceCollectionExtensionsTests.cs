@@ -1,13 +1,13 @@
 ﻿using System;
 using FluentAssertions;
-using Kentico.Kontent.Delivery.Abstractions;
-using Kentico.Kontent.Delivery.Caching.Extensions;
-using Kentico.Kontent.Delivery.Extensions;
+using Kontent.Ai.Delivery.Abstractions;
+using Kontent.Ai.Delivery.Caching.Extensions;
+using Kontent.Ai.Delivery.Extensions;
 using Microsoft.Extensions.DependencyInjection;
 using Scrutor;
 using Xunit;
 
-namespace Kentico.Kontent.Delivery.Caching.Tests
+namespace Kontent.Ai.Delivery.Caching.Tests
 {
     public class ServiceCollectionExtensionsTests
     {
