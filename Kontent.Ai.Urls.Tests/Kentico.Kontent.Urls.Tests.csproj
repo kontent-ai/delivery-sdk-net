@@ -23,7 +23,7 @@
   </ItemGroup>
 
   <ItemGroup>
-    <ProjectReference Include="..\Kontent.Ai.Urls\Kontent.Ai.Urls.csproj" />
+    <ProjectReference Include="..\Kontent.Ai.Urls\Kentico.Kontent.Urls.csproj" />
   </ItemGroup>
 
 </Project>
