@@ -4,7 +4,7 @@ You can configure the `DeliveryClient` to retrieve either secured or unpublished
 For security reasons, the `PreviewApiKey` and `SecureAccessApiKey` key should be stored outside of the project file structure. It's recommended to use [Secret Manager](https://docs.microsoft.com/en-us/aspnet/core/security/app-secrets) or [Azure Key Vault](https://docs.microsoft.com/en-us/aspnet/core/security/key-vault-configuration) to store sensitive data. Avoid using `appsettings.json` for API keys.
 
 # Secured content
-To retrieve secured content, you need to create an instance of the `IDeliveryClient` with a Secure API key. Each Kentico Kontent project has its own Secure API key.
+To retrieve secured content, you need to create an instance of the `IDeliveryClient` with a Secure API key. Each Kontent.ai project has its own Secure API key.
 
 ```csharp
 IDeliveryClient client = DeliveryClientBuilder
@@ -26,7 +26,7 @@ or set it to the `IConfiguration` object using the `Configuration["DeliveryOptio
 ```
 
 # Unpublished content
-Similarly, to retrieve unpublished content, you need to create an instance of the `IDeliveryClient` with both Project ID and Preview API key. Each Kentico Kontent project has its own Preview API key.
+Similarly, to retrieve unpublished content, you need to create an instance of the `IDeliveryClient` with both Project ID and Preview API key. Each Kontent.ai project has its own Preview API key.
 
 ```csharp
 IDeliveryClient client = DeliveryClientBuilder

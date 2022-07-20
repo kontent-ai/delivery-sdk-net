@@ -9,7 +9,7 @@ Or to the **.csproj**:
 
 ```xml
   <ItemGroup>
-    <AssemblyAttribute Include="Kentico.Kontent.Delivery.DeliverySourceTrackingHeader" />
+    <AssemblyAttribute Include="Kontent.Ai.Delivery.DeliverySourceTrackingHeader" />
   </ItemGroup>
 ```
 

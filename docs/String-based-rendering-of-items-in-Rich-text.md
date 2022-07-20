@@ -19,7 +19,7 @@ The following information applies to Rich text model properties typed as `string
 
 ## Content items and components in Rich text
 
-[Rich text elements](https://docs.kontent.ai/tutorials/write-and-collaborate/write-content/composing-content-in-the-rich-text-editor#adding-components) in Kentico Kontent can contain components and other content items. For example, if you write a blog post, you might want to insert a video or testimonial to a specific place in your article.
+[Rich text elements](https://docs.kontent.ai/tutorials/write-and-collaborate/write-content/composing-content-in-the-rich-text-editor#adding-components) in Kontent.ai can contain components and other content items. For example, if you write a blog post, you might want to insert a video or testimonial to a specific place in your article.
 
 Without adjusting your application, any component or content item in a Rich text element will resolve to an empty object reference, which won't be rendered on the page.
 
@@ -54,7 +54,7 @@ namespace DancingGoat.Models.ContentTypes
 }
 ```
 
-You will also want to register your new model in your implementation of the [ITypeProvider](https://github.com/Kentico/delivery-sdk-net/blob/master/Kentico.Kontent.Delivery/StrongTyping/ITypeProvider.cs) interface. See an example in our [sample application](https://github.com/Kentico/kontent-sample-app-net/blob/master/DancingGoat/Models/ContentTypes/CustomTypeProvider.cs).
+You will also want to register your new model in your implementation of the [ITypeProvider](https://github.com/Kentico/delivery-sdk-net/blob/master/Kontent.Ai.Delivery/StrongTyping/ITypeProvider.cs) interface. See an example in our [sample application](https://github.com/Kentico/kontent-sample-app-net/blob/master/DancingGoat/Models/ContentTypes/CustomTypeProvider.cs).
 
 ```csharp
       ...
@@ -63,7 +63,7 @@ You will also want to register your new model in your implementation of the [ITy
       ...
 ```
 
- > **Tip**: To save time, use the [Kentico Kontent .NET code generator](https://github.com/Kentico/kontent-generators-net) and have the strongly typed models of your project's content types generated for you.
+ > **Tip**: To save time, use the [Kontent.ai .NET code generator](https://github.com/kontent-ai/model-generator-net) and have the strongly typed models of your project's content types generated for you.
 
 ## Implementing a resolver
 

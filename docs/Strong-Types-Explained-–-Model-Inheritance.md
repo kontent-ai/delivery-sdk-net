@@ -1,6 +1,6 @@
 ## Implementing Model Inheritance
 
-Another interesting topic with strong types is inheritance. Currently, Kentico Kontent content types don't inherit elements from other content types. In our [MVC sample site](https://github.com/Kentico/kontent-sample-app-net/), we have the Coffee, Brewer, Grinder, and Accessory content types. All of them represent some form of a product. They have the following properties in common:
+Another interesting topic with strong types is inheritance. Currently, Kontent.ai content types don't inherit elements from other content types. In our [MVC sample site](https://github.com/Kentico/kontent-sample-app-net/), we have the Coffee, Brewer, Grinder, and Accessory content types. All of them represent some form of a product. They have the following properties in common:
 
 * Product name
 * Price
@@ -48,7 +48,7 @@ How to deal with it? There are two clean ways to choose from. Choosing one or an
 
 If you wish to operate on Brewers, Coffee and other specific products as objects of type `Product`, without the need to work with type-specific properties, this is the best way to go.
 
-Simply define a custom type `Product` with those common properties. And decorate them with `JsonProperty` attributes with their corresponding Kentico Kontent code names:
+Simply define a custom type `Product` with those common properties. And decorate them with `JsonProperty` attributes with their corresponding Kontent.ai code names:
 
 ```csharp
     public class Product
@@ -63,7 +63,7 @@ Simply define a custom type `Product` with those common properties. And decorate
     }
 ```
 
-The default [PropertyMapper](https://github.com/Kentico/delivery-sdk-net/blob/master/Kentico.Kontent.Delivery/StrongTyping/PropertyMapper.cs) in our Delivery .NET SDK is smart enough to automatically bind your properties to appropriate data using these JsonProperty attributes.
+The default [PropertyMapper](https://github.com/Kentico/delivery-sdk-net/blob/master/Kontent.Ai.Delivery/StrongTyping/PropertyMapper.cs) in our Delivery .NET SDK is smart enough to automatically bind your properties to appropriate data using these JsonProperty attributes.
 
 Now you can request all those Brewers and Coffee off of the API endpoint as Product objects using the generic overload of the GetItemsAsync method:
 

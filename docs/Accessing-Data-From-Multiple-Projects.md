@@ -1,4 +1,4 @@
-> ⚠️ Mind [the issue with the combination of the named `TypeProvider` and `Modelprovider`](https://github.com/Kentico/kontent-delivery-sdk-net/issues/312) - see [the workaround for multple clients with different Type providers](https://github.com/Kentico/kontent-delivery-sdk-net/issues/312#issuecomment-1138139987)
+> ⚠️ Mind [the issue with the combination of the named `TypeProvider` and `Modelprovider`](https://github.com/kontent-ai/delivery-sdk-net/issues/312) - see [the workaround for multple clients with different Type providers](https://github.com/kontent-ai/delivery-sdk-net/issues/312#issuecomment-1138139987)
 
 Sometimes, it's handy to register multiple `IDeliveryClient`s with different configurations (e.g. while accessing different projects, accessing secured and non-secured data at once, or accessing preview and production data at the same time). In those cases, you can take advantage of named clients.
 This SDK contains a default implementation of named clients relying on Autofac's [Named and Keyed Services](https://autofaccn.readthedocs.io/en/latest/advanced/keyed-services.html). If you wish to implement support for a DI container of your choice, jump to the [Extending named services support](#extending-named-services-support) section.
@@ -6,9 +6,9 @@ This SDK contains a default implementation of named clients relying on Autofac's
 # Using the default Autofac implementation
 
 ## Installing the NuGet packages
-Advanced registration scenarios are handled by the [Kentico.Kontent.Delivery.Extensions.DependencyInjection](https://www.nuget.org/packages/Kentico.Kontent.Delivery.Extensions.DependencyInjection) NuGet package. You'll need to install the following packages:
+Advanced registration scenarios are handled by the [Kontent.Ai.Delivery.Extensions.DependencyInjection](https://www.nuget.org/packages/Kontent.Ai.Delivery.Extensions.DependencyInjection) NuGet package. You'll need to install the following packages:
 ```
-PM> Install-Package Kentico.Kontent.Delivery.Extensions.DependencyInjection
+PM> Install-Package Kontent.Ai.Delivery.Extensions.DependencyInjection
 PM> Install-Package Autofac.Extensions.DependencyInjection
 ```
 
@@ -50,7 +50,7 @@ public class Startup
 }
 ```
 
-For resolving named clients, inject the [IDeliveryClientFactory](https://github.com/Kentico/kontent-delivery-sdk-net/blob/master/Kentico.Kontent.Delivery.Abstractions/IDeliveryClientFactory.cs), which is registered in the DI container.
+For resolving named clients, inject the [IDeliveryClientFactory](https://github.com/kontent-ai/delivery-sdk-net/blob/master/Kontent.Ai.Delivery.Abstractions/IDeliveryClientFactory.cs), which is registered in the DI container.
 
 ```csharp
 public class HomeController : Controller
@@ -81,6 +81,6 @@ public class Startup
 More details in [Autofac's docs](https://autofaccn.readthedocs.io/en/latest/integration/aspnetcore.html#startup-class).
 
 # Extending named services support
-In case you want to use a DI container other than Autofac, feel free to create your own implementation of `INamedServiceProvider` (in `Kentico.Kontent.Delivery.Extensions.DependencyInjection`) and submit a pull request to this repository.
-This implementation then needs to be registered in `NamedServiceProviderType` and [`ServiceCollectionExtensions`](https://github.com/Kentico/kontent-delivery-sdk-net/blob/master/Kentico.Kontent.Delivery.Extensions.DependencyInjection/Extensions/ServiceCollectionExtensions.cs#L133).
+In case you want to use a DI container other than Autofac, feel free to create your own implementation of `INamedServiceProvider` (in `Kontent.Ai.Delivery.Extensions.DependencyInjection`) and submit a pull request to this repository.
+This implementation then needs to be registered in `NamedServiceProviderType` and [`ServiceCollectionExtensions`](https://github.com/kontent-ai/delivery-sdk-net/blob/master/Kontent.Ai.Delivery.Extensions.DependencyInjection/Extensions/ServiceCollectionExtensions.cs#L133).
 We'll be happy to work with you to add support for your favorite DI container.

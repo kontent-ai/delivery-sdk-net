@@ -1,14 +1,14 @@
 # Kontent Delivery .NET SDK
 
-[![Build & Test](https://github.com/Kentico/kontent-delivery-sdk-net/actions/workflows/integrate.yml/badge.svg)](https://github.com/Kentico/kontent-delivery-sdk-net/actions/workflows/integrate.yml)
+[![Build & Test](https://github.com/kontent-ai/delivery-sdk-net/actions/workflows/integrate.yml/badge.svg)](https://github.com/kontent-ai/delivery-sdk-net/actions/workflows/integrate.yml)
 [![codecov](https://codecov.io/gh/Kentico/kontent-delivery-sdk-net/branch/master/graph/badge.svg)](https://codecov.io/gh/Kentico/kontent-delivery-sdk-net)
 [![Stack Overflow](https://img.shields.io/badge/Stack%20Overflow-ASK%20NOW-FE7A16.svg?logo=stackoverflow&logoColor=white)](https://stackoverflow.com/tags/kentico-kontent)
 [![Discord](https://img.shields.io/discord/821885171984891914?label=Discord&logo=Discord&logoColor=white)](https://discord.gg/SKCxwPtevJ)
 
 | Paradigm |                                                                  Package                                                                  |                                                                Downloads                                                                |                                                                  Compatibility                                                                   |                                Documentation                                 |
 | -------- | :---------------------------------------------------------------------------------------------------------------------------------------: | :-------------------------------------------------------------------------------------------------------------------------------------: | :----------------------------------------------------------------------------------------------------------------------------------------------: | :--------------------------------------------------------------------------: |
-| Async    |    [![NuGet](https://img.shields.io/nuget/v/Kentico.Kontent.Delivery.svg)](https://www.nuget.org/packages/Kentico.Kontent.Delivery)    |    [![NuGet](https://img.shields.io/nuget/dt/Kentico.Kontent.delivery.svg)](https://www.nuget.org/packages/Kentico.Kontent.Delivery)    | [`net6.0`](https://dotnet.microsoft.com/download/dotnet/6.0) [`netstandard2.0`](https://docs.microsoft.com/en-us/dotnet/standard/net-standard)\* |                            [📖 Wiki](../../wiki)                             |
-| Reactive | [![NuGet](https://img.shields.io/nuget/v/Kentico.Kontent.Delivery.Rx.svg)](https://www.nuget.org/packages/Kentico.Kontent.Delivery.Rx) | [![NuGet](https://img.shields.io/nuget/dt/Kentico.Kontent.delivery.Rx.svg)](https://www.nuget.org/packages/Kentico.Kontent.Delivery.Rx) | [`net6.0`](https://dotnet.microsoft.com/download/dotnet/6.0) [`netstandard2.0`](https://docs.microsoft.com/en-us/dotnet/standard/net-standard)\* | [📖 Wiki](../../wiki/Using-the-Kentico.Kontent.Delivery.Rx-reactive-library) |
+| Async    |    [![NuGet](https://img.shields.io/nuget/v/Kontent.Ai.Delivery.svg)](https://www.nuget.org/packages/Kontent.Ai.Delivery)    |    [![NuGet](https://img.shields.io/nuget/dt/Kontent.Ai.Delivery.svg)](https://www.nuget.org/packages/Kontent.Ai.Delivery)    | [`net6.0`](https://dotnet.microsoft.com/download/dotnet/6.0) [`netstandard2.0`](https://docs.microsoft.com/en-us/dotnet/standard/net-standard)\* |                            [📖 Wiki](../../wiki)                             |
+| Reactive | [![NuGet](https://img.shields.io/nuget/v/Kontent.Ai.Delivery.Rx.svg)](https://www.nuget.org/packages/Kontent.Ai.Delivery.Rx) | [![NuGet](https://img.shields.io/nuget/dt/Kontent.Ai.Delivery.Rx.svg)](https://www.nuget.org/packages/Kontent.Ai.Delivery.Rx) | [`net6.0`](https://dotnet.microsoft.com/download/dotnet/6.0) [`netstandard2.0`](https://docs.microsoft.com/en-us/dotnet/standard/net-standard)\* | [📖 Wiki](../../wiki/Using-the-Kontent.Ai.Delivery.Rx-reactive-library) |
 
 > \* We highly recommend targeting [`net6.0`](https://dotnet.microsoft.com/download/dotnet/6.0) in your projects. [`netstandard2.0`](https://docs.microsoft.com/en-us/dotnet/standard/net-standard) is supported to allow older projects to iteratively upgrade.
 
@@ -21,13 +21,13 @@ The Kontent Delivery .NET SDK is a client library that lets you easily retrieve 
 Installation via Package Manager Console in Visual Studio:
 
 ```powershell
-PM> Install-Package Kentico.Kontent.Delivery
+PM> Install-Package Kontent.Ai.Delivery
 ```
 
 Installation via .NET CLI:
 
 ```console
-> dotnet add <TARGET PROJECT> package Kentico.Kontent.Delivery
+> dotnet add <TARGET PROJECT> package Kontent.Ai.Delivery
 ```
 
 ## Usage
@@ -72,7 +72,7 @@ To spin up a fully configured blank site quickly, use the:
 
 ### Usage without IoC/DI containers (ideal for console apps, unit tests...)
 
-You can also set up a `DeliveryOptions` manually using the [`DeliveryClientBuilder`](https://github.com/Kentico/kontent-delivery-sdk-net/blob/master/Kentico.Kontent.Delivery/Builders/DeliveryOptions/DeliveryOptionsBuilder.cs).
+You can also set up a `DeliveryOptions` manually using the [`DeliveryClientBuilder`](https://github.com/kontent-ai/delivery-sdk-net/blob/master/Kontent.Ai.Delivery/Builders/DeliveryOptions/DeliveryOptionsBuilder.cs).
 
 ```csharp
 IDeliveryClient _client = DeliveryClientBuilder
@@ -85,7 +85,7 @@ IDeliveryClient _client = DeliveryClientBuilder
 
 ### Your first request
 
-Use the [.NET code generator](https://github.com/Kentico/kontent-generators-net) to generate POCO models:
+Use the [.NET code generator](https://github.com/kontent-ai/model-generator-net) to generate POCO models:
 
 ```csharp
 public class Article

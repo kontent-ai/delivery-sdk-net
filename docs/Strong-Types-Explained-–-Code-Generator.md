@@ -1,5 +1,5 @@
 ## The Code Generator
-You don't have to generate your strong types manually. Instead, you can use a simple yet powerful command-line [generator](https://github.com/Kentico/kontent-generators-net). The tool is available as a .NET Tool and can be used either [manually](https://github.com/Kentico/kontent-boilerplate-net/blob/7267e647ab84df56e174a1ba76a65a948050cf34/src/content/Kentico.Kontent.Boilerplate/Tools/GenerateModels.ps1#L3), as a [pre-build event](https://github.com/Kentico/kontent-boilerplate-net/blob/7267e647ab84df56e174a1ba76a65a948050cf34/src/content/Kentico.Kontent.Boilerplate/Kentico.Kontent.Boilerplate.csproj#L37-L50), or as part of your complex continuous integration process.
+You don't have to generate your strong types manually. Instead, you can use a simple yet powerful command-line [generator](https://github.com/kontent-ai/model-generator-net). The tool is available as a .NET Tool and can be used either [manually](https://github.com/Kentico/kontent-boilerplate-net/blob/7267e647ab84df56e174a1ba76a65a948050cf34/src/content/Kentico.Kontent.Boilerplate/Tools/GenerateModels.ps1#L3), as a [pre-build event](https://github.com/Kentico/kontent-boilerplate-net/blob/7267e647ab84df56e174a1ba76a65a948050cf34/src/content/Kentico.Kontent.Boilerplate/Kentico.Kontent.Boilerplate.csproj#L37-L50), or as part of your complex continuous integration process.
 
 **Installation:**
 
@@ -23,7 +23,7 @@ The utility connects to the public API endpoint for content types, fetches the n
 
 ### What Types Does It Produce
 
-The following table shows all Kentico Kontent element types with their corresponding .NET types.
+The following table shows all Kontent.ai element types with their corresponding .NET types.
 
 | **Content Type** | **.NET Type** |
 |-----------------|-----------------------------------|
@@ -66,7 +66,7 @@ public class CustomTypeProvider : ITypeProvider
 
 The important point is that you can override this simple logic with your own one.
 
-As an example, you can create several Kentico Kontent content types that don't necessarily need separate .NET types. You can name these content types with some prefix (like 'Aggregated') and return the common .NET type for all of them:
+As an example, you can create several Kontent.ai content types that don't necessarily need separate .NET types. You can name these content types with some prefix (like 'Aggregated') and return the common .NET type for all of them:
 
 ```csharp
 	if (contentType.StartsWith("Aggregated"))

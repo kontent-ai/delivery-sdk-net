@@ -26,7 +26,7 @@
   * [Enumerating all items](Enumerating-all-items.md)
   * [Retrieving secured and previewing unpublished content](Retrieving-secured-and-previewing-unpublished-content.md)
   * [Retry capabilities](Retry-capabilities.md)
-  * [Using the Kentico.Kontent.Delivery.Rx reactive library](Using-the-Kentico.Kontent.Delivery.Rx-reactive-library.md)
+  * [Using the Kontent.Ai.Delivery.Rx reactive library](Using-the-Kontent.Ai.Delivery.Rx-reactive-library.md)
   * [Caching responses](Caching-responses.md)
   * [Using the Image transformations](Using-the-Image-transformations.md)
 * **Customization and extensibility**

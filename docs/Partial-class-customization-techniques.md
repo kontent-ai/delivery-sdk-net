@@ -1,7 +1,7 @@
 It's recommended never to modify the generated models (`Model.Generated.cs`). Rather, it's recommended to adjust their partial counterparts (`Model.cs`). There are several techniques that we can utilize to achieve desired data structures.
 
 ## Collections (linked items) with specific types
-By default, although they are strongly-typed inside, all linked item elements are represented as `IEnumerable<object>`. This is due to the fact that they can contain items of any type (element constraints are [ignored](https://github.com/Kentico/kontent-generators-net/issues/90) during code generation). If we want to access a strongly-typed collection, we have to adjust the partial class.
+By default, although they are strongly-typed inside, all linked item elements are represented as `IEnumerable<object>`. This is due to the fact that they can contain items of any type (element constraints are [ignored](https://github.com/kontent-ai/model-generator-net/issues/90) during code generation). If we want to access a strongly-typed collection, we have to adjust the partial class.
 
 Suppose we have a model like this:
 

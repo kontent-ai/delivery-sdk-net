@@ -1,4 +1,4 @@
-The [ImageUrlBuilder class](https://github.com/Kentico/kontent-delivery-sdk-net/blob/master/Kentico.Kontent.ImageTransformation/ImageTransformation/ImageUrlBuilder.cs) exposes methods for applying image transformations on the Asset URL.
+The [ImageUrlBuilder class](https://github.com/kontent-ai/delivery-sdk-net/blob/master/Kentico.Kontent.ImageTransformation/ImageTransformation/ImageUrlBuilder.cs) exposes methods for applying image transformations on the Asset URL.
 
 ```csharp
 string assetUrl = articleItem.GetAssets("teaser_image").First().Url;

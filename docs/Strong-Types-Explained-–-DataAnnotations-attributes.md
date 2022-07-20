@@ -1,6 +1,6 @@
 This article explains how to add [DataAnnotations attributes for validation purposes](https://docs.microsoft.com/en-us/aspnet/core/tutorials/first-mvc-app/validation) to the generated models.
 
-Once you've [generated your strongly-typed models](https://github.com/Kentico/kontent-generators-net), you can call the generic overload of the `GetItemAsync<T>` method:
+Once you've [generated your strongly-typed models](https://github.com/kontent-ai/model-generator-net), you can call the generic overload of the `GetItemAsync<T>` method:
 
 ```csharp
 	var response = await deliveryClient.GetItemAsync<Article>("on_roasts");
@@ -24,7 +24,7 @@ Even the `RelatedArticles` property, in fact, points to an `IEnumerable<Article>
 
 ### The DataAnnotations Attributes
 
-Sometimes, not all data can be distinguished with .NET types. For example, in Kentico Kontent, an e-mail address is nothing but a string:
+Sometimes, not all data can be distinguished with .NET types. For example, in Kontent.ai, an e-mail address is nothing but a string:
 
 `john.doe@example.com`
 

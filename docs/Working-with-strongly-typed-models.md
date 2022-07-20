@@ -55,9 +55,9 @@ The models are simple [POCO](https://en.wikipedia.org/wiki/Plain_old_CLR_object)
 Here are the data types you can use for different content type elements:
 
 - [built-in types](https://msdn.microsoft.com/en-us/library/ya5y69ds.aspx) such as `string`, `decimal` and their nullable equivalents for simple elements like Number or Text.
-- `IEnumerable<Kentico.Kontent.Delivery.Abstractions.IMultipleChoiceOption>` for Multiple choice elements.
-- `IEnumerable<Kentico.Kontent.Delivery.Abstractions.IAsset>` for Asset elements.
-- `IEnumerable<Kentico.Kontent.Delivery.Abstractions.ITaxonomyTerm>` for Taxonomy elements.
+- `IEnumerable<Kontent.Ai.Delivery.Abstractions.IMultipleChoiceOption>` for Multiple choice elements.
+- `IEnumerable<Kontent.Ai.Delivery.Abstractions.IAsset>` for Asset elements.
+- `IEnumerable<Kontent.Ai.Delivery.Abstractions.ITaxonomyTerm>` for Taxonomy elements.
 
 #### Typing Linked Items
 
@@ -80,7 +80,7 @@ For [Custom elements](https://docs.kontent.ai/tutorials/develop-apps/integrate/i
 
 By default, the model properties and content elements are matched by codenames of the elements. The SDK tries to convert the element codenames to [PascalCase](https://msdn.microsoft.com/en-us/library/x2dbyw72(v=vs.71)). For example, a content element with the codename of `article_title` translates to a property called `ArticleTitle`.
 
-If you need to change the codename of an element that a property is bound to, you can enrich the property with the `Kentico.Kontent.Delivery.ContentItems.PropertyNameAttribute` attribute.
+If you need to change the codename of an element that a property is bound to, you can enrich the property with the `Kontent.Ai.Delivery.ContentItems.PropertyNameAttribute` attribute.
 
 ```csharp
 [PropertyName("text_field")]
@@ -96,11 +96,11 @@ public string ArticleTitle { get; set; }
 
 ### Examples
 
-You can find sample models at <https://github.com/Kentico/delivery-sdk-net/tree/master/Kentico.Kontent.Delivery.Tests/Models>
+You can find sample models at <https://github.com/Kentico/delivery-sdk-net/tree/master/Kontent.Ai.Delivery.Tests/Models>
 
 ## Generating models
 
-:information_source: You can save time by [generating content type models](https://github.com/Kentico/kontent-delivery-sdk-net/wiki/Strong-Types-Explained-%E2%80%93-Code-Generator) for your project using the [Kentico Kontent .NET code generator](https://github.com/Kentico/kontent-generators-net) utility.
+:information_source: You can save time by [generating content type models](https://github.com/kontent-ai/delivery-sdk-net/wiki/Strong-Types-Explained-%E2%80%93-Code-Generator) for your project using the [Kontent.ai .NET code generator](https://github.com/kontent-ai/model-generator-net) utility.
 
 ## Retrieving content items
 
@@ -131,7 +131,7 @@ Type type = model.Item.GetType(); // type will be e.g. 'Article'
 
 For this to work, the SDK needs to know the mappings between the content types and your models.
 
-If you want to use the runtime type resolution in your application, you need to implement the [`Kentico.Kontent.Delivery.Abstractions.ITypeProvider`](https://github.com/Kentico/kontent-delivery-sdk-net/blob/master/Kentico.Kontent.Delivery.Abstractions/ContentItems/ITypeProvider.cs) interface.
+If you want to use the runtime type resolution in your application, you need to implement the [`Kontent.Ai.Delivery.Abstractions.ITypeProvider`](https://github.com/kontent-ai/delivery-sdk-net/blob/master/Kontent.Ai.Delivery.Abstractions/ContentItems/ITypeProvider.cs) interface.
 
 ```csharp
 public class CustomTypeProvider : ITypeProvider
@@ -173,12 +173,12 @@ IDeliveryClient client = DeliveryClientBuilder
 
 #### Generating custom type providers
 
-Similarly to models, you can generate implementations of `ITypeProvider` by using the [.NET code generator tool](https://github.com/Kentico/kontent-generators-net) and specifying the `--withtypeprovider true` parameter. Generated `CustomTypeProvider` interface implementation is extensible - you can customize it by overriding/overloading its members.
+Similarly to models, you can generate implementations of `ITypeProvider` by using the [.NET code generator tool](https://github.com/kontent-ai/model-generator-net) and specifying the `--withtypeprovider true` parameter. Generated `CustomTypeProvider` interface implementation is extensible - you can customize it by overriding/overloading its members.
 
 ### Customizing the property matching
 Currently, the automatic matching is based on the codenames being converted to [PascalCase](https://msdn.microsoft.com/en-us/library/x2dbyw72(v=vs.71) "PascalCase").
 
-If you want to customize the way content elements and model properties are matched, you need to implement the [`Kentico.Kontent.Delivery.IPropertyMapper`](https://github.com/Kentico/delivery-sdk-net/blob/master/Kentico.Kontent.Delivery/StrongTyping/IPropertyMapper.cs) interface and pass it to the `DeliveryClientBuilder` class.
+If you want to customize the way content elements and model properties are matched, you need to implement the [`Kontent.Ai.Delivery.IPropertyMapper`](https://github.com/Kentico/delivery-sdk-net/blob/master/Kontent.Ai.Delivery/StrongTyping/IPropertyMapper.cs) interface and pass it to the `DeliveryClientBuilder` class.
 
 ```csharp
 // Implements a custom property mapper
@@ -206,7 +206,7 @@ IDeliveryClient client = DeliveryClientBuilder
 
 ### Customizing the strong-type resolution mechanism
 
-To replace the whole model instantiation mechanism, you need to implement the [`Kentico.Kontent.Delivery.Abstractions.IModelProvider`](https://github.com/Kentico/kontent-delivery-sdk-net/blob/master/Kentico.Kontent.Delivery.Abstractions/ContentItems/IModelProvider.cs) interface. It contains a single member:
+To replace the whole model instantiation mechanism, you need to implement the [`Kontent.Ai.Delivery.Abstractions.IModelProvider`](https://github.com/kontent-ai/delivery-sdk-net/blob/master/Kontent.Ai.Delivery.Abstractions/ContentItems/IModelProvider.cs) interface. It contains a single member:
 
 ```csharp
 Task<T> GetContentItemModelAsync<T>(object item, IEnumerable linkedItems);

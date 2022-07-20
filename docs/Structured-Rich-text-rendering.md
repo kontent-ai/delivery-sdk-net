@@ -2,9 +2,9 @@
 
 The [Rich text element](https://docs.kontent.ai/reference/delivery-api#section/Rich-text-element) can contain images, links to content items, content items, and components. Your application needs to define how these objects are rendered.
 
-This information applies to Rich text model properties typed as `IRichTextContent`. In case you are using `string` data model, see [String-based rendering of linked items in Rich text](https://github.com/Kentico/kontent-delivery-sdk-net/wiki/String-based-rendering-of-items-in-Rich-text). You can influence which approach to use by [applying](https://github.com/Kentico/kontent-generators-net#parameters) the `--structuredmodel true` parameter during model generation.
+This information applies to Rich text model properties typed as `IRichTextContent`. In case you are using `string` data model, see [String-based rendering of linked items in Rich text](https://github.com/kontent-ai/delivery-sdk-net/wiki/String-based-rendering-of-items-in-Rich-text). You can influence which approach to use by [applying](https://github.com/kontent-ai/model-generator-net#parameters) the `--structuredmodel true` parameter during model generation.
 
-Resolving links to content items is covered in a [separate article](https://github.com/Kentico/kontent-delivery-sdk-net/wiki/Resolving-links-to-content-items).
+Resolving links to content items is covered in a [separate article](https://github.com/kontent-ai/delivery-sdk-net/wiki/Resolving-links-to-content-items).
 
 ## Structured Rich text data model
 
@@ -84,6 +84,6 @@ Display templates can be provided to all MVC Controllers through the Shared fold
 }
 ```
 ## Other resources
-- [How to Render Different Output for Rich Text in Kentico Kontent Using the Delivery .NET SDK](https://robwest.info/articles/how-to-render-different-output-for-rich-text-in-kentico-kontent-using-the-delivery-net-sdk) by [Rob West
+- [How to Render Different Output for Rich Text in Kontent.ai Using the Delivery .NET SDK](https://robwest.info/articles/how-to-render-different-output-for-rich-text-in-kentico-kontent-using-the-delivery-net-sdk) by [Rob West
 ](https://github.com/robertgregorywest)
   - Rob describes how to render different output for AMP using ASP.NET Core Display Templates

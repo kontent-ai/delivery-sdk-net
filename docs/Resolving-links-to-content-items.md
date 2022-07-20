@@ -12,7 +12,7 @@
 
 ## Content links
 
-[Rich text elements](https://docs.kontent.ai/tutorials/write-and-collaborate/write-content/composing-content-in-the-rich-text-editor#adding-links) in Kentico Kontent can contain links to other content items. For example, if you run a blog, these content item links might represent hyperlinks to other blog posts or your contact page.
+[Rich text elements](https://docs.kontent.ai/tutorials/write-and-collaborate/write-content/composing-content-in-the-rich-text-editor#adding-links) in Kontent.ai can contain links to other content items. For example, if you run a blog, these content item links might represent hyperlinks to other blog posts or your contact page.
 
 Without adjusting your application, any link in a Rich text element that points to a content item will contain an empty value.
 

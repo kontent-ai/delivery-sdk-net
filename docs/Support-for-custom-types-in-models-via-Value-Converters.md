@@ -1,6 +1,6 @@
 Sometimes, you want to use your custom types in your models and let the `IDeliveryClient` to deserialize their values. This can be achieved by using so-called "value converters".
 
-You simply decorate properties of models with an attribute implementing the `Kentico.Kontent.Delivery.Abstractions.IPropertyValueConverter<T>` interface.
+You simply decorate properties of models with an attribute implementing the `Kontent.Ai.Delivery.Abstractions.IPropertyValueConverter<T>` interface.
 
 **Model:**
 
@@ -30,4 +30,4 @@ var item = await client.GetItemAsync<YourModelType>("codename");
 ZonedDateTime dt = item.Item.PostDateNodaTime; // Your custom-typed property
 ```
 
-See a sample unit test: https://github.com/Kentico/kontent-delivery-sdk-net/blob/master/Kentico.Kontent.Delivery.Tests/ValueConverterTests.cs
+See a sample unit test: https://github.com/kontent-ai/delivery-sdk-net/blob/master/Kontent.Ai.Delivery.Tests/ValueConverterTests.cs
