@@ -3,6 +3,7 @@
   <PropertyGroup>
     <TargetFrameworks>netstandard2.0;net6.0</TargetFrameworks>
     <Authors>Kontent s.r.o.</Authors>
+    <Company>Kontent s.r.o.</Company>
     <Product>Kontent.ai</Product>
     <Copyright>© 2022 Kontent s.r.o. All rights reserved.</Copyright>
     <Description>Kontent Delivery SDK</Description>
@@ -23,7 +24,7 @@
   <ItemGroup>
     <PackageReference Include="Newtonsoft.Json" Version="13.0.1" />
     <PackageReference Include="System.Reactive" Version="4.4.1" />
-    <PackageReference Include="Microsoft.Sourcelink.Github" Version="1.0.0" PrivateAssets="All" />
+    <PackageReference Include="Microsoft.Sourcelink.Github" Version="1.1.1" PrivateAssets="All" />
   </ItemGroup>
 
   <ItemGroup>

@@ -1,7 +1,7 @@
 ﻿<Project Sdk="Microsoft.NET.Sdk">
 
   <PropertyGroup>
-    <TargetFrameworks>net5.0;net6.0</TargetFrameworks>
+    <TargetFrameworks>net6.0</TargetFrameworks>
     <IsPackable>false</IsPackable>
     <GenerateAssemblyTitleAttribute>false</GenerateAssemblyTitleAttribute>
     <GenerateAssemblyDescriptionAttribute>false</GenerateAssemblyDescriptionAttribute>
@@ -32,7 +32,7 @@
     <PackageReference Include="Microsoft.Extensions.Caching.Memory" Version="3.1.2" />
     <PackageReference Include="Microsoft.Extensions.Configuration" Version="3.1.2" />
     <PackageReference Include="Microsoft.Extensions.Configuration.Json" Version="3.1.2" />
-    <PackageReference Include="Microsoft.NET.Test.Sdk" Version="16.8.3" />
+    <PackageReference Include="Microsoft.NET.Test.Sdk" Version="17.2.0" />
     <PackageReference Include="FakeItEasy" Version="6.2.1" />
     <PackageReference Include="NodaTime" Version="3.0.5" />
     <PackageReference Include="RichardSzalay.MockHttp" Version="6.0.0" />

@@ -3,6 +3,7 @@
   <PropertyGroup>
     <TargetFrameworks>netstandard2.0;net6.0</TargetFrameworks>
     <Authors>Kontent s.r.o.</Authors>
+    <Company>Kontent s.r.o.</Company>
     <Product>Kontent.ai</Product>
     <Copyright>© 2022 Kontent s.r.o. All rights reserved.</Copyright>
     <Description>Kontent Delivery Caching</Description>
@@ -24,7 +25,7 @@
     <PackageReference Include="Microsoft.Extensions.Caching.Abstractions" Version="3.1.2" />
     <PackageReference Include="Microsoft.Extensions.Caching.Memory" Version="3.1.2" />
     <PackageReference Include="Microsoft.Extensions.Options" Version="3.1.2" />
-    <PackageReference Include="Microsoft.SourceLink.GitHub" Version="1.0.0" />
+    <PackageReference Include="Microsoft.SourceLink.GitHub" Version="1.1.1" />
     <PackageReference Include="Newtonsoft.Json" Version="13.0.1" />
     <PackageReference Include="Newtonsoft.Json.Bson" Version="1.0.2" />
     <PackageReference Include="Scrutor" Version="3.2.2" />
