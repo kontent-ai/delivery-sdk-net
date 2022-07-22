@@ -1,7 +1,7 @@
 ﻿namespace Kontent.Ai.Delivery.Abstractions
 {
     /// <summary>
-    /// Represents a response from Kontent Delivery API that contains a content type element.
+    /// Represents a response from Kontent.ai Delivery API that contains a content type element.
     /// </summary>
     public interface IDeliveryElementResponse : IResponse
     {

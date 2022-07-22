@@ -9,7 +9,7 @@ using Microsoft.Extensions.Options;
 namespace Kontent.Ai.Delivery.Caching
 {
     /// <summary>
-    /// Cache responses against the Kontent Delivery API.
+    /// Cache responses against the Kontent.ai Delivery API.
     /// </summary>
     internal class DistributedCacheManager : IDeliveryCacheManager
     {

@@ -28,17 +28,17 @@ namespace Kontent.Ai.Delivery.Configuration
         {
             if (projectId == null)
             {
-                throw new ArgumentNullException(nameof(projectId), "Kontent project identifier is not specified.");
+                throw new ArgumentNullException(nameof(projectId), "Kontent.ai project identifier is not specified.");
             }
 
             if (projectId == string.Empty)
             {
-                throw new ArgumentException("Kontent project identifier is empty.", nameof(projectId));
+                throw new ArgumentException("Kontent.ai project identifier is empty.", nameof(projectId));
             }
 
             if (!Guid.TryParse(projectId, out var projectIdGuid))
             {
-                throw new ArgumentException("Kontent project identifier '{ProjectId}' is not valid. Perhaps you have passed an API key instead?", nameof(projectId));
+                throw new ArgumentException("Kontent.ai project identifier '{ProjectId}' is not valid. Perhaps you have passed an API key instead?", nameof(projectId));
             }
 
             ValidateProjectId(projectIdGuid);
@@ -48,7 +48,7 @@ namespace Kontent.Ai.Delivery.Configuration
         {
             if (projectId == Guid.Empty)
             {
-                throw new ArgumentException("Kontent project identifier is an empty GUID.", nameof(projectId));
+                throw new ArgumentException("Kontent.ai project identifier is an empty GUID.", nameof(projectId));
             }
         }
 

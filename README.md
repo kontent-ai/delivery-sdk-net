@@ -1,4 +1,4 @@
-# Kontent Delivery .NET SDK
+# Kontent.ai Delivery .NET SDK
 
 [![Build & Test](https://github.com/kontent-ai/delivery-sdk-net/actions/workflows/integrate.yml/badge.svg)](https://github.com/kontent-ai/delivery-sdk-net/actions/workflows/integrate.yml)
 [![codecov](https://codecov.io/gh/kontent-ai/delivery-sdk-net/branch/master/graph/badge.svg)](https://app.codecov.io/gh/kontent-ai/delivery-sdk-net)
@@ -32,7 +32,7 @@ Installation via .NET CLI:
 
 ## Usage
 
-To retrieve content from your Kontent projects, you'll be using an implementation of the `IDeliveryClient` interface. This is the main interface of the SDK. Here's how you can instantiate and use the Delivery client either [with DI/IoC](#use-dependency-injection-ideal-for-aspnet-core-web-apps "Usage with dependency injection") or [without DI/IoC](#usage-without-iocdi-containers-ideal-for-console-apps-unit-tests "Usage without dependency injection").
+To retrieve content from your Kontent.ai projects, you'll be using an implementation of the `IDeliveryClient` interface. This is the main interface of the SDK. Here's how you can instantiate and use the Delivery client either [with DI/IoC](#use-dependency-injection-ideal-for-aspnet-core-web-apps "Usage with dependency injection") or [without DI/IoC](#usage-without-iocdi-containers-ideal-for-console-apps-unit-tests "Usage without dependency injection").
 
 ### Use dependency injection (ideal for ASP.NET Core web apps)
 
@@ -63,12 +63,12 @@ In this case, the SDK reads the configuration from the `DeliveryOptions` section
 
 To see a complete working example, go to one of our sample apps:
 
-- [Kontent ASP.NET Core MVC](https://github.com/kontent-ai/sample-app-net) or
-- [Kontent ASP.NET Core Razor Pages](https://github.com/kontent-ai/sample-app-razorpages)
+- [Kontent.ai ASP.NET Core MVC](https://github.com/kontent-ai/sample-app-net) or
+- [Kontent.ai ASP.NET Core Razor Pages](https://github.com/kontent-ai/sample-app-razorpages)
 
 To spin up a fully configured blank site quickly, use the:
 
-- [Kontent ASP.NET Core MVC boilerplate](https://github.com/kontent-ai/boilerplate-net)
+- [Kontent.ai ASP.NET Core MVC boilerplate](https://github.com/kontent-ai/boilerplate-net)
 
 ### Usage without IoC/DI containers (ideal for console apps, unit tests...)
 
@@ -113,8 +113,8 @@ See [Working with Strongly Typed Models](./docs/Working-with-strongly-typed-mode
 
 For more developer resources, visit:
 
-- [✔️ Best practices for Kontent Delivery SDK for .NET](../../wiki)
-- Kontent Learn:
+- [✔️ Best practices for Kontent.ai Delivery SDK for .NET](../../wiki)
+- Kontent.ai Learn:
   - [.NET Tutorials](https://kontent.ai/learn/tutorials/develop-apps?tech=dotnet)
   - [API Reference](https://kontent.ai/learn/reference)
 

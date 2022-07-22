@@ -1,4 +1,4 @@
-# Best practices for Kontent Delivery SDK for .NET
+# Best practices for Kontent.ai Delivery SDK for .NET
 DOs:
 
 - ✔️ [Use Dependency Injection](Registering-the-DeliveryClient-to-the-IServiceCollection-in-ASP.NET-Core.md#standard-usage) for better app design

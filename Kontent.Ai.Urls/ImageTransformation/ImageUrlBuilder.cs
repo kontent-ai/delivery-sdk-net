@@ -7,7 +7,7 @@ using Microsoft.Extensions.Primitives;
 namespace Kontent.Ai.Urls.ImageTransformation
 {
     /// <summary>
-    /// Provides a builder for Image Transformations for Kontent Delivery API.
+    /// Provides a builder for Image Transformations for Kontent.ai Delivery API.
     /// </summary>
     public sealed class ImageUrlBuilder
     {

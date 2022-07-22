@@ -7,7 +7,7 @@ using Kontent.Ai.Delivery.Abstractions;
 namespace Kontent.Ai.Delivery.Caching
 {
     /// <summary>
-    /// Executes requests with cache against the Kontent Delivery API.
+    /// Executes requests with cache against the Kontent.ai Delivery API.
     /// </summary>
     public class DeliveryClientCache : IDeliveryClient
     {

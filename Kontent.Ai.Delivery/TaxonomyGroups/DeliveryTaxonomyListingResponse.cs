@@ -6,7 +6,7 @@ using Newtonsoft.Json;
 namespace Kontent.Ai.Delivery.TaxonomyGroups
 {
     /// <summary>
-    /// Represents a response from Kontent Delivery API that contains a list of taxonomy groups.
+    /// Represents a response from Kontent.ai Delivery API that contains a list of taxonomy groups.
     /// </summary>
     internal sealed class DeliveryTaxonomyListingResponse : AbstractResponse, IDeliveryTaxonomyListingResponse
     {
@@ -29,7 +29,7 @@ namespace Kontent.Ai.Delivery.TaxonomyGroups
         /// <summary>
         /// Initializes a new instance of the <see cref="DeliveryTaxonomyListingResponse"/> class.
         /// </summary>
-        /// <param name="response">The response from Kontent Delivery API that contains taxonomies.</param>
+        /// <param name="response">The response from Kontent.ai Delivery API that contains taxonomies.</param>
         /// <param name="taxonomies">A collection of taxonomies.</param>
         /// <param name="pagination">Response paging information.</param>
         [JsonConstructor]
@@ -42,7 +42,7 @@ namespace Kontent.Ai.Delivery.TaxonomyGroups
         /// <summary>
         /// Initializes a new instance of the <see cref="DeliveryTaxonomyListingResponse"/> class.
         /// </summary>
-        /// <param name="response">The response from Kontent Delivery API that contains taxonomies.</param>
+        /// <param name="response">The response from Kontent.ai Delivery API that contains taxonomies.</param>
         internal DeliveryTaxonomyListingResponse(ApiResponse response) : base(response)
         {
         }

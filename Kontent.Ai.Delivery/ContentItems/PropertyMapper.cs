@@ -7,7 +7,7 @@ using Newtonsoft.Json;
 namespace Kontent.Ai.Delivery.ContentItems
 {
     /// <summary>
-    /// Default provider for mapping Kontent content item fields to model properties.
+    /// Default provider for mapping Kontent.ai content item fields to model properties.
     /// </summary>
     internal class PropertyMapper : IPropertyMapper
     {

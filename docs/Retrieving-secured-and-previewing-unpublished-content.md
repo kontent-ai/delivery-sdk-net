@@ -46,4 +46,4 @@ or set it to the `IConfiguration` object using the `Configuration["DeliveryOptio
   }
 ```
 
-Learn more about [configuring content preview](https://docs.kontent.ai/tutorials/develop-apps/get-content/configuring-preview-for-content-items) for your app and Kontent project.
+Learn more about [configuring content preview](https://docs.kontent.ai/tutorials/develop-apps/get-content/configuring-preview-for-content-items) for your app and Kontent.ai project.

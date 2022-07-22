@@ -5,7 +5,7 @@ using System.Net.Http;
 namespace Kontent.Ai.Delivery
 {
     /// <summary>
-    /// Represents an error response from the Kontent Delivery API.
+    /// Represents an error response from the Kontent.ai Delivery API.
     /// </summary>
     public sealed class DeliveryException : Exception
     {

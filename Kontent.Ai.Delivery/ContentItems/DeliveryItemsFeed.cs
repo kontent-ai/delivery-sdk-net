@@ -6,7 +6,7 @@ using Kontent.Ai.Delivery.SharedModels;
 namespace Kontent.Ai.Delivery.ContentItems
 {
     /// <summary>
-    /// Represents a feed that can be used to retrieve strongly typed content items from Kontent Delivery API in smaller batches.
+    /// Represents a feed that can be used to retrieve strongly typed content items from Kontent.ai Delivery API in smaller batches.
     /// </summary>
     /// <typeparam name="T">The type of content items in the feed.</typeparam>
     internal class DeliveryItemsFeed<T> : IDeliveryItemsFeed<T>

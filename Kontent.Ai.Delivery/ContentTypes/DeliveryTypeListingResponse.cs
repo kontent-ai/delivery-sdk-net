@@ -23,7 +23,7 @@ namespace Kontent.Ai.Delivery.ContentTypes
         /// <summary>
         /// Initializes a new instance of the <see cref="DeliveryTypeListingResponse"/> class.
         /// </summary>
-        /// <param name="response">The response from Kontent Delivery API that contains content types.</param>
+        /// <param name="response">The response from Kontent.ai Delivery API that contains content types.</param>
         /// <param name="types">A collection of content types.</param>
         /// <param name="pagination">Response paging information.</param>
         [JsonConstructor]
@@ -36,7 +36,7 @@ namespace Kontent.Ai.Delivery.ContentTypes
         /// <summary>
         /// Initializes a new instance of the <see cref="DeliveryTypeListingResponse"/> class.
         /// </summary>
-        /// <param name="response">The response from Kontent Delivery API that contains content types.</param>
+        /// <param name="response">The response from Kontent.ai Delivery API that contains content types.</param>
         internal DeliveryTypeListingResponse(ApiResponse response) : base(response)
         {
         }

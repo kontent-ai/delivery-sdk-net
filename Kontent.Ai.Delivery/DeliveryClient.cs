@@ -23,7 +23,7 @@ using Newtonsoft.Json.Linq;
 namespace Kontent.Ai.Delivery
 {
     /// <summary>
-    /// Executes requests against the Kontent Delivery API.
+    /// Executes requests against the Kontent.ai Delivery API.
     /// </summary>
     internal sealed class DeliveryClient : IDeliveryClient
     {
@@ -42,11 +42,11 @@ namespace Kontent.Ai.Delivery
         /// <summary>
         /// Initializes a new instance of the <see cref="DeliveryClient"/> class for retrieving content of the specified project.
         /// </summary>
-        /// <param name="deliveryOptions">The settings of the Kontent project.</param>
+        /// <param name="deliveryOptions">The settings of the Kontent.ai project.</param>
         /// <param name="modelProvider">An instance of an object that can JSON responses into strongly typed CLR objects</param>
         /// <param name="retryPolicyProvider">A provider of a retry policy.</param>
-        /// <param name="typeProvider">An instance of an object that can map Kontent content types to CLR types</param>
-        /// <param name="deliveryHttpClient">An instance of an object that can send request against Kontent Delivery API</param>
+        /// <param name="typeProvider">An instance of an object that can map Kontent.ai content types to CLR types</param>
+        /// <param name="deliveryHttpClient">An instance of an object that can send request against Kontent.ai Delivery API</param>
         /// <param name="serializer">Default JSON serializer</param>
         public DeliveryClient(
             IOptionsMonitor<DeliveryOptions> deliveryOptions,

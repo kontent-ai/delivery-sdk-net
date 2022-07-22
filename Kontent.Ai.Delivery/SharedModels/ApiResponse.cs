@@ -10,7 +10,7 @@ using System.Threading.Tasks;
 namespace Kontent.Ai.Delivery.SharedModels
 {
     /// <summary>
-    /// Represents a successful JSON response from Kontent Delivery API.
+    /// Represents a successful JSON response from Kontent.ai Delivery API.
     /// </summary>
     [DebuggerDisplay("Url = {" + nameof(RequestUrl) + "}")]
     internal sealed class ApiResponse : IApiResponse

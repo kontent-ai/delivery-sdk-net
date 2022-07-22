@@ -5,7 +5,7 @@ using System.Threading.Tasks;
 namespace Kontent.Ai.Delivery.Abstractions
 {
     /// <summary>
-    /// Cache responses against the Kontent Delivery API.
+    /// Cache responses against the Kontent.ai Delivery API.
     /// </summary>
     public interface IDeliveryCacheManager
     {

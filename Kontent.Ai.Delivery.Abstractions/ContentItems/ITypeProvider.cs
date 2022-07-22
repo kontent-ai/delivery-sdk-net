@@ -3,7 +3,7 @@
 namespace Kontent.Ai.Delivery.Abstractions
 {
     /// <summary>
-    /// Defines the contract for mapping Kontent content types to CLR types.
+    /// Defines the contract for mapping Kontent.ai content types to CLR types.
     /// </summary>
     public interface ITypeProvider
     {

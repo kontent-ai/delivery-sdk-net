@@ -1,7 +1,7 @@
 ﻿namespace Kontent.Ai.Delivery.Abstractions
 {
     /// <summary>
-    /// Represents a faulty JSON response from Kontent Delivery API.
+    /// Represents a faulty JSON response from Kontent.ai Delivery API.
     /// </summary>
     public interface IError
     {
@@ -16,7 +16,7 @@
         string RequestId { get; }
 
         /// <summary>
-        /// Gets Kontent Delivery API error code. Check the Message property for more information
+        /// Gets Kontent.ai Delivery API error code. Check the Message property for more information
         /// </summary>
         int ErrorCode { get; }
 

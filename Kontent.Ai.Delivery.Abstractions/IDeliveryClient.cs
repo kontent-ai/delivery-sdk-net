@@ -4,7 +4,7 @@ using System.Threading.Tasks;
 namespace Kontent.Ai.Delivery.Abstractions
 {
     /// <summary>
-    /// Defines members necessary for retrieving content and its metadata from the Kontent Delivery service.
+    /// Defines members necessary for retrieving content and its metadata from the Kontent.ai Delivery service.
     /// </summary>
     public interface IDeliveryClient
     {

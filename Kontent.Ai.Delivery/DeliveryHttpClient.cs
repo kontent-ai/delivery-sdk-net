@@ -6,7 +6,7 @@ using Kontent.Ai.Delivery.Extensions;
 namespace Kontent.Ai.Delivery
 {
     /// <summary>
-    /// Executes Http requests against the Kontent Delivery API.
+    /// Executes Http requests against the Kontent.ai Delivery API.
     /// </summary>
     public class DeliveryHttpClient : IDeliveryHttpClient
     {
@@ -25,10 +25,10 @@ namespace Kontent.Ai.Delivery
         }
 
         /// <summary>
-        /// Returns a response message from Kontent Delivery API.
+        /// Returns a response message from Kontent.ai Delivery API.
         /// </summary>
         /// <param name="message">HttpRequestMessage instance represents the request message</param>
-        /// <returns>Returns a HttpResponseMessage from Kontent Delivery API</returns>
+        /// <returns>Returns a HttpResponseMessage from Kontent.ai Delivery API</returns>
         public async Task<HttpResponseMessage> SendHttpMessageAsync(HttpRequestMessage message)
         {
             return await _httpClient.SendAsync(message);

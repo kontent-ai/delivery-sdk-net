@@ -13,13 +13,13 @@ namespace Kontent.Ai.Delivery.Configuration
         /// <summary>
         /// Use project identifier.
         /// </summary>
-        /// <param name="projectId">The identifier of a Kontent project.</param>
+        /// <param name="projectId">The identifier of a Kontent.ai project.</param>
         IDeliveryApiConfiguration WithProjectId(string projectId);
 
         /// <summary>
         /// Use project identifier.
         /// </summary>
-        /// <param name="projectId">The identifier of a Kontent project.</param>
+        /// <param name="projectId">The identifier of a Kontent.ai project.</param>
         IDeliveryApiConfiguration WithProjectId(Guid projectId);
     }
 

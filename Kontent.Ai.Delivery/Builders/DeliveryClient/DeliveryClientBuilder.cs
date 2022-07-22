@@ -14,14 +14,14 @@ namespace Kontent.Ai.Delivery.Builders.DeliveryClient
         /// <summary>
         /// Use project identifier.
         /// </summary>
-        /// <param name="projectId">The identifier of a Kontent project.</param>
+        /// <param name="projectId">The identifier of a Kontent.ai project.</param>
         public static IOptionalClientSetup WithProjectId(string projectId)
             => Builder.BuildWithProjectId(projectId);
 
         /// <summary>
         /// Use project identifier.
         /// </summary>
-        /// <param name="projectId">The identifier of a Kontent project.</param>
+        /// <param name="projectId">The identifier of a Kontent.ai project.</param>
         public static IOptionalClientSetup WithProjectId(Guid projectId)
             => Builder.BuildWithProjectId(projectId);
 

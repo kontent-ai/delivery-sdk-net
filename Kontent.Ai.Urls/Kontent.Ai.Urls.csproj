@@ -5,7 +5,7 @@
     <Authors>Kontent s.r.o.</Authors>
     <Product>Kontent.ai</Product>
     <Copyright>© 2022 Kontent s.r.o. All rights reserved.</Copyright>
-    <Description>Kontent URL Generation Logic</Description>
+    <Description>Kontent.ai URL Generation Logic</Description>
     <PackageLicenseExpression>MIT</PackageLicenseExpression>
     <PackageProjectUrl>https://github.com/kontent-ai/delivery-sdk-net</PackageProjectUrl>
     <PackageIconUrl>https://github.com/kontent-ai/.github/blob/main/logos/kai-logo-symbol-color-rgb.png?raw=true</PackageIconUrl>

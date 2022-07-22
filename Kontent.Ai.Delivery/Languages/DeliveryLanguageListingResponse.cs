@@ -23,7 +23,7 @@ namespace Kontent.Ai.Delivery.Languages
         /// <summary>
         /// Initializes a new instance of the <see cref="DeliveryLanguageListingResponse"/> class.
         /// </summary>
-        /// <param name="response">The response from Kontent Delivery API that contains languages.</param>
+        /// <param name="response">The response from Kontent.ai Delivery API that contains languages.</param>
         /// <param name="languages">A collection of languages.</param>
         /// <param name="pagination">Response paging information.</param>
         [JsonConstructor]
@@ -36,7 +36,7 @@ namespace Kontent.Ai.Delivery.Languages
         /// <summary>
         /// Initializes a new instance of the <see cref="DeliveryLanguageListingResponse"/> class.
         /// </summary>
-        /// <param name="response">The response from Kontent Delivery API that contains languages.</param>
+        /// <param name="response">The response from Kontent.ai Delivery API that contains languages.</param>
         internal DeliveryLanguageListingResponse(ApiResponse response) : base(response)
         {
         }
