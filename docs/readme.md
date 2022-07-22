@@ -1,7 +1,6 @@
 # Kontent.ai .NET delivery SDK
 
 ## Best practices
-### DOs:
 
 - ✔️ [Use Dependency Injection](Registering-the-DeliveryClient-to-the-IServiceCollection-in-ASP.NET-Core.md#standard-usage) for better app design
 - ✔️ [Use `HttpClientFactory`](Registering-the-DeliveryClient-to-the-IServiceCollection-in-ASP.NET-Core.md#httpclientfactory) for increased performance and stability of your app
@@ -11,9 +10,6 @@
 - ✔️ [Use structured rich-text rendering](Structured-Rich-text-rendering.md) to enable display templates for rich-text elements
 - ✔️ [Enable retry logic](Retry-capabilities.md) to ensure maximum resiliency of your app
 - ✔️ [Secret Manager or Azure Key Vault](Retrieving-secured-and-previewing-unpublished-content.md) to store Secured Content and Preview API keys
-
-### DON'Ts:
-- ❌ [Use .NET Framework 4.x for new projects](Loading-DeliveryClient-settings-for-apps-running-on-.NET-framework-(MVC-5-&-OWIN)) as it'll be soon replaced with .NET 5 (based on .NET Core)/.NET 6
 
 ## Full Table of Contents
 
