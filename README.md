@@ -1,20 +1,20 @@
 # Kontent Delivery .NET SDK
 
 [![Build & Test](https://github.com/kontent-ai/delivery-sdk-net/actions/workflows/integrate.yml/badge.svg)](https://github.com/kontent-ai/delivery-sdk-net/actions/workflows/integrate.yml)
-[![codecov](https://codecov.io/gh/Kentico/kontent-delivery-sdk-net/branch/master/graph/badge.svg)](https://codecov.io/gh/Kentico/kontent-delivery-sdk-net)
-[![Stack Overflow](https://img.shields.io/badge/Stack%20Overflow-ASK%20NOW-FE7A16.svg?logo=stackoverflow&logoColor=white)](https://stackoverflow.com/tags/kentico-kontent)
+[![codecov](https://codecov.io/gh/kontent-ai/delivery-sdk-net/branch/master/graph/badge.svg)](https://app.codecov.io/gh/kontent-ai/delivery-sdk-net)
+[![Stack Overflow](https://img.shields.io/badge/Stack%20Overflow-ASK%20NOW-FE7A16.svg?logo=stackoverflow&logoColor=white)](https://stackoverflow.com/tags/kontent-ai)
 [![Discord](https://img.shields.io/discord/821885171984891914?label=Discord&logo=Discord&logoColor=white)](https://discord.gg/SKCxwPtevJ)
 
 | Paradigm |                                                                  Package                                                                  |                                                                Downloads                                                                |                                                                  Compatibility                                                                   |                                Documentation                                 |
 | -------- | :---------------------------------------------------------------------------------------------------------------------------------------: | :-------------------------------------------------------------------------------------------------------------------------------------: | :----------------------------------------------------------------------------------------------------------------------------------------------: | :--------------------------------------------------------------------------: |
 | Async    |    [![NuGet](https://img.shields.io/nuget/v/Kontent.Ai.Delivery.svg)](https://www.nuget.org/packages/Kontent.Ai.Delivery)    |    [![NuGet](https://img.shields.io/nuget/dt/Kontent.Ai.Delivery.svg)](https://www.nuget.org/packages/Kontent.Ai.Delivery)    | [`net6.0`](https://dotnet.microsoft.com/download/dotnet/6.0) [`netstandard2.0`](https://docs.microsoft.com/en-us/dotnet/standard/net-standard)\* |                            [📖 Wiki](../../wiki)                             |
-| Reactive | [![NuGet](https://img.shields.io/nuget/v/Kontent.Ai.Delivery.Rx.svg)](https://www.nuget.org/packages/Kontent.Ai.Delivery.Rx) | [![NuGet](https://img.shields.io/nuget/dt/Kontent.Ai.Delivery.Rx.svg)](https://www.nuget.org/packages/Kontent.Ai.Delivery.Rx) | [`net6.0`](https://dotnet.microsoft.com/download/dotnet/6.0) [`netstandard2.0`](https://docs.microsoft.com/en-us/dotnet/standard/net-standard)\* | [📖 Wiki](../../wiki/Using-the-Kontent.Ai.Delivery.Rx-reactive-library) |
+| Reactive | [![NuGet](https://img.shields.io/nuget/v/Kontent.Ai.Delivery.Rx.svg)](https://www.nuget.org/packages/Kontent.Ai.Delivery.Rx) | [![NuGet](https://img.shields.io/nuget/dt/Kontent.Ai.Delivery.Rx.svg)](https://www.nuget.org/packages/Kontent.Ai.Delivery.Rx) | [`net6.0`](https://dotnet.microsoft.com/download/dotnet/6.0) [`netstandard2.0`](https://docs.microsoft.com/en-us/dotnet/standard/net-standard)\* | [📖 Wiki](./docs/Using-the-Kontent.Ai.Delivery.Rx-reactive-library.md) |
 
 > \* We highly recommend targeting [`net6.0`](https://dotnet.microsoft.com/download/dotnet/6.0) in your projects. [`netstandard2.0`](https://docs.microsoft.com/en-us/dotnet/standard/net-standard) is supported to allow older projects to iteratively upgrade.
 
 ## Summary
 
-The Kontent Delivery .NET SDK is a client library that lets you easily retrieve content from [Kontent by Kentico](https://kontent.ai).
+The Kontent.ai Delivery .NET SDK is a client library that lets you easily retrieve content from [Kontent.ai](https://kontent.ai).
 
 ### Getting started
 
@@ -59,20 +59,20 @@ public class HomeController
 }
 ```
 
-In this case, the SDK reads the configuration from the `DeliveryOptions` section of the `Configuration` object. There are many ways of providing the configuration to the `DeliveryClient` as well as many advanced registration scenarios which you can all find in the [Wiki](../../wiki/Registering-the-DeliveryClient-to-the-IServiceCollection-in-ASP.NET-Core).
+In this case, the SDK reads the configuration from the `DeliveryOptions` section of the `Configuration` object. There are many ways of providing the configuration to the `DeliveryClient` as well as many advanced registration scenarios which you can all find in the [Wiki](./docs/Registering-the-DeliveryClient-to-the-IServiceCollection-in-ASP.NET-Core.md).
 
 To see a complete working example, go to one of our sample apps:
 
-- [Kontent ASP.NET Core MVC](https://github.com/Kentico/kontent-sample-app-net) or
-- [Kontent ASP.NET Core Razor Pages](https://github.com/Kentico/kontent-sample-app-razorpages)
+- [Kontent ASP.NET Core MVC](https://github.com/kontent-ai/sample-app-net) or
+- [Kontent ASP.NET Core Razor Pages](https://github.com/kontent-ai/sample-app-razorpages)
 
 To spin up a fully configured blank site quickly, use the:
 
-- [Kontent ASP.NET Core MVC boilerplate](https://github.com/Kentico/kontent-boilerplate-net)
+- [Kontent ASP.NET Core MVC boilerplate](https://github.com/kontent-ai/boilerplate-net)
 
 ### Usage without IoC/DI containers (ideal for console apps, unit tests...)
 
-You can also set up a `DeliveryOptions` manually using the [`DeliveryClientBuilder`](https://github.com/kontent-ai/delivery-sdk-net/blob/master/Kontent.Ai.Delivery/Builders/DeliveryOptions/DeliveryOptionsBuilder.cs).
+You can also set up a `DeliveryOptions` manually using the [`DeliveryClientBuilder`](https://github.com/kontent-ai/delivery-sdk-net/Kontent.Ai.Delivery/Builders/DeliveryOptions/DeliveryOptionsBuilder.cs).
 
 ```csharp
 IDeliveryClient _client = DeliveryClientBuilder
@@ -107,7 +107,7 @@ var title = response.Item.Title; // -> "On Roasts"
 var lang = response.Item.System.Language; // -> "en-US"
 ```
 
-See [Working with Strongly Typed Models](../../wiki/Working-with-strongly-typed-models) to learn how to generate models and adjust the logic to your needs.
+See [Working with Strongly Typed Models](./docs/Working-with-strongly-typed-models.md) to learn how to generate models and adjust the logic to your needs.
 
 ## Further information
 

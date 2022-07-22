@@ -1,4 +1,4 @@
-The [ImageUrlBuilder class](https://github.com/kontent-ai/delivery-sdk-net/blob/master/Kentico.Kontent.ImageTransformation/ImageTransformation/ImageUrlBuilder.cs) exposes methods for applying image transformations on the Asset URL.
+The [ImageUrlBuilder class](https://github.com/kontent-ai/delivery-sdk-net/Kontent.Ai.ImageTransformation/ImageTransformation/ImageUrlBuilder.cs) exposes methods for applying image transformations on the Asset URL.
 
 ```csharp
 string assetUrl = articleItem.GetAssets("teaser_image").First().Url;
@@ -11,4 +11,4 @@ string transformedAssetUrl = builder.WithFocalPointCrop(560, 515, 2)
                                     .Url;
 ```
 
-For list of supported transformations and more information visit the Kentico Delivery API reference at <https://docs.kontent.ai/reference/image-transformation>.
+For list of supported transformations and more information visit the Kontent.ai delivery API reference at <https://docs.kontent.ai/reference/image-transformation>.

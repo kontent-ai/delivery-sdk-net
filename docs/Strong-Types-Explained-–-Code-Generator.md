@@ -1,15 +1,15 @@
 ## The Code Generator
-You don't have to generate your strong types manually. Instead, you can use a simple yet powerful command-line [generator](https://github.com/kontent-ai/model-generator-net). The tool is available as a .NET Tool and can be used either [manually](https://github.com/Kentico/kontent-boilerplate-net/blob/7267e647ab84df56e174a1ba76a65a948050cf34/src/content/Kentico.Kontent.Boilerplate/Tools/GenerateModels.ps1#L3), as a [pre-build event](https://github.com/Kentico/kontent-boilerplate-net/blob/7267e647ab84df56e174a1ba76a65a948050cf34/src/content/Kentico.Kontent.Boilerplate/Kentico.Kontent.Boilerplate.csproj#L37-L50), or as part of your complex continuous integration process.
+You don't have to generate your strong types manually. Instead, you can use a simple yet powerful command-line [generator](https://github.com/kontent-ai/model-generator-net). The tool is available as a .NET Tool and can be used either [manually](https://github.com/kontent-ai/boilerplate-net/blob/7267e647ab84df56e174a1ba76a65a948050cf34/src/content/Kontent.Ai.Boilerplate/Tools/GenerateModels.ps1#L3), as a [pre-build event](https://github.com/kontent-ai/boilerplate-net/blob/7267e647ab84df56e174a1ba76a65a948050cf34/src/content/Kontent.Ai.Boilerplate/Kontent.Ai.Boilerplate.csproj#L37-L50), or as part of your complex continuous integration process.
 
 **Installation:**
 
-`dotnet tool install -g Kentico.Kontent.ModelGenerator`
+`dotnet tool install -g Kontent.Ai.ModelGenerator`
 
 **Usage:**
 
 `dotnet tool run KontentModelGenerator --projectid "<projectid>" [--namespace "<custom-namespace>"] [--outputdir "<output-directory>"] [--withtypeprovider <True|False>] [--structuredmodel <True|False>] [--filenamesuffix "<suffix>"]`
 
-The following is a real-world example of our [MVC sample app](https://github.com/Kentico/kontent-sample-app-net/) …
+The following is a real-world example of our [MVC sample app](https://github.com/kontent-ai/sample-app-net/) …
 
 `KontentModelGenerator.exe --projectid "975bf280-fd91-488c-994c-2f04416e5ee3" --namespace "DancingGoat.Models" --outputdir "C:\Users\jan.lenoch\Source\Repos\kontent-sample-app-net\DancingGoat\Models\ContentTypes" --withtypeprovider true`
 

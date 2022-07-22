@@ -50,7 +50,7 @@ public class Startup
 }
 ```
 
-For resolving named clients, inject the [IDeliveryClientFactory](https://github.com/kontent-ai/delivery-sdk-net/blob/master/Kontent.Ai.Delivery.Abstractions/IDeliveryClientFactory.cs), which is registered in the DI container.
+For resolving named clients, inject the [IDeliveryClientFactory](https://github.com/kontent-ai/delivery-sdk-net/Kontent.Ai.Delivery.Abstractions/IDeliveryClientFactory.cs), which is registered in the DI container.
 
 ```csharp
 public class HomeController : Controller
@@ -82,5 +82,5 @@ More details in [Autofac's docs](https://autofaccn.readthedocs.io/en/latest/inte
 
 # Extending named services support
 In case you want to use a DI container other than Autofac, feel free to create your own implementation of `INamedServiceProvider` (in `Kontent.Ai.Delivery.Extensions.DependencyInjection`) and submit a pull request to this repository.
-This implementation then needs to be registered in `NamedServiceProviderType` and [`ServiceCollectionExtensions`](https://github.com/kontent-ai/delivery-sdk-net/blob/master/Kontent.Ai.Delivery.Extensions.DependencyInjection/Extensions/ServiceCollectionExtensions.cs#L133).
+This implementation then needs to be registered in `NamedServiceProviderType` and [`ServiceCollectionExtensions`](https://github.com/kontent-ai/delivery-sdk-net/Kontent.Ai.Delivery.Extensions.DependencyInjection/Extensions/ServiceCollectionExtensions.cs#L133).
 We'll be happy to work with you to add support for your favorite DI container.

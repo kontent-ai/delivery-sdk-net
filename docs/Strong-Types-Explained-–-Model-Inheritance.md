@@ -1,6 +1,6 @@
 ## Implementing Model Inheritance
 
-Another interesting topic with strong types is inheritance. Currently, Kontent.ai content types don't inherit elements from other content types. In our [MVC sample site](https://github.com/Kentico/kontent-sample-app-net/), we have the Coffee, Brewer, Grinder, and Accessory content types. All of them represent some form of a product. They have the following properties in common:
+Another interesting topic with strong types is inheritance. Currently, Kontent.ai content types don't inherit elements from other content types. In our [MVC sample site](https://github.com/kontent-ai/sample-app-net/), we have the Coffee, Brewer, Grinder, and Accessory content types. All of them represent some form of a product. They have the following properties in common:
 
 * Product name
 * Price
@@ -63,7 +63,7 @@ Simply define a custom type `Product` with those common properties. And decorate
     }
 ```
 
-The default [PropertyMapper](https://github.com/Kentico/delivery-sdk-net/blob/master/Kontent.Ai.Delivery/StrongTyping/PropertyMapper.cs) in our Delivery .NET SDK is smart enough to automatically bind your properties to appropriate data using these JsonProperty attributes.
+The default [PropertyMapper](https://github.com/kontent-ai/delivery-sdk-net/Kontent.Ai.Delivery/StrongTyping/PropertyMapper.cs) in our Delivery .NET SDK is smart enough to automatically bind your properties to appropriate data using these JsonProperty attributes.
 
 Now you can request all those Brewers and Coffee off of the API endpoint as Product objects using the generic overload of the GetItemsAsync method:
 
@@ -98,7 +98,7 @@ You can declare a property with a slightly different name, of the same type and 
     }
 ```
 
-Now, request those Brewers and Coffee using the automatic runtime typing functionality (explained in parts [4](https://github.com/Kentico/delivery-sdk-net/wiki/Strong-Types-Explained---Why-the-Runtime-Typing) and [5](https://github.com/Kentico/delivery-sdk-net/wiki/Strong-Types-Explained---How-to-Use-Runtime-Typing)) by specifying `object` as the generic type parameter:
+Now, request those Brewers and Coffee using the automatic runtime typing functionality (explained in parts [4](https://github.com/kontent-ai/delivery-sdk-net/docs/Strong-Types-Explained---Why-the-Runtime-Typing.md) and [5](https://github.com/kontent-ai/delivery-sdk-net/docs/Strong-Types-Explained---How-to-Use-Runtime-Typing).md) by specifying `object` as the generic type parameter:
 
 ```csharp
     var brewersAndCoffeeAsProducts = (await client.GetItemsAsync<object>(new InFilter("system.type", "brewer", "coffee"))).Items;

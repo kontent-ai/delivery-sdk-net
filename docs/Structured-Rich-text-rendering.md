@@ -2,9 +2,9 @@
 
 The [Rich text element](https://docs.kontent.ai/reference/delivery-api#section/Rich-text-element) can contain images, links to content items, content items, and components. Your application needs to define how these objects are rendered.
 
-This information applies to Rich text model properties typed as `IRichTextContent`. In case you are using `string` data model, see [String-based rendering of linked items in Rich text](https://github.com/kontent-ai/delivery-sdk-net/wiki/String-based-rendering-of-items-in-Rich-text). You can influence which approach to use by [applying](https://github.com/kontent-ai/model-generator-net#parameters) the `--structuredmodel true` parameter during model generation.
+This information applies to Rich text model properties typed as `IRichTextContent`. In case you are using `string` data model, see [String-based rendering of linked items in Rich text](https://github.com/kontent-ai/delivery-sdk-net/docs/String-based-rendering-of-items-in-Rich-text.md). You can influence which approach to use by [applying](https://github.com/kontent-ai/model-generator-net#parameters) the `--structuredmodel true` parameter during model generation.
 
-Resolving links to content items is covered in a [separate article](https://github.com/kontent-ai/delivery-sdk-net/wiki/Resolving-links-to-content-items).
+Resolving links to content items is covered in a [separate article](https://github.com/kontent-ai/delivery-sdk-net/docs/Resolving-links-to-content-items.md).
 
 ## Structured Rich text data model
 
@@ -32,7 +32,7 @@ Display templates can be provided to all MVC Controllers through the Shared fold
 ## Example
 ![](https://pbs.twimg.com/media/DIFVESkXsAQ8av9.jpg:large)
 
-**[Models/ContentTypes/Article.cs](https://github.com/Kentico/kontent-sample-app-net/blob/master/DancingGoat/Models/ContentTypes/Article.cs)** - Generated
+**[Models/ContentTypes/Article.cs](https://github.com/kontent-ai/sample-app-net/DancingGoat/Models/ContentTypes/Article.cs)** - Generated
 
 ```csharp
     public partial class Article
@@ -43,7 +43,7 @@ Display templates can be provided to all MVC Controllers through the Shared fold
     }
 ```
 
-**[Views/Articles/Show.cshtml](https://github.com/Kentico/kontent-sample-app-net/blob/master/DancingGoat/Views/Articles/Show.cshtml)**
+**[Views/Articles/Show.cshtml](https://github.com/kontent-ai/sample-app-net/DancingGoat/Views/Articles/Show.cshtml)**
 
 ```csharp
     <div class="row">
@@ -53,7 +53,7 @@ Display templates can be provided to all MVC Controllers through the Shared fold
     </div>
 ```
 
-**[Views/Shared/DisplayTemplates/HostedVideo.cshtml](https://github.com/Kentico/kontent-sample-app-net/blob/master/DancingGoat/Views/Shared/DisplayTemplates/HostedVideo.cshtml)**
+**[Views/Shared/DisplayTemplates/HostedVideo.cshtml](https://github.com/kontent-ai/sample-app-net/DancingGoat/Views/Shared/DisplayTemplates/HostedVideo.cshtml)**
 ```csharp
 @model DancingGoat.Models.HostedVideo
 

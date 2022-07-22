@@ -3,7 +3,7 @@
 ## Best practices
 ### DOs:
 
-- ✔️ [Use Dependency Injection](https://github.com/kontent-ai/delivery-sdk-net/blob/migration/docs/Registering-the-DeliveryClient-to-the-IServiceCollection-in-ASP.NET-Core.md#standard-usage) for better app design
+- ✔️ [Use Dependency Injection](https://github.com/kontent-ai/delivery-sdk-net/docs/Registering-the-DeliveryClient-to-the-IServiceCollection-in-ASP.NET-Core.md#standard-usage) for better app design
 - ✔️ [Use `HttpClientFactory`](https://github.com/kontent-ai/delivery-sdk-net/blob/migration/Registering-the-DeliveryClient-to-the-IServiceCollection-in-ASP.NET-Core.md#httpclientfactory) for increased performance and stability of your app
 - ✔️ [Use strongly-typed models](Working-with-strongly-typed-models.md) for all the [10 advantages described here](Strong-Types-Explained-%E2%80%93-10-Advantages.md)
 - ✔️ [Use the code generator](https://github.com/kontent-ai/model-generator-net) to automate things and avoid errors
@@ -44,7 +44,7 @@
 * **Unit testing**
   * [Faking responses](Faking-responses.md)
 * [**Release & version management**](https://github.com/kontent-ai/kontent-ai.github.io/blob/main/docs/articles/Release-%26-version-management-of-.NET-projects.md)
-  * [Kentico's best practices for .csproj files](https://github.com/kontent-ai/kontent-ai.github.io/blob/main/docs/articles/Kontent.ai-best-practices-for-.csproj-files.md)
+  * [Kontent.ai best practices for .csproj files](https://github.com/kontent-ai/kontent-ai.github.io/blob/main/docs/articles/Kontent.ai-best-practices-for-.csproj-files.md)
 * [**Developing plugins**](Developing-plugins.md)
 * **Troubleshooting**
   * [Using Source Link for debugging](Using-Source-Link-for-debugging.md)

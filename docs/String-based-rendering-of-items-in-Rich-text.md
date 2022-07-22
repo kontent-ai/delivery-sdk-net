@@ -15,7 +15,7 @@
 
 ## Introduction
 
-The following information applies to Rich text model properties typed as `string`. In case you are using structured data model type `IRichTextContent`, see [Structured Rich text rendering](https://github.com/Kentico/delivery-sdk-net/wiki/Structured-Rich-text-rendering)
+The following information applies to Rich text model properties typed as `string`. In case you are using structured data model type `IRichTextContent`, see [Structured Rich text rendering](https://github.com/kontent-ai/delivery-sdk-net/docs/Structured-Rich-text-rendering.md)
 
 ## Content items and components in Rich text
 
@@ -36,11 +36,11 @@ To display the component or content item in the rich text on your website, you n
 
 For example, let's say you want to add YouTube videos to your article. In such case, you would need a content type *YouTube video* with a single Text element for the *Video ID*.
 
-To learn more about content items and components in rich text, see our [API Reference](https://developer.kenticocloud.com/v1/reference#linked-content).
+To learn more about content items and components in rich text, see our [API Reference](https://kontent.ai/learn/tutorials/write-and-collaborate/structure-your-content/structure-your-content/).
 
 ## Defining a content type model
 
-First, you need to define a strongly typed model of the *YouTube video* content type. For more information about models, see [Working with strongly typed models](https://github.com/Kentico/delivery-sdk-net/wiki/Working-with-Strongly-Typed-Models-(aka-Code-First-Approach)).
+First, you need to define a strongly typed model of the *YouTube video* content type. For more information about models, see [Working with strongly typed models](https://github.com/kontent-ai/delivery-sdk-net/docs/Working-with-Strongly-Typed-Models-(aka-Code-First-Approach).md).
 
 For example, a model for the *YouTube video* content type can look like this:
 
@@ -54,7 +54,7 @@ namespace DancingGoat.Models.ContentTypes
 }
 ```
 
-You will also want to register your new model in your implementation of the [ITypeProvider](https://github.com/Kentico/delivery-sdk-net/blob/master/Kontent.Ai.Delivery/StrongTyping/ITypeProvider.cs) interface. See an example in our [sample application](https://github.com/Kentico/kontent-sample-app-net/blob/master/DancingGoat/Models/ContentTypes/CustomTypeProvider.cs).
+You will also want to register your new model in your implementation of the [ITypeProvider](https://github.com/kontent-ai/delivery-sdk-net/Kontent.Ai.Delivery/StrongTyping/ITypeProvider.cs) interface. See an example in our [sample application](https://github.com/kontent-ai/sample-app-net/DancingGoat/Models/ContentTypes/CustomTypeProvider.cs).
 
 ```csharp
       ...

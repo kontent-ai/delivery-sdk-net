@@ -1,7 +1,7 @@
 You can use features like:
 
 1. [IntelliSense](https://docs.microsoft.com/en-us/visualstudio/ide/using-intellisense)
-1. [DataAnnotations](https://github.com/kontent-ai/delivery-sdk-net/wiki/Strong-Types-Explained-%E2%80%93-DataAnnotations-attributes)
+1. [DataAnnotations](https://github.com/kontent-ai/delivery-sdk-net/docs/Strong-Types-Explained-–-DataAnnotations-attributes.md)
 1. [strongly-typed views](https://docs.microsoft.com/en-us/aspnet/mvc/overview/views/dynamic-v-strongly-typed-views)
 1. better LINQ support with [generic strongly typed collections](http://www.techrepublic.com/article/take-advantage-of-strongly-typed-collection-classes-in-net/ "generic strongly typed collections")
 1. [display templates](http://bradwilson.typepad.com/blog/2009/10/aspnet-mvc-2-templates-part-1-introduction.html "display templates")

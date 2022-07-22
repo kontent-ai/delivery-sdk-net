@@ -20,7 +20,7 @@ This will return an `Article` object with the following members:
 * `string UrlPattern`
 * `IContentItemSystemAttributes System`
 
-Even the `RelatedArticles` property, in fact, points to an `IEnumerable<Article>` collection, in this case. The items in that collection are represented by [heap](https://www.codeproject.com/Articles/76153/Six-important-NET-concepts-Stack-heap-value-types) objects with proper types. We'll get to that point in [part 5](https://github.com/Kentico/delivery-sdk-net/wiki/Strong-Types-Explained---How-to-Use-Runtime-Typing) of this series.
+Even the `RelatedArticles` property, in fact, points to an `IEnumerable<Article>` collection, in this case. The items in that collection are represented by [heap](https://www.codeproject.com/Articles/76153/Six-important-NET-concepts-Stack-heap-value-types) objects with proper types. We'll get to that point in [part 5](https://github.com/kontent-ai/delivery-sdk-net/docs/Strong-Types-Explained---How-to-Use-Runtime-Typing.md) of this series.
 
 ### The DataAnnotations Attributes
 
@@ -34,7 +34,7 @@ The same applies to phone numbers if they contain the plus sign in the beginning
 
 How can you make sure that the two properties of the same type [string](https://docs.microsoft.com/en-us/dotnet/api/system.string?view=netstandard-1.6) have different semantics? By using [System.ComponentModel.DataAnnotations](https://docs.microsoft.com/de-de/dotnet/core/api/system.componentmodel.dataannotations) attributes.
 
-Let's take a few [examples](https://github.com/Kentico/kontent-sample-app-net/tree/master/DancingGoat/Models) in our MVC sample site:
+Let's take a few [examples](https://github.com/kontent-ai/sample-app-net/tree/master/DancingGoat/Models) in our MVC sample site:
 
 
 ```csharp
