@@ -20,7 +20,7 @@ This will return an `Article` object with the following members:
 * `string UrlPattern`
 * `IContentItemSystemAttributes System`
 
-Even the `RelatedArticles` property, in fact, points to an `IEnumerable<Article>` collection, in this case. The items in that collection are represented by [heap](https://www.codeproject.com/Articles/76153/Six-important-NET-concepts-Stack-heap-value-types) objects with proper types. We'll get to that point in [part 5](https://github.com/kontent-ai/delivery-sdk-net/docs/Strong-Types-Explained---How-to-Use-Runtime-Typing.md) of this series.
+Even the `RelatedArticles` property, in fact, points to an `IEnumerable<Article>` collection, in this case. The items in that collection are represented by [heap](https://www.codeproject.com/Articles/76153/Six-important-NET-concepts-Stack-heap-value-types) objects with proper types. We'll get to that point in [part 5](Strong-Types-Explained---How-to-Use-Runtime-Typing.md) of this series.
 
 ### The DataAnnotations Attributes
 

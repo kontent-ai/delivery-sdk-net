@@ -100,7 +100,7 @@ You can find sample models at <https://github.com/kontent-ai/delivery-sdk-net/tr
 
 ## Generating models
 
-:information_source: You can save time by [generating content type models](https://github.com/kontent-ai/delivery-sdk-net/docs/Strong-Types-Explained-–-Code-Generator.md) for your project using the [Kontent.ai .NET code generator](https://github.com/kontent-ai/model-generator-net) utility.
+:information_source: You can save time by [generating content type models](Strong-Types-Explained-–-Code-Generator.md) for your project using the [Kontent.ai .NET code generator](https://github.com/kontent-ai/model-generator-net) utility.
 
 ## Retrieving content items
 

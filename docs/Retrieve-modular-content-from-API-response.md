@@ -8,7 +8,7 @@ var content = JObject.Parse(response.ApiResponse.Content ?? "{}");
 dynamic linkedItems = content["modular_content"].DeepClone();
 ```
 
-It is also possible to use [runtime type resolution](https://github.com/kontent-ai/delivery-sdk-net/docs/Working-with-strongly-typed-models.md#adding-support-for-runtime-type-resolution) to get a strongly typed response from the dynamic response.
+It is also possible to use [runtime type resolution](Working-with-strongly-typed-models.md#adding-support-for-runtime-type-resolution) to get a strongly typed response from the dynamic response.
 
 ```csharp
 

@@ -98,7 +98,7 @@ You can declare a property with a slightly different name, of the same type and 
     }
 ```
 
-Now, request those Brewers and Coffee using the automatic runtime typing functionality (explained in parts [4](https://github.com/kontent-ai/delivery-sdk-net/docs/Strong-Types-Explained---Why-the-Runtime-Typing.md) and [5](https://github.com/kontent-ai/delivery-sdk-net/docs/Strong-Types-Explained---How-to-Use-Runtime-Typing).md) by specifying `object` as the generic type parameter:
+Now, request those Brewers and Coffee using the automatic runtime typing functionality (explained in parts [4](Strong-Types-Explained---Why-the-Runtime-Typing.md) and [5](Strong-Types-Explained---How-to-Use-Runtime-Typing).md) by specifying `object` as the generic type parameter:
 
 ```csharp
     var brewersAndCoffeeAsProducts = (await client.GetItemsAsync<object>(new InFilter("system.type", "brewer", "coffee"))).Items;

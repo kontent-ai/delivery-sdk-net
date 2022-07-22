@@ -1,8 +1,8 @@
 # Best practices for Kontent Delivery SDK for .NET
 DOs:
 
-- ✔️ [Use Dependency Injection](https://github.com/kontent-ai/delivery-sdk-net/docs/Registering-the-DeliveryClient-to-the-IServiceCollection-in-ASP.NET-Core.md#standard-usage) for better app design
-- ✔️ [Use `HttpClientFactory`](https://github.com/kontent-ai/delivery-sdk-net/docs/Registering-the-DeliveryClient-to-the-IServiceCollection-in-ASP.NET-Core.md#httpclientfactory) for increased performance and stability of your app
+- ✔️ [Use Dependency Injection](Registering-the-DeliveryClient-to-the-IServiceCollection-in-ASP.NET-Core.md#standard-usage) for better app design
+- ✔️ [Use `HttpClientFactory`](Registering-the-DeliveryClient-to-the-IServiceCollection-in-ASP.NET-Core.md#httpclientfactory) for increased performance and stability of your app
 - ✔️ [Use strongly-typed models](Working-with-strongly-typed-models.md) for all the [10 advantages described here](Strong-Types-Explained-%E2%80%93-10-Advantages.md)
 - ✔️ [Use the code generator](https://github.com/kontent-ai/model-generator-net) to automate things and avoid errors
 - ✔️ [Use partial classes for extending the models](Partial-class-customization-techniques.md) & not mess up the generated ones
