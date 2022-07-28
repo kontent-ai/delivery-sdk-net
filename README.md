@@ -10,8 +10,6 @@
 | Async    |    [![NuGet](https://img.shields.io/nuget/v/Kontent.Ai.Delivery.svg)](https://www.nuget.org/packages/Kontent.Ai.Delivery)    |    [![NuGet](https://img.shields.io/nuget/dt/Kontent.Ai.Delivery.svg)](https://www.nuget.org/packages/Kontent.Ai.Delivery)    | [`net6.0`](https://dotnet.microsoft.com/download/dotnet/6.0) |                            [📖 Wiki](./docs)                             |
 | Reactive | [![NuGet](https://img.shields.io/nuget/v/Kontent.Ai.Delivery.Rx.svg)](https://www.nuget.org/packages/Kontent.Ai.Delivery.Rx) | [![NuGet](https://img.shields.io/nuget/dt/Kontent.Ai.Delivery.Rx.svg)](https://www.nuget.org/packages/Kontent.Ai.Delivery.Rx) | [`net6.0`](https://dotnet.microsoft.com/download/dotnet/6.0) | [📖 Wiki](./docs/Retrieving%20data/Using-the-Kontent.Ai.Delivery.Rx-reactive-library.md) |
 
-> [`netstandard2.0`](https://docs.microsoft.com/en-us/dotnet/standard/net-standard) is no longer supported. Please target [`net6.0`](https://dotnet.microsoft.com/download/dotnet/6.0) in your projects.
-
 ## Summary
 
 The Kontent.ai Delivery .NET SDK is a client library that lets you easily retrieve content from [Kontent.ai](https://kontent.ai).
