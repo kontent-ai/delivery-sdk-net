@@ -57,7 +57,7 @@ public class HomeController
 }
 ```
 
-In this case, the SDK reads the configuration from the `DeliveryOptions` section of the `Configuration` object. There are many ways of providing the configuration to the `DeliveryClient` as well as many advanced registration scenarios which you can all find in the [Wiki](./docs/configuration/Registering-the-DeliveryClient-to-the-IServiceCollection-in-ASP.NET-Core.md).
+In this case, the SDK reads the configuration from the `DeliveryOptions` section of the `Configuration` object. There are many ways of providing the configuration to the `DeliveryClient` as well as many advanced registration scenarios which you can all find in the [Wiki](./docs/configuration/dependency-injection.md).
 
 To see a complete working example, go to one of our sample apps:
 

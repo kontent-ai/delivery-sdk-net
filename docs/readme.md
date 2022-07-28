@@ -2,8 +2,8 @@
 
 ## Best practices
 
-- ✔️ [Use Dependency Injection](./Configuration/Registering-the-DeliveryClient-to-the-IServiceCollection-in-ASP.NET-Core.md#standard-usage.md) for better app design
-- ✔️ [Use `HttpClientFactory`](./Configuration/Registering-the-DeliveryClient-to-the-IServiceCollection-in-ASP.NET-Core.md#httpclientfactory) for increased performance and stability of your app
+- ✔️ [Use Dependency Injection](./Configuration/dependency-injection.md#standard-usage.md) for better app design
+- ✔️ [Use `HttpClientFactory`](./Configuration/dependency-injection.md#httpclientfactory) for increased performance and stability of your app
 - ✔️ [Use strongly-typed models](./customization-and-extensibility/Working-with-strongly-typed-models.md) for all the [10 advantages described here](./customization-and-extensibility/Strong-Types-Explained-%E2%80%93-10-Advantages.md)
 - ✔️ [Use the code generator](https://github.com/kontent-ai/model-generator-net) to automate things and avoid errors
 - ✔️ [Use partial classes for extending the models](./customization-and-extensibility/Partial-class-customization-techniques.md) & not mess up the generated ones
@@ -14,9 +14,9 @@
 ## Full Table of Contents
 
 * **Configuration**
-  * [Registering the DeliveryClient to the IServiceCollection in ASP.NET Core](./Configuration/Registering-the-DeliveryClient-to-the-IServiceCollection-in-ASP.NET-Core.md)
-  * [Accessing data from multiple projects at the same time using named clients](./Configuration/Accessing-Data-From-Multiple-Projects.md)
-  * [Loading DeliveryClient settings for apps running on .NET framework (MVC 5 & OWIN)](./Configuration/Loading-DeliveryClient-settings-for-apps-running-on-.NET-framework-(MVC-5-&-OWIN).md)
+  * [Registering the DeliveryClient to the IServiceCollection in ASP.NET Core](./Configuration/dependency-injection.md)
+  * [Accessing data from multiple projects at the same time using named clients](./Configuration/multiple-delivery-clients.md)
+  * [Loading DeliveryClient settings for apps running on .NET framework (MVC 5 & OWIN)](./Configuration/legacy-settings-loading-for-apps-running-on-.NET-framework.md)
 * **Retrieving data**
   * [Querying content items](./retrieving-data/Querying-content.md)
   * [Enumerating all items](./retrieving-data/Enumerating-all-items.md)

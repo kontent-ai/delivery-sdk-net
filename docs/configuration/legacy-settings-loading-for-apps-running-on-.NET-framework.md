@@ -13,7 +13,7 @@ In such a case, you can take advantage of the [`ConfigurationManagerProvider`](h
 
 There are 2 approaches:
 
-* Using the `ConfigurationManagerProvider` with the [Configuration API](Registering-the-DeliveryClient-to-the-IServiceCollection-in-ASP.NET-Core.md)
+* Using the `ConfigurationManagerProvider` with the [Configuration API](dependency-injection.md)
 
   ```csharp
   var builder = new ConfigurationBuilder()
