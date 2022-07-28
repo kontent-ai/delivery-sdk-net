@@ -48,16 +48,6 @@ namespace Kontent.Ai.Urls.Delivery
         }
 
         /// <summary>
-        /// Initializes the URL builder using <see cref="IOptionsMonitor{TOptions}"/>. Ideal for simple scenarios where hot reloading of configuration is not required.
-        /// </summary>
-        /// <param name="deliveryOptions">The configuration object.</param>
-        [Obsolete("Use constructor DeliveryEndpointUrlBuilder(IOptionsMonitor<DeliveryOptions> deliveryOptions) for instance with DeliveryOptionsMonitor instead./> ")]
-        public DeliveryEndpointUrlBuilder(DeliveryOptions deliveryOptions)
-        {
-            CurrentDeliveryOptions = deliveryOptions;
-        }
-
-        /// <summary>
         /// Generates an URL for retrieving a single content item.
         /// </summary>
         /// <param name="codename">ID of the item to be retrieved.</param>
