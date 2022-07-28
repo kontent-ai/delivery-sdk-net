@@ -1,38 +1,36 @@
-# Kontent Delivery .NET SDK
+# Kontent.ai Delivery .NET SDK
 
-[![Build & Test](https://github.com/Kentico/kontent-delivery-sdk-net/actions/workflows/integrate.yml/badge.svg)](https://github.com/Kentico/kontent-delivery-sdk-net/actions/workflows/integrate.yml)
-[![codecov](https://codecov.io/gh/Kentico/kontent-delivery-sdk-net/branch/master/graph/badge.svg)](https://codecov.io/gh/Kentico/kontent-delivery-sdk-net)
-[![Stack Overflow](https://img.shields.io/badge/Stack%20Overflow-ASK%20NOW-FE7A16.svg?logo=stackoverflow&logoColor=white)](https://stackoverflow.com/tags/kentico-kontent)
+[![Build & Test](https://github.com/kontent-ai/delivery-sdk-net/actions/workflows/integrate.yml/badge.svg)](https://github.com/kontent-ai/delivery-sdk-net/actions/workflows/integrate.yml)
+[![codecov](https://codecov.io/gh/kontent-ai/delivery-sdk-net/branch/master/graph/badge.svg)](https://app.codecov.io/gh/kontent-ai/delivery-sdk-net)
+[![Stack Overflow](https://img.shields.io/badge/Stack%20Overflow-ASK%20NOW-FE7A16.svg?logo=stackoverflow&logoColor=white)](https://stackoverflow.com/tags/kontent-ai)
 [![Discord](https://img.shields.io/discord/821885171984891914?label=Discord&logo=Discord&logoColor=white)](https://discord.gg/SKCxwPtevJ)
 
 | Paradigm |                                                                  Package                                                                  |                                                                Downloads                                                                |                                                                  Compatibility                                                                   |                                Documentation                                 |
 | -------- | :---------------------------------------------------------------------------------------------------------------------------------------: | :-------------------------------------------------------------------------------------------------------------------------------------: | :----------------------------------------------------------------------------------------------------------------------------------------------: | :--------------------------------------------------------------------------: |
-| Async    |    [![NuGet](https://img.shields.io/nuget/v/Kentico.Kontent.Delivery.svg)](https://www.nuget.org/packages/Kentico.Kontent.Delivery)    |    [![NuGet](https://img.shields.io/nuget/dt/Kentico.Kontent.delivery.svg)](https://www.nuget.org/packages/Kentico.Kontent.Delivery)    | [`net6.0`](https://dotnet.microsoft.com/download/dotnet/6.0) [`netstandard2.0`](https://docs.microsoft.com/en-us/dotnet/standard/net-standard)\* |                            [📖 Wiki](../../wiki)                             |
-| Reactive | [![NuGet](https://img.shields.io/nuget/v/Kentico.Kontent.Delivery.Rx.svg)](https://www.nuget.org/packages/Kentico.Kontent.Delivery.Rx) | [![NuGet](https://img.shields.io/nuget/dt/Kentico.Kontent.delivery.Rx.svg)](https://www.nuget.org/packages/Kentico.Kontent.Delivery.Rx) | [`net6.0`](https://dotnet.microsoft.com/download/dotnet/6.0) [`netstandard2.0`](https://docs.microsoft.com/en-us/dotnet/standard/net-standard)\* | [📖 Wiki](../../wiki/Using-the-Kentico.Kontent.Delivery.Rx-reactive-library) |
-
-> \* We highly recommend targeting [`net6.0`](https://dotnet.microsoft.com/download/dotnet/6.0) in your projects. [`netstandard2.0`](https://docs.microsoft.com/en-us/dotnet/standard/net-standard) is supported to allow older projects to iteratively upgrade.
+| Async    |    [![NuGet](https://img.shields.io/nuget/v/Kontent.Ai.Delivery.svg)](https://www.nuget.org/packages/Kontent.Ai.Delivery)    |    [![NuGet](https://img.shields.io/nuget/dt/Kontent.Ai.Delivery.svg)](https://www.nuget.org/packages/Kontent.Ai.Delivery)    | [`net6.0`](https://dotnet.microsoft.com/download/dotnet/6.0) |                            [📖 Wiki](./docs)                             |
+| Reactive | [![NuGet](https://img.shields.io/nuget/v/Kontent.Ai.Delivery.Rx.svg)](https://www.nuget.org/packages/Kontent.Ai.Delivery.Rx) | [![NuGet](https://img.shields.io/nuget/dt/Kontent.Ai.Delivery.Rx.svg)](https://www.nuget.org/packages/Kontent.Ai.Delivery.Rx) | [`net6.0`](https://dotnet.microsoft.com/download/dotnet/6.0) | [📖 Wiki](./docs/Retrieving%20data/Using-the-Kontent.Ai.Delivery.Rx-reactive-library.md) |
 
 ## Summary
 
-The Kontent Delivery .NET SDK is a client library that lets you easily retrieve content from [Kontent by Kentico](https://kontent.ai).
+The Kontent.ai Delivery .NET SDK is a client library that lets you easily retrieve content from [Kontent.ai](https://kontent.ai).
 
 ### Getting started
 
 Installation via Package Manager Console in Visual Studio:
 
 ```powershell
-PM> Install-Package Kentico.Kontent.Delivery
+PM> Install-Package Kontent.Ai.Delivery
 ```
 
 Installation via .NET CLI:
 
 ```console
-> dotnet add <TARGET PROJECT> package Kentico.Kontent.Delivery
+> dotnet add <TARGET PROJECT> package Kontent.Ai.Delivery
 ```
 
 ## Usage
 
-To retrieve content from your Kontent projects, you'll be using an implementation of the `IDeliveryClient` interface. This is the main interface of the SDK. Here's how you can instantiate and use the Delivery client either [with DI/IoC](#use-dependency-injection-ideal-for-aspnet-core-web-apps "Usage with dependency injection") or [without DI/IoC](#usage-without-iocdi-containers-ideal-for-console-apps-unit-tests "Usage without dependency injection").
+To retrieve content from your Kontent.ai projects, you'll be using an implementation of the `IDeliveryClient` interface. This is the main interface of the SDK. Here's how you can instantiate and use the Delivery client either [with DI/IoC](#use-dependency-injection-ideal-for-aspnet-core-web-apps "Usage with dependency injection") or [without DI/IoC](#usage-without-iocdi-containers-ideal-for-console-apps-unit-tests "Usage without dependency injection").
 
 ### Use dependency injection (ideal for ASP.NET Core web apps)
 
@@ -59,20 +57,20 @@ public class HomeController
 }
 ```
 
-In this case, the SDK reads the configuration from the `DeliveryOptions` section of the `Configuration` object. There are many ways of providing the configuration to the `DeliveryClient` as well as many advanced registration scenarios which you can all find in the [Wiki](../../wiki/Registering-the-DeliveryClient-to-the-IServiceCollection-in-ASP.NET-Core).
+In this case, the SDK reads the configuration from the `DeliveryOptions` section of the `Configuration` object. There are many ways of providing the configuration to the `DeliveryClient` as well as many advanced registration scenarios which you can all find in the [Wiki](./docs/Configuration/Registering-the-DeliveryClient-to-the-IServiceCollection-in-ASP.NET-Core.md).
 
 To see a complete working example, go to one of our sample apps:
 
-- [Kontent ASP.NET Core MVC](https://github.com/Kentico/kontent-sample-app-net) or
-- [Kontent ASP.NET Core Razor Pages](https://github.com/Kentico/kontent-sample-app-razorpages)
+- [Kontent.ai ASP.NET Core MVC](https://github.com/kontent-ai/sample-app-net) or
+- [Kontent.ai ASP.NET Core Razor Pages](https://github.com/kontent-ai/sample-app-razorpages)
 
 To spin up a fully configured blank site quickly, use the:
 
-- [Kontent ASP.NET Core MVC boilerplate](https://github.com/Kentico/kontent-boilerplate-net)
+- [Kontent.ai ASP.NET Core MVC boilerplate](https://github.com/kontent-ai/boilerplate-net)
 
 ### Usage without IoC/DI containers (ideal for console apps, unit tests...)
 
-You can also set up a `DeliveryOptions` manually using the [`DeliveryClientBuilder`](https://github.com/Kentico/kontent-delivery-sdk-net/blob/master/Kentico.Kontent.Delivery/Builders/DeliveryOptions/DeliveryOptionsBuilder.cs).
+You can also set up a `DeliveryOptions` manually using the [`DeliveryClientBuilder`](https://github.com/kontent-ai/delivery-sdk-net/Kontent.Ai.Delivery/Builders/DeliveryOptions/DeliveryOptionsBuilder.cs).
 
 ```csharp
 IDeliveryClient _client = DeliveryClientBuilder
@@ -85,7 +83,7 @@ IDeliveryClient _client = DeliveryClientBuilder
 
 ### Your first request
 
-Use the [.NET code generator](https://github.com/Kentico/kontent-generators-net) to generate POCO models:
+Use the [.NET code generator](https://github.com/kontent-ai/model-generator-net) to generate POCO models:
 
 ```csharp
 public class Article
@@ -107,14 +105,14 @@ var title = response.Item.Title; // -> "On Roasts"
 var lang = response.Item.System.Language; // -> "en-US"
 ```
 
-See [Working with Strongly Typed Models](../../wiki/Working-with-strongly-typed-models) to learn how to generate models and adjust the logic to your needs.
+See [Working with Strongly Typed Models](./docs/Customization%20and%20extensibility/Working-with-strongly-typed-models.md) to learn how to generate models and adjust the logic to your needs.
 
 ## Further information
 
 For more developer resources, visit:
 
-- [✔️ Best practices for Kontent Delivery SDK for .NET](../../wiki)
-- Kontent Learn:
+- [✔️ Best practices for Kontent.ai Delivery SDK for .NET](../../wiki)
+- Kontent.ai Learn:
   - [.NET Tutorials](https://kontent.ai/learn/tutorials/develop-apps?tech=dotnet)
   - [API Reference](https://kontent.ai/learn/reference)
 

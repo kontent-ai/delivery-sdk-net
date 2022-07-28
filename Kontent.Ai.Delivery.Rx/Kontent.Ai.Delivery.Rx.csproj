@@ -1,0 +1,39 @@
+﻿<Project Sdk="Microsoft.NET.Sdk">
+
+  <PropertyGroup>
+    <TargetFrameworks>net6.0</TargetFrameworks>
+    <Authors>Kontent s.r.o.</Authors>
+    <Company>Kontent s.r.o.</Company>
+    <Product>Kontent.ai</Product>
+    <Copyright>© 2022 Kontent s.r.o. All rights reserved.</Copyright>
+    <Description>Kontent.ai Delivery SDK</Description>
+    <PackageReadmeFile>README.md</PackageReadmeFile>
+    <PackageIcon>kai-logo-symbol-color-rgb.png</PackageIcon>
+    <PackageLicenseExpression>MIT</PackageLicenseExpression>
+    <PackageProjectUrl>https://github.com/kontent-ai/delivery-sdk-net</PackageProjectUrl>
+    <PackageIconUrl>https://github.com/kontent-ai/.github/blob/main/logos/kai-logo-symbol-color-rgb.png?raw=true</PackageIconUrl>
+    <RepositoryUrl>https://github.com/kontent-ai/delivery-sdk-net.git</RepositoryUrl>
+    <RepositoryType>git</RepositoryType>
+    <PackageTags>kontent-ai;mvc;aspnet;aspnetmvc;reactive;rx</PackageTags>
+    <GenerateAssemblyInfo>true</GenerateAssemblyInfo>
+    <GenerateDocumentationFile>true</GenerateDocumentationFile>
+    <PublishRepositoryUrl>true</PublishRepositoryUrl>
+    <IncludeSymbols>true</IncludeSymbols>
+    <SymbolPackageFormat>snupkg</SymbolPackageFormat>
+    <EmbedUntrackedSources>true</EmbedUntrackedSources>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <PackageReference Include="Newtonsoft.Json" Version="13.0.1" />
+    <PackageReference Include="System.Reactive" Version="4.4.1" />
+    <PackageReference Include="Microsoft.Sourcelink.Github" Version="1.1.1" PrivateAssets="All" />
+    <None Include="../README.md" Pack="true" PackagePath=""/>
+    <None Include="../kai-logo-symbol-color-rgb.png" Pack="true" PackagePath=""/>
+  </ItemGroup>
+
+  <ItemGroup>
+    <ProjectReference Include="..\Kontent.Ai.Delivery.Abstractions\Kontent.Ai.Delivery.Abstractions.csproj" />
+    <ProjectReference Include="..\Kontent.Ai.Delivery\Kontent.Ai.Delivery.csproj" />
+  </ItemGroup>
+
+</Project>
