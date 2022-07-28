@@ -6,6 +6,8 @@
     <Product>Kontent.ai</Product>
     <Copyright>© 2022 Kontent s.r.o. All rights reserved.</Copyright>
     <Description>Kontent.ai Delivery Extensions Autofac Dependency Injection</Description>
+		<PackageReadmeFile>README.md</PackageReadmeFile>
+		<PackageIcon>kai-logo-symbol-color-rgb.png</PackageIcon>
     <PackageLicenseExpression>MIT</PackageLicenseExpression>
     <PackageProjectUrl>https://github.com/kontent-ai/delivery-sdk-net</PackageProjectUrl>
     <PackageIconUrl>https://github.com/kontent-ai/.github/blob/main/logos/kai-logo-symbol-color-rgb.png?raw=true</PackageIconUrl>
@@ -31,6 +33,8 @@
     <PackageReference Include="Microsoft.Extensions.DependencyInjection" Version="3.1.2" />
     <PackageReference Include="Microsoft.Extensions.Options" Version="3.1.2" />
     <PackageReference Include="Microsoft.Extensions.Options.ConfigurationExtensions" Version="3.1.2" />
+		<None Include="../README.md" Pack="true" PackagePath=""/>
+		<None Include="../kai-logo-symbol-color-rgb.png" Pack="true" PackagePath=""/>
   </ItemGroup>
 
   <ItemGroup>

@@ -5,6 +5,8 @@
     <Authors>Kontent s.r.o.</Authors>
     <Company>Kontent s.r.o.</Company>
     <Product>Kontent.ai</Product>
+    <PackageReadmeFile>README.md</PackageReadmeFile>
+		<PackageIcon>kai-logo-symbol-color-rgb.png</PackageIcon>
     <Copyright>© 2022 Kontent s.r.o. All rights reserved.</Copyright>
     <Description>Kontent.ai Delivery SDK</Description>
     <PackageLicenseExpression>MIT</PackageLicenseExpression>
@@ -35,6 +37,8 @@
     <PackageReference Include="Microsoft.Extensions.Options" Version="3.1.2" />
     <PackageReference Include="Microsoft.Sourcelink.Github" Version="1.1.1" PrivateAssets="All" />
     <PackageReference Include="Microsoft.Extensions.DependencyInjection" Version="3.1.2" />
+		<None Include="../README.md" Pack="true" PackagePath=""/>
+		<None Include="../kai-logo-symbol-color-rgb.png" Pack="true" PackagePath=""/>
   </ItemGroup>
 
   <ItemGroup>
