@@ -2,9 +2,9 @@
 
 The [Rich text element](https://docs.kontent.ai/reference/delivery-api#section/Rich-text-element) can contain images, links to content items, content items, and components. Your application needs to define how these objects are rendered.
 
-This information applies to Rich text model properties typed as `IRichTextContent`. In case you are using `string` data model, see [String-based rendering of linked items in Rich text](String-based-rendering-of-items-in-Rich-text.md). You can influence which approach to use by [applying](https://github.com/kontent-ai/model-generator-net#parameters) the `--structuredmodel true` parameter during model generation.
+This information applies to Rich text model properties typed as `IRichTextContent`. In case you are using `string` data model, see [String-based rendering of linked items in Rich text](rich-text/string-based-linked-items-rendering.md). You can influence which approach to use by [applying](https://github.com/kontent-ai/model-generator-net#parameters) the `--structuredmodel true` parameter during model generation.
 
-Resolving links to content items is covered in a [separate article](Resolving-links-to-content-items.md).
+Resolving links to content items is covered in a [separate article](rich-text/resolving-item-links.md).
 
 ## Structured Rich text data model
 

@@ -4,10 +4,10 @@
 
 - ✔️ [Use Dependency Injection](./Configuration/dependency-injection.md#standard-usage.md) for better app design
 - ✔️ [Use `HttpClientFactory`](./Configuration/dependency-injection.md#httpclientfactory) for increased performance and stability of your app
-- ✔️ [Use strongly-typed models](./customization-and-extensibility/Working-with-strongly-typed-models.md) for all the [10 advantages described here](./customization-and-extensibility/Strong-Types-Explained-%E2%80%93-10-Advantages.md)
+- ✔️ [Use strongly-typed models](./customization-and-extensibility/strongly-typed-models.md) for all the [10 advantages described here](./customization-and-extensibility/Strong-Types-Explained-%E2%80%93-10-Advantages.md)
 - ✔️ [Use the code generator](https://github.com/kontent-ai/model-generator-net) to automate things and avoid errors
-- ✔️ [Use partial classes for extending the models](./customization-and-extensibility/Partial-class-customization-techniques.md) & not mess up the generated ones
-- ✔️ [Use structured rich-text rendering](./customization-and-extensibility/Structured-Rich-text-rendering.md) to enable display templates for rich-text elements
+- ✔️ [Use partial classes for extending the models](./customization-and-extensibility/customization-techniques.md) & not mess up the generated ones
+- ✔️ [Use structured rich-text rendering](./customization-and-extensibility/rich-text/structured-rich-text-rendering.md) to enable display templates for rich-text elements
 - ✔️ [Enable retry logic](./retrieving-data/Retry-capabilities.md) to ensure maximum resiliency of your app
 - ✔️ [Secret Manager or Azure Key Vault](./retrieving-data/Retrieving-secured-and-previewing-unpublished-content.md) to store Secured Content and Preview API keys
 
@@ -27,18 +27,18 @@
   * [Caching responses](./retrieving-data/Caching-responses.md)
   * [Using the Image transformations](./retrieving-data/Using-the-Image-transformations.md)
 * **Customization and extensibility**
-  * [Resolving links to content items](./customization-and-extensibility/Resolving-links-to-content-items.md)
-  * [Structured Rich text rendering](./customization-and-extensibility/Structured-Rich-text-rendering.md)
-  * [String-based rendering of linked items in Rich text elements](./customization-and-extensibility/String-based-rendering-of-items-in-Rich-text.md)
-  * [Working with strongly typed models](./customization-and-extensibility/Working-with-strongly-typed-models.md)
-    * [10 Advantages of strong types](./customization-and-extensibility/Strong-Types-Explained-–-10-Advantages.md)
-    * [Generating models](./customization-and-extensibility/Strong-Types-Explained-–-Code-Generator.md)
-    * [DataAnnotations attributes](./customization-and-extensibility/Strong-Types-Explained-–-DataAnnotations-attributes.md)
-    * [Model Inheritance](./customization-and-extensibility/Strong-Types-Explained-–-Model-Inheritance.md)
-    * [Runtime Typing](./customization-and-extensibility/Strong-Types-Explained-–-Runtime-Typing.md)
-  * [Support for custom types in models via Value Converters](./customization-and-extensibility/Support-for-custom-types-in-models-via-Value-Converters.md)
+  * [Resolving links to content items](./customization-and-extensibility/rich-text/resolving-item-links.md)
+  * [Structured Rich text rendering](./customization-and-extensibility/rich-text/structured-rich-text-rendering.md)
+  * [String-based rendering of linked items in Rich text elements](./customization-and-extensibility/rich-text/string-based-linked-items-rendering.md)
+  * [Working with strongly typed models](./customization-and-extensibility/strongly-typed-models.md)
+    * [10 Advantages of strong types](./customization-and-extensibility/strongly-types/10-Advantages.md)
+    * [Generating models](./customization-and-extensibility/strongly-types-explained/code-generator.md)
+    * [DataAnnotations attributes](./customization-and-extensibility/strongly-types-explained/dataannotation-attributes.md)
+    * [Model Inheritance](./customization-and-extensibility/strongly-types-explained/model-inheritance.md)
+    * [Runtime Typing](./customization-and-extensibility/strongly-types-explained/runtime-typing.md)
+  * [Support for custom types in models via Value Converters](./customization-and-extensibility/value-converters.md)
   * [Retrieve modular content from API response](./customization-and-extensibility/Retrieve-modular-content-from-API-response.md)
-  * [Partial class customization techniques](./customization-and-extensibility/Partial-class-customization-techniques.md)
+  * [Partial class customization techniques](./customization-and-extensibility/customization-techniques.md)
 * **Unit testing**
   * [Faking responses](./testing/Faking-responses.md)
 * [**Release & version management**](https://github.com/kontent-ai/kontent-ai.github.io/blob/main/docs/articles/Release-%26-version-management-of-.NET-projects.md)

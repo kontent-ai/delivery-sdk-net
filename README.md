@@ -105,7 +105,7 @@ var title = response.Item.Title; // -> "On Roasts"
 var lang = response.Item.System.Language; // -> "en-US"
 ```
 
-See [Working with Strongly Typed Models](./docs/customization-and-extensibility/Working-with-strongly-typed-models.md) to learn how to generate models and adjust the logic to your needs.
+See [Working with Strongly Typed Models](./docs/customization-and-extensibility/strongly-typed-models.md) to learn how to generate models and adjust the logic to your needs.
 
 ## Further information
 
