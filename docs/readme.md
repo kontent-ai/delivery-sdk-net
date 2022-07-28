@@ -4,7 +4,7 @@
 
 - ✔️ [Use Dependency Injection](./Configuration/Registering-the-DeliveryClient-to-the-IServiceCollection-in-ASP.NET-Core.md#standard-usage.md) for better app design
 - ✔️ [Use `HttpClientFactory`](./Configuration/Registering-the-DeliveryClient-to-the-IServiceCollection-in-ASP.NET-Core.md#httpclientfactory) for increased performance and stability of your app
-- ✔️ [Use strongly-typed models](./Customization%20and%20extensibility/Working-with-strongly-typed-models.md) for all the [10 advantages described here](Strong-Types-Explained-%E2%80%93-10-Advantages.md)
+- ✔️ [Use strongly-typed models](./Customization%20and%20extensibility/Working-with-strongly-typed-models.md) for all the [10 advantages described here](./Customization%20and%20extensibility/Strong-Types-Explained-%E2%80%93-10-Advantages.md)
 - ✔️ [Use the code generator](https://github.com/kontent-ai/model-generator-net) to automate things and avoid errors
 - ✔️ [Use partial classes for extending the models](./Customization%20and%20extensibility/Partial-class-customization-techniques.md) & not mess up the generated ones
 - ✔️ [Use structured rich-text rendering](./Customization%20and%20extensibility/Structured-Rich-text-rendering.md) to enable display templates for rich-text elements
@@ -15,7 +15,7 @@
 
 * **Configuration**
   * [Registering the DeliveryClient to the IServiceCollection in ASP.NET Core](./Configuration/Registering-the-DeliveryClient-to-the-IServiceCollection-in-ASP.NET-Core.net.md)
-  * [Accessing data from multiple projects at the same time using named clients](./Configuration/Accessing-Data-From-Multiple-Projects.net.md)
+  * [Accessing data from multiple projects at the same time using named clients](./Configuration/Accessing-Data-From-Multiple-Projects.md)
   * [Loading DeliveryClient settings for apps running on .NET framework (MVC 5 & OWIN)](./Configuration/Loading-DeliveryClient-settings-for-apps-running-on-.NET-framework-(MVC-5-&-OWIN).md)
 * **Retrieving data**
   * [Querying content items](./Retrieving%20data/Querying-content.md)

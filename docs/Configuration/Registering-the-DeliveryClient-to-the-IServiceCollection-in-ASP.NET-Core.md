@@ -88,7 +88,7 @@ services.AddDeliveryClient(builder =>
 );
 ```
 ## Registering multiple clients
-In case you need to register multiple differently configured `IDeliveryClient`s, you can take advantage of [named clients](Accessing-Data-From-Multiple-Projects).
+In case you need to register multiple differently configured `IDeliveryClient`s, you can take advantage of [named clients](Accessing-Data-From-Multiple-Projects.md).
 
 
 ## HttpClientFactory

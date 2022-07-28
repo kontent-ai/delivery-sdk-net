@@ -40,7 +40,7 @@ To learn more about content items and components in rich text, see our [API Refe
 
 ## Defining a content type model
 
-First, you need to define a strongly typed model of the *YouTube video* content type. For more information about models, see [Working with strongly typed models](Working-with-Strongly-Typed-Models-(aka-Code-First-Approach).md).
+First, you need to define a strongly typed model of the *YouTube video* content type. For more information about models, see [Working with strongly typed models](Working-with-Strongly-Typed-Models.md).
 
 For example, a model for the *YouTube video* content type can look like this:
 
