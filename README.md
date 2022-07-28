@@ -8,7 +8,7 @@
 | Paradigm |                                                                  Package                                                                  |                                                                Downloads                                                                |                                                                  Compatibility                                                                   |                                Documentation                                 |
 | -------- | :---------------------------------------------------------------------------------------------------------------------------------------: | :-------------------------------------------------------------------------------------------------------------------------------------: | :----------------------------------------------------------------------------------------------------------------------------------------------: | :--------------------------------------------------------------------------: |
 | Async    |    [![NuGet](https://img.shields.io/nuget/v/Kontent.Ai.Delivery.svg)](https://www.nuget.org/packages/Kontent.Ai.Delivery)    |    [![NuGet](https://img.shields.io/nuget/dt/Kontent.Ai.Delivery.svg)](https://www.nuget.org/packages/Kontent.Ai.Delivery)    | [`net6.0`](https://dotnet.microsoft.com/download/dotnet/6.0) |                            [📖 Wiki](./docs)                             |
-| Reactive | [![NuGet](https://img.shields.io/nuget/v/Kontent.Ai.Delivery.Rx.svg)](https://www.nuget.org/packages/Kontent.Ai.Delivery.Rx) | [![NuGet](https://img.shields.io/nuget/dt/Kontent.Ai.Delivery.Rx.svg)](https://www.nuget.org/packages/Kontent.Ai.Delivery.Rx) | [`net6.0`](https://dotnet.microsoft.com/download/dotnet/6.0) | [📖 Wiki](./docs/Retrieving%20data/Using-the-Kontent.Ai.Delivery.Rx-reactive-library.md) |
+| Reactive | [![NuGet](https://img.shields.io/nuget/v/Kontent.Ai.Delivery.Rx.svg)](https://www.nuget.org/packages/Kontent.Ai.Delivery.Rx) | [![NuGet](https://img.shields.io/nuget/dt/Kontent.Ai.Delivery.Rx.svg)](https://www.nuget.org/packages/Kontent.Ai.Delivery.Rx) | [`net6.0`](https://dotnet.microsoft.com/download/dotnet/6.0) | [📖 Wiki](./docs/retrieving-data/Using-the-Kontent.Ai.Delivery.Rx-reactive-library.md) |
 
 ## Summary
 
@@ -57,7 +57,7 @@ public class HomeController
 }
 ```
 
-In this case, the SDK reads the configuration from the `DeliveryOptions` section of the `Configuration` object. There are many ways of providing the configuration to the `DeliveryClient` as well as many advanced registration scenarios which you can all find in the [Wiki](./docs/Configuration/Registering-the-DeliveryClient-to-the-IServiceCollection-in-ASP.NET-Core.md).
+In this case, the SDK reads the configuration from the `DeliveryOptions` section of the `Configuration` object. There are many ways of providing the configuration to the `DeliveryClient` as well as many advanced registration scenarios which you can all find in the [Wiki](./docs/configuration/Registering-the-DeliveryClient-to-the-IServiceCollection-in-ASP.NET-Core.md).
 
 To see a complete working example, go to one of our sample apps:
 
@@ -105,7 +105,7 @@ var title = response.Item.Title; // -> "On Roasts"
 var lang = response.Item.System.Language; // -> "en-US"
 ```
 
-See [Working with Strongly Typed Models](./docs/Customization%20and%20extensibility/Working-with-strongly-typed-models.md) to learn how to generate models and adjust the logic to your needs.
+See [Working with Strongly Typed Models](./docs/customization-and-extensibility/Working-with-strongly-typed-models.md) to learn how to generate models and adjust the logic to your needs.
 
 ## Further information
 
