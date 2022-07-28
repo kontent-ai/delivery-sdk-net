@@ -19,7 +19,7 @@ public void ConfigureServices(IServiceCollection services)
 ```
 
 ### Selective registration
-Use this approach if you wish to register the cache for a single [named `IDeliveryClient` instance](Accessing-Data-From-Multiple-Projects). Please not that the order of the method calls does matter.
+Use this approach if you wish to register the cache for a single [named `IDeliveryClient` instance](../Configuration/Accessing-Data-From-Multiple-Projects.md). Please not that the order of the method calls does matter.
 
 ```csharp
 public void ConfigureServices(IServiceCollection services)

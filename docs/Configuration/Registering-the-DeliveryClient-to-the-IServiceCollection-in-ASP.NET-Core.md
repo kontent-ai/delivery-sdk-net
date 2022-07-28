@@ -6,7 +6,7 @@ The Delivery SDK offers several methods that extend the `IServiceCollection` int
 
 The following sample shows registration to the [standard .NET Core container](https://docs.microsoft.com/en-us/aspnet/core/fundamentals/dependency-injection) and [ASP.NET Core Configuration API](https://docs.microsoft.com/en-us/aspnet/core/fundamentals/configuration).
 
-First, you need to create or extend the *appsettings.json* file. The properties should match the [`DeliveryOptions`](https://github.com/kontent-ai/delivery-sdk-net/Kontent.Ai.Delivery.Abstractions/Configuration/DeliveryOptions.cs) class. Further `DeliveryOptions` explanation can be found on [Delivery options explained](Delivery-options-explained.md).
+First, you need to create or extend the *appsettings.json* file. The properties should match the [`DeliveryOptions`](https://github.com/kontent-ai/delivery-sdk-net/Kontent.Ai.Delivery.Abstractions/Configuration/DeliveryOptions.cs) class. Further `DeliveryOptions` explanation can be found on [Delivery options explained](../Retrieving%20data/Delivery-options-explained.md).
 
 ```json
 {

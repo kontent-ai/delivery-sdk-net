@@ -70,7 +70,7 @@ Depending on your scenario, use one of the following as the data type parameter 
 
 #### Typing Rich text
 
-For Rich text elements, use either `string` to receive HTML code resolved using string-based resolver as outlined in [Rendering linked items in Rich text](String-based-rendering-of-items-in-Rich-text) or `IRichTextContent` to retrieve rich text content as [structured data](Structured-Rich-text-rendering).
+For Rich text elements, use either `string` to receive HTML code resolved using string-based resolver as outlined in [Rendering linked items in Rich text](String-based-rendering-of-items-in-Rich-text.md) or `IRichTextContent` to retrieve rich text content as [structured data](Structured-Rich-text-rendering.md).
 
 #### Typing Custom elements
 
