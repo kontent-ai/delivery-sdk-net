@@ -2,8 +2,8 @@
 
 ## Best practices
 
-- ✔️ [Use Dependency Injection](Registering-the-DeliveryClient-to-the-IServiceCollection-in-ASP.NET-Core.md#standard-usage) for better app design
-- ✔️ [Use `HttpClientFactory`](Registering-the-DeliveryClient-to-the-IServiceCollection-in-ASP.NET-Core.md#httpclientfactory) for increased performance and stability of your app
+- ✔️ [Use Dependency Injection](./Registering-the-DeliveryClient-to-the-IServiceCollection-in-ASP.NET-Core.md#standard-usage) for better app design
+- ✔️ [Use `HttpClientFactory`](./Registering-the-DeliveryClient-to-the-IServiceCollection-in-ASP.NET-Core.md#httpclientfactory) for increased performance and stability of your app
 - ✔️ [Use strongly-typed models](./Customization%20and%20extensibility/Working-with-strongly-typed-models.md) for all the [10 advantages described here](Strong-Types-Explained-%E2%80%93-10-Advantages.md)
 - ✔️ [Use the code generator](https://github.com/kontent-ai/model-generator-net) to automate things and avoid errors
 - ✔️ [Use partial classes for extending the models](./Customization%20and%20extensibility/Partial-class-customization-techniques.md) & not mess up the generated ones
