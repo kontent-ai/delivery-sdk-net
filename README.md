@@ -111,11 +111,11 @@ See [Working with Strongly Typed Models](./docs/Customization%20and%20extensibil
 
 For more developer resources, visit:
 
-- [✔️ Best practices for Kontent.ai Delivery SDK for .NET](../../wiki)
+- [✔️ Best practices for Kontent.ai Delivery SDK for .NET](./docs)
 - Kontent.ai Learn:
   - [.NET Tutorials](https://kontent.ai/learn/tutorials/develop-apps?tech=dotnet)
   - [API Reference](https://kontent.ai/learn/reference)
 
 ## Get involved
 
-Check out the [contributing](CONTRIBUTING.md) page to see the best places to file issues, start discussions, and begin contributing.
+Check out the [contributing](./CONTRIBUTING.md) page to see the best places to file issues, start discussions, and begin contributing.
