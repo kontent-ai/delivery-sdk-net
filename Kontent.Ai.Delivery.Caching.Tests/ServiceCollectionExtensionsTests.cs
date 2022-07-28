@@ -21,9 +21,9 @@ namespace Kontent.Ai.Delivery.Caching.Tests
         [Theory]
         [InlineData(CacheTypeEnum.Memory)]
         [InlineData(CacheTypeEnum.Distributed)]
-        public void AddDeliveryClientCacheWithDeliveryCacheOptions_ThrowsMissingTypeRegistrationException(CacheTypeEnum cacheType)
+        public void AddDeliveryClientCacheWithDeliveryCacheOptions_ThrowsDecorationException(CacheTypeEnum cacheType)
         {
-            Assert.Throws<MissingTypeRegistrationException>(() => _serviceCollection.AddDeliveryClientCache(new DeliveryCacheOptions() { CacheType = cacheType }));
+            Assert.Throws<DecorationException>(() => _serviceCollection.AddDeliveryClientCache(new DeliveryCacheOptions() { CacheType = cacheType }));
         }
 
         [Fact]
@@ -33,9 +33,9 @@ namespace Kontent.Ai.Delivery.Caching.Tests
         }
 
         [Fact]
-        public void AddDeliveryClientCacheWitNoPreviousRegistrationDeliveryClient_ThrowsMissingTypeRegistrationException()
+        public void AddDeliveryClientCacheWitNoPreviousRegistrationDeliveryClient_ThrowsDecorationException()
         {
-            Assert.Throws<MissingTypeRegistrationException>(() => _serviceCollection.AddDeliveryClientCache(new DeliveryCacheOptions()));
+            Assert.Throws<DecorationException>(() => _serviceCollection.AddDeliveryClientCache(new DeliveryCacheOptions()));
         }
 
         [Theory]
