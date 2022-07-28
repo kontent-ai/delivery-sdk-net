@@ -14,7 +14,7 @@
 ## Full Table of Contents
 
 * **Configuration**
-  * [Registering the DeliveryClient to the IServiceCollection in ASP.NET Core](./Configuration/Registering-the-DeliveryClient-to-the-IServiceCollection-in-ASP.NET-Core.net.md)
+  * [Registering the DeliveryClient to the IServiceCollection in ASP.NET Core](./Configuration/Registering-the-DeliveryClient-to-the-IServiceCollection-in-ASP.NET-Core.md)
   * [Accessing data from multiple projects at the same time using named clients](./Configuration/Accessing-Data-From-Multiple-Projects.md)
   * [Loading DeliveryClient settings for apps running on .NET framework (MVC 5 & OWIN)](./Configuration/Loading-DeliveryClient-settings-for-apps-running-on-.NET-framework-(MVC-5-&-OWIN).md)
 * **Retrieving data**
