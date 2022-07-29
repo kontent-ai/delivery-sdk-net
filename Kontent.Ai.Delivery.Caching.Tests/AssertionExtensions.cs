@@ -24,8 +24,7 @@ namespace Kontent.Ai.Delivery.Caching.Tests
         /// <param name="precision">The maximum amount of milliseconds which the two values may differ.</param>
         public static EquivalencyAssertionOptions<T> ApproximateDateTimes<T>(this EquivalencyAssertionOptions<T> o, int precision) 
         {
-            return o.Using<DateTime>(ctx => ctx.Subject.Should().BeCloseTo(ctx.Expectation, precision)).WhenTypeIs<DateTime>()
-                .Using<DateTime>(ctx => ctx.Subject.Should().BeCloseTo(ctx.Expectation, precision)).WhenTypeIs<DateTime?>();
+            return o.Using<DateTime>(ctx => ctx.Subject.Should().BeCloseTo(ctx.Expectation, TimeSpan.FromMilliseconds(precision))).WhenTypeIs<DateTime>();
         }
     }
 }

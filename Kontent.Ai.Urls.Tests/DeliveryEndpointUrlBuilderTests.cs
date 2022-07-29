@@ -29,19 +29,7 @@ public class DeliveryEndpointUrlBuilderTests
             throw new NotImplementedException();
         }
     }
-    
-    [Fact]
-    public void GetItemUrl_ConstructedWithDeliveryOptions_ReturnsItemUrl()
-    {
-        var options = new DeliveryOptions() { ProjectId = Guid.NewGuid().ToString() };
-        var deliveryEndpointUrlBuilder = new DeliveryEndpointUrlBuilder(options);
-
-        var actualItemUrl = deliveryEndpointUrlBuilder.GetItemUrl("item_codename",new IQueryParameter[] { });
-
-        var expectedItemUrl = $"https://deliver.kontent.ai:443/{options.ProjectId}/items/item_codename";
-        Assert.Equal(expectedItemUrl, actualItemUrl);
-    }
-    
+        
     [Fact]
     public void GetItemUrl_ConstructedWithDeliveryOptionsMonitor_ReturnsItemUrl()
     {

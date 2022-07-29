@@ -2,11 +2,11 @@
 
 <!-- TOC -->
 
-1. [Contents](#contents)
-1. [Content links](#content-links)
-1. [Implementing a resolver](#implementing-a-resolver)
-1. [Registering a resolver](#registering-a-resolver)
-1. [Retrieving Rich text content](#retrieving-rich-text-content)
+- [Contents](#contents)
+- [Content links](#content-links)
+- [Implementing a resolver](#implementing-a-resolver)
+- [Registering a resolver](#registering-a-resolver)
+- [Retrieving Rich text content](#retrieving-rich-text-content)
 
 <!-- /TOC -->
 

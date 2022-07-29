@@ -23,4 +23,4 @@ IDeliveryClient client = DeliveryClientBuilder
     .Build();
 ```
 
-See the whole example in the SDK's [HTTP client tests](https://github.com/kontent-ai/delivery-sdk-net/Kontent.Ai.Delivery.Tests/FakeHttpClientTests.cs).
+See the whole example in the SDK's [HTTP client tests](../../Kontent.Ai.Delivery.Tests/FakeHttpClientTests.cs).

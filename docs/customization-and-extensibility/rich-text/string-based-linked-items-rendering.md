@@ -2,20 +2,20 @@
 
 <!-- TOC -->
 
-1. [Contents](#contents)
-1. [Introduction](#introduction)
-1. [Content items and components in Rich text](#content-items-and-components-in-rich-text)
-1. [Defining a content type model](#defining-a-content-type-model)
-1. [Implementing a resolver](#implementing-a-resolver)
-1. [Registering a resolver](#registering-a-resolver)
-    1. [Custom default resolver](#custom-default-resolver)
-1. [Retrieving Rich text content](#retrieving-rich-text-content)
+- [Contents](#contents)
+- [Introduction](#introduction)
+- [Content items and components in Rich text](#content-items-and-components-in-rich-text)
+- [Defining a content type model](#defining-a-content-type-model)
+- [Implementing a resolver](#implementing-a-resolver)
+- [Registering a resolver](#registering-a-resolver)
+  - [Custom default resolver](#custom-default-resolver)
+- [Retrieving Rich text content](#retrieving-rich-text-content)
 
 <!-- /TOC -->
 
 ## Introduction
 
-The following information applies to Rich text model properties typed as `string`. In case you are using structured data model type `IRichTextContent`, see [Structured Rich text rendering](Structured-Rich-text-rendering.md)
+The following information applies to Rich text model properties typed as `string`. In case you are using structured data model type `IRichTextContent`, see [Structured Rich text rendering](./structured-rich-text-rendering.md)
 
 ## Content items and components in Rich text
 
@@ -40,7 +40,7 @@ To learn more about content items and components in rich text, see our [API Refe
 
 ## Defining a content type model
 
-First, you need to define a strongly typed model of the *YouTube video* content type. For more information about models, see [Working with strongly typed models](Working-with-Strongly-Typed-Models.md).
+First, you need to define a strongly typed model of the *YouTube video* content type. For more information about models, see [Working with strongly typed models](../strongly-typed-models.md).
 
 For example, a model for the *YouTube video* content type can look like this:
 

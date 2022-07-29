@@ -1,6 +1,6 @@
 The [DeliveryObservableProxy class](https://github.com/kontent-ai/delivery-sdk-net/Kontent.Ai.Delivery.Rx/DeliveryObservableProxy.cs) provides a reactive way of retrieving content from Kontent.
 
-The `DeliveryObservableProxy` class constructor accepts an [IDeliveryClient](https://github.com/kontent-ai/delivery-sdk-net/Kontent.Ai.Delivery/IDeliveryClient.cs) instance, therefore you are free to create the `IDeliveryClient` implementation (or its derivatives) in any of [the supported ways](#using-the-deliveryclient).
+The `DeliveryObservableProxy` class constructor accepts an [IDeliveryClient](https://github.com/kontent-ai/delivery-sdk-net/Kontent.Ai.Delivery/IDeliveryClient.cs) instance, therefore you are free to create the `IDeliveryClient` implementation (or its derivatives) in any of the supported ways.
 
 ```csharp
 public IDeliveryClient DeliveryClient => DeliveryClientBuilder.WithProjectId("975bf280-fd91-488c-994c-2f04416e5ee3").Build();

@@ -19,7 +19,7 @@ public void ConfigureServices(IServiceCollection services)
 ```
 
 ### Selective registration
-Use this approach if you wish to register the cache for a single [named `IDeliveryClient` instance](../Configuration/Accessing-Data-From-Multiple-Projects.md). Please not that the order of the method calls does matter.
+Use this approach if you wish to register the cache for a single [named `IDeliveryClient` instance](../configuration/multiple-delivery-clients.md). Please not that the order of the method calls does matter.
 
 ```csharp
 public void ConfigureServices(IServiceCollection services)
@@ -31,7 +31,7 @@ public void ConfigureServices(IServiceCollection services)
 
 ## DeliveryCacheOptions
 
-- `CacheType` - currently allows to select from [`Memory` and `Distributed`](https://github.com/kontent-ai/delivery-sdk-net/Kontent.Ai.Delivery.Caching/CacheTypeEnum.cs)
+- `CacheType` - currently allows to select from [`Memory` and `Distributed`](../../Kontent.Ai.Delivery.Caching/CacheTypeEnum.cs)
 - `DefaultExpiration` - [sliding expiration](https://docs.microsoft.com/en-us/dotnet/api/microsoft.extensions.caching.memory.memorycacheentryextensions.setslidingexpiration) time - how long the cache entry can be inactive (e.g. not accessed) before it will be removed
 - `StaleContentExpiration ` - [absolute expiration](https://docs.microsoft.com/en-us/dotnet/api/microsoft.extensions.caching.memory.cacheentryextensions.setabsoluteexpiration) (timespan relative to now) for content which is [yet to be refreshed on the CDN](https://github.com/kontent-ai/boilerplate-net/issues/94#issuecomment-602688995)
 

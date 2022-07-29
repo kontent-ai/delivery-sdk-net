@@ -2,23 +2,23 @@
 
 <!-- TOC -->
 
-1. [Contents](#contents)
-1. [Strongly-typed models](#strongly-typed-models)
-1. [Defining a model](#defining-a-model)
-    1. [Typing the properties](#typing-the-properties)
-        1. [Typing simple elements](#typing-simple-elements)
-        1. [Typing Linked Items](#typing-linked-items)
-        1. [Typing Rich text](#typing-rich-text)
-        1. [Typing Custom elements](#typing-custom-elements)
-    1. [Naming the properties](#naming-the-properties)
-    1. [Examples](#examples)
-1. [Generating models](#generating-models)
-1. [Retrieving content items](#retrieving-content-items)
-1. [Customizing the strong-type binding logic](#customizing-the-strong-type-binding-logic)
-    1. [Adding support for runtime type resolution](#adding-support-for-runtime-type-resolution)
-        1. [Generating custom type providers](#generating-custom-type-providers)
-    1. [Customizing the property matching](#customizing-the-property-matching)
-    1. [Customizing the strong-type resolution mechanism](#customizing-the-strong-type-resolution-mechanism)
+- [Contents](#contents)
+- [Strongly-typed models](#strongly-typed-models)
+- [Defining a model](#defining-a-model)
+  - [Typing the properties](#typing-the-properties)
+    - [Typing simple elements](#typing-simple-elements)
+    - [Typing Linked Items](#typing-linked-items)
+    - [Typing Rich text](#typing-rich-text)
+    - [Typing Custom elements](#typing-custom-elements)
+  - [Naming the properties](#naming-the-properties)
+  - [Examples](#examples)
+- [Generating models](#generating-models)
+- [Retrieving content items](#retrieving-content-items)
+- [Customizing the strong-type binding logic](#customizing-the-strong-type-binding-logic)
+  - [Adding support for runtime type resolution](#adding-support-for-runtime-type-resolution)
+    - [Generating custom type providers](#generating-custom-type-providers)
+  - [Customizing the property matching](#customizing-the-property-matching)
+  - [Customizing the strong-type resolution mechanism](#customizing-the-strong-type-resolution-mechanism)
 
 <!-- /TOC -->
 
@@ -70,7 +70,7 @@ Depending on your scenario, use one of the following as the data type parameter 
 
 #### Typing Rich text
 
-For Rich text elements, use either `string` to receive HTML code resolved using string-based resolver as outlined in [Rendering linked items in Rich text](String-based-rendering-of-items-in-Rich-text.md) or `IRichTextContent` to retrieve rich text content as [structured data](Structured-Rich-text-rendering.md).
+For Rich text elements, use either `string` to receive HTML code resolved using string-based resolver as outlined in [Rendering linked items in Rich text](./rich-text/string-based-linked-items-rendering.md) or `IRichTextContent` to retrieve rich text content as [structured data](./rich-text/structured-rich-text-rendering.md).
 
 #### Typing Custom elements
 
@@ -100,7 +100,7 @@ You can find sample models at <https://github.com/kontent-ai/delivery-sdk-net/tr
 
 ## Generating models
 
-:information_source: You can save time by [generating content type models](Strong-Types-Explained-–-Code-Generator.md) for your project using the [Kontent.ai .NET code generator](https://github.com/kontent-ai/model-generator-net) utility.
+:information_source: You can save time by [generating content type models](./strong-types-explained/code-generator.md) for your project using the [Kontent.ai .NET code generator](https://github.com/kontent-ai/model-generator-net) utility.
 
 ## Retrieving content items
 
@@ -114,7 +114,6 @@ This parameter represents the model you want to load. You can specify the parame
 - by passing the [`object`](https://msdn.microsoft.com/en-us/library/system.object(v=vs.110)) class, for example, `GetItemAsync<object>`
 
 Use the second approach if you don't know what the content type will be and you want the application to [resolve content types during runtime](#adding-support-for-runtime-type-resolution).
-
 
 ## Customizing the strong-type binding logic
 
@@ -131,7 +130,7 @@ Type type = model.Item.GetType(); // type will be e.g. 'Article'
 
 For this to work, the SDK needs to know the mappings between the content types and your models.
 
-If you want to use the runtime type resolution in your application, you need to implement the [`Kontent.Ai.Delivery.Abstractions.ITypeProvider`](https://github.com/kontent-ai/delivery-sdk-net/Kontent.Ai.Delivery.Abstractions/ContentItems/ITypeProvider.cs) interface.
+If you want to use the runtime type resolution in your application, you need to implement the [`Kontent.Ai.Delivery.Abstractions.ITypeProvider`](../../Kontent.Ai.Delivery.Abstractions/ContentItems/ITypeProvider.cs) interface.
 
 ```csharp
 public class CustomTypeProvider : ITypeProvider
@@ -178,7 +177,7 @@ Similarly to models, you can generate implementations of `ITypeProvider` by usin
 ### Customizing the property matching
 Currently, the automatic matching is based on the codenames being converted to [PascalCase](https://msdn.microsoft.com/en-us/library/x2dbyw72(v=vs.71) "PascalCase").
 
-If you want to customize the way content elements and model properties are matched, you need to implement the [`Kontent.Ai.Delivery.IPropertyMapper`](https://github.com/kontent-ai/delivery-sdk-net/Kontent.Ai.Delivery/StrongTyping/IPropertyMapper.cs) interface and pass it to the `DeliveryClientBuilder` class.
+If you want to customize the way content elements and model properties are matched, you need to implement the [`Kontent.Ai.Delivery.Abstractions.IPropertyMapper`](../../Kontent.Ai.Delivery.Abstractions/ContentItems/IPropertyMapper.cs) interface and pass it to the `DeliveryClientBuilder` class.
 
 ```csharp
 // Implements a custom property mapper
@@ -206,7 +205,7 @@ IDeliveryClient client = DeliveryClientBuilder
 
 ### Customizing the strong-type resolution mechanism
 
-To replace the whole model instantiation mechanism, you need to implement the [`Kontent.Ai.Delivery.Abstractions.IModelProvider`](https://github.com/kontent-ai/delivery-sdk-net/Kontent.Ai.Delivery.Abstractions/ContentItems/IModelProvider.cs) interface. It contains a single member:
+To replace the whole model instantiation mechanism, you need to implement the [`Kontent.Ai.Delivery.Abstractions.IModelProvider`](../../Kontent.Ai.Delivery.Abstractions/ContentItems/IModelProvider.cs) interface. It contains a single member:
 
 ```csharp
 Task<T> GetContentItemModelAsync<T>(object item, IEnumerable linkedItems);
