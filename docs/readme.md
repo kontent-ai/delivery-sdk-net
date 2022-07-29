@@ -37,14 +37,14 @@
     - [Model Inheritance](./customization-and-extensibility/strongly-types-explained/model-inheritance.md)
     - [Runtime Typing](./customization-and-extensibility/strongly-types-explained/runtime-typing.md)
   - [Support for custom types in models via Value Converters](./customization-and-extensibility/value-converters.md)
-  - [Retrieve modular content from API response](./customization-and-extensibility/Retrieve-modular-content-from-API-response.md)
+  - [Retrieve modular content from API response](./customization-and-extensibility/modular-content-in-response.md)
   - [Partial class customization techniques](./customization-and-extensibility/customization-techniques.md)
 - **Unit testing**
-  - [Faking responses](./testing/Faking-responses.md)
+  - [Faking responses](./testing/faking.md)
 - [**Release & version management**](https://github.com/kontent-ai/kontent-ai.github.io/blob/main/docs/articles/Release-%26-version-management-of-.NET-projects.md)
   - [Kontent.ai best practices for .csproj files](https://github.com/kontent-ai/kontent-ai.github.io/blob/main/docs/articles/Kontent.ai-best-practices-for-.csproj-files.md)
-- [**Developing plugins**](./testing/Developing-plugins.md)
+- [**Developing plugins**](./testing/plugins.md)
 - **Troubleshooting**
-  - [Using Source Link for debugging](./troubleshooting/Using-Source-Link-for-debugging.md)
+  - [Using Source Link for debugging](./troubleshooting/source-link.md)
 
 ---
