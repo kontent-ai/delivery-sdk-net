@@ -4,7 +4,7 @@
 
 - ✔️ [Use Dependency Injection](./configuration/dependency-injection.md#standard-usage.md) for better app design
 - ✔️ [Use `HttpClientFactory`](./configuration/dependency-injection.md#httpclientfactory) for increased performance and stability of your app
-- ✔️ [Use strongly-typed models](./customization-and-extensibility/strongly-typed-models.md) for all the [10 advantages described here](./customization-and-extensibility/Strong-Types-Explained-%E2%80%93-10-Advantages.md)
+- ✔️ [Use strongly-typed models](./customization-and-extensibility/strongly-typed-models.md) for all the [10 advantages described here](./customization-and-extensibility/stronly-types-explained/10-advantages.md)
 - ✔️ [Use the code generator](https://github.com/kontent-ai/model-generator-net) to automate things and avoid errors
 - ✔️ [Use partial classes for extending the models](./customization-and-extensibility/customization-techniques.md) & not mess up the generated ones
 - ✔️ [Use structured rich-text rendering](./customization-and-extensibility/rich-text/structured-rich-text-rendering.md) to enable display templates for rich-text elements
@@ -16,7 +16,7 @@
 - **Configuration**
   - [Registering the DeliveryClient to the IServiceCollection in ASP.NET Core](./configuration/dependency-injection.md)
   - [Accessing data from multiple projects at the same time using named clients](./configuration/multiple-delivery-clients.md)
-  - [Loading DeliveryClient settings for apps running on .NET framework (MVC 5 & OWIN)](./configuration/legacy-settings-loading-for-apps-running-on-.NET-framework.md)
+  - [Loading DeliveryClient settings for apps running on .NET framework (MVC 5 & OWIN)](./configuration/legacy-settings-loading-for-apps-running-on-dotnet-framework.md)
   - [Retry capabilities](./configuration/retry-policy.md)
   - [Delivery options explained](./configuration/delivery-options.md)
 - **Retrieving data**
@@ -41,10 +41,10 @@
   - [Partial class customization techniques](./customization-and-extensibility/customization-techniques.md)
 - **Unit testing**
   - [Faking responses](./testing/faking.md)
-- [**Release & version management**](https://github.com/kontent-ai/kontent-ai.github.io/blob/main/docs/articles/Release-%26-version-management-of-.NET-projects.md)
+- **Repository practices**
+  - [Release & version management](https://github.com/kontent-ai/kontent-ai.github.io/blob/main/docs/articles/Release-%26-version-management-of-.NET-projects.md)
   - [Kontent.ai best practices for .csproj files](https://github.com/kontent-ai/kontent-ai.github.io/blob/main/docs/articles/Kontent.ai-best-practices-for-.csproj-files.md)
-- [**Developing plugins**](./testing/plugins.md)
+- **Tools using SDK**
+  - [Source tracking header](./testing/tracking.md)
 - **Troubleshooting**
   - [Using Source Link for debugging](./troubleshooting/source-link.md)
-
----
