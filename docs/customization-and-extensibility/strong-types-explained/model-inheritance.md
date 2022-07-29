@@ -98,7 +98,7 @@ You can declare a property with a slightly different name, of the same type and 
     }
 ```
 
-Now, request those Brewers and Coffee using the automatic runtime typing functionality (explained in parts [4](strongly-types-explained/runtime-typing.md#why) and [5](strongly-types-explained/runtime-typing.md#how-to-use-runtime-typing) by specifying `object` as the generic type parameter:
+Now, request those Brewers and Coffee using the automatic runtime typing functionality (explained in parts [4](strong-types-explained/runtime-typing.md#why) and [5](strong-types-explained/runtime-typing.md#how-to-use-runtime-typing) by specifying `object` as the generic type parameter:
 
 ```csharp
     var brewersAndCoffeeAsProducts = (await client.GetItemsAsync<object>(new InFilter("system.type", "brewer", "coffee"))).Items;

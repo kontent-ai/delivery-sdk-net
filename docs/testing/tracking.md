@@ -1,4 +1,4 @@
-Are you developing a plugin or tool based on this SDK? Great! Then please include the [source tracking header](https://github.com/kontent-ai/Home/wiki/Guidelines-for-Kontent-related-tools#analytics) to your code. This way, we'll be able to identify that the traffic to Kontent.ai APIs is originating from your plugin and will be able to share its statistics with you!
+Are you developing a plugin or tool based on this SDK? Great! Then please include the [source tracking header](https://github.com/kontent-ai/kontent-ai.github.io/blob/main/docs/articles/Guidelines-for-Kontent.ai-related-tools.md#analytics) to your code. This way, we'll be able to identify that the traffic to Kontent.ai APIs is originating from your plugin and will be able to share its statistics with you!
 
 You can either attach it to the **AssemblyInfo.cs**
 ```c#

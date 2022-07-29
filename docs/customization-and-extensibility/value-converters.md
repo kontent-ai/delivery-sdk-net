@@ -30,4 +30,4 @@ var item = await client.GetItemAsync<YourModelType>("codename");
 ZonedDateTime dt = item.Item.PostDateNodaTime; // Your custom-typed property
 ```
 
-See a sample unit test: https://github.com/kontent-ai/delivery-sdk-net/Kontent.Ai.Delivery.Tests/ValueConverterTests.cs
+See a [sample unit test](../../Kontent.Ai.Delivery.Tests/ValueConverterTests.cs).

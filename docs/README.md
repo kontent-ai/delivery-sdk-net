@@ -4,7 +4,7 @@
 
 - ✔️ [Use Dependency Injection](./configuration/dependency-injection.md#standard-usage.md) for better app design
 - ✔️ [Use `HttpClientFactory`](./configuration/dependency-injection.md#httpclientfactory) for increased performance and stability of your app
-- ✔️ [Use strongly-typed models](./customization-and-extensibility/strongly-typed-models.md) for all the [10 advantages described here](./customization-and-extensibility/stronly-types-explained/10-advantages.md)
+- ✔️ [Use strongly-typed models](./customization-and-extensibility/strongly-typed-models.md) for all the [10 advantages described here](./customization-and-extensibility/strong-types-explained/10-advantages.md)
 - ✔️ [Use the code generator](https://github.com/kontent-ai/model-generator-net) to automate things and avoid errors
 - ✔️ [Use partial classes for extending the models](./customization-and-extensibility/customization-techniques.md) & not mess up the generated ones
 - ✔️ [Use structured rich-text rendering](./customization-and-extensibility/rich-text/structured-rich-text-rendering.md) to enable display templates for rich-text elements
@@ -22,7 +22,7 @@
 - **Retrieving data**
   - [Querying content items](./retrieving-data/querying-content.md)
   - [Enumerating all items](./retrieving-data/items-feed.md)
-  - [Retrieving secured and previewing unpublished content](./retrieving-data/secure-and-preview-api.md.md)
+  - [Retrieving secured and previewing unpublished content](./retrieving-data/secure-and-preview-api.md)
   - [Using the Kontent.Ai.Delivery.Rx reactive library](./retrieving-data/reactive-library.md)
   - [Caching responses](./retrieving-data/caching.md)
   - [Using the Image transformations](./retrieving-data/image-transformation.md)
@@ -31,11 +31,11 @@
   - [Structured Rich text rendering](./customization-and-extensibility/rich-text/structured-rich-text-rendering.md)
   - [String-based rendering of linked items in Rich text elements](./customization-and-extensibility/rich-text/string-based-linked-items-rendering.md)
   - [Working with strongly typed models](./customization-and-extensibility/strongly-typed-models.md)
-    - [10 Advantages of strong types](./customization-and-extensibility/strongly-types/10-Advantages.md)
-    - [Generating models](./customization-and-extensibility/strongly-types-explained/code-generator.md)
-    - [DataAnnotations attributes](./customization-and-extensibility/strongly-types-explained/dataannotation-attributes.md)
-    - [Model Inheritance](./customization-and-extensibility/strongly-types-explained/model-inheritance.md)
-    - [Runtime Typing](./customization-and-extensibility/strongly-types-explained/runtime-typing.md)
+    - [10 Advantages of strong types](./customization-and-extensibility/strong-types-explained/10-advantages.md)
+    - [Generating models](./customization-and-extensibility/strong-types-explained/code-generator.md)
+    - [DataAnnotations attributes](./customization-and-extensibility/strong-types-explained/dataannotation-attributes.md)
+    - [Model Inheritance](./customization-and-extensibility/strong-types-explained/model-inheritance.md)
+    - [Runtime Typing](./customization-and-extensibility/strong-types-explained/runtime-typing.md)
   - [Support for custom types in models via Value Converters](./customization-and-extensibility/value-converters.md)
   - [Retrieve modular content from API response](./customization-and-extensibility/modular-content-in-response.md)
   - [Partial class customization techniques](./customization-and-extensibility/customization-techniques.md)

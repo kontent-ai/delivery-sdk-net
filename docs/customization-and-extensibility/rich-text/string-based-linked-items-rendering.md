@@ -15,7 +15,7 @@
 
 ## Introduction
 
-The following information applies to Rich text model properties typed as `string`. In case you are using structured data model type `IRichTextContent`, see [Structured Rich text rendering](/rich-text/structured-rich-text-rendering.md)
+The following information applies to Rich text model properties typed as `string`. In case you are using structured data model type `IRichTextContent`, see [Structured Rich text rendering](./structured-rich-text-rendering.md)
 
 ## Content items and components in Rich text
 
@@ -40,7 +40,7 @@ To learn more about content items and components in rich text, see our [API Refe
 
 ## Defining a content type model
 
-First, you need to define a strongly typed model of the *YouTube video* content type. For more information about models, see [Working with strongly typed models](strongly-typed-models.md).
+First, you need to define a strongly typed model of the *YouTube video* content type. For more information about models, see [Working with strongly typed models](../strongly-typed-models.md).
 
 For example, a model for the *YouTube video* content type can look like this:
 
