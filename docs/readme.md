@@ -8,7 +8,7 @@
 - ✔️ [Use the code generator](https://github.com/kontent-ai/model-generator-net) to automate things and avoid errors
 - ✔️ [Use partial classes for extending the models](./customization-and-extensibility/customization-techniques.md) & not mess up the generated ones
 - ✔️ [Use structured rich-text rendering](./customization-and-extensibility/rich-text/structured-rich-text-rendering.md) to enable display templates for rich-text elements
-- ✔️ [Enable retry logic](./retrieving-data/retry-policy.md) to ensure maximum resiliency of your app
+- ✔️ [Enable retry logic](./configuration/retry-policy.md) to ensure maximum resiliency of your app
 - ✔️ [Secret Manager or Azure Key Vault](./retrieving-data/secure-and-preview-api.md) to store Secured Content and Preview API keys
 
 ## Full Table of Contents
@@ -17,12 +17,12 @@
   - [Registering the DeliveryClient to the IServiceCollection in ASP.NET Core](./configuration/dependency-injection.md)
   - [Accessing data from multiple projects at the same time using named clients](./configuration/multiple-delivery-clients.md)
   - [Loading DeliveryClient settings for apps running on .NET framework (MVC 5 & OWIN)](./configuration/legacy-settings-loading-for-apps-running-on-.NET-framework.md)
+  - [Retry capabilities](./configuration/retry-policy.md)
+  - [Delivery options explained](./configuration/delivery-options.md)
 - **Retrieving data**
   - [Querying content items](./retrieving-data/querying-content.md)
   - [Enumerating all items](./retrieving-data/items-feed.md)
   - [Retrieving secured and previewing unpublished content](./retrieving-data/secure-and-preview-api.md.md)
-  - [Delivery options explained](./retrieving-data/delivery-options.md)
-  - [Retry capabilities](./retrieving-data/retry-policy.md)
   - [Using the Kontent.Ai.Delivery.Rx reactive library](./retrieving-data/reactive-library.md)
   - [Caching responses](./retrieving-data/caching.md)
   - [Using the Image transformations](./retrieving-data/image-transformation.md)
