@@ -33,7 +33,6 @@ namespace Kentico.Kontent.Delivery.Extensions.DependencyInjection
 
             if (!_clients.TryGetValue(name, out var client))
             {
-                // TODO 312 - add some love
                 throw new ArgumentException($"The named client '{name}' does not exist.");
             }
 
