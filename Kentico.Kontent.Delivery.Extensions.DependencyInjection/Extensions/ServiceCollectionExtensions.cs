@@ -1,9 +1,9 @@
 ﻿using Kentico.Kontent.Delivery.Abstractions;
 using Kentico.Kontent.Delivery.Builders.DeliveryClient;
-using Kentico.Kontent.Delivery.Builders.DeliveryClientFactory;
 using Kentico.Kontent.Delivery.Caching;
 using Kentico.Kontent.Delivery.Caching.Extensions;
 using Kentico.Kontent.Delivery.Configuration;
+using Kentico.Kontent.Delivery.Extensions.DependencyInjection.Builders;
 using Kentico.Kontent.Delivery.Helpers;
 using Microsoft.Extensions.Caching.Distributed;
 using Microsoft.Extensions.Caching.Memory;

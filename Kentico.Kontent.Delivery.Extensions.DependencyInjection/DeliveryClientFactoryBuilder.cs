@@ -2,9 +2,9 @@
 using System.Collections.Concurrent;
 using Kentico.Kontent.Delivery.Abstractions;
 using Kentico.Kontent.Delivery.Builders.DeliveryClient;
-using Kentico.Kontent.Delivery.Builders.DeliveryClientFactory;
 using Kentico.Kontent.Delivery.Caching;
 using Kentico.Kontent.Delivery.Configuration;
+using Kentico.Kontent.Delivery.Extensions.DependencyInjection.Builders;
 
 namespace Kentico.Kontent.Delivery.Extensions.DependencyInjection
 {
@@ -13,7 +13,13 @@ namespace Kentico.Kontent.Delivery.Extensions.DependencyInjection
         // TODO 312 OK to instantiate this way?
         private readonly ConcurrentDictionary<string, IDeliveryClient> _clients = new();
 
-        public IDeliveryClientFactoryBuilder AddDeliveryClient(string name, Func<IDeliveryOptionsBuilder, DeliveryOptions> deliveryOptionsBuilder, Func<IOptionalClientSetup, IOptionalClientSetup> optionalClientSetup = null)
+        public IDeliveryClientFactoryBuilder AddDeliveryClient
+        (
+            string name,
+            Func<IDeliveryOptionsBuilder,
+            DeliveryOptions> deliveryOptionsBuilder,
+            Func<IOptionalClientSetup, IOptionalClientSetup> optionalClientSetup = null
+        )
         {
             if (string.IsNullOrEmpty(name))
             {
@@ -31,7 +37,13 @@ namespace Kentico.Kontent.Delivery.Extensions.DependencyInjection
             return this;
         }
 
-        public IDeliveryClientFactoryBuilder AddDeliveryClientCache(string name, Func<IDeliveryOptionsBuilder, DeliveryOptions> deliveryOptionsBuilder, IDeliveryCacheManager cacheManager, Func<IOptionalClientSetup, IOptionalClientSetup> optionalClientSetup = null)
+        public IDeliveryClientFactoryBuilder AddDeliveryClientCache
+        (
+            string name, Func<IDeliveryOptionsBuilder,
+            DeliveryOptions> deliveryOptionsBuilder,
+            IDeliveryCacheManager cacheManager, Func<IOptionalClientSetup,
+            IOptionalClientSetup> optionalClientSetup = null
+        )
         {
             if (string.IsNullOrEmpty(name))
             {
