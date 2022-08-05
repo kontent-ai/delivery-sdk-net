@@ -80,7 +80,6 @@ namespace Kentico.Kontent.Delivery.Extensions.DependencyInjection
 
         private void RegisterClient(string name, IDeliveryClient client)
         {
-            // TODO 312 - warning/exception for rewriting the same client
             _clients.AddOrUpdate(name, client, (key, oldValue) => client);
         }
     }
