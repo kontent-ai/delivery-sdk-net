@@ -7,7 +7,6 @@ using Kontent.Ai.Delivery.Extensions;
 
 namespace Kontent.Ai.Delivery.Tests.Factories
 {
-    [Obsolete("#312")]
     public class DeliveryClientFactoryTests
     {
         private readonly ServiceCollection _serviceCollection;

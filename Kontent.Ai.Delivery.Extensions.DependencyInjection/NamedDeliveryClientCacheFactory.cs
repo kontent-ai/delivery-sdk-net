@@ -10,7 +10,6 @@ using System.Collections.Concurrent;
 
 namespace Kontent.Ai.Delivery.Extensions.DependencyInjection
 {
-    [Obsolete("#312 Use Kontent.Ai.Delivery.Extensions.DependencyInjection.Builders.MultipleDeliveryClientFactoryBuilder instead")]
     internal class NamedDeliveryClientCacheFactory : IDeliveryClientFactory
     {
         private readonly IOptionsMonitor<DeliveryCacheOptions> _deliveryCacheOptions;

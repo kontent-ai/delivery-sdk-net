@@ -1,5 +1,4 @@
-﻿using System;
-using Autofac;
+﻿using Autofac;
 using FakeItEasy;
 using FluentAssertions;
 using Kontent.Ai.Delivery.Abstractions;
@@ -10,7 +9,6 @@ using Xunit;
 
 namespace Kontent.Ai.Delivery.Extensions.DependencyInjection.Tests
 {
-    [Obsolete("#312")]
     public class DeliveryClientCacheFactoryTests
     {
         private readonly IOptionsMonitor<DeliveryCacheOptions> _deliveryCacheOptionsMock;
