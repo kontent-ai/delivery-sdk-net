@@ -1,6 +1,7 @@
 using System;
 using System.Collections.Concurrent;
 using Kontent.Ai.Delivery.Abstractions;
+using Kontent.Ai.Delivery.Builders;
 using Kontent.Ai.Delivery.Builders.DeliveryClient;
 using Kontent.Ai.Delivery.Caching;
 using Kontent.Ai.Delivery.Configuration;

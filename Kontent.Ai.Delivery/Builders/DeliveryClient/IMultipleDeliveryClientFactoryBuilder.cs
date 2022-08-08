@@ -1,10 +1,9 @@
 using System;
 using Kontent.Ai.Delivery.Abstractions;
 using Kontent.Ai.Delivery.Builders.DeliveryClient;
-using Kontent.Ai.Delivery.Caching;
 using Kontent.Ai.Delivery.Configuration;
 
-namespace Kontent.Ai.Delivery.Extensions.DependencyInjection.Builders
+namespace Kontent.Ai.Delivery.Builders
 {
     // TODO 312 - XML comments
     // TODO 312 decide whether this lib is the best for this interface (currently here because of IDeliveryClientBuilder dependency)
