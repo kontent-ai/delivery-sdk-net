@@ -10,7 +10,6 @@ namespace Kontent.Ai.Delivery.Extensions.DependencyInjection.Tests
 {
     public partial class ServiceCollectionExtensionsTests
     {
-        [Obsolete("#312")]
         public class NamedClient
         {
             private readonly IServiceCollection _serviceCollection;
