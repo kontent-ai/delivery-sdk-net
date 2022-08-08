@@ -1,8 +1,11 @@
-﻿namespace Kontent.Ai.Delivery.Extensions.DependencyInjection
+﻿using System;
+
+namespace Kontent.Ai.Delivery.Extensions.DependencyInjection
 {
     /// <summary>
     /// Represents a contract for retrieving named dependencies.
     /// </summary>
+    [Obsolete("#312")]
     public interface INamedServiceProvider
     {
         /// <summary>

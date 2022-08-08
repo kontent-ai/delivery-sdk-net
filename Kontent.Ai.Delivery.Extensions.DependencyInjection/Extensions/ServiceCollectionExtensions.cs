@@ -2,6 +2,7 @@
 using Kontent.Ai.Delivery.Caching;
 using Kontent.Ai.Delivery.Caching.Extensions;
 using Kontent.Ai.Delivery.Configuration;
+using Kontent.Ai.Delivery.Extensions.DependencyInjection.Builders;
 using Kontent.Ai.Delivery.Helpers;
 using Microsoft.Extensions.Caching.Distributed;
 using Microsoft.Extensions.Caching.Memory;
@@ -18,6 +19,26 @@ namespace Kontent.Ai.Delivery.Extensions.DependencyInjection
     public static class ServiceCollectionExtensions
     {
         /// <summary>
+        /// Registers a factory that will be used to configure multiple <see cref="IDeliveryClient"/> via <see cref="IDeliveryClientFactory"/>
+        /// </summary>
+        /// <param name="services">A <see cref="ServiceCollection"/> instance for registering and resolving dependencies.</param>
+        /// <param name="buildDeliveryClientFactory">A function that is provided with an instance of <see cref="IDeliveryClientFactoryBuilder"/>and expected to return a valid instance of <see cref="IDeliveryClientFactory"/>.</param>
+        /// <returns>The <paramref name="services"/> instance with <see cref="IDeliveryClientFactory"/> registered in it</returns>
+        public static IServiceCollection AddMultipleDeliveryClientFactory(this IServiceCollection services, Func<IMultipleDeliveryClientFactoryBuilder, IDeliveryClientFactory> buildDeliveryClientFactory)
+        {
+            if (buildDeliveryClientFactory == null)
+            {
+                throw new ArgumentNullException(nameof(buildDeliveryClientFactory), "The function for creating Delivery client factory is null.");
+            }
+
+            var factory = buildDeliveryClientFactory(new MultipleDeliveryClientFactoryBuilder());
+
+            services.AddSingleton<IDeliveryClientFactory>(factory);
+
+            return services;
+        }
+
+        /// <summary>
         /// Registers a delegate that will be used to configure a named <see cref="IDeliveryClient"/> via <see cref="IDeliveryClientFactory"/>
         /// </summary>
         ///<param name="name">The name of the client configuration</param>
@@ -25,6 +46,7 @@ namespace Kontent.Ai.Delivery.Extensions.DependencyInjection
         /// <param name="buildDeliveryOptions">A function that is provided with an instance of <see cref="DeliveryOptionsBuilder"/>and expected to return a valid instance of <see cref="DeliveryOptions"/>.</param>
         /// <param name="namedServiceProviderType">A named service provider type.</param>
         /// <returns>The <paramref name="services"/> instance with <see cref="IDeliveryClient"/> registered in it</returns>
+        [Obsolete("#312 Use AddMultipleDeliveryClientFactory for multiple clients.")]
         public static IServiceCollection AddDeliveryClient(this IServiceCollection services, string name, Func<IDeliveryOptionsBuilder, DeliveryOptions> buildDeliveryOptions, NamedServiceProviderType namedServiceProviderType = NamedServiceProviderType.None)
         {
             if (buildDeliveryOptions == null)

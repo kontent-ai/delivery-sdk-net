@@ -2,7 +2,6 @@
 using FluentAssertions;
 using Kontent.Ai.Delivery.Abstractions;
 using Kontent.Ai.Delivery.Caching;
-using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using System;
 using Xunit;
@@ -11,6 +10,7 @@ namespace Kontent.Ai.Delivery.Extensions.DependencyInjection.Tests
 {
     public partial class ServiceCollectionExtensionsTests
     {
+        [Obsolete("#312")]
         public class NamedCacheClient
         {
             private readonly IServiceCollection _serviceCollection;
