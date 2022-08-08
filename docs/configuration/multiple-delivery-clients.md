@@ -1,36 +1,128 @@
-> ⚠️ Mind [the issue with the combination of the named `TypeProvider` and `Modelprovider`](https://github.com/kontent-ai/delivery-sdk-net/issues/312) - see [the workaround for multple clients with different Type providers](https://github.com/kontent-ai/delivery-sdk-net/issues/312#issuecomment-1138139987)
+# Register Multiple Delivery Clients
 
-Sometimes, it's handy to register multiple `IDeliveryClient`s with different configurations (e.g. while accessing different projects, accessing secured and non-secured data at once, or accessing preview and production data at the same time). In those cases, you can take advantage of named clients.
-This SDK contains a default implementation of named clients relying on Autofac's [Named and Keyed Services](https://autofaccn.readthedocs.io/en/latest/advanced/keyed-services.html). If you wish to implement support for a DI container of your choice, jump to the [Extending named services support](#extending-named-services-support) section.
+> ⚠️ Mind [because of the issue with the combination of the named `TypeProvider` and `ModelProvider`](https://github.com/kontent-ai/delivery-sdk-net/issues/312) we decided to deprecate `AutofacServiceProviderFactory` use `MultipleDeliveryClientFactory` instead.
 
-# Using the default Autofac implementation
+Sometimes, it's handy to register multiple `IDeliveryClient`s with different configurations (e.g. while accessing different projects, accessing secured and non-secured data at once, or accessing preview and production data at the same time). In those cases, you can take advantage of multiple client registration using factory pattern.
 
-## Installing the NuGet packages
-Advanced registration scenarios are handled by the [Kontent.Ai.Delivery.Extensions.DependencyInjection](https://www.nuget.org/packages/Kontent.Ai.Delivery.Extensions.DependencyInjection) NuGet package. You'll need to install the following packages:
+If you wish to implement support for a DI container of your choice, jump to the [Extending named services support](#extending-named-services-support) section.
+
+## Using the default .NET implementation of the IMultipleDeliveryClientFactory
+
+### Installing the NuGet packages
+
+Advanced registration scenarios are handled by the [Kontent.Ai.Delivery.Extensions.DependencyInjection](https://www.nuget.org/packages/Kontent.Ai.Delivery.Extensions.DependencyInjection) NuGet package. You'll need to install it first:
+
+```sh
+Install-Package Kontent.Ai.Delivery.Extensions.DependencyInjection
 ```
-PM> Install-Package Kontent.Ai.Delivery.Extensions.DependencyInjection
-PM> Install-Package Autofac.Extensions.DependencyInjection
-```
 
-## Adding Autofac to the hosting pipeline
-To enable Autofac DI resolution, you need to [add Autofac to your hosting pipeline](https://autofaccn.readthedocs.io/en/latest/integration/aspnetcore.html#asp-net-core-3-0-and-generic-hosting) as follows:
+### Registering the factory
+
+The SDK provides extension methods upon the `IServiceCollection` that allow registering delivery client factory builder. The builder is used to configure the factory and register the delivery client instances.
 
 ```csharp
-public class Program
+public class Startup
 {
-     public static IHostBuilder CreateHostBuilder(string[] args) =>
-              Host.CreateDefaultBuilder(args)
-                  .UseServiceProviderFactory(new AutofacServiceProviderFactory()) // Add this line
-                  .ConfigureWebHostDefaults(webBuilder =>
-                  {
-                      webBuilder.UseStartup<Startup>();
-                  });
+    // ...
+
+    public void ConfigureServices(IServiceCollection services)
+    {
+        services.AddDeliveryClientFactory
+        (
+            factoryBuilder => factoryBuilder
+                .AddDeliveryClient
+                (
+                    "projectA",
+                    deliveryOptionBuilder => deliveryOptionBuilder
+                        .WithProjectId("<A_PROJECT_ID>")
+                        .UseProductionApi()
+                        .Build()
+                    optionalClientSetup =>
+                        optionalClientSetup.WithTypeProvider(new ProjectAProvider())
+                )
+        );
+    }
 }
 ```
 
-## Registering multiple named DeliveryClients
+### Registering multiple type providers
 
-The SDK provides extension methods upon the `IServiceCollection` that allow registering clients indexed by name.
+If you're accessing two completely different projects, chances are they have a different content model and therefore the generated models for content types will differ. Extend the Startup class as follows:
+
+```csharp
+public class Startup
+{
+    // ...
+
+    public void ConfigureServices(IServiceCollection services)
+    {
+        services.AddDeliveryClientFactory
+        (
+            factoryBuilder => factoryBuilder
+                .AddDeliveryClient
+                (
+                    "projectA",
+                    deliveryOptionBuilder => deliveryOptionBuilder
+                        .WithProjectId("<A_PROJECT_ID>")
+                        .UseProductionApi()
+                        .Build(),
+                    optionalClientSetup =>
+                        optionalClientSetup.WithTypeProvider(new ProjectAProvider())
+                )
+                .AddDeliveryClient(
+                    "projectB",
+                    deliveryOptionBuilder => deliveryOptionBuilder
+                        .WithProjectId("<B_PROJECT_ID>")
+                        .UseProductionApi()
+                        .Build(),
+                    optionalClientSetup =>
+                        optionalClientSetup.WithTypeProvider(new ProjectBProvider())
+                )
+        );
+    }
+}
+```
+
+### Registering Cached client
+
+> To be able to use the [.NET SDK caching layer](../retrieving-data/caching.md), you need to install `Kontent.Ai.Delivery.Caching` package.
+
+If you want to use the cached client, you can use the `AddCachedDeliveryClient` method instead of `AddDeliveryClient`
+
+```csharp
+public class Startup
+{
+    // ...
+
+    public void ConfigureServices(IServiceCollection services)
+    {
+        services.AddDeliveryClientFactory
+        (
+                factoryBuilder => factoryBuilder
+                    .AddDeliveryClientCache
+                    (
+                        "projectA"
+                        deliveryOptionBuilder => deliveryOptionBuilder
+                            .WithProjectId(ClientAProjectId)
+                            .UseProductionApi()
+                            .Build(),
+                        CacheManagerFactory.Create(
+                            new MemoryCache(new MemoryCacheOptions()),
+                            Options.Create(new DeliveryCacheOptions
+                            {
+                                CacheType = CacheTypeEnum.Memory
+                            })),
+                        optionalClientSetup =>
+                            optionalClientSetup.WithTypeProvider(new ProjectAProvider())
+                    )
+        );
+    }
+}
+```
+
+### Load the configuration dynamically
+
+It is of course possible to load the configuration from `Configuration` object (ie. from `appsettings.json`).
 
 ```csharp
 public class Startup
@@ -44,13 +136,30 @@ public class Startup
 
     public void ConfigureServices(IServiceCollection services)
     {
-        services.AddDeliveryClient("projectA", Configuration, "ProjectAOptions", NamedServiceProviderType.Autofac);
-        services.AddDeliveryClient("projectB", Configuration, "ProjectBOptions", NamedServiceProviderType.Autofac);
+        services.AddDeliveryClientFactory
+        (
+            factoryBuilder => factoryBuilder
+                .AddDeliveryClient
+                (
+                    "projectA",
+                    _ =>
+                    {
+                        var options = new DeliveryOptions();
+                        config.Configuration.GetSection("MultipleDeliveryOptions:ProjectA")
+                            .Bind(options);
+                        return options;
+                    },
+                    optionalClientSetup =>
+                        optionalClientSetup.WithTypeProvider(new ProjectAProvider())
+                )
+        );
     }
 }
 ```
 
-For resolving named clients, inject the [IDeliveryClientFactory](https://github.com/kontent-ai/delivery-sdk-net/Kontent.Ai.Delivery.Abstractions/IDeliveryClientFactory.cs), which is registered in the DI container.
+### Resolving the delivery client
+
+For resolving multiple clients, inject the [IDeliveryClientFactory](https://github.com/kontent-ai/delivery-sdk-net/Kontent.Ai.Delivery.Abstractions/IDeliveryClientFactory.cs), which is registered in the DI container.
 
 ```csharp
 public class HomeController : Controller
@@ -64,23 +173,6 @@ public class HomeController : Controller
 }
 ```
 
-## Registering multiple type providers
-If you're accessing two completely different projects, chances are they have a different content model and therefore the generated models for content types will differ. Extend the Startup class as follows:
+## Extending named services support
 
-```csharp
-public class Startup
-{
-        public void ConfigureContainer(ContainerBuilder builder)
-        {
-            builder.RegisterType<ProjectACustomTypeProvider>().Named<ITypeProvider>("projectA");
-            builder.RegisterType<ProjectBCustomTypeProvider>().Named<ITypeProvider>("projectB");
-        }
-}
-```
-
-More details in [Autofac's docs](https://autofaccn.readthedocs.io/en/latest/integration/aspnetcore.html#startup-class).
-
-# Extending named services support
-In case you want to use a DI container other than Autofac, feel free to create your own implementation of `INamedServiceProvider` (in `Kontent.Ai.Delivery.Extensions.DependencyInjection`) and submit a pull request to this repository.
-This implementation then needs to be registered in `NamedServiceProviderType` and [`ServiceCollectionExtensions`](https://github.com/kontent-ai/delivery-sdk-net/Kontent.Ai.Delivery.Extensions.DependencyInjection/Extensions/ServiceCollectionExtensions.cs#L133).
-We'll be happy to work with you to add support for your favorite DI container.
+In case you want to use a different implementation for multiple client factory t, feel free to create your own implementation of `IDeliveryClientFactory` (ideally with the implementation of a `IMultipleDeliveryClientFactoryBuilder`)  and submit a pull request to this repository.
