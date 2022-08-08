@@ -1,6 +1,6 @@
 # Register Multiple Delivery Clients
 
-> ⚠️ Mind [because of the issue with the combination of the named `TypeProvider` and `ModelProvider`](https://github.com/kontent-ai/delivery-sdk-net/issues/312) we decided to deprecate `AutofacServiceProviderFactory` use `MultipleDeliveryClientFactory` instead.
+> ⚠️ Mind [because of the issue with the named clients implementation](https://github.com/kontent-ai/delivery-sdk-net/issues/312) we decided to deprecate `AutofacServiceProviderFactory` use `MultipleDeliveryClientFactory` instead.
 
 Sometimes, it's handy to register multiple `IDeliveryClient`s with different configurations (e.g. while accessing different projects, accessing secured and non-secured data at once, or accessing preview and production data at the same time). In those cases, you can take advantage of multiple client registration using factory pattern.
 
