@@ -16,7 +16,7 @@ namespace Kontent.Ai.Delivery.Extensions.DependencyInjection
         private readonly ConcurrentDictionary<string, IDeliveryClient> _cache = new ConcurrentDictionary<string, IDeliveryClient>();
 
         /// <summary>
-        /// Initializes a new instance of the <see cref="DeliveryClientFactory"/> class.
+        /// Initializes a new instance of the <see cref="MultipleDeliveryClientFactory"/> class.
         /// </summary>
         /// <param name="deliveryOptions">Used for notifications when <see cref="DeliveryOptions"/> instances change.</param>
         /// <param name="serviceProvider">An <see cref="IServiceProvider"/> instance.</param>
@@ -55,7 +55,7 @@ namespace Kontent.Ai.Delivery.Extensions.DependencyInjection
 
         private IDeliveryClient Build(DeliveryOptions options, string name)
         {
-            return DeliveryClientFactory.Create(
+            return Delivery.DeliveryClientFactory.Create(
                 new DeliveryOptionsMonitor(options, name),
                 GetNamedServiceOrDefault<IModelProvider>(name),
                 GetNamedServiceOrDefault<IRetryPolicyProvider>(name),

@@ -1,4 +1,6 @@
-﻿namespace Kontent.Ai.Delivery.Abstractions
+﻿using System;
+
+namespace Kontent.Ai.Delivery.Abstractions
 {
     /// <summary>
     /// Represents configuration of the <see cref="IDeliveryClient"/>.
@@ -75,6 +77,7 @@
         /// <summary>
         /// The name of the service configuration this options object is related to.
         /// </summary>
+        [Obsolete("#312")]
         internal string Name { get; set; }
     }
 }
