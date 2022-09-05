@@ -5,10 +5,19 @@ using Kontent.Ai.Delivery.Configuration;
 
 namespace Kontent.Ai.Delivery.Builders
 {
-    // TODO 312 - XML comments
-    // TODO 312 decide whether this lib is the best for this interface (currently here because of IDeliveryClientBuilder dependency)
+    /// <summary>
+    /// The builder capable of providing multiple instances of delivery client with different configurations.
+    /// Typically used for different project clients, or for client to the preview and delivery API.
+    /// </summary>
     public interface IMultipleDeliveryClientFactoryBuilder
     {
+        /// <summary>
+        /// Register delivery client instance.
+        /// </summary>
+        /// <param name="name">Client identifier.</param>
+        /// <param name="deliveryOptionsBuilder">Hook for <see cref="DeliveryOptions"/> creation using <see cref="IDeliveryOptionsBuilder"/>.</param>
+        /// <param name="optionalClientSetup">Hook for <see cref="IOptionalClientSetup"/> creation using <see cref="IOptionalClientSetup"/>.</param>
+        /// <returns>Instance of <see cref="IMultipleDeliveryClientFactoryBuilder"/>.</returns>
         public IMultipleDeliveryClientFactoryBuilder AddDeliveryClient
         (
             string name,
@@ -17,6 +26,14 @@ namespace Kontent.Ai.Delivery.Builders
             Func<IOptionalClientSetup, IOptionalClientSetup> optionalClientSetup = null
         );
 
+        /// <summary>
+        /// Register delivery client instance with cache.
+        /// </summary>
+        /// <param name="name">Client identifier.</param>
+        /// <param name="deliveryOptionsBuilder">Hook for <see cref="DeliveryOptions"/> creation using <see cref="IDeliveryOptionsBuilder"/>.</param>
+        /// <param name="cacheManager">Cache manager setup-</param>
+        /// <param name="optionalClientSetup">Hook for <see cref="IOptionalClientSetup"/> creation using <see cref="IOptionalClientSetup"/>.</param>
+        /// <returns>Instance of <see cref="IMultipleDeliveryClientFactoryBuilder"/>.</returns>
         public IMultipleDeliveryClientFactoryBuilder AddDeliveryClientCache
         (
             string name, Func<IDeliveryOptionsBuilder,
@@ -25,6 +42,10 @@ namespace Kontent.Ai.Delivery.Builders
             IOptionalClientSetup> optionalClientSetup = null
         );
 
+    	/// <summary>
+         /// Build up the factory for registration.
+         /// </summary>
+         /// <returns>An instance of <see cref="IDeliveryClientFactory"/></returns>
         public IDeliveryClientFactory Build();
     }
 }
