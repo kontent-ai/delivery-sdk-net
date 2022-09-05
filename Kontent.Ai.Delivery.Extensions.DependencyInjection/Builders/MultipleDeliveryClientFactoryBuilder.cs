@@ -71,7 +71,12 @@ namespace Kontent.Ai.Delivery.Extensions.DependencyInjection.Builders
             return new MultipleDeliveryClientFactory(_clients);
         }
 
-        private IDeliveryClient BuildDeliveryClient(Func<IDeliveryOptionsBuilder, DeliveryOptions> deliveryOptionsBuilder, Func<IOptionalClientSetup, IOptionalClientSetup> optionalClientSetup)
+        private IDeliveryClient BuildDeliveryClient
+        (
+            Func<IDeliveryOptionsBuilder,
+            DeliveryOptions> deliveryOptionsBuilder,
+            Func<IOptionalClientSetup, IOptionalClientSetup> optionalClientSetup
+        )
         {
             var setup = DeliveryClientBuilder.WithOptions(deliveryOptionsBuilder);
             return optionalClientSetup != null ? optionalClientSetup(setup).Build() : setup.Build();
