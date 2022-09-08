@@ -15,8 +15,7 @@ namespace Kontent.Ai.Delivery.Extensions.DependencyInjection.Builders
         public IMultipleDeliveryClientFactoryBuilder AddDeliveryClient
         (
             string name,
-            Func<IDeliveryOptionsBuilder,
-            DeliveryOptions> deliveryOptionsBuilder,
+            Func<IDeliveryOptionsBuilder, DeliveryOptions> deliveryOptionsBuilder,
             Func<IOptionalClientSetup, IOptionalClientSetup> optionalClientSetup = null
         )
         {
@@ -38,10 +37,10 @@ namespace Kontent.Ai.Delivery.Extensions.DependencyInjection.Builders
 
         public IMultipleDeliveryClientFactoryBuilder AddDeliveryClientCache
         (
-            string name, Func<IDeliveryOptionsBuilder,
-            DeliveryOptions> deliveryOptionsBuilder,
-            IDeliveryCacheManager cacheManager, Func<IOptionalClientSetup,
-            IOptionalClientSetup> optionalClientSetup = null
+            string name,
+            Func<IDeliveryOptionsBuilder, DeliveryOptions> deliveryOptionsBuilder,
+            IDeliveryCacheManager cacheManager,
+            Func<IOptionalClientSetup, IOptionalClientSetup> optionalClientSetup = null
         )
         {
             if (string.IsNullOrEmpty(name))
@@ -73,8 +72,7 @@ namespace Kontent.Ai.Delivery.Extensions.DependencyInjection.Builders
 
         private IDeliveryClient BuildDeliveryClient
         (
-            Func<IDeliveryOptionsBuilder,
-            DeliveryOptions> deliveryOptionsBuilder,
+            Func<IDeliveryOptionsBuilder, DeliveryOptions> deliveryOptionsBuilder,
             Func<IOptionalClientSetup, IOptionalClientSetup> optionalClientSetup
         )
         {
