@@ -21,8 +21,7 @@ namespace Kontent.Ai.Delivery.Builders
         public IMultipleDeliveryClientFactoryBuilder AddDeliveryClient
         (
             string name,
-            Func<IDeliveryOptionsBuilder,
-            DeliveryOptions> deliveryOptionsBuilder,
+            Func<IDeliveryOptionsBuilder, DeliveryOptions> deliveryOptionsBuilder,
             Func<IOptionalClientSetup, IOptionalClientSetup> optionalClientSetup = null
         );
 
@@ -36,16 +35,16 @@ namespace Kontent.Ai.Delivery.Builders
         /// <returns>Instance of <see cref="IMultipleDeliveryClientFactoryBuilder"/>.</returns>
         public IMultipleDeliveryClientFactoryBuilder AddDeliveryClientCache
         (
-            string name, Func<IDeliveryOptionsBuilder,
-            DeliveryOptions> deliveryOptionsBuilder,
-            IDeliveryCacheManager cacheManager, Func<IOptionalClientSetup,
-            IOptionalClientSetup> optionalClientSetup = null
+            string name,
+            Func<IDeliveryOptionsBuilder, DeliveryOptions> deliveryOptionsBuilder,
+            IDeliveryCacheManager cacheManager,
+            Func<IOptionalClientSetup, IOptionalClientSetup> optionalClientSetup = null
         );
 
-    	/// <summary>
-         /// Build up the factory for registration.
-         /// </summary>
-         /// <returns>An instance of <see cref="IDeliveryClientFactory"/></returns>
+        /// <summary>
+        /// Build up the factory for registration.
+        /// </summary>
+        /// <returns>An instance of <see cref="IDeliveryClientFactory"/></returns>
         public IDeliveryClientFactory Build();
     }
 }
