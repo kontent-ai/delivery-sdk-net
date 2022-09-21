@@ -13,23 +13,17 @@ namespace Kontent.Ai.Delivery.Tests
 
         public partial class Movie
         {
-            public const string Codename = "hero_unit";
-            public const string TitleCodename = "title";
+            // You can create your own, or generate it automatically
             public string Title { get; set; }
         }
 
+        // You can create your own, or generate it automatically
         public class TheatreTypeProvider : ITypeProvider
         {
-            private static readonly Dictionary<Type, string> _codenames = new Dictionary<Type, string>
-            {
-                {typeof(Movie), "about_us"},
-                // ...
-            };
-
             public Type GetType(string contentType)
-            => _codenames.Keys.FirstOrDefault(type => GetCodename(type).Equals(contentType));
+            => contentType == "movie" ? typeof(Movie) : null;
             public string GetCodename(Type contentType)
-            => _codenames.TryGetValue(contentType, out var codename) ? codename : null;
+            => contentType == typeof(Movie) ? "movie" : null;
         }
 
         [Fact]
@@ -38,10 +32,10 @@ namespace Kontent.Ai.Delivery.Tests
             var client = DeliveryClientBuilder.WithProjectId("975bf280-fd91-488c-994c-2f04416e5ee3")
                 .WithTypeProvider(new TheatreTypeProvider())
                 .Build();
-            
+
             var response = await client.GetItemsAsync<Movie>();
 
-            var items = response.Items;
+            var itemTitles = response.Items.Select(item => item.Title);
         }
 
 
