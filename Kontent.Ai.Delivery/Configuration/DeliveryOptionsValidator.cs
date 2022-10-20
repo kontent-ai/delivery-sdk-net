@@ -9,7 +9,7 @@ namespace Kontent.Ai.Delivery.Configuration
     /// </summary>
     public static class DeliveryOptionsValidator
     {
-        internal static Lazy<Regex> ApiKeyRegex = new Lazy<Regex>(() => new Regex(@"[A-Za-z0-9-_+/]+\.[A-Za-z0-9-_+/]+\.[A-Za-z0-9-_+/]+", RegexOptions.Compiled));
+        internal static Lazy<Regex> ApiKeyRegex = new Lazy<Regex>(() => new Regex(@"[A-Za-z0-9-_]+\.[A-Za-z0-9-_]+\.[A-Za-z0-9-_]+", RegexOptions.Compiled));
 
         /// <summary>
         /// Validates an instance of the <see cref="DeliveryOptions"/> class if it is compatible with <see cref="DeliveryClient"/>.
