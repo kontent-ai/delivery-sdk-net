@@ -20,16 +20,19 @@ namespace Kontent.Ai.Delivery.Caching.Tests
         private readonly CacheExpirationType _cacheExpirationType;
 
         private readonly MemoryCache _memoryCache = new MemoryCache(Options.Create(new MemoryCacheOptions()));
-        private readonly IDistributedCache _distributedCache = new MemoryDistributedCache(Options.Create(new MemoryDistributedCacheOptions()));
+        private readonly IDistributedCache _distributedCache;
         private readonly Dictionary<string, int> _requestCounter = new Dictionary<string, int>();
 
         private readonly List<(string key, Action<MockHttpMessageHandler> configure)> _configurations = new List<(string key, Action<MockHttpMessageHandler> configure)>();
 
-        public ScenarioBuilder(CacheTypeEnum cacheType = CacheTypeEnum.Memory, CacheExpirationType cacheExpirationType = CacheExpirationType.Sliding)
+        public ScenarioBuilder(CacheTypeEnum cacheType = CacheTypeEnum.Memory, CacheExpirationType cacheExpirationType = CacheExpirationType.Sliding, bool brokenCache = false)
         {
             _baseUrl = $"https://deliver.kontent.ai/{_projectId}/";
             _cacheType = cacheType;
             _cacheExpirationType = cacheExpirationType;
+            _distributedCache = brokenCache ?
+                new BrokenDistributedCache(Options.Create(new MemoryDistributedCacheOptions())) :
+                new MemoryDistributedCache(Options.Create(new MemoryDistributedCacheOptions()));
         }
 
         public ScenarioBuilder WithResponse(string relativeUrl, object responseObject)
