@@ -54,6 +54,7 @@ namespace Kontent.Ai.Delivery.Caching.Tests
             firstResponse.Should().NotBeEquivalentTo(secondResponse);
             scenario.GetRequestCount(url).Should().Be(2);
         }
+
         [Theory]
         [InlineData(CacheTypeEnum.Memory, CacheExpirationType.Absolute)]
         [InlineData(CacheTypeEnum.Memory, CacheExpirationType.Sliding)]
@@ -673,5 +674,24 @@ namespace Kontent.Ai.Delivery.Caching.Tests
         }
 
         #endregion
+
+        [Theory]
+        [InlineData(CacheTypeEnum.Distributed, CacheExpirationType.Absolute)]
+        [InlineData(CacheTypeEnum.Distributed, CacheExpirationType.Sliding)]
+        public async Task GetItemTypedAsync_BrokenCache_ResponseIsRetruned(CacheTypeEnum cacheType, CacheExpirationType cacheExpirationType)
+        {
+            const string codename = "codename";
+            var url = $"items/{codename}";
+            var item = CreateItemResponse(CreateItem(codename, "original"));
+            var scenarioBuilder = new ScenarioBuilder(cacheType, cacheExpirationType, brokenCache: true);
+            var scenario = scenarioBuilder.WithResponse(url, item).Build();
+
+            var firstResponse = await scenario.CachingClient.GetItemAsync<TestItem>(codename);
+            var secondResponse = await scenario.CachingClient.GetItemAsync<TestItem>(codename);
+            //Check
+            firstResponse.Should().NotBeNull();
+            firstResponse.Should().BeEquivalentTo(secondResponse);
+            scenario.GetRequestCount(url).Should().Be(2);
+        }
     }
 }
