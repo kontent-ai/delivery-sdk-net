@@ -105,7 +105,8 @@
         "opening_date": {
           "type": "date_time",
           "name": "Opening date",
-          "value": "2015-10-13T00:00:00Z"
+          "value": "2015-10-13T00:00:00Z",
+          "display_timezone": "Europe/Prague"
         },
         "nearby_offices": {
           "type": "modular_content",
@@ -195,7 +196,8 @@
         "date___time_field": {
           "type": "date_time",
           "name": "Date & time field",
-          "value": "2017-02-23T00:00:00Z"
+          "value": "2017-02-23T00:00:00Z",
+          "display_timezone": "Europe/Prague"
         },
         "asset_field": {
           "type": "asset",
@@ -326,7 +328,8 @@
         "opening_date": {
           "type": "date_time",
           "name": "Opening date",
-          "value": "2017-02-08T00:00:00Z"
+          "value": "2017-02-08T00:00:00Z",
+          "display_timezone": "Europe/Prague"
         },
         "nearby_offices": {
           "type": "modular_content",

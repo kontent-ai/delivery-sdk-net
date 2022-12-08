@@ -58,7 +58,8 @@
         "date___time_field": {
           "type": "date_time",
           "name": "Date & time field",
-          "value": "2017-02-23T00:00:00Z"
+          "value": "2017-02-23T00:00:00Z",
+          "display_timezone": "Europe/Prague"
         },
         "asset_field": {
           "type": "asset",

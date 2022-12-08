@@ -1,3 +1,4 @@
+using System;
 using System.Collections.Generic;
 using Kontent.Ai.Delivery.Abstractions;
 using Kontent.Ai.Delivery.ContentItems.Attributes;
@@ -22,6 +23,9 @@ namespace Kontent.Ai.Delivery.Tests.Models.ContentTypes
         [JsonProperty("title")]
         [TestGreeterValueConverter]
         public string TitleNotIgnored { get; set; }
+
+        [PropertyName("post_date")]
+        public IDateTimeContent PostDateContent { get; set; }
 
         [PropertyName("post_date")]
         [NodaTimeValueConverter]
