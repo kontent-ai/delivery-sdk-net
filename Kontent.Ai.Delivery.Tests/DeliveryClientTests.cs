@@ -236,6 +236,30 @@ namespace Kontent.Ai.Delivery.Tests
         }
 
         [Fact]
+        public async Task GetItemAsync_DateTimeElement_ParseCorrectly()
+        {
+            var mockedResponse = await File.ReadAllTextAsync(Path.Combine(Environment.CurrentDirectory,
+                        $"Fixtures{Path.DirectorySeparatorChar}DeliveryClient{Path.DirectorySeparatorChar}coffee_beverages_explained.json"));
+
+            var expectedDateTimeValue = JObject.Parse(mockedResponse).SelectToken("item.elements.post_date.value").ToObject<DateTime?>();
+            var expectedDateTimeDisplayTimezone = JObject.Parse(mockedResponse).SelectToken("item.elements.post_date.display_timezone").ToString();
+
+            _mockHttp
+                .When($"{_baseUrl}/items/coffee_beverages_explained")
+                .Respond("application/json", mockedResponse);
+
+            var client = InitializeDeliveryClientWithCustomModelProvider(_mockHttp, new PropertyMapper(), new CustomTypeProvider());
+            var typedResult = await client.GetItemAsync<Article>("coffee_beverages_explained");
+
+            Assert.Equal(expectedDateTimeValue, typedResult.Item.PostDate);
+
+            var postDateContent = typedResult.Item.PostDateContent;
+            Assert.NotNull(postDateContent);
+            Assert.Equal(expectedDateTimeValue, postDateContent.Value);
+            Assert.Equal(expectedDateTimeDisplayTimezone, postDateContent.DisplayTimezone);
+        }
+
+        [Fact]
         public async Task GetItemsAsyncWithTypeExtractor()
         {
             _mockHttp

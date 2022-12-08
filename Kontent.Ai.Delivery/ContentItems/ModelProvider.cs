@@ -227,7 +227,7 @@ namespace Kontent.Ai.Delivery.ContentItems
                         "rich_text" => await GetElementModelAsync<RichTextElementValue, string>(property, context, elementValue, valueConverter),
                         "asset" => await GetElementModelAsync<AssetElementValue, IEnumerable<IAsset>>(property, context, elementValue, valueConverter),
                         "number" => await GetElementModelAsync<ContentElementValue<decimal?>, decimal?>(property, context, elementValue, valueConverter),
-                        "date_time" => await GetElementModelAsync<ContentElementValue<DateTime>, DateTime>(property, context, elementValue, valueConverter),
+                        "date_time" => await GetElementModelAsync<DateTimeElementValue, DateTime?>(property, context, elementValue, valueConverter),
                         "multiple_choice" => await GetElementModelAsync<ContentElementValue<List<MultipleChoiceOption>>, List<MultipleChoiceOption>>(property, context, elementValue, valueConverter),
                         "taxonomy" => await GetElementModelAsync<TaxonomyElementValue, IEnumerable<ITaxonomyTerm>>(property, context, elementValue, valueConverter),
                         "modular_content" => await GetElementModelAsync<ContentElementValue<List<string>>, List<string>>(property, context, elementValue, valueConverter),
@@ -378,6 +378,11 @@ namespace Kontent.Ai.Delivery.ContentItems
             if (typeof(IRichTextContent).IsAssignableFrom(property.PropertyType))
             {
                 return new RichTextContentConverter(HtmlParser);
+            }
+
+            if (typeof(IDateTimeContent).IsAssignableFrom(property.PropertyType))
+            {
+                return new DateTimeContentConverter();
             }
 
             if (property.PropertyType == typeof(IEnumerable<IAsset>))
