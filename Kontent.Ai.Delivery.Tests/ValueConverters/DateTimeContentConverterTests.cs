@@ -56,7 +56,7 @@ namespace Kontent.Ai.Delivery.Tests.ValueConverters
             var expected = new DateTimeContent
             {
                 Value = DateTime.UtcNow,
-                DisplayTimezone = null
+                DisplayTimezone = "Europe/Prague"
             };
 
             var property = typeof(TestModel).GetProperty("CorrectDateTimeContent");
