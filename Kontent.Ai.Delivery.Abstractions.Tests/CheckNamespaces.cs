@@ -1,6 +1,7 @@
 using System;
 using System.Linq;
 using System.Reflection;
+using System.Runtime.CompilerServices;
 using Xunit;
 using Xunit.Abstractions;
 
@@ -23,6 +24,8 @@ public class CheckNamespaces
     {
         var abstractionTypes = Assembly.LoadFrom("Kontent.Ai.Delivery.Abstractions.dll");
 
-        Assert.All(abstractionTypes.GetTypes(), t => Assert.Equal("Kontent.Ai.Delivery.Abstractions", t.Namespace));
+        Assert.All(
+            abstractionTypes.GetTypes().Where(t => t.GetCustomAttribute(typeof(CompilerGeneratedAttribute), true) == null),
+            t => Assert.Equal("Kontent.Ai.Delivery.Abstractions", t.Namespace));
     }
 }
