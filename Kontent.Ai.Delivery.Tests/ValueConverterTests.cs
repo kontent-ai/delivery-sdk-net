@@ -37,11 +37,16 @@ namespace Kontent.Ai.Delivery.Tests
     }
 
     [AttributeUsage(AttributeTargets.Property)]
-    public class NodaTimeValueConverterAttribute : Attribute, IPropertyValueConverter<DateTime>
+    public class NodaTimeValueConverterAttribute : Attribute, IPropertyValueConverter<DateTime?>
     {
-        public Task<object> GetPropertyValueAsync<TElement>(PropertyInfo property, TElement element, ResolvingContext context) where TElement : IContentElementValue<DateTime>
+        public Task<object> GetPropertyValueAsync<TElement>(PropertyInfo property, TElement element, ResolvingContext context) where TElement : IContentElementValue<DateTime?>
         {
-            var udt = DateTime.SpecifyKind(element.Value, DateTimeKind.Utc);
+            if (!element.Value.HasValue)
+            {
+                return Task.FromResult((object)null);
+            }
+
+            var udt = DateTime.SpecifyKind(element.Value.Value, DateTimeKind.Utc);
             return Task.FromResult((object)ZonedDateTime.FromDateTimeOffset(udt));
         }
     }
