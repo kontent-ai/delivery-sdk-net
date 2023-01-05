@@ -27,7 +27,7 @@ public class Startup
 
     public void ConfigureServices(IServiceCollection services)
     {
-        services.AddDeliveryClientFactory
+        services.AddMultipleDeliveryClientFactory
         (
             factoryBuilder => factoryBuilder
                 .AddDeliveryClient
@@ -56,7 +56,7 @@ public class Startup
 
     public void ConfigureServices(IServiceCollection services)
     {
-        services.AddDeliveryClientFactory
+        services.AddMultipleDeliveryClientFactory
         (
             factoryBuilder => factoryBuilder
                 .AddDeliveryClient
@@ -96,7 +96,7 @@ public class Startup
 
     public void ConfigureServices(IServiceCollection services)
     {
-        services.AddDeliveryClientFactory
+        services.AddMultipleDeliveryClientFactory
         (
                 factoryBuilder => factoryBuilder
                     .AddDeliveryClientCache
@@ -136,7 +136,7 @@ public class Startup
 
     public void ConfigureServices(IServiceCollection services)
     {
-        services.AddDeliveryClientFactory
+        services.AddMultipleDeliveryClientFactory
         (
             factoryBuilder => factoryBuilder
                 .AddDeliveryClient
