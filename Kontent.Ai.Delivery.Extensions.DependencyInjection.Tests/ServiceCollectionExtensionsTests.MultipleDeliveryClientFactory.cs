@@ -5,7 +5,6 @@ using Kontent.Ai.Delivery.Caching;
 using Kontent.Ai.Delivery.Caching.Factories;
 using Microsoft.Extensions.Caching.Distributed;
 using Microsoft.Extensions.Caching.Memory;
-using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Options;
 using System;
@@ -18,7 +17,6 @@ namespace Kontent.Ai.Delivery.Extensions.DependencyInjection.Tests
         public class MultipleDeliveryClientFactory
         {
             private readonly IServiceCollection _serviceCollection;
-            private readonly IConfiguration _configuration;
             private readonly DeliveryOptions _deliveryOptions = new DeliveryOptions { ProjectId = Guid.NewGuid().ToString() };
             private readonly string _correctName = "correctName";
             private readonly string _wrongName = "wrongName";
@@ -34,7 +32,6 @@ namespace Kontent.Ai.Delivery.Extensions.DependencyInjection.Tests
             public MultipleDeliveryClientFactory()
             {
                 _serviceCollection = new ServiceCollection();
-                _configuration = A.Fake<IConfiguration>();
             }
 
             [Fact]
