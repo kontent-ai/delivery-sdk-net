@@ -1,7 +1,9 @@
-﻿using Autofac;
+﻿using System;
+using Autofac;
 
 namespace Kontent.Ai.Delivery.Extensions.DependencyInjection
 {
+    [Obsolete("#312")]
     internal class AutofacServiceProvider : INamedServiceProvider
     {
         private readonly IComponentContext _container;
