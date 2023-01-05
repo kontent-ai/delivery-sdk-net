@@ -72,6 +72,7 @@ namespace Kontent.Ai.Delivery.Extensions.DependencyInjection
         /// <param name="deliveryOptions">A <see cref="DeliveryOptions"/> instance.  Options themselves are not further validated (see <see cref="DeliveryOptionsValidator.Validate"/>).</param>
         /// <param name="namedServiceProviderType">A named service provider type.</param>
         /// <returns>The <paramref name="services"/> instance with <see cref="IDeliveryClient"/> registered in it</returns>
+        [Obsolete("#312 Use AddMultipleDeliveryClientFactory for multiple clients.")]
         public static IServiceCollection AddDeliveryClient(this IServiceCollection services, string name, DeliveryOptions deliveryOptions, NamedServiceProviderType namedServiceProviderType = NamedServiceProviderType.None)
         {
             if (deliveryOptions == null)
@@ -96,6 +97,7 @@ namespace Kontent.Ai.Delivery.Extensions.DependencyInjection
         /// <param name="configurationSectionName">The section name of the configuration that keeps the <see cref="DeliveryOptions"/> properties. The default value is DeliveryOptions.</param>
         /// <param name="namedServiceProviderType">A named service provider type.</param>
         /// <returns>The <paramref name="services"/> instance with <see cref="IDeliveryClient"/> registered in it</returns>
+        [Obsolete("#312 Use AddMultipleDeliveryClientFactory for multiple clients.")]
         public static IServiceCollection AddDeliveryClient(this IServiceCollection services, string name, IConfiguration configuration, string configurationSectionName = "DeliveryOptions", NamedServiceProviderType namedServiceProviderType = NamedServiceProviderType.None)
         {
             var options = new DeliveryOptions();
@@ -115,6 +117,7 @@ namespace Kontent.Ai.Delivery.Extensions.DependencyInjection
         /// <param name="name">A name of named client which want to use cached. <see cref="IDeliveryClient"/></param>
         /// <param name="options">A <see cref="DeliveryCacheOptions"/> instance. </param> 
         /// <returns>The <paramref name="services"/> instance with cache services registered in it</returns>
+        [Obsolete("#312 Use AddMultipleDeliveryClientFactory for multiple clients.")]
         public static IServiceCollection AddDeliveryClientCache(this IServiceCollection services, string name, DeliveryCacheOptions options)
         {
             if (options == null)
@@ -126,15 +129,17 @@ namespace Kontent.Ai.Delivery.Extensions.DependencyInjection
 
             return services
                 .Configure<DeliveryCacheOptions>(name, (o) => o.Configure(options))
-                .RegisterDependencies(options.CacheType, name)
+                .RegisterDependencies(options.CacheType)
                 .RegisterDeliveryClientFactoryCacheDecorator();
         }
 
+        [Obsolete("#312")]
         private static IServiceCollection RegisterDeliveryClientFactoryCacheDecorator(this IServiceCollection services)
         {
             return services.Decorate<IDeliveryClientFactory, NamedDeliveryClientCacheFactory>();
         }
 
+        [Obsolete("#312")]
         private static IServiceCollection RegisterNamedServices(this IServiceCollection services, NamedServiceProviderType namedServiceProviderType)
         {
             if (namedServiceProviderType == NamedServiceProviderType.Autofac)
@@ -147,12 +152,14 @@ namespace Kontent.Ai.Delivery.Extensions.DependencyInjection
             return services;
         }
 
+        [Obsolete("#312")]
         private static IServiceCollection RegisterOptions(this IServiceCollection services, DeliveryOptions options, string name)
         {
             return services.Configure<DeliveryOptions>(name, (o) => o.Configure(options));
         }
 
-        private static IServiceCollection RegisterDependencies(this IServiceCollection services, CacheTypeEnum cacheType, string name)
+        [Obsolete("#312")]
+        private static IServiceCollection RegisterDependencies(this IServiceCollection services, CacheTypeEnum cacheType)
         {
             switch (cacheType)
             {
