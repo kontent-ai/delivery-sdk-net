@@ -8,6 +8,7 @@ using Xunit;
 
 namespace Kontent.Ai.Delivery.Extensions.DependencyInjection.Tests
 {
+    [Obsolete("#312")]
     public class DeliveryClientFactoryTests
     {
         private readonly IOptionsMonitor<DeliveryOptions> _deliveryOptionsMock;
@@ -36,6 +37,7 @@ namespace Kontent.Ai.Delivery.Extensions.DependencyInjection.Tests
 
             result.Should().NotBeNull();
         }
+
 
         [Fact]
         public void GetNamedClient_WithWrongName_GetNull()

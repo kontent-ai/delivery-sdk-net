@@ -16,7 +16,10 @@
             o.DefaultExpiration = options.DefaultExpiration;
             o.DefaultExpirationType = options.DefaultExpirationType;
             o.StaleContentExpiration = options.StaleContentExpiration;
+            // See #312
+            #pragma warning disable CS0618
             o.Name = options.Name;
+            #pragma warning restore CS0618
         }
     }
 }
