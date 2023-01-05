@@ -12,12 +12,10 @@ namespace Kontent.Ai.Delivery.Extensions.DependencyInjection.Builders.Tests
     {
         private const string _clientName = "ClientName";
 
-        private readonly static IDeliveryClient _fakeClient = A.Fake<IDeliveryClient>();
-
         private readonly ConcurrentDictionary<string, IDeliveryClient> _dictionary = new ConcurrentDictionary<string, IDeliveryClient>(
             new Dictionary<string, IDeliveryClient>
             {
-                { _clientName, _fakeClient }
+                { _clientName, A.Fake<IDeliveryClient>() }
             }
         );
 
@@ -30,7 +28,6 @@ namespace Kontent.Ai.Delivery.Extensions.DependencyInjection.Builders.Tests
         [Fact]
         public void GetNamedClient_WithCorrectName_GetClient()
         {
-            var fakeClient = A.Fake<IDeliveryClient>();
             var deliveryClientFactory = new MultipleDeliveryClientFactory(_dictionary);
 
             var result = deliveryClientFactory.Get(_clientName);
@@ -41,7 +38,6 @@ namespace Kontent.Ai.Delivery.Extensions.DependencyInjection.Builders.Tests
         [Fact]
         public void GetNamedClient_WithWrongName_RaiseArgumentException()
         {
-            var fakeClient = A.Fake<IDeliveryClient>();
             var deliveryClientFactory = new MultipleDeliveryClientFactory(_dictionary);
 
             Assert.Throws<ArgumentException>(() => deliveryClientFactory.Get("wrongName"));
@@ -50,7 +46,6 @@ namespace Kontent.Ai.Delivery.Extensions.DependencyInjection.Builders.Tests
         [Fact]
         public void GetClient_NoName_RaiseNotImplementedException()
         {
-            var fakeClient = A.Fake<IDeliveryClient>();
             var deliveryClientFactory = new MultipleDeliveryClientFactory(_dictionary);
 
             Assert.Throws<NotImplementedException>(() => deliveryClientFactory.Get());
