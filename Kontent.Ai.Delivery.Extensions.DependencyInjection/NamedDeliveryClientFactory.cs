@@ -8,6 +8,7 @@ using System.Collections.Concurrent;
 
 namespace Kontent.Ai.Delivery.Extensions.DependencyInjection
 {
+    [Obsolete("#312")]
     internal class NamedDeliveryClientFactory : IDeliveryClientFactory
     {
         private readonly IOptionsMonitor<DeliveryOptions> _deliveryOptions;
@@ -16,7 +17,7 @@ namespace Kontent.Ai.Delivery.Extensions.DependencyInjection
         private readonly ConcurrentDictionary<string, IDeliveryClient> _cache = new ConcurrentDictionary<string, IDeliveryClient>();
 
         /// <summary>
-        /// Initializes a new instance of the <see cref="MultipleDeliveryClientFactory"/> class.
+        /// Initializes a new instance of the <see cref="DeliveryClientFactory"/> class.
         /// </summary>
         /// <param name="deliveryOptions">Used for notifications when <see cref="DeliveryOptions"/> instances change.</param>
         /// <param name="serviceProvider">An <see cref="IServiceProvider"/> instance.</param>
