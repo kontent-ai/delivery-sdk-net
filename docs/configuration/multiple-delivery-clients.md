@@ -40,6 +40,7 @@ public class Startup
                     optionalClientSetup =>
                         optionalClientSetup.WithTypeProvider(new ProjectAProvider())
                 )
+                .Build()
         );
     }
 }
@@ -78,6 +79,7 @@ public class Startup
                     optionalClientSetup =>
                         optionalClientSetup.WithTypeProvider(new ProjectBProvider())
                 )
+                .Build()
         );
     }
 }
@@ -115,6 +117,7 @@ public class Startup
                         optionalClientSetup =>
                             optionalClientSetup.WithTypeProvider(new ProjectAProvider())
                     )
+                    .Build()
         );
     }
 }
@@ -152,6 +155,7 @@ public class Startup
                     optionalClientSetup =>
                         optionalClientSetup.WithTypeProvider(new ProjectAProvider())
                 )
+                .Build()
         );
     }
 }
