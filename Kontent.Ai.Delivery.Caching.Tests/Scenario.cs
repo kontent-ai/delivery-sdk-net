@@ -4,6 +4,7 @@ using Kontent.Ai.Delivery.Abstractions;
 using Kontent.Ai.Delivery.Builders.DeliveryClient;
 using Microsoft.Extensions.Caching.Distributed;
 using Microsoft.Extensions.Caching.Memory;
+using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
 
 namespace Kontent.Ai.Delivery.Caching.Tests
@@ -22,10 +23,17 @@ namespace Kontent.Ai.Delivery.Caching.Tests
             CachingClient = new DeliveryClientCache(_cacheManager, baseClient);
         }
 
-        public Scenario(IDistributedCache distributedCache, CacheExpirationType cacheExpirationType, DistributedCacheResilientPolicy distributedCacheResilientPolicy, HttpClient httpClient, DeliveryOptions deliveryOptions, Dictionary<string, int> requestCounter)
+        public Scenario(
+            IDistributedCache distributedCache,
+            CacheExpirationType cacheExpirationType,
+            DistributedCacheResilientPolicy distributedCacheResilientPolicy,
+            HttpClient httpClient,
+            DeliveryOptions deliveryOptions,
+            Dictionary<string, int> requestCounter,
+            ILoggerFactory loggerFactory)
         {
             _requestCounter = requestCounter;
-            _cacheManager = new DistributedCacheManager(distributedCache, Options.Create(new DeliveryCacheOptions { DefaultExpirationType = cacheExpirationType, DistributedCacheResilientPolicy = distributedCacheResilientPolicy }));
+            _cacheManager = new DistributedCacheManager(distributedCache, Options.Create(new DeliveryCacheOptions { DefaultExpirationType = cacheExpirationType, DistributedCacheResilientPolicy = distributedCacheResilientPolicy }), loggerFactory);
             var baseClient = DeliveryClientBuilder.WithOptions(_ => deliveryOptions).WithDeliveryHttpClient(new DeliveryHttpClient(httpClient)).Build();
             CachingClient = new DeliveryClientCache(_cacheManager, baseClient);
         }
