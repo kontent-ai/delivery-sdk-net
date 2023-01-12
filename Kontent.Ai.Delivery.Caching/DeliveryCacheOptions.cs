@@ -29,6 +29,11 @@ namespace Kontent.Ai.Delivery.Caching
         public CacheTypeEnum CacheType { get; set; } = CacheTypeEnum.Memory;
 
         /// <summary>
+        /// Determines which resilient policy should be used when <see cref="Microsoft.Extensions.Caching.Distributed.IDistributedCache" /> is not available.
+        /// </summary>
+        public DistributedCacheResilientPolicy DistributedCacheResilientPolicy { get; set; } = DistributedCacheResilientPolicy.Crash;
+
+        /// <summary>
         /// The name of the service configuration this options object is related to.
         /// </summary>
         [Obsolete("#312")]

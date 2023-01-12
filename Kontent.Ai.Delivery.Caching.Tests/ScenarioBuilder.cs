@@ -18,6 +18,7 @@ namespace Kontent.Ai.Delivery.Caching.Tests
         private readonly string _baseUrl;
         private readonly CacheTypeEnum _cacheType;
         private readonly CacheExpirationType _cacheExpirationType;
+        private readonly DistributedCacheResilientPolicy _distributedCacheResilientPolicy;
 
         private readonly MemoryCache _memoryCache = new MemoryCache(Options.Create(new MemoryCacheOptions()));
         private readonly IDistributedCache _distributedCache;
@@ -25,11 +26,12 @@ namespace Kontent.Ai.Delivery.Caching.Tests
 
         private readonly List<(string key, Action<MockHttpMessageHandler> configure)> _configurations = new List<(string key, Action<MockHttpMessageHandler> configure)>();
 
-        public ScenarioBuilder(CacheTypeEnum cacheType = CacheTypeEnum.Memory, CacheExpirationType cacheExpirationType = CacheExpirationType.Sliding, bool brokenCache = false)
+        public ScenarioBuilder(CacheTypeEnum cacheType = CacheTypeEnum.Memory, CacheExpirationType cacheExpirationType = CacheExpirationType.Sliding, bool brokenCache = false, DistributedCacheResilientPolicy distributedCacheResilientPolicy = DistributedCacheResilientPolicy.Crash)
         {
             _baseUrl = $"https://deliver.kontent.ai/{_projectId}/";
             _cacheType = cacheType;
             _cacheExpirationType = cacheExpirationType;
+            _distributedCacheResilientPolicy = distributedCacheResilientPolicy;
             _distributedCache = brokenCache ?
                 new BrokenDistributedCache(Options.Create(new MemoryDistributedCacheOptions())) :
                 new MemoryDistributedCache(Options.Create(new MemoryDistributedCacheOptions()));
@@ -101,7 +103,7 @@ namespace Kontent.Ai.Delivery.Caching.Tests
             }
             else
             {
-                return new Scenario(_distributedCache, _cacheExpirationType, mockHttp.ToHttpClient(), new DeliveryOptions { ProjectId = _projectId }, _requestCounter);
+                return new Scenario(_distributedCache, _cacheExpirationType, _distributedCacheResilientPolicy, mockHttp.ToHttpClient(), new DeliveryOptions { ProjectId = _projectId }, _requestCounter);
             }
         }
     }
