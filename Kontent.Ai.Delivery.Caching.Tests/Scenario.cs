@@ -22,10 +22,10 @@ namespace Kontent.Ai.Delivery.Caching.Tests
             CachingClient = new DeliveryClientCache(_cacheManager, baseClient);
         }
 
-        public Scenario(IDistributedCache distributedCache, CacheExpirationType cacheExpirationType, HttpClient httpClient, DeliveryOptions deliveryOptions, Dictionary<string, int> requestCounter)
+        public Scenario(IDistributedCache distributedCache, CacheExpirationType cacheExpirationType, DistributedCacheResilientPolicy distributedCacheResilientPolicy, HttpClient httpClient, DeliveryOptions deliveryOptions, Dictionary<string, int> requestCounter)
         {
             _requestCounter = requestCounter;
-            _cacheManager = new DistributedCacheManager(distributedCache, Options.Create(new DeliveryCacheOptions { DefaultExpirationType = cacheExpirationType }));
+            _cacheManager = new DistributedCacheManager(distributedCache, Options.Create(new DeliveryCacheOptions { DefaultExpirationType = cacheExpirationType, DistributedCacheResilientPolicy = distributedCacheResilientPolicy }));
             var baseClient = DeliveryClientBuilder.WithOptions(_ => deliveryOptions).WithDeliveryHttpClient(new DeliveryHttpClient(httpClient)).Build();
             CachingClient = new DeliveryClientCache(_cacheManager, baseClient);
         }

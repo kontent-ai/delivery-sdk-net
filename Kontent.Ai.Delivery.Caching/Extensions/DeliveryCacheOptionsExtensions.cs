@@ -16,6 +16,7 @@
             o.DefaultExpiration = options.DefaultExpiration;
             o.DefaultExpirationType = options.DefaultExpirationType;
             o.StaleContentExpiration = options.StaleContentExpiration;
+            o.DistributedCacheResilientPolicy = options.DistributedCacheResilientPolicy;
             // See #312
             #pragma warning disable CS0618
             o.Name = options.Name;

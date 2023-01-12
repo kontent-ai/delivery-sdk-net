@@ -1,4 +1,5 @@
-﻿using System.Linq;
+﻿using System;
+using System.Linq;
 using System.Threading.Tasks;
 using FluentAssertions;
 using Kontent.Ai.Delivery.Abstractions;
@@ -675,15 +676,17 @@ namespace Kontent.Ai.Delivery.Caching.Tests
 
         #endregion
 
+        #region Broken Distributed cache
+
         [Theory]
         [InlineData(CacheTypeEnum.Distributed, CacheExpirationType.Absolute)]
         [InlineData(CacheTypeEnum.Distributed, CacheExpirationType.Sliding)]
-        public async Task GetItemTypedAsync_BrokenCache_ResponseIsRetruned(CacheTypeEnum cacheType, CacheExpirationType cacheExpirationType)
+        public async Task GetItemTypedAsync_BrokenCache_FallbackToApi_ResponseIsRetruned(CacheTypeEnum cacheType, CacheExpirationType cacheExpirationType)
         {
             const string codename = "codename";
             var url = $"items/{codename}";
             var item = CreateItemResponse(CreateItem(codename, "original"));
-            var scenarioBuilder = new ScenarioBuilder(cacheType, cacheExpirationType, brokenCache: true);
+            var scenarioBuilder = new ScenarioBuilder(cacheType, cacheExpirationType, brokenCache: true, distributedCacheResilientPolicy: DistributedCacheResilientPolicy.FallbackToApi);
             var scenario = scenarioBuilder.WithResponse(url, item).Build();
 
             var firstResponse = await scenario.CachingClient.GetItemAsync<TestItem>(codename);
@@ -693,5 +696,21 @@ namespace Kontent.Ai.Delivery.Caching.Tests
             firstResponse.Should().BeEquivalentTo(secondResponse);
             scenario.GetRequestCount(url).Should().Be(2);
         }
+
+        [Theory]
+        [InlineData(CacheTypeEnum.Distributed, CacheExpirationType.Absolute)]
+        [InlineData(CacheTypeEnum.Distributed, CacheExpirationType.Sliding)]
+        public async Task GetItemTypedAsync_BrokenCache_Crash_ThrowsException(CacheTypeEnum cacheType, CacheExpirationType cacheExpirationType)
+        {
+            const string codename = "codename";
+            var url = $"items/{codename}";
+            var item = CreateItemResponse(CreateItem(codename, "original"));
+            var scenarioBuilder = new ScenarioBuilder(cacheType, cacheExpirationType, brokenCache: true, distributedCacheResilientPolicy: DistributedCacheResilientPolicy.Crash);
+            var scenario = scenarioBuilder.WithResponse(url, item).Build();
+
+            await Assert.ThrowsAsync<Exception>(async () => await scenario.CachingClient.GetItemAsync<TestItem>(codename));
+        }
+
+        #endregion
     }
 }

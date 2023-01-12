@@ -30,10 +30,17 @@ namespace Kontent.Ai.Delivery.Caching
         /// <inheritdoc />
         public async Task<T> GetOrAddAsync<T>(string key, Func<Task<T>> valueFactory, Func<T, bool> shouldCache = null, Func<T, IEnumerable<string>> dependenciesFactory = null) where T : class
         {
-            var (Success, Value) = await TryGetAsync<T>(key);
-            if (Success)
+            try
             {
-                return Value;
+                var (Success, Value) = await TryGetAsync<T>(key);
+                if (Success)
+                {
+                    return Value;
+                }
+            }
+            catch(Exception ex) when (ex is not ArgumentNullException && _cacheOptions.DistributedCacheResilientPolicy == DistributedCacheResilientPolicy.FallbackToApi) 
+            {
+                return await valueFactory();
             }
 
             var value = await valueFactory();
