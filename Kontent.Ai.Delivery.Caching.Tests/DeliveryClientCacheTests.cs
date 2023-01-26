@@ -708,7 +708,7 @@ namespace Kontent.Ai.Delivery.Caching.Tests
             scenario.GetRequestCount(url).Should().Be(2);
             A.CallTo(loggerMock)
                 .Where(call => call.Method.Name == "Log")
-                .WhenArgumentsMatch(args => args.Count == 5 && args.ArgumentNames.First() == "logLevel" && args.First().Equals(LogLevel.Information))
+                .WhenArgumentsMatch(args => args.Count == 5 && args.ArgumentNames.First() == "logLevel" && args.First().Equals(LogLevel.Warning))
                 .MustHaveHappenedTwiceExactly();
         }
 
