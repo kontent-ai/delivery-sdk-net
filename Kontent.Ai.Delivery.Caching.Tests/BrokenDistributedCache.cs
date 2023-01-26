@@ -34,13 +34,6 @@ namespace Kontent.Ai.Delivery.Caching.Tests
         public byte[] Get(string key)
         {
             throw new Exception("broken cache");
-
-            if (key == null)
-            {
-                throw new ArgumentNullException(nameof(key));
-            }
-
-            return (byte[])_memCache.Get(key);
         }
 
         public Task<byte[]> GetAsync(string key, CancellationToken token = default(CancellationToken))

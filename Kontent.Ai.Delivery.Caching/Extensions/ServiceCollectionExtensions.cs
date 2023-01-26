@@ -21,7 +21,9 @@ namespace Kontent.Ai.Delivery.Caching.Extensions
         /// <param name="options">A <see cref="DeliveryCacheOptions"/> instance.</param>
         /// <param name="loggerFactory">The factory used to create loggers.</param>
         /// <returns>The <paramref name="services"/> instance with cache services registered in it</returns>
-        public static IServiceCollection AddDeliveryClientCache(this IServiceCollection services, DeliveryCacheOptions options, ILoggerFactory loggerFactory = null)
+        public static IServiceCollection AddDeliveryClientCache(this IServiceCollection services,
+            DeliveryCacheOptions options,
+            ILoggerFactory loggerFactory = null)
         {
             if (options == null)
             {
@@ -35,7 +37,9 @@ namespace Kontent.Ai.Delivery.Caching.Extensions
                  .RegisterDependencies(options.CacheType, loggerFactoryToRegister)
                  .Decorate<IDeliveryClient, DeliveryClientCache>();
         }
-        private static IServiceCollection RegisterDependencies(this IServiceCollection services, CacheTypeEnum cacheType, ILoggerFactory loggerFactory)
+        private static IServiceCollection RegisterDependencies(this IServiceCollection services,
+            CacheTypeEnum cacheType,
+            ILoggerFactory loggerFactory)
         {
             switch (cacheType)
             {
