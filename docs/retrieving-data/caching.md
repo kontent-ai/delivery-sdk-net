@@ -34,6 +34,7 @@ public void ConfigureServices(IServiceCollection services)
 - `CacheType` - currently allows to select from [`Memory` and `Distributed`](../../Kontent.Ai.Delivery.Caching/CacheTypeEnum.cs)
 - `DefaultExpiration` - [sliding expiration](https://docs.microsoft.com/en-us/dotnet/api/microsoft.extensions.caching.memory.memorycacheentryextensions.setslidingexpiration) time - how long the cache entry can be inactive (e.g. not accessed) before it will be removed
 - `StaleContentExpiration ` - [absolute expiration](https://docs.microsoft.com/en-us/dotnet/api/microsoft.extensions.caching.memory.cacheentryextensions.setabsoluteexpiration) (timespan relative to now) for content which is [yet to be refreshed on the CDN](https://github.com/kontent-ai/boilerplate-net/issues/94#issuecomment-602688995)
+- `DistributedCacheResilientPolicy ` - determines which resilient policy should be used when `MemoryDistributedCache` is not available. Currently allows to select from [`Crash` and `FallbackToApi`](../../Kontent.Ai.Delivery.Caching/DistributedCacheResilientPolicy.cs)
 
 ## Distributed caching - example
 This example shows how to use Redis cache on a local windows machine.
@@ -63,6 +64,7 @@ services.AddDeliveryClientCache(new DeliveryCacheOptions()
     CacheType = CacheTypeEnum.Distributed
 });
 ```
+> `AddDeliveryClientCache` method also has optional `ILoggerFactory loggerFactory` parameter. Logger will have effect only when `MemoryDistributedCache` is used and [`FallbackToApi`](../../Kontent.Ai.Delivery.Caching/DistributedCacheResilientPolicy.cs) option is chosen for `DistributedCacheResilientPolicy` parameter of `DeliveryCacheOptions`. In this case information message will be logged when `MemoryDistributedCache` is not available.
 Read more in [Microsoft docs](https://docs.microsoft.com/en-us/aspnet/core/performance/caching/distributed).
 
 ## Usage without DI
@@ -75,6 +77,7 @@ Use this approach to register the caching package for a specific `DeliveryClient
    var memoryOptions = Options.Create(new MemoryCacheOptions());
    var cachedClient = new DeliveryClientCache(CacheManagerFactory.Create(new MemoryCache(memoryOptions), cacheOptions), client);
 ```
+> `CacheManagerFactory.Create` method for the [`IDistributedCache`](https://docs.microsoft.com/en-us/aspnet/core/performance/caching/distributed) has optional `ILoggerFactory loggerFactory` parameter, which has the same impact, as in `services.AddDeliveryClientCache` method.
 
 ## Cache eviction / cache item invalidation
 
