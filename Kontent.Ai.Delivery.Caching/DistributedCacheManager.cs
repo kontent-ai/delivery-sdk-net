@@ -5,6 +5,7 @@ using Kontent.Ai.Delivery.Abstractions;
 using Kontent.Ai.Delivery.Caching.Extensions;
 using Microsoft.Extensions.Caching.Distributed;
 using Microsoft.Extensions.Logging;
+using Microsoft.Extensions.Logging.Abstractions;
 using Microsoft.Extensions.Options;
 
 namespace Kontent.Ai.Delivery.Caching
@@ -26,11 +27,13 @@ namespace Kontent.Ai.Delivery.Caching
         /// <param name="loggerFactory">The factory used to create loggers.</param>
         public DistributedCacheManager(IDistributedCache distributedCache,
             IOptions<DeliveryCacheOptions> cacheOptions,
-            ILoggerFactory loggerFactory)
+            ILoggerFactory loggerFactory = null)
         {
+            var loggerFactoryToUse = loggerFactory ?? NullLoggerFactory.Instance;
+
             _distributedCache = distributedCache ?? throw new ArgumentNullException(nameof(distributedCache));
             _cacheOptions = cacheOptions.Value ?? new DeliveryCacheOptions();
-            _logger = loggerFactory.CreateLogger(nameof(DistributedCacheManager));
+            _logger = loggerFactoryToUse.CreateLogger(nameof(DistributedCacheManager));
         }
 
         /// <inheritdoc />
