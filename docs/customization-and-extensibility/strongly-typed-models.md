@@ -70,7 +70,11 @@ Depending on your scenario, use one of the following as the data type parameter 
 
 #### Typing Rich text
 
-For Rich text elements, use either `string` to receive HTML code resolved using string-based resolver as outlined in [Rendering linked items in Rich text](./rich-text/string-based-linked-items-rendering.md) or `IRichTextContent` to retrieve rich text content as [structured data](./rich-text/structured-rich-text-rendering.md).
+For Rich text elements, use either `string` to receive HTML code resolved using string-based resolver as outlined in [Rendering linked items in Rich text](./structured-models/string-based-linked-items-rendering.md) or `IRichTextContent` to retrieve rich text content as [structured data](./structured-models/structured-model-rendering.md).
+
+#### Typing Date and time
+
+For Date and time elements, use either `DateTime?` to pure DateTime? value or `IDateTimeContent` to retrieve DateTime as [structured data](./structured-models/structured-model-rendering.md).
 
 #### Typing Custom elements
 
