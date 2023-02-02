@@ -207,7 +207,7 @@ public partial class Cafe
 
 ## DateTime element with DisplayTimezone property
 
-It's possible to convert DateTime element to custom `IDateTimeContent` type which contains value of element and value of element's timezone
+It's possible to convert DateTime element to custom `IDateTimeContent` type which contains value of element and value of element's timezone.
 ```csharp
     public interface IDateTimeContent
     {
@@ -222,7 +222,7 @@ It's possible to convert DateTime element to custom `IDateTimeContent` type whic
         public string DisplayTimezone { get; }
     }
 ```
-If you need a DateTime element to be converted into structured model, just define `IDateTimeContent` as type of DateTime item in strongly-typed model
+If you need a DateTime element to be converted into structured model, just define `IDateTimeContent` as type of DateTime item in strongly-typed model:
 ```csharp
     public partial class Article : IArticle
     {
