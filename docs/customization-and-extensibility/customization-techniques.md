@@ -204,3 +204,29 @@ public partial class Cafe
         string Email { get; set; }
     }
 ```
+
+## DateTime element with DisplayTimezone property
+
+It's possible to convert DateTime element to custom `IDateTimeContent` type which contains value of element and value of element's timezone
+```csharp
+    public interface IDateTimeContent
+    {
+        /// <summary>
+        /// Gets the value of DateTime element
+        /// </summary>
+        public DateTime? Value { get; }
+
+        /// <summary>
+        /// Gets the Timezone of DateTime element
+        /// </summary>
+        public string DisplayTimezone { get; }
+    }
+```
+If you need a DateTime element to be converted into structured model, just define `IDateTimeContent` as type of DateTime item in strongly-typed model
+```csharp
+    public partial class Article : IArticle
+    {
+        [PropertyName("post_date")]
+        public IDateTimeContent PostDateContent { get; set; }
+    }
+```
