@@ -7,7 +7,7 @@ You don't have to generate your strong types manually. Instead, you can use a si
 
 **Usage:**
 
-`dotnet tool run KontentModelGenerator --projectid "<projectid>" [--namespace "<custom-namespace>"] [--outputdir "<output-directory>"] [--withtypeprovider <True|False>] [--structuredmodel <True|False>] [--filenamesuffix "<suffix>"]`
+`dotnet tool run KontentModelGenerator --projectid "<projectid>" [--namespace "<custom-namespace>"] [--outputdir "<output-directory>"] [--withtypeprovider <True|False>] [--structuredmodel "<structured-model>"] [--filenamesuffix "<suffix>"]`
 
 The following is a real-world example of our [MVC sample app](https://github.com/kontent-ai/sample-app-net/) …
 

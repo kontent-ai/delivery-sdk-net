@@ -1,8 +1,8 @@
 ## Introduction
 
-The [Rich text element](https://docs.kontent.ai/reference/delivery-api#section/Rich-text-element) can contain images, links to content items, content items, and components. Your application needs to define how these objects are rendered.
+The [Rich text element](https://docs.kontent.ai/reference/delivery-api#section/Rich-text-element) can contain images, links to content items, content items, and components. The [Date and time element](https://kontent.ai/learn/reference/openapi/delivery-api/#section/Date-and-time-element) can contain display timezone. Your application needs to define how these objects are rendered.
 
-This information applies to Rich text model properties typed as `IRichTextContent`. In case you are using `string` data model, see [String-based rendering of linked items in Rich text](./string-based-linked-items-rendering.md). You can influence which approach to use by [applying](https://github.com/kontent-ai/model-generator-net#parameters) the `--structuredmodel true` parameter during model generation.
+This information applies to Rich text model properties typed as `IRichTextContent` and Date and time model properties typed as `IDateTimeContent`. For rich text model in a case you are using `string` data model, see [String-based rendering of linked items in Rich text](./string-based-linked-items-rendering.md). You can influence which approach to use by [applying](https://github.com/kontent-ai/model-generator-net#delivery-api-parameters) the `--structuredmodel "<structured-model>"` parameter during model generation.
 
 Resolving links to content items is covered in a [separate article](./resolving-item-links.md).
 
@@ -83,6 +83,26 @@ Display templates can be provided to all MVC Controllers through the Shared fold
     }
 }
 ```
+
+## Structured Date and time model
+
+`IDateTimeContent` provides a date and time value with the timezone:
+* `DateTime?`
+* `string`
+
+By getting each value you can generate date and time with a timezone.
+
+### Example
+
+```csharp
+    public partial class Article
+    {
+...
+        public IDateTimeContent CreatedAt { get; set; }
+...
+    }
+```
+
 ## Other resources
 - [How to Render Different Output for Rich Text in Kontent.ai Using the Delivery .NET SDK](https://robwest.info/articles/how-to-render-different-output-for-rich-text-in-kentico-kontent-using-the-delivery-net-sdk) by [Rob West
 ](https://github.com/robertgregorywest)
