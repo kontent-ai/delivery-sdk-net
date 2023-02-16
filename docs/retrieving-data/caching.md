@@ -59,12 +59,13 @@ services.AddStackExchangeRedisCache(options =>
 //});
 
 // Second, add a DeliveryClient
+services.AddSingleton<ILoggerFactory>(<yourLoggerFactoryImplementation>); //optional registration of ILoggerFactory
 services.AddDeliveryClientCache(new DeliveryCacheOptions()
 {
     CacheType = CacheTypeEnum.Distributed
 });
 ```
-> `AddDeliveryClientCache` method also has optional `ILoggerFactory loggerFactory` parameter. Logger will have effect only when `MemoryDistributedCache` is used and [`FallbackToApi`](../../Kontent.Ai.Delivery.Caching/DistributedCacheResilientPolicy.cs) option is chosen for `DistributedCacheResilientPolicy` parameter of `DeliveryCacheOptions`. In this case information message will be logged when `MemoryDistributedCache` is not available.
+> You can optionally register `ILoggerFactory` implementation. Logger will have effect only when `MemoryDistributedCache` is used and [`FallbackToApi`](../../Kontent.Ai.Delivery.Caching/DistributedCacheResilientPolicy.cs) option is chosen for `DistributedCacheResilientPolicy` parameter of `DeliveryCacheOptions`. In this case information message will be logged when `MemoryDistributedCache` is not available.
 Read more in [Microsoft docs](https://docs.microsoft.com/en-us/aspnet/core/performance/caching/distributed).
 
 ## Usage without DI
@@ -77,7 +78,7 @@ Use this approach to register the caching package for a specific `DeliveryClient
    var memoryOptions = Options.Create(new MemoryCacheOptions());
    var cachedClient = new DeliveryClientCache(CacheManagerFactory.Create(new MemoryCache(memoryOptions), cacheOptions), client);
 ```
-> `CacheManagerFactory.Create` method for the [`IDistributedCache`](https://docs.microsoft.com/en-us/aspnet/core/performance/caching/distributed) has optional `ILoggerFactory loggerFactory` parameter, which has the same impact, as in `services.AddDeliveryClientCache` method.
+> `CacheManagerFactory.Create` method for the [`IDistributedCache`](https://docs.microsoft.com/en-us/aspnet/core/performance/caching/distributed) has optional `ILoggerFactory loggerFactory` parameter, which has the same impact, as described for `services.AddDeliveryClientCache` method.
 
 ## Cache eviction / cache item invalidation
 
