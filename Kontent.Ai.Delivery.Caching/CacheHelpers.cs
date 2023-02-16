@@ -47,7 +47,7 @@ namespace Kontent.Ai.Delivery.Caching
         /// <returns>Dependency key</returns>
         public static string GetItemKey<T>(string codename, IEnumerable<IQueryParameter> parameters)
         {
-            return StringHelpers.Join(new[] { typeof(T).FullName.ToLower(), CONTENT_ITEM_TYPED_IDENTIFIER, codename }.Concat(parameters?.Select(x => x.GetQueryStringParameter()) ?? Enumerable.Empty<string>()));
+            return StringHelpers.Join(new[] { typeof(T).FullName, CONTENT_ITEM_TYPED_IDENTIFIER, codename }.Concat(parameters?.Select(x => x.GetQueryStringParameter()) ?? Enumerable.Empty<string>()));
         }
 
         /// <summary>
@@ -57,7 +57,7 @@ namespace Kontent.Ai.Delivery.Caching
         /// <returns>Dependency keys</returns>
         public static string GetItemsKey<T>(IEnumerable<IQueryParameter> parameters)
         {
-            return StringHelpers.Join(new[] { typeof(T).FullName.ToLower(), CONTENT_ITEM_LISTING_TYPED_IDENTIFIER }.Concat(parameters?.Select(x => x.GetQueryStringParameter()) ?? Enumerable.Empty<string>()));
+            return StringHelpers.Join(new[] { typeof(T).FullName, CONTENT_ITEM_LISTING_TYPED_IDENTIFIER }.Concat(parameters?.Select(x => x.GetQueryStringParameter()) ?? Enumerable.Empty<string>()));
         }
 
         /// <summary>

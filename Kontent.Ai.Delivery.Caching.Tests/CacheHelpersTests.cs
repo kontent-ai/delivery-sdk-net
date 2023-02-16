@@ -22,7 +22,11 @@ namespace Kontent.Ai.Delivery.Caching.Tests
                 CacheHelpers.GetItemKey<object>("codename", new []{new DepthParameter(1)}),
                 CacheHelpers.GetItemKey<object>("codename", new [] {new DepthParameter(2) }),
                 CacheHelpers.GetItemKey<object>("codename", new []{new SystemTypeEqualsFilter("article") }),
-                CacheHelpers.GetItemKey<Article>("codename", new []{new SystemTypeEqualsFilter("article") })
+                CacheHelpers.GetItemKey<Article>("codename", new []{new SystemTypeEqualsFilter("article") }),
+                CacheHelpers.GetItemKey<SomeClass>("codename", Enumerable.Empty<IQueryParameter>()),
+                CacheHelpers.GetItemKey<someclass>("codename", Enumerable.Empty<IQueryParameter>()),
+                CacheHelpers.GetItemKey<AnotherNamespace.SomeClass>("codename", Enumerable.Empty<IQueryParameter>()),
+                CacheHelpers.GetItemKey<AnotherNamespace.someclass>("codename", Enumerable.Empty<IQueryParameter>()),
             };
 
             keys.Distinct().Count().Should().Be(keys.Length);
@@ -37,7 +41,11 @@ namespace Kontent.Ai.Delivery.Caching.Tests
                 CacheHelpers.GetItemsKey<object>(new []{new DepthParameter(1)}),
                 CacheHelpers.GetItemsKey<object>(new [] {new DepthParameter(2) }),
                 CacheHelpers.GetItemsKey<object>(new []{new SystemTypeEqualsFilter("article") }) ,
-                CacheHelpers.GetItemsKey<Article>(new []{new SystemTypeEqualsFilter("article") })
+                CacheHelpers.GetItemsKey<Article>(new []{new SystemTypeEqualsFilter("article") }),
+                CacheHelpers.GetItemsKey<SomeClass>(Enumerable.Empty<IQueryParameter>()),
+                CacheHelpers.GetItemsKey<someclass>(Enumerable.Empty<IQueryParameter>()),
+                CacheHelpers.GetItemsKey<AnotherNamespace.SomeClass>(Enumerable.Empty<IQueryParameter>()),
+                CacheHelpers.GetItemsKey<AnotherNamespace.someclass>(Enumerable.Empty<IQueryParameter>()),
             };
 
             keys.Distinct().Count().Should().Be(keys.Length);
@@ -110,5 +118,14 @@ namespace Kontent.Ai.Delivery.Caching.Tests
 
         #endregion
     }
+
+    internal class SomeClass { }
+    internal class someclass { }
+}
+
+namespace Kontent.Ai.Delivery.Caching.Tests.AnotherNamespace
+{
+    internal class SomeClass { }
+    internal class someclass { }
 }
 
