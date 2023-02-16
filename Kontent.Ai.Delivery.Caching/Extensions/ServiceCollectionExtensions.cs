@@ -18,8 +18,7 @@ namespace Kontent.Ai.Delivery.Caching.Extensions
         /// <param name="services">A <see cref="IServiceCollection"/> instance for registering and resolving dependencies.</param>
         /// <param name="options">A <see cref="DeliveryCacheOptions"/> instance.</param>
         /// <returns>The <paramref name="services"/> instance with cache services registered in it</returns>
-        public static IServiceCollection AddDeliveryClientCache(this IServiceCollection services,
-            DeliveryCacheOptions options)
+        public static IServiceCollection AddDeliveryClientCache(this IServiceCollection services, DeliveryCacheOptions options)
         {
             if (options == null)
             {
