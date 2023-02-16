@@ -3,6 +3,7 @@ using Kontent.Ai.Delivery.Abstractions;
 using Kontent.Ai.Delivery.Configuration;
 using Kontent.Ai.Delivery.Extensions;
 using Microsoft.Extensions.DependencyInjection;
+using Microsoft.Extensions.Logging;
 
 namespace Kontent.Ai.Delivery.Builders.DeliveryClient
 {
@@ -56,6 +57,9 @@ namespace Kontent.Ai.Delivery.Builders.DeliveryClient
 
         IOptionalClientSetup IOptionalClientSetup.WithPropertyMapper(IPropertyMapper propertyMapper)
             => RegisterOrThrow(propertyMapper, nameof(propertyMapper));
+
+        IOptionalClientSetup IOptionalClientSetup.WithLoggerFactory(ILoggerFactory loggerFactory)
+            => RegisterOrThrow(loggerFactory, nameof(loggerFactory));
 
         IDeliveryClient IDeliveryClientBuild.Build()
         {

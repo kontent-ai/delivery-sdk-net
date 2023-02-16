@@ -7,6 +7,8 @@ using Kontent.Ai.Delivery.ContentItems;
 using Kontent.Ai.Delivery.ContentItems.InlineContentItems;
 using Kontent.Ai.Delivery.Tests.DependencyInjectionFrameworks.Helpers;
 using Kontent.Ai.Delivery.Tests.Models;
+using Microsoft.Extensions.Logging;
+using Microsoft.Extensions.Logging.Abstractions;
 using RichardSzalay.MockHttp;
 using Xunit;
 
@@ -61,6 +63,7 @@ namespace Kontent.Ai.Delivery.Tests.Builders.DeliveryClient
             var mockAnContentItemsResolver = A.Fake<IInlineContentItemsResolver<CompleteContentItemModel>>();
             var mockTypeProvider = A.Fake<ITypeProvider>();
             var mockDeliveryHttpClient = new DeliveryHttpClient(new MockHttpMessageHandler().ToHttpClient());
+            var mockLoggerFactory = A.Fake<ILoggerFactory>();
 
             var deliveryClient = (Delivery.DeliveryClient) DeliveryClientBuilder
                 .WithProjectId(ProjectId)
@@ -74,6 +77,7 @@ namespace Kontent.Ai.Delivery.Tests.Builders.DeliveryClient
                 .WithPropertyMapper(mockPropertyMapper)
                 .WithRetryPolicyProvider(mockRetryPolicyProvider)
                 .WithTypeProvider(mockTypeProvider)
+                .WithLoggerFactory(mockLoggerFactory)
                 .Build();
 
             Assert.Equal(ProjectId, deliveryClient.DeliveryOptions.CurrentValue.ProjectId);
@@ -81,6 +85,7 @@ namespace Kontent.Ai.Delivery.Tests.Builders.DeliveryClient
             Assert.Equal(mockRetryPolicyProvider, deliveryClient.RetryPolicyProvider);
             Assert.Equal(mockTypeProvider, deliveryClient.TypeProvider);
             Assert.Equal(mockDeliveryHttpClient, deliveryClient.DeliveryHttpClient);
+            Assert.Equal(mockLoggerFactory, deliveryClient.LoggerFactory);
         }
 
         [Fact]
@@ -142,6 +147,7 @@ namespace Kontent.Ai.Delivery.Tests.Builders.DeliveryClient
             Assert.NotNull(deliveryClient.DeliveryHttpClient);
             Assert.NotNull(deliveryClient.RetryPolicyProvider);
             Assert.Equal(expectedResolvableInlineContentItemsTypes, actualResolvableInlineContentItemTypes);
+            Assert.Equal(NullLoggerFactory.Instance, deliveryClient.LoggerFactory);
         }
 
         [Fact]
@@ -206,6 +212,14 @@ namespace Kontent.Ai.Delivery.Tests.Builders.DeliveryClient
             var builderStep = DeliveryClientBuilder.WithProjectId(_guid);
 
             Assert.Throws<ArgumentNullException>(() => builderStep.WithPropertyMapper(null));
+        }
+
+        [Fact]
+        public void BuildWithOptionsAndNullLoggerFactory_TrowsArgumentNullException()
+        {
+            var builderStep = DeliveryClientBuilder.WithProjectId(_guid);
+
+            Assert.Throws<ArgumentNullException>(() => builderStep.WithLoggerFactory(null));
         }
 
         private static IEnumerable<Type> GetResolvableInlineContentItemTypes(Delivery.DeliveryClient deliveryClient)

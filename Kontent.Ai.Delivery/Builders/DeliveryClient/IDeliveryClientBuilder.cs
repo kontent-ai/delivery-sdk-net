@@ -1,6 +1,7 @@
 ﻿using System;
 using Kontent.Ai.Delivery.Abstractions;
 using Kontent.Ai.Delivery.Configuration;
+using Microsoft.Extensions.Logging;
 
 namespace Kontent.Ai.Delivery.Builders.DeliveryClient
 {
@@ -72,6 +73,13 @@ namespace Kontent.Ai.Delivery.Builders.DeliveryClient
         /// </summary>
         /// <param name="propertyMapper">An instance of the <see cref="IPropertyMapper"/>.</param>
         IOptionalClientSetup WithPropertyMapper(IPropertyMapper propertyMapper);
+
+        /// <summary>
+        /// Use a ILoggerFactory to allow logging from <see cref="IDeliveryClient"/>
+        /// </summary>
+        /// <param name="loggerFactory"></param>
+        /// <returns></returns>
+        IOptionalClientSetup WithLoggerFactory(ILoggerFactory loggerFactory);
     }
 
     /// <summary>

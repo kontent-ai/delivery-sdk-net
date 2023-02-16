@@ -11,6 +11,8 @@ using Kontent.Ai.Delivery.RetryPolicy;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.DependencyInjection.Extensions;
+using Microsoft.Extensions.Logging;
+using Microsoft.Extensions.Logging.Abstractions;
 using Newtonsoft.Json;
 
 // see https://docs.microsoft.com/en-us/aspnet/core/fundamentals/dependency-injection
@@ -118,6 +120,7 @@ namespace Kontent.Ai.Delivery.Extensions
             services.TryAddSingleton<IHtmlParser, HtmlParser>();
             services.TryAddSingleton<JsonSerializer>(new DeliveryJsonSerializer());
             services.TryAddSingleton<IDeliveryClientFactory, DeliveryClientFactory>();
+            services.TryAddSingleton<ILoggerFactory>(NullLoggerFactory.Instance);
 
             return services;
         }

@@ -16,6 +16,7 @@ using Kontent.Ai.Urls.Delivery;
 using Kontent.Ai.Urls.Delivery.QueryParameters;
 using Kontent.Ai.Urls.Delivery.QueryParameters.Filters;
 using Microsoft.AspNetCore.WebUtilities;
+using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
 using Newtonsoft.Json;
 using Newtonsoft.Json.Linq;
@@ -35,6 +36,7 @@ namespace Kontent.Ai.Delivery
         internal readonly IRetryPolicyProvider RetryPolicyProvider;
         internal readonly IDeliveryHttpClient DeliveryHttpClient;
         internal readonly JsonSerializer Serializer;
+        internal readonly ILoggerFactory LoggerFactory;
 
         internal DeliveryEndpointUrlBuilder UrlBuilder
             => _urlBuilder ??= new DeliveryEndpointUrlBuilder(DeliveryOptions);
@@ -48,13 +50,15 @@ namespace Kontent.Ai.Delivery
         /// <param name="typeProvider">An instance of an object that can map Kontent.ai content types to CLR types</param>
         /// <param name="deliveryHttpClient">An instance of an object that can send request against Kontent.ai Delivery API</param>
         /// <param name="serializer">Default JSON serializer</param>
+        /// <param name="loggerFactory">The factory used to create loggers</param>
         public DeliveryClient(
             IOptionsMonitor<DeliveryOptions> deliveryOptions,
             IModelProvider modelProvider = null,
             IRetryPolicyProvider retryPolicyProvider = null,
             ITypeProvider typeProvider = null,
             IDeliveryHttpClient deliveryHttpClient = null,
-            JsonSerializer serializer = null)
+            JsonSerializer serializer = null,
+            ILoggerFactory loggerFactory = null)
         {
             DeliveryOptions = deliveryOptions;
             ModelProvider = modelProvider;
@@ -62,6 +66,7 @@ namespace Kontent.Ai.Delivery
             TypeProvider = typeProvider;
             DeliveryHttpClient = deliveryHttpClient;
             Serializer = serializer;
+            LoggerFactory = loggerFactory;
         }
 
         /// <summary>
