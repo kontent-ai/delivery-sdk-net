@@ -56,15 +56,26 @@ public class HomeController : Controller
 
 ## Registering custom implementations of the underlying logic
 
-You can register your custom implementations of the SDK interfaces (such as `IContentLinkUrlResolver`, `ITypeProvider`, `IResiliencePolicyProvider`, `IDeliveryCacheManager`, etc.) through the `IServiceCollection` interface or the `DeliveryClientBuilder` class.
+You can register your custom implementations of the SDK interfaces (such as `IContentLinkUrlResolver`, `ITypeProvider`, `IRetryPolicyProvider`, `IDeliveryCacheManager`, etc.) through the `IServiceCollection` interface:
 
 ```csharp
 public void ConfigureServices(IServiceCollection services)
 {
     services.AddSingleton<IContentLinkUrlResolver, CustomContentLinkUrlResolver>();
-    services.AddSingleton<IResiliencePolicyProvider, CustomPolicyProvider>();
+    services.AddSingleton<IRetryPolicyProvider, CustomPolicyProvider>();
     services.AddDeliveryClient(Configuration);
 }
+```
+
+or through the `DeliveryClientBuilder` class:
+
+```csharp
+IDeliveryClient deliveryClient = DeliveryClientBuilder
+                .WithProjectId("<YOUR_PROJECT_ID>")
+                .WithContentLinkUrlResolver(CustomContentLinkUrlResolver)
+                .WithRetryPolicyProvider(CustomPolicyProvider>)
+                .WithTypeProvider(CustomTypeProvider)
+                .Build();
 ```
 
 You can also use the `DeliveryOptionsBuilder` in the `AddDeliveryClient` method.
@@ -87,6 +98,30 @@ services.AddDeliveryClient(builder =>
         .Build()
 );
 ```
+## Registering logger
+You can register you implementation of the [`ILoggerFactory`](https://learn.microsoft.com/en-us/dotnet/api/microsoft.extensions.logging.iloggerfactory?view=dotnet-plat-ext-7.0) through the `IServiceCollection` interface:
+
+```csharp
+public void ConfigureServices(IServiceCollection services)
+{
+    services.AddSingleton<ILoggerFactory>(LoggerFactoryImplementation);
+    services.AddDeliveryClient(Configuration);
+}
+```
+
+or through the `DeliveryClientBuilder` class:
+
+```csharp
+IDeliveryClient deliveryClient = DeliveryClientBuilder
+                .WithProjectId("<YOUR_PROJECT_ID>")
+                .WithLoggerFactory(LoggerFactoryImplementation)
+                .Build();
+```
+
+By default `NullLoggerFactory.Instance` implementation is used.
+If you register `LoggerFactory`, SDK will have a possibility to provide warning and error messages into your logs. 
+> Currently this is a new option and SDK provides just small amount of logs. For example if you use [Caching responses](../retrieving-data/caching.md) with `DistributedCacheManager` and [`FallbackToApi`](../../Kontent.Ai.Delivery.Caching/DistributedCacheResilientPolicy.cs) option is chosen for `DistributedCacheResilientPolicy` parameter of `DeliveryCacheOptions`, information message will be logged when `distributed cache` is not available.
+
 ## Registering multiple clients
 In case you need to register multiple differently configured `IDeliveryClient`s, you can take advantage of [named clients](multiple-delivery-clients.md).
 
