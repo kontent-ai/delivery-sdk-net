@@ -70,7 +70,7 @@ To spin up a fully configured blank site quickly, use the:
 
 ### Usage without IoC/DI containers (ideal for console apps, unit tests...)
 
-You can also set up a `DeliveryOptions` manually using the [`DeliveryClientBuilder`](https://github.com/kontent-ai/delivery-sdk-net/Kontent.Ai.Delivery/Builders/DeliveryOptions/DeliveryOptionsBuilder.cs).
+You can also set up a `DeliveryOptions` manually using the [`DeliveryClientBuilder`](https://github.com/kontent-ai/delivery-sdk-net/blob/master/Kontent.Ai.Delivery/Builders/DeliveryClient/DeliveryClientBuilder.cs).
 
 ```csharp
 IDeliveryClient _client = DeliveryClientBuilder
