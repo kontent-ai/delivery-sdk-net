@@ -936,6 +936,7 @@ namespace Kontent.Ai.Delivery.Tests
             // Assert
             Assert.True(items.All(i => i.GetType() == typeof(ContentItemModelWithAttributes)));
         }
+        
 
         [Fact]
         public void GetStronglyTypedItemsFeed_DepthParameter_ThrowsArgumentException()
@@ -1036,6 +1037,20 @@ namespace Kontent.Ai.Delivery.Tests
 
             // Assert
             Assert.Equal("Text field value", response.Item.TextField);
+        }
+
+        [Fact]
+        public async Task DynamicResponse()
+        {
+            _mockHttp
+                .When($"{_baseUrl}/items/complete_content_item")
+                .Respond("application/json", await File.ReadAllTextAsync(Path.Combine(Environment.CurrentDirectory, $"Fixtures{Path.DirectorySeparatorChar}DeliveryClient{Path.DirectorySeparatorChar}complete_content_item.json")));
+
+            var client = InitializeDeliveryClientWithCustomModelProvider(_mockHttp, new PropertyMapper());// , new CustomTypeProvider());
+
+            var response = await client.GetItemAsync<DynamicContentItemModel>("complete_content_item");
+
+            Assert.NotEmpty(response.Item.Elements);
         }
 
         [Fact]

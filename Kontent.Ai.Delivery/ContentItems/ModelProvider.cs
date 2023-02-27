@@ -106,6 +106,16 @@ namespace Kontent.Ai.Delivery.ContentItems
                         property.SetValue(instance, itemSystemAttributes);
                     }
                 }
+                else if (typeof(IElements).IsAssignableFrom(property.PropertyType))
+                {
+
+                    var value = await GetAllPropertiesValuesAsync(elementsData, property, linkedItems, context, itemSystemAttributes, processedItems, richTextPropertiesToBeProcessed);
+                    if (value != null)
+                    {
+                        property.SetValue(instance, value);
+                    }
+
+                }
                 else
                 {
                     var value = await GetPropertyValueAsync(elementsData, property, linkedItems, context, itemSystemAttributes, processedItems, richTextPropertiesToBeProcessed);
@@ -211,6 +221,34 @@ namespace Kontent.Ai.Delivery.ContentItems
             };
         }
 
+        private async Task<IElements> GetAllPropertiesValuesAsync(JObject elementsData, PropertyInfo property, JObject linkedItems, ResolvingContext context, IContentItemSystemAttributes itemSystemAttributes, Dictionary<string, object> processedItems, List<PropertyInfo> richTextPropertiesToBeProcessed)
+        {
+            var result = new IElements();
+            foreach (var item in elementsData)
+            {
+                var key = item.Key;
+                var elementValue = (JObject)item.Value;
+                // var elementValue = elementsData?.Properties()?.Select(p => (p.Name, (JObject)p.Value)).FirstOrDefault();
+                // TODO think about value converter
+                var value = (elementValue["type"].ToString()) switch
+                {
+                    // TODO do we want to use string/structured data for rich text
+                    // "rich_text" => await GetPropertyValueAsync(elementsData, null, linkedItems, context, itemSystemAttributes, processedItems, richTextPropertiesToBeProcessed);
+                    // "asset" => await GetElementModelAsync<AssetElementValue, IEnumerable<IAsset>>(property, context, elementValue, null),
+                    // "number" => await GetElementModelAsync<ContentElementValue<decimal?>, decimal?>(property, context, elementValue, null),
+                    // TODO do we want to use string/structured data for date time
+                    // "date_time" => await GetElementModelAsync<DateTimeElementValue, DateTime?>(property, context, elementValue, null),
+                    // "multiple_choice" => await GetElementModelAsync<ContentElementValue<List<MultipleChoiceOption>>, List<MultipleChoiceOption>>(property, context, elementValue, null),
+                    // "taxonomy" => await GetElementModelAsync<TaxonomyElementValue, IEnumerable<ITaxonomyTerm>>(property, context, elementValue, null),
+                    // "modular_content" => await GetElementModelAsync<ContentElementValue<List<string>>, List<string>>(property, context, elementValue, null),
+                    // Custom element, text element, URL slug element
+                    _ =>  GetRawValue(elementValue)?.ToString()
+                };
+                // TODO implement
+                result.Add(key, value);
+            }
+            return result;
+        }
         private async Task<object> GetPropertyValueAsync(JObject elementsData, PropertyInfo property, JObject linkedItems, ResolvingContext context, IContentItemSystemAttributes itemSystemAttributes, Dictionary<string, object> processedItems, List<PropertyInfo> richTextPropertiesToBeProcessed)
         {
             var elementDefinition = GetElementData(elementsData, property, itemSystemAttributes);
@@ -389,7 +427,7 @@ namespace Kontent.Ai.Delivery.ContentItems
             {
                 return new AssetElementValueConverter(DeliveryOptions);
             }
-            
+
             return null;
         }
 
