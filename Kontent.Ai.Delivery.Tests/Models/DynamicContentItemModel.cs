@@ -5,6 +5,6 @@ namespace Kontent.Ai.Delivery.Tests.Models
     {
         public IContentItemSystemAttributes System { get; set; }
 
-        public IElements Elements { get; set; }
+        public ContentItemElements Elements { get; set; }
     }
 }

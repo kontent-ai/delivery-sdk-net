@@ -106,7 +106,7 @@ namespace Kontent.Ai.Delivery.ContentItems
                         property.SetValue(instance, itemSystemAttributes);
                     }
                 }
-                else if (typeof(IElements).IsAssignableFrom(property.PropertyType))
+                else if (typeof(ContentItemElements).IsAssignableFrom(property.PropertyType))
                 {
 
                     var value = GetAllPropertiesValuesAsync(elementsData, property, linkedItems, context, itemSystemAttributes, processedItems, richTextPropertiesToBeProcessed);
@@ -221,9 +221,9 @@ namespace Kontent.Ai.Delivery.ContentItems
             };
         }
 
-        private IElements GetAllPropertiesValuesAsync(JObject elementsData, PropertyInfo property, JObject linkedItems, ResolvingContext context, IContentItemSystemAttributes itemSystemAttributes, Dictionary<string, object> processedItems, List<PropertyInfo> richTextPropertiesToBeProcessed)
+        private ContentItemElements GetAllPropertiesValuesAsync(JObject elementsData, PropertyInfo property, JObject linkedItems, ResolvingContext context, IContentItemSystemAttributes itemSystemAttributes, Dictionary<string, object> processedItems, List<PropertyInfo> richTextPropertiesToBeProcessed)
         {
-            var result = new IElements();
+            var result = new ContentItemElements();
             foreach (var item in elementsData)
             {
                 var key = item.Key;
