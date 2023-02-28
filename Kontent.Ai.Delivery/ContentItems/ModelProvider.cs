@@ -109,7 +109,7 @@ namespace Kontent.Ai.Delivery.ContentItems
                 else if (typeof(IElements).IsAssignableFrom(property.PropertyType))
                 {
 
-                    var value = await GetAllPropertiesValuesAsync(elementsData, property, linkedItems, context, itemSystemAttributes, processedItems, richTextPropertiesToBeProcessed);
+                    var value = GetAllPropertiesValuesAsync(elementsData, property, linkedItems, context, itemSystemAttributes, processedItems, richTextPropertiesToBeProcessed);
                     if (value != null)
                     {
                         property.SetValue(instance, value);
@@ -221,30 +221,32 @@ namespace Kontent.Ai.Delivery.ContentItems
             };
         }
 
-        private async Task<IElements> GetAllPropertiesValuesAsync(JObject elementsData, PropertyInfo property, JObject linkedItems, ResolvingContext context, IContentItemSystemAttributes itemSystemAttributes, Dictionary<string, object> processedItems, List<PropertyInfo> richTextPropertiesToBeProcessed)
+        private IElements GetAllPropertiesValuesAsync(JObject elementsData, PropertyInfo property, JObject linkedItems, ResolvingContext context, IContentItemSystemAttributes itemSystemAttributes, Dictionary<string, object> processedItems, List<PropertyInfo> richTextPropertiesToBeProcessed)
         {
             var result = new IElements();
             foreach (var item in elementsData)
             {
                 var key = item.Key;
-                var elementValue = (JObject)item.Value;
-                // var elementValue = elementsData?.Properties()?.Select(p => (p.Name, (JObject)p.Value)).FirstOrDefault();
-                // TODO think about value converter
-                var value = (elementValue["type"].ToString()) switch
+                var element = (JObject)item.Value;
+                var elementValue = element["value"];
+
+                // TODO think about value converter implementation
+
+                object value = (element["type"].ToString()) switch
                 {
                     // TODO do we want to use string/structured data for rich text
-                    // "rich_text" => await GetPropertyValueAsync(elementsData, null, linkedItems, context, itemSystemAttributes, processedItems, richTextPropertiesToBeProcessed);
-                    // "asset" => await GetElementModelAsync<AssetElementValue, IEnumerable<IAsset>>(property, context, elementValue, null),
-                    // "number" => await GetElementModelAsync<ContentElementValue<decimal?>, decimal?>(property, context, elementValue, null),
+                    "rich_text" => elementValue.ToObject<string>(Serializer),
+                    "asset" => elementValue.ToObject<IEnumerable<IAsset>>(Serializer),
+                    "number" => elementValue.ToObject<decimal>(Serializer),
                     // TODO do we want to use string/structured data for date time
-                    // "date_time" => await GetElementModelAsync<DateTimeElementValue, DateTime?>(property, context, elementValue, null),
-                    // "multiple_choice" => await GetElementModelAsync<ContentElementValue<List<MultipleChoiceOption>>, List<MultipleChoiceOption>>(property, context, elementValue, null),
-                    // "taxonomy" => await GetElementModelAsync<TaxonomyElementValue, IEnumerable<ITaxonomyTerm>>(property, context, elementValue, null),
-                    // "modular_content" => await GetElementModelAsync<ContentElementValue<List<string>>, List<string>>(property, context, elementValue, null),
+                    "date_time" => elementValue.ToObject<DateTime>(Serializer),
+                    "multiple_choice" => elementValue.ToObject<IEnumerable<MultipleChoiceOption>>(Serializer),
+                    "taxonomy" => elementValue.ToObject<IEnumerable<ITaxonomyTerm>>(Serializer),
+                    "modular_content" => elementValue.ToObject<IEnumerable<string>>(Serializer),
                     // Custom element, text element, URL slug element
-                    _ =>  GetRawValue(elementValue)?.ToString()
+                    _ => elementValue.ToObject<string>(Serializer)
                 };
-                // TODO implement
+
                 result.Add(key, value);
             }
             return result;
