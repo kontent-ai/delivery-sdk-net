@@ -10,6 +10,7 @@ using FakeItEasy;
 using Kontent.Ai.Delivery.Abstractions;
 using Kontent.Ai.Delivery.Builders.DeliveryClient;
 using Kontent.Ai.Delivery.ContentItems;
+using Kontent.Ai.Delivery.ContentItems.Elements;
 using Kontent.Ai.Delivery.ContentItems.RichText.Blocks;
 using Kontent.Ai.Delivery.SharedModels;
 using Kontent.Ai.Delivery.Tests.Factories;
@@ -195,7 +196,7 @@ namespace Kontent.Ai.Delivery.Tests
             AssertErrorResponse(actualResponse, expectedError);
             Assert.Null(actualResponse.Item);
         }
-        
+
         [Fact]
         public async Task GetItemAsync_InvalidProjectId_RespondsWithApiError()
         {
@@ -209,7 +210,7 @@ namespace Kontent.Ai.Delivery.Tests
             var client = InitializeDeliveryClientWithACustomTypeProvider(_mockHttp);
 
             var actualResponse = await client.GetItemAsync<object>("coffee_beverages_explained");
-                
+
             AssertErrorResponse(actualResponse, expectedError);
             Assert.Null(actualResponse.Item);
         }
@@ -289,7 +290,7 @@ namespace Kontent.Ai.Delivery.Tests
             Assert.True(response?.ApiResponse?.IsSuccess);
             Assert.NotEmpty(response.Items);
         }
-        
+
         [Fact]
         public async Task GetItemsAsync_InvalidProjectId_RespondsWithApiError()
         {
@@ -303,12 +304,12 @@ namespace Kontent.Ai.Delivery.Tests
             var client = InitializeDeliveryClientWithACustomTypeProvider(_mockHttp);
 
             var actualResponse = await client.GetItemsAsync<object>();
-                
+
             AssertErrorResponse(actualResponse, expectedError);
             Assert.Null(actualResponse.Items);
             Assert.Null(actualResponse.Pagination);
         }
-        
+
         [Fact]
         public void GetItemsFeed_DepthParameter_ThrowsArgumentException()
         {
@@ -414,7 +415,7 @@ namespace Kontent.Ai.Delivery.Tests
             Assert.Equal(6, items.Count);
             Assert.Equal(2, timesCalled);
         }
-        
+
         [Fact]
         public async Task GetItemsFeed_InvalidProjectId_RespondsWithApiError()
         {
@@ -428,7 +429,7 @@ namespace Kontent.Ai.Delivery.Tests
             var client = InitializeDeliveryClientWithACustomTypeProvider(_mockHttp);
 
             var actualResponse = await client.GetItemsFeed<object>().FetchNextBatchAsync();
-                
+
             AssertErrorResponse(actualResponse, expectedError);
             Assert.Null(actualResponse.Items);
         }
@@ -478,7 +479,7 @@ namespace Kontent.Ai.Delivery.Tests
             Assert.IsAssignableFrom<ITaxonomyElement>(processingTaxonomyElement);
             Assert.Equal("processing", ((ITaxonomyElement)processingTaxonomyElement).TaxonomyGroup);
         }
-        
+
         [Fact]
         public async Task GetTypeAsync_NotFound_RespondsWithApiError()
         {
@@ -502,7 +503,7 @@ namespace Kontent.Ai.Delivery.Tests
             AssertErrorResponse(actualResponse, expectedError);
             Assert.Null(actualResponse.Type);
         }
-        
+
         [Fact]
         public async Task GetTypeAsync_InvalidProjectId_RespondsWithApiError()
         {
@@ -516,7 +517,7 @@ namespace Kontent.Ai.Delivery.Tests
             var client = InitializeDeliveryClientWithACustomTypeProvider(_mockHttp);
 
             var actualResponse = await client.GetTypeAsync("unequestrian_nonadjournment_sur_achoerodus");
-                
+
             AssertErrorResponse(actualResponse, expectedError);
             Assert.Null(actualResponse.Type);
         }
@@ -691,7 +692,7 @@ namespace Kontent.Ai.Delivery.Tests
             Assert.NotNull(response.ApiResponse.RequestUrl);
             Assert.NotEmpty(response.Taxonomies);
         }
-        
+
         [Fact]
         public async Task GetTaxonomiesAsync_InvalidProjectId_RespondsWithApiError()
         {
@@ -705,7 +706,7 @@ namespace Kontent.Ai.Delivery.Tests
             var client = InitializeDeliveryClientWithACustomTypeProvider(_mockHttp);
 
             var actualResponse = await client.GetTaxonomiesAsync();
-                
+
             AssertErrorResponse(actualResponse, expectedError);
             Assert.Null(actualResponse.Taxonomies);
             Assert.Null(actualResponse.Pagination);
@@ -936,7 +937,7 @@ namespace Kontent.Ai.Delivery.Tests
             // Assert
             Assert.True(items.All(i => i.GetType() == typeof(ContentItemModelWithAttributes)));
         }
-        
+
 
         [Fact]
         public void GetStronglyTypedItemsFeed_DepthParameter_ThrowsArgumentException()
@@ -1050,7 +1051,47 @@ namespace Kontent.Ai.Delivery.Tests
 
             var response = await client.GetItemAsync<DynamicContentItemModel>("complete_content_item");
 
-            Assert.NotEmpty(response.Item.Elements);
+            Assert.All(response.Item.Elements, item =>
+            {
+                if (typeof(IContentElementValue<object>).IsAssignableFrom(item.Value.GetType()))
+                {
+                    var elementObject = (IContentElementValue<object>)item.Value;
+                    Assert.NotNull(elementObject.Value);
+                    Assert.NotNull(elementObject.Type);
+                    Assert.NotNull(elementObject.Name);
+                    // TODO think about that one
+                    Assert.Null(elementObject.Codename);
+                }
+                else if (typeof(DateTimeElementValue).IsAssignableFrom(item.Value.GetType()))
+                {
+                    var elementObject = (DateTimeElementValue)item.Value;
+                    Assert.NotNull(elementObject.Value);
+                    Assert.NotNull(elementObject.Type);
+                    Assert.NotNull(elementObject.Name);
+                    // TODO think about that one
+                    Assert.Null(elementObject.Codename);
+
+                }
+                else if (typeof(NumberElementValue).IsAssignableFrom(item.Value.GetType()))
+                {
+                    var elementObject = (NumberElementValue)item.Value;
+                    Assert.NotNull(elementObject.Value);
+                    Assert.NotNull(elementObject.Type);
+                    Assert.NotNull(elementObject.Name);
+                    // TODO think about that one
+                    Assert.Null(elementObject.Codename);
+                }
+            });
+            Assert.All(response.Item.Elements.OfType<RichTextElementValue>(), item =>
+            {
+                Assert.NotNull(item.Images);
+                Assert.NotNull(item.Links);
+                Assert.NotNull(item.ModularContent);
+            });
+            Assert.All(response.Item.Elements.OfType<TaxonomyElementValue>(), item =>
+            {
+                Assert.NotNull(item.TaxonomyGroup);
+            });
         }
 
         [Fact]
@@ -1491,7 +1532,7 @@ namespace Kontent.Ai.Delivery.Tests
             Assert.False(response.ApiResponse.HasStaleContent);
             Assert.True(response.Types.Any());
         }
-        
+
         [Fact]
         public async Task GetTypesAsync_InvalidProjectId_RespondsWithApiError()
         {
@@ -1505,7 +1546,7 @@ namespace Kontent.Ai.Delivery.Tests
             var client = InitializeDeliveryClientWithACustomTypeProvider(_mockHttp);
 
             var actualResponse = await client.GetTypesAsync();
-                
+
             AssertErrorResponse(actualResponse, expectedError);
             Assert.Null(actualResponse.Types);
             Assert.Null(actualResponse.Pagination);
@@ -1636,7 +1677,7 @@ namespace Kontent.Ai.Delivery.Tests
             Assert.False(response.ApiResponse.HasStaleContent);
             Assert.True(response.Languages.Any());
         }
-        
+
         [Fact]
         public async Task GetLanguagesAsync_InvalidProjectId_RespondsWithApiError()
         {
@@ -1650,7 +1691,7 @@ namespace Kontent.Ai.Delivery.Tests
             var client = InitializeDeliveryClientWithACustomTypeProvider(_mockHttp);
 
             var actualResponse = await client.GetLanguagesAsync();
-                
+
             AssertErrorResponse(actualResponse, expectedError);
             Assert.Null(actualResponse.Languages);
             Assert.Null(actualResponse.Pagination);
@@ -1695,7 +1736,7 @@ namespace Kontent.Ai.Delivery.Tests
             Assert.False(response.ApiResponse.HasStaleContent);
             Assert.NotNull(response.Element.Codename);
         }
-        
+
         [Fact]
         public async Task GetElementAsync_InvalidProjectId_RespondsWithApiError()
         {
@@ -1709,7 +1750,7 @@ namespace Kontent.Ai.Delivery.Tests
             var client = InitializeDeliveryClientWithACustomTypeProvider(_mockHttp);
 
             var actualResponse = await client.GetContentElementAsync("test", "test");
-                
+
             AssertErrorResponse(actualResponse, expectedError);
             Assert.Null(actualResponse.Element);
         }
@@ -1808,7 +1849,7 @@ namespace Kontent.Ai.Delivery.Tests
             );
             var items = (await Task.WhenAll(itemTasks)).ToList();
             Assert.Equal(2, items.Count());
-            
+
             var tweetItem = items[0];
             var hostedVideoItem = items[1];
             Assert.Equal(tweetItem.GetType(), typeof(Tweet));
@@ -1859,8 +1900,8 @@ namespace Kontent.Ai.Delivery.Tests
 
             return client;
         }
-        
-        private  Error CreateInvalidProjectIdApiError() => new Error()
+
+        private Error CreateInvalidProjectIdApiError() => new Error()
         {
             ErrorCode = 105,
             RequestId = "",
@@ -1874,7 +1915,7 @@ namespace Kontent.Ai.Delivery.Tests
         private static void AssertErrorResponse(IResponse actualResponse, IError expectedError)
         {
             var actualError = actualResponse.ApiResponse.Error;
-            
+
             Assert.NotNull(actualResponse.ApiResponse.Error);
             Assert.False(actualResponse.ApiResponse.IsSuccess);
             Assert.Equal(expectedError.Message, actualError.Message);

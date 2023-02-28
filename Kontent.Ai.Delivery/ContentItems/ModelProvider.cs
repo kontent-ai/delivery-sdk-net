@@ -227,27 +227,26 @@ namespace Kontent.Ai.Delivery.ContentItems
             foreach (var item in elementsData)
             {
                 var key = item.Key;
-                var element = (JObject)item.Value;
-
-                var x = element.ToObject<DecimalElementValue>(Serializer);
+                var element = item.Value;
 
                 // TODO think about value converter implementation
                 // TODO what about codename property - now it is null
-                IContentElementValue<object> value = (element["type"].ToString()) switch
+                object value = (element["type"].ToString()) switch
                 {
                     // TODO do we want to use string/structured data for rich text
-                    "rich_text" => element.ToObject<StringElementValue>(Serializer),
+                    "rich_text" => element.ToObject<RichTextElementValue>(Serializer),
                     "asset" => element.ToObject<AssetElementValue>(Serializer),
-                    "number" => element.ToObject<DecimalElementValue>(Serializer),
+                    "number" => element.ToObject<NumberElementValue>(Serializer),
                     // TODO do we want to use string/structured data for date time
                     "date_time" => element.ToObject<DateTimeElementValue>(Serializer),
-                    "multiple_choice" => element.ToObject<IContentElementValue<IEnumerable<MultipleChoiceOption>>>(Serializer),
-                    "taxonomy" => element.ToObject<IContentElementValue<IEnumerable<ITaxonomyTerm>>>(Serializer),
-                    "modular_content" => element.ToObject<IContentElementValue<IEnumerable<string>>>(Serializer),
+                    "multiple_choice" => element.ToObject<ContentElementValue<IEnumerable<MultipleChoiceOption>>>(Serializer),
+                    "taxonomy" => element.ToObject<ContentElementValue<IEnumerable<ITaxonomyTerm>>>(Serializer),
+                    "modular_content" => element.ToObject<ContentElementValue<IEnumerable<string>>>(Serializer),
                     // Custom element, text element, URL slug element
                     _ => element.ToObject<StringElementValue>(Serializer)
                 };
 
+                // TODO Fix the empty Codename?
                 result.Add(key, value);
             }
             return result;
