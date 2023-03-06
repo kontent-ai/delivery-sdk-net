@@ -1085,7 +1085,8 @@ namespace Kontent.Ai.Delivery.Tests
                     Assert.NotNull(elementObject.Type);
                     Assert.NotNull(elementObject.Name);
                     // TODO think about that one
-                    Assert.Null(elementObject.Codename);
+                    // Assert.Null(elementObject.Codename);
+                    Assert.NotNull(elementObject.Codename);
                 }
                 else if (typeof(DateTimeElementValue).IsAssignableFrom(item.Value.GetType()))
                 {
@@ -1094,7 +1095,8 @@ namespace Kontent.Ai.Delivery.Tests
                     Assert.NotNull(elementObject.Type);
                     Assert.NotNull(elementObject.Name);
                     // TODO think about that one
-                    Assert.Null(elementObject.Codename);
+                    // Assert.Null(elementObject.Codename);
+                    Assert.NotNull(elementObject.Codename);
 
                 }
                 else if (typeof(NumberElementValue).IsAssignableFrom(item.Value.GetType()))
@@ -1104,7 +1106,8 @@ namespace Kontent.Ai.Delivery.Tests
                     Assert.NotNull(elementObject.Type);
                     Assert.NotNull(elementObject.Name);
                     // TODO think about that one
-                    Assert.Null(elementObject.Codename);
+                    // Assert.Null(elementObject.Codename);
+                    Assert.NotNull(elementObject.Codename);
                 }
             });
             Assert.All(response.Item.Elements.OfType<RichTextElementValue>(), item =>

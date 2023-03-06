@@ -20,5 +20,13 @@ namespace Kontent.Ai.Delivery.ContentItems.Elements
         /// <inheritdoc/>
         [JsonProperty("codename")]
         public string Codename { get; internal set; }
+
+        // TODO is that a good idea?
+        public ContentElementValue<T> WithCodename(string codename)
+        {
+            Codename = codename;
+            return this;
+        }
+
     }
 }

@@ -234,19 +234,19 @@ namespace Kontent.Ai.Delivery.ContentItems
                 IContentElementValue value = (element["type"].ToString()) switch
                 {
                     // TODO do we want to use string/structured data for rich text - probably think about support both ways
-                    "rich_text" => element.ToObject<RichTextElementValue>(Serializer),
-                    "asset" => element.ToObject<AssetElementValue>(Serializer),
-                    "number" => element.ToObject<NumberElementValue>(Serializer),
+                    "rich_text" => element.ToObject<RichTextElementValue>(Serializer).WithCodename(key),
+                    "asset" => element.ToObject<AssetElementValue>(Serializer).WithCodename(key),
+                    "number" => element.ToObject<NumberElementValue>(Serializer).WithCodename(key),
                     // TODO do we want to use string/structured data for date time => structured is OK
-                    "date_time" => element.ToObject<DateTimeElementValue>(Serializer),
-                    "multiple_choice" => element.ToObject<MultipleChoiceElementValue>(Serializer),
-                    "taxonomy" => element.ToObject<TaxonomyElementValue>(Serializer),
+                    "date_time" => element.ToObject<DateTimeElementValue>(Serializer).WithCodename(key),
+                    "multiple_choice" => element.ToObject<MultipleChoiceElementValue>(Serializer).WithCodename(key),
+                    "taxonomy" => element.ToObject<TaxonomyElementValue>(Serializer).WithCodename(key),
                     // TODO what Linked items + what SubPages? 
-                    "modular_content" => element.ToObject<ContentElementValue<IEnumerable<string>>>(Serializer),
-                    "custom_element" => element.ToObject<CustomElementValue>(Serializer),
-                    "url_slug" => element.ToObject<UrlSlugElementValue>(Serializer),
-                    "text" => element.ToObject<TextElementValue>(Serializer),
-                    _ => throw new ArgumentException($"Argument type {element["type"].ToString()} not supported.")
+                    "modular_content" => element.ToObject<ContentElementValue<IEnumerable<string>>>(Serializer).WithCodename(key),
+                    "custom" => element.ToObject<CustomElementValue>(Serializer).WithCodename(key),
+                    "url_slug" => element.ToObject<UrlSlugElementValue>(Serializer).WithCodename(key),
+                    "text" => element.ToObject<TextElementValue>(Serializer).WithCodename(key),
+                    _ => throw new ArgumentException($"Argument type ({element["type"].ToString()}) not supported.")
                 };
 
                 // TODO Fix the empty Codename? Probably yes (wrap ToObject with normalization logic)
@@ -255,6 +255,7 @@ namespace Kontent.Ai.Delivery.ContentItems
             }
             return result;
         }
+
         private async Task<object> GetPropertyValueAsync(JObject elementsData, PropertyInfo property, JObject linkedItems, ResolvingContext context, IContentItemSystemAttributes itemSystemAttributes, Dictionary<string, object> processedItems, List<PropertyInfo> richTextPropertiesToBeProcessed)
         {
             var elementDefinition = GetElementData(elementsData, property, itemSystemAttributes);

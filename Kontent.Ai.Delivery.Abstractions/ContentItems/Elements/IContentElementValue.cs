@@ -10,8 +10,6 @@
         /// Gets the value of the content element.
         /// </summary>
         T Value { get; }
-
-
     }
 
     /// <summary>
