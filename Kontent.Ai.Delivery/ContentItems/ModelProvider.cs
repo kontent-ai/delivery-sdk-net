@@ -237,14 +237,16 @@ namespace Kontent.Ai.Delivery.ContentItems
                     "rich_text" => element.ToObject<RichTextElementValue>(Serializer),
                     "asset" => element.ToObject<AssetElementValue>(Serializer),
                     "number" => element.ToObject<NumberElementValue>(Serializer),
-                    // TODO do we want to use string/structured data for date time
+                    // TODO do we want to use string/structured data for date time => structured is OK
                     "date_time" => element.ToObject<DateTimeElementValue>(Serializer),
-                    "multiple_choice" => element.ToObject<ContentElementValue<IEnumerable<MultipleChoiceOption>>>(Serializer),
-                    "taxonomy" => element.ToObject<ContentElementValue<IEnumerable<ITaxonomyTerm>>>(Serializer),
+                    "multiple_choice" => element.ToObject<MultipleChoiceElementValue>(Serializer),
+                    "taxonomy" => element.ToObject<TaxonomyElementValue>(Serializer),
+                    // TODO what Linked items + what SubPages? 
                     "modular_content" => element.ToObject<ContentElementValue<IEnumerable<string>>>(Serializer),
-                    // TODO do we need to split this into UrlSlugElementValue/CustomElementValue/TextElementValue => Custom value has Searchable value => split to more classes
-                    // Custom element, text element, URL slug element
-                    _ => element.ToObject<StringElementValue>(Serializer)
+                    "custom_element" => element.ToObject<CustomElementValue>(Serializer),
+                    "url_slug" => element.ToObject<UrlSlugElementValue>(Serializer),
+                    "text" => element.ToObject<TextElementValue>(Serializer),
+                    _ => throw new ArgumentException($"Argument type {element["type"].ToString()} not supported.")
                 };
 
                 // TODO Fix the empty Codename? Probably yes (wrap ToObject with normalization logic)
