@@ -230,7 +230,7 @@ namespace Kontent.Ai.Delivery.ContentItems
                 var element = item.Value;
 
                 // TODO think about value converter implementation
-                // TODO what about codename property - now it is null
+                // TODO what about codename property - now it is not null, bit withCodename is not really nice
                 IContentElementValue value = (element["type"].ToString()) switch
                 {
                     // TODO do we want to use string/structured data for rich text - probably think about support both ways
@@ -248,9 +248,6 @@ namespace Kontent.Ai.Delivery.ContentItems
                     "text" => element.ToObject<TextElementValue>(Serializer).WithCodename(key),
                     _ => throw new ArgumentException($"Argument type ({element["type"].ToString()}) not supported.")
                 };
-
-                // TODO Fix the empty Codename? Probably yes (wrap ToObject with normalization logic)
-                // value.Codename = key;
                 result.Add(key, value);
             }
             return result;
