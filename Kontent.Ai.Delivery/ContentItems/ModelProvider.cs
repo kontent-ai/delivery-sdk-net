@@ -231,9 +231,9 @@ namespace Kontent.Ai.Delivery.ContentItems
 
                 // TODO think about value converter implementation
                 // TODO what about codename property - now it is null
-                object value = (element["type"].ToString()) switch
+                IContentElementValue value = (element["type"].ToString()) switch
                 {
-                    // TODO do we want to use string/structured data for rich text
+                    // TODO do we want to use string/structured data for rich text - probably think about support both ways
                     "rich_text" => element.ToObject<RichTextElementValue>(Serializer),
                     "asset" => element.ToObject<AssetElementValue>(Serializer),
                     "number" => element.ToObject<NumberElementValue>(Serializer),
@@ -242,11 +242,13 @@ namespace Kontent.Ai.Delivery.ContentItems
                     "multiple_choice" => element.ToObject<ContentElementValue<IEnumerable<MultipleChoiceOption>>>(Serializer),
                     "taxonomy" => element.ToObject<ContentElementValue<IEnumerable<ITaxonomyTerm>>>(Serializer),
                     "modular_content" => element.ToObject<ContentElementValue<IEnumerable<string>>>(Serializer),
+                    // TODO do we need to split this into UrlSlugElementValue/CustomElementValue/TextElementValue => Custom value has Searchable value => split to more classes
                     // Custom element, text element, URL slug element
                     _ => element.ToObject<StringElementValue>(Serializer)
                 };
 
-                // TODO Fix the empty Codename?
+                // TODO Fix the empty Codename? Probably yes (wrap ToObject with normalization logic)
+                // value.Codename = key;
                 result.Add(key, value);
             }
             return result;

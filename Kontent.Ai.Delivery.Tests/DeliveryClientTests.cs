@@ -1053,6 +1053,31 @@ namespace Kontent.Ai.Delivery.Tests
 
             Assert.All(response.Item.Elements, item =>
             {
+
+
+                // Assignment with pattern matching
+                var x = item.Value switch
+                {
+                    AssetElementValue y => y.Codename,
+                    _ => null
+                };
+
+                switch (item.Value.Type)
+                {
+                    case "rich_text":
+
+                        break;
+                    case "modular_content":
+                        // TODO extract ContentElementValue<IEnumerable<string>> as separate type LinkedItems(SubPages)ElementValue
+                        var linkedItems = (ContentElementValue<IEnumerable<string>>)item.Value;
+                        // TODO check out how to work with linked items => for tree traversal the strongly typed way
+                        // response.ApiResponse.getLinkedItem<DynamicContentItemModel>(linkedItems.Value[0]);
+                        break;
+                    default:
+                        break;
+                }
+
+                // 
                 if (typeof(IContentElementValue<object>).IsAssignableFrom(item.Value.GetType()))
                 {
                     var elementObject = (IContentElementValue<object>)item.Value;

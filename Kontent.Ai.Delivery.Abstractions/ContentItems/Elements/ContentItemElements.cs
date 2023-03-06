@@ -7,7 +7,7 @@ namespace Kontent.Ai.Delivery.Abstractions
     /// Dynamic dictionary of strongly type elements for dynamic item fetch.
     /// Values are based on <see cref="Kontent.Ai.Delivery.Abstractions.IContentElementValue{T}"/>
     /// </summary>
-    public class ContentItemElements : Dictionary<string, object>
+    public class ContentItemElements : Dictionary<string, IContentElementValue>
     {
 
     }

@@ -5,7 +5,7 @@ using System.Collections.Generic;
 
 namespace Kontent.Ai.Delivery.ContentItems.Elements
 {
-    internal class RichTextElementValue : ContentElementValue<string>, IRichTextElementValue
+    internal class RichTextElementValue : StringElementValue, IRichTextElementValue
     {
         [JsonProperty("images")]
         public IDictionary<Guid, IInlineImage> Images { get; set; }

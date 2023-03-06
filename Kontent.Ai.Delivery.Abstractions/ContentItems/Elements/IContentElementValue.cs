@@ -1,15 +1,24 @@
 ﻿namespace Kontent.Ai.Delivery.Abstractions
 {
+    // TODO think whether the IContentElementValue is needed
     /// <summary>
-    /// Represents a content element.
+    /// Represents a generic content element with value.
     /// </summary>
-    public interface IContentElementValue<out T>
+    public interface IContentElementValue<out T> : IContentElementValue
     {
         /// <summary>
         /// Gets the value of the content element.
         /// </summary>
         T Value { get; }
 
+
+    }
+
+    /// <summary>
+    /// Represents a content element.
+    /// </summary>
+    public interface IContentElementValue
+    {
         /// <summary>
         /// Gets the codename of the content element.
         /// </summary>
