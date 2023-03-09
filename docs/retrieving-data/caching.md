@@ -65,6 +65,7 @@ services.AddDeliveryClientCache(new DeliveryCacheOptions()
 });
 ```
 > You can optionally register [`ILoggerFactory` implementation](../configuration/dependency-injection.md). Logger will have effect only when `distributed cache` is used and [`FallbackToApi`](../../Kontent.Ai.Delivery.Caching/DistributedCacheResilientPolicy.cs) option is chosen for `DistributedCacheResilientPolicy` parameter of `DeliveryCacheOptions`. In this case information message will be logged when `distributed cache` is not available.
+
 Read more in [Microsoft docs](https://docs.microsoft.com/en-us/aspnet/core/performance/caching/distributed).
 
 ## Usage without DI
