@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Globalization;
 using System.IO;
 using System.Linq;
 using System.Net;
@@ -1800,6 +1801,54 @@ namespace Kontent.Ai.Delivery.Tests
             Assert.Equal(hostedVideoItem.GetType(), typeof(HostedVideo));
             Assert.Equal("https://twitter.com/DeCubaNorwich/status/879265763978358784", (tweetItem as Tweet).TweetLink);
             Assert.Equal("2Ao5b6uqI40", (hostedVideoItem as HostedVideo).VideoId);
+        }
+
+        [Fact]
+        public async Task SyncApi_PostSyncInitAsync_GetContinuationToken()
+        {
+            _mockHttp
+                .When($"{_baseUrl}/sync/init")
+                .Respond(new[] { new KeyValuePair<string, string>("X-Continuation", "token"), }, "application/json", await File.ReadAllTextAsync(Path.Combine(Environment.CurrentDirectory, $"Fixtures{Path.DirectorySeparatorChar}DeliveryClient{Path.DirectorySeparatorChar}sync_init.json")));
+            
+            var client = InitializeDeliveryClientWithCustomModelProvider(_mockHttp);
+
+            var syncInit = await client.PostSyncInitAsync();
+            
+            Assert.NotNull(syncInit.ApiResponse.ContinuationToken);
+            Assert.Empty(syncInit.SyncItems);
+        }
+
+        [Fact]
+        public async Task SyncApi_GetSyncAsync_GetSyncItems()
+        {
+            _mockHttp
+                .When($"{_baseUrl}/sync")
+                .WithHeaders("X-Continuation", "token")
+                .Respond(new[] { new KeyValuePair<string, string>("X-Continuation", "token"), }, "application/json", await File.ReadAllTextAsync(Path.Combine(Environment.CurrentDirectory, $"Fixtures{Path.DirectorySeparatorChar}DeliveryClient{Path.DirectorySeparatorChar}sync.json")));
+            
+            var client = InitializeDeliveryClientWithCustomModelProvider(_mockHttp);
+
+            var sync = await client.GetSyncAsync("token");
+            
+            Assert.NotNull(sync.ApiResponse.ContinuationToken);
+            
+            Assert.Equal(2, sync.SyncItems.Count);
+
+            Assert.Equal("hello_world", sync.SyncItems[0].Codename);
+            Assert.Equal(Guid.Parse("7adfb82a-1386-4228-bcc2-45073a0355f6"), sync.SyncItems[0].Id);
+            Assert.Equal("article", sync.SyncItems[0].Type);
+            Assert.Equal("default", sync.SyncItems[0].Language);
+            Assert.Equal("default", sync.SyncItems[0].Collection);
+            Assert.Equal("changed", sync.SyncItems[0].ChangeType);
+            Assert.Equal(DateTimeOffset.Parse("2022-10-06T08:38:40.0088127Z"), sync.SyncItems[0].Timestamp);
+            
+            Assert.Equal("bye__world", sync.SyncItems[1].Codename);
+            Assert.Equal(Guid.Parse("42a3cfbd-4967-43e7-987b-e1e69c483e26"), sync.SyncItems[1].Id);
+            Assert.Equal("article", sync.SyncItems[1].Type);
+            Assert.Equal("default", sync.SyncItems[1].Language);
+            Assert.Equal("default", sync.SyncItems[1].Collection);
+            Assert.Equal("deleted", sync.SyncItems[1].ChangeType);
+            Assert.Equal(DateTimeOffset.Parse("2022-10-06T08:38:47.3613558Z"), sync.SyncItems[1].Timestamp);
         }
 
         private DeliveryClient InitializeDeliveryClientWithACustomTypeProvider(MockHttpMessageHandler handler)

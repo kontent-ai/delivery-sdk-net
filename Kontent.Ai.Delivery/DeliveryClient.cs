@@ -11,6 +11,7 @@ using Kontent.Ai.Delivery.ContentTypes;
 using Kontent.Ai.Delivery.Extensions;
 using Kontent.Ai.Delivery.Languages;
 using Kontent.Ai.Delivery.SharedModels;
+using Kontent.Ai.Delivery.Sync;
 using Kontent.Ai.Delivery.TaxonomyGroups;
 using Kontent.Ai.Urls.Delivery;
 using Kontent.Ai.Urls.Delivery.QueryParameters;
@@ -313,7 +314,37 @@ namespace Kontent.Ai.Delivery
             return new DeliveryLanguageListingResponse(response, languages.ToList<ILanguage>(), pagination);
         }
 
-        private async Task<ApiResponse> GetDeliveryResponseAsync(string endpointUrl, string continuationToken = null)
+        public async Task<IDeliverySyncInitResponse> PostSyncInitAsync(IEnumerable<IQueryParameter> parameters = null)
+        {
+            var endpointUrl = UrlBuilder.GetSyncInitUrl(parameters);
+            var response = await GetDeliveryResponseAsync(endpointUrl, httpMethod: HttpMethod.Post);
+
+            if (!response.IsSuccess)
+            {
+                return new DeliverySyncInitResponse(response);
+            }
+
+            var content = await response.GetJsonContentAsync();
+            var items = content["items"].ToObject<List<SyncItem>>(Serializer);
+            return new DeliverySyncInitResponse(response, items.ToList<ISyncItem>());
+        }
+
+        public async Task<IDeliverySyncResponse> GetSyncAsync(string continuationToken)
+        {
+            var endpointUrl = UrlBuilder.GetSyncUrl();
+            var response = await GetDeliveryResponseAsync(endpointUrl, continuationToken);
+
+            if (!response.IsSuccess)
+            {
+                return new DeliverySyncResponse(response);
+            }
+
+            var content = await response.GetJsonContentAsync();
+            var items = content["items"].ToObject<List<SyncItem>>(Serializer);
+            return new DeliverySyncResponse(response, items.ToList<ISyncItem>());
+        }
+
+        private async Task<ApiResponse> GetDeliveryResponseAsync(string endpointUrl, string continuationToken = null, HttpMethod httpMethod = null)
         {
             if (DeliveryOptions.CurrentValue.UsePreviewApi && DeliveryOptions.CurrentValue.UseSecureAccess)
             {
@@ -334,9 +365,9 @@ namespace Kontent.Ai.Delivery
             return await GetResponseContentAsync(await SendHttpMessageAsync(endpointUrl, continuationToken), endpointUrl);
         }
 
-        private Task<HttpResponseMessage> SendHttpMessageAsync(string endpointUrl, string continuationToken = null)
+        private Task<HttpResponseMessage> SendHttpMessageAsync(string endpointUrl, string continuationToken = null, HttpMethod httpMethod = null)
         {
-            var message = new HttpRequestMessage(HttpMethod.Get, endpointUrl);
+            var message = new HttpRequestMessage(httpMethod ?? HttpMethod.Get, endpointUrl);
 
             if (DeliveryOptions.CurrentValue.WaitForLoadingNewContent)
             {
