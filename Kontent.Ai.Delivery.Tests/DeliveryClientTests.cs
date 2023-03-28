@@ -1041,15 +1041,15 @@ namespace Kontent.Ai.Delivery.Tests
         }
 
         [Fact]
-        public async Task DynamicResponse()
+        public async Task GetUniversalItemAsync_RespondCorrectly()
         {
             _mockHttp
                 .When($"{_baseUrl}/items/complete_content_item")
                 .Respond("application/json", await File.ReadAllTextAsync(Path.Combine(Environment.CurrentDirectory, $"Fixtures{Path.DirectorySeparatorChar}DeliveryClient{Path.DirectorySeparatorChar}complete_content_item.json")));
 
-            var client = InitializeDeliveryClientWithCustomModelProvider(_mockHttp, new PropertyMapper());// , new CustomTypeProvider());
+            var client = InitializeDeliveryClientWithCustomModelProvider(_mockHttp, new PropertyMapper());
 
-            var response = await client.GetItemAsync<DynamicContentItemModel>("complete_content_item");
+            var response = await client.GetUniversalItemAsync("complete_content_item");
 
             Assert.All(response.Item.Elements, item =>
             {
@@ -1065,11 +1065,12 @@ namespace Kontent.Ai.Delivery.Tests
                 switch (item.Value.Type)
                 {
                     case "rich_text":
+                        // TODO Extract rich text
 
                         break;
                     case "modular_content":
                         // TODO extract ContentElementValue<IEnumerable<string>> as separate type LinkedItems(SubPages)ElementValue
-                        var linkedItems = (ContentElementValue<IEnumerable<string>>)item.Value;
+                        // var linkedItems = (ContentElementValue<IEnumerable<string>>)item.Value;
                         // TODO check out how to work with linked items => for tree traversal the strongly typed way
                         // response.ApiResponse.getLinkedItem<DynamicContentItemModel>(linkedItems.Value[0]);
                         break;
@@ -1120,6 +1121,8 @@ namespace Kontent.Ai.Delivery.Tests
             {
                 Assert.NotNull(item.TaxonomyGroup);
             });
+
+            Assert.Single(response.LinkedItems);
         }
 
         [Fact]

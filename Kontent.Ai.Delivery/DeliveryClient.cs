@@ -7,6 +7,7 @@ using System.Text;
 using System.Threading.Tasks;
 using Kontent.Ai.Delivery.Abstractions;
 using Kontent.Ai.Delivery.ContentItems;
+using Kontent.Ai.Delivery.ContentItems.Universal;
 using Kontent.Ai.Delivery.ContentTypes;
 using Kontent.Ai.Delivery.Extensions;
 using Kontent.Ai.Delivery.Languages;
@@ -37,6 +38,7 @@ namespace Kontent.Ai.Delivery
         internal readonly IDeliveryHttpClient DeliveryHttpClient;
         internal readonly JsonSerializer Serializer;
         internal readonly ILoggerFactory LoggerFactory;
+        internal readonly IUniversalItemModelProvider GenericModelProvider;
 
         internal DeliveryEndpointUrlBuilder UrlBuilder
             => _urlBuilder ??= new DeliveryEndpointUrlBuilder(DeliveryOptions);
@@ -58,7 +60,9 @@ namespace Kontent.Ai.Delivery
             ITypeProvider typeProvider = null,
             IDeliveryHttpClient deliveryHttpClient = null,
             JsonSerializer serializer = null,
-            ILoggerFactory loggerFactory = null)
+            // TODO why logger factory is not everywhere ?
+            ILoggerFactory loggerFactory = null,
+            IUniversalItemModelProvider genericModelProvider = null)
         {
             DeliveryOptions = deliveryOptions;
             ModelProvider = modelProvider;
@@ -67,6 +71,8 @@ namespace Kontent.Ai.Delivery
             DeliveryHttpClient = deliveryHttpClient;
             Serializer = serializer;
             LoggerFactory = loggerFactory;
+            // TODO IOC? Default? Check references
+            GenericModelProvider = new GenericModelProvider(serializer);
         }
 
         /// <summary>
@@ -85,7 +91,7 @@ namespace Kontent.Ai.Delivery
 
             var endpointUrl = UrlBuilder.GetItemUrl(codename, parameters);
             var response = await GetDeliveryResponseAsync(endpointUrl);
-            
+
             if (!response.IsSuccess)
             {
                 return new DeliveryItemResponse<T>(response);
@@ -107,12 +113,12 @@ namespace Kontent.Ai.Delivery
             var enhancedParameters = EnsureContentTypeFilter<T>(parameters).ToList();
             var endpointUrl = UrlBuilder.GetItemsUrl(enhancedParameters);
             var response = await GetDeliveryResponseAsync(endpointUrl);
-            
+
             if (!response.IsSuccess)
             {
                 return new DeliveryItemListingResponse<T>(response);
             }
-            
+
             var content = await response.GetJsonContentAsync();
             var pagination = content["pagination"].ToObject<Pagination>(Serializer);
             var items = ((JArray)content["items"]).Select(async source => await ModelProvider.GetContentItemModelAsync<T>(source, content["modular_content"]));
@@ -136,12 +142,12 @@ namespace Kontent.Ai.Delivery
             async Task<DeliveryItemsFeedResponse<T>> GetItemsBatchAsync(string continuationToken)
             {
                 var response = await GetDeliveryResponseAsync(endpointUrl, continuationToken);
-                
+
                 if (!response.IsSuccess)
                 {
                     return new DeliveryItemsFeedResponse<T>(response);
                 }
-                
+
                 var content = await response.GetJsonContentAsync();
 
                 var items = ((JArray)content["items"]).Select(async source => await ModelProvider.GetContentItemModelAsync<T>(source, content["modular_content"]));
@@ -194,7 +200,7 @@ namespace Kontent.Ai.Delivery
             {
                 return new DeliveryTypeListingResponse(response);
             }
-            
+
             var content = await response.GetJsonContentAsync();
             var pagination = content["pagination"].ToObject<Pagination>(Serializer);
             var types = content["types"].ToObject<List<ContentType>>(Serializer);
@@ -280,12 +286,12 @@ namespace Kontent.Ai.Delivery
         {
             var endpointUrl = UrlBuilder.GetTaxonomiesUrl(parameters);
             var response = await GetDeliveryResponseAsync(endpointUrl);
-            
+
             if (!response.IsSuccess)
             {
                 return new DeliveryTaxonomyListingResponse(response);
             }
-            
+
             var content = await response.GetJsonContentAsync();
             var pagination = content["pagination"].ToObject<Pagination>(Serializer);
             var taxonomies = content["taxonomies"].ToObject<List<TaxonomyGroup>>(Serializer);
@@ -301,12 +307,12 @@ namespace Kontent.Ai.Delivery
         {
             var endpointUrl = UrlBuilder.GetLanguagesUrl(parameters);
             var response = await GetDeliveryResponseAsync(endpointUrl);
-            
+
             if (!response.IsSuccess)
             {
                 return new DeliveryLanguageListingResponse(response);
             }
-            
+
             var content = await response.GetJsonContentAsync();
             var pagination = content["pagination"].ToObject<Pagination>(Serializer);
             var languages = content["languages"].ToObject<List<Language>>(Serializer);
@@ -446,6 +452,44 @@ namespace Kontent.Ai.Delivery
             {
                 throw new ArgumentException("Skip parameter is not supported in items feed.");
             }
+        }
+
+        public async Task<IDeliveryUniversalItemResponse> GetUniversalItemAsync(string codename, IEnumerable<IQueryParameter> parameters = null)
+        {
+            if (string.IsNullOrEmpty(codename))
+            {
+                throw new ArgumentException("Entered item codename is not valid.", nameof(codename));
+            }
+
+            var endpointUrl = UrlBuilder.GetItemUrl(codename, parameters);
+            var response = await GetDeliveryResponseAsync(endpointUrl);
+
+            if (!response.IsSuccess)
+            {
+                return new DeliveryUniversalItemResponse(response);
+            }
+
+            var content = await response.GetJsonContentAsync();
+            var model = await GenericModelProvider.GetContentItemGenericModelAsync(content["item"]);
+
+            var linkedUniversalItems = new Dictionary<string, IUniversalContentItem>();
+            // TODO rewrite
+            var result  = content["modular_content"]?
+                .Values()
+                .Select(async linkedItem =>
+                {
+                    var res = await GenericModelProvider.GetContentItemGenericModelAsync(linkedItem);
+                    linkedUniversalItems.Add(res.System.Codename, res);
+                });
+
+
+            Task.WhenAll(result);
+            return new DeliveryUniversalItemResponse(response, model, linkedUniversalItems);
+        }
+
+        public Task<IDeliveryUniversalItemListingResponse> GetUniversalItemsAsync(IEnumerable<IQueryParameter> parameters = null)
+        {
+            throw new NotImplementedException();
         }
     }
 }

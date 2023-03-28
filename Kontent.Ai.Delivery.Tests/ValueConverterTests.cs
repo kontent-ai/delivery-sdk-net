@@ -72,7 +72,7 @@ namespace Kontent.Ai.Delivery.Tests
 
             var article = await client.GetItemAsync<Article>("on_roasts");
 
-            Assert.Equal(new[]{"coffee_processing_techniques", "origins_of_arabica_bourbon"}, article.Item.RelatedArticleCodenames);
+            Assert.Equal(new[] { "coffee_processing_techniques", "origins_of_arabica_bourbon" }, article.Item.RelatedArticleCodenames);
         }
 
         [Fact]
@@ -120,7 +120,7 @@ namespace Kontent.Ai.Delivery.Tests
             Assert.NotNull(hostedVideo);
             Assert.NotNull(tweet);
         }
-        
+
         [Fact]
         public async Task AssetElementValueConverter_NoPresetSpecifiedInConfig_AssetUrlIsUntouched()
         {
@@ -138,7 +138,7 @@ namespace Kontent.Ai.Delivery.Tests
 
             Assert.Equal(assetUrl, teaserImage.Url);
         }
-        
+
         [Fact]
         public async Task AssetElementValueConverter_DefaultPresetSpecifiedInConfig_AssetUrlContainsDefaultRenditionQuery()
         {
@@ -149,7 +149,7 @@ namespace Kontent.Ai.Delivery.Tests
 
             var defaultRenditionPreset = "default";
 
-            var client = InitializeDeliveryClient(mockHttp, new DeliveryOptions { ProjectId = _guid, DefaultRenditionPreset = defaultRenditionPreset});
+            var client = InitializeDeliveryClient(mockHttp, new DeliveryOptions { ProjectId = _guid, DefaultRenditionPreset = defaultRenditionPreset });
 
             var response = await client.GetItemAsync<Article>("coffee_beverages_explained");
             var teaserImage = response.Item.TeaserImage.FirstOrDefault();
@@ -159,7 +159,7 @@ namespace Kontent.Ai.Delivery.Tests
 
             Assert.Equal($"{assetUrl}?{defaultRenditionQuery}", teaserImage.Url);
         }
-        
+
         [Fact]
         public async Task AssetElementValueConverter_MobilePresetSpecifiedInConfig_AssetUrlIsUntouchedAsThereIsNoMobileRenditionSpecified()
         {
@@ -170,8 +170,8 @@ namespace Kontent.Ai.Delivery.Tests
 
             var defaultRenditionPreset = "mobile";
 
-            var client = InitializeDeliveryClient(mockHttp, new DeliveryOptions { ProjectId = _guid, DefaultRenditionPreset = defaultRenditionPreset});
-            
+            var client = InitializeDeliveryClient(mockHttp, new DeliveryOptions { ProjectId = _guid, DefaultRenditionPreset = defaultRenditionPreset });
+
             var response = await client.GetItemAsync<Article>("coffee_beverages_explained");
             var teaserImage = response.Item.TeaserImage.FirstOrDefault();
 

@@ -156,5 +156,17 @@ namespace Kontent.Ai.Delivery.Caching
                 response => response.Languages.Any(),
                 CacheHelpers.GetLanguagesDependencies);
         }
+
+        // TODO
+        public Task<IDeliveryUniversalItemResponse> GetUniversalItemAsync(string codename, IEnumerable<IQueryParameter> parameters = null)
+        {
+            throw new NotImplementedException();
+        }
+
+        // TODO
+        public Task<IDeliveryUniversalItemListingResponse> GetUniversalItemsAsync(IEnumerable<IQueryParameter> parameters = null)
+        {
+            throw new NotImplementedException();
+        }
     }
 }

@@ -106,16 +106,6 @@ namespace Kontent.Ai.Delivery.ContentItems
                         property.SetValue(instance, itemSystemAttributes);
                     }
                 }
-                else if (typeof(ContentItemElements).IsAssignableFrom(property.PropertyType))
-                {
-
-                    var value = GetAllPropertiesValuesAsync(elementsData, property, linkedItems, context, itemSystemAttributes, processedItems, richTextPropertiesToBeProcessed);
-                    if (value != null)
-                    {
-                        property.SetValue(instance, value);
-                    }
-
-                }
                 else
                 {
                     var value = await GetPropertyValueAsync(elementsData, property, linkedItems, context, itemSystemAttributes, processedItems, richTextPropertiesToBeProcessed);
@@ -219,38 +209,6 @@ namespace Kontent.Ai.Delivery.ContentItems
                 GetLinkedItem = GetLinkedItemAsync,
                 ContentLinkUrlResolver = ContentLinkUrlResolver
             };
-        }
-
-        private ContentItemElements GetAllPropertiesValuesAsync(JObject elementsData, PropertyInfo property, JObject linkedItems, ResolvingContext context, IContentItemSystemAttributes itemSystemAttributes, Dictionary<string, object> processedItems, List<PropertyInfo> richTextPropertiesToBeProcessed)
-        {
-            var result = new ContentItemElements();
-            foreach (var item in elementsData)
-            {
-                var key = item.Key;
-                var element = item.Value;
-
-                // TODO think about value converter implementation
-                // TODO what about codename property - now it is not null, bit withCodename is not really nice
-                IContentElementValue value = (element["type"].ToString()) switch
-                {
-                    // TODO do we want to use string/structured data for rich text - probably think about support both ways
-                    "rich_text" => element.ToObject<RichTextElementValue>(Serializer).WithCodename(key),
-                    "asset" => element.ToObject<AssetElementValue>(Serializer).WithCodename(key),
-                    "number" => element.ToObject<NumberElementValue>(Serializer).WithCodename(key),
-                    // TODO do we want to use string/structured data for date time => structured is OK
-                    "date_time" => element.ToObject<DateTimeElementValue>(Serializer).WithCodename(key),
-                    "multiple_choice" => element.ToObject<MultipleChoiceElementValue>(Serializer).WithCodename(key),
-                    "taxonomy" => element.ToObject<TaxonomyElementValue>(Serializer).WithCodename(key),
-                    // TODO what Linked items + what SubPages? 
-                    "modular_content" => element.ToObject<ContentElementValue<IEnumerable<string>>>(Serializer).WithCodename(key),
-                    "custom" => element.ToObject<CustomElementValue>(Serializer).WithCodename(key),
-                    "url_slug" => element.ToObject<UrlSlugElementValue>(Serializer).WithCodename(key),
-                    "text" => element.ToObject<TextElementValue>(Serializer).WithCodename(key),
-                    _ => throw new ArgumentException($"Argument type ({element["type"].ToString()}) not supported.")
-                };
-                result.Add(key, value);
-            }
-            return result;
         }
 
         private async Task<object> GetPropertyValueAsync(JObject elementsData, PropertyInfo property, JObject linkedItems, ResolvingContext context, IContentItemSystemAttributes itemSystemAttributes, Dictionary<string, object> processedItems, List<PropertyInfo> richTextPropertiesToBeProcessed)
@@ -425,11 +383,6 @@ namespace Kontent.Ai.Delivery.ContentItems
             if (typeof(IDateTimeContent).IsAssignableFrom(property.PropertyType))
             {
                 return new DateTimeContentConverter();
-            }
-
-            if (property.PropertyType == typeof(IEnumerable<IAsset>))
-            {
-                return new AssetElementValueConverter(DeliveryOptions);
             }
 
             return null;

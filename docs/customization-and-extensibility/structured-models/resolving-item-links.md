@@ -49,7 +49,7 @@ public class CustomContentLinkUrlResolver : IContentLinkUrlResolver
             return Task.FromResult($"/accessories/{link.UrlSlug}");
         }
 
-        // TODO: Add the rest of the resolver logic
+        // TBD: Add the rest of the resolver logic
     }
 
     public Task<string> ResolveBrokenLinkUrlAsync()
