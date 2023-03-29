@@ -385,6 +385,11 @@ namespace Kontent.Ai.Delivery.ContentItems
                 return new DateTimeContentConverter();
             }
 
+            if (property.PropertyType == typeof(IEnumerable<IAsset>))
+            {
+                return new AssetElementValueConverter(DeliveryOptions);
+            }
+
             return null;
         }
 
