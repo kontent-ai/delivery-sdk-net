@@ -158,15 +158,25 @@ namespace Kontent.Ai.Delivery.Caching
         }
 
         // TODO
-        public Task<IDeliveryUniversalItemResponse> GetUniversalItemAsync(string codename, IEnumerable<IQueryParameter> parameters = null)
+        public async Task<IDeliveryUniversalItemResponse> GetUniversalItemAsync(string codename, IEnumerable<IQueryParameter> parameters = null)
         {
-            throw new NotImplementedException();
+            var queryParameters = parameters?.ToList();
+            return await _deliveryCacheManager.GetOrAddAsync(
+                CacheHelpers.GetItemKey<IUniversalContentItem>(codename, queryParameters),
+                () => _deliveryClient.GetUniversalItemAsync(codename, queryParameters),
+                response => response != null,
+                CacheHelpers.GetItemDependencies);
         }
 
         // TODO
-        public Task<IDeliveryUniversalItemListingResponse> GetUniversalItemsAsync(IEnumerable<IQueryParameter> parameters = null)
+        public async Task<IDeliveryUniversalItemListingResponse> GetUniversalItemsAsync(IEnumerable<IQueryParameter> parameters = null)
         {
-            throw new NotImplementedException();
+            var queryParameters = parameters?.ToList();
+            return await _deliveryCacheManager.GetOrAddAsync(
+                CacheHelpers.GetItemsKey<IList<IUniversalContentItem>>(queryParameters),
+                () => _deliveryClient.GetUniversalItemsAsync(queryParameters),
+                response => response.Items.Any(),
+                CacheHelpers.GetItemsDependencies);
         }
     }
 }

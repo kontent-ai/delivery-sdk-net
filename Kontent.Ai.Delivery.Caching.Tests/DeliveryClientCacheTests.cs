@@ -731,5 +731,64 @@ namespace Kontent.Ai.Delivery.Caching.Tests
         }
 
         #endregion
+
+        #region GetUniversalItemAsync
+
+        [Theory]
+        [InlineData(CacheTypeEnum.Memory, CacheExpirationType.Absolute)]
+        [InlineData(CacheTypeEnum.Memory, CacheExpirationType.Sliding)]
+        [InlineData(CacheTypeEnum.Distributed, CacheExpirationType.Absolute)]
+        [InlineData(CacheTypeEnum.Distributed, CacheExpirationType.Sliding)]
+        public async Task GetUniversalItemAsync_ResponseIsCached(CacheTypeEnum cacheType, CacheExpirationType cacheExpirationType)
+        {
+            const string codename = "codename";
+            var url = $"items/{codename}";
+            var item = CreateItemResponse(CreateItem(codename, "original"));
+            var updatedItem = CreateItemResponse(CreateItem(codename, "updated"));
+            var scenarioBuilder = new ScenarioBuilder(cacheType, cacheExpirationType);
+            var scenario = scenarioBuilder.WithResponse(url, item).Build();
+
+            var firstResponse = await scenario.CachingClient.GetUniversalItemAsync(codename);
+            scenario = scenarioBuilder.WithResponse(url, updatedItem).Build();
+
+            var secondResponse = await scenario.CachingClient.GetUniversalItemAsync(codename);
+            //Check
+            firstResponse.Should().NotBeNull();
+            firstResponse.Should().BeEquivalentTo(secondResponse);
+            scenario.GetRequestCount(url).Should().Be(1);
+        }
+
+        // TODO Add all test to mirror strongly type responses
+
+        #endregion
+
+        #region GetUniversalItemsAsync
+
+        [Theory]
+        [InlineData(CacheTypeEnum.Memory, CacheExpirationType.Absolute)]
+        [InlineData(CacheTypeEnum.Memory, CacheExpirationType.Sliding)]
+        [InlineData(CacheTypeEnum.Distributed, CacheExpirationType.Absolute)]
+        [InlineData(CacheTypeEnum.Distributed, CacheExpirationType.Sliding)]
+        public async Task GetUniversalItemsAsync_ResponseIsCached(CacheTypeEnum cacheType, CacheExpirationType cacheExpirationType)
+        {
+            var url = "items";
+            var itemB = CreateItem("b", "original");
+            var items = CreateItemsResponse(new[] { CreateItem("a", "original"), itemB });
+            var updatedItems = CreateItemsResponse(new[] { CreateItem("a", "updated"), itemB });
+            var scenarioBuilder = new ScenarioBuilder(cacheType, cacheExpirationType);
+            var scenario = scenarioBuilder.WithResponse(url, items).Build();
+
+            var firstResponse = await scenario.CachingClient.GetUniversalItemsAsync();
+            scenario = scenarioBuilder.WithResponse(url, updatedItems).Build();
+            var secondResponse = await scenario.CachingClient.GetUniversalItemsAsync();
+            //Check
+            firstResponse.Should().NotBeNull();
+            firstResponse.Should().BeEquivalentTo(secondResponse);
+            scenario.GetRequestCount(url).Should().Be(1);
+        }
+
+        // TODO Add all test to mirror strongly type responses
+
+        #endregion
     }
 }
