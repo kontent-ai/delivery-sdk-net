@@ -319,6 +319,74 @@ namespace Kontent.Ai.Delivery
             return new DeliveryLanguageListingResponse(response, languages.ToList<ILanguage>(), pagination);
         }
 
+
+        public async Task<IDeliveryUniversalItemResponse> GetUniversalItemAsync(string codename, IEnumerable<IQueryParameter> parameters = null)
+        {
+            if (string.IsNullOrEmpty(codename))
+            {
+                throw new ArgumentException("Entered item codename is not valid.", nameof(codename));
+            }
+
+            var endpointUrl = UrlBuilder.GetItemUrl(codename, parameters);
+            var response = await GetDeliveryResponseAsync(endpointUrl);
+
+            if (!response.IsSuccess)
+            {
+                return new DeliveryUniversalItemResponse(response);
+            }
+
+            var content = await response.GetJsonContentAsync();
+            var model = await GenericModelProvider.GetContentItemGenericModelAsync(content["item"]);
+
+            var linkedUniversalItems = await Task.WhenAll(
+                content["modular_content"]?
+                .Values()
+                .Select(async linkedItem =>
+                {
+                    var model = await GenericModelProvider.GetContentItemGenericModelAsync(linkedItem);
+                    return new KeyValuePair<string, IUniversalContentItem>(model.System.Codename, model);
+                })
+            );
+
+            return new DeliveryUniversalItemResponse(
+                response,
+                model,
+                linkedUniversalItems.ToDictionary(pair => pair.Key, pair => pair.Value));
+        }
+
+        public async Task<IDeliveryUniversalItemListingResponse> GetUniversalItemsAsync(IEnumerable<IQueryParameter> parameters = null)
+        {
+            var endpointUrl = UrlBuilder.GetItemsUrl(parameters);
+            var response = await GetDeliveryResponseAsync(endpointUrl);
+
+            if (!response.IsSuccess)
+            {
+                return new DeliveryUniversalItemListingResponse(response);
+            }
+
+            var content = await response.GetJsonContentAsync();
+            var pagination = content["pagination"].ToObject<Pagination>(Serializer);
+
+            var items = ((JArray)content["items"]).Select(async source => await GenericModelProvider.GetContentItemGenericModelAsync(source));
+
+            var linkedUniversalItems = await Task.WhenAll(
+                content["modular_content"]?
+                .Values()
+                .Select(async linkedItem =>
+                {
+                    var model = await GenericModelProvider.GetContentItemGenericModelAsync(linkedItem);
+                    return new KeyValuePair<string, IUniversalContentItem>(model.System.Codename, model);
+                })
+            );
+
+            return new DeliveryUniversalItemListingResponse(
+                response,
+                (await Task.WhenAll(items)).ToList(),
+                pagination,
+                linkedUniversalItems.ToDictionary(pair => pair.Key, pair => pair.Value)
+                );
+        }
+
         private async Task<ApiResponse> GetDeliveryResponseAsync(string endpointUrl, string continuationToken = null)
         {
             if (DeliveryOptions.CurrentValue.UsePreviewApi && DeliveryOptions.CurrentValue.UseSecureAccess)
@@ -452,44 +520,6 @@ namespace Kontent.Ai.Delivery
             {
                 throw new ArgumentException("Skip parameter is not supported in items feed.");
             }
-        }
-
-        public async Task<IDeliveryUniversalItemResponse> GetUniversalItemAsync(string codename, IEnumerable<IQueryParameter> parameters = null)
-        {
-            if (string.IsNullOrEmpty(codename))
-            {
-                throw new ArgumentException("Entered item codename is not valid.", nameof(codename));
-            }
-
-            var endpointUrl = UrlBuilder.GetItemUrl(codename, parameters);
-            var response = await GetDeliveryResponseAsync(endpointUrl);
-
-            if (!response.IsSuccess)
-            {
-                return new DeliveryUniversalItemResponse(response);
-            }
-
-            var content = await response.GetJsonContentAsync();
-            var model = await GenericModelProvider.GetContentItemGenericModelAsync(content["item"]);
-
-            var linkedUniversalItems = new Dictionary<string, IUniversalContentItem>();
-            // TODO rewrite
-            var result  = content["modular_content"]?
-                .Values()
-                .Select(async linkedItem =>
-                {
-                    var res = await GenericModelProvider.GetContentItemGenericModelAsync(linkedItem);
-                    linkedUniversalItems.Add(res.System.Codename, res);
-                });
-
-
-            Task.WhenAll(result);
-            return new DeliveryUniversalItemResponse(response, model, linkedUniversalItems);
-        }
-
-        public Task<IDeliveryUniversalItemListingResponse> GetUniversalItemsAsync(IEnumerable<IQueryParameter> parameters = null)
-        {
-            throw new NotImplementedException();
         }
     }
 }

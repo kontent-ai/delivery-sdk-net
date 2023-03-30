@@ -44,7 +44,7 @@ namespace Kontent.Ai.Delivery.ContentItems.Universal
                     "multiple_choice" => element.ToObject<MultipleChoiceElementValue>(Serializer).WithCodename(key),
                     "taxonomy" => element.ToObject<TaxonomyElementValue>(Serializer).WithCodename(key),
                     // TODO what Linked items + what SubPages? 
-                    "modular_content" => element.ToObject<ContentElementValue<IEnumerable<string>>>(Serializer).WithCodename(key),
+                    "modular_content" => element.ToObject<LinkedItemsElementValue>(Serializer).WithCodename(key),
                     "custom" => element.ToObject<CustomElementValue>(Serializer).WithCodename(key),
                     "url_slug" => element.ToObject<UrlSlugElementValue>(Serializer).WithCodename(key),
                     "text" => element.ToObject<TextElementValue>(Serializer).WithCodename(key),
