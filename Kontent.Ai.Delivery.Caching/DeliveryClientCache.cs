@@ -3,7 +3,6 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
 using Kontent.Ai.Delivery.Abstractions;
-using Microsoft.Extensions.Options;
 
 namespace Kontent.Ai.Delivery.Caching
 {
@@ -14,10 +13,6 @@ namespace Kontent.Ai.Delivery.Caching
     {
         private readonly IDeliveryClient _deliveryClient;
         private readonly IDeliveryCacheManager _deliveryCacheManager;
-
-        public IOptionsMonitor<DeliveryOptions> DeliveryOptions => _deliveryClient.DeliveryOptions;
-
-        public object Serializer => _deliveryClient.Serializer;
 
         /// <summary>
         /// Initializes a new instance of the <see cref="DeliveryClientCache"/> class for retrieving cached content of the specified project.
@@ -162,9 +157,16 @@ namespace Kontent.Ai.Delivery.Caching
                 CacheHelpers.GetLanguagesDependencies);
         }
 
-        public Task<IApiResponse> GetDeliveryResponseAsync(string endpointUrl, string continuationToken = null)
+        // TODO
+        public Task<IDeliveryUniversalItemResponse> GetUniversalItemAsync(string codename, IEnumerable<IQueryParameter> parameters = null)
         {
-            return _deliveryClient.GetDeliveryResponseAsync(endpointUrl, continuationToken);
+            throw new NotImplementedException();
+        }
+
+        // TODO
+        public Task<IDeliveryUniversalItemListingResponse> GetUniversalItemsAsync(IEnumerable<IQueryParameter> parameters = null)
+        {
+            throw new NotImplementedException();
         }
     }
 }

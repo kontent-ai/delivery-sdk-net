@@ -27,7 +27,6 @@
     <None Include="../README.md" Pack="true" PackagePath="" />
     <None Include="../kai-logo-symbol-color-rgb.png" Pack="true" PackagePath="" />
     <PackageReference Include="Microsoft.SourceLink.GitHub" Version="1.1.1" />
-    <PackageReference Include="Microsoft.Extensions.Options" Version="6.0.0" />
     <!-- Avoid introducing any non-framework dependencies -->
   </ItemGroup>
 

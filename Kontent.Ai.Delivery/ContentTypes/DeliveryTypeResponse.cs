@@ -19,7 +19,7 @@ namespace Kontent.Ai.Delivery.ContentTypes
         /// <param name="response">The response from Kontent.ai Delivery API that contains a content type.</param>
         /// <param name="type">A content type.</param>
         [JsonConstructor]
-        internal DeliveryTypeResponse(IApiResponse response, IContentType type) : base(response)
+        internal DeliveryTypeResponse(ApiResponse response, IContentType type) : base(response)
         {
             Type = type;
         }
@@ -28,7 +28,7 @@ namespace Kontent.Ai.Delivery.ContentTypes
         /// Initializes a new instance of the <see cref="DeliveryTypeResponse"/> class.
         /// </summary>
         /// <param name="response">The response from Kontent.ai Delivery API that contains a content type.</param>
-        internal DeliveryTypeResponse(IApiResponse response) : base(response)
+        internal DeliveryTypeResponse(ApiResponse response) : base(response)
         {
         }
     }

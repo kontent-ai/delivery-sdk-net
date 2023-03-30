@@ -3,7 +3,7 @@ using Kontent.Ai.Delivery.Abstractions;
 
 namespace Kontent.Ai.Delivery.ContentItems.Elements
 {
-    public class MultipleChoiceElementValue:  ContentElementValue<IEnumerable<IMultipleChoiceOption>>
+    internal class MultipleChoiceElementValue:  ContentElementValue<IEnumerable<IMultipleChoiceOption>>
     {
         
     }

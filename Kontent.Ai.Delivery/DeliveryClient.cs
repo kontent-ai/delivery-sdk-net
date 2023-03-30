@@ -7,6 +7,7 @@ using System.Text;
 using System.Threading.Tasks;
 using Kontent.Ai.Delivery.Abstractions;
 using Kontent.Ai.Delivery.ContentItems;
+using Kontent.Ai.Delivery.ContentItems.Universal;
 using Kontent.Ai.Delivery.ContentTypes;
 using Kontent.Ai.Delivery.Extensions;
 using Kontent.Ai.Delivery.Languages;
@@ -30,20 +31,17 @@ namespace Kontent.Ai.Delivery
     {
         private DeliveryEndpointUrlBuilder _urlBuilder;
 
-        public readonly IOptionsMonitor<DeliveryOptions> DeliveryOptions;
+        internal readonly IOptionsMonitor<DeliveryOptions> DeliveryOptions;
         internal readonly IModelProvider ModelProvider;
         internal readonly ITypeProvider TypeProvider;
         internal readonly IRetryPolicyProvider RetryPolicyProvider;
         internal readonly IDeliveryHttpClient DeliveryHttpClient;
-        public readonly JsonSerializer Serializer;
+        internal readonly JsonSerializer Serializer;
         internal readonly ILoggerFactory LoggerFactory;
-        public DeliveryEndpointUrlBuilder UrlBuilder
+        internal readonly IUniversalItemModelProvider GenericModelProvider;
+
+        internal DeliveryEndpointUrlBuilder UrlBuilder
             => _urlBuilder ??= new DeliveryEndpointUrlBuilder(DeliveryOptions);
-
-
-        IOptionsMonitor<DeliveryOptions> IDeliveryClient.DeliveryOptions => throw new NotImplementedException();
-
-        object IDeliveryClient.Serializer => (object)Serializer;
 
         /// <summary>
         /// Initializes a new instance of the <see cref="DeliveryClient"/> class for retrieving content of the specified project.
@@ -63,7 +61,8 @@ namespace Kontent.Ai.Delivery
             IDeliveryHttpClient deliveryHttpClient = null,
             JsonSerializer serializer = null,
             // TODO why logger factory is not everywhere ?
-            ILoggerFactory loggerFactory = null)
+            ILoggerFactory loggerFactory = null,
+            IUniversalItemModelProvider genericModelProvider = null)
         {
             DeliveryOptions = deliveryOptions;
             ModelProvider = modelProvider;
@@ -72,6 +71,8 @@ namespace Kontent.Ai.Delivery
             DeliveryHttpClient = deliveryHttpClient;
             Serializer = serializer;
             LoggerFactory = loggerFactory;
+            // TODO IOC? Default? Check references
+            GenericModelProvider = new GenericModelProvider(serializer);
         }
 
         /// <summary>
@@ -96,7 +97,7 @@ namespace Kontent.Ai.Delivery
                 return new DeliveryItemResponse<T>(response);
             }
 
-            var content = (JObject)(await response.GetJsonContentAsync());
+            var content = await response.GetJsonContentAsync();
             var model = await ModelProvider.GetContentItemModelAsync<T>(content?["item"], content?["modular_content"]);
             return new DeliveryItemResponse<T>(response, model);
         }
@@ -118,7 +119,7 @@ namespace Kontent.Ai.Delivery
                 return new DeliveryItemListingResponse<T>(response);
             }
 
-            var content = (JObject)await response.GetJsonContentAsync();
+            var content = await response.GetJsonContentAsync();
             var pagination = content["pagination"].ToObject<Pagination>(Serializer);
             var items = ((JArray)content["items"]).Select(async source => await ModelProvider.GetContentItemModelAsync<T>(source, content["modular_content"]));
 
@@ -147,7 +148,7 @@ namespace Kontent.Ai.Delivery
                     return new DeliveryItemsFeedResponse<T>(response);
                 }
 
-                var content = (JObject)await response.GetJsonContentAsync();
+                var content = await response.GetJsonContentAsync();
 
                 var items = ((JArray)content["items"]).Select(async source => await ModelProvider.GetContentItemModelAsync<T>(source, content["modular_content"]));
 
@@ -180,7 +181,7 @@ namespace Kontent.Ai.Delivery
                 return new DeliveryTypeResponse(response);
             }
 
-            var type = ((JObject)await response.GetJsonContentAsync())?.ToObject<ContentType>(Serializer);
+            var type = (await response.GetJsonContentAsync())?.ToObject<ContentType>(Serializer);
 
             return new DeliveryTypeResponse(response, type);
         }
@@ -200,8 +201,7 @@ namespace Kontent.Ai.Delivery
                 return new DeliveryTypeListingResponse(response);
             }
 
-            var content = (await response.GetJsonContentAsync());
-            content = content as JObject;
+            var content = await response.GetJsonContentAsync();
             var pagination = content["pagination"].ToObject<Pagination>(Serializer);
             var types = content["types"].ToObject<List<ContentType>>(Serializer);
             return new DeliveryTypeListingResponse(response, types.ToList<IContentType>(), pagination);
@@ -243,7 +243,7 @@ namespace Kontent.Ai.Delivery
                 return new DeliveryElementResponse(response);
             }
 
-            var content = (JObject)await response.GetJsonContentAsync();
+            var content = await response.GetJsonContentAsync();
             var element = content?.ToObject<IContentElement>(Serializer);
             return new DeliveryElementResponse(response, element);
         }
@@ -273,7 +273,7 @@ namespace Kontent.Ai.Delivery
                 return new DeliveryTaxonomyResponse(response);
             }
 
-            var taxonomy = ((JObject)await response.GetJsonContentAsync())?.ToObject<TaxonomyGroup>(Serializer);
+            var taxonomy = (await response.GetJsonContentAsync())?.ToObject<TaxonomyGroup>(Serializer);
             return new DeliveryTaxonomyResponse(response, taxonomy);
         }
 
@@ -292,7 +292,7 @@ namespace Kontent.Ai.Delivery
                 return new DeliveryTaxonomyListingResponse(response);
             }
 
-            var content = (JObject)await response.GetJsonContentAsync();
+            var content = await response.GetJsonContentAsync();
             var pagination = content["pagination"].ToObject<Pagination>(Serializer);
             var taxonomies = content["taxonomies"].ToObject<List<TaxonomyGroup>>(Serializer);
             return new DeliveryTaxonomyListingResponse(response, taxonomies.ToList<ITaxonomyGroup>(), pagination);
@@ -313,13 +313,81 @@ namespace Kontent.Ai.Delivery
                 return new DeliveryLanguageListingResponse(response);
             }
 
-            var content = (JObject)await response.GetJsonContentAsync();
+            var content = await response.GetJsonContentAsync();
             var pagination = content["pagination"].ToObject<Pagination>(Serializer);
             var languages = content["languages"].ToObject<List<Language>>(Serializer);
             return new DeliveryLanguageListingResponse(response, languages.ToList<ILanguage>(), pagination);
         }
 
-        public async Task<IApiResponse> GetDeliveryResponseAsync(string endpointUrl, string continuationToken = null)
+
+        public async Task<IDeliveryUniversalItemResponse> GetUniversalItemAsync(string codename, IEnumerable<IQueryParameter> parameters = null)
+        {
+            if (string.IsNullOrEmpty(codename))
+            {
+                throw new ArgumentException("Entered item codename is not valid.", nameof(codename));
+            }
+
+            var endpointUrl = UrlBuilder.GetItemUrl(codename, parameters);
+            var response = await GetDeliveryResponseAsync(endpointUrl);
+
+            if (!response.IsSuccess)
+            {
+                return new DeliveryUniversalItemResponse(response);
+            }
+
+            var content = await response.GetJsonContentAsync();
+            var model = await GenericModelProvider.GetContentItemGenericModelAsync(content["item"]);
+
+            var linkedUniversalItems = await Task.WhenAll(
+                content["modular_content"]?
+                .Values()
+                .Select(async linkedItem =>
+                {
+                    var model = await GenericModelProvider.GetContentItemGenericModelAsync(linkedItem);
+                    return new KeyValuePair<string, IUniversalContentItem>(model.System.Codename, model);
+                })
+            );
+
+            return new DeliveryUniversalItemResponse(
+                response,
+                model,
+                linkedUniversalItems.ToDictionary(pair => pair.Key, pair => pair.Value));
+        }
+
+        public async Task<IDeliveryUniversalItemListingResponse> GetUniversalItemsAsync(IEnumerable<IQueryParameter> parameters = null)
+        {
+            var endpointUrl = UrlBuilder.GetItemsUrl(parameters);
+            var response = await GetDeliveryResponseAsync(endpointUrl);
+
+            if (!response.IsSuccess)
+            {
+                return new DeliveryUniversalItemListingResponse(response);
+            }
+
+            var content = await response.GetJsonContentAsync();
+            var pagination = content["pagination"].ToObject<Pagination>(Serializer);
+
+            var items = ((JArray)content["items"]).Select(async source => await GenericModelProvider.GetContentItemGenericModelAsync(source));
+
+            var linkedUniversalItems = await Task.WhenAll(
+                content["modular_content"]?
+                .Values()
+                .Select(async linkedItem =>
+                {
+                    var model = await GenericModelProvider.GetContentItemGenericModelAsync(linkedItem);
+                    return new KeyValuePair<string, IUniversalContentItem>(model.System.Codename, model);
+                })
+            );
+
+            return new DeliveryUniversalItemListingResponse(
+                response,
+                (await Task.WhenAll(items)).ToList(),
+                pagination,
+                linkedUniversalItems.ToDictionary(pair => pair.Key, pair => pair.Value)
+                );
+        }
+
+        private async Task<ApiResponse> GetDeliveryResponseAsync(string endpointUrl, string continuationToken = null)
         {
             if (DeliveryOptions.CurrentValue.UsePreviewApi && DeliveryOptions.CurrentValue.UseSecureAccess)
             {

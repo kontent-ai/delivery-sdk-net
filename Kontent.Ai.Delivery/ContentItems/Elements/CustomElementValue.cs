@@ -1,6 +1,6 @@
 namespace Kontent.Ai.Delivery.ContentItems.Elements
 {
-    public class CustomElementValue : StringElementValue
+    internal class CustomElementValue : StringElementValue
     {
 
     }

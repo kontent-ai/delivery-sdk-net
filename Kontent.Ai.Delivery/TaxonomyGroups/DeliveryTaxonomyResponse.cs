@@ -20,7 +20,7 @@ namespace Kontent.Ai.Delivery.TaxonomyGroups
         /// <param name="response">The response from Kontent.ai Delivery API that contains a taxonomy group.</param>
         /// <param name="taxonomy">A taxonomy group.</param>
         [JsonConstructor]
-        internal DeliveryTaxonomyResponse(IApiResponse response, ITaxonomyGroup taxonomy) : base(response)
+        internal DeliveryTaxonomyResponse(ApiResponse response, ITaxonomyGroup taxonomy) : base(response)
         {
             Taxonomy = taxonomy;
         }
@@ -29,7 +29,7 @@ namespace Kontent.Ai.Delivery.TaxonomyGroups
         /// Initializes a new instance of the <see cref="DeliveryTypeResponse"/> class.
         /// </summary>
         /// <param name="response">The response from Kontent.ai Delivery API that contains a taxonomy group.</param>
-        internal DeliveryTaxonomyResponse(IApiResponse response) : base(response)
+        internal DeliveryTaxonomyResponse(ApiResponse response) : base(response)
         {
         }
     }

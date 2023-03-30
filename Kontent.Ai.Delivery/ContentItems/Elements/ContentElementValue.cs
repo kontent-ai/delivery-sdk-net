@@ -3,7 +3,7 @@ using Newtonsoft.Json;
 
 namespace Kontent.Ai.Delivery.ContentItems.Elements
 {
-    public abstract class ContentElementValue<T> : IContentElementValue<T>
+    internal class ContentElementValue<T> : IContentElementValue<T>
     {
         /// <inheritdoc/>
         [JsonProperty("type")]
@@ -21,7 +21,7 @@ namespace Kontent.Ai.Delivery.ContentItems.Elements
         [JsonProperty("codename")]
         public string Codename { get; internal set; }
 
-        // TODO is that a good idea? // extension?
+        // TODO is that a good idea?
         public ContentElementValue<T> WithCodename(string codename)
         {
             Codename = codename;

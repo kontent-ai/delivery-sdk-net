@@ -1,6 +1,4 @@
-﻿using System.Threading.Tasks;
-
-namespace Kontent.Ai.Delivery.Abstractions
+﻿namespace Kontent.Ai.Delivery.Abstractions
 {
     /// <summary>
     /// Represents a successful JSON response from Kontent.ai Delivery API.
@@ -38,7 +36,5 @@ namespace Kontent.Ai.Delivery.Abstractions
         /// Gets error object with message, error code.
         /// </summary>
         IError Error { get; }
-
-        public Task<object> GetJsonContentAsync();
     }
 }
