@@ -226,13 +226,18 @@ namespace Kontent.Ai.Delivery.ContentItems
                     {
                         "rich_text" => await GetElementModelAsync<RichTextElementValue, string>(property, context, elementValue, valueConverter),
                         "asset" => await GetElementModelAsync<AssetElementValue, IEnumerable<IAsset>>(property, context, elementValue, valueConverter),
-                        "number" => await GetElementModelAsync<ContentElementValue<decimal?>, decimal?>(property, context, elementValue, valueConverter),
+                        "number" => await GetElementModelAsync<NumberElementValue, decimal?>(property, context, elementValue, valueConverter),
                         "date_time" => await GetElementModelAsync<DateTimeElementValue, DateTime?>(property, context, elementValue, valueConverter),
-                        "multiple_choice" => await GetElementModelAsync<ContentElementValue<List<MultipleChoiceOption>>, List<MultipleChoiceOption>>(property, context, elementValue, valueConverter),
+                        "multiple_choice" => await GetElementModelAsync<MultipleChoiceElementValue, IEnumerable<IMultipleChoiceOption>>(property, context, elementValue, valueConverter),
                         "taxonomy" => await GetElementModelAsync<TaxonomyElementValue, IEnumerable<ITaxonomyTerm>>(property, context, elementValue, valueConverter),
-                        "modular_content" => await GetElementModelAsync<ContentElementValue<List<string>>, List<string>>(property, context, elementValue, valueConverter),
+                        // Linked items and Subpages
+                        "modular_content" => await GetElementModelAsync<LinkedItemsElementValue, IEnumerable<string>>(property, context, elementValue, valueConverter),
                         // Custom element, text element, URL slug element
-                        _ => await GetElementModelAsync<ContentElementValue<string>, string>(property, context, elementValue, valueConverter),
+                        "text" => await GetElementModelAsync<TextElementValue, string>(property, context, elementValue, valueConverter),
+                        "custom" => await GetElementModelAsync<CustomElementValue, string>(property, context, elementValue, valueConverter),
+                        "url_slug" => await GetElementModelAsync<UrlSlugElementValue, string>(property, context, elementValue, valueConverter),
+                        // Other string based elements
+                        _ => await GetElementModelAsync<StringElementValue, string>(property, context, elementValue, valueConverter)
                     };
                 }
             }

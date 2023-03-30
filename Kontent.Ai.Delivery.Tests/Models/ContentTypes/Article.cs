@@ -36,6 +36,6 @@ namespace Kontent.Ai.Delivery.Tests.Models.ContentTypes
 
         [PropertyName("related_articles")]
         [TestLinkedItemCodenamesValueConverter]
-        public List<string> RelatedArticleCodenames { get; set; }
+        public IEnumerable<string> RelatedArticleCodenames { get; set; }
     }
 }

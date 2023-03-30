@@ -28,9 +28,9 @@ namespace Kontent.Ai.Delivery.Tests
     }
 
     [AttributeUsage(AttributeTargets.Property)]
-    public class TestLinkedItemCodenamesValueConverterAttribute : Attribute, IPropertyValueConverter<List<string>>
+    public class TestLinkedItemCodenamesValueConverterAttribute : Attribute, IPropertyValueConverter<IEnumerable<string>>
     {
-        public Task<object> GetPropertyValueAsync<TElement>(PropertyInfo property, TElement element, ResolvingContext context) where TElement : IContentElementValue<List<string>>
+        public Task<object> GetPropertyValueAsync<TElement>(PropertyInfo property, TElement element, ResolvingContext context) where TElement : IContentElementValue<IEnumerable<string>>
         {
             return Task.FromResult((object)element.Value);
         }
