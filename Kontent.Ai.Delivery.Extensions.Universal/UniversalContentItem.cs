@@ -1,7 +1,7 @@
 using System.Collections.Generic;
 using Kontent.Ai.Delivery.Abstractions;
 
-namespace Kontent.Ai.Delivery.ContentItems.Universal
+namespace Kontent.Ai.Delivery.Extensions.Universal
 {
     public class UniversalContentItem : IUniversalContentItem
     {

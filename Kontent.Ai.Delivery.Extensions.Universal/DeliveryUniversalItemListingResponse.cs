@@ -2,9 +2,9 @@ using System.Collections.Generic;
 using Kontent.Ai.Delivery.Abstractions;
 using Kontent.Ai.Delivery.SharedModels;
 
-namespace Kontent.Ai.Delivery.ContentItems.Universal
+namespace Kontent.Ai.Delivery.Extensions.Universal
 {
-    internal class DeliveryUniversalItemListingResponse : AbstractResponse, IDeliveryUniversalItemListingResponse
+    internal class DeliveryUniversalItemListingResponse : IResponse, IDeliveryUniversalItemListingResponse
     {
         public IList<IUniversalContentItem> Items { get; }
 
@@ -13,7 +13,9 @@ namespace Kontent.Ai.Delivery.ContentItems.Universal
 
         public IPagination Pagination { get; }
 
-        public DeliveryUniversalItemListingResponse(IApiResponse response) : base(response)
+        public IApiResponse ApiResponse { get; }
+
+        public DeliveryUniversalItemListingResponse(IApiResponse response)
         {
             ApiResponse = response;
         }

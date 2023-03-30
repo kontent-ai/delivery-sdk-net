@@ -1,5 +1,6 @@
 using System.Collections.Generic;
 using System.Threading.Tasks;
+using Microsoft.Extensions.Options;
 
 namespace Kontent.Ai.Delivery.Abstractions
 {
@@ -8,6 +9,11 @@ namespace Kontent.Ai.Delivery.Abstractions
     /// </summary>
     public interface IDeliveryClient
     {
+        public IOptionsMonitor<DeliveryOptions> DeliveryOptions { get; }
+        object Serializer { get; }
+
+        public Task<IApiResponse> GetDeliveryResponseAsync(string endpointUrl, string continuationToken = null);
+
         /// <summary>
         /// Returns a strongly typed content item. By default, retrieves one level of linked items.
         /// </summary>
@@ -17,10 +23,6 @@ namespace Kontent.Ai.Delivery.Abstractions
         /// <returns>The <see cref="IDeliveryItemResponse{T}"/> instance that contains the content item with the specified codename.</returns>
         Task<IDeliveryItemResponse<T>> GetItemAsync<T>(string codename, IEnumerable<IQueryParameter> parameters = null);
 
-
-        // TODO
-        Task<IDeliveryUniversalItemResponse> GetUniversalItemAsync(string codename, IEnumerable<IQueryParameter> parameters = null);
-
         /// <summary>
         /// Returns strongly typed content items that match the optional filtering parameters. By default, retrieves one level of linked items.
         /// </summary>
@@ -28,9 +30,6 @@ namespace Kontent.Ai.Delivery.Abstractions
         /// <param name="parameters">A collection of query parameters, for example, for filtering, ordering, or setting the depth of linked items.</param>
         /// <returns>The <see cref="IDeliveryItemListingResponse{T}"/> instance that contains the content items. If no query parameters are specified, all content items are returned.</returns>
         Task<IDeliveryItemListingResponse<T>> GetItemsAsync<T>(IEnumerable<IQueryParameter> parameters = null);
-
-        // TODO extension methods
-        Task<IDeliveryUniversalItemListingResponse> GetUniversalItemsAsync(IEnumerable<IQueryParameter> parameters = null);
 
         /// <summary>
         /// Returns a feed that is used to traverse through strongly typed content items matching the optional filtering parameters.

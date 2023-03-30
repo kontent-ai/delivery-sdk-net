@@ -16,8 +16,7 @@ namespace Kontent.Ai.Delivery.Tests.Factories
             MockHttpMessageHandler httpMessageHandler = null,
             IModelProvider modelProvider = null,
             IRetryPolicyProvider resiliencePolicyProvider = null,
-            ITypeProvider typeProvider = null,
-            IUniversalItemModelProvider genericModelProvider = null)
+            ITypeProvider typeProvider = null)
         {
             var httpClient = GetHttpClient(httpMessageHandler);
 
@@ -27,9 +26,7 @@ namespace Kontent.Ai.Delivery.Tests.Factories
                 resiliencePolicyProvider ?? A.Fake<IRetryPolicyProvider>(),
                 typeProvider ?? A.Fake<ITypeProvider>(),
                 new DeliveryHttpClient(httpClient),
-                Serializer,
-                null,
-                genericModelProvider ?? A.Fake<IUniversalItemModelProvider>()
+                Serializer
             );
 
             return client;

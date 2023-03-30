@@ -6,7 +6,7 @@ namespace Kontent.Ai.Delivery.SharedModels
 {
     /// <inheritdoc/>
     [DebuggerDisplay("Count = {" + nameof(Count) + "}, Total = {" + nameof(TotalCount) + "}")]
-    internal sealed class Pagination : IPagination
+    public sealed class Pagination : IPagination
     {
         /// <inheritdoc/>
         public int Skip { get; }
