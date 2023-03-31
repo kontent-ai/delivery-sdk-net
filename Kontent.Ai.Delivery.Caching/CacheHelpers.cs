@@ -197,6 +197,7 @@ namespace Kontent.Ai.Delivery.Caching
         {
             var dependencies = new HashSet<string>();
 
+            // TODO for univeral dependencies
             if (!IsItemResponse(response))
             {
                 return dependencies;
@@ -320,8 +321,11 @@ namespace Kontent.Ai.Delivery.Caching
 
         private static bool IsItemResponse(IResponse response)
         {
-            return response.GetType().IsGenericType
-                   && IsAssignableToGenericType(response.GetType(), typeof(IDeliveryItemResponse<>));
+            return
+            (
+                response.GetType().IsGenericType
+                && IsAssignableToGenericType(response.GetType(), typeof(IDeliveryItemResponse<>))
+            ) || typeof(IDeliveryUniversalItemResponse).IsAssignableFrom(response.GetType());
         }
 
         private static bool IsAssignableToGenericType(Type givenType, Type genericType)
