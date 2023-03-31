@@ -835,28 +835,29 @@ namespace Kontent.Ai.Delivery.Caching.Tests
             scenario.GetRequestCount(url).Should().Be(2);
         }
 
-        // [Theory]
-        // [InlineData(CacheExpirationType.Absolute)]
-        // [InlineData(CacheExpirationType.Sliding)]
-        // public async Task GetItemTypedAsync_NotInvalidatedByComponentDependency(CacheExpirationType cacheExpirationType)
-        // {
-        //     const string codename = "codename";
-        //     var url = $"items/{codename}";
-        //     var component = CreateComponent();
-        //     var modularContent = new[] { component };
-        //     var item = CreateItemResponse(CreateItem(codename, "original"), modularContent);
-        //     var updatedItem = CreateItemResponse(CreateItem(codename, "updated"), modularContent);
-        //     var scenarioBuilder = new ScenarioBuilder(cacheExpirationType: cacheExpirationType);
-        //     var scenario = scenarioBuilder.WithResponse(url, item).Build();
-        //     var firstResponse = await scenario.CachingClient.GetItemAsync<TestItem>(codename);
-        //     scenario = scenarioBuilder.WithResponse(url, updatedItem).Build();
-        //     scenario.InvalidateDependency(CacheHelpers.GetItemDependencyKey(component.codename));
-        //     var secondResponse = await scenario.CachingClient.GetItemAsync<TestItem>(codename);
-        //     //Check
-        //     firstResponse.Should().NotBeNull();
-        //     firstResponse.Should().BeEquivalentTo(secondResponse);
-        //     scenario.GetRequestCount(url).Should().Be(1);
-        // }
+        [Theory]
+        [InlineData(CacheExpirationType.Absolute)]
+        [InlineData(CacheExpirationType.Sliding)]
+        public async Task GetUniversalItemAsync_NotInvalidatedByComponentDependency(CacheExpirationType cacheExpirationType)
+        {
+            const string codename = "codename";
+            var url = $"items/{codename}";
+            var component = CreateComponent();
+            var modularContent = new[] { component };
+            var item = CreateItemResponse(CreateItem(codename, "original"), modularContent);
+            var updatedItem = CreateItemResponse(CreateItem(codename, "updated"), modularContent);
+            var scenarioBuilder = new ScenarioBuilder(cacheExpirationType: cacheExpirationType);
+
+            var scenario = scenarioBuilder.WithResponse(url, item).Build();
+            var firstResponse = await scenario.CachingClient.GetUniversalItemAsync(codename);
+            scenario = scenarioBuilder.WithResponse(url, updatedItem).Build();
+            scenario.InvalidateDependency(CacheHelpers.GetItemDependencyKey(component.codename));
+            var secondResponse = await scenario.CachingClient.GetUniversalItemAsync(codename);
+            //Check
+            firstResponse.Should().NotBeNull();
+            firstResponse.Should().BeEquivalentTo(secondResponse);
+            scenario.GetRequestCount(url).Should().Be(1);
+        }
 
         // [Theory]
         // [InlineData(CacheExpirationType.Absolute)]
