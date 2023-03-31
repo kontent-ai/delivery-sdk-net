@@ -785,29 +785,30 @@ namespace Kontent.Ai.Delivery.Caching.Tests
             scenario.GetRequestCount(url).Should().Be(2);
         }
 
-        // [Theory]
-        // [InlineData(CacheTypeEnum.Memory, CacheExpirationType.Absolute)]
-        // [InlineData(CacheTypeEnum.Memory, CacheExpirationType.Sliding)]
-        // [InlineData(CacheTypeEnum.Distributed, CacheExpirationType.Absolute)]
-        // [InlineData(CacheTypeEnum.Distributed, CacheExpirationType.Sliding)]
-        // public async Task GetItemTypedAsync_InvalidatedByItemKey(CacheTypeEnum cacheType, CacheExpirationType cacheExpirationType)
-        // {
-        //     const string codename = "codename";
-        //     var url = $"items/{codename}";
-        //     var item = CreateItemResponse(CreateItem(codename, "original"));
-        //     var updatedItem = CreateItemResponse(CreateItem(codename, "updated"));
-        //     var scenarioBuilder = new ScenarioBuilder(cacheType, cacheExpirationType);
-        //     var scenario = scenarioBuilder.WithResponse(url, item).Build();
-        //     var firstResponse = await scenario.CachingClient.GetItemAsync<TestItem>(codename);
-        //     scenario = scenarioBuilder.WithResponse(url, updatedItem).Build();
-        //     scenario.InvalidateDependency(CacheHelpers.GetItemKey<TestItem>(codename, Enumerable.Empty<IQueryParameter>()));
-        //     var secondResponse = await scenario.CachingClient.GetItemAsync<TestItem>(codename);
-        //     //Check
-        //     firstResponse.Should().NotBeNull();
-        //     secondResponse.Should().NotBeNull();
-        //     firstResponse.Should().NotBeEquivalentTo(secondResponse);
-        //     scenario.GetRequestCount(url).Should().Be(2);
-        // }
+        [Theory]
+        [InlineData(CacheTypeEnum.Memory, CacheExpirationType.Absolute)]
+        [InlineData(CacheTypeEnum.Memory, CacheExpirationType.Sliding)]
+        [InlineData(CacheTypeEnum.Distributed, CacheExpirationType.Absolute)]
+        [InlineData(CacheTypeEnum.Distributed, CacheExpirationType.Sliding)]
+        public async Task GetUniversalItemAsync_InvalidatedByItemKey(CacheTypeEnum cacheType, CacheExpirationType cacheExpirationType)
+        {
+            const string codename = "codename";
+            var url = $"items/{codename}";
+            var item = CreateItemResponse(CreateItem(codename, "original"));
+            var updatedItem = CreateItemResponse(CreateItem(codename, "updated"));
+            var scenarioBuilder = new ScenarioBuilder(cacheType, cacheExpirationType);
+
+            var scenario = scenarioBuilder.WithResponse(url, item).Build();
+            var firstResponse = await scenario.CachingClient.GetUniversalItemAsync(codename);
+            scenario = scenarioBuilder.WithResponse(url, updatedItem).Build();
+            scenario.InvalidateDependency(CacheHelpers.GetItemKey<IUniversalContentItem>(codename, Enumerable.Empty<IQueryParameter>()));
+            var secondResponse = await scenario.CachingClient.GetUniversalItemAsync(codename);
+            //Check
+            firstResponse.Should().NotBeNull();
+            secondResponse.Should().NotBeNull();
+            firstResponse.Should().NotBeEquivalentTo(secondResponse);
+            scenario.GetRequestCount(url).Should().Be(2);
+        }
 
         // [Theory]
         // [InlineData(CacheExpirationType.Absolute)]
