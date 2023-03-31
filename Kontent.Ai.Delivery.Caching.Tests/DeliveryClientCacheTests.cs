@@ -859,28 +859,29 @@ namespace Kontent.Ai.Delivery.Caching.Tests
             scenario.GetRequestCount(url).Should().Be(1);
         }
 
-        // [Theory]
-        // [InlineData(CacheExpirationType.Absolute)]
-        // [InlineData(CacheExpirationType.Sliding)]
-        // public async Task GetItemTypedAsync_TooManyItems_InvalidatedByItemsDependency(CacheExpirationType cacheExpirationType)
-        // {
-        //     const string codename = "codename";
-        //     var url = $"items/{codename}";
-        //     var modularContent = Enumerable.Range(1, 51).Select(i => $"modular_{i}").Select(cn => (cn, CreateItem(cn))).ToList();
-        //     var item = CreateItemResponse(CreateItem(codename, "original"), modularContent);
-        //     var updatedItem = CreateItemResponse(CreateItem(codename, "updated"), modularContent);
-        //     var scenarioBuilder = new ScenarioBuilder(cacheExpirationType: cacheExpirationType);
-        //     var scenario = scenarioBuilder.WithResponse(url, item).Build();
-        //     var firstResponse = await scenario.CachingClient.GetItemAsync<TestItem>(codename);
-        //     scenario = scenarioBuilder.WithResponse(url, updatedItem).Build();
-        //     scenario.InvalidateDependency(CacheHelpers.GetItemsDependencyKey());
-        //     var secondResponse = await scenario.CachingClient.GetItemAsync<TestItem>(codename);
-        //     //Check
-        //     firstResponse.Should().NotBeNull();
-        //     secondResponse.Should().NotBeNull();
-        //     firstResponse.Should().NotBeEquivalentTo(secondResponse);
-        //     scenario.GetRequestCount(url).Should().Be(2);
-        // }
+        [Theory]
+        [InlineData(CacheExpirationType.Absolute)]
+        [InlineData(CacheExpirationType.Sliding)]
+        public async Task GetUniversalItemAsync_TooManyItems_InvalidatedByItemsDependency(CacheExpirationType cacheExpirationType)
+        {
+            const string codename = "codename";
+            var url = $"items/{codename}";
+            var modularContent = Enumerable.Range(1, 51).Select(i => $"modular_{i}").Select(cn => (cn, CreateItem(cn))).ToList();
+            var item = CreateItemResponse(CreateItem(codename, "original"), modularContent);
+            var updatedItem = CreateItemResponse(CreateItem(codename, "updated"), modularContent);
+            var scenarioBuilder = new ScenarioBuilder(cacheExpirationType: cacheExpirationType);
+            
+            var scenario = scenarioBuilder.WithResponse(url, item).Build();
+            var firstResponse = await scenario.CachingClient.GetUniversalItemAsync(codename);
+            scenario = scenarioBuilder.WithResponse(url, updatedItem).Build();
+            scenario.InvalidateDependency(CacheHelpers.GetItemsDependencyKey());
+            var secondResponse = await scenario.CachingClient.GetUniversalItemAsync(codename);
+            //Check
+            firstResponse.Should().NotBeNull();
+            secondResponse.Should().NotBeNull();
+            firstResponse.Should().NotBeEquivalentTo(secondResponse);
+            scenario.GetRequestCount(url).Should().Be(2);
+        }
 
         // [Theory]
         // [InlineData(CacheTypeEnum.Memory, CacheExpirationType.Absolute)]

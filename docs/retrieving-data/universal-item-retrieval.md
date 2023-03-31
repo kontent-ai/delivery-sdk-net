@@ -17,6 +17,7 @@ Mention `IPropertyValueConverter` and `IPropertyMapper` being excluded
 ## Caching
 
 * Mention retrieval key `IUniversalContentItem` + `IList<IUniversalContentItem>`
+* Mention max cache count (maybe somewhere else) `CacheHelpers.MAX_DEPENDENCY_ITEMS`
 
 > TODOS
 > 
