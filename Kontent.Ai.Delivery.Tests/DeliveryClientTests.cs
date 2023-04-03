@@ -6,6 +6,7 @@ using System.Linq;
 using System.Net;
 using System.Net.Http;
 using System.Threading.Tasks;
+using System.Web;
 using AngleSharp.Html.Parser;
 using FakeItEasy;
 using Kontent.Ai.Delivery.Abstractions;
@@ -1806,14 +1807,46 @@ namespace Kontent.Ai.Delivery.Tests
         [Fact]
         public async Task SyncApi_PostSyncInitAsync_GetContinuationToken()
         {
+            var mockedResponse = await File.ReadAllTextAsync(Path.Combine(Environment.CurrentDirectory, $"Fixtures{Path.DirectorySeparatorChar}DeliveryClient{Path.DirectorySeparatorChar}sync_init.json"));
+
             _mockHttp
                 .When($"{_baseUrl}/sync/init")
-                .Respond(new[] { new KeyValuePair<string, string>("X-Continuation", "token"), }, "application/json", await File.ReadAllTextAsync(Path.Combine(Environment.CurrentDirectory, $"Fixtures{Path.DirectorySeparatorChar}DeliveryClient{Path.DirectorySeparatorChar}sync_init.json")));
-            
+                .Respond(new[] { new KeyValuePair<string, string>("X-Continuation", "token"), }, "application/json", mockedResponse);
+
             var client = InitializeDeliveryClientWithCustomModelProvider(_mockHttp);
 
             var syncInit = await client.PostSyncInitAsync();
+
+            Assert.NotNull(syncInit.ApiResponse.ContinuationToken);
+            Assert.Empty(syncInit.SyncItems);
+        }
+        
+        [Fact]
+        public async Task SyncApi_PostSyncInitAsync_WithParameters_GetContinuationToken()
+        {
+            var mockedResponse = await File.ReadAllTextAsync(Path.Combine(Environment.CurrentDirectory, $"Fixtures{Path.DirectorySeparatorChar}DeliveryClient{Path.DirectorySeparatorChar}sync_init.json"));
+
+            _mockHttp
+                .When($"{_baseUrl}/sync/init")
+                .Respond(new[] { new KeyValuePair<string, string>("X-Continuation", "token"), }, "application/json", mockedResponse);
+
+            var client = InitializeDeliveryClientWithCustomModelProvider(_mockHttp);
+
+            var syncInit = await client.PostSyncInitAsync(new IQueryParameter[]
+            {
+                new LanguageParameter("cs"),
+                new EqualsFilter("system.type", "article"),
+                new NotEqualsFilter("system.collection", "default")
+            });
+
+            var requestUri = new Uri(syncInit.ApiResponse.RequestUrl);
+
+            var requestQuery = HttpUtility.ParseQueryString(requestUri.Query);
             
+            Assert.Equal(3, requestQuery.Count);
+            Assert.Equal("language", requestQuery.Keys[0]);
+            Assert.Equal("system.type[eq]", requestQuery.Keys[1]);
+            Assert.Equal("system.collection[neq]", requestQuery.Keys[2]);
             Assert.NotNull(syncInit.ApiResponse.ContinuationToken);
             Assert.Empty(syncInit.SyncItems);
         }
@@ -1821,17 +1854,19 @@ namespace Kontent.Ai.Delivery.Tests
         [Fact]
         public async Task SyncApi_GetSyncAsync_GetSyncItems()
         {
+            var mockedResponse = await File.ReadAllTextAsync(Path.Combine(Environment.CurrentDirectory, $"Fixtures{Path.DirectorySeparatorChar}DeliveryClient{Path.DirectorySeparatorChar}sync.json"));
+
             _mockHttp
                 .When($"{_baseUrl}/sync")
                 .WithHeaders("X-Continuation", "token")
-                .Respond(new[] { new KeyValuePair<string, string>("X-Continuation", "token"), }, "application/json", await File.ReadAllTextAsync(Path.Combine(Environment.CurrentDirectory, $"Fixtures{Path.DirectorySeparatorChar}DeliveryClient{Path.DirectorySeparatorChar}sync.json")));
-            
+                .Respond(new[] { new KeyValuePair<string, string>("X-Continuation", "token"), }, "application/json", mockedResponse);
+
             var client = InitializeDeliveryClientWithCustomModelProvider(_mockHttp);
 
             var sync = await client.GetSyncAsync("token");
-            
+
             Assert.NotNull(sync.ApiResponse.ContinuationToken);
-            
+
             Assert.Equal(2, sync.SyncItems.Count);
 
             Assert.Equal("hello_world", sync.SyncItems[0].Codename);
@@ -1841,7 +1876,7 @@ namespace Kontent.Ai.Delivery.Tests
             Assert.Equal("default", sync.SyncItems[0].Collection);
             Assert.Equal("changed", sync.SyncItems[0].ChangeType);
             Assert.Equal(DateTimeOffset.Parse("2022-10-06T08:38:40.0088127Z"), sync.SyncItems[0].Timestamp);
-            
+
             Assert.Equal("bye__world", sync.SyncItems[1].Codename);
             Assert.Equal(Guid.Parse("42a3cfbd-4967-43e7-987b-e1e69c483e26"), sync.SyncItems[1].Id);
             Assert.Equal("article", sync.SyncItems[1].Type);
