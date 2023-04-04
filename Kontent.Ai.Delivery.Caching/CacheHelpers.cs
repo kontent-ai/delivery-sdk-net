@@ -197,7 +197,7 @@ namespace Kontent.Ai.Delivery.Caching
         {
             var dependencies = new HashSet<string>();
 
-            // TODO for univeral dependencies
+            // TODO for universal dependencies
             if (!IsItemResponse(response))
             {
                 return dependencies;
@@ -224,7 +224,6 @@ namespace Kontent.Ai.Delivery.Caching
                     }
                 }
             }
-
 
             return dependencies.Count > MAX_DEPENDENCY_ITEMS
                 ? new[] { GetItemsDependencyKey() }
