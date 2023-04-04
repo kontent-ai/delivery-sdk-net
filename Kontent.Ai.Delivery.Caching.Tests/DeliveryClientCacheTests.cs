@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
 using FakeItEasy;
@@ -935,7 +936,73 @@ namespace Kontent.Ai.Delivery.Caching.Tests
             scenario.GetRequestCount(url).Should().Be(1);
         }
 
-        // TODO Add all test to mirror strongly type responses
+  
+        [Theory]
+        [InlineData(CacheTypeEnum.Memory, CacheExpirationType.Absolute)]
+        [InlineData(CacheTypeEnum.Memory, CacheExpirationType.Sliding)]
+        [InlineData(CacheTypeEnum.Distributed, CacheExpirationType.Absolute)]
+        [InlineData(CacheTypeEnum.Distributed, CacheExpirationType.Sliding)]
+        public async Task GetUniversalItemsAsync_Paged_ResponseIsCached(CacheTypeEnum cacheType, CacheExpirationType cacheExpirationType)
+        {
+            var url = "items";
+            var pagination = new Pagination(2, 100, 10, 68, "https://testme");
+            var itemB = CreateItem("b", "original");
+            var items = CreatePagedItemsResponse(new[] { CreateItem("a", "original"), itemB }, null, pagination);
+            var scenarioBuilder = new ScenarioBuilder(cacheType, cacheExpirationType);
+            var scenario = scenarioBuilder.WithResponse(url, items).Build();
+
+            var firstResponse = await scenario.CachingClient.GetUniversalItemsAsync();
+            //Check
+            firstResponse.Should().NotBeNull();
+            scenario.GetRequestCount(url).Should().Be(1);
+            firstResponse.Pagination.Should().BeEquivalentTo(pagination);
+        }
+
+        [Theory]
+        [InlineData(CacheTypeEnum.Memory, CacheExpirationType.Absolute)]
+        [InlineData(CacheTypeEnum.Memory, CacheExpirationType.Sliding)]
+        [InlineData(CacheTypeEnum.Distributed, CacheExpirationType.Absolute)]
+        [InlineData(CacheTypeEnum.Distributed, CacheExpirationType.Sliding)]
+        public async Task GetUniversalItemsAsync_InvalidatedByItemsKey(CacheTypeEnum cacheType, CacheExpirationType cacheExpirationType)
+        {
+            var url = "items";
+            var itemB = CreateItem("b", "original");
+            var items = CreateItemsResponse(new[] { CreateItem("a", "original"), itemB });
+            var updatedItems = CreateItemsResponse(new[] { CreateItem("a", "updated"), itemB });
+            var scenarioBuilder = new ScenarioBuilder(cacheType, cacheExpirationType);
+            var scenario = scenarioBuilder.WithResponse(url, items).Build();
+            var firstResponse = await scenario.CachingClient.GetUniversalItemsAsync();
+            scenario = scenarioBuilder.WithResponse(url, updatedItems).Build();
+            scenario.InvalidateDependency(CacheHelpers.GetItemsKey<IList<IUniversalContentItem>>(Enumerable.Empty<IQueryParameter>()));
+            var secondResponse = await scenario.CachingClient.GetUniversalItemsAsync();
+            //Check
+            firstResponse.Should().NotBeNull();
+            secondResponse.Should().NotBeNull();
+            firstResponse.Should().NotBeEquivalentTo(secondResponse);
+            scenario.GetRequestCount(url).Should().Be(2);
+        }
+
+        [Theory]
+        [InlineData(CacheExpirationType.Absolute)]
+        [InlineData(CacheExpirationType.Sliding)]
+        public async Task GetUniversalItemsAsync_InvalidatedByItemsDependency(CacheExpirationType cacheExpirationType)
+        {
+            var url = "items";
+            var itemB = CreateItem("b", "original");
+            var items = CreateItemsResponse(new[] { CreateItem("a", "original"), itemB });
+            var updatedItems = CreateItemsResponse(new[] { CreateItem("a", "updated"), itemB });
+            var scenarioBuilder = new ScenarioBuilder(cacheExpirationType: cacheExpirationType);
+            var scenario = scenarioBuilder.WithResponse(url, items).Build();
+            var firstResponse = await scenario.CachingClient.GetUniversalItemsAsync();
+            scenario = scenarioBuilder.WithResponse(url, updatedItems).Build();
+            scenario.InvalidateDependency(CacheHelpers.GetItemsDependencyKey());
+            var secondResponse = await scenario.CachingClient.GetUniversalItemsAsync();
+            //Check
+            firstResponse.Should().NotBeNull();
+            secondResponse.Should().NotBeNull();
+            firstResponse.Should().NotBeEquivalentTo(secondResponse);
+            scenario.GetRequestCount(url).Should().Be(2);
+        }
 
         #endregion
     }

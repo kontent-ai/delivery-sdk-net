@@ -349,8 +349,11 @@ namespace Kontent.Ai.Delivery.Caching
 
         private static bool IsItemListingResponse(IResponse response)
         {
-            return response.GetType().IsGenericType &&
-                   IsAssignableToGenericType(response.GetType(), typeof(IDeliveryItemListingResponse<>));
+            return
+            (
+                response.GetType().IsGenericType
+                && IsAssignableToGenericType(response.GetType(), typeof(IDeliveryItemListingResponse<>))
+            ) || typeof(IDeliveryUniversalItemListingResponse).IsAssignableFrom(response.GetType());
         }
 
         private static bool IsComponent(JProperty property)

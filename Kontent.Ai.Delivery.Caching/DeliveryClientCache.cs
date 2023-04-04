@@ -160,6 +160,7 @@ namespace Kontent.Ai.Delivery.Caching
         // TODO
         public async Task<IDeliveryUniversalItemResponse> GetUniversalItemAsync(string codename, IEnumerable<IQueryParameter> parameters = null)
         {
+            // TODO use different method for getting item cache keys?
             var queryParameters = parameters?.ToList();
             return await _deliveryCacheManager.GetOrAddAsync(
                 CacheHelpers.GetItemKey<IUniversalContentItem>(codename, queryParameters),
@@ -171,6 +172,8 @@ namespace Kontent.Ai.Delivery.Caching
         // TODO
         public async Task<IDeliveryUniversalItemListingResponse> GetUniversalItemsAsync(IEnumerable<IQueryParameter> parameters = null)
         {
+            // TODO CacheHelpers.GetItemsDependencies - is that correct to use the same key?
+            // TODO CacheHelpers.GetItemsKey  do we want to have it here?
             var queryParameters = parameters?.ToList();
             return await _deliveryCacheManager.GetOrAddAsync(
                 CacheHelpers.GetItemsKey<IList<IUniversalContentItem>>(queryParameters),
