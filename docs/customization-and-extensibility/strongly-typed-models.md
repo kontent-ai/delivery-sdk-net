@@ -9,6 +9,7 @@
     - [Typing simple elements](#typing-simple-elements)
     - [Typing Linked Items](#typing-linked-items)
     - [Typing Rich text](#typing-rich-text)
+    - [Typing Date and time](#typing-date-and-time)
     - [Typing Custom elements](#typing-custom-elements)
   - [Naming the properties](#naming-the-properties)
   - [Examples](#examples)
@@ -23,6 +24,7 @@
 <!-- /TOC -->
 
 ## Strongly-typed models
+
 The `IDeliveryClient` interface supports fetching of strongly-typed models.
 
 ```csharp
@@ -30,9 +32,6 @@ The `IDeliveryClient` interface supports fetching of strongly-typed models.
 IDeliveryClient deliveryClient = DeliveryClientBuilder
     .WithProjectId("975bf280-fd91-488c-994c-2f04416e5ee3")
     .Build();
-
-// Basic retrieval
-deliveryClient.GetItemAsync("article_about_coffee");
 
 // Strongly-typed model retrieval
 deliveryClient.GetItemAsync<Article>("article_about_coffee");
@@ -43,6 +42,8 @@ This approach is beneficial for its:
 - type safety during compile-time
 - convenience of usage by a developer (`@Article.ArticleTitle` vs. `@Article.GetString("article_title")`)
 - support of type-dependent functionalities (such as [display templates](http://www.growingwiththeweb.com/2012/12/aspnet-mvc-display-and-editor-templates.html) in MVC)
+
+> 💡 If you want to retrieve content items non-bound to the strongly typed models, you can try [universal item retrieval](../retrieving-data/universal-item-retrieval.md).
 
 ## Defining a model
 
