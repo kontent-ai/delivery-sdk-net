@@ -8,7 +8,9 @@ namespace Kontent.Ai.Delivery.Abstractions
     /// </summary>
     public interface IUniversalContentItem : IContentItem
     {
-        // TODO 
+        /// <summary>
+        /// Represents content items elements.
+        /// </summary>
         public Dictionary<string, IContentElementValue> Elements { get; set; }
     }
 }

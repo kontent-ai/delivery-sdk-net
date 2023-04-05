@@ -18,7 +18,12 @@ namespace Kontent.Ai.Delivery.Abstractions
         Task<IDeliveryItemResponse<T>> GetItemAsync<T>(string codename, IEnumerable<IQueryParameter> parameters = null);
 
 
-        // TODO
+        /// <summary>
+        /// Returns item and its linked items in the <see cref="IUniversalContentItem"/> form.
+        /// </summary>
+        /// <param name="codename">The codename of a content item.</param>
+        /// <param name="parameters">A collection of query parameters, for example for projection or depth of linked items.</param>
+        /// <returns>The <see cref="IDeliveryUniversalItemResponse"/> instance that contains the content item and linked items with the specified codename.</returns>
         Task<IDeliveryUniversalItemResponse> GetUniversalItemAsync(string codename, IEnumerable<IQueryParameter> parameters = null);
 
         /// <summary>
@@ -29,6 +34,11 @@ namespace Kontent.Ai.Delivery.Abstractions
         /// <returns>The <see cref="IDeliveryItemListingResponse{T}"/> instance that contains the content items. If no query parameters are specified, all content items are returned.</returns>
         Task<IDeliveryItemListingResponse<T>> GetItemsAsync<T>(IEnumerable<IQueryParameter> parameters = null);
 
+        /// <summary>
+        /// Returns <see cref="IUniversalContentItem"/> content items that match the optional filtering parameters. By default, retrieves one level of linked items.
+        /// </summary>
+        /// <param name="parameters">A collection of query parameters, for example, for filtering, ordering, or setting the depth of linked items.</param>
+        /// <returns>The <see cref="IDeliveryUniversalItemListingResponse" /> instance that contains the content items. If no query parameters are specified, all content items in the first page are returned.</returns>
         Task<IDeliveryUniversalItemListingResponse> GetUniversalItemsAsync(IEnumerable<IQueryParameter> parameters = null);
 
         /// <summary>

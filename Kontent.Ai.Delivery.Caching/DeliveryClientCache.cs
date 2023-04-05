@@ -157,7 +157,12 @@ namespace Kontent.Ai.Delivery.Caching
                 CacheHelpers.GetLanguagesDependencies);
         }
 
-        // TODO
+        /// <summary>
+        /// Returns item and its linked items in the <see cref="IUniversalContentItem"/> form.
+        /// </summary>
+        /// <param name="codename">The codename of a content item.</param>
+        /// <param name="parameters">A collection of query parameters, for example for projection or depth of linked items.</param>
+        /// <returns>The <see cref="IDeliveryUniversalItemResponse"/> instance that contains the content item and linked items with the specified codename.</returns>
         public async Task<IDeliveryUniversalItemResponse> GetUniversalItemAsync(string codename, IEnumerable<IQueryParameter> parameters = null)
         {
             var queryParameters = parameters?.ToList();
@@ -168,11 +173,13 @@ namespace Kontent.Ai.Delivery.Caching
                 CacheHelpers.GetItemDependencies);
         }
 
-        // TODO
+        /// <summary>
+        /// Returns <see cref="IUniversalContentItem"/> content items that match the optional filtering parameters. By default, retrieves one level of linked items.
+        /// </summary>
+        /// <param name="parameters">A collection of query parameters, for example, for filtering, ordering, or setting the depth of linked items.</param>
+        /// <returns>The <see cref="IDeliveryUniversalItemListingResponse" /> instance that contains the content items. If no query parameters are specified, all content items in the first page are returned.</returns>
         public async Task<IDeliveryUniversalItemListingResponse> GetUniversalItemsAsync(IEnumerable<IQueryParameter> parameters = null)
         {
-            // TODO CacheHelpers.GetItemsDependencies - is that correct to use the same key?
-            // TODO CacheHelpers.GetItemsKey  do we want to have it here?
             var queryParameters = parameters?.ToList();
             return await _deliveryCacheManager.GetOrAddAsync(
                 CacheHelpers.GetItemsKey<IList<IUniversalContentItem>>(queryParameters),
