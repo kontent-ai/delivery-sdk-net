@@ -7,7 +7,6 @@ namespace Kontent.Ai.Delivery.Abstractions
         /// <summary>
         /// Gets the content item.
         /// </summary>
-        // TODO why it is IList
         IList<IUniversalContentItem> Items { get; }
 
 

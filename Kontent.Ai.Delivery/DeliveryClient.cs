@@ -38,7 +38,7 @@ namespace Kontent.Ai.Delivery
         internal readonly IDeliveryHttpClient DeliveryHttpClient;
         internal readonly JsonSerializer Serializer;
         internal readonly ILoggerFactory LoggerFactory;
-        internal readonly IUniversalItemModelProvider GenericModelProvider;
+        internal readonly IUniversalItemModelProvider UniversalItemModelProvider;
 
         internal DeliveryEndpointUrlBuilder UrlBuilder
             => _urlBuilder ??= new DeliveryEndpointUrlBuilder(DeliveryOptions);
@@ -53,6 +53,7 @@ namespace Kontent.Ai.Delivery
         /// <param name="deliveryHttpClient">An instance of an object that can send request against Kontent.ai Delivery API</param>
         /// <param name="serializer">Default JSON serializer</param>
         /// <param name="loggerFactory">The factory used to create loggers</param>
+        /// <param name="universalItemModelProvider">An instance of an object that can JSON responses into the <see cref="IUniversalContentItem"/></param>
         public DeliveryClient(
             IOptionsMonitor<DeliveryOptions> deliveryOptions,
             IModelProvider modelProvider = null,
@@ -62,7 +63,7 @@ namespace Kontent.Ai.Delivery
             JsonSerializer serializer = null,
             // TODO why logger factory is not everywhere ?
             ILoggerFactory loggerFactory = null,
-            IUniversalItemModelProvider genericModelProvider = null)
+            IUniversalItemModelProvider universalItemModelProvider = null)
         {
             DeliveryOptions = deliveryOptions;
             ModelProvider = modelProvider;
@@ -71,8 +72,7 @@ namespace Kontent.Ai.Delivery
             DeliveryHttpClient = deliveryHttpClient;
             Serializer = serializer;
             LoggerFactory = loggerFactory;
-            // TODO IOC? Default? Check references
-            GenericModelProvider = new GenericModelProvider(serializer);
+            UniversalItemModelProvider = universalItemModelProvider;
         }
 
         /// <summary>
@@ -336,14 +336,14 @@ namespace Kontent.Ai.Delivery
             }
 
             var content = await response.GetJsonContentAsync();
-            var model = await GenericModelProvider.GetContentItemGenericModelAsync(content["item"]);
+            var model = await UniversalItemModelProvider.GetContentItemGenericModelAsync(content["item"]);
 
             var linkedUniversalItems = await Task.WhenAll(
                 content["modular_content"]?
                 .Values()
                 .Select(async linkedItem =>
                 {
-                    var model = await GenericModelProvider.GetContentItemGenericModelAsync(linkedItem);
+                    var model = await UniversalItemModelProvider.GetContentItemGenericModelAsync(linkedItem);
                     return new KeyValuePair<string, IUniversalContentItem>(model.System.Codename, model);
                 })
             );
@@ -367,14 +367,14 @@ namespace Kontent.Ai.Delivery
             var content = await response.GetJsonContentAsync();
             var pagination = content["pagination"].ToObject<Pagination>(Serializer);
 
-            var items = ((JArray)content["items"]).Select(async source => await GenericModelProvider.GetContentItemGenericModelAsync(source));
+            var items = ((JArray)content["items"]).Select(async source => await UniversalItemModelProvider.GetContentItemGenericModelAsync(source));
 
             var linkedUniversalItems = await Task.WhenAll(
                 content["modular_content"]?
                 .Values()
                 .Select(async linkedItem =>
                 {
-                    var model = await GenericModelProvider.GetContentItemGenericModelAsync(linkedItem);
+                    var model = await UniversalItemModelProvider.GetContentItemGenericModelAsync(linkedItem);
                     return new KeyValuePair<string, IUniversalContentItem>(model.System.Codename, model);
                 })
             );

@@ -760,8 +760,6 @@ namespace Kontent.Ai.Delivery.Caching.Tests
             scenario.GetRequestCount(url).Should().Be(1);
         }
 
-        // TODO Add all test to mirror strongly type responses
-
         [Theory]
         [InlineData(CacheTypeEnum.Memory, CacheExpirationType.Absolute)]
         [InlineData(CacheTypeEnum.Memory, CacheExpirationType.Sliding)]

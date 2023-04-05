@@ -197,7 +197,6 @@ namespace Kontent.Ai.Delivery.Caching
         {
             var dependencies = new HashSet<string>();
 
-            // TODO for universal dependencies
             if (!IsItemResponse(response))
             {
                 return dependencies;

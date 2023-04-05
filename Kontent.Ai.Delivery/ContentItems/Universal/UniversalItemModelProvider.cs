@@ -9,11 +9,11 @@ using Newtonsoft.Json.Linq;
 
 namespace Kontent.Ai.Delivery.ContentItems.Universal
 {
-    internal class GenericModelProvider : IUniversalItemModelProvider
+    internal class UniversalItemModelProvider : IUniversalItemModelProvider
     {
         internal readonly JsonSerializer Serializer;
 
-        internal GenericModelProvider(JsonSerializer serializer)
+        public UniversalItemModelProvider(JsonSerializer serializer)
         {
             Serializer = serializer;
         }
@@ -21,9 +21,9 @@ namespace Kontent.Ai.Delivery.ContentItems.Universal
         public async Task<IUniversalContentItem> GetContentItemGenericModelAsync(object item)
         => (IUniversalContentItem)await GetContentItemModelAsync((JObject)item);
 
-        internal async Task<IUniversalContentItem> GetContentItemModelAsync(JObject serializedItem)
+        internal Task<IUniversalContentItem> GetContentItemModelAsync(JObject serializedItem)
         {
-            var result = new UniversalContentItem() {
+            IUniversalContentItem result = new UniversalContentItem() {
                 System = serializedItem?["system"]?.ToObject<IContentItemSystemAttributes>(Serializer)
             };
 
@@ -54,7 +54,7 @@ namespace Kontent.Ai.Delivery.ContentItems.Universal
                 result.Elements.Add(key, value);
             }
 
-            return result;
+            return Task.FromResult(result);
         }
     }
 }

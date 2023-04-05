@@ -2,6 +2,7 @@
 using System.Net.Http;
 using FakeItEasy;
 using Kontent.Ai.Delivery.Abstractions;
+using Kontent.Ai.Delivery.ContentItems.Universal;
 using RichardSzalay.MockHttp;
 
 namespace Kontent.Ai.Delivery.Tests.Factories
@@ -17,7 +18,7 @@ namespace Kontent.Ai.Delivery.Tests.Factories
             IModelProvider modelProvider = null,
             IRetryPolicyProvider resiliencePolicyProvider = null,
             ITypeProvider typeProvider = null,
-            IUniversalItemModelProvider genericModelProvider = null)
+            IUniversalItemModelProvider universalItemModelProvider = null)
         {
             var httpClient = GetHttpClient(httpMessageHandler);
 
@@ -29,7 +30,7 @@ namespace Kontent.Ai.Delivery.Tests.Factories
                 new DeliveryHttpClient(httpClient),
                 Serializer,
                 null,
-                genericModelProvider ?? A.Fake<IUniversalItemModelProvider>()
+                universalItemModelProvider ?? new UniversalItemModelProvider(Serializer)
             );
 
             return client;

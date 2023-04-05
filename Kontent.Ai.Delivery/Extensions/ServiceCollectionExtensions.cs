@@ -6,6 +6,7 @@ using Kontent.Ai.Delivery.Configuration;
 using Kontent.Ai.Delivery.ContentItems;
 using Kontent.Ai.Delivery.ContentItems.ContentLinks;
 using Kontent.Ai.Delivery.ContentItems.InlineContentItems;
+using Kontent.Ai.Delivery.ContentItems.Universal;
 using Kontent.Ai.Delivery.Helpers;
 using Kontent.Ai.Delivery.RetryPolicy;
 using Microsoft.Extensions.Configuration;
@@ -121,6 +122,7 @@ namespace Kontent.Ai.Delivery.Extensions
             services.TryAddSingleton<JsonSerializer>(new DeliveryJsonSerializer());
             services.TryAddSingleton<IDeliveryClientFactory, DeliveryClientFactory>();
             services.TryAddSingleton<ILoggerFactory>(NullLoggerFactory.Instance);
+            services.TryAddSingleton<IUniversalItemModelProvider, UniversalItemModelProvider>();
 
             return services;
         }

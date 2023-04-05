@@ -2,6 +2,8 @@
 
 Intro
 
+
+
 ## Retrieve data
 
 * use sync vs. async method for IUniversalModelProvider?
@@ -9,7 +11,8 @@ Intro
 ## Data structure
 
 * mention why not record classes
-* withCodename method?
+* withCodename method/extension
+* do we want to use IList/IEnumerable for modular content?
 
 ## Convert to strongly type models
 
@@ -18,6 +21,10 @@ Explain, or raise issue
 ## Exceptions
 
 Mention `IPropertyValueConverter` and `IPropertyMapper` being excluded
+
+## Customization
+
+* Mention DeliveryCLientFactory for registering custom
 
 ## Caching
 

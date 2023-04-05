@@ -61,6 +61,9 @@ namespace Kontent.Ai.Delivery.Builders.DeliveryClient
         IOptionalClientSetup IOptionalClientSetup.WithLoggerFactory(ILoggerFactory loggerFactory)
             => RegisterOrThrow(loggerFactory, nameof(loggerFactory));
 
+        IOptionalClientSetup IOptionalClientSetup.WithUniversalItemModelProvider(IUniversalItemModelProvider universalItemModelProvider)
+            => RegisterOrThrow(universalItemModelProvider, nameof(universalItemModelProvider));
+
         IDeliveryClient IDeliveryClientBuild.Build()
         {
             _serviceCollection.AddDeliveryClient(_deliveryOptions);

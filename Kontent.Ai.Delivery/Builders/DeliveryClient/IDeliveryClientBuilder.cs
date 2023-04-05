@@ -80,6 +80,13 @@ namespace Kontent.Ai.Delivery.Builders.DeliveryClient
         /// <param name="loggerFactory"></param>
         /// <returns></returns>
         IOptionalClientSetup WithLoggerFactory(ILoggerFactory loggerFactory);
+
+        /// <summary>
+        /// Use custom IUniversalItemModelProvider to map elements to thy <see cref="IUniversalContentItem"/>.
+        /// </summary>
+        /// <param name="universalItemModelProvider"></param>
+        /// <returns></returns>
+        IOptionalClientSetup WithUniversalItemModelProvider(IUniversalItemModelProvider universalItemModelProvider);
     }
 
     /// <summary>

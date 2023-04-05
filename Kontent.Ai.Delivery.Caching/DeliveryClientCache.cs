@@ -160,7 +160,6 @@ namespace Kontent.Ai.Delivery.Caching
         // TODO
         public async Task<IDeliveryUniversalItemResponse> GetUniversalItemAsync(string codename, IEnumerable<IQueryParameter> parameters = null)
         {
-            // TODO use different method for getting item cache keys?
             var queryParameters = parameters?.ToList();
             return await _deliveryCacheManager.GetOrAddAsync(
                 CacheHelpers.GetItemKey<IUniversalContentItem>(codename, queryParameters),
