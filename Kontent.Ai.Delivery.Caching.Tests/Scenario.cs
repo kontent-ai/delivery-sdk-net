@@ -19,7 +19,10 @@ namespace Kontent.Ai.Delivery.Caching.Tests
         {
             _requestCounter = requestCounter;
             _cacheManager = new MemoryCacheManager(memoryCache, Options.Create(new DeliveryCacheOptions { DefaultExpirationType = cacheExpirationType }));
-            var baseClient = DeliveryClientBuilder.WithOptions(_ => deliveryOptions).WithDeliveryHttpClient(new DeliveryHttpClient(httpClient)).Build();
+            var baseClient = DeliveryClientBuilder
+                .WithOptions(_ => deliveryOptions)
+                .WithDeliveryHttpClient(new DeliveryHttpClient(httpClient))
+                .Build();
             CachingClient = new DeliveryClientCache(_cacheManager, baseClient);
         }
 

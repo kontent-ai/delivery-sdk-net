@@ -64,6 +64,7 @@ namespace Kontent.Ai.Delivery.Tests.Builders.DeliveryClient
             var mockTypeProvider = A.Fake<ITypeProvider>();
             var mockDeliveryHttpClient = new DeliveryHttpClient(new MockHttpMessageHandler().ToHttpClient());
             var mockLoggerFactory = A.Fake<ILoggerFactory>();
+            var mockUniversalItemModelProvider = A.Fake<IUniversalItemModelProvider>();
 
             var deliveryClient = (Delivery.DeliveryClient) DeliveryClientBuilder
                 .WithProjectId(ProjectId)
@@ -78,6 +79,7 @@ namespace Kontent.Ai.Delivery.Tests.Builders.DeliveryClient
                 .WithRetryPolicyProvider(mockRetryPolicyProvider)
                 .WithTypeProvider(mockTypeProvider)
                 .WithLoggerFactory(mockLoggerFactory)
+                .WithUniversalItemModelProvider(mockUniversalItemModelProvider)
                 .Build();
 
             Assert.Equal(ProjectId, deliveryClient.DeliveryOptions.CurrentValue.ProjectId);
@@ -86,6 +88,7 @@ namespace Kontent.Ai.Delivery.Tests.Builders.DeliveryClient
             Assert.Equal(mockTypeProvider, deliveryClient.TypeProvider);
             Assert.Equal(mockDeliveryHttpClient, deliveryClient.DeliveryHttpClient);
             Assert.Equal(mockLoggerFactory, deliveryClient.LoggerFactory);
+            Assert.Equal(mockUniversalItemModelProvider, deliveryClient.UniversalItemModelProvider);
         }
 
         [Fact]
@@ -220,6 +223,14 @@ namespace Kontent.Ai.Delivery.Tests.Builders.DeliveryClient
             var builderStep = DeliveryClientBuilder.WithProjectId(_guid);
 
             Assert.Throws<ArgumentNullException>(() => builderStep.WithLoggerFactory(null));
+        }
+
+        [Fact]
+        public void BuildWithOptionsAndNullUniversalItemModelProvider_TrowsArgumentNullException()
+        {
+            var builderStep = DeliveryClientBuilder.WithProjectId(_guid);
+
+            Assert.Throws<ArgumentNullException>(() => builderStep.WithUniversalItemModelProvider(null));
         }
 
         private static IEnumerable<Type> GetResolvableInlineContentItemTypes(Delivery.DeliveryClient deliveryClient)
