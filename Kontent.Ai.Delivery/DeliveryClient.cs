@@ -61,7 +61,6 @@ namespace Kontent.Ai.Delivery
             ITypeProvider typeProvider = null,
             IDeliveryHttpClient deliveryHttpClient = null,
             JsonSerializer serializer = null,
-            // TODO why logger factory is not everywhere ?
             ILoggerFactory loggerFactory = null,
             IUniversalItemModelProvider universalItemModelProvider = null)
         {

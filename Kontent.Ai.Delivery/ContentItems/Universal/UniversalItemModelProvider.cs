@@ -32,19 +32,14 @@ namespace Kontent.Ai.Delivery.ContentItems.Universal
                 var key = item.Key;
                 var element = item.Value;
 
-                // TODO think about value converter implementation
-                // TODO what about codename property - now it is not null, bit withCodename is not really nice
                 IContentElementValue value = (element["type"].ToString()) switch
                 {
-                    // TODO do we want to use string/structured data for rich text - probably think about support both ways
                     "rich_text" => element.ToObject<RichTextElementValue>(Serializer).WithCodename(key),
                     "asset" => element.ToObject<AssetElementValue>(Serializer).WithCodename(key),
                     "number" => element.ToObject<NumberElementValue>(Serializer).WithCodename(key),
-                    // TODO do we want to use string/structured data for date time => structured is OK
                     "date_time" => element.ToObject<DateTimeElementValue>(Serializer).WithCodename(key),
                     "multiple_choice" => element.ToObject<MultipleChoiceElementValue>(Serializer).WithCodename(key),
                     "taxonomy" => element.ToObject<TaxonomyElementValue>(Serializer).WithCodename(key),
-                    // TODO what Linked items + what SubPages? 
                     "modular_content" => element.ToObject<LinkedItemsElementValue>(Serializer).WithCodename(key),
                     "custom" => element.ToObject<CustomElementValue>(Serializer).WithCodename(key),
                     "url_slug" => element.ToObject<UrlSlugElementValue>(Serializer).WithCodename(key),

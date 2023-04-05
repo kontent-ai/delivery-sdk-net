@@ -1,6 +1,5 @@
 ﻿namespace Kontent.Ai.Delivery.Abstractions
 {
-    // TODO think whether the IContentElementValue is needed
     /// <summary>
     /// Represents a generic content element with value.
     /// </summary>
