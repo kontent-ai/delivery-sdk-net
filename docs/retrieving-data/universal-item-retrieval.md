@@ -4,7 +4,12 @@ Intro
 
 ## Retrieve data
 
+* use sync vs. async method for IUniversalModelProvider?
+
 ## Data structure
+
+* mention why not record classes
+* withCodename method?
 
 ## Convert to strongly type models
 
