@@ -1821,7 +1821,7 @@ namespace Kontent.Ai.Delivery.Tests
             Assert.NotNull(syncInit.ApiResponse.ContinuationToken);
             Assert.Empty(syncInit.SyncItems);
         }
-        
+
         [Fact]
         public async Task SyncApi_PostSyncInitAsync_WithParameters_GetContinuationToken()
         {
@@ -1833,12 +1833,10 @@ namespace Kontent.Ai.Delivery.Tests
 
             var client = InitializeDeliveryClientWithCustomModelProvider(_mockHttp);
 
-            var syncInit = await client.PostSyncInitAsync(new IQueryParameter[]
-            {
+            var syncInit = await client.PostSyncInitAsync(
                 new LanguageParameter("cs"),
                 new EqualsFilter("system.type", "article"),
-                new NotEqualsFilter("system.collection", "default")
-            });
+                new NotEqualsFilter("system.collection", "default"));
 
             var requestUri = new Uri(syncInit.ApiResponse.RequestUrl);
 
