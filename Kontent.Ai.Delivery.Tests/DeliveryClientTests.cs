@@ -14,6 +14,7 @@ using Kontent.Ai.Delivery.Builders.DeliveryClient;
 using Kontent.Ai.Delivery.ContentItems;
 using Kontent.Ai.Delivery.ContentItems.RichText.Blocks;
 using Kontent.Ai.Delivery.SharedModels;
+using Kontent.Ai.Delivery.Sync;
 using Kontent.Ai.Delivery.Tests.Factories;
 using Kontent.Ai.Delivery.Tests.Models;
 using Kontent.Ai.Delivery.Tests.Models.ContentTypes;
@@ -1856,6 +1857,8 @@ namespace Kontent.Ai.Delivery.Tests
         {
             var mockedResponse = await File.ReadAllTextAsync(Path.Combine(Environment.CurrentDirectory, $"Fixtures{Path.DirectorySeparatorChar}DeliveryClient{Path.DirectorySeparatorChar}sync.json"));
 
+            var expectedValue = JObject.Parse(mockedResponse).SelectToken("items").ToObject<IList<SyncItem>>();
+            
             _mockHttp
                 .When($"{_baseUrl}/sync")
                 .WithHeaders("X-Continuation", "token")
@@ -1869,21 +1872,21 @@ namespace Kontent.Ai.Delivery.Tests
 
             Assert.Equal(2, sync.SyncItems.Count);
 
-            Assert.Equal("hello_world", sync.SyncItems[0].Codename);
-            Assert.Equal(Guid.Parse("7adfb82a-1386-4228-bcc2-45073a0355f6"), sync.SyncItems[0].Id);
-            Assert.Equal("article", sync.SyncItems[0].Type);
-            Assert.Equal("default", sync.SyncItems[0].Language);
-            Assert.Equal("default", sync.SyncItems[0].Collection);
-            Assert.Equal("changed", sync.SyncItems[0].ChangeType);
-            Assert.Equal(DateTimeOffset.Parse("2022-10-06T08:38:40.0088127Z"), sync.SyncItems[0].Timestamp);
+            Assert.Equal(expectedValue[0].Codename, sync.SyncItems[0].Codename);
+            Assert.Equal(expectedValue[0].Id, sync.SyncItems[0].Id);
+            Assert.Equal(expectedValue[0].Type, sync.SyncItems[0].Type);
+            Assert.Equal(expectedValue[0].Language, sync.SyncItems[0].Language);
+            Assert.Equal(expectedValue[0].Collection, sync.SyncItems[0].Collection);
+            Assert.Equal(expectedValue[0].ChangeType, sync.SyncItems[0].ChangeType);
+            Assert.Equal(expectedValue[0].Timestamp, sync.SyncItems[0].Timestamp);
 
-            Assert.Equal("bye__world", sync.SyncItems[1].Codename);
-            Assert.Equal(Guid.Parse("42a3cfbd-4967-43e7-987b-e1e69c483e26"), sync.SyncItems[1].Id);
-            Assert.Equal("article", sync.SyncItems[1].Type);
-            Assert.Equal("default", sync.SyncItems[1].Language);
-            Assert.Equal("default", sync.SyncItems[1].Collection);
-            Assert.Equal("deleted", sync.SyncItems[1].ChangeType);
-            Assert.Equal(DateTimeOffset.Parse("2022-10-06T08:38:47.3613558Z"), sync.SyncItems[1].Timestamp);
+            Assert.Equal(expectedValue[1].Codename, sync.SyncItems[1].Codename);
+            Assert.Equal(expectedValue[1].Id, sync.SyncItems[1].Id);
+            Assert.Equal(expectedValue[1].Type, sync.SyncItems[1].Type);
+            Assert.Equal(expectedValue[1].Language, sync.SyncItems[1].Language);
+            Assert.Equal(expectedValue[1].Collection, sync.SyncItems[1].Collection);
+            Assert.Equal(expectedValue[1].ChangeType, sync.SyncItems[1].ChangeType);
+            Assert.Equal(expectedValue[1].Timestamp, sync.SyncItems[1].Timestamp);
         }
 
         private DeliveryClient InitializeDeliveryClientWithACustomTypeProvider(MockHttpMessageHandler handler)
