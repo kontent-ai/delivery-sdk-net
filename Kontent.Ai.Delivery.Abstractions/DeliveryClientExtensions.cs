@@ -76,7 +76,7 @@ namespace Kontent.Ai.Delivery.Abstractions
         {
             return client.GetLanguagesAsync(parameters);
         }
-        
+
         /// <summary>
         /// Initializes synchronization of changes in content items based on the specified parameters. After the initialization, you'll get an X-Continuation token in the response.
         /// </summary>
