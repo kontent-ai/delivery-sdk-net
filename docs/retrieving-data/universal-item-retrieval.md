@@ -2,7 +2,7 @@
 
 > ⚠ This approach is experimental. It might contain breaking changes in the future.
 
-The `IDeliveryClient` interface supports fetching of universal content items. Which is basically content item(s) with elements being deserialized into the dictionary of elements and its linked item.
+The `IDeliveryClient` interface supports fetching the universal content items. Which is basically a form of representing content elements being deserialized into the dictionary of elements. And this universal item is retrieved as a part of universal response with its linked items.
 
 > See [Strongly model retrieval approach](../customization-and-extensibility/strongly-typed-models.md) for more strictly typed model retrieval.
 
