@@ -1,10 +1,12 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Globalization;
 using System.IO;
 using System.Linq;
 using System.Net;
 using System.Net.Http;
 using System.Threading.Tasks;
+using System.Web;
 using AngleSharp.Html.Parser;
 using FakeItEasy;
 using Kontent.Ai.Delivery.Abstractions;
@@ -13,6 +15,7 @@ using Kontent.Ai.Delivery.ContentItems;
 using Kontent.Ai.Delivery.ContentItems.Elements;
 using Kontent.Ai.Delivery.ContentItems.RichText.Blocks;
 using Kontent.Ai.Delivery.SharedModels;
+using Kontent.Ai.Delivery.Sync;
 using Kontent.Ai.Delivery.Tests.Factories;
 using Kontent.Ai.Delivery.Tests.Models;
 using Kontent.Ai.Delivery.Tests.Models.ContentTypes;
@@ -1975,6 +1978,88 @@ namespace Kontent.Ai.Delivery.Tests
             Assert.Equal(hostedVideoItem.GetType(), typeof(HostedVideo));
             Assert.Equal("https://twitter.com/DeCubaNorwich/status/879265763978358784", (tweetItem as Tweet).TweetLink);
             Assert.Equal("2Ao5b6uqI40", (hostedVideoItem as HostedVideo).VideoId);
+        }
+
+        [Fact]
+        public async Task SyncApi_PostSyncInitAsync_GetContinuationToken()
+        {
+            var mockedResponse = await File.ReadAllTextAsync(Path.Combine(Environment.CurrentDirectory, $"Fixtures{Path.DirectorySeparatorChar}DeliveryClient{Path.DirectorySeparatorChar}sync_init.json"));
+
+            _mockHttp
+                .When($"{_baseUrl}/sync/init")
+                .Respond(new[] { new KeyValuePair<string, string>("X-Continuation", "token"), }, "application/json", mockedResponse);
+
+            var client = InitializeDeliveryClientWithCustomModelProvider(_mockHttp);
+
+            var syncInit = await client.PostSyncInitAsync();
+
+            Assert.NotNull(syncInit.ApiResponse.ContinuationToken);
+            Assert.Empty(syncInit.SyncItems);
+        }
+
+        [Fact]
+        public async Task SyncApi_PostSyncInitAsync_WithParameters_GetContinuationToken()
+        {
+            var mockedResponse = await File.ReadAllTextAsync(Path.Combine(Environment.CurrentDirectory, $"Fixtures{Path.DirectorySeparatorChar}DeliveryClient{Path.DirectorySeparatorChar}sync_init.json"));
+
+            _mockHttp
+                .When($"{_baseUrl}/sync/init")
+                .Respond(new[] { new KeyValuePair<string, string>("X-Continuation", "token"), }, "application/json", mockedResponse);
+
+            var client = InitializeDeliveryClientWithCustomModelProvider(_mockHttp);
+
+            var syncInit = await client.PostSyncInitAsync(
+                new LanguageParameter("cs"),
+                new EqualsFilter("system.type", "article"),
+                new NotEqualsFilter("system.collection", "default"));
+
+            var requestUri = new Uri(syncInit.ApiResponse.RequestUrl);
+
+            var requestQuery = HttpUtility.ParseQueryString(requestUri.Query);
+            
+            Assert.Equal(3, requestQuery.Count);
+            Assert.Equal("language", requestQuery.Keys[0]);
+            Assert.Equal("system.type[eq]", requestQuery.Keys[1]);
+            Assert.Equal("system.collection[neq]", requestQuery.Keys[2]);
+            Assert.NotNull(syncInit.ApiResponse.ContinuationToken);
+            Assert.Empty(syncInit.SyncItems);
+        }
+
+        [Fact]
+        public async Task SyncApi_GetSyncAsync_GetSyncItems()
+        {
+            var mockedResponse = await File.ReadAllTextAsync(Path.Combine(Environment.CurrentDirectory, $"Fixtures{Path.DirectorySeparatorChar}DeliveryClient{Path.DirectorySeparatorChar}sync.json"));
+
+            var expectedValue = JObject.Parse(mockedResponse).SelectToken("items").ToObject<IList<SyncItem>>();
+            
+            _mockHttp
+                .When($"{_baseUrl}/sync")
+                .WithHeaders("X-Continuation", "token")
+                .Respond(new[] { new KeyValuePair<string, string>("X-Continuation", "token"), }, "application/json", mockedResponse);
+
+            var client = InitializeDeliveryClientWithCustomModelProvider(_mockHttp);
+
+            var sync = await client.GetSyncAsync("token");
+
+            Assert.NotNull(sync.ApiResponse.ContinuationToken);
+
+            Assert.Equal(2, sync.SyncItems.Count);
+
+            Assert.Equal(expectedValue[0].Codename, sync.SyncItems[0].Codename);
+            Assert.Equal(expectedValue[0].Id, sync.SyncItems[0].Id);
+            Assert.Equal(expectedValue[0].Type, sync.SyncItems[0].Type);
+            Assert.Equal(expectedValue[0].Language, sync.SyncItems[0].Language);
+            Assert.Equal(expectedValue[0].Collection, sync.SyncItems[0].Collection);
+            Assert.Equal(expectedValue[0].ChangeType, sync.SyncItems[0].ChangeType);
+            Assert.Equal(expectedValue[0].Timestamp, sync.SyncItems[0].Timestamp);
+
+            Assert.Equal(expectedValue[1].Codename, sync.SyncItems[1].Codename);
+            Assert.Equal(expectedValue[1].Id, sync.SyncItems[1].Id);
+            Assert.Equal(expectedValue[1].Type, sync.SyncItems[1].Type);
+            Assert.Equal(expectedValue[1].Language, sync.SyncItems[1].Language);
+            Assert.Equal(expectedValue[1].Collection, sync.SyncItems[1].Collection);
+            Assert.Equal(expectedValue[1].ChangeType, sync.SyncItems[1].ChangeType);
+            Assert.Equal(expectedValue[1].Timestamp, sync.SyncItems[1].Timestamp);
         }
 
         private DeliveryClient InitializeDeliveryClientWithACustomTypeProvider(MockHttpMessageHandler handler)
