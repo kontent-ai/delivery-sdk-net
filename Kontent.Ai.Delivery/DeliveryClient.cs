@@ -337,14 +337,14 @@ namespace Kontent.Ai.Delivery
             }
 
             var content = await response.GetJsonContentAsync();
-            var model = await UniversalItemModelProvider.GetContentItemGenericModelAsync(content["item"]);
+            var model = await UniversalItemModelProvider.GetUniversalContentItemModelAsync(content["item"]);
 
             var linkedUniversalItems = await Task.WhenAll(
                 content["modular_content"]?
                 .Values()
                 .Select(async linkedItem =>
                 {
-                    var model = await UniversalItemModelProvider.GetContentItemGenericModelAsync(linkedItem);
+                    var model = await UniversalItemModelProvider.GetUniversalContentItemModelAsync(linkedItem);
                     return new KeyValuePair<string, IUniversalContentItem>(model.System.Codename, model);
                 })
             );
@@ -368,14 +368,14 @@ namespace Kontent.Ai.Delivery
             var content = await response.GetJsonContentAsync();
             var pagination = content["pagination"].ToObject<Pagination>(Serializer);
 
-            var items = ((JArray)content["items"]).Select(async source => await UniversalItemModelProvider.GetContentItemGenericModelAsync(source));
+            var items = ((JArray)content["items"]).Select(async source => await UniversalItemModelProvider.GetUniversalContentItemModelAsync(source));
 
             var linkedUniversalItems = await Task.WhenAll(
                 content["modular_content"]?
                 .Values()
                 .Select(async linkedItem =>
                 {
-                    var model = await UniversalItemModelProvider.GetContentItemGenericModelAsync(linkedItem);
+                    var model = await UniversalItemModelProvider.GetUniversalContentItemModelAsync(linkedItem);
                     return new KeyValuePair<string, IUniversalContentItem>(model.System.Codename, model);
                 })
             );

@@ -80,7 +80,7 @@ You can implement your own `IUniversalModelProvider` and register it via `Delive
 class CustomUniversalItemModelProvider : IUniversalItemModelProvider
 {
     // custom implementation
-    public async Task<IUniversalContentItem> GetContentItemGenericModelAsync(object item) => CustomImplementation((JObject)item);
+    public async Task<IUniversalContentItem> GetUniversalContentItemModelAsync(object item) => CustomImplementation((JObject)item);
 }
 
 var client = DeliveryClientBuilder

@@ -18,7 +18,7 @@ namespace Kontent.Ai.Delivery.ContentItems.Universal
             Serializer = serializer;
         }
 
-        public async Task<IUniversalContentItem> GetContentItemGenericModelAsync(object item)
+        public async Task<IUniversalContentItem> GetUniversalContentItemModelAsync(object item)
         => (IUniversalContentItem)await GetContentItemModelAsync((JObject)item);
 
         internal Task<IUniversalContentItem> GetContentItemModelAsync(JObject serializedItem)
