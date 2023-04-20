@@ -4,6 +4,8 @@ using System.Threading.Tasks;
 using Kontent.Ai.Delivery.Abstractions;
 using Kontent.Ai.Delivery.Caching.Extensions;
 using Microsoft.Extensions.Caching.Distributed;
+using Microsoft.Extensions.Logging;
+using Microsoft.Extensions.Logging.Abstractions;
 using Microsoft.Extensions.Options;
 
 namespace Kontent.Ai.Delivery.Caching
@@ -15,25 +17,40 @@ namespace Kontent.Ai.Delivery.Caching
     {
         private readonly IDistributedCache _distributedCache;
         private readonly DeliveryCacheOptions _cacheOptions;
+        private readonly ILogger _logger;
 
         /// <summary>
         /// Initializes a new instance of <see cref="DistributedCacheManager"/>
         /// </summary>
         /// <param name="distributedCache">An instance of an object that represent distributed cache</param>
         /// <param name="cacheOptions">The settings of the cache</param>
-        public DistributedCacheManager(IDistributedCache distributedCache, IOptions<DeliveryCacheOptions> cacheOptions)
+        /// <param name="loggerFactory">The factory used to create loggers.</param>
+        public DistributedCacheManager(IDistributedCache distributedCache,
+            IOptions<DeliveryCacheOptions> cacheOptions,
+            ILoggerFactory loggerFactory = null)
         {
+            var loggerFactoryToUse = loggerFactory ?? NullLoggerFactory.Instance;
+
             _distributedCache = distributedCache ?? throw new ArgumentNullException(nameof(distributedCache));
             _cacheOptions = cacheOptions.Value ?? new DeliveryCacheOptions();
+            _logger = loggerFactoryToUse.CreateLogger(nameof(DistributedCacheManager));
         }
 
         /// <inheritdoc />
         public async Task<T> GetOrAddAsync<T>(string key, Func<Task<T>> valueFactory, Func<T, bool> shouldCache = null, Func<T, IEnumerable<string>> dependenciesFactory = null) where T : class
         {
-            var (Success, Value) = await TryGetAsync<T>(key);
-            if (Success)
+            try
             {
-                return Value;
+                var (Success, Value) = await TryGetAsync<T>(key);
+                if (Success)
+                {
+                    return Value;
+                }
+            }
+            catch(Exception ex) when (ex is not ArgumentNullException && _cacheOptions.DistributedCacheResilientPolicy == DistributedCacheResilientPolicy.FallbackToApi) 
+            {
+                _logger.LogWarning(ex, "Distributed cache is not available. Default DeliveryClient was used to get content from Delivery API.");
+                return await valueFactory();
             }
 
             var value = await valueFactory();

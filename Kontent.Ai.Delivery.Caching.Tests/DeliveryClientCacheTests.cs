@@ -1,8 +1,11 @@
-﻿using System.Linq;
+﻿using System;
+using System.Linq;
 using System.Threading.Tasks;
+using FakeItEasy;
 using FluentAssertions;
 using Kontent.Ai.Delivery.Abstractions;
 using Kontent.Ai.Delivery.SharedModels;
+using Microsoft.Extensions.Logging;
 using Xunit;
 using static Kontent.Ai.Delivery.Caching.Tests.ResponseHelper;
 
@@ -54,6 +57,7 @@ namespace Kontent.Ai.Delivery.Caching.Tests
             firstResponse.Should().NotBeEquivalentTo(secondResponse);
             scenario.GetRequestCount(url).Should().Be(2);
         }
+
         [Theory]
         [InlineData(CacheTypeEnum.Memory, CacheExpirationType.Absolute)]
         [InlineData(CacheTypeEnum.Memory, CacheExpirationType.Sliding)]
@@ -670,6 +674,60 @@ namespace Kontent.Ai.Delivery.Caching.Tests
             secondResponse.Should().NotBeNull();
             firstResponse.Should().NotBeEquivalentTo(secondResponse);
             scenario.GetRequestCount(url).Should().Be(2);
+        }
+
+        #endregion
+
+        #region Broken Distributed cache
+
+        [Theory]
+        [InlineData(CacheTypeEnum.Distributed, CacheExpirationType.Absolute)]
+        [InlineData(CacheTypeEnum.Distributed, CacheExpirationType.Sliding)]
+        public async Task GetItemTypedAsync_BrokenCache_FallbackToApi_ResponseIsRetruned(CacheTypeEnum cacheType, CacheExpirationType cacheExpirationType)
+        {
+            var loggerMock = A.Fake<ILogger>();
+            var loggerFactoryMock = A.Fake<ILoggerFactory>();
+            A.CallTo(() => loggerFactoryMock.CreateLogger(A<string>.Ignored)).Returns(loggerMock);
+
+            const string codename = "codename";
+            var url = $"items/{codename}";
+            var item = CreateItemResponse(CreateItem(codename, "original"));
+            var scenarioBuilder = new ScenarioBuilder(
+                cacheType,
+                cacheExpirationType,
+                brokenCache: true,
+                distributedCacheResilientPolicy: DistributedCacheResilientPolicy.FallbackToApi,
+                loggerFactory: loggerFactoryMock);
+            var scenario = scenarioBuilder.WithResponse(url, item).Build();
+
+            var firstResponse = await scenario.CachingClient.GetItemAsync<TestItem>(codename);
+            var secondResponse = await scenario.CachingClient.GetItemAsync<TestItem>(codename);
+            //Check
+            firstResponse.Should().NotBeNull();
+            firstResponse.Should().BeEquivalentTo(secondResponse);
+            scenario.GetRequestCount(url).Should().Be(2);
+            A.CallTo(loggerMock)
+                .Where(call => call.Method.Name == "Log")
+                .WhenArgumentsMatch(args => args.Count == 5 && args.ArgumentNames.First() == "logLevel" && args.First().Equals(LogLevel.Warning))
+                .MustHaveHappenedTwiceExactly();
+        }
+
+        [Theory]
+        [InlineData(CacheTypeEnum.Distributed, CacheExpirationType.Absolute)]
+        [InlineData(CacheTypeEnum.Distributed, CacheExpirationType.Sliding)]
+        public async Task GetItemTypedAsync_BrokenCache_Crash_ThrowsException(CacheTypeEnum cacheType, CacheExpirationType cacheExpirationType)
+        {
+            const string codename = "codename";
+            var url = $"items/{codename}";
+            var item = CreateItemResponse(CreateItem(codename, "original"));
+            var scenarioBuilder = new ScenarioBuilder(
+                cacheType,
+                cacheExpirationType,
+                brokenCache: true,
+                distributedCacheResilientPolicy: DistributedCacheResilientPolicy.Crash);
+            var scenario = scenarioBuilder.WithResponse(url, item).Build();
+
+            await Assert.ThrowsAsync<Exception>(async () => await scenario.CachingClient.GetItemAsync<TestItem>(codename));
         }
 
         #endregion

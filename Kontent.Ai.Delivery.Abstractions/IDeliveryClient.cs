@@ -76,5 +76,18 @@ namespace Kontent.Ai.Delivery.Abstractions
         /// <param name="parameters">A collection of query parameters, for example, for paging.</param>
         /// <returns>The <see cref="IDeliveryLanguageListingResponse"/> instance that represents the languages. If no query parameters are specified, all languages are returned.</returns>
         Task<IDeliveryLanguageListingResponse> GetLanguagesAsync(IEnumerable<IQueryParameter> parameters = null);
+
+        /// <summary>
+        /// Initializes synchronization of changes in content items based on the specified parameters. After the initialization, you'll get an X-Continuation token in the response.
+        /// </summary>
+        /// <param name="parameters">A collection of query parameters, for example, for filtering.</param>
+        /// <returns>The <see cref="IDeliverySyncInitResponse"/> instance that represents the sync init response that contains continuation token needed for further sync execution.</returns>
+        Task<IDeliverySyncInitResponse> PostSyncInitAsync(IEnumerable<IQueryParameter> parameters = null);
+
+        /// <summary>
+        /// Retrieve a list of delta updates to recently changed content items in the specified project. The types of items you get is determined by the X-Continuation token you use.
+        /// </summary>
+        /// <returns>The <see cref="IDeliverySyncResponse"/> instance that represents the sync response that contains collection of delta updates and continuation token needed for further sync execution.</returns>
+        Task<IDeliverySyncResponse> GetSyncAsync(string continuationToken);
     }
 }

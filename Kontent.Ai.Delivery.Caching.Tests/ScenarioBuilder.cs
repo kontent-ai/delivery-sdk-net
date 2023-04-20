@@ -6,6 +6,8 @@ using System.Text;
 using Kontent.Ai.Delivery.Abstractions;
 using Microsoft.Extensions.Caching.Distributed;
 using Microsoft.Extensions.Caching.Memory;
+using Microsoft.Extensions.Logging;
+using Microsoft.Extensions.Logging.Abstractions;
 using Microsoft.Extensions.Options;
 using Newtonsoft.Json;
 using RichardSzalay.MockHttp;
@@ -18,18 +20,30 @@ namespace Kontent.Ai.Delivery.Caching.Tests
         private readonly string _baseUrl;
         private readonly CacheTypeEnum _cacheType;
         private readonly CacheExpirationType _cacheExpirationType;
+        private readonly DistributedCacheResilientPolicy _distributedCacheResilientPolicy;
+        private readonly ILoggerFactory _loggerFactory;
 
         private readonly MemoryCache _memoryCache = new MemoryCache(Options.Create(new MemoryCacheOptions()));
-        private readonly IDistributedCache _distributedCache = new MemoryDistributedCache(Options.Create(new MemoryDistributedCacheOptions()));
+        private readonly IDistributedCache _distributedCache;
         private readonly Dictionary<string, int> _requestCounter = new Dictionary<string, int>();
 
         private readonly List<(string key, Action<MockHttpMessageHandler> configure)> _configurations = new List<(string key, Action<MockHttpMessageHandler> configure)>();
 
-        public ScenarioBuilder(CacheTypeEnum cacheType = CacheTypeEnum.Memory, CacheExpirationType cacheExpirationType = CacheExpirationType.Sliding)
+        public ScenarioBuilder(
+            CacheTypeEnum cacheType = CacheTypeEnum.Memory,
+            CacheExpirationType cacheExpirationType = CacheExpirationType.Sliding,
+            bool brokenCache = false,
+            DistributedCacheResilientPolicy distributedCacheResilientPolicy = DistributedCacheResilientPolicy.Crash,
+            ILoggerFactory loggerFactory = null)
         {
             _baseUrl = $"https://deliver.kontent.ai/{_projectId}/";
             _cacheType = cacheType;
             _cacheExpirationType = cacheExpirationType;
+            _distributedCacheResilientPolicy = distributedCacheResilientPolicy;
+            _distributedCache = brokenCache ?
+                new BrokenDistributedCache(Options.Create(new MemoryDistributedCacheOptions())) :
+                new MemoryDistributedCache(Options.Create(new MemoryDistributedCacheOptions()));
+            _loggerFactory = loggerFactory ?? NullLoggerFactory.Instance;
         }
 
         public ScenarioBuilder WithResponse(string relativeUrl, object responseObject)
@@ -98,7 +112,7 @@ namespace Kontent.Ai.Delivery.Caching.Tests
             }
             else
             {
-                return new Scenario(_distributedCache, _cacheExpirationType, mockHttp.ToHttpClient(), new DeliveryOptions { ProjectId = _projectId }, _requestCounter);
+                return new Scenario(_distributedCache, _cacheExpirationType, _distributedCacheResilientPolicy, mockHttp.ToHttpClient(), new DeliveryOptions { ProjectId = _projectId }, _requestCounter, _loggerFactory);
             }
         }
     }

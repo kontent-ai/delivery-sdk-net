@@ -1,6 +1,8 @@
 ﻿using Kontent.Ai.Delivery.Abstractions;
 using Microsoft.Extensions.Caching.Distributed;
 using Microsoft.Extensions.Caching.Memory;
+using Microsoft.Extensions.Logging;
+using Microsoft.Extensions.Logging.Abstractions;
 using Microsoft.Extensions.Options;
 
 namespace Kontent.Ai.Delivery.Caching.Factories
@@ -15,11 +17,13 @@ namespace Kontent.Ai.Delivery.Caching.Factories
         /// </summary>
         /// <param name="distributedCache">A <see cref="IDistributedCache"/> instance.</param>
         /// <param name="options">A <see cref="DeliveryCacheOptions"/></param>
+        /// <param name="loggerFactory">The factory used to create loggers.</param>
         /// <returns>The <see cref="IDeliveryCacheManager"/> instance with a distribute cache.</returns>
         public static IDeliveryCacheManager Create(IDistributedCache distributedCache,
-            IOptions<DeliveryCacheOptions> options)
+            IOptions<DeliveryCacheOptions> options,
+            ILoggerFactory loggerFactory = null)
         {
-            return new DistributedCacheManager(distributedCache, options);
+            return new DistributedCacheManager(distributedCache, options, loggerFactory ?? NullLoggerFactory.Instance);
         }
 
         /// <summary>

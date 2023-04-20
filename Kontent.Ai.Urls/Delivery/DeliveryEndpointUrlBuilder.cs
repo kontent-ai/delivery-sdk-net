@@ -22,6 +22,8 @@ namespace Kontent.Ai.Urls.Delivery
         private const string UrlTemplateTaxonomy = "/taxonomies/{0}";
         private const string UrlTemplateTaxonomies = "/taxonomies";
         private const string UrlTemplateLanguages = "/languages";
+        private const string UrlTemplateSyncInit = "/sync/init";
+        private const string UrlTemplateSync = "/sync";
 
         private readonly IOptionsMonitor<DeliveryOptions> _deliveryOptionsMonitor;
         private DeliveryOptions deliveryOptions;
@@ -140,6 +142,25 @@ namespace Kontent.Ai.Urls.Delivery
         public string GetLanguagesUrl(IEnumerable<IQueryParameter> parameters)
         {
             return GetUrl(UrlTemplateLanguages, parameters);
+        }
+
+        /// <summary>
+        /// Generates an URL for sync initialization.
+        /// </summary>
+        /// <param name="parameters">Filtering parameters.</param>
+        /// <returns>A valid URL containing correctly formatted parameters.</returns>
+        public string GetSyncInitUrl(IEnumerable<IQueryParameter> parameters)
+        {
+            return GetUrl(UrlTemplateSyncInit, parameters);
+        }
+
+        /// <summary>
+        /// Generates an URL for sync execution.
+        /// </summary>
+        /// <returns>A valid URL containing correctly formatted parameters.</returns>
+        public string GetSyncUrl()
+        {
+            return GetUrl(UrlTemplateSync);
         }
 
         private string GetUrl(string path, IEnumerable<IQueryParameter> parameters)

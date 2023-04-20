@@ -11,11 +11,13 @@ using Kontent.Ai.Delivery.ContentTypes;
 using Kontent.Ai.Delivery.Extensions;
 using Kontent.Ai.Delivery.Languages;
 using Kontent.Ai.Delivery.SharedModels;
+using Kontent.Ai.Delivery.Sync;
 using Kontent.Ai.Delivery.TaxonomyGroups;
 using Kontent.Ai.Urls.Delivery;
 using Kontent.Ai.Urls.Delivery.QueryParameters;
 using Kontent.Ai.Urls.Delivery.QueryParameters.Filters;
 using Microsoft.AspNetCore.WebUtilities;
+using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
 using Newtonsoft.Json;
 using Newtonsoft.Json.Linq;
@@ -35,6 +37,7 @@ namespace Kontent.Ai.Delivery
         internal readonly IRetryPolicyProvider RetryPolicyProvider;
         internal readonly IDeliveryHttpClient DeliveryHttpClient;
         internal readonly JsonSerializer Serializer;
+        internal readonly ILoggerFactory LoggerFactory;
 
         internal DeliveryEndpointUrlBuilder UrlBuilder
             => _urlBuilder ??= new DeliveryEndpointUrlBuilder(DeliveryOptions);
@@ -48,13 +51,15 @@ namespace Kontent.Ai.Delivery
         /// <param name="typeProvider">An instance of an object that can map Kontent.ai content types to CLR types</param>
         /// <param name="deliveryHttpClient">An instance of an object that can send request against Kontent.ai Delivery API</param>
         /// <param name="serializer">Default JSON serializer</param>
+        /// <param name="loggerFactory">The factory used to create loggers</param>
         public DeliveryClient(
             IOptionsMonitor<DeliveryOptions> deliveryOptions,
             IModelProvider modelProvider = null,
             IRetryPolicyProvider retryPolicyProvider = null,
             ITypeProvider typeProvider = null,
             IDeliveryHttpClient deliveryHttpClient = null,
-            JsonSerializer serializer = null)
+            JsonSerializer serializer = null,
+            ILoggerFactory loggerFactory = null)
         {
             DeliveryOptions = deliveryOptions;
             ModelProvider = modelProvider;
@@ -62,6 +67,7 @@ namespace Kontent.Ai.Delivery
             TypeProvider = typeProvider;
             DeliveryHttpClient = deliveryHttpClient;
             Serializer = serializer;
+            LoggerFactory = loggerFactory;
         }
 
         /// <summary>
@@ -79,7 +85,7 @@ namespace Kontent.Ai.Delivery
             }
 
             var endpointUrl = UrlBuilder.GetItemUrl(codename, parameters);
-            var response = await GetDeliveryResponseAsync(endpointUrl);
+            var response = await GetDeliveryResponseAsync(endpointUrl, HttpMethod.Get);
             
             if (!response.IsSuccess)
             {
@@ -101,7 +107,7 @@ namespace Kontent.Ai.Delivery
         {
             var enhancedParameters = EnsureContentTypeFilter<T>(parameters).ToList();
             var endpointUrl = UrlBuilder.GetItemsUrl(enhancedParameters);
-            var response = await GetDeliveryResponseAsync(endpointUrl);
+            var response = await GetDeliveryResponseAsync(endpointUrl, HttpMethod.Get);
             
             if (!response.IsSuccess)
             {
@@ -130,7 +136,7 @@ namespace Kontent.Ai.Delivery
 
             async Task<DeliveryItemsFeedResponse<T>> GetItemsBatchAsync(string continuationToken)
             {
-                var response = await GetDeliveryResponseAsync(endpointUrl, continuationToken);
+                var response = await GetDeliveryResponseAsync(endpointUrl, HttpMethod.Get, continuationToken);
                 
                 if (!response.IsSuccess)
                 {
@@ -163,7 +169,7 @@ namespace Kontent.Ai.Delivery
             }
 
             var endpointUrl = UrlBuilder.GetTypeUrl(codename);
-            var response = await GetDeliveryResponseAsync(endpointUrl);
+            var response = await GetDeliveryResponseAsync(endpointUrl, HttpMethod.Get);
 
             if (!response.IsSuccess)
             {
@@ -183,7 +189,7 @@ namespace Kontent.Ai.Delivery
         public async Task<IDeliveryTypeListingResponse> GetTypesAsync(IEnumerable<IQueryParameter> parameters = null)
         {
             var endpointUrl = UrlBuilder.GetTypesUrl(parameters);
-            var response = await GetDeliveryResponseAsync(endpointUrl);
+            var response = await GetDeliveryResponseAsync(endpointUrl, HttpMethod.Get);
 
             if (!response.IsSuccess)
             {
@@ -225,7 +231,7 @@ namespace Kontent.Ai.Delivery
             }
 
             var endpointUrl = UrlBuilder.GetContentElementUrl(contentTypeCodename, contentElementCodename);
-            var response = await GetDeliveryResponseAsync(endpointUrl);
+            var response = await GetDeliveryResponseAsync(endpointUrl, HttpMethod.Get);
 
             if (!response.IsSuccess)
             {
@@ -255,7 +261,7 @@ namespace Kontent.Ai.Delivery
             }
 
             var endpointUrl = UrlBuilder.GetTaxonomyUrl(codename);
-            var response = await GetDeliveryResponseAsync(endpointUrl);
+            var response = await GetDeliveryResponseAsync(endpointUrl, HttpMethod.Get);
 
             if (!response.IsSuccess)
             {
@@ -274,7 +280,7 @@ namespace Kontent.Ai.Delivery
         public async Task<IDeliveryTaxonomyListingResponse> GetTaxonomiesAsync(IEnumerable<IQueryParameter> parameters = null)
         {
             var endpointUrl = UrlBuilder.GetTaxonomiesUrl(parameters);
-            var response = await GetDeliveryResponseAsync(endpointUrl);
+            var response = await GetDeliveryResponseAsync(endpointUrl, HttpMethod.Get);
             
             if (!response.IsSuccess)
             {
@@ -295,7 +301,7 @@ namespace Kontent.Ai.Delivery
         public async Task<IDeliveryLanguageListingResponse> GetLanguagesAsync(IEnumerable<IQueryParameter> parameters = null)
         {
             var endpointUrl = UrlBuilder.GetLanguagesUrl(parameters);
-            var response = await GetDeliveryResponseAsync(endpointUrl);
+            var response = await GetDeliveryResponseAsync(endpointUrl, HttpMethod.Get);
             
             if (!response.IsSuccess)
             {
@@ -308,7 +314,37 @@ namespace Kontent.Ai.Delivery
             return new DeliveryLanguageListingResponse(response, languages.ToList<ILanguage>(), pagination);
         }
 
-        private async Task<ApiResponse> GetDeliveryResponseAsync(string endpointUrl, string continuationToken = null)
+        public async Task<IDeliverySyncInitResponse> PostSyncInitAsync(IEnumerable<IQueryParameter> parameters = null)
+        {
+            var endpointUrl = UrlBuilder.GetSyncInitUrl(parameters);
+            var response = await GetDeliveryResponseAsync(endpointUrl, httpMethod: HttpMethod.Post);
+
+            if (!response.IsSuccess)
+            {
+                return new DeliverySyncInitResponse(response);
+            }
+
+            var content = await response.GetJsonContentAsync();
+            var items = content["items"].ToObject<List<SyncItem>>(Serializer);
+            return new DeliverySyncInitResponse(response, items.ToList<ISyncItem>());
+        }
+
+        public async Task<IDeliverySyncResponse> GetSyncAsync(string continuationToken)
+        {
+            var endpointUrl = UrlBuilder.GetSyncUrl();
+            var response = await GetDeliveryResponseAsync(endpointUrl, HttpMethod.Get, continuationToken);
+
+            if (!response.IsSuccess)
+            {
+                return new DeliverySyncResponse(response);
+            }
+
+            var content = await response.GetJsonContentAsync();
+            var items = content["items"].ToObject<List<SyncItem>>(Serializer);
+            return new DeliverySyncResponse(response, items.ToList<ISyncItem>());
+        }
+
+        private async Task<ApiResponse> GetDeliveryResponseAsync(string endpointUrl, HttpMethod httpMethod, string continuationToken = null)
         {
             if (DeliveryOptions.CurrentValue.UsePreviewApi && DeliveryOptions.CurrentValue.UseSecureAccess)
             {
@@ -320,18 +356,18 @@ namespace Kontent.Ai.Delivery
                 var retryPolicy = RetryPolicyProvider.GetRetryPolicy();
                 if (retryPolicy != null)
                 {
-                    var response = await retryPolicy.ExecuteAsync(() => SendHttpMessageAsync(endpointUrl, continuationToken));
+                    var response = await retryPolicy.ExecuteAsync(() => SendHttpMessageAsync(endpointUrl, httpMethod, continuationToken));
                     return await GetResponseContentAsync(response, endpointUrl);
                 }
             }
 
             // Omit using the resilience logic completely.
-            return await GetResponseContentAsync(await SendHttpMessageAsync(endpointUrl, continuationToken), endpointUrl);
+            return await GetResponseContentAsync(await SendHttpMessageAsync(endpointUrl, httpMethod, continuationToken), endpointUrl);
         }
 
-        private Task<HttpResponseMessage> SendHttpMessageAsync(string endpointUrl, string continuationToken = null)
+        private Task<HttpResponseMessage> SendHttpMessageAsync(string endpointUrl, HttpMethod httpMethod, string continuationToken = null)
         {
-            var message = new HttpRequestMessage(HttpMethod.Get, endpointUrl);
+            var message = new HttpRequestMessage(httpMethod, endpointUrl);
 
             if (DeliveryOptions.CurrentValue.WaitForLoadingNewContent)
             {
