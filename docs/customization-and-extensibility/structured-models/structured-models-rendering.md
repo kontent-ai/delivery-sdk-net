@@ -15,6 +15,8 @@ Resolving links to content items is covered in a [separate article](./resolving-
 
 By iterating over the blocks, you can render the Rich text content.
 
+Replaces `string` type of a rich text.
+
 ## Rich text rendering in MVC
 
 For rendering of rich text in MVC, you can use the standard approach with `Html.DisplayFor(model => model.RichTextProperty)`.
@@ -102,6 +104,14 @@ By getting each value you can generate date and time with a timezone.
 ...
     }
 ```
+
+Replaces `DateTime?` type of a date time element.
+
+## Modular content
+
+`IContentItem` provides default content item system attributes : `IContentItemSystemAttributes`
+
+Replaces `object` type of a modular content and subpages elements as well as every content item implements this interface.
 
 ## Other resources
 - [How to Render Different Output for Rich Text in Kontent.ai Using the Delivery .NET SDK](https://robwest.info/articles/how-to-render-different-output-for-rich-text-in-kentico-kontent-using-the-delivery-net-sdk) by [Rob West
