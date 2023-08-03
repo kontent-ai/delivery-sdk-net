@@ -35,7 +35,8 @@
         "post_date": {
           "type": "date_time",
           "name": "Post date",
-          "value": "2014-11-18T00:00:00Z"
+          "value": "2014-11-18T00:00:00Z",
+          "display_timezone": "Europe/Prague"
         },
         "summary": {
           "type": "text",
@@ -208,7 +209,8 @@
         "post_date": {
           "type": "date_time",
           "name": "Post date",
-          "value": "2014-11-02T00:00:00Z"
+          "value": "2014-11-02T00:00:00Z",
+          "display_timezone": "Europe/Prague"
         },
         "summary": {
           "type": "text",
@@ -390,7 +392,8 @@
         "post_date": {
           "type": "date_time",
           "name": "Post date",
-          "value": "2014-11-12T00:00:00Z"
+          "value": "2014-11-12T00:00:00Z",
+          "display_timezone": "Europe/Prague"
         },
         "summary": {
           "type": "text",
@@ -554,7 +557,8 @@
         "post_date": {
           "type": "date_time",
           "name": "Post date",
-          "value": "2014-11-07T00:00:00Z"
+          "value": "2014-11-07T00:00:00Z",
+          "display_timezone": "Europe/Prague"
         },
         "summary": {
           "type": "text",
@@ -725,7 +729,8 @@
         "post_date": {
           "type": "date_time",
           "name": "Post date",
-          "value": "2014-11-11T00:00:00Z"
+          "value": "2014-11-11T00:00:00Z",
+          "display_timezone": "Europe/Prague"
         },
         "summary": {
           "type": "text",
@@ -893,7 +898,8 @@
         "post_date": {
           "type": "date_time",
           "name": "Post date",
-          "value": "2014-10-27T00:00:00Z"
+          "value": "2014-10-27T00:00:00Z",
+          "display_timezone": "Europe/Prague"
         },
         "summary": {
           "type": "text",
@@ -1072,7 +1078,8 @@
         "post_date": {
           "type": "date_time",
           "name": "Post date",
-          "value": "2014-11-02T00:00:00Z"
+          "value": "2014-11-02T00:00:00Z",
+          "display_timezone": "Europe/Prague"
         },
         "summary": {
           "type": "text",
@@ -1348,7 +1355,8 @@
         "post_date": {
           "type": "date_time",
           "name": "Post date",
-          "value": "2014-11-07T00:00:00Z"
+          "value": "2014-11-07T00:00:00Z",
+          "display_timezone": "Europe/Prague"
         },
         "summary": {
           "type": "text",
@@ -1519,7 +1527,8 @@
         "post_date": {
           "type": "date_time",
           "name": "Post date",
-          "value": "2014-11-11T00:00:00Z"
+          "value": "2014-11-11T00:00:00Z",
+          "display_timezone": "Europe/Prague"
         },
         "summary": {
           "type": "text",
@@ -1687,7 +1696,8 @@
         "post_date": {
           "type": "date_time",
           "name": "Post date",
-          "value": "2014-10-27T00:00:00Z"
+          "value": "2014-10-27T00:00:00Z",
+          "display_timezone": "Europe/Prague"
         },
         "summary": {
           "type": "text",
