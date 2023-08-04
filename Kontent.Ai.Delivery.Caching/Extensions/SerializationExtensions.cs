@@ -1,6 +1,9 @@
-﻿using System.IO;
+﻿using System.Collections.Generic;
+using System.Globalization;
+using System.IO;
 using Newtonsoft.Json;
 using Newtonsoft.Json.Bson;
+using Newtonsoft.Json.Converters;
 
 namespace Kontent.Ai.Delivery.Caching.Extensions
 {
@@ -14,10 +17,10 @@ namespace Kontent.Ai.Delivery.Caching.Extensions
         /// </summary>
         public static JsonSerializerSettings Settings => new JsonSerializerSettings
         {
-            DateTimeZoneHandling = DateTimeZoneHandling.Unspecified,
             TypeNameHandling = TypeNameHandling.All, // Allow preserving type information (necessary for deserializing interfaces into implemented types) 
             ReferenceLoopHandling = ReferenceLoopHandling.Serialize, // The content item models contain recursive references which are supposed to be preserved.
-            PreserveReferencesHandling = PreserveReferencesHandling.All // The code must not use arrays and readonly collections, otherwise it'll result in "Cannot preserve reference to array or readonly list, or list created from a non-default constructor" exception. (more details at https://stackoverflow.com/a/41307438/1332034)
+            PreserveReferencesHandling = PreserveReferencesHandling.All, // The code must not use arrays and readonly collections, otherwise it'll result in "Cannot preserve reference to array or readonly list, or list created from a non-default constructor" exception. (more details at https://stackoverflow.com/a/41307438/1332034)
+            Converters = new List<JsonConverter> { new UtcDateTimeConverter() }
         };
 
         /// <summary>
@@ -50,6 +53,15 @@ namespace Kontent.Ai.Delivery.Caching.Extensions
             using var reader = new BsonDataReader(ms);
             var serializer = JsonSerializer.Create(Settings);
             return serializer.Deserialize<T>(reader);
+        }
+    }
+
+    internal class UtcDateTimeConverter : IsoDateTimeConverter
+    {
+        public UtcDateTimeConverter()
+        {
+            DateTimeFormat = "yyyy-MM-ddTHH:mm:ss.fffffffZ";
+            DateTimeStyles = DateTimeStyles.AdjustToUniversal;
         }
     }
 }

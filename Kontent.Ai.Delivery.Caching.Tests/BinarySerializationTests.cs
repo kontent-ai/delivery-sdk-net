@@ -79,6 +79,10 @@ namespace Kontent.Ai.Delivery.Caching.Tests
             Assert.NotEmpty(firstDeserializedItem.TeaserImage);
             Assert.NotEmpty(firstDeserializedItem.Personas);
             Assert.Equal(firstItem.PostDate, firstDeserializedItem.PostDate);
+            Assert.Equal(firstItem.PostDate.Value.Kind, firstDeserializedItem.PostDate.Value.Kind);
+            Assert.Equal(firstItem.PostDateContent.DisplayTimezone, firstDeserializedItem.PostDateContent.DisplayTimezone);
+            Assert.Equal(firstItem.PostDateContent.Value, firstDeserializedItem.PostDateContent.Value);
+            Assert.Equal(firstItem.PostDateContent.Value.Value.Kind, firstDeserializedItem.PostDateContent.Value.Value.Kind);
         }
     }
 }
