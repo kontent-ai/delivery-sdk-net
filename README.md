@@ -118,4 +118,4 @@ For more developer resources, visit:
 
 ## Get involved
 
-Check out the [contributing](./CONTRIBUTING.md) page to see the best places to file issues, start discussions, and begin contributing.
+Check out the Contributing page to see the best places to file issues, start discussions, and begin contributing.
