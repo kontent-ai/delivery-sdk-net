@@ -1,0 +1,33 @@
+name: "Dependency track analysis"
+
+on:
+  push:
+  pull_request:
+  schedule:
+    - cron: '0 18 * * 1'
+
+jobs:
+  Deptrack-build:
+
+    runs-on: ubuntu-latest
+    
+    steps:
+    - name: Checkout repository
+      uses: actions/checkout@v3
+    - name: Setup .NET Core
+      uses: actions/setup-dotnet@v3
+      with:
+        dotnet-version: 7.0.x
+    - name: Install CycloneDX
+      run: dotnet tool install --global CycloneDX
+    - name: Create SBOM
+      run: dotnet CycloneDX .\Kontent.Ai.Delivery.sln -o ./cyclone
+    - name: Upload SBOM
+      uses: DependencyTrack/gh-upload-sbom@v2.0.1
+      with:
+        serverHostname: ${{ secrets.DEPENDENCYTRACK_SERVER_URL }}
+        apiKey: ${{ secrets.DEPENDENCYTRACK_APIKEY }}
+        projectName: 'Delivery SDK .NET'
+        projectVersion: 'master'
+        bomFilename: "./cyclone/bom.xml"
+        autoCreate: true
