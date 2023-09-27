@@ -21,7 +21,7 @@ jobs:
     - name: Install CycloneDX
       run: dotnet tool install --global CycloneDX
     - name: Create SBOM
-      run: dotnet CycloneDX .\Kontent.Ai.Delivery.sln -o ./cyclone
+      run: dotnet CycloneDX ./Kontent.Ai.Delivery.sln -o ./cyclone
     - name: Upload SBOM
       uses: DependencyTrack/gh-upload-sbom@v2.0.1
       with:
