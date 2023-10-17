@@ -773,7 +773,7 @@ namespace Kontent.Ai.Delivery.Tests
         [Fact]
         public async Task QueryParametersWithGenericFilter()
         {
-            string url = $"{_baseUrl}/items?elements.personas%5Ball%5D=barista%2Ccoffee%2Cblogger&elements.personas%5Bany%5D=barista%2Ccoffee%2Cblogger&system.sitemap_locations%5Bcontains%5D=cafes&elements.last_modified%5Beq%5D=2023-03-01T00%3A00%3A00Z&elements.last_modified%5Bneq%5D=2023-03-02T00%3A00%3A00Z&elements.price%5Bgt%5D=&elements.price%5Bgte%5D=4&elements.price%5Bin%5D=100%2C50&elements.price%5Bnin%5D=300%2C400&elements.price%5Blt%5D=10.0001&elements.price%5Blte%5D=10000000000&elements.price%5Brange%5D=2022-01-01T00%3A00%3A00Z%2C2023-01-01T00%3A00%3A00Z&depth=2&elements=price%2Cproduct_name&limit=10&order=elements.price%5Bdesc%5D&skip=2&language=en&includeTotalCount";
+            string url = $"{_baseUrl}/items?elements.personas%5Ball%5D=barista%2Ccoffee%2Cblogger&elements.personas%5Bany%5D=barista%2Ccoffee%2Cblogger&system.sitemap_locations%5Bcontains%5D=cafes&system.last_modified%5Beq%5D=2023-03-01T00%3A00%3A00Z&system.last_modified%5Bneq%5D=2023-03-02T00%3A00%3A00Z&elements.price%5Bgt%5D=&elements.price%5Bgte%5D=4&elements.price%5Bin%5D=100%2C50&elements.price%5Bnin%5D=300%2C400&elements.price%5Blt%5D=10.0001&elements.price%5Blte%5D=10000000000&system.last_modified%5Brange%5D=2022-01-01T00%3A00%3A00Z%2C2023-01-01T00%3A00%3A00Z&depth=2&elements=price%2Cproduct_name&limit=10&order=elements.price%5Bdesc%5D&skip=2&language=en&includeTotalCount";
             _mockHttp
                 .When($"{url}")
                 .Respond("application/json", " { 'items': [],'modular_content': {},'pagination': {'skip': 2,'limit': 10,'count': 0, 'total_count': 0, 'next_page': ''}}");
