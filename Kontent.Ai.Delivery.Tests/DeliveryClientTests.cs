@@ -741,7 +741,7 @@ namespace Kontent.Ai.Delivery.Tests
             var client = InitializeDeliveryClientWithACustomTypeProvider(_mockHttp);
 
             var parameters = new IQueryParameter[]
-           {
+            {
                 new AllFilter("elements.personas", "barista", "coffee", "blogger"),
                 new AnyFilter("elements.personas", "barista", "coffee", "blogger"),
                 new ContainsFilter("system.sitemap_locations", "cafes"),
@@ -763,7 +763,7 @@ namespace Kontent.Ai.Delivery.Tests
                 new SkipParameter(2),
                 new LanguageParameter("en"),
                 new IncludeTotalCountParameter()
-           };
+            };
 
             var response = await client.GetItemsAsync<object>(parameters);
 
@@ -781,7 +781,7 @@ namespace Kontent.Ai.Delivery.Tests
             var client = InitializeDeliveryClientWithACustomTypeProvider(_mockHttp);
 
             var parameters = new IQueryParameter[]
-           {
+            {
                 new AllFilter("elements.personas", "barista", "coffee", "blogger"),
                 new AnyFilter("elements.personas", "barista", "coffee", "blogger"),
                 new ContainsFilter("system.sitemap_locations", "cafes"),
@@ -801,7 +801,7 @@ namespace Kontent.Ai.Delivery.Tests
                 new SkipParameter(2),
                 new LanguageParameter("en"),
                 new IncludeTotalCountParameter()
-           };
+            };
 
             var response = await client.GetItemsAsync<object>(parameters);
 
