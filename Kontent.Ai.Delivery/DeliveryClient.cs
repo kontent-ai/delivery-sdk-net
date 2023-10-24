@@ -314,6 +314,11 @@ namespace Kontent.Ai.Delivery
             return new DeliveryLanguageListingResponse(response, languages.ToList<ILanguage>(), pagination);
         }
 
+        /// <summary>
+        /// Initializes synchronization of changes in content items based on the specified parameters. After the initialization, you'll get an X-Continuation token in the response.
+        /// </summary>
+        /// <param name="parameters">A collection of query parameters, for example to limit synchronization to only a subset of collections or content types.</param>
+        /// <returns>The <see cref="IDeliverySyncInitResponse"/> instance that represents the sync init response that contains continuation token needed for further sync execution.</returns>
         public async Task<IDeliverySyncInitResponse> PostSyncInitAsync(IEnumerable<IQueryParameter> parameters = null)
         {
             var endpointUrl = UrlBuilder.GetSyncInitUrl(parameters);
@@ -329,6 +334,10 @@ namespace Kontent.Ai.Delivery
             return new DeliverySyncInitResponse(response, items.ToList<ISyncItem>());
         }
 
+        /// <summary>
+        /// Retrieve a list of delta updates to recently changed content items in the specified project. The types of items you get is determined by the X-Continuation token you use.
+        /// </summary>
+        /// <returns>The <see cref="IDeliverySyncResponse"/> instance that represents the sync response that contains collection of delta updates and continuation token needed for further sync execution.</returns>
         public async Task<IDeliverySyncResponse> GetSyncAsync(string continuationToken)
         {
             var endpointUrl = UrlBuilder.GetSyncUrl();
@@ -340,9 +349,22 @@ namespace Kontent.Ai.Delivery
             }
 
             var content = await response.GetJsonContentAsync();
-            var items = content["items"].ToObject<List<SyncItem>>(Serializer);
-            return new DeliverySyncResponse(response, items.ToList<ISyncItem>());
+            var syncItems = content["items"].ToObject<List<SyncItem>>(Serializer);
+
+            var itemModels = await Task.WhenAll(syncItems.Select(async syncItem =>
+            {
+                // use TypeProvider from DI container to select a model
+                var mappedModel = await ModelProvider.GetContentItemModelAsync<object>(syncItem.Data, new JObject());
+                if (mappedModel == null)
+                {
+                    // return JObject if no suitable model is found
+                    return new SyncItem(syncItem.Data, syncItem.ChangeType, syncItem.Timestamp);
+                }
+                return new SyncItem(mappedModel, syncItem.ChangeType, syncItem.Timestamp);
+            }));
+            return new DeliverySyncResponse(response, itemModels);
         }
+
 
         private async Task<ApiResponse> GetDeliveryResponseAsync(string endpointUrl, HttpMethod httpMethod, string continuationToken = null)
         {

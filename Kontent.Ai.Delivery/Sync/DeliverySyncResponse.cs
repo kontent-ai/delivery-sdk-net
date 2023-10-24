@@ -22,7 +22,7 @@ internal sealed class DeliverySyncResponse : AbstractResponse, IDeliverySyncResp
         SyncItems = syncItems;
     }
 
-    internal DeliverySyncResponse(IApiResponse response) 
+    internal DeliverySyncResponse(IApiResponse response)
         : base(response)
     {
     }

@@ -7,7 +7,10 @@ namespace Kontent.Ai.Delivery.Abstractions;
 /// </summary>
 public interface ISyncItem
 {
-    ISyncItemData Data { get; }
+    /// <summary>
+    /// Retrieves content item information and element values.
+    /// </summary>
+    object Data { get; }
     
     /// <summary>
     /// Gets the information whether the content item was modified or deleted since the last synchronization.
