@@ -3,12 +3,12 @@
 namespace Kontent.Ai.Delivery.Abstractions;
 
 /// <summary>
-/// Represents a response from Kontent.ai Delivery API that contains a taxonomy group.
+/// Represents a response from Kontent.ai Sync API that contains recently updated items. Response includes continuation token for subsequent synchronization calls.
 /// </summary>
 public interface IDeliverySyncResponse : IResponse
 {
     /// <summary>
-    /// Gets list of delta update items.
+    /// Gets the list of items delta updates.
     /// </summary>
     IList<ISyncItem> SyncItems { get; }
 }

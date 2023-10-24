@@ -7,22 +7,27 @@ using Newtonsoft.Json.Linq;
 namespace Kontent.Ai.Delivery.Sync;
 
 /// <inheritdoc/>
-/// <summary>
-/// Constructor used for deserialization (e.g. for caching purposes), contains no logic.
-/// </summary>
-[method: JsonConstructor]
-/// <<inheritdoc/>>
-internal sealed class SyncItem(object data, string changeType, DateTime timestamp) : ISyncItem
+internal sealed class SyncItem : ISyncItem
 {
     /// <inheritdoc/>
     [JsonProperty("data")]
-    public object Data { get; internal set; } = data;
+    public object Data { get; internal set; }
 
     /// <inheritdoc/>
     [JsonProperty("change_type")]
-    public string ChangeType { get; internal set; } = changeType;
+    public string ChangeType { get; internal set; }
 
     /// <inheritdoc/>
     [JsonProperty("timestamp")]
-    public DateTime Timestamp { get; internal set; } = timestamp;
+    public DateTime Timestamp { get; internal set; }
+
+    /// <summary>
+    /// Constructor used for deserialization (e.g. for caching purposes), contains no logic.
+    /// </summary>
+    [JsonConstructor]
+    public SyncItem(object data, string changeType, DateTime timestamp) {
+        Data = data;
+        ChangeType = changeType;
+        Timestamp = timestamp;
+    }
 }
