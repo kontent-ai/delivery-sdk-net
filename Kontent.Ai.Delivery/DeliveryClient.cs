@@ -331,6 +331,7 @@ namespace Kontent.Ai.Delivery
 
             var content = await response.GetJsonContentAsync();
             var items = content["items"].ToObject<List<SyncItem>>(Serializer);
+            
             return new DeliverySyncInitResponse(response, items.ToList<ISyncItem>());
         }
 
@@ -354,14 +355,11 @@ namespace Kontent.Ai.Delivery
             var itemModels = await Task.WhenAll(syncItems.Select(async syncItem =>
             {
                 // use TypeProvider from DI container to select a model
-                var mappedModel = await ModelProvider.GetContentItemModelAsync<object>(syncItem.Data, new JObject());
-                if (mappedModel == null)
-                {
-                    // return JObject if no suitable model is found
-                    return new SyncItem(syncItem.Data, syncItem.ChangeType, syncItem.Timestamp);
-                }
-                return new SyncItem(mappedModel, syncItem.ChangeType, syncItem.Timestamp);
+                var mappedModel = await ModelProvider.GetContentItemModelAsync<object>(JToken.FromObject(syncItem.Data), new JObject());
+
+                return new SyncItem(mappedModel, syncItem.Data, syncItem.ChangeType, syncItem.Timestamp);
             }));
+
             return new DeliverySyncResponse(response, itemModels);
         }
 

@@ -1,6 +1,5 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.Globalization;
 using System.IO;
 using System.Linq;
 using System.Net;
@@ -14,7 +13,6 @@ using Kontent.Ai.Delivery.Builders.DeliveryClient;
 using Kontent.Ai.Delivery.ContentItems;
 using Kontent.Ai.Delivery.ContentItems.RichText.Blocks;
 using Kontent.Ai.Delivery.SharedModels;
-using Kontent.Ai.Delivery.Sync;
 using Kontent.Ai.Delivery.Tests.Factories;
 using Kontent.Ai.Delivery.Tests.Models;
 using Kontent.Ai.Delivery.Tests.Models.ContentTypes;
@@ -1851,7 +1849,7 @@ namespace Kontent.Ai.Delivery.Tests
         }
 
         [Fact]
-        public async Task SyncApi_GetSyncAsync_GetSyncItems_WithTypeProvider()
+        public async Task SyncApi_GetSyncAsync_GetSyncItems_WithTypeProvider_ReturnsStronglyTypedData()
         {
             var mockedResponse = await File.ReadAllTextAsync(Path.Combine(Environment.CurrentDirectory, $"Fixtures{Path.DirectorySeparatorChar}DeliveryClient{Path.DirectorySeparatorChar}sync.json"));
 
@@ -1872,30 +1870,20 @@ namespace Kontent.Ai.Delivery.Tests
 
             for (int i = 0; i < expectedItems.Count; i++)
             {
+                var article = sync.SyncItems[i].StronglyTypedData as Article;
                 var expectedItem = expectedItems[i];
-                var syncItem = (Article)sync.SyncItems[i].Data;
-
-                var expectedSystemValues = expectedItem["data"]["system"];
                 var expectedElementValues = expectedItem["data"]["elements"];
-                var syncItemSystemValues = syncItem.System;
 
-                Assert.Equal(expectedSystemValues["codename"].ToString(), syncItemSystemValues.Codename.ToString());
-                Assert.Equal(expectedSystemValues["name"].ToString(), syncItemSystemValues.Name.ToString());
-                Assert.Equal(expectedSystemValues["id"].ToString(), syncItemSystemValues.Id.ToString());
-                Assert.Equal(expectedSystemValues["type"].ToString(), syncItemSystemValues.Type.ToString());
-                Assert.Equal(expectedSystemValues["language"].ToString(), syncItemSystemValues.Language.ToString());
-                Assert.Equal(expectedSystemValues["collection"].ToString(), syncItemSystemValues.Collection.ToString());
-                Assert.Equal(expectedSystemValues["workflow_step"].ToString(), syncItemSystemValues.WorkflowStep.ToString());
-
-                Assert.Equal(expectedElementValues["title"]["value"].ToString(), syncItem.Title);
-     
+                AssertSystemPropertiesEquality(expectedItem["data"]["system"].ToObject<JObject>(), article.System);
+                Assert.NotNull(article);
+                Assert.Equal(expectedElementValues["title"]["value"].ToString(), article.Title);   
                 Assert.Equal(expectedItem["change_type"].ToString(), sync.SyncItems[i].ChangeType);
                 Assert.Equal(DateTime.Parse(expectedItem["timestamp"].ToString()), DateTime.Parse(sync.SyncItems[i].Timestamp.ToString()));
             }
         }
         
         [Fact]
-        public async Task SyncApi_GetSyncAsync_GetSyncItems_WithoutTypeProvider()
+        public async Task SyncApi_GetSyncAsync_GetSyncItems_WithoutTypeProvider_ReturnsGenericData()
         {
             var mockedResponse = await File.ReadAllTextAsync(Path.Combine(Environment.CurrentDirectory, $"Fixtures{Path.DirectorySeparatorChar}DeliveryClient{Path.DirectorySeparatorChar}sync.json"));
 
@@ -1916,26 +1904,28 @@ namespace Kontent.Ai.Delivery.Tests
 
             for (int i = 0; i < expectedItems.Count; i++)
             {
+                var syncItemData = sync.SyncItems[i].Data;
                 var expectedItem = expectedItems[i];
-                var syncItem = (JObject)sync.SyncItems[i].Data;
-
-                var expectedSystemValues = expectedItem["data"]["system"];
                 var expectedElementValues = expectedItem["data"]["elements"];
-                var syncItemSystemValues = syncItem["system"];
 
-                Assert.Equal(expectedSystemValues["codename"].ToString(), syncItemSystemValues["codename"].ToString());
-                Assert.Equal(expectedSystemValues["name"].ToString(), syncItemSystemValues["name"].ToString());
-                Assert.Equal(expectedSystemValues["id"].ToString(), syncItemSystemValues["id"].ToString());
-                Assert.Equal(expectedSystemValues["type"].ToString(), syncItemSystemValues["type"].ToString());
-                Assert.Equal(expectedSystemValues["language"].ToString(), syncItemSystemValues["language"].ToString());
-                Assert.Equal(expectedSystemValues["collection"].ToString(), syncItemSystemValues["collection"].ToString());
-                Assert.Equal(expectedSystemValues["workflow_step"].ToString(), syncItemSystemValues["workflow_step"].ToString());
-
-                Assert.Equal(expectedElementValues["title"]["value"].ToString(), syncItem["elements"]["title"]["value"]);
-     
+                AssertSystemPropertiesEquality(expectedItem["data"]["system"].ToObject<JObject>(), sync.SyncItems[i].Data.System);
+                Assert.Null(sync.SyncItems[i].StronglyTypedData);
+                Assert.NotNull(syncItemData.Elements["title"]);
+                Assert.Equal(expectedElementValues["title"], syncItemData.Elements["title"]);
                 Assert.Equal(expectedItem["change_type"].ToString(), sync.SyncItems[i].ChangeType);
                 Assert.Equal(DateTime.Parse(expectedItem["timestamp"].ToString()), DateTime.Parse(sync.SyncItems[i].Timestamp.ToString()));
             }
+        }
+
+        private void AssertSystemPropertiesEquality(JObject expectedSystemValues, IContentItemSystemAttributes system)
+        {
+                Assert.Equal(expectedSystemValues["codename"].ToString(), system.Codename.ToString());
+                Assert.Equal(expectedSystemValues["name"].ToString(), system.Name.ToString());
+                Assert.Equal(expectedSystemValues["id"].ToString(), system.Id.ToString());
+                Assert.Equal(expectedSystemValues["type"].ToString(), system.Type.ToString());
+                Assert.Equal(expectedSystemValues["language"].ToString(), system.Language.ToString());
+                Assert.Equal(expectedSystemValues["collection"].ToString(), system.Collection.ToString());
+                Assert.Equal(expectedSystemValues["workflow_step"].ToString(), system.WorkflowStep.ToString());
         }
 
 

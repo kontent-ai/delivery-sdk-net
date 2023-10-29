@@ -1,8 +1,6 @@
 ﻿using System;
-using System.Collections.Generic;
 using Kontent.Ai.Delivery.Abstractions;
 using Newtonsoft.Json;
-using Newtonsoft.Json.Linq;
 
 namespace Kontent.Ai.Delivery.Sync;
 
@@ -10,8 +8,11 @@ namespace Kontent.Ai.Delivery.Sync;
 internal sealed class SyncItem : ISyncItem
 {
     /// <inheritdoc/>
+    public object StronglyTypedData { get; internal set; }
+
+    /// <inheritdoc/>
     [JsonProperty("data")]
-    public object Data { get; internal set; }
+    public ISyncItemData Data { get; internal set; }
 
     /// <inheritdoc/>
     [JsonProperty("change_type")]
@@ -22,10 +23,12 @@ internal sealed class SyncItem : ISyncItem
     public DateTime Timestamp { get; internal set; }
 
     /// <summary>
-    /// Constructor used for deserialization (e.g. for caching purposes), contains no logic.
+    /// Initializes a new instance of <see cref="SyncItem"/> class.
     /// </summary>
     [JsonConstructor]
-    public SyncItem(object data, string changeType, DateTime timestamp) {
+    public SyncItem(object stronglyTypedData, ISyncItemData data, string changeType, DateTime timestamp)
+    {
+        StronglyTypedData = stronglyTypedData;
         Data = data;
         ChangeType = changeType;
         Timestamp = timestamp;

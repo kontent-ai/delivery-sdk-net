@@ -8,9 +8,14 @@ namespace Kontent.Ai.Delivery.Abstractions;
 public interface ISyncItem
 {
     /// <summary>
+    /// Retrieves runtime strongly typed item if CustomTypeProvider is registered, otherwise null.
+    /// </summary>
+    object StronglyTypedData { get; }
+
+    /// <summary>
     /// Retrieves content item information and element values.
     /// </summary>
-    object Data { get; }
+    ISyncItemData Data { get; }
     
     /// <summary>
     /// Gets the information whether the content item was modified or deleted since the last synchronization.

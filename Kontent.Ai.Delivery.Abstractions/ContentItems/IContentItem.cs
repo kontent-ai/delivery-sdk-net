@@ -8,5 +8,5 @@ public interface IContentItem
     /// <summary>
     /// Represents system attributes of a content item.
     /// </summary>
-    public IContentItemSystemAttributes System { get; set; }
+    public IContentItemSystemAttributes System { get; }
 }
