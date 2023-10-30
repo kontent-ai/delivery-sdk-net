@@ -1,6 +1,5 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.Globalization;
 using System.IO;
 using System.Linq;
 using System.Net;
@@ -14,7 +13,6 @@ using Kontent.Ai.Delivery.Builders.DeliveryClient;
 using Kontent.Ai.Delivery.ContentItems;
 using Kontent.Ai.Delivery.ContentItems.RichText.Blocks;
 using Kontent.Ai.Delivery.SharedModels;
-using Kontent.Ai.Delivery.Sync;
 using Kontent.Ai.Delivery.Tests.Factories;
 using Kontent.Ai.Delivery.Tests.Models;
 using Kontent.Ai.Delivery.Tests.Models.ContentTypes;
@@ -1851,18 +1849,18 @@ namespace Kontent.Ai.Delivery.Tests
         }
 
         [Fact]
-        public async Task SyncApi_GetSyncAsync_GetSyncItems()
+        public async Task SyncApi_GetSyncAsync_GetSyncItems_WithTypeProvider_ReturnsStronglyTypedData()
         {
             var mockedResponse = await File.ReadAllTextAsync(Path.Combine(Environment.CurrentDirectory, $"Fixtures{Path.DirectorySeparatorChar}DeliveryClient{Path.DirectorySeparatorChar}sync.json"));
 
-            var expectedValue = JObject.Parse(mockedResponse).SelectToken("items").ToObject<IList<SyncItem>>();
-            
+            var expectedItems = JObject.Parse(mockedResponse).SelectToken("items").ToObject<List<JObject>>();
+
             _mockHttp
                 .When($"{_baseUrl}/sync")
                 .WithHeaders("X-Continuation", "token")
                 .Respond(new[] { new KeyValuePair<string, string>("X-Continuation", "token"), }, "application/json", mockedResponse);
 
-            var client = InitializeDeliveryClientWithCustomModelProvider(_mockHttp);
+            var client = InitializeDeliveryClientWithACustomTypeProvider(_mockHttp);
 
             var sync = await client.GetSyncAsync("token");
 
@@ -1870,22 +1868,66 @@ namespace Kontent.Ai.Delivery.Tests
 
             Assert.Equal(2, sync.SyncItems.Count);
 
-            Assert.Equal(expectedValue[0].Codename, sync.SyncItems[0].Codename);
-            Assert.Equal(expectedValue[0].Id, sync.SyncItems[0].Id);
-            Assert.Equal(expectedValue[0].Type, sync.SyncItems[0].Type);
-            Assert.Equal(expectedValue[0].Language, sync.SyncItems[0].Language);
-            Assert.Equal(expectedValue[0].Collection, sync.SyncItems[0].Collection);
-            Assert.Equal(expectedValue[0].ChangeType, sync.SyncItems[0].ChangeType);
-            Assert.Equal(expectedValue[0].Timestamp, sync.SyncItems[0].Timestamp);
+            for (int i = 0; i < expectedItems.Count; i++)
+            {
+                var article = sync.SyncItems[i].StronglyTypedData as Article;
+                var expectedItem = expectedItems[i];
+                var expectedElementValues = expectedItem["data"]["elements"];
 
-            Assert.Equal(expectedValue[1].Codename, sync.SyncItems[1].Codename);
-            Assert.Equal(expectedValue[1].Id, sync.SyncItems[1].Id);
-            Assert.Equal(expectedValue[1].Type, sync.SyncItems[1].Type);
-            Assert.Equal(expectedValue[1].Language, sync.SyncItems[1].Language);
-            Assert.Equal(expectedValue[1].Collection, sync.SyncItems[1].Collection);
-            Assert.Equal(expectedValue[1].ChangeType, sync.SyncItems[1].ChangeType);
-            Assert.Equal(expectedValue[1].Timestamp, sync.SyncItems[1].Timestamp);
+                AssertSystemPropertiesEquality(expectedItem["data"]["system"].ToObject<JObject>(), article.System);
+                Assert.NotNull(article);
+                Assert.Equal(expectedElementValues["title"]["value"].ToString(), article.Title);   
+                Assert.Equal(expectedItem["change_type"].ToString(), sync.SyncItems[i].ChangeType);
+                Assert.Equal(DateTime.Parse(expectedItem["timestamp"].ToString()), DateTime.Parse(sync.SyncItems[i].Timestamp.ToString()));
+            }
         }
+        
+        [Fact]
+        public async Task SyncApi_GetSyncAsync_GetSyncItems_WithoutTypeProvider_ReturnsGenericData()
+        {
+            var mockedResponse = await File.ReadAllTextAsync(Path.Combine(Environment.CurrentDirectory, $"Fixtures{Path.DirectorySeparatorChar}DeliveryClient{Path.DirectorySeparatorChar}sync.json"));
+
+            var expectedItems = JObject.Parse(mockedResponse).SelectToken("items").ToObject<List<JObject>>();
+
+            _mockHttp
+                .When($"{_baseUrl}/sync")
+                .WithHeaders("X-Continuation", "token")
+                .Respond(new[] { new KeyValuePair<string, string>("X-Continuation", "token"), }, "application/json", mockedResponse);
+
+            var client = InitializeDeliveryClientWithCustomModelProvider(_mockHttp, new PropertyMapper(), new TypeProvider());
+
+            var sync = await client.GetSyncAsync("token");
+
+            Assert.NotNull(sync.ApiResponse.ContinuationToken);
+
+            Assert.Equal(2, sync.SyncItems.Count);
+
+            for (int i = 0; i < expectedItems.Count; i++)
+            {
+                var syncItemData = sync.SyncItems[i].Data;
+                var expectedItem = expectedItems[i];
+                var expectedElementValues = expectedItem["data"]["elements"];
+
+                AssertSystemPropertiesEquality(expectedItem["data"]["system"].ToObject<JObject>(), sync.SyncItems[i].Data.System);
+                Assert.Null(sync.SyncItems[i].StronglyTypedData);
+                Assert.NotNull(syncItemData.Elements["title"]);
+                Assert.Equal(expectedElementValues["title"], syncItemData.Elements["title"]);
+                Assert.Equal(expectedItem["change_type"].ToString(), sync.SyncItems[i].ChangeType);
+                Assert.Equal(DateTime.Parse(expectedItem["timestamp"].ToString()), DateTime.Parse(sync.SyncItems[i].Timestamp.ToString()));
+            }
+        }
+
+        private void AssertSystemPropertiesEquality(JObject expectedSystemValues, IContentItemSystemAttributes system)
+        {
+                Assert.Equal(expectedSystemValues["codename"].ToString(), system.Codename.ToString());
+                Assert.Equal(expectedSystemValues["name"].ToString(), system.Name.ToString());
+                Assert.Equal(expectedSystemValues["id"].ToString(), system.Id.ToString());
+                Assert.Equal(expectedSystemValues["type"].ToString(), system.Type.ToString());
+                Assert.Equal(expectedSystemValues["language"].ToString(), system.Language.ToString());
+                Assert.Equal(expectedSystemValues["collection"].ToString(), system.Collection.ToString());
+                Assert.Equal(expectedSystemValues["workflow_step"].ToString(), system.WorkflowStep.ToString());
+        }
+
 
         private DeliveryClient InitializeDeliveryClientWithACustomTypeProvider(MockHttpMessageHandler handler)
         {

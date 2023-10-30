@@ -160,7 +160,7 @@ namespace Kontent.Ai.Delivery.Caching
         /// <summary>
         /// Initializes synchronization of changes in content items based on the specified parameters. After the initialization, you'll get an X-Continuation token in the response.
         /// </summary>
-        /// <param name="parameters">A collection of query parameters, for example, for filtering.</param>
+        /// <param name="parameters">A collection of query parameters, for example to limit synchronization to only a subset of collections or content types.</param>
         /// <returns>The <see cref="IDeliverySyncInitResponse"/> instance that represents the sync init response that contains continuation token needed for further sync execution.</returns>
         public Task<IDeliverySyncInitResponse> PostSyncInitAsync(IEnumerable<IQueryParameter> parameters = null)
         {

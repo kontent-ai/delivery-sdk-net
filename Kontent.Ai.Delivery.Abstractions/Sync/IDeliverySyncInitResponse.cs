@@ -3,7 +3,7 @@
 namespace Kontent.Ai.Delivery.Abstractions;
 
 /// <summary>
-/// Represents a response from Kontent.ai Delivery API that contains a continuation token and .
+/// Represents a response from Kontent.ai Sync API. Response includes continuation token for subsequent synchronization calls. Sync initialization should always return an empty list.
 /// </summary>
 public interface IDeliverySyncInitResponse : IResponse
 {
