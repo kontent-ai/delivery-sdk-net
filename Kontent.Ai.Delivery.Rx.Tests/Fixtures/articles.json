@@ -11,6 +11,7 @@
           "articles"
         ],
         "last_modified": "2017-12-08T08:35:27.1009654Z",
+        "workflow": "default",
         "workflow_step": "published"
       },
       "elements": {
@@ -163,6 +164,7 @@
           "articles"
         ],
         "last_modified": "2017-12-08T08:37:13.6773134Z",
+        "workflow": "default",
         "workflow_step": "published"
       },
       "elements": {
@@ -330,6 +332,7 @@
           "articles"
         ],
         "last_modified": "2017-12-08T08:40:45.7289755Z",
+        "workflow": "default",
         "workflow_step": "published"
       },
       "elements": {
@@ -479,6 +482,7 @@
           "articles"
         ],
         "last_modified": "2017-12-08T08:49:53.6039943Z",
+        "workflow": "default",
         "workflow_step": "published"
       },
       "elements": {
@@ -635,6 +639,7 @@
           "articles"
         ],
         "last_modified": "2017-12-08T08:50:50.6091672Z",
+        "workflow": "default",
         "workflow_step": "published"
       },
       "elements": {
@@ -788,6 +793,7 @@
           "articles"
         ],
         "last_modified": "2017-12-08T09:01:44.4223969Z",
+        "workflow": "default",
         "workflow_step": "published"
       },
       "elements": {
@@ -950,6 +956,7 @@
         "type": "hosted_video",
         "sitemap_locations": [],
         "last_modified": "2017-06-27T12:56:41.1882715Z",
+        "workflow": "default",
         "workflow_step": "published"
       },
       "elements": {
@@ -979,6 +986,7 @@
         "type": "tweet",
         "sitemap_locations": [],
         "last_modified": "2017-06-27T13:00:08.2735049Z",
+        "workflow": "default",
         "workflow_step": "published"
       },
       "elements": {
@@ -1020,6 +1028,7 @@
           "articles"
         ],
         "last_modified": "2017-12-08T08:37:13.6773134Z",
+        "workflow": "default",
         "workflow_step": "published"
       },
       "elements": {
@@ -1185,6 +1194,7 @@
         "type": "hosted_video",
         "sitemap_locations": [],
         "last_modified": "2017-06-27T12:57:16.7333276Z",
+        "workflow": "default",
         "workflow_step": "published"
       },
       "elements": {
@@ -1216,6 +1226,7 @@
           "articles"
         ],
         "last_modified": "2017-12-08T08:49:53.6039943Z",
+        "workflow": "default",
         "workflow_step": "published"
       },
       "elements": {
@@ -1372,6 +1383,7 @@
           "articles"
         ],
         "last_modified": "2017-12-08T08:50:50.6091672Z",
+        "workflow": "default",
         "workflow_step": "published"
       },
       "elements": {
@@ -1525,6 +1537,7 @@
           "articles"
         ],
         "last_modified": "2017-12-08T09:01:44.4223969Z",
+        "workflow": "default",
         "workflow_step": "published"
       },
       "elements": {

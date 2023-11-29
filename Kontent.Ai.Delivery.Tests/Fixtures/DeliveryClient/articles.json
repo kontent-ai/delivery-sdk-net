@@ -12,6 +12,7 @@
           "about_us"
         ],
         "last_modified": "2017-04-04T13:33:25.0990741Z",
+        "workflow": "default",
         "workflow_step": "published"
       },
       "elements": {
@@ -43,6 +44,7 @@
           "brewers"
         ],
         "last_modified": "2017-09-07T08:18:16.269361Z",
+        "workflow": "default",
         "workflow_step": "published"
       },
       "elements": {
@@ -128,6 +130,7 @@
           "about_us"
         ],
         "last_modified": "2016-10-20T12:47:13.65023Z",
+        "workflow": "default",
         "workflow_step": "published"
       },
       "elements": {
@@ -171,6 +174,7 @@
           "about_us"
         ],
         "last_modified": "2017-04-04T11:48:26.1878079Z",
+        "workflow": "default",
         "workflow_step": "published"
       },
       "elements": {
@@ -220,6 +224,7 @@
           "about_us"
         ],
         "last_modified": "2016-10-20T12:06:18.3403458Z",
+        "workflow": "default",
         "workflow_step": "published"
       },
       "elements": {

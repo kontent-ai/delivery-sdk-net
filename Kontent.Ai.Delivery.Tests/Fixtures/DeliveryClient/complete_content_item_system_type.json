@@ -10,6 +10,7 @@
         "collection": "default",
         "sitemap_locations": [],
         "last_modified": "2017-02-22T00:52:03.9370993Z",
+        "workflow": "default",
         "workflow_step": "published"
       },
       "elements": {
@@ -120,6 +121,7 @@
         "collection": "default",
         "sitemap_locations": [],
         "last_modified": "2017-02-21T04:29:42.9564205Z",
+        "workflow": "default",
         "workflow_step": "published"
       },
       "elements": {

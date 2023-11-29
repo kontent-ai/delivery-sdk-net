@@ -43,6 +43,10 @@ namespace Kontent.Ai.Delivery.ContentItems
         public string Collection { get; internal set; }
 
         /// <inheritdoc/>
+        [JsonProperty("workflow")]
+        public string Workflow { get; internal set; }
+
+        /// <inheritdoc/>
         [JsonProperty("workflow_step")]
         public string WorkflowStep { get; internal set; }
 

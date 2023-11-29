@@ -9,6 +9,7 @@
         "type": "article",
         "sitemap_locations": [],
         "last_modified": "2019-09-18T10:58:38.9172599Z",
+        "workflow": "default",
         "workflow_step": "published"
       },
       "elements": {
@@ -183,6 +184,7 @@
         "type": "article",
         "sitemap_locations": [],
         "last_modified": "2019-03-27T13:13:35.312Z",
+        "workflow": "default",
         "workflow_step": "published"
       },
       "elements": {
@@ -366,6 +368,7 @@
         "type": "article",
         "sitemap_locations": [],
         "last_modified": "2019-03-27T13:14:07.384Z",
+        "workflow": "default",
         "workflow_step": "published"
       },
       "elements": {
@@ -531,6 +534,7 @@
         "type": "article",
         "sitemap_locations": [],
         "last_modified": "2019-03-27T13:21:11.38Z",
+        "workflow": "default",
         "workflow_step": "published"
       },
       "elements": {
@@ -703,6 +707,7 @@
         "type": "article",
         "sitemap_locations": [],
         "last_modified": "2019-03-27T13:21:49.151Z",
+        "workflow": "default",
         "workflow_step": "published"
       },
       "elements": {
@@ -872,6 +877,7 @@
         "type": "article",
         "sitemap_locations": [],
         "last_modified": "2019-03-27T13:24:54.042Z",
+        "workflow": "default",
         "workflow_step": "published"
       },
       "elements": {
@@ -1052,6 +1058,7 @@
         "type": "article",
         "sitemap_locations": [],
         "last_modified": "2019-03-27T13:13:35.312Z",
+        "workflow": "default",
         "workflow_step": "published"
       },
       "elements": {
@@ -1329,6 +1336,7 @@
         "type": "article",
         "sitemap_locations": [],
         "last_modified": "2019-03-27T13:21:11.38Z",
+        "workflow": "default",
         "workflow_step": "published"
       },
       "elements": {
@@ -1501,6 +1509,7 @@
         "type": "article",
         "sitemap_locations": [],
         "last_modified": "2019-03-27T13:21:49.151Z",
+        "workflow": "default",
         "workflow_step": "published"
       },
       "elements": {
@@ -1670,6 +1679,7 @@
         "type": "article",
         "sitemap_locations": [],
         "last_modified": "2019-03-27T13:24:54.042Z",
+        "workflow": "default",
         "workflow_step": "published"
       },
       "elements": {

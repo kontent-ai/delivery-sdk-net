@@ -74,6 +74,7 @@ namespace Kontent.Ai.Delivery.Tests
             Assert.Equal("article", beveragesItem.System.Type);
             Assert.Equal("en-US", beveragesItem.System.Language);
             Assert.Equal("default", beveragesItem.System.Collection);
+            Assert.Equal("default", beveragesItem.System.Workflow);
             Assert.Equal("published", beveragesItem.System.WorkflowStep);
             Assert.NotEmpty(beveragesItem.System.SitemapLocation);
             Assert.NotEmpty(roastsItem.RelatedArticles);
@@ -196,7 +197,7 @@ namespace Kontent.Ai.Delivery.Tests
             AssertErrorResponse(actualResponse, expectedError);
             Assert.Null(actualResponse.Item);
         }
-        
+
         [Fact]
         public async Task GetItemAsync_InvalidProjectId_RespondsWithApiError()
         {
@@ -210,7 +211,7 @@ namespace Kontent.Ai.Delivery.Tests
             var client = InitializeDeliveryClientWithACustomTypeProvider(_mockHttp);
 
             var actualResponse = await client.GetItemAsync<object>("coffee_beverages_explained");
-                
+
             AssertErrorResponse(actualResponse, expectedError);
             Assert.Null(actualResponse.Item);
         }
@@ -290,7 +291,7 @@ namespace Kontent.Ai.Delivery.Tests
             Assert.True(response?.ApiResponse?.IsSuccess);
             Assert.NotEmpty(response.Items);
         }
-        
+
         [Fact]
         public async Task GetItemsAsync_InvalidProjectId_RespondsWithApiError()
         {
@@ -304,12 +305,12 @@ namespace Kontent.Ai.Delivery.Tests
             var client = InitializeDeliveryClientWithACustomTypeProvider(_mockHttp);
 
             var actualResponse = await client.GetItemsAsync<object>();
-                
+
             AssertErrorResponse(actualResponse, expectedError);
             Assert.Null(actualResponse.Items);
             Assert.Null(actualResponse.Pagination);
         }
-        
+
         [Fact]
         public void GetItemsFeed_DepthParameter_ThrowsArgumentException()
         {
@@ -415,7 +416,7 @@ namespace Kontent.Ai.Delivery.Tests
             Assert.Equal(6, items.Count);
             Assert.Equal(2, timesCalled);
         }
-        
+
         [Fact]
         public async Task GetItemsFeed_InvalidProjectId_RespondsWithApiError()
         {
@@ -429,7 +430,7 @@ namespace Kontent.Ai.Delivery.Tests
             var client = InitializeDeliveryClientWithACustomTypeProvider(_mockHttp);
 
             var actualResponse = await client.GetItemsFeed<object>().FetchNextBatchAsync();
-                
+
             AssertErrorResponse(actualResponse, expectedError);
             Assert.Null(actualResponse.Items);
         }
@@ -479,7 +480,7 @@ namespace Kontent.Ai.Delivery.Tests
             Assert.IsAssignableFrom<ITaxonomyElement>(processingTaxonomyElement);
             Assert.Equal("processing", ((ITaxonomyElement)processingTaxonomyElement).TaxonomyGroup);
         }
-        
+
         [Fact]
         public async Task GetTypeAsync_NotFound_RespondsWithApiError()
         {
@@ -503,7 +504,7 @@ namespace Kontent.Ai.Delivery.Tests
             AssertErrorResponse(actualResponse, expectedError);
             Assert.Null(actualResponse.Type);
         }
-        
+
         [Fact]
         public async Task GetTypeAsync_InvalidProjectId_RespondsWithApiError()
         {
@@ -517,7 +518,7 @@ namespace Kontent.Ai.Delivery.Tests
             var client = InitializeDeliveryClientWithACustomTypeProvider(_mockHttp);
 
             var actualResponse = await client.GetTypeAsync("unequestrian_nonadjournment_sur_achoerodus");
-                
+
             AssertErrorResponse(actualResponse, expectedError);
             Assert.Null(actualResponse.Type);
         }
@@ -692,7 +693,7 @@ namespace Kontent.Ai.Delivery.Tests
             Assert.NotNull(response.ApiResponse.RequestUrl);
             Assert.NotEmpty(response.Taxonomies);
         }
-        
+
         [Fact]
         public async Task GetTaxonomiesAsync_InvalidProjectId_RespondsWithApiError()
         {
@@ -706,7 +707,7 @@ namespace Kontent.Ai.Delivery.Tests
             var client = InitializeDeliveryClientWithACustomTypeProvider(_mockHttp);
 
             var actualResponse = await client.GetTaxonomiesAsync();
-                
+
             AssertErrorResponse(actualResponse, expectedError);
             Assert.Null(actualResponse.Taxonomies);
             Assert.Null(actualResponse.Pagination);
@@ -1477,7 +1478,7 @@ namespace Kontent.Ai.Delivery.Tests
             Assert.False(response.ApiResponse.HasStaleContent);
             Assert.True(response.Types.Any());
         }
-        
+
         [Fact]
         public async Task GetTypesAsync_InvalidProjectId_RespondsWithApiError()
         {
@@ -1491,7 +1492,7 @@ namespace Kontent.Ai.Delivery.Tests
             var client = InitializeDeliveryClientWithACustomTypeProvider(_mockHttp);
 
             var actualResponse = await client.GetTypesAsync();
-                
+
             AssertErrorResponse(actualResponse, expectedError);
             Assert.Null(actualResponse.Types);
             Assert.Null(actualResponse.Pagination);
@@ -1622,7 +1623,7 @@ namespace Kontent.Ai.Delivery.Tests
             Assert.False(response.ApiResponse.HasStaleContent);
             Assert.True(response.Languages.Any());
         }
-        
+
         [Fact]
         public async Task GetLanguagesAsync_InvalidProjectId_RespondsWithApiError()
         {
@@ -1636,7 +1637,7 @@ namespace Kontent.Ai.Delivery.Tests
             var client = InitializeDeliveryClientWithACustomTypeProvider(_mockHttp);
 
             var actualResponse = await client.GetLanguagesAsync();
-                
+
             AssertErrorResponse(actualResponse, expectedError);
             Assert.Null(actualResponse.Languages);
             Assert.Null(actualResponse.Pagination);
@@ -1681,7 +1682,7 @@ namespace Kontent.Ai.Delivery.Tests
             Assert.False(response.ApiResponse.HasStaleContent);
             Assert.NotNull(response.Element.Codename);
         }
-        
+
         [Fact]
         public async Task GetElementAsync_InvalidProjectId_RespondsWithApiError()
         {
@@ -1695,7 +1696,7 @@ namespace Kontent.Ai.Delivery.Tests
             var client = InitializeDeliveryClientWithACustomTypeProvider(_mockHttp);
 
             var actualResponse = await client.GetContentElementAsync("test", "test");
-                
+
             AssertErrorResponse(actualResponse, expectedError);
             Assert.Null(actualResponse.Element);
         }
@@ -1794,7 +1795,7 @@ namespace Kontent.Ai.Delivery.Tests
             );
             var items = (await Task.WhenAll(itemTasks)).ToList();
             Assert.Equal(2, items.Count());
-            
+
             var tweetItem = items[0];
             var hostedVideoItem = items[1];
             Assert.Equal(tweetItem.GetType(), typeof(Tweet));
@@ -1839,7 +1840,7 @@ namespace Kontent.Ai.Delivery.Tests
             var requestUri = new Uri(syncInit.ApiResponse.RequestUrl);
 
             var requestQuery = HttpUtility.ParseQueryString(requestUri.Query);
-            
+
             Assert.Equal(3, requestQuery.Count);
             Assert.Equal("language", requestQuery.Keys[0]);
             Assert.Equal("system.type[eq]", requestQuery.Keys[1]);
@@ -1876,12 +1877,12 @@ namespace Kontent.Ai.Delivery.Tests
 
                 AssertSystemPropertiesEquality(expectedItem["data"]["system"].ToObject<JObject>(), article.System);
                 Assert.NotNull(article);
-                Assert.Equal(expectedElementValues["title"]["value"].ToString(), article.Title);   
+                Assert.Equal(expectedElementValues["title"]["value"].ToString(), article.Title);
                 Assert.Equal(expectedItem["change_type"].ToString(), sync.SyncItems[i].ChangeType);
                 Assert.Equal(DateTime.Parse(expectedItem["timestamp"].ToString()), DateTime.Parse(sync.SyncItems[i].Timestamp.ToString()));
             }
         }
-        
+
         [Fact]
         public async Task SyncApi_GetSyncAsync_GetSyncItems_WithoutTypeProvider_ReturnsGenericData()
         {
@@ -1919,13 +1920,14 @@ namespace Kontent.Ai.Delivery.Tests
 
         private void AssertSystemPropertiesEquality(JObject expectedSystemValues, IContentItemSystemAttributes system)
         {
-                Assert.Equal(expectedSystemValues["codename"].ToString(), system.Codename.ToString());
-                Assert.Equal(expectedSystemValues["name"].ToString(), system.Name.ToString());
-                Assert.Equal(expectedSystemValues["id"].ToString(), system.Id.ToString());
-                Assert.Equal(expectedSystemValues["type"].ToString(), system.Type.ToString());
-                Assert.Equal(expectedSystemValues["language"].ToString(), system.Language.ToString());
-                Assert.Equal(expectedSystemValues["collection"].ToString(), system.Collection.ToString());
-                Assert.Equal(expectedSystemValues["workflow_step"].ToString(), system.WorkflowStep.ToString());
+            Assert.Equal(expectedSystemValues["codename"].ToString(), system.Codename.ToString());
+            Assert.Equal(expectedSystemValues["name"].ToString(), system.Name.ToString());
+            Assert.Equal(expectedSystemValues["id"].ToString(), system.Id.ToString());
+            Assert.Equal(expectedSystemValues["type"].ToString(), system.Type.ToString());
+            Assert.Equal(expectedSystemValues["language"].ToString(), system.Language.ToString());
+            Assert.Equal(expectedSystemValues["collection"].ToString(), system.Collection.ToString());
+            Assert.Equal(expectedSystemValues["workflow"].ToString(), system.Workflow.ToString());
+            Assert.Equal(expectedSystemValues["workflow_step"].ToString(), system.WorkflowStep.ToString());
         }
 
 
@@ -1971,8 +1973,8 @@ namespace Kontent.Ai.Delivery.Tests
 
             return client;
         }
-        
-        private  Error CreateInvalidProjectIdApiError() => new Error()
+
+        private Error CreateInvalidProjectIdApiError() => new Error()
         {
             ErrorCode = 105,
             RequestId = "",
@@ -1986,7 +1988,7 @@ namespace Kontent.Ai.Delivery.Tests
         private static void AssertErrorResponse(IResponse actualResponse, IError expectedError)
         {
             var actualError = actualResponse.ApiResponse.Error;
-            
+
             Assert.NotNull(actualResponse.ApiResponse.Error);
             Assert.False(actualResponse.ApiResponse.IsSuccess);
             Assert.Equal(expectedError.Message, actualError.Message);

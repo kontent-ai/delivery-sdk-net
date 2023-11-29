@@ -28,7 +28,12 @@ namespace Kontent.Ai.Delivery.Abstractions
         public string Collection { get; }
 
         /// <summary>
-        /// Gets the codename of the workflow step which the content item is assigned to .
+        /// Gets the codename of the workflow which the content item is assigned to.
+        /// </summary>
+        public string Workflow { get; }
+
+        /// <summary>
+        /// Gets the codename of the workflow step which the content item is assigned to.
         /// </summary>
         public string WorkflowStep { get; }
     }
