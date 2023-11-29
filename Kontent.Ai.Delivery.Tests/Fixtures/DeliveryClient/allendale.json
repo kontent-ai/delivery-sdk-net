@@ -13,6 +13,7 @@
           "north_america"
         ],
         "last_modified": "2016-09-05T14:13:52.934532Z",
+        "workflow": "default",
         "workflow_step": "published"
       },
       "elements": {
@@ -79,6 +80,7 @@
           "north_america"
         ],
         "last_modified": "2016-09-05T14:12:49.0914134Z",
+        "workflow": "default",
         "workflow_step": "published"
       },
       "elements": {
@@ -145,6 +147,7 @@
           "europe"
         ],
         "last_modified": "2017-07-24T08:03:34.1050224Z",
+        "workflow": "default",
         "workflow_step": "published"
       },
       "elements": {
@@ -211,6 +214,7 @@
           "north_america"
         ],
         "last_modified": "2016-09-05T14:14:00.6640656Z",
+        "workflow": "default",
         "workflow_step": "published"
       },
       "elements": {
@@ -277,6 +281,7 @@
           "europe"
         ],
         "last_modified": "2016-09-01T08:36:18.0623079Z",
+        "workflow": "default",
         "workflow_step": "published"
       },
       "elements": {
@@ -343,6 +348,7 @@
           "north_america"
         ],
         "last_modified": "2016-09-05T14:14:08.4285085Z",
+        "workflow": "default",
         "workflow_step": "published"
       },
       "elements": {

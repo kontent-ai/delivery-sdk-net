@@ -11,6 +11,7 @@
         "home"
       ],
       "last_modified": "2017-04-04T13:53:08.6639435Z",
+      "workflow": "default",
       "workflow_step": "published"
     },
     "elements": {
@@ -79,6 +80,7 @@
           "north_america"
         ],
         "last_modified": "2016-09-05T14:14:08.4285085Z",
+        "workflow": "default",
         "workflow_step": "published"
       },
       "elements": {
@@ -145,6 +147,7 @@
           "north_america"
         ],
         "last_modified": "2016-09-05T14:12:49.0914134Z",
+        "workflow": "default",
         "workflow_step": "published"
       },
       "elements": {
@@ -208,6 +211,7 @@
         "collection": "default",
         "sitemap_locations": [],
         "last_modified": "2017-03-22T12:40:16.8440029Z",
+        "workflow": "default",
         "workflow_step": "published"
       },
       "elements": {
@@ -251,6 +255,7 @@
           "about_us"
         ],
         "last_modified": "2017-04-04T11:49:14.9737715Z",
+        "workflow": "default",
         "workflow_step": "published"
       },
       "elements": {
@@ -300,6 +305,7 @@
           "articles"
         ],
         "last_modified": "2017-04-04T13:45:44.1533096Z",
+        "workflow": "default",
         "workflow_step": "published"
       },
       "elements": {
@@ -388,6 +394,7 @@
           "articles"
         ],
         "last_modified": "2017-04-04T13:45:30.7692802Z",
+        "workflow": "default",
         "workflow_step": "published"
       },
       "elements": {
@@ -480,6 +487,7 @@
           "north_america"
         ],
         "last_modified": "2016-09-05T14:13:52.934532Z",
+        "workflow": "default",
         "workflow_step": "published"
       },
       "elements": {
@@ -546,6 +554,7 @@
           "north_america"
         ],
         "last_modified": "2016-09-05T14:14:00.6640656Z",
+        "workflow": "default",
         "workflow_step": "published"
       },
       "elements": {
@@ -611,6 +620,7 @@
           "articles"
         ],
         "last_modified": "2017-06-27T13:01:54.5735581Z",
+        "workflow": "default",
         "workflow_step": "published"
       },
       "elements": {
@@ -698,6 +708,7 @@
           "articles"
         ],
         "last_modified": "2017-04-04T13:40:29.970377Z",
+        "workflow": "default",
         "workflow_step": "published"
       },
       "elements": {
@@ -782,6 +793,7 @@
           "articles"
         ],
         "last_modified": "2017-04-04T13:40:14.6418507Z",
+        "workflow": "default",
         "workflow_step": "published"
       },
       "elements": {
@@ -884,6 +896,7 @@
           "home"
         ],
         "last_modified": "2016-10-20T12:15:15.7357761Z",
+        "workflow": "default",
         "workflow_step": "published"
       },
       "elements": {

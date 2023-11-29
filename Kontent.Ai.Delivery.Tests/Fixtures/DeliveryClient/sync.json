@@ -9,6 +9,7 @@
           "type": "article",
           "language": "default",
           "collection": "default",
+          "workflow": "default",
           "workflow_step": "published"
         },
         "elements": {
@@ -31,6 +32,7 @@
           "type": "article",
           "language": "default",
           "collection": "default",
+          "workflow": "default",
           "workflow_step": "published"
         },
         "elements": {
