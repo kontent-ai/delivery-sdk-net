@@ -765,7 +765,7 @@ namespace Kontent.Ai.Delivery.Tests
 
             var response = await client.GetItemsAsync<object>(parameters);
 
-            Assert.Equal(0, response.Items.Count);
+            Assert.Empty(response.Items);
         }
 
         [Fact]
