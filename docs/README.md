@@ -7,7 +7,7 @@
 - ✔️ [Use strongly-typed models](./customization-and-extensibility/strongly-typed-models.md) for all the [10 advantages described here](./customization-and-extensibility/strong-types-explained/10-advantages.md)
 - ✔️ [Use the code generator](https://github.com/kontent-ai/model-generator-net) to automate things and avoid errors
 - ✔️ [Use partial classes for extending the models](./customization-and-extensibility/customization-techniques.md) & not mess up the generated ones
-- ✔️ [Use structured rich-text rendering](./customization-and-extensibility/rich-text/structured-rich-text-rendering.md) to enable display templates for rich-text elements
+- ✔️ [Use structured rich-text rendering](./customization-and-extensibility/structured-models/structured-models-rendering.md) to enable display templates for rich-text elements
 - ✔️ [Enable retry logic](./configuration/retry-policy.md) to ensure maximum resiliency of your app
 - ✔️ [Secret Manager or Azure Key Vault](./retrieving-data/secure-and-preview-api.md) to store Secured Content and Preview API keys
 
@@ -26,9 +26,9 @@
   - [Caching responses](./retrieving-data/caching.md)
   - [Using the Image transformations](./retrieving-data/image-transformation.md)
 - **Customization and extensibility**
-  - [Resolving links to content items](./customization-and-extensibility/rich-text/resolving-item-links.md)
-  - [Structured Rich text rendering](./customization-and-extensibility/rich-text/structured-rich-text-rendering.md)
-  - [String-based rendering of linked items in Rich text elements](./customization-and-extensibility/rich-text/string-based-linked-items-rendering.md)
+  - [Resolving links to content items](./customization-and-extensibility/structured-models/resolving-item-links.md)
+  - [Structured Rich text rendering](./customization-and-extensibility/structured-models/structured-models-rendering.md)
+  - [String-based rendering of linked items in Rich text elements](./customization-and-extensibility/structured-models/string-based-linked-items-rendering.md)
   - [Working with strongly typed models](./customization-and-extensibility/strongly-typed-models.md)
     - [10 Advantages of strong types](./customization-and-extensibility/strong-types-explained/10-advantages.md)
     - [Generating models](./customization-and-extensibility/strong-types-explained/code-generator.md)
@@ -41,8 +41,8 @@
 - **Unit testing**
   - [Faking responses](./testing/faking.md)
 - **Repository practices**
-  - [Release & version management](https://github.com/kontent-ai/kontent-ai.github.io/blob/main/docs/articles/Release-%26-version-management-of-.NET-projects.md)
-  - [Kontent.ai best practices for .csproj files](https://github.com/kontent-ai/kontent-ai.github.io/blob/main/docs/articles/Kontent.ai-best-practices-for-.csproj-files.md)
+  - [Release & version management](https://kontent-ai.github.io/ci-and-automation/net-guidelines/Kontent.ai-best-practices-for-.csproj-files#version-management)
+  - [Kontent.ai best practices for .csproj files](https://kontent-ai.github.io/ci-and-automation/net-guidelines/Kontent.ai-best-practices-for-.csproj-files)
 - **Tools using SDK**
   - [Source tracking header](./testing/tracking.md)
 - **Troubleshooting**
