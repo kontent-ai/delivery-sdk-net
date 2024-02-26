@@ -18,8 +18,8 @@ namespace Kontent.Ai.Delivery.Benchmarks
         [GlobalSetup]
         public async Task Setup()
         {
-            var projectId = Guid.NewGuid();
-            var baseUrl = $"https://deliver.kontent.ai/{projectId}";
+            var environmentId = Guid.NewGuid();
+            var baseUrl = $"https://deliver.kontent.ai/{environmentId}";
             var mockHttp = new MockHttpMessageHandler();
 
             mockHttp
@@ -32,7 +32,7 @@ namespace Kontent.Ai.Delivery.Benchmarks
                 .Respond("application/json",
                     await File.ReadAllTextAsync(Path.Combine(Environment.CurrentDirectory, $"Fixtures{Path.DirectorySeparatorChar}full_articles.json")));
 
-            _client = DeliveryClientBuilder.WithProjectId(projectId).WithTypeProvider(new CustomTypeProvider()).WithDeliveryHttpClient(new DeliveryHttpClient(mockHttp.ToHttpClient())).Build();
+            _client = DeliveryClientBuilder.WithEnvironmentId(environmentId).WithTypeProvider(new CustomTypeProvider()).WithDeliveryHttpClient(new DeliveryHttpClient(mockHttp.ToHttpClient())).Build();
         }
 
         [Benchmark]

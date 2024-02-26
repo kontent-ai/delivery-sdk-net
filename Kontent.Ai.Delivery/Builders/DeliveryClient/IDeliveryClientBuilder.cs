@@ -10,11 +10,11 @@ namespace Kontent.Ai.Delivery.Builders.DeliveryClient
     /// </summary>
     public interface IDeliveryClientBuilder
     {
-        /// <seealso cref="DeliveryClientBuilder.WithProjectId(string)"/>>
-        IOptionalClientSetup BuildWithProjectId(string projectId);
+        /// <seealso cref="DeliveryClientBuilder.WithEnvironmentId(string)"/>>
+        IOptionalClientSetup BuildWithEnvironmentId(string environmentId);
 
-        /// <seealso cref="DeliveryClientBuilder.WithProjectId(Guid)"/>>
-        IOptionalClientSetup BuildWithProjectId(Guid projectId);
+        /// <seealso cref="DeliveryClientBuilder.WithEnvironmentId(Guid)"/>>
+        IOptionalClientSetup BuildWithEnvironmentId(Guid environmentId);
 
         /// <seealso cref="DeliveryClientBuilder.WithOptions(Func{IDeliveryOptionsBuilder, DeliveryOptions})"/>
         IOptionalClientSetup BuildWithDeliveryOptions(Func<IDeliveryOptionsBuilder, DeliveryOptions> buildDeliveryOptions);

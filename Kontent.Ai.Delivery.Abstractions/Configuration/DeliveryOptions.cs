@@ -18,9 +18,9 @@ namespace Kontent.Ai.Delivery.Abstractions
         public string PreviewEndpoint { get; set; } = "https://preview-deliver.kontent.ai/";
 
         /// <summary>
-        /// Gets or sets the project identifier.
+        /// Gets or sets the environment identifier.
         /// </summary>
-        public string ProjectId { get; set; }
+        public string EnvironmentId { get; set; }
 
         /// <summary>
         /// Gets or sets the API key that is used to retrieve content with the Preview API.

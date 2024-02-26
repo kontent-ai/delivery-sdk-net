@@ -18,37 +18,37 @@ namespace Kontent.Ai.Delivery.Configuration
         /// <param name="deliveryOptions">An instance of the <see cref="DeliveryOptions"/> class.</param>
         public static void Validate(this DeliveryOptions deliveryOptions)
         {
-            ValidateProjectId(deliveryOptions.ProjectId);
+            ValidateEnvironmentId(deliveryOptions.EnvironmentId);
             ValidateUseOfPreviewAndProductionApi(deliveryOptions);
             ValidateKeyForEnabledApi(deliveryOptions);
             ValidateRetryPolicyOptions(deliveryOptions.DefaultRetryPolicyOptions);
         }
 
-        internal static void ValidateProjectId(this string projectId)
+        internal static void ValidateEnvironmentId(this string environmentId)
         {
-            if (projectId == null)
+            if (environmentId == null)
             {
-                throw new ArgumentNullException(nameof(projectId), "Kontent.ai project identifier is not specified.");
+                throw new ArgumentNullException(nameof(environmentId), "Kontent.ai environment identifier is not specified.");
             }
 
-            if (projectId == string.Empty)
+            if (environmentId == string.Empty)
             {
-                throw new ArgumentException("Kontent.ai project identifier is empty.", nameof(projectId));
+                throw new ArgumentException("Kontent.ai environment identifier is empty.", nameof(environmentId));
             }
 
-            if (!Guid.TryParse(projectId, out var projectIdGuid))
+            if (!Guid.TryParse(environmentId, out var environmentIdGuid))
             {
-                throw new ArgumentException("Kontent.ai project identifier '{ProjectId}' is not valid. Perhaps you have passed an API key instead?", nameof(projectId));
+                throw new ArgumentException("Kontent.ai environment identifier '{EnvironmentId}' is not valid. Perhaps you have passed an API key instead?", nameof(environmentId));
             }
 
-            ValidateProjectId(projectIdGuid);
+            ValidateEnvironmentId(environmentIdGuid);
         }
 
-        internal static void ValidateProjectId(this Guid projectId)
+        internal static void ValidateEnvironmentId(this Guid environmentId)
         {
-            if (projectId == Guid.Empty)
+            if (environmentId == Guid.Empty)
             {
-                throw new ArgumentException("Kontent.ai project identifier is an empty GUID.", nameof(projectId));
+                throw new ArgumentException("Kontent.ai environment identifier is an empty GUID.", nameof(environmentId));
             }
         }
 

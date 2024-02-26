@@ -47,7 +47,7 @@ namespace Kontent.Ai.Delivery.Tests
         private static DeliveryOptions MockDeliveryOptions(string baseUrl)
             => DeliveryOptionsBuilder
                 .CreateInstance()
-                .WithProjectId(Guid.NewGuid())
+                .WithEnvironmentId(Guid.NewGuid())
                 .UseProductionApi()
                 .WithCustomEndpoint($"{baseUrl}/{{0}}")
                 .Build();

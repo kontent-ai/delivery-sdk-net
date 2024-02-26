@@ -2,7 +2,7 @@
 
 > ⚠️ Mind [because of the issue with the named clients implementation](https://github.com/kontent-ai/delivery-sdk-net/issues/312) we decided to deprecate `AutofacServiceProviderFactory` use `MultipleDeliveryClientFactory` instead.
 
-Sometimes, it's handy to register multiple `IDeliveryClient`s with different configurations (e.g. while accessing different projects, accessing secured and non-secured data at once, or accessing preview and production data at the same time). In those cases, you can take advantage of multiple client registration using factory pattern.
+Sometimes, it's handy to register multiple `IDeliveryClient`s with different configurations (e.g. while accessing different environments, accessing secured and non-secured data at once, or accessing preview and production data at the same time). In those cases, you can take advantage of multiple client registration using factory pattern.
 
 If you wish to implement support for a DI container of your choice, jump to the [Extending named services support](#extending-named-services-support) section.
 
@@ -32,13 +32,13 @@ public class Startup
             factoryBuilder => factoryBuilder
                 .AddDeliveryClient
                 (
-                    "projectA",
+                    "environmentA",
                     deliveryOptionBuilder => deliveryOptionBuilder
-                        .WithProjectId("<A_PROJECT_ID>")
+                        .WithEnvironmentId("<A_ENVIRONMENT_ID>")
                         .UseProductionApi()
                         .Build()
                     optionalClientSetup =>
-                        optionalClientSetup.WithTypeProvider(new ProjectAProvider())
+                        optionalClientSetup.WithTypeProvider(new environmentAProvider())
                 )
                 .Build()
         );
@@ -48,7 +48,7 @@ public class Startup
 
 ### Registering multiple type providers
 
-If you're accessing two completely different projects, chances are they have a different content model and therefore the generated models for content types will differ. Extend the Startup class as follows:
+If you're accessing two completely different environments, chances are they have a different content model and therefore the generated models for content types will differ. Extend the Startup class as follows:
 
 ```csharp
 public class Startup
@@ -62,22 +62,22 @@ public class Startup
             factoryBuilder => factoryBuilder
                 .AddDeliveryClient
                 (
-                    "projectA",
+                    "environmentA",
                     deliveryOptionBuilder => deliveryOptionBuilder
-                        .WithProjectId("<A_PROJECT_ID>")
+                        .WithEnvironmentId("<A_ENVIRONMENT_ID>")
                         .UseProductionApi()
                         .Build(),
                     optionalClientSetup =>
-                        optionalClientSetup.WithTypeProvider(new ProjectAProvider())
+                        optionalClientSetup.WithTypeProvider(new environmentAProvider())
                 )
                 .AddDeliveryClient(
-                    "projectB",
+                    "environmentB",
                     deliveryOptionBuilder => deliveryOptionBuilder
-                        .WithProjectId("<B_PROJECT_ID>")
+                        .WithEnvironmentId("<B_ENVIRONMENT_ID>")
                         .UseProductionApi()
                         .Build(),
                     optionalClientSetup =>
-                        optionalClientSetup.WithTypeProvider(new ProjectBProvider())
+                        optionalClientSetup.WithTypeProvider(new environmentBProvider())
                 )
                 .Build()
         );
@@ -103,9 +103,9 @@ public class Startup
                 factoryBuilder => factoryBuilder
                     .AddDeliveryClientCache
                     (
-                        "projectA"
+                        "environmentA"
                         deliveryOptionBuilder => deliveryOptionBuilder
-                            .WithProjectId(ClientAProjectId)
+                            .WithEnvironmentId(ClientAEnvironmentId)
                             .UseProductionApi()
                             .Build(),
                         CacheManagerFactory.Create(
@@ -115,7 +115,7 @@ public class Startup
                                 CacheType = CacheTypeEnum.Memory
                             })),
                         optionalClientSetup =>
-                            optionalClientSetup.WithTypeProvider(new ProjectAProvider())
+                            optionalClientSetup.WithTypeProvider(new environmentAProvider())
                     )
                     .Build()
         );
@@ -144,16 +144,16 @@ public class Startup
             factoryBuilder => factoryBuilder
                 .AddDeliveryClient
                 (
-                    "projectA",
+                    "environmentA",
                     _ =>
                     {
                         var options = new DeliveryOptions();
-                        config.Configuration.GetSection("MultipleDeliveryOptions:ProjectA")
+                        config.Configuration.GetSection("MultipleDeliveryOptions:environmentA")
                             .Bind(options);
                         return options;
                     },
                     optionalClientSetup =>
-                        optionalClientSetup.WithTypeProvider(new ProjectAProvider())
+                        optionalClientSetup.WithTypeProvider(new environmentAProvider())
                 )
                 .Build()
         );
@@ -172,7 +172,7 @@ public class HomeController : Controller
 
     public HomeController(IDeliveryClientFactory deliveryClientFactory)
     {
-        _deliveryClient = deliveryClientFactory.Get("projectA");
+        _deliveryClient = deliveryClientFactory.Get("environmentA");
     }
 }
 ```

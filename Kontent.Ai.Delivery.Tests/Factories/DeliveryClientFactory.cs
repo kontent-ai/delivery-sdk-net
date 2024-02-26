@@ -11,8 +11,8 @@ namespace Kontent.Ai.Delivery.Tests.Factories
         private static readonly MockHttpMessageHandler MockHttp = new MockHttpMessageHandler();
         private static readonly DeliveryJsonSerializer Serializer = new DeliveryJsonSerializer();
 
-        internal static DeliveryClient GetMockedDeliveryClientWithProjectId(
-            Guid projectId,
+        internal static DeliveryClient GetMockedDeliveryClientWithEnvironmentId(
+            Guid environmentId,
             MockHttpMessageHandler httpMessageHandler = null,
             IModelProvider modelProvider = null,
             IRetryPolicyProvider resiliencePolicyProvider = null,
@@ -21,7 +21,7 @@ namespace Kontent.Ai.Delivery.Tests.Factories
             var httpClient = GetHttpClient(httpMessageHandler);
 
             var client = new DeliveryClient(
-                DeliveryOptionsFactory.CreateMonitor(projectId),
+                DeliveryOptionsFactory.CreateMonitor(environmentId),
                 modelProvider ?? A.Fake<IModelProvider>(),
                 resiliencePolicyProvider ?? A.Fake<IRetryPolicyProvider>(),
                 typeProvider ?? A.Fake<ITypeProvider>(),

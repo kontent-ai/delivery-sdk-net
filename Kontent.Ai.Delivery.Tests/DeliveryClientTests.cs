@@ -35,8 +35,8 @@ namespace Kontent.Ai.Delivery.Tests
         public DeliveryClientTests()
         {
             _guid = Guid.NewGuid();
-            var projectId = _guid.ToString();
-            _baseUrl = $"https://deliver.kontent.ai/{projectId}";
+            var environmentId = _guid.ToString();
+            _baseUrl = $"https://deliver.kontent.ai/{environmentId}";
             _mockHttp = new MockHttpMessageHandler();
             _mockTypeProvider = A.Fake<ITypeProvider>();
             _mockContentLinkUrlResolver = A.Fake<IContentLinkUrlResolver>();
@@ -199,9 +199,9 @@ namespace Kontent.Ai.Delivery.Tests
         }
 
         [Fact]
-        public async Task GetItemAsync_InvalidProjectId_RespondsWithApiError()
+        public async Task GetItemAsync_InvalidEnvironmentId_RespondsWithApiError()
         {
-            var expectedError = CreateInvalidProjectIdApiError();
+            var expectedError = CreateInvalidEnvironmentIdApiError();
             var response = CreateApiErrorResponse(expectedError);
 
             _mockHttp
@@ -293,9 +293,9 @@ namespace Kontent.Ai.Delivery.Tests
         }
 
         [Fact]
-        public async Task GetItemsAsync_InvalidProjectId_RespondsWithApiError()
+        public async Task GetItemsAsync_InvalidEnvironmentId_RespondsWithApiError()
         {
-            var expectedError = CreateInvalidProjectIdApiError();
+            var expectedError = CreateInvalidEnvironmentIdApiError();
             var response = CreateApiErrorResponse(expectedError);
 
             _mockHttp
@@ -418,9 +418,9 @@ namespace Kontent.Ai.Delivery.Tests
         }
 
         [Fact]
-        public async Task GetItemsFeed_InvalidProjectId_RespondsWithApiError()
+        public async Task GetItemsFeed_InvalidEnvironmentId_RespondsWithApiError()
         {
-            var expectedError = CreateInvalidProjectIdApiError();
+            var expectedError = CreateInvalidEnvironmentIdApiError();
             var response = CreateApiErrorResponse(expectedError);
 
             _mockHttp
@@ -506,9 +506,9 @@ namespace Kontent.Ai.Delivery.Tests
         }
 
         [Fact]
-        public async Task GetTypeAsync_InvalidProjectId_RespondsWithApiError()
+        public async Task GetTypeAsync_InvalidEnvironmentId_RespondsWithApiError()
         {
-            var expectedError = CreateInvalidProjectIdApiError();
+            var expectedError = CreateInvalidEnvironmentIdApiError();
             var response = CreateApiErrorResponse(expectedError);
 
             _mockHttp
@@ -695,9 +695,9 @@ namespace Kontent.Ai.Delivery.Tests
         }
 
         [Fact]
-        public async Task GetTaxonomiesAsync_InvalidProjectId_RespondsWithApiError()
+        public async Task GetTaxonomiesAsync_InvalidEnvironmentId_RespondsWithApiError()
         {
-            var expectedError = CreateInvalidProjectIdApiError();
+            var expectedError = CreateInvalidEnvironmentIdApiError();
             var response = CreateApiErrorResponse(expectedError);
 
             _mockHttp
@@ -1114,7 +1114,7 @@ namespace Kontent.Ai.Delivery.Tests
                 .When($"{_baseUrl}/items")
                 .Respond("application/json", await File.ReadAllTextAsync(Path.Combine(Environment.CurrentDirectory, $"Fixtures{Path.DirectorySeparatorChar}DeliveryClient{Path.DirectorySeparatorChar}items.json")));
 
-            var client = Factories.DeliveryClientFactory.GetMockedDeliveryClientWithProjectId(_guid, _mockHttp);
+            var client = Factories.DeliveryClientFactory.GetMockedDeliveryClientWithEnvironmentId(_guid, _mockHttp);
             var retryPolicy = A.Fake<IRetryPolicy>();
             A.CallTo(() => client.RetryPolicyProvider.GetRetryPolicy())
                 .Returns(retryPolicy);
@@ -1140,7 +1140,7 @@ namespace Kontent.Ai.Delivery.Tests
                 .When($"{_baseUrl}/items")
                 .Respond("application/json", await File.ReadAllTextAsync(Path.Combine(Environment.CurrentDirectory, $"Fixtures{Path.DirectorySeparatorChar}DeliveryClient{Path.DirectorySeparatorChar}items.json")));
 
-            var client = Factories.DeliveryClientFactory.GetMockedDeliveryClientWithProjectId(_guid, _mockHttp);
+            var client = Factories.DeliveryClientFactory.GetMockedDeliveryClientWithEnvironmentId(_guid, _mockHttp);
 
             var elements = new ElementsParameter(Enumerable.Range(0, 1000000).Select(i => "test").ToArray());
 
@@ -1171,7 +1171,7 @@ namespace Kontent.Ai.Delivery.Tests
 
             var options = new DeliveryOptions
             {
-                ProjectId = _guid.ToString(),
+                EnvironmentId = _guid.ToString(),
                 UsePreviewApi = usePreviewApi,
                 UseSecureAccess = useSecuredProduction,
                 PreviewApiKey = "someKey",
@@ -1206,7 +1206,7 @@ namespace Kontent.Ai.Delivery.Tests
             var securityKey = "someKey";
             var options = new DeliveryOptions
             {
-                ProjectId = _guid.ToString(),
+                EnvironmentId = _guid.ToString(),
                 SecureAccessApiKey = securityKey,
                 UseSecureAccess = true
             };
@@ -1480,9 +1480,9 @@ namespace Kontent.Ai.Delivery.Tests
         }
 
         [Fact]
-        public async Task GetTypesAsync_InvalidProjectId_RespondsWithApiError()
+        public async Task GetTypesAsync_InvalidEnvironmentId_RespondsWithApiError()
         {
-            var expectedError = CreateInvalidProjectIdApiError();
+            var expectedError = CreateInvalidEnvironmentIdApiError();
             var response = CreateApiErrorResponse(expectedError);
 
             _mockHttp
@@ -1625,9 +1625,9 @@ namespace Kontent.Ai.Delivery.Tests
         }
 
         [Fact]
-        public async Task GetLanguagesAsync_InvalidProjectId_RespondsWithApiError()
+        public async Task GetLanguagesAsync_InvalidEnvironmentId_RespondsWithApiError()
         {
-            var expectedError = CreateInvalidProjectIdApiError();
+            var expectedError = CreateInvalidEnvironmentIdApiError();
             var response = CreateApiErrorResponse(expectedError);
 
             _mockHttp
@@ -1684,9 +1684,9 @@ namespace Kontent.Ai.Delivery.Tests
         }
 
         [Fact]
-        public async Task GetElementAsync_InvalidProjectId_RespondsWithApiError()
+        public async Task GetElementAsync_InvalidEnvironmentId_RespondsWithApiError()
         {
-            var expectedError = CreateInvalidProjectIdApiError();
+            var expectedError = CreateInvalidEnvironmentIdApiError();
             var response = CreateApiErrorResponse(expectedError);
 
             _mockHttp
@@ -1707,7 +1707,7 @@ namespace Kontent.Ai.Delivery.Tests
             _mockHttp
                 .When($"{_baseUrl}/items")
                 .Respond(request => new HttpResponseMessage(HttpStatusCode.RequestTimeout));
-            var client = Factories.DeliveryClientFactory.GetMockedDeliveryClientWithProjectId(_guid, _mockHttp);
+            var client = Factories.DeliveryClientFactory.GetMockedDeliveryClientWithEnvironmentId(_guid, _mockHttp);
             var retryPolicy = A.Fake<IRetryPolicy>();
             A.CallTo(() => client.RetryPolicyProvider.GetRetryPolicy()).Returns(retryPolicy);
             A.CallTo(() => retryPolicy.ExecuteAsync(A<Func<Task<HttpResponseMessage>>>._))
@@ -1726,7 +1726,7 @@ namespace Kontent.Ai.Delivery.Tests
                 .Respond(request => new HttpResponseMessage(HttpStatusCode.RequestTimeout));
             var options = new DeliveryOptions
             {
-                ProjectId = _guid.ToString(),
+                EnvironmentId = _guid.ToString(),
                 EnableRetryPolicy = false
             };
             var client = Factories.DeliveryClientFactory.GetMockedDeliveryClientWithOptions(options, _mockHttp);
@@ -1750,7 +1750,7 @@ namespace Kontent.Ai.Delivery.Tests
                 .Respond("application/json", await File.ReadAllTextAsync(Path.Combine(Environment.CurrentDirectory, $"Fixtures{Path.DirectorySeparatorChar}DeliveryClient{Path.DirectorySeparatorChar}coffee_beverages_explained.json")));
 
             var deliveryClient = DeliveryClientBuilder
-                .WithProjectId(_guid)
+                .WithEnvironmentId(_guid)
                 .WithInlineContentItemsResolver(InlineContentItemsResolverFactory.Instance
                     .ResolveTo<Tweet>(tweet => tweetPrefix + tweet.TweetLink))
                 .WithInlineContentItemsResolver(InlineContentItemsResolverFactory.Instance
@@ -1942,7 +1942,7 @@ namespace Kontent.Ai.Delivery.Tests
                 new DeliveryJsonSerializer(),
                 new HtmlParser(),
                 DeliveryOptionsFactory.CreateMonitor(_guid));
-            var client = Factories.DeliveryClientFactory.GetMockedDeliveryClientWithProjectId(
+            var client = Factories.DeliveryClientFactory.GetMockedDeliveryClientWithEnvironmentId(
                 _guid,
                 handler,
                 modelProvider,
@@ -1963,7 +1963,7 @@ namespace Kontent.Ai.Delivery.Tests
             var mapper = propertyMapper ?? A.Fake<IPropertyMapper>();
             var serializer = new DeliveryJsonSerializer();
             var modelProvider = new ModelProvider(null, null, typer, mapper, serializer, new HtmlParser(), DeliveryOptionsFactory.CreateMonitor(_guid));
-            var client = Factories.DeliveryClientFactory.GetMockedDeliveryClientWithProjectId(_guid, handler, modelProvider);
+            var client = Factories.DeliveryClientFactory.GetMockedDeliveryClientWithEnvironmentId(_guid, handler, modelProvider);
 
             var retryPolicy = A.Fake<IRetryPolicy>();
             A.CallTo(() => client.RetryPolicyProvider.GetRetryPolicy())
@@ -1974,12 +1974,12 @@ namespace Kontent.Ai.Delivery.Tests
             return client;
         }
 
-        private Error CreateInvalidProjectIdApiError() => new Error()
+        private Error CreateInvalidEnvironmentIdApiError() => new Error()
         {
             ErrorCode = 105,
             RequestId = "",
             SpecificCode = 0,
-            Message = $"Project with the ID '{_guid.ToString()}' does not exist. Check for the correct project ID in the API keys section of the UI. See https://kontent.ai/learn/reference/delivery-api for more details."
+            Message = $"Environment with the ID '{_guid.ToString()}' does not exist. Check for the correct environment ID in the API keys section of the UI. See https://kontent.ai/learn/reference/delivery-api for more details."
         };
 
         private static string CreateApiErrorResponse(Error error)

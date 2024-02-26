@@ -16,7 +16,7 @@ namespace Kontent.Ai.Delivery.Caching.Tests
 {
     public class ScenarioBuilder
     {
-        private readonly string _projectId = Guid.NewGuid().ToString();
+        private readonly string _environmentId = Guid.NewGuid().ToString();
         private readonly string _baseUrl;
         private readonly CacheTypeEnum _cacheType;
         private readonly CacheExpirationType _cacheExpirationType;
@@ -36,7 +36,7 @@ namespace Kontent.Ai.Delivery.Caching.Tests
             DistributedCacheResilientPolicy distributedCacheResilientPolicy = DistributedCacheResilientPolicy.Crash,
             ILoggerFactory loggerFactory = null)
         {
-            _baseUrl = $"https://deliver.kontent.ai/{_projectId}/";
+            _baseUrl = $"https://deliver.kontent.ai/{_environmentId}/";
             _cacheType = cacheType;
             _cacheExpirationType = cacheExpirationType;
             _distributedCacheResilientPolicy = distributedCacheResilientPolicy;
@@ -108,11 +108,11 @@ namespace Kontent.Ai.Delivery.Caching.Tests
             }
             if (_cacheType == CacheTypeEnum.Memory)
             {
-                return new Scenario(_memoryCache, _cacheExpirationType, mockHttp.ToHttpClient(), new DeliveryOptions { ProjectId = _projectId }, _requestCounter);
+                return new Scenario(_memoryCache, _cacheExpirationType, mockHttp.ToHttpClient(), new DeliveryOptions { EnvironmentId = _environmentId }, _requestCounter);
             }
             else
             {
-                return new Scenario(_distributedCache, _cacheExpirationType, _distributedCacheResilientPolicy, mockHttp.ToHttpClient(), new DeliveryOptions { ProjectId = _projectId }, _requestCounter, _loggerFactory);
+                return new Scenario(_distributedCache, _cacheExpirationType, _distributedCacheResilientPolicy, mockHttp.ToHttpClient(), new DeliveryOptions { EnvironmentId = _environmentId }, _requestCounter, _loggerFactory);
             }
         }
     }

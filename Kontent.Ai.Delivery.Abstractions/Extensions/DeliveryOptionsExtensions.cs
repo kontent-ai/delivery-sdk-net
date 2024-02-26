@@ -12,7 +12,7 @@
         /// <param name="options">A source.</param>
         public static void Configure(this DeliveryOptions o, DeliveryOptions options)
         {
-            o.ProjectId = options.ProjectId;
+            o.EnvironmentId = options.EnvironmentId;
             o.ProductionEndpoint = options.ProductionEndpoint;
             o.PreviewEndpoint = options.PreviewEndpoint;
             o.PreviewApiKey = options.PreviewApiKey;

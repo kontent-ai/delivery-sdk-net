@@ -13,15 +13,15 @@ namespace Kontent.Ai.Delivery.Caching.Tests
 {
     public class BinarySerializationTests
     {
-        private readonly Guid _projectId;
+        private readonly Guid _environmentId;
         private readonly string _baseUrl;
         private readonly MockHttpMessageHandler _mockHttp;
 
         public BinarySerializationTests()
         {
-            _projectId = Guid.NewGuid();
-            var projectId = _projectId.ToString();
-            _baseUrl = $"https://deliver.kontent.ai/{projectId}";
+            _environmentId = Guid.NewGuid();
+            var environmentId = _environmentId.ToString();
+            _baseUrl = $"https://deliver.kontent.ai/{environmentId}";
             _mockHttp = new MockHttpMessageHandler();
         }
 
@@ -35,7 +35,7 @@ namespace Kontent.Ai.Delivery.Caching.Tests
                 .When(url)
                 .Respond("application/json", await File.ReadAllTextAsync(Path.Combine(Environment.CurrentDirectory, $"Fixtures{Path.DirectorySeparatorChar}brazil_natural_barra_grande.json")));
 
-            var client = DeliveryClientBuilder.WithProjectId(_projectId).WithTypeProvider(new CustomTypeProvider()).WithDeliveryHttpClient(new DeliveryHttpClient(_mockHttp.ToHttpClient())).Build();
+            var client = DeliveryClientBuilder.WithEnvironmentId(_environmentId).WithTypeProvider(new CustomTypeProvider()).WithDeliveryHttpClient(new DeliveryHttpClient(_mockHttp.ToHttpClient())).Build();
 
             // Act
             var response = await client.GetItemAsync<Coffee>("brazil_natural_barra_grande");
@@ -62,7 +62,7 @@ namespace Kontent.Ai.Delivery.Caching.Tests
                 .Respond("application/json",
                     await File.ReadAllTextAsync(Path.Combine(Environment.CurrentDirectory, $"Fixtures{Path.DirectorySeparatorChar}full_articles.json")));
 
-            var client = DeliveryClientBuilder.WithProjectId(_projectId).WithTypeProvider(new CustomTypeProvider()).WithDeliveryHttpClient(new DeliveryHttpClient(_mockHttp.ToHttpClient())).Build();
+            var client = DeliveryClientBuilder.WithEnvironmentId(_environmentId).WithTypeProvider(new CustomTypeProvider()).WithDeliveryHttpClient(new DeliveryHttpClient(_mockHttp.ToHttpClient())).Build();
 
             // Act
             var response = await client.GetItemsAsync<Article>();

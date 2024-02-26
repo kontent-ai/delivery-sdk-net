@@ -17,11 +17,11 @@ namespace Kontent.Ai.Delivery.Tests.DependencyInjectionFrameworks.Helpers
 {
     internal static class DependencyInjectionFrameworksHelper
     {
-        private const string ProjectId = "00a21be4-8fef-4dd9-9380-f4cbb82e260d";
+        private const string EnvironmentId = "00a21be4-8fef-4dd9-9380-f4cbb82e260d";
 
         internal static IServiceCollection GetServiceCollection()
             => new ServiceCollection()
-                .AddDeliveryClient(new DeliveryOptions { ProjectId = ProjectId });
+                .AddDeliveryClient(new DeliveryOptions { EnvironmentId = EnvironmentId });
 
         internal static IServiceCollection RegisterInlineContentItemResolvers(this IServiceCollection serviceCollection)
             => serviceCollection

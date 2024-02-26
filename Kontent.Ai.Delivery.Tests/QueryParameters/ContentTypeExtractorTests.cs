@@ -13,7 +13,7 @@ namespace Kontent.Ai.Delivery.Tests.QueryParameters
     public class ContentTypeExtractorTests
     {
         private const string CONTENT_TYPE_CODENAME = "SomeContentType";
-        private const string FAKE_PROJECT_ID = "00000000-0000-0000-0000-000000000000";
+        private const string FAKE_ENVIRONMENT_ID = "00000000-0000-0000-0000-000000000000";
 
         private readonly DeliveryClient _client;
 
@@ -24,7 +24,7 @@ namespace Kontent.Ai.Delivery.Tests.QueryParameters
             A.CallTo(() => contentTypeProvider.GetCodename(typeof(TypeWithContentTypeCodename))).Returns(TypeWithContentTypeCodename.Codename);
             A.CallTo(() => contentTypeProvider.GetCodename(typeof(TypeWithoutContentTypeCodename))).Returns(null);
 
-            var deliveryOptions = DeliveryOptionsFactory.CreateMonitor(new DeliveryOptions { ProjectId = FAKE_PROJECT_ID });
+            var deliveryOptions = DeliveryOptionsFactory.CreateMonitor(new DeliveryOptions { EnvironmentId = FAKE_ENVIRONMENT_ID });
             var modelProvider = new ModelProvider(null, null, contentTypeProvider, null, new DeliveryJsonSerializer(), new HtmlParser(), deliveryOptions);
             _client = new DeliveryClient(
                 deliveryOptions,

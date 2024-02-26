@@ -1,4 +1,4 @@
-Once you have an instance of the `IDeliveryClient`, you can start querying your project by calling methods on the instance.
+Once you have an instance of the `IDeliveryClient`, you can start querying your environment by calling methods on the instance.
 
 ```csharp
 // Retrieves a single content item

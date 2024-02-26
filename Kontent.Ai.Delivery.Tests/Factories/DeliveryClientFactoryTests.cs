@@ -30,7 +30,7 @@ namespace Kontent.Ai.Delivery.Tests.Factories
         {
             _serviceCollection.AddDeliveryClient(new DeliveryOptions
             {
-                ProjectId = Guid.NewGuid().ToString()
+                EnvironmentId = Guid.NewGuid().ToString()
             });
             var deliveryClientFactory = new Delivery.DeliveryClientFactory(_serviceCollection.BuildServiceProvider());
 

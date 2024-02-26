@@ -13,12 +13,12 @@ namespace Kontent.Ai.Delivery.Tests.QueryParameters
 {
     public class IncludeTotalCountTests
     {
-        private readonly Guid _projectId = Guid.NewGuid();
-        private  string BaseUrl => $"https://deliver.kontent.ai/{_projectId}";
+        private readonly Guid _environmentId = Guid.NewGuid();
+        private  string BaseUrl => $"https://deliver.kontent.ai/{_environmentId}";
         private readonly MockHttpMessageHandler _mockHttp = new MockHttpMessageHandler();
         private DeliveryOptions Options => new DeliveryOptions
         {
-            ProjectId = _projectId.ToString(),
+            EnvironmentId = _environmentId.ToString(),
             EnableRetryPolicy = false,
             IncludeTotalCount = true
         };

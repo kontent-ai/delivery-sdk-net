@@ -30,7 +30,7 @@ Installation via .NET CLI:
 
 ## Usage
 
-To retrieve content from your Kontent.ai projects, you'll be using an implementation of the `IDeliveryClient` interface. This is the main interface of the SDK. Here's how you can instantiate and use the Delivery client either [with DI/IoC](#use-dependency-injection-ideal-for-aspnet-core-web-apps "Usage with dependency injection") or [without DI/IoC](#usage-without-iocdi-containers-ideal-for-console-apps-unit-tests "Usage without dependency injection").
+To retrieve content from your Kontent.ai environments, you'll be using an implementation of the `IDeliveryClient` interface. This is the main interface of the SDK. Here's how you can instantiate and use the Delivery client either [with DI/IoC](#use-dependency-injection-ideal-for-aspnet-core-web-apps "Usage with dependency injection") or [without DI/IoC](#usage-without-iocdi-containers-ideal-for-console-apps-unit-tests "Usage without dependency injection").
 
 ### Use dependency injection (ideal for ASP.NET Core web apps)
 
@@ -75,7 +75,7 @@ You can also set up a `DeliveryOptions` manually using the [`DeliveryClientBuild
 ```csharp
 IDeliveryClient _client = DeliveryClientBuilder
     .WithOptions(builder => builder
-        .WithProjectId("<YOUR_PROJECT_ID>")
+        .WithEnvironmentId("<YOUR_ENVIRONMENT_ID>")
 	.UseProductionApi()
 	.Build())
     .Build();

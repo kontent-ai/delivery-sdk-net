@@ -22,7 +22,7 @@ The default retry policy performs retries using a randomized exponential backoff
 ```csharp
 IDeliveryClient client = DeliveryClientBuilder
     .WithOptions(builder => builder
-        .WithProjectId("<YOUR_PROJECT_ID>")
+        .WithEnvironmentId("<YOUR_ENVIRONMENT_ID>")
         .WithDefaultRetryPolicyOptions(new DefaultRetryPolicyOptions {
 	    DeltaBackoff = TimeSpan.FromSeconds(1),
 	    MaxCumulativeWaitTime = TimeSpan.FromSeconds(10)

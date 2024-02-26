@@ -11,16 +11,16 @@ namespace Kontent.Ai.Delivery.Configuration
     public interface IDeliveryOptionsBuilder
     {
         /// <summary>
-        /// Use project identifier.
+        /// Use environment identifier.
         /// </summary>
-        /// <param name="projectId">The identifier of a Kontent.ai project.</param>
-        IDeliveryApiConfiguration WithProjectId(string projectId);
+        /// <param name="environmentId">The identifier of a Kontent.ai environment.</param>
+        IDeliveryApiConfiguration WithEnvironmentId(string environmentId);
 
         /// <summary>
-        /// Use project identifier.
+        /// Use environment identifier.
         /// </summary>
-        /// <param name="projectId">The identifier of a Kontent.ai project.</param>
-        IDeliveryApiConfiguration WithProjectId(Guid projectId);
+        /// <param name="environmentId">The identifier of a Kontent.ai environment.</param>
+        IDeliveryApiConfiguration WithEnvironmentId(Guid environmentId);
     }
 
     /// <summary>
@@ -78,7 +78,7 @@ namespace Kontent.Ai.Delivery.Configuration
 
         /// <summary>
         /// Use a custom format for the Production or Preview API endpoint address.
-        /// The project identifier will be inserted at the position of the first format item "{0}".
+        /// The environment identifier will be inserted at the position of the first format item "{0}".
         /// </summary>
         /// <remarks>
         /// While both HTTP and HTTPS protocols are supported, we recommend always using HTTPS.
@@ -88,7 +88,7 @@ namespace Kontent.Ai.Delivery.Configuration
 
         /// <summary>
         /// Use a custom format for the Production or Preview API endpoint address.
-        /// The project identifier will be inserted at the position of the first format item "{0}".
+        /// The environment identifier will be inserted at the position of the first format item "{0}".
         /// </summary>
         /// <remarks>
         /// While both HTTP and HTTPS protocols are supported, we recommend always using HTTPS.

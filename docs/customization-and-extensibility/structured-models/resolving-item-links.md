@@ -36,7 +36,7 @@ Your resolver must implement the `IContentLinkUrlResolver` interface, which defi
 When are content items available?
 
 * For live environment, a content item is available when published, and unavailable when deleted or unpublished.
-* For preview environment, a content item is available when it exists in the project, and unavailable when deleted.
+* For preview environment, a content item is available when it exists, and unavailable when deleted.
 
 ```csharp
 // Sample resolver implementation
@@ -88,7 +88,7 @@ or within the `IDeliveryClient` instance through the `DeliveryClientBuilder` cla
 ```csharp
 // Sets the resolver as an optional dependency of the `IDeliveryClient` instance
 IDeliveryClient client = DeliveryClientBuilder
-    .WithProjectId("975bf280-fd91-488c-994c-2f04416e5ee3")
+    .WithEnvironmentId("975bf280-fd91-488c-994c-2f04416e5ee3")
     .WithContentLinkUrlResolver(new CustomContentLinkUrlResolver())
     .Build();
 ```

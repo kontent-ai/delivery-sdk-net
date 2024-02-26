@@ -14,9 +14,9 @@ namespace Kontent.Ai.Delivery.Tests.Factories
             return mock;
         }
         
-        public static IOptionsMonitor<DeliveryOptions> CreateMonitor(Guid projectId)
+        public static IOptionsMonitor<DeliveryOptions> CreateMonitor(Guid environmentId)
         {
-            return CreateMonitor(new DeliveryOptions { ProjectId = projectId.ToString() });
+            return CreateMonitor(new DeliveryOptions { EnvironmentId = environmentId.ToString() });
         }
 
         public static IOptions<DeliveryOptions> Create(DeliveryOptions options)

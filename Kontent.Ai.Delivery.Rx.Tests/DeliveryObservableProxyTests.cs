@@ -191,7 +191,7 @@ namespace Kontent.Ai.Delivery.Rx.Tests
         {
             mockAction();
             var deliveryHttpClient = new DeliveryHttpClient(_mockHttp.ToHttpClient());
-            var deliveryOptions = CreateMonitor(new DeliveryOptions { ProjectId = _guid });
+            var deliveryOptions = CreateMonitor(new DeliveryOptions { EnvironmentId = _guid });
             var contentLinkUrlResolver = A.Fake<IContentLinkUrlResolver>();
             var contentItemsProcessor = A.Fake<IInlineContentItemsProcessor>();
             var contentPropertyMapper = new PropertyMapper();

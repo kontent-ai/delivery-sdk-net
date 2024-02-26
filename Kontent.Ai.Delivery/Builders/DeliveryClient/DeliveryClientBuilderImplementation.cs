@@ -20,17 +20,17 @@ namespace Kontent.Ai.Delivery.Builders.DeliveryClient
             return this;
         }
 
-        public IOptionalClientSetup BuildWithProjectId(string projectId)
+        public IOptionalClientSetup BuildWithEnvironmentId(string environmentId)
             => BuildWithDeliveryOptions(builder =>
                 builder
-                    .WithProjectId(projectId)
+                    .WithEnvironmentId(environmentId)
                     .UseProductionApi()
                     .Build());
 
-        public IOptionalClientSetup BuildWithProjectId(Guid projectId)
+        public IOptionalClientSetup BuildWithEnvironmentId(Guid environmentId)
             => BuildWithDeliveryOptions(builder =>
                 builder
-                    .WithProjectId(projectId)
+                    .WithEnvironmentId(environmentId)
                     .UseProductionApi()
                     .Build());
 
