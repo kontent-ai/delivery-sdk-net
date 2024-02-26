@@ -149,7 +149,7 @@ namespace Kontent.Ai.Delivery.Tests
 
             var defaultRenditionPreset = "default";
 
-            var client = InitializeDeliveryClient(mockHttp, new DeliveryOptions { ProjectId = _guid, DefaultRenditionPreset = defaultRenditionPreset});
+            var client = InitializeDeliveryClient(mockHttp, new DeliveryOptions { EnvironmentId = _guid, DefaultRenditionPreset = defaultRenditionPreset});
 
             var response = await client.GetItemAsync<Article>("coffee_beverages_explained");
             var teaserImage = response.Item.TeaserImage.FirstOrDefault();
@@ -170,7 +170,7 @@ namespace Kontent.Ai.Delivery.Tests
 
             var defaultRenditionPreset = "mobile";
 
-            var client = InitializeDeliveryClient(mockHttp, new DeliveryOptions { ProjectId = _guid, DefaultRenditionPreset = defaultRenditionPreset});
+            var client = InitializeDeliveryClient(mockHttp, new DeliveryOptions { EnvironmentId = _guid, DefaultRenditionPreset = defaultRenditionPreset});
             
             var response = await client.GetItemAsync<Article>("coffee_beverages_explained");
             var teaserImage = response.Item.TeaserImage.FirstOrDefault();
@@ -184,7 +184,7 @@ namespace Kontent.Ai.Delivery.Tests
         {
             var deliveryHttpClient = new DeliveryHttpClient(mockHttp.ToHttpClient());
             var contentLinkUrlResolver = A.Fake<IContentLinkUrlResolver>();
-            var deliveryOptions = DeliveryOptionsFactory.CreateMonitor(options ?? new DeliveryOptions { ProjectId = _guid });
+            var deliveryOptions = DeliveryOptionsFactory.CreateMonitor(options ?? new DeliveryOptions { EnvironmentId = _guid });
             var retryPolicy = A.Fake<IRetryPolicy>();
             var retryPolicyProvider = A.Fake<IRetryPolicyProvider>();
             A.CallTo(() => retryPolicyProvider.GetRetryPolicy()).Returns(retryPolicy);

@@ -14,7 +14,7 @@ namespace Kontent.Ai.Delivery.Extensions.DependencyInjection.Tests
         public class NamedCacheClient
         {
             private readonly IServiceCollection _serviceCollection;
-            private readonly DeliveryOptions _deliveryOptions = new DeliveryOptions { ProjectId = Guid.NewGuid().ToString() };
+            private readonly DeliveryOptions _deliveryOptions = new DeliveryOptions { EnvironmentId = Guid.NewGuid().ToString() };
             private readonly string _correctName = "correctName";
             private readonly string _wrongName = "wrongName";
 

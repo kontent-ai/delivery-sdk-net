@@ -7,7 +7,7 @@ namespace Kontent.Ai.Delivery.Builders
 {
     /// <summary>
     /// The builder capable of providing multiple instances of delivery client with different configurations.
-    /// Typically used for different project clients, or for client to the preview and delivery API.
+    /// Typically used for different environment clients, or for client to the preview and delivery API.
     /// </summary>
     public interface IMultipleDeliveryClientFactoryBuilder
     {

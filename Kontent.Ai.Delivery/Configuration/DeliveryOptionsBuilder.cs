@@ -19,18 +19,18 @@ namespace Kontent.Ai.Delivery.Configuration
 
         private DeliveryOptionsBuilder() { }
 
-        IDeliveryApiConfiguration IDeliveryOptionsBuilder.WithProjectId(string projectId)
+        IDeliveryApiConfiguration IDeliveryOptionsBuilder.WithEnvironmentId(string environmentId)
         {
-            projectId.ValidateProjectId();
-            _deliveryOptions.ProjectId = projectId;
+            environmentId.ValidateEnvironmentId();
+            _deliveryOptions.EnvironmentId = environmentId;
 
             return this;
         }
 
-        IDeliveryApiConfiguration IDeliveryOptionsBuilder.WithProjectId(Guid projectId)
+        IDeliveryApiConfiguration IDeliveryOptionsBuilder.WithEnvironmentId(Guid environmentId)
         {
-            projectId.ValidateProjectId();
-            _deliveryOptions.ProjectId = projectId.ToString();
+            environmentId.ValidateEnvironmentId();
+            _deliveryOptions.EnvironmentId = environmentId.ToString();
 
             return this;
         }

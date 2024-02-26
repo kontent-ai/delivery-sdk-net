@@ -63,7 +63,7 @@ You will also want to register your new model in your implementation of the [ITy
       ...
 ```
 
- > **Tip**: To save time, use the [Kontent.ai .NET code generator](https://github.com/kontent-ai/model-generator-net) and have the strongly typed models of your project's content types generated for you.
+ > **Tip**: To save time, use the [Kontent.ai .NET code generator](https://github.com/kontent-ai/model-generator-net) and have the strongly typed models of your environment's content types generated for you.
 
 ## Implementing a resolver
 
@@ -88,7 +88,7 @@ If the resolver or the content item itself is not available, the object referenc
 When are content items available?
 
 * For live environment, a content item is available when published, and unavailable when deleted or unpublished.
-* For preview environment, a content item is available when it exists in the project inventory, and unavailable when deleted.
+* For preview environment, a content item is available when it exists in the inventory, and unavailable when deleted.
 
 Components are always available, as they are part of the Rich text element.
 
@@ -109,7 +109,7 @@ or within the `IDeliveryClient` instance by using the `DeliveryClientBuilder` cl
 ```csharp
 
 IDeliveryClient client = DeliveryClientBuilder
-    .WithProjectId("975bf280-fd91-488c-994c-2f04416e5ee3")
+    .WithEnvironmentId("975bf280-fd91-488c-994c-2f04416e5ee3")
     // Registers inline content item resolver for the 'YouTube video' type
     .WithInlineContentItemsResolver(new YoutubeVideoResolver())
     // Registers strongly-typed models
@@ -144,7 +144,7 @@ or within the `IDeliveryClient` instance by using the `DeliveryClientBuilder` cl
 
 ```csharp
 IDeliveryClient client = DeliveryClientBuilder
-    .WithProjectId("975bf280-fd91-488c-994c-2f04416e5ee3")
+    .WithEnvironmentId("975bf280-fd91-488c-994c-2f04416e5ee3")
     // Registers a custom resolver as the default resolver
     .WithInlineContentItemsResolver(new MyDefaultResolver())
     .Build();

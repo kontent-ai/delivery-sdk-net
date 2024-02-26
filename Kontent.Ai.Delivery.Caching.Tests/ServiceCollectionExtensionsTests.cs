@@ -43,7 +43,7 @@ namespace Kontent.Ai.Delivery.Caching.Tests
         [InlineData(CacheTypeEnum.Distributed)]
         public void AddDeliveryClient_WithNoCache_GetClient(CacheTypeEnum cacheType)
         {
-            _serviceCollection.AddDeliveryClient(new DeliveryOptions() { ProjectId = Guid.NewGuid().ToString() });
+            _serviceCollection.AddDeliveryClient(new DeliveryOptions() { EnvironmentId = Guid.NewGuid().ToString() });
             _serviceCollection.AddDeliveryClientCache(new DeliveryCacheOptions()
             {
                 CacheType = cacheType
@@ -62,7 +62,7 @@ namespace Kontent.Ai.Delivery.Caching.Tests
         [InlineData(CacheTypeEnum.Distributed)]
         public void AddDeliveryClient_CacheWithDeliveryCacheOptions_ThrowsNotImeplementException(CacheTypeEnum cacheType)
         {
-            _serviceCollection.AddDeliveryClient(new DeliveryOptions() { ProjectId = Guid.NewGuid().ToString() });
+            _serviceCollection.AddDeliveryClient(new DeliveryOptions() { EnvironmentId = Guid.NewGuid().ToString() });
             _serviceCollection.AddDeliveryClientCache(new DeliveryCacheOptions()
             {
                 CacheType = cacheType

@@ -7,7 +7,7 @@ namespace Kontent.Ai.Delivery.Tests.Builders.Configuration
 {
     public class DeliveryOptionsBuilderTests
     {
-        private const string ProjectId = "550cec62-90a6-4ab3-b3e4-3d0bb4c04f5c";
+        private const string EnvironmentId = "550cec62-90a6-4ab3-b3e4-3d0bb4c04f5c";
         private const string PreviewApiKey = 
             "eyJ0eXAiOiwq14X65DLCJhbGciOiJIUzI1NiJ-.eyJqdGkiOiABCjJlM2FiOTBjOGM0ODVmYjdmZTDEFRQZGM1NDIyMCIsImlhdCI6IjE1Mjg454wexiLCJleHAiOiIxODc0NDg3NjqasdfwicHJvamVjdF9pZCI6Ij" +
             "g1OTEwOTlkN2458198ewqewZjI3Yzg5M2FhZTJiNTE4IiwidmVyIjoiMS4wLjAiLCJhdWQiewqgsdaWV3LmRlbGl2ZXIua2VudGljb2Nsb3VkLmNvbSJ9._tSzbNDpbE55dsaLUTGsdgesg4b693TFuhRCRsDyoc";
@@ -15,46 +15,46 @@ namespace Kontent.Ai.Delivery.Tests.Builders.Configuration
         private const string SecuredApiKey =
             "eyJ0eXAiOiwq14X65DLCJhbGciOiJIUzI1NiJ9.eyJqdGkiOiABCjJlM2FiOTBjOGM0ODVmYjdmZTDEFRQZGM1ND123QEwclhdCI6IjE1Mjg454wexiLCJleHAiOiIxODc0NDg3NjqasdfwicHJvamVjdF9pZCI6Ij" +
             "g1OTEwOTlkN2458198ewqewZjI3Yzg5M2FhZTJiNTE4IiwidmVyIjoiMS4wLjAiLCJhdWQiewqgsdaWV3LmRlbGl2ZXIua2VudGljb2Nsb3VkLmNvbSJ9.wtSzbNDpbE55dsaLUTGsdgesg4b693TFuhRCRsDyoc";
-        private readonly Guid _guid = new Guid(ProjectId);
+        private readonly Guid _guid = new Guid(EnvironmentId);
 
         [Fact]
-        public void BuildWithProjectIdAndUseProductionApi()
+        public void BuildWithEnvironmentIdAndUseProductionApi()
         {
             var deliveryOptions = DeliveryOptionsBuilder
                 .CreateInstance()
-                .WithProjectId(ProjectId)
+                .WithEnvironmentId(EnvironmentId)
                 .UseProductionApi()
                 .Build();
 
-            Assert.Equal(ProjectId, deliveryOptions.ProjectId);
+            Assert.Equal(EnvironmentId, deliveryOptions.EnvironmentId);
             Assert.False(deliveryOptions.UsePreviewApi);
             Assert.False(deliveryOptions.UseSecureAccess);
         }
 
         [Fact]
-        public void BuildWithProjectIdAndPreviewApi()
+        public void BuildWithEnvironmentIdAndPreviewApi()
         {
             var deliveryOptions = DeliveryOptionsBuilder
                 .CreateInstance()
-                .WithProjectId(_guid)
+                .WithEnvironmentId(_guid)
                 .UsePreviewApi(PreviewApiKey)
                 .Build();
 
-            Assert.Equal(ProjectId, deliveryOptions.ProjectId);
+            Assert.Equal(EnvironmentId, deliveryOptions.EnvironmentId);
             Assert.True(deliveryOptions.UsePreviewApi);
             Assert.Equal(PreviewApiKey, deliveryOptions.PreviewApiKey);
         }
 
         [Fact]
-        public void BuildWithProjectIdAndSecuredProductionApi()
+        public void BuildWithEnvironmentIdAndSecuredProductionApi()
         {
             var deliveryOptions = DeliveryOptionsBuilder
                 .CreateInstance()
-                .WithProjectId(ProjectId)
+                .WithEnvironmentId(EnvironmentId)
                 .UseProductionApi(SecuredApiKey)
                 .Build();
 
-            Assert.Equal(ProjectId, deliveryOptions.ProjectId);
+            Assert.Equal(EnvironmentId, deliveryOptions.EnvironmentId);
             Assert.True(deliveryOptions.UseSecureAccess);
             Assert.Equal(SecuredApiKey, deliveryOptions.SecureAccessApiKey);
         }
@@ -66,7 +66,7 @@ namespace Kontent.Ai.Delivery.Tests.Builders.Configuration
 
             var deliveryOptions = DeliveryOptionsBuilder
                 .CreateInstance()
-                .WithProjectId(ProjectId)
+                .WithEnvironmentId(EnvironmentId)
                 .UseProductionApi()
                 .WithDefaultRetryPolicyOptions(retryOptions)
                 .Build();
@@ -79,7 +79,7 @@ namespace Kontent.Ai.Delivery.Tests.Builders.Configuration
         {
             Assert.Throws<ArgumentNullException>(() => DeliveryOptionsBuilder
                 .CreateInstance()
-                .WithProjectId(ProjectId)
+                .WithEnvironmentId(EnvironmentId)
                 .UseProductionApi()
                 .WithDefaultRetryPolicyOptions(null)
                 .Build());
@@ -90,7 +90,7 @@ namespace Kontent.Ai.Delivery.Tests.Builders.Configuration
         {
             var deliveryOptions = DeliveryOptionsBuilder
                 .CreateInstance()
-                .WithProjectId(Guid.NewGuid())
+                .WithEnvironmentId(Guid.NewGuid())
                 .UseProductionApi()
                 .DisableRetryPolicy()
                 .Build();
@@ -103,7 +103,7 @@ namespace Kontent.Ai.Delivery.Tests.Builders.Configuration
         {
             var deliveryOptions = DeliveryOptionsBuilder
                 .CreateInstance()
-                .WithProjectId(Guid.NewGuid())
+                .WithEnvironmentId(Guid.NewGuid())
                 .UseProductionApi()
                 .WaitForLoadingNewContent()
                 .Build();
@@ -116,7 +116,7 @@ namespace Kontent.Ai.Delivery.Tests.Builders.Configuration
         {
             var deliveryOptions = DeliveryOptionsBuilder
                 .CreateInstance()
-                .WithProjectId(Guid.NewGuid())
+                .WithEnvironmentId(Guid.NewGuid())
                 .UseProductionApi()
                 .IncludeTotalCount()
                 .Build();
@@ -131,7 +131,7 @@ namespace Kontent.Ai.Delivery.Tests.Builders.Configuration
 
             var deliveryOptions = DeliveryOptionsBuilder
                 .CreateInstance()
-                .WithProjectId(ProjectId)
+                .WithEnvironmentId(EnvironmentId)
                 .UsePreviewApi(PreviewApiKey)
                 .WithCustomEndpoint(customEndpoint)
                 .Build();
@@ -146,7 +146,7 @@ namespace Kontent.Ai.Delivery.Tests.Builders.Configuration
 
             var deliveryOptions = DeliveryOptionsBuilder
                 .CreateInstance()
-                .WithProjectId(ProjectId)
+                .WithEnvironmentId(EnvironmentId)
                 .UseProductionApi()
                 .WithCustomEndpoint(customEndpoint)
                 .Build();
@@ -162,7 +162,7 @@ namespace Kontent.Ai.Delivery.Tests.Builders.Configuration
             
             var deliveryOptions = DeliveryOptionsBuilder
                 .CreateInstance()
-                .WithProjectId(ProjectId)
+                .WithEnvironmentId(EnvironmentId)
                 .UsePreviewApi(PreviewApiKey)
                 .WithCustomEndpoint(uri)
                 .Build();
@@ -178,7 +178,7 @@ namespace Kontent.Ai.Delivery.Tests.Builders.Configuration
 
             var deliveryOptions = DeliveryOptionsBuilder
                 .CreateInstance()
-                .WithProjectId(ProjectId)
+                .WithEnvironmentId(EnvironmentId)
                 .UseProductionApi()
                 .WithCustomEndpoint(uri)
                 .Build();
@@ -193,7 +193,7 @@ namespace Kontent.Ai.Delivery.Tests.Builders.Configuration
 
             var deliveryOptions = DeliveryOptionsBuilder
                 .CreateInstance()
-                .WithProjectId(ProjectId)
+                .WithEnvironmentId(EnvironmentId)
                 .UseProductionApi()
                 .WithDefaultRenditionPreset(renditionPreset)
                 .Build();

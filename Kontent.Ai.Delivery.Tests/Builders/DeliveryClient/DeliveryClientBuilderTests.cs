@@ -16,36 +16,36 @@ namespace Kontent.Ai.Delivery.Tests.Builders.DeliveryClient
 {
     public class DeliveryClientBuilderTests
     {
-        private const string ProjectId = "e5629811-ddaa-4c2b-80d2-fa91e16bb264";
+        private const string EnvironmentId = "e5629811-ddaa-4c2b-80d2-fa91e16bb264";
         private const string PreviewEndpoint = "https://preview-deliver.test.com/{0}";
         private const string PreviewApiKey =
             "eyJ0eXAiOiJKV1QiLCJhbGciOiJIUzI1NiJ9.eyJqdGkiOiI3YjJlM2FiOTBjOGM0ODVmYjdmZTczNWY0ZGM1NDIyMCIsImlhdCI6IjE1Mjg4ODc2MzQiLCJleHAiOiIxODc0NDg3NjM0IiwicHJvamVjd" +
             "F9pZCI6IjEyMzQ1Njc5OGFiY2RibGFibGEiLCJ2ZXIiOiIxLjAuMCIsImF1ZCI6InByZXZpZXcuZGVsaXZlci5rZW50aWNvY2xvdWQuY29tIn0.wtSzbNDpbEHR2Bj4LUTGsdgesg4b693TFuhRCRsDyoc";
 
-        private readonly Guid _guid = new Guid(ProjectId);
+        private readonly Guid _guid = new Guid(EnvironmentId);
 
         [Fact]
-        public void BuildWithProjectId_ReturnsDeliveryClientWithProjectIdSet()
+        public void BuildWithEnvironmentId_ReturnsDeliveryClientWithEnvironmentIdSet()
         {
-            var deliveryClient = (Delivery.DeliveryClient) DeliveryClientBuilder.WithProjectId(ProjectId).Build();
+            var deliveryClient = (Delivery.DeliveryClient) DeliveryClientBuilder.WithEnvironmentId(EnvironmentId).Build();
 
-            Assert.Equal(ProjectId, deliveryClient.DeliveryOptions.CurrentValue.ProjectId);
+            Assert.Equal(EnvironmentId, deliveryClient.DeliveryOptions.CurrentValue.EnvironmentId);
         }
 
         [Fact]
         public void BuildWithDeliveryOptions_ReturnsDeliveryClientWithDeliveryOptions()
         {
-            var guid = new Guid(ProjectId);
+            var guid = new Guid(EnvironmentId);
 
             var deliveryClient = (Delivery.DeliveryClient) DeliveryClientBuilder
                 .WithOptions(builder => builder
-                    .WithProjectId(guid)
+                    .WithEnvironmentId(guid)
                     .UsePreviewApi(PreviewApiKey)
                     .WithCustomEndpoint(PreviewEndpoint)
                     .Build()
                 ).Build();
 
-            Assert.Equal(ProjectId, deliveryClient.DeliveryOptions.CurrentValue.ProjectId);
+            Assert.Equal(EnvironmentId, deliveryClient.DeliveryOptions.CurrentValue.EnvironmentId);
             Assert.True(deliveryClient.DeliveryOptions.CurrentValue.UsePreviewApi);
             Assert.Equal(PreviewEndpoint, deliveryClient.DeliveryOptions.CurrentValue.PreviewEndpoint);
         }
@@ -66,7 +66,7 @@ namespace Kontent.Ai.Delivery.Tests.Builders.DeliveryClient
             var mockLoggerFactory = A.Fake<ILoggerFactory>();
 
             var deliveryClient = (Delivery.DeliveryClient) DeliveryClientBuilder
-                .WithProjectId(ProjectId)
+                .WithEnvironmentId(EnvironmentId)
                 .WithDeliveryHttpClient(mockDeliveryHttpClient)
                 .WithContentLinkUrlResolver(mockContentLinkUrlResolver)
                 .WithInlineContentItemsProcessor(mockInlineContentItemsProcessor)
@@ -80,7 +80,7 @@ namespace Kontent.Ai.Delivery.Tests.Builders.DeliveryClient
                 .WithLoggerFactory(mockLoggerFactory)
                 .Build();
 
-            Assert.Equal(ProjectId, deliveryClient.DeliveryOptions.CurrentValue.ProjectId);
+            Assert.Equal(EnvironmentId, deliveryClient.DeliveryOptions.CurrentValue.EnvironmentId);
             Assert.Equal(mockModelProvider, deliveryClient.ModelProvider);
             Assert.Equal(mockRetryPolicyProvider, deliveryClient.RetryPolicyProvider);
             Assert.Equal(mockTypeProvider, deliveryClient.TypeProvider);
@@ -103,14 +103,14 @@ namespace Kontent.Ai.Delivery.Tests.Builders.DeliveryClient
             };
 
             var deliveryClient = (Delivery.DeliveryClient)DeliveryClientBuilder
-                .WithProjectId(ProjectId)
+                .WithEnvironmentId(EnvironmentId)
                 .WithInlineContentItemsResolver(mockDefaultInlineContentItemsResolver)
                 .WithInlineContentItemsResolver(mockUnretrievedInlineContentItemsResolver)
                 .WithInlineContentItemsResolver(mockCompleteContentItemsResolver)
                 .Build();
             var actualResolvableInlineContentItemTypes = GetResolvableInlineContentItemTypes(deliveryClient);
 
-            Assert.Equal(ProjectId, deliveryClient.DeliveryOptions.CurrentValue.ProjectId);
+            Assert.Equal(EnvironmentId, deliveryClient.DeliveryOptions.CurrentValue.EnvironmentId);
             Assert.Equal(expectedResolvableInlineContentItemsTypes, actualResolvableInlineContentItemTypes);
         }
 
@@ -120,7 +120,7 @@ namespace Kontent.Ai.Delivery.Tests.Builders.DeliveryClient
             var modelProvider = new FakeModelProvider();
 
             var deliveryClient = (Delivery.DeliveryClient) DeliveryClientBuilder
-                .WithProjectId(ProjectId)
+                .WithEnvironmentId(EnvironmentId)
                 .WithModelProvider(modelProvider)
                 .Build();
 
@@ -138,7 +138,7 @@ namespace Kontent.Ai.Delivery.Tests.Builders.DeliveryClient
             };
 
             var deliveryClient = (Delivery.DeliveryClient) DeliveryClientBuilder
-                .WithProjectId(_guid)
+                .WithEnvironmentId(_guid)
                 .Build();
             var actualResolvableInlineContentItemTypes = GetResolvableInlineContentItemTypes(deliveryClient);
 
@@ -153,7 +153,7 @@ namespace Kontent.Ai.Delivery.Tests.Builders.DeliveryClient
         [Fact]
         public void BuildWithOptionsAndNullHttpClient_ThrowsArgumentNullException()
         {
-            var builderStep = DeliveryClientBuilder.WithProjectId(_guid);
+            var builderStep = DeliveryClientBuilder.WithEnvironmentId(_guid);
 
             Assert.Throws<ArgumentNullException>(() => builderStep.WithDeliveryHttpClient(null));
         }
@@ -161,7 +161,7 @@ namespace Kontent.Ai.Delivery.Tests.Builders.DeliveryClient
         [Fact]
         public void BuildWithOptionsAndNullContentLinUrlResolver_ThrowsArgumentNullException()
         {
-            var builderStep = DeliveryClientBuilder.WithProjectId(_guid);
+            var builderStep = DeliveryClientBuilder.WithEnvironmentId(_guid);
 
             Assert.Throws<ArgumentNullException>(() => builderStep.WithContentLinkUrlResolver(null));
         }
@@ -169,7 +169,7 @@ namespace Kontent.Ai.Delivery.Tests.Builders.DeliveryClient
         [Fact]
         public void BuildWithOptionsAndNullModelProvider_ThrowsArgumentNullException()
         {
-            var builderStep = DeliveryClientBuilder.WithProjectId(_guid);
+            var builderStep = DeliveryClientBuilder.WithEnvironmentId(_guid);
 
             Assert.Throws<ArgumentNullException>(() => builderStep.WithModelProvider(null));
         }
@@ -177,7 +177,7 @@ namespace Kontent.Ai.Delivery.Tests.Builders.DeliveryClient
         [Fact]
         public void BuildWithOptionsAndNullInlineContentItemsResolver_ThrowsArgumentNullException()
         {
-            var builderStep = DeliveryClientBuilder.WithProjectId(_guid);
+            var builderStep = DeliveryClientBuilder.WithEnvironmentId(_guid);
 
             Assert.Throws<ArgumentNullException>(() => builderStep.WithInlineContentItemsResolver<object>(null));
         }
@@ -185,7 +185,7 @@ namespace Kontent.Ai.Delivery.Tests.Builders.DeliveryClient
         [Fact]
         public void BuildWithOptionsAndNullInlineContentItemsProcessor_ThrowsArgumentNullException()
         {
-            var builderStep = DeliveryClientBuilder.WithProjectId(_guid);
+            var builderStep = DeliveryClientBuilder.WithEnvironmentId(_guid);
 
             Assert.Throws<ArgumentNullException>(() => builderStep.WithInlineContentItemsProcessor(null));
         }
@@ -193,7 +193,7 @@ namespace Kontent.Ai.Delivery.Tests.Builders.DeliveryClient
         [Fact]
         public void BuildWithOptionsAndNullTypeProvider_ThrowsArgumentNullException()
         {
-            var builderStep = DeliveryClientBuilder.WithProjectId(_guid);
+            var builderStep = DeliveryClientBuilder.WithEnvironmentId(_guid);
 
             Assert.Throws<ArgumentNullException>(() => builderStep.WithTypeProvider(null));
         }
@@ -201,7 +201,7 @@ namespace Kontent.Ai.Delivery.Tests.Builders.DeliveryClient
         [Fact]
         public void BuildWithOptionsAndNullResiliencePolicyProvider_ThrowsArgumentNullException()
         {
-            var builderStep = DeliveryClientBuilder.WithProjectId(_guid);
+            var builderStep = DeliveryClientBuilder.WithEnvironmentId(_guid);
 
             Assert.Throws<ArgumentNullException>(() => builderStep.WithRetryPolicyProvider(null));
         }
@@ -209,7 +209,7 @@ namespace Kontent.Ai.Delivery.Tests.Builders.DeliveryClient
         [Fact]
         public void BuildWithOptionsAndNullPropertyMapper_ThrowsArgumentNullException()
         {
-            var builderStep = DeliveryClientBuilder.WithProjectId(_guid);
+            var builderStep = DeliveryClientBuilder.WithEnvironmentId(_guid);
 
             Assert.Throws<ArgumentNullException>(() => builderStep.WithPropertyMapper(null));
         }
@@ -217,7 +217,7 @@ namespace Kontent.Ai.Delivery.Tests.Builders.DeliveryClient
         [Fact]
         public void BuildWithOptionsAndNullLoggerFactory_TrowsArgumentNullException()
         {
-            var builderStep = DeliveryClientBuilder.WithProjectId(_guid);
+            var builderStep = DeliveryClientBuilder.WithEnvironmentId(_guid);
 
             Assert.Throws<ArgumentNullException>(() => builderStep.WithLoggerFactory(null));
         }

@@ -73,7 +73,7 @@ Read more in [Microsoft docs](https://docs.microsoft.com/en-us/aspnet/core/perfo
 Use this approach to register the caching package for a specific `DeliveryClient` instance.
 
 ```csharp
-   var client = DeliveryClientBuilder.WithProjectId("<PROJECT_ID>").Build();           
+   var client = DeliveryClientBuilder.WithEnvironmentId("<ENVIRONMENT_ID>").Build();           
    var cacheOptions = Options.Create(new DeliveryCacheOptions() { DefaultExpiration = new TimeSpan(2, 0, 0) }) ;
    var memoryOptions = Options.Create(new MemoryCacheOptions());
    var cachedClient = new DeliveryClientCache(CacheManagerFactory.Create(new MemoryCache(memoryOptions), cacheOptions), client);

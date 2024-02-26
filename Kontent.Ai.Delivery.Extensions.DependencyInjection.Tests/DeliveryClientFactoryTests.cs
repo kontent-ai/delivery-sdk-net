@@ -27,7 +27,7 @@ namespace Kontent.Ai.Delivery.Extensions.DependencyInjection.Tests
         [Fact]
         public void GetNamedClient_WithCorrectName_GetClient()
         {
-            var deliveryOptions = new DeliveryOptions() { ProjectId = Guid.NewGuid().ToString(), Name = _clientName };
+            var deliveryOptions = new DeliveryOptions() { EnvironmentId = Guid.NewGuid().ToString(), Name = _clientName };
             A.CallTo(() => _deliveryOptionsMock.Get(_clientName))
                 .Returns(deliveryOptions);
 
@@ -42,7 +42,7 @@ namespace Kontent.Ai.Delivery.Extensions.DependencyInjection.Tests
         [Fact]
         public void GetNamedClient_WithWrongName_GetNull()
         {
-            var deliveryOptions = new DeliveryOptions() { ProjectId = Guid.NewGuid().ToString() };
+            var deliveryOptions = new DeliveryOptions() { EnvironmentId = Guid.NewGuid().ToString() };
             A.CallTo(() => _deliveryOptionsMock.Get(_clientName))
                 .Returns(deliveryOptions);
 

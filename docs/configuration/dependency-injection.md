@@ -11,7 +11,7 @@ First, you need to create or extend the *appsettings.json* file. The properties 
 ```json
 {
     "DeliveryOptions": {
-        "ProjectId": "<ProjectId_Value>",
+        "EnvironmentId": "<EnvironmentId_Value>",
         "PreviewApiKey": "<PreviewApiKey_Value>",
         "UsePreviewApi": "true",
         "WaitForLoadingNewContent": "true",
@@ -71,7 +71,7 @@ or through the `DeliveryClientBuilder` class:
 
 ```csharp
 IDeliveryClient deliveryClient = DeliveryClientBuilder
-                .WithProjectId("<YOUR_PROJECT_ID>")
+                .WithEnvironmentId("<YOUR_ENVIRONMENT_ID>")
                 .WithContentLinkUrlResolver(CustomContentLinkUrlResolver)
                 .WithRetryPolicyProvider(CustomPolicyProvider>)
                 .WithTypeProvider(CustomTypeProvider)
@@ -83,7 +83,7 @@ You can also use the `DeliveryOptionsBuilder` in the `AddDeliveryClient` method.
 ```csharp
 services.AddDeliveryClient(builder =>
     builder
-        .WithProjectId("<ProjectId_Value>")
+        .WithEnvironmentId("<EnvironmentId_Value>")
 
         // Example production configuration:
         .UseProductionApi("<SecuredApiKey_Value>")
@@ -113,7 +113,7 @@ or through the `DeliveryClientBuilder` class:
 
 ```csharp
 IDeliveryClient deliveryClient = DeliveryClientBuilder
-                .WithProjectId("<YOUR_PROJECT_ID>")
+                .WithEnvironmentId("<YOUR_ENVIRONMENT_ID>")
                 .WithLoggerFactory(LoggerFactoryImplementation)
                 .Build();
 ```

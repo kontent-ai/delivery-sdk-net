@@ -43,9 +43,9 @@ namespace Kontent.Ai.Delivery
             => _urlBuilder ??= new DeliveryEndpointUrlBuilder(DeliveryOptions);
 
         /// <summary>
-        /// Initializes a new instance of the <see cref="DeliveryClient"/> class for retrieving content of the specified project.
+        /// Initializes a new instance of the <see cref="DeliveryClient"/> class for retrieving content of the specified environment.
         /// </summary>
-        /// <param name="deliveryOptions">The settings of the Kontent.ai project.</param>
+        /// <param name="deliveryOptions">The settings of the Kontent.ai environment.</param>
         /// <param name="modelProvider">An instance of an object that can JSON responses into strongly typed CLR objects</param>
         /// <param name="retryPolicyProvider">A provider of a retry policy.</param>
         /// <param name="typeProvider">An instance of an object that can map Kontent.ai content types to CLR types</param>
@@ -294,7 +294,7 @@ namespace Kontent.Ai.Delivery
         }
 
         /// <summary>
-        /// Returns all active languages assigned to a given project and matching the optional filtering parameters.
+        /// Returns all active languages assigned to a given environment and matching the optional filtering parameters.
         /// </summary>
         /// <param name="parameters">A collection of query parameters, for example, for paging.</param>
         /// <returns>The <see cref="DeliveryLanguageListingResponse"/> instance that represents the languages. If no query parameters are specified, all languages are returned.</returns>
@@ -336,7 +336,7 @@ namespace Kontent.Ai.Delivery
         }
 
         /// <summary>
-        /// Retrieve a list of delta updates to recently changed content items in the specified project. The types of items you get is determined by the X-Continuation token you use.
+        /// Retrieve a list of delta updates to recently changed content items in the specified environment. The types of items you get is determined by the X-Continuation token you use.
         /// </summary>
         /// <returns>The <see cref="IDeliverySyncResponse"/> instance that represents the sync response that contains collection of delta updates and continuation token needed for further sync execution.</returns>
         public async Task<IDeliverySyncResponse> GetSyncAsync(string continuationToken)

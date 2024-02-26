@@ -17,7 +17,7 @@ namespace Kontent.Ai.Delivery.Tests.Extensions
     public class ServiceCollectionsExtensionsTests
     {
         private readonly ServiceCollection _serviceCollection;
-        private const string ProjectId = "d79786fb-042c-47ec-8e5c-beaf93e38b84";
+        private const string EnvironmentId = "d79786fb-042c-47ec-8e5c-beaf93e38b84";
 
         private readonly ReadOnlyDictionary<Type, Type> _expectedInterfacesWithImplementationTypes = new ReadOnlyDictionary<Type, Type>(
             new Dictionary<Type, Type>
@@ -66,7 +66,7 @@ namespace Kontent.Ai.Delivery.Tests.Extensions
         [Fact]
         public void AddDeliveryClientWithOptions_AllServicesAreRegistered()
         {
-            _serviceCollection.AddDeliveryClient(new DeliveryOptions { ProjectId = ProjectId });
+            _serviceCollection.AddDeliveryClient(new DeliveryOptions { EnvironmentId = EnvironmentId });
             var provider = _serviceCollection.BuildServiceProvider();
             AssertDefaultServiceCollection(provider, _expectedInterfacesWithImplementationTypes);
         }

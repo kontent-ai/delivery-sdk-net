@@ -11,7 +11,7 @@ namespace Kontent.Ai.Delivery.Tests.DependencyInjectionFrameworks
 {
     internal static class DeliveryClientAssertionExtensions
     {
-        private const string ProjectId = "00a21be4-8fef-4dd9-9380-f4cbb82e260d";
+        private const string EnvironmentId = "00a21be4-8fef-4dd9-9380-f4cbb82e260d";
 
         internal static void AssertDefaultDependencies(this DeliveryClient client)
         {
@@ -31,7 +31,7 @@ namespace Kontent.Ai.Delivery.Tests.DependencyInjectionFrameworks
             where TCustomModelProvider : IModelProvider
         {
             Assert.IsType<DeliveryClient>(client);
-            Assert.Equal(ProjectId, client.DeliveryOptions.CurrentValue.ProjectId);
+            Assert.Equal(EnvironmentId, client.DeliveryOptions.CurrentValue.EnvironmentId);
             Assert.IsType<TypeProvider>(client.TypeProvider);
             Assert.IsType<DefaultRetryPolicyProvider>(client.RetryPolicyProvider);
             Assert.IsType<DeliveryOptions>(client.DeliveryOptions.CurrentValue);

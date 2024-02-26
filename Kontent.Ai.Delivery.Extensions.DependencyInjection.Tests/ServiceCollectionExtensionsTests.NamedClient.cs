@@ -16,7 +16,7 @@ namespace Kontent.Ai.Delivery.Extensions.DependencyInjection.Tests
             private readonly IServiceCollection _serviceCollection;
             private readonly INamedServiceProvider _namedServiceProvider;
             private readonly IConfiguration _configuration;
-            private readonly DeliveryOptions _deliveryOptions = new DeliveryOptions { ProjectId = Guid.NewGuid().ToString() };
+            private readonly DeliveryOptions _deliveryOptions = new DeliveryOptions { EnvironmentId = Guid.NewGuid().ToString() };
             private readonly string _correctName = "correctName";
             private readonly string _wrongName = "wrongName";
 

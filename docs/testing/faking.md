@@ -18,7 +18,7 @@ You can now use the fake `HttpClient` when creating an instance of the `IDeliver
 
 ```csharp
 IDeliveryClient client = DeliveryClientBuilder
-    .WithProjectId(Guid.NewGuid())
+    .WithEnvironmentId(Guid.NewGuid())
     .WithDeliveryHttpClient(new DeliveryHttpClient(httpClient))
     .Build();
 ```

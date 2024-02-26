@@ -28,7 +28,7 @@ The `IDeliveryClient` interface supports fetching of strongly-typed models.
 ```csharp
 // Initializes a client
 IDeliveryClient deliveryClient = DeliveryClientBuilder
-    .WithProjectId("975bf280-fd91-488c-994c-2f04416e5ee3")
+    .WithEnvironmentId("975bf280-fd91-488c-994c-2f04416e5ee3")
     .Build();
 
 // Basic retrieval
@@ -104,7 +104,7 @@ You can find sample models at <https://github.com/kontent-ai/delivery-sdk-net/tr
 
 ## Generating models
 
-:information_source: You can save time by [generating content type models](./strong-types-explained/code-generator.md) for your project using the [Kontent.ai .NET code generator](https://github.com/kontent-ai/model-generator-net) utility.
+:information_source: You can save time by [generating content type models](./strong-types-explained/code-generator.md) for your environment using the [Kontent.ai .NET code generator](https://github.com/kontent-ai/model-generator-net) utility.
 
 ## Retrieving content items
 
@@ -169,7 +169,7 @@ or pass it to the `DeliveryClientBuilder`.
 ```csharp
 CustomTypeProvider customTypeProvider = new CustomTypeProvider();
 IDeliveryClient client = DeliveryClientBuilder
-    .WithProjectId("975bf280-fd91-488c-994c-2f04416e5ee3")
+    .WithEnvironmentId("975bf280-fd91-488c-994c-2f04416e5ee3")
     .WithTypeProvider(customTypeProvider)
     .Build();
 ```
@@ -202,7 +202,7 @@ services
 // Registers the custom property mapper within a delivery client using builder
 CustomPropertyMapper customPropertyMapper = new CustomPropertyMapper();
 IDeliveryClient client = DeliveryClientBuilder
-    .WithProjectId("975bf280-fd91-488c-994c-2f04416e5ee3")
+    .WithEnvironmentId("975bf280-fd91-488c-994c-2f04416e5ee3")
     .WithPropertyMapper(customPropertyMapper)
     .Build();
 ```

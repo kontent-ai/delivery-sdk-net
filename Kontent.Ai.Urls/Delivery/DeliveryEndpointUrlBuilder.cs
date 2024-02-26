@@ -207,8 +207,8 @@ namespace Kontent.Ai.Urls.Delivery
             var endpointUrl = CurrentDeliveryOptions.UsePreviewApi
                             ? CurrentDeliveryOptions.PreviewEndpoint
                             : CurrentDeliveryOptions.ProductionEndpoint;
-            var projectId = Uri.EscapeDataString(CurrentDeliveryOptions.ProjectId);
-            var hostUrl = endpointUrl + projectId;
+            var environmentId = Uri.EscapeDataString(CurrentDeliveryOptions.EnvironmentId);
+            var hostUrl = endpointUrl + environmentId;
             return hostUrl;
         }
 

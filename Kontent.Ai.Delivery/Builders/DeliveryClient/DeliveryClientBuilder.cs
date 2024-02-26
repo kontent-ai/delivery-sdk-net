@@ -12,18 +12,18 @@ namespace Kontent.Ai.Delivery.Builders.DeliveryClient
         private static IDeliveryClientBuilder Builder => new DeliveryClientBuilderImplementation();
 
         /// <summary>
-        /// Use project identifier.
+        /// Use environment identifier.
         /// </summary>
-        /// <param name="projectId">The identifier of a Kontent.ai project.</param>
-        public static IOptionalClientSetup WithProjectId(string projectId)
-            => Builder.BuildWithProjectId(projectId);
+        /// <param name="environmentId">The identifier of a Kontent.ai environment.</param>
+        public static IOptionalClientSetup WithEnvironmentId(string environmentId)
+            => Builder.BuildWithEnvironmentId(environmentId);
 
         /// <summary>
-        /// Use project identifier.
+        /// Use environment identifier.
         /// </summary>
-        /// <param name="projectId">The identifier of a Kontent.ai project.</param>
-        public static IOptionalClientSetup WithProjectId(Guid projectId)
-            => Builder.BuildWithProjectId(projectId);
+        /// <param name="environmentId">The identifier of a Kontent.ai environment.</param>
+        public static IOptionalClientSetup WithEnvironmentId(Guid environmentId)
+            => Builder.BuildWithEnvironmentId(environmentId);
 
         /// <summary>
         /// Use additional configuration.

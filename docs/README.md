@@ -15,7 +15,7 @@
 
 - **Configuration**
   - [Registering the DeliveryClient to the IServiceCollection in ASP.NET Core](./configuration/dependency-injection.md)
-  - [Accessing data from multiple projects at the same time using named clients](./configuration/multiple-delivery-clients.md)
+  - [Accessing data from multiple environments at the same time using named clients](./configuration/multiple-delivery-clients.md)
   - [Retry capabilities](./configuration/retry-policy.md)
   - [Delivery options explained](./configuration/delivery-options.md)
 - **Retrieving data**

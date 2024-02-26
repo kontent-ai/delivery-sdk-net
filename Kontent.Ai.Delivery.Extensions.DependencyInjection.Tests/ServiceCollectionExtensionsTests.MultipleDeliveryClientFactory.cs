@@ -17,7 +17,7 @@ namespace Kontent.Ai.Delivery.Extensions.DependencyInjection.Tests
         public class MultipleDeliveryClientFactory
         {
             private readonly IServiceCollection _serviceCollection;
-            private readonly DeliveryOptions _deliveryOptions = new DeliveryOptions { ProjectId = Guid.NewGuid().ToString() };
+            private readonly DeliveryOptions _deliveryOptions = new DeliveryOptions { EnvironmentId = Guid.NewGuid().ToString() };
             private readonly string _correctName = "correctName";
             private readonly string _wrongName = "wrongName";
 
@@ -267,15 +267,15 @@ namespace Kontent.Ai.Delivery.Extensions.DependencyInjection.Tests
                 var typeProviderB = A.Fake<ITypeProvider>();
                 var clientAName = "Marketing";
                 var clientBName = "Finance";
-                var projectAID = "923850ac-5869-4743-8414-eb278e7beb69";
-                var projectBID = "88d518c5-db60-432d-918a-14dba79c63ac";
+                var environmentAID = "923850ac-5869-4743-8414-eb278e7beb69";
+                var environmentBID = "88d518c5-db60-432d-918a-14dba79c63ac";
 
                 _serviceCollection.AddMultipleDeliveryClientFactory(
                     factoryBuilder => factoryBuilder
                     .AddDeliveryClient(
                         clientAName,
                         builder => builder
-                            .WithProjectId(projectAID)
+                            .WithEnvironmentId(environmentAID)
                             .UseProductionApi()
                             .Build(),
                         optionalConfig => optionalConfig
@@ -284,7 +284,7 @@ namespace Kontent.Ai.Delivery.Extensions.DependencyInjection.Tests
                     .AddDeliveryClient(
                         clientBName,
                         builder => builder
-                            .WithProjectId(projectBID)
+                            .WithEnvironmentId(environmentBID)
                             .UseProductionApi()
                             .Build(),
                         optionalConfig => optionalConfig
@@ -324,11 +324,11 @@ namespace Kontent.Ai.Delivery.Extensions.DependencyInjection.Tests
                    .GetField("DeliveryOptions", bindingFlags)
                    .GetValue(clientB);
 
-                deliveryOptionsA.CurrentValue.ProjectId.Should().Be(projectAID);
+                deliveryOptionsA.CurrentValue.EnvironmentId.Should().Be(environmentAID);
                 registeredTypeProviderA.Should().Be(typeProviderA);
                 innerRegisteredTypeProviderA.Should().Be(typeProviderA);
 
-                deliveryOptionsB.CurrentValue.ProjectId.Should().Be(projectBID);
+                deliveryOptionsB.CurrentValue.EnvironmentId.Should().Be(environmentBID);
                 registeredTypeProviderB.Should().Be(typeProviderB);
                 innerRegisteredTypeProviderB.Should().Be(typeProviderB);
             }

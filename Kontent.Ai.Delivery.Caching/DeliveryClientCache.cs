@@ -15,7 +15,7 @@ namespace Kontent.Ai.Delivery.Caching
         private readonly IDeliveryCacheManager _deliveryCacheManager;
 
         /// <summary>
-        /// Initializes a new instance of the <see cref="DeliveryClientCache"/> class for retrieving cached content of the specified project.
+        /// Initializes a new instance of the <see cref="DeliveryClientCache"/> class for retrieving cached content of the specified environment.
         /// </summary>
         /// <param name="cacheManager"></param>
         /// <param name="deliveryClient"></param>
@@ -168,7 +168,7 @@ namespace Kontent.Ai.Delivery.Caching
         }
 
         /// <summary>
-        /// Retrieve a list of delta updates to recently changed content items in the specified project. The types of items you get is determined by the X-Continuation token you use.
+        /// Retrieve a list of delta updates to recently changed content items in the specified environment. The types of items you get is determined by the X-Continuation token you use.
         /// </summary>
         /// <returns>The <see cref="IDeliverySyncResponse"/> instance that represents the sync response that contains collection of delta updates and continuation token needed for further sync execution.</returns>
         public Task<IDeliverySyncResponse> GetSyncAsync(string continuationToken)

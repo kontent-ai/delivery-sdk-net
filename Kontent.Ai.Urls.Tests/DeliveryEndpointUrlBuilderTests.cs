@@ -33,118 +33,118 @@ public class DeliveryEndpointUrlBuilderTests
     [Fact]
     public void GetItemUrl_ConstructedWithDeliveryOptionsMonitor_ReturnsItemUrl()
     {
-        var options = new DeliveryOptions() { ProjectId = Guid.NewGuid().ToString() };
+        var options = new DeliveryOptions() { EnvironmentId = Guid.NewGuid().ToString() };
         var optionsMonitor = new FakeOptionsMonitor<DeliveryOptions>(options);
         var deliveryEndpointUrlBuilder = new DeliveryEndpointUrlBuilder(optionsMonitor);
 
         var actualItemUrl = deliveryEndpointUrlBuilder.GetItemUrl("item_codename", new IQueryParameter[] { });
 
-        var expectedItemUrl = $"https://deliver.kontent.ai:443/{options.ProjectId}/items/item_codename";
+        var expectedItemUrl = $"https://deliver.kontent.ai:443/{options.EnvironmentId}/items/item_codename";
         Assert.Equal(expectedItemUrl, actualItemUrl);
     }
     
     [Fact]
     public void GetItemsUrl_ReturnsItemsUrl()
     {
-        var options = new DeliveryOptions() { ProjectId = Guid.NewGuid().ToString() };
+        var options = new DeliveryOptions() { EnvironmentId = Guid.NewGuid().ToString() };
         var optionsMonitor = new FakeOptionsMonitor<DeliveryOptions>(options);
         var deliveryEndpointUrlBuilder = new DeliveryEndpointUrlBuilder(optionsMonitor);
 
         var actualItemsUrl = deliveryEndpointUrlBuilder.GetItemsUrl(new IQueryParameter[] { });
 
-        var expectedItemsUrl = $"https://deliver.kontent.ai:443/{options.ProjectId}/items";
+        var expectedItemsUrl = $"https://deliver.kontent.ai:443/{options.EnvironmentId}/items";
         Assert.Equal(expectedItemsUrl, actualItemsUrl);
     }
     
     [Fact]
     public void GetItemsFeedUrl_ReturnsItemsFeedUrl()
     {
-        var options = new DeliveryOptions() { ProjectId = Guid.NewGuid().ToString() };
+        var options = new DeliveryOptions() { EnvironmentId = Guid.NewGuid().ToString() };
         var optionsMonitor = new FakeOptionsMonitor<DeliveryOptions>(options);
         var deliveryEndpointUrlBuilder = new DeliveryEndpointUrlBuilder(optionsMonitor);
 
         var actualItemsFeedUrl = deliveryEndpointUrlBuilder.GetItemsFeedUrl(new IQueryParameter[] { });
 
-        var expectedItemsFeedUrl = $"https://deliver.kontent.ai:443/{options.ProjectId}/items-feed";
+        var expectedItemsFeedUrl = $"https://deliver.kontent.ai:443/{options.EnvironmentId}/items-feed";
         Assert.Equal(expectedItemsFeedUrl, actualItemsFeedUrl);
     }
     
     [Fact]
     public void GetTypeUrl_ReturnsTypeUrl()
     {
-        var options = new DeliveryOptions() { ProjectId = Guid.NewGuid().ToString() };
+        var options = new DeliveryOptions() { EnvironmentId = Guid.NewGuid().ToString() };
         var optionsMonitor = new FakeOptionsMonitor<DeliveryOptions>(options);
         var deliveryEndpointUrlBuilder = new DeliveryEndpointUrlBuilder(optionsMonitor);
 
         var actualTypeUrl = deliveryEndpointUrlBuilder.GetTypeUrl("type_codename", new IQueryParameter[] { });
 
-        var expectedTypeUrl = $"https://deliver.kontent.ai:443/{options.ProjectId}/types/type_codename";
+        var expectedTypeUrl = $"https://deliver.kontent.ai:443/{options.EnvironmentId}/types/type_codename";
         Assert.Equal(expectedTypeUrl, actualTypeUrl);
     }
     
     [Fact]
     public void GetTypesUrl_ReturnsTypesUrl()
     {
-        var options = new DeliveryOptions() { ProjectId = Guid.NewGuid().ToString() };
+        var options = new DeliveryOptions() { EnvironmentId = Guid.NewGuid().ToString() };
         var optionsMonitor = new FakeOptionsMonitor<DeliveryOptions>(options);
         var deliveryEndpointUrlBuilder = new DeliveryEndpointUrlBuilder(optionsMonitor);
 
         var actualTypesUrl = deliveryEndpointUrlBuilder.GetTypesUrl(new IQueryParameter[] { });
 
-        var expectedTypesUrl = $"https://deliver.kontent.ai:443/{options.ProjectId}/types";
+        var expectedTypesUrl = $"https://deliver.kontent.ai:443/{options.EnvironmentId}/types";
         Assert.Equal(expectedTypesUrl, actualTypesUrl);
     }
     
     [Fact]
     public void GetContentElementUrl_ReturnsContentElementUrl()
     {
-        var options = new DeliveryOptions() { ProjectId = Guid.NewGuid().ToString() };
+        var options = new DeliveryOptions() { EnvironmentId = Guid.NewGuid().ToString() };
         var optionsMonitor = new FakeOptionsMonitor<DeliveryOptions>(options);
         var deliveryEndpointUrlBuilder = new DeliveryEndpointUrlBuilder(optionsMonitor);
 
         var actualContentElementUrl = deliveryEndpointUrlBuilder
             .GetContentElementUrl("content_type_codename", "content_element_codename");
 
-        var expectedContentElementUrl = $"https://deliver.kontent.ai:443/{options.ProjectId}/types/content_type_codename/elements/content_element_codename";
+        var expectedContentElementUrl = $"https://deliver.kontent.ai:443/{options.EnvironmentId}/types/content_type_codename/elements/content_element_codename";
         Assert.Equal(expectedContentElementUrl, actualContentElementUrl);
     }
     
     [Fact]
     public void GetTaxonomyUrl_ReturnsTaxonomyUrl()
     {
-        var options = new DeliveryOptions() { ProjectId = Guid.NewGuid().ToString() };
+        var options = new DeliveryOptions() { EnvironmentId = Guid.NewGuid().ToString() };
         var optionsMonitor = new FakeOptionsMonitor<DeliveryOptions>(options);
         var deliveryEndpointUrlBuilder = new DeliveryEndpointUrlBuilder(optionsMonitor);
 
         var actualTaxonomyUrl = deliveryEndpointUrlBuilder.GetTaxonomyUrl("taxonomy_codename");
 
-        var expectedTaxonomyUrl = $"https://deliver.kontent.ai:443/{options.ProjectId}/taxonomies/taxonomy_codename";
+        var expectedTaxonomyUrl = $"https://deliver.kontent.ai:443/{options.EnvironmentId}/taxonomies/taxonomy_codename";
         Assert.Equal(expectedTaxonomyUrl, actualTaxonomyUrl);
     }
     
     [Fact]
     public void GetTaxonomiesUrl_ReturnsTaxonomiesUrl()
     {
-        var options = new DeliveryOptions() { ProjectId = Guid.NewGuid().ToString() };
+        var options = new DeliveryOptions() { EnvironmentId = Guid.NewGuid().ToString() };
         var optionsMonitor = new FakeOptionsMonitor<DeliveryOptions>(options);
         var deliveryEndpointUrlBuilder = new DeliveryEndpointUrlBuilder(optionsMonitor);
 
         var actualTaxonomiesUrl = deliveryEndpointUrlBuilder.GetTaxonomiesUrl(new IQueryParameter[] { });
 
-        var expectedTaxonomiesUrl = $"https://deliver.kontent.ai:443/{options.ProjectId}/taxonomies";
+        var expectedTaxonomiesUrl = $"https://deliver.kontent.ai:443/{options.EnvironmentId}/taxonomies";
         Assert.Equal(expectedTaxonomiesUrl, actualTaxonomiesUrl);
     }
     
     [Fact]
     public void GetLanguagesUrl_ReturnsLanguagesUrl()
     {
-        var options = new DeliveryOptions() { ProjectId = Guid.NewGuid().ToString() };
+        var options = new DeliveryOptions() { EnvironmentId = Guid.NewGuid().ToString() };
         var optionsMonitor = new FakeOptionsMonitor<DeliveryOptions>(options);
         var deliveryEndpointUrlBuilder = new DeliveryEndpointUrlBuilder(optionsMonitor);
 
         var actualLanguagesUrl = deliveryEndpointUrlBuilder.GetLanguagesUrl(new IQueryParameter[] { });
 
-        var expectedLanguagesUrl = $"https://deliver.kontent.ai:443/{options.ProjectId}/languages";
+        var expectedLanguagesUrl = $"https://deliver.kontent.ai:443/{options.EnvironmentId}/languages";
         Assert.Equal(expectedLanguagesUrl, actualLanguagesUrl);
     }
 }
