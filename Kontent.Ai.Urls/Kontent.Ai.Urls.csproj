@@ -1,7 +1,7 @@
 <Project Sdk="Microsoft.NET.Sdk">
 
   <PropertyGroup>
-    <TargetFramework>net6.0</TargetFramework>
+    <TargetFramework>net8.0</TargetFramework>
     <Authors>Kontent s.r.o.</Authors>
     <Product>Kontent.ai</Product>
     <Copyright>© 2022 Kontent s.r.o. All rights reserved.</Copyright>
