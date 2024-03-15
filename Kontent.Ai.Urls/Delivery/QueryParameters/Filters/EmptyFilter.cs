@@ -3,7 +3,7 @@
     /// <summary>
     /// Represents a filter that matches a content item if the specified content element or system attribute is empty.
     /// </summary>
-    public sealed class EmptyFilter : Filter
+    public sealed class EmptyFilter : Filter<string>
     {
         /// <summary>
         /// Initializes a new instance of the <see cref="EmptyFilter"/> class.
