@@ -138,6 +138,25 @@ namespace Kontent.Ai.Delivery.Tests
 
             Assert.Equal(assetUrl, teaserImage.Url);
         }
+
+        [Fact]
+        public async Task AssetElementValueConverter_NoPresetSpecifiedInConfig_AssetUrlReplacementSpecifiedInConfig_AssetUrlIsTouched()
+        {
+            var mockHttp = new MockHttpMessageHandler();
+            mockHttp
+                .When($"{_baseUrl}/items/coffee_beverages_explained")
+                .Respond("application/json", await File.ReadAllTextAsync(Path.Combine(Environment.CurrentDirectory, $"Fixtures{Path.DirectorySeparatorChar}DeliveryClient{Path.DirectorySeparatorChar}coffee_beverages_explained.json")));
+
+            var client = InitializeDeliveryClient(mockHttp);
+            client.DeliveryOptions.CurrentValue.AssetUrlReplacement = "https://cdn.example.com/assets";
+
+            var response = await client.GetItemAsync<Article>("coffee_beverages_explained");
+            var teaserImage = response.Item.TeaserImage.FirstOrDefault();
+
+            var assetUrl = "https://cdn.example.com/assets/975bf280-fd91-488c-994c-2f04416e5ee3/e700596b-03b0-4cee-ac5c-9212762c027a/coffee-beverages-explained-1080px.jpg";
+
+            Assert.Equal(assetUrl, teaserImage.Url);
+        }
         
         [Fact]
         public async Task AssetElementValueConverter_DefaultPresetSpecifiedInConfig_AssetUrlContainsDefaultRenditionQuery()
@@ -159,6 +178,28 @@ namespace Kontent.Ai.Delivery.Tests
 
             Assert.Equal($"{assetUrl}?{defaultRenditionQuery}", teaserImage.Url);
         }
+
+        [Fact]
+        public async Task AssetElementValueConverter_DefaultPresetSpecifiedInConfig_AssetUrlReplacementSpecifiedInConfig_AssetUrlContainsDefaultRenditionQuery()
+        {
+            var mockHttp = new MockHttpMessageHandler();
+            mockHttp
+                .When($"{_baseUrl}/items/coffee_beverages_explained")
+                .Respond("application/json", await File.ReadAllTextAsync(Path.Combine(Environment.CurrentDirectory, $"Fixtures{Path.DirectorySeparatorChar}DeliveryClient{Path.DirectorySeparatorChar}coffee_beverages_explained.json")));
+
+            var defaultRenditionPreset = "default";
+
+            var client = InitializeDeliveryClient(mockHttp, new DeliveryOptions { EnvironmentId = _guid, DefaultRenditionPreset = defaultRenditionPreset });
+            client.DeliveryOptions.CurrentValue.AssetUrlReplacement = "https://cdn.example.com/assets";
+
+            var response = await client.GetItemAsync<Article>("coffee_beverages_explained");
+            var teaserImage = response.Item.TeaserImage.FirstOrDefault();
+
+            var assetUrl = "https://cdn.example.com/assets/975bf280-fd91-488c-994c-2f04416e5ee3/e700596b-03b0-4cee-ac5c-9212762c027a/coffee-beverages-explained-1080px.jpg";
+            var defaultRenditionQuery = "w=200&h=150&fit=clip&rect=7,23,300,200";
+
+            Assert.Equal($"{assetUrl}?{defaultRenditionQuery}", teaserImage.Url);
+        }
         
         [Fact]
         public async Task AssetElementValueConverter_MobilePresetSpecifiedInConfig_AssetUrlIsUntouchedAsThereIsNoMobileRenditionSpecified()
@@ -176,6 +217,27 @@ namespace Kontent.Ai.Delivery.Tests
             var teaserImage = response.Item.TeaserImage.FirstOrDefault();
 
             var assetUrl = "https://assets.kontent.ai:443/975bf280-fd91-488c-994c-2f04416e5ee3/e700596b-03b0-4cee-ac5c-9212762c027a/coffee-beverages-explained-1080px.jpg";
+
+            Assert.Equal(assetUrl, teaserImage.Url);
+        }
+
+        [Fact]
+        public async Task AssetElementValueConverter_MobilePresetSpecifiedInConfig_AssetUrlReplacementSpecifiedInConfig_AssetUrlIsUntouchedAsThereIsNoMobileRenditionSpecified()
+        {
+            var mockHttp = new MockHttpMessageHandler();
+            mockHttp
+                .When($"{_baseUrl}/items/coffee_beverages_explained")
+                .Respond("application/json", await File.ReadAllTextAsync(Path.Combine(Environment.CurrentDirectory, $"Fixtures{Path.DirectorySeparatorChar}DeliveryClient{Path.DirectorySeparatorChar}coffee_beverages_explained.json")));
+
+            var defaultRenditionPreset = "mobile";
+
+            var client = InitializeDeliveryClient(mockHttp, new DeliveryOptions { EnvironmentId = _guid, DefaultRenditionPreset = defaultRenditionPreset });
+            client.DeliveryOptions.CurrentValue.AssetUrlReplacement = "https://cdn.example.com/assets";
+
+            var response = await client.GetItemAsync<Article>("coffee_beverages_explained");
+            var teaserImage = response.Item.TeaserImage.FirstOrDefault();
+
+            var assetUrl = "https://cdn.example.com/assets/975bf280-fd91-488c-994c-2f04416e5ee3/e700596b-03b0-4cee-ac5c-9212762c027a/coffee-beverages-explained-1080px.jpg";
 
             Assert.Equal(assetUrl, teaserImage.Url);
         }

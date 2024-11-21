@@ -200,5 +200,36 @@ namespace Kontent.Ai.Delivery.Tests.Builders.Configuration
 
             Assert.Equal(renditionPreset, deliveryOptions.DefaultRenditionPreset);
         }
+
+        [Fact]
+        public void BuildWithAssetUrlReplacement()
+        {
+            const string assetUrl = "https://www.example.com/assets";
+
+            var deliveryOptions = DeliveryOptionsBuilder
+                .CreateInstance()
+                .WithEnvironmentId(EnvironmentId)
+                .UseProductionApi()
+                .WithAssetUrlReplacement(assetUrl)
+                .Build();
+
+            Assert.Equal(assetUrl, deliveryOptions.AssetUrlReplacement);
+        }
+
+        [Fact]
+        public void BuildWithAssetUrlAsUriReplacement()
+        {
+            const string assetUrl = "https://www.example.com/assets";
+            var uri = new Uri(assetUrl, UriKind.Absolute);
+
+            var deliveryOptions = DeliveryOptionsBuilder
+                .CreateInstance()
+                .WithEnvironmentId(EnvironmentId)
+                .UseProductionApi()
+                .WithAssetUrlReplacement(uri)
+                .Build();
+
+            Assert.Equal(assetUrl, deliveryOptions.AssetUrlReplacement);
+        }
     }
 }
