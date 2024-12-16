@@ -8,6 +8,7 @@ using Kontent.Ai.Delivery.ContentItems;
 using RichardSzalay.MockHttp;
 using FluentAssertions;
 using Xunit;
+using System.Threading.Tasks;
 
 namespace Kontent.Ai.Delivery.Caching.Tests
 {
@@ -26,7 +27,7 @@ namespace Kontent.Ai.Delivery.Caching.Tests
         }
 
         [Fact]
-        public async void GetItemAsync_SerializeAndDeserialize()
+        public async Task GetItemAsync_SerializeAndDeserialize()
         {
             // Arrange
             string url = $"{_baseUrl}/items/brazil_natural_barra_grande";
@@ -51,7 +52,7 @@ namespace Kontent.Ai.Delivery.Caching.Tests
         }
 
         [Fact]
-        public async void GetItemsAsync_SerializeAndDeserialize()
+        public async Task GetItemsAsync_SerializeAndDeserialize()
         {
             // Arrange
             string url = $"{_baseUrl}/items";

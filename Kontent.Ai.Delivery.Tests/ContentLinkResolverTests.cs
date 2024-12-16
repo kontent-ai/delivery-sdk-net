@@ -120,7 +120,7 @@ namespace Kontent.Ai.Delivery.Tests
         }
 
         [Fact]
-        public async void ResolveLinksInStronglyTypedModel()
+        public async Task ResolveLinksInStronglyTypedModel()
         {
             var mockHttp = new MockHttpMessageHandler();
             string guid = Guid.NewGuid().ToString();

@@ -63,7 +63,7 @@ namespace Kontent.Ai.Delivery.Tests
         }
 
         [Fact]
-        public async void LinkedItemCodenamesValueConverter()
+        public async Task LinkedItemCodenamesValueConverter()
         {
             var mockHttp = new MockHttpMessageHandler();
             mockHttp.When($"{_baseUrl}/items/on_roasts")
@@ -76,7 +76,7 @@ namespace Kontent.Ai.Delivery.Tests
         }
 
         [Fact]
-        public async void GreeterPropertyValueConverter()
+        public async Task GreeterPropertyValueConverter()
         {
             var mockHttp = new MockHttpMessageHandler();
             string url = $"{_baseUrl}/items/on_roasts";
@@ -90,7 +90,7 @@ namespace Kontent.Ai.Delivery.Tests
         }
 
         [Fact]
-        public async void NodaTimePropertyValueConverter()
+        public async Task NodaTimePropertyValueConverter()
         {
             var mockHttp = new MockHttpMessageHandler();
             mockHttp.When($"{_baseUrl}/items/on_roasts")
@@ -103,7 +103,7 @@ namespace Kontent.Ai.Delivery.Tests
         }
 
         [Fact]
-        public async void RichTextViaValueConverter()
+        public async Task RichTextViaValueConverter()
         {
             var mockHttp = new MockHttpMessageHandler();
             mockHttp.When($"{_baseUrl}/items/coffee_beverages_explained")
