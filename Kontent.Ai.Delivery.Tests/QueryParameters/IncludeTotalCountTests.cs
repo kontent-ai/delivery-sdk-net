@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Threading.Tasks;
 using FakeItEasy;
 using FluentAssertions;
 using Kontent.Ai.Delivery.Abstractions;
@@ -59,7 +60,7 @@ namespace Kontent.Ai.Delivery.Tests.QueryParameters
         }
 
         [Fact]
-        public async void GetItems_DeliveryOptionsWithIncludeTotalCount_IncludeTotalCountParameterAdded()
+        public async Task GetItems_DeliveryOptionsWithIncludeTotalCount_IncludeTotalCountParameterAdded()
         {
             var responseJson = JsonConvert.SerializeObject(CreateItemsResponse());
             _mockHttp
@@ -74,7 +75,7 @@ namespace Kontent.Ai.Delivery.Tests.QueryParameters
         }
 
         [Fact]
-        public async void GetItemsTyped_DeliveryOptionsWithIncludeTotalCount_IncludeTotalCountParameterAdded()
+        public async Task GetItemsTyped_DeliveryOptionsWithIncludeTotalCount_IncludeTotalCountParameterAdded()
         {
             var responseJson = JsonConvert.SerializeObject(CreateItemsResponse());
             _mockHttp

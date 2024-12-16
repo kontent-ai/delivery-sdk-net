@@ -33,7 +33,7 @@ namespace Kontent.Ai.Delivery.Rx.Tests
         }
 
         [Fact]
-        public async void TypedItemRetrieved()
+        public async Task TypedItemRetrieved()
         {
             var observable = new DeliveryObservableProxy(GetDeliveryClient(MockItem)).GetItemObservable<Article>(BEVERAGES_IDENTIFIER, new LanguageParameter("es-ES"));
             var item = await observable.FirstOrDefaultAsync();
@@ -43,7 +43,7 @@ namespace Kontent.Ai.Delivery.Rx.Tests
         }
 
         [Fact]
-        public async void RuntimeTypedItemRetrieved()
+        public async Task RuntimeTypedItemRetrieved()
         {
             var observable = new DeliveryObservableProxy(GetDeliveryClient(MockItem)).GetItemObservable<object>(BEVERAGES_IDENTIFIER, new LanguageParameter("es-ES"));
             var item = await observable.FirstOrDefaultAsync();
@@ -98,7 +98,7 @@ namespace Kontent.Ai.Delivery.Rx.Tests
         }
 
         [Fact]
-        public async void TypeRetrieved()
+        public async Task TypeRetrieved()
         {
             var observable = new DeliveryObservableProxy(GetDeliveryClient(MockType)).GetTypeObservable(Article.Codename);
             var type = await observable.FirstOrDefaultAsync();
@@ -120,7 +120,7 @@ namespace Kontent.Ai.Delivery.Rx.Tests
         }
 
         [Fact]
-        public async void ElementRetrieved()
+        public async Task ElementRetrieved()
         {
             var observable = new DeliveryObservableProxy(GetDeliveryClient(MockElement)).GetElementObservable(Article.Codename, Article.TitleCodename);
             var element = await observable.FirstOrDefaultAsync();
@@ -132,7 +132,7 @@ namespace Kontent.Ai.Delivery.Rx.Tests
         }
 
         [Fact]
-        public async void TaxonomyElementRetrieved()
+        public async Task TaxonomyElementRetrieved()
         {
             var observable = new DeliveryObservableProxy(GetDeliveryClient(MockTaxonomyElement)).GetElementObservable(Coffee.Codename, Coffee.ProcessingCodename);
             var element = await observable.FirstOrDefaultAsync();
@@ -141,7 +141,7 @@ namespace Kontent.Ai.Delivery.Rx.Tests
         }
 
         [Fact]
-        public async void MultipleChoiceElementRetrieved()
+        public async Task MultipleChoiceElementRetrieved()
         {
             var observable = new DeliveryObservableProxy(GetDeliveryClient(MockMultipleChoiceElement)).GetElementObservable(Tweet.Codename, Tweet.ThemeCodename);
             var element = await observable.FirstOrDefaultAsync();
@@ -150,7 +150,7 @@ namespace Kontent.Ai.Delivery.Rx.Tests
         }
 
         [Fact]
-        public async void TaxonomyRetrieved()
+        public async Task TaxonomyRetrieved()
         {
             var observable = new DeliveryObservableProxy(GetDeliveryClient(MockTaxonomy)).GetTaxonomyObservable("personas");
             var taxonomy = await observable.FirstOrDefaultAsync();

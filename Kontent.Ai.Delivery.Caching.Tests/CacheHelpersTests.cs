@@ -120,12 +120,16 @@ namespace Kontent.Ai.Delivery.Caching.Tests
     }
 
     internal class SomeClass { }
+#pragma warning disable CS8981 // The type name only contains lower-cased ascii characters. Such names may become reserved for the language.
     internal class someclass { }
+#pragma warning restore CS8981 // The type name only contains lower-cased ascii characters. Such names may become reserved for the language.
 }
 
 namespace Kontent.Ai.Delivery.Caching.Tests.AnotherNamespace
 {
     internal class SomeClass { }
+#pragma warning disable CS8981 // The type name only contains lower-cased ascii characters. Such names may become reserved for the language.
     internal class someclass { }
+#pragma warning restore CS8981 // The type name only contains lower-cased ascii characters. Such names may become reserved for the language.
 }
 

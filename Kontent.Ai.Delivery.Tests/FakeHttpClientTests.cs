@@ -18,7 +18,7 @@ namespace Kontent.Ai.Delivery.Tests
     public class FakeHttpClientTests
     {
         [Fact]
-        public async void GetItemAsync()
+        public async Task GetItemAsync()
         {
             // Arrange
             const string testUrl = "https://tests.fake.url";
