@@ -8,16 +8,19 @@ using Kontent.Ai.Delivery.Abstractions;
 using Kontent.Ai.Delivery.ContentItems.ContentLinks;
 using Kontent.Ai.Delivery.ContentItems.RichText;
 using Kontent.Ai.Delivery.ContentItems.RichText.Blocks;
+using Microsoft.Extensions.Options;
 
 namespace Kontent.Ai.Delivery.ContentItems
 {
     internal class RichTextContentConverter : IPropertyValueConverter<string>
     {
         public IHtmlParser Parser { get; }
+        public IOptionsMonitor<DeliveryOptions> Options { get; }
 
-        public RichTextContentConverter(IHtmlParser parser)
+        public RichTextContentConverter(IHtmlParser parser, IOptionsMonitor<DeliveryOptions> options)
         {
             Parser = parser;
+            Options = options;
         }
 
         public async Task<object> GetPropertyValueAsync<TElement>(PropertyInfo property, TElement contentElement, ResolvingContext context) where TElement : IContentElementValue<string>
@@ -56,7 +59,21 @@ namespace Kontent.Ai.Delivery.ContentItems
                     if (img != null)
                     {
                         var assetId = Guid.Parse(img.GetAttribute("data-asset-id"));
-                        blocks.Add(element.Images[assetId]);
+                        if (!string.IsNullOrEmpty(Options.CurrentValue.AssetUrlReplacement))
+                        {
+                            var assetToReplace = element.Images[assetId];
+                            var replacedAsset = new InlineImage()
+                            {
+                                Url = ReplaceAssetUrlWIthCustomAssetUrl(assetToReplace.Url),
+                                Description = assetToReplace.Description,
+                                Height = assetToReplace.Height,
+                                Width = assetToReplace.Width,
+                                ImageId = assetToReplace.ImageId
+                            };
+                            blocks.Add(replacedAsset);
+                        }
+                        else
+                            blocks.Add(element.Images[assetId]);
                     }
                 }
                 else
@@ -66,6 +83,22 @@ namespace Kontent.Ai.Delivery.ContentItems
             }
 
             return blocks;
+        }
+
+        /// <summary>
+        /// Replace the beginning part of the asset URL with the AssetUrlReplacement value.
+        /// </summary>
+        /// <param name="url">Original Asset Url</param>
+        /// <returns>New URL with the CDN URL replaces with AssetUrlReplacement</returns>
+        private string ReplaceAssetUrlWIthCustomAssetUrl(string url)
+        {
+            // Replace the beginning part of the asset URL with the AssetUrlReplacement value by taking the third forward slash as the ending point for the string replacement
+            var endOfUrlIndex = url.IndexOf("/", url.IndexOf("/", url.IndexOf("/", 0) + 1) + 1);
+            if (endOfUrlIndex > 0)
+            {
+                return Options.CurrentValue.AssetUrlReplacement + url.Substring(endOfUrlIndex);
+            }
+            return url;
         }
     }
 }

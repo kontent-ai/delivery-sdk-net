@@ -105,6 +105,18 @@ namespace Kontent.Ai.Delivery.Configuration
             return this;
         }
 
+        IOptionalDeliveryConfiguration IOptionalDeliveryConfiguration.WithAssetUrlReplacement(string url)
+        {
+            _deliveryOptions.AssetUrlReplacement = url;
+            return this;
+        }
+
+        IOptionalDeliveryConfiguration IOptionalDeliveryConfiguration.WithAssetUrlReplacement(Uri url)
+        {
+            _deliveryOptions.AssetUrlReplacement = url.AbsoluteUri;
+            return this;
+        }
+
         private void SetCustomEndpoint(string endpoint)
         {
             if (_deliveryOptions.UsePreviewApi)
