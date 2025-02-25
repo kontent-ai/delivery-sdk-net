@@ -21,6 +21,7 @@ namespace Kontent.Ai.Delivery.Rx.Tests
     public class DeliveryObservableProxyTests
     {
         private const string BEVERAGES_IDENTIFIER = "coffee_beverages_explained";
+        private const string ASSET_CODENAME = "asset_codename";
         readonly string _guid;
         readonly string _baseUrl;
         readonly MockHttpMessageHandler _mockHttp;
@@ -180,6 +181,27 @@ namespace Kontent.Ai.Delivery.Rx.Tests
             Assert.NotEmpty(languages);
             Assert.All(languages, language => Assert.NotNull(language.System));
         }
+
+        [Fact]
+        public void ItemUsedInRetrieved()
+        {
+            var observable = new DeliveryObservableProxy(GetDeliveryClient(MockItemUsedIn)).GetItemUsedInObservable(Article.Codename);
+            var parents = observable.ToEnumerable().ToList();
+
+            Assert.NotEmpty(parents);
+            Assert.All(parents, item => Assert.NotNull(item.System));
+        }
+
+        [Fact]
+        public void AssetUsedInRetrieved()
+        {
+            var observable = new DeliveryObservableProxy(GetDeliveryClient(MockAssetUsedIn)).GetAssetUsedInObservable(ASSET_CODENAME);
+            var parents = observable.ToEnumerable().ToList();
+
+            Assert.NotEmpty(parents);
+            Assert.All(parents, item => Assert.NotNull(item.System));
+        }
+
         public static IOptionsMonitor<DeliveryOptions> CreateMonitor(DeliveryOptions options)
         {
             var mock = A.Fake<IOptionsMonitor<DeliveryOptions>>();
@@ -284,6 +306,18 @@ namespace Kontent.Ai.Delivery.Rx.Tests
             _mockHttp.When($"{_baseUrl}/languages")
                 .WithQueryString("skip=1")
                 .Respond("application/json", File.ReadAllText(Path.Combine(Environment.CurrentDirectory, $"Fixtures{Path.DirectorySeparatorChar}languages.json")));
+        }
+
+        private void MockAssetUsedIn()
+        {
+            _mockHttp.When($"{_baseUrl}/assets/{ASSET_CODENAME}/used-in")
+                .Respond("application/json", File.ReadAllText(Path.Combine(Environment.CurrentDirectory, $"Fixtures{Path.DirectorySeparatorChar}used_in.json")));
+        }
+
+        private void MockItemUsedIn()
+        {
+            _mockHttp.When($"{_baseUrl}/items/{Article.Codename}/used-in")
+                .Respond("application/json", File.ReadAllText(Path.Combine(Environment.CurrentDirectory, $"Fixtures{Path.DirectorySeparatorChar}used_in.json")));
         }
 
         private static void AssertArticlePropertiesNotNull(Article item)

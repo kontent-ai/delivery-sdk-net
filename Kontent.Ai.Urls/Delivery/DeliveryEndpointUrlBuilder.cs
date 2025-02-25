@@ -14,6 +14,8 @@ namespace Kontent.Ai.Urls.Delivery
     {
         private const int UrlMaxLength = 65519;
         private const string UrlTemplateItem = "/items/{0}";
+        private const string UrlTemplateItemUsedIn = "/items/{0}/used-in";
+        private const string UrlTemplateAssetUsedIn= "/assets/{0}/used-in";
         private const string UrlTemplateItems = "/items";
         private const string UrlTemplateItemsFeed = "/items-feed";
         private const string UrlTemplateType = "/types/{0}";
@@ -52,7 +54,7 @@ namespace Kontent.Ai.Urls.Delivery
         /// <summary>
         /// Generates an URL for retrieving a single content item.
         /// </summary>
-        /// <param name="codename">ID of the item to be retrieved.</param>
+        /// <param name="codename">Codename of the item to be retrieved.</param>
         /// <param name="parameters">Additional filtering parameters.</param>
         /// <returns>A valid URL containing correctly formatted parameters.</returns>
         public string GetItemUrl(string codename, IEnumerable<IQueryParameter> parameters)
@@ -84,7 +86,7 @@ namespace Kontent.Ai.Urls.Delivery
         /// <summary>
         /// Generates an URL for retrieving a single content type.
         /// </summary>
-        /// <param name="codename">ID of the content type to be retrieved.</param>
+        /// <param name="codename">Codename of the content type to be retrieved.</param>
         /// <param name="parameters">Additional filtering parameters.</param>
         /// <returns>A valid URL containing correctly formatted parameters.</returns>
         public string GetTypeUrl(string codename, IEnumerable<IQueryParameter> parameters = null)
@@ -116,7 +118,7 @@ namespace Kontent.Ai.Urls.Delivery
         /// <summary>
         /// Generates an URL for retrieving a single taxonomy.
         /// </summary>
-        /// <param name="codename">ID of the content type to be retrieved.</param>
+        /// <param name="codename">Codename of the taxonomy to be retrieved.</param>
         /// <returns>A valid URL containing correctly formatted parameters.</returns>
         public string GetTaxonomyUrl(string codename)
         {
@@ -161,6 +163,28 @@ namespace Kontent.Ai.Urls.Delivery
         public string GetSyncUrl()
         {
             return GetUrl(UrlTemplateSync);
+        }
+
+        /// <summary>
+        /// Generates an URL for retrieving parents for a single content item.
+        /// </summary>
+        /// <param name="codename">Codename of the content item to be retrieved.</param>
+        /// <param name="parameters">Additional filtering parameters.</param>
+        /// <returns>A valid URL containing correctly formatted parameters.</returns>
+        public string GetItemUsedInUrl(string codename, IEnumerable<IQueryParameter> parameters)
+        {
+            return GetUrl(string.Format(UrlTemplateItemUsedIn, Uri.EscapeDataString(codename)), parameters);
+        }
+
+        /// <summary>
+        /// Generates an URL for retrieving parents for a single asset.
+        /// </summary>
+        /// <param name="codename">Codename of the asset to be retrieved.</param>
+        /// <param name="parameters">Additional filtering parameters.</param>
+        /// <returns>A valid URL containing correctly formatted parameters.</returns>
+        public string GetAssetUsedInUrl(string codename, IEnumerable<IQueryParameter> parameters)
+        {
+            return GetUrl(string.Format(UrlTemplateAssetUsedIn, Uri.EscapeDataString(codename)), parameters);
         }
 
         private string GetUrl(string path, IEnumerable<IQueryParameter> parameters)

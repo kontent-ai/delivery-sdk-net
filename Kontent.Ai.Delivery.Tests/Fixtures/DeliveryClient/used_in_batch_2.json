@@ -1,0 +1,17 @@
+{
+  "items": [
+    {
+      "system": {
+        "id": "3120ec15-a4a2-47ec-8ccd-c85ac8ac5ba5",
+        "name": "Which brewing fits you?",
+        "codename": "which_brewing_fits_you_",
+        "language": "en-US",
+        "type": "article",
+        "collection": "default",
+        "last_modified": "2019-03-27T13:24:54.042Z",
+        "workflow": "default",
+        "workflow_step": "published"
+      }
+    }
+  ]
+}

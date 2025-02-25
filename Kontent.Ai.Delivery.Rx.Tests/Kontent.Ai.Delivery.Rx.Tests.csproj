@@ -72,4 +72,10 @@
     <ProjectReference Include="..\Kontent.Ai.Delivery.Rx\Kontent.Ai.Delivery.Rx.csproj" />
   </ItemGroup>
 
+  <ItemGroup>
+    <None Update="Fixtures\used_in.json">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </None>
+  </ItemGroup>
+
 </Project>

@@ -1,0 +1,69 @@
+{
+  "items": [
+    {
+      "system": {
+        "id": "cf106f4e-30a4-42ef-b313-b8ea3fd3e5c5",
+        "name": "Coffee Beverages Explained",
+        "codename": "coffee_beverages_explained",
+        "language": "en-US",
+        "type": "article",
+        "collection": "default",
+        "last_modified": "2019-03-27T13:12:58.578Z",
+        "workflow": "default",
+        "workflow_step": "published"
+      }
+    },
+    {
+      "system": {
+        "id": "117cdfae-52cf-4885-b271-66aef6825612",
+        "name": "Coffee processing techniques",
+        "codename": "coffee_processing_techniques",
+        "language": "en-US",
+        "type": "article",
+        "collection": "default",
+        "last_modified": "2019-03-27T13:13:35.312Z",
+        "workflow": "default",
+        "workflow_step": "published"
+      }
+    },
+    {
+      "system": {
+        "id": "23f71096-fa89-4f59-a3f9-970e970944ec",
+        "name": "Donate with us",
+        "codename": "donate_with_us",
+        "language": "en-US",
+        "type": "article",
+        "collection": "default",
+        "last_modified": "2019-03-27T13:14:07.384Z",
+        "workflow": "default",
+        "workflow_step": "published"
+      }
+    },
+    {
+      "system": {
+        "id": "f4b3fc05-e988-4dae-9ac1-a94aba566474",
+        "name": "On Roasts",
+        "codename": "on_roasts",
+        "language": "en-US",
+        "type": "article",
+        "collection": "default",
+        "last_modified": "2019-03-27T13:21:11.38Z",
+        "workflow": "default",
+        "workflow_step": "published"
+      }
+    },
+    {
+      "system": {
+        "id": "b2fea94c-73fd-42ec-a22f-f409878de187",
+        "name": "Origins of Arabica Bourbon",
+        "codename": "origins_of_arabica_bourbon",
+        "language": "en-US",
+        "type": "article",
+        "collection": "default",
+        "last_modified": "2019-03-27T13:21:49.151Z",
+        "workflow": "default",
+        "workflow_step": "published"
+      }
+    }
+  ]
+}

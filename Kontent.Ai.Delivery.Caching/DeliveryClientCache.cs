@@ -175,5 +175,27 @@ namespace Kontent.Ai.Delivery.Caching
         {
             return _deliveryClient.GetSyncAsync(continuationToken);
         }
+
+        /// <summary>
+        /// Returns a feed that is used to traverse through strongly typed parent content items matching the optional filtering parameters.
+        /// </summary>
+        /// <param name="codename">The codename of a content item.</param>
+        /// <param name="parameters">A collection of query parameters, for example, for filtering or ordering.</param>
+        /// <returns>The <see cref="IDeliveryItemsFeed{IUsedInItem}"/> instance that can be used to enumerate through content item parents for the specified item codename. If no query parameters are specified, default language parents are enumerated.</returns>
+        public IDeliveryItemsFeed<IUsedInItem> GetItemUsedIn(string codename, IEnumerable<IQueryParameter> parameters = null)
+        {
+            return _deliveryClient.GetItemUsedIn(codename, parameters);
+        }
+
+        /// <summary>
+        /// Returns a feed that is used to traverse through strongly typed parent content items matching the optional filtering parameters.
+        /// </summary>
+        /// <param name="codename">The codename of an asset.</param>
+        /// <param name="parameters">A collection of query parameters, for example, for filtering or ordering.</param>
+        /// <returns>The <see cref="IDeliveryItemsFeed{IUsedInItem}"/> instance that can be used to enumerate through asset parents for the specified asset codename. If no query parameters are specified, default language parents are enumerated.</returns>
+        public IDeliveryItemsFeed<IUsedInItem> GetAssetUsedIn(string codename, IEnumerable<IQueryParameter> parameters = null)
+        {
+            return _deliveryClient.GetAssetUsedIn(codename, parameters);
+        }
     }
 }
