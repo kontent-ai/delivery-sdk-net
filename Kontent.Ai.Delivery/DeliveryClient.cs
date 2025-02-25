@@ -13,6 +13,7 @@ using Kontent.Ai.Delivery.Languages;
 using Kontent.Ai.Delivery.SharedModels;
 using Kontent.Ai.Delivery.Sync;
 using Kontent.Ai.Delivery.TaxonomyGroups;
+using Kontent.Ai.Delivery.UsedIn;
 using Kontent.Ai.Urls.Delivery;
 using Kontent.Ai.Urls.Delivery.QueryParameters;
 using Kontent.Ai.Urls.Delivery.QueryParameters.Filters;
@@ -363,6 +364,48 @@ namespace Kontent.Ai.Delivery
             return new DeliverySyncResponse(response, itemModels);
         }
 
+        /// <summary>
+        /// Returns a feed that is used to traverse through strongly typed parent content items matching the optional filtering parameters.
+        /// </summary>
+        /// <param name="codename">The codename of a content item.</param>
+        /// <param name="parameters">A collection of query parameters, for example, for filtering or ordering.</param>
+        /// <returns>The <see cref="DeliveryUsedInItems"/> instance that can be used to enumerate through content item parents for the specified item codename. If no query parameters are specified, default language parents are enumerated.</returns>
+        public IDeliveryItemsFeed<IUsedInItem> GetItemUsedIn(string codename, IEnumerable<IQueryParameter> parameters = null)
+        {
+            ValidateUsedInParameters(parameters);
+            var endpointUrl = UrlBuilder.GetItemUsedInUrl(codename, parameters);
+
+            return new DeliveryUsedInItems(continuationToken => GetUsedInBatchAsync(endpointUrl, continuationToken));
+        }
+
+        /// <summary>
+        /// Returns a feed that is used to traverse through strongly typed parent content items matching the optional filtering parameters.
+        /// </summary>
+        /// <param name="codename">The codename of an asset.</param>
+        /// <param name="parameters">A collection of query parameters, for example, for filtering or ordering.</param>
+        /// <returns>The <see cref="DeliveryUsedInItems"/> instance that can be used to enumerate through asset parents for the specified asset codename. If no query parameters are specified, default language parents are enumerated.</returns>
+        public IDeliveryItemsFeed<IUsedInItem> GetAssetUsedIn(string codename, IEnumerable<IQueryParameter> parameters = null)
+        {
+            ValidateUsedInParameters(parameters);
+            var endpointUrl = UrlBuilder.GetAssetUsedInUrl(codename, parameters);
+
+            return new DeliveryUsedInItems(continuationToken => GetUsedInBatchAsync(endpointUrl, continuationToken));
+        }
+
+        private async Task<DeliveryUsedInResponse> GetUsedInBatchAsync(string endpointUrl, string continuationToken)
+        {
+            var response = await GetDeliveryResponseAsync(endpointUrl, HttpMethod.Get, continuationToken);
+
+            if (!response.IsSuccess)
+            {
+                return new DeliveryUsedInResponse(response);
+            }
+
+            var content = await response.GetJsonContentAsync();
+            var items = content["items"].ToObject<List<UsedInItem>>(Serializer);
+
+            return new DeliveryUsedInResponse(response, items.Cast<IUsedInItem>().ToList());
+        }
 
         private async Task<ApiResponse> GetDeliveryResponseAsync(string endpointUrl, HttpMethod httpMethod, string continuationToken = null)
         {
@@ -498,5 +541,16 @@ namespace Kontent.Ai.Delivery
                 throw new ArgumentException("Skip parameter is not supported in items feed.");
             }
         }
+
+        private static void ValidateUsedInParameters(IEnumerable<IQueryParameter> parameters)
+        {
+            if (parameters?.Any(IsNotSystemFilter) ?? false)
+            {
+                throw new ArgumentException("Only filtering by system properties is supported in used-in endpoints.");
+            }
+        }
+
+        private static bool IsNotSystemFilter(IQueryParameter parameter) =>
+            !(parameter is Filter filter && filter.ElementOrAttributePath.StartsWith("system."));
     }
 }

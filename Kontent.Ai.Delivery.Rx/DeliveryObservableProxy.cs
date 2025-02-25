@@ -105,18 +105,53 @@ namespace Kontent.Ai.Delivery.Rx
         public IObservable<T> GetItemsFeedObservable<T>(IEnumerable<IQueryParameter> parameters) where T : class
         {
             var feed = DeliveryClient?.GetItemsFeed<T>(parameters);
-            return feed == null ? null : EnumerateFeed()?.ToObservable();
+            return feed == null ? null : EnumerateFeed(feed)?.ToObservable();
+        }
 
-            IEnumerable<T> EnumerateFeed()
-            {
-                while (feed.HasMoreResults)
-                {
-                    foreach (var contentItem in feed.FetchNextBatchAsync().Result.Items)
-                    {
-                        yield return contentItem;
-                    }
-                }
-            }
+        /// <summary>
+        /// Returns an observable of strongly typed parent content items for specified content item that match the optional filtering parameters. Items are enumerated in batches.
+        /// </summary>
+        /// <param name="codename">The codename of a content item.</param>
+        /// <param name="parameters">A collection of query parameters, for example, for filtering or ordering.</param>
+        /// <returns>The <see cref="IObservable{T}"/> that represents the parent content items for the specified content item. If no query parameters are specified, parents in default language are returned.</returns>
+        public IObservable<IUsedInItem> GetItemUsedInObservable(string codename, params IQueryParameter[] parameters)
+        {
+            return GetItemUsedInObservable(codename, (IEnumerable<IQueryParameter>)parameters);
+        }
+
+        /// <summary>
+        /// Returns an observable of strongly typed parent content items for specified content item that match the optional filtering parameters. Items are enumerated in batches.
+        /// </summary>
+        /// <param name="codename">The codename of a content item.</param>
+        /// <param name="parameters">A collection of query parameters, for example, for filtering or ordering.</param>
+        /// <returns>The <see cref="IObservable{IUsedInItem}"/> that represents the parent content items for the specified content item. If no query parameters are specified, parents in default language are returned.</returns>
+        public IObservable<IUsedInItem> GetItemUsedInObservable(string codename, IEnumerable<IQueryParameter> parameters)
+        {
+            var feed = DeliveryClient?.GetItemUsedIn(codename, parameters);
+            return feed == null ? null : EnumerateFeed(feed)?.ToObservable();
+        }
+
+        /// <summary>
+        /// Returns an observable of strongly typed parent content items for specified asset that match the optional filtering parameters. Items are enumerated in batches.
+        /// </summary>
+        /// <param name="codename">The codename of an asset.</param>
+        /// <param name="parameters">A collection of query parameters, for example, for filtering or ordering.</param>
+        /// <returns>The <see cref="IObservable{T}"/> that represents the parent content items for the specified content item. If no query parameters are specified, parents in default language are returned.</returns>
+        public IObservable<IUsedInItem> GetAssetUsedInObservable(string codename, params IQueryParameter[] parameters)
+        {
+            return GetAssetUsedInObservable(codename, (IEnumerable<IQueryParameter>)parameters);
+        }
+
+        /// <summary>
+        /// Returns an observable of strongly typed parent content items for specified asset that match the optional filtering parameters. Items are enumerated in batches.
+        /// </summary>
+        /// <param name="codename">The codename of an asset.</param>
+        /// <param name="parameters">A collection of query parameters, for example, for filtering or ordering.</param>
+        /// <returns>The <see cref="IObservable{IUsedInItem}"/> that represents the parent content items for the specified content item. If no query parameters are specified, parents in default language are returned.</returns>
+        public IObservable<IUsedInItem> GetAssetUsedInObservable(string codename, IEnumerable<IQueryParameter> parameters)
+        {
+            var feed = DeliveryClient?.GetAssetUsedIn(codename, parameters);
+            return feed == null ? null : EnumerateFeed(feed)?.ToObservable();
         }
 
         /// <summary>
@@ -211,6 +246,16 @@ namespace Kontent.Ai.Delivery.Rx
 
         #endregion
         #region "Private methods"
+        private static IEnumerable<T> EnumerateFeed<T>(IDeliveryItemsFeed<T> feed) where T : class
+        {
+            while (feed.HasMoreResults)
+            {
+                foreach (var contentItem in feed.FetchNextBatchAsync().Result.Items)
+                {
+                    yield return contentItem;
+                }
+            }
+        }
 
         private static IObservable<T> GetObservableOfOne<T>(Func<T> responseFactory)
         {

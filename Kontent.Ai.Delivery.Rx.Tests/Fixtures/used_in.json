@@ -1,0 +1,30 @@
+{
+  "items": [
+    {
+      "system": {
+        "id": "35778b62-e97f-42cb-833f-8a34c14e27ce",
+        "name": "rich text child",
+        "codename": "rich_text_child",
+        "language": "language1",
+        "type": "ct",
+        "collection": "default",
+        "workflow": "default",
+        "workflow_step": "published",
+        "last_modified": "2024-08-01T14:17:50.4141347Z"
+      }
+    },
+    {
+      "system": {
+        "id": "3ad63df6-a439-4a64-8193-14e999bfaaf2",
+        "name": "rich text child 2",
+        "codename": "rich_text_child_2",
+        "language": "language1",
+        "type": "ct",
+        "collection": "default",
+        "workflow": "default",
+        "workflow_step": "published",
+        "last_modified": "2024-08-01T14:17:50.4141347Z"
+      }
+    }
+  ]
+}

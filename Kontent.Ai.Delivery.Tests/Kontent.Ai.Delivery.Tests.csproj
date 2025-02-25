@@ -87,6 +87,15 @@
     <None Update="Fixtures\DeliveryClient\rich_text_complex_tables.json">
       <CopyToOutputDirectory>Always</CopyToOutputDirectory>
     </None>
+    <None Update="Fixtures\DeliveryClient\used_in_batch_2.json">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </None>
+    <None Update="Fixtures\DeliveryClient\used_in_batch_1.json">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </None>
+    <None Update="Fixtures\DeliveryClient\used_in.json">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </None>
     <None Update="Fixtures\ServiceCollectionsExtensions\deliveryOptions_as_root.json">
       <CopyToOutputDirectory>Always</CopyToOutputDirectory>
     </None>

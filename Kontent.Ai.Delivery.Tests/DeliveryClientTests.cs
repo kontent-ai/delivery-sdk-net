@@ -26,6 +26,7 @@ namespace Kontent.Ai.Delivery.Tests
 {
     public class DeliveryClientTests
     {
+        private const string AssetCodename = "asset_codename";
         private readonly Guid _guid;
         private readonly string _baseUrl;
         private readonly MockHttpMessageHandler _mockHttp;
@@ -430,6 +431,224 @@ namespace Kontent.Ai.Delivery.Tests
             var client = InitializeDeliveryClientWithACustomTypeProvider(_mockHttp);
 
             var actualResponse = await client.GetItemsFeed<object>().FetchNextBatchAsync();
+
+            AssertErrorResponse(actualResponse, expectedError);
+            Assert.Null(actualResponse.Items);
+        }
+
+        [Theory]
+        [MemberData(nameof(InvalidUsedInQueryParameters))]
+        public void GetItemUsedIn_InvalidUsedInQueryParameter_ThrowsArgumentException(IQueryParameter parameter)
+        {
+            var client = InitializeDeliveryClientWithACustomTypeProvider(_mockHttp);
+
+            Assert.Throws<ArgumentException>(() => client.GetItemUsedIn("item_codename", parameter));
+        }
+
+        [Fact]
+        public async Task GetItemUsedIn_SingleBatch_FetchNextBatchAsync()
+        {
+            _mockHttp
+                .When($"{_baseUrl}/items/{Article.Codename}/used-in")
+                .WithQueryString("system.language[in]=en-US")
+                .Respond("application/json", await File.ReadAllTextAsync(Path.Combine(Environment.CurrentDirectory, $"Fixtures{Path.DirectorySeparatorChar}DeliveryClient{Path.DirectorySeparatorChar}used_in.json")));
+
+            var client = InitializeDeliveryClientWithACustomTypeProvider(_mockHttp);
+
+            var feed = client.GetItemUsedIn(Article.Codename, new InFilter("system.language", "en-US"));
+            var items = new List<IUsedInItem>();
+            var timesCalled = 0;
+            while (feed.HasMoreResults)
+            {
+                timesCalled++;
+                var response = await feed.FetchNextBatchAsync();
+                items.AddRange(response.Items);
+            }
+
+            Assert.Equal(6, items.Count);
+            Assert.Equal(1, timesCalled);
+        }
+
+        [Fact]
+        public async Task GetItemUsedIn_SingleBatchWithContinuationToken_FetchNextBatchAsync()
+        {
+            // Single batch with specific continuation token.
+            _mockHttp
+                .When($"{_baseUrl}/items/{Article.Codename}/used-in")
+                .WithQueryString("system.language[in]=en-US")
+                .WithHeaders("X-Continuation", "token")
+                .Respond("application/json", await File.ReadAllTextAsync(Path.Combine(Environment.CurrentDirectory, $"Fixtures{Path.DirectorySeparatorChar}DeliveryClient{Path.DirectorySeparatorChar}used_in.json")));
+
+            var client = InitializeDeliveryClientWithACustomTypeProvider(_mockHttp);
+
+            var feed = client.GetItemUsedIn(Article.Codename, new InFilter("system.language", "en-US"));
+            var items = new List<IUsedInItem>();
+            var timesCalled = 0;
+            while (feed.HasMoreResults)
+            {
+                timesCalled++;
+                var response = await feed.FetchNextBatchAsync("token");
+                items.AddRange(response.Items);
+            }
+
+            Assert.Equal(6, items.Count);
+            Assert.Equal(1, timesCalled);
+        }
+
+        [Fact]
+        public async Task GetItemUsedIn_MultipleBatches_FetchNextBatchAsync()
+        {
+            // Second batch
+            _mockHttp
+                .When($"{_baseUrl}/items/{Article.Codename}/used-in")
+                .WithQueryString("system.language[in]=en-US")
+                .WithHeaders("X-Continuation", "token")
+                .Respond("application/json", await File.ReadAllTextAsync(Path.Combine(Environment.CurrentDirectory, $"Fixtures{Path.DirectorySeparatorChar}DeliveryClient{Path.DirectorySeparatorChar}used_in_batch_2.json")));
+
+            // First batch
+            _mockHttp
+                .When($"{_baseUrl}/items/{Article.Codename}/used-in")
+                .WithQueryString("system.language[in]=en-US")
+                .Respond(new[] { new KeyValuePair<string, string>("X-Continuation", "token"), }, "application/json", await File.ReadAllTextAsync(Path.Combine(Environment.CurrentDirectory, $"Fixtures{Path.DirectorySeparatorChar}DeliveryClient{Path.DirectorySeparatorChar}used_in_batch_1.json")));
+
+            var client = InitializeDeliveryClientWithACustomTypeProvider(_mockHttp);
+
+            var feed = client.GetItemUsedIn(Article.Codename, new InFilter("system.language", "en-US"));
+            var items = new List<IUsedInItem>();
+            var timesCalled = 0;
+            while (feed.HasMoreResults)
+            {
+                timesCalled++;
+                var response = await feed.FetchNextBatchAsync();
+                items.AddRange(response.Items);
+            }
+
+            Assert.Equal(6, items.Count);
+            Assert.Equal(2, timesCalled);
+        }
+
+        [Fact]
+        public async Task GetItemUsedIn_InvalidEnvironmentId_RespondsWithApiError()
+        {
+            var expectedError = CreateInvalidEnvironmentIdApiError();
+            var response = CreateApiErrorResponse(expectedError);
+
+            _mockHttp
+                .When($"{_baseUrl}/items/{Article.Codename}/used-in")
+                .Respond(HttpStatusCode.NotFound, "application/json", response);
+
+            var client = InitializeDeliveryClientWithACustomTypeProvider(_mockHttp);
+
+            var actualResponse = await client.GetItemUsedIn(Article.Codename).FetchNextBatchAsync();
+
+            AssertErrorResponse(actualResponse, expectedError);
+            Assert.Null(actualResponse.Items);
+        }
+
+        [Theory]
+        [MemberData(nameof(InvalidUsedInQueryParameters))]
+        public void GetAssetUsedIn_InvalidUsedInQueryParameter_ThrowsArgumentException(IQueryParameter parameter)
+        {
+            var client = InitializeDeliveryClientWithACustomTypeProvider(_mockHttp);
+
+            Assert.Throws<ArgumentException>(() => client.GetAssetUsedIn(AssetCodename, parameter));
+        }
+
+        [Fact]
+        public async Task GetAssetUsedIn_SingleBatch_FetchNextBatchAsync()
+        {
+            _mockHttp
+                .When($"{_baseUrl}/assets/{AssetCodename}/used-in")
+                .WithQueryString("system.type=article")
+                .Respond("application/json", await File.ReadAllTextAsync(Path.Combine(Environment.CurrentDirectory, $"Fixtures{Path.DirectorySeparatorChar}DeliveryClient{Path.DirectorySeparatorChar}used_in.json")));
+
+            var client = InitializeDeliveryClientWithACustomTypeProvider(_mockHttp);
+
+            var feed = client.GetAssetUsedIn(AssetCodename, new SystemTypeEqualsFilter("article"));
+            var items = new List<IUsedInItem>();
+            var timesCalled = 0;
+            while (feed.HasMoreResults)
+            {
+                timesCalled++;
+                var response = await feed.FetchNextBatchAsync();
+                items.AddRange(response.Items);
+            }
+
+            Assert.Equal(6, items.Count);
+            Assert.Equal(1, timesCalled);
+        }
+
+        [Fact]
+        public async Task GetAssetUsedIn_SingleBatchWithContinuationToken_FetchNextBatchAsync()
+        {
+            // Single batch with specific continuation token.
+            _mockHttp
+                .When($"{_baseUrl}/assets/{AssetCodename}/used-in")
+                .WithQueryString("system.type=article")
+                .WithHeaders("X-Continuation", "token")
+                .Respond("application/json", await File.ReadAllTextAsync(Path.Combine(Environment.CurrentDirectory, $"Fixtures{Path.DirectorySeparatorChar}DeliveryClient{Path.DirectorySeparatorChar}used_in.json")));
+
+            var client = InitializeDeliveryClientWithACustomTypeProvider(_mockHttp);
+
+            var feed = client.GetAssetUsedIn(AssetCodename, new SystemTypeEqualsFilter("article"));
+            var items = new List<IUsedInItem>();
+            var timesCalled = 0;
+            while (feed.HasMoreResults)
+            {
+                timesCalled++;
+                var response = await feed.FetchNextBatchAsync("token");
+                items.AddRange(response.Items);
+            }
+
+            Assert.Equal(6, items.Count);
+            Assert.Equal(1, timesCalled);
+        }
+
+        [Fact]
+        public async Task GetAssetUsedIn_MultipleBatches_FetchNextBatchAsync()
+        {
+            // Second batch
+            _mockHttp
+                .When($"{_baseUrl}/assets/{AssetCodename}/used-in")
+                .WithQueryString("system.type=article")
+                .WithHeaders("X-Continuation", "token")
+                .Respond("application/json", await File.ReadAllTextAsync(Path.Combine(Environment.CurrentDirectory, $"Fixtures{Path.DirectorySeparatorChar}DeliveryClient{Path.DirectorySeparatorChar}used_in_batch_2.json")));
+
+            // First batch
+            _mockHttp
+                .When($"{_baseUrl}/assets/{AssetCodename}/used-in")
+                .WithQueryString("system.type=article")
+                .Respond(new[] { new KeyValuePair<string, string>("X-Continuation", "token"), }, "application/json", await File.ReadAllTextAsync(Path.Combine(Environment.CurrentDirectory, $"Fixtures{Path.DirectorySeparatorChar}DeliveryClient{Path.DirectorySeparatorChar}used_in_batch_1.json")));
+
+            var client = InitializeDeliveryClientWithACustomTypeProvider(_mockHttp);
+
+            var feed = client.GetAssetUsedIn(AssetCodename, new SystemTypeEqualsFilter("article"));
+            var items = new List<IUsedInItem>();
+            var timesCalled = 0;
+            while (feed.HasMoreResults)
+            {
+                timesCalled++;
+                var response = await feed.FetchNextBatchAsync();
+                items.AddRange(response.Items);
+            }
+
+            Assert.Equal(6, items.Count);
+            Assert.Equal(2, timesCalled);
+        }
+
+        [Fact]
+        public async Task GetAssetUsedIn_InvalidEnvironmentId_RespondsWithApiError()
+        {
+            var expectedError = CreateInvalidEnvironmentIdApiError();
+            var response = CreateApiErrorResponse(expectedError);
+
+            _mockHttp
+                .When($"{_baseUrl}/assets/{AssetCodename}/used-in")
+                .Respond(HttpStatusCode.NotFound, "application/json", response);
+
+            var client = InitializeDeliveryClientWithACustomTypeProvider(_mockHttp);
+
+            var actualResponse = await client.GetAssetUsedIn(AssetCodename).FetchNextBatchAsync();
 
             AssertErrorResponse(actualResponse, expectedError);
             Assert.Null(actualResponse.Items);
@@ -1917,6 +2136,46 @@ namespace Kontent.Ai.Delivery.Tests
                 Assert.Equal(DateTime.Parse(expectedItem["timestamp"].ToString()), DateTime.Parse(sync.SyncItems[i].Timestamp.ToString()));
             }
         }
+
+        public static IEnumerable<object[]> InvalidUsedInQueryParameters =>
+            [
+                [new DepthParameter(2)],
+                [new LimitParameter(2)],
+                [new SkipParameter(2)],
+                [new OrderParameter("test")],
+                [new LanguageParameter("test")],
+                [new IncludeTotalCountParameter()],
+                [new ExcludeElementsParameter("test")],
+                [new ElementsParameter("test")],
+                [new AllFilter("elements.test", "test")],
+                [new AnyFilter("elements.test2", "test")],
+                [new ContainsFilter("elements.te2st", "test")],
+                [new EmptyFilter("elements.test")],
+                [new EqualsFilter("elements.te2st", "test")],
+                [new GreaterThanFilter("elements.test", "test")],
+                [new GreaterThanOrEqualFilter("elements.tes2t", "test")],
+                [new InFilter("elements.test", "test")],
+                [new LessThanFilter("elements.tes2t", "test")],
+                [new LessThanOrEqualFilter("elements.test", "test")],
+                [new NotEmptyFilter("elements.test")],
+                [new NotEqualsFilter("elements.t2est", "test")],
+                [new NotInFilter("elements.test", "test")],
+                [new RangeFilter("elements.tes2t", "test", "test2")],
+                [new AllFilter("etest", "test")],
+                [new AnyFilter("test2", "test")],
+                [new ContainsFilter("te2st", "test")],
+                [new EmptyFilter("eletest")],
+                [new EqualsFilter("elemente2st", "test")],
+                [new GreaterThanFilter("etest", "test")],
+                [new GreaterThanOrEqualFilter("elementstes2t", "test")],
+                [new InFilter("elementstest", "test")],
+                [new LessThanFilter("elementstes2t", "test")],
+                [new LessThanOrEqualFilter("elementtest", "test")],
+                [new NotEmptyFilter("elementtest")],
+                [new NotEqualsFilter("elementt2est", "test")],
+                [new NotInFilter("elementstest", "test")],
+                [new RangeFilter("elementstes2t", "test", "test2")],
+            ];
 
         private void AssertSystemPropertiesEquality(JObject expectedSystemValues, IContentItemSystemAttributes system)
         {

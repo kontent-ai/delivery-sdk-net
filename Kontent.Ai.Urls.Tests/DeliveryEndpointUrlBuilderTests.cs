@@ -147,4 +147,30 @@ public class DeliveryEndpointUrlBuilderTests
         var expectedLanguagesUrl = $"https://deliver.kontent.ai:443/{options.EnvironmentId}/languages";
         Assert.Equal(expectedLanguagesUrl, actualLanguagesUrl);
     }
+
+    [Fact]
+    public void GetItemUsedInUrl_ReturnsItemUsedInUrl()
+    {
+        var options = new DeliveryOptions() { EnvironmentId = Guid.NewGuid().ToString() };
+        var optionsMonitor = new FakeOptionsMonitor<DeliveryOptions>(options);
+        var deliveryEndpointUrlBuilder = new DeliveryEndpointUrlBuilder(optionsMonitor);
+
+        var actualItemUsedInUrl = deliveryEndpointUrlBuilder.GetItemUsedInUrl("item_codename", new IQueryParameter[] { });
+
+        var expectedItemUsedInUrl = $"https://deliver.kontent.ai:443/{options.EnvironmentId}/items/item_codename/used-in";
+        Assert.Equal(expectedItemUsedInUrl, actualItemUsedInUrl);
+    }
+
+    [Fact]
+    public void GetAssetUsedInUrl_ReturnsAssetUsedInUrl()
+    {
+        var options = new DeliveryOptions() { EnvironmentId = Guid.NewGuid().ToString() };
+        var optionsMonitor = new FakeOptionsMonitor<DeliveryOptions>(options);
+        var deliveryEndpointUrlBuilder = new DeliveryEndpointUrlBuilder(optionsMonitor);
+
+        var actualAssetUsedInUrl = deliveryEndpointUrlBuilder.GetAssetUsedInUrl("asset_codename", new IQueryParameter[] { });
+
+        var expectedAssetUsedInUrl = $"https://deliver.kontent.ai:443/{options.EnvironmentId}/assets/asset_codename/used-in";
+        Assert.Equal(expectedAssetUsedInUrl, actualAssetUsedInUrl);
+    }
 }
