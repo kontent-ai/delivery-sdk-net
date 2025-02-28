@@ -94,7 +94,7 @@ namespace Kontent.Ai.Delivery.Abstractions
         /// </summary>
         /// <param name="client">An instance of the <see cref="IDeliveryClient"/></param>
         /// <param name="codename">The codename of a content item.</param>
-        /// <param name="parameters">An array that contains zero or more query parameters, for example, for filtering or ordering.</param>
+        /// <param name="parameters">An array that contains zero or more query parameters for filtering.</param>
         /// <returns>The <see cref="IDeliveryItemsFeed{IUsedInItem}"/> instance that can be used to enumerate through content item parents for the specified item codename. If no query parameters are specified, default language parents are enumerated.</returns>
         public static IDeliveryItemsFeed<IUsedInItem> GetItemUsedIn(this IDeliveryClient client, string codename, params IQueryParameter[] parameters)
         {
@@ -106,7 +106,7 @@ namespace Kontent.Ai.Delivery.Abstractions
         /// </summary>
         /// <param name="client">An instance of the <see cref="IDeliveryClient"/></param>
         /// <param name="codename">The codename of an asset.</param>
-        /// <param name="parameters">An array that contains zero or more query parameters, for example, for filtering, or ordering.</param>
+        /// <param name="parameters">An array that contains zero or more query parameters for filtering.</param>
         /// <returns>The <see cref="IDeliveryItemsFeed{IUsedInItem}"/> instance that can be used to enumerate through asset parents for the specified asset codename. If no query parameters are specified, default language parents are enumerated.</returns>
         public static IDeliveryItemsFeed<IUsedInItem> GetAssetUsedIn(this IDeliveryClient client, string codename, params IQueryParameter[] parameters)
         {
