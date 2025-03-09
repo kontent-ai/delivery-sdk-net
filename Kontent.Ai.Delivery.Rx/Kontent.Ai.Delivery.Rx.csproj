@@ -25,10 +25,10 @@
 
   <ItemGroup>
     <PackageReference Include="Newtonsoft.Json" Version="13.0.1" />
-    <PackageReference Include="System.Reactive" Version="5.0.0" />
+    <PackageReference Include="System.Reactive" Version="6.0.1" />
     <PackageReference Include="Microsoft.Sourcelink.Github" Version="1.1.1" PrivateAssets="All" />
-    <None Include="../README.md" Pack="true" PackagePath=""/>
-    <None Include="../kai-logo-symbol-color-rgb.png" Pack="true" PackagePath=""/>
+    <None Include="../README.md" Pack="true" PackagePath="" />
+    <None Include="../kai-logo-symbol-color-rgb.png" Pack="true" PackagePath="" />
   </ItemGroup>
 
   <ItemGroup>

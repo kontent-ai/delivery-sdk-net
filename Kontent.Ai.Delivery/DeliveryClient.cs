@@ -372,6 +372,11 @@ namespace Kontent.Ai.Delivery
         /// <returns>The <see cref="DeliveryUsedInItems"/> instance that can be used to enumerate through content item parents for the specified item codename. If no query parameters are specified, default language parents are enumerated.</returns>
         public IDeliveryItemsFeed<IUsedInItem> GetItemUsedIn(string codename, IEnumerable<IQueryParameter> parameters = null)
         {
+            if (codename == null)
+            {
+                throw new ArgumentNullException(nameof(codename), "The codename of a content item is not specified.");
+            }
+
             ValidateUsedInParameters(parameters);
             var endpointUrl = UrlBuilder.GetItemUsedInUrl(codename, parameters);
 
@@ -386,6 +391,11 @@ namespace Kontent.Ai.Delivery
         /// <returns>The <see cref="DeliveryUsedInItems"/> instance that can be used to enumerate through asset parents for the specified asset codename. If no query parameters are specified, default language parents are enumerated.</returns>
         public IDeliveryItemsFeed<IUsedInItem> GetAssetUsedIn(string codename, IEnumerable<IQueryParameter> parameters = null)
         {
+            if (codename == null)
+            {
+                throw new ArgumentNullException(nameof(codename), "The codename of an asset is not specified.");
+            }
+
             ValidateUsedInParameters(parameters);
             var endpointUrl = UrlBuilder.GetAssetUsedInUrl(codename, parameters);
 
