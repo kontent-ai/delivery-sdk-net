@@ -2,6 +2,8 @@
 using System.Collections.Generic;
 using System.Reactive.Disposables;
 using System.Reactive.Linq;
+using System.Reactive;
+using System.Threading.Tasks;
 using Kontent.Ai.Delivery.Abstractions;
 
 namespace Kontent.Ai.Delivery.Rx
@@ -104,8 +106,7 @@ namespace Kontent.Ai.Delivery.Rx
         /// <returns>The <see cref="IObservable{T}"/> that represents the content items. If no query parameters are specified, all content items are returned.</returns>
         public IObservable<T> GetItemsFeedObservable<T>(IEnumerable<IQueryParameter> parameters) where T : class
         {
-            var feed = DeliveryClient?.GetItemsFeed<T>(parameters);
-            return feed == null ? null : EnumerateFeed(feed)?.ToObservable();
+            return DeliveryClient?.GetItemsFeed<T>(parameters).ToObservable();
         }
 
         /// <summary>
@@ -127,8 +128,7 @@ namespace Kontent.Ai.Delivery.Rx
         /// <returns>The <see cref="IObservable{IUsedInItem}"/> that represents the parent content items for the specified content item. If no query parameters are specified, parents in default language are returned.</returns>
         public IObservable<IUsedInItem> GetItemUsedInObservable(string codename, IEnumerable<IQueryParameter> parameters)
         {
-            var feed = DeliveryClient?.GetItemUsedIn(codename, parameters);
-            return feed == null ? null : EnumerateFeed(feed)?.ToObservable();
+            return DeliveryClient?.GetItemUsedIn(codename, parameters).ToObservable();
         }
 
         /// <summary>
@@ -150,8 +150,7 @@ namespace Kontent.Ai.Delivery.Rx
         /// <returns>The <see cref="IObservable{IUsedInItem}"/> that represents the parent content items for the specified content item. If no query parameters are specified, parents in default language are returned.</returns>
         public IObservable<IUsedInItem> GetAssetUsedInObservable(string codename, IEnumerable<IQueryParameter> parameters)
         {
-            var feed = DeliveryClient?.GetAssetUsedIn(codename, parameters);
-            return feed == null ? null : EnumerateFeed(feed)?.ToObservable();
+            return DeliveryClient?.GetAssetUsedIn(codename, parameters).ToObservable();
         }
 
         /// <summary>
@@ -246,17 +245,6 @@ namespace Kontent.Ai.Delivery.Rx
 
         #endregion
         #region "Private methods"
-        private static IEnumerable<T> EnumerateFeed<T>(IDeliveryItemsFeed<T> feed) where T : class
-        {
-            while (feed.HasMoreResults)
-            {
-                foreach (var contentItem in feed.FetchNextBatchAsync().Result.Items)
-                {
-                    yield return contentItem;
-                }
-            }
-        }
-
         private static IObservable<T> GetObservableOfOne<T>(Func<T> responseFactory)
         {
             return Observable.Create((IObserver<T> observer) =>
