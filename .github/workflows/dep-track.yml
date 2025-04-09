@@ -13,9 +13,9 @@ jobs:
     
     steps:
     - name: Checkout repository
-      uses: actions/checkout@v3
+      uses: actions/checkout@v4
     - name: Setup .NET Core
-      uses: actions/setup-dotnet@v3
+      uses: actions/setup-dotnet@v4
       with:
         dotnet-version: 8.0.x
     - name: Install CycloneDX
@@ -23,7 +23,7 @@ jobs:
     - name: Create SBOM
       run: dotnet CycloneDX ./Kontent.Ai.Delivery.sln -o ./cyclone
     - name: Upload SBOM
-      uses: DependencyTrack/gh-upload-sbom@v2.0.1
+      uses: DependencyTrack/gh-upload-sbom@v3
       with:
         serverHostname: ${{ secrets.DEPENDENCYTRACK_SERVER_URL }}
         apiKey: ${{ secrets.DEPENDENCYTRACK_APIKEY }}
