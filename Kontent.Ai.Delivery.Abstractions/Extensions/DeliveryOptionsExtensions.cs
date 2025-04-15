@@ -28,6 +28,7 @@
             o.Name = options.Name;
             #pragma warning restore CS0618
             o.DefaultRenditionPreset = options.DefaultRenditionPreset;
+            o.AssetUrlReplacement = options.AssetUrlReplacement;
         }
     }
 }

@@ -377,7 +377,7 @@ namespace Kontent.Ai.Delivery.ContentItems
             // Specific type converters
             if (typeof(IRichTextContent).IsAssignableFrom(property.PropertyType))
             {
-                return new RichTextContentConverter(HtmlParser);
+                return new RichTextContentConverter(HtmlParser, DeliveryOptions);
             }
 
             if (typeof(IDateTimeContent).IsAssignableFrom(property.PropertyType))
@@ -389,7 +389,7 @@ namespace Kontent.Ai.Delivery.ContentItems
             {
                 return new AssetElementValueConverter(DeliveryOptions);
             }
-            
+
             return null;
         }
 
