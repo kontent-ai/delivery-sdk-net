@@ -3,7 +3,7 @@
     /// <summary>
     /// Represents a filter that matches a content item of the given content type.
     /// </summary>
-    public sealed class SystemTypeEqualsFilter : Filter
+    public sealed class SystemTypeEqualsFilter : Filter<string>
     {
         /// <summary>
         /// Initializes a new instance of the <see cref="SystemTypeEqualsFilter"/> class.

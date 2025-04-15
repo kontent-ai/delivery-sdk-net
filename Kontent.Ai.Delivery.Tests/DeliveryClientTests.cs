@@ -958,7 +958,7 @@ namespace Kontent.Ai.Delivery.Tests
             var client = InitializeDeliveryClientWithACustomTypeProvider(_mockHttp);
 
             var parameters = new IQueryParameter[]
-           {
+            {
                 new AllFilter("elements.personas", "barista", "coffee", "blogger"),
                 new AnyFilter("elements.personas", "barista", "coffee", "blogger"),
                 new ContainsFilter("system.sitemap_locations", "cafes"),
@@ -981,7 +981,45 @@ namespace Kontent.Ai.Delivery.Tests
                 new SkipParameter(2),
                 new LanguageParameter("en"),
                 new IncludeTotalCountParameter()
-           };
+            };
+
+            var response = await client.GetItemsAsync<object>(parameters);
+
+            Assert.Equal(0, response.Items.Count);
+        }
+
+        [Fact]
+        public async Task QueryParametersWithGenericFilter()
+        {
+            string url = $"{_baseUrl}/items?elements.personas%5Ball%5D=barista%2Ccoffee%2Cblogger&elements.personas%5Bany%5D=barista%2Ccoffee%2Cblogger&system.sitemap_locations%5Bcontains%5D=cafes&system.last_modified%5Beq%5D=2023-03-01T00%3A00%3A00Z&system.last_modified%5Bneq%5D=2023-03-02T00%3A00%3A00Z&elements.price%5Bgt%5D=&elements.price%5Bgte%5D=4&elements.price%5Bin%5D=100%2C50&elements.price%5Bnin%5D=300%2C400&elements.price%5Blt%5D=10.0001&elements.price%5Blte%5D=10000000000&system.last_modified%5Brange%5D=2022-01-01T00%3A00%3A00Z%2C2023-01-01T00%3A00%3A00Z&depth=2&elements=price%2Cproduct_name&limit=10&order=elements.price%5Bdesc%5D&skip=2&language=en&includeTotalCount";
+            _mockHttp
+                .When($"{url}")
+                .Respond("application/json", " { 'items': [],'modular_content': {},'pagination': {'skip': 2,'limit': 10,'count': 0, 'total_count': 0, 'next_page': ''}}");
+
+            var client = InitializeDeliveryClientWithACustomTypeProvider(_mockHttp);
+
+            var parameters = new IQueryParameter[]
+            {
+                new AllFilter("elements.personas", "barista", "coffee", "blogger"),
+                new AnyFilter("elements.personas", "barista", "coffee", "blogger"),
+                new ContainsFilter("system.sitemap_locations", "cafes"),
+                new EqualsFilter<DateTime>("system.last_modified", new DateTime(2023, 3, 1)),
+                new NotEqualsFilter<DateTime>("system.last_modified", new DateTime(2023, 3, 2)),
+                new GreaterThanFilter<decimal>("elements.price", 0.00000000001m),
+                new GreaterThanOrEqualFilter<decimal>("elements.price", 4),
+                new InFilter<decimal>("elements.price", 100, 50.0m),
+                new NotInFilter<decimal>("elements.price", 300, 400),
+                new LessThanFilter<decimal>("elements.price", 10.0001m),
+                new LessThanOrEqualFilter<decimal>("elements.price", 10000000000m),
+                new RangeFilter<DateTime>("system.last_modified", new DateTime(2022, 1, 1), new DateTime(2023, 1, 1)),
+                new DepthParameter(2),
+                new ElementsParameter("price", "product_name"),
+                new LimitParameter(10),
+                new OrderParameter("elements.price", SortOrder.Descending),
+                new SkipParameter(2),
+                new LanguageParameter("en"),
+                new IncludeTotalCountParameter()
+            };
 
             var response = await client.GetItemsAsync<object>(parameters);
 
