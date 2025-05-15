@@ -171,9 +171,9 @@ public class DeliveryEndpointUrlBuilder
     /// </summary>
     /// <param name="parameters">Filtering parameters.</param>
     /// <returns>A valid URL containing correctly formatted parameters.</returns>
-    public string GetSyncV2InitUrl(IEnumerable<IQueryParameter> parameters)
+    public string GetSyncV2InitUrl()
     {
-        return GetUrl(UrlTemplateSyncInit, parameters, UrlTemplateVersionV2);
+        return GetUrl(UrlTemplateSyncInit, version: UrlTemplateVersionV2);
     }
 
     /// <summary>

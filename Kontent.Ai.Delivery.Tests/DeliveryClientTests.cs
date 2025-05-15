@@ -29,6 +29,7 @@ namespace Kontent.Ai.Delivery.Tests
         private const string AssetCodename = "asset_codename";
         private readonly Guid _guid;
         private readonly string _baseUrl;
+        private readonly string _v2BaseUrl;
         private readonly MockHttpMessageHandler _mockHttp;
         private readonly ITypeProvider _mockTypeProvider;
         private readonly IContentLinkUrlResolver _mockContentLinkUrlResolver;
@@ -38,6 +39,7 @@ namespace Kontent.Ai.Delivery.Tests
             _guid = Guid.NewGuid();
             var environmentId = _guid.ToString();
             _baseUrl = $"https://deliver.kontent.ai/{environmentId}";
+            _v2BaseUrl = $"https://deliver.kontent.ai/v2/{environmentId}";
             _mockHttp = new MockHttpMessageHandler();
             _mockTypeProvider = A.Fake<ITypeProvider>();
             _mockContentLinkUrlResolver = A.Fake<IContentLinkUrlResolver>();
@@ -2134,6 +2136,148 @@ namespace Kontent.Ai.Delivery.Tests
                 Assert.Equal(expectedElementValues["title"], syncItemData.Elements["title"]);
                 Assert.Equal(expectedItem["change_type"].ToString(), sync.SyncItems[i].ChangeType);
                 Assert.Equal(DateTime.Parse(expectedItem["timestamp"].ToString()), DateTime.Parse(sync.SyncItems[i].Timestamp.ToString()));
+            }
+        }
+
+        [Fact]
+        public async Task SyncV2Api_PostSyncV2InitAsync_GetContinuationToken()
+        {
+            var mockedResponse = await File.ReadAllTextAsync(Path.Combine(Environment.CurrentDirectory, $"Fixtures{Path.DirectorySeparatorChar}DeliveryClient{Path.DirectorySeparatorChar}sync_v2_init.json"));
+
+            _mockHttp
+                .When($"{_v2BaseUrl}/sync/init")
+                .Respond(new[] { new KeyValuePair<string, string>("X-Continuation", "token"), }, "application/json", mockedResponse);
+
+            var client = InitializeDeliveryClientWithCustomModelProvider(_mockHttp);
+
+            var syncInit = await client.PostSyncV2InitAsync();
+
+            Assert.NotNull(syncInit.ApiResponse.ContinuationToken);
+            Assert.Empty(syncInit.SyncItems);
+        }
+
+        [Fact]
+        public async Task SyncV2Api_PostSyncV2InitAsync_WithParameters_GetContinuationToken()
+        {
+            var mockedResponse = await File.ReadAllTextAsync(Path.Combine(Environment.CurrentDirectory, $"Fixtures{Path.DirectorySeparatorChar}DeliveryClient{Path.DirectorySeparatorChar}sync_v2_init.json"));
+
+            _mockHttp
+                .When($"{_v2BaseUrl}/sync/init")
+                .Respond(new[] { new KeyValuePair<string, string>("X-Continuation", "token"), }, "application/json", mockedResponse);
+
+            var client = InitializeDeliveryClientWithCustomModelProvider(_mockHttp);
+
+            var syncInit = await client.PostSyncV2InitAsync();
+
+            var requestUri = new Uri(syncInit.ApiResponse.RequestUrl);
+
+            var requestQuery = HttpUtility.ParseQueryString(requestUri.Query);
+
+            Assert.Empty(requestQuery);
+            Assert.NotNull(syncInit.ApiResponse.ContinuationToken);
+            Assert.Empty(syncInit.SyncItems);
+        }
+
+        [Fact]
+        public async Task SyncV2Api_GetSyncV2Async_ReturnsGenericData()
+        {
+            var mockedResponse = await File.ReadAllTextAsync(Path.Combine(Environment.CurrentDirectory, $"Fixtures{Path.DirectorySeparatorChar}DeliveryClient{Path.DirectorySeparatorChar}sync_v2.json"));
+
+            var expectedItems = JObject.Parse(mockedResponse).SelectToken("items").ToObject<List<JObject>>();
+            var expectedTypes = JObject.Parse(mockedResponse).SelectToken("types").ToObject<List<JObject>>();
+            var expectedTaxonomies = JObject.Parse(mockedResponse).SelectToken("taxonomies").ToObject<List<JObject>>();
+            var expectedLanguages = JObject.Parse(mockedResponse).SelectToken("languages").ToObject<List<JObject>>();
+
+            _mockHttp
+                .When($"{_v2BaseUrl}/sync")
+                .WithHeaders("X-Continuation", "token")
+                .Respond(new[] { new KeyValuePair<string, string>("X-Continuation", "token"), }, "application/json", mockedResponse);
+
+            var client = InitializeDeliveryClientWithCustomModelProvider(_mockHttp, new PropertyMapper(), new TypeProvider());
+
+            var sync = await client.GetSyncV2Async("token");
+
+            Assert.NotNull(sync.ApiResponse.ContinuationToken);
+
+            Assert.Equal(2, sync.SyncItems.Count);
+            Assert.Equal(2, sync.SyncTypes.Count);
+            Assert.Equal(2, sync.SyncTaxonomies.Count);
+            Assert.Equal(2, sync.SyncLanguages.Count);
+
+            AssertItems(expectedItems, sync.SyncItems);
+            AssertTypes(expectedTypes, sync.SyncTypes);
+            AssertTaxonomies(expectedTaxonomies, sync.SyncTaxonomies);
+            AssertLanguages(expectedLanguages, sync.SyncLanguages);
+
+            void AssertItems(List<JObject> expectedEntities, IList<ISyncV2Item> actualEntities)
+            {
+                Assert.Equal(expectedEntities.Count, actualEntities.Count);
+
+                for (int i = 0; i < expectedEntities.Count; i++)
+                {
+                    var expected = expectedEntities[i];
+                    var expectedSystemValues = expected["data"]["system"].ToObject<JObject>();
+
+                    Assert.Equal(expectedSystemValues["codename"].ToString(), actualEntities[i].Data.System.Codename.ToString());
+                    Assert.Equal(expectedSystemValues["name"].ToString(), actualEntities[i].Data.System.Name.ToString());
+                    Assert.Equal(expectedSystemValues["id"].ToString(), actualEntities[i].Data.System.Id.ToString());
+                    Assert.Equal(expectedSystemValues["type"].ToString(), actualEntities[i].Data.System.Type.ToString());
+                    Assert.Equal(expectedSystemValues["language"].ToString(), actualEntities[i].Data.System.Language.ToString());
+                    Assert.Equal(expectedSystemValues["collection"].ToString(), actualEntities[i].Data.System.Collection.ToString());
+                    Assert.Equal(expected["change_type"].ToString(), actualEntities[i].ChangeType);
+                    Assert.Equal(DateTime.Parse(expected["timestamp"].ToString()), DateTime.Parse(actualEntities[i].Timestamp.ToString()));
+                }
+            }
+
+            void AssertTypes(List<JObject> expectedEntities, IList<ISyncV2ContentType> actualEntities)
+            {
+                Assert.Equal(expectedEntities.Count, actualEntities.Count);
+
+                for (int i = 0; i < expectedEntities.Count; i++)
+                {
+                    var expected = expectedEntities[i];
+                    var expectedSystemValues = expected["data"]["system"].ToObject<JObject>();
+
+                    Assert.Equal(expectedSystemValues["codename"].ToString(), actualEntities[i].Data.System.Codename.ToString());
+                    Assert.Equal(expectedSystemValues["name"].ToString(), actualEntities[i].Data.System.Name.ToString());
+                    Assert.Equal(expectedSystemValues["id"].ToString(), actualEntities[i].Data.System.Id.ToString());
+                    Assert.Equal(expected["change_type"].ToString(), actualEntities[i].ChangeType);
+                    Assert.Equal(DateTime.Parse(expected["timestamp"].ToString()), DateTime.Parse(actualEntities[i].Timestamp.ToString()));
+                }
+            }
+
+            void AssertTaxonomies(List<JObject> expectedEntities, IList<ISyncV2Taxonomy> actualEntities)
+            {
+                Assert.Equal(expectedEntities.Count, actualEntities.Count);
+
+                for (int i = 0; i < expectedEntities.Count; i++)
+                {
+                    var expected = expectedEntities[i];
+                    var expectedSystemValues = expected["data"]["system"].ToObject<JObject>();
+
+                    Assert.Equal(expectedSystemValues["codename"].ToString(), actualEntities[i].Data.System.Codename.ToString());
+                    Assert.Equal(expectedSystemValues["name"].ToString(), actualEntities[i].Data.System.Name.ToString());
+                    Assert.Equal(expectedSystemValues["id"].ToString(), actualEntities[i].Data.System.Id.ToString());
+                    Assert.Equal(expected["change_type"].ToString(), actualEntities[i].ChangeType);
+                    Assert.Equal(DateTime.Parse(expected["timestamp"].ToString()), DateTime.Parse(actualEntities[i].Timestamp.ToString()));
+                }
+            }
+
+            void AssertLanguages(List<JObject> expectedEntities, IList<ISyncV2Language> actualEntities)
+            {
+                Assert.Equal(expectedEntities.Count, actualEntities.Count);
+
+                for (int i = 0; i < expectedEntities.Count; i++)
+                {
+                    var expected = expectedEntities[i];
+                    var expectedSystemValues = expected["data"]["system"].ToObject<JObject>();
+
+                    Assert.Equal(expectedSystemValues["codename"].ToString(), actualEntities[i].Data.System.Codename.ToString());
+                    Assert.Equal(expectedSystemValues["name"].ToString(), actualEntities[i].Data.System.Name.ToString());
+                    Assert.Equal(expectedSystemValues["id"].ToString(), actualEntities[i].Data.System.Id.ToString());
+                    Assert.Equal(expected["change_type"].ToString(), actualEntities[i].ChangeType);
+                    Assert.Equal(DateTime.Parse(expected["timestamp"].ToString()), DateTime.Parse(actualEntities[i].Timestamp.ToString()));
+                }
             }
         }
 
