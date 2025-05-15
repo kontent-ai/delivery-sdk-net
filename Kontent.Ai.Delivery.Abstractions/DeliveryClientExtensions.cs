@@ -1,5 +1,4 @@
-﻿using System.Collections.Generic;
-using System.Threading.Tasks;
+﻿using System.Threading.Tasks;
 
 namespace Kontent.Ai.Delivery.Abstractions
 {
@@ -87,6 +86,16 @@ namespace Kontent.Ai.Delivery.Abstractions
         public static Task<IDeliverySyncInitResponse> PostSyncInitAsync(this IDeliveryClient client, params IQueryParameter[] parameters)
         {
             return client.PostSyncInitAsync(parameters);
+        }
+
+        /// <summary>
+        /// Initializes synchronization of changes in content items, content types, taxonomies and languages. After the initialization, you'll get an X-Continuation token in the response.
+        /// </summary>
+        /// <param name="client">An instance of the <see cref="IDeliveryClient"/></param>
+        /// <returns>The <see cref="IDeliverySyncV2InitResponse"/> instance that represents the sync init response that contains continuation token needed for further sync execution.</returns>
+        public static Task<IDeliverySyncV2InitResponse> PostSyncV2InitAsync(this IDeliveryClient client)
+        {
+            return client.PostSyncV2InitAsync();
         }
 
         /// <summary>

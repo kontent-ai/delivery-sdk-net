@@ -1,0 +1,112 @@
+{
+  "items": [
+    {
+      "data": {
+        "system": {
+          "id": "7adfb82a-1386-4228-bcc2-45073a0355f6",
+          "name": "Hello world!",
+          "codename": "hello_world",
+          "language": "default",
+          "type": "article",
+          "sitemap_locations": [],
+          "last_modified": "2022-10-06T08:38:40.0088127Z",
+          "collection": "default"
+        }
+      },
+      "change_type": "changed",
+      "timestamp": "2022-10-06T08:38:40.0088127Z"
+    },
+    {
+      "data": {
+        "system": {
+          "id": "42a3cfbd-4967-43e7-987b-e1e69c483e26",
+          "name": "Bye world!",
+          "codename": "bye_world",
+          "language": "default",
+          "type": "article",
+          "sitemap_locations": [],
+          "last_modified": "2022-10-08T18:22:10.7894119Z",
+          "collection": "default"
+        }
+      },
+      "change_type": "deleted",
+      "timestamp": "2022-10-08T18:22:10.7894119Z"
+    }
+  ],
+  "types": [
+    {
+      "data": {
+        "system": {
+          "id": "b1e2c3d4-5678-4abc-9def-1234567890ab",
+          "name": "Sample Type",
+          "codename": "sample_type",
+          "last_modified": "2022-10-12T15:30:00Z"
+        }
+      },
+      "change_type": "changed",
+      "timestamp": "2022-09-01T08:15:30.1234567Z"
+    },
+    {
+      "data": {
+        "system": {
+          "id": "e3f4a5b6-7890-4cde-8fab-2345678901cd",
+          "name": "Blog Post",
+          "codename": "blog_post",
+          "last_modified": "2022-11-01T10:00:00Z"
+        }
+      },
+      "change_type": "deleted",
+      "timestamp": "2022-09-10T12:00:00.0000000Z"
+    }
+  ],
+  "taxonomies": [
+    {
+      "data": {
+        "system": {
+          "id": "a1234567-89ab-4cde-f012-3456789abcde",
+          "name": "Category",
+          "codename": "category",
+          "last_modified": "2023-05-10T14:20:00Z"
+        }
+      },
+      "change_type": "changed",
+      "timestamp": "2022-09-15T18:45:10.9876543Z"
+    },
+    {
+      "data": {
+        "system": {
+          "id": "b2345678-90bc-5def-0123-456789abcdef",
+          "name": "Tags",
+          "codename": "tags",
+          "last_modified": "2023-06-15T09:45:00Z"
+        }
+      },
+      "change_type": "deleted",
+      "timestamp": "2022-09-20T05:30:00.0000000Z"
+    }
+  ],
+  "languages": [
+    {
+      "data": {
+        "system": {
+          "id": "c3456789-01de-6fab-2345-678901bcdef0",
+          "name": "English (United States)",
+          "codename": "en_us"
+        }
+      },
+      "change_type": "changed",
+      "timestamp": "2022-09-18T21:10:05.2223334Z"
+    },
+    {
+      "data": {
+        "system": {
+          "id": "d4567890-12ef-7abc-3456-789012cdef01",
+          "name": "German (Germany)",
+          "codename": "de_de"
+        }
+      },
+      "change_type": "deleted",
+      "timestamp": "2022-09-25T16:22:45.6543210Z"
+    }
+  ]
+}
