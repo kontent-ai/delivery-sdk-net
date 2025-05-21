@@ -12,6 +12,7 @@ using Kontent.Ai.Delivery.Extensions;
 using Kontent.Ai.Delivery.Languages;
 using Kontent.Ai.Delivery.SharedModels;
 using Kontent.Ai.Delivery.Sync;
+using Kontent.Ai.Delivery.SyncV2;
 using Kontent.Ai.Delivery.TaxonomyGroups;
 using Kontent.Ai.Delivery.UsedIn;
 using Kontent.Ai.Urls.Delivery;
@@ -87,7 +88,7 @@ namespace Kontent.Ai.Delivery
 
             var endpointUrl = UrlBuilder.GetItemUrl(codename, parameters);
             var response = await GetDeliveryResponseAsync(endpointUrl, HttpMethod.Get);
-            
+
             if (!response.IsSuccess)
             {
                 return new DeliveryItemResponse<T>(response);
@@ -109,12 +110,12 @@ namespace Kontent.Ai.Delivery
             var enhancedParameters = EnsureContentTypeFilter<T>(parameters).ToList();
             var endpointUrl = UrlBuilder.GetItemsUrl(enhancedParameters);
             var response = await GetDeliveryResponseAsync(endpointUrl, HttpMethod.Get);
-            
+
             if (!response.IsSuccess)
             {
                 return new DeliveryItemListingResponse<T>(response);
             }
-            
+
             var content = await response.GetJsonContentAsync();
             var pagination = content["pagination"].ToObject<Pagination>(Serializer);
             var items = ((JArray)content["items"]).Select(async source => await ModelProvider.GetContentItemModelAsync<T>(source, content["modular_content"]));
@@ -138,12 +139,12 @@ namespace Kontent.Ai.Delivery
             async Task<DeliveryItemsFeedResponse<T>> GetItemsBatchAsync(string continuationToken)
             {
                 var response = await GetDeliveryResponseAsync(endpointUrl, HttpMethod.Get, continuationToken);
-                
+
                 if (!response.IsSuccess)
                 {
                     return new DeliveryItemsFeedResponse<T>(response);
                 }
-                
+
                 var content = await response.GetJsonContentAsync();
 
                 var items = ((JArray)content["items"]).Select(async source => await ModelProvider.GetContentItemModelAsync<T>(source, content["modular_content"]));
@@ -196,7 +197,7 @@ namespace Kontent.Ai.Delivery
             {
                 return new DeliveryTypeListingResponse(response);
             }
-            
+
             var content = await response.GetJsonContentAsync();
             var pagination = content["pagination"].ToObject<Pagination>(Serializer);
             var types = content["types"].ToObject<List<ContentType>>(Serializer);
@@ -282,12 +283,12 @@ namespace Kontent.Ai.Delivery
         {
             var endpointUrl = UrlBuilder.GetTaxonomiesUrl(parameters);
             var response = await GetDeliveryResponseAsync(endpointUrl, HttpMethod.Get);
-            
+
             if (!response.IsSuccess)
             {
                 return new DeliveryTaxonomyListingResponse(response);
             }
-            
+
             var content = await response.GetJsonContentAsync();
             var pagination = content["pagination"].ToObject<Pagination>(Serializer);
             var taxonomies = content["taxonomies"].ToObject<List<TaxonomyGroup>>(Serializer);
@@ -303,12 +304,12 @@ namespace Kontent.Ai.Delivery
         {
             var endpointUrl = UrlBuilder.GetLanguagesUrl(parameters);
             var response = await GetDeliveryResponseAsync(endpointUrl, HttpMethod.Get);
-            
+
             if (!response.IsSuccess)
             {
                 return new DeliveryLanguageListingResponse(response);
             }
-            
+
             var content = await response.GetJsonContentAsync();
             var pagination = content["pagination"].ToObject<Pagination>(Serializer);
             var languages = content["languages"].ToObject<List<Language>>(Serializer);
@@ -332,7 +333,7 @@ namespace Kontent.Ai.Delivery
 
             var content = await response.GetJsonContentAsync();
             var items = content["items"].ToObject<List<SyncItem>>(Serializer);
-            
+
             return new DeliverySyncInitResponse(response, items.ToList<ISyncItem>());
         }
 
@@ -362,6 +363,63 @@ namespace Kontent.Ai.Delivery
             }));
 
             return new DeliverySyncResponse(response, itemModels);
+        }
+
+        /// <summary>
+        /// Initializes synchronization of changes in content items, content types, taxonomies or languages based on the specified parameters. After the initialization, you'll get an X-Continuation token in the response.
+        /// </summary>
+        /// <param name="parameters">A collection of query parameters, for example, for filtering.</param>
+        /// <returns>The <see cref="IDeliverySyncV2InitResponse"/> instance that represents the sync init response that contains continuation token needed for further sync execution.</returns>
+        public async Task<IDeliverySyncV2InitResponse> PostSyncV2InitAsync()
+        {
+            var endpointUrl = UrlBuilder.GetSyncV2InitUrl();
+            var response = await GetDeliveryResponseAsync(endpointUrl, httpMethod: HttpMethod.Post);
+
+            if (!response.IsSuccess)
+            {
+                return new DeliverySyncV2InitResponse(response);
+            }
+
+            var content = await response.GetJsonContentAsync();
+            var items = content["items"].ToObject<List<SyncV2Item>>(Serializer);
+            var types = content["types"].ToObject<List<SyncV2ContentType>>(Serializer);
+            var taxonomies = content["taxonomies"].ToObject<List<SyncV2Taxonomy>>(Serializer);
+            var languages = content["languages"].ToObject<List<SyncV2Language>>(Serializer);
+
+            return new DeliverySyncV2InitResponse(
+                response,
+                items.ToList<ISyncV2Item>(),
+                types.ToList<ISyncV2ContentType>(),
+                taxonomies.ToList<ISyncV2Taxonomy>(),
+                languages.ToList<ISyncV2Language>());
+        }
+
+        /// <summary>
+        /// Retrieve a list of delta updates to recently changed content items, content types, taxonomies or languages in the specified environment. The types of items you get is determined by the X-Continuation token you use.
+        /// </summary>
+        /// <returns>The <see cref="IDeliverySyncV2Response"/> instance that represents the sync response that contains collection of delta updates and continuation token needed for further sync execution.</returns>
+        public async Task<IDeliverySyncV2Response> GetSyncV2Async(string continuationToken)
+        {
+            var endpointUrl = UrlBuilder.GetSyncV2Url();
+            var response = await GetDeliveryResponseAsync(endpointUrl, HttpMethod.Get, continuationToken);
+
+            if (!response.IsSuccess)
+            {
+                return new DeliverySyncV2Response(response);
+            }
+
+            var content = await response.GetJsonContentAsync();
+            var syncItems = content["items"].ToObject<List<SyncV2Item>>(Serializer);
+            var syncTypes = content["types"].ToObject<List<SyncV2ContentType>>(Serializer);
+            var syncTaxonomies = content["taxonomies"].ToObject<List<SyncV2Taxonomy>>(Serializer);
+            var syncLanguages = content["languages"].ToObject<List<SyncV2Language>>(Serializer);
+
+            return new DeliverySyncV2Response(
+                response,
+                syncItems.ToList<ISyncV2Item>(),
+                syncTypes.ToList<ISyncV2ContentType>(),
+                syncTaxonomies.ToList<ISyncV2Taxonomy>(),
+                syncLanguages.ToList<ISyncV2Language>());
         }
 
         /// <summary>

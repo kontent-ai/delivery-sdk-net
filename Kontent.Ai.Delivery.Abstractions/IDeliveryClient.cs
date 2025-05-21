@@ -91,6 +91,18 @@ namespace Kontent.Ai.Delivery.Abstractions
         Task<IDeliverySyncResponse> GetSyncAsync(string continuationToken);
 
         /// <summary>
+        /// Initializes synchronization of changes in content items, content types, taxonomies and languages. After the initialization, you'll get an X-Continuation token in the response.
+        /// </summary>
+        /// <returns>The <see cref="IDeliverySyncV2InitResponse"/> instance that represents the sync init response that contains continuation token needed for further sync execution.</returns>
+        Task<IDeliverySyncV2InitResponse> PostSyncV2InitAsync();
+
+        /// <summary>
+        /// Retrieve a list of delta updates to recently changed content items, content types, taxonomies or languages in the specified environment. The types of items you get is determined by the X-Continuation token you use.
+        /// </summary>
+        /// <returns>The <see cref="IDeliverySyncV2Response"/> instance that represents the sync response that contains collection of delta updates and continuation token needed for further sync execution.</returns>
+        Task<IDeliverySyncV2Response> GetSyncV2Async(string continuationToken);
+
+        /// <summary>
         /// Returns a feed that is used to traverse through strongly typed parent content items matching the optional filtering parameters.
         /// </summary>
         /// <param name="codename">The codename of a content item.</param>
