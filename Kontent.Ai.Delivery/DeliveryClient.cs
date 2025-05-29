@@ -368,15 +368,15 @@ namespace Kontent.Ai.Delivery
         /// <summary>
         /// Initializes synchronization of changes in content items, content types, taxonomies and languages. After the initialization, you'll get an X-Continuation token in the response.
         /// </summary>
-        /// <returns>The <see cref="IDeliverySyncV2InitResponse"/> instance that represents the sync init response that contains continuation token needed for further sync execution.</returns>
-        public async Task<IDeliverySyncV2InitResponse> PostSyncV2InitAsync()
+        /// <returns>The <see cref="IDeliverySyncV2Response"/> instance that represents the sync init response that contains continuation token needed for further sync execution.</returns>
+        public async Task<IDeliverySyncV2Response> PostSyncV2InitAsync()
         {
             var endpointUrl = UrlBuilder.GetSyncV2InitUrl();
             var response = await GetDeliveryResponseAsync(endpointUrl, httpMethod: HttpMethod.Post);
 
             if (!response.IsSuccess)
             {
-                return new DeliverySyncV2InitResponse(response);
+                return new DeliverySyncV2Response(response);
             }
 
             var content = await response.GetJsonContentAsync();
@@ -385,7 +385,7 @@ namespace Kontent.Ai.Delivery
             var taxonomies = content["taxonomies"].ToObject<List<SyncV2Taxonomy>>(Serializer);
             var languages = content["languages"].ToObject<List<SyncV2Language>>(Serializer);
 
-            return new DeliverySyncV2InitResponse(
+            return new DeliverySyncV2Response(
                 response,
                 items.ToList<ISyncV2Item>(),
                 types.ToList<ISyncV2ContentType>(),

@@ -180,8 +180,8 @@ namespace Kontent.Ai.Delivery.Caching
         /// <summary>
         /// Initializes synchronization of changes in content items, content types, taxonomies and languages. After the initialization, you'll get an X-Continuation token in the response.
         /// </summary>
-        /// <returns>The <see cref="IDeliverySyncV2InitResponse"/> instance that represents the sync init response that contains continuation token needed for further sync execution.</returns>
-        public Task<IDeliverySyncV2InitResponse> PostSyncV2InitAsync()
+        /// <returns>The <see cref="IDeliverySyncV2Response"/> instance that represents the sync init response that contains continuation token needed for further sync execution.</returns>
+        public Task<IDeliverySyncV2Response> PostSyncV2InitAsync()
         {
             return _deliveryClient.PostSyncV2InitAsync();
         }
