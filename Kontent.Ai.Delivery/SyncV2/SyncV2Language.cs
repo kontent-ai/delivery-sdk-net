@@ -5,7 +5,7 @@ using Newtonsoft.Json;
 namespace Kontent.Ai.Delivery.SyncV2;
 
 /// <inheritdoc/>
-public class SyncV2Language : ISyncV2Language
+internal sealed class SyncV2Language : ISyncV2Language
 {
     /// <inheritdoc/>
     [JsonProperty("data")]
@@ -23,7 +23,7 @@ public class SyncV2Language : ISyncV2Language
     /// Initializes a new instance of <see cref="SyncV2Language"/> class.
     /// </summary>
     [JsonConstructor]
-    public SyncV2Language(object stronglyTypedData, ISyncV2LanguageData data, string changeType, DateTime timestamp)
+    public SyncV2Language(ISyncV2LanguageData data, string changeType, DateTime timestamp)
     {
         Data = data;
         ChangeType = changeType;

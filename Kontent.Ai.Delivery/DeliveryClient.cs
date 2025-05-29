@@ -366,9 +366,8 @@ namespace Kontent.Ai.Delivery
         }
 
         /// <summary>
-        /// Initializes synchronization of changes in content items, content types, taxonomies or languages based on the specified parameters. After the initialization, you'll get an X-Continuation token in the response.
+        /// Initializes synchronization of changes in content items, content types, taxonomies and languages. After the initialization, you'll get an X-Continuation token in the response.
         /// </summary>
-        /// <param name="parameters">A collection of query parameters, for example, for filtering.</param>
         /// <returns>The <see cref="IDeliverySyncV2InitResponse"/> instance that represents the sync init response that contains continuation token needed for further sync execution.</returns>
         public async Task<IDeliverySyncV2InitResponse> PostSyncV2InitAsync()
         {

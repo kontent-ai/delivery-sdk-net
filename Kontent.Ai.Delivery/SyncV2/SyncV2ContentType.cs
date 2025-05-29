@@ -5,7 +5,7 @@ using System;
 namespace Kontent.Ai.Delivery.SyncV2;
 
 /// <inheritdoc/>
-public class SyncV2ContentType : ISyncV2ContentType
+internal sealed class SyncV2ContentType : ISyncV2ContentType
 {
     /// <inheritdoc/>
     [JsonProperty("data")]
@@ -23,7 +23,7 @@ public class SyncV2ContentType : ISyncV2ContentType
     /// Initializes a new instance of <see cref="SyncV2ContentType"/> class.
     /// </summary>
     [JsonConstructor]
-    public SyncV2ContentType(object stronglyTypedData, ISyncV2ContentTypeData data, string changeType, DateTime timestamp)
+    public SyncV2ContentType(ISyncV2ContentTypeData data, string changeType, DateTime timestamp)
     {
         Data = data;
         ChangeType = changeType;

@@ -4,7 +4,7 @@ using Newtonsoft.Json;
 namespace Kontent.Ai.Delivery.SyncV2;
 
 /// <inheritdoc/>
-public class SyncV2TaxonomyData : ISyncV2TaxonomyData
+internal sealed class SyncV2TaxonomyData : ISyncV2TaxonomyData
 {
     /// <inheritdoc/>
     [JsonProperty("system")]
