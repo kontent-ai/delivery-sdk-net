@@ -1,24 +1,19 @@
-using System.Collections.Generic;
 using Kontent.Ai.Delivery.Abstractions;
 using Newtonsoft.Json;
 
-namespace Kontent.Ai.Delivery.Sync;
+namespace Kontent.Ai.Delivery.SyncV2;
 
-internal sealed class SyncItemData : ISyncItemData
+internal sealed class SyncV2ItemData : ISyncV2ItemData
 {
     /// <inheritdoc/>
     [JsonProperty("system")]
     public IContentItemSystemAttributes System { get; internal set; }
 
-    /// <inheritdoc/>
-    [JsonProperty("elements")]
-    public Dictionary<string, object> Elements { get; internal set; }
-
     /// <summary>
     /// Constructor used for deserialization. Contains no logic.
     /// </summary>
     [JsonConstructor]
-    public SyncItemData()
+    public SyncV2ItemData()
     {
     }
 }
