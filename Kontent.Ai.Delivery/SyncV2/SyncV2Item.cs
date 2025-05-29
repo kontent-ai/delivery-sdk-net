@@ -23,7 +23,7 @@ internal sealed class SyncV2Item : ISyncV2Item
     /// Initializes a new instance of <see cref="SyncV2Item"/> class.
     /// </summary>
     [JsonConstructor]
-    public SyncV2Item(object stronglyTypedData, ISyncV2ItemData data, string changeType, DateTime timestamp)
+    public SyncV2Item(ISyncV2ItemData data, string changeType, DateTime timestamp)
     {
         Data = data;
         ChangeType = changeType;

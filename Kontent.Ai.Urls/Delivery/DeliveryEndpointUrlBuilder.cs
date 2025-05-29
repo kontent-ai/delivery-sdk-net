@@ -169,7 +169,6 @@ public class DeliveryEndpointUrlBuilder
     /// <summary>
     /// Generates a URL for sync v2 initialization.
     /// </summary>
-    /// <param name="parameters">Filtering parameters.</param>
     /// <returns>A valid URL containing correctly formatted parameters.</returns>
     public string GetSyncV2InitUrl()
     {

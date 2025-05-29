@@ -89,16 +89,6 @@ namespace Kontent.Ai.Delivery.Abstractions
         }
 
         /// <summary>
-        /// Initializes synchronization of changes in content items, content types, taxonomies and languages. After the initialization, you'll get an X-Continuation token in the response.
-        /// </summary>
-        /// <param name="client">An instance of the <see cref="IDeliveryClient"/></param>
-        /// <returns>The <see cref="IDeliverySyncV2InitResponse"/> instance that represents the sync init response that contains continuation token needed for further sync execution.</returns>
-        public static Task<IDeliverySyncV2InitResponse> PostSyncV2InitAsync(this IDeliveryClient client)
-        {
-            return client.PostSyncV2InitAsync();
-        }
-
-        /// <summary>
         /// Returns a feed that is used to traverse through strongly typed parent content items matching the optional filtering parameters.
         /// </summary>
         /// <param name="client">An instance of the <see cref="IDeliveryClient"/></param>

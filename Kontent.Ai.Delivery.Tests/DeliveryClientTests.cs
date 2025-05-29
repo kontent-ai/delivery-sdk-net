@@ -2152,25 +2152,7 @@ namespace Kontent.Ai.Delivery.Tests
 
             var syncInit = await client.PostSyncV2InitAsync();
 
-            Assert.NotNull(syncInit.ApiResponse.ContinuationToken);
-            Assert.Empty(syncInit.SyncItems);
-        }
-
-        [Fact]
-        public async Task SyncV2Api_PostSyncV2InitAsync_WithParameters_GetContinuationToken()
-        {
-            var mockedResponse = await File.ReadAllTextAsync(Path.Combine(Environment.CurrentDirectory, $"Fixtures{Path.DirectorySeparatorChar}DeliveryClient{Path.DirectorySeparatorChar}sync_v2_init.json"));
-
-            _mockHttp
-                .When($"{_v2BaseUrl}/sync/init")
-                .Respond(new[] { new KeyValuePair<string, string>("X-Continuation", "token"), }, "application/json", mockedResponse);
-
-            var client = InitializeDeliveryClientWithCustomModelProvider(_mockHttp);
-
-            var syncInit = await client.PostSyncV2InitAsync();
-
             var requestUri = new Uri(syncInit.ApiResponse.RequestUrl);
-
             var requestQuery = HttpUtility.ParseQueryString(requestUri.Query);
 
             Assert.Empty(requestQuery);
