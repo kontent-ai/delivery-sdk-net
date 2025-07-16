@@ -36,18 +36,21 @@ namespace Kontent.Ai.Delivery.Tests.Builders.DeliveryClient
         public void BuildWithDeliveryOptions_ReturnsDeliveryClientWithDeliveryOptions()
         {
             var guid = new Guid(EnvironmentId);
+            var assetReplacementUrl = "https://cdn.example.com/assets";
 
             var deliveryClient = (Delivery.DeliveryClient) DeliveryClientBuilder
                 .WithOptions(builder => builder
                     .WithEnvironmentId(guid)
                     .UsePreviewApi(PreviewApiKey)
                     .WithCustomEndpoint(PreviewEndpoint)
+                    .WithAssetUrlReplacement("https://cdn.example.com/assets")
                     .Build()
                 ).Build();
 
             Assert.Equal(EnvironmentId, deliveryClient.DeliveryOptions.CurrentValue.EnvironmentId);
             Assert.True(deliveryClient.DeliveryOptions.CurrentValue.UsePreviewApi);
             Assert.Equal(PreviewEndpoint, deliveryClient.DeliveryOptions.CurrentValue.PreviewEndpoint);
+            Assert.Equal(assetReplacementUrl, deliveryClient.DeliveryOptions.CurrentValue.AssetUrlReplacement);
         }
 
         [Fact]

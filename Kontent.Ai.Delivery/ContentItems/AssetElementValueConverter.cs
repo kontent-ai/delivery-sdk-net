@@ -50,13 +50,33 @@ namespace Kontent.Ai.Delivery.ContentItems
 
         private string ResolveAssetUrl(IAsset asset)
         {
+            var url = ReplaceAssetUrlWIthCustomAssetUrl(asset.Url);
             var renditionPresetToBeApplied = Options.CurrentValue.DefaultRenditionPreset;
             if (renditionPresetToBeApplied == null || asset.Renditions == null)
-                return asset.Url;
-            
+                return url;
+
             return asset.Renditions.TryGetValue(renditionPresetToBeApplied, out var renditionToBeApplied)
-                ? $"{asset.Url}?{renditionToBeApplied.Query}"
-                : asset.Url;
+                ? $"{url}?{renditionToBeApplied.Query}"
+                : url;
+        }
+
+        /// <summary>
+        /// Replace the beginning part of the asset URL with the AssetUrlReplacement value.
+        /// </summary>
+        /// <param name="url">Original Asset Url</param>
+        /// <returns>New URL with the CDN URL replaces with AssetUrlReplacement</returns>
+        private string ReplaceAssetUrlWIthCustomAssetUrl(string url)
+        {
+            if (!string.IsNullOrEmpty(Options.CurrentValue.AssetUrlReplacement))
+            {
+                // Replace the beginning part of the asset URL with the AssetUrlReplacement value by taking the third forward slash as the ending point for the string replacement
+                var endOfUrlIndex = url.IndexOf("/", url.IndexOf("/", url.IndexOf("/", 0) + 1) + 1);
+                if (endOfUrlIndex > 0)
+                {
+                    return Options.CurrentValue.AssetUrlReplacement + url.Substring(endOfUrlIndex);
+                }
+            }
+            return url;
         }
     }
 }
