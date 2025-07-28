@@ -21,9 +21,9 @@ public interface IDeliveryContentApi
     [Get("/items/{codename}")]
     Task<JObject> GetItemAsync(
         string codename,
-        [Query(CollectionFormat.Multi)] IDictionary<string, object> queryParameters = null,
+        [Query(CollectionFormat.Multi)] IDictionary<string, object>? queryParameters = null,
         [Header("X-KC-Wait-For-Loading-New-Content")] bool? waitForLoadingNewContent = null,
-        [Header("X-Continuation")] string continuationToken = null);
+        [Header("X-Continuation")] string? continuationToken = null);
 
     /// <summary>
     /// Gets multiple content items with optional filtering.
@@ -34,9 +34,9 @@ public interface IDeliveryContentApi
     /// <returns>Raw JSON response containing the content items.</returns>
     [Get("/items")]
     Task<JObject> GetItemsAsync(
-        [Query(CollectionFormat.Multi)] IDictionary<string, object> queryParameters = null,
+        [Query(CollectionFormat.Multi)] IDictionary<string, object>? queryParameters = null,
         [Header("X-KC-Wait-For-Loading-New-Content")] bool? waitForLoadingNewContent = null,
-        [Header("X-Continuation")] string continuationToken = null);
+        [Header("X-Continuation")] string? continuationToken = null);
 
     /// <summary>
     /// Gets content items feed for continuous enumeration.
@@ -47,9 +47,9 @@ public interface IDeliveryContentApi
     /// <returns>Raw JSON response containing the content items feed.</returns>
     [Get("/items-feed")]
     Task<JObject> GetItemsFeedAsync(
-        [Query(CollectionFormat.Multi)] IDictionary<string, object> queryParameters = null,
+        [Query(CollectionFormat.Multi)] IDictionary<string, object>? queryParameters = null,
         [Header("X-KC-Wait-For-Loading-New-Content")] bool? waitForLoadingNewContent = null,
-        [Header("X-Continuation")] string continuationToken = null);
+        [Header("X-Continuation")] string? continuationToken = null);
 
     /// <summary>
     /// Gets content items that use the specified content item.
@@ -62,9 +62,9 @@ public interface IDeliveryContentApi
     [Get("/items/{codename}/used-in")]
     Task<JObject> GetItemUsedInAsync(
         string codename,
-        [Query(CollectionFormat.Multi)] IDictionary<string, object> queryParameters = null,
+        [Query(CollectionFormat.Multi)] IDictionary<string, object>? queryParameters = null,
         [Header("X-KC-Wait-For-Loading-New-Content")] bool? waitForLoadingNewContent = null,
-        [Header("X-Continuation")] string continuationToken = null);
+        [Header("X-Continuation")] string? continuationToken = null);
 
     /// <summary>
     /// Gets content items that use the specified asset.
@@ -77,7 +77,7 @@ public interface IDeliveryContentApi
     [Get("/assets/{codename}/used-in")]
     Task<JObject> GetAssetUsedInAsync(
         string codename,
-        [Query(CollectionFormat.Multi)] IDictionary<string, object> queryParameters = null,
+        [Query(CollectionFormat.Multi)] IDictionary<string, object>? queryParameters = null,
         [Header("X-KC-Wait-For-Loading-New-Content")] bool? waitForLoadingNewContent = null,
-        [Header("X-Continuation")] string continuationToken = null);
+        [Header("X-Continuation")] string? continuationToken = null);
 } 
