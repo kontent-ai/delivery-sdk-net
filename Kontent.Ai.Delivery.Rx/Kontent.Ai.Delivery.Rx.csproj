@@ -24,7 +24,7 @@
   </PropertyGroup>
 
   <ItemGroup>
-    <PackageReference Include="Newtonsoft.Json" Version="13.0.1" />
+    <PackageReference Include="Newtonsoft.Json" Version="13.0.3" />
     <PackageReference Include="System.Reactive" Version="6.0.1" />
     <PackageReference Include="Microsoft.Sourcelink.Github" Version="1.1.1" PrivateAssets="All" />
     <None Include="../README.md" Pack="true" PackagePath="" />

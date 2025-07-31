@@ -5,29 +5,19 @@
     /// </summary>
     public static class DeliveryOptionsExtensions
     {
+
         /// <summary>
-        /// Maps one <see cref="DeliveryOptions"/> object to another.
+        /// Gets the base URL for the delivery API.
         /// </summary>
-        /// <param name="o">A destination.</param>
-        /// <param name="options">A source.</param>
-        public static void Configure(this DeliveryOptions o, DeliveryOptions options)
-        {
-            o.EnvironmentId = options.EnvironmentId;
-            o.ProductionEndpoint = options.ProductionEndpoint;
-            o.PreviewEndpoint = options.PreviewEndpoint;
-            o.PreviewApiKey = options.PreviewApiKey;
-            o.UsePreviewApi = options.UsePreviewApi;
-            o.WaitForLoadingNewContent = options.WaitForLoadingNewContent;
-            o.UseSecureAccess = options.UseSecureAccess;
-            o.SecureAccessApiKey = options.SecureAccessApiKey;
-            o.EnableRetryPolicy = options.EnableRetryPolicy;
-            o.DefaultRetryPolicyOptions = options.DefaultRetryPolicyOptions;
-            o.IncludeTotalCount = options.IncludeTotalCount;
-            // See #312
-            #pragma warning disable CS0618
-            o.Name = options.Name;
-            #pragma warning restore CS0618
-            o.DefaultRenditionPreset = options.DefaultRenditionPreset;
-        }
+        /// <param name="options">The delivery options.</param>
+        /// <returns>The base URL for the delivery API.</returns>
+        public static string GetBaseUrl(this DeliveryOptions options) => options.UsePreviewApi ? options.PreviewEndpoint : options.ProductionEndpoint;
+
+        /// <summary>
+        /// Gets the API key for the delivery API.
+        /// </summary>
+        /// <param name="options">The delivery options.</param>
+        /// <returns>The API key for the delivery API.</returns>
+        public static string? GetApiKey(this DeliveryOptions options) => options.UseSecureAccess ? options.SecureAccessApiKey : options.UsePreviewApi ? options.PreviewApiKey : null;
     }
 }

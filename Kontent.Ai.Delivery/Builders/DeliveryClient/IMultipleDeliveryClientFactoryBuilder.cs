@@ -22,7 +22,7 @@ namespace Kontent.Ai.Delivery.Builders
         (
             string name,
             Func<IDeliveryOptionsBuilder, DeliveryOptions> deliveryOptionsBuilder,
-            Func<IOptionalClientSetup, IOptionalClientSetup> optionalClientSetup = null
+            Func<IOptionalClientSetup, IOptionalClientSetup>? optionalClientSetup = null
         );
 
         /// <summary>
@@ -38,7 +38,7 @@ namespace Kontent.Ai.Delivery.Builders
             string name,
             Func<IDeliveryOptionsBuilder, DeliveryOptions> deliveryOptionsBuilder,
             IDeliveryCacheManager cacheManager,
-            Func<IOptionalClientSetup, IOptionalClientSetup> optionalClientSetup = null
+            Func<IOptionalClientSetup, IOptionalClientSetup>? optionalClientSetup = null
         );
 
         /// <summary>
