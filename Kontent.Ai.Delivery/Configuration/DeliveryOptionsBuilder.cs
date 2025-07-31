@@ -163,21 +163,23 @@ namespace Kontent.Ai.Delivery.Configuration
     /// <summary>
     /// Legacy builder implementation for backward compatibility.
     /// </summary>
+    [Obsolete]
     internal class DeliveryOptionsBuilderLegacy : IDeliveryApiConfiguration, ILegacyDeliveryOptionsBuilder, IOptionalDeliveryConfiguration
     {
         private string _environmentId = string.Empty;
         private bool _enableResilience = true;
         private string _productionEndpoint = "https://deliver.kontent.ai/";
         private string _previewEndpoint = "https://preview-deliver.kontent.ai/";
-        private string _previewApiKey;
+        private string? _previewApiKey;
         private bool _usePreviewApi;
         private bool _waitForLoadingNewContent;
         private bool _includeTotalCount;
         private bool _useSecureAccess;
-        private string _secureAccessApiKey;
+        private string? _secureAccessApiKey;
         private DefaultRetryPolicyOptions _defaultRetryPolicyOptions = new();
-        private string _defaultRenditionPreset;
+        private string? _defaultRenditionPreset;
 
+        [Obsolete]
         IDeliveryApiConfiguration ILegacyDeliveryOptionsBuilder.WithEnvironmentId(string environmentId)
         {
             environmentId.ValidateEnvironmentId();
@@ -185,6 +187,7 @@ namespace Kontent.Ai.Delivery.Configuration
             return this;
         }
 
+        [Obsolete]
         IDeliveryApiConfiguration ILegacyDeliveryOptionsBuilder.WithEnvironmentId(Guid environmentId)
         {
             environmentId.ValidateEnvironmentId();
@@ -192,24 +195,28 @@ namespace Kontent.Ai.Delivery.Configuration
             return this;
         }
 
+        [Obsolete]
         IOptionalDeliveryConfiguration IOptionalDeliveryConfiguration.WaitForLoadingNewContent()
         {
             _waitForLoadingNewContent = true;
             return this;
         }
 
+        [Obsolete]
         IOptionalDeliveryConfiguration IOptionalDeliveryConfiguration.IncludeTotalCount()
         {
             _includeTotalCount = true;
             return this;
         }
 
+        [Obsolete]
         IOptionalDeliveryConfiguration IOptionalDeliveryConfiguration.DisableRetryPolicy()
         {
             _enableResilience = false;
             return this;
         }
 
+        [Obsolete]
         IOptionalDeliveryConfiguration IOptionalDeliveryConfiguration.WithDefaultRetryPolicyOptions(DefaultRetryPolicyOptions retryPolicyOptions)
         {
             retryPolicyOptions.ValidateRetryPolicyOptions();
@@ -217,6 +224,7 @@ namespace Kontent.Ai.Delivery.Configuration
             return this;
         }
 
+        [Obsolete]
         IOptionalDeliveryConfiguration IDeliveryApiConfiguration.UsePreviewApi(string previewApiKey)
         {
             previewApiKey.ValidateApiKey(nameof(previewApiKey));
@@ -225,9 +233,11 @@ namespace Kontent.Ai.Delivery.Configuration
             return this;
         }
 
+        [Obsolete]
         IOptionalDeliveryConfiguration IDeliveryApiConfiguration.UseProductionApi()
             => this;
 
+        [Obsolete]
         IOptionalDeliveryConfiguration IDeliveryApiConfiguration.UseProductionApi(string secureAccessApiKey)
         {
             secureAccessApiKey.ValidateApiKey(nameof(secureAccessApiKey));
@@ -236,6 +246,7 @@ namespace Kontent.Ai.Delivery.Configuration
             return this;
         }
 
+        [Obsolete]
         IOptionalDeliveryConfiguration IOptionalDeliveryConfiguration.WithCustomEndpoint(string endpoint)
         {
             endpoint.ValidateCustomEndpoint();
@@ -243,6 +254,7 @@ namespace Kontent.Ai.Delivery.Configuration
             return this;
         }
 
+        [Obsolete]
         IOptionalDeliveryConfiguration IOptionalDeliveryConfiguration.WithCustomEndpoint(Uri endpoint)
         {
             endpoint.ValidateCustomEndpoint();
@@ -250,6 +262,7 @@ namespace Kontent.Ai.Delivery.Configuration
             return this;
         }
 
+        [Obsolete]
         IOptionalDeliveryConfiguration IOptionalDeliveryConfiguration.WithDefaultRenditionPreset(string presetCodename)
         {
             _defaultRenditionPreset = presetCodename;

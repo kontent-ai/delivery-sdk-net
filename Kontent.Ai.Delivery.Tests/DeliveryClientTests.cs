@@ -1948,7 +1948,7 @@ namespace Kontent.Ai.Delivery.Tests
             var options = new DeliveryOptions
             {
                 EnvironmentId = _guid.ToString(),
-                EnableRetryPolicy = false
+                EnableResilience = false
             };
             var client = Factories.DeliveryClientFactory.GetMockedDeliveryClientWithOptions(options, _mockHttp);
             var retryPolicy = A.Fake<IRetryPolicy>();

@@ -17,8 +17,8 @@ namespace Kontent.Ai.Delivery.Extensions
 
         private const string PackageRepositoryHost = "nuget.org";
 
-        private static readonly Lazy<string> Sdk = new Lazy<string>(GetSdk);
-        private static readonly Lazy<string> Source = new Lazy<string>(GetSource);
+        private static readonly Lazy<string> Sdk = new(GetSdk);
+        private static readonly Lazy<string?> Source = new(GetSource);
 
         internal static void AddSdkTrackingHeader(this HttpRequestHeaders headers)
         {
@@ -55,7 +55,7 @@ namespace Kontent.Ai.Delivery.Extensions
 
         internal static string GetProductVersion(this Assembly assembly)
         {
-            string sdkVersion;
+            string? sdkVersion;
 
             if (string.IsNullOrEmpty(assembly.Location))
             {
@@ -89,9 +89,9 @@ namespace Kontent.Ai.Delivery.Extensions
             return $"{PackageRepositoryHost};{sdkPackageId};{sdkVersion}";
         }
 
-        internal static string GetSource()
+        internal static string? GetSource()
         {
-            Assembly originatingAssembly = GetOriginatingAssembly();
+            Assembly? originatingAssembly = GetOriginatingAssembly();
             if (originatingAssembly != null)
             {
                 var attribute = originatingAssembly.GetCustomAttributes<DeliverySourceTrackingHeaderAttribute>().FirstOrDefault();
@@ -105,7 +105,7 @@ namespace Kontent.Ai.Delivery.Extensions
 
         internal static string GenerateSourceTrackingHeaderValue(Assembly originatingAssembly, DeliverySourceTrackingHeaderAttribute attribute)
         {
-            string packageName;
+            string? packageName;
             string version;
             if (attribute.LoadFromAssembly)
             {
@@ -126,12 +126,12 @@ namespace Kontent.Ai.Delivery.Extensions
         /// </summary>
         /// <returns>The first assembly in the call stack.</returns>
         [MethodImpl(MethodImplOptions.NoInlining)]
-        internal static Assembly GetOriginatingAssembly()
+        internal static Assembly? GetOriginatingAssembly()
         {
             var executingAssembly = Assembly.GetExecutingAssembly();
             // Get the whole stack trace, get involved assemblies, and determine which one references this SDK
             var callerAssemblies = new StackTrace().GetFrames()
-                        .Select(x => x.GetMethod().ReflectedType?.Assembly).Distinct().OfType<Assembly>()
+                        .Select(x => x.GetMethod()?.ReflectedType?.Assembly).Distinct().OfType<Assembly>()
                         .Where(x => x.GetReferencedAssemblies().Any(y => y.FullName == executingAssembly.FullName));
             var originatingAssembly = callerAssemblies.Any() ? callerAssemblies.Last() : null;
             return originatingAssembly;

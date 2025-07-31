@@ -44,6 +44,7 @@ namespace Kontent.Ai.Delivery.Tests
             return mockHttp.ToHttpClient();
         }
 
+        [Obsolete]
         private static DeliveryOptions MockDeliveryOptions(string baseUrl)
             => DeliveryOptionsBuilder
                 .CreateInstance()
@@ -57,7 +58,7 @@ namespace Kontent.Ai.Delivery.Tests
             var contentLinkUrlResolver = A.Fake<IContentLinkUrlResolver>();
             var retryPolicy = A.Fake<IRetryPolicy>();
             var retryPolicyProvider = A.Fake<IRetryPolicyProvider>();
-          
+
             A.CallTo(() => retryPolicyProvider.GetRetryPolicy())
                 .Returns(retryPolicy);
             A.CallTo(() => retryPolicy.ExecuteAsync(A<Func<Task<HttpResponseMessage>>>._))
