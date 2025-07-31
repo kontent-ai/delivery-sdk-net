@@ -30,9 +30,9 @@
 
   <ItemGroup>
     <PackageReference Include="Autofac" Version="6.4.0" />
-    <PackageReference Include="Microsoft.Extensions.DependencyInjection" Version="8.0.1" />
-    <PackageReference Include="Microsoft.Extensions.Options" Version="8.0.2" />
-    <PackageReference Include="Microsoft.Extensions.Options.ConfigurationExtensions" Version="8.0.0" />
+    <PackageReference Include="Microsoft.Extensions.DependencyInjection" Version="8.0.18" />
+    <PackageReference Include="Microsoft.Extensions.Options" Version="8.0.18" />
+    <PackageReference Include="Microsoft.Extensions.Options.ConfigurationExtensions" Version="8.0.18" />
     <None Include="../README.md" Pack="true" PackagePath="" />
     <None Include="../kai-logo-symbol-color-rgb.png" Pack="true" PackagePath="" />
   </ItemGroup>
