@@ -1,7 +1,6 @@
-using System.Collections.Generic;
 using System.Threading.Tasks;
 using Kontent.Ai.Delivery.Api.QueryParams.Types;
-using Newtonsoft.Json.Linq;
+using Kontent.Ai.Delivery.Abstractions;
 using Refit;
 
 namespace Kontent.Ai.Delivery.Api;
@@ -17,7 +16,7 @@ public partial interface IDeliveryApi
     /// <param name="waitForLoadingNewContent">Wait for loading new content header.</param>
     /// <returns>Raw JSON response containing the content type.</returns>
     [Get("/types/{codename}")]
-    Task<JObject> GetTypeAsync(
+    Task<IDeliveryTypeResponse> GetTypeAsync(
         string codename,
         [Query] ISingleTypeParams? queryParameters = null,
         [Header("X-KC-Wait-For-Loading-New-Content")] bool? waitForLoadingNewContent = null);
@@ -29,7 +28,7 @@ public partial interface IDeliveryApi
     /// <param name="waitForLoadingNewContent">Wait for loading new content header.</param>
     /// <returns>Raw JSON response containing the content types.</returns>
     [Get("/types")]
-    Task<JObject> GetTypesAsync(
+    Task<IDeliveryTypeListingResponse> GetTypesAsync(
         [Query] IListTypesParams? queryParameters = null,
         [Header("X-KC-Wait-For-Loading-New-Content")] bool? waitForLoadingNewContent = null);
 
@@ -41,7 +40,7 @@ public partial interface IDeliveryApi
     /// <param name="waitForLoadingNewContent">Wait for loading new content header.</param>
     /// <returns>Raw JSON response containing the content element.</returns>
     [Get("/types/{contentTypeCodename}/elements/{contentElementCodename}")]
-    Task<JObject> GetContentElementAsync(
+    Task<IDeliveryElementResponse> GetContentElementAsync(
         string contentTypeCodename,
         string contentElementCodename,
         [Header("X-KC-Wait-For-Loading-New-Content")] bool? waitForLoadingNewContent = null);

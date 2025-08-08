@@ -1,151 +1,187 @@
-﻿using System;
+using System;
+using System.Collections.Generic;
+using System.ComponentModel.DataAnnotations;
 using System.Linq;
-using AngleSharp.Html.Parser;
+using System.Net.Http;
 using Kontent.Ai.Delivery.Abstractions;
+using Kontent.Ai.Delivery.Api;
 using Kontent.Ai.Delivery.Configuration;
-using Kontent.Ai.Delivery.ContentItems;
-using Kontent.Ai.Delivery.ContentItems.ContentLinks;
-using Kontent.Ai.Delivery.ContentItems.InlineContentItems;
-using Kontent.Ai.Delivery.Helpers;
-using Kontent.Ai.Delivery.RetryPolicy;
+using Kontent.Ai.Delivery.Handlers;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.DependencyInjection.Extensions;
-using Microsoft.Extensions.Logging;
-using Microsoft.Extensions.Logging.Abstractions;
-using Newtonsoft.Json;
+using Microsoft.Extensions.Http.Resilience;
+using Microsoft.Extensions.Options;
+using Polly;
+using Refit;
 
-// see https://docs.microsoft.com/en-us/aspnet/core/fundamentals/dependency-injection
 namespace Kontent.Ai.Delivery.Extensions
 {
     /// <summary>
-    /// A class which contains extension methods on <see cref="IServiceCollection"/> for registering an <see cref="IDeliveryClient"/> instance.
+    /// Extension methods for registering Kontent.ai Delivery SDK services.
     /// </summary>
     public static class ServiceCollectionExtensions
     {
         /// <summary>
-        /// Registers a <see cref="IDeliveryClient"/> instance to an <see cref="IDeliveryClient"/> interface in <see cref="ServiceCollection"/>.
+        /// Registers the Kontent.ai Delivery client with the specified options.
         /// </summary>
-        /// <param name="services">A <see cref="ServiceCollection"/> instance for registering and resolving dependencies.</param>
-        /// <param name="buildDeliveryOptions">A function that is provided with an instance of <see cref="DeliveryOptionsBuilder"/>and expected to return a valid instance of <see cref="DeliveryOptions"/>.</param>
-        /// <returns>The <paramref name="services"/> instance with <see cref="IDeliveryClient"/> registered in it</returns>
-        public static IServiceCollection AddDeliveryClient(this IServiceCollection services, Func<IDeliveryOptionsBuilder, DeliveryOptions> buildDeliveryOptions)
+        /// <param name="services">The service collection.</param>
+        /// <param name="deliveryOptions">The delivery options.</param>
+        /// <returns>The service collection for chaining.</returns>
+        public static IServiceCollection AddDeliveryClient(
+            this IServiceCollection services,
+            DeliveryOptions deliveryOptions)
         {
-            if (buildDeliveryOptions == null)
+            ArgumentNullException.ThrowIfNull(deliveryOptions);
+            
+            // Register immutable record directly - Options.Create handles both IOptions<T> and IOptionsMonitor<T>
+            services.AddSingleton(Options.Create(deliveryOptions));
+            
+            // Validate the provided options using same pipeline as other overloads
+            var validationContext = new ValidationContext(deliveryOptions);
+            var validationResults = new List<ValidationResult>();
+            if (!Validator.TryValidateObject(deliveryOptions, validationContext, validationResults, validateAllProperties: true))
             {
-                throw new ArgumentNullException(nameof(buildDeliveryOptions), "The function for creating Delivery options is null.");
+                var errors = string.Join(Environment.NewLine, validationResults.Select(r => r.ErrorMessage));
+                throw new ArgumentException($"DeliveryOptions validation failed:{Environment.NewLine}{errors}");
             }
-
-            return services
-                .RegisterOptions(DeliveryOptionsHelpers.Build(buildDeliveryOptions))
-                .RegisterDependencies();
+            
+            return services.AddDeliveryCore();
         }
 
         /// <summary>
-        /// Registers a <see cref="IDeliveryClient"/> instance to an <see cref="IDeliveryClient"/> interface in <see cref="ServiceCollection"/>.
+        /// Registers the Kontent.ai Delivery client using configuration.
         /// </summary>
-        /// <param name="services">A <see cref="ServiceCollection"/> instance for registering and resolving dependencies.</param>
-        /// <param name="deliveryOptions">A <see cref="DeliveryOptions"/> instance.  Options themselves are not further validated (see <see cref="DeliveryOptionsValidator.Validate"/>).</param>
-        /// <returns>The <paramref name="services"/> instance with <see cref="IDeliveryClient"/> registered in it</returns>
-        public static IServiceCollection AddDeliveryClient(this IServiceCollection services, DeliveryOptions deliveryOptions)
+        /// <param name="services">The service collection.</param>
+        /// <param name="configuration">The configuration.</param>
+        /// <param name="configurationSectionName">The configuration section name. Default is "DeliveryOptions".</param>
+        /// <returns>The service collection for chaining.</returns>
+        public static IServiceCollection AddDeliveryClient(
+            this IServiceCollection services,
+            IConfiguration configuration,
+            string configurationSectionName = "DeliveryOptions")
         {
-            if (deliveryOptions == null)
-            {
-                throw new ArgumentNullException(nameof(deliveryOptions), "The Delivery options object is not specified.");
-            }
-
-            return services
-                .RegisterOptions(deliveryOptions)
-                .RegisterDependencies();
+            ArgumentNullException.ThrowIfNull(configuration);
+            
+            var section = string.IsNullOrEmpty(configurationSectionName) 
+                ? configuration 
+                : configuration.GetSection(configurationSectionName);
+            
+            // Register options with validation
+            return services.AddOptions<DeliveryOptions>()
+                .Bind(section)
+                .ValidateDataAnnotations()
+                .ValidateOnStart()
+                .Services
+                .AddDeliveryCore();
         }
 
         /// <summary>
-        /// Registers a <see cref="IDeliveryClient"/> instance to an <see cref="IDeliveryClient"/> interface in <see cref="ServiceCollection"/>.
+        /// Registers the Kontent.ai Delivery client with custom configuration.
         /// </summary>
-        /// <param name="services">A <see cref="ServiceCollection"/> instance for registering and resolving dependencies.</param>
-        /// <param name="configuration">A set of key/value application configuration properties.</param>
-        /// <param name="configurationSectionName">The section name of the configuration that keeps the <see cref="DeliveryOptions"/> properties. The default value is DeliveryOptions.</param>
-        /// <returns>The <paramref name="services"/> instance with <see cref="IDeliveryClient"/> registered in it</returns>
-        public static IServiceCollection AddDeliveryClient(this IServiceCollection services, IConfiguration configuration, string configurationSectionName = "DeliveryOptions")
-            => services
-                .LoadOptionsConfiguration(configuration, configurationSectionName)
-                .RegisterDependencies();
-
-        /// <summary>
-        /// Registers an <see cref="IInlineContentItemsResolver{T}"/> implementation For <seealso cref="InlineContentItemsProcessor"/> in <see cref="ServiceCollection"/>.
-        /// </summary>
-        /// <typeparam name="TContentItem">Type of content item that <paramref name="resolver"/> works with</typeparam>
-        /// <param name="services">A <see cref="ServiceCollection"/> instance for registering and resolving dependencies.</param>
-        /// <param name="resolver">An <see cref="IInlineContentItemsResolver{T}"/> instance capable of resolving <typeparamref name="TContentItem"/> to a <see cref="string"/></param>
-        /// <returns>The <paramref name="services"/> instance with <see cref="IDeliveryClient"/> registered in it</returns>
-        public static IServiceCollection AddDeliveryInlineContentItemsResolver<TContentItem>(this IServiceCollection services, IInlineContentItemsResolver<TContentItem> resolver)
-            => services
-                .AddSingleton(resolver)
-                .AddSingleton(TypelessInlineContentItemsResolver.Create(resolver));
-
-        /// <summary>
-        /// Registers an <see cref="IInlineContentItemsResolver{T}"/> implementation for <seealso cref="InlineContentItemsProcessor"/> in <see cref="ServiceCollection"/>.
-        /// </summary>
-        /// <typeparam name="TContentItem">Type of content item that <typeparamref name="TInlineContentItemsResolver"/> works with</typeparam>
-        /// <typeparam name="TInlineContentItemsResolver">Type of an <see cref="IInlineContentItemsResolver{T}"/> instance capable of resolving <typeparamref name="TContentItem"/> to a <see cref="string"/></typeparam>
-        /// <returns>The <paramref name="services"/> instance with <see cref="IDeliveryClient"/> registered in it</returns>
-        /// <remarks>Instance of <typeparamref name="TInlineContentItemsResolver"/> is obtained through <see cref="IServiceProvider"/> thus its dependencies might be injected.</remarks>
-        public static IServiceCollection AddDeliveryInlineContentItemsResolver<TContentItem, TInlineContentItemsResolver>(this IServiceCollection services)
-            where TInlineContentItemsResolver : class, IInlineContentItemsResolver<TContentItem>
-            => services
-                .AddSingleton<IInlineContentItemsResolver<TContentItem>, TInlineContentItemsResolver>()
-                .AddSingleton(provider => provider.CreateDescriptor<TContentItem>());
-
-        /// <summary>
-        /// Registers <see cref="IDeliveryClient"/> dependencies.
-        /// </summary>
-        /// <param name="services">A <see cref="ServiceCollection"/> instance for registering and resolving dependencies.</param>
-        /// <param name="isNamedRegistration">A parameter indicates if the registration is for a named client.</param>
-        /// <returns>The <paramref name="services"/> instance with <see cref="IDeliveryClient"/> dependencies.</returns>
-        public static IServiceCollection RegisterDependencies(this IServiceCollection services, bool isNamedRegistration = false)
+        /// <param name="services">The service collection.</param>
+        /// <param name="configureOptions">Action to configure delivery options.</param>
+        /// <param name="configureRefit">Optional action to configure Refit settings.</param>
+        /// <param name="configureHttpClient">Optional action to configure the HTTP client.</param>
+        /// <param name="configureResilience">Optional action to configure resilience policies.</param>
+        /// <returns>The service collection for chaining.</returns>
+        public static IServiceCollection AddDeliveryClient(
+            this IServiceCollection services,
+            Action<DeliveryOptions> configureOptions,
+            Action<RefitSettings>? configureRefit = null,
+            Action<IHttpClientBuilder>? configureHttpClient = null,
+            Action<ResiliencePipelineBuilder<HttpResponseMessage>>? configureResilience = null)
         {
-            if (!isNamedRegistration)
-                services.TryAddSingleton<IDeliveryClient, DeliveryClient>();
+            ArgumentNullException.ThrowIfNull(configureOptions);
+            
+            // Register options with validation
+            return services.AddOptions<DeliveryOptions>()
+                .Configure(configureOptions)
+                .ValidateDataAnnotations()
+                .ValidateOnStart()
+                .Services
+                .AddDeliveryCore(configureRefit, configureHttpClient, configureResilience);
+        }
 
-            services.TryAddSingleton<IContentLinkUrlResolver, DefaultContentLinkUrlResolver>();
-            services.TryAddSingleton<ITypeProvider, TypeProvider>();
-            services.TryAddSingleton<IDeliveryHttpClient, DeliveryHttpClient>();
-            services.TryAddDeliveryInlineContentItemsResolver<object, ReplaceWithWarningAboutRegistrationResolver>();
-            services.TryAddDeliveryInlineContentItemsResolver<UnretrievedContentItem, ReplaceWithWarningAboutUnretrievedItemResolver>();
-            services.TryAddDeliveryInlineContentItemsResolver<UnknownContentItem, ReplaceWithWarningAboutUnknownItemResolver>();
-            services.TryAddSingleton<IInlineContentItemsProcessor, InlineContentItemsProcessor>();
-            services.TryAddSingleton<IModelProvider, ModelProvider>();
-            services.TryAddSingleton<IPropertyMapper, PropertyMapper>();
-            services.TryAddSingleton<IRetryPolicyProvider, DefaultRetryPolicyProvider>();
-            services.TryAddSingleton<IHtmlParser, HtmlParser>();
-            services.TryAddSingleton<JsonSerializer>(new DeliveryJsonSerializer());
-            services.TryAddSingleton<IDeliveryClientFactory, DeliveryClientFactory>();
-            services.TryAddSingleton<ILoggerFactory>(NullLoggerFactory.Instance);
+        /// <summary>
+        /// Centralized method for registering Refit client, handlers, and resilience configuration.
+        /// Reads all configuration from IOptionsMonitor at runtime.
+        /// </summary>
+        private static IServiceCollection AddDeliveryCore(
+            this IServiceCollection services,
+            Action<RefitSettings>? configureRefit = null,
+            Action<IHttpClientBuilder>? configureHttpClient = null,
+            Action<ResiliencePipelineBuilder<HttpResponseMessage>>? configureResilience = null)
+        {
+            // Create Refit settings
+            var refitSettings = RefitSettingsProvider.CreateDefaultSettings();
+            configureRefit?.Invoke(refitSettings);
+
+            // Register message handlers
+            services.TryAddTransient<TrackingHandler>();
+            services.TryAddTransient<DeliveryAuthenticationHandler>();
+
+            // Register Refit client
+            var httpClientBuilder = services
+                .AddRefitClient<IDeliveryApi>(refitSettings)
+                .ConfigureHttpClient((serviceProvider, httpClient) =>
+                {
+                    var options = serviceProvider.GetRequiredService<IOptionsMonitor<DeliveryOptions>>();
+                    var opts = options.CurrentValue;
+                    
+                    // Set base address
+                    var baseUrl = opts.GetBaseUrl();
+                    httpClient.BaseAddress = new Uri($"{baseUrl.TrimEnd('/')}/{opts.EnvironmentId}");
+                })
+                .AddHttpMessageHandler<TrackingHandler>()
+                .AddHttpMessageHandler<DeliveryAuthenticationHandler>();
+
+            // Allow custom HTTP client configuration
+            configureHttpClient?.Invoke(httpClientBuilder);
+
+            // Configure resilience based on runtime options
+            httpClientBuilder.AddResilienceHandler("delivery-resilience", (resilienceBuilder, context) =>
+            {
+                // Read resilience setting from options at runtime
+                var options = context.ServiceProvider.GetRequiredService<IOptionsMonitor<DeliveryOptions>>();
+                var opts = options.CurrentValue;
+
+                if (!opts.EnableResilience)
+                {
+                    return; // Skip resilience configuration if disabled
+                }
+
+                // Default retry policy
+                resilienceBuilder.AddRetry(new HttpRetryStrategyOptions
+                {
+                    MaxRetryAttempts = 3,
+                    Delay = TimeSpan.FromSeconds(1),
+                    BackoffType = DelayBackoffType.Exponential,
+                    UseJitter = true
+                });
+
+                // Default timeout
+                resilienceBuilder.AddTimeout(TimeSpan.FromSeconds(30));
+
+                // Default circuit breaker
+                resilienceBuilder.AddCircuitBreaker(new HttpCircuitBreakerStrategyOptions
+                {
+                    SamplingDuration = TimeSpan.FromSeconds(30),
+                    FailureRatio = 0.5,
+                    MinimumThroughput = 5,
+                    BreakDuration = TimeSpan.FromSeconds(30)
+                });
+
+                // Allow custom resilience configuration
+                configureResilience?.Invoke(resilienceBuilder);
+            });
+
+            // Register IDeliveryClient implementation
+            services.TryAddSingleton<IDeliveryClient, DeliveryClient>();
 
             return services;
         }
 
-        private static IServiceCollection RegisterOptions(this IServiceCollection services, DeliveryOptions options)
-        {
-            return services.Configure<DeliveryOptions>((o) => o.Configure(options));
-        }
 
-        private static void TryAddDeliveryInlineContentItemsResolver<TContentItem, TInlineContentItemsResolver>(this IServiceCollection services)
-            where TInlineContentItemsResolver : class, IInlineContentItemsResolver<TContentItem>
-        {
-            if (services.Any(descriptor => descriptor.ServiceType == typeof(IInlineContentItemsResolver<TContentItem>)))
-                return;
-
-            services.AddDeliveryInlineContentItemsResolver<TContentItem, TInlineContentItemsResolver>();
-        }
-
-        private static ITypelessInlineContentItemsResolver CreateDescriptor<TContentItem>(this IServiceProvider provider)
-            => TypelessInlineContentItemsResolver.Create(provider.GetService<IInlineContentItemsResolver<TContentItem>>());
-
-        private static IServiceCollection LoadOptionsConfiguration(this IServiceCollection services, IConfiguration configuration, string configurationSectionName)
-            => services
-                .Configure<DeliveryOptions>(configurationSectionName == null
-                    ? configuration
-                    : configuration.GetSection(configurationSectionName));
     }
 }

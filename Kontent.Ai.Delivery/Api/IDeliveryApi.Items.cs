@@ -1,5 +1,6 @@
 using System.Threading.Tasks;
 using Kontent.Ai.Delivery.Abstractions;
+using Kontent.Ai.Delivery.Api.QueryParams.Items;
 using Refit;
 
 namespace Kontent.Ai.Delivery.Api;
@@ -19,7 +20,7 @@ public partial interface IDeliveryApi
     [Get("/items/{codename}")]
     Task<IDeliveryItemResponse<T>> GetItemAsync<T>(
         string codename,
-        [Query(CollectionFormat.Multi)] ISingleItemQueryParams? queryParameters = null,
+        [Query] ISingleItemParams? queryParameters = null,
         [Header("X-KC-Wait-For-Loading-New-Content")] bool? waitForLoadingNewContent = null);
 
     /// <summary>
@@ -30,6 +31,6 @@ public partial interface IDeliveryApi
     /// <returns>Raw JSON response containing the content items.</returns>
     [Get("/items")]
     Task<IDeliveryItemListingResponse<T>> GetItemsAsync<T>(
-        [Query] IListingItemQueryParams? queryParameters = null,
+        [Query] IListItemsParams? queryParameters = null,
         [Header("X-KC-Wait-For-Loading-New-Content")] bool? waitForLoadingNewContent = null);
 }

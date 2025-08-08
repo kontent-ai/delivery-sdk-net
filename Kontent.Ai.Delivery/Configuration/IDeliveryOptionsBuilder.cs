@@ -49,12 +49,6 @@ namespace Kontent.Ai.Delivery.Configuration
         IDeliveryOptionsBuilder WithDefaultRenditionPreset(string presetCodename);
 
         /// <summary>
-        /// Configure custom retry policy options.
-        /// </summary>
-        /// <param name="retryPolicyOptions">Configuration of the retry policy.</param>
-        IDeliveryOptionsBuilder WithRetryPolicyOptions(DefaultRetryPolicyOptions retryPolicyOptions);
-
-        /// <summary>
         /// Returns a new instance of the <see cref="DeliveryOptions"/> class.
         /// </summary>
         DeliveryOptions Build();
@@ -97,12 +91,6 @@ namespace Kontent.Ai.Delivery.Configuration
         /// </summary>
         IOptionalDeliveryConfiguration DisableRetryPolicy();
 
-        /// <summary>
-        /// Provide content that is always up-to-date.
-        /// We recommend to wait for new content when you have received a webhook notification.
-        /// However, the request might take longer than usual to complete.
-        /// </summary>
-        IOptionalDeliveryConfiguration WaitForLoadingNewContent();
 
         /// <summary>
         /// Include the total number of items matching the search criteria in the response.
