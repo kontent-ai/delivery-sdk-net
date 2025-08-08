@@ -1,18 +1,19 @@
-﻿using System.ComponentModel.DataAnnotations;
+using System.Collections.Generic;
+using System.ComponentModel.DataAnnotations;
 
 namespace Kontent.Ai.Delivery.Abstractions
 {
     /// <summary>
     /// Represents configuration of the <see cref="IDeliveryClient"/>.
     /// </summary>
-    public record DeliveryOptions
+    public record DeliveryOptions : IValidatableObject
     {
         /// <summary>
         /// Gets or sets the environment ID.
         /// </summary>
         [Required]
         [RegularExpression(@"^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$", ErrorMessage = "The environment ID must be a valid GUID.")]
-        public required string EnvironmentId { get; init; }
+        public string EnvironmentId { get; init; } = string.Empty;
 
         /// <summary>
         /// Gets or sets a value that determines if the client uses resilience policies.
@@ -67,5 +68,20 @@ namespace Kontent.Ai.Delivery.Abstractions
         /// If no value is specified, asset URLs will always point to non-customized variant of the image.
         /// </summary>
         public string? DefaultRenditionPreset { get; init; }
+
+        /// <summary>
+        /// Validates cross-field constraints for delivery options.
+        /// Ensures mutual exclusivity of <see cref="UsePreviewApi"/> and <see cref="UseSecureAccess"/>.
+        /// Uses yield semantics so other attribute-based validations also execute.
+        /// </summary>
+        public IEnumerable<ValidationResult> Validate(ValidationContext validationContext)
+        {
+            if (UsePreviewApi && UseSecureAccess)
+            {
+                yield return new ValidationResult(
+                    "Cannot use both Preview API and Secure Access simultaneously.",
+                    new[] { nameof(UsePreviewApi), nameof(UseSecureAccess) });
+            }
+        }
     }
 }
