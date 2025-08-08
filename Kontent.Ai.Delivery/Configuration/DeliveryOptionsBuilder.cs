@@ -16,7 +16,6 @@ namespace Kontent.Ai.Delivery.Configuration
         /// <param name="environmentId">The identifier of a Kontent.ai environment.</param>
         public static DeliveryOptionsBuilder Create(string environmentId)
         {
-            environmentId.ValidateEnvironmentId();
             return new DeliveryOptionsBuilder(environmentId);
         }
 
@@ -26,7 +25,6 @@ namespace Kontent.Ai.Delivery.Configuration
         /// <param name="environmentId">The identifier of a Kontent.ai environment.</param>
         public static DeliveryOptionsBuilder Create(Guid environmentId)
         {
-            environmentId.ValidateEnvironmentId();
             return new DeliveryOptionsBuilder(environmentId.ToString());
         }
 
@@ -57,7 +55,6 @@ namespace Kontent.Ai.Delivery.Configuration
         /// <param name="secureAccessApiKey">An API key for secure access.</param>
         public DeliveryOptionsBuilder UseProduction(string secureAccessApiKey)
         {
-            secureAccessApiKey.ValidateApiKey(nameof(secureAccessApiKey));
             _options = _options with { UsePreviewApi = false, UseSecureAccess = true, SecureAccessApiKey = secureAccessApiKey };
             return this;
         }
@@ -68,7 +65,6 @@ namespace Kontent.Ai.Delivery.Configuration
         /// <param name="previewApiKey">A Preview API key.</param>
         public DeliveryOptionsBuilder UsePreview(string previewApiKey)
         {
-            previewApiKey.ValidateApiKey(nameof(previewApiKey));
             _options = _options with { UsePreviewApi = true, PreviewApiKey = previewApiKey, UseSecureAccess = false };
             return this;
         }
@@ -88,7 +84,6 @@ namespace Kontent.Ai.Delivery.Configuration
         /// <param name="endpoint">A custom endpoint URL.</param>
         public DeliveryOptionsBuilder WithCustomEndpoint(string endpoint)
         {
-            endpoint.ValidateCustomEndpoint();
             SetCustomEndpoint(endpoint);
             return this;
         }
@@ -99,7 +94,6 @@ namespace Kontent.Ai.Delivery.Configuration
         /// <param name="endpoint">A custom endpoint URI.</param>
         public DeliveryOptionsBuilder WithCustomEndpoint(Uri endpoint)
         {
-            endpoint.ValidateCustomEndpoint();
             SetCustomEndpoint(endpoint.AbsoluteUri);
             return this;
         }
@@ -111,17 +105,6 @@ namespace Kontent.Ai.Delivery.Configuration
         public DeliveryOptionsBuilder WithDefaultRenditionPreset(string presetCodename)
         {
             _options = _options with { DefaultRenditionPreset = presetCodename };
-            return this;
-        }
-
-        /// <summary>
-        /// Configure custom retry policy options.
-        /// </summary>
-        /// <param name="retryPolicyOptions">Configuration of the retry policy.</param>
-        public DeliveryOptionsBuilder WithRetryPolicyOptions(DefaultRetryPolicyOptions retryPolicyOptions)
-        {
-            retryPolicyOptions.ValidateRetryPolicyOptions();
-            _options = _options with { DefaultRetryPolicyOptions = retryPolicyOptions };
             return this;
         }
 
@@ -140,11 +123,7 @@ namespace Kontent.Ai.Delivery.Configuration
         /// <summary>
         /// Returns a new instance of the <see cref="DeliveryOptions"/> class.
         /// </summary>
-        public DeliveryOptions Build()
-        {
-            _options.Validate();
-            return _options;
-        }
+        public DeliveryOptions Build() => _options;
 
         #region Explicit interface implementations for IDeliveryOptionsBuilder
 
@@ -155,7 +134,6 @@ namespace Kontent.Ai.Delivery.Configuration
         IDeliveryOptionsBuilder IDeliveryOptionsBuilder.WithCustomEndpoint(string endpoint) => WithCustomEndpoint(endpoint);
         IDeliveryOptionsBuilder IDeliveryOptionsBuilder.WithCustomEndpoint(Uri endpoint) => WithCustomEndpoint(endpoint);
         IDeliveryOptionsBuilder IDeliveryOptionsBuilder.WithDefaultRenditionPreset(string presetCodename) => WithDefaultRenditionPreset(presetCodename);
-        IDeliveryOptionsBuilder IDeliveryOptionsBuilder.WithRetryPolicyOptions(DefaultRetryPolicyOptions retryPolicyOptions) => WithRetryPolicyOptions(retryPolicyOptions);
 
         #endregion
     }
@@ -172,7 +150,6 @@ namespace Kontent.Ai.Delivery.Configuration
         private string _previewEndpoint = "https://preview-deliver.kontent.ai/";
         private string? _previewApiKey;
         private bool _usePreviewApi;
-        private bool _waitForLoadingNewContent;
         private bool _includeTotalCount;
         private bool _useSecureAccess;
         private string? _secureAccessApiKey;
@@ -182,7 +159,6 @@ namespace Kontent.Ai.Delivery.Configuration
         [Obsolete]
         IDeliveryApiConfiguration ILegacyDeliveryOptionsBuilder.WithEnvironmentId(string environmentId)
         {
-            environmentId.ValidateEnvironmentId();
             _environmentId = environmentId;
             return this;
         }
@@ -190,17 +166,10 @@ namespace Kontent.Ai.Delivery.Configuration
         [Obsolete]
         IDeliveryApiConfiguration ILegacyDeliveryOptionsBuilder.WithEnvironmentId(Guid environmentId)
         {
-            environmentId.ValidateEnvironmentId();
             _environmentId = environmentId.ToString();
             return this;
         }
 
-        [Obsolete]
-        IOptionalDeliveryConfiguration IOptionalDeliveryConfiguration.WaitForLoadingNewContent()
-        {
-            _waitForLoadingNewContent = true;
-            return this;
-        }
 
         [Obsolete]
         IOptionalDeliveryConfiguration IOptionalDeliveryConfiguration.IncludeTotalCount()
@@ -219,7 +188,6 @@ namespace Kontent.Ai.Delivery.Configuration
         [Obsolete]
         IOptionalDeliveryConfiguration IOptionalDeliveryConfiguration.WithDefaultRetryPolicyOptions(DefaultRetryPolicyOptions retryPolicyOptions)
         {
-            retryPolicyOptions.ValidateRetryPolicyOptions();
             _defaultRetryPolicyOptions = retryPolicyOptions;
             return this;
         }
@@ -227,7 +195,6 @@ namespace Kontent.Ai.Delivery.Configuration
         [Obsolete]
         IOptionalDeliveryConfiguration IDeliveryApiConfiguration.UsePreviewApi(string previewApiKey)
         {
-            previewApiKey.ValidateApiKey(nameof(previewApiKey));
             _previewApiKey = previewApiKey;
             _usePreviewApi = true;
             return this;
@@ -240,7 +207,6 @@ namespace Kontent.Ai.Delivery.Configuration
         [Obsolete]
         IOptionalDeliveryConfiguration IDeliveryApiConfiguration.UseProductionApi(string secureAccessApiKey)
         {
-            secureAccessApiKey.ValidateApiKey(nameof(secureAccessApiKey));
             _secureAccessApiKey = secureAccessApiKey;
             _useSecureAccess = true;
             return this;
@@ -249,7 +215,6 @@ namespace Kontent.Ai.Delivery.Configuration
         [Obsolete]
         IOptionalDeliveryConfiguration IOptionalDeliveryConfiguration.WithCustomEndpoint(string endpoint)
         {
-            endpoint.ValidateCustomEndpoint();
             SetCustomEndpoint(endpoint);
             return this;
         }
@@ -257,7 +222,6 @@ namespace Kontent.Ai.Delivery.Configuration
         [Obsolete]
         IOptionalDeliveryConfiguration IOptionalDeliveryConfiguration.WithCustomEndpoint(Uri endpoint)
         {
-            endpoint.ValidateCustomEndpoint();
             SetCustomEndpoint(endpoint.AbsoluteUri);
             return this;
         }
@@ -291,15 +255,12 @@ namespace Kontent.Ai.Delivery.Configuration
                 PreviewEndpoint = _previewEndpoint,
                 PreviewApiKey = _previewApiKey,
                 UsePreviewApi = _usePreviewApi,
-                WaitForLoadingNewContent = _waitForLoadingNewContent,
                 IncludeTotalCount = _includeTotalCount,
                 UseSecureAccess = _useSecureAccess,
                 SecureAccessApiKey = _secureAccessApiKey,
-                DefaultRetryPolicyOptions = _defaultRetryPolicyOptions,
                 DefaultRenditionPreset = _defaultRenditionPreset
             };
 
-            options.Validate();
             return options;
         }
     }

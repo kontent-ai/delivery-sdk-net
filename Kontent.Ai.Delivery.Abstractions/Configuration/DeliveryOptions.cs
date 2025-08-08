@@ -1,4 +1,4 @@
-﻿using System;
+﻿using System.ComponentModel.DataAnnotations;
 
 namespace Kontent.Ai.Delivery.Abstractions
 {
@@ -10,7 +10,9 @@ namespace Kontent.Ai.Delivery.Abstractions
         /// <summary>
         /// Gets or sets the environment ID.
         /// </summary>
-        public string EnvironmentId { get; init; } = string.Empty;
+        [Required]
+        [RegularExpression(@"^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$", ErrorMessage = "The environment ID must be a valid GUID.")]
+        public required string EnvironmentId { get; init; }
 
         /// <summary>
         /// Gets or sets a value that determines if the client uses resilience policies.
@@ -30,6 +32,8 @@ namespace Kontent.Ai.Delivery.Abstractions
         /// <summary>
         /// Gets or sets the API key that is used to retrieve content with the Preview API.
         /// </summary>
+        [RequiredIf(nameof(UsePreviewApi), true, ErrorMessage = "PreviewApiKey is required when using the Preview API.")]
+        [RegularExpression(@"[A-Za-z0-9-_]+\.[A-Za-z0-9-_]+\.[A-Za-z0-9-_]+", ErrorMessage = "The Preview API key must be a valid API key.")]
         public string? PreviewApiKey { get; init; }
 
         /// <summary>
@@ -37,13 +41,6 @@ namespace Kontent.Ai.Delivery.Abstractions
         /// If the Preview API is used the <see cref="PreviewApiKey"/> must be set.
         /// </summary>
         public bool UsePreviewApi { get; init; } = false;
-
-        /// <summary>
-        /// Gets or sets a value that determines if the client provides content that is always up-to-date.
-        /// We recommend to wait for new content when you have received a webhook notification.
-        /// However, the request might take longer than usual to complete.
-        /// </summary>
-        public bool WaitForLoadingNewContent { get; init; }
 
         /// <summary>
         /// Gets or sets a value that determines if the client sends the secure access API key to retrieve content with the Production API.
@@ -55,12 +52,9 @@ namespace Kontent.Ai.Delivery.Abstractions
         /// <summary>
         /// Gets or sets the API key that is used to retrieve content with the Production API when secure access is enabled.
         /// </summary>
+        [RequiredIf(nameof(UseSecureAccess), true, ErrorMessage = "SecureAccessApiKey is required when using the Production API with secure access.")]
+        [RegularExpression(@"[A-Za-z0-9-_]+\.[A-Za-z0-9-_]+\.[A-Za-z0-9-_]+", ErrorMessage = "The Secure Access API key must be a valid API key.")]
         public string? SecureAccessApiKey { get; init; }
-
-        /// <summary>
-        /// Gets or sets configuration of the default retry policy.
-        /// </summary>
-        public DefaultRetryPolicyOptions DefaultRetryPolicyOptions { get; init; } = new DefaultRetryPolicyOptions();
 
         /// <summary>
         /// Gets or sets a value that determines if the client includes the total number of items matching the search criteria in response.
@@ -73,11 +67,5 @@ namespace Kontent.Ai.Delivery.Abstractions
         /// If no value is specified, asset URLs will always point to non-customized variant of the image.
         /// </summary>
         public string? DefaultRenditionPreset { get; init; }
-
-        /// <summary>
-        /// The name of the service configuration this options object is related to.
-        /// </summary>
-        [Obsolete("#312")]
-        internal string? Name { get; init; }
     }
 }
