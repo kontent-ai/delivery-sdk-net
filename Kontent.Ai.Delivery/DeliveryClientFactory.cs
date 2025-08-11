@@ -1,4 +1,6 @@
-﻿namespace Kontent.Ai.Delivery
+﻿using Microsoft.Extensions.DependencyInjection;
+
+namespace Kontent.Ai.Delivery
 {
     /// <summary>
     /// A factory class for <see cref="IDeliveryClient"/>
