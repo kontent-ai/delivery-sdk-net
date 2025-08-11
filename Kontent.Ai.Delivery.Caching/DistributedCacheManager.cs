@@ -47,7 +47,7 @@ namespace Kontent.Ai.Delivery.Caching
                     return Value;
                 }
             }
-            catch(Exception ex) when (ex is not ArgumentNullException && _cacheOptions.DistributedCacheResilientPolicy == DistributedCacheResilientPolicy.FallbackToApi) 
+            catch (Exception ex) when (ex is not ArgumentNullException && _cacheOptions.DistributedCacheResilientPolicy == DistributedCacheResilientPolicy.FallbackToApi)
             {
                 _logger.LogWarning(ex, "Distributed cache is not available. Default DeliveryClient was used to get content from Delivery API.");
                 return await valueFactory();

@@ -3,7 +3,6 @@ using System.Linq;
 using System.Net;
 using System.Net.Http;
 using System.Threading.Tasks;
-using Kontent.Ai.Delivery.Abstractions;
 using Kontent.Ai.Delivery.Extensions;
 
 namespace Kontent.Ai.Delivery.RetryPolicy

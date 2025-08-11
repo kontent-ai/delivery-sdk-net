@@ -1,5 +1,4 @@
-﻿using Kontent.Ai.Delivery.Abstractions;
-using Kontent.Ai.Delivery.SharedModels;
+﻿using Kontent.Ai.Delivery.SharedModels;
 using Newtonsoft.Json;
 
 namespace Kontent.Ai.Delivery.ContentTypes
@@ -23,7 +22,7 @@ namespace Kontent.Ai.Delivery.ContentTypes
         {
             Type = type;
         }
-        
+
         /// <summary>
         /// Initializes a new instance of the <see cref="DeliveryTypeResponse"/> class.
         /// </summary>

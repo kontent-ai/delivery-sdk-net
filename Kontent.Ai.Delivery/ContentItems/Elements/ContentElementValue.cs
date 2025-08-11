@@ -1,5 +1,4 @@
-﻿using Kontent.Ai.Delivery.Abstractions;
-using Newtonsoft.Json;
+﻿using Newtonsoft.Json;
 
 namespace Kontent.Ai.Delivery.ContentItems.Elements
 {
@@ -7,18 +6,18 @@ namespace Kontent.Ai.Delivery.ContentItems.Elements
     {
         /// <inheritdoc/>
         [JsonProperty("type")]
-        public string Type { get; internal set; }
+        public required string Type { get; internal set; }
 
         /// <inheritdoc/>
         [JsonProperty("value")]
-        public T Value { get; internal set; }
+        public required T Value { get; internal set; }
 
         /// <inheritdoc/>
         [JsonProperty("name")]
-        public string Name { get; internal set; }
+        public required string Name { get; internal set; }
 
         /// <inheritdoc/>
         [JsonProperty("codename")]
-        public string Codename { get; internal set; }
+        public required string Codename { get; internal set; }
     }
 }

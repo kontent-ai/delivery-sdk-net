@@ -22,7 +22,7 @@ namespace Kontent.Ai.Delivery.Caching.Tests
         /// <typeparam name="T">Type of object that the exceptions is applied to.</typeparam>
         /// <param name="o">Type-specific behavior options.</param>
         /// <param name="precision">The maximum amount of milliseconds which the two values may differ.</param>
-        public static EquivalencyAssertionOptions<T> ApproximateDateTimes<T>(this EquivalencyAssertionOptions<T> o, int precision) 
+        public static EquivalencyAssertionOptions<T> ApproximateDateTimes<T>(this EquivalencyAssertionOptions<T> o, int precision)
         {
             return o.Using<DateTime>(ctx => ctx.Subject.Should().BeCloseTo(ctx.Expectation, TimeSpan.FromMilliseconds(precision))).WhenTypeIs<DateTime>();
         }

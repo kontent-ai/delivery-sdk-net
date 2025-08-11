@@ -24,10 +24,10 @@
         /// Gets rendition height in pixels.
         /// </summary>
         int Height { get; }
-        
+
         /// <summary>
         /// Gets query string parameters used for image transformations.
         /// </summary>
-        string Query { get;}
+        string Query { get; }
     }
 }

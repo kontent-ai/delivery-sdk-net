@@ -1,5 +1,4 @@
-﻿using Kontent.Ai.Delivery.Abstractions;
-using Kontent.Ai.Delivery.SharedModels;
+﻿using Kontent.Ai.Delivery.SharedModels;
 
 namespace Kontent.Ai.Delivery.ContentItems
 {

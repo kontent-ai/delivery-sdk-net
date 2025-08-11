@@ -1,8 +1,4 @@
-﻿using System;
-using Kontent.Ai.Delivery.Abstractions;
-using Microsoft.Extensions.DependencyInjection;
-
-namespace Kontent.Ai.Delivery
+﻿namespace Kontent.Ai.Delivery
 {
     /// <summary>
     /// A factory class for <see cref="IDeliveryClient"/>
@@ -11,7 +7,7 @@ namespace Kontent.Ai.Delivery
     {
         private readonly IServiceProvider _serviceProvider;
         private string _notImplementExceptionMessage = "The default implementation does not support retrieving clients by name. Please use the Kontent.Ai.Delivery.Extensions.Autofac.DependencyInjection or implement your own factory.";
-        
+
         /// <summary>
         /// Initializes a new instance of the <see cref="DeliveryClientFactory"/> class.
         /// </summary>

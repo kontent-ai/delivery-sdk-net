@@ -1,5 +1,4 @@
 ﻿using System.Collections.Generic;
-using Kontent.Ai.Delivery.Abstractions;
 using Newtonsoft.Json;
 using Kontent.Ai.Delivery.SharedModels;
 

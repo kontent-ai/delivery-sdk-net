@@ -1,5 +1,4 @@
 ﻿using System;
-using Kontent.Ai.Delivery.Abstractions;
 
 namespace Kontent.Ai.Delivery.Configuration
 {
@@ -98,7 +97,7 @@ namespace Kontent.Ai.Delivery.Configuration
         /// Please note that using this option might increase the response time.
         /// </summary>
         IOptionalDeliveryConfiguration IncludeTotalCount();
-        
+
         /// <summary>
         /// Change configuration of the default retry policy.
         /// </summary>

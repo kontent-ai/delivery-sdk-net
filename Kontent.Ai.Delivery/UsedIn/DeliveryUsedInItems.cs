@@ -1,6 +1,5 @@
 ﻿using System;
 using System.Threading.Tasks;
-using Kontent.Ai.Delivery.Abstractions;
 
 namespace Kontent.Ai.Delivery.UsedIn
 {
@@ -33,7 +32,7 @@ namespace Kontent.Ai.Delivery.UsedIn
         /// </summary>
         /// <param name="continuationToken">Optional explicit continuation token that allows you to get the next batch from a specific point in the feed.</param>
         /// <returns>Instance of <see cref="DeliveryUsedInResponse"/> class that contains a list of strongly typed content items.</returns>
-        public async Task<IDeliveryItemsFeedResponse<IUsedInItem>> FetchNextBatchAsync(string continuationToken = null)
+        public async Task<IDeliveryItemsFeedResponse<IUsedInItem>> FetchNextBatchAsync(string? continuationToken = null)
         {
             if (!HasMoreResults)
             {
@@ -46,7 +45,7 @@ namespace Kontent.Ai.Delivery.UsedIn
             {
                 return new DeliveryUsedInResponse(response.ApiResponse, null);
             }
-            
+
             _continuationToken = response.ApiResponse.ContinuationToken;
             HasMoreResults = !string.IsNullOrEmpty(response.ApiResponse.ContinuationToken);
 

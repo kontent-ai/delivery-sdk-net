@@ -1,5 +1,4 @@
 ﻿using System.Diagnostics;
-using Kontent.Ai.Delivery.Abstractions;
 using Newtonsoft.Json;
 
 namespace Kontent.Ai.Delivery.ContentTypes.Element

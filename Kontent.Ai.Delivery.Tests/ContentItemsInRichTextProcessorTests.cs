@@ -36,7 +36,7 @@ namespace Kontent.Ai.Delivery.Tests
             var inlineContentItemsProcessor = InlineContentItemsProcessorFactory
                 .WithResolver(factory => factory.ResolveToMessage<DummyItem>(string.Empty))
                 .Build();
-            var processedContentItems = new Dictionary<string, object> {{insertedContentName1, new DummyItem()}, {insertedContentName2, new DummyItem()} };
+            var processedContentItems = new Dictionary<string, object> { { insertedContentName1, new DummyItem() }, { insertedContentName2, new DummyItem() } };
 
             var result = await inlineContentItemsProcessor.ProcessAsync(input, processedContentItems);
 
@@ -405,7 +405,7 @@ namespace Kontent.Ai.Delivery.Tests
             const string insertedContentName = "dummyCodename1";
             var wrapperWithObject = GetContentItemObjectElement(insertedContentName);
 
-            var inputHtml = 
+            var inputHtml =
                 $"A hyper-hybrid socialization &amp; turbocharges adaptive {wrapperWithObject} frameworks"
                 + " by thinking outside of the box, while the support structures influence the mediators.";
             const string insertedContentItemValue = "dummyValue";
@@ -419,7 +419,7 @@ namespace Kontent.Ai.Delivery.Tests
 
             var result = await inlineContentItemsProcessor.ProcessAsync(inputHtml, processedContentItems);
 
-            var expectedResults = 
+            var expectedResults =
                 "A hyper-hybrid socialization &amp; turbocharges adaptive [Inline content item resolver provided an invalid HTML 5 fragment (1:3)."
                 + $" Please check the output for a content item dummyCodename1 of type {typeof(DummyItem).FullName}.]"
                 + " frameworks by thinking outside of the box, while the support structures influence the mediators.";
@@ -454,7 +454,7 @@ namespace Kontent.Ai.Delivery.Tests
                 " The thought leaders target a teamwork-oriented silo.\n" +
                 "A documented high quality enables our unique, outside -in and customer-centric tailwinds." +
                 $"It's not about our targets. {insertedImage2} It's about infrastructures.";
-            var expectedOutput = 
+            var expectedOutput =
                 $"Opting out of business line is not a choice. {WrapElementWithDivs(string.Empty)} A radical, unified, highly-curated and" +
                 " digitized realignment transfers a touchpoint. As a result, the attackers empower our well-planned" +
                 $" brainstorming spaces. It's not about our evidence-based customer centricity. It's about brandings. {WrapElementWithDivs(string.Empty)}" +

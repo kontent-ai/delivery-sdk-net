@@ -1,5 +1,4 @@
 ﻿using System.Collections.Generic;
-using Kontent.Ai.Delivery.Abstractions;
 using Kontent.Ai.Delivery.SharedModels;
 using Newtonsoft.Json;
 
@@ -27,12 +26,12 @@ namespace Kontent.Ai.Delivery.ContentItems
         /// <param name="items">A collection of content items of a specific type.</param>
         /// <param name="pagination">Response paging information.</param>
         [JsonConstructor]
-        internal DeliveryItemListingResponse(ApiResponse response, IList<T> items,IPagination pagination) : base(response)
+        internal DeliveryItemListingResponse(ApiResponse response, IList<T> items, IPagination pagination) : base(response)
         {
             Items = items;
             Pagination = pagination;
         }
-        
+
         /// <summary>
         /// Initializes a new instance of the <see cref="DeliveryItemListingResponse{T}"/> class.
         /// </summary>

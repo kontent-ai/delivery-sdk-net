@@ -1,5 +1,4 @@
 ﻿using System.Collections.Generic;
-using Kontent.Ai.Delivery.Abstractions;
 using Newtonsoft.Json;
 using System.Diagnostics;
 
@@ -36,7 +35,7 @@ namespace Kontent.Ai.Delivery.ContentItems
         /// <inheritdoc/>
         [JsonProperty("height")]
         public int Height { get; internal set; }
-        
+
         /// <inheritdoc/>
         [JsonProperty("renditions")]
         public Dictionary<string, IAssetRendition> Renditions { get; internal set; }

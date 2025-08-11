@@ -1,6 +1,4 @@
-﻿using Kontent.Ai.Delivery.Abstractions;
-
-namespace Kontent.Ai.Delivery.SharedModels
+﻿namespace Kontent.Ai.Delivery.SharedModels
 {
     /// <summary>
     /// Represents a successful response from Kontent.ai Delivery API.

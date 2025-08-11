@@ -4,7 +4,6 @@ using System.Linq;
 using System.Net;
 using System.Text.RegularExpressions;
 using System.Threading.Tasks;
-using Kontent.Ai.Delivery.Abstractions;
 
 namespace Kontent.Ai.Delivery.ContentItems.ContentLinks
 {

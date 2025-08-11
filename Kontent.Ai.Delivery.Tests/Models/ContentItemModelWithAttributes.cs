@@ -41,7 +41,7 @@ namespace Kontent.Ai.Delivery.Tests.Models
 
         [JsonProperty("complete_type_taxonomy")]
         public IEnumerable<ITaxonomyTerm> CompleteTypeTaxonomyWithADifferentName { get; set; }
-        
+
         public IContentItemSystemAttributes System { get; set; }
     }
 }

@@ -1,5 +1,4 @@
 ﻿using System.Collections.Generic;
-using Kontent.Ai.Delivery.Abstractions;
 
 namespace Kontent.Ai.Delivery.ContentItems
 {
@@ -18,7 +17,7 @@ namespace Kontent.Ai.Delivery.ContentItems
         {
             Items = items;
         }
-        
+
         /// <summary>
         /// Initializes a new instance of the <see cref="DeliveryItemsFeedResponse{T}"/> class.
         /// </summary>

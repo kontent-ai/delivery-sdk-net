@@ -1,6 +1,4 @@
 using System.Threading.Tasks;
-using Kontent.Ai.Delivery.Abstractions;
-using Kontent.Ai.Delivery.Api.QueryParams.Languages;
 using Refit;
 
 namespace Kontent.Ai.Delivery.Api;
@@ -17,6 +15,7 @@ public partial interface IDeliveryApi
     internal Task<IDeliveryLanguageListingResponse> GetLanguagesInternalAsync(
         [Query] LanguagesParams? queryParameters = null,
         [Header("X-KC-Wait-For-Loading-New-Content")] bool? waitForLoadingNewContent = null);
+/// <inheritdoc/>
 
     // Public forward
     public Task<IDeliveryLanguageListingResponse> GetLanguagesAsync(

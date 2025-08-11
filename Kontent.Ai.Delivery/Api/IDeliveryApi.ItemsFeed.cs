@@ -1,6 +1,4 @@
 using System.Threading.Tasks;
-using Kontent.Ai.Delivery.Abstractions;
-using Kontent.Ai.Delivery.Api.QueryParams.Items;
 using Refit;
 
 namespace Kontent.Ai.Delivery.Api;

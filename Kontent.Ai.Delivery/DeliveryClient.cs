@@ -1,18 +1,4 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Threading.Tasks;
-using Kontent.Ai.Delivery.Abstractions;
-using Kontent.Ai.Delivery.Api;
-using Kontent.Ai.Delivery.Api.QueryParams.Items;
-using Kontent.Ai.Delivery.Api.QueryParams.Languages;
-using Kontent.Ai.Delivery.Api.QueryParams.TaxonomyGroups;
-using Kontent.Ai.Delivery.Api.QueryParams.Types;
-using Kontent.Ai.Delivery.ContentItems;
-using Kontent.Ai.Delivery.UsedIn;
-using Kontent.Ai.Urls.Delivery.QueryParameters;
-using Kontent.Ai.Urls.Delivery.QueryParameters.Filters;
-using Microsoft.Extensions.Options;
+﻿using Microsoft.Extensions.Options;
 
 namespace Kontent.Ai.Delivery
 {
@@ -319,7 +305,7 @@ namespace Kontent.Ai.Delivery
                 var lang = parameters.OfType<LanguageParameter>().FirstOrDefault();
                 if (lang != null) Language = lang.Language;
                 return this;
-                
+
             }
 
             public ParamsAdapter WithElements(IEnumerable<IQueryParameter> parameters)
@@ -369,7 +355,7 @@ namespace Kontent.Ai.Delivery
             {
                 // Explicit IncludeTotalCount parameter wins; otherwise use global option
                 var explicitParam = parameters.OfType<IncludeTotalCountParameter>().Any();
-                IncludeTotalCount = explicitParam ? true : (bool?) (globalInclude ? true : null);
+                IncludeTotalCount = explicitParam ? true : (bool?)(globalInclude ? true : null);
                 return this;
             }
 

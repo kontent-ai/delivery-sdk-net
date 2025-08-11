@@ -1,5 +1,4 @@
-﻿using Kontent.Ai.Delivery.Abstractions;
-using Newtonsoft.Json;
+﻿using Newtonsoft.Json;
 
 namespace Kontent.Ai.Delivery.SharedModels
 {
@@ -7,11 +6,11 @@ namespace Kontent.Ai.Delivery.SharedModels
     {
         /// <inheritdoc/>
         [JsonProperty("message")]
-        public string Message { get; internal set; }
+        public required string Message { get; internal set; }
 
         /// <inheritdoc/>
         [JsonProperty("request_id")]
-        public string RequestId { get; internal set; }
+        public required string RequestId { get; internal set; }
 
         /// <inheritdoc/>
         [JsonProperty("error_code")]

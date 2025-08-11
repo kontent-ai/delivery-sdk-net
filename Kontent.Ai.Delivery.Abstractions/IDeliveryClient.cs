@@ -52,6 +52,7 @@ namespace Kontent.Ai.Delivery.Abstractions
         /// </summary>
         /// <param name="contentTypeCodename">The codename of the content type.</param>
         /// <param name="contentElementCodename">The codename of the content type element.</param>
+        /// <param name="parameters"></param>
         /// <returns>The <see cref="IDeliveryElementResponse"/> instance that contains the specified content type element.</returns>
         Task<IDeliveryElementResponse> GetContentElementAsync(string contentTypeCodename, string contentElementCodename, IEnumerable<IQueryParameter>? parameters = null);
 

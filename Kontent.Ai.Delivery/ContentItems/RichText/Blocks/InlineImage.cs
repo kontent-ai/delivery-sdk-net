@@ -1,5 +1,4 @@
-﻿using Kontent.Ai.Delivery.Abstractions;
-using Kontent.Ai.Delivery.ContentItems.RichText.Attributes;
+﻿using Kontent.Ai.Delivery.ContentItems.RichText.Attributes;
 using Newtonsoft.Json;
 using System;
 using System.Diagnostics;

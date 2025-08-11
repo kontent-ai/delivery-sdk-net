@@ -1,6 +1,4 @@
-﻿using System;
-using Kontent.Ai.Delivery.Abstractions;
-using Newtonsoft.Json;
+﻿using Newtonsoft.Json;
 
 namespace Kontent.Ai.Delivery.ContentItems
 {
@@ -26,7 +24,7 @@ namespace Kontent.Ai.Delivery.ContentItems
         /// <inheritdoc/>
         [JsonProperty("query")]
         public string Query { get; set; }
-        
+
         /// <summary>
         /// Initializes a new instance of the <see cref="AssetRendition"/> class.
         /// </summary>

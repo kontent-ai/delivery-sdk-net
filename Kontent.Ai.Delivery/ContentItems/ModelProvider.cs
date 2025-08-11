@@ -5,7 +5,6 @@ using System.Linq;
 using System.Reflection;
 using System.Threading.Tasks;
 using AngleSharp.Html.Parser;
-using Kontent.Ai.Delivery.Abstractions;
 using Kontent.Ai.Delivery.ContentItems.ContentLinks;
 using Kontent.Ai.Delivery.ContentItems.Elements;
 using Kontent.Ai.Delivery.ContentItems.InlineContentItems;
@@ -81,10 +80,10 @@ namespace Kontent.Ai.Delivery.ContentItems
         public async Task<T> GetContentItemModelAsync<T>(object item, IEnumerable linkedItems)
             => (T)await GetContentItemModelAsync(typeof(T), (JToken)item, (JObject)linkedItems);
 
-        internal async Task<object> GetContentItemModelAsync(Type modelType, JToken serializedItem, JObject linkedItems, Dictionary<string, object> processedItems = null, HashSet<RichTextContentElements> currentlyResolvedRichStrings = null)
+        internal async Task<object> GetContentItemModelAsync(Type modelType, JToken serializedItem, JObject linkedItems, Dictionary<string, object>? processedItems = null, HashSet<RichTextContentElements>? currentlyResolvedRichStrings = null)
         {
             processedItems ??= new Dictionary<string, object>();
-            IContentItemSystemAttributes itemSystemAttributes = serializedItem?["system"]?.ToObject<IContentItemSystemAttributes>(Serializer);
+            IContentItemSystemAttributes? itemSystemAttributes = serializedItem?["system"]?.ToObject<IContentItemSystemAttributes>(Serializer);
 
             var instance = CreateInstance(modelType, ref itemSystemAttributes, ref processedItems);
             if (instance == null)
@@ -177,9 +176,9 @@ namespace Kontent.Ai.Delivery.ContentItems
             return instance;
         }
 
-        private static JObject GetElementData(JToken serializedItem)
+        private static JObject? GetElementData(JToken serializedItem)
         {
-            var elementsData = (JObject)serializedItem?["elements"];
+            var elementsData = (JObject?)serializedItem?["elements"];
             if (elementsData == null)
             {
                 return null;
@@ -389,7 +388,7 @@ namespace Kontent.Ai.Delivery.ContentItems
             {
                 return new AssetElementValueConverter(DeliveryOptions);
             }
-            
+
             return null;
         }
 

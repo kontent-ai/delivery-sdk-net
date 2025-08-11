@@ -1,5 +1,4 @@
 ﻿using System;
-using Kontent.Ai.Delivery.Abstractions;
 
 namespace Kontent.Ai.Delivery.Configuration
 {

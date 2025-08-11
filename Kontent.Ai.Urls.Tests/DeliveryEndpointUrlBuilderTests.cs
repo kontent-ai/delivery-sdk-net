@@ -18,7 +18,7 @@ public class DeliveryEndpointUrlBuilderTests
         {
             CurrentValue = options;
         }
-        
+
         public T Get(string name)
         {
             throw new NotImplementedException();
@@ -29,7 +29,7 @@ public class DeliveryEndpointUrlBuilderTests
             throw new NotImplementedException();
         }
     }
-        
+
     [Fact]
     public void GetItemUrl_ConstructedWithDeliveryOptionsMonitor_ReturnsItemUrl()
     {
@@ -42,7 +42,7 @@ public class DeliveryEndpointUrlBuilderTests
         var expectedItemUrl = $"https://deliver.kontent.ai:443/{options.EnvironmentId}/items/item_codename";
         Assert.Equal(expectedItemUrl, actualItemUrl);
     }
-    
+
     [Fact]
     public void GetItemsUrl_ReturnsItemsUrl()
     {
@@ -55,7 +55,7 @@ public class DeliveryEndpointUrlBuilderTests
         var expectedItemsUrl = $"https://deliver.kontent.ai:443/{options.EnvironmentId}/items";
         Assert.Equal(expectedItemsUrl, actualItemsUrl);
     }
-    
+
     [Fact]
     public void GetItemsFeedUrl_ReturnsItemsFeedUrl()
     {
@@ -68,7 +68,7 @@ public class DeliveryEndpointUrlBuilderTests
         var expectedItemsFeedUrl = $"https://deliver.kontent.ai:443/{options.EnvironmentId}/items-feed";
         Assert.Equal(expectedItemsFeedUrl, actualItemsFeedUrl);
     }
-    
+
     [Fact]
     public void GetTypeUrl_ReturnsTypeUrl()
     {
@@ -81,7 +81,7 @@ public class DeliveryEndpointUrlBuilderTests
         var expectedTypeUrl = $"https://deliver.kontent.ai:443/{options.EnvironmentId}/types/type_codename";
         Assert.Equal(expectedTypeUrl, actualTypeUrl);
     }
-    
+
     [Fact]
     public void GetTypesUrl_ReturnsTypesUrl()
     {
@@ -94,7 +94,7 @@ public class DeliveryEndpointUrlBuilderTests
         var expectedTypesUrl = $"https://deliver.kontent.ai:443/{options.EnvironmentId}/types";
         Assert.Equal(expectedTypesUrl, actualTypesUrl);
     }
-    
+
     [Fact]
     public void GetContentElementUrl_ReturnsContentElementUrl()
     {
@@ -108,7 +108,7 @@ public class DeliveryEndpointUrlBuilderTests
         var expectedContentElementUrl = $"https://deliver.kontent.ai:443/{options.EnvironmentId}/types/content_type_codename/elements/content_element_codename";
         Assert.Equal(expectedContentElementUrl, actualContentElementUrl);
     }
-    
+
     [Fact]
     public void GetTaxonomyUrl_ReturnsTaxonomyUrl()
     {
@@ -121,7 +121,7 @@ public class DeliveryEndpointUrlBuilderTests
         var expectedTaxonomyUrl = $"https://deliver.kontent.ai:443/{options.EnvironmentId}/taxonomies/taxonomy_codename";
         Assert.Equal(expectedTaxonomyUrl, actualTaxonomyUrl);
     }
-    
+
     [Fact]
     public void GetTaxonomiesUrl_ReturnsTaxonomiesUrl()
     {
@@ -134,7 +134,7 @@ public class DeliveryEndpointUrlBuilderTests
         var expectedTaxonomiesUrl = $"https://deliver.kontent.ai:443/{options.EnvironmentId}/taxonomies";
         Assert.Equal(expectedTaxonomiesUrl, actualTaxonomiesUrl);
     }
-    
+
     [Fact]
     public void GetLanguagesUrl_ReturnsLanguagesUrl()
     {

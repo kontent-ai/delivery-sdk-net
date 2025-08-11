@@ -10,7 +10,7 @@ namespace Kontent.Ai.Delivery.Tests.Factories
         public static InlineContentItemsResolverFactory Instance => LazyInstance.Value;
 
         private InlineContentItemsResolverFactory()
-        {            
+        {
         }
 
         public IInlineContentItemsResolver<TContentItem> ResolveToMessage<TContentItem>(string message)
@@ -20,8 +20,8 @@ namespace Kontent.Ai.Delivery.Tests.Factories
             => ResolveToMessage<object>(message);
 
         public IInlineContentItemsResolver<TContentItem> ResolveToType<TContentItem>(bool acceptNull = false)
-            => ResolveTo<TContentItem>(item => acceptNull && item == null 
-                ? typeof(TContentItem).FullName 
+            => ResolveTo<TContentItem>(item => acceptNull && item == null
+                ? typeof(TContentItem).FullName
                 : item.GetType().FullName);
 
         public IInlineContentItemsResolver<object> ResolveByDefaultToType()

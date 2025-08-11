@@ -15,7 +15,7 @@ namespace Kontent.Ai.Delivery.Tests.QueryParameters
     public class IncludeTotalCountTests
     {
         private readonly Guid _environmentId = Guid.NewGuid();
-        private  string BaseUrl => $"https://deliver.kontent.ai/{_environmentId}";
+        private string BaseUrl => $"https://deliver.kontent.ai/{_environmentId}";
         private readonly MockHttpMessageHandler _mockHttp = new MockHttpMessageHandler();
         private DeliveryOptions Options => new DeliveryOptions
         {

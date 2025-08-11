@@ -1,6 +1,4 @@
 using System.Threading.Tasks;
-using Kontent.Ai.Delivery.Api.QueryParams.TaxonomyGroups;
-using Kontent.Ai.Delivery.Abstractions;
 using Refit;
 
 namespace Kontent.Ai.Delivery.Api;
@@ -29,12 +27,14 @@ public partial interface IDeliveryApi
     internal Task<IDeliveryTaxonomyListingResponse> GetTaxonomiesInternalAsync(
         [Query] Api.QueryParams.TaxonomyGroups.ListTaxonomyGroupsParams? queryParameters = null,
         [Header("X-KC-Wait-For-Loading-New-Content")] bool? waitForLoadingNewContent = null);
+/// <inheritdoc/>
 
     // Public forwards
     public Task<IDeliveryTaxonomyResponse> GetTaxonomyAsync(
         string codename,
         bool? waitForLoadingNewContent = null)
         => GetTaxonomyInternalAsync(codename, waitForLoadingNewContent);
+/// <inheritdoc/>
 
     public Task<IDeliveryTaxonomyListingResponse> GetTaxonomiesAsync(
         Api.QueryParams.TaxonomyGroups.ListTaxonomyGroupsParams? queryParameters = null,

@@ -36,7 +36,7 @@ namespace Kontent.Ai.Delivery.Tests.Factories
         {
             var httpClient = GetHttpClient(httpMessageHandler);
             var deliveryHttpClient = new DeliveryHttpClient(httpClient);
-            
+
             var client = new DeliveryClient(
                 DeliveryOptionsFactory.CreateMonitor(options),
                 A.Fake<IModelProvider>(),

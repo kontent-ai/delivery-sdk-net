@@ -1,5 +1,4 @@
-﻿using Kontent.Ai.Delivery.Abstractions;
-using Kontent.Ai.Delivery.ContentTypes;
+﻿using Kontent.Ai.Delivery.ContentTypes;
 using Kontent.Ai.Delivery.SharedModels;
 using Newtonsoft.Json;
 
@@ -24,7 +23,7 @@ namespace Kontent.Ai.Delivery.TaxonomyGroups
         {
             Taxonomy = taxonomy;
         }
-        
+
         /// <summary>
         /// Initializes a new instance of the <see cref="DeliveryTypeResponse"/> class.
         /// </summary>

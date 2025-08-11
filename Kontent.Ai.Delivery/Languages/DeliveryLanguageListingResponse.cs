@@ -1,5 +1,4 @@
-﻿using Kontent.Ai.Delivery.Abstractions;
-using Kontent.Ai.Delivery.SharedModels;
+﻿using Kontent.Ai.Delivery.SharedModels;
 using Newtonsoft.Json;
 using System.Collections.Generic;
 
@@ -32,7 +31,7 @@ namespace Kontent.Ai.Delivery.Languages
             Languages = languages;
             Pagination = pagination;
         }
-        
+
         /// <summary>
         /// Initializes a new instance of the <see cref="DeliveryLanguageListingResponse"/> class.
         /// </summary>

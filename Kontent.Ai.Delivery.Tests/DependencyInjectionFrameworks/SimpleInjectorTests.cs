@@ -16,7 +16,7 @@ namespace Kontent.Ai.Delivery.Tests.DependencyInjectionFrameworks
                 .RegisterInlineContentItemResolvers()
                 .BuildSimpleInjectorServiceProvider();
 
-            var client = (DeliveryClient) container.GetInstance<IDeliveryClient>();
+            var client = (DeliveryClient)container.GetInstance<IDeliveryClient>();
 
             client.AssertDefaultDependencies();
         }
@@ -29,7 +29,7 @@ namespace Kontent.Ai.Delivery.Tests.DependencyInjectionFrameworks
                 .AddSingleton<IModelProvider, FakeModelProvider>()
                 .BuildSimpleInjectorServiceProvider();
 
-            var client = (DeliveryClient) container.GetInstance<IDeliveryClient>();
+            var client = (DeliveryClient)container.GetInstance<IDeliveryClient>();
 
             client.AssertDefaultDependenciesWithModelProviderAndInlineContentItemTypeResolvers<FakeModelProvider>();
         }

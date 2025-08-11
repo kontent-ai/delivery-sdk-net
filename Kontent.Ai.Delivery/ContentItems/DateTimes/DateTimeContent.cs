@@ -1,5 +1,4 @@
-﻿using Kontent.Ai.Delivery.Abstractions;
-using Newtonsoft.Json;
+﻿using Newtonsoft.Json;
 using System;
 
 namespace Kontent.Ai.Delivery.ContentItems.DateTimes
@@ -7,14 +6,14 @@ namespace Kontent.Ai.Delivery.ContentItems.DateTimes
     internal sealed class DateTimeContent : IDateTimeContent
     {
         [JsonProperty("value")]
-        public DateTime? Value 
-        { 
+        public DateTime? Value
+        {
             get; internal set;
         }
 
         [JsonProperty("display_timezone")]
-        public string DisplayTimezone 
-        { 
+        public string DisplayTimezone
+        {
             get; internal set;
         }
 

@@ -1,7 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Diagnostics;
-using Kontent.Ai.Delivery.Abstractions;
 using Newtonsoft.Json;
 
 namespace Kontent.Ai.Delivery.ContentItems
