@@ -1,8 +1,3 @@
-using System.Threading.Tasks;
-using Kontent.Ai.Delivery.Abstractions;
-using Kontent.Ai.Delivery.Api.QueryParams.Items;
-using Refit;
-
 namespace Kontent.Ai.Delivery.Api;
 
 /// <inheritdoc cref="IDeliveryApi"/>
@@ -14,11 +9,11 @@ public partial interface IDeliveryApi
     /// <param name="queryParameters">Query parameters as a dictionary.</param>
     /// <param name="waitForLoadingNewContent">Wait for loading new content header.</param>
     /// <param name="continuationToken">Continuation token for feed operations.</param>
-    /// <returns>Raw JSON response containing the content items feed.</returns>
+    /// <returns>Response containing a batch of content items and continuation token.</returns>
     [Get("/items-feed")]
-    Task<IDeliveryItemsFeed<T>> GetItemsFeedAsync<T>(
-        [Query] IEnumItemsParams? queryParameters = null,
-        [Header("X-KC-Wait-For-Loading-New-Content")] bool? waitForLoadingNewContent = null,
+    internal Task<IDeliveryItemsFeedResponse<T>> GetItemsFeedInternalAsync<T>(
+        [Query] EnumItemsParams? queryParameters = null,
+        [Header(HttpRequestHeadersExtensions.WaitForLoadingNewContentHeaderName)] bool? waitForLoadingNewContent = null,
         [Header("X-Continuation")] string? continuationToken = null);
 
     /// <summary>
@@ -27,11 +22,11 @@ public partial interface IDeliveryApi
     /// <param name="codename">The codename of the content item.</param>
     /// <param name="waitForLoadingNewContent">Wait for loading new content header.</param>
     /// <param name="continuationToken">Continuation token for operations.</param>
-    /// <returns>Raw JSON response containing the content items that use the specified item.</returns>
+    /// <returns>Response containing a batch of parent items and continuation token.</returns>
     [Get("/items/{codename}/used-in")]
-    Task<IDeliveryItemsFeed<IUsedInItem>> GetItemUsedInAsync(
+    internal Task<IDeliveryItemsFeedResponse<IUsedInItem>> GetItemUsedInInternalAsync(
         string codename,
-        [Header("X-KC-Wait-For-Loading-New-Content")] bool? waitForLoadingNewContent = null,
+        [Header(HttpRequestHeadersExtensions.WaitForLoadingNewContentHeaderName)] bool? waitForLoadingNewContent = null,
         [Header("X-Continuation")] string? continuationToken = null);
 
     /// <summary>
@@ -40,10 +35,10 @@ public partial interface IDeliveryApi
     /// <param name="codename">The codename of the asset.</param>
     /// <param name="waitForLoadingNewContent">Wait for loading new content header.</param>
     /// <param name="continuationToken">Continuation token for operations.</param>
-    /// <returns>Raw JSON response containing the content items that use the specified asset.</returns>
+    /// <returns>Response containing a batch of parent items and continuation token.</returns>
     [Get("/assets/{codename}/used-in")]
-    Task<IDeliveryItemsFeed<IUsedInItem>> GetAssetUsedInAsync(
+    internal Task<IDeliveryItemsFeedResponse<IUsedInItem>> GetAssetUsedInInternalAsync(
         string codename,
-        [Header("X-KC-Wait-For-Loading-New-Content")] bool? waitForLoadingNewContent = null,
+        [Header(HttpRequestHeadersExtensions.WaitForLoadingNewContentHeaderName)] bool? waitForLoadingNewContent = null,
         [Header("X-Continuation")] string? continuationToken = null);
 }

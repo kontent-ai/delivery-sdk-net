@@ -1,5 +1,4 @@
-﻿using Kontent.Ai.Delivery.Abstractions;
-using Kontent.Ai.Delivery.SharedModels;
+﻿using Kontent.Ai.Delivery.SharedModels;
 using Newtonsoft.Json;
 
 namespace Kontent.Ai.Delivery.ContentItems
@@ -23,7 +22,7 @@ namespace Kontent.Ai.Delivery.ContentItems
         {
             Item = item;
         }
-        
+
         /// <summary>
         /// Initializes a new instance of the <see cref="DeliveryItemResponse{T}"/> class.
         /// </summary>

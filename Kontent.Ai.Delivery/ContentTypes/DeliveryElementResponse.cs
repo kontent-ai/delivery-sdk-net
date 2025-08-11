@@ -1,5 +1,4 @@
 ﻿using System.Diagnostics;
-using Kontent.Ai.Delivery.Abstractions;
 using Kontent.Ai.Delivery.SharedModels;
 using Newtonsoft.Json;
 
@@ -26,7 +25,7 @@ namespace Kontent.Ai.Delivery.ContentTypes
         {
             Element = element;
         }
-        
+
         /// <summary>
         /// Initializes a new instance of the <see cref="DeliveryElementResponse"/> class.
         /// </summary>

@@ -1,11 +1,11 @@
-﻿using Kontent.Ai.Delivery.Abstractions;
-using Microsoft.AspNetCore.WebUtilities;
+﻿using Microsoft.AspNetCore.WebUtilities;
 using Newtonsoft.Json;
 using Newtonsoft.Json.Linq;
 using System.Diagnostics;
 using System.Net.Http;
 using System.Text;
 using System.Threading.Tasks;
+using IApiResponse = Kontent.Ai.Delivery.Abstractions.IApiResponse; // TODO: Remove this once we adopt ApiResponse from Refit
 
 namespace Kontent.Ai.Delivery.SharedModels
 {
@@ -48,7 +48,7 @@ namespace Kontent.Ai.Delivery.SharedModels
 
         /// <inheritdoc/>
         public IError Error { get; }
-        
+
         /// <summary>
         /// Initializes a new instance of the <see cref="ApiResponse"/> class.
         /// </summary>
@@ -56,7 +56,7 @@ namespace Kontent.Ai.Delivery.SharedModels
         /// <param name="hasStaleContent">Specifies whether content is stale.</param>
         /// <param name="continuationToken">Continuation token to be used for continuing enumeration.</param>
         /// <param name="requestUrl">URL used to retrieve this response.</param>
-        internal ApiResponse(HttpContent httpContent, bool hasStaleContent, string continuationToken, string requestUrl) : 
+        internal ApiResponse(HttpContent httpContent, bool hasStaleContent, string continuationToken, string requestUrl) :
             this(httpContent, hasStaleContent, continuationToken, requestUrl, null)
         {
         }

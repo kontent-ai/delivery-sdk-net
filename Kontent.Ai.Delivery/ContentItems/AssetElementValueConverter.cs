@@ -3,7 +3,6 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Reflection;
 using System.Threading.Tasks;
-using Kontent.Ai.Delivery.Abstractions;
 using Kontent.Ai.Delivery.ContentItems.Elements;
 using Microsoft.Extensions.Options;
 
@@ -53,7 +52,7 @@ namespace Kontent.Ai.Delivery.ContentItems
             var renditionPresetToBeApplied = Options.CurrentValue.DefaultRenditionPreset;
             if (renditionPresetToBeApplied == null || asset.Renditions == null)
                 return asset.Url;
-            
+
             return asset.Renditions.TryGetValue(renditionPresetToBeApplied, out var renditionToBeApplied)
                 ? $"{asset.Url}?{renditionToBeApplied.Query}"
                 : asset.Url;

@@ -23,7 +23,7 @@ namespace Kontent.Ai.Delivery.Extensions.DependencyInjection
             {
                 return default(T);
             }
-           
+
         }
     }
 }

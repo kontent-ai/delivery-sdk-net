@@ -1,6 +1,4 @@
 ﻿using System;
-using Kontent.Ai.Delivery.Abstractions;
-using Kontent.Ai.Delivery.Builders.DeliveryClient;
 using Microsoft.Extensions.DependencyInjection;
 
 namespace Kontent.Ai.Delivery.ContentItems.InlineContentItems

@@ -1,8 +1,3 @@
-using System.Threading.Tasks;
-using Kontent.Ai.Delivery.Abstractions;
-using Kontent.Ai.Delivery.Api.QueryParams.Languages;
-using Refit;
-
 namespace Kontent.Ai.Delivery.Api;
 
 public partial interface IDeliveryApi
@@ -14,7 +9,7 @@ public partial interface IDeliveryApi
     /// <param name="waitForLoadingNewContent">Wait for loading new content header.</param>
     /// <returns>Raw JSON response containing the languages.</returns>
     [Get("/languages")]
-    Task<IDeliveryLanguageListingResponse> GetLanguagesAsync(
-        [Query] ILanguagesParams? queryParameters = null,
-        [Header("X-KC-Wait-For-Loading-New-Content")] bool? waitForLoadingNewContent = null);
+    internal Task<IDeliveryLanguageListingResponse> GetLanguagesInternalAsync(
+        [Query] LanguagesParams? queryParameters = null,
+        [Header(HttpRequestHeadersExtensions.WaitForLoadingNewContentHeaderName)] bool? waitForLoadingNewContent = null);
 }

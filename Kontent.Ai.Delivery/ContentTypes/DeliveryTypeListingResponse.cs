@@ -1,5 +1,4 @@
 ﻿using System.Collections.Generic;
-using Kontent.Ai.Delivery.Abstractions;
 using Kontent.Ai.Delivery.SharedModels;
 using Newtonsoft.Json;
 
@@ -32,7 +31,7 @@ namespace Kontent.Ai.Delivery.ContentTypes
             Types = types;
             Pagination = pagination;
         }
-        
+
         /// <summary>
         /// Initializes a new instance of the <see cref="DeliveryTypeListingResponse"/> class.
         /// </summary>

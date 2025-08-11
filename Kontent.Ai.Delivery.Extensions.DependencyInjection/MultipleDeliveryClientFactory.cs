@@ -26,7 +26,7 @@ namespace Kontent.Ai.Delivery.Extensions.DependencyInjection
                 throw new ArgumentNullException(nameof(name));
             }
 
-            if(string.IsNullOrEmpty(name))
+            if (string.IsNullOrEmpty(name))
             {
                 throw new ArgumentException("Name cannot be empty", nameof(name));
             }

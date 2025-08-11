@@ -18,6 +18,7 @@ namespace Kontent.Ai.Delivery.Tests
     public class FakeHttpClientTests
     {
         [Fact]
+        [Obsolete]
         public async Task GetItemAsync()
         {
             // Arrange

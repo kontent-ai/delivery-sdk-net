@@ -1,8 +1,3 @@
-using System.Threading.Tasks;
-using Kontent.Ai.Delivery.Api.QueryParams.Types;
-using Kontent.Ai.Delivery.Abstractions;
-using Refit;
-
 namespace Kontent.Ai.Delivery.Api;
 
 /// <inheritdoc cref="IDeliveryApi"/>
@@ -16,10 +11,10 @@ public partial interface IDeliveryApi
     /// <param name="waitForLoadingNewContent">Wait for loading new content header.</param>
     /// <returns>Raw JSON response containing the content type.</returns>
     [Get("/types/{codename}")]
-    Task<IDeliveryTypeResponse> GetTypeAsync(
+    internal Task<IDeliveryTypeResponse> GetTypeInternalAsync(
         string codename,
-        [Query] ISingleTypeParams? queryParameters = null,
-        [Header("X-KC-Wait-For-Loading-New-Content")] bool? waitForLoadingNewContent = null);
+        [Query] SingleTypeParams? queryParameters = null,
+        [Header(HttpRequestHeadersExtensions.WaitForLoadingNewContentHeaderName)] bool? waitForLoadingNewContent = null);
 
     /// <summary>
     /// Gets multiple content types with optional filtering.
@@ -28,9 +23,9 @@ public partial interface IDeliveryApi
     /// <param name="waitForLoadingNewContent">Wait for loading new content header.</param>
     /// <returns>Raw JSON response containing the content types.</returns>
     [Get("/types")]
-    Task<IDeliveryTypeListingResponse> GetTypesAsync(
-        [Query] IListTypesParams? queryParameters = null,
-        [Header("X-KC-Wait-For-Loading-New-Content")] bool? waitForLoadingNewContent = null);
+    internal Task<IDeliveryTypeListingResponse> GetTypesInternalAsync(
+        [Query] ListTypesParams? queryParameters = null,
+        [Header(HttpRequestHeadersExtensions.WaitForLoadingNewContentHeaderName)] bool? waitForLoadingNewContent = null);
 
     /// <summary>
     /// Gets a content type element.
@@ -40,8 +35,8 @@ public partial interface IDeliveryApi
     /// <param name="waitForLoadingNewContent">Wait for loading new content header.</param>
     /// <returns>Raw JSON response containing the content element.</returns>
     [Get("/types/{contentTypeCodename}/elements/{contentElementCodename}")]
-    Task<IDeliveryElementResponse> GetContentElementAsync(
+    internal Task<IDeliveryElementResponse> GetContentElementInternalAsync(
         string contentTypeCodename,
         string contentElementCodename,
-        [Header("X-KC-Wait-For-Loading-New-Content")] bool? waitForLoadingNewContent = null);
+        [Header(HttpRequestHeadersExtensions.WaitForLoadingNewContentHeaderName)] bool? waitForLoadingNewContent = null);
 }

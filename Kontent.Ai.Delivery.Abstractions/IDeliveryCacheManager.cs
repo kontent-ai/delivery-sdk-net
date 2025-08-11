@@ -18,7 +18,7 @@ namespace Kontent.Ai.Delivery.Abstractions
         /// <param name="shouldCache">Callback deciding whether or not to cache the data.</param>
         /// <param name="dependenciesFactory">Callback for building a collection of dependencies.</param>
         /// <returns>The data of a specified type</returns>
-        Task<T> GetOrAddAsync<T>(string key, Func<Task<T>> valueFactory, Func<T, bool> shouldCache = null, Func<T, IEnumerable<string>> dependenciesFactory = null) where T : class;
+        Task<T> GetOrAddAsync<T>(string key, Func<Task<T>> valueFactory, Func<T, bool>? shouldCache = null, Func<T, IEnumerable<string>>? dependenciesFactory = null) where T : class;
 
         /// <summary>
         /// Attempts to retrieve data from cache.

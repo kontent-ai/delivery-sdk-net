@@ -8,7 +8,7 @@ namespace Kontent.Ai.Delivery.Tests.Builders.Configuration
     public class DeliveryOptionsValidatorTests
     {
         private readonly Guid _guid = Guid.NewGuid();
-        
+
         [Fact]
         public void ValidateRetryOptions_NegativeDeltaBackoff_Throws()
         {
@@ -84,7 +84,7 @@ namespace Kontent.Ai.Delivery.Tests.Builders.Configuration
         [Fact]
         public void ValidateOptionsWithEmptyEnvironmentId()
         {
-            var deliveryOptions = new DeliveryOptions {EnvironmentId = ""};
+            var deliveryOptions = new DeliveryOptions { EnvironmentId = "" };
 
             Assert.Throws<ArgumentException>(() => deliveryOptions.Validate());
         }
@@ -108,6 +108,7 @@ namespace Kontent.Ai.Delivery.Tests.Builders.Configuration
         }
 
         [Fact]
+        [Obsolete]
         public void ValidateOptionsWithNullPreviewApiKey()
         {
             var deliveryOptionsStep = DeliveryOptionsBuilder
@@ -118,6 +119,7 @@ namespace Kontent.Ai.Delivery.Tests.Builders.Configuration
         }
 
         [Fact]
+        [Obsolete]
         public void ValidateOptionsWithNullSecuredApiKey()
         {
             var deliveryOptionsStep = DeliveryOptionsBuilder
@@ -128,6 +130,7 @@ namespace Kontent.Ai.Delivery.Tests.Builders.Configuration
         }
 
         [Fact]
+        [Obsolete]
         public void ValidateOptionsBuiltWithBuilderWithIncorrectApiKeyFormat()
         {
             var deliveryOptions = DeliveryOptionsBuilder
@@ -183,6 +186,7 @@ namespace Kontent.Ai.Delivery.Tests.Builders.Configuration
         [InlineData("")]
         [InlineData("ftp://abc.com")]
         [InlineData("abc.com/{0}")]
+        [Obsolete]
         public void ValidateOptionsWithInvalidEndpointFormat(string endpoint)
         {
             var deliveryOptionsSteps = DeliveryOptionsBuilder
@@ -194,6 +198,7 @@ namespace Kontent.Ai.Delivery.Tests.Builders.Configuration
         }
 
         [Fact]
+        [Obsolete]
         public void ValidateOptionsWithNullUriEndpoint()
         {
             var deliveryOptionsSteps = DeliveryOptionsBuilder
@@ -205,6 +210,7 @@ namespace Kontent.Ai.Delivery.Tests.Builders.Configuration
         }
 
         [Fact]
+        [Obsolete]
         public void ValidateOptionsWithUriEndpointWrongScheme()
         {
             var incorrectSchemeUri = new Uri("ftp://www.abc.com");
@@ -217,6 +223,7 @@ namespace Kontent.Ai.Delivery.Tests.Builders.Configuration
         }
 
         [Fact]
+        [Obsolete]
         public void ValidateOptionsWithRelativeUriEndpoint()
         {
             var relativeUri = new Uri("/abc/cde", UriKind.Relative);
@@ -229,6 +236,7 @@ namespace Kontent.Ai.Delivery.Tests.Builders.Configuration
         }
 
         [Fact]
+        [Obsolete]
         public void ValidateOptionsBuiltWithBuilderWithEmptyEnvironmentId()
         {
             var deliveryOptionsSteps = DeliveryOptionsBuilder.CreateInstance();

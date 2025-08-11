@@ -6,14 +6,14 @@ using Microsoft.Extensions.Options;
 namespace Kontent.Ai.Delivery.Tests.Factories
 {
     public static class DeliveryOptionsFactory
-    { 
+    {
         public static IOptionsMonitor<DeliveryOptions> CreateMonitor(DeliveryOptions options)
         {
             var mock = A.Fake<IOptionsMonitor<DeliveryOptions>>();
             A.CallTo(() => mock.CurrentValue).Returns(options);
             return mock;
         }
-        
+
         public static IOptionsMonitor<DeliveryOptions> CreateMonitor(Guid environmentId)
         {
             return CreateMonitor(new DeliveryOptions { EnvironmentId = environmentId.ToString() });

@@ -6,8 +6,6 @@ using System.Threading.Tasks;
 using AngleSharp.Dom;
 using AngleSharp.Html.Dom;
 using AngleSharp.Html.Parser;
-using Kontent.Ai.Delivery.Abstractions;
-using Kontent.Ai.Delivery.Builders.DeliveryClient;
 using Microsoft.Extensions.DependencyInjection;
 
 namespace Kontent.Ai.Delivery.ContentItems.InlineContentItems

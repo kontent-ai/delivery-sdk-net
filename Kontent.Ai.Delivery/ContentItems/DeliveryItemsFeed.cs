@@ -1,7 +1,5 @@
 ﻿using System;
 using System.Threading.Tasks;
-using Kontent.Ai.Delivery.Abstractions;
-using Kontent.Ai.Delivery.SharedModels;
 
 namespace Kontent.Ai.Delivery.ContentItems
 {
@@ -35,7 +33,7 @@ namespace Kontent.Ai.Delivery.ContentItems
         /// </summary>
         /// <param name="continuationToken">Optional explicit continuation token that allows you to get the next batch from a specific point in the feed.</param>
         /// <returns>Instance of <see cref="DeliveryItemsFeedResponse{T}"/> class that contains a list of strongly typed content items.</returns>
-        public async Task<IDeliveryItemsFeedResponse<T>> FetchNextBatchAsync(string continuationToken = null)
+        public async Task<IDeliveryItemsFeedResponse<T>> FetchNextBatchAsync(string? continuationToken = null)
         {
             if (!HasMoreResults)
             {
@@ -48,7 +46,7 @@ namespace Kontent.Ai.Delivery.ContentItems
             {
                 return new DeliveryItemsFeedResponse<T>(response.ApiResponse, null);
             }
-            
+
             _continuationToken = response.ApiResponse.ContinuationToken;
             HasMoreResults = !string.IsNullOrEmpty(response.ApiResponse.ContinuationToken);
 

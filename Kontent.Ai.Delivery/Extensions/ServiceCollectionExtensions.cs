@@ -3,8 +3,6 @@ using System.Collections.Generic;
 using System.ComponentModel.DataAnnotations;
 using System.Linq;
 using System.Net.Http;
-using Kontent.Ai.Delivery.Abstractions;
-using Kontent.Ai.Delivery.Api;
 using Kontent.Ai.Delivery.Configuration;
 using Kontent.Ai.Delivery.Handlers;
 using Microsoft.Extensions.Configuration;
@@ -33,10 +31,10 @@ namespace Kontent.Ai.Delivery.Extensions
             DeliveryOptions deliveryOptions)
         {
             ArgumentNullException.ThrowIfNull(deliveryOptions);
-            
+
             // Register immutable record directly - Options.Create handles both IOptions<T> and IOptionsMonitor<T>
             services.AddSingleton(Options.Create(deliveryOptions));
-            
+
             // Validate the provided options using same pipeline as other overloads
             var validationContext = new ValidationContext(deliveryOptions);
             var validationResults = new List<ValidationResult>();
@@ -45,7 +43,7 @@ namespace Kontent.Ai.Delivery.Extensions
                 var errors = string.Join(Environment.NewLine, validationResults.Select(r => r.ErrorMessage));
                 throw new ArgumentException($"DeliveryOptions validation failed:{Environment.NewLine}{errors}");
             }
-            
+
             return services.AddDeliveryCore();
         }
 
@@ -62,11 +60,11 @@ namespace Kontent.Ai.Delivery.Extensions
             string configurationSectionName = "DeliveryOptions")
         {
             ArgumentNullException.ThrowIfNull(configuration);
-            
-            var section = string.IsNullOrEmpty(configurationSectionName) 
-                ? configuration 
+
+            var section = string.IsNullOrEmpty(configurationSectionName)
+                ? configuration
                 : configuration.GetSection(configurationSectionName);
-            
+
             // Register options with validation
             return services.AddOptions<DeliveryOptions>()
                 .Bind(section)
@@ -93,7 +91,7 @@ namespace Kontent.Ai.Delivery.Extensions
             Action<ResiliencePipelineBuilder<HttpResponseMessage>>? configureResilience = null)
         {
             ArgumentNullException.ThrowIfNull(configureOptions);
-            
+
             // Register options with validation
             return services.AddOptions<DeliveryOptions>()
                 .Configure(configureOptions)
@@ -128,7 +126,7 @@ namespace Kontent.Ai.Delivery.Extensions
                 {
                     var options = serviceProvider.GetRequiredService<IOptionsMonitor<DeliveryOptions>>();
                     var opts = options.CurrentValue;
-                    
+
                     // Set base address
                     var baseUrl = opts.GetBaseUrl();
                     httpClient.BaseAddress = new Uri($"{baseUrl.TrimEnd('/')}/{opts.EnvironmentId}");

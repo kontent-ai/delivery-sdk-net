@@ -1,8 +1,3 @@
-using System.Threading.Tasks;
-using Kontent.Ai.Delivery.Abstractions;
-using Kontent.Ai.Delivery.Api.QueryParams.Items;
-using Refit;
-
 namespace Kontent.Ai.Delivery.Api;
 
 /// <summary>
@@ -18,10 +13,10 @@ public partial interface IDeliveryApi
     /// <param name="waitForLoadingNewContent">Wait for loading new content header.</param>
     /// <returns>Raw JSON response containing the content item.</returns>
     [Get("/items/{codename}")]
-    Task<IDeliveryItemResponse<T>> GetItemAsync<T>(
+    internal Task<IDeliveryItemResponse<T>> GetItemInternalAsync<T>(
         string codename,
-        [Query] ISingleItemParams? queryParameters = null,
-        [Header("X-KC-Wait-For-Loading-New-Content")] bool? waitForLoadingNewContent = null);
+        [Query] SingleItemParams? queryParameters = null,
+        [Header(HttpRequestHeadersExtensions.WaitForLoadingNewContentHeaderName)] bool? waitForLoadingNewContent = null);
 
     /// <summary>
     /// Gets multiple content items with optional filtering.
@@ -30,7 +25,7 @@ public partial interface IDeliveryApi
     /// <param name="waitForLoadingNewContent">Wait for loading new content header.</param>
     /// <returns>Raw JSON response containing the content items.</returns>
     [Get("/items")]
-    Task<IDeliveryItemListingResponse<T>> GetItemsAsync<T>(
-        [Query] IListItemsParams? queryParameters = null,
-        [Header("X-KC-Wait-For-Loading-New-Content")] bool? waitForLoadingNewContent = null);
+    internal Task<IDeliveryItemListingResponse<T>> GetItemsInternalAsync<T>(
+        [Query] ListItemsParams? queryParameters = null,
+        [Header(HttpRequestHeadersExtensions.WaitForLoadingNewContentHeaderName)] bool? waitForLoadingNewContent = null);
 }

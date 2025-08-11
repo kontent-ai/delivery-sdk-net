@@ -1,6 +1,4 @@
-﻿using Kontent.Ai.Delivery.Abstractions;
-
-namespace Kontent.Ai.Delivery.ContentItems.InlineContentItems
+﻿namespace Kontent.Ai.Delivery.ContentItems.InlineContentItems
 {
     internal class ReplaceWithWarningAboutUnknownItemResolver : IInlineContentItemsResolver<UnknownContentItem>
     {

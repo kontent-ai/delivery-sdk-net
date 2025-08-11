@@ -2,7 +2,6 @@
 using System.Collections.Concurrent;
 using System.Collections.Generic;
 using System.Linq;
-using Kontent.Ai.Delivery.Abstractions;
 using Kontent.Ai.Delivery.ContentTypes.Element;
 using Microsoft.Extensions.DependencyInjection;
 using Newtonsoft.Json.Serialization;

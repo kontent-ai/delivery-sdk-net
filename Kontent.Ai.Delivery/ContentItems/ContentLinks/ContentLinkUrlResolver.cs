@@ -1,5 +1,4 @@
-﻿using Kontent.Ai.Delivery.Abstractions;
-using System.Threading.Tasks;
+﻿using System.Threading.Tasks;
 
 namespace Kontent.Ai.Delivery.ContentItems.ContentLinks
 {

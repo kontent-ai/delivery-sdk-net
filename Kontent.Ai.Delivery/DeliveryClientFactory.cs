@@ -1,8 +1,4 @@
-﻿using System;
-using Kontent.Ai.Delivery.Abstractions;
-using Microsoft.Extensions.DependencyInjection;
-using Microsoft.Extensions.Options;
-using Newtonsoft.Json;
+﻿using Microsoft.Extensions.DependencyInjection;
 
 namespace Kontent.Ai.Delivery
 {
@@ -13,7 +9,7 @@ namespace Kontent.Ai.Delivery
     {
         private readonly IServiceProvider _serviceProvider;
         private string _notImplementExceptionMessage = "The default implementation does not support retrieving clients by name. Please use the Kontent.Ai.Delivery.Extensions.Autofac.DependencyInjection or implement your own factory.";
-        
+
         /// <summary>
         /// Initializes a new instance of the <see cref="DeliveryClientFactory"/> class.
         /// </summary>
@@ -32,30 +28,5 @@ namespace Kontent.Ai.Delivery
             return _serviceProvider.GetRequiredService<IDeliveryClient>();
         }
 
-        /// <summary>
-        /// Creates a <see cref="IDeliveryClient"/> instance manually.
-        /// </summary>
-        /// <param name="options">A <see cref="DeliveryOptions"/></param>
-        /// <param name="modelProvider">A <see cref="IModelProvider"/> instance.</param>
-        /// <param name="retryPolicyProvider">A <see cref="IRetryPolicyProvider"/> instance.</param>
-        /// <param name="typeProvider">A <see cref="ITypeProvider"/> instance.</param>
-        /// <param name="deliveryHttpClient">A <see cref="IDeliveryHttpClient"/> instance.</param>
-        /// <param name="jsonSerializer">A <see cref="JsonSerializer"/> instance.</param>
-        /// <returns></returns>
-        public static IDeliveryClient Create(
-            IOptionsMonitor<DeliveryOptions> options,
-            IModelProvider modelProvider,
-            IRetryPolicyProvider retryPolicyProvider,
-            ITypeProvider typeProvider,
-            IDeliveryHttpClient deliveryHttpClient,
-            JsonSerializer jsonSerializer)
-        {
-            return new DeliveryClient(options,
-                modelProvider,
-                retryPolicyProvider,
-                typeProvider,
-                deliveryHttpClient,
-                jsonSerializer);
-        }
     }
 }

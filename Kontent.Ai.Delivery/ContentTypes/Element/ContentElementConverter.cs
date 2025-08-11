@@ -1,5 +1,4 @@
 ﻿using Newtonsoft.Json;
-using Kontent.Ai.Delivery.Abstractions;
 using System;
 using Newtonsoft.Json.Linq;
 

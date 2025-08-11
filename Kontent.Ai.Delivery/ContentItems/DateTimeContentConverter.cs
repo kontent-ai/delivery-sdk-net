@@ -1,5 +1,4 @@
-﻿using Kontent.Ai.Delivery.Abstractions;
-using Kontent.Ai.Delivery.ContentItems.DateTimes;
+﻿using Kontent.Ai.Delivery.ContentItems.DateTimes;
 using System;
 using System.Reflection;
 using System.Threading.Tasks;

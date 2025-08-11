@@ -20,7 +20,7 @@ namespace Kontent.Ai.Delivery.Tests.DependencyInjectionFrameworks
 
             client.AssertDefaultDependencies();
         }
-        
+
         [Fact]
         public void DeliveryClientIsSuccessfullyResolvedFromCastleWindsorContainer_CustomModelProvider()
         {

@@ -1,6 +1,5 @@
 ﻿using System.Net.Http;
 using System.Threading.Tasks;
-using Kontent.Ai.Delivery.Abstractions;
 using Kontent.Ai.Delivery.Extensions;
 
 namespace Kontent.Ai.Delivery
@@ -16,7 +15,7 @@ namespace Kontent.Ai.Delivery
         /// Initializes a new instance of the <see cref="IDeliveryHttpClient"/> class.
         /// </summary>
         /// <param name="httpClient">An HTTP client instance (this can be provided manually or via DI - for example by the HttpClientFactory)</param>
-        public DeliveryHttpClient(HttpClient httpClient = null)
+        public DeliveryHttpClient(HttpClient? httpClient = null)
         {
             _httpClient = httpClient ?? new HttpClient();
 
