@@ -1,6 +1,3 @@
-using System.Threading.Tasks;
-using Refit;
-
 namespace Kontent.Ai.Delivery.Api;
 
 /// <inheritdoc cref="IDeliveryApi"/>
@@ -15,7 +12,7 @@ public partial interface IDeliveryApi
     [Get("/taxonomies/{codename}")]
     internal Task<IDeliveryTaxonomyResponse> GetTaxonomyInternalAsync(
         string codename,
-        [Header("X-KC-Wait-For-Loading-New-Content")] bool? waitForLoadingNewContent = null);
+        [Header(HttpRequestHeadersExtensions.WaitForLoadingNewContentHeaderName)] bool? waitForLoadingNewContent = null);
 
     /// <summary>
     /// Gets multiple taxonomy groups with optional filtering.
@@ -25,19 +22,6 @@ public partial interface IDeliveryApi
     /// <returns>Raw JSON response containing the taxonomy groups.</returns>
     [Get("/taxonomies")]
     internal Task<IDeliveryTaxonomyListingResponse> GetTaxonomiesInternalAsync(
-        [Query] Api.QueryParams.TaxonomyGroups.ListTaxonomyGroupsParams? queryParameters = null,
-        [Header("X-KC-Wait-For-Loading-New-Content")] bool? waitForLoadingNewContent = null);
-/// <inheritdoc/>
-
-    // Public forwards
-    public Task<IDeliveryTaxonomyResponse> GetTaxonomyAsync(
-        string codename,
-        bool? waitForLoadingNewContent = null)
-        => GetTaxonomyInternalAsync(codename, waitForLoadingNewContent);
-/// <inheritdoc/>
-
-    public Task<IDeliveryTaxonomyListingResponse> GetTaxonomiesAsync(
-        Api.QueryParams.TaxonomyGroups.ListTaxonomyGroupsParams? queryParameters = null,
-        bool? waitForLoadingNewContent = null)
-        => GetTaxonomiesInternalAsync(queryParameters, waitForLoadingNewContent);
+        [Query] QueryParams.TaxonomyGroups.ListTaxonomyGroupsParams? queryParameters = null,
+        [Header(HttpRequestHeadersExtensions.WaitForLoadingNewContentHeaderName)] bool? waitForLoadingNewContent = null);
 }

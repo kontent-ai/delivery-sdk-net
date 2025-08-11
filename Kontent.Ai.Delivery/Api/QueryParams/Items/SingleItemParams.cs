@@ -16,6 +16,11 @@ internal sealed record SingleItemParams
     public string[]? Elements { get; init; }
 
     /// <summary>
+    /// The content elements to exclude in the response. By default, all elements are returned.
+    /// </summary>
+    public string[]? ExcludeElements { get; init; }
+
+    /// <summary>
     /// The depth of linked items to retrieve. If not specified, the default depth is 1.
     /// </summary>
     public int? Depth { get; init; }

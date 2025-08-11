@@ -1,6 +1,3 @@
-using System.Threading.Tasks;
-using Refit;
-
 namespace Kontent.Ai.Delivery.Api;
 
 /// <inheritdoc cref="IDeliveryApi"/>
@@ -15,8 +12,8 @@ public partial interface IDeliveryApi
     /// <returns>Response containing a batch of content items and continuation token.</returns>
     [Get("/items-feed")]
     internal Task<IDeliveryItemsFeedResponse<T>> GetItemsFeedInternalAsync<T>(
-        [Query] Api.QueryParams.Items.EnumItemsParams? queryParameters = null,
-        [Header("X-KC-Wait-For-Loading-New-Content")] bool? waitForLoadingNewContent = null,
+        [Query] EnumItemsParams? queryParameters = null,
+        [Header(HttpRequestHeadersExtensions.WaitForLoadingNewContentHeaderName)] bool? waitForLoadingNewContent = null,
         [Header("X-Continuation")] string? continuationToken = null);
 
     /// <summary>
@@ -29,7 +26,7 @@ public partial interface IDeliveryApi
     [Get("/items/{codename}/used-in")]
     internal Task<IDeliveryItemsFeedResponse<IUsedInItem>> GetItemUsedInInternalAsync(
         string codename,
-        [Header("X-KC-Wait-For-Loading-New-Content")] bool? waitForLoadingNewContent = null,
+        [Header(HttpRequestHeadersExtensions.WaitForLoadingNewContentHeaderName)] bool? waitForLoadingNewContent = null,
         [Header("X-Continuation")] string? continuationToken = null);
 
     /// <summary>
@@ -42,6 +39,6 @@ public partial interface IDeliveryApi
     [Get("/assets/{codename}/used-in")]
     internal Task<IDeliveryItemsFeedResponse<IUsedInItem>> GetAssetUsedInInternalAsync(
         string codename,
-        [Header("X-KC-Wait-For-Loading-New-Content")] bool? waitForLoadingNewContent = null,
+        [Header(HttpRequestHeadersExtensions.WaitForLoadingNewContentHeaderName)] bool? waitForLoadingNewContent = null,
         [Header("X-Continuation")] string? continuationToken = null);
 }

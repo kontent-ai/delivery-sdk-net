@@ -1,7 +1,3 @@
-using System.Threading.Tasks;
-using Refit;
-using Kontent.Ai.Delivery.Extensions;
-
 namespace Kontent.Ai.Delivery.Api;
 
 /// <inheritdoc cref="IDeliveryApi"/>
@@ -29,7 +25,7 @@ public partial interface IDeliveryApi
     [Get("/types")]
     internal Task<IDeliveryTypeListingResponse> GetTypesInternalAsync(
         [Query] ListTypesParams? queryParameters = null,
-        [Header("X-KC-Wait-For-Loading-New-Content")] bool? waitForLoadingNewContent = null);
+        [Header(HttpRequestHeadersExtensions.WaitForLoadingNewContentHeaderName)] bool? waitForLoadingNewContent = null);
 
     /// <summary>
     /// Gets a content type element.
@@ -42,5 +38,5 @@ public partial interface IDeliveryApi
     internal Task<IDeliveryElementResponse> GetContentElementInternalAsync(
         string contentTypeCodename,
         string contentElementCodename,
-        [Header("X-KC-Wait-For-Loading-New-Content")] bool? waitForLoadingNewContent = null);
+        [Header(HttpRequestHeadersExtensions.WaitForLoadingNewContentHeaderName)] bool? waitForLoadingNewContent = null);
 }
