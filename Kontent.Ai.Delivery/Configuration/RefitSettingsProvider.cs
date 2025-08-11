@@ -23,7 +23,8 @@ namespace Kontent.Ai.Delivery.Configuration
             return new RefitSettings
             {
                 ContentSerializer = new SystemTextJsonContentSerializer(jsonSerializerOptions),
-                CollectionFormat = CollectionFormat.Multi
+                CollectionFormat = CollectionFormat.Multi,
+                UrlParameterKeyFormatter = new CamelCaseUrlParameterKeyFormatter()
             };
         }
     }

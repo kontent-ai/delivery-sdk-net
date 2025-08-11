@@ -14,7 +14,13 @@ public partial interface IDeliveryApi
     /// <param name="waitForLoadingNewContent">Wait for loading new content header.</param>
     /// <returns>Raw JSON response containing the languages.</returns>
     [Get("/languages")]
-    Task<IDeliveryLanguageListingResponse> GetLanguagesAsync(
-        [Query] ILanguagesParams? queryParameters = null,
+    internal Task<IDeliveryLanguageListingResponse> GetLanguagesInternalAsync(
+        [Query] LanguagesParams? queryParameters = null,
         [Header("X-KC-Wait-For-Loading-New-Content")] bool? waitForLoadingNewContent = null);
+
+    // Public forward
+    public Task<IDeliveryLanguageListingResponse> GetLanguagesAsync(
+        LanguagesParams? queryParameters = null,
+        bool? waitForLoadingNewContent = null)
+        => GetLanguagesInternalAsync(queryParameters, waitForLoadingNewContent);
 }
