@@ -1,6 +1,4 @@
-﻿using System;
-
-namespace Kontent.Ai.Delivery.Configuration
+﻿namespace Kontent.Ai.Delivery.Configuration
 {
     /// <summary>
     /// A builder abstraction for creating <see cref="DeliveryOptions"/> instances.

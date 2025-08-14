@@ -1,6 +1,5 @@
 ﻿using Kontent.Ai.Delivery.ContentItems.RichText.Attributes;
 using Newtonsoft.Json;
-using System;
 using System.Diagnostics;
 
 namespace Kontent.Ai.Delivery.ContentItems.RichText.Blocks

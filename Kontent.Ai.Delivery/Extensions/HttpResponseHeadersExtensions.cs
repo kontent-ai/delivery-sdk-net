@@ -1,6 +1,4 @@
-﻿using System;
-using System.Linq;
-using System.Net.Http.Headers;
+﻿using System.Net.Http.Headers;
 
 namespace Kontent.Ai.Delivery.Extensions
 {

@@ -1,6 +1,4 @@
 ﻿using Newtonsoft.Json;
-using System;
-using System.Collections.Generic;
 
 namespace Kontent.Ai.Delivery.ContentItems.Elements
 {

@@ -1,5 +1,3 @@
-using Refit;
-
 namespace Kontent.Ai.Delivery.Api.QueryParams.Items;
 
 /// <summary>
@@ -48,4 +46,9 @@ internal sealed record ListItemsParams
     /// Indicates whether to include the total count of items in the response.
     /// </summary>
     public bool? IncludeTotalCount { get; init; }
+
+    /// <summary>
+    /// Filtering parameters in the format expected by the Delivery API.
+    /// </summary>
+    public string[]? Filters { get; init; }
 }

@@ -9,7 +9,6 @@ using System.Web;
 using AngleSharp.Html.Parser;
 using FakeItEasy;
 using Kontent.Ai.Delivery.Abstractions;
-using Kontent.Ai.Delivery.Builders.DeliveryClient;
 using Kontent.Ai.Delivery.ContentItems;
 using Kontent.Ai.Delivery.ContentItems.RichText.Blocks;
 using Kontent.Ai.Delivery.SharedModels;

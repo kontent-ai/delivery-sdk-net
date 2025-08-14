@@ -1,8 +1,4 @@
-﻿using System.Net.Http;
-using System.Threading.Tasks;
-using Kontent.Ai.Delivery.Extensions;
-
-namespace Kontent.Ai.Delivery
+﻿namespace Kontent.Ai.Delivery
 {
     /// <summary>
     /// Executes Http requests against the Kontent.ai Delivery API.

@@ -2,8 +2,6 @@
 using System.Collections.Generic;
 using System.Reactive.Disposables;
 using System.Reactive.Linq;
-using System.Reactive;
-using System.Threading.Tasks;
 using Kontent.Ai.Delivery.Abstractions;
 
 namespace Kontent.Ai.Delivery.Rx

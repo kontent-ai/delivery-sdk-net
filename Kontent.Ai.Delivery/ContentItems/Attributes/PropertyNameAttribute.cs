@@ -1,6 +1,4 @@
-﻿using System;
-
-namespace Kontent.Ai.Delivery.ContentItems.Attributes
+﻿namespace Kontent.Ai.Delivery.ContentItems.Attributes
 {
     /// <summary>
     /// Instructs the <see cref="PropertyMapper"/> to always map to the property with the specified name.

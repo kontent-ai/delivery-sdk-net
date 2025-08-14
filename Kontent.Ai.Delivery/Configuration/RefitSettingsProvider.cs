@@ -1,5 +1,4 @@
 using System.Text.Json;
-using Refit;
 
 namespace Kontent.Ai.Delivery.Configuration
 {

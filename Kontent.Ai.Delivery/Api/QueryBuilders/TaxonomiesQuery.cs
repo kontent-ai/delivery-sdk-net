@@ -1,10 +1,14 @@
 using Kontent.Ai.Delivery.Abstractions.QueryBuilders;
+using Kontent.Ai.Delivery.Abstractions.QueryBuilders.Filtering;
+using Kontent.Ai.Delivery.Api.QueryBuilders.Filtering;
 
 namespace Kontent.Ai.Delivery.Api.QueryBuilders;
 
 internal sealed class TaxonomiesQuery(IDeliveryApi api) : ITaxonomiesQuery
 {
     private readonly IDeliveryApi _api = api;
+    private readonly TaxonomyFilters _filters = new();
+    private readonly List<IFilter> _appliedFilters = [];
     private ListTaxonomyGroupsParams _params = new();
 
     public ITaxonomiesQuery Skip(int skip)
@@ -19,9 +23,26 @@ internal sealed class TaxonomiesQuery(IDeliveryApi api) : ITaxonomiesQuery
         return this;
     }
 
+    public ITaxonomiesQuery Where(Func<ITaxonomyFilters, IFilter> filterBuilder)
+    {
+        var filter = filterBuilder(_filters);
+        _appliedFilters.Add(filter);
+        return this;
+    }
+
+    public ITaxonomiesQuery Where(IFilter filter)
+    {
+        _appliedFilters.Add(filter);
+        return this;
+    }
+
     public Task<IDeliveryTaxonomyListingResponse> ExecuteAsync()
     {
-        return _api.GetTaxonomiesInternalAsync(_params, null);
+        var paramsWithFilters = _appliedFilters.Count > 0
+            ? _params with { Filters = _appliedFilters.Select(f => f.ToQueryParameter()).ToArray() }
+            : _params;
+        
+        return _api.GetTaxonomiesInternalAsync(paramsWithFilters, null);
     }
 }
 
