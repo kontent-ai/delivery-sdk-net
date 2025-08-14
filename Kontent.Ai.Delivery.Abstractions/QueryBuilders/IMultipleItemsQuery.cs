@@ -1,4 +1,6 @@
+using System;
 using System.Threading.Tasks;
+using Kontent.Ai.Delivery.Abstractions.QueryBuilders.Filtering;
 
 namespace Kontent.Ai.Delivery.Abstractions.QueryBuilders;
 
@@ -47,6 +49,18 @@ public interface IMultipleItemsQuery<T>
     /// Requests the total count to be included in the response.
     /// </summary>
     IMultipleItemsQuery<T> WithTotalCount();
+
+    /// <summary>
+    /// Adds a filter to the query using a filter builder function.
+    /// </summary>
+    /// <param name="filterBuilder">Function that builds a filter using the items filter builder.</param>
+    IMultipleItemsQuery<T> Where(Func<IItemFilters, IFilter> filterBuilder);
+
+    /// <summary>
+    /// Adds a filter to the query.
+    /// </summary>
+    /// <param name="filter">The filter to add.</param>
+    IMultipleItemsQuery<T> Where(IFilter filter);
 
     /// <summary>
     /// Executes the built query.

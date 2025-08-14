@@ -28,7 +28,8 @@
     <None Include="../README.md" Pack="true" PackagePath="" />
     <None Include="../kai-logo-symbol-color-rgb.png" Pack="true" PackagePath="" />
     <PackageReference Include="Microsoft.SourceLink.GitHub" Version="1.1.1" />
-    <!-- Avoid introducing any non-framework dependencies -->
+    <PackageReference Include="OneOf" Version="3.0.271" />
+    <!-- OneOf for type-safe filter unions -->
   </ItemGroup>
 
 </Project>

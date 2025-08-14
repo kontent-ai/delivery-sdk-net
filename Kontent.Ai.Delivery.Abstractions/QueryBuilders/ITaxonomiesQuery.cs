@@ -1,4 +1,6 @@
+using System;
 using System.Threading.Tasks;
+using Kontent.Ai.Delivery.Abstractions.QueryBuilders.Filtering;
 
 namespace Kontent.Ai.Delivery.Abstractions.QueryBuilders;
 
@@ -18,6 +20,18 @@ public interface ITaxonomiesQuery
     /// </summary>
     /// <param name="limit">Maximum number of items.</param>
     ITaxonomiesQuery Limit(int limit);
+
+    /// <summary>
+    /// Adds a filter to the query using a filter builder function.
+    /// </summary>
+    /// <param name="filterBuilder">Function that builds a filter using the taxonomy filter builder.</param>
+    ITaxonomiesQuery Where(Func<ITaxonomyFilters, IFilter> filterBuilder);
+
+    /// <summary>
+    /// Adds a filter to the query.
+    /// </summary>
+    /// <param name="filter">The filter to add.</param>
+    ITaxonomiesQuery Where(IFilter filter);
 
     /// <summary>
     /// Executes the built query.
