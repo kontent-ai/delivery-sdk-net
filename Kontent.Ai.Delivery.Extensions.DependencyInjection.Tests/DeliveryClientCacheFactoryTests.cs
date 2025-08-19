@@ -1,5 +1,4 @@
 ﻿using System;
-using Autofac;
 using FakeItEasy;
 using FluentAssertions;
 using Kontent.Ai.Delivery.Abstractions;

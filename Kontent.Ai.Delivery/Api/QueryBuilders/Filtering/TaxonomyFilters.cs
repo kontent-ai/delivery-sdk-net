@@ -8,15 +8,15 @@ namespace Kontent.Ai.Delivery.Api.QueryBuilders.Filtering;
 /// </summary>
 internal sealed class TaxonomyFilters : ITaxonomyFilters
 {
-    public IFilter Equals(string propertyPath, string value)
-        => new Filter(propertyPath, FilterOperator.Equals, value);
+    public IFilter Equals(TaxonomySystemPath path, string value)
+        => new Filter(path.Serialize(), FilterOperator.Equals, StringValue.From(value));
 
-    public IFilter NotEquals(string propertyPath, string value)
-        => new Filter(propertyPath, FilterOperator.NotEquals, value);
+    public IFilter NotEquals(TaxonomySystemPath path, string value)
+        => new Filter(path.Serialize(), FilterOperator.NotEquals, StringValue.From(value));
 
-    public IFilter Equals(string propertyPath, DateTime value)
-        => new Filter(propertyPath, FilterOperator.Equals, value);
+    public IFilter Equals(TaxonomySystemPath path, DateTime value)
+        => new Filter(path.Serialize(), FilterOperator.Equals, DateTimeValue.From(value));
 
-    public IFilter NotEquals(string propertyPath, DateTime value)
-        => new Filter(propertyPath, FilterOperator.NotEquals, value);
+    public IFilter NotEquals(TaxonomySystemPath path, DateTime value)
+        => new Filter(path.Serialize(), FilterOperator.NotEquals, DateTimeValue.From(value));
 }

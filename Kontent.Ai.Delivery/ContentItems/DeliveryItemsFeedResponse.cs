@@ -1,6 +1,4 @@
-﻿using System.Collections.Generic;
-
-namespace Kontent.Ai.Delivery.ContentItems
+﻿namespace Kontent.Ai.Delivery.ContentItems
 {
     /// <inheritdoc cref="IDeliveryItemsFeedResponse{T}" />
     internal class DeliveryItemsFeedResponse<T> : AbstractItemsResponse, IDeliveryItemsFeedResponse<T>

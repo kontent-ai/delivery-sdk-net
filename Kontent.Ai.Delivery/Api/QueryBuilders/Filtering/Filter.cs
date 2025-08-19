@@ -1,16 +1,12 @@
-using System;
-using System.Linq;
-using System.Text.Encodings.Web;
-
 namespace Kontent.Ai.Delivery.Abstractions.QueryBuilders.Filtering;
 
 /// <summary>
 /// Concrete implementation of IFilter that represents a filtering operation.
 /// </summary>
-public sealed record Filter(
+internal sealed record Filter(
     string PropertyPath,
     FilterOperator Operator,
-    FilterValue Value) : IFilter
+    IFilterValue Value) : IFilter
 {
     /// <summary>
     /// Serializes this filter to the Kontent.ai API query parameter format.

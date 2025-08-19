@@ -1,4 +1,3 @@
-using System;
 using System.Reflection;
 using Kontent.Ai.Delivery.ContentItems.Attributes;
 using Newtonsoft.Json;

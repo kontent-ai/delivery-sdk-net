@@ -1,6 +1,5 @@
 ﻿using Kontent.Ai.Delivery.SharedModels;
 using Newtonsoft.Json;
-using System.Collections.Generic;
 
 namespace Kontent.Ai.Delivery.Languages
 {

@@ -1,6 +1,3 @@
-using System;
-using System.Collections.Generic;
-using System.Linq;
 using Kontent.Ai.Delivery.Abstractions.QueryBuilders;
 using Kontent.Ai.Delivery.Abstractions.QueryBuilders.Filtering;
 using Kontent.Ai.Delivery.Api.QueryBuilders.Filtering;

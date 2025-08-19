@@ -4,7 +4,6 @@ using System.Net.Http;
 using System.Threading.Tasks;
 using FakeItEasy;
 using Kontent.Ai.Delivery.Abstractions;
-using Kontent.Ai.Delivery.Builders.DeliveryClient;
 using Kontent.Ai.Delivery.Configuration;
 using Kontent.Ai.Delivery.Tests.Models.ContentTypes;
 using RichardSzalay.MockHttp;

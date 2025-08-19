@@ -8,30 +8,36 @@ namespace Kontent.Ai.Delivery.Api.QueryBuilders.Filtering;
 /// </summary>
 internal sealed class TypeFilters : ITypeFilters
 {
-    public IFilter Equals(string propertyPath, string value)
-        => new Filter(propertyPath, FilterOperator.Equals, value);
+    public IFilter Equals(TypeSystemPath path, string value)
+        => new Filter(path.Serialize(), FilterOperator.Equals, StringValue.From(value));
 
-    public IFilter NotEquals(string propertyPath, string value)
-        => new Filter(propertyPath, FilterOperator.NotEquals, value);
+    public IFilter Equals(TypeSystemPath path, DateTime value)
+        => new Filter(path.Serialize(), FilterOperator.Equals, DateTimeValue.From(value));
 
-    public IFilter In(string propertyPath, params string[] values)
-        => new Filter(propertyPath, FilterOperator.In, values);
+    public IFilter NotEquals(TypeSystemPath path, string value)
+        => new Filter(path.Serialize(), FilterOperator.NotEquals, StringValue.From(value));
 
-    public IFilter NotIn(string propertyPath, params string[] values)
-        => new Filter(propertyPath, FilterOperator.NotIn, values);
+    public IFilter NotEquals(TypeSystemPath path, DateTime value)
+        => new Filter(path.Serialize(), FilterOperator.NotEquals, DateTimeValue.From(value));
 
-    public IFilter Range(string propertyPath, DateTime lowerBound, DateTime upperBound)
-        => new Filter(propertyPath, FilterOperator.Range, new FilterValue.DateRange(lowerBound, upperBound));
+    public IFilter In(TypeSystemPath path, params string[] values)
+        => new Filter(path.Serialize(), FilterOperator.In, StringArrayValue.From(values));
 
-    public IFilter LessThan(string propertyPath, DateTime value)
-        => new Filter(propertyPath, FilterOperator.LessThan, value);
+    public IFilter NotIn(TypeSystemPath path, params string[] values)
+        => new Filter(path.Serialize(), FilterOperator.NotIn, StringArrayValue.From(values));
 
-    public IFilter LessThanOrEqual(string propertyPath, DateTime value)
-        => new Filter(propertyPath, FilterOperator.LessThanOrEqual, value);
+    public IFilter Range(TypeSystemPath path, DateTime lowerBound, DateTime upperBound)
+        => new Filter(path.Serialize(), FilterOperator.Range, DateRangeValue.From((lowerBound, upperBound)));
 
-    public IFilter GreaterThan(string propertyPath, DateTime value)
-        => new Filter(propertyPath, FilterOperator.GreaterThan, value);
+    public IFilter LessThan(TypeSystemPath path, DateTime value)
+        => new Filter(path.Serialize(), FilterOperator.LessThan, DateTimeValue.From(value));
 
-    public IFilter GreaterThanOrEqual(string propertyPath, DateTime value)
-        => new Filter(propertyPath, FilterOperator.GreaterThanOrEqual, value);
+    public IFilter LessThanOrEqual(TypeSystemPath path, DateTime value)
+        => new Filter(path.Serialize(), FilterOperator.LessThanOrEqual, DateTimeValue.From(value));
+
+    public IFilter GreaterThan(TypeSystemPath path, DateTime value)
+        => new Filter(path.Serialize(), FilterOperator.GreaterThan, DateTimeValue.From(value));
+
+    public IFilter GreaterThanOrEqual(TypeSystemPath path, DateTime value)
+        => new Filter(path.Serialize(), FilterOperator.GreaterThanOrEqual, DateTimeValue.From(value));
 }

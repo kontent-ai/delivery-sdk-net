@@ -9,17 +9,49 @@ namespace Kontent.Ai.Delivery.Abstractions.QueryBuilders.Filtering;
 public interface ITypeFilters
 {
     // Basic equality operators for system properties
-    IFilter Equals(string propertyPath, string value);
-    IFilter NotEquals(string propertyPath, string value);
+    /// <summary>
+    /// Retrieves types where the specified system property equals the specified value.
+    /// </summary>
+    IFilter Equals(TypeSystemPath path, string value);
+    /// <inheritdoc cref="Equals(TypeSystemPath, string)"/>
+    IFilter Equals(TypeSystemPath path, DateTime value);
+
+    /// <summary>
+    /// Retrieves types where the specified system property does not equal the specified value.
+    /// </summary>
+    IFilter NotEquals(TypeSystemPath path, string value);
+    /// <inheritdoc cref="NotEquals(TypeSystemPath, string)"/>
+    IFilter NotEquals(TypeSystemPath path, DateTime value);
 
     // Collection operators for system properties
-    IFilter In(string propertyPath, params string[] values);
-    IFilter NotIn(string propertyPath, params string[] values);
+    /// <summary>
+    /// Retrieves types where the specified system property is in the specified collection.
+    /// </summary>
+    IFilter In(TypeSystemPath path, params string[] values);
+    /// <summary>
+    /// Retrieves types where the specified system property is not in the specified collection.
+    /// </summary>
+    IFilter NotIn(TypeSystemPath path, params string[] values);
 
     // Date range operators for system.last_modified
-    IFilter Range(string propertyPath, DateTime lowerBound, DateTime upperBound);
-    IFilter LessThan(string propertyPath, DateTime value);
-    IFilter LessThanOrEqual(string propertyPath, DateTime value);
-    IFilter GreaterThan(string propertyPath, DateTime value);
-    IFilter GreaterThanOrEqual(string propertyPath, DateTime value);
+    /// <summary>
+    /// Retrieves types where the specified system property is within the specified range.
+    /// </summary>
+    IFilter Range(TypeSystemPath path, DateTime lowerBound, DateTime upperBound);
+    /// <summary>
+    /// Retrieves types where the specified system property is less than the specified value.
+    /// </summary>
+    IFilter LessThan(TypeSystemPath path, DateTime value);
+    /// <summary>
+    /// Retrieves types where the specified system property is less than or equal to the specified value.
+    /// </summary>
+    IFilter LessThanOrEqual(TypeSystemPath path, DateTime value);
+    /// <summary>
+    /// Retrieves types where the specified system property is greater than the specified value.
+    /// </summary>
+    IFilter GreaterThan(TypeSystemPath path, DateTime value);
+    /// <summary>
+    /// Retrieves types where the specified system property is greater than or equal to the specified value.
+    /// </summary>
+    IFilter GreaterThanOrEqual(TypeSystemPath path, DateTime value);
 }

@@ -1,6 +1,4 @@
-﻿using System;
-
-namespace Kontent.Ai.Delivery.ContentItems
+﻿namespace Kontent.Ai.Delivery.ContentItems
 {
     internal class TypeProvider : ITypeProvider
     {

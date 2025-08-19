@@ -1,7 +1,6 @@
 ﻿using AutoFixture;
 using FluentAssertions;
 using Kontent.Ai.Delivery.Caching.Extensions;
-using System;
 using System.Collections.Generic;
 using Xunit;
 

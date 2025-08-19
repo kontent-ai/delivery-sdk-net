@@ -1,7 +1,4 @@
-﻿using System;
-using System.Threading.Tasks;
-
-namespace Kontent.Ai.Delivery.ContentItems
+﻿namespace Kontent.Ai.Delivery.ContentItems
 {
     /// <summary>
     /// Represents a feed that can be used to retrieve strongly typed content items from Kontent.ai Delivery API in smaller batches.

@@ -1,6 +1,4 @@
-﻿using System;
-
-namespace Kontent.Ai.Delivery.Abstractions;
+﻿namespace Kontent.Ai.Delivery.Abstractions;
 
 /// <summary>
 /// Represents a parent content item.

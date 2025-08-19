@@ -1,5 +1,3 @@
-using Refit;
-
 namespace Kontent.Ai.Delivery.Api.QueryParams.Items;
 
 /// <summary>

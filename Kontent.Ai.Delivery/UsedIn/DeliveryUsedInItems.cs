@@ -1,7 +1,4 @@
-﻿using System;
-using System.Threading.Tasks;
-
-namespace Kontent.Ai.Delivery.UsedIn
+﻿namespace Kontent.Ai.Delivery.UsedIn
 {
     /// <summary>
     /// Represents a feed that can be used to retrieve strongly typed parent content items from Kontent.ai Delivery Used In API methods in smaller batches.

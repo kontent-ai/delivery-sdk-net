@@ -1,7 +1,6 @@
 ﻿using System.Collections.Generic;
 using System.Net.Http;
 using Kontent.Ai.Delivery.Abstractions;
-using Kontent.Ai.Delivery.Builders.DeliveryClient;
 using Microsoft.Extensions.Caching.Distributed;
 using Microsoft.Extensions.Caching.Memory;
 using Microsoft.Extensions.Logging;

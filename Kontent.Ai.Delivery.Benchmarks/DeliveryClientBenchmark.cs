@@ -1,6 +1,5 @@
 ﻿using System;
 using System.IO;
-using Kontent.Ai.Delivery.Builders.DeliveryClient;
 using Kontent.Ai.Delivery.Abstractions;
 using BenchmarkDotNet.Attributes;
 using RichardSzalay.MockHttp;

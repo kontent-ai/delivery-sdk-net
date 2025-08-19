@@ -1,7 +1,5 @@
 ﻿using Kontent.Ai.Delivery.ContentItems.DateTimes;
-using System;
 using System.Reflection;
-using System.Threading.Tasks;
 
 namespace Kontent.Ai.Delivery.ContentItems
 {

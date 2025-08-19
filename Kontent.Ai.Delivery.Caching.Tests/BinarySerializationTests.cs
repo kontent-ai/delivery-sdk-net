@@ -1,7 +1,6 @@
 ﻿using System;
 using System.IO;
 using System.Linq;
-using Kontent.Ai.Delivery.Builders.DeliveryClient;
 using Kontent.Ai.Delivery.Caching.Extensions;
 using Kontent.Ai.Delivery.Caching.Tests.ContentTypes;
 using Kontent.Ai.Delivery.ContentItems;

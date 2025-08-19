@@ -1,6 +1,4 @@
-﻿using System.Threading.Tasks;
-
-namespace Kontent.Ai.Delivery.ContentItems.ContentLinks
+﻿namespace Kontent.Ai.Delivery.ContentItems.ContentLinks
 {
     internal class DefaultContentLinkUrlResolver : IContentLinkUrlResolver
     {

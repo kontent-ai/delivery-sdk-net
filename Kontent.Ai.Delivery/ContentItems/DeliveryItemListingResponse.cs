@@ -1,5 +1,4 @@
-﻿using System.Collections.Generic;
-using Kontent.Ai.Delivery.SharedModels;
+﻿using Kontent.Ai.Delivery.SharedModels;
 using Newtonsoft.Json;
 
 namespace Kontent.Ai.Delivery.ContentItems

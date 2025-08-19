@@ -1,109 +1,68 @@
-using System;
+using Scalar = OneOf.OneOf<string, double, System.DateTime, bool>;
+using ScalarArray = OneOf.OneOf<string[], double[], System.DateTime[]>;
+using RangeTuple = OneOf.OneOf<(double Lower, double Upper), (System.DateTime Lower, System.DateTime Upper)>;
+using Comparable = OneOf.OneOf<double, System.DateTime, string>;
 
 namespace Kontent.Ai.Delivery.Abstractions.QueryBuilders.Filtering;
-
 /// <summary>
-/// Filter builder interface for content items endpoint.
-/// Provides full filtering capabilities including system and element properties with all operators.
+/// Interface for item filters.
 /// </summary>
 public interface IItemFilters
 {
     /// <summary>
-    /// Retrieves items where the specified property equals the specified value.
+    /// Retrieves items where the property specified by path equals the specified value.
     /// </summary>
-    IFilter Equals(string propertyPath, string value);
-    /// <inheritdoc cref="Equals(string, string)"/>
-    IFilter Equals(string propertyPath, double value);
-    /// <inheritdoc cref="Equals(string, string)"/>
-    IFilter Equals(string propertyPath, DateTime value);
-    /// <inheritdoc cref="Equals(string, string)"/>
-    IFilter Equals(string propertyPath, bool value);
-
+    IFilter Equals(IPropertyPath path, Scalar value);
     /// <summary>
-    /// Retrieves items where the specified property does not equal the specified value.
+    /// Retrieves items where the property specified by path does not equal the specified value.
     /// </summary>
-    IFilter NotEquals(string propertyPath, string value);
-    /// <inheritdoc cref="NotEquals(string, string)"/>
-    IFilter NotEquals(string propertyPath, double value);
-    /// <inheritdoc cref="NotEquals(string, string)"/>
-    IFilter NotEquals(string propertyPath, DateTime value);
-    /// <inheritdoc cref="NotEquals(string, string)"/>
-    IFilter NotEquals(string propertyPath, bool value);
-
+    IFilter NotEquals(IPropertyPath path, Scalar value);
     /// <summary>
-    /// Retrieves items where the specified property is less than the specified value.
+    /// Retrieves items where the property specified by path is less than the specified value.
     /// </summary>
-    IFilter LessThan(string propertyPath, double value);
-    /// <inheritdoc cref="LessThan(string, double)"/>
-    IFilter LessThan(string propertyPath, DateTime value);
-
+    IFilter LessThan(IPropertyPath path, Comparable value);
     /// <summary>
-    /// Retrieves items where the specified property is less than or equal to the specified value.
+    /// Retrieves items where the property specified by path is less than or equal to the specified value.
     /// </summary>
-    IFilter LessThanOrEqual(string propertyPath, double value);
-    /// <inheritdoc cref="LessThanOrEqual(string, double)"/>
-    IFilter LessThanOrEqual(string propertyPath, DateTime value);
-
+    IFilter LessThanOrEqual(IPropertyPath path, Comparable value);
     /// <summary>
-    /// Retrieves items where the specified property is greater than the specified value.
+    /// Retrieves items where the property specified by path is greater than the specified value.
     /// </summary>
-    IFilter GreaterThan(string propertyPath, double value);
-    /// <inheritdoc cref="GreaterThan(string, double)"/>
-    IFilter GreaterThan(string propertyPath, DateTime value);
-
+    IFilter GreaterThan(IPropertyPath path, Comparable value);
     /// <summary>
-    /// Retrieves items where the specified property is greater than or equal to the specified value.
+    /// Retrieves items where the property specified by path is greater than or equal to the specified value.
     /// </summary>
-    IFilter GreaterThanOrEqual(string propertyPath, double value);
-    /// <inheritdoc cref="GreaterThanOrEqual(string, double)"/>
-    IFilter GreaterThanOrEqual(string propertyPath, DateTime value);
-
+    IFilter GreaterThanOrEqual(IPropertyPath path, Comparable value);
     /// <summary>
-    /// Retrieves items where the specified property is within the specified range.
+    /// Retrieves items where the property specified by path is within the specified range.
     /// </summary>
-    IFilter Range(string propertyPath, double lowerBound, double upperBound);
-    /// <inheritdoc cref="Range(string, double, double)"/>
-    IFilter Range(string propertyPath, DateTime lowerBound, DateTime upperBound);
-
+    IFilter Range(IPropertyPath path, RangeTuple range);
     /// <summary>
-    /// Retrieves items where the specified property is in the specified collection.
+    /// Retrieves items where the property specified by path is in the specified collection.
     /// </summary>
-    IFilter In(string propertyPath, params string[] values);
-    /// <inheritdoc cref="In(string, string[])"/>
-    IFilter In(string propertyPath, params double[] values);
-    /// <inheritdoc cref="In(string, string[])"/>
-    IFilter In(string propertyPath, params DateTime[] values);
-    /// <inheritdoc cref="In(string, string[])"/>
-
+    IFilter In(IPropertyPath path, ScalarArray values);
     /// <summary>
-    /// Retrieves items where the specified property is not in the specified collection.
+    /// Retrieves items where the property specified by path is not in the specified collection.
     /// </summary>
-    IFilter NotIn(string propertyPath, params string[] values);
-    /// <inheritdoc cref="NotIn(string, string[])"/>
-    IFilter NotIn(string propertyPath, params double[] values);
-    /// <inheritdoc cref="NotIn(string, string[])"/>
-    IFilter NotIn(string propertyPath, params DateTime[] values);
-
+    IFilter NotIn(IPropertyPath path, ScalarArray values);
     /// <summary>
-    /// Retrieves items where the specified array property contains the specified value.
+    /// Retrieves items where the property specified by path contains the specified value.
     /// </summary>
-    IFilter Contains(string propertyPath, string value);
-
+    IFilter Contains(IPropertyPath path, string value);
     /// <summary>
-    /// Retrieves items where the specified array property contains any of the specified values.
+    /// Retrieves items where the property specified by path contains any of the specified values.
     /// </summary>
-    IFilter Any(string propertyPath, params string[] values);
+    IFilter Any(IPropertyPath path, params string[] values);
     /// <summary>
-    /// Retrieves items where the specified array property contains all of the specified values.
+    /// Retrieves items where the property specified by path contains all of the specified values.
     /// </summary>
-    IFilter All(string propertyPath, params string[] values);
-
+    IFilter All(IPropertyPath path, params string[] values);
     /// <summary>
-    /// Retrieves items where the specified property is empty.
+    /// Retrieves items where the property specified by path is empty.
     /// </summary>
-    IFilter Empty(string propertyPath);
+    IFilter Empty(IPropertyPath path);
     /// <summary>
-    /// Retrieves items where the specified property is not empty.
+    /// Retrieves items where the property specified by path is not empty.
     /// </summary>
-    IFilter NotEmpty(string propertyPath);
+    IFilter NotEmpty(IPropertyPath path);
 }

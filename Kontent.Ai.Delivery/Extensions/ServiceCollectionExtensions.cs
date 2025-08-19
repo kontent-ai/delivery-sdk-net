@@ -1,8 +1,4 @@
-using System;
-using System.Collections.Generic;
 using System.ComponentModel.DataAnnotations;
-using System.Linq;
-using System.Net.Http;
 using Kontent.Ai.Delivery.Configuration;
 using Kontent.Ai.Delivery.Handlers;
 using Microsoft.Extensions.Configuration;
@@ -11,7 +7,6 @@ using Microsoft.Extensions.DependencyInjection.Extensions;
 using Microsoft.Extensions.Http.Resilience;
 using Microsoft.Extensions.Options;
 using Polly;
-using Refit;
 
 namespace Kontent.Ai.Delivery.Extensions
 {

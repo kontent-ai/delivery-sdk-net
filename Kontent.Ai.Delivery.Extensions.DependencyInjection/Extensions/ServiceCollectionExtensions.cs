@@ -1,10 +1,7 @@
 ﻿using Kontent.Ai.Delivery.Abstractions;
-using Kontent.Ai.Delivery.Builders;
 using Kontent.Ai.Delivery.Caching;
 using Kontent.Ai.Delivery.Caching.Extensions;
 using Kontent.Ai.Delivery.Configuration;
-using Kontent.Ai.Delivery.Extensions.DependencyInjection.Builders;
-using Kontent.Ai.Delivery.Helpers;
 using Microsoft.Extensions.Caching.Distributed;
 using Microsoft.Extensions.Caching.Memory;
 using Microsoft.Extensions.Configuration;

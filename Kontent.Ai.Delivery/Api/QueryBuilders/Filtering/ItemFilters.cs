@@ -8,90 +8,46 @@ namespace Kontent.Ai.Delivery.Api.QueryBuilders.Filtering;
 /// </summary>
 internal sealed class ItemFilters : IItemFilters
 {
-    public IFilter Equals(string propertyPath, string value)
-        => new Filter(propertyPath, FilterOperator.Equals, value);
+    public IFilter Equals(IPropertyPath path, Scalar value)
+        => new Filter(path.Serialize(), FilterOperator.Equals, FilterValueMapper.From(value));
 
-    public IFilter Equals(string propertyPath, int value)
-        => new Filter(propertyPath, FilterOperator.Equals, value);
+    public IFilter NotEquals(IPropertyPath path, Scalar value)
+        => new Filter(path.Serialize(), FilterOperator.NotEquals, FilterValueMapper.From(value));
 
-    public IFilter Equals(string propertyPath, DateTime value)
-        => new Filter(propertyPath, FilterOperator.Equals, value);
+    public IFilter LessThan(IPropertyPath path, Comparable value)
+        => new Filter(path.Serialize(), FilterOperator.LessThan, FilterValueMapper.From(value));
 
-    public IFilter Equals(string propertyPath, bool value)
-        => new Filter(propertyPath, FilterOperator.Equals, value);
+    public IFilter LessThanOrEqual(IPropertyPath path, Comparable value)
+        => new Filter(path.Serialize(), FilterOperator.LessThanOrEqual, FilterValueMapper.From(value));
 
-    public IFilter NotEquals(string propertyPath, string value)
-        => new Filter(propertyPath, FilterOperator.NotEquals, value);
+    public IFilter GreaterThan(IPropertyPath path, Comparable value)
+        => new Filter(path.Serialize(), FilterOperator.GreaterThan, FilterValueMapper.From(value));
 
-    public IFilter NotEquals(string propertyPath, int value)
-        => new Filter(propertyPath, FilterOperator.NotEquals, value);
+    public IFilter GreaterThanOrEqual(IPropertyPath path, Comparable value)
+        => new Filter(path.Serialize(), FilterOperator.GreaterThanOrEqual, FilterValueMapper.From(value));
 
-    public IFilter NotEquals(string propertyPath, DateTime value)
-        => new Filter(propertyPath, FilterOperator.NotEquals, value);
+    public IFilter Range(IPropertyPath path, RangeTuple bounds)
+        => new Filter(path.Serialize(), FilterOperator.Range, FilterValueMapper.From(bounds));
 
-    public IFilter NotEquals(string propertyPath, bool value)
-        => new Filter(propertyPath, FilterOperator.NotEquals, value);
+    public IFilter In(IPropertyPath path, ScalarArray values)
+        => new Filter(path.Serialize(), FilterOperator.In, FilterValueMapper.From(values));
 
-    public IFilter LessThan(string propertyPath, int value)
-        => new Filter(propertyPath, FilterOperator.LessThan, value);
+    public IFilter NotIn(IPropertyPath path, ScalarArray values)
+        => new Filter(path.Serialize(), FilterOperator.NotIn, FilterValueMapper.From(values));
 
-    public IFilter LessThan(string propertyPath, DateTime value)
-        => new Filter(propertyPath, FilterOperator.LessThan, value);
+    public IFilter Contains(IPropertyPath path, string value)
+        => new Filter(path.Serialize(), FilterOperator.Contains, StringValue.From(value));
 
-    public IFilter LessThanOrEqual(string propertyPath, int value)
-        => new Filter(propertyPath, FilterOperator.LessThanOrEqual, value);
+    public IFilter Any(IPropertyPath path, params string[] values)
+        => new Filter(path.Serialize(), FilterOperator.Any, StringArrayValue.From(values));
 
-    public IFilter LessThanOrEqual(string propertyPath, DateTime value)
-        => new Filter(propertyPath, FilterOperator.LessThanOrEqual, value);
+    public IFilter All(IPropertyPath path, params string[] values)
+        => new Filter(path.Serialize(), FilterOperator.All, StringArrayValue.From(values));
 
-    public IFilter GreaterThan(string propertyPath, int value)
-        => new Filter(propertyPath, FilterOperator.GreaterThan, value);
+    public IFilter Empty(IPropertyPath path)
+        => new Filter(path.Serialize(), FilterOperator.Empty, EmptyValue.From(string.Empty));
 
-    public IFilter GreaterThan(string propertyPath, DateTime value)
-        => new Filter(propertyPath, FilterOperator.GreaterThan, value);
+    public IFilter NotEmpty(IPropertyPath path)
+        => new Filter(path.Serialize(), FilterOperator.NotEmpty, EmptyValue.From(string.Empty));
 
-    public IFilter GreaterThanOrEqual(string propertyPath, int value)
-        => new Filter(propertyPath, FilterOperator.GreaterThanOrEqual, value);
-
-    public IFilter GreaterThanOrEqual(string propertyPath, DateTime value)
-        => new Filter(propertyPath, FilterOperator.GreaterThanOrEqual, value);
-
-    public IFilter Range(string propertyPath, int lowerBound, int upperBound)
-        => new Filter(propertyPath, FilterOperator.Range, new FilterValue.NumericRange(lowerBound, upperBound));
-
-    public IFilter Range(string propertyPath, DateTime lowerBound, DateTime upperBound)
-        => new Filter(propertyPath, FilterOperator.Range, new FilterValue.DateRange(lowerBound, upperBound));
-
-    public IFilter In(string propertyPath, params string[] values)
-        => new Filter(propertyPath, FilterOperator.In, values);
-
-    public IFilter In(string propertyPath, params int[] values)
-        => new Filter(propertyPath, FilterOperator.In, values);
-
-    public IFilter In(string propertyPath, params DateTime[] values)
-        => new Filter(propertyPath, FilterOperator.In, values);
-
-    public IFilter NotIn(string propertyPath, params string[] values)
-        => new Filter(propertyPath, FilterOperator.NotIn, values);
-
-    public IFilter NotIn(string propertyPath, params int[] values)
-        => new Filter(propertyPath, FilterOperator.NotIn, values);
-
-    public IFilter NotIn(string propertyPath, params DateTime[] values)
-        => new Filter(propertyPath, FilterOperator.NotIn, values);
-
-    public IFilter Contains(string propertyPath, string value)
-        => new Filter(propertyPath, FilterOperator.Contains, value);
-
-    public IFilter Any(string propertyPath, params string[] values)
-        => new Filter(propertyPath, FilterOperator.Any, values);
-
-    public IFilter All(string propertyPath, params string[] values)
-        => new Filter(propertyPath, FilterOperator.All, values);
-
-    public IFilter Empty(string propertyPath)
-        => new Filter(propertyPath, FilterOperator.Empty, FilterValue.EmptyValue);
-
-    public IFilter NotEmpty(string propertyPath)
-        => new Filter(propertyPath, FilterOperator.NotEmpty, FilterValue.EmptyValue);
 }

@@ -1,6 +1,3 @@
-using System;
-using System.Collections.Generic;
-using System.Linq;
 using Kontent.Ai.Delivery.Abstractions.QueryBuilders;
 using Kontent.Ai.Delivery.Abstractions.QueryBuilders.Filtering;
 using Kontent.Ai.Delivery.Api.QueryBuilders.Filtering;
@@ -78,7 +75,7 @@ internal sealed class MultipleItemsQuery<T>(IDeliveryApi api) : IMultipleItemsQu
     public Task<IDeliveryItemListingResponse<T>> ExecuteAsync()
     {
         var paramsWithFilters = _appliedFilters.Count > 0
-            ? _params with { Filters = _appliedFilters.Select(f => f.ToQueryParameter()).ToArray() }
+            ? _params with { Filters = [.. _appliedFilters.Select(f => f.ToQueryParameter())] }
             : _params;
         
         return _api.GetItemsInternalAsync<T>(paramsWithFilters, null);

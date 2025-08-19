@@ -9,16 +9,16 @@ namespace Kontent.Ai.Delivery.Abstractions.QueryBuilders.Filtering;
 public interface ITaxonomyFilters
 {
     /// <summary>
-    /// Retrieves taxonomy groups where the specified property equals the specified value.
+    /// Retrieves taxonomy groups where the specified system property equals the specified value.
     /// </summary>
-    IFilter Equals(string propertyPath, string value);
+    IFilter Equals(TaxonomySystemPath path, string value);
     /// <summary>
-    /// Retrieves taxonomy groups where the specified property does not equal the specified value.
+    /// Retrieves taxonomy groups where the specified system property does not equal the specified value.
     /// </summary>
-    IFilter NotEquals(string propertyPath, string value);
+    IFilter NotEquals(TaxonomySystemPath path, string value);
 
-    /// <inheritdoc cref="Equals(string, string)"/>
-    IFilter Equals(string propertyPath, DateTime value);
-    /// <inheritdoc cref="NotEquals(string, string)"/>
-    IFilter NotEquals(string propertyPath, DateTime value);
+    /// <inheritdoc cref="Equals(TaxonomySystemPath, string)"/>
+    IFilter Equals(TaxonomySystemPath path, DateTime value);
+    /// <inheritdoc cref="NotEquals(TaxonomySystemPath, string)"/>
+    IFilter NotEquals(TaxonomySystemPath path, DateTime value);
 }
