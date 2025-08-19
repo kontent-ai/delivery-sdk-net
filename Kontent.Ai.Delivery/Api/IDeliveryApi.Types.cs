@@ -1,3 +1,5 @@
+using Kontent.Ai.Delivery.Api.ResponseModels;
+
 namespace Kontent.Ai.Delivery.Api;
 
 /// <inheritdoc cref="IDeliveryApi"/>
@@ -11,7 +13,7 @@ public partial interface IDeliveryApi
     /// <param name="waitForLoadingNewContent">Wait for loading new content header.</param>
     /// <returns>Raw JSON response containing the content type.</returns>
     [Get("/types/{codename}")]
-    internal Task<IDeliveryTypeResponse> GetTypeInternalAsync(
+    internal Task<IApiResponse<RawContentTypeResponse>> GetTypeInternalAsync(
         string codename,
         [Query] SingleTypeParams? queryParameters = null,
         [Header(HttpRequestHeadersExtensions.WaitForLoadingNewContentHeaderName)] bool? waitForLoadingNewContent = null);
@@ -23,7 +25,7 @@ public partial interface IDeliveryApi
     /// <param name="waitForLoadingNewContent">Wait for loading new content header.</param>
     /// <returns>Raw JSON response containing the content types.</returns>
     [Get("/types")]
-    internal Task<IDeliveryTypeListingResponse> GetTypesInternalAsync(
+    internal Task<IApiResponse<RawContentTypeListingResponse>> GetTypesInternalAsync(
         [Query] ListTypesParams? queryParameters = null,
         [Header(HttpRequestHeadersExtensions.WaitForLoadingNewContentHeaderName)] bool? waitForLoadingNewContent = null);
 
@@ -35,7 +37,7 @@ public partial interface IDeliveryApi
     /// <param name="waitForLoadingNewContent">Wait for loading new content header.</param>
     /// <returns>Raw JSON response containing the content element.</returns>
     [Get("/types/{contentTypeCodename}/elements/{contentElementCodename}")]
-    internal Task<IDeliveryElementResponse> GetContentElementInternalAsync(
+    internal Task<IApiResponse<RawContentElementResponse>> GetContentElementInternalAsync(
         string contentTypeCodename,
         string contentElementCodename,
         [Header(HttpRequestHeadersExtensions.WaitForLoadingNewContentHeaderName)] bool? waitForLoadingNewContent = null);

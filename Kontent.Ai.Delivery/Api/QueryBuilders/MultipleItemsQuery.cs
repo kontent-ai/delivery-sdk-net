@@ -1,12 +1,19 @@
+using System.Threading;
 using Kontent.Ai.Delivery.Abstractions.QueryBuilders;
 using Kontent.Ai.Delivery.Abstractions.QueryBuilders.Filtering;
+using Kontent.Ai.Delivery.Abstractions.SharedModels;
 using Kontent.Ai.Delivery.Api.QueryBuilders.Filtering;
 
 namespace Kontent.Ai.Delivery.Api.QueryBuilders;
 
-internal sealed class MultipleItemsQuery<T>(IDeliveryApi api) : IMultipleItemsQuery<T>
+/// <summary>
+/// Concrete implementation of <see cref="IMultipleItemsQuery{T}"/> using the modernized Result pattern.
+/// </summary>
+/// <typeparam name="T">The type of the content items.</typeparam>
+internal sealed class MultipleItemsQuery<T>(IDeliveryApi api, DeliveryResponseProcessor responseProcessor) : IMultipleItemsQuery<T>
 {
     private readonly IDeliveryApi _api = api;
+    private readonly DeliveryResponseProcessor _responseProcessor = responseProcessor;
     private readonly ItemFilters _filters = new();
     private readonly List<IFilter> _appliedFilters = [];
     private ListItemsParams _params = new();
@@ -72,12 +79,35 @@ internal sealed class MultipleItemsQuery<T>(IDeliveryApi api) : IMultipleItemsQu
         return this;
     }
 
-    public Task<IDeliveryItemListingResponse<T>> ExecuteAsync()
+    public async Task<IDeliveryResult<IReadOnlyList<T>>> ExecuteAsync(CancellationToken cancellationToken = default)
     {
         var paramsWithFilters = _appliedFilters.Count > 0
             ? _params with { Filters = [.. _appliedFilters.Select(f => f.ToQueryParameter())] }
             : _params;
         
-        return _api.GetItemsInternalAsync<T>(paramsWithFilters, null);
+        // Get raw response from Refit API
+        var rawResponse = await _api.GetItemsInternalAsync(paramsWithFilters, null);
+        
+        // Process the response to create strongly-typed result
+        var processedResponse = await _responseProcessor.ProcessItemListingResponseAsync<T>(rawResponse);
+        
+        // Extract the content items from the processed response
+        if (processedResponse.IsSuccess)
+        {
+            return DeliveryResult.Success<IReadOnlyList<T>>(
+                processedResponse.Value.Items.ToList().AsReadOnly(),
+                processedResponse.StatusCode,
+                processedResponse.HasStaleContent,
+                processedResponse.ContinuationToken,
+                processedResponse.RequestUrl,
+                processedResponse.RateLimit);
+        }
+
+        // Return error result
+        return DeliveryResult.Failure<IReadOnlyList<T>>(
+            processedResponse.Errors,
+            processedResponse.StatusCode,
+            processedResponse.RequestUrl,
+            processedResponse.RateLimit);
     }
 }

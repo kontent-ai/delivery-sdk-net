@@ -1,4 +1,4 @@
-﻿using Microsoft.Extensions.Options;
+using Microsoft.Extensions.Options;
 using Kontent.Ai.Delivery.Abstractions.QueryBuilders;
 
 namespace Kontent.Ai.Delivery
@@ -9,18 +9,22 @@ namespace Kontent.Ai.Delivery
     internal sealed class DeliveryClient : IDeliveryClient
     {
         private readonly IDeliveryApi _deliveryApi;
+        private readonly DeliveryResponseProcessor _responseProcessor;
         private readonly IOptionsMonitor<DeliveryOptions> _deliveryOptions;
 
         /// <summary>
         /// Initializes a new instance of the <see cref="DeliveryClient"/> class for retrieving content of the specified environment.
         /// </summary>
         /// <param name="deliveryApi">The Refit-generated API client.</param>
+        /// <param name="responseProcessor">The response processor for handling API responses.</param>
         /// <param name="deliveryOptions">The settings of the Kontent.ai environment.</param>
         public DeliveryClient(
             IDeliveryApi deliveryApi,
+            DeliveryResponseProcessor responseProcessor,
             IOptionsMonitor<DeliveryOptions> deliveryOptions)
         {
             _deliveryApi = deliveryApi ?? throw new ArgumentNullException(nameof(deliveryApi));
+            _responseProcessor = responseProcessor ?? throw new ArgumentNullException(nameof(responseProcessor));
             _deliveryOptions = deliveryOptions ?? throw new ArgumentNullException(nameof(deliveryOptions));
         }
 
@@ -31,12 +35,12 @@ namespace Kontent.Ai.Delivery
                 throw new ArgumentException("Entered item codename is not valid.", nameof(codename));
             }
 
-            return new SingleItemQuery<T>(_deliveryApi, codename);
+            return new SingleItemQuery<T>(_deliveryApi, codename, _responseProcessor);
         }
 
         public IMultipleItemsQuery<T> GetItems<T>()
         {
-            return new MultipleItemsQuery<T>(_deliveryApi);
+            return new MultipleItemsQuery<T>(_deliveryApi, _responseProcessor);
         }
 
         public IEnumerateItemsQuery<T> GetItemsFeed<T>()
