@@ -1,4 +1,4 @@
-﻿using Newtonsoft.Json;
+﻿using System.Text.Json.Serialization;
 using System.Diagnostics;
 
 namespace Kontent.Ai.Delivery.ContentItems.ContentLinks
@@ -14,21 +14,21 @@ namespace Kontent.Ai.Delivery.ContentItems.ContentLinks
         }
 
         /// <inheritdoc/>
-        [JsonProperty("codename")]
+        [JsonPropertyName("codename")]
         public string Codename
         {
             get; internal set;
         }
 
         /// <inheritdoc/>
-        [JsonProperty("url_slug")]
+        [JsonPropertyName("url_slug")]
         public string UrlSlug
         {
             get; internal set;
         }
 
         /// <inheritdoc/>
-        [JsonProperty("type")]
+        [JsonPropertyName("type")]
         public string ContentTypeCodename
         {
             get; internal set;

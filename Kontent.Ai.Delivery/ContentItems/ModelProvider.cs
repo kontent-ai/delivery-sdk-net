@@ -1,38 +1,33 @@
-﻿using System.Collections;
+using System.Collections;
 using System.Reflection;
+using System.Text.Json;
+using System.Text.Json.Serialization;
 using AngleSharp.Html.Parser;
+using Kontent.Ai.Delivery.Abstractions.Serialization;
 using Kontent.Ai.Delivery.ContentItems.ContentLinks;
 using Kontent.Ai.Delivery.ContentItems.Elements;
 using Kontent.Ai.Delivery.ContentItems.InlineContentItems;
 using Kontent.Ai.Delivery.SharedModels;
 using Microsoft.Extensions.Options;
-using Newtonsoft.Json;
-using Newtonsoft.Json.Linq;
 
 namespace Kontent.Ai.Delivery.ContentItems
 {
     /// <summary>
-    /// A default provider for mapping content items to models.
+    /// Provider for mapping content items to models using System.Text.Json.
     /// </summary>
     internal class ModelProvider : IModelProvider
     {
-        private ContentLinkResolver _contentLinkResolver;
+        private ContentLinkResolver? _contentLinkResolver;
 
         internal ITypeProvider TypeProvider { get; set; }
-
         internal IInlineContentItemsProcessor InlineContentItemsProcessor { get; }
-
         internal IPropertyMapper PropertyMapper { get; }
-
-        internal IContentLinkUrlResolver ContentLinkUrlResolver { get; }
-
-        internal JsonSerializer Serializer { get; }
-
+        internal IContentLinkUrlResolver? ContentLinkUrlResolver { get; }
+        internal IJsonSerializer JsonSerializer { get; }
         internal IHtmlParser HtmlParser { get; }
-
         internal IOptionsMonitor<DeliveryOptions> DeliveryOptions { get; }
 
-        private ContentLinkResolver ContentLinkResolver
+        private ContentLinkResolver? ContentLinkResolver
         {
             get
             {
@@ -44,26 +39,25 @@ namespace Kontent.Ai.Delivery.ContentItems
             }
         }
 
-
         /// <summary>
         /// Initializes a new instance of <see cref="ModelProvider"/>.
         /// </summary>
         public ModelProvider(
-            IContentLinkUrlResolver contentLinkUrlResolver,
+            ITypeProvider typeProvider, 
+            IPropertyMapper propertyMapper, 
             IInlineContentItemsProcessor inlineContentItemsProcessor,
-            ITypeProvider typeProvider,
-            IPropertyMapper propertyMapper,
-            JsonSerializer serializer,
+            IContentLinkUrlResolver? contentLinkUrlResolver,
+            IJsonSerializer jsonSerializer,
             IHtmlParser htmlParser,
             IOptionsMonitor<DeliveryOptions> deliveryOptions)
         {
+            TypeProvider = typeProvider ?? throw new ArgumentNullException(nameof(typeProvider));
+            PropertyMapper = propertyMapper ?? throw new ArgumentNullException(nameof(propertyMapper));
+            InlineContentItemsProcessor = inlineContentItemsProcessor ?? throw new ArgumentNullException(nameof(inlineContentItemsProcessor));
             ContentLinkUrlResolver = contentLinkUrlResolver;
-            InlineContentItemsProcessor = inlineContentItemsProcessor;
-            TypeProvider = typeProvider;
-            PropertyMapper = propertyMapper;
-            Serializer = serializer;
-            HtmlParser = htmlParser;
-            DeliveryOptions = deliveryOptions;
+            JsonSerializer = jsonSerializer ?? throw new ArgumentNullException(nameof(jsonSerializer));
+            HtmlParser = htmlParser ?? throw new ArgumentNullException(nameof(htmlParser));
+            DeliveryOptions = deliveryOptions ?? throw new ArgumentNullException(nameof(deliveryOptions));
         }
 
         /// <summary>
@@ -74,36 +68,79 @@ namespace Kontent.Ai.Delivery.ContentItems
         /// <param name="linkedItems">Linked items.</param>
         /// <returns>Strongly typed POCO model of the generic type.</returns>
         public async Task<T> GetContentItemModelAsync<T>(object item, IEnumerable linkedItems)
-            => (T)await GetContentItemModelAsync(typeof(T), (JToken)item, (JObject)linkedItems);
+        {
+            var itemJson = item.ToString() ?? throw new ArgumentException("Item cannot be null or empty", nameof(item));
+            var linkedItemsJson = linkedItems?.ToString() ?? "{}";
+            
+            using var itemDocument = JsonDocument.Parse(itemJson);
+            using var linkedItemsDocument = JsonDocument.Parse(linkedItemsJson);
+            
+            var result = await GetContentItemModelAsync(
+                typeof(T), 
+                itemDocument.RootElement, 
+                linkedItemsDocument.RootElement);
+                
+            return (T)result;
+        }
 
-        internal async Task<object> GetContentItemModelAsync(Type modelType, JToken serializedItem, JObject linkedItems, Dictionary<string, object>? processedItems = null, HashSet<RichTextContentElements>? currentlyResolvedRichStrings = null)
+        internal async Task<object> GetContentItemModelAsync(
+            Type modelType, 
+            JsonElement serializedItem, 
+            JsonElement linkedItems, 
+            Dictionary<string, object>? processedItems = null, 
+            HashSet<RichTextContentElements>? currentlyResolvedRichStrings = null)
         {
             processedItems ??= new Dictionary<string, object>();
-            IContentItemSystemAttributes? itemSystemAttributes = serializedItem?["system"]?.ToObject<IContentItemSystemAttributes>(Serializer);
+            
+            IContentItemSystemAttributes? itemSystemAttributes = null;
+            
+            if (serializedItem.TryGetProperty("system", out var systemElement))
+            {
+                var systemJson = systemElement.GetRawText();
+                itemSystemAttributes = JsonSerializer.Deserialize<IContentItemSystemAttributes>(systemJson);
+            }
 
             var instance = CreateInstance(modelType, ref itemSystemAttributes, ref processedItems);
             if (instance == null)
             {
                 // modelType could not be resolved or instance could not be created
-                return null;
+                return null!;
             }
 
             var elementsData = GetElementData(serializedItem);
-            var context = CreateResolvingContext(linkedItems, processedItems);
-            var richTextPropertiesToBeProcessed = new List<PropertyInfo>();
-            foreach (var property in instance.GetType().GetProperties().Where(property => property.SetMethod != null))
+            if (elementsData == null)
             {
-                if (typeof(IContentItemSystemAttributes).IsAssignableFrom(property.PropertyType))
+                return instance;
+            }
+
+            currentlyResolvedRichStrings ??= new HashSet<RichTextContentElements>();
+            var richTextPropertiesToBeProcessed = new List<PropertyInfo>();
+
+            foreach (var property in instance.GetType().GetProperties())
+            {
+                if (property.SetMethod?.IsPublic != true || 
+                    !property.SetMethod.GetParameters().Any() || 
+                    property.GetCustomAttribute<JsonIgnoreAttribute>() != null)
                 {
-                    // Handle the system metadata
-                    if (itemSystemAttributes != null)
-                    {
-                        property.SetValue(instance, itemSystemAttributes);
-                    }
+                    continue;
+                }
+
+                if (PropertyMapper.IsMatch(property, "system", null!) && itemSystemAttributes != null)
+                {
+                    property.SetValue(instance, itemSystemAttributes);
                 }
                 else
                 {
-                    var value = await GetPropertyValueAsync(elementsData, property, linkedItems, context, itemSystemAttributes, processedItems, richTextPropertiesToBeProcessed);
+                    var context = CreateResolvingContext(linkedItems, processedItems);
+                    var value = await GetPropertyValueAsync(
+                        elementsData.Value, 
+                        property, 
+                        linkedItems, 
+                        context, 
+                        itemSystemAttributes, 
+                        processedItems, 
+                        richTextPropertiesToBeProcessed);
+                        
                     if (value != null)
                     {
                         property.SetValue(instance, value);
@@ -111,17 +148,22 @@ namespace Kontent.Ai.Delivery.ContentItems
                 }
             }
 
-            // Rich-text elements need to be processed last, so in case of circular dependency, content items resolved by
-            // resolvers would have all elements already processed
-            currentlyResolvedRichStrings ??= new HashSet<RichTextContentElements>();
+            // Process rich text properties that were deferred
             foreach (var property in richTextPropertiesToBeProcessed)
             {
-                var currentValue = property.GetValue(instance)?.ToString();
-
-                var value = await GetRichTextValueAsync(currentValue, elementsData, property, linkedItems, itemSystemAttributes, processedItems, currentlyResolvedRichStrings);
-
-                if (value != null)
+                var elementData = GetElementData(elementsData.Value, property, itemSystemAttributes);
+                if (elementData?.Value != null)
                 {
+                    var (stringValue, isRichText) = await GetStringValueAsync(elementData.Value.Value);
+                    var value = await GetRichTextValueAsync(
+                        stringValue, 
+                        elementsData.Value, 
+                        property, 
+                        linkedItems, 
+                        itemSystemAttributes, 
+                        processedItems, 
+                        currentlyResolvedRichStrings);
+                        
                     property.SetValue(instance, value);
                 }
             }
@@ -129,319 +171,290 @@ namespace Kontent.Ai.Delivery.ContentItems
             return instance;
         }
 
-        private async Task<object> GetRichTextValueAsync(string value, JObject elementsData, PropertyInfo property, JObject linkedItems, IContentItemSystemAttributes itemSystemAttributes, Dictionary<string, object> processedItems, HashSet<RichTextContentElements> currentlyResolvedRichStrings)
+        private static JsonElement? GetElementData(JsonElement serializedItem)
         {
-            var currentlyProcessedString = new RichTextContentElements(itemSystemAttributes?.Codename, property.Name);
-            if (currentlyResolvedRichStrings.Contains(currentlyProcessedString))
-            {
-                // If this element is already being processed it's necessary to use it as is (with removed inline content items)
-                // otherwise resolving would be stuck in an infinite loop
-                return await RemoveInlineContentItemsAsync(value);
-            }
-
-            currentlyResolvedRichStrings.Add(currentlyProcessedString);
-
-            var elementData = GetElementData(elementsData, property, itemSystemAttributes);
-            var linkedItemsInRichText = GetLinkedItemsInRichText(elementData?.Value);
-            value = await ProcessInlineContentItemsAsync(linkedItems, processedItems, value, linkedItemsInRichText, currentlyResolvedRichStrings);
-
-            currentlyResolvedRichStrings.Remove(currentlyProcessedString);
-
-            return value;
+            return serializedItem.TryGetProperty("elements", out var elements) ? elements : null;
         }
 
-        private object CreateInstance(Type detectedModelType, ref IContentItemSystemAttributes itemSystemAttributes, ref Dictionary<string, object> processedItems)
-        {
-            if (detectedModelType == typeof(object) || detectedModelType.IsInterface)
-            {
-                // Try to find a more specific type or a type that can be instantiated
-                detectedModelType = TypeProvider?.GetType(itemSystemAttributes?.Type);
-            }
-
-            if (detectedModelType == null || itemSystemAttributes == null)
-            {
-                return null;
-            }
-
-            var instance = Activator.CreateInstance(detectedModelType);
-            if (!processedItems.ContainsKey(itemSystemAttributes?.Codename))
-            {
-                processedItems.Add(itemSystemAttributes.Codename, instance);
-            }
-
-            return instance;
-        }
-
-        private static JObject? GetElementData(JToken serializedItem)
-        {
-            var elementsData = (JObject?)serializedItem?["elements"];
-            if (elementsData == null)
-            {
-                return null;
-            }
-
-            return elementsData;
-        }
-
-
-        private ResolvingContext CreateResolvingContext(JObject linkedItems, Dictionary<string, object> processedItems)
+        private ResolvingContext CreateResolvingContext(JsonElement linkedItems, Dictionary<string, object> processedItems)
         {
             async Task<object> GetLinkedItemAsync(string codename)
             {
-                var linkedItemsElementNode = linkedItems.Properties().FirstOrDefault(p => p.Name == codename)?.First;
-                if (linkedItemsElementNode == null)
+                if (linkedItems.TryGetProperty(codename, out var linkedItemElement))
                 {
-                    return null;
+                    var contentItem = await GetContentItemModelAsync(
+                        TypeProvider.GetType(codename) ?? typeof(object), 
+                        linkedItemElement, 
+                        linkedItems, 
+                        processedItems);
+                    return contentItem;
                 }
-
-                return processedItems.ContainsKey(codename)
-                    ? processedItems[codename]
-                    : await GetContentItemModelAsync(typeof(object), linkedItemsElementNode, linkedItems, processedItems);
+                return null!;
             }
 
             return new ResolvingContext
             {
                 GetLinkedItem = GetLinkedItemAsync,
-                ContentLinkUrlResolver = ContentLinkUrlResolver
+                ContentLinkUrlResolver = ContentLinkUrlResolver!
             };
         }
 
-        private async Task<object> GetPropertyValueAsync(JObject elementsData, PropertyInfo property, JObject linkedItems, ResolvingContext context, IContentItemSystemAttributes itemSystemAttributes, Dictionary<string, object> processedItems, List<PropertyInfo> richTextPropertiesToBeProcessed)
+        private async Task<object?> GetPropertyValueAsync(
+            JsonElement elementsData, 
+            PropertyInfo property, 
+            JsonElement linkedItems, 
+            ResolvingContext context, 
+            IContentItemSystemAttributes? itemSystemAttributes, 
+            Dictionary<string, object> processedItems, 
+            List<PropertyInfo> richTextPropertiesToBeProcessed)
         {
             var elementDefinition = GetElementData(elementsData, property, itemSystemAttributes);
-
-            var elementValue = elementDefinition?.Value;
-
-            if (elementValue != null)
+            
+            if (elementDefinition == null)
             {
-                var valueConverter = GetValueConverter(property);
-                if (valueConverter != null)
-                {
-                    return (elementValue["type"].ToString()) switch
-                    {
-                        "rich_text" => await GetElementModelAsync<RichTextElementValue, string>(property, context, elementValue, valueConverter),
-                        "asset" => await GetElementModelAsync<AssetElementValue, IEnumerable<IAsset>>(property, context, elementValue, valueConverter),
-                        "number" => await GetElementModelAsync<ContentElementValue<decimal?>, decimal?>(property, context, elementValue, valueConverter),
-                        "date_time" => await GetElementModelAsync<DateTimeElementValue, DateTime?>(property, context, elementValue, valueConverter),
-                        "multiple_choice" => await GetElementModelAsync<ContentElementValue<List<MultipleChoiceOption>>, List<MultipleChoiceOption>>(property, context, elementValue, valueConverter),
-                        "taxonomy" => await GetElementModelAsync<TaxonomyElementValue, IEnumerable<ITaxonomyTerm>>(property, context, elementValue, valueConverter),
-                        "modular_content" => await GetElementModelAsync<ContentElementValue<List<string>>, List<string>>(property, context, elementValue, valueConverter),
-                        // Custom element, text element, URL slug element
-                        _ => await GetElementModelAsync<ContentElementValue<string>, string>(property, context, elementValue, valueConverter),
-                    };
-                }
+                return null;
             }
 
-            if (property.PropertyType == typeof(string))
+            var (elementName, elementValue) = elementDefinition.Value;
+
+            var propertyType = property.PropertyType;
+
+            if (propertyType == typeof(string))
             {
                 var (value, isRichText) = await GetStringValueAsync(elementValue);
-
+                
                 if (isRichText)
                 {
                     richTextPropertiesToBeProcessed.Add(property);
+                    return null;
                 }
-
+                
                 return value;
             }
 
-            if (IsNonHierarchicalField(property.PropertyType))
+            if (IsGenericHierarchicalField(propertyType))
             {
-                return GetRawValue(elementValue)?.ToObject(property.PropertyType);
+                return await GetLinkedItemsValueAsync(elementValue, linkedItems, propertyType, processedItems);
             }
 
-            if (IsGenericHierarchicalField(property.PropertyType))
+            // Handle other property types...
+            var rawValue = GetRawValue(elementValue);
+            if (rawValue.HasValue)
             {
-                return await GetLinkedItemsValueAsync(elementValue, linkedItems, property.PropertyType, processedItems);
+                var rawJson = rawValue.Value.GetRawText();
+                return JsonSerializer.Deserialize(rawJson, propertyType);
             }
 
             return null;
         }
 
-        private async Task<object> GetElementModelAsync<TElement, TElementValue>(PropertyInfo property, ResolvingContext context, JObject elementValue, IPropertyValueConverter valueConverter) where TElement : IContentElementValue<TElementValue>
+        private async Task<object?> GetRichTextValueAsync(
+            string value, 
+            JsonElement elementsData, 
+            PropertyInfo property, 
+            JsonElement linkedItems, 
+            IContentItemSystemAttributes? itemSystemAttributes, 
+            Dictionary<string, object> processedItems, 
+            HashSet<RichTextContentElements> currentlyResolvedRichStrings)
         {
-            var contentElement = elementValue.ToObject<TElement>(Serializer);
-            return await ((IPropertyValueConverter<TElementValue>)valueConverter).GetPropertyValueAsync(property, contentElement, context);
+            var currentlyProcessedString = new RichTextContentElements(itemSystemAttributes?.Codename, property.Name);
+            
+            if (currentlyResolvedRichStrings.Contains(currentlyProcessedString))
+            {
+                return value;
+            }
+
+            currentlyResolvedRichStrings.Add(currentlyProcessedString);
+
+            var elementDefinition = GetElementData(elementsData, property, itemSystemAttributes);
+            if (elementDefinition?.Value == null)
+            {
+                return value;
+            }
+
+            var linkedItemsInRichText = GetLinkedItemsInRichText(elementDefinition.Value.Value);
+            
+            var processedValue = await ProcessInlineContentItemsAsync(
+                linkedItems, 
+                processedItems, 
+                value, 
+                linkedItemsInRichText, 
+                currentlyResolvedRichStrings);
+
+            currentlyResolvedRichStrings.Remove(currentlyProcessedString);
+            return processedValue;
         }
 
-        private (string Name, JObject Value)? GetElementData(JObject elementsData, PropertyInfo property, IContentItemSystemAttributes itemSystemAttributes)
-        => elementsData?.Properties()?.Where(p => PropertyMapper.IsMatch(property, p.Name, itemSystemAttributes?.Type)).Select(p => (p.Name, (JObject)p.Value)).FirstOrDefault();
+
+        private (string Name, JsonElement Value)? GetElementData(
+            JsonElement elementsData, 
+            PropertyInfo property, 
+            IContentItemSystemAttributes? itemSystemAttributes)
+        {
+            if (elementsData.ValueKind != JsonValueKind.Object)
+            {
+                return null;
+            }
+
+            foreach (var elementProperty in elementsData.EnumerateObject())
+            {
+                if (PropertyMapper.IsMatch(property, elementProperty.Name, itemSystemAttributes?.Type))
+                {
+                    return (elementProperty.Name, elementProperty.Value);
+                }
+            }
+
+            return null;
+        }
 
         private static bool IsGenericHierarchicalField(Type fieldType)
         {
-            static bool IsGenericICollection(Type @interface)
-                => @interface.IsGenericType && @interface.GetGenericTypeDefinition() == typeof(ICollection<>);
-
-            return fieldType.IsGenericType && (fieldType.GetGenericTypeDefinition() == typeof(IEnumerable<>) ||
-                                               fieldType.IsClass &&
-                                               fieldType.GetInterfaces().Any(IsGenericICollection));
+            var propertyType = fieldType;
+            return propertyType.IsGenericType && 
+                   (propertyType.GetGenericTypeDefinition() == typeof(IEnumerable<>) ||
+                    propertyType.GetInterfaces().Any(i => i.IsGenericType && i.GetGenericTypeDefinition() == typeof(IEnumerable<>)));
         }
 
-        private static bool IsNonHierarchicalField(Type propertyType)
-            => propertyType.IsValueType && !(typeof(Enumerable).IsAssignableFrom(propertyType)
-               || (propertyType.IsGenericType && propertyType.GetGenericTypeDefinition() == typeof(IEnumerable<>)));
-
-        private async Task<(string value, bool isRichText)> GetStringValueAsync(JObject elementData)
+        private async Task<(string value, bool isRichText)> GetStringValueAsync(JsonElement elementData)
         {
             var elementValue = GetRawValue(elementData);
-            var value = elementValue?.ToObject<string>(Serializer);
-            var links = elementData?.Property("links")?.Value.ToObject<IDictionary<Guid, IContentLink>>(Serializer);
-
-            // Handle rich_text link resolution
-            if (links != null && elementValue != null && ContentLinkResolver != null)
+            
+            if (elementValue == null || elementValue.Value.ValueKind != JsonValueKind.String)
             {
-                value = await ContentLinkResolver.ResolveContentLinksAsync(value, links);
+                return (string.Empty, false);
             }
 
-            var linkedItemsInRichText = GetLinkedItemsInRichText(elementData);
+            var value = elementValue.Value.GetString() ?? string.Empty;
 
-            // It's clear it's rich-text because it contains linked items
-            var isRichText = elementValue != null && linkedItemsInRichText != null && InlineContentItemsProcessor != null;
+            if (elementData.TryGetProperty("type", out var typeElement) && 
+                typeElement.GetString() == "rich_text")
+            {
+                return (value, true);
+            }
 
-            return (value, isRichText);
+            return (value, false);
         }
 
-        private static JToken GetLinkedItemsInRichText(JObject elementData)
-            => elementData?.Property("modular_content")?.Value;
-
-        private async Task<object> GetLinkedItemsValueAsync(JObject elementData, JObject linkedItems, Type propertyType, Dictionary<string, object> processedItems)
+        private static JsonElement? GetLinkedItemsInRichText(JsonElement elementData)
         {
-            // Create a List<T> based on the generic parameter of the input type (IEnumerable<T> or derived types)
-            var genericArgs = propertyType.GetGenericArguments();
-            var collectionType = propertyType.IsInterface
-                ? typeof(List<>).MakeGenericType(genericArgs)
-                : propertyType;
+            return elementData.TryGetProperty("modular_content", out var modularContent) ? modularContent : null;
+        }
 
-            if ((genericArgs.Length == 1) && (new[] { typeof(IAsset), typeof(ITaxonomyTerm), typeof(IMultipleChoiceOption) }.Contains(genericArgs.First())))
+        private async Task<object?> GetLinkedItemsValueAsync(
+            JsonElement elementData, 
+            JsonElement linkedItems, 
+            Type propertyType, 
+            Dictionary<string, object> processedItems)
+        {
+            // Create a List<T> based on the generic parameter of the input type
+            var genericArgs = propertyType.GetGenericArguments();
+            if (!genericArgs.Any())
             {
-                return GetRawValue(elementData)?.ToObject(collectionType, Serializer);
+                return null;
             }
 
-            var codeNamesWithLinkedItems = GetRawValue(elementData)
-                ?.ToObject<List<string>>(Serializer)
-                ?.Select(codename => (codename, linkedItems.Properties().FirstOrDefault(p => p.Name == codename)?.First))
-                .Where(pair => pair.First != null)
-                .ToArray()
-                ?? Array.Empty<(string, JToken)>();
+            var collectionType = typeof(List<>).MakeGenericType(genericArgs.First());
+            var rawValue = GetRawValue(elementData);
+            
+            if (rawValue == null)
+            {
+                return Activator.CreateInstance(collectionType);
+            }
+
+            var codenamesJson = rawValue.Value.GetRawText();
+            var codenames = JsonSerializer.Deserialize<List<string>>(codenamesJson) ?? new List<string>();
 
             var contentItems = Activator.CreateInstance(collectionType);
-            if (!codeNamesWithLinkedItems.Any())
-            {
-                return contentItems;
-            }
+            var addMethod = collectionType.GetMethod("Add");
 
-            // It certain that the instance is of the ICollection<> type at this point, we can call "Add"
-            var addMethod = contentItems.GetType().GetMethod("Add");
-            if (addMethod == null)
+            foreach (var codename in codenames.Where(c => !string.IsNullOrEmpty(c)))
             {
-                throw new InvalidOperationException("Linked items are not stored in collection allowing adding new ones. This should have never happen.");
-            }
-
-            foreach (var (codename, linkedItemsElementNode) in codeNamesWithLinkedItems)
-            {
-                object contentItem;
-                if (processedItems.ContainsKey(codename))
+                if (linkedItems.TryGetProperty(codename, out var linkedItemElement))
                 {
-                    // Avoid infinite recursion by re-using already processed content items
-                    contentItem = processedItems[codename];
+                    var linkedItemType = TypeProvider.GetType(codename) ?? typeof(object);
+                    var linkedItem = await GetContentItemModelAsync(
+                        linkedItemType, 
+                        linkedItemElement, 
+                        linkedItems, 
+                        processedItems);
+                        
+                    addMethod?.Invoke(contentItems, new[] { linkedItem });
                 }
-                else
-                {
-                    // This is the entry-point for recursion mentioned above
-                    contentItem = await GetContentItemModelAsync(genericArgs.First(), linkedItemsElementNode, linkedItems, processedItems);
-
-                    if (!processedItems.ContainsKey(codename))
-                    {
-                        processedItems.Add(codename, contentItem);
-                    }
-                }
-
-                addMethod.Invoke(contentItems, new[] { contentItem });
             }
 
             return contentItems;
         }
 
-        private IPropertyValueConverter GetValueConverter(PropertyInfo property)
+        private static JsonElement? GetRawValue(JsonElement elementData)
         {
-            // Converter defined by explicit attribute has the highest priority
-            if (property.GetCustomAttributes().OfType<IPropertyValueConverter>().FirstOrDefault() is { } attributeConverter)
-            {
-                return attributeConverter;
-            }
-
-            // Specific type converters
-            if (typeof(IRichTextContent).IsAssignableFrom(property.PropertyType))
-            {
-                return new RichTextContentConverter(HtmlParser);
-            }
-
-            if (typeof(IDateTimeContent).IsAssignableFrom(property.PropertyType))
-            {
-                return new DateTimeContentConverter();
-            }
-
-            if (property.PropertyType == typeof(IEnumerable<IAsset>))
-            {
-                return new AssetElementValueConverter(DeliveryOptions);
-            }
-
-            return null;
+            return elementData.TryGetProperty("value", out var value) ? value : null;
         }
 
-        private static JToken GetRawValue(JObject elementData)
-            => elementData?.Property("value")?.Value;
-
-        private async Task<string> ProcessInlineContentItemsAsync(JObject linkedItems, Dictionary<string, object> processedItems, string value, JToken linkedItemsInRichText, HashSet<RichTextContentElements> currentlyResolvedRichStrings)
+        private async Task<string> ProcessInlineContentItemsAsync(
+            JsonElement linkedItems, 
+            Dictionary<string, object> processedItems, 
+            string value, 
+            JsonElement? linkedItemsInRichText, 
+            HashSet<RichTextContentElements> currentlyResolvedRichStrings)
         {
-            var usedCodenames = linkedItemsInRichText.ToObject<List<string>>(Serializer);
-            var contentItemsInRichText = new Dictionary<string, object>();
-
-            if (usedCodenames != null)
+            if (linkedItemsInRichText == null)
             {
-                foreach (var codenameUsed in usedCodenames)
-                {
-                    object contentItem;
-                    // This is to reuse content items which were processed already, but not those 
-                    // that are calling this resolver as they may contain unprocessed rich text elements
-                    if (processedItems.ContainsKey(codenameUsed) && currentlyResolvedRichStrings.All(x => x.ContentItemCodeName != codenameUsed))
+                return value;
+            }
 
-                    {
-                        contentItem = processedItems[codenameUsed];
-                    }
-                    else
-                    {
-                        var linkedItemsElementNode = linkedItems
-                            .Properties()
-                            .FirstOrDefault(p => p.Name == codenameUsed)
-                            ?.First;
-                        if (linkedItemsElementNode != null)
-                        {
-                            contentItem = await GetContentItemModelAsync(typeof(object), linkedItemsElementNode, linkedItems, processedItems, currentlyResolvedRichStrings);
-                            if (!processedItems.ContainsKey(codenameUsed))
-                            {
-                                contentItem ??= new UnknownContentItem(linkedItemsElementNode
-                                                                        .SelectToken("system.type", false)
-                                                                        ?.ToString()
-                                                                        ?? "unextractable system type");
-                                processedItems.Add(codenameUsed, contentItem);
-                            }
-                        }
-                        else
-                        {
-                            // This means that response from Delivery API didn't contain content of this item 
-                            contentItem = new UnretrievedContentItem();
-                        }
-                    }
-                    contentItemsInRichText.Add(codenameUsed, contentItem);
+            var codenamesJson = linkedItemsInRichText.Value.GetRawText();
+            var usedCodenames = JsonSerializer.Deserialize<List<string>>(codenamesJson) ?? new List<string>();
+
+            var usedContentItems = new Dictionary<string, object>();
+            
+            foreach (var codename in usedCodenames.Where(c => !string.IsNullOrEmpty(c)))
+            {
+                if (linkedItems.TryGetProperty(codename, out var linkedItemElement))
+                {
+                    var linkedItemType = TypeProvider.GetType(codename) ?? typeof(object);
+                    var linkedItem = await GetContentItemModelAsync(
+                        linkedItemType, 
+                        linkedItemElement, 
+                        linkedItems, 
+                        processedItems, 
+                        currentlyResolvedRichStrings);
+
+                    usedContentItems[codename] = linkedItem;
                 }
             }
 
-            value = await InlineContentItemsProcessor.ProcessAsync(value, contentItemsInRichText);
+            value = await InlineContentItemsProcessor.ProcessAsync(value, usedContentItems);
 
             return value;
         }
 
-        private async Task<string> RemoveInlineContentItemsAsync(string value)
-            => await InlineContentItemsProcessor.RemoveAllAsync(value);
+        private object? CreateInstance(
+            Type modelType, 
+            ref IContentItemSystemAttributes? itemSystemAttributes, 
+            ref Dictionary<string, object> processedItems)
+        {
+            var codename = itemSystemAttributes?.Codename;
+            
+            if (!string.IsNullOrEmpty(codename) && processedItems.ContainsKey(codename))
+            {
+                return processedItems[codename];
+            }
+
+            try
+            {
+                var instance = Activator.CreateInstance(modelType);
+                
+                if (!string.IsNullOrEmpty(codename))
+                {
+                    processedItems[codename] = instance!;
+                }
+                
+                return instance;
+            }
+            catch
+            {
+                return null;
+            }
+        }
     }
 }

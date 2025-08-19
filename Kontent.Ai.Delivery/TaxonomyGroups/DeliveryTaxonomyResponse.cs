@@ -1,6 +1,6 @@
 ﻿using Kontent.Ai.Delivery.ContentTypes;
 using Kontent.Ai.Delivery.SharedModels;
-using Newtonsoft.Json;
+using System.Text.Json.Serialization;
 
 namespace Kontent.Ai.Delivery.TaxonomyGroups
 {

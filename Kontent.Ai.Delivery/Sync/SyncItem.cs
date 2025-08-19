@@ -1,4 +1,4 @@
-﻿using Newtonsoft.Json;
+﻿using System.Text.Json.Serialization;
 
 namespace Kontent.Ai.Delivery.Sync;
 
@@ -9,15 +9,15 @@ internal sealed class SyncItem : ISyncItem
     public object StronglyTypedData { get; internal set; }
 
     /// <inheritdoc/>
-    [JsonProperty("data")]
+    [JsonPropertyName("data")]
     public ISyncItemData Data { get; internal set; }
 
     /// <inheritdoc/>
-    [JsonProperty("change_type")]
+    [JsonPropertyName("change_type")]
     public string ChangeType { get; internal set; }
 
     /// <inheritdoc/>
-    [JsonProperty("timestamp")]
+    [JsonPropertyName("timestamp")]
     public DateTime Timestamp { get; internal set; }
 
     /// <summary>

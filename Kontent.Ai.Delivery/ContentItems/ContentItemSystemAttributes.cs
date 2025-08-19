@@ -1,5 +1,5 @@
 ﻿using System.Diagnostics;
-using Newtonsoft.Json;
+using System.Text.Json.Serialization;
 
 namespace Kontent.Ai.Delivery.ContentItems
 {
@@ -8,43 +8,43 @@ namespace Kontent.Ai.Delivery.ContentItems
     internal sealed class ContentItemSystemAttributes : IContentItemSystemAttributes
     {
         /// <inheritdoc/>
-        [JsonProperty("id")]
+        [JsonPropertyName("id")]
         public string Id { get; internal set; }
 
         /// <inheritdoc/>
-        [JsonProperty("name")]
+        [JsonPropertyName("name")]
         public string Name { get; internal set; }
 
         /// <inheritdoc/>
-        [JsonProperty("codename")]
+        [JsonPropertyName("codename")]
         public string Codename { get; internal set; }
 
         /// <inheritdoc/>
-        [JsonProperty("type")]
+        [JsonPropertyName("type")]
         public string Type { get; internal set; }
 
         /// <inheritdoc/>
-        [JsonProperty("sitemap_locations")]
+        [JsonPropertyName("sitemap_locations")]
         public IList<string> SitemapLocation { get; internal set; }
 
         /// <inheritdoc/>
-        [JsonProperty("last_modified")]
+        [JsonPropertyName("last_modified")]
         public DateTime LastModified { get; internal set; }
 
         /// <inheritdoc/>
-        [JsonProperty("language")]
+        [JsonPropertyName("language")]
         public string Language { get; internal set; }
 
         /// <inheritdoc/>
-        [JsonProperty("collection")]
+        [JsonPropertyName("collection")]
         public string Collection { get; internal set; }
 
         /// <inheritdoc/>
-        [JsonProperty("workflow")]
+        [JsonPropertyName("workflow")]
         public string Workflow { get; internal set; }
 
         /// <inheritdoc/>
-        [JsonProperty("workflow_step")]
+        [JsonPropertyName("workflow_step")]
         public string WorkflowStep { get; internal set; }
 
         /// <summary>

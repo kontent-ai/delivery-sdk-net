@@ -1,6 +1,6 @@
 ﻿using System.Diagnostics;
 using Kontent.Ai.Delivery.ContentTypes.Element;
-using Newtonsoft.Json;
+using System.Text.Json.Serialization;
 
 namespace Kontent.Ai.Delivery.ContentTypes
 {
@@ -9,11 +9,11 @@ namespace Kontent.Ai.Delivery.ContentTypes
     internal sealed class ContentType : IContentType
     {
         /// <inheritdoc/>
-        [JsonProperty("system")]
+        [JsonPropertyName("system")]
         public IContentTypeSystemAttributes System { get; internal set; }
 
         /// <inheritdoc/>
-        [JsonProperty("elements")]
+        [JsonPropertyName("elements")]
         public IDictionary<string, IContentElement> Elements { get; internal set; }
 
         /// <summary>

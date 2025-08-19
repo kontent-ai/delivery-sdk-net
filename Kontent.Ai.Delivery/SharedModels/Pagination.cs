@@ -1,4 +1,4 @@
-﻿using Newtonsoft.Json;
+﻿using System.Text.Json.Serialization;
 using System.Diagnostics;
 
 namespace Kontent.Ai.Delivery.SharedModels
@@ -17,11 +17,11 @@ namespace Kontent.Ai.Delivery.SharedModels
         public int Count { get; }
 
         /// <inheritdoc/>
-        [JsonProperty("total_count")]
+        [JsonPropertyName("total_count")]
         public int? TotalCount { get; }
 
         /// <inheritdoc/>
-        [JsonProperty("next_page")]
+        [JsonPropertyName("next_page")]
         public string NextPageUrl { get; }
 
         /// <summary>

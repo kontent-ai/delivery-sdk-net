@@ -1,4 +1,4 @@
-﻿using Newtonsoft.Json;
+﻿using System.Text.Json.Serialization;
 using System.Diagnostics;
 
 namespace Kontent.Ai.Delivery.Languages
@@ -8,7 +8,7 @@ namespace Kontent.Ai.Delivery.Languages
     internal sealed class Language : ILanguage
     {
         /// <inheritdoc/>
-        [JsonProperty("system")]
+        [JsonPropertyName("system")]
         public ILanguageSystemAttributes System { get; internal set; }
 
         /// <summary>

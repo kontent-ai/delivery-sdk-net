@@ -1,6 +1,6 @@
 ﻿using System.Diagnostics;
 using Kontent.Ai.Delivery.SharedModels;
-using Newtonsoft.Json;
+using System.Text.Json.Serialization;
 
 namespace Kontent.Ai.Delivery.ContentTypes
 {

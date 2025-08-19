@@ -1,16 +1,16 @@
-﻿using Newtonsoft.Json;
+﻿using System.Text.Json.Serialization;
 
 namespace Kontent.Ai.Delivery.ContentItems.DateTimes
 {
     internal sealed class DateTimeContent : IDateTimeContent
     {
-        [JsonProperty("value")]
+        [JsonPropertyName("value")]
         public DateTime? Value
         {
             get; internal set;
         }
 
-        [JsonProperty("display_timezone")]
+        [JsonPropertyName("display_timezone")]
         public string DisplayTimezone
         {
             get; internal set;

@@ -1,4 +1,4 @@
-﻿using Newtonsoft.Json;
+﻿using System.Text.Json.Serialization;
 using System.Diagnostics;
 
 namespace Kontent.Ai.Delivery.ContentItems
@@ -8,35 +8,35 @@ namespace Kontent.Ai.Delivery.ContentItems
     internal sealed class Asset : IAsset
     {
         /// <inheritdoc/>
-        [JsonProperty("name")]
+        [JsonPropertyName("name")]
         public string Name { get; internal set; }
 
         /// <inheritdoc/>
-        [JsonProperty("description")]
+        [JsonPropertyName("description")]
         public string Description { get; internal set; }
 
         /// <inheritdoc/>
-        [JsonProperty("type")]
+        [JsonPropertyName("type")]
         public string Type { get; internal set; }
 
         /// <inheritdoc/>
-        [JsonProperty("size")]
+        [JsonPropertyName("size")]
         public int Size { get; internal set; }
 
         /// <inheritdoc/>
-        [JsonProperty("url")]
+        [JsonPropertyName("url")]
         public string Url { get; internal set; }
 
         /// <inheritdoc/>
-        [JsonProperty("width")]
+        [JsonPropertyName("width")]
         public int Width { get; internal set; }
 
         /// <inheritdoc/>
-        [JsonProperty("height")]
+        [JsonPropertyName("height")]
         public int Height { get; internal set; }
 
         /// <inheritdoc/>
-        [JsonProperty("renditions")]
+        [JsonPropertyName("renditions")]
         public Dictionary<string, IAssetRendition> Renditions { get; internal set; }
 
         /// <summary>
