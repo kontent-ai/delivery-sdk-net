@@ -1,4 +1,4 @@
-﻿using Newtonsoft.Json;
+﻿using System.Text.Json.Serialization;
 
 namespace Kontent.Ai.Delivery.ContentItems
 {
@@ -6,23 +6,23 @@ namespace Kontent.Ai.Delivery.ContentItems
     public class AssetRendition : IAssetRendition
     {
         /// <inheritdoc/>
-        [JsonProperty("rendition_id")]
+        [JsonPropertyName("rendition_id")]
         public string RenditionId { get; set; }
 
         /// <inheritdoc/>
-        [JsonProperty("preset_id")]
+        [JsonPropertyName("preset_id")]
         public string PresetId { get; set; }
 
         /// <inheritdoc/>
-        [JsonProperty("width")]
+        [JsonPropertyName("width")]
         public int Width { get; set; }
 
         /// <inheritdoc/>
-        [JsonProperty("height")]
+        [JsonPropertyName("height")]
         public int Height { get; set; }
 
         /// <inheritdoc/>
-        [JsonProperty("query")]
+        [JsonPropertyName("query")]
         public string Query { get; set; }
 
         /// <summary>

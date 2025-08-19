@@ -1,4 +1,4 @@
-﻿using Newtonsoft.Json;
+﻿using System.Text.Json.Serialization;
 using System.Diagnostics;
 
 namespace Kontent.Ai.Delivery.Languages
@@ -8,15 +8,15 @@ namespace Kontent.Ai.Delivery.Languages
     public class LanguageSystemAttributes : ILanguageSystemAttributes
     {
         /// <inheritdoc/>
-        [JsonProperty("codename")]
+        [JsonPropertyName("codename")]
         public string Codename { get; internal set; }
 
         /// <inheritdoc/>
-        [JsonProperty("id")]
+        [JsonPropertyName("id")]
         public string Id { get; internal set; }
 
         /// <inheritdoc/>
-        [JsonProperty("name")]
+        [JsonPropertyName("name")]
         public string Name { get; internal set; }
 
         /// <summary>

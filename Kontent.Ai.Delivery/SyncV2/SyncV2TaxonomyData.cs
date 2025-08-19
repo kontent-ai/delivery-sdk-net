@@ -1,4 +1,4 @@
-﻿using Newtonsoft.Json;
+﻿using System.Text.Json.Serialization;
 
 namespace Kontent.Ai.Delivery.SyncV2;
 
@@ -6,7 +6,7 @@ namespace Kontent.Ai.Delivery.SyncV2;
 internal sealed class SyncV2TaxonomyData : ISyncV2TaxonomyData
 {
     /// <inheritdoc/>
-    [JsonProperty("system")]
+    [JsonPropertyName("system")]
     public ITaxonomyGroupSystemAttributes System { get; internal set; }
 
     /// <summary>

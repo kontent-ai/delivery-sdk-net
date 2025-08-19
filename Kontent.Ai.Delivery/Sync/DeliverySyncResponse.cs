@@ -1,5 +1,6 @@
-﻿using Newtonsoft.Json;
+﻿using System.Text.Json.Serialization;
 using Kontent.Ai.Delivery.SharedModels;
+using IApiResponse = Kontent.Ai.Delivery.Abstractions.IApiResponse; // TODO: Remove this once we adopt ApiResponse from Refit
 
 namespace Kontent.Ai.Delivery.Sync;
 

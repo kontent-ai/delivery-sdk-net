@@ -1,4 +1,6 @@
-﻿namespace Kontent.Ai.Delivery.ContentItems
+using IApiResponse = Kontent.Ai.Delivery.Abstractions.IApiResponse; // TODO: Remove this once we adopt ApiResponse from Refit
+
+namespace Kontent.Ai.Delivery.ContentItems
 {
     /// <inheritdoc cref="IDeliveryItemsFeedResponse{T}" />
     internal class DeliveryItemsFeedResponse<T> : AbstractItemsResponse, IDeliveryItemsFeedResponse<T>

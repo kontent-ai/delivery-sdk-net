@@ -1,11 +1,11 @@
-﻿using Newtonsoft.Json;
+﻿using System.Text.Json.Serialization;
 
 namespace Kontent.Ai.Delivery.ContentTypes.Element
 {
     internal class MultipleChoiceElement : ContentElement, IMultipleChoiceElement
     {
         /// <inheritdoc/>
-        [JsonProperty("options")]
+        [JsonPropertyName("options")]
         public IList<IMultipleChoiceOption> Options { get; internal set; }
 
         /// <summary>

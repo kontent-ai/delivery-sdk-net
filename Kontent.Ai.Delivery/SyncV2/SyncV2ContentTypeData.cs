@@ -1,4 +1,4 @@
-﻿using Newtonsoft.Json;
+﻿using System.Text.Json.Serialization;
 
 namespace Kontent.Ai.Delivery.SyncV2;
 
@@ -6,7 +6,7 @@ namespace Kontent.Ai.Delivery.SyncV2;
 internal sealed class SyncV2ContentTypeData : ISyncV2ContentTypeData
 {
     /// <inheritdoc/>
-    [JsonProperty("system")]
+    [JsonPropertyName("system")]
     public IContentTypeSystemAttributes System { get; internal set; }
 
     /// <summary>

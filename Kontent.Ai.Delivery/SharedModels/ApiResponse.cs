@@ -1,6 +1,6 @@
 ﻿using Microsoft.AspNetCore.WebUtilities;
-using Newtonsoft.Json;
-using Newtonsoft.Json.Linq;
+using System.Text.Json;
+using System.Text.Json.Serialization;
 using System.Diagnostics;
 using System.Text;
 using IApiResponse = Kontent.Ai.Delivery.Abstractions.IApiResponse; // TODO: Remove this once we adopt ApiResponse from Refit
@@ -13,7 +13,7 @@ namespace Kontent.Ai.Delivery.SharedModels
     [DebuggerDisplay("Url = {" + nameof(RequestUrl) + "}")]
     internal sealed class ApiResponse : IApiResponse
     {
-        private JObject _jsonContent;
+        private JsonDocument _jsonContent;
         private string _content;
 
         /// <summary>
@@ -89,13 +89,12 @@ namespace Kontent.Ai.Delivery.SharedModels
         /// <summary>
         /// Gets an object model of the JSON content.
         /// </summary>
-        public async Task<JObject> GetJsonContentAsync()
+        public async Task<JsonDocument> GetJsonContentAsync()
         {
             if (_jsonContent == null)
             {
-                using var streamReader = new HttpRequestStreamReader(await HttpContent.ReadAsStreamAsync(), Encoding.UTF8);
-                using var jsonReader = new JsonTextReader(streamReader);
-                _jsonContent = await JObject.LoadAsync(jsonReader);
+                using var stream = await HttpContent.ReadAsStreamAsync();
+                _jsonContent = await JsonDocument.ParseAsync(stream);
             }
             return _jsonContent;
         }

@@ -1,4 +1,4 @@
-﻿using Newtonsoft.Json;
+﻿using System.Text.Json.Serialization;
 
 namespace Kontent.Ai.Delivery.SyncV2;
 
@@ -6,15 +6,15 @@ namespace Kontent.Ai.Delivery.SyncV2;
 internal sealed class SyncV2Item : ISyncV2Item
 {
     /// <inheritdoc/>
-    [JsonProperty("data")]
+    [JsonPropertyName("data")]
     public ISyncV2ItemData Data { get; internal set; }
 
     /// <inheritdoc/>
-    [JsonProperty("change_type")]
+    [JsonPropertyName("change_type")]
     public string ChangeType { get; internal set; }
 
     /// <inheritdoc/>
-    [JsonProperty("timestamp")]
+    [JsonPropertyName("timestamp")]
     public DateTime Timestamp { get; internal set; }
 
     /// <summary>

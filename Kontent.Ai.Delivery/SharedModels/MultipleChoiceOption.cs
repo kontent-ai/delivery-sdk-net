@@ -1,4 +1,4 @@
-﻿using Newtonsoft.Json;
+﻿using System.Text.Json.Serialization;
 using System.Diagnostics;
 
 namespace Kontent.Ai.Delivery.SharedModels
@@ -8,11 +8,11 @@ namespace Kontent.Ai.Delivery.SharedModels
     internal sealed class MultipleChoiceOption : IMultipleChoiceOption
     {
         /// <inheritdoc/>
-        [JsonProperty("name")]
+        [JsonPropertyName("name")]
         public string Name { get; internal set; }
 
         /// <inheritdoc/>
-        [JsonProperty("codename")]
+        [JsonPropertyName("codename")]
         public string Codename { get; internal set; }
 
         /// <summary>

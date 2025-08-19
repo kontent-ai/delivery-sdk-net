@@ -1,4 +1,4 @@
-﻿using Newtonsoft.Json;
+﻿using System.Text.Json.Serialization;
 
 namespace Kontent.Ai.Delivery.UsedIn;
 
@@ -6,7 +6,7 @@ namespace Kontent.Ai.Delivery.UsedIn;
 internal sealed class UsedInItem : IUsedInItem
 {
     /// <inheritdoc/>
-    [JsonProperty("system")]
+    [JsonPropertyName("system")]
     public IUsedInItemSystemAttributes System { get; internal set; }
 
     /// <summary>

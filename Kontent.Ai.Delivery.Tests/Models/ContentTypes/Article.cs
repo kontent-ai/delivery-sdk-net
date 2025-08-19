@@ -1,7 +1,7 @@
-using System.Collections.Generic;
+﻿using System.Collections.Generic;
 using Kontent.Ai.Delivery.Abstractions;
 using Kontent.Ai.Delivery.ContentItems.Attributes;
-using Newtonsoft.Json;
+using System.Text.Json.Serialization;
 using NodaTime;
 
 namespace Kontent.Ai.Delivery.Tests.Models.ContentTypes
@@ -15,11 +15,11 @@ namespace Kontent.Ai.Delivery.Tests.Models.ContentTypes
         [TestGreeterValueConverter]
         public string TitleConverted { get; set; }
 
-        [JsonProperty("title")]
+        [JsonPropertyName("title")]
         [JsonIgnore]
         public string TitleIgnored { get; set; }
 
-        [JsonProperty("title")]
+        [JsonPropertyName("title")]
         [TestGreeterValueConverter]
         public string TitleNotIgnored { get; set; }
 

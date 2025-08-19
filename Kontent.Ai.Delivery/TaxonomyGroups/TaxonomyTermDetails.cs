@@ -1,5 +1,5 @@
 ﻿using System.Diagnostics;
-using Newtonsoft.Json;
+using System.Text.Json.Serialization;
 
 namespace Kontent.Ai.Delivery.TaxonomyGroups
 {
@@ -8,15 +8,15 @@ namespace Kontent.Ai.Delivery.TaxonomyGroups
     internal sealed class TaxonomyTermDetails : ITaxonomyTermDetails
     {
         /// <inheritdoc/>
-        [JsonProperty("name")]
+        [JsonPropertyName("name")]
         public string Name { get; internal set; }
 
         /// <inheritdoc/>
-        [JsonProperty("codename")]
+        [JsonPropertyName("codename")]
         public string Codename { get; internal set; }
 
         /// <inheritdoc/>
-        [JsonProperty("terms")]
+        [JsonPropertyName("terms")]
         public IList<ITaxonomyTermDetails> Terms { get; internal set; }
 
         /// <summary>

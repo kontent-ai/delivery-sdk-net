@@ -1,5 +1,5 @@
-﻿using Newtonsoft.Json;
-using Newtonsoft.Json.Linq;
+﻿using System.Text.Json;
+using System.Text.Json.Serialization;
 
 namespace Kontent.Ai.Delivery.ContentTypes.Element
 {
@@ -9,33 +9,30 @@ namespace Kontent.Ai.Delivery.ContentTypes.Element
     public class ContentElementConverter : JsonConverter<IContentElement>
     {
         /// <inheritdoc/>
-        public override bool CanRead => true;
-
-        /// <inheritdoc/>
-        public override bool CanWrite => false;
-
-        /// <inheritdoc/>
-        public override IContentElement ReadJson(JsonReader reader, Type objectType, IContentElement existingValue, bool hasExistingValue, JsonSerializer serializer)
+        public override bool CanConvert(Type typeToConvert)
         {
-            JObject jObject = JObject.Load(reader);
+            return typeof(IContentElement).IsAssignableFrom(typeToConvert);
+        }
 
-            var elementType = (jObject["type"].ToString()) switch
+        /// <inheritdoc/>
+        public override IContentElement Read(ref Utf8JsonReader reader, Type typeToConvert, JsonSerializerOptions options)
+        {
+            using JsonDocument doc = JsonDocument.ParseValue(ref reader);
+            JsonElement root = doc.RootElement;
+
+            var elementType = root.GetProperty("type").GetString() switch
             {
                 "taxonomy" => typeof(TaxonomyElement),
                 "multiple_choice" => typeof(MultipleChoiceElement),
                 _ => typeof(ContentElement)
             };
 
-            var viewType = serializer.ContractResolver.ResolveContract(elementType);
-            var resultInstance = viewType.DefaultCreator();
-
-            serializer.Populate(jObject.CreateReader(), resultInstance);
-
-            return (IContentElement)resultInstance;
+            var jsonText = root.GetRawText();
+            return (IContentElement)JsonSerializer.Deserialize(jsonText, elementType, options);
         }
 
         /// <inheritdoc/>
-        public override void WriteJson(JsonWriter writer, IContentElement value, JsonSerializer serializer)
+        public override void Write(Utf8JsonWriter writer, IContentElement value, JsonSerializerOptions options)
         {
             throw new NotImplementedException();
         }

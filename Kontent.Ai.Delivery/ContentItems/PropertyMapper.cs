@@ -1,6 +1,6 @@
 using System.Reflection;
 using Kontent.Ai.Delivery.ContentItems.Attributes;
-using Newtonsoft.Json;
+using System.Text.Json.Serialization;
 
 namespace Kontent.Ai.Delivery.ContentItems
 {
@@ -33,6 +33,6 @@ namespace Kontent.Ai.Delivery.ContentItems
 
         private static string GetPropertyNameFromAttribute(PropertyInfo modelProperty)
             => modelProperty.GetCustomAttribute<PropertyNameAttribute>()?.PropertyName  // Try to get the name of the property name attribute
-            ?? modelProperty.GetCustomAttribute<JsonPropertyAttribute>()?.PropertyName; // Try to get the name of JSON serialization property
+            ?? modelProperty.GetCustomAttribute<JsonPropertyNameAttribute>()?.Name; // Try to get the name of JSON serialization property
     }
 }

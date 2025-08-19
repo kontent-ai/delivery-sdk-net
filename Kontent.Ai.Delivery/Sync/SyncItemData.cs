@@ -1,15 +1,15 @@
-using Newtonsoft.Json;
+﻿using System.Text.Json.Serialization;
 
 namespace Kontent.Ai.Delivery.Sync;
 
 internal sealed class SyncItemData : ISyncItemData
 {
     /// <inheritdoc/>
-    [JsonProperty("system")]
+    [JsonPropertyName("system")]
     public IContentItemSystemAttributes System { get; internal set; }
 
     /// <inheritdoc/>
-    [JsonProperty("elements")]
+    [JsonPropertyName("elements")]
     public Dictionary<string, object> Elements { get; internal set; }
 
     /// <summary>

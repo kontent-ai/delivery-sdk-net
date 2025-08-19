@@ -1,5 +1,5 @@
 ﻿using System.Diagnostics;
-using Newtonsoft.Json;
+using System.Text.Json.Serialization;
 
 namespace Kontent.Ai.Delivery.ContentTypes.Element
 {
@@ -8,15 +8,15 @@ namespace Kontent.Ai.Delivery.ContentTypes.Element
     internal class ContentElement : IContentElement
     {
         /// <inheritdoc/>
-        [JsonProperty("type")]
+        [JsonPropertyName("type")]
         public string Type { get; internal set; }
 
         /// <inheritdoc/>
-        [JsonProperty("name")]
+        [JsonPropertyName("name")]
         public string Name { get; internal set; }
 
         /// <inheritdoc/>
-        [JsonProperty("codename")]
+        [JsonPropertyName("codename")]
         public string Codename { get; internal set; }
 
         /// <summary>

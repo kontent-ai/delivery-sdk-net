@@ -1,10 +1,10 @@
-﻿using Newtonsoft.Json;
+﻿using System.Text.Json.Serialization;
 
 namespace Kontent.Ai.Delivery.ContentItems.Elements
 {
     internal class TaxonomyElementValue : ContentElementValue<IEnumerable<ITaxonomyTerm>>, ITaxonomyElementValue
     {
-        [JsonProperty("taxonomy_group")]
+        [JsonPropertyName("taxonomy_group")]
         public required string TaxonomyGroup { get; set; }
     }
 }

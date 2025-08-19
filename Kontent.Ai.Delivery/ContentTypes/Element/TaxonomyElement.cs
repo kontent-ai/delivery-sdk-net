@@ -1,11 +1,11 @@
-﻿using Newtonsoft.Json;
+﻿using System.Text.Json.Serialization;
 
 namespace Kontent.Ai.Delivery.ContentTypes.Element
 {
     internal class TaxonomyElement : ContentElement, ITaxonomyElement
     {
         /// <inheritdoc/>
-        [JsonProperty("taxonomy_group")]
+        [JsonPropertyName("taxonomy_group")]
         public string TaxonomyGroup { get; internal set; }
 
         /// <summary>
