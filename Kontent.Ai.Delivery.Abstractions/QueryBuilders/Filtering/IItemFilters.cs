@@ -38,13 +38,29 @@ public interface IItemFilters
     /// </summary>
     IFilter Range(IPropertyPath path, RangeTuple range);
     /// <summary>
-    /// Retrieves items where the property specified by path is in the specified collection.
+    /// Retrieves items where the property specified by path is in the specified collection of strings.
     /// </summary>
-    IFilter In(IPropertyPath path, ScalarArray values);
+    IFilter In(IPropertyPath path, string[] values);
     /// <summary>
-    /// Retrieves items where the property specified by path is not in the specified collection.
+    /// Retrieves items where the property specified by path is not in the specified collection of strings.
     /// </summary>
-    IFilter NotIn(IPropertyPath path, ScalarArray values);
+    IFilter NotIn(IPropertyPath path, string[] values);
+    /// <summary>
+    /// Retrieves items where the property specified by path is in the specified collection of numbers.
+    /// </summary>
+    IFilter In(IPropertyPath path, double[] values);
+    /// <summary>
+    /// Retrieves items where the property specified by path is not in the specified collection of numbers.
+    /// </summary>
+    IFilter NotIn(IPropertyPath path, double[] values);
+    /// <summary>
+    /// Retrieves items where the property specified by path is in the specified collection of dates.
+    /// </summary>
+    IFilter In(IPropertyPath path, System.DateTime[] values);
+    /// <summary>
+    /// Retrieves items where the property specified by path is not in the specified collection of dates.
+    /// </summary>
+    IFilter NotIn(IPropertyPath path, System.DateTime[] values);
     /// <summary>
     /// Retrieves items where the property specified by path contains the specified value.
     /// </summary>

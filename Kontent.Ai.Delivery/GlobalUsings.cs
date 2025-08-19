@@ -14,6 +14,6 @@ global using System.Linq;
 global using System.Net.Http;
 
 global using Scalar = OneOf.OneOf<string, double, System.DateTime, bool>;
-global using ScalarArray = OneOf.OneOf<string[], double[], System.DateTime[]>;
 global using RangeTuple = OneOf.OneOf<(double Lower, double Upper), (System.DateTime Lower, System.DateTime Upper)>;
 global using Comparable = OneOf.OneOf<double, System.DateTime, string>;
+

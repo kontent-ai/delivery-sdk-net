@@ -29,12 +29,6 @@ internal sealed class ItemFilters : IItemFilters
     public IFilter Range(IPropertyPath path, RangeTuple bounds)
         => new Filter(path.Serialize(), FilterOperator.Range, FilterValueMapper.From(bounds));
 
-    public IFilter In(IPropertyPath path, ScalarArray values)
-        => new Filter(path.Serialize(), FilterOperator.In, FilterValueMapper.From(values));
-
-    public IFilter NotIn(IPropertyPath path, ScalarArray values)
-        => new Filter(path.Serialize(), FilterOperator.NotIn, FilterValueMapper.From(values));
-
     public IFilter Contains(IPropertyPath path, string value)
         => new Filter(path.Serialize(), FilterOperator.Contains, StringValue.From(value));
 
@@ -49,5 +43,23 @@ internal sealed class ItemFilters : IItemFilters
 
     public IFilter NotEmpty(IPropertyPath path)
         => new Filter(path.Serialize(), FilterOperator.NotEmpty, EmptyValue.From(string.Empty));
+
+    public IFilter In(IPropertyPath path, string[] values)
+        => new Filter(path.Serialize(), FilterOperator.In, StringArrayValue.From(values));
+
+    public IFilter NotIn(IPropertyPath path, string[] values)
+        => new Filter(path.Serialize(), FilterOperator.NotIn, StringArrayValue.From(values));
+
+    public IFilter In(IPropertyPath path, double[] values)
+        => new Filter(path.Serialize(), FilterOperator.In, NumericArrayValue.From(values));
+
+    public IFilter NotIn(IPropertyPath path, double[] values)
+        => new Filter(path.Serialize(), FilterOperator.NotIn, NumericArrayValue.From(values));
+
+    public IFilter In(IPropertyPath path, System.DateTime[] values)
+        => new Filter(path.Serialize(), FilterOperator.In, DateTimeArrayValue.From(values));
+
+    public IFilter NotIn(IPropertyPath path, System.DateTime[] values)
+        => new Filter(path.Serialize(), FilterOperator.NotIn, DateTimeArrayValue.From(values));
 
 }

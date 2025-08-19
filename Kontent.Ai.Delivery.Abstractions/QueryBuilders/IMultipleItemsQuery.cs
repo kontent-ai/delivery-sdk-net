@@ -54,7 +54,7 @@ public interface IMultipleItemsQuery<T>
     /// Adds a filter to the query using a filter builder function.
     /// </summary>
     /// <param name="filterBuilder">Function that builds a filter using the items filter builder.</param>
-    IMultipleItemsQuery<T> Where(Func<IItemFilters, IFilter> filterBuilder);
+    IMultipleItemsQuery<T> Filter(Func<IItemFilters, IFilter> filterBuilder);
 
     /// <summary>
     /// Adds a filter to the query.

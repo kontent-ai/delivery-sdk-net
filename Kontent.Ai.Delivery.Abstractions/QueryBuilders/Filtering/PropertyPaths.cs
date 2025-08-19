@@ -10,7 +10,7 @@ public interface IPropertyPath
 }
 
 /// <summary>
-/// Strongly-typed system property path for content items.
+/// Strongly-typed system property path for content items. Implicitly converts to string.
 /// </summary>
 public readonly record struct ItemSystemPath
     : IPropertyPath
@@ -68,12 +68,17 @@ public readonly record struct ItemSystemPath
     /// </summary>
     public static ItemSystemPath SitemapLocations { get; } = new("system.sitemap_locations");
 
+    /// <summary>
+    /// Implicitly converts an <see cref="ItemSystemPath"/> to a string.
+    /// </summary>
+    public static implicit operator string(ItemSystemPath path) => path._value;
+
     /// <inheritdoc />
     public string Serialize() => _value;
 }
 
 /// <summary>
-/// Strongly-typed system property path for content types.
+/// Strongly-typed system property path for content types. Implicitly converts to string.
 /// </summary>
 public readonly record struct TypeSystemPath
     : IPropertyPath
@@ -106,7 +111,7 @@ public readonly record struct TypeSystemPath
 }
 
 /// <summary>
-/// Strongly-typed system property path for taxonomy groups.
+/// Strongly-typed system property path for taxonomy groups. Implicitly converts to string.
 /// </summary>
 public readonly record struct TaxonomySystemPath
     : IPropertyPath
@@ -134,12 +139,17 @@ public readonly record struct TaxonomySystemPath
     /// </summary>
     public static TaxonomySystemPath LastModified { get; } = new("system.last_modified");
 
+    /// <summary>
+    /// Implicitly converts an <see cref="TaxonomySystemPath"/> to a string.
+    /// </summary>
+    public static implicit operator string(TaxonomySystemPath path) => path._value;
+
     /// <inheritdoc />
     public string Serialize() => _value;
 }
 
 /// <summary>
-/// Strongly-typed element property path.
+/// Strongly-typed element property path. Implicitly converts to string.
 /// </summary>
 public readonly record struct ElementPath
     : IPropertyPath
@@ -157,6 +167,11 @@ public readonly record struct ElementPath
     /// </summary>
     /// <inheritdoc />
     public string Serialize() => _value;
+
+    /// <summary>
+    /// Implicitly converts an <see cref="ElementPath"/> to a string.
+    /// </summary>
+    public static implicit operator string(ElementPath path) => path._value;
 }
 
 /// <summary>

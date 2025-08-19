@@ -22,24 +22,24 @@ namespace Kontent.Ai.Delivery.Examples
         {
             // Filter by content type
             var articles = await _client.GetItems<Article>()
-                .Where(f => f.Equals(ItemSystemPath.Type, "article"))
+                .Filter(f => f.Equals(ItemSystemPath.Type, "article"))
                 .ExecuteAsync();
 
             // Filter by multiple system properties
             var recentEnglishArticles = await _client.GetItems<Article>()
-                .Where(f => f.Equals(ItemSystemPath.Type, "article"))
-                .Where(f => f.Equals(ItemSystemPath.Language, "en-US"))
-                .Where(f => f.GreaterThan(ItemSystemPath.LastModified, DateTime.UtcNow.AddDays(-30)))
+                .Filter(f => f.Equals(ItemSystemPath.Type, "article"))
+                .Filter(f => f.Equals(ItemSystemPath.Language, "en-US"))
+                .Filter(f => f.GreaterThan(ItemSystemPath.LastModified, DateTime.UtcNow.AddDays(-30)))
                 .ExecuteAsync();
 
             // Filter by content item ID
             var specificItem = await _client.GetItems<ContentItem>()
-                .Where(f => f.Equals(ItemSystemPath.Id, "f4b3fc05-e988-4dae-9ac1-a94aba566474"))
+                .Filter(f => f.Equals(ItemSystemPath.Id, "f4b3fc05-e988-4dae-9ac1-a94aba566474"))
                 .ExecuteAsync();
 
             // Filter by collection
             var newsItems = await _client.GetItems<ContentItem>()
-                .Where(f => f.Equals(ItemSystemPath.Collection, "news"))
+                .Filter(f => f.Equals(ItemSystemPath.Collection, "news"))
                 .ExecuteAsync();
         }
 
@@ -50,35 +50,35 @@ namespace Kontent.Ai.Delivery.Examples
         {
             // String contains operator
             var coffeeArticles = await _client.GetItems<Article>()
-                .Where(f => f.Contains(Elements.GetPath("title"), "coffee"))
+                .Filter(f => f.Contains(Elements.GetPath("title"), "coffee"))
                 .ExecuteAsync();
 
             // Numeric comparison operators
             var expensiveProducts = await _client.GetItems<Product>()
-                .Where(f => f.GreaterThanOrEqual(Elements.GetPath("price"), 1000))
+                .Filter(f => f.GreaterThanOrEqual(Elements.GetPath("price"), 1000))
                 .ExecuteAsync();
 
             var affordableProducts = await _client.GetItems<Product>()
-                .Where(f => f.LessThan(Elements.GetPath("price"), 100))
+                .Filter(f => f.LessThan(Elements.GetPath("price"), 100))
                 .ExecuteAsync();
 
             // Range operator for numeric values
             var midRangeProducts = await _client.GetItems<Product>()
-                .Where(f => f.Range(Elements.GetPath("price"), (100, 500)))
+                .Filter(f => f.Range(Elements.GetPath("price"), (100, 500)))
                 .ExecuteAsync();
 
             // Boolean filtering
             var featuredProducts = await _client.GetItems<Product>()
-                .Where(f => f.Equals(Elements.GetPath("is_featured"), true))
+                .Filter(f => f.Equals(Elements.GetPath("is_featured"), true))
                 .ExecuteAsync();
 
             // Empty/NotEmpty operators
             var itemsWithDescription = await _client.GetItems<ContentItem>()
-                .Where(f => f.NotEmpty(Elements.GetPath("description")))
+                .Filter(f => f.NotEmpty(Elements.GetPath("description")))
                 .ExecuteAsync();
 
             var itemsWithoutImage = await _client.GetItems<ContentItem>()
-                .Where(f => f.Empty(Elements.GetPath("thumbnail")))
+                .Filter(f => f.Empty(Elements.GetPath("thumbnail")))
                 .ExecuteAsync();
         }
 
@@ -89,32 +89,32 @@ namespace Kontent.Ai.Delivery.Examples
         {
             // IN operator - matches any of the specified values
             var techArticles = await _client.GetItems<Article>()
-                .Where(f => f.In(Elements.GetPath("category"), 
-                    new [] { "technology", "programming", "software" }))
+                .Filter(f => f.In(Elements.GetPath("category"), 
+                    ["technology", "programming", "software"]))
                 .ExecuteAsync();
 
             // NOT IN operator - excludes specified values
             var nonDraftItems = await _client.GetItems<ContentItem>()
-                .Where(f => f.NotIn(ItemSystemPath.WorkflowStep, 
-                    new [] { "draft", "review", "archived" }))
+                .Filter(f => f.NotIn(ItemSystemPath.WorkflowStep, 
+                    ["draft", "review", "archived"]))
                 .ExecuteAsync();
 
             // ANY operator - array contains any of the specified values
             var taggedArticles = await _client.GetItems<Article>()
-                .Where(f => f.Any(Elements.GetPath("tags"), 
+                .Filter(f => f.Any(Elements.GetPath("tags"), 
                     "featured", "trending", "popular"))
                 .ExecuteAsync();
 
             // ALL operator - array contains all specified values
             var completeProducts = await _client.GetItems<Product>()
-                .Where(f => f.All(Elements.GetPath("required_features"), 
+                .Filter(f => f.All(Elements.GetPath("required_features"), 
                     "warranty", "manual", "support"))
                 .ExecuteAsync();
 
             // Multiple values in system properties
             var selectedTypes = await _client.GetItems<ContentItem>()
-                .Where(f => f.In(ItemSystemPath.Type, 
-                    new [] { "article", "blog_post", "news" }))
+                .Filter(f => f.In(ItemSystemPath.Type, 
+                    ["article", "blog_post", "news"]))
                 .ExecuteAsync();
         }
 
@@ -127,25 +127,25 @@ namespace Kontent.Ai.Delivery.Examples
             
             // Items modified in the last week
             var recentItems = await _client.GetItems<ContentItem>()
-                .Where(f => f.GreaterThan(ItemSystemPath.LastModified, now.AddDays(-7)))
+                .Filter(f => f.GreaterThan(ItemSystemPath.LastModified, now.AddDays(-7)))
                 .ExecuteAsync();
 
             // Items modified between two dates
             var dateRangeItems = await _client.GetItems<ContentItem>()
-                .Where(f => f.Range(ItemSystemPath.LastModified, 
+                .Filter(f => f.Range(ItemSystemPath.LastModified, 
                     (now.AddMonths(-3), now.AddMonths(-1))))
                 .ExecuteAsync();
 
             // Events happening in the future
             var upcomingEvents = await _client.GetItems<Event>()
-                .Where(f => f.GreaterThan(Elements.GetPath("event_date"), now))
+                .Filter(f => f.GreaterThan(Elements.GetPath("event_date"), now))
                 .ExecuteAsync();
 
             // Articles published this year
             var thisYearArticles = await _client.GetItems<Article>()
-                .Where(f => f.GreaterThanOrEqual(Elements.GetPath("publish_date"), 
+                .Filter(f => f.GreaterThanOrEqual(Elements.GetPath("publish_date"), 
                     new DateTime(now.Year, 1, 1)))
-                .Where(f => f.LessThan(Elements.GetPath("publish_date"), 
+                .Filter(f => f.LessThan(Elements.GetPath("publish_date"), 
                     new DateTime(now.Year + 1, 1, 1)))
                 .ExecuteAsync();
         }
@@ -157,13 +157,13 @@ namespace Kontent.Ai.Delivery.Examples
         {
             // E-commerce product filtering
             var filteredProducts = await _client.GetItems<Product>()
-                .Where(f => f.Equals(ItemSystemPath.Type, "product"))
-                .Where(f => f.Range(Elements.GetPath("price"), (50, 500)))
-                .Where(f => f.GreaterThanOrEqual(Elements.GetPath("rating"), 4.0))
-                .Where(f => f.Any(Elements.GetPath("categories"), 
+                .Filter(f => f.Equals(ItemSystemPath.Type, "product"))
+                .Filter(f => f.Range(Elements.GetPath("price"), (50, 500)))
+                .Filter(f => f.GreaterThanOrEqual(Elements.GetPath("rating"), 4.0))
+                .Filter(f => f.Any(Elements.GetPath("categories"), 
                     "electronics", "computers", "accessories"))
-                .Where(f => f.NotEmpty(Elements.GetPath("description")))
-                .Where(f => f.Equals(Elements.GetPath("in_stock"), true))
+                .Filter(f => f.NotEmpty(Elements.GetPath("description")))
+                .Filter(f => f.Equals(Elements.GetPath("in_stock"), true))
                 .WithLanguage("en-US")
                 .Limit(20)
                 .OrderBy("elements.rating", false) // Descending
@@ -171,25 +171,25 @@ namespace Kontent.Ai.Delivery.Examples
 
             // Blog post filtering with multiple criteria
             var qualityBlogPosts = await _client.GetItems<BlogPost>()
-                .Where(f => f.Equals(ItemSystemPath.Type, "blog_post"))
-                .Where(f => f.GreaterThan(ItemSystemPath.LastModified, 
+                .Filter(f => f.Equals(ItemSystemPath.Type, "blog_post"))
+                .Filter(f => f.GreaterThan(ItemSystemPath.LastModified, 
                     DateTime.UtcNow.AddMonths(-6)))
-                .Where(f => f.Contains(Elements.GetPath("title"), "tutorial"))
-                .Where(f => f.All(Elements.GetPath("tags"), 
+                .Filter(f => f.Contains(Elements.GetPath("title"), "tutorial"))
+                .Filter(f => f.All(Elements.GetPath("tags"), 
                     "verified", "complete"))
-                .Where(f => f.NotEquals(Elements.GetPath("status"), "draft"))
-                .Where(f => f.GreaterThan(Elements.GetPath("word_count"), 1000))
+                .Filter(f => f.NotEquals(Elements.GetPath("status"), "draft"))
+                .Filter(f => f.GreaterThan(Elements.GetPath("word_count"), 1000))
                 .WithTotalCount()
                 .ExecuteAsync();
 
             // Content audit query
             var outdatedContent = await _client.GetItems<ContentItem>()
-                .Where(f => f.LessThan(ItemSystemPath.LastModified, 
+                .Filter(f => f.LessThan(ItemSystemPath.LastModified, 
                     DateTime.UtcNow.AddYears(-2)))
-                .Where(f => f.Empty(Elements.GetPath("seo_description")))
-                .Where(f => f.NotIn(ItemSystemPath.Type, 
-                    new [] { "navigation", "settings", "configuration" }))
-                .Where(f => f.NotEquals(ItemSystemPath.Collection, "archive"))
+                .Filter(f => f.Empty(Elements.GetPath("seo_description")))
+                .Filter(f => f.NotIn(ItemSystemPath.Type, 
+                    ["navigation", "settings", "configuration"]))
+                .Filter(f => f.NotEquals(ItemSystemPath.Collection, "archive"))
                 .ExecuteAsync();
         }
 
@@ -264,9 +264,9 @@ namespace Kontent.Ai.Delivery.Examples
             // Full query with filters and all other parameters
             var comprehensiveQuery = await _client.GetItems<Article>()
                 // Filters
-                .Where(f => f.Equals(ItemSystemPath.Type, "article"))
-                .Where(f => f.Contains(Elements.GetPath("title"), "guide"))
-                .Where(f => f.Any(Elements.GetPath("tags"), "beginner", "intermediate"))
+                .Filter(f => f.Equals(ItemSystemPath.Type, "article"))
+                .Filter(f => f.Contains(Elements.GetPath("title"), "guide"))
+                .Filter(f => f.Any(Elements.GetPath("tags"), "beginner", "intermediate"))
                 // Other query parameters
                 .WithLanguage("en-US")
                 .WithElements("title", "summary", "content", "author")
@@ -282,8 +282,8 @@ namespace Kontent.Ai.Delivery.Examples
             for (int page = 0; page < 5; page++)
             {
                 var pagedResults = await _client.GetItems<Product>()
-                    .Where(f => f.Equals(Elements.GetPath("category"), "electronics"))
-                    .Where(f => f.GreaterThan(Elements.GetPath("price"), 100))
+                    .Filter(f => f.Equals(Elements.GetPath("category"), "electronics"))
+                    .Filter(f => f.GreaterThan(Elements.GetPath("price"), 100))
                     .Skip(page * pageSize)
                     .Limit(pageSize)
                     .ExecuteAsync();
@@ -319,7 +319,7 @@ namespace Kontent.Ai.Delivery.Examples
             var arrayFilter = new Filter(
                 Elements.GetPath("tags"),
                 FilterOperator.In,
-                StringArrayValue.From(new[] { "featured", "popular", "trending" })
+                StringArrayValue.From(["featured", "popular", "trending"])
             );
 
             // Apply multiple direct filters
@@ -336,22 +336,32 @@ namespace Kontent.Ai.Delivery.Examples
         {
             // Filters handle special characters automatically
             var specialChars = await _client.GetItems<Article>()
-                .Where(f => f.Contains(Elements.GetPath("title"), "coffee & tea"))
+                .Filter(f => f.Contains(Elements.GetPath("title"), "coffee & tea"))
                 .ExecuteAsync();
             // Generates: elements.title[contains]=coffee%20%26%20tea
 
             // Unicode characters
             var unicodeSearch = await _client.GetItems<Article>()
-                .Where(f => f.Contains(Elements.GetPath("title"), "café naïve"))
+                .Filter(f => f.Contains(Elements.GetPath("title"), "café naïve"))
                 .ExecuteAsync();
             // Properly URL-encoded in the query string
 
             // Multiple values with special characters
             var specialCategories = await _client.GetItems<Product>()
-                .Where(f => f.In(Elements.GetPath("category"), 
-                    new [] { "home & garden", "sports & outdoors", "arts & crafts" }))
+                .Filter(f => f.In(Elements.GetPath("category"), 
+                    ["home & garden", "sports & outdoors", "arts & crafts"]))
                 .ExecuteAsync();
             // Each value is properly encoded in the comma-separated list
+
+            // Collection expressions with string arrays
+            var modernSyntax = await _client.GetItems<Product>()
+                .Filter(f => f.In(ItemSystemPath.Type, ["product", "variant", "bundle"]))
+                .ExecuteAsync();
+
+            // Collection expressions with numeric arrays
+            var ratedItems = await _client.GetItems<Product>()
+                .Filter(f => f.In(Elements.GetPath("rating"), [4.0, 5.0]))
+                .ExecuteAsync();
         }
     }
 

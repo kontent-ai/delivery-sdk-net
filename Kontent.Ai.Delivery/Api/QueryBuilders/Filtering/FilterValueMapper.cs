@@ -11,12 +11,6 @@ internal static class FilterValueMapper
         BooleanValue.From
     );
 
-    public static IFilterValue From(ScalarArray arr) => arr.Match<IFilterValue>(
-        StringArrayValue.From,
-        NumericArrayValue.From,
-        DateTimeArrayValue.From
-    );
-
     public static IFilterValue From(RangeTuple r) => r.Match<IFilterValue>(
         NumericRangeValue.From,
         DateRangeValue.From

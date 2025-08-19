@@ -59,7 +59,7 @@ internal sealed class MultipleItemsQuery<T>(IDeliveryApi api) : IMultipleItemsQu
         return this;
     }
 
-    public IMultipleItemsQuery<T> Where(Func<IItemFilters, IFilter> filterBuilder)
+    public IMultipleItemsQuery<T> Filter(Func<IItemFilters, IFilter> filterBuilder)
     {
         var filter = filterBuilder(_filters);
         _appliedFilters.Add(filter);
