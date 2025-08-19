@@ -1,5 +1,6 @@
 ﻿using Kontent.Ai.Delivery.SharedModels;
 using System.Text.Json.Serialization;
+using IApiResponse = Kontent.Ai.Delivery.Abstractions.IApiResponse;
 
 namespace Kontent.Ai.Delivery.TaxonomyGroups
 {
@@ -31,7 +32,7 @@ namespace Kontent.Ai.Delivery.TaxonomyGroups
         /// <param name="taxonomies">A collection of taxonomies.</param>
         /// <param name="pagination">Response paging information.</param>
         [JsonConstructor]
-        internal DeliveryTaxonomyListingResponse(ApiResponse response, IList<ITaxonomyGroup> taxonomies, IPagination pagination) : base(response)
+        internal DeliveryTaxonomyListingResponse(IApiResponse response, IList<ITaxonomyGroup> taxonomies, IPagination pagination) : base(response)
         {
             Taxonomies = taxonomies;
             Pagination = pagination;
@@ -41,7 +42,7 @@ namespace Kontent.Ai.Delivery.TaxonomyGroups
         /// Initializes a new instance of the <see cref="DeliveryTaxonomyListingResponse"/> class.
         /// </summary>
         /// <param name="response">The response from Kontent.ai Delivery API that contains taxonomies.</param>
-        internal DeliveryTaxonomyListingResponse(ApiResponse response) : base(response)
+        internal DeliveryTaxonomyListingResponse(IApiResponse response) : base(response)
         {
         }
     }

@@ -1,4 +1,4 @@
-﻿namespace Kontent.Ai.Delivery.Configuration
+namespace Kontent.Ai.Delivery.Configuration
 {
     /// <summary>
     /// A builder of <see cref="DeliveryOptions"/> instances.
@@ -105,6 +105,15 @@
             return this;
         }
 
+        /// <summary>
+        /// Enable waiting for loading new content globally via DeliveryOptions.
+        /// </summary>
+        public DeliveryOptionsBuilder WithWaitForLoadingNewContent()
+        {
+            _options = _options with { WaitForLoadingNewContent = true };
+            return this;
+        }
+
         private void SetCustomEndpoint(string endpoint)
         {
             if (_options.UsePreviewApi)
@@ -131,6 +140,7 @@
         IDeliveryOptionsBuilder IDeliveryOptionsBuilder.WithCustomEndpoint(string endpoint) => WithCustomEndpoint(endpoint);
         IDeliveryOptionsBuilder IDeliveryOptionsBuilder.WithCustomEndpoint(Uri endpoint) => WithCustomEndpoint(endpoint);
         IDeliveryOptionsBuilder IDeliveryOptionsBuilder.WithDefaultRenditionPreset(string presetCodename) => WithDefaultRenditionPreset(presetCodename);
+        IDeliveryOptionsBuilder IDeliveryOptionsBuilder.WithWaitForLoadingNewContent() => WithWaitForLoadingNewContent();
 
         #endregion
     }
@@ -152,6 +162,7 @@
         private string? _secureAccessApiKey;
         private DefaultRetryPolicyOptions _defaultRetryPolicyOptions = new();
         private string? _defaultRenditionPreset;
+        private bool _waitForLoadingNewContent;
 
         [Obsolete]
         IDeliveryApiConfiguration ILegacyDeliveryOptionsBuilder.WithEnvironmentId(string environmentId)
@@ -230,6 +241,12 @@
             return this;
         }
 
+        IOptionalDeliveryConfiguration IOptionalDeliveryConfiguration.WaitForLoadingNewContent()
+        {
+            _waitForLoadingNewContent = true;
+            return this;
+        }
+
         private void SetCustomEndpoint(string endpoint)
         {
             if (_usePreviewApi)
@@ -255,7 +272,8 @@
                 IncludeTotalCount = _includeTotalCount,
                 UseSecureAccess = _useSecureAccess,
                 SecureAccessApiKey = _secureAccessApiKey,
-                DefaultRenditionPreset = _defaultRenditionPreset
+                DefaultRenditionPreset = _defaultRenditionPreset,
+                WaitForLoadingNewContent = _waitForLoadingNewContent
             };
 
             return options;

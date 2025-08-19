@@ -1,6 +1,7 @@
 using System;
 using System.Threading.Tasks;
 using Kontent.Ai.Delivery.Abstractions.QueryBuilders.Filtering;
+using Kontent.Ai.Delivery.Abstractions.SharedModels;
 
 namespace Kontent.Ai.Delivery.Abstractions.QueryBuilders;
 
@@ -40,8 +41,14 @@ public interface ITypesQuery
     ITypesQuery Where(IFilter filter);
 
     /// <summary>
-    /// Executes the built query.
+    /// Overrides the global option for waiting on the newest content for this specific request.
     /// </summary>
-    /// <returns>Delivery types listing response.</returns>
-    Task<IDeliveryTypeListingResponse> ExecuteAsync();
+    /// <param name="enabled">Whether to wait for loading new content.</param>
+    ITypesQuery WaitForLoadingNewContent(bool enabled = true);
+
+    /// <summary>
+    /// Executes the built query and returns a functional result.
+    /// </summary>
+    /// <returns>A delivery result containing the content types or errors.</returns>
+    Task<IDeliveryResult<IDeliveryTypeListingResponse>> ExecuteAsync();
 }

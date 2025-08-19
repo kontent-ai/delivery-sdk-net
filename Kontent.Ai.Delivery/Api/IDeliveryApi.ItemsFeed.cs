@@ -1,21 +1,10 @@
+using Kontent.Ai.Delivery.Api.ResponseModels;
+
 namespace Kontent.Ai.Delivery.Api;
 
 /// <inheritdoc cref="IDeliveryApi"/>
 public partial interface IDeliveryApi
 {
-    /// <summary>
-    /// Gets content items feed for continuous enumeration.
-    /// </summary>
-    /// <param name="queryParameters">Query parameters as a dictionary.</param>
-    /// <param name="waitForLoadingNewContent">Wait for loading new content header.</param>
-    /// <param name="continuationToken">Continuation token for feed operations.</param>
-    /// <returns>Response containing a batch of content items and continuation token.</returns>
-    [Get("/items-feed")]
-    internal Task<IDeliveryItemsFeedResponse<T>> GetItemsFeedInternalAsync<T>(
-        [Query] EnumItemsParams? queryParameters = null,
-        [Header(HttpRequestHeadersExtensions.WaitForLoadingNewContentHeaderName)] bool? waitForLoadingNewContent = null,
-        [Header("X-Continuation")] string? continuationToken = null);
-
     /// <summary>
     /// Gets content items that use the specified content item.
     /// </summary>
@@ -24,7 +13,7 @@ public partial interface IDeliveryApi
     /// <param name="continuationToken">Continuation token for operations.</param>
     /// <returns>Response containing a batch of parent items and continuation token.</returns>
     [Get("/items/{codename}/used-in")]
-    internal Task<IDeliveryItemsFeedResponse<IUsedInItem>> GetItemUsedInInternalAsync(
+    internal Task<IApiResponse<RawUsedInResponse>> GetItemUsedInInternalAsync(
         string codename,
         [Header(HttpRequestHeadersExtensions.WaitForLoadingNewContentHeaderName)] bool? waitForLoadingNewContent = null,
         [Header("X-Continuation")] string? continuationToken = null);
@@ -37,7 +26,7 @@ public partial interface IDeliveryApi
     /// <param name="continuationToken">Continuation token for operations.</param>
     /// <returns>Response containing a batch of parent items and continuation token.</returns>
     [Get("/assets/{codename}/used-in")]
-    internal Task<IDeliveryItemsFeedResponse<IUsedInItem>> GetAssetUsedInInternalAsync(
+    internal Task<IApiResponse<RawUsedInResponse>> GetAssetUsedInInternalAsync(
         string codename,
         [Header(HttpRequestHeadersExtensions.WaitForLoadingNewContentHeaderName)] bool? waitForLoadingNewContent = null,
         [Header("X-Continuation")] string? continuationToken = null);

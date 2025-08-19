@@ -1,4 +1,4 @@
-﻿namespace Kontent.Ai.Delivery.Configuration
+namespace Kontent.Ai.Delivery.Configuration
 {
     /// <summary>
     /// A builder abstraction for creating <see cref="DeliveryOptions"/> instances.
@@ -44,6 +44,12 @@
         /// </summary>
         /// <param name="presetCodename">Codename of the rendition preset to be applied automatically.</param>
         IDeliveryOptionsBuilder WithDefaultRenditionPreset(string presetCodename);
+
+        /// <summary>
+        /// Enables waiting for the newest published content to be fully loaded before returning responses globally.
+        /// Can be overridden per request via query builder methods.
+        /// </summary>
+        IDeliveryOptionsBuilder WithWaitForLoadingNewContent();
 
         /// <summary>
         /// Returns a new instance of the <see cref="DeliveryOptions"/> class.
@@ -119,6 +125,12 @@
         /// </summary>
         /// <param name="presetCodename">Codename of the rendition preset to be applied automatically.</param>
         IOptionalDeliveryConfiguration WithDefaultRenditionPreset(string presetCodename);
+
+            /// <summary>
+            /// Enables waiting for the newest published content to be fully loaded before returning responses globally.
+            /// Can be overridden per request via query builder methods.
+            /// </summary>
+            IOptionalDeliveryConfiguration WaitForLoadingNewContent();
     }
 
     /// <summary>

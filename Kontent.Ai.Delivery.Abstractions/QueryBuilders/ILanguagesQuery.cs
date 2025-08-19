@@ -1,4 +1,5 @@
 using System.Threading.Tasks;
+using Kontent.Ai.Delivery.Abstractions.SharedModels;
 
 namespace Kontent.Ai.Delivery.Abstractions.QueryBuilders;
 
@@ -27,8 +28,14 @@ public interface ILanguagesQuery
     ILanguagesQuery Limit(int limit);
 
     /// <summary>
-    /// Executes the built query.
+    /// Overrides the global option for waiting on the newest content for this specific request.
     /// </summary>
-    /// <returns>Delivery languages listing response.</returns>
-    Task<IDeliveryLanguageListingResponse> ExecuteAsync();
+    /// <param name="enabled">Whether to wait for loading new content.</param>
+    ILanguagesQuery WaitForLoadingNewContent(bool enabled = true);
+
+    /// <summary>
+    /// Executes the built query and returns a functional result.
+    /// </summary>
+    /// <returns>A delivery result containing the languages or errors.</returns>
+    Task<IDeliveryResult<IDeliveryLanguageListingResponse>> ExecuteAsync();
 }

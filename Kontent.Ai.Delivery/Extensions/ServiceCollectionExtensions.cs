@@ -169,7 +169,8 @@ namespace Kontent.Ai.Delivery.Extensions
                 configureResilience?.Invoke(resilienceBuilder);
             });
 
-            // Register IDeliveryClient implementation
+            // Register response processor and delivery client
+            services.TryAddSingleton<DeliveryResponseProcessor>();
             services.TryAddSingleton<IDeliveryClient, DeliveryClient>();
 
             return services;
