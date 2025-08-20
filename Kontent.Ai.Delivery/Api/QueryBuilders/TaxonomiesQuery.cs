@@ -1,12 +1,17 @@
 using Kontent.Ai.Delivery.Abstractions.QueryBuilders;
 using Kontent.Ai.Delivery.Abstractions.QueryBuilders.Filtering;
+using Kontent.Ai.Delivery.Abstractions.SharedModels;
 using Kontent.Ai.Delivery.Api.QueryBuilders.Filtering;
+using Kontent.Ai.Delivery.Serialization;
+using Kontent.Ai.Delivery.SharedModels;
+using Kontent.Ai.Delivery.TaxonomyGroups;
 
 namespace Kontent.Ai.Delivery.Api.QueryBuilders;
 
-internal sealed class TaxonomiesQuery(IDeliveryApi api, Func<bool?> getDefaultWaitForNewContent) : ITaxonomiesQuery
+internal sealed class TaxonomiesQuery(IDeliveryApi api, DeliveryResponseProcessor responseProcessor, Func<bool?> getDefaultWaitForNewContent) : ITaxonomiesQuery
 {
     private readonly IDeliveryApi _api = api;
+    private readonly DeliveryResponseProcessor _responseProcessor = responseProcessor;
     private readonly TaxonomyFilters _filters = new();
     private readonly List<IFilter> _appliedFilters = [];
     private ListTaxonomyGroupsParams _params = new();
@@ -44,14 +49,15 @@ internal sealed class TaxonomiesQuery(IDeliveryApi api, Func<bool?> getDefaultWa
         return this;
     }
 
-    public Task<IDeliveryTaxonomyListingResponse> ExecuteAsync()
+    public async Task<IDeliveryResult<IDeliveryTaxonomyListingResponse>> ExecuteAsync()
     {
         var paramsWithFilters = _appliedFilters.Count > 0
             ? _params with { Filters = _appliedFilters.Select(f => f.ToQueryParameter()).ToArray() }
             : _params;
-        
+
         bool? header = _waitForLoadingNewContentOverride ?? _getDefaultWaitForNewContent();
-        return _api.GetTaxonomiesInternalAsync(paramsWithFilters, header);
+        var raw = await _api.GetTaxonomiesInternalAsync(paramsWithFilters, header);
+        return await _responseProcessor.ProcessTaxonomyListingResponseAsync(raw);
     }
 }
 

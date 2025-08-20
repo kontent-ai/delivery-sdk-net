@@ -1,4 +1,5 @@
 using System.Threading.Tasks;
+using Kontent.Ai.Delivery.Abstractions.SharedModels;
 
 namespace Kontent.Ai.Delivery.Abstractions.QueryBuilders;
 
@@ -14,10 +15,10 @@ public interface IItemUsedInQuery
     IItemUsedInQuery WaitForLoadingNewContent(bool enabled = true);
 
     /// <summary>
-    /// Executes the built query.
+    /// Executes the built query and returns a functional result.
     /// </summary>
-    /// <returns>Delivery items feed response for used in items.</returns>
-    Task<IDeliveryItemsFeedResponse<IUsedInItem>> ExecuteAsync();
+    /// <returns>A delivery result containing the used-in items feed or errors.</returns>
+    Task<IDeliveryResult<IDeliveryItemsFeedResponse<IUsedInItem>>> ExecuteAsync();
 }
 
 /// <summary>
@@ -32,8 +33,8 @@ public interface IAssetUsedInQuery
     IAssetUsedInQuery WaitForLoadingNewContent(bool enabled = true);
 
     /// <summary>
-    /// Executes the built query.
+    /// Executes the built query and returns a functional result.
     /// </summary>
-    /// <returns>Delivery items feed response for used in items.</returns>
-    Task<IDeliveryItemsFeedResponse<IUsedInItem>> ExecuteAsync();
+    /// <returns>A delivery result containing the used-in items feed or errors.</returns>
+    Task<IDeliveryResult<IDeliveryItemsFeedResponse<IUsedInItem>>> ExecuteAsync();
 }

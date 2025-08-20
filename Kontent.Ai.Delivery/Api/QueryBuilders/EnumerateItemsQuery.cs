@@ -1,10 +1,13 @@
 using Kontent.Ai.Delivery.Abstractions.QueryBuilders;
+using Kontent.Ai.Delivery.Abstractions.SharedModels;
+using Kontent.Ai.Delivery.Services;
 
 namespace Kontent.Ai.Delivery.Api.QueryBuilders;
 
-internal sealed class EnumerateItemsQuery<T>(IDeliveryApi api, Func<bool?> getDefaultWaitForNewContent) : IEnumerateItemsQuery<T>
+internal sealed class EnumerateItemsQuery<T>(IDeliveryApi api, DeliveryResponseProcessor responseProcessor, Func<bool?> getDefaultWaitForNewContent) : IEnumerateItemsQuery<T>
 {
     private readonly IDeliveryApi _api = api;
+    private readonly DeliveryResponseProcessor _responseProcessor = responseProcessor;
     private readonly Func<bool?> _getDefaultWaitForNewContent = getDefaultWaitForNewContent;
     private EnumItemsParams _params = new();
     private bool? _waitForLoadingNewContentOverride;
@@ -33,9 +36,11 @@ internal sealed class EnumerateItemsQuery<T>(IDeliveryApi api, Func<bool?> getDe
         return this;
     }
 
-    public Task<IDeliveryItemsFeedResponse<T>> ExecuteAsync()
+    public async Task<IDeliveryResult<IDeliveryItemsFeedResponse<T>>> ExecuteAsync()
     {
         bool? header = _waitForLoadingNewContentOverride ?? _getDefaultWaitForNewContent();
-        return _api.GetItemsFeedInternalAsync(_params, header);
+        var raw = await _api.GetItemsFeedInternalAsync(_params, header);
+        // Items feed uses raw items; reuse processor to ensure consistent wrapping
+        return await _responseProcessor.ProcessItemsFeedResponseAsync<T>(raw);
     }
 }

@@ -5,6 +5,11 @@ using Kontent.Ai.Delivery.Api.ResponseModels;
 using Kontent.Ai.Delivery.Extensions;
 using Kontent.Ai.Delivery.SharedModels;
 using Refit;
+using System.Net.Http;
+using Kontent.Ai.Delivery.ContentTypes;
+using Kontent.Ai.Delivery.TaxonomyGroups;
+using Kontent.Ai.Delivery.Languages;
+using Kontent.Ai.Delivery.UsedIn;
 
 namespace Kontent.Ai.Delivery.Services;
 
@@ -25,6 +30,291 @@ internal sealed class DeliveryResponseProcessor
     {
         _modelProvider = modelProvider ?? throw new ArgumentNullException(nameof(modelProvider));
         _jsonSerializer = jsonSerializer ?? throw new ArgumentNullException(nameof(jsonSerializer));
+    }
+
+    /// <summary>
+    /// Processes a single content type response.
+    /// </summary>
+    public async Task<IDeliveryResult<IDeliveryTypeResponse>> ProcessTypeResponseAsync(
+        IApiResponse<RawContentTypeResponse> apiResponse)
+    {
+        var baseResult = await apiResponse.ToDeliveryResultAsync(_jsonSerializer);
+        if (!baseResult.IsSuccess)
+        {
+            return DeliveryResult.Failure<IDeliveryTypeResponse>(
+                baseResult.Errors,
+                baseResult.StatusCode,
+                baseResult.RequestUrl,
+                baseResult.RateLimit);
+        }
+
+        try
+        {
+            var raw = baseResult.Value;
+            var typeJson = raw.Type.ToString() ?? string.Empty;
+            var contentType = _jsonSerializer.Deserialize<IContentType>(typeJson);
+            var envelope = new DeliveryTypeResponse(
+                new ApiResponse(new StringContent(string.Empty), baseResult.HasStaleContent, baseResult.ContinuationToken ?? string.Empty, baseResult.RequestUrl ?? string.Empty),
+                contentType);
+
+            return DeliveryResult.Success<IDeliveryTypeResponse>(
+                envelope,
+                baseResult.StatusCode,
+                baseResult.HasStaleContent,
+                baseResult.ContinuationToken,
+                baseResult.RequestUrl,
+                baseResult.RateLimit);
+        }
+        catch (Exception ex)
+        {
+            return DeliveryResult.Failure<IDeliveryTypeResponse>(
+                $"Failed to process content type: {ex.Message}",
+                baseResult.StatusCode,
+                requestUrl: baseResult.RequestUrl);
+        }
+    }
+
+    /// <summary>
+    /// Processes a multiple content types response.
+    /// </summary>
+    public async Task<IDeliveryResult<IDeliveryTypeListingResponse>> ProcessTypesListingResponseAsync(
+        IApiResponse<RawContentTypeListingResponse> apiResponse)
+    {
+        var baseResult = await apiResponse.ToDeliveryResultAsync(_jsonSerializer);
+        if (!baseResult.IsSuccess)
+        {
+            return DeliveryResult.Failure<IDeliveryTypeListingResponse>(
+                baseResult.Errors,
+                baseResult.StatusCode,
+                baseResult.RequestUrl,
+                baseResult.RateLimit);
+        }
+
+        try
+        {
+            var raw = baseResult.Value;
+            var types = new List<IContentType>();
+            foreach (var t in raw.Types)
+            {
+                var json = t.ToString() ?? string.Empty;
+                var type = _jsonSerializer.Deserialize<IContentType>(json);
+                if (type != null)
+                {
+                    types.Add(type);
+                }
+            }
+
+            var pagination = ConvertPagination(raw.Pagination);
+            var envelope = new DeliveryTypeListingResponse(
+                new ApiResponse(new StringContent(string.Empty), baseResult.HasStaleContent, baseResult.ContinuationToken ?? string.Empty, baseResult.RequestUrl ?? string.Empty),
+                types,
+                pagination);
+
+            return DeliveryResult.Success<IDeliveryTypeListingResponse>(
+                envelope,
+                baseResult.StatusCode,
+                baseResult.HasStaleContent,
+                baseResult.ContinuationToken,
+                baseResult.RequestUrl,
+                baseResult.RateLimit);
+        }
+        catch (Exception ex)
+        {
+            return DeliveryResult.Failure<IDeliveryTypeListingResponse>(
+                $"Failed to process content types: {ex.Message}",
+                baseResult.StatusCode,
+                requestUrl: baseResult.RequestUrl);
+        }
+    }
+
+    /// <summary>
+    /// Processes a content element response.
+    /// </summary>
+    public async Task<IDeliveryResult<IDeliveryElementResponse>> ProcessContentElementResponseAsync(
+        IApiResponse<RawContentElementResponse> apiResponse)
+    {
+        var baseResult = await apiResponse.ToDeliveryResultAsync(_jsonSerializer);
+        if (!baseResult.IsSuccess)
+        {
+            return DeliveryResult.Failure<IDeliveryElementResponse>(
+                baseResult.Errors,
+                baseResult.StatusCode,
+                baseResult.RequestUrl,
+                baseResult.RateLimit);
+        }
+
+        try
+        {
+            var raw = baseResult.Value;
+            var elementJson = raw.Element.ToString() ?? string.Empty;
+            var element = _jsonSerializer.Deserialize<IContentElement>(elementJson);
+            var envelope = new DeliveryElementResponse(
+                new ApiResponse(new StringContent(string.Empty), baseResult.HasStaleContent, baseResult.ContinuationToken ?? string.Empty, baseResult.RequestUrl ?? string.Empty),
+                element);
+
+            return DeliveryResult.Success<IDeliveryElementResponse>(
+                envelope,
+                baseResult.StatusCode,
+                baseResult.HasStaleContent,
+                baseResult.ContinuationToken,
+                baseResult.RequestUrl,
+                baseResult.RateLimit);
+        }
+        catch (Exception ex)
+        {
+            return DeliveryResult.Failure<IDeliveryElementResponse>(
+                $"Failed to process content element: {ex.Message}",
+                baseResult.StatusCode,
+                requestUrl: baseResult.RequestUrl);
+        }
+    }
+
+    /// <summary>
+    /// Processes a single taxonomy response.
+    /// </summary>
+    public async Task<IDeliveryResult<IDeliveryTaxonomyResponse>> ProcessTaxonomyResponseAsync(
+        IApiResponse<RawTaxonomyResponse> apiResponse)
+    {
+        var baseResult = await apiResponse.ToDeliveryResultAsync(_jsonSerializer);
+        if (!baseResult.IsSuccess)
+        {
+            return DeliveryResult.Failure<IDeliveryTaxonomyResponse>(
+                baseResult.Errors,
+                baseResult.StatusCode,
+                baseResult.RequestUrl,
+                baseResult.RateLimit);
+        }
+
+        try
+        {
+            var raw = baseResult.Value;
+            var taxonomyJson = raw.Taxonomy.ToString() ?? string.Empty;
+            var taxonomy = _jsonSerializer.Deserialize<ITaxonomyGroup>(taxonomyJson);
+            var envelope = new DeliveryTaxonomyResponse(
+                new ApiResponse(new StringContent(string.Empty), baseResult.HasStaleContent, baseResult.ContinuationToken ?? string.Empty, baseResult.RequestUrl ?? string.Empty),
+                taxonomy);
+
+            return DeliveryResult.Success<IDeliveryTaxonomyResponse>(
+                envelope,
+                baseResult.StatusCode,
+                baseResult.HasStaleContent,
+                baseResult.ContinuationToken,
+                baseResult.RequestUrl,
+                baseResult.RateLimit);
+        }
+        catch (Exception ex)
+        {
+            return DeliveryResult.Failure<IDeliveryTaxonomyResponse>(
+                $"Failed to process taxonomy: {ex.Message}",
+                baseResult.StatusCode,
+                requestUrl: baseResult.RequestUrl);
+        }
+    }
+
+    /// <summary>
+    /// Processes a taxonomy listing response.
+    /// </summary>
+    public async Task<IDeliveryResult<IDeliveryTaxonomyListingResponse>> ProcessTaxonomyListingResponseAsync(
+        IApiResponse<RawTaxonomyListingResponse> apiResponse)
+    {
+        var baseResult = await apiResponse.ToDeliveryResultAsync(_jsonSerializer);
+        if (!baseResult.IsSuccess)
+        {
+            return DeliveryResult.Failure<IDeliveryTaxonomyListingResponse>(
+                baseResult.Errors,
+                baseResult.StatusCode,
+                baseResult.RequestUrl,
+                baseResult.RateLimit);
+        }
+
+        try
+        {
+            var raw = baseResult.Value;
+            var taxonomies = new List<ITaxonomyGroup>();
+            foreach (var t in raw.Taxonomies)
+            {
+                var json = t.ToString() ?? string.Empty;
+                var taxonomy = _jsonSerializer.Deserialize<ITaxonomyGroup>(json);
+                if (taxonomy != null)
+                {
+                    taxonomies.Add(taxonomy);
+                }
+            }
+
+            var pagination = ConvertPagination(raw.Pagination);
+            var envelope = new DeliveryTaxonomyListingResponse(
+                new ApiResponse(new StringContent(string.Empty), baseResult.HasStaleContent, baseResult.ContinuationToken ?? string.Empty, baseResult.RequestUrl ?? string.Empty),
+                taxonomies,
+                pagination);
+
+            return DeliveryResult.Success<IDeliveryTaxonomyListingResponse>(
+                envelope,
+                baseResult.StatusCode,
+                baseResult.HasStaleContent,
+                baseResult.ContinuationToken,
+                baseResult.RequestUrl,
+                baseResult.RateLimit);
+        }
+        catch (Exception ex)
+        {
+            return DeliveryResult.Failure<IDeliveryTaxonomyListingResponse>(
+                $"Failed to process taxonomies: {ex.Message}",
+                baseResult.StatusCode,
+                requestUrl: baseResult.RequestUrl);
+        }
+    }
+
+    /// <summary>
+    /// Processes a languages listing response.
+    /// </summary>
+    public async Task<IDeliveryResult<IDeliveryLanguageListingResponse>> ProcessLanguageListingResponseAsync(
+        IApiResponse<RawLanguageListingResponse> apiResponse)
+    {
+        var baseResult = await apiResponse.ToDeliveryResultAsync(_jsonSerializer);
+        if (!baseResult.IsSuccess)
+        {
+            return DeliveryResult.Failure<IDeliveryLanguageListingResponse>(
+                baseResult.Errors,
+                baseResult.StatusCode,
+                baseResult.RequestUrl,
+                baseResult.RateLimit);
+        }
+
+        try
+        {
+            var raw = baseResult.Value;
+            var languages = new List<ILanguage>();
+            foreach (var l in raw.Languages)
+            {
+                var json = l.ToString() ?? string.Empty;
+                var language = _jsonSerializer.Deserialize<ILanguage>(json);
+                if (language != null)
+                {
+                    languages.Add(language);
+                }
+            }
+
+            var pagination = ConvertPagination(raw.Pagination);
+            var envelope = new DeliveryLanguageListingResponse(
+                new ApiResponse(new StringContent(string.Empty), baseResult.HasStaleContent, baseResult.ContinuationToken ?? string.Empty, baseResult.RequestUrl ?? string.Empty),
+                languages,
+                pagination);
+
+            return DeliveryResult.Success<IDeliveryLanguageListingResponse>(
+                envelope,
+                baseResult.StatusCode,
+                baseResult.HasStaleContent,
+                baseResult.ContinuationToken,
+                baseResult.RequestUrl,
+                baseResult.RateLimit);
+        }
+        catch (Exception ex)
+        {
+            return DeliveryResult.Failure<IDeliveryLanguageListingResponse>(
+                $"Failed to process languages: {ex.Message}",
+                baseResult.StatusCode,
+                requestUrl: baseResult.RequestUrl);
+        }
     }
 
     /// <summary>
@@ -223,6 +513,57 @@ internal sealed class DeliveryResponseProcessor
             rawPagination.Count,
             rawPagination.NextPage,
             rawPagination.TotalCount);
+    }
+
+    /// <summary>
+    /// Processes a used-in response (items referencing an item or asset).
+    /// </summary>
+    public async Task<IDeliveryResult<IDeliveryItemsFeedResponse<IUsedInItem>>> ProcessUsedInResponseAsync(
+        IApiResponse<RawUsedInResponse> apiResponse)
+    {
+        var baseResult = await apiResponse.ToDeliveryResultAsync(_jsonSerializer);
+        if (!baseResult.IsSuccess)
+        {
+            return DeliveryResult.Failure<IDeliveryItemsFeedResponse<IUsedInItem>>(
+                baseResult.Errors,
+                baseResult.StatusCode,
+                baseResult.RequestUrl,
+                baseResult.RateLimit);
+        }
+
+        try
+        {
+            var raw = baseResult.Value;
+            var items = new List<IUsedInItem>();
+            foreach (var i in raw.Items)
+            {
+                var json = i.ToString() ?? string.Empty;
+                var item = _jsonSerializer.Deserialize<IUsedInItem>(json);
+                if (item != null)
+                {
+                    items.Add(item);
+                }
+            }
+
+            var envelope = new DeliveryUsedInResponse(
+                new ApiResponse(new StringContent(string.Empty), baseResult.HasStaleContent, baseResult.ContinuationToken ?? string.Empty, baseResult.RequestUrl ?? string.Empty),
+                items);
+
+            return DeliveryResult.Success<IDeliveryItemsFeedResponse<IUsedInItem>>(
+                envelope,
+                baseResult.StatusCode,
+                baseResult.HasStaleContent,
+                baseResult.ContinuationToken,
+                baseResult.RequestUrl,
+                baseResult.RateLimit);
+        }
+        catch (Exception ex)
+        {
+            return DeliveryResult.Failure<IDeliveryItemsFeedResponse<IUsedInItem>>(
+                $"Failed to process used-in response: {ex.Message}",
+                baseResult.StatusCode,
+                requestUrl: baseResult.RequestUrl);
+        }
     }
 }
 

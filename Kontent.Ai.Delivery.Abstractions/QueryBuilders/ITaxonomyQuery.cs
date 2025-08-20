@@ -1,4 +1,5 @@
 using System.Threading.Tasks;
+using Kontent.Ai.Delivery.Abstractions.SharedModels;
 
 namespace Kontent.Ai.Delivery.Abstractions.QueryBuilders;
 
@@ -14,8 +15,8 @@ public interface ITaxonomyQuery
     ITaxonomyQuery WaitForLoadingNewContent(bool enabled = true);
 
     /// <summary>
-    /// Executes the built query.
+    /// Executes the built query and returns a functional result.
     /// </summary>
-    /// <returns>Delivery taxonomy response.</returns>
-    Task<IDeliveryTaxonomyResponse> ExecuteAsync();
+    /// <returns>A delivery result containing the taxonomy or errors.</returns>
+    Task<IDeliveryResult<IDeliveryTaxonomyResponse>> ExecuteAsync();
 }

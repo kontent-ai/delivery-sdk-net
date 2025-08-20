@@ -1,4 +1,5 @@
 using System.Threading.Tasks;
+using Kontent.Ai.Delivery.Abstractions.SharedModels;
 
 namespace Kontent.Ai.Delivery.Abstractions.QueryBuilders;
 
@@ -20,8 +21,8 @@ public interface ITypeQuery
     ITypeQuery WaitForLoadingNewContent(bool enabled = true);
 
     /// <summary>
-    /// Executes the built query.
+    /// Executes the built query and returns a functional result.
     /// </summary>
-    /// <returns>Delivery type response.</returns>
-    Task<IDeliveryTypeResponse> ExecuteAsync();
+    /// <returns>A delivery result containing the content type or errors.</returns>
+    Task<IDeliveryResult<IDeliveryTypeResponse>> ExecuteAsync();
 }

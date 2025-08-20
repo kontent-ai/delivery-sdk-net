@@ -1,4 +1,5 @@
 using System.Threading.Tasks;
+using Kontent.Ai.Delivery.Abstractions.SharedModels;
 
 namespace Kontent.Ai.Delivery.Abstractions.QueryBuilders;
 
@@ -31,8 +32,8 @@ public interface IEnumerateItemsQuery<T>
     IEnumerateItemsQuery<T> WaitForLoadingNewContent(bool enabled = true);
 
     /// <summary>
-    /// Executes the built query.
+    /// Executes the built query and returns a functional result.
     /// </summary>
-    /// <returns>Delivery items feed response.</returns>
-    Task<IDeliveryItemsFeedResponse<T>> ExecuteAsync();
+    /// <returns>A delivery result containing the items feed or errors.</returns>
+    Task<IDeliveryResult<IDeliveryItemsFeedResponse<T>>> ExecuteAsync();
 }
