@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using Kontent.Ai.Delivery.Abstractions;
 using Kontent.Ai.Delivery.Configuration;
 using Xunit;
@@ -105,14 +105,12 @@ namespace Kontent.Ai.Delivery.Tests.Builders.Configuration
         }
 
         [Fact]
-        [Obsolete]
-        public void BuildWithWaitForLoadingNewContent()
+        public void ModernBuilder_WithWaitForLoadingNewContent_SetsOptions()
         {
             var deliveryOptions = DeliveryOptionsBuilder
-                .CreateInstance()
-                .WithEnvironmentId(Guid.NewGuid())
-                .UseProductionApi()
-                .WaitForLoadingNewContent()
+                .Create(EnvironmentId)
+                .UseProduction()
+                .WithWaitForLoadingNewContent()
                 .Build();
 
             Assert.True(deliveryOptions.WaitForLoadingNewContent);

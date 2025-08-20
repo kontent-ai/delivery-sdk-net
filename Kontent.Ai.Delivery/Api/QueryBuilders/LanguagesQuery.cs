@@ -2,10 +2,12 @@ using Kontent.Ai.Delivery.Abstractions.QueryBuilders;
 
 namespace Kontent.Ai.Delivery.Api.QueryBuilders;
 
-internal sealed class LanguagesQuery(IDeliveryApi api) : ILanguagesQuery
+internal sealed class LanguagesQuery(IDeliveryApi api, Func<bool?> getDefaultWaitForNewContent) : ILanguagesQuery
 {
     private readonly IDeliveryApi _api = api;
+    private readonly Func<bool?> _getDefaultWaitForNewContent = getDefaultWaitForNewContent;
     private LanguagesParams _params = new();
+    private bool? _waitForLoadingNewContentOverride;
 
     public ILanguagesQuery OrderBy(string elementOrAttributePath, bool ascending = true)
     {
@@ -25,9 +27,16 @@ internal sealed class LanguagesQuery(IDeliveryApi api) : ILanguagesQuery
         return this;
     }
 
+    public ILanguagesQuery WaitForLoadingNewContent(bool enabled = true)
+    {
+        _waitForLoadingNewContentOverride = enabled;
+        return this;
+    }
+
     public Task<IDeliveryLanguageListingResponse> ExecuteAsync()
     {
-        return _api.GetLanguagesInternalAsync(_params, null);
+        bool? header = _waitForLoadingNewContentOverride ?? _getDefaultWaitForNewContent();
+        return _api.GetLanguagesInternalAsync(_params, header);
     }
 }
 

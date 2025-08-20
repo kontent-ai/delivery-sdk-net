@@ -70,6 +70,13 @@ public interface IMultipleItemsQuery<T>
     IMultipleItemsQuery<T> WithTotalCount();
 
     /// <summary>
+    /// Overrides the global option for waiting on the newest content for this specific request.
+    /// </summary>
+    /// <param name="enabled">Whether to wait for loading new content.</param>
+    /// <returns>The query builder for method chaining.</returns>
+    IMultipleItemsQuery<T> WaitForLoadingNewContent(bool enabled = true);
+
+    /// <summary>
     /// Adds a filter to the query using a filter builder function.
     /// </summary>
     /// <param name="filterBuilder">Function that builds a filter using the items filter builder.</param>

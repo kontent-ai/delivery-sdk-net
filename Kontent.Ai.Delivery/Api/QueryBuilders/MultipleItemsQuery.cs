@@ -10,13 +10,18 @@ namespace Kontent.Ai.Delivery.Api.QueryBuilders;
 /// Concrete implementation of <see cref="IMultipleItemsQuery{T}"/> using the modernized Result pattern.
 /// </summary>
 /// <typeparam name="T">The type of the content items.</typeparam>
-internal sealed class MultipleItemsQuery<T>(IDeliveryApi api, DeliveryResponseProcessor responseProcessor) : IMultipleItemsQuery<T>
+internal sealed class MultipleItemsQuery<T>(
+    IDeliveryApi api,
+    DeliveryResponseProcessor responseProcessor,
+    Func<bool?> getDefaultWaitForNewContent) : IMultipleItemsQuery<T>
 {
     private readonly IDeliveryApi _api = api;
     private readonly DeliveryResponseProcessor _responseProcessor = responseProcessor;
+    private readonly Func<bool?> _getDefaultWaitForNewContent = getDefaultWaitForNewContent;
     private readonly ItemFilters _filters = new();
     private readonly List<IFilter> _appliedFilters = [];
     private ListItemsParams _params = new();
+    private bool? _waitForLoadingNewContentOverride;
 
     public IMultipleItemsQuery<T> WithLanguage(string languageCodename)
     {
@@ -66,6 +71,12 @@ internal sealed class MultipleItemsQuery<T>(IDeliveryApi api, DeliveryResponsePr
         return this;
     }
 
+    public IMultipleItemsQuery<T> WaitForLoadingNewContent(bool enabled = true)
+    {
+        _waitForLoadingNewContentOverride = enabled;
+        return this;
+    }
+
     public IMultipleItemsQuery<T> Filter(Func<IItemFilters, IFilter> filterBuilder)
     {
         var filter = filterBuilder(_filters);
@@ -86,7 +97,8 @@ internal sealed class MultipleItemsQuery<T>(IDeliveryApi api, DeliveryResponsePr
             : _params;
         
         // Get raw response from Refit API
-        var rawResponse = await _api.GetItemsInternalAsync(paramsWithFilters, null);
+        bool? header = _waitForLoadingNewContentOverride ?? _getDefaultWaitForNewContent();
+        var rawResponse = await _api.GetItemsInternalAsync(paramsWithFilters, header);
         
         // Process the response to create strongly-typed result
         var processedResponse = await _responseProcessor.ProcessItemListingResponseAsync<T>(rawResponse);

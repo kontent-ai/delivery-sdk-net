@@ -2,10 +2,12 @@ using Kontent.Ai.Delivery.Abstractions.QueryBuilders;
 
 namespace Kontent.Ai.Delivery.Api.QueryBuilders;
 
-internal sealed class EnumerateItemsQuery<T>(IDeliveryApi api) : IEnumerateItemsQuery<T>
+internal sealed class EnumerateItemsQuery<T>(IDeliveryApi api, Func<bool?> getDefaultWaitForNewContent) : IEnumerateItemsQuery<T>
 {
     private readonly IDeliveryApi _api = api;
+    private readonly Func<bool?> _getDefaultWaitForNewContent = getDefaultWaitForNewContent;
     private EnumItemsParams _params = new();
+    private bool? _waitForLoadingNewContentOverride;
 
     public IEnumerateItemsQuery<T> WithLanguage(string languageCodename)
     {
@@ -25,8 +27,15 @@ internal sealed class EnumerateItemsQuery<T>(IDeliveryApi api) : IEnumerateItems
         return this;
     }
 
+    public IEnumerateItemsQuery<T> WaitForLoadingNewContent(bool enabled = true)
+    {
+        _waitForLoadingNewContentOverride = enabled;
+        return this;
+    }
+
     public Task<IDeliveryItemsFeedResponse<T>> ExecuteAsync()
     {
-        return _api.GetItemsFeedInternalAsync<T>(_params, null);
+        bool? header = _waitForLoadingNewContentOverride ?? _getDefaultWaitForNewContent();
+        return _api.GetItemsFeedInternalAsync(_params, header);
     }
 }

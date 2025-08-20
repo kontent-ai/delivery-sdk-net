@@ -40,6 +40,12 @@ public interface ITypesQuery
     ITypesQuery Where(IFilter filter);
 
     /// <summary>
+    /// Overrides the global option for waiting on the newest content for this specific request.
+    /// </summary>
+    /// <param name="enabled">Whether to wait for loading new content.</param>
+    ITypesQuery WaitForLoadingNewContent(bool enabled = true);
+
+    /// <summary>
     /// Executes the built query.
     /// </summary>
     /// <returns>Delivery types listing response.</returns>

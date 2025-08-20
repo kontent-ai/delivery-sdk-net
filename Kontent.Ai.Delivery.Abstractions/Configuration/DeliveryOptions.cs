@@ -64,6 +64,14 @@ namespace Kontent.Ai.Delivery.Abstractions
         public bool IncludeTotalCount { get; init; }
 
         /// <summary>
+        /// Gets or sets a value indicating whether the SDK should wait for the newest published content to be fully loaded
+        /// before returning a response. When enabled, requests include the
+        /// <c>X-KC-Wait-For-Loading-New-Content</c> header. This option can be overridden per query.
+        /// Default is <c>false</c>.
+        /// </summary>
+        public bool WaitForLoadingNewContent { get; init; } = false;
+
+        /// <summary>
         /// Gets or sets a value of codename for the rendition preset to be applied by default to the base asset URL path.
         /// If no value is specified, asset URLs will always point to non-customized variant of the image.
         /// </summary>

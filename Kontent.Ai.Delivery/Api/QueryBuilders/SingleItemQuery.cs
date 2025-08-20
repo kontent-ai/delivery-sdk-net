@@ -10,14 +10,17 @@ namespace Kontent.Ai.Delivery.Api.QueryBuilders;
 /// </summary>
 /// <typeparam name="T">The type of the content item.</typeparam>
 internal sealed class SingleItemQuery<T>(
-    IDeliveryApi api, 
-    string codename, 
-    DeliveryResponseProcessor responseProcessor) : ISingleItemQuery<T>
+    IDeliveryApi api,
+    string codename,
+    DeliveryResponseProcessor responseProcessor,
+    Func<bool?> getDefaultWaitForNewContent) : ISingleItemQuery<T>
 {
     private readonly IDeliveryApi _api = api;
     private readonly string _codename = codename;
     private readonly DeliveryResponseProcessor _responseProcessor = responseProcessor;
+    private readonly Func<bool?> _getDefaultWaitForNewContent = getDefaultWaitForNewContent;
     private SingleItemParams _params = new();
+    private bool? _waitForLoadingNewContentOverride;
 
     public ISingleItemQuery<T> WithLanguage(string languageCodename)
     {
@@ -43,10 +46,17 @@ internal sealed class SingleItemQuery<T>(
         return this;
     }
 
+    public ISingleItemQuery<T> WaitForLoadingNewContent(bool enabled = true)
+    {
+        _waitForLoadingNewContentOverride = enabled;
+        return this;
+    }
+
     public async Task<IDeliveryResult<T>> ExecuteAsync(CancellationToken cancellationToken = default)
     {
         // Get raw response from Refit API
-        var rawResponse = await _api.GetItemInternalAsync(_codename, _params, null);
+        bool? header = _waitForLoadingNewContentOverride ?? _getDefaultWaitForNewContent();
+        var rawResponse = await _api.GetItemInternalAsync(_codename, _params, header);
         
         // Process the response to create strongly-typed result
         var processedResponse = await _responseProcessor.ProcessItemResponseAsync<T>(rawResponse);

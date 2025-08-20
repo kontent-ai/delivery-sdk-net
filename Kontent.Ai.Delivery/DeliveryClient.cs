@@ -35,17 +35,17 @@ namespace Kontent.Ai.Delivery
                 throw new ArgumentException("Entered item codename is not valid.", nameof(codename));
             }
 
-            return new SingleItemQuery<T>(_deliveryApi, codename, _responseProcessor);
+            return new SingleItemQuery<T>(_deliveryApi, codename, _responseProcessor, GetDefaultWaitForLoadingNewContent);
         }
 
         public IMultipleItemsQuery<T> GetItems<T>()
         {
-            return new MultipleItemsQuery<T>(_deliveryApi, _responseProcessor);
+            return new MultipleItemsQuery<T>(_deliveryApi, _responseProcessor, GetDefaultWaitForLoadingNewContent);
         }
 
         public IEnumerateItemsQuery<T> GetItemsFeed<T>()
         {
-            return new EnumerateItemsQuery<T>(_deliveryApi);
+            return new EnumerateItemsQuery<T>(_deliveryApi, GetDefaultWaitForLoadingNewContent);
         }
 
         public ITypeQuery GetType(string codename)
@@ -55,12 +55,12 @@ namespace Kontent.Ai.Delivery
                 throw new ArgumentException("Entered type codename is not valid.", nameof(codename));
             }
 
-            return new TypeQuery(_deliveryApi, codename);
+            return new TypeQuery(_deliveryApi, codename, GetDefaultWaitForLoadingNewContent);
         }
 
         public ITypesQuery GetTypes()
         {
-            return new TypesQuery(_deliveryApi);
+            return new TypesQuery(_deliveryApi, GetDefaultWaitForLoadingNewContent);
         }
 
         public ITypeElementQuery GetContentElement(string contentTypeCodename, string contentElementCodename)
@@ -75,7 +75,7 @@ namespace Kontent.Ai.Delivery
                 throw new ArgumentException("Entered content element codename is not valid.", nameof(contentElementCodename));
             }
 
-            return new TypeElementQuery(_deliveryApi, contentTypeCodename, contentElementCodename);
+            return new TypeElementQuery(_deliveryApi, contentTypeCodename, contentElementCodename, GetDefaultWaitForLoadingNewContent);
         }
 
         public ITaxonomyQuery GetTaxonomy(string codename)
@@ -85,17 +85,17 @@ namespace Kontent.Ai.Delivery
                 throw new ArgumentException("Entered taxonomy codename is not valid.", nameof(codename));
             }
 
-            return new TaxonomyQuery(_deliveryApi, codename);
+            return new TaxonomyQuery(_deliveryApi, codename, GetDefaultWaitForLoadingNewContent);
         }
 
         public ITaxonomiesQuery GetTaxonomies()
         {
-            return new TaxonomiesQuery(_deliveryApi);
+            return new TaxonomiesQuery(_deliveryApi, GetDefaultWaitForLoadingNewContent);
         }
 
         public ILanguagesQuery GetLanguages()
         {
-            return new LanguagesQuery(_deliveryApi);
+            return new LanguagesQuery(_deliveryApi, GetDefaultWaitForLoadingNewContent);
         }
 
         public IItemUsedInQuery GetItemUsedIn(string codename)
@@ -105,7 +105,7 @@ namespace Kontent.Ai.Delivery
                 throw new ArgumentException("Entered item codename is not valid.", nameof(codename));
             }
 
-            return new ItemUsedInQuery(_deliveryApi, codename);
+            return new ItemUsedInQuery(_deliveryApi, codename, GetDefaultWaitForLoadingNewContent);
         }
 
         public IAssetUsedInQuery GetAssetUsedIn(string codename)
@@ -115,7 +115,10 @@ namespace Kontent.Ai.Delivery
                 throw new ArgumentException("Entered asset codename is not valid.", nameof(codename));
             }
 
-            return new AssetUsedInQuery(_deliveryApi, codename);
+            return new AssetUsedInQuery(_deliveryApi, codename, GetDefaultWaitForLoadingNewContent);
         }
+
+        private bool? GetDefaultWaitForLoadingNewContent()
+            => _deliveryOptions.CurrentValue.WaitForLoadingNewContent ? true : null;
     }
 }

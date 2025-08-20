@@ -34,6 +34,12 @@ public interface ITaxonomiesQuery
     ITaxonomiesQuery Where(IFilter filter);
 
     /// <summary>
+    /// Overrides the global option for waiting on the newest content for this specific request.
+    /// </summary>
+    /// <param name="enabled">Whether to wait for loading new content.</param>
+    ITaxonomiesQuery WaitForLoadingNewContent(bool enabled = true);
+
+    /// <summary>
     /// Executes the built query.
     /// </summary>
     /// <returns>Delivery taxonomy listing response.</returns>

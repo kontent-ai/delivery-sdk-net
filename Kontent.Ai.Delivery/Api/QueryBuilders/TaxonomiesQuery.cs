@@ -4,12 +4,14 @@ using Kontent.Ai.Delivery.Api.QueryBuilders.Filtering;
 
 namespace Kontent.Ai.Delivery.Api.QueryBuilders;
 
-internal sealed class TaxonomiesQuery(IDeliveryApi api) : ITaxonomiesQuery
+internal sealed class TaxonomiesQuery(IDeliveryApi api, Func<bool?> getDefaultWaitForNewContent) : ITaxonomiesQuery
 {
     private readonly IDeliveryApi _api = api;
     private readonly TaxonomyFilters _filters = new();
     private readonly List<IFilter> _appliedFilters = [];
     private ListTaxonomyGroupsParams _params = new();
+    private bool? _waitForLoadingNewContentOverride;
+    private readonly Func<bool?> _getDefaultWaitForNewContent = getDefaultWaitForNewContent;
 
     public ITaxonomiesQuery Skip(int skip)
     {
@@ -36,13 +38,20 @@ internal sealed class TaxonomiesQuery(IDeliveryApi api) : ITaxonomiesQuery
         return this;
     }
 
+    public ITaxonomiesQuery WaitForLoadingNewContent(bool enabled = true)
+    {
+        _waitForLoadingNewContentOverride = enabled;
+        return this;
+    }
+
     public Task<IDeliveryTaxonomyListingResponse> ExecuteAsync()
     {
         var paramsWithFilters = _appliedFilters.Count > 0
             ? _params with { Filters = _appliedFilters.Select(f => f.ToQueryParameter()).ToArray() }
             : _params;
         
-        return _api.GetTaxonomiesInternalAsync(paramsWithFilters, null);
+        bool? header = _waitForLoadingNewContentOverride ?? _getDefaultWaitForNewContent();
+        return _api.GetTaxonomiesInternalAsync(paramsWithFilters, header);
     }
 }
 
