@@ -1,6 +1,6 @@
 ﻿using System.Text.Json.Serialization;
 using Kontent.Ai.Delivery.SharedModels;
-using IApiResponse = Kontent.Ai.Delivery.Abstractions.IApiResponse; // TODO: Remove this once we adopt ApiResponse from Refit
+using IApiResponse = Kontent.Ai.Delivery.Abstractions.IApiResponse;
 
 namespace Kontent.Ai.Delivery.UsedIn;
 

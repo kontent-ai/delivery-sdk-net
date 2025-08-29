@@ -1,4 +1,4 @@
-using IApiResponse = Kontent.Ai.Delivery.Abstractions.IApiResponse; // TODO: Remove this once we adopt ApiResponse from Refit
+using IApiResponse = Kontent.Ai.Delivery.Abstractions.IApiResponse; // Using abstractions interface
 
 namespace Kontent.Ai.Delivery.ContentItems
 {

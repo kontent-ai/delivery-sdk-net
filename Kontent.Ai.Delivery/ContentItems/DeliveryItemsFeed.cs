@@ -1,4 +1,7 @@
-﻿namespace Kontent.Ai.Delivery.ContentItems
+﻿using Kontent.Ai.Delivery.Services;
+using Kontent.Ai.Delivery.Abstractions.SharedModels;
+
+namespace Kontent.Ai.Delivery.ContentItems
 {
     /// <summary>
     /// Represents a feed that can be used to retrieve strongly typed content items from Kontent.ai Delivery API in smaller batches.
@@ -6,9 +9,9 @@
     /// <typeparam name="T">The type of content items in the feed.</typeparam>
     internal class DeliveryItemsFeed<T> : IDeliveryItemsFeed<T>
     {
-        internal delegate Task<DeliveryItemsFeedResponse<T>> GetFeedResponse(string continuationToken);
+        internal delegate Task<IDeliveryResult<IDeliveryItemsFeedResponse<T>>> GetFeedResponse(string continuationToken);
 
-        private string _continuationToken;
+        private string _continuationToken = string.Empty;
         private readonly GetFeedResponse _getFeedResponseAsync;
 
         /// <summary>
@@ -37,17 +40,20 @@
                 throw new InvalidOperationException("The feed has already been enumerated and there are no more results.");
             }
 
-            var response = await _getFeedResponseAsync(continuationToken ?? _continuationToken);
+            var result = await _getFeedResponseAsync(continuationToken ?? _continuationToken);
 
-            if (!response.ApiResponse.IsSuccess)
+            if (!result.IsSuccess)
             {
-                return new DeliveryItemsFeedResponse<T>(response.ApiResponse, null);
+                return new DeliveryItemsFeedResponse<T>(
+                    new ProcessedApiResponse(result.HasStaleContent, result.ContinuationToken, result.RequestUrl, result.StatusCode),
+                    new List<T>());
             }
 
-            _continuationToken = response.ApiResponse.ContinuationToken;
-            HasMoreResults = !string.IsNullOrEmpty(response.ApiResponse.ContinuationToken);
+            var envelope = result.Value;
+            _continuationToken = result.ContinuationToken ?? envelope.ApiResponse.ContinuationToken;
+            HasMoreResults = !string.IsNullOrEmpty(result.ContinuationToken ?? envelope.ApiResponse.ContinuationToken);
 
-            return response;
+            return envelope;
         }
     }
 }

@@ -39,39 +39,14 @@ internal sealed class DeliveryResponseProcessor
         IApiResponse<RawContentTypeResponse> apiResponse)
     {
         var baseResult = await apiResponse.ToDeliveryResultAsync(_jsonSerializer);
-        if (!baseResult.IsSuccess)
+        return baseResult.Map(raw =>
         {
-            return DeliveryResult.Failure<IDeliveryTypeResponse>(
-                baseResult.Errors,
-                baseResult.StatusCode,
-                baseResult.RequestUrl,
-                baseResult.RateLimit);
-        }
-
-        try
-        {
-            var raw = baseResult.Value;
             var typeJson = raw.Type.ToString() ?? string.Empty;
             var contentType = _jsonSerializer.Deserialize<IContentType>(typeJson);
-            var envelope = new DeliveryTypeResponse(
-                new ApiResponse(new StringContent(string.Empty), baseResult.HasStaleContent, baseResult.ContinuationToken ?? string.Empty, baseResult.RequestUrl ?? string.Empty),
+            return new DeliveryTypeResponse(
+                new ProcessedApiResponse(baseResult.HasStaleContent, baseResult.ContinuationToken, baseResult.RequestUrl, baseResult.StatusCode),
                 contentType);
-
-            return DeliveryResult.Success<IDeliveryTypeResponse>(
-                envelope,
-                baseResult.StatusCode,
-                baseResult.HasStaleContent,
-                baseResult.ContinuationToken,
-                baseResult.RequestUrl,
-                baseResult.RateLimit);
-        }
-        catch (Exception ex)
-        {
-            return DeliveryResult.Failure<IDeliveryTypeResponse>(
-                $"Failed to process content type: {ex.Message}",
-                baseResult.StatusCode,
-                requestUrl: baseResult.RequestUrl);
-        }
+        });
     }
 
     /// <summary>
@@ -81,18 +56,8 @@ internal sealed class DeliveryResponseProcessor
         IApiResponse<RawContentTypeListingResponse> apiResponse)
     {
         var baseResult = await apiResponse.ToDeliveryResultAsync(_jsonSerializer);
-        if (!baseResult.IsSuccess)
+        return baseResult.Map(raw =>
         {
-            return DeliveryResult.Failure<IDeliveryTypeListingResponse>(
-                baseResult.Errors,
-                baseResult.StatusCode,
-                baseResult.RequestUrl,
-                baseResult.RateLimit);
-        }
-
-        try
-        {
-            var raw = baseResult.Value;
             var types = new List<IContentType>();
             foreach (var t in raw.Types)
             {
@@ -105,26 +70,11 @@ internal sealed class DeliveryResponseProcessor
             }
 
             var pagination = ConvertPagination(raw.Pagination);
-            var envelope = new DeliveryTypeListingResponse(
-                new ApiResponse(new StringContent(string.Empty), baseResult.HasStaleContent, baseResult.ContinuationToken ?? string.Empty, baseResult.RequestUrl ?? string.Empty),
+            return new DeliveryTypeListingResponse(
+                new ProcessedApiResponse(baseResult.HasStaleContent, baseResult.ContinuationToken, baseResult.RequestUrl, baseResult.StatusCode),
                 types,
                 pagination);
-
-            return DeliveryResult.Success<IDeliveryTypeListingResponse>(
-                envelope,
-                baseResult.StatusCode,
-                baseResult.HasStaleContent,
-                baseResult.ContinuationToken,
-                baseResult.RequestUrl,
-                baseResult.RateLimit);
-        }
-        catch (Exception ex)
-        {
-            return DeliveryResult.Failure<IDeliveryTypeListingResponse>(
-                $"Failed to process content types: {ex.Message}",
-                baseResult.StatusCode,
-                requestUrl: baseResult.RequestUrl);
-        }
+        });
     }
 
     /// <summary>
@@ -134,39 +84,14 @@ internal sealed class DeliveryResponseProcessor
         IApiResponse<RawContentElementResponse> apiResponse)
     {
         var baseResult = await apiResponse.ToDeliveryResultAsync(_jsonSerializer);
-        if (!baseResult.IsSuccess)
+        return baseResult.Map(raw =>
         {
-            return DeliveryResult.Failure<IDeliveryElementResponse>(
-                baseResult.Errors,
-                baseResult.StatusCode,
-                baseResult.RequestUrl,
-                baseResult.RateLimit);
-        }
-
-        try
-        {
-            var raw = baseResult.Value;
             var elementJson = raw.Element.ToString() ?? string.Empty;
             var element = _jsonSerializer.Deserialize<IContentElement>(elementJson);
-            var envelope = new DeliveryElementResponse(
-                new ApiResponse(new StringContent(string.Empty), baseResult.HasStaleContent, baseResult.ContinuationToken ?? string.Empty, baseResult.RequestUrl ?? string.Empty),
+            return new DeliveryElementResponse(
+                new ProcessedApiResponse(baseResult.HasStaleContent, baseResult.ContinuationToken, baseResult.RequestUrl, baseResult.StatusCode),
                 element);
-
-            return DeliveryResult.Success<IDeliveryElementResponse>(
-                envelope,
-                baseResult.StatusCode,
-                baseResult.HasStaleContent,
-                baseResult.ContinuationToken,
-                baseResult.RequestUrl,
-                baseResult.RateLimit);
-        }
-        catch (Exception ex)
-        {
-            return DeliveryResult.Failure<IDeliveryElementResponse>(
-                $"Failed to process content element: {ex.Message}",
-                baseResult.StatusCode,
-                requestUrl: baseResult.RequestUrl);
-        }
+        });
     }
 
     /// <summary>
@@ -176,39 +101,14 @@ internal sealed class DeliveryResponseProcessor
         IApiResponse<RawTaxonomyResponse> apiResponse)
     {
         var baseResult = await apiResponse.ToDeliveryResultAsync(_jsonSerializer);
-        if (!baseResult.IsSuccess)
+        return baseResult.Map(raw =>
         {
-            return DeliveryResult.Failure<IDeliveryTaxonomyResponse>(
-                baseResult.Errors,
-                baseResult.StatusCode,
-                baseResult.RequestUrl,
-                baseResult.RateLimit);
-        }
-
-        try
-        {
-            var raw = baseResult.Value;
             var taxonomyJson = raw.Taxonomy.ToString() ?? string.Empty;
             var taxonomy = _jsonSerializer.Deserialize<ITaxonomyGroup>(taxonomyJson);
-            var envelope = new DeliveryTaxonomyResponse(
-                new ApiResponse(new StringContent(string.Empty), baseResult.HasStaleContent, baseResult.ContinuationToken ?? string.Empty, baseResult.RequestUrl ?? string.Empty),
+            return new DeliveryTaxonomyResponse(
+                new ProcessedApiResponse(baseResult.HasStaleContent, baseResult.ContinuationToken, baseResult.RequestUrl, baseResult.StatusCode),
                 taxonomy);
-
-            return DeliveryResult.Success<IDeliveryTaxonomyResponse>(
-                envelope,
-                baseResult.StatusCode,
-                baseResult.HasStaleContent,
-                baseResult.ContinuationToken,
-                baseResult.RequestUrl,
-                baseResult.RateLimit);
-        }
-        catch (Exception ex)
-        {
-            return DeliveryResult.Failure<IDeliveryTaxonomyResponse>(
-                $"Failed to process taxonomy: {ex.Message}",
-                baseResult.StatusCode,
-                requestUrl: baseResult.RequestUrl);
-        }
+        });
     }
 
     /// <summary>
@@ -218,18 +118,8 @@ internal sealed class DeliveryResponseProcessor
         IApiResponse<RawTaxonomyListingResponse> apiResponse)
     {
         var baseResult = await apiResponse.ToDeliveryResultAsync(_jsonSerializer);
-        if (!baseResult.IsSuccess)
+        return baseResult.Map(raw =>
         {
-            return DeliveryResult.Failure<IDeliveryTaxonomyListingResponse>(
-                baseResult.Errors,
-                baseResult.StatusCode,
-                baseResult.RequestUrl,
-                baseResult.RateLimit);
-        }
-
-        try
-        {
-            var raw = baseResult.Value;
             var taxonomies = new List<ITaxonomyGroup>();
             foreach (var t in raw.Taxonomies)
             {
@@ -242,26 +132,11 @@ internal sealed class DeliveryResponseProcessor
             }
 
             var pagination = ConvertPagination(raw.Pagination);
-            var envelope = new DeliveryTaxonomyListingResponse(
-                new ApiResponse(new StringContent(string.Empty), baseResult.HasStaleContent, baseResult.ContinuationToken ?? string.Empty, baseResult.RequestUrl ?? string.Empty),
+            return new DeliveryTaxonomyListingResponse(
+                new ProcessedApiResponse(baseResult.HasStaleContent, baseResult.ContinuationToken, baseResult.RequestUrl, baseResult.StatusCode),
                 taxonomies,
                 pagination);
-
-            return DeliveryResult.Success<IDeliveryTaxonomyListingResponse>(
-                envelope,
-                baseResult.StatusCode,
-                baseResult.HasStaleContent,
-                baseResult.ContinuationToken,
-                baseResult.RequestUrl,
-                baseResult.RateLimit);
-        }
-        catch (Exception ex)
-        {
-            return DeliveryResult.Failure<IDeliveryTaxonomyListingResponse>(
-                $"Failed to process taxonomies: {ex.Message}",
-                baseResult.StatusCode,
-                requestUrl: baseResult.RequestUrl);
-        }
+        });
     }
 
     /// <summary>
@@ -271,18 +146,8 @@ internal sealed class DeliveryResponseProcessor
         IApiResponse<RawLanguageListingResponse> apiResponse)
     {
         var baseResult = await apiResponse.ToDeliveryResultAsync(_jsonSerializer);
-        if (!baseResult.IsSuccess)
+        return baseResult.Map(raw =>
         {
-            return DeliveryResult.Failure<IDeliveryLanguageListingResponse>(
-                baseResult.Errors,
-                baseResult.StatusCode,
-                baseResult.RequestUrl,
-                baseResult.RateLimit);
-        }
-
-        try
-        {
-            var raw = baseResult.Value;
             var languages = new List<ILanguage>();
             foreach (var l in raw.Languages)
             {
@@ -295,26 +160,11 @@ internal sealed class DeliveryResponseProcessor
             }
 
             var pagination = ConvertPagination(raw.Pagination);
-            var envelope = new DeliveryLanguageListingResponse(
-                new ApiResponse(new StringContent(string.Empty), baseResult.HasStaleContent, baseResult.ContinuationToken ?? string.Empty, baseResult.RequestUrl ?? string.Empty),
+            return new DeliveryLanguageListingResponse(
+                new ProcessedApiResponse(baseResult.HasStaleContent, baseResult.ContinuationToken, baseResult.RequestUrl, baseResult.StatusCode),
                 languages,
                 pagination);
-
-            return DeliveryResult.Success<IDeliveryLanguageListingResponse>(
-                envelope,
-                baseResult.StatusCode,
-                baseResult.HasStaleContent,
-                baseResult.ContinuationToken,
-                baseResult.RequestUrl,
-                baseResult.RateLimit);
-        }
-        catch (Exception ex)
-        {
-            return DeliveryResult.Failure<IDeliveryLanguageListingResponse>(
-                $"Failed to process languages: {ex.Message}",
-                baseResult.StatusCode,
-                requestUrl: baseResult.RequestUrl);
-        }
+        });
     }
 
     /// <summary>
@@ -326,49 +176,19 @@ internal sealed class DeliveryResponseProcessor
     public async Task<IDeliveryResult<IDeliveryItemResponse<T>>> ProcessItemResponseAsync<T>(
         IApiResponse<RawContentItemResponse> apiResponse)
     {
-        // Convert to delivery result first
         var baseResult = await apiResponse.ToDeliveryResultAsync(_jsonSerializer);
-        
-        if (!baseResult.IsSuccess)
+        return await baseResult.MapTryAsync(async raw =>
         {
-            return DeliveryResult.Failure<IDeliveryItemResponse<T>>(
-                baseResult.Errors,
-                baseResult.StatusCode,
-                baseResult.RequestUrl,
-                baseResult.RateLimit);
-        }
-
-        try
-        {
-            // Process the content item
-            var rawResponse = baseResult.Value;
             var contentItem = await _modelProvider.GetContentItemModelAsync<T>(
-                rawResponse.Item, 
-                rawResponse.ModularContent ?? new Dictionary<string, object>());
-
-            // Create the response wrapper
-            var response = new ProcessedDeliveryItemResponse<T>(
+                raw.Item,
+                raw.ModularContent ?? new Dictionary<string, object>());
+            return new ProcessedDeliveryItemResponse<T>(
                 contentItem,
                 baseResult.HasStaleContent,
                 baseResult.ContinuationToken,
                 baseResult.RequestUrl,
                 baseResult.StatusCode);
-
-            return DeliveryResult.Success<IDeliveryItemResponse<T>>(
-                response,
-                baseResult.StatusCode,
-                baseResult.HasStaleContent,
-                baseResult.ContinuationToken,
-                baseResult.RequestUrl,
-                baseResult.RateLimit);
-        }
-        catch (Exception ex)
-        {
-            return DeliveryResult.Failure<IDeliveryItemResponse<T>>(
-                $"Failed to process content item: {ex.Message}",
-                baseResult.StatusCode,
-                requestUrl: baseResult.RequestUrl);
-        }
+        }, ex => $"Failed to process content item: {ex.Message}");
     }
 
     /// <summary>
@@ -380,59 +200,26 @@ internal sealed class DeliveryResponseProcessor
     public async Task<IDeliveryResult<IDeliveryItemListingResponse<T>>> ProcessItemListingResponseAsync<T>(
         IApiResponse<RawContentItemListingResponse> apiResponse)
     {
-        // Convert to delivery result first
         var baseResult = await apiResponse.ToDeliveryResultAsync(_jsonSerializer);
-        
-        if (!baseResult.IsSuccess)
+        return await baseResult.MapTryAsync(async raw =>
         {
-            return DeliveryResult.Failure<IDeliveryItemListingResponse<T>>(
-                baseResult.Errors,
-                baseResult.StatusCode,
-                baseResult.RequestUrl,
-                baseResult.RateLimit);
-        }
-
-        try
-        {
-            var rawResponse = baseResult.Value;
             var items = new List<T>();
-
-            // Process each content item
-            foreach (var rawItem in rawResponse.Items)
+            foreach (var rawItem in raw.Items)
             {
                 var contentItem = await _modelProvider.GetContentItemModelAsync<T>(
                     rawItem,
-                    rawResponse.ModularContent ?? new Dictionary<string, object>());
+                    raw.ModularContent ?? new Dictionary<string, object>());
                 items.Add(contentItem);
             }
-
-            // Convert pagination
-            var pagination = ConvertPagination(rawResponse.Pagination);
-
-            // Create the response wrapper
-            var response = new ProcessedDeliveryItemListingResponse<T>(
+            var pagination = ConvertPagination(raw.Pagination);
+            return new ProcessedDeliveryItemListingResponse<T>(
                 items,
                 pagination,
                 baseResult.HasStaleContent,
                 baseResult.ContinuationToken,
                 baseResult.RequestUrl,
                 baseResult.StatusCode);
-
-            return DeliveryResult.Success<IDeliveryItemListingResponse<T>>(
-                response,
-                baseResult.StatusCode,
-                baseResult.HasStaleContent,
-                baseResult.ContinuationToken,
-                baseResult.RequestUrl,
-                baseResult.RateLimit);
-        }
-        catch (Exception ex)
-        {
-            return DeliveryResult.Failure<IDeliveryItemListingResponse<T>>(
-                $"Failed to process content items: {ex.Message}",
-                baseResult.StatusCode,
-                requestUrl: baseResult.RequestUrl);
-        }
+        }, ex => $"Failed to process content items: {ex.Message}");
     }
 
     /// <summary>
@@ -444,55 +231,24 @@ internal sealed class DeliveryResponseProcessor
     public async Task<IDeliveryResult<IDeliveryItemsFeedResponse<T>>> ProcessItemsFeedResponseAsync<T>(
         IApiResponse<RawContentItemsFeedResponse> apiResponse)
     {
-        // Convert to delivery result first
         var baseResult = await apiResponse.ToDeliveryResultAsync(_jsonSerializer);
-        
-        if (!baseResult.IsSuccess)
+        return await baseResult.MapTryAsync(async raw =>
         {
-            return DeliveryResult.Failure<IDeliveryItemsFeedResponse<T>>(
-                baseResult.Errors,
-                baseResult.StatusCode,
-                baseResult.RequestUrl,
-                baseResult.RateLimit);
-        }
-
-        try
-        {
-            var rawResponse = baseResult.Value;
             var items = new List<T>();
-
-            // Process each content item
-            foreach (var rawItem in rawResponse.Items)
+            foreach (var rawItem in raw.Items)
             {
                 var contentItem = await _modelProvider.GetContentItemModelAsync<T>(
                     rawItem,
-                    rawResponse.ModularContent ?? new Dictionary<string, object>());
+                    raw.ModularContent ?? new Dictionary<string, object>());
                 items.Add(contentItem);
             }
-
-            // Create the response wrapper
-            var response = new ProcessedDeliveryItemsFeedResponse<T>(
+            return new ProcessedDeliveryItemsFeedResponse<T>(
                 items,
                 baseResult.HasStaleContent,
                 baseResult.ContinuationToken,
                 baseResult.RequestUrl,
                 baseResult.StatusCode);
-
-            return DeliveryResult.Success<IDeliveryItemsFeedResponse<T>>(
-                response,
-                baseResult.StatusCode,
-                baseResult.HasStaleContent,
-                baseResult.ContinuationToken,
-                baseResult.RequestUrl,
-                baseResult.RateLimit);
-        }
-        catch (Exception ex)
-        {
-            return DeliveryResult.Failure<IDeliveryItemsFeedResponse<T>>(
-                $"Failed to process items feed: {ex.Message}",
-                baseResult.StatusCode,
-                requestUrl: baseResult.RequestUrl);
-        }
+        }, ex => $"Failed to process items feed: {ex.Message}");
     }
 
     /// <summary>
@@ -546,7 +302,7 @@ internal sealed class DeliveryResponseProcessor
             }
 
             var envelope = new DeliveryUsedInResponse(
-                new ApiResponse(new StringContent(string.Empty), baseResult.HasStaleContent, baseResult.ContinuationToken ?? string.Empty, baseResult.RequestUrl ?? string.Empty),
+                new ProcessedApiResponse(baseResult.HasStaleContent, baseResult.ContinuationToken, baseResult.RequestUrl, baseResult.StatusCode),
                 items);
 
             return DeliveryResult.Success<IDeliveryItemsFeedResponse<IUsedInItem>>(
