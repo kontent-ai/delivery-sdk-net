@@ -96,4 +96,12 @@ public interface IMultipleItemsQuery<T>
     /// <param name="cancellationToken">Cancellation token for the operation.</param>
     /// <returns>A delivery result containing the content items or errors.</returns>
     Task<IDeliveryResult<IReadOnlyList<T>>> ExecuteAsync(CancellationToken cancellationToken = default);
+
+    /// <summary>
+    /// Executes the query and retrieves all items by paging under the hood.
+    /// Use with care on large environments due to latency/memory.
+    /// </summary>
+    /// <param name="cancellationToken">Cancellation token for the operation.</param>
+    /// <returns>A delivery result containing all matching items or errors.</returns>
+    Task<IDeliveryResult<IReadOnlyList<T>>> ExecuteAllAsync(CancellationToken cancellationToken = default);
 }

@@ -122,4 +122,59 @@ internal sealed class MultipleItemsQuery<T>(
             processedResponse.RequestUrl,
             processedResponse.RateLimit);
     }
+
+    public async Task<IDeliveryResult<IReadOnlyList<T>>> ExecuteAllAsync(CancellationToken cancellationToken = default)
+    {
+        var all = new List<T>();
+        var skip = _params.Skip ?? 0;
+        var limit = _params.Limit;
+
+        // Build filters once; avoid per-iteration allocations.
+        var filters = _appliedFilters.Count > 0
+            ? _appliedFilters.Select(f => f.ToQueryParameter()).ToArray()
+            : _params.Filters;
+
+        while (true)
+        {
+            var pageParams = _params with { Skip = skip, Limit = limit, Filters = filters };
+
+            var header = _waitForLoadingNewContentOverride ?? _getDefaultWaitForNewContent();
+            var raw = await _api.GetItemsInternalAsync(pageParams, header);
+            var processed = await _responseProcessor.ProcessItemListingResponseAsync<T>(raw);
+
+            if (!processed.IsSuccess)
+            {
+                return DeliveryResult.Failure<IReadOnlyList<T>>(
+                    processed.Errors,
+                    processed.StatusCode,
+                    processed.RequestUrl,
+                    processed.RateLimit);
+            }
+
+            var items = processed.Value.Items;
+            var pageCount = items?.Count ?? processed.Value.Pagination?.Count ?? 0;
+
+            if (pageCount == 0)
+                break;
+
+            if (items is { Count: > 0 })
+                all.AddRange(items);
+
+            skip += pageCount;
+
+            // Stop if we got fewer than requested (page exhausted),
+            // or if server says there is no next page (works for both with/without limit).
+            var nextPageMissing = processed.Value.Pagination?.NextPageUrl is null;
+            if ((limit.HasValue && pageCount < limit.Value) || nextPageMissing)
+                break;
+        }
+
+        return DeliveryResult.Success<IReadOnlyList<T>>(
+            all.AsReadOnly(),
+            200,
+            hasStaleContent: false,
+            continuationToken: null,
+            requestUrl: null,
+            rateLimit: null);
+    }
 }
