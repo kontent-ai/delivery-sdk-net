@@ -75,11 +75,30 @@ namespace Kontent.Ai.Delivery.ContentItems
             using var itemDocument = JsonDocument.Parse(itemJson);
             using var linkedItemsDocument = JsonDocument.Parse(linkedItemsJson);
             
+            // If caller requested object, try runtime mapping via type provider, otherwise fall back to dynamic item
+            var requestedType = typeof(T);
+            if (requestedType == typeof(object))
+            {
+                var targetType = GetModelTypeFromSystem(itemDocument.RootElement) ?? typeof(DynamicItem);
+
+                if (targetType == typeof(DynamicItem))
+                {
+                    var dynamicItem = BuildDynamicItem(itemDocument.RootElement);
+                    return (T)(object)dynamicItem;
+                }
+
+                var mapped = await GetContentItemModelAsync(
+                    targetType,
+                    itemDocument.RootElement,
+                    linkedItemsDocument.RootElement);
+                return (T)mapped;
+            }
+
             var result = await GetContentItemModelAsync(
-                typeof(T), 
-                itemDocument.RootElement, 
+                requestedType,
+                itemDocument.RootElement,
                 linkedItemsDocument.RootElement);
-                
+
             return (T)result;
         }
 
@@ -174,6 +193,42 @@ namespace Kontent.Ai.Delivery.ContentItems
         private static JsonElement? GetElementData(JsonElement serializedItem)
         {
             return serializedItem.TryGetProperty("elements", out var elements) ? elements : null;
+        }
+
+        private Type? GetModelTypeFromSystem(JsonElement serializedItem)
+        {
+            if (serializedItem.TryGetProperty("system", out var systemEl) &&
+                systemEl.TryGetProperty("type", out var typeEl))
+            {
+                var contentType = typeEl.GetString();
+                if (!string.IsNullOrEmpty(contentType))
+                {
+                    return TypeProvider.GetType(contentType);
+                }
+            }
+            return null;
+        }
+
+        private DynamicItem BuildDynamicItem(JsonElement serializedItem)
+        {
+            IContentItemSystemAttributes system = new ContentItemSystemAttributes();
+            if (serializedItem.TryGetProperty("system", out var systemEl))
+            {
+                var systemJson = systemEl.GetRawText();
+                system = JsonSerializer.Deserialize<IContentItemSystemAttributes>(systemJson) ?? new ContentItemSystemAttributes();
+            }
+
+            var elementsDict = new Dictionary<string, JsonElement>(StringComparer.Ordinal);
+            var elements = GetElementData(serializedItem);
+            if (elements.HasValue && elements.Value.ValueKind == JsonValueKind.Object)
+            {
+                foreach (var prop in elements.Value.EnumerateObject())
+                {
+                    elementsDict[prop.Name] = prop.Value;
+                }
+            }
+
+            return new DynamicItem(system, elementsDict);
         }
 
         private ResolvingContext CreateResolvingContext(JsonElement linkedItems, Dictionary<string, object> processedItems)

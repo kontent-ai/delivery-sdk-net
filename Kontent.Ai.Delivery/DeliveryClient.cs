@@ -38,14 +38,34 @@ namespace Kontent.Ai.Delivery
             return new SingleItemQuery<T>(_deliveryApi, codename, _responseProcessor, GetDefaultWaitForLoadingNewContent);
         }
 
+        public ISingleItemQuery<object> GetItem(string codename)
+        {
+            if (string.IsNullOrEmpty(codename))
+            {
+                throw new ArgumentException("Entered item codename is not valid.", nameof(codename));
+            }
+
+            return new SingleItemQuery<object>(_deliveryApi, codename, _responseProcessor, GetDefaultWaitForLoadingNewContent);
+        }
+
         public IMultipleItemsQuery<T> GetItems<T>()
         {
             return new MultipleItemsQuery<T>(_deliveryApi, _responseProcessor, GetDefaultWaitForLoadingNewContent);
         }
 
+        public IMultipleItemsQuery<object> GetItems()
+        {
+            return new MultipleItemsQuery<object>(_deliveryApi, _responseProcessor, GetDefaultWaitForLoadingNewContent);
+        }
+
         public IEnumerateItemsQuery<T> GetItemsFeed<T>()
         {
             return new EnumerateItemsQuery<T>(_deliveryApi, _responseProcessor, GetDefaultWaitForLoadingNewContent);
+        }
+
+        public IEnumerateItemsQuery<object> GetItemsFeed()
+        {
+            return new EnumerateItemsQuery<object>(_deliveryApi, _responseProcessor, GetDefaultWaitForLoadingNewContent);
         }
 
         public ITypeQuery GetType(string codename)
