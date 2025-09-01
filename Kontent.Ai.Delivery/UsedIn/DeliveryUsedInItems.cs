@@ -43,14 +43,12 @@ namespace Kontent.Ai.Delivery.UsedIn
 
             if (!result.IsSuccess)
             {
-                return new DeliveryUsedInResponse(
-                    new ProcessedApiResponse(result.HasStaleContent, result.ContinuationToken, result.RequestUrl, result.StatusCode),
-                    new List<IUsedInItem>());
+                return new DeliveryUsedInResponse(new List<IUsedInItem>());
             }
 
             var envelope = result.Value;
-            _continuationToken = result.ContinuationToken ?? envelope.ApiResponse.ContinuationToken;
-            HasMoreResults = !string.IsNullOrEmpty(result.ContinuationToken ?? envelope.ApiResponse.ContinuationToken);
+            _continuationToken = result.ContinuationToken ?? string.Empty;
+            HasMoreResults = !string.IsNullOrEmpty(result.ContinuationToken);
 
             return envelope;
         }

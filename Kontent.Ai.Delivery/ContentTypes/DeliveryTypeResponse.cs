@@ -1,11 +1,10 @@
 ﻿using Kontent.Ai.Delivery.SharedModels;
-using IApiResponse = Kontent.Ai.Delivery.Abstractions.IApiResponse;
 using System.Text.Json.Serialization;
 
 namespace Kontent.Ai.Delivery.ContentTypes
 {
     /// <inheritdoc cref="IDeliveryTypeResponse" />
-    internal sealed class DeliveryTypeResponse : AbstractResponse, IDeliveryTypeResponse
+    internal sealed class DeliveryTypeResponse : IDeliveryTypeResponse
     {
         /// <inheritdoc/>
         public IContentType Type
@@ -16,20 +15,11 @@ namespace Kontent.Ai.Delivery.ContentTypes
         /// <summary>
         /// Initializes a new instance of the <see cref="DeliveryTypeResponse"/> class.
         /// </summary>
-        /// <param name="response">The response from Kontent.ai Delivery API that contains a content type.</param>
         /// <param name="type">A content type.</param>
         [JsonConstructor]
-        internal DeliveryTypeResponse(IApiResponse response, IContentType type) : base(response)
+        internal DeliveryTypeResponse(IContentType type)
         {
             Type = type;
-        }
-
-        /// <summary>
-        /// Initializes a new instance of the <see cref="DeliveryTypeResponse"/> class.
-        /// </summary>
-        /// <param name="response">The response from Kontent.ai Delivery API that contains a content type.</param>
-        internal DeliveryTypeResponse(IApiResponse response) : base(response)
-        {
         }
     }
 }

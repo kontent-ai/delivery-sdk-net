@@ -3,7 +3,7 @@
     /// <summary>
     /// Represents a response from Kontent.ai Delivery API that contains a taxonomy group.
     /// </summary>
-    public interface IDeliveryTaxonomyResponse : IResponse
+    public interface IDeliveryTaxonomyResponse
     {
         /// <summary>
         /// Gets the taxonomy group.

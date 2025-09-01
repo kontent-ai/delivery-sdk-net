@@ -1,11 +1,9 @@
-﻿using Kontent.Ai.Delivery.SharedModels;
-using System.Text.Json.Serialization;
-using IApiResponse = Kontent.Ai.Delivery.Abstractions.IApiResponse;
+﻿using System.Text.Json.Serialization;
 
 namespace Kontent.Ai.Delivery.ContentItems
 {
     /// <inheritdoc cref="IDeliveryItemResponse{T}" />
-    internal sealed class DeliveryItemResponse<T> : AbstractItemsResponse, IDeliveryItemResponse<T>
+    internal sealed class DeliveryItemResponse<T> : IDeliveryItemResponse<T>
     {
         /// <inheritdoc/>
         public T Item
@@ -16,20 +14,11 @@ namespace Kontent.Ai.Delivery.ContentItems
         /// <summary>
         /// Initializes a new instance of the <see cref="DeliveryItemResponse{T}"/> class.
         /// </summary>
-        /// <param name="response">The response from Kontent.ai Delivery API that contains a content item.</param>
         /// <param name="item">Content item of a specific type.</param>
         [JsonConstructor]
-        internal DeliveryItemResponse(IApiResponse response, T item) : base(response)
+        internal DeliveryItemResponse(T item)
         {
             Item = item;
-        }
-
-        /// <summary>
-        /// Initializes a new instance of the <see cref="DeliveryItemResponse{T}"/> class.
-        /// </summary>
-        /// <param name="response">The response from Kontent.ai Delivery API that contains a content item.</param>
-        internal DeliveryItemResponse(IApiResponse response) : base(response)
-        {
         }
     }
 }

@@ -3,7 +3,7 @@
     /// <summary>
     /// Represents a response from Kontent.ai Delivery API that contains a content type element.
     /// </summary>
-    public interface IDeliveryElementResponse : IResponse
+    public interface IDeliveryElementResponse
     {
         /// <summary>
         /// Gets the content type element.

@@ -1,11 +1,9 @@
-﻿using Kontent.Ai.Delivery.SharedModels;
-using System.Text.Json.Serialization;
-using IApiResponse = Kontent.Ai.Delivery.Abstractions.IApiResponse;
+﻿using System.Text.Json.Serialization;
 
 namespace Kontent.Ai.Delivery.Languages
 {
     /// <inheritdoc cref="IDeliveryLanguageListingResponse" />
-    internal sealed class DeliveryLanguageListingResponse : AbstractResponse, IDeliveryLanguageListingResponse
+    internal sealed class DeliveryLanguageListingResponse : IDeliveryLanguageListingResponse
     {
         /// <inheritdoc/>
         public IList<ILanguage> Languages
@@ -22,22 +20,13 @@ namespace Kontent.Ai.Delivery.Languages
         /// <summary>
         /// Initializes a new instance of the <see cref="DeliveryLanguageListingResponse"/> class.
         /// </summary>
-        /// <param name="response">The response from Kontent.ai Delivery API that contains languages.</param>
         /// <param name="languages">A collection of languages.</param>
         /// <param name="pagination">Response paging information.</param>
         [JsonConstructor]
-        internal DeliveryLanguageListingResponse(IApiResponse response, IList<ILanguage> languages, IPagination pagination) : base(response)
+        internal DeliveryLanguageListingResponse(IList<ILanguage> languages, IPagination pagination)
         {
             Languages = languages;
             Pagination = pagination;
-        }
-
-        /// <summary>
-        /// Initializes a new instance of the <see cref="DeliveryLanguageListingResponse"/> class.
-        /// </summary>
-        /// <param name="response">The response from Kontent.ai Delivery API that contains languages.</param>
-        internal DeliveryLanguageListingResponse(IApiResponse response) : base(response)
-        {
         }
     }
 }

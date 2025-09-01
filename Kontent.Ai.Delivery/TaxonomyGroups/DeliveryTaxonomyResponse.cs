@@ -1,12 +1,9 @@
-﻿using Kontent.Ai.Delivery.ContentTypes;
-using Kontent.Ai.Delivery.SharedModels;
-using System.Text.Json.Serialization;
-using IApiResponse = Kontent.Ai.Delivery.Abstractions.IApiResponse;
+﻿using System.Text.Json.Serialization;
 
 namespace Kontent.Ai.Delivery.TaxonomyGroups
 {
     /// <inheritdoc cref="IDeliveryTaxonomyResponse" />
-    internal sealed class DeliveryTaxonomyResponse : AbstractResponse, IDeliveryTaxonomyResponse
+    internal sealed class DeliveryTaxonomyResponse : IDeliveryTaxonomyResponse
     {
         /// <inheritdoc/>
         public ITaxonomyGroup Taxonomy
@@ -17,20 +14,11 @@ namespace Kontent.Ai.Delivery.TaxonomyGroups
         /// <summary>
         /// Initializes a new instance of the <see cref="DeliveryTypeResponse"/> class.
         /// </summary>
-        /// <param name="response">The response from Kontent.ai Delivery API that contains a taxonomy group.</param>
         /// <param name="taxonomy">A taxonomy group.</param>
         [JsonConstructor]
-        internal DeliveryTaxonomyResponse(IApiResponse response, ITaxonomyGroup taxonomy) : base(response)
+        internal DeliveryTaxonomyResponse(ITaxonomyGroup taxonomy)
         {
             Taxonomy = taxonomy;
-        }
-
-        /// <summary>
-        /// Initializes a new instance of the <see cref="DeliveryTypeResponse"/> class.
-        /// </summary>
-        /// <param name="response">The response from Kontent.ai Delivery API that contains a taxonomy group.</param>
-        internal DeliveryTaxonomyResponse(IApiResponse response) : base(response)
-        {
         }
     }
 }

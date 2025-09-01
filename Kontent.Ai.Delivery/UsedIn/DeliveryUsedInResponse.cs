@@ -1,10 +1,8 @@
 ﻿using System.Text.Json.Serialization;
-using Kontent.Ai.Delivery.SharedModels;
-using IApiResponse = Kontent.Ai.Delivery.Abstractions.IApiResponse;
 
 namespace Kontent.Ai.Delivery.UsedIn;
 
-internal sealed class DeliveryUsedInResponse : AbstractResponse, IDeliveryItemsFeedResponse<IUsedInItem>
+internal sealed class DeliveryUsedInResponse : IDeliveryItemsFeedResponse<IUsedInItem>
 {
     /// <inheritdoc/>
     public IList<IUsedInItem> Items { get; }
@@ -12,17 +10,10 @@ internal sealed class DeliveryUsedInResponse : AbstractResponse, IDeliveryItemsF
     /// <summary>
     /// Initializes a new instance of the <see cref="DeliveryUsedInResponse"/>
     /// </summary>
-    /// <param name="response"></param>
     /// <param name="items"></param>
     [JsonConstructor]
-    internal DeliveryUsedInResponse(IApiResponse response, IList<IUsedInItem> items)
-        : base(response)
+    internal DeliveryUsedInResponse(IList<IUsedInItem> items)
     {
         Items = items;
-    }
-
-    internal DeliveryUsedInResponse(IApiResponse response)
-        : base(response)
-    {
     }
 }

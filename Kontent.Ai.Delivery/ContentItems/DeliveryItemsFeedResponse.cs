@@ -1,9 +1,9 @@
-using IApiResponse = Kontent.Ai.Delivery.Abstractions.IApiResponse; // Using abstractions interface
+ 
 
 namespace Kontent.Ai.Delivery.ContentItems
 {
     /// <inheritdoc cref="IDeliveryItemsFeedResponse{T}" />
-    internal class DeliveryItemsFeedResponse<T> : AbstractItemsResponse, IDeliveryItemsFeedResponse<T>
+    internal class DeliveryItemsFeedResponse<T> : IDeliveryItemsFeedResponse<T>
     {
         /// <inheritdoc/>
         public IList<T> Items { get; set; }
@@ -11,19 +11,10 @@ namespace Kontent.Ai.Delivery.ContentItems
         /// <summary>
         /// Initializes a new instance of the <see cref="DeliveryItemsFeedResponse{T}"/> class.
         /// </summary>
-        /// <param name="response">The response from Kontent.ai Delivery API that contains a list of content items.</param>
         /// <param name="items">A list of content items.</param>
-        internal DeliveryItemsFeedResponse(IApiResponse response, IList<T> items) : base(response)
+        internal DeliveryItemsFeedResponse(IList<T> items)
         {
             Items = items;
-        }
-
-        /// <summary>
-        /// Initializes a new instance of the <see cref="DeliveryItemsFeedResponse{T}"/> class.
-        /// </summary>
-        /// <param name="response">The response from Kontent.ai Delivery API that contains a list of content items.</param>
-        internal DeliveryItemsFeedResponse(IApiResponse response) : base(response)
-        {
         }
     }
 }
