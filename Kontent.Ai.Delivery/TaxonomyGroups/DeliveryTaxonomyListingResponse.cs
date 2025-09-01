@@ -1,13 +1,11 @@
-﻿using Kontent.Ai.Delivery.SharedModels;
-using System.Text.Json.Serialization;
-using IApiResponse = Kontent.Ai.Delivery.Abstractions.IApiResponse;
+﻿using System.Text.Json.Serialization;
 
 namespace Kontent.Ai.Delivery.TaxonomyGroups
 {
     /// <summary>
     /// Represents a response from Kontent.ai Delivery API that contains a list of taxonomy groups.
     /// </summary>
-    internal sealed class DeliveryTaxonomyListingResponse : AbstractResponse, IDeliveryTaxonomyListingResponse
+    internal sealed class DeliveryTaxonomyListingResponse : IDeliveryTaxonomyListingResponse
     {
         /// <summary>
         /// Gets paging information.
@@ -28,22 +26,13 @@ namespace Kontent.Ai.Delivery.TaxonomyGroups
         /// <summary>
         /// Initializes a new instance of the <see cref="DeliveryTaxonomyListingResponse"/> class.
         /// </summary>
-        /// <param name="response">The response from Kontent.ai Delivery API that contains taxonomies.</param>
         /// <param name="taxonomies">A collection of taxonomies.</param>
         /// <param name="pagination">Response paging information.</param>
         [JsonConstructor]
-        internal DeliveryTaxonomyListingResponse(IApiResponse response, IList<ITaxonomyGroup> taxonomies, IPagination pagination) : base(response)
+        internal DeliveryTaxonomyListingResponse(IList<ITaxonomyGroup> taxonomies, IPagination pagination)
         {
             Taxonomies = taxonomies;
             Pagination = pagination;
-        }
-
-        /// <summary>
-        /// Initializes a new instance of the <see cref="DeliveryTaxonomyListingResponse"/> class.
-        /// </summary>
-        /// <param name="response">The response from Kontent.ai Delivery API that contains taxonomies.</param>
-        internal DeliveryTaxonomyListingResponse(IApiResponse response) : base(response)
-        {
         }
     }
 }

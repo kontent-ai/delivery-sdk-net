@@ -44,14 +44,12 @@ namespace Kontent.Ai.Delivery.ContentItems
 
             if (!result.IsSuccess)
             {
-                return new DeliveryItemsFeedResponse<T>(
-                    new ProcessedApiResponse(result.HasStaleContent, result.ContinuationToken, result.RequestUrl, result.StatusCode),
-                    new List<T>());
+                return new DeliveryItemsFeedResponse<T>(new List<T>());
             }
 
             var envelope = result.Value;
-            _continuationToken = result.ContinuationToken ?? envelope.ApiResponse.ContinuationToken;
-            HasMoreResults = !string.IsNullOrEmpty(result.ContinuationToken ?? envelope.ApiResponse.ContinuationToken);
+            _continuationToken = result.ContinuationToken ?? string.Empty;
+            HasMoreResults = !string.IsNullOrEmpty(result.ContinuationToken);
 
             return envelope;
         }

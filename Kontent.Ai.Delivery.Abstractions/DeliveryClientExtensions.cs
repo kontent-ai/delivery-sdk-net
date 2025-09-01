@@ -78,17 +78,6 @@ namespace Kontent.Ai.Delivery.Abstractions
         }
 
         /// <summary>
-        /// Initializes synchronization of changes in content items based on the specified parameters. After the initialization, you'll get an X-Continuation token in the response.
-        /// </summary>
-        /// <param name="client">An instance of the <see cref="IDeliveryClient"/></param>
-        /// <param name="parameters">A collection of query parameters, for example, for filtering.</param>
-        /// <returns>The <see cref="IDeliverySyncInitResponse"/> instance that represents the sync init response that contains continuation token needed for further sync execution.</returns>
-        public static Task<IDeliverySyncInitResponse> PostSyncInitAsync(this IDeliveryClient client, params IQueryParameter[] parameters)
-        {
-            return client.PostSyncInitAsync(parameters);
-        }
-
-        /// <summary>
         /// Returns a feed that is used to traverse through strongly typed parent content items matching the optional filtering parameters.
         /// </summary>
         /// <param name="client">An instance of the <see cref="IDeliveryClient"/></param>

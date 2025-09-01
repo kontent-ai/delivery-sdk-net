@@ -44,7 +44,6 @@ internal sealed class DeliveryResponseProcessor
             var typeJson = raw.Type.ToString() ?? string.Empty;
             var contentType = _jsonSerializer.Deserialize<IContentType>(typeJson);
             return new DeliveryTypeResponse(
-                new ProcessedApiResponse(baseResult.HasStaleContent, baseResult.ContinuationToken, baseResult.RequestUrl, baseResult.StatusCode),
                 contentType);
         });
     }
@@ -71,7 +70,6 @@ internal sealed class DeliveryResponseProcessor
 
             var pagination = ConvertPagination(raw.Pagination);
             return new DeliveryTypeListingResponse(
-                new ProcessedApiResponse(baseResult.HasStaleContent, baseResult.ContinuationToken, baseResult.RequestUrl, baseResult.StatusCode),
                 types,
                 pagination);
         });
@@ -89,7 +87,6 @@ internal sealed class DeliveryResponseProcessor
             var elementJson = raw.Element.ToString() ?? string.Empty;
             var element = _jsonSerializer.Deserialize<IContentElement>(elementJson);
             return new DeliveryElementResponse(
-                new ProcessedApiResponse(baseResult.HasStaleContent, baseResult.ContinuationToken, baseResult.RequestUrl, baseResult.StatusCode),
                 element);
         });
     }
@@ -106,7 +103,6 @@ internal sealed class DeliveryResponseProcessor
             var taxonomyJson = raw.Taxonomy.ToString() ?? string.Empty;
             var taxonomy = _jsonSerializer.Deserialize<ITaxonomyGroup>(taxonomyJson);
             return new DeliveryTaxonomyResponse(
-                new ProcessedApiResponse(baseResult.HasStaleContent, baseResult.ContinuationToken, baseResult.RequestUrl, baseResult.StatusCode),
                 taxonomy);
         });
     }
@@ -133,7 +129,6 @@ internal sealed class DeliveryResponseProcessor
 
             var pagination = ConvertPagination(raw.Pagination);
             return new DeliveryTaxonomyListingResponse(
-                new ProcessedApiResponse(baseResult.HasStaleContent, baseResult.ContinuationToken, baseResult.RequestUrl, baseResult.StatusCode),
                 taxonomies,
                 pagination);
         });
@@ -161,7 +156,6 @@ internal sealed class DeliveryResponseProcessor
 
             var pagination = ConvertPagination(raw.Pagination);
             return new DeliveryLanguageListingResponse(
-                new ProcessedApiResponse(baseResult.HasStaleContent, baseResult.ContinuationToken, baseResult.RequestUrl, baseResult.StatusCode),
                 languages,
                 pagination);
         });
@@ -182,12 +176,7 @@ internal sealed class DeliveryResponseProcessor
             var contentItem = await _modelProvider.GetContentItemModelAsync<T>(
                 raw.Item,
                 raw.ModularContent ?? new Dictionary<string, object>());
-            return new ProcessedDeliveryItemResponse<T>(
-                contentItem,
-                baseResult.HasStaleContent,
-                baseResult.ContinuationToken,
-                baseResult.RequestUrl,
-                baseResult.StatusCode);
+            return new ProcessedDeliveryItemResponse<T>(contentItem);
         }, ex => $"Failed to process content item: {ex.Message}");
     }
 
@@ -212,13 +201,7 @@ internal sealed class DeliveryResponseProcessor
                 items.Add(contentItem);
             }
             var pagination = ConvertPagination(raw.Pagination);
-            return new ProcessedDeliveryItemListingResponse<T>(
-                items,
-                pagination,
-                baseResult.HasStaleContent,
-                baseResult.ContinuationToken,
-                baseResult.RequestUrl,
-                baseResult.StatusCode);
+            return new ProcessedDeliveryItemListingResponse<T>(items, pagination);
         }, ex => $"Failed to process content items: {ex.Message}");
     }
 
@@ -242,12 +225,7 @@ internal sealed class DeliveryResponseProcessor
                     raw.ModularContent ?? new Dictionary<string, object>());
                 items.Add(contentItem);
             }
-            return new ProcessedDeliveryItemsFeedResponse<T>(
-                items,
-                baseResult.HasStaleContent,
-                baseResult.ContinuationToken,
-                baseResult.RequestUrl,
-                baseResult.StatusCode);
+            return new ProcessedDeliveryItemsFeedResponse<T>(items);
         }, ex => $"Failed to process items feed: {ex.Message}");
     }
 
@@ -301,9 +279,7 @@ internal sealed class DeliveryResponseProcessor
                 }
             }
 
-            var envelope = new DeliveryUsedInResponse(
-                new ProcessedApiResponse(baseResult.HasStaleContent, baseResult.ContinuationToken, baseResult.RequestUrl, baseResult.StatusCode),
-                items);
+            var envelope = new DeliveryUsedInResponse(items);
 
             return DeliveryResult.Success<IDeliveryItemsFeedResponse<IUsedInItem>>(
                 envelope,
@@ -332,27 +308,13 @@ internal sealed class ProcessedDeliveryItemResponse<T> : IDeliveryItemResponse<T
     /// <inheritdoc/>
     public T Item { get; }
 
-    /// <inheritdoc/>
-    public Kontent.Ai.Delivery.Abstractions.IApiResponse ApiResponse { get; }
+    // Legacy ApiResponse removed from envelopes; keeping processed wrappers minimal
 
     /// <summary>
     /// Initializes a new instance of the <see cref="ProcessedDeliveryItemResponse{T}"/> class.
     /// </summary>
     /// <param name="item">The processed content item.</param>
-    /// <param name="hasStaleContent">Whether the content is stale.</param>
-    /// <param name="continuationToken">The continuation token.</param>
-    /// <param name="requestUrl">The request URL.</param>
-    /// <param name="statusCode">The HTTP status code.</param>
-    public ProcessedDeliveryItemResponse(
-        T item,
-        bool hasStaleContent,
-        string? continuationToken,
-        string? requestUrl,
-        int statusCode)
-    {
-        Item = item;
-        ApiResponse = new ProcessedApiResponse(hasStaleContent, continuationToken, requestUrl, statusCode);
-    }
+    public ProcessedDeliveryItemResponse(T item) { Item = item; }
 }
 
 /// <summary>
@@ -368,29 +330,15 @@ internal sealed class ProcessedDeliveryItemListingResponse<T> : IDeliveryItemLis
     public IPagination Pagination { get; }
 
     /// <inheritdoc/>
-    public Kontent.Ai.Delivery.Abstractions.IApiResponse ApiResponse { get; }
+    // No ApiResponse in domain envelope
 
     /// <summary>
     /// Initializes a new instance of the <see cref="ProcessedDeliveryItemListingResponse{T}"/> class.
     /// </summary>
     /// <param name="items">The processed content items.</param>
     /// <param name="pagination">The pagination information.</param>
-    /// <param name="hasStaleContent">Whether the content is stale.</param>
-    /// <param name="continuationToken">The continuation token.</param>
-    /// <param name="requestUrl">The request URL.</param>
-    /// <param name="statusCode">The HTTP status code.</param>
-    public ProcessedDeliveryItemListingResponse(
-        IList<T> items,
-        IPagination pagination,
-        bool hasStaleContent,
-        string? continuationToken,
-        string? requestUrl,
-        int statusCode)
-    {
-        Items = items;
-        Pagination = pagination;
-        ApiResponse = new ProcessedApiResponse(hasStaleContent, continuationToken, requestUrl, statusCode);
-    }
+    public ProcessedDeliveryItemListingResponse(IList<T> items, IPagination pagination)
+    { Items = items; Pagination = pagination; }
 }
 
 /// <summary>
@@ -402,27 +350,13 @@ internal sealed class ProcessedDeliveryItemsFeedResponse<T> : IDeliveryItemsFeed
     /// <inheritdoc/>
     public IList<T> Items { get; }
 
-    /// <inheritdoc/>
-    public Kontent.Ai.Delivery.Abstractions.IApiResponse ApiResponse { get; }
+    // No ApiResponse in domain envelope
 
     /// <summary>
     /// Initializes a new instance of the <see cref="ProcessedDeliveryItemsFeedResponse{T}"/> class.
     /// </summary>
     /// <param name="items">The processed content items.</param>
-    /// <param name="hasStaleContent">Whether the content is stale.</param>
-    /// <param name="continuationToken">The continuation token.</param>
-    /// <param name="requestUrl">The request URL.</param>
-    /// <param name="statusCode">The HTTP status code.</param>
-    public ProcessedDeliveryItemsFeedResponse(
-        IList<T> items,
-        bool hasStaleContent,
-        string? continuationToken,
-        string? requestUrl,
-        int statusCode)
-    {
-        Items = items;
-        ApiResponse = new ProcessedApiResponse(hasStaleContent, continuationToken, requestUrl, statusCode);
-    }
+    public ProcessedDeliveryItemsFeedResponse(IList<T> items) { Items = items; }
 }
 
 /// <summary>
