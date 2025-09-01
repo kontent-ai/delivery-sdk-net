@@ -24,8 +24,6 @@ public class DeliveryEndpointUrlBuilder
     private const string UrlTemplateTaxonomy = "/taxonomies/{0}";
     private const string UrlTemplateTaxonomies = "/taxonomies";
     private const string UrlTemplateLanguages = "/languages";
-    private const string UrlTemplateSyncInit = "/sync/init";
-    private const string UrlTemplateSync = "/sync";
     private const string UrlTemplateVersionV2 = "v2/";
 
     private readonly IOptionsMonitor<DeliveryOptions> _deliveryOptionsMonitor;
@@ -145,43 +143,6 @@ public class DeliveryEndpointUrlBuilder
     public string GetLanguagesUrl(IEnumerable<IQueryParameter> parameters)
     {
         return GetUrl(UrlTemplateLanguages, parameters);
-    }
-
-    /// <summary>
-    /// Generates a URL for sync initialization.
-    /// </summary>
-    /// <param name="parameters">Filtering parameters.</param>
-    /// <returns>A valid URL containing correctly formatted parameters.</returns>
-    public string GetSyncInitUrl(IEnumerable<IQueryParameter> parameters)
-    {
-        return GetUrl(UrlTemplateSyncInit, parameters);
-    }
-
-    /// <summary>
-    /// Generates a URL for sync execution.
-    /// </summary>
-    /// <returns>A valid URL containing correctly formatted parameters.</returns>
-    public string GetSyncUrl()
-    {
-        return GetUrl(UrlTemplateSync);
-    }
-
-    /// <summary>
-    /// Generates a URL for sync v2 initialization.
-    /// </summary>
-    /// <returns>A valid URL containing correctly formatted parameters.</returns>
-    public string GetSyncV2InitUrl()
-    {
-        return GetUrl(UrlTemplateSyncInit, version: UrlTemplateVersionV2);
-    }
-
-    /// <summary>
-    /// Generates a URL for sync v2 execution.
-    /// </summary>
-    /// <returns>A valid URL containing correctly formatted parameters.</returns>
-    public string GetSyncV2Url()
-    {
-        return GetUrl(UrlTemplateSync, version: UrlTemplateVersionV2);
     }
 
     /// <summary>
