@@ -10,8 +10,6 @@ internal static class HttpRequestHeadersExtensions
 {
     private const string SdkTrackingHeaderName = "X-KC-SDKID";
     private const string SourceTrackingHeaderName = "X-KC-SOURCE";
-    private const string ContinuationHeaderName = "X-Continuation";
-
     private const string PackageRepositoryHost = "nuget.org";
 
     private static readonly Lazy<string> Sdk = new(GetSdk);
@@ -45,12 +43,7 @@ internal static class HttpRequestHeadersExtensions
     {
         headers.Authorization = new AuthenticationHeaderValue(scheme, parameter);
     }
-
-    internal static void AddContinuationHeader(this HttpRequestHeaders headers, string continuation)
-    {
-        headers.Add(ContinuationHeaderName, continuation);
-    }
-
+    
     internal static string GetProductVersion(this Assembly assembly)
     {
         string? sdkVersion;

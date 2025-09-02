@@ -1,3 +1,4 @@
+using System.Threading;
 using System.Threading.Tasks;
 using Kontent.Ai.Delivery.Abstractions.SharedModels;
 
@@ -11,12 +12,13 @@ public interface ITaxonomyQuery
     /// <summary>
     /// Overrides the global option for waiting on the newest content for this specific request.
     /// </summary>
-    /// <param name=\"enabled\">Whether to wait for loading new content.</param>
+    /// <param name="enabled">Whether to wait for loading new content.</param>
     ITaxonomyQuery WaitForLoadingNewContent(bool enabled = true);
 
     /// <summary>
     /// Executes the built query and returns a functional result.
     /// </summary>
+    /// <param name="cancellationToken">Cancellation token for the operation.</param>
     /// <returns>A delivery result containing the taxonomy or errors.</returns>
-    Task<IDeliveryResult<IDeliveryTaxonomyResponse>> ExecuteAsync();
+    Task<IDeliveryResult<ITaxonomyGroup>> ExecuteAsync(CancellationToken cancellationToken = default);
 }

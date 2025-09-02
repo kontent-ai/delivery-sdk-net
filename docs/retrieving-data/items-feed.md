@@ -7,13 +7,18 @@ To fetch data from the start of the feed, you can use
 
 ```csharp
 // Process all strongly-typed content items in a streaming fashion.
-IDeliveryItemsFeed<Article> feed = client.GetItemsFeed<Article>();
-while(feed.HasMoreResults) 
+var query = client.GetItemsFeed<Article>()
+    .WithLanguage("en-US")
+    .OrderBy("system.last_modified", ascending: false);
+
+IDeliveryItemsFeed<Article> feed = query.Start();
+while (feed.HasMoreResults)
 {
-    IDeliveryItemsFeedResponse<Article> response = await feed.FetchNextBatchAsync();
-    foreach(Article article in response) {
+    var page = await feed.FetchNextBatchAsync();
+    foreach (var article in page.Items)
+    {
         ProcessArticle(article);
-    }client.GetItemsFeed
+    }
 }
 ```
 
@@ -26,12 +31,20 @@ Both filtering and language selection are identical to the `GetItems` method, ex
 
 ```csharp
 // Process selected and projected content items in a streaming fashion.
-IDeliveryItemsFeed<Brewer> feed = await client.GetItemsFeed<Brewer>(
-    new LanguageParameter("es-ES"),
-    new EqualsFilter("system.type", "brewer"),
-    new ElementsParameter("image", "price", "product_status", "processing"),
-    new OrderParameter("elements.product_name")
-);
+var query = client.GetItemsFeed<Brewer>()
+    .WithLanguage("es-ES")
+    .WithElements("image", "price", "product_status", "processing")
+    .OrderBy("elements.product_name");
+
+IDeliveryItemsFeed<Brewer> feed = query.Start();
+while (feed.HasMoreResults)
+{
+    var batch = await feed.FetchNextBatchAsync();
+    foreach (var brewer in batch.Items)
+    {
+        ProcessBrewer(brewer);
+    }
+}
 ```
 
 ### Limitations

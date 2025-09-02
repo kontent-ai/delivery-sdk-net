@@ -1,17 +1,17 @@
+using System.Threading;
 using Kontent.Ai.Delivery.Abstractions.QueryBuilders;
 using Kontent.Ai.Delivery.Abstractions.SharedModels;
 using Kontent.Ai.Delivery.ContentTypes;
-using Kontent.Ai.Delivery.Serialization;
-using Kontent.Ai.Delivery.SharedModels;
+using Kontent.Ai.Delivery.Extensions;
 
 namespace Kontent.Ai.Delivery.Api.QueryBuilders;
 
-internal sealed class TypeElementQuery(IDeliveryApi api, string contentTypeCodename, string elementCodename, DeliveryResponseProcessor responseProcessor, Func<bool?> getDefaultWaitForNewContent) : ITypeElementQuery
+/// <inheritdoc cref="ITypeElementQuery"/>
+internal sealed class TypeElementQuery(IDeliveryApi api, string contentTypeCodename, string elementCodename, Func<bool?> getDefaultWaitForNewContent) : ITypeElementQuery
 {
     private readonly IDeliveryApi _api = api;
     private readonly string _type = contentTypeCodename;
     private readonly string _element = elementCodename;
-    private readonly DeliveryResponseProcessor _responseProcessor = responseProcessor;
     private bool? _waitForLoadingNewContentOverride;
     private readonly Func<bool?> _getDefaultWaitForNewContent = getDefaultWaitForNewContent;
 
@@ -21,11 +21,13 @@ internal sealed class TypeElementQuery(IDeliveryApi api, string contentTypeCoden
         return this;
     }
 
-    public async Task<IDeliveryResult<IDeliveryElementResponse>> ExecuteAsync()
+    public async Task<IDeliveryResult<IContentElement>> ExecuteAsync(CancellationToken cancellationToken = default)
     {
-        bool? header = _waitForLoadingNewContentOverride ?? _getDefaultWaitForNewContent();
-        var raw = await _api.GetContentElementInternalAsync(_type, _element, header);
-        return await _responseProcessor.ProcessContentElementResponseAsync(raw);
+        bool? wait = _waitForLoadingNewContentOverride ?? _getDefaultWaitForNewContent();
+        var response = await _api.GetContentElementInternalAsync(_type, _element, wait).ConfigureAwait(false);
+        var deliveryResult = await response.ToDeliveryResultAsync().ConfigureAwait(false);
+
+        return deliveryResult.Map(response => response.Element);
     }
 }
 

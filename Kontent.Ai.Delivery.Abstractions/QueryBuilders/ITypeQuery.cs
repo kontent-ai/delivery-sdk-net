@@ -1,3 +1,4 @@
+using System.Threading;
 using System.Threading.Tasks;
 using Kontent.Ai.Delivery.Abstractions.SharedModels;
 
@@ -23,6 +24,7 @@ public interface ITypeQuery
     /// <summary>
     /// Executes the built query and returns a functional result.
     /// </summary>
+    /// <param name="cancellationToken">Cancellation token for the operation.</param>
     /// <returns>A delivery result containing the content type or errors.</returns>
-    Task<IDeliveryResult<IDeliveryTypeResponse>> ExecuteAsync();
+    Task<IDeliveryResult<IContentType>> ExecuteAsync(CancellationToken cancellationToken = default);
 }

@@ -1,15 +1,15 @@
+using System.Threading;
 using Kontent.Ai.Delivery.Abstractions.QueryBuilders;
 using Kontent.Ai.Delivery.Abstractions.SharedModels;
+using Kontent.Ai.Delivery.Extensions;
 using Kontent.Ai.Delivery.Languages;
-using Kontent.Ai.Delivery.Serialization;
-using Kontent.Ai.Delivery.SharedModels;
 
 namespace Kontent.Ai.Delivery.Api.QueryBuilders;
 
-internal sealed class LanguagesQuery(IDeliveryApi api, DeliveryResponseProcessor responseProcessor, Func<bool?> getDefaultWaitForNewContent) : ILanguagesQuery
+/// <inheritdoc cref="ILanguagesQuery"/>
+internal sealed class LanguagesQuery(IDeliveryApi api, Func<bool?> getDefaultWaitForNewContent) : ILanguagesQuery
 {
     private readonly IDeliveryApi _api = api;
-    private readonly DeliveryResponseProcessor _responseProcessor = responseProcessor;
     private readonly Func<bool?> _getDefaultWaitForNewContent = getDefaultWaitForNewContent;
     private LanguagesParams _params = new();
     private bool? _waitForLoadingNewContentOverride;
@@ -38,11 +38,13 @@ internal sealed class LanguagesQuery(IDeliveryApi api, DeliveryResponseProcessor
         return this;
     }
 
-    public async Task<IDeliveryResult<IDeliveryLanguageListingResponse>> ExecuteAsync()
+    public async Task<IDeliveryResult<IReadOnlyList<ILanguage>>> ExecuteAsync(CancellationToken cancellationToken = default)
     {
-        bool? header = _waitForLoadingNewContentOverride ?? _getDefaultWaitForNewContent();
-        var raw = await _api.GetLanguagesInternalAsync(_params, header);
-        return await _responseProcessor.ProcessLanguageListingResponseAsync(raw);
+        bool? wait = _waitForLoadingNewContentOverride ?? _getDefaultWaitForNewContent();
+        var response = await _api.GetLanguagesInternalAsync(_params, wait).ConfigureAwait(false);
+        var deliveryResult = await response.ToDeliveryResultAsync().ConfigureAwait(false);
+
+        return deliveryResult.Map(response => response.Languages.AsReadOnly());
     }
 }
 

@@ -1,4 +1,6 @@
 using System.Threading.Tasks;
+using System.Collections.Generic;
+using System.Threading;
 using Kontent.Ai.Delivery.Abstractions.SharedModels;
 
 namespace Kontent.Ai.Delivery.Abstractions.QueryBuilders;
@@ -6,34 +8,44 @@ namespace Kontent.Ai.Delivery.Abstractions.QueryBuilders;
 /// <summary>
 /// Fluent builder for enumerating content items.
 /// </summary>
-public interface IEnumerateItemsQuery<T>
+/// <typeparam name="TModel">Strongly typed elements model of the content items.</typeparam>
+public interface IEnumerateItemsQuery<TModel>
+    where TModel : IElementsModel
 {
     /// <summary>
     /// Sets the language codename for the request.
     /// </summary>
     /// <param name="languageCodename">Language codename.</param>
-    IEnumerateItemsQuery<T> WithLanguage(string languageCodename);
+    IEnumerateItemsQuery<TModel> WithLanguage(string languageCodename);
     /// <summary>
     /// Includes only specified element codenames in the response.
     /// </summary>
     /// <param name="elementCodenames">Element codenames to include.</param>
-    IEnumerateItemsQuery<T> WithElements(params string[] elementCodenames);
+    IEnumerateItemsQuery<TModel> WithElements(params string[] elementCodenames);
     /// <summary>
     /// Orders the items by the given path in ascending or descending order.
     /// </summary>
     /// <param name="elementOrAttributePath">Element or attribute path.</param>
     /// <param name="ascending">True for ascending; false for descending.</param>
-    IEnumerateItemsQuery<T> OrderBy(string elementOrAttributePath, bool ascending = true);
+    IEnumerateItemsQuery<TModel> OrderBy(string elementOrAttributePath, bool ascending = true);
 
     /// <summary>
     /// Overrides the global option for waiting on the newest content for this specific request.
     /// </summary>
     /// <param name="enabled">Whether to wait for loading new content.</param>
-    IEnumerateItemsQuery<T> WaitForLoadingNewContent(bool enabled = true);
+    IEnumerateItemsQuery<TModel> WaitForLoadingNewContent(bool enabled = true);
 
     /// <summary>
-    /// Executes the built query and returns a functional result.
+    /// Enumerates content items using the Delivery API items-feed endpoint.
     /// </summary>
-    /// <returns>A delivery result containing the items feed or errors.</returns>
-    Task<IDeliveryResult<IDeliveryItemsFeedResponse<T>>> ExecuteAsync();
+    /// <param name="cancellationToken">Cancellation token to stop enumeration and cancel in-flight requests.</param>
+    /// <returns>Async sequence of strongly typed content items.</returns>
+    IAsyncEnumerable<IContentItem<TModel>> EnumerateItemsAsync(CancellationToken cancellationToken = default);
+
+    /// <summary>
+    /// Convenience method that enumerates all items and returns them as a list.
+    /// </summary>
+    /// <param name="cancellationToken">Cancellation token to stop enumeration and cancel in-flight requests.</param>
+    /// <returns>All items aggregated into a read-only list.</returns>
+    Task<IReadOnlyList<IContentItem<TModel>>> EnumerateAllAsync(CancellationToken cancellationToken = default);
 }

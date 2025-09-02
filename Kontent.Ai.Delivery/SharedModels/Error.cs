@@ -2,22 +2,23 @@
 
 namespace Kontent.Ai.Delivery.SharedModels
 {
-    internal sealed class Error : IError
+    /// <inheritdoc cref="IError" />
+    internal sealed record Error : IError
     {
         /// <inheritdoc/>
         [JsonPropertyName("message")]
-        public required string Message { get; internal set; }
+        public required string Message { get; init; }
 
         /// <inheritdoc/>
         [JsonPropertyName("request_id")]
-        public required string RequestId { get; internal set; }
+        public string? RequestId { get; init; }
 
         /// <inheritdoc/>
         [JsonPropertyName("error_code")]
-        public int ErrorCode { get; internal set; }
+        public int? ErrorCode { get; init; }
 
         /// <inheritdoc/>
         [JsonPropertyName("specific_code")]
-        public int SpecificCode { get; internal set; }
+        public int? SpecificCode { get; init; }
     }
 }

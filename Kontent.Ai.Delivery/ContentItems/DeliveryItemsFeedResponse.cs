@@ -1,20 +1,14 @@
- 
+using System.Text.Json.Serialization;
 
-namespace Kontent.Ai.Delivery.ContentItems
+namespace Kontent.Ai.Delivery.ContentItems;
+
+/// <inheritdoc cref="IDeliveryItemsFeedResponse{T}" />
+internal sealed record DeliveryItemsFeedResponse<TModel> : IDeliveryItemsFeedResponse<TModel>
+    where TModel : IElementsModel
 {
-    /// <inheritdoc cref="IDeliveryItemsFeedResponse{T}" />
-    internal class DeliveryItemsFeedResponse<T> : IDeliveryItemsFeedResponse<T>
-    {
-        /// <inheritdoc/>
-        public IList<T> Items { get; set; }
+    /// <inheritdoc/>
+    [JsonPropertyName("items")]
+    public required IReadOnlyList<ContentItem<TModel>> Items { get; init; } = [];
 
-        /// <summary>
-        /// Initializes a new instance of the <see cref="DeliveryItemsFeedResponse{T}"/> class.
-        /// </summary>
-        /// <param name="items">A list of content items.</param>
-        internal DeliveryItemsFeedResponse(IList<T> items)
-        {
-            Items = items;
-        }
-    }
+    IReadOnlyList<IContentItem<TModel>> IDeliveryItemsFeedResponse<TModel>.Items => Items;
 }

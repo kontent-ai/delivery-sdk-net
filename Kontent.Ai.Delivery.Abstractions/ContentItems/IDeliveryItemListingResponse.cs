@@ -5,12 +5,13 @@ namespace Kontent.Ai.Delivery.Abstractions
     /// <summary>
     /// Represents a response from Kontent.ai Delivery API that contains a list of content items.
     /// </summary>
-    /// <typeparam name="T">The type of content items in the response.</typeparam>
-    public interface IDeliveryItemListingResponse<T> : IPageable
+    /// <typeparam name="TModel">The type of content items in the response.</typeparam>
+    public interface IDeliveryItemListingResponse<TModel> : IPageable
+        where TModel : IElementsModel
     {
         /// <summary>
         /// Gets a read-only list of content items.
         /// </summary>
-        IList<T> Items { get; }
+        IReadOnlyList<IContentItem<TModel>> Items { get; }
     }
 }

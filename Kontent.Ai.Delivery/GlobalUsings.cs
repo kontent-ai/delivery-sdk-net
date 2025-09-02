@@ -14,7 +14,6 @@ global using System;
 global using System.Collections.Generic;
 global using System.Linq;
 global using System.Net.Http;
-global using Kontent.Ai.Delivery.Internal;
 
 global using Scalar = OneOf.OneOf<string, double, System.DateTime, bool>;
 global using RangeTuple = OneOf.OneOf<(double Lower, double Upper), (System.DateTime Lower, System.DateTime Upper)>;

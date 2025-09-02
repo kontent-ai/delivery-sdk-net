@@ -1,20 +1,17 @@
+using System.Threading;
 using Kontent.Ai.Delivery.Abstractions.QueryBuilders;
 using Kontent.Ai.Delivery.Abstractions.SharedModels;
-using Kontent.Ai.Delivery.ContentTypes;
-using Kontent.Ai.Delivery.Serialization;
-using Kontent.Ai.Delivery.SharedModels;
 
 namespace Kontent.Ai.Delivery.Api.QueryBuilders;
 
+/// <inheritdoc cref="ITypeQuery"/>
 internal sealed class TypeQuery(
     IDeliveryApi api,
     string codename,
-    DeliveryResponseProcessor responseProcessor,
     Func<bool?> getDefaultWaitForNewContent) : ITypeQuery
 {
     private readonly IDeliveryApi _api = api;
     private readonly string _codename = codename;
-    private readonly DeliveryResponseProcessor _responseProcessor = responseProcessor;
     private SingleTypeParams _params = new();
     private bool? _waitForLoadingNewContentOverride;
     private readonly Func<bool?> _getDefaultWaitForNewContent = getDefaultWaitForNewContent;
@@ -31,11 +28,13 @@ internal sealed class TypeQuery(
         return this;
     }
 
-    public async Task<IDeliveryResult<IDeliveryTypeResponse>> ExecuteAsync()
+    public async Task<IDeliveryResult<IContentType>> ExecuteAsync(CancellationToken cancellationToken = default)
     {
-        bool? header = _waitForLoadingNewContentOverride ?? _getDefaultWaitForNewContent();
-        var raw = await _api.GetTypeInternalAsync(_codename, _params, header);
-        return await _responseProcessor.ProcessTypeResponseAsync(raw);
+        bool? wait = _waitForLoadingNewContentOverride ?? _getDefaultWaitForNewContent();
+        var response = await _api.GetTypeInternalAsync(_codename, _params, wait).ConfigureAwait(false);
+        var deliveryResult = await response.ToDeliveryResultAsync().ConfigureAwait(false);
+
+        return deliveryResult.Map(response => response.Type);
     }
 }
 

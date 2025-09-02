@@ -2,23 +2,12 @@
 
 namespace Kontent.Ai.Delivery.ContentItems
 {
-    /// <inheritdoc cref="IDeliveryItemResponse{T}" />
-    internal sealed class DeliveryItemResponse<T> : IDeliveryItemResponse<T>
+    /// <inheritdoc cref="IDeliveryItemResponse{TModel}" />
+    internal sealed record DeliveryItemResponse<TModel> : IDeliveryItemResponse<TModel>
+        where TModel : IElementsModel
     {
         /// <inheritdoc/>
-        public T Item
-        {
-            get;
-        }
-
-        /// <summary>
-        /// Initializes a new instance of the <see cref="DeliveryItemResponse{T}"/> class.
-        /// </summary>
-        /// <param name="item">Content item of a specific type.</param>
-        [JsonConstructor]
-        internal DeliveryItemResponse(T item)
-        {
-            Item = item;
-        }
+        [JsonPropertyName("item")]
+        public required IContentItem<TModel> Item { get; init; }
     }
 }

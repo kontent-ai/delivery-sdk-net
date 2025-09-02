@@ -1,3 +1,4 @@
+using System.Threading;
 using System.Threading.Tasks;
 using Kontent.Ai.Delivery.Abstractions.SharedModels;
 
@@ -17,6 +18,7 @@ public interface ITypeElementQuery
     /// <summary>
     /// Executes the built query and returns a functional result.
     /// </summary>
+    /// <param name="cancellationToken">Cancellation token for the operation.</param>
     /// <returns>A delivery result containing the content element or errors.</returns>
-    Task<IDeliveryResult<IDeliveryElementResponse>> ExecuteAsync();
+    Task<IDeliveryResult<IContentElement>> ExecuteAsync(CancellationToken cancellationToken = default);
 }
