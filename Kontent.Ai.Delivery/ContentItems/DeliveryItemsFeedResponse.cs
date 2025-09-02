@@ -1,5 +1,3 @@
- 
-
 namespace Kontent.Ai.Delivery.ContentItems
 {
     /// <inheritdoc cref="IDeliveryItemsFeedResponse{T}" />
