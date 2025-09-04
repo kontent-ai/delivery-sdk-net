@@ -6,11 +6,11 @@ using Kontent.Ai.Delivery.Extensions;
 
 namespace Kontent.Ai.Delivery.Api.QueryBuilders;
 
-/// <inheritdoc cref="ISingleItemQueryDynamic"/>
-internal sealed class SingleItemQueryDynamic(
+/// <inheritdoc cref="IDynamicItemQuery"/>
+internal sealed class DynamicItemQuery(
     IDeliveryApi api,
     string codename,
-    Func<bool?> getDefaultWaitForNewContent) : ISingleItemQueryDynamic
+    Func<bool?> getDefaultWaitForNewContent) : IDynamicItemQuery
 {
     private readonly IDeliveryApi _api = api;
     private readonly string _codename = codename;
@@ -18,31 +18,31 @@ internal sealed class SingleItemQueryDynamic(
     private SingleItemParams _params = new();
     private bool? _waitForLoadingNewContentOverride;
 
-    public ISingleItemQueryDynamic WithLanguage(string languageCodename)
+    public IDynamicItemQuery WithLanguage(string languageCodename)
     {
         _params = _params with { Language = languageCodename };
         return this;
     }
 
-    public ISingleItemQueryDynamic WithElements(params string[] elementCodenames)
+    public IDynamicItemQuery WithElements(params string[] elementCodenames)
     {
         _params = _params with { Elements = elementCodenames };
         return this;
     }
 
-    public ISingleItemQueryDynamic WithoutElements(params string[] elementCodenames)
+    public IDynamicItemQuery WithoutElements(params string[] elementCodenames)
     {
         _params = _params with { ExcludeElements = elementCodenames };
         return this;
     }
 
-    public ISingleItemQueryDynamic Depth(int depth)
+    public IDynamicItemQuery Depth(int depth)
     {
         _params = _params with { Depth = depth };
         return this;
     }
 
-    public ISingleItemQueryDynamic WaitForLoadingNewContent(bool enabled = true)
+    public IDynamicItemQuery WaitForLoadingNewContent(bool enabled = true)
     {
         _waitForLoadingNewContentOverride = enabled;
         return this;

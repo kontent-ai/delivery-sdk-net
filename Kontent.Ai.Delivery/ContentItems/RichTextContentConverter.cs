@@ -6,7 +6,7 @@ using Kontent.Ai.Delivery.ContentItems.RichText.Blocks;
 
 namespace Kontent.Ai.Delivery.ContentItems
 {
-    internal class RichTextContentConverter : IPropertyValueConverter<string>
+    internal class RichTextContentConverter : IPropertyValueConverter<string, IRichTextContent>
     {
         public IHtmlParser Parser { get; }
 
@@ -15,14 +15,14 @@ namespace Kontent.Ai.Delivery.ContentItems
             Parser = parser;
         }
 
-        public async Task<object> GetPropertyValueAsync<TElement>(PropertyInfo property, TElement contentElement, ResolvingContext context) where TElement : IContentElementValue<string>
+        public async Task<IRichTextContent?> GetPropertyValueAsync<TElement>(PropertyInfo property, TElement contentElement, ResolvingContext context) where TElement : IContentElementValue<string>
         {
             if (!typeof(IRichTextContent).IsAssignableFrom(property.PropertyType))
             {
                 throw new InvalidOperationException($"Type of property {property.Name} must implement {nameof(IRichTextContent)} in order to receive rich text content.");
             }
 
-            if (!(contentElement is IRichTextElementValue element))
+            if (contentElement is not IRichTextElementValue element)
             {
                 return null;
             }

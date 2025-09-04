@@ -10,49 +10,49 @@ namespace Kontent.Ai.Delivery.Abstractions.QueryBuilders;
 /// <summary>
 /// Fluent builder for retrieving multiple content items with dynamic content mapping.
 /// </summary>
-public interface IMultipleItemsQueryDynamic
+public interface IDynamicItemsQuery
 {
     /// <summary>
     /// Sets the language codename for the request.
     /// </summary>
     /// <param name="languageCodename">Language codename.</param>
     /// <returns>The query builder for method chaining.</returns>
-    IMultipleItemsQueryDynamic WithLanguage(string languageCodename);
+    IDynamicItemsQuery WithLanguage(string languageCodename);
 
     /// <summary>
     /// Includes only specified element codenames in the response.
     /// </summary>
     /// <param name="elementCodenames">Element codenames to include.</param>
     /// <returns>The query builder for method chaining.</returns>
-    IMultipleItemsQueryDynamic WithElements(params string[] elementCodenames);
+    IDynamicItemsQuery WithElements(params string[] elementCodenames);
 
     /// <summary>
     /// Excludes specified element codenames from the response.
     /// </summary>
     /// <param name="elementCodenames">Element codenames to exclude.</param>
     /// <returns>The query builder for method chaining.</returns>
-    IMultipleItemsQueryDynamic WithoutElements(params string[] elementCodenames);
+    IDynamicItemsQuery WithoutElements(params string[] elementCodenames);
 
     /// <summary>
     /// Sets the linked items depth.
     /// </summary>
     /// <param name="depth">Depth value.</param>
     /// <returns>The query builder for method chaining.</returns>
-    IMultipleItemsQueryDynamic Depth(int depth);
+    IDynamicItemsQuery Depth(int depth);
 
     /// <summary>
     /// Skips the specified number of content items.
     /// </summary>
     /// <param name="skip">Number of items to skip.</param>
     /// <returns>The query builder for method chaining.</returns>
-    IMultipleItemsQueryDynamic Skip(int skip);
+    IDynamicItemsQuery Skip(int skip);
 
     /// <summary>
     /// Limits the number of content items.
     /// </summary>
     /// <param name="limit">Maximum number of items to retrieve.</param>
     /// <returns>The query builder for method chaining.</returns>
-    IMultipleItemsQueryDynamic Limit(int limit);
+    IDynamicItemsQuery Limit(int limit);
 
     /// <summary>
     /// Orders the results by the specified element or system attribute.
@@ -60,34 +60,34 @@ public interface IMultipleItemsQueryDynamic
     /// <param name="elementOrAttributePath">Element or attribute path for ordering.</param>
     /// <param name="ascending">Whether to order in ascending order.</param>
     /// <returns>The query builder for method chaining.</returns>
-    IMultipleItemsQueryDynamic OrderBy(string elementOrAttributePath, bool ascending = true);
+    IDynamicItemsQuery OrderBy(string elementOrAttributePath, bool ascending = true);
 
     /// <summary>
     /// Includes the total count in the response for pagination purposes.
     /// </summary>
     /// <returns>The query builder for method chaining.</returns>
-    IMultipleItemsQueryDynamic WithTotalCount();
+    IDynamicItemsQuery WithTotalCount();
 
     /// <summary>
     /// Overrides the global option for waiting on the newest content for this specific request.
     /// </summary>
     /// <param name="enabled">Whether to wait for loading new content.</param>
     /// <returns>The query builder for method chaining.</returns>
-    IMultipleItemsQueryDynamic WaitForLoadingNewContent(bool enabled = true);
+    IDynamicItemsQuery WaitForLoadingNewContent(bool enabled = true);
 
     /// <summary>
     /// Adds a filter using the fluent filter builder.
     /// </summary>
     /// <param name="filterBuilder">Function to build the filter.</param>
     /// <returns>The query builder for method chaining.</returns>
-    IMultipleItemsQueryDynamic Filter(Func<IItemFilters, IFilter> filterBuilder);
+    IDynamicItemsQuery Filter(Func<IItemFilters, IFilter> filterBuilder);
 
     /// <summary>
     /// Adds a pre-built filter to the query.
     /// </summary>
     /// <param name="filter">The filter to add.</param>
     /// <returns>The query builder for method chaining.</returns>
-    IMultipleItemsQueryDynamic Where(IFilter filter);
+    IDynamicItemsQuery Where(IFilter filter);
 
     /// <summary>
     /// Executes the built query and returns a functional result.

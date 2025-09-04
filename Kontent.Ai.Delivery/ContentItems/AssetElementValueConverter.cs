@@ -4,7 +4,7 @@ using Microsoft.Extensions.Options;
 
 namespace Kontent.Ai.Delivery.ContentItems
 {
-    internal class AssetElementValueConverter : IPropertyValueConverter<IEnumerable<IAsset>>
+    internal class AssetElementValueConverter : IPropertyValueConverter<IEnumerable<IAsset>, IList<IAsset>>
     {
         public IOptionsMonitor<DeliveryOptions> Options { get; }
 
@@ -13,7 +13,7 @@ namespace Kontent.Ai.Delivery.ContentItems
             Options = options;
         }
 
-        public Task<object> GetPropertyValueAsync<TElement>(PropertyInfo property, TElement contentElement, ResolvingContext context) where TElement : IContentElementValue<IEnumerable<IAsset>>
+        public Task<IList<IAsset>?> GetPropertyValueAsync<TElement>(PropertyInfo property, TElement contentElement, ResolvingContext context) where TElement : IContentElementValue<IEnumerable<IAsset>>
         {
             if (!typeof(IEnumerable<IAsset>).IsAssignableFrom(property.PropertyType))
             {
@@ -22,7 +22,7 @@ namespace Kontent.Ai.Delivery.ContentItems
 
             if (!(contentElement is AssetElementValue assetElementValue))
             {
-                return null;
+                return Task.FromResult<IList<IAsset>?>(null);
             }
 
             var assets = assetElementValue.Value
@@ -40,7 +40,7 @@ namespace Kontent.Ai.Delivery.ContentItems
                 .Cast<IAsset>()
                 .ToList();
 
-            return Task.FromResult((object)assets);
+            return Task.FromResult<IList<IAsset>?>(assets);
         }
 
         private string ResolveAssetUrl(IAsset asset)

@@ -35,14 +35,14 @@ namespace Kontent.Ai.Delivery
             return new ItemQuery<T>(_deliveryApi, codename, GetDefaultWaitForLoadingNewContent);
         }
 
-        public ISingleItemQueryDynamic GetItem(string codename)
+        public IDynamicItemQuery GetItem(string codename)
         {
             if (string.IsNullOrEmpty(codename))
             {
                 throw new ArgumentException("Entered item codename is not valid.", nameof(codename));
             }
 
-            return new SingleItemQueryDynamic(_deliveryApi, codename, GetDefaultWaitForLoadingNewContent);
+            return new DynamicItemQuery(_deliveryApi, codename, GetDefaultWaitForLoadingNewContent);
         }
 
         public IItemsQuery<T> GetItems<T>() where T : IElementsModel
@@ -50,9 +50,9 @@ namespace Kontent.Ai.Delivery
             return new ItemsQuery<T>(_deliveryApi, GetDefaultWaitForLoadingNewContent);
         }
 
-        public IMultipleItemsQueryDynamic GetItems()
+        public IDynamicItemsQuery GetItems()
         {
-            return new MultipleItemsQueryDynamic(_deliveryApi, GetDefaultWaitForLoadingNewContent);
+            return new DynamicItemsQuery(_deliveryApi, GetDefaultWaitForLoadingNewContent);
         }
 
         public IEnumerateItemsQuery<T> GetItemsFeed<T>() where T : IElementsModel

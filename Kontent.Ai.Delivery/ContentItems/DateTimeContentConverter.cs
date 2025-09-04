@@ -3,13 +3,13 @@ using System.Reflection;
 
 namespace Kontent.Ai.Delivery.ContentItems
 {
-    internal class DateTimeContentConverter : IPropertyValueConverter<DateTime?>
+    internal class DateTimeContentConverter : IPropertyValueConverter<DateTime?, IDateTimeContent>
     {
         public DateTimeContentConverter()
         {
         }
 
-        public Task<object> GetPropertyValueAsync<TElement>(
+        public Task<IDateTimeContent?> GetPropertyValueAsync<TElement>(
             PropertyInfo property,
             TElement contentElement,
             ResolvingContext context
@@ -22,7 +22,7 @@ namespace Kontent.Ai.Delivery.ContentItems
 
             if (contentElement is not IDateTimeElementValue element)
             {
-                return Task.FromResult((object)null);
+                return Task.FromResult<IDateTimeContent?>(null);
             }
 
             var displayTimezone = element.DisplayTimezone;
@@ -34,7 +34,7 @@ namespace Kontent.Ai.Delivery.ContentItems
                 Value = value
             };
 
-            return Task.FromResult((object)dateTimeContent);
+            return Task.FromResult<IDateTimeContent?>(dateTimeContent);
         }
     }
 }

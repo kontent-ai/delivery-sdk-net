@@ -5,46 +5,38 @@ namespace Kontent.Ai.Delivery.ContentItems
 {
     /// <inheritdoc/>
     [DebuggerDisplay("Name = {" + nameof(Name) + "}")]
-    internal sealed class Asset : IAsset
+    internal sealed record Asset : IAsset
     {
         /// <inheritdoc/>
         [JsonPropertyName("name")]
-        public string Name { get; internal set; }
+        public required string Name { get; init; }
 
         /// <inheritdoc/>
         [JsonPropertyName("description")]
-        public string Description { get; internal set; }
+        public string Description { get; init; } = string.Empty;
 
         /// <inheritdoc/>
         [JsonPropertyName("type")]
-        public string Type { get; internal set; }
+        public required string Type { get; init; }
 
         /// <inheritdoc/>
         [JsonPropertyName("size")]
-        public int Size { get; internal set; }
+        public required int Size { get; init; }
 
         /// <inheritdoc/>
         [JsonPropertyName("url")]
-        public string Url { get; internal set; }
+        public required string Url { get; init; }
 
         /// <inheritdoc/>
         [JsonPropertyName("width")]
-        public int Width { get; internal set; }
+        public int Width { get; init; }
 
         /// <inheritdoc/>
         [JsonPropertyName("height")]
-        public int Height { get; internal set; }
+        public int Height { get; init; }
 
         /// <inheritdoc/>
         [JsonPropertyName("renditions")]
-        public Dictionary<string, IAssetRendition> Renditions { get; internal set; }
-
-        /// <summary>
-        /// Initializes a new instance of the <see cref="Asset"/> class.
-        /// </summary>
-        [JsonConstructor]
-        public Asset()
-        {
-        }
+        public required Dictionary<string, IAssetRendition> Renditions { get; init; }
     }
 }
