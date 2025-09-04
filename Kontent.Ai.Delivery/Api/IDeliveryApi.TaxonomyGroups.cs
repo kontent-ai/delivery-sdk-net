@@ -1,4 +1,4 @@
-using Kontent.Ai.Delivery.Api.ResponseModels;
+using Kontent.Ai.Delivery.TaxonomyGroups;
 
 namespace Kontent.Ai.Delivery.Api;
 
@@ -12,7 +12,7 @@ public partial interface IDeliveryApi
     /// <param name="waitForLoadingNewContent">Wait for loading new content header.</param>
     /// <returns>Raw JSON response containing the taxonomy group.</returns>
     [Get("/taxonomies/{codename}")]
-    internal Task<IApiResponse<RawTaxonomyResponse>> GetTaxonomyInternalAsync(
+    internal Task<IApiResponse<DeliveryTaxonomyResponse>> GetTaxonomyInternalAsync(
         string codename,
         [Header(HttpRequestHeadersExtensions.WaitForLoadingNewContentHeaderName)] bool? waitForLoadingNewContent = null);
 
@@ -23,7 +23,7 @@ public partial interface IDeliveryApi
     /// <param name="waitForLoadingNewContent">Wait for loading new content header.</param>
     /// <returns>Raw JSON response containing the taxonomy groups.</returns>
     [Get("/taxonomies")]
-    internal Task<IApiResponse<RawTaxonomyListingResponse>> GetTaxonomiesInternalAsync(
-        [Query] QueryParams.TaxonomyGroups.ListTaxonomyGroupsParams? queryParameters = null,
+    internal Task<IApiResponse<DeliveryTaxonomyListingResponse>> GetTaxonomiesInternalAsync(
+        [Query] ListTaxonomyGroupsParams? queryParameters = null,
         [Header(HttpRequestHeadersExtensions.WaitForLoadingNewContentHeaderName)] bool? waitForLoadingNewContent = null);
 }

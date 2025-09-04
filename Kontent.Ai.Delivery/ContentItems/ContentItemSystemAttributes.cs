@@ -5,54 +5,46 @@ namespace Kontent.Ai.Delivery.ContentItems
 {
     /// <inheritdoc/>
     [DebuggerDisplay("Id = {" + nameof(Id) + "}")]
-    internal sealed class ContentItemSystemAttributes : IContentItemSystemAttributes
+    internal sealed record ContentItemSystemAttributes : IContentItemSystemAttributes
     {
         /// <inheritdoc/>
         [JsonPropertyName("id")]
-        public string Id { get; internal set; }
+        public required string Id { get; init; }
 
         /// <inheritdoc/>
         [JsonPropertyName("name")]
-        public string Name { get; internal set; }
+        public required string Name { get; init; }
 
         /// <inheritdoc/>
         [JsonPropertyName("codename")]
-        public string Codename { get; internal set; }
+        public required string Codename { get; init; }
 
         /// <inheritdoc/>
         [JsonPropertyName("type")]
-        public string Type { get; internal set; }
+        public required string Type { get; init; }
 
         /// <inheritdoc/>
         [JsonPropertyName("sitemap_locations")]
-        public IList<string> SitemapLocation { get; internal set; }
+        public required IList<string> SitemapLocation { get; init; }
 
         /// <inheritdoc/>
         [JsonPropertyName("last_modified")]
-        public DateTime LastModified { get; internal set; }
+        public required DateTime LastModified { get; init; }
 
         /// <inheritdoc/>
         [JsonPropertyName("language")]
-        public string Language { get; internal set; }
+        public required string Language { get; init; }
 
         /// <inheritdoc/>
         [JsonPropertyName("collection")]
-        public string Collection { get; internal set; }
+        public required string Collection { get; init; }
 
         /// <inheritdoc/>
         [JsonPropertyName("workflow")]
-        public string Workflow { get; internal set; }
+        public required string Workflow { get; init; }
 
         /// <inheritdoc/>
         [JsonPropertyName("workflow_step")]
-        public string WorkflowStep { get; internal set; }
-
-        /// <summary>
-        /// Initializes a new instance of the <see cref="ContentItemSystemAttributes"/> class.
-        /// </summary>
-        [JsonConstructor]
-        public ContentItemSystemAttributes()
-        {
-        }
+        public required string WorkflowStep { get; init; }
     }
 }

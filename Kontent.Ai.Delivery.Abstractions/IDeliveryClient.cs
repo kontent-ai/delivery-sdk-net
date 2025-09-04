@@ -14,40 +14,40 @@ namespace Kontent.Ai.Delivery.Abstractions
         /// <typeparam name="T">Type of the model. (Or <see cref="object"/> if the return type is not yet known.)</typeparam>
         /// <param name="codename">The codename of a content item.</param>
         /// <returns>A query builder that can be configured and executed to retrieve the content item.</returns>
-        ISingleItemQuery<T> GetItem<T>(string codename);
+        IItemQuery<T> GetItem<T>(string codename) where T : IElementsModel;
 
         /// <summary>
         /// Returns a query builder for retrieving a single content item with runtime/dynamic mapping.
         /// </summary>
         /// <param name="codename">The codename of a content item.</param>
         /// <returns>A query builder that can be configured and executed to retrieve the content item.</returns>
-        ISingleItemQuery<object> GetItem(string codename);
+        ISingleItemQueryDynamic GetItem(string codename);
 
         /// <summary>
         /// Returns a query builder for retrieving multiple strongly typed content items.
         /// </summary>
         /// <typeparam name="T">Type of the model. (Or <see cref="object"/> if the return type is not yet known.)</typeparam>
         /// <returns>A query builder that can be configured and executed to retrieve content items.</returns>
-        IMultipleItemsQuery<T> GetItems<T>();
+        IItemsQuery<T> GetItems<T>() where T : IElementsModel;
 
         /// <summary>
         /// Returns a query builder for retrieving multiple content items with runtime/dynamic mapping.
         /// </summary>
         /// <returns>A query builder that can be configured and executed to retrieve content items.</returns>
-        IMultipleItemsQuery<object> GetItems();
+        IMultipleItemsQueryDynamic GetItems();
 
         /// <summary>
         /// Returns a query builder for enumerating through strongly typed content items using a feed.
         /// </summary>
         /// <typeparam name="T">Type of the model. (Or <see cref="object"/> if the return type is not yet known.)</typeparam>
         /// <returns>A query builder that can be configured and executed to enumerate through content items.</returns>
-        IEnumerateItemsQuery<T> GetItemsFeed<T>();
+        IEnumerateItemsQuery<T> GetItemsFeed<T>() where T : IElementsModel;
 
         /// <summary>
         /// Returns a query builder for enumerating through content items using a feed with runtime/dynamic mapping.
         /// </summary>
         /// <returns>A query builder that can be configured and executed to enumerate through content items.</returns>
-        IEnumerateItemsQuery<object> GetItemsFeed();
+        IEnumerateItemsQuery<IElementsModel> GetItemsFeed();
 
         /// <summary>
         /// Returns a query builder for retrieving a single content type.

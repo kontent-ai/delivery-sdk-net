@@ -1,4 +1,4 @@
-using Kontent.Ai.Delivery.Api.ResponseModels;
+using Kontent.Ai.Delivery.ContentTypes;
 
 namespace Kontent.Ai.Delivery.Api;
 
@@ -13,7 +13,7 @@ public partial interface IDeliveryApi
     /// <param name="waitForLoadingNewContent">Wait for loading new content header.</param>
     /// <returns>Raw JSON response containing the content type.</returns>
     [Get("/types/{codename}")]
-    internal Task<IApiResponse<RawContentTypeResponse>> GetTypeInternalAsync(
+    internal Task<IApiResponse<DeliveryTypeResponse>> GetTypeInternalAsync(
         string codename,
         [Query] SingleTypeParams? queryParameters = null,
         [Header(HttpRequestHeadersExtensions.WaitForLoadingNewContentHeaderName)] bool? waitForLoadingNewContent = null);
@@ -25,7 +25,7 @@ public partial interface IDeliveryApi
     /// <param name="waitForLoadingNewContent">Wait for loading new content header.</param>
     /// <returns>Raw JSON response containing the content types.</returns>
     [Get("/types")]
-    internal Task<IApiResponse<RawContentTypeListingResponse>> GetTypesInternalAsync(
+    internal Task<IApiResponse<DeliveryTypeListingResponse>> GetTypesInternalAsync(
         [Query] ListTypesParams? queryParameters = null,
         [Header(HttpRequestHeadersExtensions.WaitForLoadingNewContentHeaderName)] bool? waitForLoadingNewContent = null);
 
@@ -37,7 +37,7 @@ public partial interface IDeliveryApi
     /// <param name="waitForLoadingNewContent">Wait for loading new content header.</param>
     /// <returns>Raw JSON response containing the content element.</returns>
     [Get("/types/{contentTypeCodename}/elements/{contentElementCodename}")]
-    internal Task<IApiResponse<RawContentElementResponse>> GetContentElementInternalAsync(
+    internal Task<IApiResponse<DeliveryElementResponse>> GetContentElementInternalAsync(
         string contentTypeCodename,
         string contentElementCodename,
         [Header(HttpRequestHeadersExtensions.WaitForLoadingNewContentHeaderName)] bool? waitForLoadingNewContent = null);

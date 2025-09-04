@@ -1,46 +1,78 @@
+using Kontent.Ai.Delivery.Abstractions;
 using Kontent.Ai.Delivery.Abstractions.QueryBuilders;
 using Kontent.Ai.Delivery.Abstractions.SharedModels;
-using Kontent.Ai.Delivery.Services;
+using Kontent.Ai.Delivery.Extensions;
+using Kontent.Ai.Delivery.ContentItems;
+using System.Threading;
+using System.Runtime.CompilerServices;
+using System.Collections.Generic;
 
 namespace Kontent.Ai.Delivery.Api.QueryBuilders;
 
-internal sealed class EnumerateItemsQuery<T>(IDeliveryApi api, DeliveryResponseProcessor responseProcessor, Func<bool?> getDefaultWaitForNewContent) : IEnumerateItemsQuery<T>
+/// <inheritdoc cref="IEnumerateItemsQuery{TModel}"/>
+internal sealed class EnumerateItemsQuery<TModel>(IDeliveryApi api, Func<bool?> getDefaultWaitForNewContent) : IEnumerateItemsQuery<TModel>
+    where TModel : IElementsModel
 {
     private readonly IDeliveryApi _api = api;
-    private readonly DeliveryResponseProcessor _responseProcessor = responseProcessor;
     private readonly Func<bool?> _getDefaultWaitForNewContent = getDefaultWaitForNewContent;
     private EnumItemsParams _params = new();
     private bool? _waitForLoadingNewContentOverride;
 
-    public IEnumerateItemsQuery<T> WithLanguage(string languageCodename)
+    public IEnumerateItemsQuery<TModel> WithLanguage(string languageCodename)
     {
         _params = _params with { Language = languageCodename };
         return this;
     }
 
-    public IEnumerateItemsQuery<T> WithElements(params string[] elementCodenames)
+    public IEnumerateItemsQuery<TModel> WithElements(params string[] elementCodenames)
     {
         _params = _params with { Elements = elementCodenames };
         return this;
     }
 
-    public IEnumerateItemsQuery<T> OrderBy(string elementOrAttributePath, bool ascending = true)
+    public IEnumerateItemsQuery<TModel> OrderBy(string elementOrAttributePath, bool ascending = true)
     {
         _params = _params with { OrderBy = ascending ? $"{elementOrAttributePath}[asc]" : $"{elementOrAttributePath}[desc]" };
         return this;
     }
 
-    public IEnumerateItemsQuery<T> WaitForLoadingNewContent(bool enabled = true)
+    public IEnumerateItemsQuery<TModel> WaitForLoadingNewContent(bool enabled = true)
     {
         _waitForLoadingNewContentOverride = enabled;
         return this;
     }
 
-    public async Task<IDeliveryResult<IDeliveryItemsFeedResponse<T>>> ExecuteAsync()
+    public async IAsyncEnumerable<IContentItem<TModel>> EnumerateItemsAsync([EnumeratorCancellation] CancellationToken cancellationToken = default)
     {
-        bool? header = _waitForLoadingNewContentOverride ?? _getDefaultWaitForNewContent();
-        var raw = await _api.GetItemsFeedInternalAsync(_params, header);
-        // Items feed uses raw items; reuse processor to ensure consistent wrapping
-        return await _responseProcessor.ProcessItemsFeedResponseAsync<T>(raw);
+        bool? wait = _waitForLoadingNewContentOverride ?? _getDefaultWaitForNewContent();
+        string? token = null;
+        while (true)
+        {
+            var resp = await _api
+                .GetItemsFeedInternalAsync<TModel>(_params, token, wait, cancellationToken)
+                .ConfigureAwait(false);
+
+            if (!resp.IsSuccessStatusCode || resp.Content is null)
+                yield break;
+
+            foreach (var item in resp.Content.Items)
+            {
+                yield return item;
+            }
+
+            token = resp.Continuation();
+            if (string.IsNullOrEmpty(token))
+                yield break;
+        }
+    }
+
+    public async Task<IReadOnlyList<IContentItem<TModel>>> EnumerateAllAsync(CancellationToken cancellationToken = default)
+    {
+        var results = new List<IContentItem<TModel>>();
+        await foreach (var item in EnumerateItemsAsync(cancellationToken).WithCancellation(cancellationToken))
+        {
+            results.Add(item);
+        }
+        return results.AsReadOnly();
     }
 }

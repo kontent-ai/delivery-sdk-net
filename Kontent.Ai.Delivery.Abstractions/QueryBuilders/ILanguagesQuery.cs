@@ -1,3 +1,5 @@
+using System.Threading;
+using System.Collections.Generic;
 using System.Threading.Tasks;
 using Kontent.Ai.Delivery.Abstractions.SharedModels;
 
@@ -36,6 +38,7 @@ public interface ILanguagesQuery
     /// <summary>
     /// Executes the built query and returns a functional result.
     /// </summary>
+    /// <param name="cancellationToken">Cancellation token for the operation.</param>
     /// <returns>A delivery result containing the languages or errors.</returns>
-    Task<IDeliveryResult<IDeliveryLanguageListingResponse>> ExecuteAsync();
+    Task<IDeliveryResult<IReadOnlyList<ILanguage>>> ExecuteAsync(CancellationToken cancellationToken = default);
 }

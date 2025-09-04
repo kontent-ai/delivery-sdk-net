@@ -1,4 +1,4 @@
-using Kontent.Ai.Delivery.Api.ResponseModels;
+using Kontent.Ai.Delivery.Languages;
 
 namespace Kontent.Ai.Delivery.Api;
 
@@ -11,7 +11,7 @@ public partial interface IDeliveryApi
     /// <param name="waitForLoadingNewContent">Wait for loading new content header.</param>
     /// <returns>Raw JSON response containing the languages.</returns>
     [Get("/languages")]
-    internal Task<IApiResponse<RawLanguageListingResponse>> GetLanguagesInternalAsync(
+    internal Task<IApiResponse<DeliveryLanguageListingResponse>> GetLanguagesInternalAsync(
         [Query] LanguagesParams? queryParameters = null,
         [Header(HttpRequestHeadersExtensions.WaitForLoadingNewContentHeaderName)] bool? waitForLoadingNewContent = null);
 }

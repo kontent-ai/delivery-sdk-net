@@ -1,57 +1,39 @@
-﻿using Kontent.Ai.Delivery.Services;
-using Kontent.Ai.Delivery.Abstractions.SharedModels;
+﻿using System.Runtime.CompilerServices;
+using System.Threading;
+using Kontent.Ai.Delivery.ContentItems;
 
-namespace Kontent.Ai.Delivery.ContentItems
+/// <inheritdoc cref="IDeliveryItemsFeed{TModel}"/>
+internal sealed class DeliveryItemsFeed<TModel>(DeliveryItemsFeed<TModel>.GetPageAsync getPage, string? startToken = null) : IDeliveryItemsFeed<TModel>
+    where TModel : IElementsModel
 {
-    /// <summary>
-    /// Represents a feed that can be used to retrieve strongly typed content items from Kontent.ai Delivery API in smaller batches.
-    /// </summary>
-    /// <typeparam name="T">The type of content items in the feed.</typeparam>
-    internal class DeliveryItemsFeed<T> : IDeliveryItemsFeed<T>
+    // Delegate that calls Refit and returns headers+body
+    internal delegate Task<IApiResponse<DeliveryItemsFeedResponse<TModel>>> GetPageAsync(
+        string? continuationToken, CancellationToken ct);
+
+    private readonly GetPageAsync _getPage = getPage ?? throw new ArgumentNullException(nameof(getPage));
+    private string? _continuation = startToken;
+    private bool _exhausted;
+    public bool HasMoreResults => !_exhausted;
+
+    public async Task<IDeliveryItemsFeedResponse<TModel>> FetchNextBatchAsync(
+        string? continuationToken = null, CancellationToken ct = default)
     {
-        internal delegate Task<IDeliveryResult<IDeliveryItemsFeedResponse<T>>> GetFeedResponse(string continuationToken);
+        if (_exhausted)
+            throw new InvalidOperationException("The feed has been fully enumerated.");
 
-        private string _continuationToken = string.Empty;
-        private readonly GetFeedResponse _getFeedResponseAsync;
+        var token = continuationToken ?? _continuation;
+        var resp = await _getPage(token, ct).ConfigureAwait(false);
 
-        /// <summary>
-        /// Indicates whether there are more batches to fetch.
-        /// </summary>
-        public bool HasMoreResults { get; private set; } = true;
+        // Map network errors to empty page (or throw—your call)
+        if (!resp.IsSuccessStatusCode || resp.Content is null)
+            return new DeliveryItemsFeedResponse<TModel> { Items = [] };
 
-        /// <summary>
-        /// Initializes a new instance of <see cref="DeliveryItemsFeed{T}"/> class.
-        /// </summary>
-        /// <param name="getFeedResponseAsync">Function to retrieve next batch of content items.</param>
-        public DeliveryItemsFeed(GetFeedResponse getFeedResponseAsync)
-        {
-            _getFeedResponseAsync = getFeedResponseAsync;
-        }
+        // Update continuation from headers
+        _continuation = resp.Continuation();
+        _exhausted = string.IsNullOrEmpty(_continuation);
 
-        /// <summary>
-        /// Retrieves the next feed batch if available.
-        /// </summary>
-        /// <param name="continuationToken">Optional explicit continuation token that allows you to get the next batch from a specific point in the feed.</param>
-        /// <returns>Instance of <see cref="DeliveryItemsFeedResponse{T}"/> class that contains a list of strongly typed content items.</returns>
-        public async Task<IDeliveryItemsFeedResponse<T>> FetchNextBatchAsync(string? continuationToken = null)
-        {
-            if (!HasMoreResults)
-            {
-                throw new InvalidOperationException("The feed has already been enumerated and there are no more results.");
-            }
-
-            var result = await _getFeedResponseAsync(continuationToken ?? _continuationToken);
-
-            if (!result.IsSuccess)
-            {
-                return new DeliveryItemsFeedResponse<T>(new List<T>());
-            }
-
-            var envelope = result.Value;
-            _continuationToken = result.ContinuationToken ?? string.Empty;
-            HasMoreResults = !string.IsNullOrEmpty(result.ContinuationToken);
-
-            return envelope;
-        }
+        return resp.Content; // contains Items only
     }
+
+    // Removed AsAsyncEnumerable to keep a single, simple consumption pattern via FetchNextBatchAsync
 }

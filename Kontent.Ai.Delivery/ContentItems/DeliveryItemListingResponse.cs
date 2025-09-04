@@ -1,32 +1,18 @@
 ﻿using System.Text.Json.Serialization;
 
-namespace Kontent.Ai.Delivery.ContentItems
+namespace Kontent.Ai.Delivery.ContentItems;
+
+/// <inheritdoc cref="IDeliveryItemListingResponse{TModel}" />
+internal sealed record DeliveryItemListingResponse<TModel> : IDeliveryItemListingResponse<TModel>
+    where TModel : IElementsModel
 {
-    /// <inheritdoc cref="IDeliveryItemListingResponse{T}" />
-    internal sealed class DeliveryItemListingResponse<T> : IDeliveryItemListingResponse<T>
-    {
-        /// <inheritdoc/>
-        public IPagination Pagination
-        {
-            get;
-        }
+    [JsonPropertyName("items")]
+    public required IReadOnlyList<ContentItem<TModel>> Items { get; init; } = [];
 
-        /// <inheritdoc/>
-        public IList<T> Items
-        {
-            get;
-        }
+    [JsonPropertyName("pagination")]
+    public required Pagination Pagination { get; init; } = default!;
 
-        /// <summary>
-        /// Initializes a new instance of the <see cref="DeliveryItemListingResponse{T}"/> class.
-        /// </summary>
-        /// <param name="items">A collection of content items of a specific type.</param>
-        /// <param name="pagination">Response paging information.</param>
-        [JsonConstructor]
-        internal DeliveryItemListingResponse(IList<T> items, IPagination pagination)
-        {
-            Items = items;
-            Pagination = pagination;
-        }
-    }
+    // Expose read-only view to the interface
+    IReadOnlyList<IContentItem<TModel>> IDeliveryItemListingResponse<TModel>.Items => Items;
+    IPagination IPageable.Pagination => Pagination;
 }

@@ -1,17 +1,17 @@
+using System.Threading;
 using Kontent.Ai.Delivery.Abstractions.QueryBuilders;
 using Kontent.Ai.Delivery.Abstractions.QueryBuilders.Filtering;
 using Kontent.Ai.Delivery.Abstractions.SharedModels;
 using Kontent.Ai.Delivery.Api.QueryBuilders.Filtering;
 using Kontent.Ai.Delivery.ContentTypes;
-using Kontent.Ai.Delivery.Serialization;
-using Kontent.Ai.Delivery.SharedModels;
+using Kontent.Ai.Delivery.Extensions;
 
 namespace Kontent.Ai.Delivery.Api.QueryBuilders;
 
-internal sealed class TypesQuery(IDeliveryApi api, DeliveryResponseProcessor responseProcessor, Func<bool?> getDefaultWaitForNewContent) : ITypesQuery
+/// <inheritdoc cref="ITypesQuery"/>
+internal sealed class TypesQuery(IDeliveryApi api, Func<bool?> getDefaultWaitForNewContent) : ITypesQuery
 {
     private readonly IDeliveryApi _api = api;
-    private readonly DeliveryResponseProcessor _responseProcessor = responseProcessor;
     private readonly TypeFilters _filters = new();
     private readonly List<IFilter> _appliedFilters = [];
     private ListTypesParams _params = new();
@@ -55,15 +55,17 @@ internal sealed class TypesQuery(IDeliveryApi api, DeliveryResponseProcessor res
         return this;
     }
 
-    public async Task<IDeliveryResult<IDeliveryTypeListingResponse>> ExecuteAsync()
+    public async Task<IDeliveryResult<IReadOnlyList<IContentType>>> ExecuteAsync(CancellationToken cancellationToken = default)
     {
         var paramsWithFilters = _appliedFilters.Count > 0
-            ? _params with { Filters = _appliedFilters.Select(f => f.ToQueryParameter()).ToArray() }
+            ? _params with { Filters = [.. _appliedFilters.Select(f => f.ToQueryParameter())] }
             : _params;
 
-        bool? header = _waitForLoadingNewContentOverride ?? _getDefaultWaitForNewContent();
-        var raw = await _api.GetTypesInternalAsync(paramsWithFilters, header);
-        return await _responseProcessor.ProcessTypesListingResponseAsync(raw);
+        bool? wait = _waitForLoadingNewContentOverride ?? _getDefaultWaitForNewContent();
+        var response = await _api.GetTypesInternalAsync(paramsWithFilters, wait).ConfigureAwait(false);
+        var deliveryResult = await response.ToDeliveryResultAsync().ConfigureAwait(false);
+        
+        return deliveryResult.Map(response => response.Types.AsReadOnly());
     }
 }
 

@@ -1,3 +1,5 @@
+using System.Threading;
+using System.Collections.Generic;
 using System.Threading.Tasks;
 using Kontent.Ai.Delivery.Abstractions.SharedModels;
 
@@ -17,8 +19,23 @@ public interface IItemUsedInQuery
     /// <summary>
     /// Executes the built query and returns a functional result.
     /// </summary>
-    /// <returns>A delivery result containing the used-in items feed or errors.</returns>
-    Task<IDeliveryResult<IDeliveryItemsFeedResponse<IUsedInItem>>> ExecuteAsync();
+    /// <param name="cancellationToken">Cancellation token for the operation.</param>
+    /// <returns>A delivery result containing the used-in response or errors.</returns>
+    Task<IDeliveryResult<IReadOnlyList<IUsedInItem>>> ExecuteAsync(CancellationToken cancellationToken = default);
+
+    /// <summary>
+    /// Enumerates parent content items using the Used In endpoint.
+    /// </summary>
+    /// <param name="cancellationToken">Cancellation token to stop enumeration and cancel in-flight requests.</param>
+    /// <returns>Async sequence of used-in items.</returns>
+    IAsyncEnumerable<IUsedInItem> EnumerateItemsAsync(CancellationToken cancellationToken = default);
+
+    /// <summary>
+    /// Convenience method that enumerates all used-in items and returns them as a list.
+    /// </summary>
+    /// <param name="cancellationToken">Cancellation token.</param>
+    /// <returns>All used-in items aggregated into a read-only list.</returns>
+    Task<IReadOnlyList<IUsedInItem>> EnumerateAllItemsAsync(CancellationToken cancellationToken = default);
 }
 
 /// <summary>
@@ -35,6 +52,21 @@ public interface IAssetUsedInQuery
     /// <summary>
     /// Executes the built query and returns a functional result.
     /// </summary>
-    /// <returns>A delivery result containing the used-in items feed or errors.</returns>
-    Task<IDeliveryResult<IDeliveryItemsFeedResponse<IUsedInItem>>> ExecuteAsync();
+    /// <param name="cancellationToken">Cancellation token for the operation.</param>
+    /// <returns>A delivery result containing the used-in response or errors.</returns>
+    Task<IDeliveryResult<IReadOnlyList<IUsedInItem>>> ExecuteAsync(CancellationToken cancellationToken = default);
+
+    /// <summary>
+    /// Enumerates parent content items using the Asset Used In endpoint.
+    /// </summary>
+    /// <param name="cancellationToken">Cancellation token to stop enumeration and cancel in-flight requests.</param>
+    /// <returns>Async sequence of used-in items.</returns>
+    IAsyncEnumerable<IUsedInItem> EnumerateItemsAsync(CancellationToken cancellationToken = default);
+
+    /// <summary>
+    /// Convenience method that enumerates all used-in items and returns them as a list.
+    /// </summary>
+    /// <param name="cancellationToken">Cancellation token.</param>
+    /// <returns>All used-in items aggregated into a read-only list.</returns>
+    Task<IReadOnlyList<IUsedInItem>> EnumerateAllItemsAsync(CancellationToken cancellationToken = default);
 }
