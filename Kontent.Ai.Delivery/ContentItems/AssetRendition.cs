@@ -3,34 +3,26 @@
 namespace Kontent.Ai.Delivery.ContentItems
 {
     /// <inheritdoc/>
-    public class AssetRendition : IAssetRendition
+    public sealed record AssetRendition : IAssetRendition
     {
         /// <inheritdoc/>
         [JsonPropertyName("rendition_id")]
-        public string RenditionId { get; set; }
+        public required string RenditionId { get; init; }
 
         /// <inheritdoc/>
         [JsonPropertyName("preset_id")]
-        public string PresetId { get; set; }
+        public required string PresetId { get; init; }
 
         /// <inheritdoc/>
         [JsonPropertyName("width")]
-        public int Width { get; set; }
+        public required int Width { get; init; }
 
         /// <inheritdoc/>
         [JsonPropertyName("height")]
-        public int Height { get; set; }
+        public required int Height { get; init; }
 
         /// <inheritdoc/>
         [JsonPropertyName("query")]
-        public string Query { get; set; }
-
-        /// <summary>
-        /// Initializes a new instance of the <see cref="AssetRendition"/> class.
-        /// </summary>
-        [JsonConstructor]
-        public AssetRendition()
-        {
-        }
+        public required string Query { get; init; }
     }
 }
