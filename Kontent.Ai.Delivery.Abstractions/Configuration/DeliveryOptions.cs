@@ -72,6 +72,13 @@ namespace Kontent.Ai.Delivery.Abstractions
         public bool WaitForLoadingNewContent { get; init; } = false;
 
         /// <summary>
+        /// Gets or sets a value indicating whether rich text elements should be rendered to HTML strings by default.
+        /// This option can be overridden per query via the fluent method on query builders.
+        /// Default is <c>false</c> which keeps rich text as structured blocks.
+        /// </summary>
+        public bool RenderRichTextToHtml { get; init; } = false;
+
+        /// <summary>
         /// Gets or sets a value of codename for the rendition preset to be applied by default to the base asset URL path.
         /// If no value is specified, asset URLs will always point to non-customized variant of the image.
         /// </summary>
