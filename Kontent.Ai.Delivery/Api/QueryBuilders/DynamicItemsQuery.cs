@@ -10,11 +10,11 @@ using Kontent.Ai.Delivery.SharedModels;
 namespace Kontent.Ai.Delivery.Api.QueryBuilders;
 
 /// <summary>
-/// Concrete implementation of <see cref="IMultipleItemsQueryDynamic"/> using the modernized Result pattern.
+/// Concrete implementation of <see cref="IDynamicItemsQuery"/> using the modernized Result pattern.
 /// </summary>
-internal sealed class MultipleItemsQueryDynamic(
+internal sealed class DynamicItemsQuery(
     IDeliveryApi api,
-    Func<bool?> getDefaultWaitForNewContent) : IMultipleItemsQueryDynamic
+    Func<bool?> getDefaultWaitForNewContent) : IDynamicItemsQuery
 {
     private readonly IDeliveryApi _api = api;
     private readonly Func<bool?> _getDefaultWaitForNewContent = getDefaultWaitForNewContent;
@@ -23,68 +23,68 @@ internal sealed class MultipleItemsQueryDynamic(
     private ListItemsParams _params = new();
     private bool? _waitForLoadingNewContentOverride;
 
-    public IMultipleItemsQueryDynamic WithLanguage(string languageCodename)
+    public IDynamicItemsQuery WithLanguage(string languageCodename)
     {
         _params = _params with { Language = languageCodename };
         return this;
     }
 
-    public IMultipleItemsQueryDynamic WithElements(params string[] elementCodenames)
+    public IDynamicItemsQuery WithElements(params string[] elementCodenames)
     {
         _params = _params with { Elements = elementCodenames };
         return this;
     }
 
-    public IMultipleItemsQueryDynamic WithoutElements(params string[] elementCodenames)
+    public IDynamicItemsQuery WithoutElements(params string[] elementCodenames)
     {
         _params = _params with { ExcludeElements = elementCodenames };
         return this;
     }
 
-    public IMultipleItemsQueryDynamic Depth(int depth)
+    public IDynamicItemsQuery Depth(int depth)
     {
         _params = _params with { Depth = depth };
         return this;
     }
 
-    public IMultipleItemsQueryDynamic Skip(int skip)
+    public IDynamicItemsQuery Skip(int skip)
     {
         _params = _params with { Skip = skip };
         return this;
     }
 
-    public IMultipleItemsQueryDynamic Limit(int limit)
+    public IDynamicItemsQuery Limit(int limit)
     {
         _params = _params with { Limit = limit };
         return this;
     }
 
-    public IMultipleItemsQueryDynamic OrderBy(string elementOrAttributePath, bool ascending = true)
+    public IDynamicItemsQuery OrderBy(string elementOrAttributePath, bool ascending = true)
     {
         _params = _params with { OrderBy = ascending ? $"{elementOrAttributePath}[asc]" : $"{elementOrAttributePath}[desc]" };
         return this;
     }
 
-    public IMultipleItemsQueryDynamic WithTotalCount()
+    public IDynamicItemsQuery WithTotalCount()
     {
         _params = _params with { IncludeTotalCount = true };
         return this;
     }
 
-    public IMultipleItemsQueryDynamic WaitForLoadingNewContent(bool enabled = true)
+    public IDynamicItemsQuery WaitForLoadingNewContent(bool enabled = true)
     {
         _waitForLoadingNewContentOverride = enabled;
         return this;
     }
 
-    public IMultipleItemsQueryDynamic Filter(Func<IItemFilters, IFilter> filterBuilder)
+    public IDynamicItemsQuery Filter(Func<IItemFilters, IFilter> filterBuilder)
     {
         var filter = filterBuilder(_filters);
         _appliedFilters.Add(filter);
         return this;
     }
 
-    public IMultipleItemsQueryDynamic Where(IFilter filter)
+    public IDynamicItemsQuery Where(IFilter filter)
     {
         _appliedFilters.Add(filter);
         return this;

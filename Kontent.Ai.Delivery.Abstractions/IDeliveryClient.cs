@@ -21,7 +21,7 @@ namespace Kontent.Ai.Delivery.Abstractions
         /// </summary>
         /// <param name="codename">The codename of a content item.</param>
         /// <returns>A query builder that can be configured and executed to retrieve the content item.</returns>
-        ISingleItemQueryDynamic GetItem(string codename);
+        IDynamicItemQuery GetItem(string codename);
 
         /// <summary>
         /// Returns a query builder for retrieving multiple strongly typed content items.
@@ -34,7 +34,7 @@ namespace Kontent.Ai.Delivery.Abstractions
         /// Returns a query builder for retrieving multiple content items with runtime/dynamic mapping.
         /// </summary>
         /// <returns>A query builder that can be configured and executed to retrieve content items.</returns>
-        IMultipleItemsQueryDynamic GetItems();
+        IDynamicItemsQuery GetItems();
 
         /// <summary>
         /// Returns a query builder for enumerating through strongly typed content items using a feed.
