@@ -32,7 +32,7 @@ namespace Kontent.Ai.Delivery
                 throw new ArgumentException("Entered item codename is not valid.", nameof(codename));
             }
 
-            return new ItemQuery<T>(_deliveryApi, codename, GetDefaultWaitForLoadingNewContent);
+            return new ItemQuery<T>(_deliveryApi, codename, GetDefaultWaitForLoadingNewContent, GetDefaultRenderRichTextToHtml);
         }
 
         public IDynamicItemQuery GetItem(string codename)
@@ -47,7 +47,7 @@ namespace Kontent.Ai.Delivery
 
         public IItemsQuery<T> GetItems<T>() where T : IElementsModel
         {
-            return new ItemsQuery<T>(_deliveryApi, GetDefaultWaitForLoadingNewContent);
+            return new ItemsQuery<T>(_deliveryApi, GetDefaultWaitForLoadingNewContent, GetDefaultRenderRichTextToHtml);
         }
 
         public IDynamicItemsQuery GetItems()
@@ -137,5 +137,8 @@ namespace Kontent.Ai.Delivery
 
         private bool? GetDefaultWaitForLoadingNewContent()
             => _deliveryOptions.CurrentValue.WaitForLoadingNewContent ? true : null;
+
+        private bool GetDefaultRenderRichTextToHtml()
+            => _deliveryOptions.CurrentValue.RenderRichTextToHtml;
     }
 }
