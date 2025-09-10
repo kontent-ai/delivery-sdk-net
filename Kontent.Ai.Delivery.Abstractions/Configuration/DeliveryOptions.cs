@@ -95,7 +95,7 @@ namespace Kontent.Ai.Delivery.Abstractions
             {
                 yield return new ValidationResult(
                     "Cannot use both Preview API and Secure Access simultaneously.",
-                    new[] { nameof(UsePreviewApi), nameof(UseSecureAccess) });
+                    [nameof(UsePreviewApi), nameof(UseSecureAccess)]);
             }
         }
     }

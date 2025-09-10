@@ -366,9 +366,9 @@ namespace Kontent.Ai.Delivery.Examples
     }
 
     // Example model classes (these would typically be generated)
-    public class Article { }
-    public class Product { }
-    public class BlogPost { }
-    public class Event { }
-    public class ContentItem { }
+    public class Article : IElementsModel { }
+    public class Product : IElementsModel { }
+    public class BlogPost : IElementsModel { }
+    public class Event : IElementsModel { }
+    public class ContentItem : IElementsModel { }
 }

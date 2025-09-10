@@ -49,5 +49,5 @@ public interface IDynamicItemQuery
     /// </summary>
     /// <param name="cancellationToken">Cancellation token for the operation.</param>
     /// <returns>A delivery result containing the content item or errors.</returns>
-    Task<IDeliveryResult<IContentItem>> ExecuteAsync(CancellationToken cancellationToken = default);
+    Task<IDeliveryResult<IContentItem<IElementsModel>>> ExecuteAsync(CancellationToken cancellationToken = default);
 }

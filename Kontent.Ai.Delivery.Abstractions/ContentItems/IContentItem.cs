@@ -1,24 +1,21 @@
-﻿namespace Kontent.Ai.Delivery.Abstractions;
+﻿using System.Collections.Generic;
+using System.Text.Json;
 
-/// <summary>
-/// Represents a content item.
-/// </summary>
-public interface IContentItem
-{
-    /// <summary>
-    /// Represents system attributes of a content item.
-    /// </summary>
-    public IContentItemSystemAttributes System { get; }
-}
+namespace Kontent.Ai.Delivery.Abstractions;
 
 /// <summary>
 /// Represents a content item with elements.
 /// </summary>
 /// <typeparam name="TModel">Strongly typed elements of a content item.</typeparam>
 
-public interface IContentItem<out TModel> : IContentItem
+public interface IContentItem<out TModel>
     where TModel : IElementsModel
 {
+    /// <summary>
+    /// Represents system attributes of a content item.
+    /// </summary>
+    public IContentItemSystemAttributes System { get; }
+
     /// <summary>
     /// Represents the elements of a content item.
     /// </summary>

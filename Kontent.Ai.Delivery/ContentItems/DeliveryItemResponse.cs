@@ -16,6 +16,6 @@ namespace Kontent.Ai.Delivery.ContentItems
         /// Raw modular content used for resolving linked items/inline content.
         /// </summary>
         [JsonPropertyName("modular_content")]
-        internal required Dictionary<string, JsonElement> ModularContent { get; init; } = new();
+        internal required Dictionary<string, JsonElement> ModularContent { get; init; } = [];
     }
 }
