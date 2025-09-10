@@ -1,4 +1,7 @@
-﻿namespace Kontent.Ai.Delivery.Abstractions;
+﻿using System.Collections.Generic;
+using System.Text.Json;
+
+namespace Kontent.Ai.Delivery.Abstractions;
 
 /// <summary>
 /// Represents a content item.
@@ -9,6 +12,11 @@ public interface IContentItem
     /// Represents system attributes of a content item.
     /// </summary>
     public IContentItemSystemAttributes System { get; }
+
+    /// <summary>
+    /// Represents the elements of a content item.
+    /// </summary>
+    public Dictionary<string, IContentElementValue<dynamic>> Elements { get; }
 }
 
 /// <summary>
@@ -22,7 +30,7 @@ public interface IContentItem<out TModel> : IContentItem
     /// <summary>
     /// Represents the elements of a content item.
     /// </summary>
-    public TModel Elements { get; }
+    public new TModel Elements { get; }
 }
 
 /// <summary>

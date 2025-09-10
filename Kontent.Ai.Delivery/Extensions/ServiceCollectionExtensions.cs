@@ -61,7 +61,8 @@ namespace Kontent.Ai.Delivery.Extensions
                 : configuration.GetSection(configurationSectionName);
 
             // Register options with validation
-            return services.AddOptions<DeliveryOptions>()
+            return services
+                .AddOptions<DeliveryOptions>()
                 .Bind(section)
                 .ValidateDataAnnotations()
                 .ValidateOnStart()
@@ -169,8 +170,6 @@ namespace Kontent.Ai.Delivery.Extensions
                 configureResilience?.Invoke(resilienceBuilder);
             });
 
-            // Register response processor and delivery client
-            services.TryAddSingleton<DeliveryResponseProcessor>();
             services.TryAddSingleton<IDeliveryClient, DeliveryClient>();
 
             return services;
