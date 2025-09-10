@@ -1,8 +1,7 @@
 using System.Threading;
-using Kontent.Ai.Delivery.Abstractions;
 using Kontent.Ai.Delivery.Abstractions.QueryBuilders;
 using Kontent.Ai.Delivery.Abstractions.SharedModels;
-using Kontent.Ai.Delivery.Extensions;
+using Kontent.Ai.Delivery.ContentItems;
 
 namespace Kontent.Ai.Delivery.Api.QueryBuilders;
 
@@ -48,16 +47,16 @@ internal sealed class DynamicItemQuery(
         return this;
     }
 
-    public async Task<IDeliveryResult<IContentItem>> ExecuteAsync(CancellationToken cancellationToken = default)
+    public async Task<IDeliveryResult<IContentItem<IElementsModel>>> ExecuteAsync(CancellationToken cancellationToken = default)
     {
         // Get raw response from Refit API
-        bool? header = _waitForLoadingNewContentOverride ?? _getDefaultWaitForNewContent();
-        var rawResponse = await _api.GetItemInternalAsync<IElementsModel>(_codename, _params, header).ConfigureAwait(false);
+        bool? wait = _waitForLoadingNewContentOverride ?? _getDefaultWaitForNewContent();
+        var rawResponse = await _api.GetItemInternalAsync<DynamicElements>(_codename, _params, wait).ConfigureAwait(false);
         
         // Convert IApiResponse to IDeliveryResult
         var deliveryResult = await rawResponse.ToDeliveryResultAsync();
         
-        // Map from IDeliveryItemResponse<IElementsModel> to IContentItem (non-generic)
-        return deliveryResult.Map(response => (IContentItem)response.Item);
+        // Map from IDeliveryItemResponse<IElementsModel> to IContentItem<DynamicElements>
+        return deliveryResult.Map(response => response.Item);
     }
 }

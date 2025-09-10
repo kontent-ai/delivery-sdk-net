@@ -1,11 +1,9 @@
 using System.Threading;
-using Kontent.Ai.Delivery.Abstractions;
 using Kontent.Ai.Delivery.Abstractions.QueryBuilders;
 using Kontent.Ai.Delivery.Abstractions.QueryBuilders.Filtering;
 using Kontent.Ai.Delivery.Abstractions.SharedModels;
 using Kontent.Ai.Delivery.Api.QueryBuilders.Filtering;
-using Kontent.Ai.Delivery.Extensions;
-using Kontent.Ai.Delivery.SharedModels;
+using Kontent.Ai.Delivery.ContentItems;
 
 namespace Kontent.Ai.Delivery.Api.QueryBuilders;
 
@@ -90,26 +88,26 @@ internal sealed class DynamicItemsQuery(
         return this;
     }
 
-    public async Task<IDeliveryResult<IReadOnlyList<IContentItem>>> ExecuteAsync(CancellationToken cancellationToken = default)
+    public async Task<IDeliveryResult<IReadOnlyList<IContentItem<IElementsModel>>>> ExecuteAsync(CancellationToken cancellationToken = default)
     {
         var paramsWithFilters = _appliedFilters.Count > 0
             ? _params with { Filters = [.. _appliedFilters.Select(f => f.ToQueryParameter())] }
             : _params;
         
         // Get raw response from Refit API
-        bool? header = _waitForLoadingNewContentOverride ?? _getDefaultWaitForNewContent();
-        var rawResponse = await _api.GetItemsInternalAsync<IElementsModel>(paramsWithFilters, header).ConfigureAwait(false);
+        bool? wait = _waitForLoadingNewContentOverride ?? _getDefaultWaitForNewContent();
+        var rawResponse = await _api.GetItemsInternalAsync<DynamicElements>(paramsWithFilters, wait).ConfigureAwait(false);
         
         // Convert IApiResponse to IDeliveryResult
         var deliveryResult = await rawResponse.ToDeliveryResultAsync();
         
         // Map from IDeliveryItemListingResponse<IElementsModel> to IReadOnlyList<IContentItem>
-        return deliveryResult.Map(response => (IReadOnlyList<IContentItem>)response.Items.Cast<IContentItem>().ToList().AsReadOnly());
+        return deliveryResult.Map(response => response.Items);
     }
 
-    public async Task<IDeliveryResult<IReadOnlyList<IContentItem>>> ExecuteAllAsync(CancellationToken cancellationToken = default)
+    public async Task<IDeliveryResult<IReadOnlyList<IContentItem<IElementsModel>>>> ExecuteAllAsync(CancellationToken cancellationToken = default)
     {
-        var all = new List<IContentItem>();
+        var all = new List<IContentItem<DynamicElements>>();
         var skip = _params.Skip ?? 0;
         var limit = _params.Limit;
         string? requestUrl = null;
@@ -124,14 +122,14 @@ internal sealed class DynamicItemsQuery(
             var pageParams = _params with { Skip = skip, Limit = limit, Filters = filters };
 
             var wait = _waitForLoadingNewContentOverride ?? _getDefaultWaitForNewContent();
-            var response = await _api.GetItemsInternalAsync<IElementsModel>(pageParams, wait).ConfigureAwait(false);
+            var response = await _api.GetItemsInternalAsync<DynamicElements>(pageParams, wait).ConfigureAwait(false);
 
             // Convert to delivery result
             var deliveryResult = await response.ToDeliveryResultAsync();
             
             if (!deliveryResult.IsSuccess)
             {
-                return DeliveryResult.Failure<IReadOnlyList<IContentItem>>(
+                return DeliveryResult.Failure<IReadOnlyList<IContentItem<DynamicElements>>>(
                     deliveryResult.RequestUrl ?? string.Empty,
                     deliveryResult.StatusCode,
                     deliveryResult.Error!);
@@ -140,7 +138,7 @@ internal sealed class DynamicItemsQuery(
             // Capture request URL from first request
             requestUrl ??= deliveryResult.RequestUrl;
 
-            var items = deliveryResult.Value.Items.Cast<IContentItem>().ToList();
+            var items = deliveryResult.Value.Items;
             var pageCount = items.Count;
 
             if (pageCount == 0)
@@ -154,8 +152,8 @@ internal sealed class DynamicItemsQuery(
                 break;
         }
 
-        return DeliveryResult.Success<IReadOnlyList<IContentItem>>(
-            all.AsReadOnly(),
+        return DeliveryResult.Success<IReadOnlyList<IContentItem<DynamicElements>>>(
+            all,
             requestUrl ?? string.Empty,
             200,
             hasStaleContent: false,
