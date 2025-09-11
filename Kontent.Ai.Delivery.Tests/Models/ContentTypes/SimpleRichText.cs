@@ -1,14 +1,13 @@
 ﻿using Kontent.Ai.Delivery.Abstractions;
 using System.Text.Json.Serialization;
 
-namespace Kontent.Ai.Delivery.Tests.Models.ContentTypes
-{
-    public class SimpleRichText
-    {
-        [JsonPropertyName("rich_text")]
-        public IRichTextContent RichText { get; set; }
+namespace Kontent.Ai.Delivery.Tests.Models.ContentTypes;
 
-        [JsonPropertyName("rich_text")]
-        public string RichTextString { get; set; }
-    }
+public class SimpleRichText
+{
+    [JsonPropertyName("rich_text")]
+    public IRichTextContent RichText { get; set; }
+
+    [JsonPropertyName("rich_text")]
+    public string RichTextString { get; set; }
 }

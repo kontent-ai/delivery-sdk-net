@@ -1,5 +1,3 @@
-using Kontent.Ai.Delivery.Abstractions.QueryBuilders.Filtering;
-
 namespace Kontent.Ai.Delivery.Api.QueryBuilders.Filtering;
 
 /// <summary>

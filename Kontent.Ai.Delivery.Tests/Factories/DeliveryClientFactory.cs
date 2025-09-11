@@ -1,57 +1,69 @@
 ﻿using System;
-using System.Net.Http;
-using FakeItEasy;
 using Kontent.Ai.Delivery.Abstractions;
+using Microsoft.Extensions.DependencyInjection;
 using RichardSzalay.MockHttp;
+using Kontent.Ai.Delivery.Extensions;
 
-namespace Kontent.Ai.Delivery.Tests.Factories
+namespace Kontent.Ai.Delivery.Tests.Factories;
+
+internal static class DeliveryClientFactory
 {
-    internal static class DeliveryClientFactory
+    private static readonly MockHttpMessageHandler MockHttp = new MockHttpMessageHandler();
+
+    internal static DeliveryClient GetMockedDeliveryClientWithEnvironmentId(
+        Guid environmentId,
+        MockHttpMessageHandler httpMessageHandler = null,
+        IModelProvider modelProvider = null,
+        IRetryPolicyProvider resiliencePolicyProvider = null,
+        ITypeProvider typeProvider = null)
     {
-        private static readonly MockHttpMessageHandler MockHttp = new MockHttpMessageHandler();
-        private static readonly DeliveryJsonSerializer Serializer = new DeliveryJsonSerializer();
+        var services = new ServiceCollection();
 
-        internal static DeliveryClient GetMockedDeliveryClientWithEnvironmentId(
-            Guid environmentId,
-            MockHttpMessageHandler httpMessageHandler = null,
-            IModelProvider modelProvider = null,
-            IRetryPolicyProvider resiliencePolicyProvider = null,
-            ITypeProvider typeProvider = null)
+        if (typeProvider != null)
         {
-            var httpClient = GetHttpClient(httpMessageHandler);
-
-            var client = new DeliveryClient(
-                DeliveryOptionsFactory.CreateMonitor(environmentId),
-                modelProvider ?? A.Fake<IModelProvider>(),
-                resiliencePolicyProvider ?? A.Fake<IRetryPolicyProvider>(),
-                typeProvider ?? A.Fake<ITypeProvider>(),
-                new DeliveryHttpClient(httpClient),
-                Serializer
-            );
-
-            return client;
+            services.AddSingleton(typeProvider);
         }
 
-        internal static DeliveryClient GetMockedDeliveryClientWithOptions(DeliveryOptions options, MockHttpMessageHandler httpMessageHandler = null)
+        if (modelProvider != null)
         {
-            var httpClient = GetHttpClient(httpMessageHandler);
-            var deliveryHttpClient = new DeliveryHttpClient(httpClient);
-
-            var client = new DeliveryClient(
-                DeliveryOptionsFactory.CreateMonitor(options),
-                A.Fake<IModelProvider>(),
-                A.Fake<IRetryPolicyProvider>(),
-                A.Fake<ITypeProvider>(),
-                deliveryHttpClient,
-                Serializer
-            );
-
-            return client;
+            services.AddSingleton(modelProvider);
         }
 
-        private static HttpClient GetHttpClient(MockHttpMessageHandler mockHttpMessageHandler)
-        {
-            return mockHttpMessageHandler != null ? mockHttpMessageHandler.ToHttpClient() : MockHttp.ToHttpClient();
-        }
+        var options = new DeliveryOptions { EnvironmentId = environmentId.ToString() };
+
+        services.AddDeliveryClient(
+            options,
+            configureRefit: null,
+            configureHttpClient: builder =>
+            {
+                if (httpMessageHandler != null)
+                {
+                    builder.ConfigurePrimaryHttpMessageHandler(() => httpMessageHandler);
+                }
+            });
+
+        var provider = services.BuildServiceProvider();
+        var client = provider.GetRequiredService<IDeliveryClient>();
+        return (DeliveryClient)client;
+    }
+
+    internal static DeliveryClient GetMockedDeliveryClientWithOptions(DeliveryOptions options, MockHttpMessageHandler httpMessageHandler = null)
+    {
+        var services = new ServiceCollection();
+
+        services.AddDeliveryClient(
+            options,
+            configureRefit: null,
+            configureHttpClient: builder =>
+            {
+                if (httpMessageHandler != null)
+                {
+                    builder.ConfigurePrimaryHttpMessageHandler(() => httpMessageHandler);
+                }
+            });
+
+        var provider = services.BuildServiceProvider();
+        var client = provider.GetRequiredService<IDeliveryClient>();
+        return (DeliveryClient)client;
     }
 }

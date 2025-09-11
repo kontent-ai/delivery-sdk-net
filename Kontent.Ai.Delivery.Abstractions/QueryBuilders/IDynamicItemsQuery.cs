@@ -2,10 +2,8 @@ using System;
 using System.Collections.Generic;
 using System.Threading;
 using System.Threading.Tasks;
-using Kontent.Ai.Delivery.Abstractions.QueryBuilders.Filtering;
-using Kontent.Ai.Delivery.Abstractions.SharedModels;
 
-namespace Kontent.Ai.Delivery.Abstractions.QueryBuilders;
+namespace Kontent.Ai.Delivery.Abstractions;
 
 /// <summary>
 /// Fluent builder for retrieving multiple content items with dynamic content mapping.

@@ -1,13 +1,12 @@
-﻿namespace Kontent.Ai.Delivery.Abstractions
+﻿namespace Kontent.Ai.Delivery.Abstractions;
+
+/// <summary>
+/// Represents inline content item block within rich text
+/// </summary>
+public interface IInlineContentItem : IRichTextBlock
 {
     /// <summary>
-    /// Represents inline content item block within rich text
+    /// Referenced content item
     /// </summary>
-    public interface IInlineContentItem : IRichTextBlock
-    {
-        /// <summary>
-        /// Referenced content item
-        /// </summary>
-        object ContentItem { get; }
-    }
+    object ContentItem { get; }
 }

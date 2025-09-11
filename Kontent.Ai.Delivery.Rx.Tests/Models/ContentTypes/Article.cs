@@ -8,32 +8,31 @@ using System;
 using System.Collections.Generic;
 using Kontent.Ai.Delivery.Abstractions;
 
-namespace Kontent.Ai.Delivery.Rx.Tests.Models.ContentTypes
-{
-    public class Article
-    {
-        public const string Codename = "article";
-        public const string PersonasCodename = "personas";
-        public const string TitleCodename = "title";
-        public const string TeaserImageCodename = "teaser_image";
-        public const string PostDateCodename = "post_date";
-        public const string SummaryCodename = "summary";
-        public const string BodyCopyCodename = "body_copy";
-        public const string RelatedArticlesCodename = "related_articles";
-        public const string MetaKeywordsCodename = "meta_keywords";
-        public const string MetaDescriptionCodename = "meta_description";
-        public const string UrlPatternCodename = "url_pattern";
+namespace Kontent.Ai.Delivery.Rx.Tests.Models.ContentTypes;
 
-        public IEnumerable<ITaxonomyTerm> Personas { get; set; }
-        public string Title { get; set; }
-        public IEnumerable<IAsset> TeaserImage { get; set; }
-        public DateTime? PostDate { get; set; }
-        public string Summary { get; set; }
-        public string BodyCopy { get; set; }
-        public IEnumerable<object> RelatedArticles { get; set; }
-        public string MetaKeywords { get; set; }
-        public string MetaDescription { get; set; }
-        public string UrlPattern { get; set; }
-        public IContentItemSystemAttributes System { get; set; }
-    }
+public class Article
+{
+    public const string Codename = "article";
+    public const string PersonasCodename = "personas";
+    public const string TitleCodename = "title";
+    public const string TeaserImageCodename = "teaser_image";
+    public const string PostDateCodename = "post_date";
+    public const string SummaryCodename = "summary";
+    public const string BodyCopyCodename = "body_copy";
+    public const string RelatedArticlesCodename = "related_articles";
+    public const string MetaKeywordsCodename = "meta_keywords";
+    public const string MetaDescriptionCodename = "meta_description";
+    public const string UrlPatternCodename = "url_pattern";
+
+    public IEnumerable<ITaxonomyTerm> Personas { get; set; }
+    public string Title { get; set; }
+    public IEnumerable<IAsset> TeaserImage { get; set; }
+    public DateTime? PostDate { get; set; }
+    public string Summary { get; set; }
+    public string BodyCopy { get; set; }
+    public IEnumerable<object> RelatedArticles { get; set; }
+    public string MetaKeywords { get; set; }
+    public string MetaDescription { get; set; }
+    public string UrlPattern { get; set; }
+    public IContentItemSystemAttributes System { get; set; }
 }

@@ -35,7 +35,7 @@ public static class DeliveryItemsFeedExtensions
             {
                 await foreach (var item in EnumerateFeed(feed))
                 {
-                    observer.OnNext(item);
+                    observer.OnNext((IContentItem<TModel>)item);
                 }
                 observer.OnCompleted();
             }

@@ -1,18 +1,17 @@
-﻿namespace Kontent.Ai.Urls.Delivery.QueryParameters.Filters
+﻿namespace Kontent.Ai.Urls.Delivery.QueryParameters.Filters;
+
+/// <summary>
+/// Represents a filter that matches a content item if the specified content element or system attribute has a value that matches a value in the specified list.
+/// </summary>
+public sealed class InFilter : Filter
 {
     /// <summary>
-    /// Represents a filter that matches a content item if the specified content element or system attribute has a value that matches a value in the specified list.
+    /// Initializes a new instance of the <see cref="InFilter"/> class.
     /// </summary>
-    public sealed class InFilter : Filter
+    /// <param name="elementOrAttributePath">The codename of a content element or system attribute, for example <c>elements.title</c> or <c>system.name</c>.</param>
+    /// <param name="values">The filter values.</param>
+    public InFilter(string elementOrAttributePath, params string[] values) : base(elementOrAttributePath, values)
     {
-        /// <summary>
-        /// Initializes a new instance of the <see cref="InFilter"/> class.
-        /// </summary>
-        /// <param name="elementOrAttributePath">The codename of a content element or system attribute, for example <c>elements.title</c> or <c>system.name</c>.</param>
-        /// <param name="values">The filter values.</param>
-        public InFilter(string elementOrAttributePath, params string[] values) : base(elementOrAttributePath, values)
-        {
-            Operator = "[in]";
-        }
+        Operator = "[in]";
     }
 }

@@ -1,13 +1,12 @@
-﻿namespace Kontent.Ai.Delivery.Abstractions
+﻿namespace Kontent.Ai.Delivery.Abstractions;
+
+/// <summary>
+/// Represents HTML content rich text block
+/// </summary>
+public interface IHtmlContent : IRichTextBlock
 {
     /// <summary>
-    /// Represents HTML content rich text block
+    /// HTML code
     /// </summary>
-    public interface IHtmlContent : IRichTextBlock
-    {
-        /// <summary>
-        /// HTML code
-        /// </summary>
-        string Html { get; }
-    }
+    string Html { get; }
 }

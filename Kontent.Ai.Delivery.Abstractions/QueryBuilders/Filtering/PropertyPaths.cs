@@ -1,4 +1,4 @@
-namespace Kontent.Ai.Delivery.Abstractions.QueryBuilders.Filtering;
+namespace Kontent.Ai.Delivery.Abstractions;
 
 /// <summary>
 /// Common abstraction for any queryable property path.

@@ -1,247 +1,155 @@
 ﻿using System;
+using System.Collections.Generic;
+using System.ComponentModel.DataAnnotations;
 using Kontent.Ai.Delivery.Abstractions;
-using Kontent.Ai.Delivery.Configuration;
 using Xunit;
 
-namespace Kontent.Ai.Delivery.Tests.Builders.Configuration
+namespace Kontent.Ai.Delivery.Tests.Builders.Configuration;
+
+public class DeliveryOptionsValidatorTests
 {
-    public class DeliveryOptionsValidatorTests
+    private readonly Guid _guid = Guid.NewGuid();
+
+    private static bool TryValidate(DeliveryOptions options, out List<ValidationResult> results)
     {
-        private readonly Guid _guid = Guid.NewGuid();
+        results = [];
+        var context = new ValidationContext(options);
+        return Validator.TryValidateObject(options, context, results, validateAllProperties: true);
+    }
 
-        [Fact]
-        public void ValidateRetryOptions_NegativeDeltaBackoff_Throws()
+    [Fact]
+    public void ValidateOptions_WithEmptyEnvironmentId_Fails()
+    {
+        var options = new DeliveryOptions { EnvironmentId = string.Empty };
+
+        var isValid = TryValidate(options, out var results);
+
+        Assert.False(isValid);
+        Assert.NotEmpty(results);
+    }
+
+    [Fact]
+    public void ValidateOptions_WithNullEnvironmentId_Fails()
+    {
+        var options = new DeliveryOptions { EnvironmentId = null };
+
+        var isValid = TryValidate(options, out var results);
+
+        Assert.False(isValid);
+        Assert.NotEmpty(results);
+    }
+
+    [Theory]
+    [InlineData("123-456")]
+    public void ValidateOptions_WithInvalidEnvironmentIdFormat_Fails(string environmentId)
+    {
+        var options = new DeliveryOptions { EnvironmentId = environmentId };
+
+        var isValid = TryValidate(options, out var results);
+
+        Assert.False(isValid);
+        Assert.NotEmpty(results);
+    }
+
+    [Fact]
+    public void ValidateOptions_UseOfPreviewAndSecureAccessSimultaneously_Fails()
+    {
+        var options = new DeliveryOptions
         {
-            var deliveryOptions = new DeliveryOptions
-            {
-                EnvironmentId = _guid.ToString(),
-                DefaultRetryPolicyOptions = new DefaultRetryPolicyOptions
-                {
-                    DeltaBackoff = TimeSpan.FromSeconds(-1)
-                }
-            };
+            EnvironmentId = _guid.ToString(),
+            UsePreviewApi = true,
+            PreviewApiKey = "abc.def.ghi",
+            UseSecureAccess = true,
+            SecureAccessApiKey = "jkl.mno.pqr"
+        };
 
-            Assert.Throws<ArgumentException>(() => deliveryOptions.Validate());
-        }
+        var isValid = TryValidate(options, out var results);
 
-        [Fact]
-        public void ValidateRetryOptions_ZeroDeltaBackoff_Throws()
+        Assert.False(isValid);
+        Assert.Contains(results, r => r.ErrorMessage != null && r.ErrorMessage.Contains("Cannot use both Preview API and Secure Access simultaneously."));
+    }
+
+    [Fact]
+    public void ValidateOptions_PreviewEnabledWithoutKey_Fails()
+    {
+        var options = new DeliveryOptions
         {
-            var deliveryOptions = new DeliveryOptions
-            {
-                EnvironmentId = _guid.ToString(),
-                DefaultRetryPolicyOptions = new DefaultRetryPolicyOptions
-                {
-                    DeltaBackoff = TimeSpan.Zero
-                }
-            };
+            EnvironmentId = _guid.ToString(),
+            UsePreviewApi = true,
+            PreviewApiKey = null
+        };
 
-            Assert.Throws<ArgumentException>(() => deliveryOptions.Validate());
-        }
+        var isValid = TryValidate(options, out var results);
 
-        [Fact]
-        public void ValidateRetryOptions_NegativeMaxCumulativeWaitTime_Throws()
+        Assert.False(isValid);
+        Assert.Contains(results, r => r.ErrorMessage != null && r.ErrorMessage.Contains("PreviewApiKey is required"));
+    }
+
+    [Fact]
+    public void ValidateOptions_SecureAccessEnabledWithoutKey_Fails()
+    {
+        var options = new DeliveryOptions
         {
-            var deliveryOptions = new DeliveryOptions
-            {
-                EnvironmentId = _guid.ToString(),
-                DefaultRetryPolicyOptions = new DefaultRetryPolicyOptions
-                {
-                    MaxCumulativeWaitTime = TimeSpan.FromSeconds(-1)
-                }
-            };
+            EnvironmentId = _guid.ToString(),
+            UseSecureAccess = true,
+            SecureAccessApiKey = null
+        };
 
-            Assert.Throws<ArgumentException>(() => deliveryOptions.Validate());
-        }
+        var isValid = TryValidate(options, out var results);
 
-        [Fact]
-        public void ValidateRetryOptions_ZeroMaxCumulativeWaitTime_Throws()
+        Assert.False(isValid);
+        Assert.Contains(results, r => r.ErrorMessage != null && r.ErrorMessage.Contains("SecureAccessApiKey is required"));
+    }
+
+    [Fact]
+    public void ValidateOptions_PreviewKeyWithInvalidFormat_Fails()
+    {
+        var options = new DeliveryOptions
         {
-            var deliveryOptions = new DeliveryOptions
-            {
-                EnvironmentId = _guid.ToString(),
-                DefaultRetryPolicyOptions = new DefaultRetryPolicyOptions
-                {
-                    MaxCumulativeWaitTime = TimeSpan.Zero
-                }
-            };
+            EnvironmentId = _guid.ToString(),
+            UsePreviewApi = true,
+            PreviewApiKey = "badPreviewApiFormat"
+        };
 
-            Assert.Throws<ArgumentException>(() => deliveryOptions.Validate());
-        }
+        var isValid = TryValidate(options, out var results);
 
-        [Fact]
-        public void ValidateNullRetryOptions_Throws()
+        Assert.False(isValid);
+        Assert.Contains(results, r => r.ErrorMessage != null && r.ErrorMessage.Contains("The Preview API key must be a valid API key."));
+    }
+
+    [Fact]
+    public void ValidateOptions_SecureAccessKeyWithInvalidFormat_Fails()
+    {
+        var options = new DeliveryOptions
         {
-            var deliveryOptions = new DeliveryOptions
-            {
-                EnvironmentId = _guid.ToString(),
-                DefaultRetryPolicyOptions = null
-            };
+            EnvironmentId = _guid.ToString(),
+            UseSecureAccess = true,
+            SecureAccessApiKey = "invalid"
+        };
 
-            Assert.Throws<ArgumentNullException>(() => deliveryOptions.Validate());
-        }
+        var isValid = TryValidate(options, out var results);
 
-        [Fact]
-        public void ValidateOptionsWithEmptyEnvironmentId()
+        Assert.False(isValid);
+        Assert.Contains(results, r => r.ErrorMessage != null && r.ErrorMessage.Contains("The Secure Access API key must be a valid API key."));
+    }
+
+    [Fact]
+    public void ValidateOptions_ProductionEndpointWithInvalidFormat_Fails()
+    {
+        var options = new DeliveryOptions
         {
-            var deliveryOptions = new DeliveryOptions { EnvironmentId = "" };
+            EnvironmentId = _guid.ToString(),
+            ProductionEndpoint = "invalid"
+        };
+    }
 
-            Assert.Throws<ArgumentException>(() => deliveryOptions.Validate());
-        }
-
-        [Fact]
-        public void ValidateOptionsWithNullEnvironmentId()
+    [Fact]
+    public void ValidateOptions_PreviewEndpointWithInvalidFormat_Fails()
+    {
+        var options = new DeliveryOptions
         {
-            var deliveryOptions = new DeliveryOptions { EnvironmentId = null };
-
-            Assert.Throws<ArgumentNullException>(() => deliveryOptions.Validate());
-        }
-
-        [Theory]
-        [InlineData("123-456")]
-        [InlineData("00000000-0000-0000-0000-000000000000")]
-        public void ValidateOptionsWithEmptyGuidEnvironmentId(string environmentId)
-        {
-            var deliveryOptions = new DeliveryOptions { EnvironmentId = environmentId };
-
-            Assert.Throws<ArgumentException>(() => deliveryOptions.Validate());
-        }
-
-        [Fact]
-        [Obsolete]
-        public void ValidateOptionsWithNullPreviewApiKey()
-        {
-            var deliveryOptionsStep = DeliveryOptionsBuilder
-                .CreateInstance()
-                .WithEnvironmentId(_guid);
-
-            Assert.Throws<ArgumentNullException>(() => deliveryOptionsStep.UsePreviewApi(null));
-        }
-
-        [Fact]
-        [Obsolete]
-        public void ValidateOptionsWithNullSecuredApiKey()
-        {
-            var deliveryOptionsStep = DeliveryOptionsBuilder
-                .CreateInstance()
-                .WithEnvironmentId(_guid);
-
-            Assert.Throws<ArgumentNullException>(() => deliveryOptionsStep.UseProductionApi(null));
-        }
-
-        [Fact]
-        [Obsolete]
-        public void ValidateOptionsBuiltWithBuilderWithIncorrectApiKeyFormat()
-        {
-            var deliveryOptions = DeliveryOptionsBuilder
-                .CreateInstance()
-                .WithEnvironmentId(_guid);
-
-            Assert.Throws<ArgumentException>(() => deliveryOptions.UsePreviewApi("badPreviewApiFormat"));
-        }
-
-        [Fact]
-        public void ValidateOptionsUseOfPreviewAndProductionApiSimultaneously()
-        {
-            const string previewApiKey = "previewApiKey";
-            const string productionApiKey = "productionApiKey";
-
-            var deliveryOptions = new DeliveryOptions
-            {
-                EnvironmentId = _guid.ToString(),
-                UsePreviewApi = true,
-                PreviewApiKey = previewApiKey,
-                UseSecureAccess = true,
-                SecureAccessApiKey = productionApiKey
-            };
-
-            Assert.Throws<InvalidOperationException>(() => deliveryOptions.Validate());
-        }
-
-        [Fact]
-        public void ValidateOptionsWithEnabledPreviewApiWithSetKey()
-        {
-            var deliveryOptions = new DeliveryOptions
-            {
-                EnvironmentId = _guid.ToString(),
-                UsePreviewApi = true
-            };
-
-            Assert.Throws<InvalidOperationException>(() => deliveryOptions.Validate());
-        }
-
-        [Fact]
-        public void ValidateOptionsWithEnabledSecuredApiWithSetKey()
-        {
-            var deliveryOptions = new DeliveryOptions
-            {
-                EnvironmentId = _guid.ToString(),
-                UseSecureAccess = true
-            };
-
-            Assert.Throws<InvalidOperationException>(() => deliveryOptions.Validate());
-        }
-
-        [Theory]
-        [InlineData("")]
-        [InlineData("ftp://abc.com")]
-        [InlineData("abc.com/{0}")]
-        [Obsolete]
-        public void ValidateOptionsWithInvalidEndpointFormat(string endpoint)
-        {
-            var deliveryOptionsSteps = DeliveryOptionsBuilder
-                .CreateInstance()
-                .WithEnvironmentId(_guid)
-                .UseProductionApi();
-
-            Assert.Throws<ArgumentException>(() => deliveryOptionsSteps.WithCustomEndpoint(endpoint));
-        }
-
-        [Fact]
-        [Obsolete]
-        public void ValidateOptionsWithNullUriEndpoint()
-        {
-            var deliveryOptionsSteps = DeliveryOptionsBuilder
-                .CreateInstance()
-                .WithEnvironmentId(_guid)
-                .UseProductionApi();
-
-            Assert.Throws<ArgumentNullException>(() => deliveryOptionsSteps.WithCustomEndpoint((Uri)null));
-        }
-
-        [Fact]
-        [Obsolete]
-        public void ValidateOptionsWithUriEndpointWrongScheme()
-        {
-            var incorrectSchemeUri = new Uri("ftp://www.abc.com");
-            var deliveryOptionsSteps = DeliveryOptionsBuilder
-                .CreateInstance()
-                .WithEnvironmentId(_guid)
-                .UseProductionApi();
-
-            Assert.Throws<ArgumentException>(() => deliveryOptionsSteps.WithCustomEndpoint(incorrectSchemeUri));
-        }
-
-        [Fact]
-        [Obsolete]
-        public void ValidateOptionsWithRelativeUriEndpoint()
-        {
-            var relativeUri = new Uri("/abc/cde", UriKind.Relative);
-            var deliveryOptionsSteps = DeliveryOptionsBuilder
-                .CreateInstance()
-                .WithEnvironmentId(_guid)
-                .UseProductionApi();
-
-            Assert.Throws<ArgumentException>(() => deliveryOptionsSteps.WithCustomEndpoint(relativeUri));
-        }
-
-        [Fact]
-        [Obsolete]
-        public void ValidateOptionsBuiltWithBuilderWithEmptyEnvironmentId()
-        {
-            var deliveryOptionsSteps = DeliveryOptionsBuilder.CreateInstance();
-
-            Assert.Throws<ArgumentException>(() => deliveryOptionsSteps.WithEnvironmentId(Guid.Empty));
-        }
+            EnvironmentId = _guid.ToString(),
+            PreviewEndpoint = "invalid"
+        };
     }
 }

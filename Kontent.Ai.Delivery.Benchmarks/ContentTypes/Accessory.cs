@@ -1,6 +1,5 @@
-namespace Kontent.Ai.Delivery.Benchmarks.ContentTypes
+namespace Kontent.Ai.Delivery.Benchmarks.ContentTypes;
+
+public partial class Accessory
 {
-    public partial class Accessory
-    {
-    }
 }

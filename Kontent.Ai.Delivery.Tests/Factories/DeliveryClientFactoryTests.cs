@@ -5,38 +5,51 @@ using Microsoft.Extensions.DependencyInjection;
 using Xunit;
 using Kontent.Ai.Delivery.Extensions;
 
-namespace Kontent.Ai.Delivery.Tests.Factories
+namespace Kontent.Ai.Delivery.Tests.Factories;
+
+[Obsolete("#312")]
+public class DeliveryClientFactoryTests
 {
-    [Obsolete("#312")]
-    public class DeliveryClientFactoryTests
+    private readonly ServiceCollection _serviceCollection;
+
+    public DeliveryClientFactoryTests()
     {
-        private readonly ServiceCollection _serviceCollection;
+        _serviceCollection = new ServiceCollection();
+    }
 
-        public DeliveryClientFactoryTests()
+    [Fact]
+    public void GetNamedClient_GetNull()
+    {
+        var deliveryClientFactory = new Delivery.DeliveryClientFactory(_serviceCollection.BuildServiceProvider());
+
+        Assert.Throws<NotImplementedException>(() => deliveryClientFactory.Get("clientName"));
+    }
+
+    [Fact]
+    public void GetClient_GetClient()
+    {
+        _serviceCollection.AddDeliveryClient(new DeliveryOptions
         {
-            _serviceCollection = new ServiceCollection();
-        }
+            EnvironmentId = Guid.NewGuid().ToString()
+        });
+        var deliveryClientFactory = new Delivery.DeliveryClientFactory(_serviceCollection.BuildServiceProvider());
 
-        [Fact]
-        public void GetNamedClient_GetNull()
+        var result = deliveryClientFactory.Get();
+
+        result.Should().NotBeNull();
+    }
+
+    [Fact]
+    public void AddDeliveryClient_WithInvalidOptions_Throws()
+    {
+        var services = new ServiceCollection();
+
+        Action act = () => services.AddDeliveryClient(new DeliveryOptions
         {
-            var deliveryClientFactory = new Delivery.DeliveryClientFactory(_serviceCollection.BuildServiceProvider());
+            EnvironmentId = "invalid-guid"
+        });
 
-            Assert.Throws<NotImplementedException>(() => deliveryClientFactory.Get("clientName"));
-        }
-
-        [Fact]
-        public void GetClient_GetClient()
-        {
-            _serviceCollection.AddDeliveryClient(new DeliveryOptions
-            {
-                EnvironmentId = Guid.NewGuid().ToString()
-            });
-            var deliveryClientFactory = new Delivery.DeliveryClientFactory(_serviceCollection.BuildServiceProvider());
-
-            var result = deliveryClientFactory.Get();
-
-            result.Should().NotBeNull();
-        }
+        act.Should().Throw<ArgumentException>()
+            .WithMessage("*DeliveryOptions validation failed*");
     }
 }

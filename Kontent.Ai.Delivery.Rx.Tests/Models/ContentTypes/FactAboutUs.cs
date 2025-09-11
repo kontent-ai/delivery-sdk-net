@@ -7,18 +7,17 @@
 using System.Collections.Generic;
 using Kontent.Ai.Delivery.Abstractions;
 
-namespace Kontent.Ai.Delivery.Rx.Tests.Models.ContentTypes
-{
-    public class FactAboutUs
-    {
-        public const string Codename = "fact_about_us";
-        public const string TitleCodename = "title";
-        public const string DescriptionCodename = "description";
-        public const string ImageCodename = "image";
+namespace Kontent.Ai.Delivery.Rx.Tests.Models.ContentTypes;
 
-        public string Title { get; set; }
-        public string Description { get; set; }
-        public IEnumerable<IAsset> Image { get; set; }
-        public IContentItemSystemAttributes System { get; set; }
-    }
+public class FactAboutUs
+{
+    public const string Codename = "fact_about_us";
+    public const string TitleCodename = "title";
+    public const string DescriptionCodename = "description";
+    public const string ImageCodename = "image";
+
+    public string Title { get; set; }
+    public string Description { get; set; }
+    public IEnumerable<IAsset> Image { get; set; }
+    public IContentItemSystemAttributes System { get; set; }
 }

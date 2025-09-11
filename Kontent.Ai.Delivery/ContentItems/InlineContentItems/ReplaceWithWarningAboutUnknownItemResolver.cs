@@ -1,8 +1,7 @@
-﻿namespace Kontent.Ai.Delivery.ContentItems.InlineContentItems
+﻿namespace Kontent.Ai.Delivery.ContentItems.InlineContentItems;
+
+internal class ReplaceWithWarningAboutUnknownItemResolver : IInlineContentItemsResolver<UnknownContentItem>
 {
-    internal class ReplaceWithWarningAboutUnknownItemResolver : IInlineContentItemsResolver<UnknownContentItem>
-    {
-        public string Resolve(UnknownContentItem item)
-            => $"Content type '{item.Type}' has no corresponding model.";
-    }
+    public string Resolve(UnknownContentItem item)
+        => $"Content type '{item.Type}' has no corresponding model.";
 }

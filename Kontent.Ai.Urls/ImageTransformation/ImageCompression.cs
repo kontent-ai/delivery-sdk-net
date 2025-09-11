@@ -1,18 +1,17 @@
-﻿namespace Kontent.Ai.Urls.ImageTransformation
+﻿namespace Kontent.Ai.Urls.ImageTransformation;
+
+/// <summary>
+/// Types of image compression.
+/// </summary>
+public enum ImageCompression
 {
     /// <summary>
-    /// Types of image compression.
+    /// Allows the original data to be perfectly reconstructed from the compressed data.
     /// </summary>
-    public enum ImageCompression
-    {
-        /// <summary>
-        /// Allows the original data to be perfectly reconstructed from the compressed data.
-        /// </summary>
-        Lossless,
+    Lossless,
 
-        /// <summary>
-        /// Irreversible compression where partial data are discarded.
-        /// </summary>
-        Lossy
-    }
+    /// <summary>
+    /// Irreversible compression where partial data are discarded.
+    /// </summary>
+    Lossy
 }

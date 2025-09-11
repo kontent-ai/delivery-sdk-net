@@ -3,18 +3,14 @@
 namespace Kontent.Ai.Delivery.UsedIn;
 
 /// <inheritdoc/>
-internal sealed class UsedInItem : IUsedInItem
+/// <summary>
+/// Constructor used for deserialization (e.g. for caching purposes), contains no logic.
+/// </summary>
+[method: JsonConstructor]
+/// <inheritdoc/>
+internal sealed class UsedInItem(IUsedInItemSystemAttributes system) : IUsedInItem
 {
     /// <inheritdoc/>
     [JsonPropertyName("system")]
-    public IUsedInItemSystemAttributes System { get; internal set; }
-
-    /// <summary>
-    /// Constructor used for deserialization (e.g. for caching purposes), contains no logic.
-    /// </summary>
-    [JsonConstructor]
-    public UsedInItem(IUsedInItemSystemAttributes system)
-    {
-        System = system;
-    }
+    public IUsedInItemSystemAttributes System { get; internal set; } = system;
 }

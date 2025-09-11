@@ -1,29 +1,23 @@
 ﻿using System;
 using Autofac;
 
-namespace Kontent.Ai.Delivery.Extensions.DependencyInjection
+namespace Kontent.Ai.Delivery.Extensions.DependencyInjection;
+
+[Obsolete("#312")]
+internal class AutofacServiceProvider(IComponentContext container) : INamedServiceProvider
 {
-    [Obsolete("#312")]
-    internal class AutofacServiceProvider : INamedServiceProvider
+    private readonly IComponentContext _container = container;
+
+    public T GetService<T>(string name)
     {
-        private readonly IComponentContext _container;
-
-        public AutofacServiceProvider(IComponentContext container)
+        try
         {
-            _container = container;
+            return _container.ResolveNamed<T>(name);
+        }
+        catch
+        {
+            return default(T);
         }
 
-        public T GetService<T>(string name)
-        {
-            try
-            {
-                return _container.ResolveNamed<T>(name);
-            }
-            catch
-            {
-                return default(T);
-            }
-
-        }
     }
 }

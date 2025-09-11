@@ -1,11 +1,10 @@
-﻿namespace Kontent.Ai.Delivery.ContentItems
-{
-    internal class TypeProvider : ITypeProvider
-    {
-        public Type? GetType(string contentType)
-            => null;
+﻿namespace Kontent.Ai.Delivery.ContentItems;
 
-        public string? GetCodename(Type contentType)
-            => null;
-    }
+internal class TypeProvider : ITypeProvider
+{
+    public Type? GetType(string contentType)
+        => null;
+
+    public string? GetCodename(Type contentType)
+        => null;
 }

@@ -7,18 +7,17 @@
 using System.Collections.Generic;
 using Kontent.Ai.Delivery.Abstractions;
 
-namespace Kontent.Ai.Delivery.Rx.Tests.Models.ContentTypes
-{
-    public class Tweet
-    {
-        public const string Codename = "tweet";
-        public const string TweetLinkCodename = "tweet_link";
-        public const string ThemeCodename = "theme";
-        public const string DisplayOptionsCodename = "display_options";
+namespace Kontent.Ai.Delivery.Rx.Tests.Models.ContentTypes;
 
-        public string TweetLink { get; set; }
-        public IEnumerable<IMultipleChoiceOption> Theme { get; set; }
-        public IEnumerable<IMultipleChoiceOption> DisplayOptions { get; set; }
-        public IContentItemSystemAttributes System { get; set; }
-    }
+public class Tweet
+{
+    public const string Codename = "tweet";
+    public const string TweetLinkCodename = "tweet_link";
+    public const string ThemeCodename = "theme";
+    public const string DisplayOptionsCodename = "display_options";
+
+    public string TweetLink { get; set; }
+    public IEnumerable<IMultipleChoiceOption> Theme { get; set; }
+    public IEnumerable<IMultipleChoiceOption> DisplayOptions { get; set; }
+    public IContentItemSystemAttributes System { get; set; }
 }

@@ -1,6 +1,5 @@
-namespace Kontent.Ai.Delivery.Caching.Tests.ContentTypes
+namespace Kontent.Ai.Delivery.Caching.Tests.ContentTypes;
+
+public partial class Office
 {
-    public partial class Office
-    {
-    }
 }

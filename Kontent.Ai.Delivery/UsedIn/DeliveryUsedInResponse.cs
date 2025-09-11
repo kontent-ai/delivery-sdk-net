@@ -2,18 +2,11 @@
 
 namespace Kontent.Ai.Delivery.UsedIn;
 
-internal sealed class DeliveryUsedInResponse : IDeliveryItemsFeedResponse<IUsedInItem>
+internal sealed class DeliveryUsedInResponse : IDeliveryUsedInResponse
 {
     /// <inheritdoc/>
-    public IList<IUsedInItem> Items { get; }
+    [JsonPropertyName("items")]
+    public required IReadOnlyList<UsedInItem> Items { get; init; }
 
-    /// <summary>
-    /// Initializes a new instance of the <see cref="DeliveryUsedInResponse"/>
-    /// </summary>
-    /// <param name="items"></param>
-    [JsonConstructor]
-    internal DeliveryUsedInResponse(IList<IUsedInItem> items)
-    {
-        Items = items;
-    }
+    IReadOnlyList<IUsedInItem> IDeliveryUsedInResponse.Items => Items;
 }

@@ -2,56 +2,50 @@
 using Kontent.Ai.Delivery.ContentItems.Elements;
 using Microsoft.Extensions.Options;
 
-namespace Kontent.Ai.Delivery.ContentItems
+namespace Kontent.Ai.Delivery.ContentItems;
+
+internal class AssetElementValueConverter(IOptionsMonitor<DeliveryOptions> options) : IPropertyValueConverter<IEnumerable<IAsset>, IList<IAsset>>
 {
-    internal class AssetElementValueConverter : IPropertyValueConverter<IEnumerable<IAsset>, IList<IAsset>>
+    public IOptionsMonitor<DeliveryOptions> Options { get; } = options;
+
+    public Task<IList<IAsset>?> GetPropertyValueAsync<TElement>(PropertyInfo property, TElement contentElement, ResolvingContext context) where TElement : IContentElementValue<IEnumerable<IAsset>>
     {
-        public IOptionsMonitor<DeliveryOptions> Options { get; }
-
-        public AssetElementValueConverter(IOptionsMonitor<DeliveryOptions> options)
+        if (!typeof(IEnumerable<IAsset>).IsAssignableFrom(property.PropertyType))
         {
-            Options = options;
+            throw new InvalidOperationException($"Type of property {property.Name} must implement {nameof(IEnumerable<IAsset>)} in order to receive asset content.");
         }
 
-        public Task<IList<IAsset>?> GetPropertyValueAsync<TElement>(PropertyInfo property, TElement contentElement, ResolvingContext context) where TElement : IContentElementValue<IEnumerable<IAsset>>
+        if (!(contentElement is AssetElementValue assetElementValue))
         {
-            if (!typeof(IEnumerable<IAsset>).IsAssignableFrom(property.PropertyType))
+            return Task.FromResult<IList<IAsset>?>(null);
+        }
+
+        var assets = assetElementValue.Value
+            .Select(asset => new Asset
             {
-                throw new InvalidOperationException($"Type of property {property.Name} must implement {nameof(IEnumerable<IAsset>)} in order to receive asset content.");
-            }
+                Description = asset.Description,
+                Name = asset.Name,
+                Height = asset.Height,
+                Width = asset.Width,
+                Renditions = asset.Renditions,
+                Size = asset.Size,
+                Type = asset.Type,
+                Url = ResolveAssetUrl(asset),
+            })
+            .Cast<IAsset>()
+            .ToList();
 
-            if (!(contentElement is AssetElementValue assetElementValue))
-            {
-                return Task.FromResult<IList<IAsset>?>(null);
-            }
+        return Task.FromResult<IList<IAsset>?>(assets);
+    }
 
-            var assets = assetElementValue.Value
-                .Select(asset => new Asset
-                {
-                    Description = asset.Description,
-                    Name = asset.Name,
-                    Height = asset.Height,
-                    Width = asset.Width,
-                    Renditions = asset.Renditions,
-                    Size = asset.Size,
-                    Type = asset.Type,
-                    Url = ResolveAssetUrl(asset),
-                })
-                .Cast<IAsset>()
-                .ToList();
+    private string ResolveAssetUrl(IAsset asset)
+    {
+        var renditionPresetToBeApplied = Options.CurrentValue.DefaultRenditionPreset;
+        if (renditionPresetToBeApplied == null || asset.Renditions == null)
+            return asset.Url;
 
-            return Task.FromResult<IList<IAsset>?>(assets);
-        }
-
-        private string ResolveAssetUrl(IAsset asset)
-        {
-            var renditionPresetToBeApplied = Options.CurrentValue.DefaultRenditionPreset;
-            if (renditionPresetToBeApplied == null || asset.Renditions == null)
-                return asset.Url;
-
-            return asset.Renditions.TryGetValue(renditionPresetToBeApplied, out var renditionToBeApplied)
-                ? $"{asset.Url}?{renditionToBeApplied.Query}"
-                : asset.Url;
-        }
+        return asset.Renditions.TryGetValue(renditionPresetToBeApplied, out var renditionToBeApplied)
+            ? $"{asset.Url}?{renditionToBeApplied.Query}"
+            : asset.Url;
     }
 }

@@ -1,9 +1,8 @@
 using System.Threading;
 using System.Collections.Generic;
 using System.Threading.Tasks;
-using Kontent.Ai.Delivery.Abstractions.SharedModels;
 
-namespace Kontent.Ai.Delivery.Abstractions.QueryBuilders;
+namespace Kontent.Ai.Delivery.Abstractions;
 
 /// <summary>
 /// Fluent builder for listing languages.

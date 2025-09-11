@@ -1,11 +1,3 @@
-using System.Net;
-using System.Net.Http.Headers;
-using System.Text.Json;
-using Kontent.Ai.Delivery.Abstractions.Serialization;
-using Kontent.Ai.Delivery.Abstractions.SharedModels;
-using Kontent.Ai.Delivery.SharedModels;
-using Refit;
-
 namespace Kontent.Ai.Delivery.Extensions;
 
 /// <summary>

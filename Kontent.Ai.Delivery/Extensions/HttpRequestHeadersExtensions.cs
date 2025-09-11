@@ -43,7 +43,7 @@ internal static class HttpRequestHeadersExtensions
     {
         headers.Authorization = new AuthenticationHeaderValue(scheme, parameter);
     }
-    
+
     internal static string GetProductVersion(this Assembly assembly)
     {
         string? sdkVersion;

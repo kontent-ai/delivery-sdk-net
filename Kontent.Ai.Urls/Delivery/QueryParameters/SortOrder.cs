@@ -1,18 +1,17 @@
-﻿namespace Kontent.Ai.Urls.Delivery.QueryParameters
+﻿namespace Kontent.Ai.Urls.Delivery.QueryParameters;
+
+/// <summary>
+/// Specifies the order in which content items are sorted.
+/// </summary>
+public enum SortOrder
 {
     /// <summary>
-    /// Specifies the order in which content items are sorted.
+    /// Content items in ascending order.
     /// </summary>
-    public enum SortOrder
-    {
-        /// <summary>
-        /// Content items in ascending order.
-        /// </summary>
-        Ascending,
+    Ascending,
 
-        /// <summary>
-        /// Content items in descending order.
-        /// </summary>
-        Descending
-    }
+    /// <summary>
+    /// Content items in descending order.
+    /// </summary>
+    Descending
 }

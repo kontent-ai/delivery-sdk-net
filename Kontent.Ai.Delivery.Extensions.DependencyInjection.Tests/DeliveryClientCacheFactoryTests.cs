@@ -7,53 +7,52 @@ using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Options;
 using Xunit;
 
-namespace Kontent.Ai.Delivery.Extensions.DependencyInjection.Tests
+namespace Kontent.Ai.Delivery.Extensions.DependencyInjection.Tests;
+
+[Obsolete("#312")]
+public class DeliveryClientCacheFactoryTests
 {
-    [Obsolete("#312")]
-    public class DeliveryClientCacheFactoryTests
+    private readonly IOptionsMonitor<DeliveryCacheOptions> _deliveryCacheOptionsMock;
+    private readonly IDeliveryClientFactory _innerDeliveryClientFactoryMock;
+    private readonly INamedServiceProvider _autofacServiceProvider;
+    private readonly IServiceCollection _serviceCollection;
+
+    private const string _clientName = "ClientName";
+
+    public DeliveryClientCacheFactoryTests()
     {
-        private readonly IOptionsMonitor<DeliveryCacheOptions> _deliveryCacheOptionsMock;
-        private readonly IDeliveryClientFactory _innerDeliveryClientFactoryMock;
-        private readonly INamedServiceProvider _autofacServiceProvider;
-        private readonly IServiceCollection _serviceCollection;
+        _deliveryCacheOptionsMock = A.Fake<IOptionsMonitor<DeliveryCacheOptions>>();
+        _innerDeliveryClientFactoryMock = A.Fake<IDeliveryClientFactory>();
+        _autofacServiceProvider = A.Fake<INamedServiceProvider>();
+        _serviceCollection = new ServiceCollection()
+            .AddMemoryCache();
+    }
 
-        private const string _clientName = "ClientName";
+    [Fact]
+    public void GetNamedCacheClient_WithCorrectName_GetClient()
+    {
+        var deliveryCacheOptions = new DeliveryCacheOptions();
+        A.CallTo(() => _deliveryCacheOptionsMock.Get(_clientName))
+            .Returns(deliveryCacheOptions);
 
-        public DeliveryClientCacheFactoryTests()
-        {
-            _deliveryCacheOptionsMock = A.Fake<IOptionsMonitor<DeliveryCacheOptions>>();
-            _innerDeliveryClientFactoryMock = A.Fake<IDeliveryClientFactory>();
-            _autofacServiceProvider = A.Fake<INamedServiceProvider>();
-            _serviceCollection = new ServiceCollection()
-                .AddMemoryCache();
-        }
+        var deliveryClientFactory = new NamedDeliveryClientCacheFactory(_innerDeliveryClientFactoryMock, _deliveryCacheOptionsMock, _serviceCollection.BuildServiceProvider(), _autofacServiceProvider);
 
-        [Fact]
-        public void GetNamedCacheClient_WithCorrectName_GetClient()
-        {
-            var deliveryCacheOptions = new DeliveryCacheOptions();
-            A.CallTo(() => _deliveryCacheOptionsMock.Get(_clientName))
-                .Returns(deliveryCacheOptions);
+        var result = deliveryClientFactory.Get(_clientName);
 
-            var deliveryClientFactory = new NamedDeliveryClientCacheFactory(_innerDeliveryClientFactoryMock, _deliveryCacheOptionsMock, _serviceCollection.BuildServiceProvider(), _autofacServiceProvider);
+        result.Should().NotBeNull();
+    }
 
-            var result = deliveryClientFactory.Get(_clientName);
+    [Fact]
+    public void GetNamedCacheClient_WithWrongName_GetNull()
+    {
+        var deliveryCacheOptions = new DeliveryCacheOptions();
+        A.CallTo(() => _deliveryCacheOptionsMock.Get(_clientName))
+            .Returns(deliveryCacheOptions);
 
-            result.Should().NotBeNull();
-        }
+        var deliveryClientFactory = new NamedDeliveryClientCacheFactory(_innerDeliveryClientFactoryMock, _deliveryCacheOptionsMock, _serviceCollection.BuildServiceProvider(), _autofacServiceProvider);
 
-        [Fact]
-        public void GetNamedCacheClient_WithWrongName_GetNull()
-        {
-            var deliveryCacheOptions = new DeliveryCacheOptions();
-            A.CallTo(() => _deliveryCacheOptionsMock.Get(_clientName))
-                .Returns(deliveryCacheOptions);
+        var result = deliveryClientFactory.Get("WrongName");
 
-            var deliveryClientFactory = new NamedDeliveryClientCacheFactory(_innerDeliveryClientFactoryMock, _deliveryCacheOptionsMock, _serviceCollection.BuildServiceProvider(), _autofacServiceProvider);
-
-            var result = deliveryClientFactory.Get("WrongName");
-
-            result.Should().NotBeNull();
-        }
+        result.Should().NotBeNull();
     }
 }

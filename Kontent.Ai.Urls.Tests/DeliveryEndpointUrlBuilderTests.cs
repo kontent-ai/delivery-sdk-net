@@ -10,14 +10,9 @@ public class DeliveryEndpointUrlBuilderTests
 {
     //as this is only place where mock would be used, just fake implementation class is created
     //if more mocking is to be used, please consider usage mocking library package like NSubstitute instead
-    private class FakeOptionsMonitor<T> : IOptionsMonitor<T>
+    private class FakeOptionsMonitor<T>(T options) : IOptionsMonitor<T>
     {
-        public T CurrentValue { get; }
-
-        public FakeOptionsMonitor(T options)
-        {
-            CurrentValue = options;
-        }
+        public T CurrentValue { get; } = options;
 
         public T Get(string name)
         {

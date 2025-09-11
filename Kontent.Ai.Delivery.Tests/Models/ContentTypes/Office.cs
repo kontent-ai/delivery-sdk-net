@@ -1,6 +1,35 @@
-namespace Kontent.Ai.Delivery.Tests.Models.ContentTypes
-{
-    public partial class Office
-    {
-    }
-}
+using System.Collections.Generic;
+using System.Text.Json.Serialization;
+using Kontent.Ai.Delivery.Abstractions;
+
+namespace Kontent.Ai.Delivery.Tests.Models.ContentTypes;
+
+public record Office
+(
+    [property: JsonPropertyName("city")]
+    string City,
+
+    [property: JsonPropertyName("country")]
+    string Country,
+
+    [property: JsonPropertyName("email")]
+    string Email,
+
+    [property: JsonPropertyName("name")]
+    string Name,
+
+    [property: JsonPropertyName("phone")]
+    string Phone,
+
+    [property: JsonPropertyName("sitemap")]
+    IEnumerable<ITaxonomyTerm> Sitemap,
+
+    [property: JsonPropertyName("state")]
+    string State,
+
+    [property: JsonPropertyName("street")]
+    string Street,
+
+    [property: JsonPropertyName("zip_code")]
+    string ZipCode
+);
