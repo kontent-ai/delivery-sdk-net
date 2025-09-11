@@ -10,11 +10,13 @@ namespace Kontent.Ai.Delivery.Api.QueryBuilders;
 internal sealed class ItemsQuery<TModel>(
     IDeliveryApi api,
     Func<bool?> getDefaultWaitForNewContent,
-    Func<bool> getDefaultRenderRichTextToHtml) : IItemsQuery<TModel> where TModel : IElementsModel
+    Func<bool> getDefaultRenderRichTextToHtml,
+    IElementsPostProcessor elementsPostProcessor) : IItemsQuery<TModel> where TModel : IElementsModel
 {
     private readonly IDeliveryApi _api = api;
     private readonly Func<bool?> _getDefaultWaitForNewContent = getDefaultWaitForNewContent;
     private readonly Func<bool> _getDefaultRenderRichTextToHtml = getDefaultRenderRichTextToHtml;
+    private readonly IElementsPostProcessor _elementsPostProcessor = elementsPostProcessor;
     private readonly ItemFilters _filters = new();
     private readonly List<IFilter> _appliedFilters = [];
     private ListItemsParams _params = new();
@@ -107,9 +109,28 @@ internal sealed class ItemsQuery<TModel>(
         
         // Convert IApiResponse to IDeliveryResult
         var deliveryResult = await rawResponse.ToDeliveryResultAsync().ConfigureAwait(false);
-        
-        // Map from IDeliveryItemListingResponse<T> to IReadOnlyList<IContentItem<T>>
-        return deliveryResult.Map(response => response.Items);
+
+        if (!deliveryResult.IsSuccess)
+        {
+            return DeliveryResult.Failure<IReadOnlyList<IContentItem<TModel>>>(
+                deliveryResult.RequestUrl ?? string.Empty,
+                deliveryResult.StatusCode,
+                deliveryResult.Error);
+        }
+
+        var resp = deliveryResult.Value;
+        var items = resp.Items;
+        foreach (var item in items)
+        {
+            await _elementsPostProcessor.ProcessAsync(item, resp.ModularContent, cancellationToken).ConfigureAwait(false);
+        }
+
+        return DeliveryResult.Success<IReadOnlyList<IContentItem<TModel>>>(
+            (IReadOnlyList<IContentItem<TModel>>)items,
+            deliveryResult.RequestUrl ?? string.Empty,
+            deliveryResult.StatusCode,
+            deliveryResult.HasStaleContent,
+            deliveryResult.ContinuationToken);
     }
 
     public async Task<IDeliveryResult<IReadOnlyList<IContentItem<TModel>>>> ExecuteAllAsync(CancellationToken cancellationToken = default)
@@ -152,7 +173,13 @@ internal sealed class ItemsQuery<TModel>(
                 break;
 
             if (items is { Count: > 0 })
-                all.AddRange(items);
+            {
+                foreach (var item in items)
+                {
+                    await _elementsPostProcessor.ProcessAsync(item, deliveryResult.Value.ModularContent, cancellationToken).ConfigureAwait(false);
+                    all.Add(item);
+                }
+            }
 
             skip += pageCount;
 

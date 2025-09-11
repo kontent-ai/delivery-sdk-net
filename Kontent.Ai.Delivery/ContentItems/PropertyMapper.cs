@@ -31,7 +31,7 @@ namespace Kontent.Ai.Delivery.ContentItems
                 : fieldName.Replace("_", "").Equals(modelProperty.Name, StringComparison.OrdinalIgnoreCase); // Default mapping
         }
 
-        private static string GetPropertyNameFromAttribute(PropertyInfo modelProperty)
+        private static string? GetPropertyNameFromAttribute(PropertyInfo modelProperty)
             => modelProperty.GetCustomAttribute<PropertyNameAttribute>()?.PropertyName  // Try to get the name of the property name attribute
             ?? modelProperty.GetCustomAttribute<JsonPropertyNameAttribute>()?.Name; // Try to get the name of JSON serialization property
     }

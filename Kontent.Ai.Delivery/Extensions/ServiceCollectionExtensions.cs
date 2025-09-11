@@ -1,5 +1,8 @@
 using System.ComponentModel.DataAnnotations;
+using AngleSharp.Html.Parser;
 using Kontent.Ai.Delivery.Configuration;
+using Kontent.Ai.Delivery.ContentItems;
+using Kontent.Ai.Delivery.ContentItems.InlineContentItems;
 using Kontent.Ai.Delivery.Handlers;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
@@ -114,6 +117,13 @@ namespace Kontent.Ai.Delivery.Extensions
             // Register message handlers
             services.TryAddTransient<TrackingHandler>();
             services.TryAddTransient<DeliveryAuthenticationHandler>();
+
+            // Mapping and processing services
+            services.TryAddSingleton<IPropertyMapper, PropertyMapper>();
+            services.TryAddSingleton<IModelProvider, ModelProvider>();
+            services.TryAddSingleton<IInlineContentItemsProcessor, InlineContentItemsProcessor>();
+            services.TryAddSingleton<IElementsPostProcessor, ElementsPostProcessor>();
+            services.TryAddSingleton<IHtmlParser, HtmlParser>();
 
             // Register Refit client
             var httpClientBuilder = services

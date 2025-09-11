@@ -10,11 +10,12 @@ using System.Collections.Generic;
 namespace Kontent.Ai.Delivery.Api.QueryBuilders;
 
 /// <inheritdoc cref="IEnumerateItemsQuery{TModel}"/>
-internal sealed class EnumerateItemsQuery<TModel>(IDeliveryApi api, Func<bool?> getDefaultWaitForNewContent) : IEnumerateItemsQuery<TModel>
+internal sealed class EnumerateItemsQuery<TModel>(IDeliveryApi api, Func<bool?> getDefaultWaitForNewContent, IElementsPostProcessor elementsPostProcessor) : IEnumerateItemsQuery<TModel>
     where TModel : IElementsModel
 {
     private readonly IDeliveryApi _api = api;
     private readonly Func<bool?> _getDefaultWaitForNewContent = getDefaultWaitForNewContent;
+    private readonly IElementsPostProcessor _elementsPostProcessor = elementsPostProcessor;
     private EnumItemsParams _params = new();
     private bool? _waitForLoadingNewContentOverride;
 
@@ -57,6 +58,7 @@ internal sealed class EnumerateItemsQuery<TModel>(IDeliveryApi api, Func<bool?> 
 
             foreach (var item in resp.Content.Items)
             {
+                await _elementsPostProcessor.ProcessAsync(item, null, cancellationToken).ConfigureAwait(false);
                 yield return item;
             }
 

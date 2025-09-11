@@ -11,7 +11,8 @@ internal sealed class ItemQuery<TModel>(
     IDeliveryApi api,
     string codename,
     Func<bool?> getDefaultWaitForNewContent,
-    Func<bool> getDefaultRenderRichTextToHtml) : IItemQuery<TModel>
+    Func<bool> getDefaultRenderRichTextToHtml,
+    IElementsPostProcessor elementsPostProcessor) : IItemQuery<TModel>
     where TModel : IElementsModel
 {
     private readonly IDeliveryApi _api = api;
@@ -19,6 +20,7 @@ internal sealed class ItemQuery<TModel>(
     private readonly Func<bool?> _getDefaultWaitForNewContent = getDefaultWaitForNewContent;
     private readonly Func<bool> _getDefaultRenderRichTextToHtml = getDefaultRenderRichTextToHtml;
     private SingleItemParams _params = new();
+    private readonly IElementsPostProcessor _elementsPostProcessor = elementsPostProcessor;
     private bool? _waitForLoadingNewContentOverride;
     private bool? _renderRichTextToHtmlOverride;
 
@@ -67,8 +69,26 @@ internal sealed class ItemQuery<TModel>(
         
         // Convert IApiResponse to IDeliveryResult
         var deliveryResult = await rawResponse.ToDeliveryResultAsync().ConfigureAwait(false);
-        
-        // Map from IDeliveryItemResponse<T> to IContentItem<T>
-        return deliveryResult.Map(response => response.Item);
+
+        if (!deliveryResult.IsSuccess)
+        {
+            return DeliveryResult.Failure<IContentItem<TModel>>(
+                deliveryResult.RequestUrl ?? string.Empty,
+                deliveryResult.StatusCode,
+                deliveryResult.Error);
+        }
+
+        var resp = deliveryResult.Value;
+        var item = resp.Item;
+
+        // Post-process to hydrate IRichTextContent, etc.
+        await _elementsPostProcessor.ProcessAsync(item, resp.ModularContent, cancellationToken).ConfigureAwait(false);
+
+        return DeliveryResult.Success<IContentItem<TModel>>(
+            item,
+            deliveryResult.RequestUrl ?? string.Empty,
+            deliveryResult.StatusCode,
+            deliveryResult.HasStaleContent,
+            deliveryResult.ContinuationToken);
     }
 }

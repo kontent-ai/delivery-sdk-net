@@ -79,12 +79,11 @@ namespace Kontent.Ai.Delivery.ContentItems
             var requestedType = typeof(T);
             if (requestedType == typeof(object))
             {
-                var targetType = GetModelTypeFromSystem(itemDocument.RootElement) ?? typeof(DynamicItem);
-
-                if (targetType == typeof(DynamicItem))
+                var targetType = GetModelTypeFromSystem(itemDocument.RootElement);
+                if (targetType is null)
                 {
-                    var dynamicItem = BuildDynamicItem(itemDocument.RootElement);
-                    return (T)(object)dynamicItem;
+                    // Fallback: return raw JSON object
+                    return (T)(object)itemDocument.RootElement.Clone();
                 }
 
                 var mapped = await GetContentItemModelAsync(
@@ -109,7 +108,7 @@ namespace Kontent.Ai.Delivery.ContentItems
             Dictionary<string, object>? processedItems = null, 
             HashSet<RichTextContentElements>? currentlyResolvedRichStrings = null)
         {
-            processedItems ??= new Dictionary<string, object>();
+            processedItems ??= [];
             
             IContentItemSystemAttributes? itemSystemAttributes = null;
             
@@ -173,7 +172,7 @@ namespace Kontent.Ai.Delivery.ContentItems
                 var elementData = GetElementData(elementsData.Value, property, itemSystemAttributes);
                 if (elementData?.Value != null)
                 {
-                    var (stringValue, isRichText) = await GetStringValueAsync(elementData.Value.Value);
+                    var (stringValue, isRichText) = GetStringValue(elementData.Value.Value);
                     var value = await GetRichTextValueAsync(
                         stringValue, 
                         elementsData.Value, 
@@ -209,27 +208,7 @@ namespace Kontent.Ai.Delivery.ContentItems
             return null;
         }
 
-        private DynamicItem BuildDynamicItem(JsonElement serializedItem)
-        {
-            IContentItemSystemAttributes system = new ContentItemSystemAttributes();
-            if (serializedItem.TryGetProperty("system", out var systemEl))
-            {
-                var systemJson = systemEl.GetRawText();
-                system = JsonSerializer.Deserialize<IContentItemSystemAttributes>(systemJson) ?? new ContentItemSystemAttributes();
-            }
-
-            var elementsDict = new Dictionary<string, JsonElement>(StringComparer.Ordinal);
-            var elements = GetElementData(serializedItem);
-            if (elements.HasValue && elements.Value.ValueKind == JsonValueKind.Object)
-            {
-                foreach (var prop in elements.Value.EnumerateObject())
-                {
-                    elementsDict[prop.Name] = prop.Value;
-                }
-            }
-
-            return new DynamicItem(system, elementsDict);
-        }
+        // Removed DynamicItem path; dynamic mapping is handled elsewhere.
 
         private ResolvingContext CreateResolvingContext(JsonElement linkedItems, Dictionary<string, object> processedItems)
         {
@@ -276,11 +255,11 @@ namespace Kontent.Ai.Delivery.ContentItems
 
             if (propertyType == typeof(string))
             {
-                var (value, isRichText) = await GetStringValueAsync(elementValue);
+                var (value, isRichText) = GetStringValue(elementValue);
                 
                 if (isRichText)
                 {
-                    richTextPropertiesToBeProcessed.Add(property);
+                    // Stop mapping rich text into string; handled via post-processor for IRichTextContent only.
                     return null;
                 }
                 
@@ -308,11 +287,11 @@ namespace Kontent.Ai.Delivery.ContentItems
             JsonElement elementsData, 
             PropertyInfo property, 
             JsonElement linkedItems, 
-            IContentItemSystemAttributes? itemSystemAttributes, 
+            IContentItemSystemAttributes itemSystemAttributes, 
             Dictionary<string, object> processedItems, 
             HashSet<RichTextContentElements> currentlyResolvedRichStrings)
         {
-            var currentlyProcessedString = new RichTextContentElements(itemSystemAttributes?.Codename, property.Name);
+            var currentlyProcessedString = new RichTextContentElements(itemSystemAttributes.Codename, property.Name);
             
             if (currentlyResolvedRichStrings.Contains(currentlyProcessedString))
             {
@@ -370,10 +349,10 @@ namespace Kontent.Ai.Delivery.ContentItems
                     propertyType.GetInterfaces().Any(i => i.IsGenericType && i.GetGenericTypeDefinition() == typeof(IEnumerable<>)));
         }
 
-        private async Task<(string value, bool isRichText)> GetStringValueAsync(JsonElement elementData)
+        private static (string value, bool isRichText) GetStringValue(JsonElement elementData)
         {
             var elementValue = GetRawValue(elementData);
-            
+
             if (elementValue == null || elementValue.Value.ValueKind != JsonValueKind.String)
             {
                 return (string.Empty, false);
@@ -381,7 +360,7 @@ namespace Kontent.Ai.Delivery.ContentItems
 
             var value = elementValue.Value.GetString() ?? string.Empty;
 
-            if (elementData.TryGetProperty("type", out var typeElement) && 
+            if (elementData.TryGetProperty("type", out var typeElement) &&
                 typeElement.GetString() == "rich_text")
             {
                 return (value, true);

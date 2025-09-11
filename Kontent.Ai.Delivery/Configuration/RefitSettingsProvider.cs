@@ -20,8 +20,9 @@ public static class RefitSettingsProvider
             PropertyNameCaseInsensitive = true
         };
 
-        // Register single factory that covers dynamic and strongly-typed elements mapping
+        // Register converters
         jsonSerializerOptions.Converters.Add(new ElementsConverterFactory());
+        jsonSerializerOptions.Converters.Add(new ContentItemConverterFactory());
 
         return new RefitSettings
         {
