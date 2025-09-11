@@ -11,6 +11,7 @@ namespace Kontent.Ai.Delivery
     {
         private readonly IDeliveryApi _deliveryApi;
         private readonly IOptionsMonitor<DeliveryOptions> _deliveryOptions;
+        private readonly IElementsPostProcessor _elementsPostProcessor;
 
         /// <summary>
         /// Initializes a new instance of the <see cref="DeliveryClient"/> class for retrieving content of the specified environment.
@@ -19,10 +20,12 @@ namespace Kontent.Ai.Delivery
         /// <param name="deliveryOptions">The settings of the Kontent.ai environment.</param>
         public DeliveryClient(
             IDeliveryApi deliveryApi,
-            IOptionsMonitor<DeliveryOptions> deliveryOptions)
+            IOptionsMonitor<DeliveryOptions> deliveryOptions,
+            IElementsPostProcessor elementsPostProcessor)
         {
             _deliveryApi = deliveryApi ?? throw new ArgumentNullException(nameof(deliveryApi));
             _deliveryOptions = deliveryOptions ?? throw new ArgumentNullException(nameof(deliveryOptions));
+            _elementsPostProcessor = elementsPostProcessor ?? throw new ArgumentNullException(nameof(elementsPostProcessor));
         }
 
         public IItemQuery<T> GetItem<T>(string codename) where T : IElementsModel
@@ -32,7 +35,7 @@ namespace Kontent.Ai.Delivery
                 throw new ArgumentException("Entered item codename is not valid.", nameof(codename));
             }
 
-            return new ItemQuery<T>(_deliveryApi, codename, GetDefaultWaitForLoadingNewContent, GetDefaultRenderRichTextToHtml);
+            return new ItemQuery<T>(_deliveryApi, codename, GetDefaultWaitForLoadingNewContent, GetDefaultRenderRichTextToHtml, _elementsPostProcessor);
         }
 
         public IDynamicItemQuery GetItem(string codename)
@@ -47,7 +50,7 @@ namespace Kontent.Ai.Delivery
 
         public IItemsQuery<T> GetItems<T>() where T : IElementsModel
         {
-            return new ItemsQuery<T>(_deliveryApi, GetDefaultWaitForLoadingNewContent, GetDefaultRenderRichTextToHtml);
+            return new ItemsQuery<T>(_deliveryApi, GetDefaultWaitForLoadingNewContent, GetDefaultRenderRichTextToHtml, _elementsPostProcessor);
         }
 
         public IDynamicItemsQuery GetItems()
@@ -57,7 +60,7 @@ namespace Kontent.Ai.Delivery
 
         public IEnumerateItemsQuery<T> GetItemsFeed<T>() where T : IElementsModel
         {
-            return new EnumerateItemsQuery<T>(_deliveryApi, GetDefaultWaitForLoadingNewContent);
+            return new EnumerateItemsQuery<T>(_deliveryApi, GetDefaultWaitForLoadingNewContent, _elementsPostProcessor);
         }
 
         public IEnumerateItemsQuery<IElementsModel> GetItemsFeed()

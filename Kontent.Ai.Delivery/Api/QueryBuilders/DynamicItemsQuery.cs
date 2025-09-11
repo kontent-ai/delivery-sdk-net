@@ -96,7 +96,7 @@ internal sealed class DynamicItemsQuery(
         
         // Get raw response from Refit API
         bool? wait = _waitForLoadingNewContentOverride ?? _getDefaultWaitForNewContent();
-        var rawResponse = await _api.GetItemsInternalAsync<DynamicElements>(paramsWithFilters, wait).ConfigureAwait(false);
+        var rawResponse = await _api.GetItemsInternalAsync<IElementsModel>(paramsWithFilters, wait).ConfigureAwait(false);
         
         // Convert IApiResponse to IDeliveryResult
         var deliveryResult = await rawResponse.ToDeliveryResultAsync();
@@ -122,7 +122,7 @@ internal sealed class DynamicItemsQuery(
             var pageParams = _params with { Skip = skip, Limit = limit, Filters = filters };
 
             var wait = _waitForLoadingNewContentOverride ?? _getDefaultWaitForNewContent();
-            var response = await _api.GetItemsInternalAsync<DynamicElements>(pageParams, wait).ConfigureAwait(false);
+            var response = await _api.GetItemsInternalAsync<IElementsModel>(pageParams, wait).ConfigureAwait(false);
 
             // Convert to delivery result
             var deliveryResult = await response.ToDeliveryResultAsync();

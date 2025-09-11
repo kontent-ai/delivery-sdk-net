@@ -1,4 +1,5 @@
 using System.Text.Json.Serialization;
+using System.Text.Json;
 
 namespace Kontent.Ai.Delivery.ContentItems;
 
@@ -16,4 +17,8 @@ internal sealed record ContentItem<TModel> : IContentItem<TModel>
     public required TModel Elements { get; init; }
 
     IContentItemSystemAttributes IContentItem<TModel>.System => System;
+
+    // Captured raw elements object for post-processing (not serialized)
+    [JsonIgnore]
+    internal JsonElement? RawElements { get; init; }
 }

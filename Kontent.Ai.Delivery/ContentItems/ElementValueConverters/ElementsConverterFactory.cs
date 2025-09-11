@@ -31,43 +31,39 @@ internal sealed class ElementsConverterFactory : JsonConverterFactory
     {
         if (typeToConvert == typeof(IElementsModel))
         {
-            return new DynamicElementsJsonConverter();
+            return new DynamicElementsConverter();
         }
 
         var converterType = typeof(StronglyTypedElementsJsonConverter<>).MakeGenericType(typeToConvert);
         return (JsonConverter)Activator.CreateInstance(converterType)!;
     }
 
-    private sealed class DynamicElementsJsonConverter : JsonConverter<IElementsModel>
+    internal sealed class DynamicElementsConverter : JsonConverter<IElementsModel>
     {
-        public override IElementsModel Read(ref Utf8JsonReader reader, Type typeToConvert, JsonSerializerOptions options)
+        public override IElementsModel Read(ref Utf8JsonReader reader, Type _, JsonSerializerOptions __)
         {
-            using var document = JsonDocument.ParseValue(ref reader);
-            var root = document.RootElement;
+            using var doc = JsonDocument.ParseValue(ref reader);
+            var root = doc.RootElement;
 
-            if (root.ValueKind != JsonValueKind.Object)
+            var map = new Dictionary<string, JsonElement>(StringComparer.Ordinal);
+            if (root.ValueKind == JsonValueKind.Object)
             {
-                return new DynamicElements(new Dictionary<string, JsonElement>(StringComparer.Ordinal));
+                foreach (var prop in root.EnumerateObject())
+                {
+                    // store the WHOLE element object (clone to ensure lifetime)
+                    map[prop.Name] = Clone(prop.Value);
+                }
             }
-
-            var dict = new Dictionary<string, JsonElement>(StringComparer.Ordinal);
-            foreach (var prop in root.EnumerateObject())
-            {
-                dict[prop.Name] = CloneElement(prop.Value);
-            }
-
-            return new DynamicElements(dict);
+            return new DynamicElements(map);
         }
 
         public override void Write(Utf8JsonWriter writer, IElementsModel value, JsonSerializerOptions options)
-        {
-            throw new NotSupportedException("Serialization of IElementsModel is not supported.");
-        }
+            => throw new NotSupportedException();
 
-        private static JsonElement CloneElement(JsonElement element)
+        private static JsonElement Clone(JsonElement el)
         {
-            using var doc = JsonDocument.Parse(element.GetRawText());
-            return doc.RootElement.Clone();
+            using var d = JsonDocument.Parse(el.GetRawText());
+            return d.RootElement.Clone();
         }
     }
 
