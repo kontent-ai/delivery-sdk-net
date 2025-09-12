@@ -1,4 +1,4 @@
-namespace Kontent.Ai.Delivery.Abstractions.SharedModels;
+namespace Kontent.Ai.Delivery.Abstractions;
 
 /// <summary>
 /// Represents the result of a Delivery API operation.

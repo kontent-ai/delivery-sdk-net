@@ -1,10 +1,9 @@
 ﻿using System.Text.Json.Serialization;
 
-namespace Kontent.Ai.Delivery.ContentItems.Elements
+namespace Kontent.Ai.Delivery.ContentItems.Elements;
+
+internal class TaxonomyElementValue : ContentElementValue<IEnumerable<ITaxonomyTerm>>, ITaxonomyElementValue
 {
-    internal class TaxonomyElementValue : ContentElementValue<IEnumerable<ITaxonomyTerm>>, ITaxonomyElementValue
-    {
-        [JsonPropertyName("taxonomy_group")]
-        public required string TaxonomyGroup { get; set; }
-    }
+    [JsonPropertyName("taxonomy_group")]
+    public required string TaxonomyGroup { get; set; }
 }

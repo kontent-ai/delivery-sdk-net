@@ -1,7 +1,4 @@
 using System.Threading;
-using Kontent.Ai.Delivery.Abstractions.QueryBuilders;
-using Kontent.Ai.Delivery.Abstractions.SharedModels;
-using Kontent.Ai.Delivery.ContentItems;
 
 namespace Kontent.Ai.Delivery.Api.QueryBuilders;
 
@@ -52,10 +49,10 @@ internal sealed class DynamicItemQuery(
         // Get raw response from Refit API
         bool? wait = _waitForLoadingNewContentOverride ?? _getDefaultWaitForNewContent();
         var rawResponse = await _api.GetItemInternalAsync<IElementsModel>(_codename, _params, wait).ConfigureAwait(false);
-        
+
         // Convert IApiResponse to IDeliveryResult
         var deliveryResult = await rawResponse.ToDeliveryResultAsync();
-        
+
         // Map from IDeliveryItemResponse<IElementsModel> to IContentItem<DynamicElements>
         return deliveryResult.Map(response => response.Item);
     }

@@ -7,24 +7,23 @@
 using System.Collections.Generic;
 using Kontent.Ai.Delivery.Abstractions;
 
-namespace Kontent.Ai.Delivery.Rx.Tests.Models.ContentTypes
-{
-    public class Home
-    {
-        public const string Codename = "home";
-        public const string HeroUnitCodename = "hero_unit";
-        public const string ArticlesCodename = "articles";
-        public const string OurStoryCodename = "our_story";
-        public const string CafesCodename = "cafes";
-        public const string ContactCodename = "contact";
-        public const string UrlPatternCodename = "url_pattern";
+namespace Kontent.Ai.Delivery.Rx.Tests.Models.ContentTypes;
 
-        public IEnumerable<object> HeroUnit { get; set; }
-        public IEnumerable<object> Articles { get; set; }
-        public IEnumerable<object> OurStory { get; set; }
-        public IEnumerable<object> Cafes { get; set; }
-        public string Contact { get; set; }
-        public string UrlPattern { get; set; }
-        public IContentItemSystemAttributes System { get; set; }
-    }
+public class Home
+{
+    public const string Codename = "home";
+    public const string HeroUnitCodename = "hero_unit";
+    public const string ArticlesCodename = "articles";
+    public const string OurStoryCodename = "our_story";
+    public const string CafesCodename = "cafes";
+    public const string ContactCodename = "contact";
+    public const string UrlPatternCodename = "url_pattern";
+
+    public IEnumerable<object> HeroUnit { get; set; }
+    public IEnumerable<object> Articles { get; set; }
+    public IEnumerable<object> OurStory { get; set; }
+    public IEnumerable<object> Cafes { get; set; }
+    public string Contact { get; set; }
+    public string UrlPattern { get; set; }
+    public IContentItemSystemAttributes System { get; set; }
 }

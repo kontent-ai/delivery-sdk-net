@@ -3,48 +3,46 @@ using Kontent.Ai.Delivery.Tests.DependencyInjectionFrameworks.Helpers;
 using Microsoft.Extensions.DependencyInjection;
 using Xunit;
 
-namespace Kontent.Ai.Delivery.Tests.DependencyInjectionFrameworks
+namespace Kontent.Ai.Delivery.Tests.DependencyInjectionFrameworks;
+
+[Collection("DI Tests")]
+public class SimpleInjectorTests
 {
-    [Collection("DI Tests")]
-    public class SimpleInjectorTests
+    [Fact]
+    public void DeliveryClientIsSuccessfullyResolvedFromSimpleInjectorContainer()
     {
-        [Fact]
-        public void DeliveryClientIsSuccessfullyResolvedFromSimpleInjectorContainer()
-        {
-            var container = DependencyInjectionFrameworksHelper
-                .GetServiceCollection()
-                .RegisterInlineContentItemResolvers()
-                .BuildSimpleInjectorServiceProvider();
+        var container = DependencyInjectionFrameworksHelper
+            .GetServiceCollection()
+            .BuildSimpleInjectorServiceProvider();
 
-            var client = (DeliveryClient)container.GetInstance<IDeliveryClient>();
+        var client = (DeliveryClient)container.GetInstance<IDeliveryClient>();
 
-            client.AssertDefaultDependencies();
-        }
+        client.AssertDefaultDependencies();
+    }
 
-        [Fact]
-        public void DeliveryClientIsSuccessfullyResolvedFromSimpleInjectorContainer_CustomModelProvider()
-        {
-            var container = DependencyInjectionFrameworksHelper
-                .GetServiceCollection()
-                .AddSingleton<IModelProvider, FakeModelProvider>()
-                .BuildSimpleInjectorServiceProvider();
+    [Fact]
+    public void DeliveryClientIsSuccessfullyResolvedFromSimpleInjectorContainer_CustomModelProvider()
+    {
+        var container = DependencyInjectionFrameworksHelper
+            .GetServiceCollection()
+            .AddSingleton<IModelProvider, FakeModelProvider>()
+            .BuildSimpleInjectorServiceProvider();
 
-            var client = (DeliveryClient)container.GetInstance<IDeliveryClient>();
+        var client = (DeliveryClient)container.GetInstance<IDeliveryClient>();
 
-            client.AssertDefaultDependenciesWithModelProviderAndInlineContentItemTypeResolvers<FakeModelProvider>();
-        }
+        client.AssertDefaultDependenciesWithModelProviderAndInlineContentItemTypeResolvers<FakeModelProvider>();
+    }
 
-        [Fact]
-        public void FakeModelProviderIsSuccessfullyResolvedAfterCrossWireWithServiceCollection()
-        {
-            var container = DependencyInjectionFrameworksHelper
-                .GetServiceCollection()
-                .BuildSimpleInjectorServiceProvider();
-            container.Register<IModelProvider, FakeModelProvider>();
+    [Fact]
+    public void FakeModelProviderIsSuccessfullyResolvedAfterCrossWireWithServiceCollection()
+    {
+        var container = DependencyInjectionFrameworksHelper
+            .GetServiceCollection()
+            .BuildSimpleInjectorServiceProvider();
+        container.Register<IModelProvider, FakeModelProvider>();
 
-            var resolvedService = container.GetRequiredService<IModelProvider>();
+        var resolvedService = container.GetRequiredService<IModelProvider>();
 
-            Assert.IsType<FakeModelProvider>(resolvedService);
-        }
+        Assert.IsType<FakeModelProvider>(resolvedService);
     }
 }

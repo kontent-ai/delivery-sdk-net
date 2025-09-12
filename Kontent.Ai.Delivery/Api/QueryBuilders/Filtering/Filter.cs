@@ -1,4 +1,4 @@
-namespace Kontent.Ai.Delivery.Abstractions.QueryBuilders.Filtering;
+namespace Kontent.Ai.Delivery.Api.QueryBuilders.Filtering;
 
 /// <summary>
 /// Concrete implementation of IFilter that represents a filtering operation.

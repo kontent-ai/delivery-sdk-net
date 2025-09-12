@@ -1,4 +1,4 @@
-namespace Kontent.Ai.Delivery.Abstractions.QueryBuilders.Filtering;
+namespace Kontent.Ai.Delivery.Abstractions;
 
 /// <summary>
 /// Base interface for all content filtering operations.

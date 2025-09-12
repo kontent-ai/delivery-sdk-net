@@ -1,4 +1,4 @@
-namespace Kontent.Ai.Delivery.Abstractions.QueryBuilders.Filtering;
+namespace Kontent.Ai.Delivery.Abstractions;
 
 /// <summary>
 /// Represents a filter value.

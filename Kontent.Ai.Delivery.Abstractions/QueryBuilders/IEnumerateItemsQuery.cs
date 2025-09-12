@@ -1,9 +1,8 @@
 using System.Threading.Tasks;
 using System.Collections.Generic;
 using System.Threading;
-using Kontent.Ai.Delivery.Abstractions.SharedModels;
 
-namespace Kontent.Ai.Delivery.Abstractions.QueryBuilders;
+namespace Kontent.Ai.Delivery.Abstractions;
 
 /// <summary>
 /// Fluent builder for enumerating content items.

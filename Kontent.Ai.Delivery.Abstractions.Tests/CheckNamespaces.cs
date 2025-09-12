@@ -4,16 +4,11 @@ using System.Runtime.CompilerServices;
 using Xunit;
 using Xunit.Abstractions;
 
-namespace Kontent.Ai.Delivery.Abstractions.Tests;
+namespace Kontent.Ai.Delivery.Abstractions;
 
-public class CheckNamespaces
+public class CheckNamespaces(ITestOutputHelper output)
 {
-    private readonly ITestOutputHelper output;
-
-    public CheckNamespaces(ITestOutputHelper output)
-    {
-        this.output = output;
-    }
+    private readonly ITestOutputHelper output = output;
 
     /// <summary>
     /// See Kontent.Ai.Delivery.Abstractions Readme for more information.

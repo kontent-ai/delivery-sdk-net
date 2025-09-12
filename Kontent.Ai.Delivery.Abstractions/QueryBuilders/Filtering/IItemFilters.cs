@@ -1,9 +1,8 @@
 using Scalar = OneOf.OneOf<string, double, System.DateTime, bool>;
-using ScalarArray = OneOf.OneOf<string[], double[], System.DateTime[]>;
 using RangeTuple = OneOf.OneOf<(double Lower, double Upper), (System.DateTime Lower, System.DateTime Upper)>;
 using Comparable = OneOf.OneOf<double, System.DateTime, string>;
 
-namespace Kontent.Ai.Delivery.Abstractions.QueryBuilders.Filtering;
+namespace Kontent.Ai.Delivery.Abstractions;
 /// <summary>
 /// Interface for item filters.
 /// </summary>

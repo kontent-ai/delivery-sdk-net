@@ -1,5 +1,3 @@
-using Kontent.Ai.Delivery.Abstractions.SharedModels;
-
 namespace Kontent.Ai.Delivery.Extensions;
 
 internal static class DeliveryResultExtensions

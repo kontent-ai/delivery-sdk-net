@@ -2,83 +2,82 @@
 using Kontent.Ai.Delivery.Abstractions;
 using Xunit;
 
-namespace Kontent.Ai.Delivery.Tests
+namespace Kontent.Ai.Delivery.Tests;
+
+public class DeliveryOptionsExtensionsTests
 {
-    public class DeliveryOptionsExtensionsTests
+    [Fact]
+    public void GetBaseUrl_Production_ReturnsProductionEndpoint()
     {
-        [Fact]
-        public void GetBaseUrl_Production_ReturnsProductionEndpoint()
+        var options = new DeliveryOptions
         {
-            var options = new DeliveryOptions
-            {
-                UsePreviewApi = false,
-                ProductionEndpoint = "https://deliver.kontent.ai/",
-                PreviewEndpoint = "https://preview-deliver.kontent.ai/"
-            };
+            UsePreviewApi = false,
+            ProductionEndpoint = "https://deliver.kontent.ai/",
+            PreviewEndpoint = "https://preview-deliver.kontent.ai/"
+        };
 
-            var result = options.GetBaseUrl();
+        var result = options.GetBaseUrl();
 
-            result.Should().Be(options.ProductionEndpoint);
-        }
+        result.Should().Be(options.ProductionEndpoint);
+    }
 
-        [Fact]
-        public void GetBaseUrl_Preview_ReturnsPreviewEndpoint()
+    [Fact]
+    public void GetBaseUrl_Preview_ReturnsPreviewEndpoint()
+    {
+        var options = new DeliveryOptions
         {
-            var options = new DeliveryOptions
-            {
-                UsePreviewApi = true,
-                ProductionEndpoint = "https://deliver.kontent.ai/",
-                PreviewEndpoint = "https://preview-deliver.kontent.ai/"
-            };
+            UsePreviewApi = true,
+            ProductionEndpoint = "https://deliver.kontent.ai/",
+            PreviewEndpoint = "https://preview-deliver.kontent.ai/"
+        };
 
-            var result = options.GetBaseUrl();
+        var result = options.GetBaseUrl();
 
-            result.Should().Be(options.PreviewEndpoint);
-        }
+        result.Should().Be(options.PreviewEndpoint);
+    }
 
-        [Fact]
-        public void GetApiKey_SecureAccessEnabled_ReturnsSecureAccessApiKey()
+    [Fact]
+    public void GetApiKey_SecureAccessEnabled_ReturnsSecureAccessApiKey()
+    {
+        var options = new DeliveryOptions
         {
-            var options = new DeliveryOptions
-            {
-                UseSecureAccess = true,
-                SecureAccessApiKey = "sec.sec.sec",
-                UsePreviewApi = false,
-                PreviewApiKey = "pre.pre.pre"
-            };
+            UseSecureAccess = true,
+            SecureAccessApiKey = "sec.sec.sec",
+            UsePreviewApi = false,
+            PreviewApiKey = "pre.pre.pre"
+        };
 
-            var result = options.GetApiKey();
+        var result = options.GetApiKey();
 
-            result.Should().Be(options.SecureAccessApiKey);
-        }
+        result.Should().Be(options.SecureAccessApiKey);
+    }
 
-        [Fact]
-        public void GetApiKey_PreviewEnabled_ReturnsPreviewApiKey()
+    [Fact]
+    public void GetApiKey_PreviewEnabled_ReturnsPreviewApiKey()
+    {
+        var options = new DeliveryOptions
         {
-            var options = new DeliveryOptions
-            {
-                UseSecureAccess = false,
-                UsePreviewApi = true,
-                PreviewApiKey = "pre.pre.pre"
-            };
+            UseSecureAccess = false,
+            UsePreviewApi = true,
+            PreviewApiKey = "pre.pre.pre"
+        };
 
-            var result = options.GetApiKey();
+        var result = options.GetApiKey();
 
-            result.Should().Be(options.PreviewApiKey);
-        }
+        result.Should().Be(options.PreviewApiKey);
+    }
 
-        [Fact]
-        public void GetApiKey_NoneEnabled_ReturnsNull()
+    [Fact]
+    public void GetApiKey_NoneEnabled_ReturnsNull()
+    {
+        var options = new DeliveryOptions
         {
-            var options = new DeliveryOptions
-            {
-                UseSecureAccess = false,
-                UsePreviewApi = false
-            };
+            UseSecureAccess = false,
+            UsePreviewApi = false
+        };
 
-            var result = options.GetApiKey();
+        var result = options.GetApiKey();
 
-            result.Should().BeNull();
-        }
+        result.Should().BeNull();
     }
 }

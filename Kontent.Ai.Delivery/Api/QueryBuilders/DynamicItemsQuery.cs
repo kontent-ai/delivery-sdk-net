@@ -1,7 +1,4 @@
 using System.Threading;
-using Kontent.Ai.Delivery.Abstractions.QueryBuilders;
-using Kontent.Ai.Delivery.Abstractions.QueryBuilders.Filtering;
-using Kontent.Ai.Delivery.Abstractions.SharedModels;
 using Kontent.Ai.Delivery.Api.QueryBuilders.Filtering;
 using Kontent.Ai.Delivery.ContentItems;
 
@@ -93,14 +90,14 @@ internal sealed class DynamicItemsQuery(
         var paramsWithFilters = _appliedFilters.Count > 0
             ? _params with { Filters = [.. _appliedFilters.Select(f => f.ToQueryParameter())] }
             : _params;
-        
+
         // Get raw response from Refit API
         bool? wait = _waitForLoadingNewContentOverride ?? _getDefaultWaitForNewContent();
         var rawResponse = await _api.GetItemsInternalAsync<IElementsModel>(paramsWithFilters, wait).ConfigureAwait(false);
-        
+
         // Convert IApiResponse to IDeliveryResult
         var deliveryResult = await rawResponse.ToDeliveryResultAsync();
-        
+
         // Map from IDeliveryItemListingResponse<IElementsModel> to IReadOnlyList<IContentItem>
         return deliveryResult.Map(response => response.Items);
     }
@@ -126,7 +123,7 @@ internal sealed class DynamicItemsQuery(
 
             // Convert to delivery result
             var deliveryResult = await response.ToDeliveryResultAsync();
-            
+
             if (!deliveryResult.IsSuccess)
             {
                 return DeliveryResult.Failure<IReadOnlyList<IContentItem<DynamicElements>>>(
@@ -144,7 +141,7 @@ internal sealed class DynamicItemsQuery(
             if (pageCount == 0)
                 break;
 
-            all.AddRange(items);
+            all.AddRange((IEnumerable<IContentItem<DynamicElements>>)items);
             skip += pageCount;
 
             // Stop if we got fewer than requested (page exhausted)

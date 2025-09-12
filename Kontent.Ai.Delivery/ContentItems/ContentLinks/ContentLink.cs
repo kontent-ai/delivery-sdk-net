@@ -1,42 +1,38 @@
 ﻿using System.Text.Json.Serialization;
 using System.Diagnostics;
 
-namespace Kontent.Ai.Delivery.ContentItems.ContentLinks
+namespace Kontent.Ai.Delivery.ContentItems.ContentLinks;
+
+/// <inheritdoc/>
+[DebuggerDisplay("Codename = {" + nameof(IContentLink.Codename) + "}")]
+[method: JsonConstructor]
+internal sealed class ContentLink() : IContentLink
 {
     /// <inheritdoc/>
-    [DebuggerDisplay("Codename = {" + nameof(IContentLink.Codename) + "}")]
-    internal sealed class ContentLink : IContentLink
+    Guid IContentLink.Id
     {
-        /// <inheritdoc/>
-        Guid IContentLink.Id
-        {
-            get; set;
-        }
+        get; set;
+    }
 
-        /// <inheritdoc/>
-        [JsonPropertyName("codename")]
-        public string Codename
-        {
-            get; internal set;
-        }
+    /// <inheritdoc/>
+    [JsonPropertyName("codename")]
+    public string Codename
+    {
+        get; internal set;
+    }
 
-        /// <inheritdoc/>
-        [JsonPropertyName("url_slug")]
-        public string UrlSlug
-        {
-            get; internal set;
-        }
+    /// <inheritdoc/>
+    [JsonPropertyName("url_slug")]
+    public string UrlSlug
+    {
+        get; internal set;
+    }
 
-        /// <inheritdoc/>
-        [JsonPropertyName("type")]
-        public string ContentTypeCodename
-        {
-            get; internal set;
-        }
-
-        [JsonConstructor]
-        public ContentLink()
-        {
-        }
+    /// <inheritdoc/>
+    [JsonPropertyName("type")]
+    public string ContentTypeCodename
+    {
+        get; internal set;
     }
 }
+

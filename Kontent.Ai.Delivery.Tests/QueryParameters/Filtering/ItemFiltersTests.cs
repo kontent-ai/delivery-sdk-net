@@ -1,36 +1,35 @@
-using Kontent.Ai.Delivery.Abstractions.QueryBuilders.Filtering;
+using Kontent.Ai.Delivery.Abstractions;
 using Kontent.Ai.Delivery.Api.QueryBuilders.Filtering;
 using Xunit;
 
-namespace Kontent.Ai.Delivery.Tests.QueryParameters.Filtering
+namespace Kontent.Ai.Delivery.Tests.QueryParameters.Filtering;
+
+public class ItemFiltersTests
 {
-    public class ItemFiltersTests
+    private readonly ItemFilters _filters = new();
+
+    [Fact]
+    public void Equals_BuildsCorrectFilter()
     {
-        private readonly ItemFilters _filters = new();
+        var filter = _filters.Equals(ItemSystemPath.Type, "article");
 
-        [Fact]
-        public void Equals_BuildsCorrectFilter()
-        {
-            var filter = _filters.Equals(SystemPath.Type(), Scalar.From("article"));
+        Assert.Equal("system.type[eq]=\"article\"", filter.ToQueryParameter());
+    }
 
-            Assert.Equal("system.type[eq]=\"article\"", filter.ToQueryParameter());
-        }
+    [Fact]
+    public void All_BuildsCorrectFilter()
+    {
+        var filter = _filters.All(Elements.GetPath("tags"), "a", "b");
 
-        [Fact]
-        public void All_BuildsCorrectFilter()
-        {
-            var filter = _filters.All(ElementsPath.Element("tags"), "a", "b");
+        Assert.Equal("elements.tags[all]=\"a\",\"b\"", filter.ToQueryParameter());
+    }
 
-            Assert.Equal("elements.tags[all]=\"a\",\"b\"", filter.ToQueryParameter());
-        }
+    [Fact]
+    public void Empty_BuildsCorrectFilter()
+    {
+        var filter = _filters.Empty(Elements.GetPath("title"));
 
-        [Fact]
-        public void Empty_BuildsCorrectFilter()
-        {
-            var filter = _filters.Empty(ElementsPath.Element("title"));
-
-            Assert.Equal("elements.title[empty]", filter.ToQueryParameter());
-        }
+        Assert.Equal("elements.title[empty]", filter.ToQueryParameter());
     }
 }
 

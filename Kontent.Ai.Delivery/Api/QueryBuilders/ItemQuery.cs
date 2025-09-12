@@ -1,8 +1,4 @@
 using System.Threading;
-using Kontent.Ai.Delivery.Abstractions;
-using Kontent.Ai.Delivery.Abstractions.QueryBuilders;
-using Kontent.Ai.Delivery.Abstractions.SharedModels;
-using Kontent.Ai.Delivery.Extensions;
 
 namespace Kontent.Ai.Delivery.Api.QueryBuilders;
 
@@ -66,7 +62,7 @@ internal sealed class ItemQuery<TModel>(
         // The renderRichText flag is carried for downstream processing (mapping). API call remains unchanged.
         var _ = _renderRichTextToHtmlOverride ?? _getDefaultRenderRichTextToHtml();
         var rawResponse = await _api.GetItemInternalAsync<TModel>(_codename, _params, wait).ConfigureAwait(false);
-        
+
         // Convert IApiResponse to IDeliveryResult
         var deliveryResult = await rawResponse.ToDeliveryResultAsync().ConfigureAwait(false);
 

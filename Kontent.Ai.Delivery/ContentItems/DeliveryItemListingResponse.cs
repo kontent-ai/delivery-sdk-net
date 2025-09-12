@@ -1,5 +1,4 @@
-﻿using System.Collections.Generic;
-using System.Text.Json;
+﻿using System.Text.Json;
 using System.Text.Json.Serialization;
 
 namespace Kontent.Ai.Delivery.ContentItems;
@@ -16,7 +15,7 @@ internal sealed record DeliveryItemListingResponse<TModel> : IDeliveryItemListin
 
     /// <summary>
     /// Raw modular content used for resolving linked items/inline content.
-    /// </summary]
+    /// </summary>
     [JsonPropertyName("modular_content")]
     internal required Dictionary<string, JsonElement> ModularContent { get; init; } = new();
 

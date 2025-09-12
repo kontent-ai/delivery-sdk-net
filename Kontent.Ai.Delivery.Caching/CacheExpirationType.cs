@@ -1,18 +1,17 @@
-﻿namespace Kontent.Ai.Delivery.Caching
+﻿namespace Kontent.Ai.Delivery.Caching;
+
+/// <summary>
+/// Determines which expiration type to use
+/// </summary>
+public enum CacheExpirationType
 {
     /// <summary>
-    /// Determines which expiration type to use
+    /// Sliding expiration type
     /// </summary>
-    public enum CacheExpirationType
-    {
-        /// <summary>
-        /// Sliding expiration type
-        /// </summary>
-        Sliding = 0,
+    Sliding = 0,
 
-        /// <summary>
-        /// Absolute expiration type
-        /// </summary>
-        Absolute = 1
-    }
+    /// <summary>
+    /// Absolute expiration type
+    /// </summary>
+    Absolute = 1
 }

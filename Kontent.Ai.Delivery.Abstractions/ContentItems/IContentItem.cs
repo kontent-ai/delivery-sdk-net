@@ -1,7 +1,4 @@
-﻿using System.Collections.Generic;
-using System.Text.Json;
-
-namespace Kontent.Ai.Delivery.Abstractions;
+﻿namespace Kontent.Ai.Delivery.Abstractions;
 
 /// <summary>
 /// Represents a content item with elements.

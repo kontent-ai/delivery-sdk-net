@@ -13,68 +13,62 @@ using SimpleInjector.Lifestyles;
 using Unity;
 using Unity.Microsoft.DependencyInjection;
 
-namespace Kontent.Ai.Delivery.Tests.DependencyInjectionFrameworks.Helpers
+namespace Kontent.Ai.Delivery.Tests.DependencyInjectionFrameworks.Helpers;
+
+internal static class DependencyInjectionFrameworksHelper
 {
-    internal static class DependencyInjectionFrameworksHelper
+    private const string EnvironmentId = "00a21be4-8fef-4dd9-9380-f4cbb82e260d";
+
+    internal static IServiceCollection GetServiceCollection()
+        => new ServiceCollection()
+            .AddDeliveryClient(new DeliveryOptions { EnvironmentId = EnvironmentId });
+
+    internal static IServiceProvider BuildAutoFacServiceProvider(this IServiceCollection serviceCollection)
     {
-        private const string EnvironmentId = "00a21be4-8fef-4dd9-9380-f4cbb82e260d";
+        var autoFacContainerBuilder = new ContainerBuilder();
+        autoFacContainerBuilder.Populate(serviceCollection);
 
-        internal static IServiceCollection GetServiceCollection()
-            => new ServiceCollection()
-                .AddDeliveryClient(new DeliveryOptions { EnvironmentId = EnvironmentId });
+        var container = autoFacContainerBuilder.Build();
 
-        internal static IServiceCollection RegisterInlineContentItemResolvers(this IServiceCollection serviceCollection)
-            => serviceCollection
-                .AddDeliveryInlineContentItemsResolver(InlineContentItemsResolverFactory.Instance.ResolveToMessage<HostedVideo>(string.Empty))
-                .AddDeliveryInlineContentItemsResolver<Tweet, FakeTweetResolver>();
+        return new AutofacServiceProvider(container);
+    }
 
-        internal static IServiceProvider BuildAutoFacServiceProvider(this IServiceCollection serviceCollection)
+    internal static IServiceProvider BuildWindsorCastleServiceProvider(this IServiceCollection serviceCollection)
+    {
+        var castleContainer = new WindsorContainer();
+
+        return WindsorRegistrationHelper.CreateServiceProvider(castleContainer, serviceCollection);
+    }
+
+    internal static IServiceProvider BuildUnityServiceProvider(this IServiceCollection serviceCollection)
+    {
+        var unityContainer = new UnityContainer();
+
+        return serviceCollection.BuildServiceProvider(unityContainer);
+    }
+
+    internal static Container BuildSimpleInjectorServiceProvider(this IServiceCollection serviceCollection)
+    {
+        var container = new Container
         {
-            var autoFacContainerBuilder = new ContainerBuilder();
-            autoFacContainerBuilder.Populate(serviceCollection);
-
-            var container = autoFacContainerBuilder.Build();
-
-            return new AutofacServiceProvider(container);
-        }
-
-        internal static IServiceProvider BuildWindsorCastleServiceProvider(this IServiceCollection serviceCollection)
-        {
-            var castleContainer = new WindsorContainer();
-
-            return WindsorRegistrationHelper.CreateServiceProvider(castleContainer, serviceCollection);
-        }
-
-        internal static IServiceProvider BuildUnityServiceProvider(this IServiceCollection serviceCollection)
-        {
-            var unityContainer = new UnityContainer();
-
-            return serviceCollection.BuildServiceProvider(unityContainer);
-        }
-
-        internal static Container BuildSimpleInjectorServiceProvider(this IServiceCollection serviceCollection)
-        {
-            var container = new Container
+            Options =
             {
-                Options =
-                {
-                    DefaultScopedLifestyle = new AsyncScopedLifestyle()
-                }
-            };
+                DefaultScopedLifestyle = new AsyncScopedLifestyle()
+            }
+        };
 
-            serviceCollection.BuildServiceProvider();
+        serviceCollection.BuildServiceProvider();
 
-            serviceCollection.AddSimpleInjector(container);
-            serviceCollection.UseSimpleInjectorAspNetRequestScoping(container);
+        serviceCollection.AddSimpleInjector(container);
+        serviceCollection.UseSimpleInjectorAspNetRequestScoping(container);
 
-            ServiceCollection services = serviceCollection as ServiceCollection;
+        ServiceCollection services = serviceCollection as ServiceCollection;
 
-            ServiceCollectionContainerBuilderExtensions.BuildServiceProvider(services, true)
-                .UseSimpleInjector(container);
+        ServiceCollectionContainerBuilderExtensions.BuildServiceProvider(services, true)
+            .UseSimpleInjector(container);
 
 
 
-            return container;
-        }
+        return container;
     }
 }

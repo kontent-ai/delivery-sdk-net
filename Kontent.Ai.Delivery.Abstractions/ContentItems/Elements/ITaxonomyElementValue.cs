@@ -1,15 +1,14 @@
 ﻿using System.Collections.Generic;
 
-namespace Kontent.Ai.Delivery.Abstractions
+namespace Kontent.Ai.Delivery.Abstractions;
+
+/// <summary>
+/// An object representing a taxonomy element value.
+/// </summary>
+public interface ITaxonomyElementValue : IContentElementValue<IEnumerable<ITaxonomyTerm>>
 {
     /// <summary>
-    /// An object representing a taxonomy element value.
+    /// Gets the codename of the taxonomy group for the Taxonomy content element; otherwise, an empty string.
     /// </summary>
-    public interface ITaxonomyElementValue : IContentElementValue<IEnumerable<ITaxonomyTerm>>
-    {
-        /// <summary>
-        /// Gets the codename of the taxonomy group for the Taxonomy content element; otherwise, an empty string.
-        /// </summary>
-        string TaxonomyGroup { get; }
-    }
+    string TaxonomyGroup { get; }
 }

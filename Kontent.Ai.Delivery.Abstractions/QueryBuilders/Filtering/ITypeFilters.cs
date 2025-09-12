@@ -1,6 +1,6 @@
 using System;
 
-namespace Kontent.Ai.Delivery.Abstractions.QueryBuilders.Filtering;
+namespace Kontent.Ai.Delivery.Abstractions;
 
 /// <summary>
 /// Filter builder interface for content types endpoint.

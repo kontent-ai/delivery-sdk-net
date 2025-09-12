@@ -8,82 +8,73 @@ using Microsoft.Extensions.Options;
 using System;
 using System.Collections.Concurrent;
 
-namespace Kontent.Ai.Delivery.Extensions.DependencyInjection
-{
-    [Obsolete("#312 Use Kontent.Ai.Delivery.Extensions.DependencyInjection.Builders.MultipleDeliveryClientFactoryBuilder instead")]
-    internal class NamedDeliveryClientCacheFactory : IDeliveryClientFactory
-    {
-        private readonly IOptionsMonitor<DeliveryCacheOptions> _deliveryCacheOptions;
-        private readonly IServiceProvider _serviceProvider;
-        private readonly INamedServiceProvider _customServiceProvider;
-        private readonly IDeliveryClientFactory _innerDeliveryClientFactory;
-        private readonly ConcurrentDictionary<string, IDeliveryClient> _cache = new ConcurrentDictionary<string, IDeliveryClient>();
+namespace Kontent.Ai.Delivery.Extensions.DependencyInjection;
 
-        /// <summary>
-        /// Initializes a new instance of the <see cref="NamedDeliveryClientCacheFactory"/> class.
-        /// </summary>
-        /// <param name="deliveryClientFactory">Factory to be decorated.</param>
-        /// <param name="deliveryCacheOptions">Cache configuration options.</param>
-        /// <param name="serviceProvider">An <see cref="IServiceProvider"/> instance.</param>
-        /// <param name="customServiceProvider">A custom service provider.</param>
-        public NamedDeliveryClientCacheFactory(IDeliveryClientFactory deliveryClientFactory, IOptionsMonitor<DeliveryCacheOptions> deliveryCacheOptions, IServiceProvider serviceProvider, INamedServiceProvider customServiceProvider)
+/// <summary>
+/// Initializes a new instance of the <see cref="NamedDeliveryClientCacheFactory"/> class.
+/// </summary>
+/// <param name="deliveryClientFactory">Factory to be decorated.</param>
+/// <param name="deliveryCacheOptions">Cache configuration options.</param>
+/// <param name="serviceProvider">An <see cref="IServiceProvider"/> instance.</param>
+/// <param name="customServiceProvider">A custom service provider.</param>
+[Obsolete("#312 Use Kontent.Ai.Delivery.Extensions.DependencyInjection.Builders.MultipleDeliveryClientFactoryBuilder instead")]
+internal class NamedDeliveryClientCacheFactory(IDeliveryClientFactory deliveryClientFactory, IOptionsMonitor<DeliveryCacheOptions> deliveryCacheOptions, IServiceProvider serviceProvider, INamedServiceProvider customServiceProvider) : IDeliveryClientFactory
+{
+    private readonly IOptionsMonitor<DeliveryCacheOptions> _deliveryCacheOptions = deliveryCacheOptions;
+    private readonly IServiceProvider _serviceProvider = serviceProvider;
+    private readonly INamedServiceProvider _customServiceProvider = customServiceProvider;
+    private readonly IDeliveryClientFactory _innerDeliveryClientFactory = deliveryClientFactory;
+    private readonly ConcurrentDictionary<string, IDeliveryClient> _cache = new ConcurrentDictionary<string, IDeliveryClient>();
+
+    public IDeliveryClient Get(string name)
+    {
+        if (name == null)
         {
-            _deliveryCacheOptions = deliveryCacheOptions;
-            _serviceProvider = serviceProvider;
-            _customServiceProvider = customServiceProvider;
-            _innerDeliveryClientFactory = deliveryClientFactory;
+            throw new ArgumentNullException(nameof(name));
         }
 
-        public IDeliveryClient Get(string name)
+        if (!_cache.TryGetValue(name, out var client))
         {
-            if (name == null)
+            client = _innerDeliveryClientFactory.Get(name);
+            if (client != null)
             {
-                throw new ArgumentNullException(nameof(name));
-            }
-
-            if (!_cache.TryGetValue(name, out var client))
-            {
-                client = _innerDeliveryClientFactory.Get(name);
-                if (client != null)
+                var cacheOptions = _deliveryCacheOptions.Get(name);
+                if (cacheOptions.Name == name)
                 {
-                    var cacheOptions = _deliveryCacheOptions.Get(name);
-                    if (cacheOptions.Name == name)
+                    // Build caching services according to the options
+                    IDeliveryCacheManager manager;
+                    if (cacheOptions.CacheType == CacheTypeEnum.Memory)
                     {
-                        // Build caching services according to the options
-                        IDeliveryCacheManager manager;
-                        if (cacheOptions.CacheType == CacheTypeEnum.Memory)
-                        {
-                            var memoryCache = GetNamedServiceOrDefault<IMemoryCache>(name);
-                            manager = CacheManagerFactory.Create(memoryCache, Options.Create(cacheOptions));
-                        }
-                        else
-                        {
-                            var distributedCache = GetNamedServiceOrDefault<IDistributedCache>(name);
-                            manager = CacheManagerFactory.Create(distributedCache, Options.Create(cacheOptions));
-                        }
-
-                        // Decorate the client with a caching layer
-                        client = new DeliveryClientCache(manager, client);
-
-                        _cache.TryAdd(name, client);
+                        var memoryCache = GetNamedServiceOrDefault<IMemoryCache>(name);
+                        manager = CacheManagerFactory.Create(memoryCache, Options.Create(cacheOptions));
                     }
+                    else
+                    {
+                        var distributedCache = GetNamedServiceOrDefault<IDistributedCache>(name);
+                        manager = CacheManagerFactory.Create(distributedCache, Options.Create(cacheOptions));
+                    }
+
+                    // Decorate the client with a caching layer
+                    client = new DeliveryClientCache(manager, client);
+
+                    _cache.TryAdd(name, client);
                 }
             }
-
-            return client;
         }
 
-        public IDeliveryClient Get() => _innerDeliveryClientFactory.Get();
+        return client;
+    }
 
-        private T GetNamedServiceOrDefault<T>(string name)
+    public IDeliveryClient Get() => _innerDeliveryClientFactory.Get();
+
+    private T GetNamedServiceOrDefault<T>(string name)
+    {
+        var service = _customServiceProvider.GetService<T>(name);
+        if (service == null)
         {
-            var service = _customServiceProvider.GetService<T>(name);
-            if (service == null)
-            {
-                service = _serviceProvider.GetService<T>();
-            }
-
-            return service;
+            service = _serviceProvider.GetService<T>();
         }
+
+        return service;
     }
 }

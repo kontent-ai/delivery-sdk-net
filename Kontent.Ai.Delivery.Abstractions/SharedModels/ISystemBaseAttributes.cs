@@ -1,23 +1,22 @@
-﻿namespace Kontent.Ai.Delivery.Abstractions
+﻿namespace Kontent.Ai.Delivery.Abstractions;
+
+/// <summary>
+/// Represents system base attributes of any object in Kontent.
+/// </summary>
+public interface ISystemBaseAttributes
 {
     /// <summary>
-    /// Represents system base attributes of any object in Kontent.
+    /// Gets the codename of the object.
     /// </summary>
-    public interface ISystemBaseAttributes
-    {
-        /// <summary>
-        /// Gets the codename of the object.
-        /// </summary>
-        string Codename { get; }
+    string Codename { get; }
 
-        /// <summary>
-        /// Gets the identifier of the object.
-        /// </summary>
-        string Id { get; }
+    /// <summary>
+    /// Gets the identifier of the object.
+    /// </summary>
+    string Id { get; }
 
-        /// <summary>
-        /// Gets the name of the object.
-        /// </summary>
-        string Name { get; }
-    }
+    /// <summary>
+    /// Gets the name of the object.
+    /// </summary>
+    string Name { get; }
 }

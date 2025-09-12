@@ -6,28 +6,27 @@
 
 using Kontent.Ai.Delivery.Abstractions;
 
-namespace Kontent.Ai.Delivery.Rx.Tests.Models.ContentTypes
-{
-    public class Office
-    {
-        public const string Codename = "office";
-        public const string NameCodename = "name";
-        public const string StreetCodename = "street";
-        public const string CityCodename = "city";
-        public const string CountryCodename = "country";
-        public const string StateCodename = "state";
-        public const string ZipCodeCodename = "zip_code";
-        public const string PhoneCodename = "phone";
-        public const string EmailCodename = "email";
+namespace Kontent.Ai.Delivery.Rx.Tests.Models.ContentTypes;
 
-        public string Name { get; set; }
-        public string Street { get; set; }
-        public string City { get; set; }
-        public string Country { get; set; }
-        public string State { get; set; }
-        public string ZipCode { get; set; }
-        public string Phone { get; set; }
-        public string Email { get; set; }
-        public IContentItemSystemAttributes System { get; set; }
-    }
+public class Office
+{
+    public const string Codename = "office";
+    public const string NameCodename = "name";
+    public const string StreetCodename = "street";
+    public const string CityCodename = "city";
+    public const string CountryCodename = "country";
+    public const string StateCodename = "state";
+    public const string ZipCodeCodename = "zip_code";
+    public const string PhoneCodename = "phone";
+    public const string EmailCodename = "email";
+
+    public string Name { get; set; }
+    public string Street { get; set; }
+    public string City { get; set; }
+    public string Country { get; set; }
+    public string State { get; set; }
+    public string ZipCode { get; set; }
+    public string Phone { get; set; }
+    public string Email { get; set; }
+    public IContentItemSystemAttributes System { get; set; }
 }

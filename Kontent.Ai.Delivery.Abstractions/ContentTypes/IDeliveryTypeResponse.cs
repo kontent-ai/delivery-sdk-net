@@ -1,13 +1,12 @@
-﻿namespace Kontent.Ai.Delivery.Abstractions
+﻿namespace Kontent.Ai.Delivery.Abstractions;
+
+/// <summary>
+/// Represents a response from Kontent.ai Delivery API that contains a content type.
+/// </summary>
+public interface IDeliveryTypeResponse
 {
     /// <summary>
-    /// Represents a response from Kontent.ai Delivery API that contains a content type.
+    /// Gets the content type.
     /// </summary>
-    public interface IDeliveryTypeResponse
-    {
-        /// <summary>
-        /// Gets the content type.
-        /// </summary>
-        IContentType Type { get; }
-    }
+    IContentType Type { get; }
 }

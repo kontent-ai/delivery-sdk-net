@@ -4,27 +4,26 @@ using Kontent.Ai.Delivery.Caching.Extensions;
 using System.Collections.Generic;
 using Xunit;
 
-namespace Kontent.Ai.Delivery.Caching.Tests
+namespace Kontent.Ai.Delivery.Caching.Tests;
+
+public class DeliveryCacheOptionsExtensionsTests
 {
-    public class DeliveryCacheOptionsExtensionsTests
+    private static readonly Fixture _fixture = new Fixture();
+
+    [Theory]
+    [MemberData(nameof(GetDeliveryCacheOptionsData))]
+    public void Configure(DeliveryCacheOptions options)
     {
-        private static readonly Fixture _fixture = new Fixture();
+        var o = new DeliveryCacheOptions();
 
-        [Theory]
-        [MemberData(nameof(GetDeliveryCacheOptionsData))]
-        public void Configure(DeliveryCacheOptions options)
-        {
-            var o = new DeliveryCacheOptions();
+        o.Configure(options);
 
-            o.Configure(options);
+        o.Should().BeEquivalentTo(options);
+    }
 
-            o.Should().BeEquivalentTo(options);
-        }
-
-        public static IEnumerable<object[]> GetDeliveryCacheOptionsData()
-        {
-            yield return new object[] { _fixture.Create<DeliveryCacheOptions>() };
-            yield return new object[] { _fixture.Create<DeliveryCacheOptions>() };
-        }
+    public static IEnumerable<object[]> GetDeliveryCacheOptionsData()
+    {
+        yield return new object[] { _fixture.Create<DeliveryCacheOptions>() };
+        yield return new object[] { _fixture.Create<DeliveryCacheOptions>() };
     }
 }

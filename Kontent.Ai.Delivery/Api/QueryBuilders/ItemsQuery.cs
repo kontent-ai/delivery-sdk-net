@@ -1,7 +1,4 @@
 using System.Threading;
-using Kontent.Ai.Delivery.Abstractions.QueryBuilders;
-using Kontent.Ai.Delivery.Abstractions.QueryBuilders.Filtering;
-using Kontent.Ai.Delivery.Abstractions.SharedModels;
 using Kontent.Ai.Delivery.Api.QueryBuilders.Filtering;
 
 namespace Kontent.Ai.Delivery.Api.QueryBuilders;
@@ -101,12 +98,12 @@ internal sealed class ItemsQuery<TModel>(
         var paramsWithFilters = _appliedFilters.Count > 0
             ? _params with { Filters = [.. _appliedFilters.Select(f => f.ToQueryParameter())] }
             : _params;
-        
+
         // Get raw response from Refit API
         bool? header = _waitForLoadingNewContentOverride ?? _getDefaultWaitForNewContent();
         var _ = _renderRichTextToHtmlOverride ?? _getDefaultRenderRichTextToHtml();
         var rawResponse = await _api.GetItemsInternalAsync<TModel>(paramsWithFilters, header).ConfigureAwait(false);
-        
+
         // Convert IApiResponse to IDeliveryResult
         var deliveryResult = await rawResponse.ToDeliveryResultAsync().ConfigureAwait(false);
 
@@ -154,7 +151,7 @@ internal sealed class ItemsQuery<TModel>(
 
             // Convert to delivery result
             var deliveryResult = await response.ToDeliveryResultAsync().ConfigureAwait(false);
-            
+
             if (!deliveryResult.IsSuccess)
             {
                 return DeliveryResult.Failure<IReadOnlyList<IContentItem<TModel>>>(

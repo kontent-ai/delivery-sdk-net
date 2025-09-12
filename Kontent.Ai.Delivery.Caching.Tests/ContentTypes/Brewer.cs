@@ -1,6 +1,5 @@
-namespace Kontent.Ai.Delivery.Caching.Tests.ContentTypes
+namespace Kontent.Ai.Delivery.Caching.Tests.ContentTypes;
+
+public partial class Brewer
 {
-    public partial class Brewer
-    {
-    }
 }

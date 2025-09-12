@@ -1,18 +1,17 @@
-﻿namespace Kontent.Ai.Urls.Delivery.QueryParameters.Filters
+﻿namespace Kontent.Ai.Urls.Delivery.QueryParameters.Filters;
+
+/// <summary>
+/// Represents a filter that matches a content item if the specified content element or system attribute has a value that is greater than the specified value.
+/// </summary>
+public sealed class GreaterThanFilter : Filter
 {
     /// <summary>
-    /// Represents a filter that matches a content item if the specified content element or system attribute has a value that is greater than the specified value.
+    /// Initializes a new instance of the <see cref="GreaterThanFilter"/> class.
     /// </summary>
-    public sealed class GreaterThanFilter : Filter
+    /// <param name="elementOrAttributePath">The codename of a content element or system attribute, for example <c>elements.title</c> or <c>system.name</c>.</param>
+    /// <param name="value">The filter value.</param>
+    public GreaterThanFilter(string elementOrAttributePath, string value) : base(elementOrAttributePath, value)
     {
-        /// <summary>
-        /// Initializes a new instance of the <see cref="GreaterThanFilter"/> class.
-        /// </summary>
-        /// <param name="elementOrAttributePath">The codename of a content element or system attribute, for example <c>elements.title</c> or <c>system.name</c>.</param>
-        /// <param name="value">The filter value.</param>
-        public GreaterThanFilter(string elementOrAttributePath, string value) : base(elementOrAttributePath, value)
-        {
-            Operator = "[gt]";
-        }
+        Operator = "[gt]";
     }
 }

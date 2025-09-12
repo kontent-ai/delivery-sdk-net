@@ -2,34 +2,33 @@
 using Kontent.Ai.Delivery.ContentTypes.Element;
 using System.Text.Json.Serialization;
 
-namespace Kontent.Ai.Delivery.ContentTypes
+namespace Kontent.Ai.Delivery.ContentTypes;
+
+/// <inheritdoc/>
+[DebuggerDisplay("Name = {" + nameof(System) + "." + nameof(IContentTypeSystemAttributes.Name) + "}")]
+internal sealed class ContentType : IContentType
 {
     /// <inheritdoc/>
-    [DebuggerDisplay("Name = {" + nameof(System) + "." + nameof(IContentTypeSystemAttributes.Name) + "}")]
-    internal sealed class ContentType : IContentType
+    [JsonPropertyName("system")]
+    public IContentTypeSystemAttributes System { get; internal set; }
+
+    /// <inheritdoc/>
+    [JsonPropertyName("elements")]
+    public IDictionary<string, IContentElement> Elements { get; internal set; }
+
+    /// <summary>
+    /// Constructor used for deserialization (e.g. for caching purposes), contains no logic.
+    /// </summary>
+    [JsonConstructor]
+    public ContentType(IContentTypeSystemAttributes system, IDictionary<string, IContentElement> elements)
     {
-        /// <inheritdoc/>
-        [JsonPropertyName("system")]
-        public IContentTypeSystemAttributes System { get; internal set; }
+        System = system;
+        Elements = elements;
 
-        /// <inheritdoc/>
-        [JsonPropertyName("elements")]
-        public IDictionary<string, IContentElement> Elements { get; internal set; }
-
-        /// <summary>
-        /// Constructor used for deserialization (e.g. for caching purposes), contains no logic.
-        /// </summary>
-        [JsonConstructor]
-        public ContentType(IContentTypeSystemAttributes system, IDictionary<string, IContentElement> elements)
+        // Initialize codenames
+        foreach (var element in Elements.Where(r => r.Value is ContentElement).Select(a => (Codename: a.Key, Element: (ContentElement)a.Value)))
         {
-            System = system;
-            Elements = elements;
-
-            // Initialize codenames
-            foreach (var element in Elements.Where(r => r.Value is ContentElement).Select(a => (Codename: a.Key, Element: (ContentElement)a.Value)))
-            {
-                element.Element.Codename = element.Codename;
-            }
+            element.Element.Codename = element.Codename;
         }
     }
 }

@@ -1,10 +1,9 @@
 ﻿using System.Text.Json.Serialization;
 
-namespace Kontent.Ai.Delivery.ContentItems.Elements
+namespace Kontent.Ai.Delivery.ContentItems.Elements;
+
+internal class DateTimeElementValue : ContentElementValue<DateTime?>, IDateTimeElementValue
 {
-    internal class DateTimeElementValue : ContentElementValue<DateTime?>, IDateTimeElementValue
-    {
-        [JsonPropertyName("display_timezone")]
-        public required string DisplayTimezone { get; set; }
-    }
+    [JsonPropertyName("display_timezone")]
+    public required string DisplayTimezone { get; set; }
 }

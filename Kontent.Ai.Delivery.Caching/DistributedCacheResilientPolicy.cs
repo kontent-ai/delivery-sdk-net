@@ -1,18 +1,17 @@
-﻿namespace Kontent.Ai.Delivery.Caching
+﻿namespace Kontent.Ai.Delivery.Caching;
+
+/// <summary>
+/// Determines which resilient policy should be applied when Distrubuted cache is not available
+/// </summary>
+public enum DistributedCacheResilientPolicy
 {
     /// <summary>
-    /// Determines which resilient policy should be applied when Distrubuted cache is not available
+    /// No resilient policy is used, throw exception
     /// </summary>
-    public enum DistributedCacheResilientPolicy
-    {
-        /// <summary>
-        /// No resilient policy is used, throw exception
-        /// </summary>
-        Crash = 0,
+    Crash = 0,
 
-        /// <summary>
-        /// Fallback to default DeliveryClient implementation
-        /// </summary>
-        FallbackToApi = 1
-    }
+    /// <summary>
+    /// Fallback to default DeliveryClient implementation
+    /// </summary>
+    FallbackToApi = 1
 }

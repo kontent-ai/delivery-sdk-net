@@ -6,51 +6,50 @@ using Microsoft.Extensions.Options;
 using System;
 using Xunit;
 
-namespace Kontent.Ai.Delivery.Extensions.DependencyInjection.Tests
+namespace Kontent.Ai.Delivery.Extensions.DependencyInjection.Tests;
+
+[Obsolete("#312")]
+public class DeliveryClientFactoryTests
 {
-    [Obsolete("#312")]
-    public class DeliveryClientFactoryTests
+    private readonly IOptionsMonitor<DeliveryOptions> _deliveryOptionsMock;
+    private INamedServiceProvider _autofacServiceProvider;
+    private readonly IServiceProvider _serviceProvider;
+
+    private const string _clientName = "ClientName";
+
+    public DeliveryClientFactoryTests()
     {
-        private readonly IOptionsMonitor<DeliveryOptions> _deliveryOptionsMock;
-        private INamedServiceProvider _autofacServiceProvider;
-        private readonly IServiceProvider _serviceProvider;
+        _deliveryOptionsMock = A.Fake<IOptionsMonitor<DeliveryOptions>>();
+        _autofacServiceProvider = A.Fake<INamedServiceProvider>();
+        _serviceProvider = new ServiceCollection().BuildServiceProvider();
+    }
 
-        private const string _clientName = "ClientName";
+    [Fact]
+    public void GetNamedClient_WithCorrectName_GetClient()
+    {
+        var deliveryOptions = new DeliveryOptions() { EnvironmentId = Guid.NewGuid().ToString(), Name = _clientName };
+        A.CallTo(() => _deliveryOptionsMock.Get(_clientName))
+            .Returns(deliveryOptions);
 
-        public DeliveryClientFactoryTests()
-        {
-            _deliveryOptionsMock = A.Fake<IOptionsMonitor<DeliveryOptions>>();
-            _autofacServiceProvider = A.Fake<INamedServiceProvider>();
-            _serviceProvider = new ServiceCollection().BuildServiceProvider();
-        }
+        var deliveryClientFactory = new NamedDeliveryClientFactory(_deliveryOptionsMock, _serviceProvider, _autofacServiceProvider);
 
-        [Fact]
-        public void GetNamedClient_WithCorrectName_GetClient()
-        {
-            var deliveryOptions = new DeliveryOptions() { EnvironmentId = Guid.NewGuid().ToString(), Name = _clientName };
-            A.CallTo(() => _deliveryOptionsMock.Get(_clientName))
-                .Returns(deliveryOptions);
+        var result = deliveryClientFactory.Get(_clientName);
 
-            var deliveryClientFactory = new NamedDeliveryClientFactory(_deliveryOptionsMock, _serviceProvider, _autofacServiceProvider);
-
-            var result = deliveryClientFactory.Get(_clientName);
-
-            result.Should().NotBeNull();
-        }
+        result.Should().NotBeNull();
+    }
 
 
-        [Fact]
-        public void GetNamedClient_WithWrongName_GetNull()
-        {
-            var deliveryOptions = new DeliveryOptions() { EnvironmentId = Guid.NewGuid().ToString() };
-            A.CallTo(() => _deliveryOptionsMock.Get(_clientName))
-                .Returns(deliveryOptions);
+    [Fact]
+    public void GetNamedClient_WithWrongName_GetNull()
+    {
+        var deliveryOptions = new DeliveryOptions() { EnvironmentId = Guid.NewGuid().ToString() };
+        A.CallTo(() => _deliveryOptionsMock.Get(_clientName))
+            .Returns(deliveryOptions);
 
-            var deliveryClientFactory = new NamedDeliveryClientFactory(_deliveryOptionsMock, _serviceProvider, _autofacServiceProvider);
+        var deliveryClientFactory = new NamedDeliveryClientFactory(_deliveryOptionsMock, _serviceProvider, _autofacServiceProvider);
 
-            var result = deliveryClientFactory.Get("WrongName");
+        var result = deliveryClientFactory.Get("WrongName");
 
-            result.Should().BeNull();
-        }
+        result.Should().BeNull();
     }
 }

@@ -1,8 +1,4 @@
 using System.Threading;
-using Kontent.Ai.Delivery.Abstractions.QueryBuilders;
-using Kontent.Ai.Delivery.Abstractions.SharedModels;
-using Kontent.Ai.Delivery.ContentTypes;
-using Kontent.Ai.Delivery.Extensions;
 
 namespace Kontent.Ai.Delivery.Api.QueryBuilders;
 

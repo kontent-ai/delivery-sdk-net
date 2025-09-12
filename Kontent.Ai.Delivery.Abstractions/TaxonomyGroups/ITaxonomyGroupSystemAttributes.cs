@@ -1,9 +1,8 @@
-﻿namespace Kontent.Ai.Delivery.Abstractions
+﻿namespace Kontent.Ai.Delivery.Abstractions;
+
+/// <summary>
+/// Represents system attributes of a taxonomy group
+/// </summary>
+public interface ITaxonomyGroupSystemAttributes : ISystemAttributes
 {
-    /// <summary>
-    /// Represents system attributes of a taxonomy group
-    /// </summary>
-    public interface ITaxonomyGroupSystemAttributes : ISystemAttributes
-    {
-    }
 }

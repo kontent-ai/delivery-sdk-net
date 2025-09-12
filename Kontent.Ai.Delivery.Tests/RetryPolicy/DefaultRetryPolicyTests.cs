@@ -11,148 +11,142 @@ using Polly;
 using RichardSzalay.MockHttp;
 using Xunit;
 
-namespace Kontent.Ai.Delivery.Tests.RetryPolicy
+namespace Kontent.Ai.Delivery.Tests.RetryPolicy;
+
+public class DefaultRetryPolicyTests
 {
-    public class DefaultRetryPolicyTests
+    [Fact]
+    public async Task HttpClient_Success_DoesNotRetry()
     {
-        [Fact]
-        public async Task HttpClient_Success_DoesNotRetry()
+        var env = Guid.NewGuid();
+        var mockHttp = new MockHttpMessageHandler();
+
+        var baseUrl = $"https://deliver.kontent.ai/{env}";
+        var itemsUrl = $"{baseUrl}/items";
+        var itemsJson = await File.ReadAllTextAsync(Path.Combine(Environment.CurrentDirectory, $"Fixtures{Path.DirectorySeparatorChar}DeliveryClient{Path.DirectorySeparatorChar}items.json"));
+        mockHttp.When(itemsUrl).Respond("application/json", itemsJson);
+
+        var behavior = new TestBehaviorHandler();
+        var client = BuildClient(env, mockHttp, behavior, b =>
         {
-            var env = Guid.NewGuid();
-            var mockHttp = new MockHttpMessageHandler();
+            b.AddRetry(new HttpRetryStrategyOptions { MaxRetryAttempts = 3, Delay = TimeSpan.FromMilliseconds(10), BackoffType = DelayBackoffType.Exponential });
+        });
 
-            var baseUrl = $"https://deliver.kontent.ai/{env}";
-            var itemsUrl = $"{baseUrl}/items";
-            var itemsJson = await File.ReadAllTextAsync(Path.Combine(Environment.CurrentDirectory, $"Fixtures{Path.DirectorySeparatorChar}DeliveryClient{Path.DirectorySeparatorChar}items.json"));
-            mockHttp.When(itemsUrl).Respond("application/json", itemsJson);
+        var result = await client.GetItems<IElementsModel>().ExecuteAsync();
 
-            var behavior = new TestBehaviorHandler();
-            var client = BuildClient(env, mockHttp, behavior, b =>
+        Assert.True(result.IsSuccess);
+        Assert.Equal(1, behavior.Attempts);
+    }
+
+    [Fact]
+    public async Task HttpClient_RecoversAfterServerError()
+    {
+        var env = Guid.NewGuid();
+        var mockHttp = new MockHttpMessageHandler();
+
+        var baseUrl = $"https://deliver.kontent.ai/{env}";
+        var itemsUrl = $"{baseUrl}/items";
+        var itemsJson = await File.ReadAllTextAsync(Path.Combine(Environment.CurrentDirectory, $"Fixtures{Path.DirectorySeparatorChar}DeliveryClient{Path.DirectorySeparatorChar}items.json"));
+
+        // First 500, then OK
+        mockHttp.When(itemsUrl).Respond(req => new HttpResponseMessage(HttpStatusCode.InternalServerError));
+        mockHttp.When(itemsUrl).Respond("application/json", itemsJson);
+
+        var behavior = new TestBehaviorHandler();
+        var client = BuildClient(env, mockHttp, behavior, b =>
+        {
+            b.AddRetry(new HttpRetryStrategyOptions { MaxRetryAttempts = 3, Delay = TimeSpan.FromMilliseconds(10), BackoffType = DelayBackoffType.Exponential });
+        });
+
+        var result = await client.GetItems<IElementsModel>().ExecuteAsync();
+
+        Assert.True(result.IsSuccess);
+        Assert.Equal(2, behavior.Attempts);
+    }
+
+    [Fact]
+    public async Task HttpClient_RetriesUpToConfiguredLimit_ThenFails()
+    {
+        var env = Guid.NewGuid();
+        var mockHttp = new MockHttpMessageHandler();
+
+        var baseUrl = $"https://deliver.kontent.ai/{env}";
+        var itemsUrl = $"{baseUrl}/items";
+        mockHttp.When(itemsUrl).Respond(HttpStatusCode.InternalServerError);
+
+        var behavior = new TestBehaviorHandler();
+        var maxAttempts = 2;
+        var client = BuildClient(env, mockHttp, behavior, b =>
+        {
+            b.AddRetry(new HttpRetryStrategyOptions { MaxRetryAttempts = maxAttempts, Delay = TimeSpan.FromMilliseconds(10), BackoffType = DelayBackoffType.Exponential });
+        });
+
+        var result = await client.GetItems<IElementsModel>().ExecuteAsync();
+
+        Assert.False(result.IsSuccess);
+        // total tries = initial + retries
+        Assert.Equal(1 + maxAttempts, behavior.Attempts);
+    }
+
+    [Fact]
+    public async Task HttpClient_RetriesAfterException_ThenSucceeds()
+    {
+        var env = Guid.NewGuid();
+        var mockHttp = new MockHttpMessageHandler();
+
+        var baseUrl = $"https://deliver.kontent.ai/{env}";
+        var itemsUrl = $"{baseUrl}/items";
+        var itemsJson = await File.ReadAllTextAsync(Path.Combine(Environment.CurrentDirectory, $"Fixtures{Path.DirectorySeparatorChar}DeliveryClient{Path.DirectorySeparatorChar}items.json"));
+        mockHttp.When(itemsUrl).Respond("application/json", itemsJson);
+
+        var behavior = new TestBehaviorHandler(throwsOnFirstAttempt: true);
+        var client = BuildClient(env, mockHttp, behavior, b =>
+        {
+            b.AddRetry(new HttpRetryStrategyOptions { MaxRetryAttempts = 3, Delay = TimeSpan.FromMilliseconds(10), BackoffType = DelayBackoffType.Exponential });
+        });
+
+        var result = await client.GetItems<IElementsModel>().ExecuteAsync();
+
+        Assert.True(result.IsSuccess);
+        Assert.Equal(2, behavior.Attempts);
+    }
+
+    private static DeliveryClient BuildClient(
+        Guid environmentId,
+        MockHttpMessageHandler primary,
+        TestBehaviorHandler behaviorHandler,
+        Action<ResiliencePipelineBuilder<HttpResponseMessage>> configureResilience)
+    {
+        var services = new ServiceCollection();
+        services.AddDeliveryClient(
+            new DeliveryOptions { EnvironmentId = environmentId.ToString(), EnableResilience = true },
+            configureRefit: null,
+            configureHttpClient: builder =>
             {
-                b.AddRetry(new HttpRetryStrategyOptions { MaxRetryAttempts = 3, Delay = TimeSpan.FromMilliseconds(10), BackoffType = DelayBackoffType.Exponential });
-            });
+                builder.ConfigurePrimaryHttpMessageHandler(() => primary);
+                builder.AddHttpMessageHandler(() => behaviorHandler);
+            },
+            configureResilience: configureResilience);
 
-            var result = await client.GetItems<IElementsModel>().ExecuteAsync();
+        var provider = services.BuildServiceProvider();
+        return (DeliveryClient)provider.GetRequiredService<IDeliveryClient>();
+    }
 
-            Assert.True(result.IsSuccess);
-            Assert.Equal(1, behavior.Attempts);
-        }
+    private class TestBehaviorHandler(bool throwsOnFirstAttempt = false) : DelegatingHandler
+    {
+        private readonly bool _throwsOnFirstAttempt = throwsOnFirstAttempt;
 
-        [Fact]
-        public async Task HttpClient_RecoversAfterServerError()
+        public int Attempts { get; private set; }
+
+        protected override Task<HttpResponseMessage> SendAsync(HttpRequestMessage request, System.Threading.CancellationToken cancellationToken)
         {
-            var env = Guid.NewGuid();
-            var mockHttp = new MockHttpMessageHandler();
-
-            var baseUrl = $"https://deliver.kontent.ai/{env}";
-            var itemsUrl = $"{baseUrl}/items";
-            var itemsJson = await File.ReadAllTextAsync(Path.Combine(Environment.CurrentDirectory, $"Fixtures{Path.DirectorySeparatorChar}DeliveryClient{Path.DirectorySeparatorChar}items.json"));
-
-            // First 500, then OK
-            mockHttp.When(itemsUrl).Respond(req => new HttpResponseMessage(HttpStatusCode.InternalServerError));
-            mockHttp.When(itemsUrl).Respond("application/json", itemsJson);
-
-            var behavior = new TestBehaviorHandler();
-            var client = BuildClient(env, mockHttp, behavior, b =>
+            Attempts++;
+            if (_throwsOnFirstAttempt && Attempts == 1)
             {
-                b.AddRetry(new HttpRetryStrategyOptions { MaxRetryAttempts = 3, Delay = TimeSpan.FromMilliseconds(10), BackoffType = DelayBackoffType.Exponential });
-            });
-
-            var result = await client.GetItems<IElementsModel>().ExecuteAsync();
-
-            Assert.True(result.IsSuccess);
-            Assert.Equal(2, behavior.Attempts);
-        }
-
-        [Fact]
-        public async Task HttpClient_RetriesUpToConfiguredLimit_ThenFails()
-        {
-            var env = Guid.NewGuid();
-            var mockHttp = new MockHttpMessageHandler();
-
-            var baseUrl = $"https://deliver.kontent.ai/{env}";
-            var itemsUrl = $"{baseUrl}/items";
-            mockHttp.When(itemsUrl).Respond(HttpStatusCode.InternalServerError);
-
-            var behavior = new TestBehaviorHandler();
-            var maxAttempts = 2;
-            var client = BuildClient(env, mockHttp, behavior, b =>
-            {
-                b.AddRetry(new HttpRetryStrategyOptions { MaxRetryAttempts = maxAttempts, Delay = TimeSpan.FromMilliseconds(10), BackoffType = DelayBackoffType.Exponential });
-            });
-
-            var result = await client.GetItems<IElementsModel>().ExecuteAsync();
-
-            Assert.False(result.IsSuccess);
-            // total tries = initial + retries
-            Assert.Equal(1 + maxAttempts, behavior.Attempts);
-        }
-
-        [Fact]
-        public async Task HttpClient_RetriesAfterException_ThenSucceeds()
-        {
-            var env = Guid.NewGuid();
-            var mockHttp = new MockHttpMessageHandler();
-
-            var baseUrl = $"https://deliver.kontent.ai/{env}";
-            var itemsUrl = $"{baseUrl}/items";
-            var itemsJson = await File.ReadAllTextAsync(Path.Combine(Environment.CurrentDirectory, $"Fixtures{Path.DirectorySeparatorChar}DeliveryClient{Path.DirectorySeparatorChar}items.json"));
-            mockHttp.When(itemsUrl).Respond("application/json", itemsJson);
-
-            var behavior = new TestBehaviorHandler(throwsOnFirstAttempt: true);
-            var client = BuildClient(env, mockHttp, behavior, b =>
-            {
-                b.AddRetry(new HttpRetryStrategyOptions { MaxRetryAttempts = 3, Delay = TimeSpan.FromMilliseconds(10), BackoffType = DelayBackoffType.Exponential });
-            });
-
-            var result = await client.GetItems<IElementsModel>().ExecuteAsync();
-
-            Assert.True(result.IsSuccess);
-            Assert.Equal(2, behavior.Attempts);
-        }
-
-        private static DeliveryClient BuildClient(
-            Guid environmentId,
-            MockHttpMessageHandler primary,
-            TestBehaviorHandler behaviorHandler,
-            Action<ResiliencePipelineBuilder<HttpResponseMessage>> configureResilience)
-        {
-            var services = new ServiceCollection();
-            services.AddDeliveryClient(
-                new DeliveryOptions { EnvironmentId = environmentId.ToString(), EnableResilience = true },
-                configureRefit: null,
-                configureHttpClient: builder =>
-                {
-                    builder.ConfigurePrimaryHttpMessageHandler(() => primary);
-                    builder.AddHttpMessageHandler(() => behaviorHandler);
-                },
-                configureResilience: configureResilience);
-
-            var provider = services.BuildServiceProvider();
-            return (DeliveryClient)provider.GetRequiredService<IDeliveryClient>();
-        }
-
-        private class TestBehaviorHandler : DelegatingHandler
-        {
-            private readonly bool _throwsOnFirstAttempt;
-
-            public int Attempts { get; private set; }
-
-            public TestBehaviorHandler(bool throwsOnFirstAttempt = false)
-            {
-                _throwsOnFirstAttempt = throwsOnFirstAttempt;
+                throw new HttpRequestException("Simulated network failure");
             }
 
-            protected override Task<HttpResponseMessage> SendAsync(HttpRequestMessage request, System.Threading.CancellationToken cancellationToken)
-            {
-                Attempts++;
-                if (_throwsOnFirstAttempt && Attempts == 1)
-                {
-                    throw new HttpRequestException("Simulated network failure");
-                }
-
-                return base.SendAsync(request, cancellationToken);
-            }
+            return base.SendAsync(request, cancellationToken);
         }
     }
 }

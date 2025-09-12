@@ -1,10 +1,5 @@
 using System.Threading;
-using Kontent.Ai.Delivery.Abstractions.QueryBuilders;
-using Kontent.Ai.Delivery.Abstractions.QueryBuilders.Filtering;
-using Kontent.Ai.Delivery.Abstractions.SharedModels;
 using Kontent.Ai.Delivery.Api.QueryBuilders.Filtering;
-using Kontent.Ai.Delivery.ContentTypes;
-using Kontent.Ai.Delivery.Extensions;
 
 namespace Kontent.Ai.Delivery.Api.QueryBuilders;
 
@@ -64,7 +59,7 @@ internal sealed class TypesQuery(IDeliveryApi api, Func<bool?> getDefaultWaitFor
         bool? wait = _waitForLoadingNewContentOverride ?? _getDefaultWaitForNewContent();
         var response = await _api.GetTypesInternalAsync(paramsWithFilters, wait).ConfigureAwait(false);
         var deliveryResult = await response.ToDeliveryResultAsync().ConfigureAwait(false);
-        
+
         return deliveryResult.Map(response => response.Types.AsReadOnly());
     }
 }

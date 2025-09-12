@@ -1,10 +1,5 @@
 using System.Threading;
-using Kontent.Ai.Delivery.Abstractions.QueryBuilders;
-using Kontent.Ai.Delivery.Abstractions.QueryBuilders.Filtering;
-using Kontent.Ai.Delivery.Abstractions.SharedModels;
 using Kontent.Ai.Delivery.Api.QueryBuilders.Filtering;
-using Kontent.Ai.Delivery.Extensions;
-using Kontent.Ai.Delivery.TaxonomyGroups;
 
 namespace Kontent.Ai.Delivery.Api.QueryBuilders;
 
@@ -58,7 +53,7 @@ internal sealed class TaxonomiesQuery(IDeliveryApi api, Func<bool?> getDefaultWa
         bool? wait = _waitForLoadingNewContentOverride ?? _getDefaultWaitForNewContent();
         var response = await _api.GetTaxonomiesInternalAsync(paramsWithFilters, wait).ConfigureAwait(false);
         var deliveryResult = await response.ToDeliveryResultAsync().ConfigureAwait(false);
-        
+
         return deliveryResult.Map(response => response.Taxonomies.AsReadOnly());
     }
 }

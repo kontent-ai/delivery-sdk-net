@@ -1,22 +1,16 @@
-﻿namespace Kontent.Ai.Delivery.ContentItems
+﻿namespace Kontent.Ai.Delivery.ContentItems;
+
+/// <summary>
+/// Type used to identify inline content items which don't have corresponding model.
+/// </summary>
+/// <remarks>
+/// Creates an instance of <see cref="UnknownContentItem"/> which represents content item with no corresponding model.
+/// </remarks>
+/// <param name="type">The unresolvable type.</param>
+public class UnknownContentItem(string type)
 {
     /// <summary>
-    /// Type used to identify inline content items which don't have corresponding model.
+    /// Represents the content type that has no corresponding model
     /// </summary>
-    public class UnknownContentItem
-    {
-        /// <summary>
-        /// Represents the content type that has no corresponding model
-        /// </summary>
-        public string Type { get; set; }
-
-        /// <summary>
-        /// Creates an instance of <see cref="UnknownContentItem"/> which represents content item with no corresponding model.
-        /// </summary>
-        /// <param name="type">The unresolvable type.</param>
-        public UnknownContentItem(string type)
-        {
-            Type = type;
-        }
-    }
+    public string Type { get; set; } = type;
 }

@@ -1,11 +1,9 @@
 using System;
 using System.Threading;
 using System.Threading.Tasks;
-using Kontent.Ai.Delivery.Abstractions.QueryBuilders.Filtering;
-using Kontent.Ai.Delivery.Abstractions.SharedModels;
 using System.Collections.Generic;
 
-namespace Kontent.Ai.Delivery.Abstractions.QueryBuilders;
+namespace Kontent.Ai.Delivery.Abstractions;
 
 /// <summary>
 /// Fluent builder for listing taxonomy groups.

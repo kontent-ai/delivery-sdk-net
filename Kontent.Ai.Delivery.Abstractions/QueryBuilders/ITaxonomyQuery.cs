@@ -1,8 +1,7 @@
 using System.Threading;
 using System.Threading.Tasks;
-using Kontent.Ai.Delivery.Abstractions.SharedModels;
 
-namespace Kontent.Ai.Delivery.Abstractions.QueryBuilders;
+namespace Kontent.Ai.Delivery.Abstractions;
 
 /// <summary>
 /// Fluent builder for retrieving a single taxonomy group by codename.

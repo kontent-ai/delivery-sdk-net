@@ -10,7 +10,11 @@ namespace Kontent.Ai.Urls.Delivery;
 /// <summary>
 /// Facilitates the generation of valid URLs for Kontent.ai Delivery API
 /// </summary>
-public class DeliveryEndpointUrlBuilder
+/// <remarks>
+/// Initializes the URL builder using <see cref="IOptionsMonitor{TOptions}"/>. Ideal for web-based scenarios and scenarios with dynamically changing configuration.
+/// </remarks>
+/// <param name="deliveryOptions">The configuration wrapped in a notification object.</param>
+public class DeliveryEndpointUrlBuilder(IOptionsMonitor<DeliveryOptions> deliveryOptions)
 {
     private const int UrlMaxLength = 65519;
     private const string UrlTemplateItem = "/items/{0}";
@@ -26,7 +30,7 @@ public class DeliveryEndpointUrlBuilder
     private const string UrlTemplateLanguages = "/languages";
     private const string UrlTemplateVersionV2 = "v2/";
 
-    private readonly IOptionsMonitor<DeliveryOptions> _deliveryOptionsMonitor;
+    private readonly IOptionsMonitor<DeliveryOptions> _deliveryOptionsMonitor = deliveryOptions;
     private DeliveryOptions deliveryOptions;
 
     private DeliveryOptions CurrentDeliveryOptions
@@ -39,15 +43,6 @@ public class DeliveryEndpointUrlBuilder
         {
             deliveryOptions = value;
         }
-    }
-
-    /// <summary>
-    /// Initializes the URL builder using <see cref="IOptionsMonitor{TOptions}"/>. Ideal for web-based scenarios and scenarios with dynamically changing configuration.
-    /// </summary>
-    /// <param name="deliveryOptions">The configuration wrapped in a notification object.</param>
-    public DeliveryEndpointUrlBuilder(IOptionsMonitor<DeliveryOptions> deliveryOptions)
-    {
-        _deliveryOptionsMonitor = deliveryOptions;
     }
 
     /// <summary>

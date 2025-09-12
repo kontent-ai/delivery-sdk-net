@@ -1,4 +1,4 @@
-namespace Kontent.Ai.Delivery.Abstractions.QueryBuilders.Filtering;
+namespace Kontent.Ai.Delivery.Abstractions;
 
 /// <summary>
 /// All available filtering operators in the Kontent.ai Delivery API.

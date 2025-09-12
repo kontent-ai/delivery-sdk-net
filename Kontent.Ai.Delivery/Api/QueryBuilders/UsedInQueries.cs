@@ -1,8 +1,5 @@
 using System.Threading;
-using Kontent.Ai.Delivery.Abstractions.QueryBuilders;
-using Kontent.Ai.Delivery.Abstractions.SharedModels;
 using System.Runtime.CompilerServices;
-using System.Collections.Generic;
 
 namespace Kontent.Ai.Delivery.Api.QueryBuilders;
 
