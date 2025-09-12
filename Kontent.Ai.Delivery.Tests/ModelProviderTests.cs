@@ -29,7 +29,8 @@ namespace Kontent.Ai.Delivery.Tests
             var processor = InlineContentItemsProcessorFactory
                 .WithResolver(ResolveItemWithSingleRte)
                 .Build();
-            var retriever = new ModelProvider(contentLinkUrlResolver, processor, typeProvider, propertyMapper, new DeliveryJsonSerializer(), new HtmlParser(), deliveryOptions);
+            var jsonOptions = Configuration.RefitSettingsProvider.CreateDefaultJsonSerializerOptions();
+            var retriever = new ModelProvider(typeProvider, propertyMapper, processor, contentLinkUrlResolver, jsonOptions, new HtmlParser(), deliveryOptions);
 
             var item = JToken.FromObject(Rt1);
             var linkedItems = JToken.FromObject(LinkedItemsForItemWithTwoReferencedContentItems);
@@ -53,7 +54,8 @@ namespace Kontent.Ai.Delivery.Tests
             var processor = InlineContentItemsProcessorFactory
                 .WithResolver(factory => factory.ResolveTo<UnknownContentItem>(unknownItem => $"Content type '{unknownItem.Type}' has no corresponding model."))
                 .Build();
-            var retriever = new ModelProvider(contentLinkUrlResolver, processor, typeProvider, propertyMapper, new DeliveryJsonSerializer(), new HtmlParser(), deliveryOptions);
+            var jsonOptions = Configuration.RefitSettingsProvider.CreateDefaultJsonSerializerOptions();
+            var retriever = new ModelProvider(typeProvider, propertyMapper, processor, contentLinkUrlResolver, jsonOptions, new HtmlParser(), deliveryOptions);
 
             var item = JToken.FromObject(Rt5);
             var linkedItems = JToken.FromObject(LinkedItemWithNoModel);
@@ -83,7 +85,8 @@ namespace Kontent.Ai.Delivery.Tests
             var processor = InlineContentItemsProcessorFactory
                 .WithResolver(ResolveItemWithSingleRte)
                 .Build();
-            var retriever = new ModelProvider(contentLinkUrlResolver, processor, typeProvider, propertyMapper, new DeliveryJsonSerializer(), new HtmlParser(), deliveryOptions);
+            var jsonOptions = Configuration.RefitSettingsProvider.CreateDefaultJsonSerializerOptions();
+            var retriever = new ModelProvider(typeProvider, propertyMapper, processor, contentLinkUrlResolver, jsonOptions, new HtmlParser(), deliveryOptions);
 
             var item = JToken.FromObject(Rt3);
             var linkedItems = JToken.FromObject(LinkedItemsForItemReferencingItself);
@@ -107,7 +110,8 @@ namespace Kontent.Ai.Delivery.Tests
             var typeProvider = A.Fake<ITypeProvider>();
             var propertyMapper = A.Fake<IPropertyMapper>();
             A.CallTo(() => typeProvider.GetType("newType")).Returns(null);
-            var modelProvider = new ModelProvider(contentLinkUrlResolver, inlineContentItemsProcessor, typeProvider, propertyMapper, new DeliveryJsonSerializer(), new HtmlParser(), deliveryOptions);
+            var jsonOptions = Configuration.RefitSettingsProvider.CreateDefaultJsonSerializerOptions();
+            var modelProvider = new ModelProvider(typeProvider, propertyMapper, inlineContentItemsProcessor, contentLinkUrlResolver, jsonOptions, new HtmlParser(), deliveryOptions);
 
             Assert.Null(await modelProvider.GetContentItemModelAsync<object>(item, linkedItems));
         }

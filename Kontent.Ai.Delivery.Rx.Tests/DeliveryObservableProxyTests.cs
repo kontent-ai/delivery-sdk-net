@@ -218,8 +218,8 @@ namespace Kontent.Ai.Delivery.Rx.Tests
             var contentItemsProcessor = A.Fake<IInlineContentItemsProcessor>();
             var contentPropertyMapper = new PropertyMapper();
             var contentTypeProvider = new CustomTypeProvider();
-            var serializer = new DeliveryJsonSerializer();
-            var modelProvider = new ModelProvider(contentLinkUrlResolver, contentItemsProcessor, contentTypeProvider, contentPropertyMapper, serializer, new HtmlParser(), deliveryOptions);
+            var serializerOptions = Kontent.Ai.Delivery.Configuration.RefitSettingsProvider.CreateDefaultJsonSerializerOptions();
+            var modelProvider = new ModelProvider(contentLinkUrlResolver, contentItemsProcessor, contentTypeProvider, contentPropertyMapper, serializerOptions, new HtmlParser(), deliveryOptions);
             var retryPolicy = A.Fake<IRetryPolicy>();
             var retryPolicyProvider = A.Fake<IRetryPolicyProvider>();
             A.CallTo(() => retryPolicyProvider.GetRetryPolicy()).Returns(retryPolicy);
@@ -231,7 +231,7 @@ namespace Kontent.Ai.Delivery.Rx.Tests
                 retryPolicyProvider,
                 contentTypeProvider,
                 deliveryHttpClient,
-                serializer
+                serializerOptions
             );
 
             return client;

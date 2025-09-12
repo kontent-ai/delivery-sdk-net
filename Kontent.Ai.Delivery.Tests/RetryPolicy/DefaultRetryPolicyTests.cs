@@ -1,13 +1,14 @@
 ﻿using System;
-using System.Collections.Generic;
-using System.Diagnostics;
-using System.Linq;
+using System.IO;
 using System.Net;
 using System.Net.Http;
-using System.Net.Http.Headers;
 using System.Threading.Tasks;
 using Kontent.Ai.Delivery.Abstractions;
-using Kontent.Ai.Delivery.RetryPolicy;
+using Kontent.Ai.Delivery.Extensions;
+using Microsoft.Extensions.DependencyInjection;
+using Microsoft.Extensions.Http.Resilience;
+using Polly;
+using RichardSzalay.MockHttp;
 using Xunit;
 
 namespace Kontent.Ai.Delivery.Tests.RetryPolicy
@@ -15,313 +16,142 @@ namespace Kontent.Ai.Delivery.Tests.RetryPolicy
     public class DefaultRetryPolicyTests
     {
         [Fact]
-        public async Task ExecuteAsync_ResponseOk_DoesNotRetry()
+        public async Task HttpClient_Success_DoesNotRetry()
         {
-            var options = new DefaultRetryPolicyOptions
+            var env = Guid.NewGuid();
+            var mockHttp = new MockHttpMessageHandler();
+
+            var baseUrl = $"https://deliver.kontent.ai/{env}";
+            var itemsUrl = $"{baseUrl}/items";
+            var itemsJson = await File.ReadAllTextAsync(Path.Combine(Environment.CurrentDirectory, $"Fixtures{Path.DirectorySeparatorChar}DeliveryClient{Path.DirectorySeparatorChar}items.json"));
+            mockHttp.When(itemsUrl).Respond("application/json", itemsJson);
+
+            var behavior = new TestBehaviorHandler();
+            var client = BuildClient(env, mockHttp, behavior, b =>
             {
-                DeltaBackoff = TimeSpan.FromSeconds(5)
-            };
-            var retryPolicy = new DefaultRetryPolicy(options);
-            var client = new FakeSender().Returns(HttpStatusCode.OK);
+                b.AddRetry(new HttpRetryStrategyOptions { MaxRetryAttempts = 3, Delay = TimeSpan.FromMilliseconds(10), BackoffType = DelayBackoffType.Exponential });
+            });
 
-            var response = await retryPolicy.ExecuteAsync(client.SendRequest);
+            var result = await client.GetItems<IElementsModel>().ExecuteAsync();
 
-            Assert.Equal(HttpStatusCode.OK, response.StatusCode);
-            Assert.Equal(1, client.TimesCalled);
+            Assert.True(result.IsSuccess);
+            Assert.Equal(1, behavior.Attempts);
         }
 
         [Fact]
-        public async Task ExecuteAsync_RecoversAfterNotSuccessStatusCode()
+        public async Task HttpClient_RecoversAfterServerError()
         {
-            var options = new DefaultRetryPolicyOptions
+            var env = Guid.NewGuid();
+            var mockHttp = new MockHttpMessageHandler();
+
+            var baseUrl = $"https://deliver.kontent.ai/{env}";
+            var itemsUrl = $"{baseUrl}/items";
+            var itemsJson = await File.ReadAllTextAsync(Path.Combine(Environment.CurrentDirectory, $"Fixtures{Path.DirectorySeparatorChar}DeliveryClient{Path.DirectorySeparatorChar}items.json"));
+
+            // First 500, then OK
+            mockHttp.When(itemsUrl).Respond(req => new HttpResponseMessage(HttpStatusCode.InternalServerError));
+            mockHttp.When(itemsUrl).Respond("application/json", itemsJson);
+
+            var behavior = new TestBehaviorHandler();
+            var client = BuildClient(env, mockHttp, behavior, b =>
             {
-                DeltaBackoff = TimeSpan.FromMilliseconds(100)
-            };
-            var retryPolicy = new DefaultRetryPolicy(options);
-            var client = new FakeSender().Returns(HttpStatusCode.InternalServerError, HttpStatusCode.OK);
+                b.AddRetry(new HttpRetryStrategyOptions { MaxRetryAttempts = 3, Delay = TimeSpan.FromMilliseconds(10), BackoffType = DelayBackoffType.Exponential });
+            });
 
-            var stopwatch = Stopwatch.StartNew();
-            var response = await retryPolicy.ExecuteAsync(client.SendRequest);
-            stopwatch.Stop();
+            var result = await client.GetItems<IElementsModel>().ExecuteAsync();
 
-            Assert.Equal(HttpStatusCode.OK, response.StatusCode);
-            Assert.Equal(2, client.TimesCalled);
-            Assert.True(stopwatch.Elapsed > 0.8 * options.DeltaBackoff);
+            Assert.True(result.IsSuccess);
+            Assert.Equal(2, behavior.Attempts);
         }
 
         [Fact]
-        public async Task ExecuteAsync_RecoversAfterException()
+        public async Task HttpClient_RetriesUpToConfiguredLimit_ThenFails()
         {
-            var options = new DefaultRetryPolicyOptions
+            var env = Guid.NewGuid();
+            var mockHttp = new MockHttpMessageHandler();
+
+            var baseUrl = $"https://deliver.kontent.ai/{env}";
+            var itemsUrl = $"{baseUrl}/items";
+            mockHttp.When(itemsUrl).Respond(HttpStatusCode.InternalServerError);
+
+            var behavior = new TestBehaviorHandler();
+            var maxAttempts = 2;
+            var client = BuildClient(env, mockHttp, behavior, b =>
             {
-                DeltaBackoff = TimeSpan.FromMilliseconds(100)
-            };
-            var retryPolicy = new DefaultRetryPolicy(options);
-            var client = new FakeSender()
-                .Throws(GetExceptionFromStatus(WebExceptionStatus.ConnectionClosed))
-                .Returns(HttpStatusCode.OK);
+                b.AddRetry(new HttpRetryStrategyOptions { MaxRetryAttempts = maxAttempts, Delay = TimeSpan.FromMilliseconds(10), BackoffType = DelayBackoffType.Exponential });
+            });
 
-            var stopwatch = Stopwatch.StartNew();
-            var response = await retryPolicy.ExecuteAsync(client.SendRequest);
-            stopwatch.Stop();
+            var result = await client.GetItems<IElementsModel>().ExecuteAsync();
 
-            Assert.Equal(HttpStatusCode.OK, response.StatusCode);
-            Assert.Equal(2, client.TimesCalled);
-            Assert.True(stopwatch.Elapsed > 0.8 * options.DeltaBackoff);
+            Assert.False(result.IsSuccess);
+            // total tries = initial + retries
+            Assert.Equal(1 + maxAttempts, behavior.Attempts);
         }
 
         [Fact]
-        public async Task ExecuteAsync_UnsuccessfulStatusCode_RetriesUntilCumulativeWaitTimeReached()
+        public async Task HttpClient_RetriesAfterException_ThenSucceeds()
         {
-            var options = new DefaultRetryPolicyOptions
+            var env = Guid.NewGuid();
+            var mockHttp = new MockHttpMessageHandler();
+
+            var baseUrl = $"https://deliver.kontent.ai/{env}";
+            var itemsUrl = $"{baseUrl}/items";
+            var itemsJson = await File.ReadAllTextAsync(Path.Combine(Environment.CurrentDirectory, $"Fixtures{Path.DirectorySeparatorChar}DeliveryClient{Path.DirectorySeparatorChar}items.json"));
+            mockHttp.When(itemsUrl).Respond("application/json", itemsJson);
+
+            var behavior = new TestBehaviorHandler(throwsOnFirstAttempt: true);
+            var client = BuildClient(env, mockHttp, behavior, b =>
             {
-                DeltaBackoff = TimeSpan.FromMilliseconds(100),
-                MaxCumulativeWaitTime = TimeSpan.FromSeconds(2)
-            };
-            var retryPolicy = new DefaultRetryPolicy(options);
-            var client = new FakeSender().Returns(HttpStatusCode.InternalServerError);
+                b.AddRetry(new HttpRetryStrategyOptions { MaxRetryAttempts = 3, Delay = TimeSpan.FromMilliseconds(10), BackoffType = DelayBackoffType.Exponential });
+            });
 
-            var stopwatch = Stopwatch.StartNew();
-            var response = await retryPolicy.ExecuteAsync(client.SendRequest);
-            stopwatch.Stop();
+            var result = await client.GetItems<IElementsModel>().ExecuteAsync();
 
-            Assert.Equal(HttpStatusCode.InternalServerError, response.StatusCode);
-            Assert.True(client.TimesCalled > 1);
-            var maximumPossibleNextWaitTime = 1.2 * options.DeltaBackoff * Math.Pow(2, client.TimesCalled - 1);
-            Assert.True(stopwatch.Elapsed > options.MaxCumulativeWaitTime - maximumPossibleNextWaitTime);
+            Assert.True(result.IsSuccess);
+            Assert.Equal(2, behavior.Attempts);
         }
 
-        [Fact]
-        public async Task ExecuteAsync_Exception_RetriesUntilCumulativeWaitTimeReached()
+        private static DeliveryClient BuildClient(
+            Guid environmentId,
+            MockHttpMessageHandler primary,
+            TestBehaviorHandler behaviorHandler,
+            Action<ResiliencePipelineBuilder<HttpResponseMessage>> configureResilience)
         {
-            var options = new DefaultRetryPolicyOptions
-            {
-                DeltaBackoff = TimeSpan.FromMilliseconds(100),
-                MaxCumulativeWaitTime = TimeSpan.FromSeconds(2)
-            };
-            var retryPolicy = new DefaultRetryPolicy(options);
-            var client = new FakeSender().Throws(GetExceptionFromStatus(WebExceptionStatus.ConnectionClosed));
-
-            var stopwatch = Stopwatch.StartNew();
-            await Assert.ThrowsAsync<HttpRequestException>(() => retryPolicy.ExecuteAsync(client.SendRequest));
-            stopwatch.Stop();
-
-            Assert.True(client.TimesCalled > 1);
-            var maximumPossibleNextWaitTime = 1.2 * options.DeltaBackoff * Math.Pow(2, client.TimesCalled - 1);
-            Assert.True(stopwatch.Elapsed > options.MaxCumulativeWaitTime - maximumPossibleNextWaitTime);
-        }
-
-        [Theory]
-        [InlineData((HttpStatusCode)429)]
-        [InlineData(HttpStatusCode.ServiceUnavailable)]
-        public async Task ExecuteAsync_ThrottledRequest_NoHeader_GetsNextWaitTime(HttpStatusCode statusCode)
-        {
-            var options = new DefaultRetryPolicyOptions
-            {
-                DeltaBackoff = TimeSpan.FromSeconds(10),
-                MaxCumulativeWaitTime = TimeSpan.FromSeconds(5)
-            };
-            var retryPolicy = new DefaultRetryPolicy(options);
-            var client = new FakeSender().Returns(statusCode);
-
-            var response = await retryPolicy.ExecuteAsync(client.SendRequest);
-
-            Assert.Equal(statusCode, response.StatusCode);
-            Assert.Equal(1, client.TimesCalled);
-        }
-
-        [Theory]
-        [InlineData((HttpStatusCode)429, -1)]
-        [InlineData((HttpStatusCode)429, 0)]
-        [InlineData(HttpStatusCode.ServiceUnavailable, -1)]
-        [InlineData(HttpStatusCode.ServiceUnavailable, 0)]
-        public async Task ExecuteAsync_ThrottledRequest_RetryAfterHeaderWithNotPositiveDelta_GetsNextWaitTime(HttpStatusCode statusCode, int waitTimeInSeconds)
-        {
-            var options = new DefaultRetryPolicyOptions
-            {
-                DeltaBackoff = TimeSpan.FromSeconds(10),
-                MaxCumulativeWaitTime = TimeSpan.FromSeconds(5)
-            };
-            var retryPolicy = new DefaultRetryPolicy(options);
-            var mockResponse = new HttpResponseMessage(statusCode);
-            mockResponse.Headers.RetryAfter = new RetryConditionHeaderValue(TimeSpan.FromSeconds(waitTimeInSeconds));
-            var client = new FakeSender().Returns(mockResponse);
-
-            var response = await retryPolicy.ExecuteAsync(client.SendRequest);
-
-            Assert.Equal(statusCode, response.StatusCode);
-            Assert.Equal(1, client.TimesCalled);
-        }
-
-        [Theory]
-        [InlineData((HttpStatusCode)429)]
-        [InlineData(HttpStatusCode.ServiceUnavailable)]
-        public async Task ExecuteAsync_ThrottledRequest_RetryAfterHeaderWithPastDate_GetsNextWaitTime(HttpStatusCode statusCode)
-        {
-            var options = new DefaultRetryPolicyOptions
-            {
-                DeltaBackoff = TimeSpan.FromSeconds(10),
-                MaxCumulativeWaitTime = TimeSpan.FromSeconds(5)
-            };
-            var retryPolicy = new DefaultRetryPolicy(options);
-            var mockResponse = new HttpResponseMessage(statusCode);
-            mockResponse.Headers.RetryAfter = new RetryConditionHeaderValue(DateTime.UtcNow.AddSeconds(-1));
-            var client = new FakeSender().Returns(mockResponse);
-
-            var response = await retryPolicy.ExecuteAsync(client.SendRequest);
-
-            Assert.Equal(statusCode, response.StatusCode);
-            Assert.Equal(1, client.TimesCalled);
-        }
-
-        [Theory]
-        [InlineData((HttpStatusCode)429)]
-        [InlineData(HttpStatusCode.ServiceUnavailable)]
-        public async Task ExecuteAsync_ThrottledRequest_RetryAfterHeaderWithDelta_ReadsWaitTimeFromHeader(HttpStatusCode statusCode)
-        {
-            var options = new DefaultRetryPolicyOptions
-            {
-                DeltaBackoff = TimeSpan.FromMilliseconds(100),
-                MaxCumulativeWaitTime = TimeSpan.FromSeconds(5)
-            };
-            var retryPolicy = new DefaultRetryPolicy(options);
-            var mockResponse = new HttpResponseMessage(statusCode);
-            mockResponse.Headers.RetryAfter = new RetryConditionHeaderValue(TimeSpan.FromSeconds(6));
-            var client = new FakeSender().Returns(mockResponse);
-
-            var response = await retryPolicy.ExecuteAsync(client.SendRequest);
-
-            Assert.Equal(statusCode, response.StatusCode);
-            Assert.Equal(1, client.TimesCalled);
-        }
-
-        [Theory]
-        [InlineData((HttpStatusCode)429)]
-        [InlineData(HttpStatusCode.ServiceUnavailable)]
-        public async Task ExecuteAsync_ThrottledRequest_RetryAfterHeaderWithDate_ReadsWaitTimeFromHeader(HttpStatusCode statusCode)
-        {
-            var options = new DefaultRetryPolicyOptions
-            {
-                DeltaBackoff = TimeSpan.FromMilliseconds(100),
-                MaxCumulativeWaitTime = TimeSpan.FromSeconds(5)
-            };
-            var retryPolicy = new DefaultRetryPolicy(options);
-            var mockResponse = new HttpResponseMessage(statusCode);
-            mockResponse.Headers.RetryAfter = new RetryConditionHeaderValue(DateTime.UtcNow.AddSeconds(6));
-            var client = new FakeSender().Returns(mockResponse);
-
-            var response = await retryPolicy.ExecuteAsync(client.SendRequest);
-
-            Assert.Equal(statusCode, response.StatusCode);
-            Assert.Equal(1, client.TimesCalled);
-        }
-
-        [Theory]
-        [InlineData(HttpStatusCode.RequestTimeout)]
-        [InlineData((HttpStatusCode)429)]
-        [InlineData(HttpStatusCode.InternalServerError)]
-        [InlineData(HttpStatusCode.BadGateway)]
-        [InlineData(HttpStatusCode.ServiceUnavailable)]
-        [InlineData(HttpStatusCode.GatewayTimeout)]
-        public async Task ExecuteAsync_RetriesForCertainStatusCodes(HttpStatusCode statusCode)
-        {
-            var options = new DefaultRetryPolicyOptions
-            {
-                DeltaBackoff = TimeSpan.FromMilliseconds(100)
-            };
-            var retryPolicy = new DefaultRetryPolicy(options);
-            var client = new FakeSender().Returns(statusCode, HttpStatusCode.OK);
-
-            var stopwatch = Stopwatch.StartNew();
-            var response = await retryPolicy.ExecuteAsync(client.SendRequest);
-            stopwatch.Stop();
-
-            Assert.Equal(HttpStatusCode.OK, response.StatusCode);
-            Assert.Equal(2, client.TimesCalled);
-            Assert.True(stopwatch.Elapsed > 0.8 * options.DeltaBackoff);
-        }
-
-        [Theory]
-        [MemberData(nameof(RetriedExceptions))]
-        public async Task ExecuteAsync_RetriesForCertainExceptions(Exception exception)
-        {
-            var options = new DefaultRetryPolicyOptions
-            {
-                DeltaBackoff = TimeSpan.FromMilliseconds(100)
-            };
-            var retryPolicy = new DefaultRetryPolicy(options);
-            var client = new FakeSender()
-                .Throws(exception)
-                .Returns(HttpStatusCode.OK);
-
-            var stopwatch = Stopwatch.StartNew();
-            var response = await retryPolicy.ExecuteAsync(client.SendRequest);
-            stopwatch.Stop();
-
-            Assert.Equal(HttpStatusCode.OK, response.StatusCode);
-            Assert.Equal(2, client.TimesCalled);
-            Assert.True(stopwatch.Elapsed > 0.8 * options.DeltaBackoff);
-        }
-
-        private static Exception GetExceptionFromStatus(WebExceptionStatus status) => new HttpRequestException("Exception", new WebException(string.Empty, status));
-        public static readonly object[][] RetriedExceptions =
-        {
-            new object[] { GetExceptionFromStatus(WebExceptionStatus.ConnectFailure) },
-            new object[] { GetExceptionFromStatus(WebExceptionStatus.ConnectionClosed) },
-            new object[] { GetExceptionFromStatus(WebExceptionStatus.KeepAliveFailure) },
-            new object[] { GetExceptionFromStatus(WebExceptionStatus.NameResolutionFailure) },
-            new object[] { GetExceptionFromStatus(WebExceptionStatus.ReceiveFailure) },
-            new object[] { GetExceptionFromStatus(WebExceptionStatus.SendFailure) },
-            new object[] { GetExceptionFromStatus(WebExceptionStatus.Timeout) },
-        };
-
-        private class FakeSender
-        {
-            public int TimesCalled { get; private set; }
-            private readonly Queue<Task<HttpResponseMessage>> _responses = new Queue<Task<HttpResponseMessage>>();
-
-            public Task<HttpResponseMessage> SendRequest()
-            {
-                ++TimesCalled;
-
-                if (_responses.Count == 1)
+            var services = new ServiceCollection();
+            services.AddDeliveryClient(
+                new DeliveryOptions { EnvironmentId = environmentId.ToString(), EnableResilience = true },
+                configureRefit: null,
+                configureHttpClient: builder =>
                 {
-                    return _responses.Peek();
-                }
-                return _responses.Any()
-                    ? _responses.Dequeue()
-                    : Task.FromResult((HttpResponseMessage)null);
+                    builder.ConfigurePrimaryHttpMessageHandler(() => primary);
+                    builder.AddHttpMessageHandler(() => behaviorHandler);
+                },
+                configureResilience: configureResilience);
+
+            var provider = services.BuildServiceProvider();
+            return (DeliveryClient)provider.GetRequiredService<IDeliveryClient>();
+        }
+
+        private class TestBehaviorHandler : DelegatingHandler
+        {
+            private readonly bool _throwsOnFirstAttempt;
+
+            public int Attempts { get; private set; }
+
+            public TestBehaviorHandler(bool throwsOnFirstAttempt = false)
+            {
+                _throwsOnFirstAttempt = throwsOnFirstAttempt;
             }
 
-            public FakeSender Returns(params HttpResponseMessage[] responseMessages)
+            protected override Task<HttpResponseMessage> SendAsync(HttpRequestMessage request, System.Threading.CancellationToken cancellationToken)
             {
-                foreach (var response in responseMessages)
+                Attempts++;
+                if (_throwsOnFirstAttempt && Attempts == 1)
                 {
-                    _responses.Enqueue(Task.FromResult(response));
+                    throw new HttpRequestException("Simulated network failure");
                 }
 
-                return this;
-            }
-
-
-            public FakeSender Returns(params HttpStatusCode[] statusCodes)
-            {
-                foreach (var statusCode in statusCodes)
-                {
-                    _responses.Enqueue(Task.FromResult(new HttpResponseMessage(statusCode)));
-                }
-
-                return this;
-            }
-
-            public FakeSender Throws(params Exception[] exceptions)
-            {
-                foreach (var exception in exceptions)
-                {
-                    _responses.Enqueue(Task.FromException<HttpResponseMessage>(exception));
-                }
-
-                return this;
+                return base.SendAsync(request, cancellationToken);
             }
         }
     }

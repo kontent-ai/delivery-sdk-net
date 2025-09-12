@@ -37,8 +37,8 @@ namespace Kontent.Ai.Delivery.Tests.SharedModels
 
         private Pagination SerializeThenDeserializeUsingBson(Pagination pagination)
         {
-            var data = pagination.ToBson();
-            return data.FromBson<Pagination>();
+            var data = pagination.ToMessagePack();
+            return data.FromMessagePack<Pagination>();
         }
     }
 }

@@ -38,5 +38,19 @@ namespace Kontent.Ai.Delivery.Tests.Factories
 
             result.Should().NotBeNull();
         }
+
+        [Fact]
+        public void AddDeliveryClient_WithInvalidOptions_Throws()
+        {
+            var services = new ServiceCollection();
+
+            Action act = () => services.AddDeliveryClient(new DeliveryOptions
+            {
+                EnvironmentId = "invalid-guid"
+            });
+
+            act.Should().Throw<ArgumentException>()
+                .WithMessage("*DeliveryOptions validation failed*");
+        }
     }
 }
