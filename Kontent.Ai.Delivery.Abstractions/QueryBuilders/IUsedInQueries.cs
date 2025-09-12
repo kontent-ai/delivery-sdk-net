@@ -17,13 +17,6 @@ public interface IItemUsedInQuery
     IItemUsedInQuery WaitForLoadingNewContent(bool enabled = true);
 
     /// <summary>
-    /// Executes the built query and returns a functional result.
-    /// </summary>
-    /// <param name="cancellationToken">Cancellation token for the operation.</param>
-    /// <returns>A delivery result containing the used-in response or errors.</returns>
-    Task<IDeliveryResult<IReadOnlyList<IUsedInItem>>> ExecuteAsync(CancellationToken cancellationToken = default);
-
-    /// <summary>
     /// Enumerates parent content items using the Used In endpoint.
     /// </summary>
     /// <param name="cancellationToken">Cancellation token to stop enumeration and cancel in-flight requests.</param>
@@ -48,13 +41,6 @@ public interface IAssetUsedInQuery
     /// </summary>
     /// <param name="enabled">Whether to wait for loading new content.</param>
     IAssetUsedInQuery WaitForLoadingNewContent(bool enabled = true);
-
-    /// <summary>
-    /// Executes the built query and returns a functional result.
-    /// </summary>
-    /// <param name="cancellationToken">Cancellation token for the operation.</param>
-    /// <returns>A delivery result containing the used-in response or errors.</returns>
-    Task<IDeliveryResult<IReadOnlyList<IUsedInItem>>> ExecuteAsync(CancellationToken cancellationToken = default);
 
     /// <summary>
     /// Enumerates parent content items using the Asset Used In endpoint.

@@ -65,7 +65,7 @@ namespace Kontent.Ai.Delivery
 
         public IEnumerateItemsQuery<IElementsModel> GetItemsFeed()
         {
-            return new EnumerateItemsQuery<IElementsModel>(_deliveryApi, GetDefaultWaitForLoadingNewContent);
+            return new EnumerateItemsQuery<IElementsModel>(_deliveryApi, GetDefaultWaitForLoadingNewContent, _elementsPostProcessor);
         }
 
         public ITypeQuery GetType(string codename)

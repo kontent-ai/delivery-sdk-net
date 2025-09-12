@@ -20,15 +20,6 @@ internal sealed class ItemUsedInQuery(IDeliveryApi api, string codename, Func<bo
         return this;
     }
 
-    public async Task<IDeliveryResult<IReadOnlyList<IUsedInItem>>> ExecuteAsync(CancellationToken cancellationToken = default)
-    {
-        bool? header = _waitForLoadingNewContentOverride ?? _getDefaultWaitForNewContent();
-        var response = await _api.GetItemUsedInInternalAsync(_codename, header, null, cancellationToken).ConfigureAwait(false);
-        var deliveryResult = await response.ToDeliveryResultAsync().ConfigureAwait(false);
-
-        return deliveryResult.Map(response => response.Items.AsReadOnly());
-    }
-
     public async IAsyncEnumerable<IUsedInItem> EnumerateItemsAsync([EnumeratorCancellation] CancellationToken cancellationToken = default)
     {
         bool? wait = _waitForLoadingNewContentOverride ?? _getDefaultWaitForNewContent();
@@ -71,15 +62,6 @@ internal sealed class AssetUsedInQuery(IDeliveryApi api, string codename, Func<b
     {
         _waitForLoadingNewContentOverride = enabled;
         return this;
-    }
-
-    public async Task<IDeliveryResult<IReadOnlyList<IUsedInItem>>> ExecuteAsync(CancellationToken cancellationToken = default)
-    {
-        bool? wait = _waitForLoadingNewContentOverride ?? _getDefaultWaitForNewContent();
-        var response = await _api.GetAssetUsedInInternalAsync(_codename, wait, null, cancellationToken).ConfigureAwait(false);
-        var deliveryResult = await response.ToDeliveryResultAsync().ConfigureAwait(false);
-
-        return deliveryResult.Map(response => response.Items.AsReadOnly());
     }
 
     public async IAsyncEnumerable<IUsedInItem> EnumerateItemsAsync([EnumeratorCancellation] CancellationToken cancellationToken = default)
