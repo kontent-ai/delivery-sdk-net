@@ -64,22 +64,5 @@ namespace Kontent.Ai.Delivery.Caching.Extensions
                 return null;
             }
         }
-
-        /// <summary>
-        /// Legacy method for backward compatibility - converts BSON calls to MessagePack.
-        /// </summary>
-        /// <param name="obj">Object to serialize.</param>
-        /// <returns>Byte array of MessagePack representation of the given object.</returns>
-        [Obsolete("Use ToMessagePack instead. This method is kept for backward compatibility during migration.")]
-        public static byte[]? ToBson(this object? obj) => obj.ToMessagePack();
-
-        /// <summary>
-        /// Legacy method for backward compatibility - converts BSON calls to MessagePack.
-        /// </summary>
-        /// <typeparam name="T">Target type to deserialize the object to.</typeparam>
-        /// <param name="byteArray">Byte array representation of the object.</param>
-        /// <returns>Strongly-typed deserialized object.</returns>
-        [Obsolete("Use FromMessagePack instead. This method is kept for backward compatibility during migration.")]
-        public static T? FromBson<T>(this byte[]? byteArray) where T : class => byteArray.FromMessagePack<T>();
     }
 }

@@ -3,7 +3,7 @@ using System.Diagnostics;
 
 namespace Kontent.Ai.Delivery.SharedModels
 {
-    /// <inheritdoc/>
+    /// <inheritdoc cref="IPagination" />
     [DebuggerDisplay("Count = {" + nameof(Count) + "}, Total = {" + nameof(TotalCount) + "}")]
     internal sealed class Pagination : IPagination
     {
@@ -22,7 +22,7 @@ namespace Kontent.Ai.Delivery.SharedModels
 
         /// <inheritdoc/>
         [JsonPropertyName("next_page")]
-        public string NextPageUrl { get; }
+        public string? NextPageUrl { get; }
 
         /// <summary>
         /// Initializes a new instance of the <see cref="Pagination"/> class with information from a response.

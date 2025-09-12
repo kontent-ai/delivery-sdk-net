@@ -6,7 +6,6 @@ global using Kontent.Ai.Delivery.Api.QueryParams.TaxonomyGroups;
 global using Kontent.Ai.Delivery.Api.QueryParams.Types;
 global using Kontent.Ai.Delivery.Api.QueryBuilders;
 global using Kontent.Ai.Delivery.Extensions;
-global using Kontent.Ai.Delivery.Services;
 global using Kontent.Ai.Delivery.SharedModels;
 global using Refit;
 global using System.Threading.Tasks;

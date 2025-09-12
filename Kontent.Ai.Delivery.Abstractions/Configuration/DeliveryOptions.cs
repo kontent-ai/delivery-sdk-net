@@ -23,11 +23,13 @@ namespace Kontent.Ai.Delivery.Abstractions
         /// <summary>
         /// Gets or sets the format of the Production API endpoint address.
         /// </summary>
+        [Url]
         public string ProductionEndpoint { get; init; } = "https://deliver.kontent.ai/";
 
         /// <summary>
         /// Gets or sets the format of the Preview API endpoint address.
         /// </summary>
+        [Url]
         public string PreviewEndpoint { get; init; } = "https://preview-deliver.kontent.ai/";
 
         /// <summary>

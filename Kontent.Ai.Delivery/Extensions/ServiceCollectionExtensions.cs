@@ -46,6 +46,39 @@ namespace Kontent.Ai.Delivery.Extensions
         }
 
         /// <summary>
+        /// Registers the Kontent.ai Delivery client with the specified options and allows configuring Refit/HTTP client/resilience.
+        /// </summary>
+        /// <param name="services">The service collection.</param>
+        /// <param name="deliveryOptions">The delivery options instance.</param>
+        /// <param name="configureRefit">Optional action to configure Refit settings.</param>
+        /// <param name="configureHttpClient">Optional action to configure the HTTP client.</param>
+        /// <param name="configureResilience">Optional action to configure resilience policies.</param>
+        /// <returns>The service collection for chaining.</returns>
+        public static IServiceCollection AddDeliveryClient(
+            this IServiceCollection services,
+            DeliveryOptions deliveryOptions,
+            Action<RefitSettings>? configureRefit = null,
+            Action<IHttpClientBuilder>? configureHttpClient = null,
+            Action<ResiliencePipelineBuilder<HttpResponseMessage>>? configureResilience = null)
+        {
+            ArgumentNullException.ThrowIfNull(deliveryOptions);
+
+            // Register immutable record directly - Options.Create handles both IOptions<T> and IOptionsMonitor<T>
+            services.AddSingleton(Options.Create(deliveryOptions));
+
+            // Validate the provided options using same pipeline as other overloads
+            var validationContext = new ValidationContext(deliveryOptions);
+            var validationResults = new List<ValidationResult>();
+            if (!Validator.TryValidateObject(deliveryOptions, validationContext, validationResults, validateAllProperties: true))
+            {
+                var errors = string.Join(Environment.NewLine, validationResults.Select(r => r.ErrorMessage));
+                throw new ArgumentException($"DeliveryOptions validation failed:{Environment.NewLine}{errors}");
+            }
+
+            return services.AddDeliveryCore(configureRefit, configureHttpClient, configureResilience);
+        }
+
+        /// <summary>
         /// Registers the Kontent.ai Delivery client using configuration.
         /// </summary>
         /// <param name="services">The service collection.</param>

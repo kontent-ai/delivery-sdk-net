@@ -18,7 +18,7 @@
         /// Gets the URL of the next page.
         /// </summary>
         /// <remarks>The URL of the next page, if available; otherwise, <see cref="string.Empty"/>.</remarks>
-        string NextPageUrl { get; }
+        string? NextPageUrl { get; }
 
         /// <summary>
         /// Gets the requested number of items to skip.

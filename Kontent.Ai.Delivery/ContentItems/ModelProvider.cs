@@ -3,7 +3,6 @@ using System.Reflection;
 using System.Text.Json;
 using System.Text.Json.Serialization;
 using AngleSharp.Html.Parser;
-using Kontent.Ai.Delivery.Abstractions.Serialization;
 using Kontent.Ai.Delivery.ContentItems.ContentLinks;
 using Kontent.Ai.Delivery.ContentItems.Elements;
 using Kontent.Ai.Delivery.ContentItems.InlineContentItems;
@@ -23,7 +22,7 @@ namespace Kontent.Ai.Delivery.ContentItems
         internal IInlineContentItemsProcessor InlineContentItemsProcessor { get; }
         internal IPropertyMapper PropertyMapper { get; }
         internal IContentLinkUrlResolver? ContentLinkUrlResolver { get; }
-        internal IJsonSerializer JsonSerializer { get; }
+        internal JsonSerializerOptions JsonOptions { get; }
         internal IHtmlParser HtmlParser { get; }
         internal IOptionsMonitor<DeliveryOptions> DeliveryOptions { get; }
 
@@ -47,7 +46,7 @@ namespace Kontent.Ai.Delivery.ContentItems
             IPropertyMapper propertyMapper, 
             IInlineContentItemsProcessor inlineContentItemsProcessor,
             IContentLinkUrlResolver? contentLinkUrlResolver,
-            IJsonSerializer jsonSerializer,
+            JsonSerializerOptions jsonOptions,
             IHtmlParser htmlParser,
             IOptionsMonitor<DeliveryOptions> deliveryOptions)
         {
@@ -55,7 +54,7 @@ namespace Kontent.Ai.Delivery.ContentItems
             PropertyMapper = propertyMapper ?? throw new ArgumentNullException(nameof(propertyMapper));
             InlineContentItemsProcessor = inlineContentItemsProcessor ?? throw new ArgumentNullException(nameof(inlineContentItemsProcessor));
             ContentLinkUrlResolver = contentLinkUrlResolver;
-            JsonSerializer = jsonSerializer ?? throw new ArgumentNullException(nameof(jsonSerializer));
+            JsonOptions = jsonOptions ?? throw new ArgumentNullException(nameof(jsonOptions));
             HtmlParser = htmlParser ?? throw new ArgumentNullException(nameof(htmlParser));
             DeliveryOptions = deliveryOptions ?? throw new ArgumentNullException(nameof(deliveryOptions));
         }
@@ -115,7 +114,7 @@ namespace Kontent.Ai.Delivery.ContentItems
             if (serializedItem.TryGetProperty("system", out var systemElement))
             {
                 var systemJson = systemElement.GetRawText();
-                itemSystemAttributes = JsonSerializer.Deserialize<IContentItemSystemAttributes>(systemJson);
+                itemSystemAttributes = System.Text.Json.JsonSerializer.Deserialize<IContentItemSystemAttributes>(systemJson, JsonOptions);
             }
 
             var instance = CreateInstance(modelType, ref itemSystemAttributes, ref processedItems);
@@ -276,7 +275,7 @@ namespace Kontent.Ai.Delivery.ContentItems
             if (rawValue.HasValue)
             {
                 var rawJson = rawValue.Value.GetRawText();
-                return JsonSerializer.Deserialize(rawJson, propertyType);
+                return System.Text.Json.JsonSerializer.Deserialize(rawJson, propertyType, JsonOptions);
             }
 
             return null;
@@ -396,7 +395,7 @@ namespace Kontent.Ai.Delivery.ContentItems
             }
 
             var codenamesJson = rawValue.Value.GetRawText();
-            var codenames = JsonSerializer.Deserialize<List<string>>(codenamesJson) ?? new List<string>();
+            var codenames = System.Text.Json.JsonSerializer.Deserialize<List<string>>(codenamesJson, JsonOptions) ?? new List<string>();
 
             var contentItems = Activator.CreateInstance(collectionType);
             var addMethod = collectionType.GetMethod("Add");
