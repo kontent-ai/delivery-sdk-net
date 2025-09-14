@@ -76,16 +76,45 @@ internal sealed class ElementsConverterFactory : JsonConverterFactory
 
             if (elementsRoot.ValueKind != JsonValueKind.Object)
             {
-                var fallback = JsonSerializer.Deserialize<TModel>(elementsRoot.GetRawText(), options);
+                // Create new options without the ElementsConverterFactory to avoid infinite recursion
+                var fallbackOptions = new JsonSerializerOptions(options);
+                fallbackOptions.Converters.Remove(fallbackOptions.Converters.FirstOrDefault(c => c is ElementsConverterFactory));
+
+                var fallback = JsonSerializer.Deserialize<TModel>(elementsRoot.GetRawText(), fallbackOptions);
                 return fallback!;
             }
 
             var jsonObject = new JsonObject();
             foreach (var prop in elementsRoot.EnumerateObject())
             {
-                if (prop.Value.ValueKind == JsonValueKind.Object && prop.Value.TryGetProperty("value", out var value))
+                if (prop.Value.ValueKind == JsonValueKind.Object)
                 {
-                    jsonObject[prop.Name] = JsonNode.Parse(value.GetRawText());
+                    // Prefer safe defaults for complex element types that are handled later by post-processing
+                    // Detect element type when available
+                    string? elementType = null;
+                    if (prop.Value.TryGetProperty("type", out var typeProp) && typeProp.ValueKind == JsonValueKind.String)
+                    {
+                        elementType = typeProp.GetString();
+                    }
+
+                    if (prop.Value.TryGetProperty("value", out var value))
+                    {
+                        // For rich_text, taxonomy, and asset elements, set null to avoid interface deserialization issues
+                        if (string.Equals(elementType, "rich_text", StringComparison.OrdinalIgnoreCase)
+                            || string.Equals(elementType, "taxonomy", StringComparison.OrdinalIgnoreCase)
+                            || string.Equals(elementType, "asset", StringComparison.OrdinalIgnoreCase))
+                        {
+                            jsonObject[prop.Name] = null;
+                        }
+                        else
+                        {
+                            jsonObject[prop.Name] = JsonNode.Parse(value.GetRawText());
+                        }
+                    }
+                    else
+                    {
+                        jsonObject[prop.Name] = null;
+                    }
                 }
                 else
                 {
@@ -94,7 +123,12 @@ internal sealed class ElementsConverterFactory : JsonConverterFactory
             }
 
             var flattenedJson = jsonObject.ToJsonString();
-            var model = JsonSerializer.Deserialize<TModel>(flattenedJson, options);
+
+            // Create new options without the ElementsConverterFactory to avoid infinite recursion
+            var newOptions = new JsonSerializerOptions(options);
+            newOptions.Converters.Remove(newOptions.Converters.FirstOrDefault(c => c is ElementsConverterFactory));
+
+            var model = JsonSerializer.Deserialize<TModel>(flattenedJson, newOptions);
             return model!;
         }
 

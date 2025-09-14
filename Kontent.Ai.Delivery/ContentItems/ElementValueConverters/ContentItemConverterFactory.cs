@@ -32,11 +32,16 @@ internal sealed class ContentItemConverterFactory : JsonConverterFactory
             var systemObj = JsonSerializer.Deserialize<ContentItemSystemAttributes>(system, options)!;
             var elementsObj = JsonSerializer.Deserialize<TModel>(elements.GetRawText(), options)!;
 
+            // Store the raw JSON string to avoid JsonDocument disposal issues
+            var rawElementsJson = elements.ValueKind != JsonValueKind.Undefined && elements.ValueKind != JsonValueKind.Null
+                ? elements.GetRawText()
+                : null;
+
             return new ContentItem<TModel>
             {
                 System = systemObj,
                 Elements = elementsObj,
-                RawElements = elements
+                RawElementsJson = rawElementsJson
             };
         }
 

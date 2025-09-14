@@ -157,7 +157,7 @@ public class ContentLinkResolverTests
         var result = await client.GetItem<Article>("coffee_processing_techniques").RenderRichTextToHtml().ExecuteAsync();
 
         Assert.True(result.IsSuccess);
-        var enumerator = result.Value.Elements.BodyCopyRichText.GetEnumerator();
+        var enumerator = result.Value.Elements.BodyCopy.GetEnumerator();
         var html = string.Empty;
         if (enumerator.MoveNext())
         {

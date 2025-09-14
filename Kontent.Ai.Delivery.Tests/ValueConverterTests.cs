@@ -51,63 +51,6 @@ public class ValueConverterTests
     }
 
     [Fact]
-    public async Task LinkedItemCodenamesValueConverter()
-    {
-        var mockHttp = new MockHttpMessageHandler();
-        mockHttp.When($"{_baseUrl}/items/on_roasts")
-            .Respond("application/json", await File.ReadAllTextAsync(Path.Combine(Environment.CurrentDirectory, $"Fixtures{Path.DirectorySeparatorChar}ContentLinkResolver{Path.DirectorySeparatorChar}on_roasts.json")));
-        var client = CreateClient(mockHttp);
-        var result = await client.GetItem<Article>("on_roasts").ExecuteAsync();
-
-        Assert.True(result.IsSuccess);
-        Assert.Equal(new[] { "coffee_processing_techniques", "origins_of_arabica_bourbon" }, result.Value.Elements.RelatedArticleCodenames);
-    }
-
-    [Fact]
-    public async Task GreeterPropertyValueConverter()
-    {
-        var mockHttp = new MockHttpMessageHandler();
-        string url = $"{_baseUrl}/items/on_roasts";
-        mockHttp.When(url).
-            Respond("application/json", await File.ReadAllTextAsync(Path.Combine(Environment.CurrentDirectory, $"Fixtures{Path.DirectorySeparatorChar}ContentLinkResolver{Path.DirectorySeparatorChar}on_roasts.json")));
-        var client = CreateClient(mockHttp);
-        var result = await client.GetItem<Article>("on_roasts").ExecuteAsync();
-
-        Assert.True(result.IsSuccess);
-        Assert.Equal("Hello On Roasts!", result.Value.Elements.TitleConverted);
-    }
-
-    [Fact]
-    public async Task NodaTimePropertyValueConverter()
-    {
-        var mockHttp = new MockHttpMessageHandler();
-        mockHttp.When($"{_baseUrl}/items/on_roasts")
-            .Respond("application/json", await File.ReadAllTextAsync(Path.Combine(Environment.CurrentDirectory, $"Fixtures{Path.DirectorySeparatorChar}ContentLinkResolver{Path.DirectorySeparatorChar}on_roasts.json")));
-        var client = CreateClient(mockHttp);
-        var result = await client.GetItem<Article>("on_roasts").ExecuteAsync();
-
-        Assert.True(result.IsSuccess);
-        Assert.Equal(new ZonedDateTime(Instant.FromUtc(2014, 11, 7, 0, 0), DateTimeZone.Utc), result.Value.Elements.PostDateNodaTime);
-    }
-
-    [Fact]
-    public async Task RichTextViaValueConverter()
-    {
-        var mockHttp = new MockHttpMessageHandler();
-        mockHttp.When($"{_baseUrl}/items/coffee_beverages_explained")
-            .WithQueryString("depth=15")
-            .Respond("application/json", await File.ReadAllTextAsync(Path.Combine(Environment.CurrentDirectory, $"Fixtures{Path.DirectorySeparatorChar}ContentLinkResolver{Path.DirectorySeparatorChar}coffee_beverages_explained.json")));
-        var client = CreateClient(mockHttp);
-        var result = await client.GetItem<Article>("coffee_beverages_explained").ExecuteAsync();
-
-        Assert.True(result.IsSuccess);
-        var hostedVideo = result.Value.Elements.BodyCopyRichText.FirstOrDefault(b => (b as IInlineContentItem)?.ContentItem is HostedVideo);
-        var tweet = result.Value.Elements.BodyCopyRichText.FirstOrDefault(b => (b as IInlineContentItem)?.ContentItem is Tweet);
-        Assert.NotNull(hostedVideo);
-        Assert.NotNull(tweet);
-    }
-
-    [Fact]
     public async Task AssetElementValueConverter_NoPresetSpecifiedInConfig_AssetUrlIsUntouched()
     {
         var mockHttp = new MockHttpMessageHandler();

@@ -32,7 +32,7 @@ internal sealed class ItemsQuery<TModel>(
         return this;
     }
 
-    public IItemsQuery<TModel> WithouTModel(params string[] elementCodenames)
+    public IItemsQuery<TModel> WithoutElements(params string[] elementCodenames)
     {
         _params = _params with { ExcludeElements = elementCodenames };
         return this;

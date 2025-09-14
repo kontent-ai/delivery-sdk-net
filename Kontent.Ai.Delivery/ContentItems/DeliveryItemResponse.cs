@@ -9,11 +9,13 @@ internal sealed record DeliveryItemResponse<TModel> : IDeliveryItemResponse<TMod
 {
     /// <inheritdoc/>
     [JsonPropertyName("item")]
-    public required IContentItem<TModel> Item { get; init; }
+    public required ContentItem<TModel> Item { get; init; }
 
     /// <summary>
     /// Raw modular content used for resolving linked items/inline content.
     /// </summary>
     [JsonPropertyName("modular_content")]
-    internal required Dictionary<string, JsonElement> ModularContent { get; init; } = [];
+    public required Dictionary<string, JsonElement> ModularContent { get; init; } = [];
+
+    IContentItem<TModel> IDeliveryItemResponse<TModel>.Item => Item;
 }

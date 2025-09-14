@@ -4,6 +4,7 @@ using System.Diagnostics;
 
 namespace Kontent.Ai.Delivery.ContentItems.RichText.Blocks;
 
+/// <inheritdoc cref="IInlineImage" />
 [DisableHtmlEncode]
 [UseDisplayTemplate("InlineImage")]
 [DebuggerDisplay("Url = {" + nameof(Url) + "}")]

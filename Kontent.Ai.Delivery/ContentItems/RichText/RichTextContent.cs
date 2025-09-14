@@ -2,7 +2,8 @@
 
 namespace Kontent.Ai.Delivery.ContentItems.RichText;
 
+/// <inheritdoc cref="IRichTextContent" />
 [method: JsonConstructor]
-internal class RichTextContent() : List<IRichTextBlock>, IRichTextContent
+public class RichTextContent() : List<IRichTextBlock>, IRichTextContent
 {
 }

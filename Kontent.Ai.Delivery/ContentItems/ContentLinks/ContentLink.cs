@@ -3,10 +3,10 @@ using System.Diagnostics;
 
 namespace Kontent.Ai.Delivery.ContentItems.ContentLinks;
 
-/// <inheritdoc/>
+/// <inheritdoc cref="IContentLink"/>
 [DebuggerDisplay("Codename = {" + nameof(IContentLink.Codename) + "}")]
 [method: JsonConstructor]
-internal sealed class ContentLink() : IContentLink
+internal sealed class ContentLink() : IContentLink // TODO: improve, nullability etc.
 {
     /// <inheritdoc/>
     Guid IContentLink.Id

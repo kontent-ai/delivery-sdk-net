@@ -9,11 +9,11 @@ namespace Kontent.Ai.Delivery.SharedModels;
 /// </summary>
 [DebuggerDisplay("Name = {" + nameof(Name) + "}")]
 [method: JsonConstructor]
-internal sealed class TaxonomyTerm() : ITaxonomyTerm
+public sealed class TaxonomyTerm() : ITaxonomyTerm
 {
     /// <inheritdoc/>
     [JsonPropertyName("name")]
-    public string Name { get; internal set; }
+    public string Name { get; internal set; } // TODO: improve and consider changing to record
 
     /// <inheritdoc/>
     [JsonPropertyName("codename")]

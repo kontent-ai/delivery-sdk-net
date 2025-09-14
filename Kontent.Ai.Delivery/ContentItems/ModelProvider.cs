@@ -101,7 +101,7 @@ internal class ModelProvider(
         if (serializedItem.TryGetProperty("system", out var systemElement))
         {
             var systemJson = systemElement.GetRawText();
-            itemSystemAttributes = System.Text.Json.JsonSerializer.Deserialize<IContentItemSystemAttributes>(systemJson, JsonOptions);
+            itemSystemAttributes = System.Text.Json.JsonSerializer.Deserialize<ContentItemSystemAttributes>(systemJson, JsonOptions);
         }
 
         var instance = CreateInstance(modelType, ref itemSystemAttributes, ref processedItems);

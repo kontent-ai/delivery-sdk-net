@@ -49,7 +49,7 @@ public class ModelProviderTests
         var contentLinkUrlResolver = A.Fake<IContentLinkUrlResolver>();
         var propertyMapper = A.Fake<IPropertyMapper>();
         A.CallTo(() => typeProvider.GetType(A<string>._)).Returns(null);
-        A.CallTo(() => propertyMapper.IsMatch(A<PropertyInfo>._, A<string>._, A<string>._)).Returns(true);
+        A.CallTo(() => propertyMapper.IsMatch(A<PropertyInfo>.That.Matches(p => p.Name == "Rt"), A<string>.That.Matches(s => s == "rt"), A<string>._)).Returns(true);
 
         var processor = InlineContentItemsProcessorFactory
             .WithResolver(factory => factory.ResolveTo<UnknownContentItem>(unknownItem => $"Content type '{unknownItem.Type}' has no corresponding model."))
@@ -124,8 +124,12 @@ public class ModelProviderTests
             name = "RT1",
             codename = "rt1",
             type = "simple_richtext",
-            sitemap_location = new string[0],
-            last_modified = new DateTime(2017, 06, 01, 11, 43, 33)
+            sitemap_locations = new string[0],
+            last_modified = new DateTime(2017, 06, 01, 11, 43, 33),
+            language = "en-US",
+            collection = "default",
+            workflow = "default",
+            workflow_step = "published"
         },
         elements = new
         {
@@ -148,8 +152,12 @@ public class ModelProviderTests
             name = "RT2",
             codename = "rt2",
             type = "simple_richtext",
-            sitemap_location = new string[0],
-            last_modified = new DateTime(2017, 06, 01, 11, 43, 33)
+            sitemap_locations = new string[0],
+            last_modified = new DateTime(2017, 06, 01, 11, 43, 33),
+            language = "en-US",
+            collection = "default",
+            workflow = "default",
+            workflow_step = "published"
         },
         elements = new
         {
@@ -172,8 +180,12 @@ public class ModelProviderTests
             name = "RT3",
             codename = "rt3",
             type = "simple_richtext",
-            sitemap_location = new string[0],
-            last_modified = new DateTime(2017, 06, 01, 11, 43, 33)
+            sitemap_locations = new string[0],
+            last_modified = new DateTime(2017, 06, 01, 11, 43, 33),
+            language = "en-US",
+            collection = "default",
+            workflow = "default",
+            workflow_step = "published"
         },
         elements = new
         {
@@ -196,8 +208,12 @@ public class ModelProviderTests
             name = "RT4",
             codename = "rt4",
             type = "newType",
-            sitemap_location = new string[0],
-            last_modified = new DateTime(2017, 06, 01, 11, 43, 33)
+            sitemap_locations = new string[0],
+            last_modified = new DateTime(2017, 06, 01, 11, 43, 33),
+            language = "en-US",
+            collection = "default",
+            workflow = "default",
+            workflow_step = "published"
         },
         elements = new { }
     };
@@ -210,8 +226,12 @@ public class ModelProviderTests
             name = "RT5",
             codename = "rt5",
             type = "simple_richtext",
-            sitemap_location = new string[0],
-            last_modified = new DateTime(2017, 06, 01, 11, 43, 33)
+            sitemap_locations = new string[0],
+            last_modified = new DateTime(2017, 06, 01, 11, 43, 33),
+            language = "en-US",
+            collection = "default",
+            workflow = "default",
+            workflow_step = "published"
         },
         elements = new
         {
@@ -237,7 +257,10 @@ public class ModelProviderTests
                 language = "en-US",
                 type = "newType",
                 sitemap_locations = new string[0],
-                last_modified = new DateTime(2017, 06, 01, 11, 43, 33)
+                last_modified = new DateTime(2017, 06, 01, 11, 43, 33),
+                collection = "default",
+                workflow = "default",
+                workflow_step = "published"
             },
             elements = new
             { }

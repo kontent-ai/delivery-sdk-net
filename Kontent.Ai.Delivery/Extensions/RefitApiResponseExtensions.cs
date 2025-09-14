@@ -17,7 +17,7 @@ internal static class RefitApiResponseExtensions
     public static Task<IDeliveryResult<T>> ToDeliveryResultAsync<T>(this IApiResponse<T> apiResponse)
     {
         // Fast success path: no awaits/allocations
-        if (apiResponse.IsSuccessStatusCode && apiResponse.Content is not null)
+        if (apiResponse.IsSuccessful && apiResponse.Content is not null)
         {
             return Task.FromResult(DeliveryResult.Success(
                 value: apiResponse.Content,
@@ -38,37 +38,35 @@ internal static class RefitApiResponseExtensions
     /// <typeparam name="T">The type of the response content.</typeparam>
     /// <param name="apiResponse">The API response.</param>
     /// <returns>A delivery result containing the response data or errors.</returns>
-    private static async Task<IDeliveryResult<T>> MapFailureAsync<T>(IApiResponse<T> apiResponse)
+    private static Task<IDeliveryResult<T>> MapFailureAsync<T>(IApiResponse<T> apiResponse)
     {
         var url = apiResponse.RequestMessage?.RequestUri?.ToString() ?? string.Empty;
         var status = (int)apiResponse.StatusCode;
 
-        var error =
-            apiResponse.Error is ApiException ex
-                ? await TryGetErrorAsync(ex, status)
-                : new Error { Message = "Unknown error", ErrorCode = status };
-
-        return DeliveryResult.Failure<T>(
-            requestUrl: url,
-            statusCode: status,
-            error: error);
-
-        static async Task<Error> TryGetErrorAsync(ApiException ex, int status)
+        if (apiResponse.Error is not ApiException apiEx)
         {
+            var fallback = new Error { Message = "Unknown error", ErrorCode = status };
+            return Task.FromResult(DeliveryResult.Failure<T>(url, status, fallback));
+        }
+
+        return MapApiExceptionAsync(apiEx, url, status);
+
+        static async Task<IDeliveryResult<T>> MapApiExceptionAsync(ApiException ex, string url, int status)
+        {
+            Error error;
             try
             {
-                // Let Refit deserialize the error body
-                var parsed = await ex.GetContentAsAsync<Error>();
-                return parsed ?? new Error { Message = ex.Message, ErrorCode = status };
+                // Try to parse a structured Kontent API error from the body.
+                var parsed = await ex.GetContentAsAsync<Error>().ConfigureAwait(false);
+                error = parsed ?? new Error { Message = ex.Message, ErrorCode = status };
             }
             catch
             {
-                // Fallback when the body isn’t JSON or deserialization fails
-                var raw = ex.Content;
-                return !string.IsNullOrWhiteSpace(raw)
-                    ? new Error { Message = raw, ErrorCode = status }
-                    : new Error { Message = ex.Message, ErrorCode = status };
+                // Body isn’t JSON or deserialization failed – fall back to best available message.
+                error = new Error { Message = ex.InnerException?.Message ?? ex.Message, ErrorCode = status };
             }
+
+            return DeliveryResult.Failure<T>(url, status, error);
         }
     }
 

@@ -5,7 +5,7 @@ namespace Kontent.Ai.Delivery.ContentItems;
 
 /// <inheritdoc/>
 [DebuggerDisplay("Name = {" + nameof(Name) + "}")]
-internal sealed record Asset : IAsset
+public sealed record Asset : IAsset
 {
     /// <inheritdoc/>
     [JsonPropertyName("name")]
