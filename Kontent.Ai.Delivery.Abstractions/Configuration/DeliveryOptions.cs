@@ -24,13 +24,13 @@ public record DeliveryOptions : IValidatableObject
     /// Gets or sets the format of the Production API endpoint address.
     /// </summary>
     [Url]
-    public string ProductionEndpoint { get; init; } = "https://deliver.kontent.ai/";
+    public string ProductionEndpoint { get; init; } = "https://deliver.kontent.ai";
 
     /// <summary>
     /// Gets or sets the format of the Preview API endpoint address.
     /// </summary>
     [Url]
-    public string PreviewEndpoint { get; init; } = "https://preview-deliver.kontent.ai/";
+    public string PreviewEndpoint { get; init; } = "https://preview-deliver.kontent.ai";
 
     /// <summary>
     /// Gets or sets the API key that is used to retrieve content with the Preview API.

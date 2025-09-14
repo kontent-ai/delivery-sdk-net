@@ -33,12 +33,13 @@ internal sealed class ElementsPostProcessor(
         IReadOnlyDictionary<string, JsonElement>? modularContent,
         CancellationToken cancellationToken = default) where TModel : IElementsModel
     {
-        if (item is not ContentItem<TModel> concrete || concrete.RawElements is null)
+        if (item is not ContentItem<TModel> concrete || string.IsNullOrEmpty(concrete.RawElementsJson))
         {
             return;
         }
 
-        var elementsJson = concrete.RawElements.Value;
+        using var doc = JsonDocument.Parse(concrete.RawElementsJson);
+        var elementsJson = doc.RootElement;
         if (elementsJson.ValueKind != JsonValueKind.Object)
         {
             return;
@@ -51,7 +52,7 @@ internal sealed class ElementsPostProcessor(
 
         // precompute stuff shared by all props
         var resolvingContext = CreateResolvingContext(modularContent);
-        var converter = new RichTextContentConverter(_htmlParser);
+        var contentConverter = new RichTextContentConverter(_htmlParser);
 
         // pipeline: filter → map → run → apply
         var results = await Task.WhenAll(
@@ -70,13 +71,17 @@ internal sealed class ElementsPostProcessor(
                         valueEl.ValueKind != JsonValueKind.String)
                         return (prop, null);
 
-                    // map json → IRichTextElementValue (full element node, not just "value")
+                    // map json → IRichTextElementValue using custom converter that injects codename
+                    var options = new JsonSerializerOptions();
+                    var converter = new Elements.RichTextElementValueConverter { ElementCodename = elementName };
+                    options.Converters.Add(converter);
+
                     var richElement = JsonSerializer.Deserialize<Elements.RichTextElementValue>(
-                        elementValue.GetRawText());
+                        elementValue.GetRawText(), options);
                     if (richElement is null) return (prop, null);
 
                     // produce blocks
-                    var blocks = await converter
+                    var blocks = await contentConverter
                         .GetPropertyValueAsync(prop, richElement, resolvingContext)
                         .ConfigureAwait(false);
 

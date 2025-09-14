@@ -31,7 +31,7 @@ public interface IItemsQuery<TModel>
     /// </summary>
     /// <param name="elementCodenames">Element codenames to exclude.</param>
     /// <returns>The query builder for method chaining.</returns>
-    IItemsQuery<TModel> WithouTModel(params string[] elementCodenames);
+    IItemsQuery<TModel> WithoutElements(params string[] elementCodenames);
 
     /// <summary>
     /// Sets the linked items depth.

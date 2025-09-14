@@ -1,64 +1,98 @@
-using System.Threading;
+using System.Net.Http.Headers;
 using Microsoft.Extensions.Options;
+using System.Threading;
 
 namespace Kontent.Ai.Delivery.Handlers;
 
 /// <summary>
-/// Delivery-specific authentication handler that extends Core's authentication handler
-/// with support for Preview API and Secure Access API keys.
+/// DelegatingHandler that injects authentication header and environment ID into a request.
 /// </summary>
 public sealed class DeliveryAuthenticationHandler : DelegatingHandler
 {
-    private readonly IOptionsMonitor<DeliveryOptions> _deliveryOptionsMonitor;
-    private readonly string? _optionsName;
+    private readonly IOptionsMonitor<DeliveryOptions> _monitor;
+    private readonly string? _name;
 
     /// <summary>
-    /// Initializes a new instance of the DeliveryAuthenticationHandler with default options.
+    /// Initializes a new instance of the <see cref="DeliveryAuthenticationHandler"/> class.
     /// </summary>
-    /// <param name="deliveryOptionsMonitor">The delivery client options monitor for retrieving authentication configuration.</param>
-    public DeliveryAuthenticationHandler(IOptionsMonitor<DeliveryOptions> deliveryOptionsMonitor)
-    {
-        ArgumentNullException.ThrowIfNull(deliveryOptionsMonitor);
-        _deliveryOptionsMonitor = deliveryOptionsMonitor;
-    }
+    /// <param name="monitor">Instance of <see cref="IOptionsMonitor{DeliveryOptions}"/>.</param>
+    /// <exception cref="ArgumentNullException"></exception>
+    public DeliveryAuthenticationHandler(IOptionsMonitor<DeliveryOptions> monitor) =>
+        _monitor = monitor ?? throw new ArgumentNullException(nameof(monitor));
 
     /// <summary>
-    /// Initializes a new instance of the DeliveryAuthenticationHandler with named options.
+    /// Initializes a new instance of the <see cref="DeliveryAuthenticationHandler"/> class with named options.
     /// </summary>
-    /// <param name="deliveryOptionsMonitor">The delivery client options monitor for retrieving authentication configuration.</param>
-    /// <param name="optionsName">The name of the options configuration to use.</param>
-    public DeliveryAuthenticationHandler(IOptionsMonitor<DeliveryOptions> deliveryOptionsMonitor, string optionsName)
+    /// <param name="monitor">Instance of <see cref="IOptionsMonitor{DeliveryOptions}"/>.</param>
+    /// <param name="optionsName">The name of the options.</param>
+    /// <exception cref="ArgumentNullException"></exception>
+    public DeliveryAuthenticationHandler(IOptionsMonitor<DeliveryOptions> monitor, string optionsName)
     {
-        ArgumentNullException.ThrowIfNull(deliveryOptionsMonitor);
+        _monitor = monitor ?? throw new ArgumentNullException(nameof(monitor));
         ArgumentException.ThrowIfNullOrWhiteSpace(optionsName);
-
-        _deliveryOptionsMonitor = deliveryOptionsMonitor;
-        _optionsName = optionsName;
+        _name = optionsName;
     }
 
     /// <summary>
-    /// Sends an HTTP request with delivery-specific authentication headers added.
+    /// Sends an HTTP request with authentication header and environment ID injected.
     /// </summary>
     /// <param name="request">The HTTP request message.</param>
-    /// <param name="cancellationToken">The cancellation token.</param>
+    /// <param name="ct">The cancellation token.</param>
     /// <returns>The HTTP response message.</returns>
-    protected override async Task<HttpResponseMessage> SendAsync(
-        HttpRequestMessage request,
-        CancellationToken cancellationToken)
+    protected override Task<HttpResponseMessage> SendAsync(HttpRequestMessage request, CancellationToken ct)
     {
-        // Get the delivery client options (named or default)
-        var deliveryOptions = string.IsNullOrEmpty(_optionsName)
-            ? _deliveryOptionsMonitor.CurrentValue
-            : _deliveryOptionsMonitor.Get(_optionsName);
+        ArgumentNullException.ThrowIfNull(request);
 
-        // Add appropriate authorization header based on delivery options
-        var apiKey = deliveryOptions?.GetApiKey();
+        var opts = _name is null ? _monitor.CurrentValue : _monitor.Get(_name);
+
+        // 1) Auth (Bearer key)
+        var apiKey = opts.GetApiKey();
         if (!string.IsNullOrWhiteSpace(apiKey))
+            request.Headers.Authorization = new AuthenticationHeaderValue("Bearer", apiKey);
+
+        // 2) Base endpoint rewrite (runtime switchable prod/preview)
+        var baseUri = new Uri(opts.GetBaseUrl().TrimEnd('/'), UriKind.Absolute);
+
+        if (request.RequestUri is null)
         {
-            request.Headers.AddAuthorizationHeader("Bearer", apiKey);
+            request.RequestUri = baseUri;
+        }
+        else if (!request.RequestUri.IsAbsoluteUri)
+        {
+            request.RequestUri = new Uri(baseUri, request.RequestUri);
+        }
+        else
+        {
+            // Absolute -> replace scheme/host/port from current base (keep path/query/fragment)
+            var ub = new UriBuilder(request.RequestUri)
+            {
+                Scheme = baseUri.Scheme,
+                Host   = baseUri.Host,
+                Port   = baseUri.IsDefaultPort ? -1 : baseUri.Port
+            };
+            request.RequestUri = ub.Uri;
         }
 
-        // Continue with the request pipeline
-        return await base.SendAsync(request, cancellationToken).ConfigureAwait(false);
+        // 3) Inject "/{environmentId}" as first path segment if missing
+        var env = opts.EnvironmentId?.Trim('/');
+        if (!string.IsNullOrWhiteSpace(env))
+        {
+            var uri = request.RequestUri!;
+            var path = uri.AbsolutePath;                 // always starts with "/"
+            var envPrefix = "/" + env;                   // "/{env}"
+
+            // If path is exactly "/{env}" or starts with "/{env}/", do nothing; else prefix it.
+            var hasEnv =
+                path.Equals(envPrefix, StringComparison.OrdinalIgnoreCase) ||
+                path.StartsWith(envPrefix + "/", StringComparison.OrdinalIgnoreCase);
+
+            if (!hasEnv)
+            {
+                var ub = new UriBuilder(uri) { Path = envPrefix + path }; // "/env" + "/items/..." => "/env/items/..."
+                request.RequestUri = ub.Uri;                               // keeps query/fragment/host intact
+            }
+        }
+
+        return base.SendAsync(request, ct);
     }
 }
