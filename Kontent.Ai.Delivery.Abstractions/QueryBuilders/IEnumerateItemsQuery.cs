@@ -1,6 +1,7 @@
 using System.Threading.Tasks;
 using System.Collections.Generic;
 using System.Threading;
+using System;
 
 namespace Kontent.Ai.Delivery.Abstractions;
 
@@ -33,6 +34,20 @@ public interface IEnumerateItemsQuery<TModel>
     /// </summary>
     /// <param name="enabled">Whether to wait for loading new content.</param>
     IEnumerateItemsQuery<TModel> WaitForLoadingNewContent(bool enabled = true);
+
+    /// <summary>
+    /// Adds a filter to the query using a filter builder function.
+    /// </summary>
+    /// <param name="filterBuilder">Function that builds a filter using the items filter builder.</param>
+    /// <returns>The query builder for method chaining.</returns>
+    IEnumerateItemsQuery<TModel> Filter(Func<IItemFilters, IFilter> filterBuilder);
+
+    /// <summary>
+    /// Adds a filter to the query.
+    /// </summary>
+    /// <param name="filter">The filter to add.</param>
+    /// <returns>The query builder for method chaining.</returns>
+    IEnumerateItemsQuery<TModel> Where(IFilter filter);
 
     /// <summary>
     /// Enumerates content items using the Delivery API items-feed endpoint.

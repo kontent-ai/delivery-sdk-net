@@ -1,5 +1,6 @@
 using System.Threading;
 using System.Runtime.CompilerServices;
+using Kontent.Ai.Delivery.Api.QueryBuilders.Filtering;
 
 namespace Kontent.Ai.Delivery.Api.QueryBuilders;
 
@@ -12,6 +13,8 @@ internal sealed class EnumerateItemsQuery<TModel>(IDeliveryApi api, Func<bool?> 
     private readonly IElementsPostProcessor _elementsPostProcessor = elementsPostProcessor;
     private EnumItemsParams _params = new();
     private bool? _waitForLoadingNewContentOverride;
+    private readonly ItemFilters _filters = new();
+    private readonly List<IFilter> _appliedFilters = [];
 
     public IEnumerateItemsQuery<TModel> WithLanguage(string languageCodename)
     {
@@ -37,14 +40,31 @@ internal sealed class EnumerateItemsQuery<TModel>(IDeliveryApi api, Func<bool?> 
         return this;
     }
 
+    public IEnumerateItemsQuery<TModel> Filter(Func<IItemFilters, IFilter> filterBuilder)
+    {
+        var filter = filterBuilder(_filters);
+        _appliedFilters.Add(filter);
+        return this;
+    }
+
+    public IEnumerateItemsQuery<TModel> Where(IFilter filter)
+    {
+        _appliedFilters.Add(filter);
+        return this;
+    }
+
     public async IAsyncEnumerable<IContentItem<TModel>> EnumerateItemsAsync([EnumeratorCancellation] CancellationToken cancellationToken = default)
     {
         bool? wait = _waitForLoadingNewContentOverride ?? _getDefaultWaitForNewContent();
         string? token = null;
+        var paramsWithFilters = _appliedFilters.Count > 0
+            ? _params with { Filters = [.. _appliedFilters.Select(f => f.ToQueryParameter())] }
+            : _params;
+
         while (true)
         {
             var resp = await _api
-                .GetItemsFeedInternalAsync<TModel>(_params, token, wait, cancellationToken)
+                .GetItemsFeedInternalAsync<TModel>(paramsWithFilters, token, wait, cancellationToken)
                 .ConfigureAwait(false);
 
             if (!resp.IsSuccessStatusCode || resp.Content is null)
