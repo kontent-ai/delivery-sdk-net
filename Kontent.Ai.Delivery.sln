@@ -28,10 +28,6 @@ Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Kontent.Ai.Urls.Tests", "Ko
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Kontent.Ai.Delivery.Benchmarks", "Kontent.Ai.Delivery.Benchmarks\Kontent.Ai.Delivery.Benchmarks.csproj", "{FAA8F5E9-A262-4F7E-AD38-E72B8A5137F6}"
 EndProject
-Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Kontent.Ai.Delivery.Extensions.DependencyInjection", "Kontent.Ai.Delivery.Extensions.DependencyInjection\Kontent.Ai.Delivery.Extensions.DependencyInjection.csproj", "{26270FC5-DB28-4106-A2FA-5402829FEDFA}"
-EndProject
-Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Kontent.Ai.Delivery.Extensions.DependencyInjection.Tests", "Kontent.Ai.Delivery.Extensions.DependencyInjection.Tests\Kontent.Ai.Delivery.Extensions.DependencyInjection.Tests.csproj", "{1582662E-39EA-426F-AE11-AC10E87B4791}"
-EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Kontent.Ai.Delivery.Abstractions.Tests", "Kontent.Ai.Delivery.Abstractions.Tests\Kontent.Ai.Delivery.Abstractions.Tests.csproj", "{F82D45A6-B0F5-4E40-A43B-4AFFF23EAF96}"
 EndProject
 Global
