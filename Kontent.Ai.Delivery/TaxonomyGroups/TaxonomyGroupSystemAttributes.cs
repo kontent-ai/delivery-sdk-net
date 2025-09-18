@@ -9,21 +9,21 @@ namespace Kontent.Ai.Delivery.TaxonomyGroups;
 /// </summary>
 [DebuggerDisplay("Id = {" + nameof(Id) + "}")]
 [method: JsonConstructor]
-internal sealed class TaxonomyGroupSystemAttributes() : ITaxonomyGroupSystemAttributes
+internal sealed record TaxonomyGroupSystemAttributes() : ITaxonomyGroupSystemAttributes
 {
     /// <inheritdoc/>
     [JsonPropertyName("id")]
-    public string Id { get; internal set; }
+    public string Id { get; init; }
 
     /// <inheritdoc/>
     [JsonPropertyName("name")]
-    public string Name { get; internal set; }
+    public string Name { get; init; }
 
     /// <inheritdoc/>
     [JsonPropertyName("codename")]
-    public string Codename { get; internal set; }
+    public string Codename { get; init; }
 
     /// <inheritdoc/>
     [JsonPropertyName("last_modified")]
-    public DateTime LastModified { get; internal set; }
+    public DateTime LastModified { get; init; }
 }

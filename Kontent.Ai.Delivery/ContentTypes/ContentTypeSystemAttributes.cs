@@ -9,21 +9,21 @@ namespace Kontent.Ai.Delivery.ContentTypes;
 /// </summary>
 [DebuggerDisplay("Id = {" + nameof(Id) + "}")]
 [method: JsonConstructor]
-internal sealed class ContentTypeSystemAttributes() : IContentTypeSystemAttributes
+internal sealed record ContentTypeSystemAttributes() : IContentTypeSystemAttributes
 {
     /// <inheritdoc/>
     [JsonPropertyName("id")]
-    public string Id { get; internal set; }
+    public required string Id { get; init; }
 
     /// <inheritdoc/>
     [JsonPropertyName("name")]
-    public string Name { get; internal set; }
+    public required string Name { get; init; }
 
     /// <inheritdoc/>
     [JsonPropertyName("codename")]
-    public string Codename { get; internal set; }
+    public required string Codename { get; init; }
 
     /// <inheritdoc/>
     [JsonPropertyName("last_modified")]
-    public DateTime LastModified { get; internal set; }
+    public required DateTime LastModified { get; init; }
 }

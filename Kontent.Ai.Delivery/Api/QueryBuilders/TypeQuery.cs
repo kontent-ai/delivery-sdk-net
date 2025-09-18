@@ -32,7 +32,7 @@ internal sealed class TypeQuery(
         var response = await _api.GetTypeInternalAsync(_codename, _params, wait).ConfigureAwait(false);
         var deliveryResult = await response.ToDeliveryResultAsync().ConfigureAwait(false);
 
-        return deliveryResult.Map(response => response.Type);
+        return deliveryResult;
     }
 }
 

@@ -9,17 +9,18 @@ namespace Kontent.Ai.Delivery.TaxonomyGroups;
 /// </summary>
 [DebuggerDisplay("Name = {" + nameof(Name) + "}")]
 [method: JsonConstructor]
-internal sealed class TaxonomyTermDetails() : ITaxonomyTermDetails
+internal sealed record TaxonomyTermDetails() : ITaxonomyTermDetails
 {
     /// <inheritdoc/>
     [JsonPropertyName("name")]
-    public string Name { get; internal set; }
+    public string Name { get; init; }
 
     /// <inheritdoc/>
     [JsonPropertyName("codename")]
-    public string Codename { get; internal set; }
+    public string Codename { get; init; }
 
     /// <inheritdoc/>
     [JsonPropertyName("terms")]
-    public IList<ITaxonomyTermDetails> Terms { get; internal set; }
+    public IList<TaxonomyTermDetails> Terms { get; init; }
+    IList<ITaxonomyTermDetails> ITaxonomyTermDetails.Terms => Terms.Cast<ITaxonomyTermDetails>().ToList();
 }

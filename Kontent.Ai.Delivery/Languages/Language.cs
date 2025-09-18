@@ -8,10 +8,11 @@ namespace Kontent.Ai.Delivery.Languages;
 /// Constructor used for deserialization (e.g. for caching purposes), contains no logic.
 /// </summary>
 [DebuggerDisplay("Name = {" + nameof(System) + "." + nameof(ILanguageSystemAttributes.Name) + "}")]
-[method: JsonConstructor]
-internal sealed class Language(ILanguageSystemAttributes system) : ILanguage
+internal sealed record Language : ILanguage
 {
     /// <inheritdoc/>
     [JsonPropertyName("system")]
-    public ILanguageSystemAttributes System { get; internal set; } = system;
+    public LanguageSystemAttributes System { get; init; }
+
+    ILanguageSystemAttributes ILanguage.System => System;
 }

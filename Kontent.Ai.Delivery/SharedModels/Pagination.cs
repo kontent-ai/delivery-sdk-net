@@ -8,23 +8,30 @@ namespace Kontent.Ai.Delivery.SharedModels;
 /// Initializes a new instance of the <see cref="Pagination"/> class with information from a response.
 /// </summary>
 [DebuggerDisplay("Count = {" + nameof(Count) + "}, Total = {" + nameof(TotalCount) + "}")]
-[method: JsonConstructor]
-internal sealed class Pagination(int skip, int limit, int count, int? total_count, string next_page) : IPagination
+internal sealed record Pagination : IPagination
 {
+    private string? _nextPageUrl;
     /// <inheritdoc/>
-    public int Skip { get; } = skip;
+    [JsonPropertyName("skip")]
+    public required int Skip { get; init; }
 
     /// <inheritdoc/>
-    public int Limit { get; } = limit;
+    [JsonPropertyName("limit")]
+    public required int Limit { get; init; }
 
     /// <inheritdoc/>
-    public int Count { get; } = count;
+    [JsonPropertyName("count")]
+    public required int Count { get; init; }
 
     /// <inheritdoc/>
     [JsonPropertyName("total_count")]
-    public int? TotalCount { get; } = total_count;
+    public int? TotalCount { get; init; }
 
     /// <inheritdoc/>
     [JsonPropertyName("next_page")]
-    public string? NextPageUrl { get; } = string.IsNullOrEmpty(next_page) ? null : next_page; // Normalize deserialization
+    public string? NextPageUrl
+    {
+        get => _nextPageUrl;
+        init => _nextPageUrl = string.IsNullOrWhiteSpace(value) ? null : value;
+    }
 }

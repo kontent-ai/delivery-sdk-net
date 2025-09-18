@@ -12,7 +12,7 @@ public partial interface IDeliveryApi
     /// <param name="waitForLoadingNewContent">Wait for loading new content header.</param>
     /// <returns>Raw JSON response containing the taxonomy group.</returns>
     [Get("/taxonomies/{codename}")]
-    internal Task<IApiResponse<DeliveryTaxonomyResponse>> GetTaxonomyInternalAsync(
+    internal Task<IApiResponse<TaxonomyGroup>> GetTaxonomyInternalAsync(
         string codename,
         [Header(HttpRequestHeadersExtensions.WaitForLoadingNewContentHeaderName)] bool? waitForLoadingNewContent = null);
 

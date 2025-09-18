@@ -6,9 +6,9 @@ namespace Kontent.Ai.Delivery.ContentTypes.Element;
 /// Constructor used for deserialization (e.g. for caching purposes), contains no logic.
 /// </summary>
 [method: JsonConstructor]
-internal class TaxonomyElement() : ContentElement, ITaxonomyElement
+internal sealed record TaxonomyElement() : ContentElement, ITaxonomyElement
 {
     /// <inheritdoc/>
     [JsonPropertyName("taxonomy_group")]
-    public string TaxonomyGroup { get; internal set; }
+    public string TaxonomyGroup { get; init; }
 }
