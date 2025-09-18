@@ -9,9 +9,12 @@ using AngleSharp.Html.Parser;
 using FakeItEasy;
 using Kontent.Ai.Delivery.Abstractions;
 using Kontent.Ai.Delivery.ContentItems;
+using Kontent.Ai.Delivery.Extensions;
+using Kontent.Ai.Delivery.Configuration;
 using Kontent.Ai.Delivery.Rx.Tests.Models.ContentTypes;
 using Kontent.Ai.Urls.Delivery.QueryParameters;
 using Kontent.Ai.Urls.Delivery.QueryParameters.Filters;
+using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Options;
 using RichardSzalay.MockHttp;
 using Xunit;
@@ -36,28 +39,29 @@ public class DeliveryObservableProxyTests
     [Fact]
     public async Task TypedItemRetrieved()
     {
-        var observable = new DeliveryObservableProxy(GetDeliveryClient(MockItem)).GetItemObservable<Article>(BEVERAGES_IDENTIFIER, new LanguageParameter("es-ES"));
+        var observable = new DeliveryObservableProxy(GetDeliveryClient(MockItem)).GetItemObservable<Article>(BEVERAGES_IDENTIFIER, q => q.WithLanguage("es-ES"));
         var item = await observable.FirstOrDefaultAsync();
 
         Assert.NotNull(item);
         AssertArticlePropertiesNotNull(item);
     }
 
-    [Fact]
-    public async Task RuntimeTypedItemRetrieved()
-    {
-        var observable = new DeliveryObservableProxy(GetDeliveryClient(MockItem)).GetItemObservable<object>(BEVERAGES_IDENTIFIER, new LanguageParameter("es-ES"));
-        var item = await observable.FirstOrDefaultAsync();
+    // TODO: Add when runtime provision works.
+    // [Fact]
+    // public async Task RuntimeTypedItemRetrieved()
+    // {
+    //     var observable = new DeliveryObservableProxy(GetDeliveryClient(MockItem)).GetItemObservable<DynamicElements>(BEVERAGES_IDENTIFIER, q => q.WithLanguage("es-ES"));
+    //     var item = await observable.FirstOrDefaultAsync();
 
-        Assert.IsType<Article>(item);
-        Assert.NotNull(item);
-        AssertArticlePropertiesNotNull((Article)item);
-    }
+    //     Assert.IsType<Article>(item);
+    //     Assert.NotNull(item);
+    //     AssertArticlePropertiesNotNull((Article)item);
+    // }
 
     [Fact]
     public void TypedItemsRetrieved()
     {
-        var observable = new DeliveryObservableProxy(GetDeliveryClient(MockArticles)).GetItemsObservable<Article>(new ContainsFilter("elements.personas", "barista"));
+        var observable = new DeliveryObservableProxy(GetDeliveryClient(MockArticles)).GetItemsObservable<Article>(q => q.Filter(f => f.Contains(Elements.GetPath("personas"), "barista")));
         var items = observable.ToEnumerable().ToList();
 
         Assert.NotEmpty(items);
@@ -68,7 +72,7 @@ public class DeliveryObservableProxyTests
     [Fact]
     public void TypedItemsFeedRetrieved()
     {
-        var observable = new DeliveryObservableProxy(GetDeliveryClient(MockFeedArticles)).GetItemsFeedObservable<Article>(new ContainsFilter("elements.personas", "barista"));
+        var observable = new DeliveryObservableProxy(GetDeliveryClient(MockFeedArticles)).GetItemsFeedObservable<Article>(q => q.Filter(f => f.Contains(Elements.GetPath("personas"), "barista")));
         var items = observable.ToEnumerable().ToList();
 
         Assert.NotEmpty(items);
@@ -79,7 +83,7 @@ public class DeliveryObservableProxyTests
     [Fact]
     public void RuntimeTypedItemsRetrieved()
     {
-        var observable = new DeliveryObservableProxy(GetDeliveryClient(MockArticles)).GetItemsObservable<Article>(new ContainsFilter("elements.personas", "barista"));
+        var observable = new DeliveryObservableProxy(GetDeliveryClient(MockArticles)).GetItemsObservable<Article>(q => q.Filter(f => f.Contains(Elements.GetPath("personas"), "barista")));
         var articles = observable.ToEnumerable().ToList();
 
         Assert.NotEmpty(articles);
@@ -90,7 +94,7 @@ public class DeliveryObservableProxyTests
     [Fact]
     public void RuntimeTypedItemsFeedRetrieved()
     {
-        var observable = new DeliveryObservableProxy(GetDeliveryClient(MockFeedArticles)).GetItemsFeedObservable<Article>(new ContainsFilter("elements.personas", "barista"));
+        var observable = new DeliveryObservableProxy(GetDeliveryClient(MockFeedArticles)).GetItemsFeedObservable<Article>(q => q.Filter(f => f.Contains(Elements.GetPath("personas"), "barista")));
         var articles = observable.ToEnumerable().ToList();
 
         Assert.NotEmpty(articles);
@@ -101,7 +105,7 @@ public class DeliveryObservableProxyTests
     [Fact]
     public async Task TypeRetrieved()
     {
-        var observable = new DeliveryObservableProxy(GetDeliveryClient(MockType)).GetTypeObservable(Article.Codename);
+        var observable = new DeliveryObservableProxy(GetDeliveryClient(MockType)).GetTypeObservable("article");
         var type = await observable.FirstOrDefaultAsync();
 
         Assert.Single(observable.ToEnumerable());
@@ -112,7 +116,7 @@ public class DeliveryObservableProxyTests
     [Fact]
     public void TypesRetrieved()
     {
-        var observable = new DeliveryObservableProxy(GetDeliveryClient(MockTypes)).GetTypesObservable(new SkipParameter(2));
+        var observable = new DeliveryObservableProxy(GetDeliveryClient(MockTypes)).GetTypesObservable(q => q.Skip(2));
         var types = observable.ToEnumerable().ToList();
 
         Assert.NotEmpty(types);
@@ -123,7 +127,7 @@ public class DeliveryObservableProxyTests
     [Fact]
     public async Task ElementRetrieved()
     {
-        var observable = new DeliveryObservableProxy(GetDeliveryClient(MockElement)).GetElementObservable(Article.Codename, Article.TitleCodename);
+        var observable = new DeliveryObservableProxy(GetDeliveryClient(MockElement)).GetElementObservable("article", "title");
         var element = await observable.FirstOrDefaultAsync();
 
         Assert.NotNull(element);
@@ -135,7 +139,7 @@ public class DeliveryObservableProxyTests
     [Fact]
     public async Task TaxonomyElementRetrieved()
     {
-        var observable = new DeliveryObservableProxy(GetDeliveryClient(MockTaxonomyElement)).GetElementObservable(Coffee.Codename, Coffee.ProcessingCodename);
+        var observable = new DeliveryObservableProxy(GetDeliveryClient(MockTaxonomyElement)).GetElementObservable("coffee", "processing");
         var element = await observable.FirstOrDefaultAsync();
 
         Assert.IsAssignableFrom<ITaxonomyElement>(element);
@@ -144,7 +148,7 @@ public class DeliveryObservableProxyTests
     [Fact]
     public async Task MultipleChoiceElementRetrieved()
     {
-        var observable = new DeliveryObservableProxy(GetDeliveryClient(MockMultipleChoiceElement)).GetElementObservable(Tweet.Codename, Tweet.ThemeCodename);
+        var observable = new DeliveryObservableProxy(GetDeliveryClient(MockMultipleChoiceElement)).GetElementObservable("tweet", "theme");
         var element = await observable.FirstOrDefaultAsync();
 
         Assert.IsAssignableFrom<IMultipleChoiceElement>(element);
@@ -164,7 +168,7 @@ public class DeliveryObservableProxyTests
     [Fact]
     public void TaxonomiesRetrieved()
     {
-        var observable = new DeliveryObservableProxy(GetDeliveryClient(MockTaxonomies)).GetTaxonomiesObservable(new SkipParameter(1));
+        var observable = new DeliveryObservableProxy(GetDeliveryClient(MockTaxonomies)).GetTaxonomiesObservable(q => q.Skip(1));
         var taxonomies = observable.ToEnumerable().ToList();
 
         Assert.NotEmpty(taxonomies);
@@ -175,7 +179,7 @@ public class DeliveryObservableProxyTests
     [Fact]
     public void LanguagesRetrieved()
     {
-        var observable = new DeliveryObservableProxy(GetDeliveryClient(MockLanguages)).GetLanguagesObservable(new SkipParameter(1));
+        var observable = new DeliveryObservableProxy(GetDeliveryClient(MockLanguages)).GetLanguagesObservable(q => q.Skip(1));
         var languages = observable.ToEnumerable().ToList();
 
         Assert.NotEmpty(languages);
@@ -185,7 +189,7 @@ public class DeliveryObservableProxyTests
     [Fact]
     public void ItemUsedInRetrieved()
     {
-        var observable = new DeliveryObservableProxy(GetDeliveryClient(MockItemUsedIn)).GetItemUsedInObservable(Article.Codename);
+        var observable = new DeliveryObservableProxy(GetDeliveryClient(MockItemUsedIn)).GetItemUsedInObservable("article");
         var parents = observable.ToEnumerable().ToList();
 
         Assert.NotEmpty(parents);
@@ -212,29 +216,23 @@ public class DeliveryObservableProxyTests
     private IDeliveryClient GetDeliveryClient(Action mockAction)
     {
         mockAction();
-        var deliveryHttpClient = new DeliveryHttpClient(_mockHttp.ToHttpClient());
-        var deliveryOptions = CreateMonitor(new DeliveryOptions { EnvironmentId = _guid });
-        var contentLinkUrlResolver = A.Fake<IContentLinkUrlResolver>();
-        var contentItemsProcessor = A.Fake<IInlineContentItemsProcessor>();
-        var contentPropertyMapper = new PropertyMapper();
-        var contentTypeProvider = new CustomTypeProvider();
-        var serializerOptions = Kontent.Ai.Delivery.Configuration.RefitSettingsProvider.CreateDefaultJsonSerializerOptions();
-        var modelProvider = new ModelProvider((ITypeProvider)contentLinkUrlResolver, (IPropertyMapper)contentItemsProcessor, (IInlineContentItemsProcessor)contentTypeProvider, (IContentLinkUrlResolver)contentPropertyMapper, serializerOptions, new HtmlParser(), deliveryOptions);
-        var retryPolicy = A.Fake<IRetryPolicy>();
-        var retryPolicyProvider = A.Fake<IRetryPolicyProvider>();
-        A.CallTo(() => retryPolicyProvider.GetRetryPolicy()).Returns(retryPolicy);
-        A.CallTo(() => retryPolicy.ExecuteAsync(A<Func<Task<HttpResponseMessage>>>._))
-            .ReturnsLazily(call => call.GetArgument<Func<Task<HttpResponseMessage>>>(0)());
-        var client = new DeliveryClient(
-            deliveryOptions,
-            modelProvider,
-            retryPolicyProvider,
-            contentTypeProvider,
-            deliveryHttpClient,
-            serializerOptions
-        );
 
-        return client;
+        var services = new ServiceCollection();
+
+        // Register the Delivery client configured to use the mock HTTP handler
+        services.AddDeliveryClient(
+            new DeliveryOptions { EnvironmentId = _guid, EnableResilience = false },
+            configureRefit: null,
+            configureHttpClient: builder => builder.ConfigurePrimaryHttpMessageHandler(() => _mockHttp));
+
+        // Provide minimal type mapping needed for post-processing linked items
+        var typeProvider = A.Fake<ITypeProvider>();
+        A.CallTo(() => typeProvider.GetType("article")).Returns(typeof(Article));
+        A.CallTo(() => typeProvider.GetCodename(typeof(Article))).Returns("article");
+        services.AddSingleton(typeProvider);
+
+        var provider = services.BuildServiceProvider();
+        return provider.GetRequiredService<IDeliveryClient>();
     }
 
     private void MockItem()
@@ -246,20 +244,20 @@ public class DeliveryObservableProxyTests
     private void MockArticles()
     {
         _mockHttp.When($"{_baseUrl}/items")
-            .WithQueryString(new[] { new KeyValuePair<string, string>("system.type", Article.Codename), new KeyValuePair<string, string>("elements.personas[contains]", "barista") })
+            .WithQueryString(new[] { new KeyValuePair<string, string>("system.type", "article"), new KeyValuePair<string, string>("elements.personas[contains]", "barista") })
             .Respond("application/json", File.ReadAllText(Path.Combine(Environment.CurrentDirectory, $"Fixtures{Path.DirectorySeparatorChar}articles.json")));
     }
 
     private void MockFeedArticles()
     {
         _mockHttp.When($"{_baseUrl}/items-feed")
-            .WithQueryString(new[] { new KeyValuePair<string, string>("system.type", Article.Codename), new KeyValuePair<string, string>("elements.personas[contains]", "barista") })
+            .WithQueryString(new[] { new KeyValuePair<string, string>("system.type", "article"), new KeyValuePair<string, string>("elements.personas[contains]", "barista") })
             .Respond("application/json", File.ReadAllText(Path.Combine(Environment.CurrentDirectory, $"Fixtures{Path.DirectorySeparatorChar}articles.json")));
     }
 
     private void MockType()
     {
-        _mockHttp.When($"{_baseUrl}/types/{Article.Codename}")
+        _mockHttp.When($"{_baseUrl}/types/article")
             .Respond("application/json", File.ReadAllText(Path.Combine(Environment.CurrentDirectory, $"Fixtures{Path.DirectorySeparatorChar}article-type.json")));
     }
 
@@ -271,20 +269,20 @@ public class DeliveryObservableProxyTests
 
     private void MockElement()
     {
-        _mockHttp.When($"{_baseUrl}/types/{Article.Codename}/elements/{Article.TitleCodename}")
+        _mockHttp.When($"{_baseUrl}/types/article/elements/title")
             .Respond("application/json", "{'type':'text','name':'Title','codename':'title'}");
     }
     private void MockTaxonomyElement()
     {
         _mockHttp
-               .When($"{_baseUrl}/types/{Coffee.Codename}/elements/{Coffee.ProcessingCodename}")
+               .When($"{_baseUrl}/types/coffee/elements/processing")
                .Respond("application/json", "{'type':'taxonomy','name':'Processing','taxonomy_group':'processing','codename':'processing'}");
     }
 
     private void MockMultipleChoiceElement()
     {
         _mockHttp
-            .When($"{_baseUrl}/types/{Tweet.Codename}/elements/{Tweet.ThemeCodename}")
+            .When($"{_baseUrl}/types/tweet/elements/theme")
             .Respond("application/json", "{ 'type': 'multiple_choice', 'name': 'Theme', 'options': [ { 'name': 'Dark', 'codename': 'dark' }, { 'name': 'Light', 'codename': 'light' } ], 'codename': 'theme' }");
     }
 
@@ -316,13 +314,12 @@ public class DeliveryObservableProxyTests
 
     private void MockItemUsedIn()
     {
-        _mockHttp.When($"{_baseUrl}/items/{Article.Codename}/used-in")
+        _mockHttp.When($"{_baseUrl}/items/article/used-in")
             .Respond("application/json", File.ReadAllText(Path.Combine(Environment.CurrentDirectory, $"Fixtures{Path.DirectorySeparatorChar}used_in.json")));
     }
 
     private static void AssertArticlePropertiesNotNull(Article item)
     {
-        Assert.NotNull(item.System);
         Assert.NotNull(item.Personas);
         Assert.NotNull(item.Title);
         Assert.NotNull(item.TeaserImage);

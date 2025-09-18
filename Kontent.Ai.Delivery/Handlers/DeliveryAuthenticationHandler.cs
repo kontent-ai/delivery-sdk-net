@@ -74,7 +74,7 @@ public sealed class DeliveryAuthenticationHandler : DelegatingHandler
         }
 
         // 3) Inject "/{environmentId}" as first path segment if missing
-        var env = opts.EnvironmentId?.Trim('/');
+        var env = opts.EnvironmentId?.Trim('/'); // TODO: simplify
         if (!string.IsNullOrWhiteSpace(env))
         {
             var uri = request.RequestUri!;
