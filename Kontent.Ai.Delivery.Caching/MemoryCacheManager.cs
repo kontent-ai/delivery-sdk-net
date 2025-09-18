@@ -54,7 +54,7 @@ internal class MemoryCacheManager(IMemoryCache memoryCache, IOptions<DeliveryCac
 
             // Set different timeout for stale content
             var valueCacheOptions = new MemoryCacheEntryOptions();
-            if (value is IResponse ar && ar.ApiResponse.HasStaleContent)
+            if (value is IDeliveryResult<object> ar && ar.HasStaleContent)
             {
                 valueCacheOptions.SetAbsoluteExpiration(_cacheOptions.StaleContentExpiration);
             }
@@ -79,7 +79,7 @@ internal class MemoryCacheManager(IMemoryCache memoryCache, IOptions<DeliveryCac
                 var dependencyKey = dependency;
                 var dependencyLock = _dependencyLocks.GetOrAdd(dependencyKey, _ => new object());
 
-                if (!_memoryCache.TryGetValue(dependencyKey, out CancellationTokenSource tokenSource) || tokenSource.IsCancellationRequested)
+                if (!_memoryCache.TryGetValue(dependencyKey, out CancellationTokenSource? tokenSource) || tokenSource.IsCancellationRequested)
                 {
                     lock (dependencyLock)
                     {
@@ -112,8 +112,8 @@ internal class MemoryCacheManager(IMemoryCache memoryCache, IOptions<DeliveryCac
             throw new ArgumentNullException(nameof(key));
         }
 
-        var result = _memoryCache.TryGetValue(key, out object value);
-        return Task.FromResult((Success: result, Value: value as T));
+        var result = _memoryCache.TryGetValue(key, out object? value);
+        return Task.FromResult((Success: result, Value: (value as T)!));
     }
 
     /// <inheritdoc />

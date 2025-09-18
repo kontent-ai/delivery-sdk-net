@@ -1,135 +1,331 @@
 ﻿using System.Linq;
+using FakeItEasy;
 using FluentAssertions;
 using Kontent.Ai.Delivery.Abstractions;
-using Kontent.Ai.Delivery.Caching.Tests.ContentTypes;
-using Kontent.Ai.Urls.Delivery.QueryParameters;
-using Kontent.Ai.Urls.Delivery.QueryParameters.Filters;
 using Xunit;
 
 namespace Kontent.Ai.Delivery.Caching.Tests
 {
     public class CacheHelpersTests
     {
-        #region API keys
+        private const string SampleCodename = "sample_code";
+
+        private static IContentItem<TModel> CreateContentItem<TModel>(string codename)
+            where TModel : IElementsModel
+        {
+            var system = A.Fake<IContentItemSystemAttributes>();
+            A.CallTo(() => system.Codename).Returns(codename);
+
+            var item = A.Fake<IContentItem<TModel>>();
+            A.CallTo(() => item.System).Returns(system);
+            return item;
+        }
+
+        private static IContentItem<IElementsModel> CreateDynamicContentItem(string codename)
+        {
+            var system = A.Fake<IContentItemSystemAttributes>();
+            A.CallTo(() => system.Codename).Returns(codename);
+
+            var item = A.Fake<IContentItem<IElementsModel>>();
+            A.CallTo(() => item.System).Returns(system);
+            return item;
+        }
+
+        private static IContentType CreateContentType(string codename)
+        {
+            var system = A.Fake<IContentTypeSystemAttributes>();
+            A.CallTo(() => system.Codename).Returns(codename);
+
+            var type = A.Fake<IContentType>();
+            A.CallTo(() => type.System).Returns(system);
+            return type;
+        }
+
+        private static IContentElement CreateContentElement(string codename)
+        {
+            var element = A.Fake<IContentElement>();
+            A.CallTo(() => element.Codename).Returns(codename);
+            return element;
+        }
+
+        private static ITaxonomyGroup CreateTaxonomyGroup(string codename)
+        {
+            var system = A.Fake<ITaxonomyGroupSystemAttributes>();
+            A.CallTo(() => system.Codename).Returns(codename);
+
+            var taxonomy = A.Fake<ITaxonomyGroup>();
+            A.CallTo(() => taxonomy.System).Returns(system);
+            return taxonomy;
+        }
+
+        private static ILanguage CreateLanguage(string codename)
+        {
+            var system = A.Fake<ILanguageSystemAttributes>();
+            A.CallTo(() => system.Codename).Returns(codename);
+
+            var language = A.Fake<ILanguage>();
+            A.CallTo(() => language.System).Returns(system);
+            return language;
+        }
+
+        // Dependency key methods
 
         [Fact]
-        public void GetItemKey_WithDifferentValues_AreUnique()
+        public void GetItemDependencyKey_Returns_Expected_Format()
         {
-            var keys = new[]
-            {
-                CacheHelpers.GetItemKey<object>("codename", Enumerable.Empty<IQueryParameter>()),
-                CacheHelpers.GetItemKey<object>("other_codename", Enumerable.Empty<IQueryParameter>()),
-                CacheHelpers.GetItemKey<object>("codename", new []{new DepthParameter(1)}),
-                CacheHelpers.GetItemKey<object>("codename", new [] {new DepthParameter(2) }),
-                CacheHelpers.GetItemKey<object>("codename", new []{new SystemTypeEqualsFilter("article") }),
-                CacheHelpers.GetItemKey<Article>("codename", new []{new SystemTypeEqualsFilter("article") }),
-                CacheHelpers.GetItemKey<SomeClass>("codename", Enumerable.Empty<IQueryParameter>()),
-                CacheHelpers.GetItemKey<someclass>("codename", Enumerable.Empty<IQueryParameter>()),
-                CacheHelpers.GetItemKey<AnotherNamespace.SomeClass>("codename", Enumerable.Empty<IQueryParameter>()),
-                CacheHelpers.GetItemKey<AnotherNamespace.someclass>("codename", Enumerable.Empty<IQueryParameter>()),
-            };
-
-            keys.Distinct().Count().Should().Be(keys.Length);
+            CacheHelpers.GetItemDependencyKey(SampleCodename)
+                .Should().Be($"dependency_item|{SampleCodename}");
         }
 
         [Fact]
-        public void GetItemsKey_WithDifferentValues_AreUnique()
+        public void GetItemsDependencyKey_Returns_Constant()
         {
-            var keys = new[]
-            {
-                CacheHelpers.GetItemsKey<object>(Enumerable.Empty<IQueryParameter>()),
-                CacheHelpers.GetItemsKey<object>(new []{new DepthParameter(1)}),
-                CacheHelpers.GetItemsKey<object>(new [] {new DepthParameter(2) }),
-                CacheHelpers.GetItemsKey<object>(new []{new SystemTypeEqualsFilter("article") }) ,
-                CacheHelpers.GetItemsKey<Article>(new []{new SystemTypeEqualsFilter("article") }),
-                CacheHelpers.GetItemsKey<SomeClass>(Enumerable.Empty<IQueryParameter>()),
-                CacheHelpers.GetItemsKey<someclass>(Enumerable.Empty<IQueryParameter>()),
-                CacheHelpers.GetItemsKey<AnotherNamespace.SomeClass>(Enumerable.Empty<IQueryParameter>()),
-                CacheHelpers.GetItemsKey<AnotherNamespace.someclass>(Enumerable.Empty<IQueryParameter>()),
-            };
-
-            keys.Distinct().Count().Should().Be(keys.Length);
+            CacheHelpers.GetItemsDependencyKey().Should().Be("dependency_item_listing");
         }
 
         [Fact]
-        public void GetTypeKey_WithDifferentValues_AreUnique()
+        public void GetTypesDependencyKey_Returns_Constant()
         {
-            var keys = new[]
-            {
-                CacheHelpers.GetTypeKey("codename"),
-                CacheHelpers.GetTypeKey("other_codename")
-            };
-
-            keys.Distinct().Count().Should().Be(keys.Length);
+            CacheHelpers.GetTypesDependencyKey().Should().Be("dependency_type_listing");
         }
 
         [Fact]
-        public void GetTypesKey_WithDifferentValues_AreUnique()
+        public void GetTaxonomyDependencyKey_Returns_Expected_Format()
         {
-            var keys = new[]
-            {
-                CacheHelpers.GetTypesKey(Enumerable.Empty<IQueryParameter>()),
-                CacheHelpers.GetTypesKey(new []{new  SkipParameter(1)}),
-                CacheHelpers.GetTypesKey(new [] {new SkipParameter(2)}),
-                CacheHelpers.GetTypesKey(new []{new LimitParameter(2)})
-            };
-
-            keys.Distinct().Count().Should().Be(keys.Length);
+            CacheHelpers.GetTaxonomyDependencyKey(SampleCodename)
+                .Should().Be($"dependency_taxonomy_group|{SampleCodename}");
         }
 
         [Fact]
-        public void GetTaxonomyKey_WithDifferentValues_AreUnique()
+        public void GetTaxonomiesDependencyKey_Returns_Constant()
         {
-            var keys = new[]
-            {
-                CacheHelpers.GetTaxonomyKey("codename"),
-                CacheHelpers.GetTaxonomyKey("other_codename")
-            };
-
-            keys.Distinct().Count().Should().Be(keys.Length);
+            CacheHelpers.GetTaxonomiesDependencyKey().Should().Be("dependency_taxonomy_group_listing");
         }
 
         [Fact]
-        public void GetTaxonomiesKey_WithDifferentValues_AreUnique()
+        public void GetLanguagesDependencyKey_Returns_Constant()
         {
-            var keys = new[]
-            {
-                CacheHelpers.GetTaxonomiesKey(Enumerable.Empty<IQueryParameter>()),
-                CacheHelpers.GetTaxonomiesKey(new []{new  SkipParameter(1)}),
-                CacheHelpers.GetTaxonomiesKey(new [] {new SkipParameter(2)}),
-                CacheHelpers.GetTaxonomiesKey(new []{new LimitParameter(2)})
-            };
+            CacheHelpers.GetLanguagesDependencyKey().Should().Be("dependency_language_listing");
+        }
 
-            keys.Distinct().Count().Should().Be(keys.Length);
+        // Item dependencies (generic)
+
+        public class DummyElements : IElementsModel { }
+
+        [Fact]
+        public void GetItemDependencies_Generic_NullItem_Returns_Empty()
+        {
+            CacheHelpers.GetItemDependencies<IElementsModel>(null).Should().BeEmpty();
         }
 
         [Fact]
-        public void GetContentElementKey_WithDifferentValues_AreUnique()
+        public void GetItemDependencies_Generic_NullSystem_Returns_Empty()
         {
-            var keys = new[]
-            {
-                CacheHelpers.GetContentElementKey("type_codename", "element_codename"),
-                CacheHelpers.GetContentElementKey("type_codename", "other_element_codename"),
-                CacheHelpers.GetContentElementKey("other_type_codename", "element_codename")
-            };
+            var item = A.Fake<IContentItem<DummyElements>>();
+            A.CallTo(() => item.System).Returns(null);
 
-            keys.Distinct().Count().Should().Be(keys.Length);
+            CacheHelpers.GetItemDependencies(item).Should().BeEmpty();
         }
 
-        #endregion
+        [Fact]
+        public void GetItemDependencies_Generic_NullCodename_Returns_Empty()
+        {
+            var system = A.Fake<IContentItemSystemAttributes>();
+            A.CallTo(() => system.Codename).Returns(null);
+            var item = A.Fake<IContentItem<DummyElements>>();
+            A.CallTo(() => item.System).Returns(system);
+
+            CacheHelpers.GetItemDependencies(item).Should().BeEmpty();
+        }
+
+        [Fact]
+        public void GetItemDependencies_Generic_Valid_Returns_Single_Item_Key()
+        {
+            var item = CreateContentItem<DummyElements>(SampleCodename);
+            var result = CacheHelpers.GetItemDependencies(item).ToArray();
+
+            result.Should().HaveCount(1);
+            result[0].Should().Be($"dependency_item|{SampleCodename}");
+        }
+
+        // Item dependencies (dynamic overload)
+
+        [Fact]
+        public void GetItemDependencies_Dynamic_NullItem_Returns_Empty()
+        {
+            CacheHelpers.GetItemDependencies((IContentItem<IElementsModel>)null).Should().BeEmpty();
+        }
+
+        [Fact]
+        public void GetItemDependencies_Dynamic_NullSystem_Returns_Empty()
+        {
+            var item = A.Fake<IContentItem<IElementsModel>>();
+            A.CallTo(() => item.System).Returns(null);
+
+            CacheHelpers.GetItemDependencies(item).Should().BeEmpty();
+        }
+
+        [Fact]
+        public void GetItemDependencies_Dynamic_NullCodename_Returns_Empty()
+        {
+            var system = A.Fake<IContentItemSystemAttributes>();
+            A.CallTo(() => system.Codename).Returns(null);
+            var item = A.Fake<IContentItem<IElementsModel>>();
+            A.CallTo(() => item.System).Returns(system);
+
+            CacheHelpers.GetItemDependencies(item).Should().BeEmpty();
+        }
+
+        [Fact]
+        public void GetItemDependencies_Dynamic_Valid_Returns_Single_Item_Key()
+        {
+            var item = CreateDynamicContentItem(SampleCodename);
+            var result = CacheHelpers.GetItemDependencies(item).ToArray();
+
+            result.Should().HaveCount(1);
+            result[0].Should().Be($"dependency_item|{SampleCodename}");
+        }
+
+        // Content type dependencies
+
+        [Fact]
+        public void GetTypeDependencies_NullType_Returns_Empty()
+        {
+            CacheHelpers.GetTypeDependencies(null).Should().BeEmpty();
+        }
+
+        [Fact]
+        public void GetTypeDependencies_NullSystem_Returns_Empty()
+        {
+            var type = A.Fake<IContentType>();
+            A.CallTo(() => type.System).Returns(null);
+
+            CacheHelpers.GetTypeDependencies(type).Should().BeEmpty();
+        }
+
+        [Fact]
+        public void GetTypeDependencies_NullCodename_Returns_Empty()
+        {
+            var system = A.Fake<IContentTypeSystemAttributes>();
+            A.CallTo(() => system.Codename).Returns(null);
+            var type = A.Fake<IContentType>();
+            A.CallTo(() => type.System).Returns(system);
+
+            CacheHelpers.GetTypeDependencies(type).Should().BeEmpty();
+        }
+
+        [Fact]
+        public void GetTypeDependencies_Valid_Returns_Single_Types_Key()
+        {
+            var type = CreateContentType(SampleCodename);
+            var result = CacheHelpers.GetTypeDependencies(type).ToArray();
+
+            result.Should().HaveCount(1);
+            result[0].Should().Be("dependency_type_listing");
+        }
+
+        // Content element dependencies
+
+        [Fact]
+        public void GetContentElementDependencies_NullElement_Returns_Empty()
+        {
+            CacheHelpers.GetContentElementDependencies(null).Should().BeEmpty();
+        }
+
+        [Fact]
+        public void GetContentElementDependencies_NullCodename_Returns_Empty()
+        {
+            var element = A.Fake<IContentElement>();
+            A.CallTo(() => element.Codename).Returns(null);
+
+            CacheHelpers.GetContentElementDependencies(element).Should().BeEmpty();
+        }
+
+        [Fact]
+        public void GetContentElementDependencies_Valid_Returns_Single_Types_Key()
+        {
+            var element = CreateContentElement(SampleCodename);
+            var result = CacheHelpers.GetContentElementDependencies(element).ToArray();
+
+            result.Should().HaveCount(1);
+            result[0].Should().Be("dependency_type_listing");
+        }
+
+        // Taxonomy dependencies
+
+        [Fact]
+        public void GetTaxonomyDependencies_NullTaxonomy_Returns_Empty()
+        {
+            CacheHelpers.GetTaxonomyDependencies(null).Should().BeEmpty();
+        }
+
+        [Fact]
+        public void GetTaxonomyDependencies_NullSystem_Returns_Empty()
+        {
+            var taxonomy = A.Fake<ITaxonomyGroup>();
+            A.CallTo(() => taxonomy.System).Returns(null);
+
+            CacheHelpers.GetTaxonomyDependencies(taxonomy).Should().BeEmpty();
+        }
+
+        [Fact]
+        public void GetTaxonomyDependencies_NullCodename_Returns_Empty()
+        {
+            var system = A.Fake<ITaxonomyGroupSystemAttributes>();
+            A.CallTo(() => system.Codename).Returns(null);
+            var taxonomy = A.Fake<ITaxonomyGroup>();
+            A.CallTo(() => taxonomy.System).Returns(system);
+
+            CacheHelpers.GetTaxonomyDependencies(taxonomy).Should().BeEmpty();
+        }
+
+        [Fact]
+        public void GetTaxonomyDependencies_Valid_Returns_Single_Taxonomy_Key()
+        {
+            var taxonomy = CreateTaxonomyGroup(SampleCodename);
+            var result = CacheHelpers.GetTaxonomyDependencies(taxonomy).ToArray();
+
+            result.Should().HaveCount(1);
+            result[0].Should().Be($"dependency_taxonomy_group|{SampleCodename}");
+        }
+
+        // Language dependencies
+
+        [Fact]
+        public void GetLanguagesDependencies_NullLanguage_Returns_Empty()
+        {
+            CacheHelpers.GetLanguagesDependencies(null).Should().BeEmpty();
+        }
+
+        [Fact]
+        public void GetLanguagesDependencies_NullSystem_Returns_Empty()
+        {
+            var language = A.Fake<ILanguage>();
+            A.CallTo(() => language.System).Returns(null);
+
+            CacheHelpers.GetLanguagesDependencies(language).Should().BeEmpty();
+        }
+
+        [Fact]
+        public void GetLanguagesDependencies_NullCodename_Returns_Empty()
+        {
+            var system = A.Fake<ILanguageSystemAttributes>();
+            A.CallTo(() => system.Codename).Returns(null);
+            var language = A.Fake<ILanguage>();
+            A.CallTo(() => language.System).Returns(system);
+
+            CacheHelpers.GetLanguagesDependencies(language).Should().BeEmpty();
+        }
+
+        [Fact]
+        public void GetLanguagesDependencies_Valid_Returns_Single_Languages_Key()
+        {
+            var language = CreateLanguage(SampleCodename);
+            var result = CacheHelpers.GetLanguagesDependencies(language).ToArray();
+
+            result.Should().HaveCount(1);
+            result[0].Should().Be("dependency_language_listing");
+        }
     }
-
-    internal class SomeClass { }
-#pragma warning disable CS8981 // The type name only contains lower-cased ascii characters. Such names may become reserved for the language.
-    internal class someclass { }
-#pragma warning restore CS8981 // The type name only contains lower-cased ascii characters. Such names may become reserved for the language.
-}
-
-namespace Kontent.Ai.Delivery.Caching.Tests.AnotherNamespace
-{
-    internal class SomeClass { }
-#pragma warning disable CS8981 // The type name only contains lower-cased ascii characters. Such names may become reserved for the language.
-    internal class someclass { }
-#pragma warning restore CS8981 // The type name only contains lower-cased ascii characters. Such names may become reserved for the language.
 }
 

@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using System.Threading.Tasks;
 using Kontent.Ai.Delivery.Abstractions;
+using Kontent.Ai.Delivery.Caching.Extensions;
 using Microsoft.Extensions.Caching.Distributed;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Logging.Abstractions;
@@ -17,6 +18,7 @@ internal class DistributedCacheManager : IDeliveryCacheManager
     private readonly IDistributedCache _distributedCache;
     private readonly DeliveryCacheOptions _cacheOptions;
     private readonly ILogger _logger;
+    private const string DependencyIndexPrefix = "depidx|";
 
     /// <summary>
     /// Initializes a new instance of <see cref="DistributedCacheManager"/>
@@ -26,7 +28,7 @@ internal class DistributedCacheManager : IDeliveryCacheManager
     /// <param name="loggerFactory">The factory used to create loggers.</param>
     public DistributedCacheManager(IDistributedCache distributedCache,
         IOptions<DeliveryCacheOptions> cacheOptions,
-        ILoggerFactory loggerFactory = null)
+        ILoggerFactory? loggerFactory = null)
     {
         var loggerFactoryToUse = loggerFactory ?? NullLoggerFactory.Instance;
 
@@ -36,7 +38,7 @@ internal class DistributedCacheManager : IDeliveryCacheManager
     }
 
     /// <inheritdoc />
-    public async Task<T> GetOrAddAsync<T>(string key, Func<Task<T>> valueFactory, Func<T, bool> shouldCache = null, Func<T, IEnumerable<string>> dependenciesFactory = null) where T : class
+    public async Task<T> GetOrAddAsync<T>(string key, Func<Task<T>> valueFactory, Func<T, bool>? shouldCache = null, Func<T, IEnumerable<string>>? dependenciesFactory = null) where T : class
     {
         try
         {
@@ -62,7 +64,7 @@ internal class DistributedCacheManager : IDeliveryCacheManager
 
         // Set different timeout for stale content
         var valueCacheOptions = new DistributedCacheEntryOptions();
-        if (value is IResponse ar && ar.ApiResponse.HasStaleContent)
+        if (value is IDeliveryResult<object> dr && dr.HasStaleContent)
         {
             valueCacheOptions.SetAbsoluteExpiration(_cacheOptions.StaleContentExpiration);
         }
@@ -80,7 +82,48 @@ internal class DistributedCacheManager : IDeliveryCacheManager
             }
         }
 
-        await _distributedCache.SetAsync(key, value.ToBson(), valueCacheOptions);
+        // Store cached value
+        var valueBytes = value.ToMessagePack();
+        if (valueBytes == null)
+        {
+            return value;
+        }
+
+        await _distributedCache.SetAsync(key, valueBytes, valueCacheOptions);
+
+        // Store dependency index entries for distributed invalidation
+        var dependencies = dependenciesFactory?.Invoke(value);
+        if (dependencies != null)
+        {
+            foreach (var dependency in dependencies)
+            {
+                if (string.IsNullOrEmpty(dependency))
+                {
+                    continue;
+                }
+
+                var indexKey = GetDependencyIndexKey(dependency);
+                var existingIndexBytes = await _distributedCache.GetAsync(indexKey);
+                HashSet<string> indexSet = existingIndexBytes.FromMessagePack<HashSet<string>>() ?? new HashSet<string>(StringComparer.Ordinal);
+                indexSet.Add(key);
+
+                var indexOptions = new DistributedCacheEntryOptions();
+                switch (_cacheOptions.DefaultExpirationType)
+                {
+                    case CacheExpirationType.Absolute:
+                        indexOptions.SetAbsoluteExpiration(_cacheOptions.DefaultExpiration);
+                        break;
+                    case CacheExpirationType.Sliding:
+                        indexOptions.SetSlidingExpiration(_cacheOptions.DefaultExpiration);
+                        break;
+                }
+                var indexBytes = indexSet.ToMessagePack();
+                if (indexBytes != null)
+                {
+                    await _distributedCache.SetAsync(indexKey, indexBytes, indexOptions);
+                }
+            }
+        }
 
         return value;
     }
@@ -93,8 +136,8 @@ internal class DistributedCacheManager : IDeliveryCacheManager
             throw new ArgumentNullException(nameof(key));
         }
 
-        var value = (await _distributedCache.GetAsync(key))?.FromBson<T>();
-        return (Success: value != null, Value: value);
+        var value = (await _distributedCache.GetAsync(key)).FromMessagePack<T>();
+        return (Success: value != null, Value: value!);
     }
 
     /// <inheritdoc />
@@ -105,6 +148,24 @@ internal class DistributedCacheManager : IDeliveryCacheManager
             throw new ArgumentNullException(nameof(key));
         }
 
+        // First, try to treat the key as a dependency key and invalidate all associated cache entries
+        var indexKey = GetDependencyIndexKey(key);
+        var indexBytes = await _distributedCache.GetAsync(indexKey);
+        var indexSet = indexBytes.FromMessagePack<HashSet<string>>();
+
+        if (indexSet != null)
+        {
+            foreach (var cacheKey in indexSet)
+            {
+                await _distributedCache.RemoveAsync(cacheKey);
+            }
+
+            // Remove the dependency index itself
+            await _distributedCache.RemoveAsync(indexKey);
+            return;
+        }
+
+        // If there was no dependency index, attempt to remove the key directly (treat as a cache key)
         await _distributedCache.RemoveAsync(key);
     }
 
@@ -113,4 +174,6 @@ internal class DistributedCacheManager : IDeliveryCacheManager
     {
         throw new NotImplementedException("It's not possible to clear a distributed cache.");
     }
+
+    private static string GetDependencyIndexKey(string dependencyKey) => string.Concat(DependencyIndexPrefix, dependencyKey);
 }

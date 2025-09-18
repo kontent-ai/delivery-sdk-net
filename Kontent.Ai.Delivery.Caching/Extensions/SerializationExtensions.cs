@@ -1,5 +1,6 @@
 using System;
 using MessagePack;
+using MessagePack.Resolvers;
 
 namespace Kontent.Ai.Delivery.Caching.Extensions;
 
@@ -14,7 +15,9 @@ public static class SerializationExtensions
     private static readonly MessagePackSerializerOptions Options = MessagePackSerializerOptions.Standard
         .WithCompression(MessagePackCompression.Lz4BlockArray)
         .WithOldSpec(false)
-        .WithOmitAssemblyVersion(true);
+        .WithOmitAssemblyVersion(true)
+        .WithResolver(ContractlessStandardResolverAllowPrivate.Instance)
+        .WithResolver(TypelessContractlessStandardResolver.Instance);
 
     /// <summary>
     /// Serializes given object to MessagePack binary format.
