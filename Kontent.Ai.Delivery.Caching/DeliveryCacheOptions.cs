@@ -32,10 +32,4 @@ public class DeliveryCacheOptions
     /// Determines which resilient policy should be used when <see cref="Microsoft.Extensions.Caching.Distributed.IDistributedCache" /> is not available.
     /// </summary>
     public DistributedCacheResilientPolicy DistributedCacheResilientPolicy { get; set; } = DistributedCacheResilientPolicy.Crash;
-
-    /// <summary>
-    /// The name of the service configuration this options object is related to.
-    /// </summary>
-    [Obsolete("#312")]
-    internal required string Name { get; set; }
 }
