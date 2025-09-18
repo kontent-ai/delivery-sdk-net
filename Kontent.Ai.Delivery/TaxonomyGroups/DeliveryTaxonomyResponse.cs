@@ -3,7 +3,7 @@
 namespace Kontent.Ai.Delivery.TaxonomyGroups;
 
 /// <inheritdoc cref="IDeliveryTaxonomyResponse" />
-internal sealed class DeliveryTaxonomyResponse : IDeliveryTaxonomyResponse
+internal sealed class DeliveryTaxonomyResponse : IDeliveryTaxonomyResponse // TODO: delete this, not used, see other responses too
 {
     /// <inheritdoc/>
     public ITaxonomyGroup Taxonomy

@@ -40,7 +40,14 @@ public class IncludeTotalCountTests
             count = 8,
             next_page = "nextPage"
         });
-        var expected = new Pagination(20, 10, 8, null, "nextPage");
+        var expected = new Pagination()
+        {
+            Skip = 20,
+            Limit = 10,
+            Count = 8,
+            TotalCount = null,
+            NextPageUrl = "nextPage"
+        };
 
         var result = responsePagination.ToObject<Pagination>();
 
@@ -58,7 +65,14 @@ public class IncludeTotalCountTests
             total_count = 28,
             next_page = "nextPage"
         });
-        var expected = new Pagination(20, 10, 8, 28, "nextPage");
+        var expected = new Pagination()
+        {
+            Skip = 20,
+            Limit = 10,
+            Count = 8,
+            TotalCount = 28,
+            NextPageUrl = "nextPage"
+        };
 
         var result = responsePagination.ToObject<Pagination>();
 

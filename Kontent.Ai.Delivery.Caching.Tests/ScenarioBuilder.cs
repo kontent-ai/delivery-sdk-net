@@ -108,11 +108,11 @@ public class ScenarioBuilder
         }
         if (_cacheType == CacheTypeEnum.Memory)
         {
-            return new Scenario(_memoryCache, _cacheExpirationType, mockHttp.ToHttpClient(), new DeliveryOptions { EnvironmentId = _environmentId }, _requestCounter);
+            return new Scenario(_memoryCache, _cacheExpirationType, mockHttp, new DeliveryOptions { EnvironmentId = _environmentId }, _requestCounter);
         }
         else
         {
-            return new Scenario(_distributedCache, _cacheExpirationType, _distributedCacheResilientPolicy, mockHttp.ToHttpClient(), new DeliveryOptions { EnvironmentId = _environmentId }, _requestCounter, _loggerFactory);
+            return new Scenario(_distributedCache, _cacheExpirationType, _distributedCacheResilientPolicy, mockHttp, new DeliveryOptions { EnvironmentId = _environmentId }, _requestCounter, _loggerFactory);
         }
     }
 }

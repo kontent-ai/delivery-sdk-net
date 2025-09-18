@@ -14,7 +14,6 @@ internal static class DeliveryClientFactory
         Guid environmentId,
         MockHttpMessageHandler httpMessageHandler = null,
         IModelProvider modelProvider = null,
-        IRetryPolicyProvider resiliencePolicyProvider = null,
         ITypeProvider typeProvider = null)
     {
         var services = new ServiceCollection();

@@ -8,8 +8,8 @@ namespace Kontent.Ai.Delivery.Tests.QueryParameters.Filtering;
 public class FilterTests
 {
     [Theory]
-    [InlineData("elements.title", FilterOperator.Equals, "test", "elements.title[eq]=\"test\"")]
-    [InlineData("system.type", FilterOperator.Equals, "article", "system.type[eq]=\"article\"")]
+    [InlineData("elements.title", FilterOperator.Equals, "test", "elements.title[eq]=test")]
+    [InlineData("system.type", FilterOperator.Equals, "article", "system.type[eq]=article")]
     public void ToQueryParameter_ScalarOperators(string path, FilterOperator op, string value, string expected)
     {
         var filter = new Filter(path, op, StringValue.From(value));
@@ -36,7 +36,7 @@ public class FilterTests
 
         var result = filter.ToQueryParameter();
 
-        Assert.Equal("elements.tags[in]=\"a\",\"b\"", result);
+        Assert.Equal("elements.tags[in]=a,b", result);
     }
 
     [Fact]
