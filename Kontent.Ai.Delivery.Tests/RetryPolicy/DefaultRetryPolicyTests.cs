@@ -3,6 +3,7 @@ using System.IO;
 using System.Net;
 using System.Net.Http;
 using System.Threading.Tasks;
+using System.Text;
 using Kontent.Ai.Delivery.Abstractions;
 using Kontent.Ai.Delivery.Extensions;
 using Microsoft.Extensions.DependencyInjection;
@@ -29,7 +30,22 @@ public class DefaultRetryPolicyTests
         var behavior = new TestBehaviorHandler();
         var client = BuildClient(env, mockHttp, behavior, b =>
         {
-            b.AddRetry(new HttpRetryStrategyOptions { MaxRetryAttempts = 3, Delay = TimeSpan.FromMilliseconds(10), BackoffType = DelayBackoffType.Exponential });
+            b.AddRetry(new HttpRetryStrategyOptions
+            {
+                MaxRetryAttempts = 3,
+                Delay = TimeSpan.FromMilliseconds(10),
+                BackoffType = DelayBackoffType.Exponential,
+                ShouldHandle = args =>
+                {
+                    if (args.Outcome.Exception is HttpRequestException) return ValueTask.FromResult(true);
+                    if (args.Outcome.Result is HttpResponseMessage rsp)
+                    {
+                        var sc = (int)rsp.StatusCode;
+                        if (sc == 408 || sc >= 500) return ValueTask.FromResult(true);
+                    }
+                    return ValueTask.FromResult(false);
+                }
+            });
         });
 
         var result = await client.GetItems<IElementsModel>().ExecuteAsync();
@@ -49,13 +65,28 @@ public class DefaultRetryPolicyTests
         var itemsJson = await File.ReadAllTextAsync(Path.Combine(Environment.CurrentDirectory, $"Fixtures{Path.DirectorySeparatorChar}DeliveryClient{Path.DirectorySeparatorChar}items.json"));
 
         // First 500, then OK
-        mockHttp.When(itemsUrl).Respond(req => new HttpResponseMessage(HttpStatusCode.InternalServerError));
+        mockHttp.When(itemsUrl).Respond(req => new HttpResponseMessage(HttpStatusCode.InternalServerError)); // TODO: Fix tests
         mockHttp.When(itemsUrl).Respond("application/json", itemsJson);
 
         var behavior = new TestBehaviorHandler();
         var client = BuildClient(env, mockHttp, behavior, b =>
         {
-            b.AddRetry(new HttpRetryStrategyOptions { MaxRetryAttempts = 3, Delay = TimeSpan.FromMilliseconds(10), BackoffType = DelayBackoffType.Exponential });
+            b.AddRetry(new HttpRetryStrategyOptions
+            {
+                MaxRetryAttempts = 3,
+                Delay = TimeSpan.FromMilliseconds(10),
+                BackoffType = DelayBackoffType.Exponential,
+                ShouldHandle = args =>
+                {
+                    if (args.Outcome.Exception is HttpRequestException) return ValueTask.FromResult(true);
+                    if (args.Outcome.Result is HttpResponseMessage rsp)
+                    {
+                        var sc = (int)rsp.StatusCode;
+                        if (sc == 408 || sc >= 500) return ValueTask.FromResult(true);
+                    }
+                    return ValueTask.FromResult(false);
+                }
+            });
         });
 
         var result = await client.GetItems<IElementsModel>().ExecuteAsync();
@@ -78,7 +109,22 @@ public class DefaultRetryPolicyTests
         var maxAttempts = 2;
         var client = BuildClient(env, mockHttp, behavior, b =>
         {
-            b.AddRetry(new HttpRetryStrategyOptions { MaxRetryAttempts = maxAttempts, Delay = TimeSpan.FromMilliseconds(10), BackoffType = DelayBackoffType.Exponential });
+            b.AddRetry(new HttpRetryStrategyOptions
+            {
+                MaxRetryAttempts = maxAttempts,
+                Delay = TimeSpan.FromMilliseconds(10),
+                BackoffType = DelayBackoffType.Exponential,
+                ShouldHandle = args =>
+                {
+                    if (args.Outcome.Exception is HttpRequestException) return ValueTask.FromResult(true);
+                    if (args.Outcome.Result is HttpResponseMessage rsp)
+                    {
+                        var sc = (int)rsp.StatusCode;
+                        if (sc == 408 || sc >= 500) return ValueTask.FromResult(true);
+                    }
+                    return ValueTask.FromResult(false);
+                }
+            });
         });
 
         var result = await client.GetItems<IElementsModel>().ExecuteAsync();
@@ -102,7 +148,22 @@ public class DefaultRetryPolicyTests
         var behavior = new TestBehaviorHandler(throwsOnFirstAttempt: true);
         var client = BuildClient(env, mockHttp, behavior, b =>
         {
-            b.AddRetry(new HttpRetryStrategyOptions { MaxRetryAttempts = 3, Delay = TimeSpan.FromMilliseconds(10), BackoffType = DelayBackoffType.Exponential });
+            b.AddRetry(new HttpRetryStrategyOptions
+            {
+                MaxRetryAttempts = 3,
+                Delay = TimeSpan.FromMilliseconds(10),
+                BackoffType = DelayBackoffType.Exponential,
+                ShouldHandle = args =>
+                {
+                    if (args.Outcome.Exception is HttpRequestException) return ValueTask.FromResult(true);
+                    if (args.Outcome.Result is HttpResponseMessage rsp)
+                    {
+                        var sc = (int)rsp.StatusCode;
+                        if (sc == 408 || sc >= 500) return ValueTask.FromResult(true);
+                    }
+                    return ValueTask.FromResult(false);
+                }
+            });
         });
 
         var result = await client.GetItems<IElementsModel>().ExecuteAsync();

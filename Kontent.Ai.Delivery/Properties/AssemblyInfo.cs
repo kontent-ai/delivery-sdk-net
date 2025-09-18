@@ -6,4 +6,3 @@ using System.Runtime.InteropServices;
 [assembly: InternalsVisibleTo("Kontent.Ai.Delivery.Extensions.DependencyInjection.Tests")]
 [assembly: InternalsVisibleTo("Kontent.Ai.Delivery.Tests")]
 [assembly: InternalsVisibleTo("Kontent.Ai.Delivery.Caching.Tests")]
-[assembly: InternalsVisibleTo("Kontent.Ai.Delivery.Rx.Tests")]

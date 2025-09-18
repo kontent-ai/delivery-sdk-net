@@ -16,11 +16,18 @@ public class PaginationTests
     [Fact]
     public void SerializePagination_AndThen_DeserializeToCheck_ValuesMatch_UsingBsonSerialization()
     {
-        ExecuteTestsScenario(SerializeThenDeserializeUsingBson);
+        ExecuteTestsScenario(SerializeThenDeserializeUsingMesPack);
     }
     private void ExecuteTestsScenario(Func<Pagination, Pagination> serializeThenDeserialize)
     {
-        var pagination = new Pagination(2, 500, 10, 65, "https://nextpageUrl");
+        var pagination = new Pagination()
+        {
+            Skip = 2,
+            Limit = 500,
+            Count = 10,
+            TotalCount = 65,
+            NextPageUrl = "https://nextpageUrl"
+        };
         var deserializedPagination = serializeThenDeserialize(pagination);
         Assert.Equal(pagination.Skip, deserializedPagination.Skip);
         Assert.Equal(pagination.Limit, deserializedPagination.Limit);
@@ -35,7 +42,7 @@ public class PaginationTests
         return JsonConvert.DeserializeObject<Pagination>(json);
     }
 
-    private Pagination SerializeThenDeserializeUsingBson(Pagination pagination)
+    private Pagination SerializeThenDeserializeUsingMesPack(Pagination pagination)
     {
         var data = pagination.ToMessagePack();
         return data.FromMessagePack<Pagination>();

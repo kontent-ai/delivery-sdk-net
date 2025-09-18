@@ -11,7 +11,9 @@ public class ContentElementConverter : JsonConverter<IContentElement>
     /// <inheritdoc/>
     public override bool CanConvert(Type typeToConvert)
     {
-        return typeof(IContentElement).IsAssignableFrom(typeToConvert);
+        // Only intercept when target type is the interface itself to avoid recursion.
+        // Concrete implementations (e.g., ContentElement) should be deserialized by the default serializer.
+        return typeToConvert == typeof(IContentElement);
     }
 
     /// <inheritdoc/>

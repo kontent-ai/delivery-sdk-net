@@ -1,6 +1,8 @@
 using System.Reflection;
+using System.Text;
 using System.Text.Json;
 using System.Threading;
+using System.IO;
 using AngleSharp.Html.Parser;
 
 namespace Kontent.Ai.Delivery.ContentItems;
@@ -112,12 +114,17 @@ internal sealed class ElementsPostProcessor(
 
     private ResolvingContext CreateResolvingContext(IReadOnlyDictionary<string, JsonElement>? modularContent)
     {
+        // Prebuild a JSON object string for linked items so ModelProvider can parse it
+        var linkedItemsJson = modularContent is null
+            ? "{}"
+            : BuildLinkedItemsJson(modularContent);
+
         async Task<object> GetLinkedItemAsync(string codename)
         {
             if (modularContent is not null && modularContent.TryGetValue(codename, out var linked))
             {
-                // Use ModelProvider to map nested items; type provider is supplied by customer
-                return await _modelProvider.GetContentItemModelAsync<object>(linked.GetRawText(), Array.Empty<object>());
+                // Use ModelProvider to map nested items; supply full linked-items map as JSON
+                return await _modelProvider.GetContentItemModelAsync<object>(linked.GetRawText(), linkedItemsJson);
             }
             return null!;
         }
@@ -127,6 +134,21 @@ internal sealed class ElementsPostProcessor(
             GetLinkedItem = GetLinkedItemAsync,
             ContentLinkUrlResolver = new ContentLinks.DefaultContentLinkUrlResolver()
         };
+    }
+
+    private static string BuildLinkedItemsJson(IReadOnlyDictionary<string, JsonElement> modularContent)
+    {
+        using var stream = new MemoryStream();
+        using var writer = new Utf8JsonWriter(stream);
+        writer.WriteStartObject();
+        foreach (var kv in modularContent)
+        {
+            writer.WritePropertyName(kv.Key);
+            kv.Value.WriteTo(writer);
+        }
+        writer.WriteEndObject();
+        writer.Flush();
+        return Encoding.UTF8.GetString(stream.ToArray());
     }
 }
 

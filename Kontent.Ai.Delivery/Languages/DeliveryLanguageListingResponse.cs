@@ -3,29 +3,23 @@
 namespace Kontent.Ai.Delivery.Languages;
 
 /// <inheritdoc cref="IDeliveryLanguageListingResponse" />
-internal sealed class DeliveryLanguageListingResponse : IDeliveryLanguageListingResponse
+internal sealed record DeliveryLanguageListingResponse : IDeliveryLanguageListingResponse
 {
     /// <inheritdoc/>
-    public IList<ILanguage> Languages
+    [JsonPropertyName("languages")]
+    public IList<Language> Languages
     {
-        get;
+        get; init;
     }
 
     /// <inheritdoc/>
-    public IPagination Pagination
+    [JsonPropertyName("pagination")]
+    public Pagination Pagination
     {
-        get;
+        get; init;
     }
 
-    /// <summary>
-    /// Initializes a new instance of the <see cref="DeliveryLanguageListingResponse"/> class.
-    /// </summary>
-    /// <param name="languages">A collection of languages.</param>
-    /// <param name="pagination">Response paging information.</param>
-    [JsonConstructor]
-    internal DeliveryLanguageListingResponse(IList<ILanguage> languages, IPagination pagination)
-    {
-        Languages = languages;
-        Pagination = pagination;
-    }
+    IList<ILanguage> IDeliveryLanguageListingResponse.Languages => Languages.Cast<ILanguage>().ToList();
+
+    IPagination IPageable.Pagination => Pagination;
 }

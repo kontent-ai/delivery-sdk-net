@@ -1,5 +1,6 @@
 using System.Text.Json;
 using Kontent.Ai.Delivery.ContentItems;
+using Kontent.Ai.Delivery.ContentTypes.Element;
 
 namespace Kontent.Ai.Delivery.Configuration;
 
@@ -38,6 +39,8 @@ public static class RefitSettingsProvider
         // Register converters
         jsonSerializerOptions.Converters.Add(new ElementsConverterFactory());
         jsonSerializerOptions.Converters.Add(new ContentItemConverterFactory());
+        //jsonSerializerOptions.Converters.Add(new ContentElementConverter());
+        // TODO: does this need to be here?
         return jsonSerializerOptions;
     }
 }
