@@ -22,6 +22,6 @@ internal sealed class TaxonomyQuery(IDeliveryApi api, string codename, Func<bool
         var response = await _api.GetTaxonomyInternalAsync(_codename, wait).ConfigureAwait(false);
         var deliveryResult = await response.ToDeliveryResultAsync().ConfigureAwait(false);
 
-        return deliveryResult.Map(response => response.Taxonomy);
+        return deliveryResult;
     }
 }

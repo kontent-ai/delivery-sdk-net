@@ -23,7 +23,7 @@ internal sealed class TypeElementQuery(IDeliveryApi api, string contentTypeCoden
         var response = await _api.GetContentElementInternalAsync(_type, _element, wait).ConfigureAwait(false);
         var deliveryResult = await response.ToDeliveryResultAsync().ConfigureAwait(false);
 
-        return deliveryResult.Map(response => response.Element);
+        return deliveryResult;
     }
 }
 
