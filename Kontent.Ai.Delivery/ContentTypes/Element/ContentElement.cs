@@ -9,17 +9,17 @@ namespace Kontent.Ai.Delivery.ContentTypes.Element;
 /// </summary>
 [DebuggerDisplay("Name = {" + nameof(Name) + "}")]
 [method: JsonConstructor]
-internal class ContentElement() : IContentElement
+internal record ContentElement() : IContentElement
 {
     /// <inheritdoc/>
     [JsonPropertyName("type")]
-    public string Type { get; internal set; }
+    public required string Type { get; init; }
 
     /// <inheritdoc/>
     [JsonPropertyName("name")]
-    public string Name { get; internal set; }
+    public required string Name { get; init; }
 
     /// <inheritdoc/>
     [JsonPropertyName("codename")]
-    public string Codename { get; internal set; }
+    public string? Codename { get; init; } // TODO: fix nullability here and in the interface
 }

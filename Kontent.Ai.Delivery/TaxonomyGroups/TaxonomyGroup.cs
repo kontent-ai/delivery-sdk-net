@@ -8,14 +8,17 @@ namespace Kontent.Ai.Delivery.TaxonomyGroups;
 /// Constructor used for deserialization (e.g. for caching purposes), contains no logic.
 /// </summary>
 [DebuggerDisplay("Name = {" + nameof(System) + "." + nameof(IContentTypeSystemAttributes.Name) + "}")]
-[method: JsonConstructor]
-internal sealed class TaxonomyGroup(ITaxonomyGroupSystemAttributes system, IList<ITaxonomyTermDetails> terms) : ITaxonomyGroup
+internal sealed record TaxonomyGroup : ITaxonomyGroup
 {
     /// <inheritdoc/>
     [JsonPropertyName("system")]
-    public ITaxonomyGroupSystemAttributes System { get; internal set; } = system;
+    public TaxonomyGroupSystemAttributes System { get; init; }
 
     /// <inheritdoc/>
     [JsonPropertyName("terms")]
-    public IList<ITaxonomyTermDetails> Terms { get; internal set; } = terms;
+    public IList<TaxonomyTermDetails> Terms { get; init; }
+
+    ITaxonomyGroupSystemAttributes ITaxonomyGroup.System => System;
+
+    IList<ITaxonomyTermDetails> ITaxonomyGroup.Terms => Terms.Cast<ITaxonomyTermDetails>().ToList();
 }

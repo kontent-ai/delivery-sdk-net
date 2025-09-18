@@ -3,29 +3,17 @@
 namespace Kontent.Ai.Delivery.ContentTypes;
 
 /// <inheritdoc cref="IDeliveryTypeListingResponse" />
-internal sealed class DeliveryTypeListingResponse : IDeliveryTypeListingResponse
+internal sealed record DeliveryTypeListingResponse : IDeliveryTypeListingResponse
 {
     /// <inheritdoc/>
-    public IPagination Pagination
-    {
-        get;
-    }
+    [JsonPropertyName("pagination")]
+    public required Pagination Pagination { get; init; }
 
     /// <inheritdoc/>
-    public IList<IContentType> Types
-    {
-        get;
-    }
+    [JsonPropertyName("types")]
+    public required IList<ContentType> Types { get; init; }
 
-    /// <summary>
-    /// Initializes a new instance of the <see cref="DeliveryTypeListingResponse"/> class.
-    /// </summary>
-    /// <param name="types">A collection of content types.</param>
-    /// <param name="pagination">Response paging information.</param>
-    [JsonConstructor]
-    internal DeliveryTypeListingResponse(IList<IContentType> types, IPagination pagination)
-    {
-        Types = types;
-        Pagination = pagination;
-    }
+    IList<IContentType> IDeliveryTypeListingResponse.Types => [.. Types.Cast<IContentType>()];
+
+    IPagination IPageable.Pagination => Pagination;
 }

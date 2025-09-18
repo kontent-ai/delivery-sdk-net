@@ -6,29 +6,17 @@ namespace Kontent.Ai.Delivery.ContentTypes;
 
 /// <inheritdoc/>
 [DebuggerDisplay("Name = {" + nameof(System) + "." + nameof(IContentTypeSystemAttributes.Name) + "}")]
-internal sealed class ContentType : IContentType
+internal sealed record ContentType : IContentType
 {
     /// <inheritdoc/>
     [JsonPropertyName("system")]
-    public IContentTypeSystemAttributes System { get; internal set; }
+    public required ContentTypeSystemAttributes System { get; init; }
 
     /// <inheritdoc/>
     [JsonPropertyName("elements")]
-    public IDictionary<string, IContentElement> Elements { get; internal set; }
+    public required IDictionary<string, ContentElement> Elements { get; init; }
 
-    /// <summary>
-    /// Constructor used for deserialization (e.g. for caching purposes), contains no logic.
-    /// </summary>
-    [JsonConstructor]
-    public ContentType(IContentTypeSystemAttributes system, IDictionary<string, IContentElement> elements)
-    {
-        System = system;
-        Elements = elements;
+    IDictionary<string, IContentElement> IContentType.Elements => Elements.ToDictionary(x => x.Key, x => (IContentElement)x.Value);
 
-        // Initialize codenames
-        foreach (var element in Elements.Where(r => r.Value is ContentElement).Select(a => (Codename: a.Key, Element: (ContentElement)a.Value)))
-        {
-            element.Element.Codename = element.Codename;
-        }
-    }
+    IContentTypeSystemAttributes IContentType.System => System;
 }
