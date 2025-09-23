@@ -12,24 +12,28 @@ public class ItemFiltersTests
     public void Equals_BuildsCorrectFilter()
     {
         var filter = _filters.Equals(ItemSystemPath.Type, "article");
+        var (key, value) = filter.ToQueryParameter();
 
-        Assert.Equal("system.type[eq]=\"article\"", filter.ToQueryParameter());
+        Assert.Equal("system.type[eq]=article", $"{key}={value}");
     }
 
     [Fact]
     public void All_BuildsCorrectFilter()
     {
         var filter = _filters.All(Elements.GetPath("tags"), "a", "b");
+        var (key, value) = filter.ToQueryParameter();
 
-        Assert.Equal("elements.tags[all]=\"a\",\"b\"", filter.ToQueryParameter());
+        Assert.Equal("elements.tags[all]=a,b", $"{key}={value}");
     }
 
     [Fact]
     public void Empty_BuildsCorrectFilter()
     {
         var filter = _filters.Empty(Elements.GetPath("title"));
-
-        Assert.Equal("elements.title[empty]", filter.ToQueryParameter());
+        var (key, value) = filter.ToQueryParameter();
+        
+        // filter serialization handles empty and not empty differently, see Filter.cs
+        Assert.Equal("elements.title[empty]", $"{key}{value}");
     }
 }
 

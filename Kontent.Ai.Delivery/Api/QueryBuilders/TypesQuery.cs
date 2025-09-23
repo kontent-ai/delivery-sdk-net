@@ -8,7 +8,7 @@ internal sealed class TypesQuery(IDeliveryApi api, Func<bool?> getDefaultWaitFor
 {
     private readonly IDeliveryApi _api = api;
     private readonly TypeFilters _filters = new();
-    private readonly List<IFilter> _appliedFilters = [];
+    private readonly Dictionary<string, string> _serializedFilters = [];
     private ListTypesParams _params = new();
     private bool? _waitForLoadingNewContentOverride;
     private readonly Func<bool?> _getDefaultWaitForNewContent = getDefaultWaitForNewContent;
@@ -34,13 +34,15 @@ internal sealed class TypesQuery(IDeliveryApi api, Func<bool?> getDefaultWaitFor
     public ITypesQuery Where(Func<ITypeFilters, IFilter> filterBuilder)
     {
         var filter = filterBuilder(_filters);
-        _appliedFilters.Add(filter);
+        var (key, value) = filter.ToQueryParameter();
+        _serializedFilters.Add(key, value);
         return this;
     }
 
     public ITypesQuery Where(IFilter filter)
     {
-        _appliedFilters.Add(filter);
+        var (key, value) = filter.ToQueryParameter();
+        _serializedFilters.Add(key, value);
         return this;
     }
 
@@ -52,12 +54,8 @@ internal sealed class TypesQuery(IDeliveryApi api, Func<bool?> getDefaultWaitFor
 
     public async Task<IDeliveryResult<IReadOnlyList<IContentType>>> ExecuteAsync(CancellationToken cancellationToken = default)
     {
-        var paramsWithFilters = _appliedFilters.Count > 0
-            ? _params with { Filters = [.. _appliedFilters.Select(f => f.ToQueryParameter())] }
-            : _params;
-
         bool? wait = _waitForLoadingNewContentOverride ?? _getDefaultWaitForNewContent();
-        var response = await _api.GetTypesInternalAsync(paramsWithFilters, wait).ConfigureAwait(false);
+        var response = await _api.GetTypesInternalAsync(_params, _serializedFilters, wait).ConfigureAwait(false);
         var deliveryResult = await response.ToDeliveryResultAsync().ConfigureAwait(false);
 
         return deliveryResult.Map(response => response.Types.AsReadOnly());

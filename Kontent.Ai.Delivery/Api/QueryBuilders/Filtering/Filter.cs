@@ -12,7 +12,7 @@ internal sealed record Filter(
     /// Serializes this filter to the Kontent.ai API query parameter format.
     /// </summary>
     /// <returns>The serialized filter string.</returns>
-    public string ToQueryParameter()
+    public KeyValuePair<string, string> ToQueryParameter()
     {
         var operatorSuffix = Operator switch
         {
@@ -36,11 +36,11 @@ internal sealed record Filter(
         // Empty operators don't need values
         if (Operator is FilterOperator.Empty or FilterOperator.NotEmpty)
         {
-            return $"{PropertyPath}{operatorSuffix}";
+            return new KeyValuePair<string, string>(PropertyPath, operatorSuffix);
         }
 
         var serializedValue = Value.Serialize();
 
-        return $"{PropertyPath}{operatorSuffix}={serializedValue}";
+        return new KeyValuePair<string, string>($"{PropertyPath}{operatorSuffix}", serializedValue);
     }
 }

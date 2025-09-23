@@ -19,9 +19,4 @@ internal sealed record ListTypesParams
     /// The maximum number of items to return per request.
     /// </summary>
     public int? Limit { get; init; }
-
-    /// <summary>
-    /// Filtering parameters in the format expected by the Delivery API.
-    /// </summary>
-    public string[]? Filters { get; init; }
 }

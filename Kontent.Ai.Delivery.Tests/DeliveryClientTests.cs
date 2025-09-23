@@ -134,7 +134,7 @@ public class DeliveryClientTests
             .Respond("application/json", await File.ReadAllTextAsync(Path.Combine(Environment.CurrentDirectory, $"Fixtures{Path.DirectorySeparatorChar}DeliveryClient{Path.DirectorySeparatorChar}articles_feed.json")));
 
         var client = CreateClient(mock);
-        var items = await client.GetItemsFeed<Article>().EnumerateAllAsync();
+        var items = await client.GetItemsFeed<Article>().Filter(f => f.Equals(ItemSystemPath.Type, "article")).EnumerateAllAsync();
 
         Assert.NotEmpty(items);
     }
@@ -186,7 +186,7 @@ public class DeliveryClientTests
     public async Task GetItems_Filter_ComposesQuery()
     {
         var mock = new MockHttpMessageHandler();
-        var expectedUrl = $"{BaseUrl}/items?system.type%5Beq%5D=\"article\"";
+        var expectedUrl = $"{BaseUrl}/items?system.type%5Beq%5D=article";
         mock.When(expectedUrl)
             .Respond("application/json", await File.ReadAllTextAsync(Path.Combine(Environment.CurrentDirectory, $"Fixtures{Path.DirectorySeparatorChar}DeliveryClient{Path.DirectorySeparatorChar}articles.json")));
 

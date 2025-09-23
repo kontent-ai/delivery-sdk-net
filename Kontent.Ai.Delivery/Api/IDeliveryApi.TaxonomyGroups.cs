@@ -20,10 +20,12 @@ public partial interface IDeliveryApi
     /// Gets multiple taxonomy groups with optional filtering.
     /// </summary>
     /// <param name="queryParameters">Query parameters as a dictionary.</param>
+    /// <param name="filters">Filters as a dictionary.</param>
     /// <param name="waitForLoadingNewContent">Wait for loading new content header.</param>
     /// <returns>Raw JSON response containing the taxonomy groups.</returns>
     [Get("/taxonomies")]
     internal Task<IApiResponse<DeliveryTaxonomyListingResponse>> GetTaxonomiesInternalAsync(
         [Query] ListTaxonomyGroupsParams? queryParameters = null,
+        [Query] Dictionary<string, string>? filters = null,
         [Header(HttpRequestHeadersExtensions.WaitForLoadingNewContentHeaderName)] bool? waitForLoadingNewContent = null);
 }

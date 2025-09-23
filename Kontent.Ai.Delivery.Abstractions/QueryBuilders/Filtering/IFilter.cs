@@ -1,3 +1,5 @@
+using System.Collections.Generic;
+
 namespace Kontent.Ai.Delivery.Abstractions;
 
 /// <summary>
@@ -14,5 +16,5 @@ public interface IFilter
     /// Serializes this filter to the Kontent.ai API query parameter format.
     /// </summary>
     /// <returns>The serialized filter string.</returns>
-    string ToQueryParameter();
+    KeyValuePair<string, string> ToQueryParameter();
 }

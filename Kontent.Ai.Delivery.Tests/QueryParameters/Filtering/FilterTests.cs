@@ -16,7 +16,7 @@ public class FilterTests
 
         var result = filter.ToQueryParameter();
 
-        Assert.Equal(expected, result);
+        Assert.Equal(expected, $"{result.Key}={result.Value}");
     }
 
     [Fact]
@@ -26,7 +26,7 @@ public class FilterTests
 
         var result = filter.ToQueryParameter();
 
-        Assert.Equal("elements.title[empty]", result);
+        Assert.Equal("elements.title[empty]", $"{result.Key}={result.Value}");
     }
 
     [Fact]
@@ -36,7 +36,7 @@ public class FilterTests
 
         var result = filter.ToQueryParameter();
 
-        Assert.Equal("elements.tags[in]=a,b", result);
+        Assert.Equal("elements.tags[in]=a,b", $"{result.Key}={result.Value}");
     }
 
     [Fact]
@@ -46,7 +46,7 @@ public class FilterTests
 
         var result = filter.ToQueryParameter();
 
-        Assert.Equal("elements.date[range]=2020-01-01,2020-12-31", result);
+        Assert.Equal("elements.date[range]=2020-01-01,2020-12-31", $"{result.Key}={result.Value}");
     }
 }
 
