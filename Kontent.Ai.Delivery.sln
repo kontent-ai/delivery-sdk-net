@@ -5,11 +5,7 @@ VisualStudioVersion = 17.1.32407.343
 MinimumVisualStudioVersion = 10.0.40219.1
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Kontent.Ai.Delivery", "Kontent.Ai.Delivery\Kontent.Ai.Delivery.csproj", "{742B4C41-1C0E-40BC-8841-C236C3FF7910}"
 EndProject
-Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Kontent.Ai.Delivery.Rx", "Kontent.Ai.Delivery.Rx\Kontent.Ai.Delivery.Rx.csproj", "{66F88596-86F3-4E53-AF7D-B8FE497D5019}"
-EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Kontent.Ai.Delivery.Tests", "Kontent.Ai.Delivery.Tests\Kontent.Ai.Delivery.Tests.csproj", "{CAC807C5-FDBB-4DE4-B5F3-E04B4766BEFE}"
-EndProject
-Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Kontent.Ai.Delivery.Rx.Tests", "Kontent.Ai.Delivery.Rx.Tests\Kontent.Ai.Delivery.Rx.Tests.csproj", "{32FDA558-79F7-445C-93B3-30E2B06709D8}"
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Kontent.Ai.Delivery.Abstractions", "Kontent.Ai.Delivery.Abstractions\Kontent.Ai.Delivery.Abstractions.csproj", "{CC6D3CC0-78A1-4950-BABF-6674F608858D}"
 EndProject
