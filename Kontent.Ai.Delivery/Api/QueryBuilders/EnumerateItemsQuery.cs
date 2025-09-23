@@ -14,7 +14,7 @@ internal sealed class EnumerateItemsQuery<TModel>(IDeliveryApi api, Func<bool?> 
     private EnumItemsParams _params = new();
     private bool? _waitForLoadingNewContentOverride;
     private readonly ItemFilters _filters = new();
-    private readonly List<IFilter> _appliedFilters = [];
+    private readonly Dictionary<string, string> _serializedFilters = [];
 
     public IEnumerateItemsQuery<TModel> WithLanguage(string languageCodename)
     {
@@ -43,28 +43,28 @@ internal sealed class EnumerateItemsQuery<TModel>(IDeliveryApi api, Func<bool?> 
     public IEnumerateItemsQuery<TModel> Filter(Func<IItemFilters, IFilter> filterBuilder)
     {
         var filter = filterBuilder(_filters);
-        _appliedFilters.Add(filter);
+        var (key, value) = filter.ToQueryParameter();
+        _serializedFilters.Add(key, value);
         return this;
     }
 
     public IEnumerateItemsQuery<TModel> Where(IFilter filter)
     {
-        _appliedFilters.Add(filter);
+        var (key, value) = filter.ToQueryParameter();
+        _serializedFilters.Add(key, value);
         return this;
     }
 
     public async IAsyncEnumerable<IContentItem<TModel>> EnumerateItemsAsync([EnumeratorCancellation] CancellationToken cancellationToken = default)
     {
+            
         bool? wait = _waitForLoadingNewContentOverride ?? _getDefaultWaitForNewContent();
         string? token = null;
-        var paramsWithFilters = _appliedFilters.Count > 0
-            ? _params with { Filters = [.. _appliedFilters.Select(f => f.ToQueryParameter())] }
-            : _params;
 
         while (true)
         {
             var resp = await _api
-                .GetItemsFeedInternalAsync<TModel>(paramsWithFilters, token, wait, cancellationToken)
+                .GetItemsFeedInternalAsync<TModel>(_params, _serializedFilters, token, wait, cancellationToken)
                 .ConfigureAwait(false);
 
             if (!resp.IsSuccessStatusCode || resp.Content is null)

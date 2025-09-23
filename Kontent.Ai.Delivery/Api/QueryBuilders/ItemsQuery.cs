@@ -15,7 +15,7 @@ internal sealed class ItemsQuery<TModel>(
     private readonly Func<bool> _getDefaultRenderRichTextToHtml = getDefaultRenderRichTextToHtml;
     private readonly IElementsPostProcessor _elementsPostProcessor = elementsPostProcessor;
     private readonly ItemFilters _filters = new();
-    private readonly List<IFilter> _appliedFilters = [];
+    private readonly Dictionary<string, string> _serializedFilters = [];
     private ListItemsParams _params = new();
     private bool? _waitForLoadingNewContentOverride;
     private bool? _renderRichTextToHtmlOverride;
@@ -83,26 +83,24 @@ internal sealed class ItemsQuery<TModel>(
     public IItemsQuery<TModel> Filter(Func<IItemFilters, IFilter> filterBuilder)
     {
         var filter = filterBuilder(_filters);
-        _appliedFilters.Add(filter);
+        var (key, value) = filter.ToQueryParameter();
+        _serializedFilters.Add(key, value);
         return this;
     }
 
     public IItemsQuery<TModel> Where(IFilter filter)
     {
-        _appliedFilters.Add(filter);
+        var (key, value) = filter.ToQueryParameter();
+        _serializedFilters.Add(key, value);
         return this;
     }
 
     public async Task<IDeliveryResult<IReadOnlyList<IContentItem<TModel>>>> ExecuteAsync(CancellationToken cancellationToken = default)
     {
-        var paramsWithFilters = _appliedFilters.Count > 0
-            ? _params with { Filters = [.. _appliedFilters.Select(f => f.ToQueryParameter())] }
-            : _params;
-
         // Get raw response from Refit API
-        bool? header = _waitForLoadingNewContentOverride ?? _getDefaultWaitForNewContent();
+        bool? wait = _waitForLoadingNewContentOverride ?? _getDefaultWaitForNewContent();
         var _ = _renderRichTextToHtmlOverride ?? _getDefaultRenderRichTextToHtml();
-        var rawResponse = await _api.GetItemsInternalAsync<TModel>(paramsWithFilters, header).ConfigureAwait(false);
+        var rawResponse = await _api.GetItemsInternalAsync<TModel>(_params, _serializedFilters, wait).ConfigureAwait(false);
 
         // Convert IApiResponse to IDeliveryResult
         var deliveryResult = await rawResponse.ToDeliveryResultAsync().ConfigureAwait(false);
@@ -137,17 +135,12 @@ internal sealed class ItemsQuery<TModel>(
         var limit = _params.Limit;
         string? requestUrl = null;
 
-        // Build filters once; avoid per-iteration allocations.
-        var filters = _appliedFilters.Count > 0
-            ? [.. _appliedFilters.Select(f => f.ToQueryParameter())]
-            : _params.Filters;
-
         while (true)
         {
-            var pageParams = _params with { Skip = skip, Limit = limit, Filters = filters };
+            var pageParams = _params with { Skip = skip, Limit = limit };
 
             var wait = _waitForLoadingNewContentOverride ?? _getDefaultWaitForNewContent();
-            var response = await _api.GetItemsInternalAsync<TModel>(pageParams, wait).ConfigureAwait(false);
+            var response = await _api.GetItemsInternalAsync<TModel>(pageParams, _serializedFilters, wait).ConfigureAwait(false);
 
             // Convert to delivery result
             var deliveryResult = await response.ToDeliveryResultAsync().ConfigureAwait(false);

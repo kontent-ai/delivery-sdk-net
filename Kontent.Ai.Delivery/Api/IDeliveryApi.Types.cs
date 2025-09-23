@@ -23,11 +23,13 @@ public partial interface IDeliveryApi
     /// Gets multiple content types with optional filtering.
     /// </summary>
     /// <param name="queryParameters">Query parameters as a dictionary.</param>
+    /// <param name="filters">Filters as a dictionary.</param>
     /// <param name="waitForLoadingNewContent">Wait for loading new content header.</param>
     /// <returns>Raw JSON response containing the content types.</returns>
     [Get("/types")]
     internal Task<IApiResponse<DeliveryTypeListingResponse>> GetTypesInternalAsync(
         [Query] ListTypesParams? queryParameters = null,
+        [Query] Dictionary<string, string>? filters = null,
         [Header(HttpRequestHeadersExtensions.WaitForLoadingNewContentHeaderName)] bool? waitForLoadingNewContent = null);
 
     /// <summary>

@@ -14,7 +14,7 @@ internal sealed class DynamicItemsQuery(
     private readonly IDeliveryApi _api = api;
     private readonly Func<bool?> _getDefaultWaitForNewContent = getDefaultWaitForNewContent;
     private readonly ItemFilters _filters = new();
-    private readonly List<IFilter> _appliedFilters = [];
+    private readonly Dictionary<string, string> _serializedFilters = [];
     private ListItemsParams _params = new();
     private bool? _waitForLoadingNewContentOverride;
 
@@ -75,25 +75,24 @@ internal sealed class DynamicItemsQuery(
     public IDynamicItemsQuery Filter(Func<IItemFilters, IFilter> filterBuilder)
     {
         var filter = filterBuilder(_filters);
-        _appliedFilters.Add(filter);
+        var (key, value) = filter.ToQueryParameter();
+        _serializedFilters.Add(key, value);
         return this;
     }
 
     public IDynamicItemsQuery Where(IFilter filter)
     {
-        _appliedFilters.Add(filter);
+        var (key, value) = filter.ToQueryParameter();
+        _serializedFilters.Add(key, value);
         return this;
     }
 
     public async Task<IDeliveryResult<IReadOnlyList<IContentItem<IElementsModel>>>> ExecuteAsync(CancellationToken cancellationToken = default)
     {
-        var paramsWithFilters = _appliedFilters.Count > 0
-            ? _params with { Filters = [.. _appliedFilters.Select(f => f.ToQueryParameter())] }
-            : _params;
 
         // Get raw response from Refit API
         bool? wait = _waitForLoadingNewContentOverride ?? _getDefaultWaitForNewContent();
-        var rawResponse = await _api.GetItemsInternalAsync<IElementsModel>(paramsWithFilters, wait).ConfigureAwait(false);
+        var rawResponse = await _api.GetItemsInternalAsync<IElementsModel>(_params, _serializedFilters, wait).ConfigureAwait(false);
 
         // Convert IApiResponse to IDeliveryResult
         var deliveryResult = await rawResponse.ToDeliveryResultAsync();
@@ -109,17 +108,12 @@ internal sealed class DynamicItemsQuery(
         var limit = _params.Limit;
         string? requestUrl = null;
 
-        // Build filters once; avoid per-iteration allocations.
-        var filters = _appliedFilters.Count > 0
-            ? _appliedFilters.Select(f => f.ToQueryParameter()).ToArray()
-            : _params.Filters;
-
         while (true)
         {
-            var pageParams = _params with { Skip = skip, Limit = limit, Filters = filters };
+            var pageParams = _params with { Skip = skip, Limit = limit };
 
             var wait = _waitForLoadingNewContentOverride ?? _getDefaultWaitForNewContent();
-            var response = await _api.GetItemsInternalAsync<IElementsModel>(pageParams, wait).ConfigureAwait(false);
+            var response = await _api.GetItemsInternalAsync<IElementsModel>(pageParams, _serializedFilters, wait).ConfigureAwait(false);
 
             // Convert to delivery result
             var deliveryResult = await response.ToDeliveryResultAsync();
