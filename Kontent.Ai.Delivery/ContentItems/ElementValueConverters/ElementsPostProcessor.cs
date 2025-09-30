@@ -1,9 +1,11 @@
+using System.Collections.Concurrent;
 using System.Reflection;
 using System.Text;
 using System.Text.Json;
 using System.Threading;
 using System.IO;
 using AngleSharp.Html.Parser;
+using Microsoft.Extensions.Options;
 
 namespace Kontent.Ai.Delivery.ContentItems;
 
@@ -12,145 +14,285 @@ namespace Kontent.Ai.Delivery.ContentItems;
 /// such as rich text blocks using original element JSON and modular content.
 /// </summary>
 /// <param name="propertyMapper">The property mapper.</param>
-/// <param name="modelProvider">The model provider.</param>
+/// <param name="typingStrategy">The typing strategy.</param>
+/// <param name="deserializer">The content deserializer.</param>
 /// <param name="htmlParser">The HTML parser.</param>
+/// <param name="deliveryOptions">The delivery options.</param>
 internal sealed class ElementsPostProcessor(
     IPropertyMapper propertyMapper,
-    IModelProvider modelProvider,
-    IHtmlParser htmlParser) : IElementsPostProcessor
+    IItemTypingStrategy typingStrategy,
+    IContentDeserializer deserializer,
+    IHtmlParser htmlParser,
+    IOptionsMonitor<DeliveryOptions> deliveryOptions) : IElementsPostProcessor
 {
-    private readonly IPropertyMapper _propertyMapper = propertyMapper ?? throw new ArgumentNullException(nameof(propertyMapper));
-    private readonly IModelProvider _modelProvider = modelProvider ?? throw new ArgumentNullException(nameof(modelProvider));
-    private readonly IHtmlParser _htmlParser = htmlParser ?? throw new ArgumentNullException(nameof(htmlParser));
-
+    private readonly RichTextContentConverter _richTextConverter = new(htmlParser);
+    private static readonly ConcurrentDictionary<string, JsonSerializerOptions> _richTextOptionsCache = new();
     /// <summary>
     /// Hydrates advanced element types on a strongly typed content item.
     /// </summary>
-    /// <typeparam name="TModel">The model type.</typeparam>
-    /// <param name="item">The content item to process.</param>
-    /// <param name="modularContent">The modular content.</param>
-    /// <param name="cancellationToken">The cancellation token.</param>
     public async Task ProcessAsync<TModel>(
         IContentItem<TModel> item,
         IReadOnlyDictionary<string, JsonElement>? modularContent,
         CancellationToken cancellationToken = default) where TModel : IElementsModel
     {
-        if (item is not ContentItem<TModel> concrete || string.IsNullOrEmpty(concrete.RawElementsJson))
-        {
+        if (item is not ContentItem<TModel> concrete || !concrete.RawElements.HasValue || concrete.RawElements.Value.ValueKind != JsonValueKind.Object)
             return;
-        }
 
-        using var doc = JsonDocument.Parse(concrete.RawElementsJson);
-        var elementsJson = doc.RootElement;
-        if (elementsJson.ValueKind != JsonValueKind.Object)
-        {
-            return;
-        }
-
-        var systemType = item.System.Type;
-        var properties = item.Elements.GetType().GetProperties(BindingFlags.Instance | BindingFlags.Public)
+        var elementsJson = concrete.RawElements.Value;
+        var writableProperties = item.Elements.GetType()
+            .GetProperties(BindingFlags.Instance | BindingFlags.Public)
             .Where(p => p.CanWrite);
 
-
-        // precompute stuff shared by all props
         var resolvingContext = CreateResolvingContext(modularContent);
-        var contentConverter = new RichTextContentConverter(_htmlParser);
 
-        // pipeline: filter → map → run → apply
+        // Process rich text properties in parallel
+        await ProcessPropertiesAsync(
+            writableProperties.Where(IsRichTextProperty),
+            prop => ProcessRichTextPropertyAsync(prop, elementsJson, item.System.Type, resolvingContext),
+            (prop, value) => prop.SetValue(item.Elements, value));
+
+        // Process asset properties in parallel
+        await ProcessPropertiesAsync(
+            writableProperties.Where(IsAssetProperty),
+            prop => ProcessAssetPropertyAsync(prop, elementsJson, item.System.Type),
+            (prop, value) => prop.SetValue(item.Elements, value));
+
+        // Process datetime content properties in parallel
+        await ProcessPropertiesAsync(
+            writableProperties.Where(IsDateTimeContentProperty),
+            prop => ProcessDateTimePropertyAsync(prop, elementsJson, item.System.Type),
+            (prop, value) => prop.SetValue(item.Elements, value));
+    }
+
+    /// <summary>
+    /// Generic parallel property processor with filter, transform, and apply phases.
+    /// </summary>
+    private static async Task ProcessPropertiesAsync<T>(
+        IEnumerable<PropertyInfo> properties,
+        Func<PropertyInfo, Task<T?>> transform,
+        Action<PropertyInfo, T> apply) where T : class
+    {
         var results = await Task.WhenAll(
-            properties
-                .Where(p => typeof(IRichTextContent).IsAssignableFrom(p.PropertyType))
-                .Select(async prop =>
-                {
-                    // find the matching element
-                    var element = FindElement(elementsJson, prop, systemType);
-                    if (element is null) return (prop, null);
+            properties.Select(async prop => (Property: prop, Value: await transform(prop).ConfigureAwait(false)))
+        ).ConfigureAwait(false);
 
-                    var (elementName, elementValue) = element.Value;
-
-                    // must have a string value
-                    if (!elementValue.TryGetProperty("value", out var valueEl) ||
-                        valueEl.ValueKind != JsonValueKind.String)
-                        return (prop, null);
-
-                    // map json → IRichTextElementValue using custom converter that injects codename
-                    var options = new JsonSerializerOptions();
-                    var converter = new Elements.RichTextElementValueConverter { ElementCodename = elementName };
-                    options.Converters.Add(converter);
-
-                    var richElement = JsonSerializer.Deserialize<Elements.RichTextElementValue>(
-                        elementValue.GetRawText(), options);
-                    if (richElement is null) return (prop, null);
-
-                    // produce blocks
-                    var blocks = await contentConverter
-                        .GetPropertyValueAsync(prop, richElement, resolvingContext)
-                        .ConfigureAwait(false);
-
-                    return (prop, blocks);
-                })
-                ).ConfigureAwait(false);
-
-        foreach (var (prop, blocks) in results)
-        {
-            if (blocks is IRichTextContent richText)
-            {
-                prop.SetValue(item.Elements, richText);
-            }
-        }
+        foreach (var (property, value) in results.Where(r => r.Value is not null))
+            apply(property, value!);
     }
 
-    private (string Name, JsonElement Value)? FindElement(JsonElement elementsJson, PropertyInfo propertyInfo, string contentType)
+    private async Task<IRichTextContent?> ProcessRichTextPropertyAsync(
+        PropertyInfo property,
+        JsonElement elementsJson,
+        string contentType,
+        ResolvingContext context)
     {
-        foreach (var prop in elementsJson.EnumerateObject())
-        {
-            if (_propertyMapper.IsMatch(propertyInfo, prop.Name, contentType))
-            {
-                return (prop.Name, prop.Value);
-            }
-        }
-        return null;
+        var element = FindElement(elementsJson, property, contentType);
+        if (!element.HasValue)
+            return null;
+
+        var (elementName, elementValue) = element.Value;
+
+        if (!TryGetStringValue(elementValue, out var stringValue))
+            return null;
+
+        var richElement = DeserializeRichTextElement(elementValue.GetRawText(), elementName);
+        if (richElement is null)
+            return null;
+
+        return await _richTextConverter.GetPropertyValueAsync(property, richElement, context).ConfigureAwait(false);
     }
 
-    private ResolvingContext CreateResolvingContext(IReadOnlyDictionary<string, JsonElement>? modularContent)
+    private Task<object?> ProcessAssetPropertyAsync(PropertyInfo property, JsonElement elementsJson, string contentType)
     {
-        // Prebuild a JSON object string for linked items so ModelProvider can parse it
-        var linkedItemsJson = modularContent is null
-            ? "{}"
-            : BuildLinkedItemsJson(modularContent);
+        var element = FindElement(elementsJson, property, contentType);
+        if (!element.HasValue)
+            return Task.FromResult<object?>(null);
 
-        async Task<object> GetLinkedItemAsync(string codename)
+        var (_, elementValue) = element.Value;
+
+        object? result = TryGetArrayValue(elementValue, out var arrayValue)
+            ? DeserializeAssets(arrayValue)
+            : null;
+
+        return Task.FromResult(result);
+    }
+
+    private Task<object?> ProcessDateTimePropertyAsync(PropertyInfo property, JsonElement elementsJson, string contentType)
+    {
+        var element = FindElement(elementsJson, property, contentType);
+        if (!element.HasValue)
+            return Task.FromResult<object?>(null);
+
+        var (_, elementValue) = element.Value;
+
+        var dateTimeElement = JsonSerializer.Deserialize<Elements.DateTimeElementValue>(elementValue.GetRawText());
+        if (dateTimeElement is null)
+            return Task.FromResult<object?>(null);
+
+        var result = new DateTimes.DateTimeContent
         {
-            if (modularContent is not null && modularContent.TryGetValue(codename, out var linked))
+            Value = dateTimeElement.Value,
+            DisplayTimezone = dateTimeElement.DisplayTimezone
+        };
+
+        return Task.FromResult<object?>(result);
+    }
+
+    private (string Name, JsonElement Value)? FindElement(JsonElement elementsJson, PropertyInfo property, string contentType) =>
+        elementsJson.EnumerateObject()
+            .Where(prop => propertyMapper.IsMatch(property, prop.Name, contentType))
+            .Select(prop => ((string, JsonElement)?)(prop.Name, prop.Value))
+            .FirstOrDefault();
+
+    private ResolvingContext CreateResolvingContext(IReadOnlyDictionary<string, JsonElement>? modularContent) =>
+        new()
+        {
+            GetLinkedItem = codename =>
             {
-                // Use ModelProvider to map nested items; supply full linked-items map as JSON
-                return await _modelProvider.GetContentItemModelAsync<object>(linked.GetRawText(), linkedItemsJson);
-            }
-            return null!;
-        }
+                if (modularContent is null || !modularContent.TryGetValue(codename, out var linkedItem))
+                    return Task.FromResult<object>(null!);
 
-        return new ResolvingContext
-        {
-            GetLinkedItem = GetLinkedItemAsync,
+                var contentType = ExtractContentType(linkedItem);
+                var modelType = typingStrategy.ResolveModelType(contentType);
+                var itemJson = SerializeJsonElement(linkedItem);
+                var contentItem = deserializer.DeserializeContentItem(itemJson, modelType);
+
+                var result = contentItem.GetType().GetProperty("Elements")?.GetValue(contentItem) ?? contentItem;
+                return Task.FromResult(result);
+            },
             ContentLinkUrlResolver = new ContentLinks.DefaultContentLinkUrlResolver()
         };
+
+    // Simple property type predicates
+    private static bool IsRichTextProperty(PropertyInfo property) =>
+        typeof(IRichTextContent).IsAssignableFrom(property.PropertyType);
+
+    private static bool IsAssetProperty(PropertyInfo property) =>
+        GetEnumerableElementType(property.PropertyType) is Type elementType &&
+        (typeof(IAsset).IsAssignableFrom(elementType) || elementType == typeof(Asset));
+
+    private static bool IsDateTimeContentProperty(PropertyInfo property) =>
+        typeof(IDateTimeContent).IsAssignableFrom(property.PropertyType);
+
+    // Helper: Get T from IEnumerable<T>
+    private static Type? GetEnumerableElementType(Type type)
+    {
+        var enumerableInterface = type.IsGenericType && type.GetGenericTypeDefinition() == typeof(IEnumerable<>)
+            ? type
+            : type.GetInterfaces().FirstOrDefault(i => i.IsGenericType && i.GetGenericTypeDefinition() == typeof(IEnumerable<>));
+
+        return enumerableInterface?.GetGenericArguments().FirstOrDefault();
     }
 
-    private static string BuildLinkedItemsJson(IReadOnlyDictionary<string, JsonElement> modularContent)
+    // JSON extraction helpers
+    private static bool TryGetStringValue(JsonElement element, out string value)
+    {
+        if (element.TryGetProperty("value", out var valueEl) && valueEl.ValueKind == JsonValueKind.String)
+        {
+            value = valueEl.GetString() ?? string.Empty;
+            return true;
+        }
+        value = string.Empty;
+        return false;
+    }
+
+    private static bool TryGetArrayValue(JsonElement element, out JsonElement arrayValue)
+    {
+        if (element.TryGetProperty("value", out var valueEl) && valueEl.ValueKind == JsonValueKind.Array)
+        {
+            arrayValue = valueEl;
+            return true;
+        }
+        arrayValue = default;
+        return false;
+    }
+
+    private static string ExtractContentType(JsonElement itemElement) =>
+        itemElement.TryGetProperty("system", out var system) && system.TryGetProperty("type", out var type)
+            ? type.GetString() ?? string.Empty
+            : string.Empty;
+
+    private static string SerializeJsonElement(JsonElement element)
     {
         using var stream = new MemoryStream();
         using var writer = new Utf8JsonWriter(stream);
         writer.WriteStartObject();
-        foreach (var kv in modularContent)
+        foreach (var prop in element.EnumerateObject())
         {
-            writer.WritePropertyName(kv.Key);
-            kv.Value.WriteTo(writer);
+            writer.WritePropertyName(prop.Name);
+            prop.Value.WriteTo(writer);
         }
         writer.WriteEndObject();
         writer.Flush();
         return Encoding.UTF8.GetString(stream.ToArray());
     }
+
+    private static Elements.RichTextElementValue? DeserializeRichTextElement(string json, string elementCodename)
+    {
+        var options = _richTextOptionsCache.GetOrAdd(elementCodename, codename =>
+        {
+            var opts = new JsonSerializerOptions();
+            opts.Converters.Add(new RichTextElementValueJsonConverter { ElementCodename = codename });
+            return opts;
+        });
+        return JsonSerializer.Deserialize<Elements.RichTextElementValue>(json, options);
+    }
+
+    private IReadOnlyList<Asset> DeserializeAssets(JsonElement valueArray) =>
+        valueArray.EnumerateArray()
+            .Where(asset => asset.ValueKind == JsonValueKind.Object)
+            .Select(asset => CreateAsset(asset, deliveryOptions.CurrentValue.DefaultRenditionPreset))
+            .ToList();
+
+    private static Asset CreateAsset(JsonElement assetElement, string? defaultPreset)
+    {
+        var renditions = ParseRenditions(assetElement);
+        var url = GetStringProperty(assetElement, "url");
+
+        // Apply default rendition preset if configured
+        if (!string.IsNullOrEmpty(defaultPreset) &&
+            renditions.TryGetValue(defaultPreset, out var presetRendition) &&
+            !string.IsNullOrEmpty(presetRendition.Query) &&
+            !string.IsNullOrEmpty(url))
+        {
+            url = $"{url}?{presetRendition.Query}";
+        }
+
+        return new Asset
+        {
+            Name = GetStringProperty(assetElement, "name"),
+            Description = GetStringProperty(assetElement, "description"),
+            Type = GetStringProperty(assetElement, "type"),
+            Size = GetIntProperty(assetElement, "size"),
+            Url = url,
+            Width = GetIntProperty(assetElement, "width"),
+            Height = GetIntProperty(assetElement, "height"),
+            Renditions = new Dictionary<string, IAssetRendition>(renditions)
+        };
+    }
+
+    private static Dictionary<string, IAssetRendition> ParseRenditions(JsonElement assetElement)
+    {
+        if (!assetElement.TryGetProperty("renditions", out var rendsEl) || rendsEl.ValueKind != JsonValueKind.Object)
+            return new Dictionary<string, IAssetRendition>(StringComparer.Ordinal);
+
+        return rendsEl.EnumerateObject()
+            .ToDictionary(
+                prop => prop.Name,
+                prop => (IAssetRendition)new AssetRendition
+                {
+                    RenditionId = GetStringProperty(prop.Value, "rendition_id"),
+                    PresetId = GetStringProperty(prop.Value, "preset_id"),
+                    Width = GetIntProperty(prop.Value, "width"),
+                    Height = GetIntProperty(prop.Value, "height"),
+                    Query = GetStringProperty(prop.Value, "query")
+                },
+                StringComparer.Ordinal);
+    }
+
+    private static string GetStringProperty(JsonElement element, string propertyName) =>
+        element.TryGetProperty(propertyName, out var prop) ? prop.GetString() ?? string.Empty : string.Empty;
+
+    private static int GetIntProperty(JsonElement element, string propertyName) =>
+        element.TryGetProperty(propertyName, out var prop) && prop.TryGetInt32(out var value) ? value : 0;
 }
-
-
-

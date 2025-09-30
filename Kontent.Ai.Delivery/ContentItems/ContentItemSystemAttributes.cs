@@ -13,7 +13,7 @@ internal sealed record ContentItemSystemAttributes : IContentItemSystemAttribute
 
     /// <inheritdoc/>
     [JsonPropertyName("name")]
-    public required string Name { get; init; }
+    public string Name { get; init; }
 
     /// <inheritdoc/>
     [JsonPropertyName("codename")]
@@ -25,25 +25,27 @@ internal sealed record ContentItemSystemAttributes : IContentItemSystemAttribute
 
     /// <inheritdoc/>
     [JsonPropertyName("sitemap_locations")]
-    public required IList<string> SitemapLocation { get; init; }
+    public IList<string>? SitemapLocation { get; init; }
 
     /// <inheritdoc/>
     [JsonPropertyName("last_modified")]
-    public required DateTime LastModified { get; init; }
+    public DateTime LastModified { get; init; }
 
     /// <inheritdoc/>
     [JsonPropertyName("language")]
-    public required string Language { get; init; }
+    public string Language { get; init; }
 
     /// <inheritdoc/>
     [JsonPropertyName("collection")]
-    public required string Collection { get; init; }
+    public string Collection { get; init; }
 
     /// <inheritdoc/>
     [JsonPropertyName("workflow")]
-    public required string Workflow { get; init; }
+    public string Workflow { get; init; }
 
     /// <inheritdoc/>
     [JsonPropertyName("workflow_step")]
-    public required string WorkflowStep { get; init; }
+    public string WorkflowStep { get; init; }
 }
+
+// TODO: fix accessibility modifiers

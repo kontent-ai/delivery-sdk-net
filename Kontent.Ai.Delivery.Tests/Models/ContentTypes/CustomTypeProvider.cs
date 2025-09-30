@@ -24,12 +24,12 @@ public class CustomTypeProvider : ITypeProvider
         {typeof(Tweet), "tweet"}
     };
 
-    public Type GetType(string contentType)
+    public Type? TryGetModelType(string contentType)
     {
-        return _codenames.Keys.FirstOrDefault(type => GetCodename(type).Equals(contentType));
+        return _codenames.Keys.FirstOrDefault(type => GetCodename(type)?.Equals(contentType) == true);
     }
 
-    public string GetCodename(Type contentType)
+    public string? GetCodename(Type contentType)
     {
         return _codenames.TryGetValue(contentType, out var codename) ? codename : null;
     }

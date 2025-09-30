@@ -23,12 +23,13 @@ public class ServiceCollectionsExtensionsTests
         {
             { typeof(IContentLinkUrlResolver), typeof(DefaultContentLinkUrlResolver) },
             { typeof(ITypeProvider), typeof(TypeProvider) },
+            { typeof(IItemTypingStrategy), typeof(DefaultItemTypingStrategy) },
+            { typeof(IContentDeserializer), typeof(ContentDeserializer) },
             { typeof(IDeliveryHttpClient), typeof(DeliveryHttpClient) },
             { typeof(IInlineContentItemsProcessor), typeof(InlineContentItemsProcessor) },
             { typeof(IInlineContentItemsResolver<object>), typeof(ReplaceWithWarningAboutRegistrationResolver) },
             { typeof(IInlineContentItemsResolver<UnretrievedContentItem>), typeof(ReplaceWithWarningAboutUnretrievedItemResolver) },
             { typeof(IInlineContentItemsResolver<UnknownContentItem>), typeof(ReplaceWithWarningAboutUnknownItemResolver) },
-            { typeof(IModelProvider), typeof(ModelProvider) },
             { typeof(IPropertyMapper), typeof(PropertyMapper) },
             { typeof(IDeliveryClient), typeof(DeliveryClient) },
         }

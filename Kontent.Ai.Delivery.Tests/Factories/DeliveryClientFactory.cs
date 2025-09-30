@@ -13,7 +13,6 @@ internal static class DeliveryClientFactory
     internal static DeliveryClient GetMockedDeliveryClientWithEnvironmentId(
         Guid environmentId,
         MockHttpMessageHandler httpMessageHandler = null,
-        IModelProvider modelProvider = null,
         ITypeProvider typeProvider = null)
     {
         var services = new ServiceCollection();
@@ -21,11 +20,6 @@ internal static class DeliveryClientFactory
         if (typeProvider != null)
         {
             services.AddSingleton(typeProvider);
-        }
-
-        if (modelProvider != null)
-        {
-            services.AddSingleton(modelProvider);
         }
 
         var options = new DeliveryOptions { EnvironmentId = environmentId.ToString() };

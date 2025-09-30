@@ -8,14 +8,18 @@ namespace Kontent.Ai.Delivery.Abstractions;
 public interface ITypeProvider
 {
     /// <summary>
-    /// Returns a CLR type corresponding to the given content type.
+    /// Attempts to return a CLR type corresponding to the given content type.
+    /// Returns null if no mapping exists, allowing fallback to dynamic types.
     /// </summary>
     /// <param name="contentType">Content type identifier.</param>
-    Type GetType(string contentType);
+    /// <returns>The CLR type for the content type, or null if no mapping exists.</returns>
+    Type? TryGetModelType(string contentType);
 
     /// <summary>
-    /// Returns a codename corresponding to the given content type model.
+    /// Attempts to return a codename corresponding to the given content type model.
+    /// Returns null if no mapping exists.
     /// </summary>
     /// <param name="contentType">Content type model.</param>
-    string GetCodename(Type contentType);
+    /// <returns>The content type codename, or null if no mapping exists.</returns>
+    string? GetCodename(Type contentType);
 }

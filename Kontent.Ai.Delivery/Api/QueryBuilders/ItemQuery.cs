@@ -60,7 +60,7 @@ internal sealed class ItemQuery<TModel>(
     {
         bool? wait = _waitForLoadingNewContentOverride ?? _getDefaultWaitForNewContent();
         // The renderRichText flag is carried for downstream processing (mapping). API call remains unchanged.
-        var _ = _renderRichTextToHtmlOverride ?? _getDefaultRenderRichTextToHtml();
+        var _ = _renderRichTextToHtmlOverride ?? _getDefaultRenderRichTextToHtml(); // TODO: decide how to work with this flag
         var rawResponse = await _api.GetItemInternalAsync<TModel>(_codename, _params, wait).ConfigureAwait(false);
 
         // Convert IApiResponse to IDeliveryResult
