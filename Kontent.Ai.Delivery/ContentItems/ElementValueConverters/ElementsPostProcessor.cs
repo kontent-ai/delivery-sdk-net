@@ -1,3 +1,4 @@
+using System.Collections.Concurrent;
 using System.Reflection;
 using System.Text;
 using System.Text.Json;
@@ -5,7 +6,6 @@ using System.Threading;
 using System.IO;
 using AngleSharp.Html.Parser;
 using Microsoft.Extensions.Options;
-using Kontent.Ai.Delivery.Abstractions;
 
 namespace Kontent.Ai.Delivery.ContentItems;
 
@@ -25,6 +25,8 @@ internal sealed class ElementsPostProcessor(
     IHtmlParser htmlParser,
     IOptionsMonitor<DeliveryOptions> deliveryOptions) : IElementsPostProcessor
 {
+    private readonly RichTextContentConverter _richTextConverter = new(htmlParser);
+    private static readonly ConcurrentDictionary<string, JsonSerializerOptions> _richTextOptionsCache = new();
     /// <summary>
     /// Hydrates advanced element types on a strongly typed content item.
     /// </summary>
@@ -42,18 +44,23 @@ internal sealed class ElementsPostProcessor(
             .Where(p => p.CanWrite);
 
         var resolvingContext = CreateResolvingContext(modularContent);
-        var richTextConverter = new RichTextContentConverter(htmlParser);
 
         // Process rich text properties in parallel
         await ProcessPropertiesAsync(
             writableProperties.Where(IsRichTextProperty),
-            prop => ProcessRichTextPropertyAsync(prop, elementsJson, item.System.Type, richTextConverter, resolvingContext),
+            prop => ProcessRichTextPropertyAsync(prop, elementsJson, item.System.Type, resolvingContext),
             (prop, value) => prop.SetValue(item.Elements, value));
 
         // Process asset properties in parallel
         await ProcessPropertiesAsync(
             writableProperties.Where(IsAssetProperty),
             prop => ProcessAssetPropertyAsync(prop, elementsJson, item.System.Type),
+            (prop, value) => prop.SetValue(item.Elements, value));
+
+        // Process datetime content properties in parallel
+        await ProcessPropertiesAsync(
+            writableProperties.Where(IsDateTimeContentProperty),
+            prop => ProcessDateTimePropertyAsync(prop, elementsJson, item.System.Type),
             (prop, value) => prop.SetValue(item.Elements, value));
     }
 
@@ -77,7 +84,6 @@ internal sealed class ElementsPostProcessor(
         PropertyInfo property,
         JsonElement elementsJson,
         string contentType,
-        RichTextContentConverter converter,
         ResolvingContext context)
     {
         var element = FindElement(elementsJson, property, contentType);
@@ -93,8 +99,7 @@ internal sealed class ElementsPostProcessor(
         if (richElement is null)
             return null;
 
-        var blocks = await converter.GetPropertyValueAsync(property, richElement, context).ConfigureAwait(false);
-        return blocks as IRichTextContent;
+        return await _richTextConverter.GetPropertyValueAsync(property, richElement, context).ConfigureAwait(false);
     }
 
     private Task<object?> ProcessAssetPropertyAsync(PropertyInfo property, JsonElement elementsJson, string contentType)
@@ -105,11 +110,32 @@ internal sealed class ElementsPostProcessor(
 
         var (_, elementValue) = element.Value;
 
-        var result = TryGetArrayValue(elementValue, out var arrayValue)
+        object? result = TryGetArrayValue(elementValue, out var arrayValue)
             ? DeserializeAssets(arrayValue)
             : null;
 
         return Task.FromResult(result);
+    }
+
+    private Task<object?> ProcessDateTimePropertyAsync(PropertyInfo property, JsonElement elementsJson, string contentType)
+    {
+        var element = FindElement(elementsJson, property, contentType);
+        if (!element.HasValue)
+            return Task.FromResult<object?>(null);
+
+        var (_, elementValue) = element.Value;
+
+        var dateTimeElement = JsonSerializer.Deserialize<Elements.DateTimeElementValue>(elementValue.GetRawText());
+        if (dateTimeElement is null)
+            return Task.FromResult<object?>(null);
+
+        var result = new DateTimes.DateTimeContent
+        {
+            Value = dateTimeElement.Value,
+            DisplayTimezone = dateTimeElement.DisplayTimezone
+        };
+
+        return Task.FromResult<object?>(result);
     }
 
     private (string Name, JsonElement Value)? FindElement(JsonElement elementsJson, PropertyInfo property, string contentType) =>
@@ -121,17 +147,18 @@ internal sealed class ElementsPostProcessor(
     private ResolvingContext CreateResolvingContext(IReadOnlyDictionary<string, JsonElement>? modularContent) =>
         new()
         {
-            GetLinkedItem = async codename =>
+            GetLinkedItem = codename =>
             {
                 if (modularContent is null || !modularContent.TryGetValue(codename, out var linkedItem))
-                    return null!;
+                    return Task.FromResult<object>(null!);
 
                 var contentType = ExtractContentType(linkedItem);
                 var modelType = typingStrategy.ResolveModelType(contentType);
                 var itemJson = SerializeJsonElement(linkedItem);
                 var contentItem = deserializer.DeserializeContentItem(itemJson, modelType);
 
-                return contentItem.GetType().GetProperty("Elements")?.GetValue(contentItem) ?? contentItem;
+                var result = contentItem.GetType().GetProperty("Elements")?.GetValue(contentItem) ?? contentItem;
+                return Task.FromResult(result);
             },
             ContentLinkUrlResolver = new ContentLinks.DefaultContentLinkUrlResolver()
         };
@@ -143,6 +170,9 @@ internal sealed class ElementsPostProcessor(
     private static bool IsAssetProperty(PropertyInfo property) =>
         GetEnumerableElementType(property.PropertyType) is Type elementType &&
         (typeof(IAsset).IsAssignableFrom(elementType) || elementType == typeof(Asset));
+
+    private static bool IsDateTimeContentProperty(PropertyInfo property) =>
+        typeof(IDateTimeContent).IsAssignableFrom(property.PropertyType);
 
     // Helper: Get T from IEnumerable<T>
     private static Type? GetEnumerableElementType(Type type)
@@ -199,12 +229,16 @@ internal sealed class ElementsPostProcessor(
 
     private static Elements.RichTextElementValue? DeserializeRichTextElement(string json, string elementCodename)
     {
-        var options = new JsonSerializerOptions();
-        options.Converters.Add(new Elements.RichTextElementValueConverter { ElementCodename = elementCodename });
+        var options = _richTextOptionsCache.GetOrAdd(elementCodename, codename =>
+        {
+            var opts = new JsonSerializerOptions();
+            opts.Converters.Add(new RichTextElementValueJsonConverter { ElementCodename = codename });
+            return opts;
+        });
         return JsonSerializer.Deserialize<Elements.RichTextElementValue>(json, options);
     }
 
-    private object DeserializeAssets(JsonElement valueArray) =>
+    private IReadOnlyList<Asset> DeserializeAssets(JsonElement valueArray) =>
         valueArray.EnumerateArray()
             .Where(asset => asset.ValueKind == JsonValueKind.Object)
             .Select(asset => CreateAsset(asset, deliveryOptions.CurrentValue.DefaultRenditionPreset))
