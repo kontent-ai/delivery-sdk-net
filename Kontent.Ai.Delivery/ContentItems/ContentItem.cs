@@ -18,7 +18,7 @@ internal sealed record ContentItem<TModel> : IContentItem<TModel>
 
     IContentItemSystemAttributes IContentItem<TModel>.System => System;
 
-    // Captured raw elements JSON for post-processing (not serialized)
+    // Captured raw elements JsonElement for post-processing (not serialized)
     [JsonIgnore]
-    internal string? RawElementsJson { get; init; }
+    internal JsonElement? RawElements { get; init; }
 }

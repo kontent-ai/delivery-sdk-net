@@ -39,13 +39,12 @@ internal sealed class ElementsPostProcessor(
         IReadOnlyDictionary<string, JsonElement>? modularContent,
         CancellationToken cancellationToken = default) where TModel : IElementsModel
     {
-        if (item is not ContentItem<TModel> concrete || string.IsNullOrEmpty(concrete.RawElementsJson))
+        if (item is not ContentItem<TModel> concrete || !concrete.RawElements.HasValue)
         {
             return;
         }
 
-        using var doc = JsonDocument.Parse(concrete.RawElementsJson);
-        var elementsJson = doc.RootElement;
+        var elementsJson = concrete.RawElements.Value;
         if (elementsJson.ValueKind != JsonValueKind.Object)
         {
             return;
