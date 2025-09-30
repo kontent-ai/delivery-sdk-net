@@ -136,19 +136,9 @@ public class ContentLinkResolverTests
             configureRefit: null,
             configureHttpClient: builder => builder.ConfigurePrimaryHttpMessageHandler(() => mockHttp));
 
-        // Override model provider to use custom link resolver
-        services.AddSingleton<IModelProvider>(sp =>
-        {
-            var contentItemsProcessor = InlineContentItemsProcessorFactory.Create();
-            var customResolver = new CustomContentLinkUrlResolver();
-            var typeProvider = new CustomTypeProvider();
-            var propertyMapper = new PropertyMapper();
-            var htmlParser = new HtmlParser();
-            var optionsMonitor = DeliveryOptionsFactory.CreateMonitor(new DeliveryOptions { EnvironmentId = guid });
-            // Use the same JSON options as Refit
-            var jsonOptions = RefitSettingsProvider.CreateDefaultJsonSerializerOptions();
-            return new ModelProvider(typeProvider, propertyMapper, contentItemsProcessor, customResolver, jsonOptions, htmlParser, optionsMonitor);
-        });
+        // Override services to use custom implementations
+        services.AddSingleton<IContentLinkUrlResolver, CustomContentLinkUrlResolver>();
+        services.AddSingleton<ITypeProvider, CustomTypeProvider>();
 
         var provider = services.BuildServiceProvider();
         var client = (DeliveryClient)provider.GetRequiredService<IDeliveryClient>();

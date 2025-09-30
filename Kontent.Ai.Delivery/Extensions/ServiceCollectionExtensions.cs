@@ -5,8 +5,6 @@ using Kontent.Ai.Delivery.ContentItems;
 using Kontent.Ai.Delivery.ContentItems.ContentLinks;
 using Kontent.Ai.Delivery.ContentItems.InlineContentItems;
 using Kontent.Ai.Delivery.Handlers;
-using Kontent.Ai.Delivery.ResponseProcessing;
-using Kontent.Ai.Delivery.ResponseProcessing.Enrichers;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.DependencyInjection.Extensions;
@@ -193,7 +191,8 @@ public static class ServiceCollectionExtensions
         services.TryAddSingleton<IPropertyMapper, PropertyMapper>();
         services.TryAddSingleton<IContentLinkUrlResolver, DefaultContentLinkUrlResolver>();
         services.TryAddSingleton<ITypeProvider, TypeProvider>();
-        services.TryAddSingleton<IModelProvider, ModelProvider>();
+        services.TryAddSingleton<IItemTypingStrategy, DefaultItemTypingStrategy>();
+        services.TryAddSingleton<IContentDeserializer, ContentDeserializer>();
         services.TryAddSingleton<IInlineContentItemsProcessor, InlineContentItemsProcessor>();
         services.TryAddSingleton<IElementsPostProcessor, ElementsPostProcessor>();
         services.TryAddSingleton<IHtmlParser, HtmlParser>();
@@ -202,29 +201,6 @@ public static class ServiceCollectionExtensions
         services.TryAddSingleton<IInlineContentItemsResolver<object>, ReplaceWithWarningAboutRegistrationResolver>();
         services.TryAddSingleton<IInlineContentItemsResolver<UnretrievedContentItem>, ReplaceWithWarningAboutUnretrievedItemResolver>();
         services.TryAddSingleton<IInlineContentItemsResolver<UnknownContentItem>, ReplaceWithWarningAboutUnknownItemResolver>();
-
-        // Register enrichers
-        services.TryAddSingleton<RichTextEnricher>(sp =>
-            new RichTextEnricher(sp.GetRequiredService<IHtmlParser>()));
-        services.TryAddSingleton<AssetEnricher>();
-        services.TryAddSingleton<LinkedItemsEnricher>();
-
-        // Register response processor
-        services.TryAddSingleton<IResponseProcessor>(sp =>
-        {
-            var htmlParser = sp.GetRequiredService<IHtmlParser>();
-            var typeProvider = sp.GetRequiredService<ITypeProvider>();
-            var linkResolver = sp.GetRequiredService<IContentLinkUrlResolver>();
-            var inlineProcessor = sp.GetRequiredService<IInlineContentItemsProcessor>();
-            var jsonOptions = sp.GetRequiredService<JsonSerializerOptions>();
-
-            return ResponseProcessorFactory.CreateDefault(
-                typeProvider,
-                linkResolver,
-                inlineProcessor,
-                jsonOptions,
-                htmlParser);
-        });
     }
 
     /// <summary>
