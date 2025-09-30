@@ -38,9 +38,9 @@ internal sealed class ElementsConverterFactory : JsonConverterFactory
         return (JsonConverter)Activator.CreateInstance(converterType)!;
     }
 
-    internal sealed class DynamicElementsConverter : JsonConverter<IElementsModel>
+    internal sealed class DynamicElementsConverter : JsonConverter<DynamicElements>
     {
-        public override IElementsModel Read(ref Utf8JsonReader reader, Type _, JsonSerializerOptions __)
+        public override DynamicElements Read(ref Utf8JsonReader reader, Type _, JsonSerializerOptions __)
         {
             using var doc = JsonDocument.ParseValue(ref reader);
             var root = doc.RootElement;
@@ -57,7 +57,7 @@ internal sealed class ElementsConverterFactory : JsonConverterFactory
             return new DynamicElements(map);
         }
 
-        public override void Write(Utf8JsonWriter writer, IElementsModel value, JsonSerializerOptions options)
+        public override void Write(Utf8JsonWriter writer, DynamicElements value, JsonSerializerOptions options)
             => throw new NotSupportedException();
 
         private static JsonElement Clone(JsonElement el)

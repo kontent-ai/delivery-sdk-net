@@ -39,7 +39,7 @@ public static class RefitSettingsProvider
         // Register converters
         jsonSerializerOptions.Converters.Add(new ElementsConverterFactory());
         jsonSerializerOptions.Converters.Add(new ContentItemConverterFactory());
-        //jsonSerializerOptions.Converters.Add(new ContentElementConverter());
+        jsonSerializerOptions.Converters.Add(new ContentElementConverter());
         // TODO: does this need to be here?
         return jsonSerializerOptions;
     }
