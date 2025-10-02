@@ -9,6 +9,7 @@ namespace Kontent.Ai.Delivery.ContentItems.InlineContentItems;
 /// <summary>
 /// Processor responsible for parsing HTML input and resolving inline content items referenced in them using registered resolvers
 /// </summary>
+[Obsolete("String-based inline content item resolution is deprecated. Use IHtmlResolver with structured IRichTextContent instead. This will be removed in v18.0.0", false)]
 internal class InlineContentItemsProcessor : IInlineContentItemsProcessor
 {
     private readonly IDictionary<Type, Func<object, string>> _inlineContentItemsResolvers;

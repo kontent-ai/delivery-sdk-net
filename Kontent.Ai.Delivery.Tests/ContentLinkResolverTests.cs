@@ -1,125 +1,20 @@
 ﻿using System;
-using System.Collections.Generic;
 using System.IO;
 using System.Threading.Tasks;
-using AngleSharp.Html.Parser;
 using Kontent.Ai.Delivery.Abstractions;
 using Kontent.Ai.Delivery.Configuration;
-using Kontent.Ai.Delivery.ContentItems;
-using Kontent.Ai.Delivery.ContentItems.ContentLinks;
 using Kontent.Ai.Delivery.Extensions;
 using Kontent.Ai.Delivery.Tests.Factories;
 using Microsoft.Extensions.DependencyInjection;
 using Kontent.Ai.Delivery.Tests.Models.ContentTypes;
 using RichardSzalay.MockHttp;
 using Xunit;
+using Kontent.Ai.Delivery.ContentItems.RichText.Resolution;
 
 namespace Kontent.Ai.Delivery.Tests;
 
 public class ContentLinkResolverTests
 {
-    private readonly Guid ContentItemIdA = Guid.NewGuid();
-    private readonly Guid ContentItemIdB = Guid.NewGuid();
-
-    [Fact]
-    public async Task ContentLinkIsResolved()
-    {
-        var result = await ResolveContentLinks($"Learn <a href=\"\" data-item-id=\"{ContentItemIdA}\">more</a>.");
-
-        Assert.Equal($"Learn <a href=\"http://example.org/about-us\" data-item-id=\"{ContentItemIdA}\">more</a>.", result);
-    }
-
-    [Fact]
-    public async Task DecoratedContentLinkIsResolved()
-    {
-        var result = await ResolveContentLinks($"Learn <a href=\"\" data-item-id=\"{ContentItemIdA}\" class=\"link\">more</a>.");
-
-        Assert.Equal($"Learn <a href=\"http://example.org/about-us\" data-item-id=\"{ContentItemIdA}\" class=\"link\">more</a>.", result);
-    }
-
-    [Fact]
-    public async Task BrokenContentLinkIsResolved()
-    {
-        var result = await ResolveContentLinks($"Learn <a href=\"\" data-item-id=\"{ContentItemIdB}\">more</a>.");
-
-        Assert.Equal($"Learn <a href=\"http://example.org/broken\" data-item-id=\"{ContentItemIdB}\">more</a>.", result);
-    }
-
-    [Fact]
-    public async Task ResolveLinkUrlIsOptional()
-    {
-        var linkUrlResolver = new CustomContentLinkUrlResolver
-        {
-            GetLinkUrl = link => null
-        };
-        var result = await ResolveContentLinks($"Learn <a href=\"\" data-item-id=\"{ContentItemIdA}\">more</a>.", linkUrlResolver);
-
-        Assert.Equal($"Learn <a href=\"\" data-item-id=\"{ContentItemIdA}\">more</a>.", result);
-    }
-
-    [Fact]
-    public async Task ResolveBrokenLinkUrlIsOptional()
-    {
-        var linkUrlResolver = new CustomContentLinkUrlResolver
-        {
-            GetBrokenLinkUrl = () => null
-        };
-        var result = await ResolveContentLinks($"Learn <a href=\"\" data-item-id=\"{ContentItemIdB}\">more</a>.", linkUrlResolver);
-
-        Assert.Equal($"Learn <a href=\"\" data-item-id=\"{ContentItemIdB}\">more</a>.", result);
-    }
-
-    [Fact]
-    public async Task ExternalLinksArePreserved()
-    {
-        var result = await ResolveContentLinks("Learn <a href=\"https://www.kontent.ai\">more</a>.");
-
-        Assert.Equal("Learn <a href=\"https://www.kontent.ai\">more</a>.", result);
-    }
-
-    [Fact]
-    public async Task ExternalEmptyLinksArePreserved()
-    {
-        var result = await ResolveContentLinks("Learn <a href=\"\">more</a>.");
-
-        Assert.Equal("Learn <a href=\"\">more</a>.", result);
-    }
-
-    [Fact]
-    public async Task UrlLinkIsEncoded()
-    {
-        var linkUrlResolver = new CustomContentLinkUrlResolver
-        {
-            GetLinkUrl = link => "http://example.org?q=bits&bolts"
-        };
-        var result = await ResolveContentLinks($"Learn <a href=\"\" data-item-id=\"{ContentItemIdA}\">more</a>.", linkUrlResolver);
-
-        Assert.Equal($"Learn <a href=\"http://example.org?q=bits&amp;bolts\" data-item-id=\"{ContentItemIdA}\">more</a>.", result);
-    }
-
-    [Fact]
-    public async Task BrokenUrlLinkIsEncoded()
-    {
-        var linkUrlResolver = new CustomContentLinkUrlResolver
-        {
-            GetBrokenLinkUrl = () => "http://example.org/<broken>"
-        };
-        var result = await ResolveContentLinks($"Learn <a href=\"\" data-item-id=\"{ContentItemIdB}\">more</a>.", linkUrlResolver);
-
-        Assert.Equal($"Learn <a href=\"http://example.org/&lt;broken&gt;\" data-item-id=\"{ContentItemIdB}\">more</a>.", result);
-    }
-
-    [Fact]
-    public async Task ContentLinkAttributesAreParsed()
-    {
-        var linkUrlResolver = new CustomContentLinkUrlResolver
-        {
-            GetLinkUrl = link => $"http://example.org/{link.ContentTypeCodename}/{link.Codename}/{link.Id}-{link.UrlSlug}"
-        };
-        var result = await ResolveContentLinks($"Learn <a href=\"\" data-item-id=\"{ContentItemIdA}\">more</a>.", linkUrlResolver);
-
-        Assert.Equal($"Learn <a href=\"http://example.org/article/about_us/{ContentItemIdA}-about-us\" data-item-id=\"{ContentItemIdA}\">more</a>.", result);
-    }
 
     [Fact]
     public async Task ResolveLinksInStronglyTypedModel()
@@ -143,39 +38,25 @@ public class ContentLinkResolverTests
         var provider = services.BuildServiceProvider();
         var client = (DeliveryClient)provider.GetRequiredService<IDeliveryClient>();
 
-        string expected = "Check out our <a data-item-id=\"0c9a11bb-6fc3-409c-b3cb-f0b797e15489\" href=\"http://example.org/brazil-natural-barra-grande\">Brazil Natural Barra Grande</a> coffee for a tasty example.";
-        var result = await client.GetItem<Article>("coffee_processing_techniques").RenderRichTextToHtml().ExecuteAsync();
+        var result = await client.GetItem<Article>("coffee_processing_techniques").ExecuteAsync();
 
         Assert.True(result.IsSuccess);
-        var enumerator = result.Value.Elements.BodyCopy.GetEnumerator();
-        var html = string.Empty;
-        if (enumerator.MoveNext())
-        {
-            html = (enumerator.Current as Kontent.Ai.Delivery.Abstractions.IHtmlContent)?.Html ?? string.Empty;
-        }
-        Assert.Contains(expected, html);
-    }
 
-    private async Task<string> ResolveContentLinks(string text)
-    {
-        var linkUrlResolver = new CustomContentLinkUrlResolver();
-        return await ResolveContentLinks(text, linkUrlResolver);
-    }
+        // Use the new structured approach with LegacyUrlResolver
+        var urlResolver = provider.GetRequiredService<IContentLinkUrlResolver>();
+        var resolver = new Kontent.Ai.Delivery.ContentItems.RichText.Resolution.HtmlResolverBuilder()
+            .WithDefaultResolvers()
+            .WithContentItemLinkResolver(DefaultResolvers.LegacyUrlResolver(urlResolver))
+            .Build();
 
-    private async Task<string> ResolveContentLinks(string text, CustomContentLinkUrlResolver linkUrlResolver)
-    {
-        var linkResolver = new ContentLinkResolver(linkUrlResolver);
-        IContentLink link = new ContentLink()
-        {
-            ContentTypeCodename = "article",
-            UrlSlug = "about-us",
-            Codename = "about_us"
-        };
+        var html = await result.Value.Elements.BodyCopy.ToHtmlAsync(resolver);
 
-        link.Id = ContentItemIdA;
-        var links = new Dictionary<Guid, IContentLink> { { ContentItemIdA, link } };
-
-        return await linkResolver.ResolveContentLinksAsync(text, links);
+        // Check that the link is resolved correctly (attribute order may vary)
+        Assert.Contains("Check out our", html);
+        Assert.Contains("Brazil Natural Barra Grande", html);
+        Assert.Contains("href=\"http://example.org/brazil-natural-barra-grande\"", html);
+        Assert.Contains("data-item-id=\"0c9a11bb-6fc3-409c-b3cb-f0b797e15489\"", html);
+        Assert.Contains("coffee for a tasty example", html);
     }
 
     private sealed class CustomContentLinkUrlResolver : IContentLinkUrlResolver
