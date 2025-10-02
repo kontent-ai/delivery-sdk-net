@@ -18,21 +18,21 @@ internal sealed class ContentLink() : IContentLink // TODO: improve, nullability
     [JsonPropertyName("codename")]
     public string Codename
     {
-        get; internal set;
+        get; set;
     }
 
     /// <inheritdoc/>
     [JsonPropertyName("url_slug")]
     public string UrlSlug
     {
-        get; internal set;
+        get; set;
     }
 
     /// <inheritdoc/>
     [JsonPropertyName("type")]
     public string ContentTypeCodename
     {
-        get; internal set;
+        get; set;
     }
 }
 

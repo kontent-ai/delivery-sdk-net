@@ -24,8 +24,8 @@ internal class RichTextElementValueJsonConverter : JsonConverter<RichTextElement
             Name = root.GetProperty("name").GetString() ?? string.Empty,
             Codename = ElementCodename ?? string.Empty,
             Value = root.GetProperty("value").GetString() ?? string.Empty,
-            Images = DeserializeImages(root),
-            Links = DeserializeLinks(root),
+            Images = DeserializeImages(root, options),
+            Links = DeserializeLinks(root, options),
             ModularContent = DeserializeModularContent(root)
         };
     }
@@ -49,20 +49,20 @@ internal class RichTextElementValueJsonConverter : JsonConverter<RichTextElement
         writer.WriteEndObject();
     }
 
-    private static IDictionary<Guid, InlineImage> DeserializeImages(JsonElement root) =>
+    private static IDictionary<Guid, InlineImage> DeserializeImages(JsonElement root, JsonSerializerOptions options) =>
         root.TryGetProperty("images", out var imagesEl) && imagesEl.ValueKind == JsonValueKind.Object
             ? imagesEl.EnumerateObject()
                 .Where(prop => Guid.TryParse(prop.Name, out _))
-                .Select(prop => (Id: Guid.Parse(prop.Name), Image: JsonSerializer.Deserialize<InlineImage>(prop.Value.GetRawText())))
+                .Select(prop => (Id: Guid.Parse(prop.Name), Image: JsonSerializer.Deserialize<InlineImage>(prop.Value.GetRawText(), options)))
                 .Where(x => x.Image is not null)
                 .ToDictionary(x => x.Id, x => x.Image!)
             : new Dictionary<Guid, InlineImage>();
 
-    private static IDictionary<Guid, ContentLink> DeserializeLinks(JsonElement root) =>
+    private static IDictionary<Guid, ContentLink> DeserializeLinks(JsonElement root, JsonSerializerOptions options) =>
         root.TryGetProperty("links", out var linksEl) && linksEl.ValueKind == JsonValueKind.Object
             ? linksEl.EnumerateObject()
                 .Where(prop => Guid.TryParse(prop.Name, out _))
-                .Select(prop => (Id: Guid.Parse(prop.Name), Link: JsonSerializer.Deserialize<ContentLink>(prop.Value.GetRawText())))
+                .Select(prop => (Id: Guid.Parse(prop.Name), Link: JsonSerializer.Deserialize<ContentLink>(prop.Value.GetRawText(), options)))
                 .Where(x => x.Link is not null)
                 .ToDictionary(x => x.Id, x => x.Link!)
             : new Dictionary<Guid, ContentLink>();
