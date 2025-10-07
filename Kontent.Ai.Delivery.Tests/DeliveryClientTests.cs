@@ -147,7 +147,7 @@ public class DeliveryClientTests
             .Respond("application/json", await File.ReadAllTextAsync(Path.Combine(Environment.CurrentDirectory, $"Fixtures{Path.DirectorySeparatorChar}DeliveryClient{Path.DirectorySeparatorChar}used_in.json")));
 
         var client = CreateClient(mock);
-        var used = await client.GetItemUsedIn("coffee_beverages_explained").EnumerateAllItemsAsync();
+        var used = await client.GetItemUsedIn("coffee_beverages_explained").EnumerateAllAsync();
 
         Assert.NotEmpty(used);
     }
@@ -160,7 +160,7 @@ public class DeliveryClientTests
             .Respond("application/json", await File.ReadAllTextAsync(Path.Combine(Environment.CurrentDirectory, $"Fixtures{Path.DirectorySeparatorChar}DeliveryClient{Path.DirectorySeparatorChar}used_in.json")));
 
         var client = CreateClient(mock);
-        var used = await client.GetAssetUsedIn("asset_codename").EnumerateAllItemsAsync();
+        var used = await client.GetAssetUsedIn("asset_codename").EnumerateAllAsync();
 
         Assert.NotEmpty(used);
     }
