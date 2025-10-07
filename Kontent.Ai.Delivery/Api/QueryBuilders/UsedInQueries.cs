@@ -36,7 +36,7 @@ internal sealed class ItemUsedInQuery(IDeliveryApi api, string codename, Func<bo
         }
     }
 
-    public async Task<IReadOnlyList<IUsedInItem>> EnumerateAllItemsAsync(CancellationToken cancellationToken = default)
+    public async Task<IReadOnlyList<IUsedInItem>> EnumerateAllAsync(CancellationToken cancellationToken = default)
     {
         var results = new List<IUsedInItem>();
         await foreach (var item in EnumerateItemsAsync(cancellationToken).WithCancellation(cancellationToken))
@@ -80,7 +80,7 @@ internal sealed class AssetUsedInQuery(IDeliveryApi api, string codename, Func<b
         }
     }
 
-    public async Task<IReadOnlyList<IUsedInItem>> EnumerateAllItemsAsync(CancellationToken cancellationToken = default)
+    public async Task<IReadOnlyList<IUsedInItem>> EnumerateAllAsync(CancellationToken cancellationToken = default)
     {
         var results = new List<IUsedInItem>();
         await foreach (var item in EnumerateItemsAsync(cancellationToken).WithCancellation(cancellationToken))

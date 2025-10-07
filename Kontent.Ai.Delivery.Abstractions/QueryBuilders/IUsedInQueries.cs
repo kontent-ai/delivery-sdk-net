@@ -27,7 +27,7 @@ public interface IItemUsedInQuery
     /// </summary>
     /// <param name="cancellationToken">Cancellation token.</param>
     /// <returns>All used-in items aggregated into a read-only list.</returns>
-    Task<IReadOnlyList<IUsedInItem>> EnumerateAllItemsAsync(CancellationToken cancellationToken = default);
+    Task<IReadOnlyList<IUsedInItem>> EnumerateAllAsync(CancellationToken cancellationToken = default);
 }
 
 /// <summary>
@@ -53,5 +53,5 @@ public interface IAssetUsedInQuery
     /// </summary>
     /// <param name="cancellationToken">Cancellation token.</param>
     /// <returns>All used-in items aggregated into a read-only list.</returns>
-    Task<IReadOnlyList<IUsedInItem>> EnumerateAllItemsAsync(CancellationToken cancellationToken = default);
+    Task<IReadOnlyList<IUsedInItem>> EnumerateAllAsync(CancellationToken cancellationToken = default);
 }

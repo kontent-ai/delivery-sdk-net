@@ -34,16 +34,6 @@ internal static class HttpRequestHeadersExtensions
         }
     }
 
-    internal static void AddWaitForLoadingNewContentHeader(this HttpRequestHeaders headers)
-    {
-        headers.Add(WaitForLoadingNewContentHeaderName, "true");
-    }
-
-    internal static void AddAuthorizationHeader(this HttpRequestHeaders headers, string scheme, string parameter)
-    {
-        headers.Authorization = new AuthenticationHeaderValue(scheme, parameter);
-    }
-
     internal static string GetProductVersion(this Assembly assembly)
     {
         string? sdkVersion;
