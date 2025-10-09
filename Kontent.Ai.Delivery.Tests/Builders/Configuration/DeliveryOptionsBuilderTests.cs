@@ -21,8 +21,9 @@ public class DeliveryOptionsBuilderTests
     public void BuildWithEnvironmentIdAndUseProductionApi()
     {
         var deliveryOptions = DeliveryOptionsBuilder
-            .Create(EnvironmentId)
-            .UseProduction()
+            .CreateInstance()
+            .WithEnvironmentId(EnvironmentId)
+            .UseProductionApi()
             .Build();
 
         Assert.Equal(EnvironmentId, deliveryOptions.EnvironmentId);
@@ -35,8 +36,9 @@ public class DeliveryOptionsBuilderTests
     public void BuildWithEnvironmentIdAndPreviewApi()
     {
         var deliveryOptions = DeliveryOptionsBuilder
-            .Create(EnvironmentId)
-            .UsePreview(PreviewApiKey)
+            .CreateInstance()
+            .WithEnvironmentId(EnvironmentId)
+            .UsePreviewApi(PreviewApiKey)
             .Build();
 
         Assert.Equal(EnvironmentId, deliveryOptions.EnvironmentId);
@@ -49,8 +51,9 @@ public class DeliveryOptionsBuilderTests
     public void BuildWithEnvironmentIdAndSecuredProductionApi()
     {
         var deliveryOptions = DeliveryOptionsBuilder
-            .Create(EnvironmentId)
-            .UseProduction(SecuredApiKey)
+            .CreateInstance()
+            .WithEnvironmentId(EnvironmentId)
+            .UseProductionApi(SecuredApiKey)
             .Build();
 
         Assert.Equal(EnvironmentId, deliveryOptions.EnvironmentId);
@@ -88,8 +91,9 @@ public class DeliveryOptionsBuilderTests
     public void BuildWithDisabledRetryLogic()
     {
         var deliveryOptions = DeliveryOptionsBuilder
-            .Create(Guid.NewGuid())
-            .UseProduction()
+            .CreateInstance()
+            .WithEnvironmentId(Guid.NewGuid())
+            .UseProductionApi()
             .DisableRetryPolicy()
             .Build();
 
@@ -100,8 +104,9 @@ public class DeliveryOptionsBuilderTests
     public void ModernBuilder_WithWaitForLoadingNewContent_SetsOptions()
     {
         var deliveryOptions = DeliveryOptionsBuilder
-            .Create(EnvironmentId)
-            .UseProduction()
+            .CreateInstance()
+            .WithEnvironmentId(EnvironmentId)
+            .UseProductionApi()
             .WaitForLoadingNewContent()
             .Build();
 
@@ -127,8 +132,9 @@ public class DeliveryOptionsBuilderTests
         const string customEndpoint = "http://www.customPreviewEndpoint.com";
 
         var deliveryOptions = DeliveryOptionsBuilder
-            .Create(EnvironmentId)
-            .UsePreview(PreviewApiKey)
+            .CreateInstance()
+            .WithEnvironmentId(EnvironmentId)
+            .UsePreviewApi(PreviewApiKey)
             .WithCustomEndpoint(customEndpoint)
             .Build();
 
@@ -141,8 +147,9 @@ public class DeliveryOptionsBuilderTests
         const string customEndpoint = "https://www.customProductionEndpoint.com";
 
         var deliveryOptions = DeliveryOptionsBuilder
-            .Create(EnvironmentId)
-            .UseProduction()
+            .CreateInstance()
+            .WithEnvironmentId(EnvironmentId)
+            .UseProductionApi()
             .WithCustomEndpoint(customEndpoint)
             .Build();
 
@@ -156,8 +163,9 @@ public class DeliveryOptionsBuilderTests
         var uri = new Uri(customEndpoint, UriKind.Absolute);
 
         var deliveryOptions = DeliveryOptionsBuilder
-            .Create(EnvironmentId)
-            .UsePreview(PreviewApiKey)
+            .CreateInstance()
+            .WithEnvironmentId(EnvironmentId)
+            .UsePreviewApi(PreviewApiKey)
             .WithCustomEndpoint(uri)
             .Build();
 
@@ -171,8 +179,9 @@ public class DeliveryOptionsBuilderTests
         var uri = new Uri(customEndpoint, UriKind.Absolute);
 
         var deliveryOptions = DeliveryOptionsBuilder
-            .Create(EnvironmentId)
-            .UseProduction()
+            .CreateInstance()
+            .WithEnvironmentId(EnvironmentId)
+            .UseProductionApi()
             .WithCustomEndpoint(uri)
             .Build();
 
@@ -185,8 +194,9 @@ public class DeliveryOptionsBuilderTests
         const string renditionPreset = "mobile";
 
         var deliveryOptions = DeliveryOptionsBuilder
-            .Create(EnvironmentId)
-            .UseProduction()
+            .CreateInstance()
+            .WithEnvironmentId(EnvironmentId)
+            .UseProductionApi()
             .WithDefaultRenditionPreset(renditionPreset)
             .Build();
 
