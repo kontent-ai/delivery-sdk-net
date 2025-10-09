@@ -5,37 +5,41 @@ namespace Kontent.Ai.Delivery.Configuration;
 /// </summary>
 public class DeliveryOptionsBuilder : IDeliveryOptionsBuilder // TODO: add injection of type and model providers etc.
 {
-    private DeliveryOptions _options;
+    private DeliveryOptions _options = new();
+    private DeliveryOptionsBuilder() {}
+
+    /// <summary>
+    /// Creates a new instance of the <see cref="DeliveryOptionsBuilder"/> class.
+    /// </summary>
+    public static IDeliveryOptionsBuilder CreateInstance() => new DeliveryOptionsBuilder();
 
     /// <summary>
     /// Creates a new instance of the <see cref="DeliveryOptionsBuilder"/> class with the specified environment ID.
     /// </summary>
     /// <param name="environmentId">The identifier of a Kontent.ai environment.</param>
-    public static IDeliveryOptionsBuilder Create(string environmentId)
+    public IDeliveryOptionsBuilder WithEnvironmentId(string environmentId)
     {
-        return new DeliveryOptionsBuilder(environmentId);
+        _options.EnvironmentId = environmentId;
+        return this;
     }
 
     /// <summary>
     /// Creates a new instance of the <see cref="DeliveryOptionsBuilder"/> class with the specified environment ID.
     /// </summary>
     /// <param name="environmentId">The identifier of a Kontent.ai environment.</param>
-    public static IDeliveryOptionsBuilder Create(Guid environmentId)
+    public IDeliveryOptionsBuilder WithEnvironmentId(Guid environmentId)
     {
-        return new DeliveryOptionsBuilder(environmentId.ToString());
-    }
-
-    private DeliveryOptionsBuilder(string environmentId)
-    {
-        _options = new DeliveryOptions { EnvironmentId = environmentId };
+        _options.EnvironmentId = environmentId.ToString();
+        return this;
     }
 
     /// <summary>
     /// Configure for Production API.
     /// </summary>
-    public IDeliveryOptionsBuilder UseProduction()
+    public IDeliveryOptionsBuilder UseProductionApi()
     {
-        _options = _options with { UsePreviewApi = false, UseSecureAccess = false };
+        _options.UsePreviewApi = false;
+        _options.UseSecureAccess = false;
         return this;
     }
 
@@ -43,9 +47,11 @@ public class DeliveryOptionsBuilder : IDeliveryOptionsBuilder // TODO: add injec
     /// Configure for Production API with secure access.
     /// </summary>
     /// <param name="secureAccessApiKey">An API key for secure access.</param>
-    public IDeliveryOptionsBuilder UseProduction(string secureAccessApiKey)
+    public IDeliveryOptionsBuilder UseProductionApi(string secureAccessApiKey)
     {
-        _options = _options with { UsePreviewApi = false, UseSecureAccess = true, SecureAccessApiKey = secureAccessApiKey };
+        _options.UsePreviewApi = false;
+        _options.UseSecureAccess = true;
+        _options.SecureAccessApiKey = secureAccessApiKey;
         return this;
     }
 
@@ -53,9 +59,11 @@ public class DeliveryOptionsBuilder : IDeliveryOptionsBuilder // TODO: add injec
     /// Configure for Preview API.
     /// </summary>
     /// <param name="previewApiKey">A Preview API key.</param>
-    public IDeliveryOptionsBuilder UsePreview(string previewApiKey)
+    public IDeliveryOptionsBuilder UsePreviewApi(string previewApiKey)
     {
-        _options = _options with { UsePreviewApi = true, PreviewApiKey = previewApiKey, UseSecureAccess = false };
+        _options.UsePreviewApi = true;
+        _options.PreviewApiKey = previewApiKey;
+        _options.UseSecureAccess = false;
         return this;
     }
 
@@ -64,7 +72,7 @@ public class DeliveryOptionsBuilder : IDeliveryOptionsBuilder // TODO: add injec
     /// </summary>
     public IDeliveryOptionsBuilder DisableRetryPolicy()
     {
-        _options = _options with { EnableResilience = false };
+        _options.EnableResilience = false;
         return this;
     }
 
@@ -94,7 +102,7 @@ public class DeliveryOptionsBuilder : IDeliveryOptionsBuilder // TODO: add injec
     /// <param name="presetCodename">Codename of the rendition preset to be applied automatically.</param>
     public IDeliveryOptionsBuilder WithDefaultRenditionPreset(string presetCodename)
     {
-        _options = _options with { DefaultRenditionPreset = presetCodename };
+        _options.DefaultRenditionPreset = presetCodename;
         return this;
     }
 
@@ -103,7 +111,7 @@ public class DeliveryOptionsBuilder : IDeliveryOptionsBuilder // TODO: add injec
     /// </summary>
     public IDeliveryOptionsBuilder WaitForLoadingNewContent()
     {
-        _options = _options with { WaitForLoadingNewContent = true };
+        _options.WaitForLoadingNewContent = true;
         return this;
     }
 
@@ -111,11 +119,11 @@ public class DeliveryOptionsBuilder : IDeliveryOptionsBuilder // TODO: add injec
     {
         if (_options.UsePreviewApi)
         {
-            _options = _options with { PreviewEndpoint = endpoint };
+            _options.PreviewEndpoint = endpoint;
         }
         else
         {
-            _options = _options with { ProductionEndpoint = endpoint };
+            _options.ProductionEndpoint = endpoint;
         }
     }
 

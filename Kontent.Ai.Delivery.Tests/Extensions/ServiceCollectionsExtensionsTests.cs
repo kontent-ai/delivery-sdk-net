@@ -2,13 +2,18 @@
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
 using System.IO;
+using AngleSharp.Html.Parser;
 using Kontent.Ai.Delivery.Abstractions;
+using Kontent.Ai.Delivery.Api;
+using Kontent.Ai.Delivery.Configuration;
 using Kontent.Ai.Delivery.ContentItems;
 using Kontent.Ai.Delivery.ContentItems.ContentLinks;
-using Kontent.Ai.Delivery.ContentItems.InlineContentItems;
 using Kontent.Ai.Delivery.Extensions;
+using Microsoft.Extensions.Http.Resilience;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
+using Microsoft.Extensions.Options;
+using Refit;
 using Xunit;
 
 namespace Kontent.Ai.Delivery.Tests.Extensions;
@@ -25,11 +30,8 @@ public class ServiceCollectionsExtensionsTests
             { typeof(ITypeProvider), typeof(TypeProvider) },
             { typeof(IItemTypingStrategy), typeof(DefaultItemTypingStrategy) },
             { typeof(IContentDeserializer), typeof(ContentDeserializer) },
-            { typeof(IDeliveryHttpClient), typeof(DeliveryHttpClient) },
-            { typeof(IInlineContentItemsProcessor), typeof(InlineContentItemsProcessor) },
-            { typeof(IInlineContentItemsResolver<object>), typeof(ReplaceWithWarningAboutRegistrationResolver) },
-            { typeof(IInlineContentItemsResolver<UnretrievedContentItem>), typeof(ReplaceWithWarningAboutUnretrievedItemResolver) },
-            { typeof(IInlineContentItemsResolver<UnknownContentItem>), typeof(ReplaceWithWarningAboutUnknownItemResolver) },
+            { typeof(IElementsPostProcessor), typeof(ElementsPostProcessor) },
+            { typeof(IHtmlParser), typeof(HtmlParser) },
             { typeof(IPropertyMapper), typeof(PropertyMapper) },
             { typeof(IDeliveryClient), typeof(DeliveryClient) },
         }
@@ -68,6 +70,119 @@ public class ServiceCollectionsExtensionsTests
         _serviceCollection.AddDeliveryClient(new DeliveryOptions { EnvironmentId = EnvironmentId });
         var provider = _serviceCollection.BuildServiceProvider();
         AssertDefaultServiceCollection(provider, _expectedInterfacesWithImplementationTypes);
+    }
+
+    [Fact]
+    public void AddDeliveryClientWithConfigureAction_AllServicesAreRegistered()
+    {
+        _serviceCollection.AddDeliveryClient(o => o.EnvironmentId = EnvironmentId);
+        var provider = _serviceCollection.BuildServiceProvider();
+        AssertDefaultServiceCollection(provider, _expectedInterfacesWithImplementationTypes);
+    }
+
+    [Fact]
+    public void AddDeliveryClientWithBuilderDelegate_AllServicesAreRegistered_AndOptionsApplied()
+    {
+        _serviceCollection.AddDeliveryClient(
+            (IDeliveryOptionsBuilder b) => b.WithEnvironmentId(EnvironmentId).UsePreviewApi("preview_key").Build());
+
+        var provider = _serviceCollection.BuildServiceProvider();
+        AssertDefaultServiceCollection(provider, _expectedInterfacesWithImplementationTypes);
+
+        var monitor = provider.GetRequiredService<IOptionsMonitor<DeliveryOptions>>();
+        var options = monitor.CurrentValue;
+        Assert.Equal(EnvironmentId, options.EnvironmentId);
+        Assert.True(options.UsePreviewApi);
+        Assert.Equal("preview_key", options.PreviewApiKey);
+    }
+
+    [Fact]
+    public void AddDeliveryClientWithBuilderDelegate_Null_ThrowsArgumentNullException()
+    {
+        Assert.Throws<ArgumentNullException>(() => _serviceCollection.AddDeliveryClient(
+            buildDeliveryOptions: null));
+    }
+
+    [Fact]
+    public void AddDeliveryClient_Advanced_InvokesConfigureRefit()
+    {
+        bool invoked = false;
+        _serviceCollection.AddDeliveryClient(
+            new DeliveryOptions { EnvironmentId = EnvironmentId },
+            configureHttpClient: null,
+            configureResilience: null,
+            configureRefit: s => invoked = true);
+
+        // Build triggers ValidateOnStart but not needed for this assertion
+        _serviceCollection.BuildServiceProvider();
+        Assert.True(invoked);
+    }
+
+    [Fact]
+    public void AddDeliveryClient_ResilienceEnabled_InvokesConfigureResilience()
+    {
+        bool invoked = false;
+        _serviceCollection.AddDeliveryClient(
+            new DeliveryOptions { EnvironmentId = EnvironmentId, EnableResilience = true },
+            configureHttpClient: null,
+            configureResilience: _ => invoked = true,
+            configureRefit: null);
+
+        var provider = _serviceCollection.BuildServiceProvider();
+        // Resolve the typed client to force HttpClient pipeline building
+        var _ = provider.GetRequiredService<IDeliveryApi>();
+        Assert.True(invoked);
+    }
+
+    [Fact]
+    public void AddDeliveryClient_ResilienceDisabled_DoesNotInvokeConfigureResilience()
+    {
+        bool invoked = false;
+        _serviceCollection.AddDeliveryClient(
+            new DeliveryOptions { EnvironmentId = EnvironmentId, EnableResilience = false },
+            configureHttpClient: null,
+            configureResilience: _ => invoked = true,
+            configureRefit: null);
+
+        var provider = _serviceCollection.BuildServiceProvider();
+        var _ = provider.GetRequiredService<IDeliveryApi>();
+        Assert.False(invoked);
+    }
+
+    [Fact]
+    public void AddDeliveryClient_InvalidEnvironmentId_ThrowsOptionsValidationException()
+    {
+        _serviceCollection.AddDeliveryClient(new DeliveryOptions { EnvironmentId = "not-a-guid" });
+        Assert.Throws<OptionsValidationException>(() => _serviceCollection.BuildServiceProvider());
+    }
+
+    [Fact]
+    public void AddDeliveryClient_PreviewMissingApiKey_ThrowsOptionsValidationException()
+    {
+        _serviceCollection.AddDeliveryClient(new DeliveryOptions { EnvironmentId = EnvironmentId, UsePreviewApi = true, PreviewApiKey = null });
+        Assert.Throws<OptionsValidationException>(() => _serviceCollection.BuildServiceProvider());
+    }
+
+    [Fact]
+    public void AddDeliveryClient_SecureAccessMissingApiKey_ThrowsOptionsValidationException()
+    {
+        _serviceCollection.AddDeliveryClient(new DeliveryOptions { EnvironmentId = EnvironmentId, UseSecureAccess = true, SecureAccessApiKey = null });
+        Assert.Throws<OptionsValidationException>(() => _serviceCollection.BuildServiceProvider());
+    }
+
+    [Fact]
+    public void AddDeliveryClient_PreviewAndSecureBothTrue_ThrowsOptionsValidationException()
+    {
+        _serviceCollection.AddDeliveryClient(new DeliveryOptions
+        {
+            EnvironmentId = EnvironmentId,
+            UsePreviewApi = true,
+            PreviewApiKey = "preview",
+            UseSecureAccess = true,
+            SecureAccessApiKey = "secure"
+        });
+
+        Assert.Throws<OptionsValidationException>(() => _serviceCollection.BuildServiceProvider());
     }
 
     [Theory]

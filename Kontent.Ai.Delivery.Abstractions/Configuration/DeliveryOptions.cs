@@ -1,3 +1,4 @@
+using System;
 using System.Collections.Generic;
 using System.ComponentModel.DataAnnotations;
 
@@ -6,14 +7,14 @@ namespace Kontent.Ai.Delivery.Abstractions;
 /// <summary>
 /// Represents configuration of the <see cref="IDeliveryClient"/>.
 /// </summary>
-public record DeliveryOptions : IValidatableObject
+public sealed class DeliveryOptions : IValidatableObject
 {
     /// <summary>
     /// Gets or sets the environment ID.
     /// </summary>
     [Required]
     [RegularExpression(@"^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$", ErrorMessage = "The environment ID must be a valid GUID.")]
-    public string EnvironmentId { get; set; } = string.Empty;
+    public string EnvironmentId { get; set; } = Guid.Empty.ToString();
 
     /// <summary>
     /// Gets or sets a value that determines if the client uses resilience policies.

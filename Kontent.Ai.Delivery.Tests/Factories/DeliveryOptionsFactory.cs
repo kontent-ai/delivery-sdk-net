@@ -5,7 +5,7 @@ using Microsoft.Extensions.Options;
 
 namespace Kontent.Ai.Delivery.Tests.Factories;
 
-public static class DeliveryOptionsFactory
+public static class DeliveryOptionsFactory // TODO: delete?
 {
     public static IOptionsMonitor<DeliveryOptions> CreateMonitor(DeliveryOptions options)
     {

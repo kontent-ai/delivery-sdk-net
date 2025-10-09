@@ -1,9 +1,7 @@
-using System.Text.Json;
 using AngleSharp.Html.Parser;
 using Kontent.Ai.Delivery.Configuration;
 using Kontent.Ai.Delivery.ContentItems;
 using Kontent.Ai.Delivery.ContentItems.ContentLinks;
-using Kontent.Ai.Delivery.ContentItems.InlineContentItems;
 using Kontent.Ai.Delivery.Handlers;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
@@ -24,31 +22,47 @@ public static class ServiceCollectionExtensions
     /// </summary>
     /// <param name="services">The service collection.</param>
     /// <param name="deliveryOptions">The delivery options instance.</param>
+    /// <param name="configureHttpClient">Optional action to configure the HTTP client.</param>
+    /// <param name="configureResilience">Optional action to configure resilience policies.</param>
+    /// <param name="configureRefit">Optional action to configure Refit settings.</param>
     /// <returns>The service collection for chaining.</returns>
     public static IServiceCollection AddDeliveryClient(
         this IServiceCollection services,
-        DeliveryOptions deliveryOptions)
+        DeliveryOptions deliveryOptions,
+        Action<IHttpClientBuilder>? configureHttpClient = null,
+        Action<ResiliencePipelineBuilder<HttpResponseMessage>>? configureResilience = null,
+        Action<RefitSettings>? configureRefit = null)
     {
-        ArgumentNullException.ThrowIfNull(services);
         ArgumentNullException.ThrowIfNull(deliveryOptions);
 
-        services.Configure<DeliveryOptions>(options =>
-        {
-            options.EnvironmentId = deliveryOptions.EnvironmentId;
-            options.PreviewApiKey = deliveryOptions.PreviewApiKey;
-            options.SecureAccessApiKey = deliveryOptions.SecureAccessApiKey;
-            options.UsePreviewApi = deliveryOptions.UsePreviewApi;
-            options.UseSecureAccess = deliveryOptions.UseSecureAccess;
-            options.EnableResilience = deliveryOptions.EnableResilience;
-            options.ProductionEndpoint = deliveryOptions.ProductionEndpoint;
-            options.PreviewEndpoint = deliveryOptions.PreviewEndpoint;
-            options.IncludeTotalCount = deliveryOptions.IncludeTotalCount;
-            options.WaitForLoadingNewContent = deliveryOptions.WaitForLoadingNewContent;
-            options.RenderRichTextToHtml = deliveryOptions.RenderRichTextToHtml;
-            options.DefaultRenditionPreset = deliveryOptions.DefaultRenditionPreset;
-        });
+        return services
+            .RegisterOptions(deliveryOptions)
+            .RegisterServices(configureHttpClient, configureResilience, configureRefit);
+    }
 
-        return services.AddDeliveryCore();
+    /// <summary>
+    /// Registers the Kontent.ai Delivery client with the specified options builder.
+    /// </summary>
+    /// <param name="services">The service collection.</param>
+    /// <param name="buildDeliveryOptions">A function to build the delivery options.</param>
+    /// <param name="configureHttpClient">Optional action to configure the HTTP client.</param>
+    /// <param name="configureResilience">Optional action to configure resilience policies.</param>
+    /// <param name="configureRefit">Optional action to configure Refit settings.</param>
+    /// <returns>The service collection for chaining.</returns>
+    public static IServiceCollection AddDeliveryClient(
+        this IServiceCollection services, 
+        Func<IDeliveryOptionsBuilder, DeliveryOptions> buildDeliveryOptions, 
+        Action<IHttpClientBuilder>? configureHttpClient = null, 
+        Action<ResiliencePipelineBuilder<HttpResponseMessage>>? configureResilience = null, 
+        Action<RefitSettings>? configureRefit = null)
+    {
+        ArgumentNullException.ThrowIfNull(buildDeliveryOptions);
+
+        var builder = DeliveryOptionsBuilder.CreateInstance();
+
+        return services
+            .RegisterOptions(builder.Build())
+            .RegisterServices(configureHttpClient, configureResilience, configureRefit);
     }
 
     /// <summary>
@@ -63,16 +77,16 @@ public static class ServiceCollectionExtensions
         IConfiguration configuration,
         string configurationSectionName = "DeliveryOptions")
     {
-        ArgumentNullException.ThrowIfNull(services);
         ArgumentNullException.ThrowIfNull(configuration);
 
         var section = string.IsNullOrWhiteSpace(configurationSectionName)
             ? configuration
             : configuration.GetSection(configurationSectionName);
 
-        services.Configure<DeliveryOptions>(section);
 
-        return services.AddDeliveryCore();
+        return services
+            .Configure<DeliveryOptions>(section)
+            .RegisterServices();
     }
 
     /// <summary>
@@ -85,12 +99,11 @@ public static class ServiceCollectionExtensions
         this IServiceCollection services,
         Action<DeliveryOptions> configureOptions)
     {
-        ArgumentNullException.ThrowIfNull(services);
         ArgumentNullException.ThrowIfNull(configureOptions);
 
-        services.Configure(configureOptions);
-
-        return services.AddDeliveryCore();
+        return services
+            .Configure(configureOptions)
+            .RegisterServices();
     }
 
     /// <summary>
@@ -107,57 +120,17 @@ public static class ServiceCollectionExtensions
         Action<IHttpClientBuilder>? configureHttpClient,
         Action<ResiliencePipelineBuilder<HttpResponseMessage>>? configureResilience = null)
     {
-        ArgumentNullException.ThrowIfNull(services);
         ArgumentNullException.ThrowIfNull(configureOptions);
 
-        services.Configure(configureOptions);
-
-        return services.AddDeliveryCore(configureHttpClient, configureResilience);
-    }
-
-    /// <summary>
-    /// Registers the Kontent.ai Delivery client with options instance and advanced configuration.
-    /// This overload supports backward compatibility with existing test code.
-    /// </summary>
-    /// <param name="services">The service collection.</param>
-    /// <param name="deliveryOptions">The delivery options instance.</param>
-    /// <param name="configureRefit">Optional action to configure Refit settings.</param>
-    /// <param name="configureHttpClient">Optional action to configure the HTTP client.</param>
-    /// <param name="configureResilience">Optional action to configure resilience policies.</param>
-    /// <returns>The service collection for chaining.</returns>
-    public static IServiceCollection AddDeliveryClient(
-        this IServiceCollection services,
-        DeliveryOptions deliveryOptions,
-        Action<RefitSettings>? configureRefit = null,
-        Action<IHttpClientBuilder>? configureHttpClient = null,
-        Action<ResiliencePipelineBuilder<HttpResponseMessage>>? configureResilience = null)
-    {
-        ArgumentNullException.ThrowIfNull(services);
-        ArgumentNullException.ThrowIfNull(deliveryOptions);
-
-        services.Configure<DeliveryOptions>(options =>
-        {
-            options.EnvironmentId = deliveryOptions.EnvironmentId;
-            options.PreviewApiKey = deliveryOptions.PreviewApiKey;
-            options.SecureAccessApiKey = deliveryOptions.SecureAccessApiKey;
-            options.UsePreviewApi = deliveryOptions.UsePreviewApi;
-            options.UseSecureAccess = deliveryOptions.UseSecureAccess;
-            options.EnableResilience = deliveryOptions.EnableResilience;
-            options.ProductionEndpoint = deliveryOptions.ProductionEndpoint;
-            options.PreviewEndpoint = deliveryOptions.PreviewEndpoint;
-            options.IncludeTotalCount = deliveryOptions.IncludeTotalCount;
-            options.WaitForLoadingNewContent = deliveryOptions.WaitForLoadingNewContent;
-            options.RenderRichTextToHtml = deliveryOptions.RenderRichTextToHtml;
-            options.DefaultRenditionPreset = deliveryOptions.DefaultRenditionPreset;
-        });
-
-        return services.AddDeliveryCore(configureHttpClient, configureResilience, configureRefit);
+        return services
+            .Configure(configureOptions)
+            .RegisterServices(configureHttpClient, configureResilience);
     }
 
     /// <summary>
     /// Core registration method containing all service registrations.
     /// </summary>
-    private static IServiceCollection AddDeliveryCore(
+    private static IServiceCollection RegisterServices(
         this IServiceCollection services,
         Action<IHttpClientBuilder>? configureHttpClient = null,
         Action<ResiliencePipelineBuilder<HttpResponseMessage>>? configureResilience = null,
@@ -167,7 +140,7 @@ public static class ServiceCollectionExtensions
             .ValidateDataAnnotations()
             .ValidateOnStart();
 
-        RegisterCoreServices(services);
+        RegisterDependencies(services);
         RegisterHttpClient(services, configureHttpClient, configureResilience, configureRefit);
 
         services.TryAddSingleton<IDeliveryClient, DeliveryClient>();
@@ -175,10 +148,7 @@ public static class ServiceCollectionExtensions
         return services;
     }
 
-    /// <summary>
-    /// Registers core SDK services.
-    /// </summary>
-    private static void RegisterCoreServices(IServiceCollection services)
+    private static void RegisterDependencies(IServiceCollection services)
     {
         // JSON serialization
         services.TryAddSingleton(RefitSettingsProvider.CreateDefaultJsonSerializerOptions());
@@ -193,14 +163,8 @@ public static class ServiceCollectionExtensions
         services.TryAddSingleton<ITypeProvider, TypeProvider>();
         services.TryAddSingleton<IItemTypingStrategy, DefaultItemTypingStrategy>();
         services.TryAddSingleton<IContentDeserializer, ContentDeserializer>();
-        services.TryAddSingleton<IInlineContentItemsProcessor, InlineContentItemsProcessor>();
         services.TryAddSingleton<IElementsPostProcessor, ElementsPostProcessor>();
         services.TryAddSingleton<IHtmlParser, HtmlParser>();
-
-        // Inline content item resolvers
-        services.TryAddSingleton<IInlineContentItemsResolver<object>, ReplaceWithWarningAboutRegistrationResolver>();
-        services.TryAddSingleton<IInlineContentItemsResolver<UnretrievedContentItem>, ReplaceWithWarningAboutUnretrievedItemResolver>();
-        services.TryAddSingleton<IInlineContentItemsResolver<UnknownContentItem>, ReplaceWithWarningAboutUnknownItemResolver>();
     }
 
     /// <summary>
@@ -252,9 +216,9 @@ public static class ServiceCollectionExtensions
         configureHttpClient?.Invoke(httpClientBuilder);
     }
 
-    /// <summary>
-    /// Configures default resilience policies.
-    /// </summary>
+    private static IServiceCollection RegisterOptions(this IServiceCollection services, DeliveryOptions options) =>
+        services.Configure<DeliveryOptions>(o => o.Configure(options));
+
     private static void ConfigureDefaultResilience(ResiliencePipelineBuilder<HttpResponseMessage> builder)
     {
         // Retry policy
@@ -273,18 +237,12 @@ public static class ServiceCollectionExtensions
         builder.AddTimeout(TimeSpan.FromSeconds(30));
     }
 
-    /// <summary>
-    /// Determines if a status code should trigger a retry.
-    /// </summary>
     private static bool IsRetryableStatusCode(System.Net.HttpStatusCode? statusCode)
-    {
-        return statusCode is
+     => statusCode is
             System.Net.HttpStatusCode.TooManyRequests or
             System.Net.HttpStatusCode.RequestTimeout or
             System.Net.HttpStatusCode.InternalServerError or
             System.Net.HttpStatusCode.BadGateway or
             System.Net.HttpStatusCode.ServiceUnavailable or
             System.Net.HttpStatusCode.GatewayTimeout;
-    }
-
 }

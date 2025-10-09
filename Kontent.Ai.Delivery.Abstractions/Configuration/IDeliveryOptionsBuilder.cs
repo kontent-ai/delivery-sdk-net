@@ -10,19 +10,29 @@ public interface IDeliveryOptionsBuilder
     /// <summary>
     /// Configure for Production API.
     /// </summary>
-    IDeliveryOptionsBuilder UseProduction();
+    IDeliveryOptionsBuilder UseProductionApi();
 
     /// <summary>
     /// Configure for Production API with secure access.
     /// </summary>
     /// <param name="secureAccessApiKey">An API key for secure access.</param>
-    IDeliveryOptionsBuilder UseProduction(string secureAccessApiKey);
+    IDeliveryOptionsBuilder UseProductionApi(string secureAccessApiKey);
 
     /// <summary>
     /// Configure for Preview API.
     /// </summary>
     /// <param name="previewApiKey">A Preview API key.</param>
-    IDeliveryOptionsBuilder UsePreview(string previewApiKey);
+    IDeliveryOptionsBuilder UsePreviewApi(string previewApiKey);
+
+    /// <summary>
+    /// Sets the environment ID for the delivery options.
+    /// </summary>
+    IDeliveryOptionsBuilder WithEnvironmentId(string environmentId);
+
+    /// <summary>
+    /// Sets the environment ID for the delivery options.
+    /// </summary>
+    IDeliveryOptionsBuilder WithEnvironmentId(Guid environmentId);
 
     /// <summary>
     /// Disable retry policy for HTTP requests.
