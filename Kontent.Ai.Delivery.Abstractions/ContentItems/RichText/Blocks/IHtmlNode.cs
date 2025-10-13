@@ -5,7 +5,7 @@ namespace Kontent.Ai.Delivery.Abstractions;
 /// <summary>
 /// Represents an HTML element block with structured children
 /// </summary>
-public interface IHtmlElement : IRichTextBlock, IBlockWithChildren
+public interface IHtmlNode : IBlockWithChildren
 {
     /// <summary>
     /// HTML tag name (e.g., "p", "li", "h1")

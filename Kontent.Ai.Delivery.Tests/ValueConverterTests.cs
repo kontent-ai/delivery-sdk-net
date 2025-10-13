@@ -2,7 +2,6 @@
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
-using System.Reflection;
 using System.Threading.Tasks;
 using Kontent.Ai.Delivery.Abstractions;
 using Kontent.Ai.Delivery.Extensions;
@@ -15,23 +14,23 @@ using Xunit;
 namespace Kontent.Ai.Delivery.Tests;
 
 [AttributeUsage(AttributeTargets.Property)]
-public class TestGreeterValueConverterAttribute : Attribute, IPropertyValueConverter<string, object>
+public class TestGreeterValueConverterAttribute : Attribute, IElementValueConverter<string, object>
 {
-    public Task<object?> GetPropertyValueAsync<TElement>(PropertyInfo property, TElement element, ResolvingContext context) where TElement : IContentElementValue<string>
+    public Task<object?> ConvertAsync<TElement>(TElement element, ResolvingContext context) where TElement : IContentElementValue<string>
         => Task.FromResult<object?>($"Hello {element.Value}!");
 }
 
 [AttributeUsage(AttributeTargets.Property)]
-public class TestLinkedItemCodenamesValueConverterAttribute : Attribute, IPropertyValueConverter<List<string>, object>
+public class TestLinkedItemCodenamesValueConverterAttribute : Attribute, IElementValueConverter<List<string>, object>
 {
-    public Task<object?> GetPropertyValueAsync<TElement>(PropertyInfo property, TElement element, ResolvingContext context) where TElement : IContentElementValue<List<string>>
+    public Task<object?> ConvertAsync<TElement>(TElement element, ResolvingContext context) where TElement : IContentElementValue<List<string>>
         => Task.FromResult<object?>(element.Value);
 }
 
 [AttributeUsage(AttributeTargets.Property)]
-public class NodaTimeValueConverterAttribute : Attribute, IPropertyValueConverter<DateTime?, ZonedDateTime>
+public class NodaTimeValueConverterAttribute : Attribute, IElementValueConverter<DateTime?, ZonedDateTime>
 {
-    public Task<ZonedDateTime> GetPropertyValueAsync<TElement>(PropertyInfo property, TElement element, ResolvingContext context) where TElement : IContentElementValue<DateTime?>
+    public Task<ZonedDateTime> ConvertAsync<TElement>(TElement element, ResolvingContext context) where TElement : IContentElementValue<DateTime?>
     {
         if (!element.Value.HasValue) return Task.FromResult<ZonedDateTime>(default);
         var udt = DateTime.SpecifyKind(element.Value.Value, DateTimeKind.Utc);

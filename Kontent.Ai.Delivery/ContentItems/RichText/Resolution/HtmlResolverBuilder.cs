@@ -1,6 +1,7 @@
 using System.Text;
 using System.Text.Encodings.Web;
 using Kontent.Ai.Delivery.Abstractions;
+using Kontent.Ai.Delivery.Abstractions.ContentItems.RichText.Blocks;
 
 namespace Kontent.Ai.Delivery.ContentItems.RichText.Resolution;
 
@@ -26,6 +27,7 @@ namespace Kontent.Ai.Delivery.ContentItems.RichText.Resolution;
 public sealed class HtmlResolverBuilder : IHtmlResolverBuilder
 {
     private readonly Dictionary<Type, Delegate> _resolvers = new();
+    private readonly List<ConditionalHtmlNodeResolver> _conditionalHtmlNodeResolvers = new();
     private readonly HtmlResolverOptions _options = new();
 
     /// <inheritdoc />
@@ -53,29 +55,79 @@ public sealed class HtmlResolverBuilder : IHtmlResolverBuilder
     }
 
     /// <inheritdoc />
-    public IHtmlResolverBuilder WithHtmlContentResolver(BlockResolver<IHtmlContent> resolver)
+    public IHtmlResolverBuilder WithTextNodeResolver(BlockResolver<ITextNode> resolver)
     {
         ArgumentNullException.ThrowIfNull(resolver);
-        _resolvers[typeof(IHtmlContent)] = resolver;
+        _resolvers[typeof(ITextNode)] = resolver;
         return this;
     }
 
     /// <inheritdoc />
-    public IHtmlResolverBuilder WithHtmlElementResolver(BlockResolver<IHtmlElement> resolver)
+    public IHtmlResolverBuilder WithHtmlNodeResolver(
+        HtmlNodePredicate predicate,
+        BlockResolver<IHtmlNode> resolver,
+        string? description = null)
+    {
+        ArgumentNullException.ThrowIfNull(predicate);
+        ArgumentNullException.ThrowIfNull(resolver);
+
+        _conditionalHtmlNodeResolvers.Add(new ConditionalHtmlNodeResolver(
+            predicate,
+            resolver,
+            description));
+
+        return this;
+    }
+
+    /// <inheritdoc />
+    public IHtmlResolverBuilder WithHtmlNodeResolver(
+        string tagName,
+        BlockResolver<IHtmlNode> resolver)
+    {
+        ArgumentException.ThrowIfNullOrWhiteSpace(tagName);
+        ArgumentNullException.ThrowIfNull(resolver);
+
+        return WithHtmlNodeResolver(
+            node => node.TagName.Equals(tagName, StringComparison.OrdinalIgnoreCase),
+            resolver,
+            $"Tag={tagName}");
+    }
+
+    /// <inheritdoc />
+    public IHtmlResolverBuilder WithHtmlNodeResolverForAttribute(
+        string attributeName,
+        string? attributeValue,
+        BlockResolver<IHtmlNode> resolver)
+    {
+        ArgumentException.ThrowIfNullOrWhiteSpace(attributeName);
+        ArgumentNullException.ThrowIfNull(resolver);
+
+        HtmlNodePredicate predicate = attributeValue == null
+            ? node => node.Attributes.ContainsKey(attributeName)
+            : node => node.Attributes.TryGetValue(attributeName, out var value)
+                   && value?.Equals(attributeValue, StringComparison.OrdinalIgnoreCase) == true;
+
+        var description = attributeValue == null
+            ? $"Attribute={attributeName}"
+            : $"Attribute={attributeName}[{attributeValue}]";
+
+        return WithHtmlNodeResolver(predicate, resolver, description);
+    }
+
+    /// <inheritdoc />
+    public IHtmlResolverBuilder WithHtmlElementResolver(BlockResolver<IHtmlNode> resolver)
     {
         ArgumentNullException.ThrowIfNull(resolver);
-        _resolvers[typeof(IHtmlElement)] = resolver;
+        _resolvers[typeof(IHtmlNode)] = resolver;
         return this;
     }
 
     /// <inheritdoc />
     public IHtmlResolverBuilder WithDefaultResolvers()
     {
-        // Default pass-through for HTML content (just returns the HTML as-is)
-        // Note: Content item links embedded in HTML blocks are not resolved by default
-        // Use WithContentItemLinkResolver to handle embedded links if needed
-        _resolvers.TryAdd(typeof(IHtmlContent), new BlockResolver<IHtmlContent>(
-            (block, _, _) => ValueTask.FromResult(block.Html)
+        // Default text node resolver - HTML-encodes text content
+        _resolvers.TryAdd(typeof(ITextNode), new BlockResolver<ITextNode>(
+            (block, _, _) => ValueTask.FromResult(HtmlEncoder.Default.Encode(block.Text))
         ));
 
         // Default inline image resolver - generates proper HTML figure element
@@ -119,14 +171,32 @@ public sealed class HtmlResolverBuilder : IHtmlResolverBuilder
         ));
 
         // Default HTML element resolver (renders elements with their structure)
-        _resolvers.TryAdd(typeof(IHtmlElement), DefaultResolvers.HtmlElementResolver());
+        _resolvers.TryAdd(typeof(IHtmlNode), DefaultResolvers.HtmlElementResolver());
 
         return this;
     }
 
     /// <inheritdoc />
-    public IHtmlResolver Build() => new HtmlResolver(
-        _resolvers.ToDictionary(kvp => kvp.Key, kvp => kvp.Value), // Create defensive copy for thread safety
-        _options
-    );
+    public IHtmlResolver Build()
+    {
+        // Extract the default HTML node resolver if registered
+        var defaultHtmlNodeResolver = _resolvers.TryGetValue(typeof(IHtmlNode), out var resolver)
+            ? (BlockResolver<IHtmlNode>)resolver
+            : null;
+
+        // Create options with conditional resolvers and default fallback
+        var options = new HtmlResolverOptions
+        {
+            ConditionalHtmlNodeResolvers = _conditionalHtmlNodeResolvers.ToArray(),
+            DefaultHtmlNodeResolver = defaultHtmlNodeResolver,
+            ThrowOnMissingResolver = _options.ThrowOnMissingResolver
+        };
+
+        // Create resolver dictionary excluding IHtmlNode (handled via options)
+        var resolverDict = _resolvers
+            .Where(kvp => kvp.Key != typeof(IHtmlNode))
+            .ToDictionary(kvp => kvp.Key, kvp => kvp.Value);
+
+        return new HtmlResolver(resolverDict, options);
+    }
 }
