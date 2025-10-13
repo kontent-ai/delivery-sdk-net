@@ -6,10 +6,12 @@ using Kontent.Ai.Delivery.ContentItems.RichText.Blocks;
 
 namespace Kontent.Ai.Delivery.ContentItems;
 
-internal class RichTextElementValueJsonConverter : JsonConverter<RichTextElementValue>
+/// <summary>
+/// Deserializes rich text element values from JSON API response.
+/// Extracts HTML content, images, content links, and modular content references.
+/// </summary>
+internal sealed class RichTextElementValueJsonConverter(string elementCodename) : JsonConverter<RichTextElementValue>
 {
-    public string? ElementCodename { get; set; }
-
     public override RichTextElementValue? Read(ref Utf8JsonReader reader, Type typeToConvert, JsonSerializerOptions options)
     {
         using var doc = JsonDocument.ParseValue(ref reader);
@@ -22,7 +24,7 @@ internal class RichTextElementValueJsonConverter : JsonConverter<RichTextElement
         {
             Type = root.GetProperty("type").GetString() ?? string.Empty,
             Name = root.GetProperty("name").GetString() ?? string.Empty,
-            Codename = ElementCodename ?? string.Empty,
+            Codename = elementCodename,
             Value = root.GetProperty("value").GetString() ?? string.Empty,
             Images = DeserializeImages(root, options),
             Links = DeserializeLinks(root, options),
@@ -49,6 +51,10 @@ internal class RichTextElementValueJsonConverter : JsonConverter<RichTextElement
         writer.WriteEndObject();
     }
 
+    /// <summary>
+    /// Deserializes the images dictionary from rich text element.
+    /// Maps image asset IDs (Guids) to InlineImage metadata (URL, dimensions, etc.)
+    /// </summary>
     private static Dictionary<Guid, InlineImage> DeserializeImages(JsonElement root, JsonSerializerOptions options) =>
         root.TryGetProperty("images", out var imagesEl) && imagesEl.ValueKind == JsonValueKind.Object
             ? imagesEl.EnumerateObject()
@@ -58,6 +64,10 @@ internal class RichTextElementValueJsonConverter : JsonConverter<RichTextElement
                 .ToDictionary(x => x.Id, x => x.Image!)
             : [];
 
+    /// <summary>
+    /// Deserializes the links dictionary from rich text element.
+    /// Maps content item IDs (Guids) to ContentLink metadata (codename, URL slug, type)
+    /// </summary>
     private static Dictionary<Guid, ContentLink> DeserializeLinks(JsonElement root, JsonSerializerOptions options) =>
         root.TryGetProperty("links", out var linksEl) && linksEl.ValueKind == JsonValueKind.Object
             ? linksEl.EnumerateObject()
@@ -67,6 +77,10 @@ internal class RichTextElementValueJsonConverter : JsonConverter<RichTextElement
                 .ToDictionary(x => x.Id, x => x.Link!)
             : [];
 
+    /// <summary>
+    /// Deserializes the list of modular content codenames referenced in rich text.
+    /// These are inline content items embedded within the rich text HTML.
+    /// </summary>
     private static List<string> DeserializeModularContent(JsonElement root) =>
         root.TryGetProperty("modular_content", out var modularEl) && modularEl.ValueKind == JsonValueKind.Array
             ? JsonSerializer.Deserialize<List<string>>(modularEl.GetRawText()) ?? []

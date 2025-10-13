@@ -94,7 +94,7 @@ internal class RichTextParser(IHtmlParser parser) : IElementValueConverter<strin
         // Get metadata from Links dictionary
         var metadata = elementValue.Links?.TryGetValue(itemId, out var link) == true ? link : null;
 
-        // Parse children recursively with incremented depth
+        // Parse children recursively
         var children = new List<IRichTextBlock>();
         foreach (var childNode in anchorElement.ChildNodes)
         {

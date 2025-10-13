@@ -232,7 +232,7 @@ internal sealed class ElementsPostProcessor(
         var options = _richTextOptionsCache.GetOrAdd(elementCodename, codename =>
         {
             var opts = new JsonSerializerOptions();
-            opts.Converters.Add(new RichTextElementValueJsonConverter { ElementCodename = codename });
+            opts.Converters.Add(new RichTextElementValueJsonConverter(codename));
             return opts;
         });
         return JsonSerializer.Deserialize<Elements.RichTextElementValue>(json, options);
