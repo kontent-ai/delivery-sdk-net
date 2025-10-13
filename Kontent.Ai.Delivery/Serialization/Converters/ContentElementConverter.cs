@@ -1,7 +1,8 @@
 ﻿using System.Text.Json;
 using System.Text.Json.Serialization;
+using Kontent.Ai.Delivery.ContentTypes.Element;
 
-namespace Kontent.Ai.Delivery.ContentTypes.Element;
+namespace Kontent.Ai.Delivery.Serialization.Converters;
 
 /// <summary>
 /// Serializes content element definitions into specific types
