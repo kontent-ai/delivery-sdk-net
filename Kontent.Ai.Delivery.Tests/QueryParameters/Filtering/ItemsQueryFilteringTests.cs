@@ -19,7 +19,7 @@ public class ItemsQueryFilteringTests
         var itemsUrl = $"{baseUrl}/items";
         var mockHttp = new MockHttpMessageHandler();
 
-        mockHttp.When($"{itemsUrl}?system.type%5Beq%5D=\"article\"")
+        mockHttp.When($"{itemsUrl}?system.type%5Beq%5D=article")
             .Respond("application/json", await File.ReadAllTextAsync(Path.Combine(Environment.CurrentDirectory, $"Fixtures{Path.DirectorySeparatorChar}DeliveryClient{Path.DirectorySeparatorChar}items.json")));
 
         var services = new ServiceCollection();

@@ -2,7 +2,6 @@
 using Kontent.Ai.Delivery.Abstractions;
 using Kontent.Ai.Delivery.ContentItems;
 using Kontent.Ai.Delivery.ContentItems.ContentLinks;
-using Kontent.Ai.Delivery.ContentItems.InlineContentItems;
 using Xunit;
 
 namespace Kontent.Ai.Delivery.Tests.DependencyInjectionFrameworks;

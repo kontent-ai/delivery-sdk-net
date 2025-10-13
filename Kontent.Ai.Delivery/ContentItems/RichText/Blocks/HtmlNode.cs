@@ -5,7 +5,7 @@ namespace Kontent.Ai.Delivery.ContentItems.RichText.Blocks;
 /// <summary>
 /// Represents an HTML element block with structured children
 /// </summary>
-internal sealed class HtmlElement : IHtmlElement
+internal sealed class HtmlNode : IHtmlNode
 {
     public string TagName { get; }
 
@@ -13,7 +13,7 @@ internal sealed class HtmlElement : IHtmlElement
 
     public IReadOnlyList<IRichTextBlock> Children { get; }
 
-    public HtmlElement(string tagName, IReadOnlyDictionary<string, string>? attributes = null, IReadOnlyList<IRichTextBlock>? children = null)
+    public HtmlNode(string tagName, IReadOnlyDictionary<string, string>? attributes = null, IReadOnlyList<IRichTextBlock>? children = null)
     {
         TagName = tagName ?? throw new ArgumentNullException(nameof(tagName));
         Attributes = attributes ?? new ReadOnlyDictionary<string, string>(new Dictionary<string, string>());

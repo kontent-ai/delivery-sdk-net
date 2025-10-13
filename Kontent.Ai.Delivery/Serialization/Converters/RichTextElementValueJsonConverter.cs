@@ -49,23 +49,23 @@ internal class RichTextElementValueJsonConverter : JsonConverter<RichTextElement
         writer.WriteEndObject();
     }
 
-    private static IDictionary<Guid, InlineImage> DeserializeImages(JsonElement root, JsonSerializerOptions options) =>
+    private static Dictionary<Guid, InlineImage> DeserializeImages(JsonElement root, JsonSerializerOptions options) =>
         root.TryGetProperty("images", out var imagesEl) && imagesEl.ValueKind == JsonValueKind.Object
             ? imagesEl.EnumerateObject()
                 .Where(prop => Guid.TryParse(prop.Name, out _))
                 .Select(prop => (Id: Guid.Parse(prop.Name), Image: JsonSerializer.Deserialize<InlineImage>(prop.Value.GetRawText(), options)))
                 .Where(x => x.Image is not null)
                 .ToDictionary(x => x.Id, x => x.Image!)
-            : new Dictionary<Guid, InlineImage>();
+            : [];
 
-    private static IDictionary<Guid, ContentLink> DeserializeLinks(JsonElement root, JsonSerializerOptions options) =>
+    private static Dictionary<Guid, ContentLink> DeserializeLinks(JsonElement root, JsonSerializerOptions options) =>
         root.TryGetProperty("links", out var linksEl) && linksEl.ValueKind == JsonValueKind.Object
             ? linksEl.EnumerateObject()
                 .Where(prop => Guid.TryParse(prop.Name, out _))
                 .Select(prop => (Id: Guid.Parse(prop.Name), Link: JsonSerializer.Deserialize<ContentLink>(prop.Value.GetRawText(), options)))
                 .Where(x => x.Link is not null)
                 .ToDictionary(x => x.Id, x => x.Link!)
-            : new Dictionary<Guid, ContentLink>();
+            : [];
 
     private static List<string> DeserializeModularContent(JsonElement root) =>
         root.TryGetProperty("modular_content", out var modularEl) && modularEl.ValueKind == JsonValueKind.Array

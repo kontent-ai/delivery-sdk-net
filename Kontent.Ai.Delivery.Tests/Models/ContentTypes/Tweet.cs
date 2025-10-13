@@ -4,14 +4,14 @@ using Kontent.Ai.Delivery.Abstractions;
 
 namespace Kontent.Ai.Delivery.Tests.Models.ContentTypes;
 
-public record Tweet
-(
-    [property: JsonPropertyName("display_options")]
-    IEnumerable<IMultipleChoiceOption> DisplayOptions,
+public record Tweet : IElementsModel
+{
+    [JsonPropertyName("display_options")]
+    public IEnumerable<IMultipleChoiceOption> DisplayOptions { get; init; }
 
-    [property: JsonPropertyName("theme")]
-    IEnumerable<IMultipleChoiceOption> Theme,
+    [JsonPropertyName("theme")]
+    public IEnumerable<IMultipleChoiceOption> Theme { get; init; }
 
-    [property: JsonPropertyName("tweet_link")]
-    string TweetLink
-);
+    [JsonPropertyName("tweet_link")]
+    public string TweetLink { get; init; }
+}

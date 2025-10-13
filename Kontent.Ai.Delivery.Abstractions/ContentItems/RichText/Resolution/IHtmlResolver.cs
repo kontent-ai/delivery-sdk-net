@@ -2,6 +2,7 @@ using System;
 using System.Collections.Generic;
 using System.Threading;
 using System.Threading.Tasks;
+using Kontent.Ai.Delivery.Abstractions.ContentItems.RichText.Blocks;
 
 namespace Kontent.Ai.Delivery.Abstractions;
 
@@ -18,6 +19,13 @@ public delegate ValueTask<string> BlockResolver<in TBlock>(
     IHtmlResolutionContext context,
     Func<IEnumerable<IRichTextBlock>, ValueTask<string>> resolveChildren
 ) where TBlock : IRichTextBlock;
+
+/// <summary>
+/// Predicate delegate for determining if an HTML node should be handled by a specific resolver.
+/// </summary>
+/// <param name="node">The HTML node to evaluate.</param>
+/// <returns>True if the resolver should handle this node; otherwise, false.</returns>
+public delegate bool HtmlNodePredicate(IHtmlNode node);
 
 /// <summary>
 /// Resolves structured rich text content into HTML strings.
@@ -81,18 +89,56 @@ public interface IHtmlResolverBuilder
     IHtmlResolverBuilder WithInlineImageResolver(BlockResolver<IInlineImage> resolver);
 
     /// <summary>
-    /// Registers a resolver for HTML content blocks.
+    /// Registers a resolver for text node blocks (leaf text content).
     /// </summary>
     /// <param name="resolver">The resolver function.</param>
     /// <returns>This builder for method chaining.</returns>
-    IHtmlResolverBuilder WithHtmlContentResolver(BlockResolver<IHtmlContent> resolver);
+    IHtmlResolverBuilder WithTextNodeResolver(BlockResolver<ITextNode> resolver);
 
     /// <summary>
-    /// Registers a resolver for HTML element blocks with structured children.
+    /// Registers a conditional resolver for HTML nodes matching a predicate.
+    /// Resolvers are evaluated in registration order - first match wins.
+    /// If no conditional resolver matches, falls back to <see cref="WithHtmlElementResolver"/>.
+    /// </summary>
+    /// <param name="predicate">Predicate to determine if this resolver applies to a node.</param>
+    /// <param name="resolver">The resolver function for matching nodes.</param>
+    /// <param name="description">Optional description for debugging purposes.</param>
+    /// <returns>This builder for method chaining.</returns>
+    IHtmlResolverBuilder WithHtmlNodeResolver(
+        HtmlNodePredicate predicate,
+        BlockResolver<IHtmlNode> resolver,
+        string? description = null);
+
+    /// <summary>
+    /// Convenience method to register a resolver for HTML nodes with a specific tag name.
+    /// Tag name matching is case-insensitive.
+    /// </summary>
+    /// <param name="tagName">The HTML tag name to match (e.g., "h1", "p", "div").</param>
+    /// <param name="resolver">The resolver function for matching nodes.</param>
+    /// <returns>This builder for method chaining.</returns>
+    IHtmlResolverBuilder WithHtmlNodeResolver(
+        string tagName,
+        BlockResolver<IHtmlNode> resolver);
+
+    /// <summary>
+    /// Convenience method to register a resolver for HTML nodes with a specific attribute.
+    /// </summary>
+    /// <param name="attributeName">The attribute name to check for.</param>
+    /// <param name="attributeValue">Optional specific attribute value to match (null matches any value).</param>
+    /// <param name="resolver">The resolver function for matching nodes.</param>
+    /// <returns>This builder for method chaining.</returns>
+    IHtmlResolverBuilder WithHtmlNodeResolverForAttribute(
+        string attributeName,
+        string? attributeValue,
+        BlockResolver<IHtmlNode> resolver);
+
+    /// <summary>
+    /// Registers a fallback resolver for HTML element blocks with structured children.
+    /// This resolver is used when no conditional resolver matches via <see cref="WithHtmlNodeResolver"/>.
     /// </summary>
     /// <param name="resolver">The resolver function.</param>
     /// <returns>This builder for method chaining.</returns>
-    IHtmlResolverBuilder WithHtmlElementResolver(BlockResolver<IHtmlElement> resolver);
+    IHtmlResolverBuilder WithHtmlElementResolver(BlockResolver<IHtmlNode> resolver);
 
     /// <summary>
     /// Registers default resolvers for all block types.

@@ -22,11 +22,11 @@ public class FilterTests
     [Fact]
     public void ToQueryParameter_Empty_NoValueSuffix()
     {
-        var filter = new Filter("elements.title", FilterOperator.Empty, EmptyValue.From(string.Empty));
+        var filter = new Filter("elements.title", FilterOperator.Empty);
 
         var result = filter.ToQueryParameter();
 
-        Assert.Equal("elements.title[empty]", $"{result.Key}={result.Value}");
+        Assert.Equal("elements.title[empty]", $"{result.Key}{result.Value}");
     }
 
     [Fact]
@@ -46,7 +46,7 @@ public class FilterTests
 
         var result = filter.ToQueryParameter();
 
-        Assert.Equal("elements.date[range]=2020-01-01,2020-12-31", $"{result.Key}={result.Value}");
+        Assert.Equal("elements.date[range]=2020-01-01T00:00:00Z,2020-12-31T00:00:00Z", $"{result.Key}={result.Value}");
     }
 }
 

@@ -10,7 +10,6 @@ using System.Collections.Generic;
 using Kontent.Ai.Delivery.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Kontent.Ai.Delivery.Extensions;
-using Kontent.Ai.Delivery.ContentItems.InlineContentItems;
 using Kontent.Ai.Delivery.ContentItems.ContentLinks;
 using Kontent.Ai.Delivery.ContentItems;
 using Kontent.Ai.Delivery.Benchmarks.ContentTypes;
@@ -23,7 +22,7 @@ public class DeliveryClientBenchmark
 
     private static IDeliveryClient CreateClient(MockHttpMessageHandler mockHttp, DeliveryOptions options)
     {
-        var services = new ServiceCollection();
+        var services = new ServiceCollection(); // TODO: cleanup
 
         // services.AddSingleton<IModelProvider>(sp =>
         // {
@@ -59,10 +58,10 @@ public class DeliveryClientBenchmark
             .Respond("application/json",
                 await File.ReadAllTextAsync(Path.Combine(Environment.CurrentDirectory, $"Fixtures{Path.DirectorySeparatorChar}full_articles.json")));
 
-        var _deliveryOptions = DeliveryOptionsBuilder.Create(environmentId).Build();
+        var _deliveryOptions = DeliveryOptionsBuilder.CreateInstance().WithEnvironmentId(environmentId).UseProductionApi().Build();
         _client = CreateClient(mockHttp, _deliveryOptions);
     }
-
+    
     [Benchmark]
     public async Task<IDeliveryResult<IContentItem<Article>>> GetItemAsync()
     {

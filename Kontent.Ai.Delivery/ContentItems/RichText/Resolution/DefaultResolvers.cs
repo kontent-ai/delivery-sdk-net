@@ -106,7 +106,7 @@ public static class DefaultResolvers
     /// Creates a default resolver for HTML elements that renders them with their original structure.
     /// </summary>
     /// <returns>A block resolver for HTML elements.</returns>
-    public static BlockResolver<IHtmlElement> HtmlElementResolver()
+    public static BlockResolver<IHtmlNode> HtmlElementResolver()
     {
         return async (block, context, resolveChildren) =>
         {

@@ -25,7 +25,7 @@ internal sealed class ElementsPostProcessor(
     IHtmlParser htmlParser,
     IOptionsMonitor<DeliveryOptions> deliveryOptions) : IElementsPostProcessor
 {
-    private readonly RichTextContentConverter _richTextConverter = new(htmlParser);
+    private readonly RichTextParser _richTextParser = new(htmlParser);
     private static readonly ConcurrentDictionary<string, JsonSerializerOptions> _richTextOptionsCache = new();
     /// <summary>
     /// Hydrates advanced element types on a strongly typed content item.
@@ -99,7 +99,7 @@ internal sealed class ElementsPostProcessor(
         if (richElement is null)
             return null;
 
-        return await _richTextConverter.GetPropertyValueAsync(property, richElement, context).ConfigureAwait(false);
+        return await _richTextParser.ConvertAsync(richElement, context).ConfigureAwait(false);
     }
 
     private Task<object?> ProcessAssetPropertyAsync(PropertyInfo property, JsonElement elementsJson, string contentType)
