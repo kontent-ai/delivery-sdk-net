@@ -6,7 +6,7 @@ namespace Kontent.Ai.Delivery.Api.QueryBuilders.Filtering;
 internal sealed record Filter(
     string PropertyPath,
     FilterOperator Operator,
-    IFilterValue Value) : IFilter
+    IFilterValue? Value = null) : IFilter
 {
     /// <summary>
     /// Serializes this filter to the Kontent.ai API query parameter format.
@@ -39,7 +39,7 @@ internal sealed record Filter(
             return new KeyValuePair<string, string>(PropertyPath, operatorSuffix);
         }
 
-        var serializedValue = Value.Serialize();
+        var serializedValue = Value?.Serialize() ?? null;
 
         return new KeyValuePair<string, string>($"{PropertyPath}{operatorSuffix}", serializedValue);
     }

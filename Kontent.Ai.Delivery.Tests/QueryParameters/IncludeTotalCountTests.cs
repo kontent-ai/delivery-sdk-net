@@ -1,12 +1,11 @@
 ﻿using System;
+using System.Text.Json;
 using System.Threading.Tasks;
 using FluentAssertions;
 using Kontent.Ai.Delivery.Abstractions;
 using Kontent.Ai.Delivery.Extensions;
 using Kontent.Ai.Delivery.SharedModels;
 using Microsoft.Extensions.DependencyInjection;
-using Newtonsoft.Json;
-using Newtonsoft.Json.Linq;
 using RichardSzalay.MockHttp;
 using Xunit;
 
@@ -33,14 +32,15 @@ public class IncludeTotalCountTests
     [Fact]
     public void PaginationResponse_WithoutTotalCount_DeserializedCorrectly()
     {
-        var responsePagination = JObject.FromObject(new
+        var responsePagination = JsonSerializer.SerializeToElement(new
         {
             skip = 20,
             limit = 10,
             count = 8,
             next_page = "nextPage"
         });
-        var expected = new Pagination()
+
+        var expected = new Pagination
         {
             Skip = 20,
             Limit = 10,
@@ -49,7 +49,7 @@ public class IncludeTotalCountTests
             NextPageUrl = "nextPage"
         };
 
-        var result = responsePagination.ToObject<Pagination>();
+        var result = JsonSerializer.Deserialize<Pagination>(responsePagination);
 
         result.Should().BeEquivalentTo(expected);
     }
@@ -57,7 +57,7 @@ public class IncludeTotalCountTests
     [Fact]
     public void PaginationResponse_WithTotalCount_DeserializedCorrectly()
     {
-        var responsePagination = JObject.FromObject(new
+        var responsePagination = JsonSerializer.SerializeToElement(new
         {
             skip = 20,
             limit = 10,
@@ -65,6 +65,7 @@ public class IncludeTotalCountTests
             total_count = 28,
             next_page = "nextPage"
         });
+
         var expected = new Pagination()
         {
             Skip = 20,
@@ -74,7 +75,7 @@ public class IncludeTotalCountTests
             NextPageUrl = "nextPage"
         };
 
-        var result = responsePagination.ToObject<Pagination>();
+        var result = JsonSerializer.Deserialize<Pagination>(responsePagination);
 
         result.Should().BeEquivalentTo(expected);
     }
@@ -82,13 +83,13 @@ public class IncludeTotalCountTests
     [Fact]
     public async Task GetItems_DeliveryOptionsWithIncludeTotalCount_IncludeTotalCountParameterAdded()
     {
-        var responseJson = JsonConvert.SerializeObject(CreateItemsResponse());
+        var responseJson = JsonSerializer.Serialize(CreateItemsResponse());
         _mockHttp
             .Expect($"{BaseUrl}/items")
-            .WithExactQueryString("includeTotalCount")
+            .WithQueryString("includeTotalCount", bool.TrueString)
             .Respond("application/json", responseJson);
         var client = CreateClient();
-        await client.GetItems<IElementsModel>().ExecuteAsync();
+        await client.GetItems<IElementsModel>().WithTotalCount().ExecuteAsync();
 
         _mockHttp.VerifyNoOutstandingExpectation();
     }
@@ -96,10 +97,11 @@ public class IncludeTotalCountTests
     [Fact]
     public async Task GetItemsTyped_DeliveryOptionsWithIncludeTotalCount_IncludeTotalCountParameterAdded()
     {
-        var responseJson = JsonConvert.SerializeObject(CreateItemsResponse());
+        var responseJson = JsonSerializer.Serialize(CreateItemsResponse());
         _mockHttp
             .Expect($"{BaseUrl}/items")
-            .WithExactQueryString("system.type=cafe&includeTotalCount")
+            .WithQueryString("system.type[eq]", "cafe")
+            .WithQueryString("includeTotalCount", bool.TrueString)
             .Respond("application/json", responseJson);
         var client = CreateClient();
         await client.GetItems<IElementsModel>()
@@ -107,6 +109,7 @@ public class IncludeTotalCountTests
                 "system.type",
                 FilterOperator.Equals,
                 Api.QueryBuilders.Filtering.StringValue.From("cafe")))
+            .WithTotalCount()
             .ExecuteAsync();
 
         _mockHttp.VerifyNoOutstandingExpectation();

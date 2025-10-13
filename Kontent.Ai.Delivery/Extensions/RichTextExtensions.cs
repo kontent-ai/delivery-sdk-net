@@ -52,9 +52,9 @@ public static class RichTextExtensions
         if (block is TBlock typedBlock)
             yield return typedBlock;
 
-        if (block is IContentItemLink link)
+        if (block is IBlockWithChildren blockWithChildren)
         {
-            foreach (var child in link.Children.SelectMany(GetBlocksRecursive<TBlock>))
+            foreach (var child in blockWithChildren.Children.SelectMany(GetBlocksRecursive<TBlock>))
                 yield return child;
         }
     }

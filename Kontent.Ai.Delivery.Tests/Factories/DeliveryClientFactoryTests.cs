@@ -4,6 +4,7 @@ using Kontent.Ai.Delivery.Abstractions;
 using Microsoft.Extensions.DependencyInjection;
 using Xunit;
 using Kontent.Ai.Delivery.Extensions;
+using Microsoft.Extensions.Options;
 
 namespace Kontent.Ai.Delivery.Tests.Factories;
 
@@ -44,12 +45,16 @@ public class DeliveryClientFactoryTests
     {
         var services = new ServiceCollection();
 
-        Action act = () => services.AddDeliveryClient(new DeliveryOptions
+        services.AddDeliveryClient(new DeliveryOptions
         {
             EnvironmentId = "invalid-guid"
         });
 
-        act.Should().Throw<ArgumentException>()
-            .WithMessage("*DeliveryOptions validation failed*");
+        using var sp = services.BuildServiceProvider();
+
+        Action act = () => _ = sp.GetRequiredService<IOptions<DeliveryOptions>>().Value;
+
+        act.Should().Throw<OptionsValidationException>()
+        .WithMessage("*The environment ID must be a valid GUID*");
     }
 }

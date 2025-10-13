@@ -64,9 +64,11 @@ public class DefaultRetryPolicyTests
         var itemsUrl = $"{baseUrl}/items";
         var itemsJson = await File.ReadAllTextAsync(Path.Combine(Environment.CurrentDirectory, $"Fixtures{Path.DirectorySeparatorChar}DeliveryClient{Path.DirectorySeparatorChar}items.json"));
 
-        // First 500, then OK
-        mockHttp.When(itemsUrl).Respond(req => new HttpResponseMessage(HttpStatusCode.InternalServerError)); // TODO: Fix tests
-        mockHttp.When(itemsUrl).Respond("application/json", itemsJson);
+        mockHttp.Expect(HttpMethod.Get, itemsUrl)
+                .Respond(HttpStatusCode.InternalServerError);
+
+        mockHttp.Expect(HttpMethod.Get, itemsUrl)
+                .Respond("application/json", itemsJson);   
 
         var behavior = new TestBehaviorHandler();
         var client = BuildClient(env, mockHttp, behavior, b =>
