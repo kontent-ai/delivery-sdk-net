@@ -8,14 +8,13 @@ namespace Kontent.Ai.Delivery.SharedModels;
 /// Initializes a new instance of the <see cref="TaxonomyTerm"/> class.
 /// </summary>
 [DebuggerDisplay("Name = {" + nameof(Name) + "}")]
-[method: JsonConstructor]
-public sealed class TaxonomyTerm() : ITaxonomyTerm
+public sealed record TaxonomyTerm : ITaxonomyTerm
 {
     /// <inheritdoc/>
     [JsonPropertyName("name")]
-    public string Name { get; internal set; } // TODO: improve and consider changing to record
+    public required string Name { get; init; }
 
     /// <inheritdoc/>
     [JsonPropertyName("codename")]
-    public string Codename { get; internal set; }
+    public required string Codename { get; init; }
 }

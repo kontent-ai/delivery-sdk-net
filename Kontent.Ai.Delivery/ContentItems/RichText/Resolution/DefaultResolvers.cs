@@ -9,65 +9,44 @@ namespace Kontent.Ai.Delivery.ContentItems.RichText.Resolution;
 public static class DefaultResolvers
 {
     /// <summary>
-    /// Creates a content item link resolver that generates URLs based on a pattern string.
-    /// Placeholders: {codename}, {type}, {urlslug}, {id}
+    /// Creates a content item link resolver that generates URLs based on content type-specific patterns.
+    /// Each content type can have its own URL pattern. Placeholders: {codename}, {type}, {urlslug}, {id}
     /// </summary>
-    /// <param name="pattern">The URL pattern with placeholders.</param>
+    /// <param name="typePatterns">Dictionary mapping content type codenames to URL patterns.</param>
+    /// <param name="fallbackPattern">Optional fallback pattern for content types not in the dictionary. If null, uses "/content/{id}".</param>
     /// <returns>A block resolver for content item links.</returns>
     /// <example>
     /// <code>
-    /// var resolver = DefaultResolvers.UrlPatternResolver("/articles/{urlslug}");
+    /// var resolver = DefaultResolvers.UrlPatternResolver(new Dictionary&lt;string, string&gt;
+    /// {
+    ///     ["article"] = "/articles/{urlslug}",
+    ///     ["product"] = "/shop/products/{urlslug}",
+    ///     ["author"] = "/about/authors/{codename}"
+    /// });
     /// </code>
     /// </example>
-    public static BlockResolver<IContentItemLink> UrlPatternResolver(string pattern)
+    public static BlockResolver<IContentItemLink> UrlPatternResolver(
+        IReadOnlyDictionary<string, string> typePatterns,
+        string? fallbackPattern = null)
     {
-        ArgumentNullException.ThrowIfNull(pattern);
+        ArgumentNullException.ThrowIfNull(typePatterns);
 
         return async (block, context, resolveChildren) =>
         {
             var innerHtml = await resolveChildren(block.Children);
 
+            // Get pattern for this content type, or use fallback
+            var contentType = block.Metadata?.ContentTypeCodename ?? string.Empty;
+            var pattern = typePatterns.TryGetValue(contentType, out var typePattern)
+                ? typePattern
+                : fallbackPattern ?? "/content/{id}";
+
+            // Apply pattern with placeholder replacement
             var url = pattern
                 .Replace("{codename}", block.Metadata?.Codename ?? string.Empty)
                 .Replace("{type}", block.Metadata?.ContentTypeCodename ?? string.Empty)
                 .Replace("{urlslug}", block.Metadata?.UrlSlug ?? string.Empty)
                 .Replace("{id}", block.ItemId.ToString());
-
-            var attributes = BuildAttributes(block.Attributes, ("href", url), ("data-item-id", block.ItemId.ToString()));
-            return $"<a {attributes}>{innerHtml}</a>";
-        };
-    }
-
-    /// <summary>
-    /// Creates a content item link resolver that uses the legacy IContentLinkUrlResolver.
-    /// Provided for backward compatibility when migrating from string-based resolution.
-    /// </summary>
-    /// <param name="urlResolver">The legacy URL resolver.</param>
-    /// <returns>A block resolver for content item links.</returns>
-    public static BlockResolver<IContentItemLink> LegacyUrlResolver(IContentLinkUrlResolver urlResolver)
-    {
-        ArgumentNullException.ThrowIfNull(urlResolver);
-
-        return async (block, context, resolveChildren) =>
-        {
-            var innerHtml = await resolveChildren(block.Children);
-
-            string url;
-            if (block.Metadata != null)
-            {
-                url = await urlResolver.ResolveLinkUrlAsync(block.Metadata);
-            }
-            else
-            {
-                url = await urlResolver.ResolveBrokenLinkUrlAsync();
-            }
-
-            if (string.IsNullOrEmpty(url))
-            {
-                // If resolver returns null/empty, render link without href (broken link)
-                var brokenAttributes = BuildAttributes(block.Attributes, ("data-item-id", block.ItemId.ToString()));
-                return $"<a {brokenAttributes}>{innerHtml}</a>";
-            }
 
             var attributes = BuildAttributes(block.Attributes, ("href", url), ("data-item-id", block.ItemId.ToString()));
             return $"<a {attributes}>{innerHtml}</a>";

@@ -27,7 +27,7 @@ internal sealed class DeliveryClient(
             throw new ArgumentException("Entered item codename is not valid.", nameof(codename));
         }
 
-        return new ItemQuery<T>(_deliveryApi, codename, GetDefaultWaitForLoadingNewContent, GetDefaultRenderRichTextToHtml, _elementsPostProcessor);
+        return new ItemQuery<T>(_deliveryApi, codename, GetDefaultWaitForLoadingNewContent, _elementsPostProcessor);
     }
 
     public IDynamicItemQuery GetItem(string codename)
@@ -42,7 +42,7 @@ internal sealed class DeliveryClient(
 
     public IItemsQuery<T> GetItems<T>() where T : IElementsModel
     {
-        return new ItemsQuery<T>(_deliveryApi, GetDefaultWaitForLoadingNewContent, GetDefaultRenderRichTextToHtml, _elementsPostProcessor);
+        return new ItemsQuery<T>(_deliveryApi, GetDefaultWaitForLoadingNewContent, _elementsPostProcessor);
     }
 
     public IDynamicItemsQuery GetItems()
@@ -132,7 +132,4 @@ internal sealed class DeliveryClient(
 
     private bool? GetDefaultWaitForLoadingNewContent()
         => _deliveryOptions.CurrentValue.WaitForLoadingNewContent ? true : null;
-
-    private bool GetDefaultRenderRichTextToHtml()
-        => _deliveryOptions.CurrentValue.RenderRichTextToHtml;
 }

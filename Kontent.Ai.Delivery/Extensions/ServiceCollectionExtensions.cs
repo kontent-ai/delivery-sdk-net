@@ -1,7 +1,6 @@
 using AngleSharp.Html.Parser;
 using Kontent.Ai.Delivery.Configuration;
 using Kontent.Ai.Delivery.ContentItems;
-using Kontent.Ai.Delivery.ContentItems.ContentLinks;
 using Kontent.Ai.Delivery.Handlers;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
@@ -50,18 +49,19 @@ public static class ServiceCollectionExtensions
     /// <param name="configureRefit">Optional action to configure Refit settings.</param>
     /// <returns>The service collection for chaining.</returns>
     public static IServiceCollection AddDeliveryClient(
-        this IServiceCollection services, 
-        Func<IDeliveryOptionsBuilder, DeliveryOptions> buildDeliveryOptions, 
-        Action<IHttpClientBuilder>? configureHttpClient = null, 
-        Action<ResiliencePipelineBuilder<HttpResponseMessage>>? configureResilience = null, 
+        this IServiceCollection services,
+        Func<IDeliveryOptionsBuilder, DeliveryOptions> buildDeliveryOptions,
+        Action<IHttpClientBuilder>? configureHttpClient = null,
+        Action<ResiliencePipelineBuilder<HttpResponseMessage>>? configureResilience = null,
         Action<RefitSettings>? configureRefit = null)
     {
         ArgumentNullException.ThrowIfNull(buildDeliveryOptions);
 
         var builder = DeliveryOptionsBuilder.CreateInstance();
+        var options = buildDeliveryOptions(builder);
 
         return services
-            .RegisterOptions(builder.Build())
+            .RegisterOptions(options)
             .RegisterServices(configureHttpClient, configureResilience, configureRefit);
     }
 
@@ -159,7 +159,6 @@ public static class ServiceCollectionExtensions
 
         // Core services
         services.TryAddSingleton<IPropertyMapper, PropertyMapper>();
-        services.TryAddSingleton<IContentLinkUrlResolver, DefaultContentLinkUrlResolver>();
         services.TryAddSingleton<ITypeProvider, TypeProvider>();
         services.TryAddSingleton<IItemTypingStrategy, DefaultItemTypingStrategy>();
         services.TryAddSingleton<IContentDeserializer, ContentDeserializer>();

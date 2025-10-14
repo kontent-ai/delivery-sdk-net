@@ -12,9 +12,4 @@ public class ResolvingContext
     /// Gets the content item within current resolving context
     /// </summary>
     public required Func<string, Task<object>> GetLinkedItem { get; init; }
-
-    /// <summary>
-    /// Gets an instance that resolves content links in Rich text element values
-    /// </summary>
-    public required IContentLinkUrlResolver ContentLinkUrlResolver { get; init; }
 }

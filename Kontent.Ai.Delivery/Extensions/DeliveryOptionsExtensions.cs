@@ -22,7 +22,6 @@ internal static class DeliveryOptionsExtensions
         o.PreviewEndpoint = options.PreviewEndpoint;
         o.IncludeTotalCount = options.IncludeTotalCount;
         o.WaitForLoadingNewContent = options.WaitForLoadingNewContent;
-        o.RenderRichTextToHtml = options.RenderRichTextToHtml;
         o.DefaultRenditionPreset = options.DefaultRenditionPreset;
     }
 }

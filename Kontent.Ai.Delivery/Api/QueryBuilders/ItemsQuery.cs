@@ -7,18 +7,15 @@ namespace Kontent.Ai.Delivery.Api.QueryBuilders;
 internal sealed class ItemsQuery<TModel>(
     IDeliveryApi api,
     Func<bool?> getDefaultWaitForNewContent,
-    Func<bool> getDefaultRenderRichTextToHtml,
     IElementsPostProcessor elementsPostProcessor) : IItemsQuery<TModel> where TModel : IElementsModel
 {
     private readonly IDeliveryApi _api = api;
     private readonly Func<bool?> _getDefaultWaitForNewContent = getDefaultWaitForNewContent;
-    private readonly Func<bool> _getDefaultRenderRichTextToHtml = getDefaultRenderRichTextToHtml;
     private readonly IElementsPostProcessor _elementsPostProcessor = elementsPostProcessor;
     private readonly ItemFilters _filters = new();
     private readonly Dictionary<string, string> _serializedFilters = [];
     private ListItemsParams _params = new();
     private bool? _waitForLoadingNewContentOverride;
-    private bool? _renderRichTextToHtmlOverride;
 
     public IItemsQuery<TModel> WithLanguage(string languageCodename)
     {
@@ -74,12 +71,6 @@ internal sealed class ItemsQuery<TModel>(
         return this;
     }
 
-    public IItemsQuery<TModel> RenderRichTextToHtml(bool render = true)
-    {
-        _renderRichTextToHtmlOverride = render;
-        return this;
-    }
-
     public IItemsQuery<TModel> Filter(Func<IItemFilters, IFilter> filterBuilder)
     {
         var filter = filterBuilder(_filters);
@@ -99,7 +90,6 @@ internal sealed class ItemsQuery<TModel>(
     {
         // Get raw response from Refit API
         bool? wait = _waitForLoadingNewContentOverride ?? _getDefaultWaitForNewContent();
-        var _ = _renderRichTextToHtmlOverride ?? _getDefaultRenderRichTextToHtml();
         var rawResponse = await _api.GetItemsInternalAsync<TModel>(_params, _serializedFilters, wait).ConfigureAwait(false);
 
         // Convert IApiResponse to IDeliveryResult

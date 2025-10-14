@@ -1,3 +1,4 @@
+using System.Collections.Frozen;
 using System.Text;
 using Kontent.Ai.Delivery.Abstractions;
 using Kontent.Ai.Delivery.Abstractions.ContentItems.RichText.Blocks;
@@ -12,7 +13,11 @@ internal sealed class HtmlResolver : IHtmlResolver
     private readonly HtmlResolverOptions _options;
 
     // Performance cache: maps tag names to their dedicated resolvers for O(1) lookup
-    private readonly Dictionary<string, BlockResolver<IHtmlNode>?> _tagResolverCache;
+    private readonly FrozenDictionary<string, BlockResolver<IHtmlNode>> _tagResolverCache;
+
+    // Diagnostic messages for app-specific resolvers that require configuration
+    private const string MissingInlineContentItemResolver = "<!-- [Kontent.ai SDK] Missing resolver for IInlineContentItem (type: {0}) -->";
+    private const string MissingContentItemLinkResolver = "<!-- [Kontent.ai SDK] Missing resolver for IContentItemLink (item ID: {0}, codename: {1}) -->";
 
     public HtmlResolver(
         IReadOnlyDictionary<Type, Delegate> resolvers,
@@ -21,17 +26,13 @@ internal sealed class HtmlResolver : IHtmlResolver
         _resolvers = resolvers ?? throw new ArgumentNullException(nameof(resolvers));
         _options = options ?? throw new ArgumentNullException(nameof(options));
 
-        // Pre-populate cache for simple tag-based resolvers
-        _tagResolverCache = new Dictionary<string, BlockResolver<IHtmlNode>?>(StringComparer.OrdinalIgnoreCase);
-        foreach (var conditional in _options.ConditionalHtmlNodeResolvers)
-        {
-            // Only cache simple tag matchers for performance
-            if (conditional.Description?.StartsWith("Tag=") == true)
-            {
-                var tagName = conditional.Description[4..];
-                _tagResolverCache.TryAdd(tagName, conditional.Resolver);
-            }
-        }
+        // Build immutable tag resolver cache
+        _tagResolverCache = _options.ConditionalHtmlNodeResolvers
+            .Where(c => c.Description?.StartsWith("Tag=") == true)
+            .ToFrozenDictionary(
+                c => c.Description![4..],  // Extract tag name from "Tag=..." description
+                c => c.Resolver,
+                StringComparer.OrdinalIgnoreCase);
     }
 
     public async ValueTask<string> ResolveAsync(
@@ -59,27 +60,29 @@ internal sealed class HtmlResolver : IHtmlResolver
     {
         return block switch
         {
-            // Special handling for IHtmlNode with conditional resolution
             IHtmlNode htmlNode => ResolveHtmlNodeAsync(htmlNode, context),
 
-            // ITextNode resolution - encode and return text
             ITextNode textNode when _resolvers.TryGetValue(typeof(ITextNode), out var resolver)
                 => ((BlockResolver<ITextNode>)resolver)(textNode, context, _ => ValueTask.FromResult(string.Empty)),
-            ITextNode textNode
-                => ValueTask.FromResult(System.Text.Encodings.Web.HtmlEncoder.Default.Encode(textNode.Text)),
-
-            IContentItemLink link when _resolvers.TryGetValue(typeof(IContentItemLink), out var resolver)
-                => ((BlockResolver<IContentItemLink>)resolver)(link, context, children => ResolveChildrenAsync(children, context)),
-
-            IInlineContentItem item when _resolvers.TryGetValue(typeof(IInlineContentItem), out var resolver)
-                => ((BlockResolver<IInlineContentItem>)resolver)(item, context, _ => ValueTask.FromResult(string.Empty)),
 
             IInlineImage image when _resolvers.TryGetValue(typeof(IInlineImage), out var resolver)
                 => ((BlockResolver<IInlineImage>)resolver)(image, context, _ => ValueTask.FromResult(string.Empty)),
 
-            _ => _options.ThrowOnMissingResolver
-                ? throw new InvalidOperationException($"No resolver registered for block type {block.GetType().Name}")
-                : ValueTask.FromResult(string.Empty)
+            IContentItemLink link when _resolvers.TryGetValue(typeof(IContentItemLink), out var resolver)
+                => ((BlockResolver<IContentItemLink>)resolver)(link, context, children => ResolveChildrenAsync(children, context)),
+
+            IContentItemLink link => _options.ThrowOnMissingResolver
+                ? throw new InvalidOperationException($"No resolver registered for IContentItemLink (item ID: {link.ItemId})")
+                : ValueTask.FromResult(string.Format(MissingContentItemLinkResolver, link.ItemId, link.Metadata?.Codename ?? "unknown")),
+
+            IInlineContentItem item when _resolvers.TryGetValue(typeof(IInlineContentItem), out var resolver)
+                => ((BlockResolver<IInlineContentItem>)resolver)(item, context, _ => ValueTask.FromResult(string.Empty)),
+
+            IInlineContentItem item => _options.ThrowOnMissingResolver
+                ? throw new InvalidOperationException($"No resolver registered for IInlineContentItem")
+                : ValueTask.FromResult(string.Format(MissingInlineContentItemResolver, item.ContentItem?.GetType().Name ?? "unknown")),
+
+            _ => throw new InvalidOperationException($"Unknown block type: {block.GetType().Name}")
         };
     }
 
@@ -88,7 +91,7 @@ internal sealed class HtmlResolver : IHtmlResolver
         IHtmlResolutionContext context)
     {
         // Step 1: Check tag resolver cache for O(1) lookup
-        if (_tagResolverCache.TryGetValue(node.TagName, out var cachedResolver) && cachedResolver != null)
+        if (_tagResolverCache.TryGetValue(node.TagName, out var cachedResolver))
         {
             return await cachedResolver(node, context, children => ResolveChildrenAsync(children, context));
         }
@@ -141,8 +144,7 @@ internal sealed record HtmlResolverOptions
     /// Ordered list of conditional HTML node resolvers.
     /// Evaluated in order - first matching predicate wins.
     /// </summary>
-    public IReadOnlyList<ConditionalHtmlNodeResolver> ConditionalHtmlNodeResolvers { get; init; }
-        = Array.Empty<ConditionalHtmlNodeResolver>();
+    public IReadOnlyList<ConditionalHtmlNodeResolver> ConditionalHtmlNodeResolvers { get; init; } = [];
 
     /// <summary>
     /// Fallback resolver for HTML nodes when no conditional resolver matches.

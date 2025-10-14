@@ -7,7 +7,6 @@ using Kontent.Ai.Delivery.Abstractions;
 using Kontent.Ai.Delivery.Api;
 using Kontent.Ai.Delivery.Configuration;
 using Kontent.Ai.Delivery.ContentItems;
-using Kontent.Ai.Delivery.ContentItems.ContentLinks;
 using Kontent.Ai.Delivery.Extensions;
 using Microsoft.Extensions.Http.Resilience;
 using Microsoft.Extensions.Configuration;
@@ -26,7 +25,6 @@ public class ServiceCollectionsExtensionsTests
     private readonly ReadOnlyDictionary<Type, Type> _expectedInterfacesWithImplementationTypes = new ReadOnlyDictionary<Type, Type>(
         new Dictionary<Type, Type>
         {
-            { typeof(IContentLinkUrlResolver), typeof(DefaultContentLinkUrlResolver) },
             { typeof(ITypeProvider), typeof(TypeProvider) },
             { typeof(IItemTypingStrategy), typeof(DefaultItemTypingStrategy) },
             { typeof(IContentDeserializer), typeof(ContentDeserializer) },

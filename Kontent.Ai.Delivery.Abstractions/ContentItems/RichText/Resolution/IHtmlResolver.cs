@@ -141,13 +141,6 @@ public interface IHtmlResolverBuilder
     IHtmlResolverBuilder WithHtmlElementResolver(BlockResolver<IHtmlNode> resolver);
 
     /// <summary>
-    /// Registers default resolvers for all block types.
-    /// Default resolvers provide sensible HTML output for common scenarios.
-    /// </summary>
-    /// <returns>This builder for method chaining.</returns>
-    IHtmlResolverBuilder WithDefaultResolvers();
-
-    /// <summary>
     /// Builds the configured HTML resolver.
     /// </summary>
     /// <returns>A new HTML resolver instance.</returns>

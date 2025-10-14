@@ -9,11 +9,11 @@ namespace Kontent.Ai.Delivery.ContentItems;
 /// Default provider for mapping Kontent.ai content item fields to model properties.
 /// Caches reflection results for optimal performance.
 /// </summary>
-internal class PropertyMapper : IPropertyMapper
+internal class PropertyMapper : IPropertyMapper // TODO: this is just a boolean checker now, consider renaming?
 {
     // Cache property matching results to avoid repeated reflection overhead
-    // Key: (DeclaringType, fieldName), Value: matched PropertyInfo or null if no match
-    private static readonly ConcurrentDictionary<(Type, string), PropertyInfo?> _matchCache = new();
+    // Key: (PropertyInfo, fieldName), Value: bool match result
+    private static readonly ConcurrentDictionary<(PropertyInfo, string), bool> _matchCache = new();
     /// <summary>
     /// Determines whether the given property corresponds with a given field.
     /// Uses caching to avoid repeated reflection overhead.
@@ -27,12 +27,12 @@ internal class PropertyMapper : IPropertyMapper
         if (modelProperty.DeclaringType is null)
             return false;
 
-        var cacheKey = (modelProperty.DeclaringType, fieldName);
+        var cacheKey = (modelProperty, fieldName);
 
         // Check cache first for O(1) lookup
-        if (_matchCache.TryGetValue(cacheKey, out var cachedProperty))
+        if (_matchCache.TryGetValue(cacheKey, out var cachedResult))
         {
-            return cachedProperty == modelProperty;
+            return cachedResult;
         }
 
         // Cache miss - perform matching logic
@@ -40,7 +40,7 @@ internal class PropertyMapper : IPropertyMapper
         if (ignoreAttribute != null)
         {
             // JsonIgnore means no match - cache null to avoid repeated checks
-            _matchCache[cacheKey] = null;
+            _matchCache[cacheKey] = false;
             return false;
         }
 
@@ -49,8 +49,8 @@ internal class PropertyMapper : IPropertyMapper
             ? fieldName.Equals(propertyName, StringComparison.Ordinal)
             : fieldName.Replace("_", "").Equals(modelProperty.Name, StringComparison.OrdinalIgnoreCase); // Default mapping
 
-        // Cache the result (either the matched property or null) to avoid repeated reflection
-        _matchCache[cacheKey] = isMatch ? modelProperty : null;
+        // Cache the result to avoid repeated reflection
+        _matchCache[cacheKey] = isMatch;
 
         return isMatch;
     }
