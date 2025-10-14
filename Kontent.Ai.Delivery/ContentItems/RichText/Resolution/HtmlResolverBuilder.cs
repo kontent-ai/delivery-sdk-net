@@ -9,16 +9,27 @@ namespace Kontent.Ai.Delivery.ContentItems.RichText.Resolution;
 /// Fluent builder for configuring HTML resolvers for rich text content.
 /// </summary>
 /// <remarks>
-/// This builder allows you to register custom resolvers for different block types
-/// and configure how rich text content is transformed into HTML strings.
-/// Use <see cref="WithDefaultResolvers"/> to register sensible defaults for all block types,
-/// then override specific resolvers as needed.
+/// <para>
+/// The SDK automatically provides sensible defaults for text nodes, HTML elements, and inline images.
+/// You only need to configure resolvers for app-specific content:
+/// </para>
+/// <list type="bullet">
+///   <item><description><see cref="IContentItemLink"/> - Links to other content items (requires URL generation logic)</description></item>
+///   <item><description><see cref="IInlineContentItem"/> - Embedded content items (requires rendering logic)</description></item>
+/// </list>
+/// <para>
+/// Custom resolvers override the built-in defaults.
+/// </para>
 /// </remarks>
 /// <example>
 /// <code>
 /// var resolver = new HtmlResolverBuilder()
-///     .WithDefaultResolvers()
-///     .WithContentItemLinkResolver(DefaultResolvers.UrlPatternResolver("/articles/{urlslug}"))
+///     .WithContentItemLinkResolver(DefaultResolvers.UrlPatternResolver(new Dictionary&lt;string, string&gt;
+///     {
+///         ["article"] = "/articles/{urlslug}",
+///         ["product"] = "/products/{urlslug}"
+///     }))
+///     .WithInlineContentItemResolver((item, ctx, _) => ValueTask.FromResult($"&lt;div class='embed'&gt;{item.ContentItem.System.Name}&lt;/div&gt;"))
 ///     .Build();
 ///
 /// var html = await richText.ToHtmlAsync(resolver);
@@ -123,15 +134,18 @@ public sealed class HtmlResolverBuilder : IHtmlResolverBuilder
     }
 
     /// <inheritdoc />
-    public IHtmlResolverBuilder WithDefaultResolvers()
+    public IHtmlResolver Build()
     {
+        // Always provide built-in defaults for elements that have sensible default rendering
+        var resolversWithDefaults = new Dictionary<Type, Delegate>(_resolvers);
+
         // Default text node resolver - HTML-encodes text content
-        _resolvers.TryAdd(typeof(ITextNode), new BlockResolver<ITextNode>(
+        resolversWithDefaults.TryAdd(typeof(ITextNode), new BlockResolver<ITextNode>(
             (block, _, _) => ValueTask.FromResult(HtmlEncoder.Default.Encode(block.Text))
         ));
 
         // Default inline image resolver - generates proper HTML figure element
-        _resolvers.TryAdd(typeof(IInlineImage), new BlockResolver<IInlineImage>(
+        resolversWithDefaults.TryAdd(typeof(IInlineImage), new BlockResolver<IInlineImage>(
             (block, _, _) =>
             {
                 var url = HtmlEncoder.Default.Encode(block.Url ?? string.Empty);
@@ -141,45 +155,13 @@ public sealed class HtmlResolverBuilder : IHtmlResolverBuilder
             }
         ));
 
-        // Default content item link resolver (renders with href from UrlSlug or empty)
-        _resolvers.TryAdd(typeof(IContentItemLink), new BlockResolver<IContentItemLink>(
-            async (block, context, resolveChildren) =>
-            {
-                var innerHtml = await resolveChildren(block.Children);
-                var href = block.Metadata?.UrlSlug ?? string.Empty;
+        // Default HTML element resolver - renders elements with their structure
+        var defaultHtmlNodeResolver = resolversWithDefaults.TryGetValue(typeof(IHtmlNode), out var htmlResolver)
+            ? (BlockResolver<IHtmlNode>)htmlResolver
+            : DefaultResolvers.HtmlElementResolver();
 
-                string[] baseAttributes = [
-                    $"href=\"{HtmlEncoder.Default.Encode(href)}\"",
-                    $"data-item-id=\"{block.ItemId}\""
-                ];
-
-                var customAttributes = block.Attributes
-                    .Where(kvp => !string.IsNullOrEmpty(kvp.Value))
-                    .Select(kvp => $"{kvp.Key}=\"{HtmlEncoder.Default.Encode(kvp.Value)}\"");
-
-                var attributes = string.Join(" ", baseAttributes.Concat(customAttributes));
-                return $"<a {attributes}>{innerHtml}</a>";
-            }
-        ));
-
-        // Default inline content item resolver (returns type name as fallback)
-        _resolvers.TryAdd(typeof(IInlineContentItem), new BlockResolver<IInlineContentItem>(
-            (block, _, _) => ValueTask.FromResult($"<!-- Inline content item: {block.ContentItem?.GetType().Name ?? "null"} -->")
-        ));
-
-        // Default HTML element resolver (renders elements with their structure)
-        _resolvers.TryAdd(typeof(IHtmlNode), DefaultResolvers.HtmlElementResolver());
-
-        return this;
-    }
-
-    /// <inheritdoc />
-    public IHtmlResolver Build()
-    {
-        // Extract the default HTML node resolver if registered
-        var defaultHtmlNodeResolver = _resolvers.TryGetValue(typeof(IHtmlNode), out var resolver)
-            ? (BlockResolver<IHtmlNode>)resolver
-            : null;
+        // Note: IContentItemLink and IInlineContentItem have NO defaults
+        // They require explicit configuration and will show diagnostic comments if missing
 
         // Create options with conditional resolvers and default fallback
         var options = new HtmlResolverOptions
@@ -190,7 +172,7 @@ public sealed class HtmlResolverBuilder : IHtmlResolverBuilder
         };
 
         // Create resolver dictionary excluding IHtmlNode (handled via options)
-        var resolverDict = _resolvers
+        var resolverDict = resolversWithDefaults
             .Where(kvp => kvp.Key != typeof(IHtmlNode))
             .ToDictionary(kvp => kvp.Key, kvp => kvp.Value);
 

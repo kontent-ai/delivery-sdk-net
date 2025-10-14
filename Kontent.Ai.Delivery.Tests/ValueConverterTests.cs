@@ -55,8 +55,6 @@ public class ValueConverterTests
         var services = new ServiceCollection();
         var opts = options ?? new DeliveryOptions { EnvironmentId = _guid };
         services.AddDeliveryClient(opts, configureHttpClient: b => b.ConfigurePrimaryHttpMessageHandler(() => mockHttp));
-        // Register custom content link url resolver to satisfy value converter usages
-        services.AddSingleton<IContentLinkUrlResolver, Kontent.Ai.Delivery.ContentItems.ContentLinks.DefaultContentLinkUrlResolver>();
         return services.BuildServiceProvider().GetRequiredService<IDeliveryClient>();
     }
 }

@@ -76,14 +76,6 @@ public interface IItemsQuery<TModel>
     IItemsQuery<TModel> WaitForLoadingNewContent(bool enabled = true);
 
     /// <summary>
-    /// Controls whether rich text elements are rendered into HTML strings for this request.
-    /// Overrides the client-level default when specified.
-    /// </summary>
-    /// <param name="render">Whether to render rich text to HTML strings.</param>
-    /// <returns>The query builder for method chaining.</returns>
-    IItemsQuery<TModel> RenderRichTextToHtml(bool render = true);
-
-    /// <summary>
     /// Adds a filter to the query using a filter builder function.
     /// </summary>
     /// <param name="filterBuilder">Function that builds a filter using the items filter builder.</param>

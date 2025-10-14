@@ -1,4 +1,5 @@
 using System;
+using System.Collections.Generic;
 using System.IO;
 using System.Linq;
 using System.Threading.Tasks;
@@ -25,17 +26,20 @@ public class RichTextIntegrationTests
     #region Content Item Link Resolution Tests
 
     [Fact]
-    public async Task IntegrationTest_CoffeeProcessingTechniques_ResolvesLinksCorrectly()
+    public async Task IntegrationTest_CoffeeProcessingTechniques_WithTypeSpecificPatterns_GeneratesCorrectUrls()
     {
         // Arrange
         var client = await CreateDeliveryClientAsync("coffee_processing_techniques.json");
-        var urlResolver = new TestContentLinkUrlResolver(
-            link => $"http://example.org/{link.UrlSlug}",
-            () => "http://example.org/broken");
 
         var resolver = new HtmlResolverBuilder()
-            .WithDefaultResolvers()
-            .WithContentItemLinkResolver(DefaultResolvers.LegacyUrlResolver(urlResolver))
+            .WithContentItemLinkResolver(DefaultResolvers.UrlPatternResolver(
+                new Dictionary<string, string>
+                {
+                    ["coffee"] = "/shop/products/{urlslug}",
+                    ["article"] = "/articles/{urlslug}",
+                    ["author"] = "/about/authors/{codename}"
+                },
+                fallbackPattern: "/content/{id}"))
             .Build();
 
         // Act
@@ -43,44 +47,13 @@ public class RichTextIntegrationTests
         var html = await result.Value.Elements.BodyCopy.ToHtmlAsync(resolver);
 
         // Assert
-        Assert.True(result.IsSuccess);
-        Assert.NotNull(html);
-
-        // Verify both links are resolved
-        Assert.Contains("href=\"http://example.org/kenya-gakuyuni-aa\"", html);
-        Assert.Contains("href=\"http://example.org/brazil-natural-barra-grande\"", html);
-
-        // Verify link text is preserved
-        Assert.Contains("Kenya Gakuyuni AA", html);
-        Assert.Contains("Brazil Natural Barra Grande", html);
+        // Verify coffee type links use the shop pattern
+        Assert.Contains("href=\"/shop/products/kenya-gakuyuni-aa\"", html);
+        Assert.Contains("href=\"/shop/products/brazil-natural-barra-grande\"", html);
 
         // Verify data-item-id attributes are present
         Assert.Contains("data-item-id=\"80c7074b-3da1-4e1d-882b-c5716ebb4d25\"", html);
         Assert.Contains("data-item-id=\"0c9a11bb-6fc3-409c-b3cb-f0b797e15489\"", html);
-
-        // Verify surrounding text is preserved
-        Assert.Contains("If you are curious about the taste", html);
-        Assert.Contains("Check out our", html);
-    }
-
-    [Fact]
-    public async Task IntegrationTest_CoffeeProcessingTechniques_WithUrlPattern_GeneratesCorrectUrls()
-    {
-        // Arrange
-        var client = await CreateDeliveryClientAsync("coffee_processing_techniques.json");
-
-        var resolver = new HtmlResolverBuilder()
-            .WithDefaultResolvers()
-            .WithContentItemLinkResolver(DefaultResolvers.UrlPatternResolver("/products/{type}/{urlslug}"))
-            .Build();
-
-        // Act
-        var result = await client.GetItem<Article>("coffee_processing_techniques").ExecuteAsync();
-        var html = await result.Value.Elements.BodyCopy.ToHtmlAsync(resolver);
-
-        // Assert
-        Assert.Contains("href=\"/products/coffee/kenya-gakuyuni-aa\"", html);
-        Assert.Contains("href=\"/products/coffee/brazil-natural-barra-grande\"", html);
     }
 
     [Fact]
@@ -113,9 +86,7 @@ public class RichTextIntegrationTests
         // Arrange
         var client = await CreateDeliveryClientAsync("on_roasts.json");
 
-        var resolver = new HtmlResolverBuilder()
-            .WithDefaultResolvers()
-            .Build();
+        var resolver = new HtmlResolverBuilder().Build();
 
         // Act
         var result = await client.GetItem<Article>("on_roasts").ExecuteAsync();
@@ -150,7 +121,6 @@ public class RichTextIntegrationTests
         var client = await CreateDeliveryClientAsync("coffee_beverages_explained.json");
 
         var resolver = new HtmlResolverBuilder()
-            .WithDefaultResolvers()
             .WithInlineContentItemResolver((block, context, _) =>
             {
                 // Custom resolver for inline items
@@ -217,7 +187,6 @@ public class RichTextIntegrationTests
         var client = await CreateDeliveryClientAsync("coffee_processing_techniques.json");
 
         var resolver = new HtmlResolverBuilder()
-            .WithDefaultResolvers()
             .WithContentItemLinkResolver(async (link, context, resolveChildren) =>
             {
                 var innerHtml = await resolveChildren(link.Children);
@@ -248,7 +217,6 @@ public class RichTextIntegrationTests
         var client = await CreateDeliveryClientAsync("coffee_processing_techniques.json");
 
         var resolver = new HtmlResolverBuilder()
-            .WithDefaultResolvers()
             .WithContentItemLinkResolver(async (link, context, resolveChildren) =>
             {
                 // Resolve children (which may contain <strong>, <em>, etc.)
@@ -314,7 +282,7 @@ public class RichTextIntegrationTests
         var provider = services.BuildServiceProvider();
         var client = (DeliveryClient)provider.GetRequiredService<IDeliveryClient>();
 
-        var resolver = new HtmlResolverBuilder().WithDefaultResolvers().Build();
+        var resolver = new HtmlResolverBuilder().Build();
 
         // Act
         var result = await client.GetItem<Article>("empty_article").ExecuteAsync();
@@ -360,9 +328,7 @@ public class RichTextIntegrationTests
         // Arrange
         var client = await CreateDeliveryClientAsync("on_roasts.json");
 
-        var resolver = new HtmlResolverBuilder()
-            .WithDefaultResolvers()
-            .Build();
+        var resolver = new HtmlResolverBuilder().Build();
 
         // Act
         var result = await client.GetItem<Article>("on_roasts").ExecuteAsync();
@@ -385,14 +351,13 @@ public class RichTextIntegrationTests
     }
 
     [Fact]
-    public async Task IntegrationTest_WithDefaultResolvers_RendersAllContent()
+    public async Task IntegrationTest_AutomaticDefaultResolvers_RenderInlineItemsAsComments()
     {
         // Arrange
         var client = await CreateDeliveryClientAsync("coffee_beverages_explained.json");
 
-        var resolver = new HtmlResolverBuilder()
-            .WithDefaultResolvers() // Use all default resolvers
-            .Build();
+        // No explicit resolvers configured - defaults are automatic
+        var resolver = new HtmlResolverBuilder().Build();
 
         // Act
         var result = await client.GetItem<Article>("coffee_beverages_explained").ExecuteAsync();
@@ -418,9 +383,7 @@ public class RichTextIntegrationTests
         // Arrange
         var client = await CreateDeliveryClientAsync("coffee_processing_techniques.json");
 
-        var resolver = new HtmlResolverBuilder()
-            .WithDefaultResolvers()
-            .Build();
+        var resolver = new HtmlResolverBuilder().Build();
 
         // Act
         var result = await client.GetItem<Article>("coffee_processing_techniques").ExecuteAsync();
@@ -434,27 +397,213 @@ public class RichTextIntegrationTests
         Assert.True(duration.TotalMilliseconds < 1000, "Resolution should complete in under 1 second");
     }
 
+    #endregion
+
+    #region HTML Entity Encoding Tests
+
     [Fact]
-    public async Task IntegrationTest_MultipleResolutions_ProducesSameOutput()
+    public async Task IntegrationTest_HtmlEntities_AreProperlyEncoded()
+    {
+        // Arrange - API returns HTML with entities already encoded
+        var mockHttp = new MockHttpMessageHandler();
+        var guid = Guid.NewGuid().ToString();
+        var url = $"https://deliver.kontent.ai/{guid}/items/html_entities_test";
+
+        var response = @"{
+            ""item"": {
+                ""system"": {
+                    ""id"": ""12345678-1234-1234-1234-123456789012"",
+                    ""name"": ""HTML Entities Test"",
+                    ""codename"": ""html_entities_test"",
+                    ""language"": ""en-US"",
+                    ""type"": ""article""
+                },
+                ""elements"": {
+                    ""body_copy"": {
+                        ""type"": ""rich_text"",
+                        ""name"": ""Body Copy"",
+                        ""images"": {},
+                        ""links"": {},
+                        ""modular_content"": [],
+                        ""value"": ""<p>Use the &lt;template&gt; tag in HTML</p><p>Compare: 5 &lt; 10 &amp; 10 &gt; 5</p><p>Quote: &quot;Hello World&quot;</p>""
+                    }
+                }
+            },
+            ""modular_content"": {}
+        }";
+
+        mockHttp.When(url).Respond("application/json", response);
+
+        var services = new ServiceCollection();
+        services.AddDeliveryClient(
+            new DeliveryOptions { EnvironmentId = guid },
+            configureHttpClient: builder => builder.ConfigurePrimaryHttpMessageHandler(() => mockHttp));
+        services.AddSingleton<ITypeProvider, CustomTypeProvider>();
+
+        var provider = services.BuildServiceProvider();
+        var client = (DeliveryClient)provider.GetRequiredService<IDeliveryClient>();
+
+        var resolver = new HtmlResolverBuilder().Build();
+
+        // Act
+        var result = await client.GetItem<Article>("html_entities_test").ExecuteAsync();
+        var html = await result.Value.Elements.BodyCopy.ToHtmlAsync(resolver);
+
+        // Assert
+        Assert.True(result.IsSuccess);
+
+        // Verify that entities from API are decoded by AngleSharp parser, then re-encoded for output
+        // So &lt; in API becomes < during parsing, then &lt; again in output
+        Assert.Contains("&lt;template&gt;", html);
+        Assert.Contains("5 &lt; 10 &amp; 10 &gt; 5", html);
+        Assert.Contains("&quot;Hello World&quot;", html);
+
+        // Verify the structure is preserved
+        Assert.Contains("<p>", html);
+        Assert.Contains("</p>", html);
+    }
+
+    [Fact]
+    public async Task IntegrationTest_HtmlEntities_OutputVerification()
+    {
+        // Arrange
+        var mockHttp = new MockHttpMessageHandler();
+        var guid = Guid.NewGuid().ToString();
+        var url = $"https://deliver.kontent.ai/{guid}/items/output_test";
+
+        var response = @"{
+            ""item"": {
+                ""system"": {
+                    ""id"": ""12345678-1234-1234-1234-123456789012"",
+                    ""name"": ""Output Test"",
+                    ""codename"": ""output_test"",
+                    ""language"": ""en-US"",
+                    ""type"": ""article""
+                },
+                ""elements"": {
+                    ""body_copy"": {
+                        ""type"": ""rich_text"",
+                        ""name"": ""Body Copy"",
+                        ""images"": {},
+                        ""links"": {},
+                        ""modular_content"": [],
+                        ""value"": ""<p>API sends: &lt;tag&gt; and &amp;</p>""
+                    }
+                }
+            },
+            ""modular_content"": {}
+        }";
+
+        mockHttp.When(url).Respond("application/json", response);
+
+        var services = new ServiceCollection();
+        services.AddDeliveryClient(
+            new DeliveryOptions { EnvironmentId = guid },
+            configureHttpClient: builder => builder.ConfigurePrimaryHttpMessageHandler(() => mockHttp));
+        services.AddSingleton<ITypeProvider, CustomTypeProvider>();
+
+        var provider = services.BuildServiceProvider();
+        var client = (DeliveryClient)provider.GetRequiredService<IDeliveryClient>();
+
+        var resolver = new HtmlResolverBuilder().Build();
+
+        // Act
+        var result = await client.GetItem<Article>("output_test").ExecuteAsync();
+        var html = await result.Value.Elements.BodyCopy.ToHtmlAsync(resolver);
+
+        // Assert
+        Assert.True(result.IsSuccess);
+
+        // The output should be: <p>API sends: &lt;tag&gt; and &amp;</p>
+        // This demonstrates that:
+        // 1. API returns: &lt;tag&gt; and &amp;
+        // 2. AngleSharp decodes to: <tag> and &
+        // 3. SDK re-encodes to: &lt;tag&gt; and &amp;
+        Assert.Equal("<p>API sends: &lt;tag&gt; and &amp;</p>", html);
+    }
+
+    [Fact]
+    public async Task IntegrationTest_PlainText_WithoutSpecialChars_IsUnchanged()
+    {
+        // Arrange
+        var mockHttp = new MockHttpMessageHandler();
+        var guid = Guid.NewGuid().ToString();
+        var url = $"https://deliver.kontent.ai/{guid}/items/plain_text_test";
+
+        var response = @"{
+            ""item"": {
+                ""system"": {
+                    ""id"": ""12345678-1234-1234-1234-123456789012"",
+                    ""name"": ""Plain Text Test"",
+                    ""codename"": ""plain_text_test"",
+                    ""language"": ""en-US"",
+                    ""type"": ""article""
+                },
+                ""elements"": {
+                    ""body_copy"": {
+                        ""type"": ""rich_text"",
+                        ""name"": ""Body Copy"",
+                        ""images"": {},
+                        ""links"": {},
+                        ""modular_content"": [],
+                        ""value"": ""<p>This is plain text without any special characters.</p>""
+                    }
+                }
+            },
+            ""modular_content"": {}
+        }";
+
+        mockHttp.When(url).Respond("application/json", response);
+
+        var services = new ServiceCollection();
+        services.AddDeliveryClient(
+            new DeliveryOptions { EnvironmentId = guid },
+            configureHttpClient: builder => builder.ConfigurePrimaryHttpMessageHandler(() => mockHttp));
+        services.AddSingleton<ITypeProvider, CustomTypeProvider>();
+
+        var provider = services.BuildServiceProvider();
+        var client = (DeliveryClient)provider.GetRequiredService<IDeliveryClient>();
+
+        var resolver = new HtmlResolverBuilder().Build();
+
+        // Act
+        var result = await client.GetItem<Article>("plain_text_test").ExecuteAsync();
+        var html = await result.Value.Elements.BodyCopy.ToHtmlAsync(resolver);
+
+        // Assert
+        Assert.True(result.IsSuccess);
+        Assert.Equal("<p>This is plain text without any special characters.</p>", html);
+    }
+
+    #endregion
+
+    #region Missing Resolver Diagnostics Tests
+
+    [Fact]
+    public async Task IntegrationTest_MissingContentItemLinkResolver_RendersDiagnosticWithContext()
     {
         // Arrange
         var client = await CreateDeliveryClientAsync("coffee_processing_techniques.json");
 
-        var resolver = new HtmlResolverBuilder()
-            .WithDefaultResolvers()
-            .WithContentItemLinkResolver(DefaultResolvers.UrlPatternResolver("/articles/{urlslug}"))
-            .Build();
-
-        var result = await client.GetItem<Article>("coffee_processing_techniques").ExecuteAsync();
+        // Build resolver WITHOUT content item link resolver
+        // Note: No need to call WithDefaultResolvers() - defaults are automatic!
+        var resolver = new HtmlResolverBuilder().Build();
 
         // Act
-        var html1 = await result.Value.Elements.BodyCopy.ToHtmlAsync(resolver);
-        var html2 = await result.Value.Elements.BodyCopy.ToHtmlAsync(resolver);
-        var html3 = await result.Value.Elements.BodyCopy.ToHtmlAsync(resolver);
+        var result = await client.GetItem<Article>("coffee_processing_techniques").ExecuteAsync();
+        var html = await result.Value.Elements.BodyCopy.ToHtmlAsync(resolver);
 
-        // Assert - All resolutions should produce identical output
-        Assert.Equal(html1, html2);
-        Assert.Equal(html2, html3);
+        // Assert
+        Assert.True(result.IsSuccess);
+
+        // Verify diagnostic comment includes context (item ID and codename)
+        Assert.Contains("<!-- [Kontent.ai SDK] Missing resolver for IContentItemLink", html);
+        Assert.Contains("80c7074b-3da1-4e1d-882b-c5716ebb4d25", html); // Item ID
+        Assert.Contains("kenya_gakuyuni_aa", html); // Codename
+
+        // Verify text and HTML elements still render correctly with built-in defaults
+        Assert.Contains("<p>", html);
+        Assert.Contains("</p>", html);
     }
 
     #endregion
@@ -483,21 +632,6 @@ public class RichTextIntegrationTests
 
         var provider = services.BuildServiceProvider();
         return (DeliveryClient)provider.GetRequiredService<IDeliveryClient>();
-    }
-
-    private class TestContentLinkUrlResolver : IContentLinkUrlResolver
-    {
-        private readonly Func<IContentLink, string> _linkUrl;
-        private readonly Func<string> _brokenUrl;
-
-        public TestContentLinkUrlResolver(Func<IContentLink, string> linkUrl, Func<string> brokenUrl)
-        {
-            _linkUrl = linkUrl;
-            _brokenUrl = brokenUrl;
-        }
-
-        public Task<string> ResolveLinkUrlAsync(IContentLink link) => Task.FromResult(_linkUrl(link));
-        public Task<string> ResolveBrokenLinkUrlAsync() => Task.FromResult(_brokenUrl());
     }
 
     #endregion

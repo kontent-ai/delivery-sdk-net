@@ -159,8 +159,7 @@ internal sealed class ElementsPostProcessor(
 
                 var result = contentItem.GetType().GetProperty("Elements")?.GetValue(contentItem) ?? contentItem;
                 return Task.FromResult(result);
-            },
-            ContentLinkUrlResolver = new ContentLinks.DefaultContentLinkUrlResolver()
+            }
         };
 
     // Simple property type predicates

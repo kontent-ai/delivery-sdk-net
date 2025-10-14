@@ -110,13 +110,6 @@ internal sealed class CachingItemsQuery<TModel> : IItemsQuery<TModel>
         return this;
     }
 
-    public IItemsQuery<TModel> RenderRichTextToHtml(bool render = true)
-    {
-        _queryStateComponents.Add($"render:{render}");
-        _innerQuery.RenderRichTextToHtml(render);
-        return this;
-    }
-
     public async Task<IDeliveryResult<IReadOnlyList<IContentItem<TModel>>>> ExecuteAsync(CancellationToken cancellationToken = default)
     {
         var cacheKey = GenerateCacheKey();

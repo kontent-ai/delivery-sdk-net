@@ -21,9 +21,7 @@ public static class RichTextExtensions
     {
         ArgumentNullException.ThrowIfNull(richText);
 
-        resolver ??= new HtmlResolverBuilder()
-            .WithDefaultResolvers()
-            .Build();
+        resolver ??= new HtmlResolverBuilder().Build();
 
         return resolver.ResolveAsync(richText, context);
     }

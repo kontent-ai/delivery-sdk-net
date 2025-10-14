@@ -33,7 +33,7 @@ public class DeliveryClientTests
 
         var client = CreateClient(mock);
 
-        var result = await client.GetItem<Article>("coffee_beverages_explained").RenderRichTextToHtml().ExecuteAsync();
+        var result = await client.GetItem<Article>("coffee_beverages_explained").ExecuteAsync();
 
         Assert.True(result.IsSuccess);
         Assert.Equal(200, result.StatusCode);
