@@ -148,19 +148,16 @@ public sealed class HtmlResolverBuilder : IHtmlResolverBuilder
                 var innerHtml = await resolveChildren(block.Children);
                 var href = block.Metadata?.UrlSlug ?? string.Empty;
 
-                var attributesBuilder = new StringBuilder();
-                attributesBuilder.Append($"href=\"{HtmlEncoder.Default.Encode(href)}\"");
-                attributesBuilder.Append($" data-item-id=\"{block.ItemId}\"");
+                string[] baseAttributes = [
+                    $"href=\"{HtmlEncoder.Default.Encode(href)}\"",
+                    $"data-item-id=\"{block.ItemId}\""
+                ];
 
-                foreach (var (key, value) in block.Attributes)
-                {
-                    if (!string.IsNullOrEmpty(value))
-                    {
-                        attributesBuilder.Append($" {key}=\"{HtmlEncoder.Default.Encode(value)}\"");
-                    }
-                }
+                var customAttributes = block.Attributes
+                    .Where(kvp => !string.IsNullOrEmpty(kvp.Value))
+                    .Select(kvp => $"{kvp.Key}=\"{HtmlEncoder.Default.Encode(kvp.Value)}\"");
 
-                var attributes = attributesBuilder.ToString();
+                var attributes = string.Join(" ", baseAttributes.Concat(customAttributes));
                 return $"<a {attributes}>{innerHtml}</a>";
             }
         ));

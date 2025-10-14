@@ -53,18 +53,15 @@ internal sealed class DynamicContentItemConverter<TModel> : JsonConverter<Conten
     /// Parses elements in dynamic mode, preserving full element structure (type, name, value).
     /// Each element is stored as a complete JsonElement for flexible runtime access.
     /// </summary>
-    private static TModel ParseDynamicElements(JsonElement elementsElement)
+    private static TModel ParseDynamicElements(JsonElement element)
     {
-        var map = new Dictionary<string, JsonElement>(StringComparer.Ordinal);
-
-        if (elementsElement.ValueKind == JsonValueKind.Object)
-        {
-            foreach (var prop in elementsElement.EnumerateObject())
-            {
-                // Store the WHOLE element object (clone to ensure lifetime)
-                map[prop.Name] = prop.Value.CloneElement();
-            }
-        }
+        var map = element.ValueKind == JsonValueKind.Object
+            ? element.EnumerateObject()
+                .ToDictionary(
+                    prop => prop.Name,
+                    prop => prop.Value.CloneElement(),
+                    StringComparer.Ordinal)
+            : new Dictionary<string, JsonElement>(StringComparer.Ordinal);
 
         return (TModel)(IElementsModel)new DynamicElements(map);
     }

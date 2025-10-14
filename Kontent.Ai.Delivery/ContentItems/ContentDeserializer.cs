@@ -65,9 +65,9 @@ internal sealed class ContentDeserializer(JsonSerializerOptions options) : ICont
         var optionsParam = Expression.Parameter(typeof(JsonSerializerOptions), "options");
 
         // Call: JsonSerializer.Deserialize(json, contentItemType, options)
+        Type[] parameterTypes = [typeof(string), typeof(Type), typeof(JsonSerializerOptions)];
         var deserializeMethod = typeof(JsonSerializer)
-            .GetMethod(nameof(JsonSerializer.Deserialize),
-                new[] { typeof(string), typeof(Type), typeof(JsonSerializerOptions) })
+            .GetMethod(nameof(JsonSerializer.Deserialize), parameterTypes)
             ?? throw new InvalidOperationException("Could not find JsonSerializer.Deserialize method");
 
         var deserializeCall = Expression.Call(
