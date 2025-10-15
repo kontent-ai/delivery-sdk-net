@@ -57,6 +57,12 @@ internal sealed class ElementsPostProcessor(
             prop => ProcessAssetPropertyAsync(prop, elementsJson, item.System.Type),
             (prop, value) => prop.SetValue(item.Elements, value));
 
+        // Process taxonomy properties in parallel
+        await ProcessPropertiesAsync(
+            writableProperties.Where(IsTaxonomyProperty),
+            prop => ProcessTaxonomyPropertyAsync(prop, elementsJson, item.System.Type),
+            (prop, value) => prop.SetValue(item.Elements, value));
+
         // Process datetime content properties in parallel
         await ProcessPropertiesAsync(
             writableProperties.Where(IsDateTimeContentProperty),
@@ -117,6 +123,21 @@ internal sealed class ElementsPostProcessor(
         return Task.FromResult(result);
     }
 
+    private Task<object?> ProcessTaxonomyPropertyAsync(PropertyInfo property, JsonElement elementsJson, string contentType)
+    {
+        var element = FindElement(elementsJson, property, contentType);
+        if (!element.HasValue)
+            return Task.FromResult<object?>(null);
+
+        var (_, elementValue) = element.Value;
+
+        object? result = TryGetArrayValue(elementValue, out var arrayValue)
+            ? DeserializeTaxonomyTerms(arrayValue)
+            : null;
+
+        return Task.FromResult(result);
+    }
+
     private Task<object?> ProcessDateTimePropertyAsync(PropertyInfo property, JsonElement elementsJson, string contentType)
     {
         var element = FindElement(elementsJson, property, contentType);
@@ -169,6 +190,10 @@ internal sealed class ElementsPostProcessor(
     private static bool IsAssetProperty(PropertyInfo property) =>
         GetEnumerableElementType(property.PropertyType) is Type elementType &&
         (typeof(IAsset).IsAssignableFrom(elementType) || elementType == typeof(Asset));
+
+    private static bool IsTaxonomyProperty(PropertyInfo property) =>
+        GetEnumerableElementType(property.PropertyType) is Type elementType &&
+        typeof(ITaxonomyTerm).IsAssignableFrom(elementType);
 
     private static bool IsDateTimeContentProperty(PropertyInfo property) =>
         typeof(IDateTimeContent).IsAssignableFrom(property.PropertyType);
@@ -243,6 +268,12 @@ internal sealed class ElementsPostProcessor(
             .Select(asset => CreateAsset(asset, deliveryOptions.CurrentValue.DefaultRenditionPreset))
             .ToList();
 
+    private static IReadOnlyList<TaxonomyTerm> DeserializeTaxonomyTerms(JsonElement valueArray) =>
+        valueArray.EnumerateArray()
+            .Where(term => term.ValueKind == JsonValueKind.Object)
+            .Select(CreateTaxonomyTerm)
+            .ToList();
+
     private static Asset CreateAsset(JsonElement assetElement, string? defaultPreset)
     {
         var renditions = ParseRenditions(assetElement);
@@ -288,6 +319,13 @@ internal sealed class ElementsPostProcessor(
                 },
                 StringComparer.Ordinal);
     }
+
+    private static TaxonomyTerm CreateTaxonomyTerm(JsonElement termElement) =>
+        new()
+        {
+            Name = GetStringProperty(termElement, "name"),
+            Codename = GetStringProperty(termElement, "codename")
+        };
 
     private static string GetStringProperty(JsonElement element, string propertyName) =>
         element.TryGetProperty(propertyName, out var prop) ? prop.GetString() ?? string.Empty : string.Empty;

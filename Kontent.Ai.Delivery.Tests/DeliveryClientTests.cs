@@ -1,5 +1,6 @@
 using System;
 using System.IO;
+using System.Linq;
 using System.Threading.Tasks;
 using Kontent.Ai.Delivery.Abstractions;
 using Kontent.Ai.Delivery.Api.QueryBuilders.Filtering;
@@ -39,6 +40,9 @@ public class DeliveryClientTests
         Assert.Equal(200, result.StatusCode);
         Assert.False(string.IsNullOrEmpty(result.RequestUrl));
         Assert.False(string.IsNullOrEmpty(result.Value.Elements.Title));
+        Assert.NotNull(result.Value.Elements.TeaserImage); // TODO: fix this and extend tests to all other elements
+        Assert.NotNull(result.Value.Elements.Personas);
+        Assert.True(result.Value.Elements.Personas.Any());
     }
 
     [Fact]
