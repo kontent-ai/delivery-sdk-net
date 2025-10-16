@@ -35,12 +35,12 @@ public static class ServiceCollectionExtensions
         switch (cacheType)
         {
             case CacheTypeEnum.Memory:
-                services.TryAddSingleton<IDeliveryCacheManager, MemoryCacheManager>();
+                services.TryAddSingleton<IDeliveryCacheManagerLegacy, MemoryCacheManager>();
                 services.TryAddSingleton<IMemoryCache, MemoryCache>();
                 break;
 
             case CacheTypeEnum.Distributed:
-                services.TryAddSingleton<IDeliveryCacheManager, DistributedCacheManager>();
+                services.TryAddSingleton<IDeliveryCacheManagerLegacy, DistributedCacheManager>();
                 services.TryAddSingleton<IDistributedCache, MemoryDistributedCache>();
                 break;
         }

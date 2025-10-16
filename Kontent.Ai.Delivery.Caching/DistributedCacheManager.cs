@@ -13,7 +13,7 @@ namespace Kontent.Ai.Delivery.Caching;
 /// <summary>
 /// Cache responses against the Kontent.ai Delivery API.
 /// </summary>
-internal class DistributedCacheManager : IDeliveryCacheManager
+internal class DistributedCacheManager : IDeliveryCacheManagerLegacy
 {
     private readonly IDistributedCache _distributedCache;
     private readonly DeliveryCacheOptions _cacheOptions;

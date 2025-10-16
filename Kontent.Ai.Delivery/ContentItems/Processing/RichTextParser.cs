@@ -1,5 +1,6 @@
 using AngleSharp.Dom;
 using AngleSharp.Html.Parser;
+using Kontent.Ai.Delivery.Abstractions.ContentItems.Processing;
 using Kontent.Ai.Delivery.ContentItems.RichText;
 using Kontent.Ai.Delivery.ContentItems.RichText.Blocks;
 
@@ -11,6 +12,18 @@ internal class RichTextParser(IHtmlParser parser) : IElementValueConverter<strin
         TElement contentElement,
         ResolvingContext context) where TElement : IContentElementValue<string>
     {
+        // Public interface method - delegates to internal implementation
+        return await ConvertAsync(contentElement, context, null).ConfigureAwait(false);
+    }
+
+    /// <summary>
+    /// Internal conversion method with dependency tracking support.
+    /// </summary>
+    internal async Task<IRichTextContent?> ConvertAsync<TElement>(
+        TElement contentElement,
+        ResolvingContext context,
+        DependencyTrackingContext? dependencyContext) where TElement : IContentElementValue<string>
+    {
         if (contentElement is not IRichTextElementValue element)
             return null;
 
@@ -18,6 +31,33 @@ internal class RichTextParser(IHtmlParser parser) : IElementValueConverter<strin
 
         if (document.Body == null)
             throw new InvalidOperationException("Failed to parse rich text HTML: document body is null.");
+
+        // Track inline image dependencies
+        if (dependencyContext is not null && element.Images is not null)
+        {
+            foreach (var imageId in element.Images.Keys)
+            {
+                dependencyContext.TrackAsset(imageId);
+            }
+        }
+
+        // Track content link dependencies
+        if (dependencyContext is not null && element.Links is not null)
+        {
+            foreach (var link in element.Links.Values)
+            {
+                dependencyContext.TrackItem(link.Codename);
+            }
+        }
+
+        // Track modular content dependencies
+        if (dependencyContext is not null && element.ModularContent is not null)
+        {
+            foreach (var codename in element.ModularContent)
+            {
+                dependencyContext.TrackItem(codename);
+            }
+        }
 
         var blocks = new List<IRichTextBlock>();
         foreach (var childNode in document.Body.ChildNodes)

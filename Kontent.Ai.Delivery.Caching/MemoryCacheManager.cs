@@ -18,7 +18,7 @@ namespace Kontent.Ai.Delivery.Caching;
 /// </remarks>
 /// <param name="memoryCache">An instance of an object that represent memory cache</param>
 /// <param name="cacheOptions">The settings of the cache</param>
-internal class MemoryCacheManager(IMemoryCache memoryCache, IOptions<DeliveryCacheOptions> cacheOptions) : IDeliveryCacheManager
+internal class MemoryCacheManager(IMemoryCache memoryCache, IOptions<DeliveryCacheOptions> cacheOptions) : IDeliveryCacheManagerLegacy
 {
     private readonly IMemoryCache _memoryCache = memoryCache ?? throw new ArgumentNullException(nameof(memoryCache));
     private readonly DeliveryCacheOptions _cacheOptions = cacheOptions.Value ?? new DeliveryCacheOptions();

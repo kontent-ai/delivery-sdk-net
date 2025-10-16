@@ -13,12 +13,12 @@ namespace Kontent.Ai.Delivery.Caching.QueryBuilders;
 internal sealed class CachingTaxonomyQuery : ITaxonomyQuery
 {
     private readonly ITaxonomyQuery _innerQuery;
-    private readonly IDeliveryCacheManager _cacheManager;
+    private readonly IDeliveryCacheManagerLegacy _cacheManager;
     private readonly List<string> _queryStateComponents = new();
 
     public CachingTaxonomyQuery(
         ITaxonomyQuery innerQuery,
-        IDeliveryCacheManager cacheManager,
+        IDeliveryCacheManagerLegacy cacheManager,
         string codename)
     {
         _innerQuery = innerQuery ?? throw new ArgumentNullException(nameof(innerQuery));

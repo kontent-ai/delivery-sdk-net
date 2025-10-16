@@ -72,7 +72,7 @@ internal sealed class EnumerateItemsQuery<TModel>(IDeliveryApi api, Func<bool?> 
 
             foreach (var item in resp.Content.Items)
             {
-                await _elementsPostProcessor.ProcessAsync(item, null, cancellationToken).ConfigureAwait(false);
+                await _elementsPostProcessor.ProcessAsync(item, null, null, cancellationToken).ConfigureAwait(false);
                 yield return item;
             }
 

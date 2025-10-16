@@ -22,6 +22,39 @@ public sealed class DeliveryOptions : IValidatableObject
     public bool EnableResilience { get; set; } = true;
 
     /// <summary>
+    /// Gets or sets a value that determines if the client uses integrated caching for API responses.
+    /// When enabled, the client will cache responses and automatically track dependencies for invalidation.
+    /// </summary>
+    /// <remarks>
+    /// <para>
+    /// When caching is enabled, an implementation of <see cref="IDeliveryCacheManager"/> must be
+    /// registered in the dependency injection container. If no cache manager is found, requests will
+    /// fail with a clear error message.
+    /// </para>
+    /// <para>
+    /// To enable caching:
+    /// <code>
+    /// services
+    ///     .AddDeliveryClient(options => {
+    ///         options.EnvironmentId = "your-environment-id";
+    ///         options.EnableCaching = true;
+    ///     })
+    ///     .AddDeliveryMemoryCache(); // or AddDeliveryDistributedCache()
+    /// </code>
+    /// </para>
+    /// <para>
+    /// Caching significantly improves performance by eliminating redundant API calls. The cache
+    /// automatically tracks dependencies on content items, assets, and taxonomies, allowing
+    /// precise invalidation when content changes.
+    /// </para>
+    /// <para>
+    /// Default: <c>false</c> (caching disabled).
+    /// </para>
+    /// </remarks>
+    /// <seealso cref="IDeliveryCacheManager"/>
+    public bool EnableCaching { get; set; } = false;
+
+    /// <summary>
     /// Gets or sets the format of the Production API endpoint address.
     /// </summary>
     [Url]

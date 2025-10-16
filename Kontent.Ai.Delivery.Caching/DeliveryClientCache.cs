@@ -12,10 +12,10 @@ namespace Kontent.Ai.Delivery.Caching;
 /// </remarks>
 /// <param name="cacheManager">The cache manager for storing and retrieving cached responses.</param>
 /// <param name="deliveryClient">The underlying delivery client.</param>
-public class DeliveryClientCache(IDeliveryCacheManager cacheManager, IDeliveryClient deliveryClient) : IDeliveryClient
+public class DeliveryClientCache(IDeliveryCacheManagerLegacy cacheManager, IDeliveryClient deliveryClient) : IDeliveryClient
 {
     private readonly IDeliveryClient _deliveryClient = deliveryClient ?? throw new ArgumentNullException(nameof(deliveryClient));
-    private readonly IDeliveryCacheManager _deliveryCacheManager = cacheManager ?? throw new ArgumentNullException(nameof(cacheManager));
+    private readonly IDeliveryCacheManagerLegacy _deliveryCacheManager = cacheManager ?? throw new ArgumentNullException(nameof(cacheManager));
 
     /// <summary>
     /// Returns a query builder for retrieving a single strongly typed content item.

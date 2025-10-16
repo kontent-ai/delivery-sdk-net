@@ -15,12 +15,12 @@ internal sealed class CachingItemQuery<TModel> : IItemQuery<TModel>
     where TModel : IElementsModel
 {
     private readonly IItemQuery<TModel> _innerQuery;
-    private readonly IDeliveryCacheManager _cacheManager;
+    private readonly IDeliveryCacheManagerLegacy _cacheManager;
     private readonly List<string> _queryStateComponents = new();
 
     public CachingItemQuery(
         IItemQuery<TModel> innerQuery,
-        IDeliveryCacheManager cacheManager,
+        IDeliveryCacheManagerLegacy cacheManager,
         string codename)
     {
         _innerQuery = innerQuery ?? throw new ArgumentNullException(nameof(innerQuery));

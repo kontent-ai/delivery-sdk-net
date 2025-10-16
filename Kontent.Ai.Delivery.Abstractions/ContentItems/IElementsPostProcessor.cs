@@ -2,6 +2,7 @@ using System.Collections.Generic;
 using System.Text.Json;
 using System.Threading;
 using System.Threading.Tasks;
+using Kontent.Ai.Delivery.Abstractions.ContentItems.Processing;
 
 namespace Kontent.Ai.Delivery.Abstractions;
 
@@ -17,10 +18,16 @@ public interface IElementsPostProcessor
     /// <typeparam name="TModel">Elements model type.</typeparam>
     /// <param name="item">The content item to process.</param>
     /// <param name="modularContent">Raw modular content dictionary from the API response.</param>
+    /// <param name="dependencyContext">
+    /// Optional context for tracking cache dependencies discovered during element hydration.
+    /// When provided, dependencies on referenced assets, taxonomies, and linked items are tracked.
+    /// Pass null when caching is disabled to avoid tracking overhead.
+    /// </param>
     /// <param name="cancellationToken">Cancellation token.</param>
     Task ProcessAsync<TModel>(
         IContentItem<TModel> item,
         IReadOnlyDictionary<string, JsonElement>? modularContent,
+        DependencyTrackingContext? dependencyContext = null,
         CancellationToken cancellationToken = default)
         where TModel : IElementsModel;
 }

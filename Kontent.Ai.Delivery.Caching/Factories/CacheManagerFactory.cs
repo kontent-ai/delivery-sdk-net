@@ -19,7 +19,7 @@ public static class CacheManagerFactory
     /// <param name="options">A <see cref="DeliveryCacheOptions"/></param>
     /// <param name="loggerFactory">The factory used to create loggers.</param>
     /// <returns>The <see cref="IDeliveryCacheManager"/> instance with a distribute cache.</returns>
-    public static IDeliveryCacheManager Create(IDistributedCache distributedCache,
+    public static IDeliveryCacheManagerLegacy Create(IDistributedCache distributedCache,
         IOptions<DeliveryCacheOptions> options,
         ILoggerFactory loggerFactory = null)
     {
@@ -32,7 +32,7 @@ public static class CacheManagerFactory
     /// <param name="memoryCache">A <see cref="IMemoryCache"/> instance.</param>
     /// <param name="options">A <see cref="DeliveryCacheOptions"/></param>
     /// <returns>The <see cref="IDeliveryCacheManager"/> instance with a memory cache.</returns>
-    public static IDeliveryCacheManager Create(IMemoryCache memoryCache,
+    public static IDeliveryCacheManagerLegacy Create(IMemoryCache memoryCache,
        IOptions<DeliveryCacheOptions> options)
     {
         return new MemoryCacheManager(memoryCache, options);

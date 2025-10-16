@@ -14,12 +14,12 @@ namespace Kontent.Ai.Delivery.Caching.QueryBuilders;
 internal sealed class CachingTypesQuery : ITypesQuery
 {
     private readonly ITypesQuery _innerQuery;
-    private readonly IDeliveryCacheManager _cacheManager;
+    private readonly IDeliveryCacheManagerLegacy _cacheManager;
     private readonly List<string> _queryStateComponents = new();
 
     public CachingTypesQuery(
         ITypesQuery innerQuery,
-        IDeliveryCacheManager cacheManager)
+        IDeliveryCacheManagerLegacy cacheManager)
     {
         _innerQuery = innerQuery ?? throw new ArgumentNullException(nameof(innerQuery));
         _cacheManager = cacheManager ?? throw new ArgumentNullException(nameof(cacheManager));

@@ -7,7 +7,8 @@ namespace Kontent.Ai.Delivery.Abstractions;
 /// <summary>
 /// Cache responses against the Kontent.ai Delivery API.
 /// </summary>
-public interface IDeliveryCacheManager
+[Obsolete("This interface is deprecated and will be removed in a future version. Use the new IDeliveryCacheManager interface with Get/Set/Invalidate pattern. See caching-v3.md for migration guidance.", false)]
+public interface IDeliveryCacheManagerLegacy
 {
     /// <summary>
     /// Returns the cached data or fetches the data using a factory and caches it before returning.

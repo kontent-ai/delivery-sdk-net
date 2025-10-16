@@ -13,12 +13,12 @@ namespace Kontent.Ai.Delivery.Caching.QueryBuilders;
 internal sealed class CachingTypeElementQuery : ITypeElementQuery
 {
     private readonly ITypeElementQuery _innerQuery;
-    private readonly IDeliveryCacheManager _cacheManager;
+    private readonly IDeliveryCacheManagerLegacy _cacheManager;
     private readonly List<string> _queryStateComponents = new();
 
     public CachingTypeElementQuery(
         ITypeElementQuery innerQuery,
-        IDeliveryCacheManager cacheManager,
+        IDeliveryCacheManagerLegacy cacheManager,
         string contentTypeCodename,
         string contentElementCodename)
     {

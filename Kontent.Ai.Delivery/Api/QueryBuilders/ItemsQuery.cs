@@ -1,5 +1,7 @@
 using System.Threading;
+using Kontent.Ai.Delivery.Abstractions.ContentItems.Processing;
 using Kontent.Ai.Delivery.Api.QueryBuilders.Filtering;
+using Kontent.Ai.Delivery.Caching;
 
 namespace Kontent.Ai.Delivery.Api.QueryBuilders;
 
@@ -7,11 +9,13 @@ namespace Kontent.Ai.Delivery.Api.QueryBuilders;
 internal sealed class ItemsQuery<TModel>(
     IDeliveryApi api,
     Func<bool?> getDefaultWaitForNewContent,
-    IElementsPostProcessor elementsPostProcessor) : IItemsQuery<TModel> where TModel : IElementsModel
+    IElementsPostProcessor elementsPostProcessor,
+    IDeliveryCacheManager? cacheManager) : IItemsQuery<TModel> where TModel : IElementsModel
 {
     private readonly IDeliveryApi _api = api;
     private readonly Func<bool?> _getDefaultWaitForNewContent = getDefaultWaitForNewContent;
     private readonly IElementsPostProcessor _elementsPostProcessor = elementsPostProcessor;
+    private readonly IDeliveryCacheManager? _cacheManager = cacheManager;
     private readonly ItemFilters _filters = new();
     private readonly Dictionary<string, string> _serializedFilters = [];
     private ListItemsParams _params = new();
@@ -88,7 +92,29 @@ internal sealed class ItemsQuery<TModel>(
 
     public async Task<IDeliveryResult<IReadOnlyList<IContentItem<TModel>>>> ExecuteAsync(CancellationToken cancellationToken = default)
     {
-        // Get raw response from Refit API
+        // ========== 1. CACHE CHECK (if enabled) ==========
+        string? cacheKey = null;
+        if (_cacheManager != null)
+        {
+            try
+            {
+                cacheKey = CacheKeyBuilder.BuildItemsKey(_params, _serializedFilters);
+                var cached = await _cacheManager.GetAsync<IDeliveryResult<IReadOnlyList<IContentItem<TModel>>>>(cacheKey, cancellationToken)
+                    .ConfigureAwait(false);
+
+                if (cached != null)
+                {
+                    return cached; // Cache hit
+                }
+            }
+            catch (Exception)
+            {
+                // Cache read failed - continue with API call
+                // In production, this should be logged
+            }
+        }
+
+        // ========== 2. API CALL (cache miss or disabled) ==========
         bool? wait = _waitForLoadingNewContentOverride ?? _getDefaultWaitForNewContent();
         var rawResponse = await _api.GetItemsInternalAsync<TModel>(_params, _serializedFilters, wait).ConfigureAwait(false);
 
@@ -103,19 +129,67 @@ internal sealed class ItemsQuery<TModel>(
                 deliveryResult.Error);
         }
 
+        // ========== 3. POST-PROCESS WITH DEPENDENCY TRACKING ==========
         var resp = deliveryResult.Value;
         var items = resp.Items;
-        foreach (var item in items)
+
+        // Create dependency context only if caching enabled
+        var dependencyContext = _cacheManager != null ? new DependencyTrackingContext() : null;
+
+        // Track all items in the response
+        if (dependencyContext != null && items is { Count: > 0 })
         {
-            await _elementsPostProcessor.ProcessAsync(item, resp.ModularContent, cancellationToken).ConfigureAwait(false);
+            foreach (var item in items)
+            {
+                dependencyContext.TrackItem(item.System.Codename);
+            }
         }
 
-        return DeliveryResult.Success<IReadOnlyList<IContentItem<TModel>>>(
+        // Track modular content dependencies
+        if (dependencyContext != null && resp.ModularContent != null)
+        {
+            foreach (var codename in resp.ModularContent.Keys)
+            {
+                dependencyContext.TrackItem(codename);
+            }
+        }
+
+        // Post-process each item (will track additional dependencies: assets, taxonomies)
+        foreach (var item in items)
+        {
+            await _elementsPostProcessor.ProcessAsync(item, resp.ModularContent, dependencyContext, cancellationToken)
+                .ConfigureAwait(false);
+        }
+
+        // ========== 4. BUILD RESULT ==========
+        var result = DeliveryResult.Success<IReadOnlyList<IContentItem<TModel>>>(
             (IReadOnlyList<IContentItem<TModel>>)items,
             deliveryResult.RequestUrl ?? string.Empty,
             deliveryResult.StatusCode,
             deliveryResult.HasStaleContent,
             deliveryResult.ContinuationToken);
+
+        // ========== 5. CACHE RESULT (if enabled) ==========
+        if (_cacheManager != null && dependencyContext != null && cacheKey != null)
+        {
+            try
+            {
+                await _cacheManager.SetAsync(
+                    cacheKey,
+                    result,
+                    dependencyContext.Dependencies,
+                    expiration: null, // Use cache manager's default
+                    cancellationToken: cancellationToken)
+                    .ConfigureAwait(false);
+            }
+            catch (Exception)
+            {
+                // Cache write failed - still return result to caller
+                // In production, this should be logged
+            }
+        }
+
+        return result;
     }
 
     public async Task<IDeliveryResult<IReadOnlyList<IContentItem<TModel>>>> ExecuteAllAsync(CancellationToken cancellationToken = default)
@@ -156,7 +230,8 @@ internal sealed class ItemsQuery<TModel>(
             {
                 foreach (var item in items)
                 {
-                    await _elementsPostProcessor.ProcessAsync(item, deliveryResult.Value.ModularContent, cancellationToken).ConfigureAwait(false);
+                    // NOTE: ExecuteAllAsync intentionally does NOT use caching - it's for bulk operations where freshness is critical
+                    await _elementsPostProcessor.ProcessAsync(item, deliveryResult.Value.ModularContent, null, cancellationToken).ConfigureAwait(false);
                     all.Add(item);
                 }
             }

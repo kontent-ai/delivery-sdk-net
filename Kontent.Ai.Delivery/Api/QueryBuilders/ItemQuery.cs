@@ -1,4 +1,6 @@
 using System.Threading;
+using Kontent.Ai.Delivery.Abstractions.ContentItems.Processing;
+using Kontent.Ai.Delivery.Caching;
 
 namespace Kontent.Ai.Delivery.Api.QueryBuilders;
 
@@ -7,7 +9,8 @@ internal sealed class ItemQuery<TModel>(
     IDeliveryApi api,
     string codename,
     Func<bool?> getDefaultWaitForNewContent,
-    IElementsPostProcessor elementsPostProcessor) : IItemQuery<TModel>
+    IElementsPostProcessor elementsPostProcessor,
+    IDeliveryCacheManager? cacheManager) : IItemQuery<TModel>
     where TModel : IElementsModel
 {
     private readonly IDeliveryApi _api = api;
@@ -15,6 +18,7 @@ internal sealed class ItemQuery<TModel>(
     private readonly Func<bool?> _getDefaultWaitForNewContent = getDefaultWaitForNewContent;
     private SingleItemParams _params = new();
     private readonly IElementsPostProcessor _elementsPostProcessor = elementsPostProcessor;
+    private readonly IDeliveryCacheManager? _cacheManager = cacheManager;
     private bool? _waitForLoadingNewContentOverride;
 
     public IItemQuery<TModel> WithLanguage(string languageCodename)
@@ -49,6 +53,29 @@ internal sealed class ItemQuery<TModel>(
 
     public async Task<IDeliveryResult<IContentItem<TModel>>> ExecuteAsync(CancellationToken cancellationToken = default)
     {
+        // ========== 1. CACHE CHECK (if enabled) ==========
+        string? cacheKey = null;
+        if (_cacheManager != null)
+        {
+            try
+            {
+                cacheKey = CacheKeyBuilder.BuildItemKey(_codename, _params);
+                var cached = await _cacheManager.GetAsync<IDeliveryResult<IContentItem<TModel>>>(cacheKey, cancellationToken)
+                    .ConfigureAwait(false);
+
+                if (cached != null)
+                {
+                    return cached; // Cache hit
+                }
+            }
+            catch (Exception)
+            {
+                // Cache read failed - continue with API call
+                // In production, this should be logged
+            }
+        }
+
+        // ========== 2. API CALL (cache miss or disabled) ==========
         bool? wait = _waitForLoadingNewContentOverride ?? _getDefaultWaitForNewContent();
         var rawResponse = await _api.GetItemInternalAsync<TModel>(_codename, _params, wait).ConfigureAwait(false);
 
@@ -63,17 +90,57 @@ internal sealed class ItemQuery<TModel>(
                 deliveryResult.Error);
         }
 
+        // ========== 3. POST-PROCESS WITH DEPENDENCY TRACKING ==========
         var resp = deliveryResult.Value;
         var item = resp.Item;
 
-        // Post-process to hydrate IRichTextContent, etc.
-        await _elementsPostProcessor.ProcessAsync(item, resp.ModularContent, cancellationToken).ConfigureAwait(false);
+        // Create dependency context only if caching enabled
+        var dependencyContext = _cacheManager != null ? new DependencyTrackingContext() : null;
 
-        return DeliveryResult.Success<IContentItem<TModel>>(
+        // Track primary item dependency
+        dependencyContext?.TrackItem(item.System.Codename);
+
+        // Track modular content dependencies
+        if (dependencyContext != null && resp.ModularContent != null)
+        {
+            foreach (var codename in resp.ModularContent.Keys)
+            {
+                dependencyContext.TrackItem(codename);
+            }
+        }
+
+        // Post-process to hydrate IRichTextContent, assets, taxonomy (will track additional dependencies)
+        await _elementsPostProcessor.ProcessAsync(item, resp.ModularContent, dependencyContext, cancellationToken)
+            .ConfigureAwait(false);
+
+        // ========== 4. BUILD RESULT ==========
+        var result = DeliveryResult.Success<IContentItem<TModel>>(
             item,
             deliveryResult.RequestUrl ?? string.Empty,
             deliveryResult.StatusCode,
             deliveryResult.HasStaleContent,
             deliveryResult.ContinuationToken);
+
+        // ========== 5. CACHE RESULT (if enabled) ==========
+        if (_cacheManager != null && dependencyContext != null && cacheKey != null)
+        {
+            try
+            {
+                await _cacheManager.SetAsync(
+                    cacheKey,
+                    result,
+                    dependencyContext.Dependencies,
+                    expiration: null, // Use cache manager's default
+                    cancellationToken: cancellationToken)
+                    .ConfigureAwait(false);
+            }
+            catch (Exception)
+            {
+                // Cache write failed - still return result to caller
+                // In production, this should be logged
+            }
+        }
+
+        return result;
     }
 }
