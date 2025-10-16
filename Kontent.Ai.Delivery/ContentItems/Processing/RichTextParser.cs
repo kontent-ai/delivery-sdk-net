@@ -1,15 +1,29 @@
 using AngleSharp.Dom;
 using AngleSharp.Html.Parser;
+using Kontent.Ai.Delivery.Abstractions.ContentItems.Processing;
+using Kontent.Ai.Delivery.ContentItems.Processing;
 using Kontent.Ai.Delivery.ContentItems.RichText;
 using Kontent.Ai.Delivery.ContentItems.RichText.Blocks;
 
 namespace Kontent.Ai.Delivery.ContentItems;
 
-internal class RichTextParser(IHtmlParser parser) : IElementValueConverter<string, IRichTextContent>
+internal class RichTextParser(IHtmlParser parser, IContentDependencyExtractor dependencyExtractor) : IElementValueConverter<string, IRichTextContent>
 {
     public async Task<IRichTextContent?> ConvertAsync<TElement>(
         TElement contentElement,
         ResolvingContext context) where TElement : IContentElementValue<string>
+    {
+        // Public interface method - delegates to internal implementation
+        return await ConvertAsync(contentElement, context, null).ConfigureAwait(false);
+    }
+
+    /// <summary>
+    /// Internal conversion method with dependency tracking support.
+    /// </summary>
+    internal async Task<IRichTextContent?> ConvertAsync<TElement>(
+        TElement contentElement,
+        ResolvingContext context,
+        DependencyTrackingContext? dependencyContext) where TElement : IContentElementValue<string>
     {
         if (contentElement is not IRichTextElementValue element)
             return null;
@@ -18,6 +32,9 @@ internal class RichTextParser(IHtmlParser parser) : IElementValueConverter<strin
 
         if (document.Body == null)
             throw new InvalidOperationException("Failed to parse rich text HTML: document body is null.");
+
+        // Extract dependencies for caching (delegated to extractor)
+        dependencyExtractor.ExtractFromRichTextElement(element, dependencyContext);
 
         var blocks = new List<IRichTextBlock>();
         foreach (var childNode in document.Body.ChildNodes)

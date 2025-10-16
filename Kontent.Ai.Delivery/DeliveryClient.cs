@@ -11,14 +11,17 @@ namespace Kontent.Ai.Delivery;
 /// <param name="deliveryApi">The Refit-generated API client.</param>
 /// <param name="deliveryOptions">The settings of the Kontent.ai environment.</param>
 /// <param name="elementsPostProcessor">The elements post processor.</param>
+/// <param name="cacheManager">Optional cache manager for caching API responses (injected when EnableCaching is true).</param>
 internal sealed class DeliveryClient(
     IDeliveryApi deliveryApi,
     IOptionsMonitor<DeliveryOptions> deliveryOptions,
-    IElementsPostProcessor elementsPostProcessor) : IDeliveryClient
+    IElementsPostProcessor elementsPostProcessor,
+    IDeliveryCacheManager? cacheManager = null) : IDeliveryClient
 {
     private readonly IDeliveryApi _deliveryApi = deliveryApi ?? throw new ArgumentNullException(nameof(deliveryApi));
     private readonly IOptionsMonitor<DeliveryOptions> _deliveryOptions = deliveryOptions ?? throw new ArgumentNullException(nameof(deliveryOptions));
     private readonly IElementsPostProcessor _elementsPostProcessor = elementsPostProcessor ?? throw new ArgumentNullException(nameof(elementsPostProcessor));
+    private readonly IDeliveryCacheManager? _cacheManager = cacheManager;
 
     public IItemQuery<T> GetItem<T>(string codename) where T : IElementsModel
     {
@@ -27,7 +30,7 @@ internal sealed class DeliveryClient(
             throw new ArgumentException("Entered item codename is not valid.", nameof(codename));
         }
 
-        return new ItemQuery<T>(_deliveryApi, codename, GetDefaultWaitForLoadingNewContent, _elementsPostProcessor);
+        return new ItemQuery<T>(_deliveryApi, codename, GetDefaultWaitForLoadingNewContent, _elementsPostProcessor, _cacheManager);
     }
 
     public IDynamicItemQuery GetItem(string codename)
@@ -42,7 +45,7 @@ internal sealed class DeliveryClient(
 
     public IItemsQuery<T> GetItems<T>() where T : IElementsModel
     {
-        return new ItemsQuery<T>(_deliveryApi, GetDefaultWaitForLoadingNewContent, _elementsPostProcessor);
+        return new ItemsQuery<T>(_deliveryApi, GetDefaultWaitForLoadingNewContent, _elementsPostProcessor, _cacheManager);
     }
 
     public IDynamicItemsQuery GetItems()
@@ -67,12 +70,12 @@ internal sealed class DeliveryClient(
             throw new ArgumentException("Entered type codename is not valid.", nameof(codename));
         }
 
-        return new TypeQuery(_deliveryApi, codename, GetDefaultWaitForLoadingNewContent);
+        return new TypeQuery(_deliveryApi, codename, GetDefaultWaitForLoadingNewContent, _cacheManager);
     }
 
     public ITypesQuery GetTypes()
     {
-        return new TypesQuery(_deliveryApi, GetDefaultWaitForLoadingNewContent);
+        return new TypesQuery(_deliveryApi, GetDefaultWaitForLoadingNewContent, _cacheManager);
     }
 
     public ITypeElementQuery GetContentElement(string contentTypeCodename, string contentElementCodename)
@@ -97,12 +100,12 @@ internal sealed class DeliveryClient(
             throw new ArgumentException("Entered taxonomy codename is not valid.", nameof(codename));
         }
 
-        return new TaxonomyQuery(_deliveryApi, codename, GetDefaultWaitForLoadingNewContent);
+        return new TaxonomyQuery(_deliveryApi, codename, GetDefaultWaitForLoadingNewContent, _cacheManager);
     }
 
     public ITaxonomiesQuery GetTaxonomies()
     {
-        return new TaxonomiesQuery(_deliveryApi, GetDefaultWaitForLoadingNewContent);
+        return new TaxonomiesQuery(_deliveryApi, GetDefaultWaitForLoadingNewContent, _cacheManager);
     }
 
     public ILanguagesQuery GetLanguages()
