@@ -1,5 +1,4 @@
 ﻿using System;
-using Kontent.Ai.Delivery.Caching.Extensions;
 using Kontent.Ai.Delivery.SharedModels;
 using Newtonsoft.Json;
 using Xunit;
@@ -12,11 +11,6 @@ public class PaginationTests
     public void SerializePagination_AndThen_DeserializeToCheck_ValuesMatch_UsingStandardSerialization()
     {
         ExecuteTestsScenario(SerializeThenDeserializeUsingJson);
-    }
-    [Fact]
-    public void SerializePagination_AndThen_DeserializeToCheck_ValuesMatch_UsingBsonSerialization()
-    {
-        ExecuteTestsScenario(SerializeThenDeserializeUsingMesPack);
     }
     private void ExecuteTestsScenario(Func<Pagination, Pagination> serializeThenDeserialize)
     {
@@ -40,11 +34,5 @@ public class PaginationTests
     {
         var json = JsonConvert.SerializeObject(pagination);
         return JsonConvert.DeserializeObject<Pagination>(json);
-    }
-
-    private Pagination SerializeThenDeserializeUsingMesPack(Pagination pagination)
-    {
-        var data = pagination.ToMessagePack();
-        return data.FromMessagePack<Pagination>();
     }
 }
