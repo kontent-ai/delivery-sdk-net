@@ -2,6 +2,8 @@
 using System.Collections.Generic;
 using Kontent.Ai.Delivery.Abstractions;
 using System.Text.Json.Serialization;
+using Kontent.Ai.Delivery.SharedModels;
+using Kontent.Ai.Delivery.ContentItems;
 
 namespace Kontent.Ai.Delivery.Tests.Models;
 
@@ -17,19 +19,19 @@ public class ContentItemModelWithAttributes
     public decimal? NumberFieldWithADifferentName { get; set; }
 
     [JsonPropertyName("multiple_choice_field_as_radio_buttons")]
-    public IEnumerable<IMultipleChoiceOption> MultipleChoiceFieldAsRadioButtonsWithADifferentName { get; set; }
+    public IEnumerable<MultipleChoiceOption> MultipleChoiceFieldAsRadioButtonsWithADifferentName { get; set; }
 
     [JsonPropertyName("multiple_choice_field_as_checkboxes")]
-    public IEnumerable<IMultipleChoiceOption> MultipleChoiceFieldAsCheckboxes { get; set; }
+    public IEnumerable<MultipleChoiceOption> MultipleChoiceFieldAsCheckboxes { get; set; }
 
     [JsonPropertyName("date___time_field")]
     public DateTime? DateTimeFieldWithADifferentName { get; set; }
 
     [JsonPropertyName("asset_field")]
-    public IEnumerable<IAsset> AssetFieldWithADifferentName { get; set; }
+    public IEnumerable<Asset> AssetFieldWithADifferentName { get; set; }
 
     [JsonPropertyName("linked_items_field")]
-    public IEnumerable<object> LinkedItemsFieldWithADifferentName { get; set; }
+    public IEnumerable<string> LinkedItemsFieldWithADifferentName { get; set; }
 
     [JsonPropertyName("linked_items_field")]
     public HashSet<object> LinkedItemsFieldWithACollectionTypeDefined { get; set; }
@@ -40,7 +42,7 @@ public class ContentItemModelWithAttributes
     public HashSet<Homepage> LinkedItemsFieldWithAGenericTypeDefined { get; set; }
 
     [JsonPropertyName("complete_type_taxonomy")]
-    public IEnumerable<ITaxonomyTerm> CompleteTypeTaxonomyWithADifferentName { get; set; }
+    public IEnumerable<TaxonomyTerm> CompleteTypeTaxonomyWithADifferentName { get; set; }
 
     public IContentItemSystemAttributes System { get; set; }
 }

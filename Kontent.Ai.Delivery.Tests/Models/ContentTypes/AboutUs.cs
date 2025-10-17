@@ -1,47 +1,49 @@
 using System.Collections.Generic;
 using System.Text.Json.Serialization;
 using Kontent.Ai.Delivery.Abstractions;
+using Kontent.Ai.Delivery.ContentItems;
+using Kontent.Ai.Delivery.SharedModels;
 
 namespace Kontent.Ai.Delivery.Tests.Models.ContentTypes;
 
-public record AboutUs
-(
-    [property: JsonPropertyName("facts")]
-    IEnumerable<object> Facts,
+public record AboutUs : IElementsModel
+{
+    [JsonPropertyName("facts")]
+    public IEnumerable<string> Facts { get; init; }
 
-    [property: JsonPropertyName("metadata__meta_description")]
-    string MetadataMetaDescription,
+    [JsonPropertyName("metadata__meta_description")]
+    public string MetadataMetaDescription { get; init; }
 
-    [property: JsonPropertyName("metadata__meta_title")]
-    string MetadataMetaTitle,
+    [JsonPropertyName("metadata__meta_title")]
+    public string MetadataMetaTitle { get; init; }
 
-    [property: JsonPropertyName("metadata__og_description")]
-    string MetadataOgDescription,
+    [JsonPropertyName("metadata__og_description")]
+    public string MetadataOgDescription { get; init; }
 
-    [property: JsonPropertyName("metadata__og_image")]
-    IEnumerable<IAsset> MetadataOgImage,
+    [JsonPropertyName("metadata__og_image")]
+    public IEnumerable<Asset> MetadataOgImage { get; init; }
 
-    [property: JsonPropertyName("metadata__og_title")]
-    string MetadataOgTitle,
+    [JsonPropertyName("metadata__og_title")]
+    public string MetadataOgTitle { get; init; }
 
-    [property: JsonPropertyName("metadata__twitter_creator")]
-    string MetadataTwitterCreator,
+    [JsonPropertyName("metadata__twitter_creator")]
+    public string MetadataTwitterCreator { get; init; }
 
-    [property: JsonPropertyName("metadata__twitter_description")]
-    string MetadataTwitterDescription,
+    [JsonPropertyName("metadata__twitter_description")]
+    public string MetadataTwitterDescription { get; init; }
 
-    [property: JsonPropertyName("metadata__twitter_image")]
-    IEnumerable<IAsset> MetadataTwitterImage,
+    [JsonPropertyName("metadata__twitter_image")]
+    public IEnumerable<Asset> MetadataTwitterImage { get; init; }
 
-    [property: JsonPropertyName("metadata__twitter_site")]
-    string MetadataTwitterSite,
+    [JsonPropertyName("metadata__twitter_site")]
+    public string MetadataTwitterSite { get; init; }
 
-    [property: JsonPropertyName("metadata__twitter_title")]
-    string MetadataTwitterTitle,
+    [JsonPropertyName("metadata__twitter_title")]
+    public string MetadataTwitterTitle { get; init; }
 
-    [property: JsonPropertyName("sitemap")]
-    IEnumerable<ITaxonomyTerm> Sitemap,
+    [JsonPropertyName("sitemap")]
+    public IEnumerable<TaxonomyTerm> Sitemap { get; init; }
 
-    [property: JsonPropertyName("url_pattern")]
-    string UrlPattern
-);
+    [JsonPropertyName("url_pattern")]
+    public string UrlPattern { get; init; }
+};

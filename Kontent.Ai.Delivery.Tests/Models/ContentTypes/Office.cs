@@ -1,35 +1,28 @@
 using System.Collections.Generic;
 using System.Text.Json.Serialization;
 using Kontent.Ai.Delivery.Abstractions;
+using Kontent.Ai.Delivery.ContentItems;
+using Kontent.Ai.Delivery.SharedModels;
 
 namespace Kontent.Ai.Delivery.Tests.Models.ContentTypes;
 
-public record Office
-(
-    [property: JsonPropertyName("city")]
-    string City,
+public record Office : IElementsModel
+{
+    [JsonPropertyName("city")]
+    public string City { get; init; }
 
-    [property: JsonPropertyName("country")]
-    string Country,
+    [JsonPropertyName("country")]
+    public string Country { get; init; }
 
-    [property: JsonPropertyName("email")]
-    string Email,
+    [JsonPropertyName("sitemap")]
+    public IEnumerable<TaxonomyTerm> Sitemap { get; init; }
 
-    [property: JsonPropertyName("name")]
-    string Name,
+    [JsonPropertyName("state")]
+    public string State { get; init; }
 
-    [property: JsonPropertyName("phone")]
-    string Phone,
+    [JsonPropertyName("street")]
+    public string Street { get; init; }
 
-    [property: JsonPropertyName("sitemap")]
-    IEnumerable<ITaxonomyTerm> Sitemap,
-
-    [property: JsonPropertyName("state")]
-    string State,
-
-    [property: JsonPropertyName("street")]
-    string Street,
-
-    [property: JsonPropertyName("zip_code")]
-    string ZipCode
-);
+    [JsonPropertyName("zip_code")]
+    public string ZipCode { get; init; }
+}

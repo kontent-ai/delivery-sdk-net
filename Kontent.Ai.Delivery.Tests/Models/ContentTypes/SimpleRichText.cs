@@ -3,11 +3,11 @@ using System.Text.Json.Serialization;
 
 namespace Kontent.Ai.Delivery.Tests.Models.ContentTypes;
 
-public class SimpleRichText
+public class SimpleRichText : IElementsModel
 {
     [JsonPropertyName("rich_text")]
-    public IRichTextContent RichText { get; set; }
+    public IRichTextContent RichText { get; init; }
 
     [JsonPropertyName("rich_text")]
-    public string RichTextString { get; set; }
+    public string RichTextString { get; init; }
 }

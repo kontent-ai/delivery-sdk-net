@@ -1,35 +1,37 @@
 using System.Collections.Generic;
 using System.Text.Json.Serialization;
 using Kontent.Ai.Delivery.Abstractions;
+using Kontent.Ai.Delivery.ContentItems;
+using Kontent.Ai.Delivery.SharedModels;
 
 namespace Kontent.Ai.Delivery.Tests.Models.ContentTypes;
 
-public record Cafe
-(
-    [property: JsonPropertyName("city")]
-    string City,
+public record Cafe : IElementsModel
+{
+    [JsonPropertyName("city")]
+    public string City { get; init; }
 
-    [property: JsonPropertyName("country")]
-    string Country,
+    [JsonPropertyName("country")]
+    public string Country { get; init; }
 
-    [property: JsonPropertyName("email")]
-    string Email,
+    [JsonPropertyName("email")]
+    public string Email { get; init; }
 
-    [property: JsonPropertyName("phone")]
-    string Phone,
+    [JsonPropertyName("phone")]
+    public string Phone { get; init; }
 
-    [property: JsonPropertyName("photo")]
-    IEnumerable<IAsset> Photo,
+    [JsonPropertyName("photo")]
+    public IEnumerable<Asset> Photo { get; init; }
 
-    [property: JsonPropertyName("sitemap")]
-    IEnumerable<ITaxonomyTerm> Sitemap,
+    [JsonPropertyName("sitemap")]
+    public IEnumerable<TaxonomyTerm> Sitemap { get; init; }
 
-    [property: JsonPropertyName("state")]
-    string State,
+    [JsonPropertyName("state")]
+    public string State { get; init; }
 
-    [property: JsonPropertyName("street")]
-    string Street,
+    [JsonPropertyName("street")]
+    public string Street { get; init; }
 
-    [property: JsonPropertyName("zip_code")]
-    string ZipCode
-);
+    [JsonPropertyName("zip_code")]
+    public string ZipCode { get; init; }
+}

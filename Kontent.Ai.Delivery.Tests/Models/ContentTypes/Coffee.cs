@@ -1,77 +1,79 @@
 using System.Collections.Generic;
 using System.Text.Json.Serialization;
 using Kontent.Ai.Delivery.Abstractions;
+using Kontent.Ai.Delivery.ContentItems;
+using Kontent.Ai.Delivery.SharedModels;
 
 namespace Kontent.Ai.Delivery.Tests.Models.ContentTypes;
 
-public record Coffee
-(
-    [property: JsonPropertyName("altitude")]
-    string Altitude,
+public record Coffee : IElementsModel
+{
+    [JsonPropertyName("altitude")]
+    public string Altitude { get; init; }
 
-    [property: JsonPropertyName("country")]
-    string Country,
+    [JsonPropertyName("country")]
+    public string Country { get; init; }
 
-    [property: JsonPropertyName("farm")]
-    string Farm,
+    [JsonPropertyName("farm")]
+    public string Farm { get; init; }
 
-    [property: JsonPropertyName("image")]
-    IEnumerable<IAsset> Image,
+    [JsonPropertyName("image")]
+    public IEnumerable<Asset> Image { get; init; }
 
-    [property: JsonPropertyName("long_description")]
-    string LongDescription,
+    [JsonPropertyName("long_description")]
+    public string LongDescription { get; init; }
 
-    [property: JsonPropertyName("metadata__meta_description")]
-    string MetadataMetaDescription,
+    [JsonPropertyName("metadata__meta_description")]
+    public string MetadataMetaDescription { get; init; }
 
-    [property: JsonPropertyName("metadata__meta_title")]
-    string MetadataMetaTitle,
+    [JsonPropertyName("metadata__meta_title")]
+    public string MetadataMetaTitle { get; init; }
 
-    [property: JsonPropertyName("metadata__og_description")]
-    string MetadataOgDescription,
+    [JsonPropertyName("metadata__og_description")]
+    public string MetadataOgDescription { get; init; }
 
-    [property: JsonPropertyName("metadata__og_image")]
-    IEnumerable<IAsset> MetadataOgImage,
+    [JsonPropertyName("metadata__og_image")]
+    public IEnumerable<Asset> MetadataOgImage { get; init; }
 
-    [property: JsonPropertyName("metadata__og_title")]
-    string MetadataOgTitle,
+    [JsonPropertyName("metadata__og_title")]
+    public string MetadataOgTitle { get; init; }
 
-    [property: JsonPropertyName("metadata__twitter_creator")]
-    string MetadataTwitterCreator,
+    [JsonPropertyName("metadata__twitter_creator")]
+    public IEnumerable<Asset> MetadataTwitterCreator { get; init; }
 
-    [property: JsonPropertyName("metadata__twitter_description")]
-    string MetadataTwitterDescription,
+    [JsonPropertyName("metadata__twitter_description")]
+    public string MetadataTwitterDescription { get; init; }
 
-    [property: JsonPropertyName("metadata__twitter_image")]
-    IEnumerable<IAsset> MetadataTwitterImage,
+    [JsonPropertyName("metadata__twitter_image")]
+    public IEnumerable<Asset> MetadataTwitterImage { get; init; }
 
-    [property: JsonPropertyName("metadata__twitter_site")]
-    string MetadataTwitterSite,
+    [JsonPropertyName("metadata__twitter_site")]
+    public string MetadataTwitterSite { get; init; }
 
-    [property: JsonPropertyName("metadata__twitter_title")]
-    string MetadataTwitterTitle,
+    [JsonPropertyName("metadata__twitter_title")]
+    public string MetadataTwitterTitle { get; init; }
 
-    [property: JsonPropertyName("price")]
-    decimal? Price,
+    [JsonPropertyName("price")]
+    public decimal? Price { get; init; }
 
-    [property: JsonPropertyName("processing")]
-    IEnumerable<ITaxonomyTerm> Processing,
+    [JsonPropertyName("processing")]
+    public IEnumerable<TaxonomyTerm> Processing { get; init; }
 
-    [property: JsonPropertyName("product_name")]
-    string ProductName,
+    [JsonPropertyName("product_name")]
+    public string ProductName { get; init; }
 
-    [property: JsonPropertyName("product_status")]
-    IEnumerable<ITaxonomyTerm> ProductStatus,
+    [JsonPropertyName("product_status")]
+    public IEnumerable<TaxonomyTerm> ProductStatus { get; init; }
 
-    [property: JsonPropertyName("short_description")]
-    string ShortDescription,
+    [JsonPropertyName("short_description")]
+    public string ShortDescription { get; init; }
 
-    [property: JsonPropertyName("sitemap")]
-    IEnumerable<ITaxonomyTerm> Sitemap,
+    [JsonPropertyName("sitemap")]
+    public IEnumerable<TaxonomyTerm> Sitemap { get; init; }
 
-    [property: JsonPropertyName("url_pattern")]
-    string UrlPattern,
+    [JsonPropertyName("url_pattern")]
+    public string UrlPattern { get; init; }
 
-    [property: JsonPropertyName("variety")]
-    string Variety
-);
+    [JsonPropertyName("variety")]
+    public string Variety { get; init; }
+}
