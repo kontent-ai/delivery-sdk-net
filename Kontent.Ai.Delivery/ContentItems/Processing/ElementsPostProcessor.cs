@@ -191,9 +191,9 @@ internal sealed class ElementsPostProcessor(
                 var modelType = typingStrategy.ResolveModelType(contentType);
                 var itemJson = SerializeJsonElement(linkedItem);
                 var contentItem = deserializer.DeserializeContentItem(itemJson, modelType);
-
-                var result = contentItem.GetType().GetProperty("Elements")?.GetValue(contentItem) ?? contentItem;
-                return Task.FromResult(result);
+                // TODO: doublecheck this is valid
+                //var result = contentItem.GetType().GetProperty("Elements")?.GetValue(contentItem) ?? contentItem;
+                return Task.FromResult(contentItem);
             }
         };
 

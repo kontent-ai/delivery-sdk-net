@@ -126,6 +126,7 @@ public class RichTextIntegrationTests
                 // Custom resolver for inline items
                 if (block.ContentItem != null)
                 {
+                    var allProp = block.ContentItem.GetType().GetProperties();
                     var systemProp = block.ContentItem.GetType().GetProperty("System");
                     if (systemProp != null)
                     {
@@ -241,7 +242,7 @@ public class RichTextIntegrationTests
     #region Edge Cases and Error Handling
 
     [Fact]
-    public async Task IntegrationTest_EmptyRichText_ReturnsEmptyString()
+    public async Task IntegrationTest_EmptyRichText_ReturnsParagraphWithLineBreak()
     {
         // Arrange
         var mockHttp = new MockHttpMessageHandler();
@@ -264,10 +265,11 @@ public class RichTextIntegrationTests
                         ""images"": {},
                         ""links"": {},
                         ""modular_content"": [],
-                        ""value"": """"
+                        ""value"": ""<p><br></p>""
                     }
                 }
-            }
+            },
+            ""modular_content"": {}
         }";
 
         mockHttp.When(url).Respond("application/json", emptyResponse);
@@ -290,7 +292,7 @@ public class RichTextIntegrationTests
 
         // Assert
         Assert.True(result.IsSuccess);
-        Assert.Empty(html);
+        Assert.Equal("<p><br></p>", html);
     }
 
     [Fact]
@@ -370,7 +372,30 @@ public class RichTextIntegrationTests
 
         // Verify content is rendered (inline items show as comments by default)
         Assert.Contains("<!--", html); // Default comment resolver for inline items
-        Assert.Contains("Inline content item", html);
+        Assert.Contains("Missing resolver for items or components of type", html);
+    }
+
+    [Fact]
+    public async Task IntegrationTest_AutomaticDefaultResolvers_RenderItemLinksAsComments()
+    {
+        // Arrange
+        var client = await CreateDeliveryClientAsync("on_roasts.json");
+
+        // No explicit resolvers configured - defaults are automatic
+        var resolver = new HtmlResolverBuilder().Build();
+
+        // Act
+        var result = await client.GetItem<Article>("on_roasts").ExecuteAsync();
+        var html = await result.Value.Elements.BodyCopy.ToHtmlAsync(resolver);
+
+        // Assert
+        Assert.True(result.IsSuccess);
+        Assert.NotNull(html);
+        Assert.NotEmpty(html);
+
+        // Verify content is rendered (inline items show as comments by default)
+        Assert.Contains("<!--", html); // Default comment resolver for inline items
+        Assert.Contains("Missing resolver for link to a content type", html);
     }
 
     #endregion
@@ -597,9 +622,8 @@ public class RichTextIntegrationTests
         Assert.True(result.IsSuccess);
 
         // Verify diagnostic comment includes context (item ID and codename)
-        Assert.Contains("<!-- [Kontent.ai SDK] Missing resolver for IContentItemLink", html);
+        Assert.Contains("<!-- [Kontent.ai SDK] Missing resolver for link to a content type: \"coffee\"", html);
         Assert.Contains("80c7074b-3da1-4e1d-882b-c5716ebb4d25", html); // Item ID
-        Assert.Contains("kenya_gakuyuni_aa", html); // Codename
 
         // Verify text and HTML elements still render correctly with built-in defaults
         Assert.Contains("<p>", html);

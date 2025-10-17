@@ -21,6 +21,7 @@ public class ServiceCollectionsExtensionsTests
 {
     private readonly ServiceCollection _serviceCollection;
     private const string EnvironmentId = "d79786fb-042c-47ec-8e5c-beaf93e38b84";
+    private const string PreviewApiKey = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJqdGkiOiIwNDllNjllNDBjMDI0NzU3YmE2Y2RmODQzMjI0NGI2ZCIsImlhdCI6MTYyNzkwNDk0MSwibmJmIjoxNjI3OTA0OTQxLCJleHAiOjE5NzM1MDQ5NDEsInZlciI6IjEuMC4wIiwicHJvamVjdF9pZCI6IjZlYTk4NWNlMWM4ZjAwZWRiZmJkNGU1OGJkNGYzZDFiIiwiYXVkIjoicHJldmlldy5kZWxpdmVyLmtlbnRpY29jbG91ZC5jb20ifQ.j5uH5LVIT45bP4VeSkNRynzyR_vqHfHelNXpy7R8C0w";
 
     private readonly ReadOnlyDictionary<Type, Type> _expectedInterfacesWithImplementationTypes = new ReadOnlyDictionary<Type, Type>(
         new Dictionary<Type, Type>
@@ -82,7 +83,7 @@ public class ServiceCollectionsExtensionsTests
     public void AddDeliveryClientWithBuilderDelegate_AllServicesAreRegistered_AndOptionsApplied()
     {
         _serviceCollection.AddDeliveryClient(
-            (IDeliveryOptionsBuilder b) => b.WithEnvironmentId(EnvironmentId).UsePreviewApi("preview_key").Build());
+            (IDeliveryOptionsBuilder b) => b.WithEnvironmentId(EnvironmentId).UsePreviewApi(PreviewApiKey).Build());
 
         var provider = _serviceCollection.BuildServiceProvider();
         AssertDefaultServiceCollection(provider, _expectedInterfacesWithImplementationTypes);
@@ -91,7 +92,7 @@ public class ServiceCollectionsExtensionsTests
         var options = monitor.CurrentValue;
         Assert.Equal(EnvironmentId, options.EnvironmentId);
         Assert.True(options.UsePreviewApi);
-        Assert.Equal("preview_key", options.PreviewApiKey);
+        Assert.Equal(PreviewApiKey, options.PreviewApiKey);
     }
 
     [Fact]
@@ -151,21 +152,27 @@ public class ServiceCollectionsExtensionsTests
     public void AddDeliveryClient_InvalidEnvironmentId_ThrowsOptionsValidationException()
     {
         _serviceCollection.AddDeliveryClient(new DeliveryOptions { EnvironmentId = "not-a-guid" });
-        Assert.Throws<OptionsValidationException>(() => _serviceCollection.BuildServiceProvider());
+        var provider = _serviceCollection.BuildServiceProvider();
+        var optionsMonitor = provider.GetRequiredService<IOptionsMonitor<DeliveryOptions>>();
+        Assert.Throws<OptionsValidationException>(() => optionsMonitor.CurrentValue);
     }
 
     [Fact]
     public void AddDeliveryClient_PreviewMissingApiKey_ThrowsOptionsValidationException()
     {
         _serviceCollection.AddDeliveryClient(new DeliveryOptions { EnvironmentId = EnvironmentId, UsePreviewApi = true, PreviewApiKey = null });
-        Assert.Throws<OptionsValidationException>(() => _serviceCollection.BuildServiceProvider());
+        var provider = _serviceCollection.BuildServiceProvider();
+        var optionsMonitor = provider.GetRequiredService<IOptionsMonitor<DeliveryOptions>>();
+        Assert.Throws<OptionsValidationException>(() => optionsMonitor.CurrentValue);
     }
 
     [Fact]
     public void AddDeliveryClient_SecureAccessMissingApiKey_ThrowsOptionsValidationException()
     {
         _serviceCollection.AddDeliveryClient(new DeliveryOptions { EnvironmentId = EnvironmentId, UseSecureAccess = true, SecureAccessApiKey = null });
-        Assert.Throws<OptionsValidationException>(() => _serviceCollection.BuildServiceProvider());
+        var provider = _serviceCollection.BuildServiceProvider();
+        var optionsMonitor = provider.GetRequiredService<IOptionsMonitor<DeliveryOptions>>();
+        Assert.Throws<OptionsValidationException>(() => optionsMonitor.CurrentValue);
     }
 
     [Fact]
@@ -175,12 +182,14 @@ public class ServiceCollectionsExtensionsTests
         {
             EnvironmentId = EnvironmentId,
             UsePreviewApi = true,
-            PreviewApiKey = "preview",
+            PreviewApiKey = PreviewApiKey,
             UseSecureAccess = true,
-            SecureAccessApiKey = "secure"
+            SecureAccessApiKey = PreviewApiKey
         });
 
-        Assert.Throws<OptionsValidationException>(() => _serviceCollection.BuildServiceProvider());
+        var provider = _serviceCollection.BuildServiceProvider();
+        var optionsMonitor = provider.GetRequiredService<IOptionsMonitor<DeliveryOptions>>();
+        Assert.Throws<OptionsValidationException>(() => optionsMonitor.CurrentValue);
     }
 
     [Theory]
