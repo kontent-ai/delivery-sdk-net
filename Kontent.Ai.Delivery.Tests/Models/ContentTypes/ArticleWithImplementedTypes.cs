@@ -2,19 +2,21 @@ using System;
 using System.Collections.Generic;
 using System.Text.Json.Serialization;
 using Kontent.Ai.Delivery.Abstractions;
+using Kontent.Ai.Delivery.ContentItems;
+using Kontent.Ai.Delivery.SharedModels;
 
 namespace Kontent.Ai.Delivery.Tests.Models.ContentTypes;
 
 public record ArticleWithImplementedTypes
 (
     [property: JsonPropertyName("personas")]
-    IEnumerable<ITaxonomyTerm> Personas,
+    IEnumerable<TaxonomyTerm> Personas,
 
     [property: JsonPropertyName("title")]
     string Title,
 
     [property: JsonPropertyName("teaser_image")]
-    IEnumerable<IAsset> TeaserImage,
+    IEnumerable<Asset> TeaserImage,
 
     [property: JsonPropertyName("post_date")]
     DateTime? PostDate,
@@ -26,7 +28,7 @@ public record ArticleWithImplementedTypes
     IRichTextContent BodyCopy,
 
     [property: JsonPropertyName("related_articles")]
-    IEnumerable<object> RelatedArticles,
+    IEnumerable<string> RelatedArticles,
 
     [property: JsonPropertyName("meta_keywords")]
     string MetaKeywords,

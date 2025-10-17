@@ -16,8 +16,8 @@ internal sealed class HtmlResolver : IHtmlResolver
     private readonly FrozenDictionary<string, BlockResolver<IHtmlNode>> _tagResolverCache;
 
     // Diagnostic messages for app-specific resolvers that require configuration
-    private const string MissingInlineContentItemResolver = "<!-- [Kontent.ai SDK] Missing resolver for IInlineContentItem (type: {0}) -->";
-    private const string MissingContentItemLinkResolver = "<!-- [Kontent.ai SDK] Missing resolver for IContentItemLink (item ID: {0}, codename: {1}) -->";
+    private const string MissingInlineContentItemResolver = "<!-- [Kontent.ai SDK] Missing resolver for items or components of type: {0} -->";
+    private const string MissingContentItemLinkResolver = "<!-- [Kontent.ai SDK] Missing resolver for link to a content type: \"{0}\" (item ID: {1}) -->";
 
     public HtmlResolver(
         IReadOnlyDictionary<Type, Delegate> resolvers,
@@ -73,14 +73,14 @@ internal sealed class HtmlResolver : IHtmlResolver
 
             IContentItemLink link => _options.ThrowOnMissingResolver
                 ? throw new InvalidOperationException($"No resolver registered for IContentItemLink (item ID: {link.ItemId})")
-                : ValueTask.FromResult(string.Format(MissingContentItemLinkResolver, link.ItemId, link.Metadata?.Codename ?? "unknown")),
+                : ValueTask.FromResult(string.Format(MissingContentItemLinkResolver, link.Metadata?.ContentTypeCodename ?? "unknown", link.ItemId)),
 
             IInlineContentItem item when _resolvers.TryGetValue(typeof(IInlineContentItem), out var resolver)
                 => ((BlockResolver<IInlineContentItem>)resolver)(item, context, _ => ValueTask.FromResult(string.Empty)),
 
             IInlineContentItem item => _options.ThrowOnMissingResolver
                 ? throw new InvalidOperationException($"No resolver registered for IInlineContentItem")
-                : ValueTask.FromResult(string.Format(MissingInlineContentItemResolver, item.ContentItem?.GetType().Name ?? "unknown")),
+                : ValueTask.FromResult(string.Format(MissingInlineContentItemResolver, item.ContentItem?.GetType().GetGenericArguments().FirstOrDefault()?.Name ?? "unknown")),
 
             _ => throw new InvalidOperationException($"Unknown block type: {block.GetType().Name}")
         };

@@ -1,13 +1,18 @@
 ﻿using System.Collections.Generic;
+using System.Text.Json.Serialization;
 using Kontent.Ai.Delivery.Abstractions;
+using Kontent.Ai.Delivery.SharedModels;
 
 namespace Kontent.Ai.Delivery.Tests.Models;
 
-public class ArticlePartialItemModel
+public record ArticlePartialItemModel : IElementsModel
 {
-    public const string Codename = "article";
-    public string Title { get; set; }
-    public string Summary { get; set; }
-    public IEnumerable<ITaxonomyTerm> Personas { get; set; }
-    public IContentItemSystemAttributes System { get; set; }
+    [JsonPropertyName("title")]
+    public string Title { get; init; }
+    [JsonPropertyName("summary")]
+    public string Summary { get; init; }
+    [JsonPropertyName("personas")]
+    public IEnumerable<TaxonomyTerm> Personas { get; init; }
+    [JsonPropertyName("system")]
+    public IContentItemSystemAttributes System { get; init; }
 }

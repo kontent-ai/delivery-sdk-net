@@ -1,14 +1,16 @@
 using System.Collections.Generic;
 using System.Text.Json.Serialization;
 using Kontent.Ai.Delivery.Abstractions;
+using Kontent.Ai.Delivery.ContentItems;
+using Kontent.Ai.Delivery.SharedModels;
 
 namespace Kontent.Ai.Delivery.Tests.Models.ContentTypes;
 
-public record HostedVideo
-(
-    [property: JsonPropertyName("video_host")]
-    IEnumerable<IMultipleChoiceOption> VideoHost,
+public record HostedVideo : IElementsModel
+{
+    [JsonPropertyName("video_host")]
+    public IEnumerable<MultipleChoiceOption> VideoHost { get; init; }
 
-    [property: JsonPropertyName("video_id")]
-    string VideoId
-);
+    [JsonPropertyName("video_id")]
+    public string VideoId { get; init; }
+}

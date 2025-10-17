@@ -9,13 +9,13 @@ namespace Kontent.Ai.Delivery.SharedModels;
 /// </summary>
 [DebuggerDisplay("Name = {" + nameof(Name) + "}")]
 [method: JsonConstructor]
-internal sealed class MultipleChoiceOption() : IMultipleChoiceOption
+public sealed record MultipleChoiceOption() : IMultipleChoiceOption
 {
     /// <inheritdoc/>
     [JsonPropertyName("name")]
-    public string Name { get; internal set; }
+    public required string Name { get; init; }
 
     /// <inheritdoc/>
     [JsonPropertyName("codename")]
-    public string Codename { get; internal set; }
+    public required string Codename { get; init; }
 }
