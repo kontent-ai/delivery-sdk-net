@@ -7,6 +7,7 @@ using System.IO;
 using AngleSharp.Html.Parser;
 using Microsoft.Extensions.Options;
 using Kontent.Ai.Delivery.Abstractions.ContentItems.Processing;
+using Kontent.Ai.Delivery.ContentItems.Processing;
 
 namespace Kontent.Ai.Delivery.ContentItems;
 
@@ -19,14 +20,16 @@ namespace Kontent.Ai.Delivery.ContentItems;
 /// <param name="deserializer">The content deserializer.</param>
 /// <param name="htmlParser">The HTML parser.</param>
 /// <param name="deliveryOptions">The delivery options.</param>
+/// <param name="dependencyExtractor">The dependency extractor for caching support.</param>
 internal sealed class ElementsPostProcessor(
     IPropertyMapper propertyMapper,
     IItemTypingStrategy typingStrategy,
     IContentDeserializer deserializer,
     IHtmlParser htmlParser,
-    IOptionsMonitor<DeliveryOptions> deliveryOptions) : IElementsPostProcessor
+    IOptionsMonitor<DeliveryOptions> deliveryOptions,
+    IContentDependencyExtractor dependencyExtractor) : IElementsPostProcessor
 {
-    private readonly RichTextParser _richTextParser = new(htmlParser);
+    private readonly RichTextParser _richTextParser = new(htmlParser, dependencyExtractor);
     private static readonly ConcurrentDictionary<string, JsonSerializerOptions> _richTextOptionsCache = new();
     /// <summary>
     /// Hydrates advanced element types on a strongly typed content item.
@@ -287,18 +290,12 @@ internal sealed class ElementsPostProcessor(
             .ToList();
     }
 
-    private static IReadOnlyList<TaxonomyTerm> DeserializeTaxonomyTerms(
+    private IReadOnlyList<TaxonomyTerm> DeserializeTaxonomyTerms(
         JsonElement elementValue,
         DependencyTrackingContext? dependencyContext)
     {
         // Extract taxonomy group for dependency tracking
-        if (dependencyContext is not null &&
-            elementValue.TryGetProperty("taxonomy_group", out var taxonomyGroupEl) &&
-            taxonomyGroupEl.ValueKind == JsonValueKind.String)
-        {
-            var taxonomyGroup = taxonomyGroupEl.GetString();
-            dependencyContext.TrackTaxonomy(taxonomyGroup);
-        }
+        dependencyExtractor.ExtractFromTaxonomyElement(elementValue, dependencyContext);
 
         // Deserialize taxonomy terms
         if (!elementValue.TryGetProperty("value", out var valueArray) ||

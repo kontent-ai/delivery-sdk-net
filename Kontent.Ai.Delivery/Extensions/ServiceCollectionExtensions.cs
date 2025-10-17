@@ -3,6 +3,7 @@ using Kontent.Ai.Delivery.Abstractions;
 using Kontent.Ai.Delivery.Caching;
 using Kontent.Ai.Delivery.Configuration;
 using Kontent.Ai.Delivery.ContentItems;
+using Kontent.Ai.Delivery.ContentItems.Processing;
 using Kontent.Ai.Delivery.Handlers;
 using Microsoft.Extensions.Caching.Distributed;
 using Microsoft.Extensions.Caching.Memory;
@@ -168,6 +169,9 @@ public static class ServiceCollectionExtensions
         services.TryAddSingleton<IContentDeserializer, ContentDeserializer>();
         services.TryAddSingleton<IElementsPostProcessor, ElementsPostProcessor>();
         services.TryAddSingleton<IHtmlParser, HtmlParser>();
+
+        // Dependency extraction - default to no-op when caching is disabled
+        services.TryAddSingleton<IContentDependencyExtractor>(NullContentDependencyExtractor.Instance);
     }
 
     /// <summary>
@@ -282,6 +286,9 @@ public static class ServiceCollectionExtensions
                 sp.GetRequiredService<IMemoryCache>(),
                 defaultExpiration));
 
+        // Override default no-op extractor with actual implementation
+        services.AddSingleton<IContentDependencyExtractor, ContentDependencyExtractor>();
+
         return services;
     }
 
@@ -327,6 +334,9 @@ public static class ServiceCollectionExtensions
             new DistributedCacheManager(
                 sp.GetRequiredService<IDistributedCache>(),
                 defaultExpiration));
+
+        // Override default no-op extractor with actual implementation
+        services.AddSingleton<IContentDependencyExtractor, ContentDependencyExtractor>();
 
         return services;
     }
