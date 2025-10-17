@@ -111,8 +111,7 @@ public class CachingIntegrationTests
         var services = new ServiceCollection();
         var options = new DeliveryOptions
         {
-            EnvironmentId = _guid.ToString(),
-            EnableCaching = true
+            EnvironmentId = _guid.ToString()
         };
 
         services.AddMemoryCache();
@@ -294,8 +293,7 @@ public class CachingIntegrationTests
         var services = new ServiceCollection();
         var options = new DeliveryOptions
         {
-            EnvironmentId = _guid.ToString(),
-            EnableCaching = true
+            EnvironmentId = _guid.ToString()
         };
 
         var mockDistributedCache = new MockDistributedCache();
@@ -345,8 +343,7 @@ public class CachingIntegrationTests
         var services = new ServiceCollection();
         var options = new DeliveryOptions
         {
-            EnvironmentId = _guid.ToString(),
-            EnableCaching = true
+            EnvironmentId = _guid.ToString()
         };
 
         services.AddMemoryCache();
@@ -394,8 +391,7 @@ public class CachingIntegrationTests
         var services = new ServiceCollection();
         var options = new DeliveryOptions
         {
-            EnvironmentId = _guid.ToString(),
-            EnableCaching = true
+            EnvironmentId = _guid.ToString()
         };
 
         services.AddMemoryCache();
@@ -446,8 +442,7 @@ public class CachingIntegrationTests
         var services = new ServiceCollection();
         var options = new DeliveryOptions
         {
-            EnvironmentId = _guid.ToString(),
-            EnableCaching = true
+            EnvironmentId = _guid.ToString()
         };
 
         services.AddMemoryCache();
@@ -503,10 +498,10 @@ public class CachingIntegrationTests
         var services = new ServiceCollection();
         var options = new DeliveryOptions
         {
-            EnvironmentId = _guid.ToString(),
-            EnableCaching = false // Caching disabled
+            EnvironmentId = _guid.ToString()
         };
 
+        // No cache manager registered - caching disabled
         services.AddDeliveryClient(options, configureHttpClient: b =>
             b.ConfigurePrimaryHttpMessageHandler(() => mock));
 
@@ -541,10 +536,10 @@ public class CachingIntegrationTests
         var services = new ServiceCollection();
         var options = new DeliveryOptions
         {
-            EnvironmentId = _guid.ToString(),
-            EnableCaching = true // Enabled but no cache manager registered
+            EnvironmentId = _guid.ToString()
         };
 
+        // No cache manager registered - caching disabled
         services.AddDeliveryClient(options, configureHttpClient: b =>
             b.ConfigurePrimaryHttpMessageHandler(() => mock));
 
@@ -567,15 +562,13 @@ public class CachingIntegrationTests
         var services = new ServiceCollection();
         var options = new DeliveryOptions
         {
-            EnvironmentId = _guid.ToString(),
-            EnableCaching = true
+            EnvironmentId = _guid.ToString()
         };
 
-        services.AddMemoryCache();
-        services.AddSingleton<IDeliveryCacheManager>(sp =>
-            new MemoryCacheManager(sp.GetRequiredService<IMemoryCache>()));
+        // Use the fluent API for cleaner registration
         services.AddDeliveryClient(options, configureHttpClient: b =>
-            b.ConfigurePrimaryHttpMessageHandler(() => mockHttp));
+                b.ConfigurePrimaryHttpMessageHandler(() => mockHttp))
+            .WithMemoryCache();
 
         return services.BuildServiceProvider().GetRequiredService<IDeliveryClient>();
     }
@@ -585,16 +578,16 @@ public class CachingIntegrationTests
         var services = new ServiceCollection();
         var options = new DeliveryOptions
         {
-            EnvironmentId = _guid.ToString(),
-            EnableCaching = true
+            EnvironmentId = _guid.ToString()
         };
 
         var mockDistributedCache = new MockDistributedCache();
         services.AddSingleton<IDistributedCache>(mockDistributedCache);
-        services.AddSingleton<IDeliveryCacheManager>(sp =>
-            new DistributedCacheManager(sp.GetRequiredService<IDistributedCache>()));
+
+        // Use the fluent API for cleaner registration
         services.AddDeliveryClient(options, configureHttpClient: b =>
-            b.ConfigurePrimaryHttpMessageHandler(() => mockHttp));
+                b.ConfigurePrimaryHttpMessageHandler(() => mockHttp))
+            .WithDistributedCache();
 
         return services.BuildServiceProvider().GetRequiredService<IDeliveryClient>();
     }

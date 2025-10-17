@@ -1,7 +1,11 @@
 using AngleSharp.Html.Parser;
+using Kontent.Ai.Delivery.Abstractions;
+using Kontent.Ai.Delivery.Caching;
 using Kontent.Ai.Delivery.Configuration;
 using Kontent.Ai.Delivery.ContentItems;
 using Kontent.Ai.Delivery.Handlers;
+using Microsoft.Extensions.Caching.Distributed;
+using Microsoft.Extensions.Caching.Memory;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.DependencyInjection.Extensions;
@@ -244,4 +248,86 @@ public static class ServiceCollectionExtensions
             System.Net.HttpStatusCode.BadGateway or
             System.Net.HttpStatusCode.ServiceUnavailable or
             System.Net.HttpStatusCode.GatewayTimeout;
+
+    /// <summary>
+    /// Enables in-memory caching for the Delivery Client using <see cref="IMemoryCache"/>.
+    /// </summary>
+    /// <param name="services">The service collection.</param>
+    /// <param name="defaultExpiration">
+    /// Default cache entry expiration time. If null, defaults to 1 hour.
+    /// Individual queries can override this using query parameters.
+    /// </param>
+    /// <returns>The service collection for chaining.</returns>
+    /// <remarks>
+    /// <para>
+    /// This method registers:
+    /// <list type="bullet">
+    /// <item><description><see cref="IMemoryCache"/> - The underlying memory cache (if not already registered)</description></item>
+    /// <item><description><see cref="IDeliveryCacheManager"/> - Memory cache manager implementation</description></item>
+    /// </list>
+    /// </para>
+    /// </remarks>
+    public static IServiceCollection WithMemoryCache(
+        this IServiceCollection services,
+        TimeSpan? defaultExpiration = null)
+    {
+        ArgumentNullException.ThrowIfNull(services);
+
+        // Register IMemoryCache if not already registered
+        services.AddMemoryCache();
+
+        // Register the cache manager as a singleton
+        services.TryAddSingleton<IDeliveryCacheManager>(sp =>
+            new MemoryCacheManager(
+                sp.GetRequiredService<IMemoryCache>(),
+                defaultExpiration));
+
+        return services;
+    }
+
+    /// <summary>
+    /// Enables distributed caching for the Delivery Client using <see cref="IDistributedCache"/>.
+    /// </summary>
+    /// <param name="services">The service collection.</param>
+    /// <param name="defaultExpiration">
+    /// Default cache entry expiration time. If null, defaults to 1 hour.
+    /// Individual queries can override this using query parameters.
+    /// </param>
+    /// <returns>The service collection for chaining.</returns>
+    /// <remarks>
+    /// <para>
+    /// This method registers:
+    /// <list type="bullet">
+    /// <item><description><see cref="IDeliveryCacheManager"/> - Distributed cache manager implementation</description></item>
+    /// </list>
+    /// </para>
+    /// <para>
+    /// <b>Prerequisites:</b> You must register an <see cref="IDistributedCache"/> implementation before calling this method.
+    /// Common implementations:
+    /// <list type="bullet">
+    /// <item><description>Redis: <c>services.AddStackExchangeRedisCache(options => ...)</c></description></item>
+    /// <item><description>SQL Server: <c>services.AddDistributedSqlServerCache(options => ...)</c></description></item>
+    /// <item><description>NCache: <c>services.AddNCacheDistributedCache(options => ...)</c></description></item>
+    /// </list>
+    /// </para>
+    /// </remarks>
+    /// <exception cref="InvalidOperationException">
+    /// Thrown when no <see cref="IDistributedCache"/> implementation is registered.
+    /// </exception>
+    public static IServiceCollection WithDistributedCache(
+        this IServiceCollection services,
+        TimeSpan? defaultExpiration = null)
+    {
+        ArgumentNullException.ThrowIfNull(services);
+
+        // Register the cache manager as a singleton
+        // The IDistributedCache dependency will be resolved from services
+        // If it's not registered, this will fail at runtime with a clear error
+        services.TryAddSingleton<IDeliveryCacheManager>(sp =>
+            new DistributedCacheManager(
+                sp.GetRequiredService<IDistributedCache>(),
+                defaultExpiration));
+
+        return services;
+    }
 }
