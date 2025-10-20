@@ -1,7 +1,6 @@
-using System.Text;
+using System.Collections.ObjectModel;
 using System.Text.Encodings.Web;
-using Kontent.Ai.Delivery.Abstractions;
-using Kontent.Ai.Delivery.Abstractions.ContentItems.RichText.Blocks;
+using System.Text.Unicode;
 
 namespace Kontent.Ai.Delivery.ContentItems.RichText.Resolution;
 
@@ -15,7 +14,7 @@ namespace Kontent.Ai.Delivery.ContentItems.RichText.Resolution;
 /// </para>
 /// <list type="bullet">
 ///   <item><description><see cref="IContentItemLink"/> - Links to other content items (requires URL generation logic)</description></item>
-///   <item><description><see cref="IInlineContentItem"/> - Embedded content items (requires rendering logic)</description></item>
+///   <item><description><see cref="IEmbeddedContent"/> - Embedded content items/components (requires rendering logic)</description></item>
 /// </list>
 /// <para>
 /// Custom resolvers override the built-in defaults.
@@ -29,7 +28,10 @@ namespace Kontent.Ai.Delivery.ContentItems.RichText.Resolution;
 ///         ["article"] = "/articles/{urlslug}",
 ///         ["product"] = "/products/{urlslug}"
 ///     }))
-///     .WithInlineContentItemResolver((item, ctx, _) => ValueTask.FromResult($"&lt;div class='embed'&gt;{item.ContentItem.System.Name}&lt;/div&gt;"))
+///     .WithContentResolver("tweet", (content, ctx) =>
+///         $"&lt;div class='tweet'&gt;{content.Name}&lt;/div&gt;")
+///     .WithContentResolver("video", (content, ctx) =>
+///         $"&lt;video src='{content.Content.Url}'&gt;&lt;/video&gt;")
 ///     .Build();
 ///
 /// var html = await richText.ToHtmlAsync(resolver);
@@ -39,6 +41,8 @@ public sealed class HtmlResolverBuilder : IHtmlResolverBuilder
 {
     private readonly Dictionary<Type, Delegate> _resolvers = new();
     private readonly List<ConditionalHtmlNodeResolver> _conditionalHtmlNodeResolvers = new();
+    private readonly Dictionary<string, Func<IEmbeddedContent, ValueTask<string>>> _embeddedContentResolvers = new(StringComparer.OrdinalIgnoreCase);
+    private readonly Dictionary<string, BlockResolver<IContentItemLink>> _contentItemLinkResolvers = new(StringComparer.OrdinalIgnoreCase);
     private readonly HtmlResolverOptions _options = new();
 
     /// <inheritdoc />
@@ -50,10 +54,92 @@ public sealed class HtmlResolverBuilder : IHtmlResolverBuilder
     }
 
     /// <inheritdoc />
-    public IHtmlResolverBuilder WithInlineContentItemResolver(BlockResolver<IInlineContentItem> resolver)
+    public IHtmlResolverBuilder WithContentItemLinkResolver(
+        string contentTypeCodename,
+        BlockResolver<IContentItemLink> resolver)
     {
+        ArgumentException.ThrowIfNullOrWhiteSpace(contentTypeCodename);
         ArgumentNullException.ThrowIfNull(resolver);
-        _resolvers[typeof(IInlineContentItem)] = resolver;
+
+        _contentItemLinkResolvers[contentTypeCodename] = resolver;
+        return this;
+    }
+
+    /// <inheritdoc />
+    public IHtmlResolverBuilder WithContentItemLinkResolvers(
+        IReadOnlyDictionary<string, BlockResolver<IContentItemLink>> resolvers)
+    {
+        ArgumentNullException.ThrowIfNull(resolvers);
+
+        foreach (var (codename, resolver) in resolvers)
+        {
+            WithContentItemLinkResolver(codename, resolver);
+        }
+        return this;
+    }
+
+    /// <inheritdoc />
+    public IHtmlResolverBuilder WithContentItemLinkResolvers(
+        params (string ContentTypeCodename, BlockResolver<IContentItemLink> Resolver)[] resolvers)
+    {
+        ArgumentNullException.ThrowIfNull(resolvers);
+
+        foreach (var (codename, resolver) in resolvers)
+        {
+            WithContentItemLinkResolver(codename, resolver);
+        }
+        return this;
+    }
+
+    /// <inheritdoc />
+    public IHtmlResolverBuilder WithContentResolver(
+        string contentTypeCodename,
+        Func<IEmbeddedContent, ValueTask<string>> resolver)
+    {
+        ArgumentException.ThrowIfNullOrWhiteSpace(contentTypeCodename);
+        ArgumentNullException.ThrowIfNull(resolver);
+
+        _embeddedContentResolvers[contentTypeCodename] = resolver;
+        return this;
+    }
+
+    /// <inheritdoc />
+    public IHtmlResolverBuilder WithContentResolver(
+        string contentTypeCodename,
+        Func<IEmbeddedContent, string> resolver)
+    {
+        ArgumentException.ThrowIfNullOrWhiteSpace(contentTypeCodename);
+        ArgumentNullException.ThrowIfNull(resolver);
+
+        // Wrap synchronous resolver in ValueTask
+        _embeddedContentResolvers[contentTypeCodename] = content =>
+            ValueTask.FromResult(resolver(content));
+        return this;
+    }
+
+    /// <inheritdoc />
+    public IHtmlResolverBuilder WithContentResolvers(
+        IReadOnlyDictionary<string, Func<IEmbeddedContent, string>> resolvers)
+    {
+        ArgumentNullException.ThrowIfNull(resolvers);
+
+        foreach (var (codename, resolver) in resolvers)
+        {
+            WithContentResolver(codename, resolver);
+        }
+        return this;
+    }
+
+    /// <inheritdoc />
+    public IHtmlResolverBuilder WithContentResolvers(
+        params (string ContentTypeCodename, Func<IEmbeddedContent, string> Resolver)[] resolvers)
+    {
+        ArgumentNullException.ThrowIfNull(resolvers);
+
+        foreach (var (codename, resolver) in resolvers)
+        {
+            WithContentResolver(codename, resolver);
+        }
         return this;
     }
 
@@ -139,14 +225,18 @@ public sealed class HtmlResolverBuilder : IHtmlResolverBuilder
         // Always provide built-in defaults for elements that have sensible default rendering
         var resolversWithDefaults = new Dictionary<Type, Delegate>(_resolvers);
 
-        // Default text node resolver - HTML-encodes text content
+        // Create HTML encoder that preserves Unicode characters (emojis, smart quotes, accented chars)
+        // but still encodes HTML-reserved characters (<, >, &, ", ') for security
+        var unicodeEncoder = HtmlEncoder.Create(UnicodeRanges.All);
+
+        // Default text node resolver - HTML-encodes reserved chars but preserves Unicode
         resolversWithDefaults.TryAdd(typeof(ITextNode), new BlockResolver<ITextNode>(
-            (block, _, _) => ValueTask.FromResult(HtmlEncoder.Default.Encode(block.Text))
+            (block, _) => ValueTask.FromResult(unicodeEncoder.Encode(block.Text))
         ));
 
         // Default inline image resolver - generates proper HTML figure element
         resolversWithDefaults.TryAdd(typeof(IInlineImage), new BlockResolver<IInlineImage>(
-            (block, _, _) =>
+            (block, _) =>
             {
                 var url = HtmlEncoder.Default.Encode(block.Url ?? string.Empty);
                 var description = HtmlEncoder.Default.Encode(block.Description ?? string.Empty);
@@ -160,15 +250,17 @@ public sealed class HtmlResolverBuilder : IHtmlResolverBuilder
             ? (BlockResolver<IHtmlNode>)htmlResolver
             : DefaultResolvers.HtmlElementResolver();
 
-        // Note: IContentItemLink and IInlineContentItem have NO defaults
+        // Note: IContentItemLink and IEmbeddedContent have NO defaults
         // They require explicit configuration and will show diagnostic comments if missing
 
-        // Create options with conditional resolvers and default fallback
+        // Create options with conditional resolvers, embedded content resolvers, content item link resolvers, and default fallback
         var options = new HtmlResolverOptions
         {
             ConditionalHtmlNodeResolvers = _conditionalHtmlNodeResolvers.ToArray(),
             DefaultHtmlNodeResolver = defaultHtmlNodeResolver,
-            ThrowOnMissingResolver = _options.ThrowOnMissingResolver
+            ThrowOnMissingResolver = _options.ThrowOnMissingResolver,
+            EmbeddedContentResolvers = _embeddedContentResolvers.Count > 0 ? _embeddedContentResolvers : null,
+            ContentItemLinkResolvers = _contentItemLinkResolvers.Count > 0 ? _contentItemLinkResolvers : null
         };
 
         // Create resolver dictionary excluding IHtmlNode (handled via options)

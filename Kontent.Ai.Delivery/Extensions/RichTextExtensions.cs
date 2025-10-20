@@ -12,18 +12,16 @@ public static class RichTextExtensions
     /// </summary>
     /// <param name="richText">The structured rich text content.</param>
     /// <param name="resolver">Optional HTML resolver. If null, uses default resolvers.</param>
-    /// <param name="context">Optional resolution context for passing linked items and other state.</param>
     /// <returns>The HTML representation of the rich text content.</returns>
     public static ValueTask<string> ToHtmlAsync(
         this IRichTextContent richText,
-        IHtmlResolver? resolver = null,
-        IHtmlResolutionContext? context = null)
+        IHtmlResolver? resolver = null)
     {
         ArgumentNullException.ThrowIfNull(richText);
 
         resolver ??= new HtmlResolverBuilder().Build();
 
-        return resolver.ResolveAsync(richText, context);
+        return resolver.ResolveAsync(richText);
     }
 
     /// <summary>
@@ -68,13 +66,13 @@ public static class RichTextExtensions
     }
 
     /// <summary>
-    /// Gets all inline content items from rich text content.
+    /// Gets all embedded content (components and linked items) from the rich text content.
     /// </summary>
     /// <param name="richText">The rich text content to search.</param>
-    /// <returns>An enumerable of all inline content items.</returns>
-    public static IEnumerable<IInlineContentItem> GetInlineContentItems(this IRichTextContent richText)
+    /// <returns>An enumerable of all embedded content blocks.</returns>
+    public static IEnumerable<IEmbeddedContent> GetEmbeddedContent(this IRichTextContent richText)
     {
-        return richText.GetBlocks<IInlineContentItem>();
+        return richText.GetBlocks<IEmbeddedContent>();
     }
 
     /// <summary>

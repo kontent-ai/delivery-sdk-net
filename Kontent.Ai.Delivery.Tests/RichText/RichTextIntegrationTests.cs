@@ -121,30 +121,10 @@ public class RichTextIntegrationTests
         var client = await CreateDeliveryClientAsync("coffee_beverages_explained.json");
 
         var resolver = new HtmlResolverBuilder()
-            .WithInlineContentItemResolver((block, context, _) =>
-            {
-                // Custom resolver for inline items
-                if (block.ContentItem != null)
-                {
-                    var allProp = block.ContentItem.GetType().GetProperties();
-                    var systemProp = block.ContentItem.GetType().GetProperty("System");
-                    if (systemProp != null)
-                    {
-                        var system = systemProp.GetValue(block.ContentItem);
-                        var typeCodename = system?.GetType().GetProperty("Type")?.GetValue(system) as string;
-
-                        if (typeCodename == "tweet")
-                        {
-                            return ValueTask.FromResult("<div class=\"tweet-embed\">[Tweet content]</div>");
-                        }
-                        else if (typeCodename == "hosted_video")
-                        {
-                            return ValueTask.FromResult("<div class=\"video-embed\">[Video content]</div>");
-                        }
-                    }
-                }
-                return ValueTask.FromResult("<!-- Inline item -->");
-            })
+            .WithContentResolver("tweet", (content) =>
+                "<div class=\"tweet-embed\">[Tweet content]</div>")
+            .WithContentResolver("hosted_video", (content) =>
+                "<div class=\"video-embed\">[Video content]</div>")
             .Build();
 
         // Act
@@ -161,20 +141,147 @@ public class RichTextIntegrationTests
     }
 
     [Fact]
-    public async Task IntegrationTest_GetInlineContentItems_ExtractsAllItems()
+    public async Task IntegrationTest_GetEmbeddedContent_ExtractsAllItems()
     {
         // Arrange
         var client = await CreateDeliveryClientAsync("coffee_beverages_explained.json");
 
         // Act
         var result = await client.GetItem<Article>("coffee_beverages_explained").ExecuteAsync();
-        var inlineItems = result.Value.Elements.BodyCopy.GetInlineContentItems().ToList();
+        var embeddedContent = result.Value.Elements.BodyCopy.GetEmbeddedContent().ToList();
 
         // Assert
-        Assert.Equal(2, inlineItems.Count); // americano and how_to_make_a_cappuccino
+        const int ExpectedEmbeddedItemCount = 2;
+        Assert.Equal(ExpectedEmbeddedItemCount, embeddedContent.Count);
 
-        // Verify items have content
-        Assert.All(inlineItems, item => Assert.NotNull(item.ContentItem));
+        // Verify specific expected items by content type
+        var tweetItem = embeddedContent.FirstOrDefault(e => e.ContentTypeCodename == "tweet");
+        Assert.NotNull(tweetItem);
+        Assert.NotNull(tweetItem.Content);
+        Assert.NotEmpty(tweetItem.Codename);
+
+        var videoItem = embeddedContent.FirstOrDefault(e => e.ContentTypeCodename == "hosted_video");
+        Assert.NotNull(videoItem);
+        Assert.NotNull(videoItem.Content);
+        Assert.NotEmpty(videoItem.Codename);
+    }
+
+    #endregion
+
+    #region Async Content Resolver Tests
+
+    [Fact]
+    public async Task IntegrationTest_AsyncContentResolver_WithAsyncOperations()
+    {
+        // Arrange
+        var client = await CreateDeliveryClientAsync("coffee_beverages_explained.json");
+
+        var resolver = new HtmlResolverBuilder()
+            .WithContentResolver("tweet", async (content) =>
+            {
+                // Simulate async database lookup
+                await Task.Delay(1);
+                var tweetData = $"Tweet by {content.Codename}";
+                return $"<div class=\"tweet\" data-id=\"{content.Id}\">{tweetData}</div>";
+            })
+            .WithContentResolver("hosted_video", async (content) =>
+            {
+                await Task.Delay(1);
+                return $"<div class=\"video\" data-codename=\"{content.Codename}\"><iframe src=\"video.mp4\"></iframe></div>";
+            })
+            .Build();
+
+        // Act
+        var result = await client.GetItem<Article>("coffee_beverages_explained").ExecuteAsync();
+        var html = await result.Value.Elements.BodyCopy.ToHtmlAsync(resolver);
+
+        // Assert
+        Assert.True(result.IsSuccess);
+        Assert.Contains("<div class=\"tweet\"", html);
+        Assert.Contains("data-id=", html);
+        Assert.Contains("<div class=\"video\"", html);
+        Assert.Contains("data-codename=", html);
+        Assert.Contains("<iframe src=\"video.mp4\">", html);
+    }
+
+    #endregion
+
+    #region Bulk Content Resolver Tests
+
+    [Fact]
+    public async Task IntegrationTest_BulkContentResolvers_RegistersMultipleTypes()
+    {
+        // Arrange
+        var client = await CreateDeliveryClientAsync("coffee_beverages_explained.json");
+
+        var contentResolvers = new Dictionary<string, Func<IEmbeddedContent, string>>
+        {
+            ["tweet"] = (content) =>
+                $"<blockquote class=\"twitter-tweet\">{content.Name}</blockquote>",
+            ["hosted_video"] = (content) =>
+                $"<video class=\"hosted\" data-item=\"{content.Id}\"></video>"
+        };
+
+        var resolver = new HtmlResolverBuilder()
+            .WithContentResolvers(contentResolvers)
+            .Build();
+
+        // Act
+        var result = await client.GetItem<Article>("coffee_beverages_explained").ExecuteAsync();
+        var html = await result.Value.Elements.BodyCopy.ToHtmlAsync(resolver);
+
+        // Assert
+        Assert.True(result.IsSuccess);
+        Assert.Contains("<blockquote class=\"twitter-tweet\">", html);
+        Assert.Contains("<video class=\"hosted\"", html);
+        Assert.Contains("data-item=", html);
+    }
+
+    [Fact]
+    public async Task IntegrationTest_BulkContentResolvers_OverridesPreviousRegistration()
+    {
+        // Arrange
+        var client = await CreateDeliveryClientAsync("coffee_beverages_explained.json");
+
+        var resolver = new HtmlResolverBuilder()
+            .WithContentResolver("tweet", (content) => "<div>FIRST</div>")
+            .WithContentResolvers(
+                ("tweet", (content) => "<div>SECOND</div>")
+            )
+            .Build();
+
+        // Act
+        var result = await client.GetItem<Article>("coffee_beverages_explained").ExecuteAsync();
+        var html = await result.Value.Elements.BodyCopy.ToHtmlAsync(resolver);
+
+        // Assert
+        Assert.True(result.IsSuccess);
+        Assert.Contains("<div>SECOND</div>", html);
+        Assert.DoesNotContain("<div>FIRST</div>", html);
+    }
+
+    [Fact]
+    public async Task IntegrationTest_BulkContentResolvers_ParamsTupleSyntax()
+    {
+        // Arrange
+        var client = await CreateDeliveryClientAsync("coffee_beverages_explained.json");
+
+        // Use the cleaner params tuple syntax for registering multiple resolvers
+        var resolver = new HtmlResolverBuilder()
+            .WithContentResolvers(
+                ("tweet", (content) => $"<div class=\"tweet-params\">{content.Name}</div>"),
+                ("hosted_video", (content) => $"<div class=\"video-params\" data-id=\"{content.Id}\"></div>")
+            )
+            .Build();
+
+        // Act
+        var result = await client.GetItem<Article>("coffee_beverages_explained").ExecuteAsync();
+        var html = await result.Value.Elements.BodyCopy.ToHtmlAsync(resolver);
+
+        // Assert
+        Assert.True(result.IsSuccess);
+        Assert.Contains("<div class=\"tweet-params\">", html);
+        Assert.Contains("<div class=\"video-params\"", html);
     }
 
     #endregion
@@ -188,7 +295,7 @@ public class RichTextIntegrationTests
         var client = await CreateDeliveryClientAsync("coffee_processing_techniques.json");
 
         var resolver = new HtmlResolverBuilder()
-            .WithContentItemLinkResolver(async (link, context, resolveChildren) =>
+            .WithContentItemLinkResolver(async (link, resolveChildren) =>
             {
                 var innerHtml = await resolveChildren(link.Children);
 
@@ -218,7 +325,7 @@ public class RichTextIntegrationTests
         var client = await CreateDeliveryClientAsync("coffee_processing_techniques.json");
 
         var resolver = new HtmlResolverBuilder()
-            .WithContentItemLinkResolver(async (link, context, resolveChildren) =>
+            .WithContentItemLinkResolver(async (link, resolveChildren) =>
             {
                 // Resolve children (which may contain <strong>, <em>, etc.)
                 var innerHtml = await resolveChildren(link.Children);
@@ -235,6 +342,93 @@ public class RichTextIntegrationTests
         // Verify nested formatting is preserved in link text
         Assert.Contains("<a href=", html);
         Assert.Contains("class=\"custom-link\"", html);
+    }
+
+    [Fact]
+    public async Task IntegrationTest_ContentItemLinkResolver_TypeSpecific_SingleRegistration()
+    {
+        // Arrange
+        var client = await CreateDeliveryClientAsync("coffee_processing_techniques.json");
+
+        var resolver = new HtmlResolverBuilder()
+            // Register type-specific resolver for "coffee" content type
+            .WithContentItemLinkResolver("coffee", async (link, resolveChildren) =>
+            {
+                var innerHtml = await resolveChildren(link.Children);
+                return $"<a href=\"/coffee/{link.Metadata?.UrlSlug}\" class=\"coffee-specific\">{innerHtml}</a>";
+            })
+            .Build();
+
+        // Act
+        var result = await client.GetItem<Article>("coffee_processing_techniques").ExecuteAsync();
+        var html = await result.Value.Elements.BodyCopy.ToHtmlAsync(resolver);
+
+        // Assert
+        Assert.Contains("class=\"coffee-specific\"", html);
+        Assert.Contains("href=\"/coffee/", html);
+    }
+
+    [Fact]
+    public async Task IntegrationTest_ContentItemLinkResolver_TypeSpecific_BulkDictionary()
+    {
+        // Arrange
+        var client = await CreateDeliveryClientAsync("coffee_processing_techniques.json");
+
+        var linkResolvers = new Dictionary<string, BlockResolver<IContentItemLink>>
+        {
+            ["coffee"] = async (link, resolveChildren) =>
+            {
+                var innerHtml = await resolveChildren(link.Children);
+                return $"<a href=\"/coffee/{link.Metadata?.UrlSlug}\" class=\"coffee-dict\">{innerHtml}</a>";
+            },
+            ["article"] = async (link, resolveChildren) =>
+            {
+                var innerHtml = await resolveChildren(link.Children);
+                return $"<a href=\"/articles/{link.Metadata?.UrlSlug}\" class=\"article-dict\">{innerHtml}</a>";
+            }
+        };
+
+        var resolver = new HtmlResolverBuilder()
+            .WithContentItemLinkResolvers(linkResolvers)
+            .Build();
+
+        // Act
+        var result = await client.GetItem<Article>("coffee_processing_techniques").ExecuteAsync();
+        var html = await result.Value.Elements.BodyCopy.ToHtmlAsync(resolver);
+
+        // Assert
+        Assert.Contains("class=\"coffee-dict\"", html);
+        Assert.Contains("href=\"/coffee/", html);
+    }
+
+    [Fact]
+    public async Task IntegrationTest_ContentItemLinkResolver_TypeSpecific_BulkTuples()
+    {
+        // Arrange
+        var client = await CreateDeliveryClientAsync("coffee_processing_techniques.json");
+
+        var resolver = new HtmlResolverBuilder()
+            .WithContentItemLinkResolvers(
+                ("coffee", async (link, resolveChildren) =>
+                {
+                    var innerHtml = await resolveChildren(link.Children);
+                    return $"<a href=\"/coffee/{link.Metadata?.UrlSlug}\" class=\"coffee-tuple\">{innerHtml}</a>";
+                }),
+                ("article", async (link, resolveChildren) =>
+                {
+                    var innerHtml = await resolveChildren(link.Children);
+                    return $"<a href=\"/articles/{link.Metadata?.UrlSlug}\" class=\"article-tuple\">{innerHtml}</a>";
+                })
+            )
+            .Build();
+
+        // Act
+        var result = await client.GetItem<Article>("coffee_processing_techniques").ExecuteAsync();
+        var html = await result.Value.Elements.BodyCopy.ToHtmlAsync(resolver);
+
+        // Assert
+        Assert.Contains("class=\"coffee-tuple\"", html);
+        Assert.Contains("href=\"/coffee/", html);
     }
 
     #endregion
@@ -370,9 +564,9 @@ public class RichTextIntegrationTests
         Assert.NotNull(html);
         Assert.NotEmpty(html);
 
-        // Verify content is rendered (inline items show as comments by default)
-        Assert.Contains("<!--", html); // Default comment resolver for inline items
-        Assert.Contains("Missing resolver for items or components of type", html);
+        // Verify content is rendered (embedded content shows as comments by default)
+        Assert.Contains("<!--", html); // Default comment resolver for embedded content
+        Assert.Contains("Missing resolver for embedded content of type", html);
     }
 
     [Fact]
@@ -396,6 +590,234 @@ public class RichTextIntegrationTests
         // Verify content is rendered (inline items show as comments by default)
         Assert.Contains("<!--", html); // Default comment resolver for inline items
         Assert.Contains("Missing resolver for link to a content type", html);
+    }
+
+    #endregion
+
+    #region Text Node Resolver Tests
+
+    [Fact]
+    public async Task IntegrationTest_TextNodeResolver_NormalizesText()
+    {
+        // Arrange
+        var client = await CreateDeliveryClientAsync("on_roasts.json");
+
+        // Create encoder that preserves Unicode (emojis, smart quotes) but encodes HTML-reserved chars
+        var encoder = System.Text.Encodings.Web.HtmlEncoder.Create(System.Text.Unicode.UnicodeRanges.All);
+
+        var resolver = new HtmlResolverBuilder()
+            .WithTextNodeResolver(async (textNode, resolveChildren) =>
+            {
+                var text = textNode.Text;
+
+                // Apply text-level transformations (e.g., adding emoji)
+                text = text.Replace("roast", "roast ☕");
+
+                // HTML-encode reserved chars but preserve Unicode
+                return encoder.Encode(text);
+            })
+            .Build();
+
+        // Act
+        var result = await client.GetItem<Article>("on_roasts").ExecuteAsync();
+        var html = await result.Value.Elements.BodyCopy.ToHtmlAsync(resolver);
+
+        // Assert
+        Assert.True(result.IsSuccess);
+        Assert.Contains("roast ☕", html); // Emoji should be preserved, not encoded
+        Assert.Contains("There\u2019s", html); // Smart quote (U+2019) should be preserved
+    }
+
+    #endregion
+
+    #region Tag Name HTML Node Resolver Tests
+
+    [Fact]
+    public async Task IntegrationTest_HtmlNodeResolver_ByTagName_CustomizesSpecificTag()
+    {
+        // Arrange
+        var client = await CreateDeliveryClientAsync("on_roasts.json");
+
+        var resolver = new HtmlResolverBuilder()
+            .WithHtmlNodeResolver("h3", async (node, resolveChildren) =>
+            {
+                var content = await resolveChildren(node.Children);
+                return $"<h2 class=\"section-header\">{content}</h2>"; // Convert h3 to h2
+            })
+            .Build();
+
+        // Act
+        var result = await client.GetItem<Article>("on_roasts").ExecuteAsync();
+        var html = await result.Value.Elements.BodyCopy.ToHtmlAsync(resolver);
+
+        // Assert
+        Assert.True(result.IsSuccess);
+        Assert.Contains("<h2 class=\"section-header\">Light Roasts</h2>", html);
+        Assert.Contains("<h2 class=\"section-header\">Medium roast</h2>", html);
+        Assert.Contains("<h2 class=\"section-header\">Dark Roasts</h2>", html);
+        Assert.DoesNotContain("<h3>", html);
+    }
+
+    [Fact]
+    public async Task IntegrationTest_HtmlNodeResolver_ByTagName_IsCaseInsensitive()
+    {
+        // Arrange
+        var client = await CreateDeliveryClientAsync("on_roasts.json");
+
+        var resolver = new HtmlResolverBuilder()
+            .WithHtmlNodeResolver("H3", async (node, resolveChildren) => // Uppercase
+            {
+                var content = await resolveChildren(node.Children);
+                return $"<div class=\"uppercase-match\">{content}</div>";
+            })
+            .Build();
+
+        // Act
+        var result = await client.GetItem<Article>("on_roasts").ExecuteAsync();
+        var html = await result.Value.Elements.BodyCopy.ToHtmlAsync(resolver);
+
+        // Assert
+        Assert.True(result.IsSuccess);
+        Assert.Contains("<div class=\"uppercase-match\">", html);
+        Assert.DoesNotContain("<h3>", html);
+    }
+
+    [Fact]
+    public async Task IntegrationTest_HtmlNodeResolver_ByTagName_CustomizeListItems()
+    {
+        // Arrange
+        var client = await CreateDeliveryClientAsync("on_roasts.json");
+
+        var resolver = new HtmlResolverBuilder()
+            .WithHtmlNodeResolver("li", async (node, resolveChildren) =>
+            {
+                var content = await resolveChildren(node.Children);
+                return $"<li class=\"custom-bullet\"><span class=\"icon\">✓</span> {content}</li>";
+            })
+            .Build();
+
+        // Act
+        var result = await client.GetItem<Article>("on_roasts").ExecuteAsync();
+        var html = await result.Value.Elements.BodyCopy.ToHtmlAsync(resolver);
+
+        // Assert
+        Assert.True(result.IsSuccess);
+        Assert.Contains("<li class=\"custom-bullet\"><span class=\"icon\">✓</span>", html);
+        Assert.Contains("Caffeine level decreases", html);
+    }
+
+    #endregion
+
+    #region Predicate-Based HTML Node Resolver Tests
+
+    [Fact]
+    public async Task IntegrationTest_HtmlNodeResolver_WithMultiplePredicates_FirstMatchWins()
+    {
+        // Arrange
+        var client = await CreateDeliveryClientAsync("on_roasts.json");
+
+        var resolver = new HtmlResolverBuilder()
+            // First: matches h3 tags
+            .WithHtmlNodeResolver(
+                predicate: node => node.TagName == "h3",
+                resolver: async (node, resolveChildren) =>
+                {
+                    var content = await resolveChildren(node.Children);
+                    return $"<h3 class=\"first-match\">{content}</h3>";
+                }
+            )
+            // Second: also matches h3 tags (should never execute)
+            .WithHtmlNodeResolver(
+                predicate: node => node.TagName == "h3",
+                resolver: async (node, resolveChildren) =>
+                {
+                    var content = await resolveChildren(node.Children);
+                    return $"<h3 class=\"second-match\">{content}</h3>";
+                }
+            )
+            .Build();
+
+        // Act
+        var result = await client.GetItem<Article>("on_roasts").ExecuteAsync();
+        var html = await result.Value.Elements.BodyCopy.ToHtmlAsync(resolver);
+
+        // Assert
+        Assert.True(result.IsSuccess);
+        Assert.Contains("<h3 class=\"first-match\">", html);
+        Assert.DoesNotContain("second-match", html);
+    }
+
+    #endregion
+
+    #region HTML Element Fallback Resolver Tests
+
+    [Fact]
+    public async Task IntegrationTest_HtmlElementResolver_AppliesWhenNoPredicateMatches()
+    {
+        // Arrange
+        var client = await CreateDeliveryClientAsync("on_roasts.json");
+
+        var resolver = new HtmlResolverBuilder()
+            // Conditional: only matches h3
+            .WithHtmlNodeResolver("h3", async (node, resolveChildren) =>
+            {
+                var content = await resolveChildren(node.Children);
+                return $"<h3 class=\"heading\">{content}</h3>";
+            })
+            // Fallback: applies to all other nodes (p, ul, li, etc.)
+            .WithHtmlElementResolver(async (node, resolveChildren) =>
+            {
+                var content = await resolveChildren(node.Children);
+                return $"<{node.TagName} class=\"fallback-applied\">{content}</{node.TagName}>";
+            })
+            .Build();
+
+        // Act
+        var result = await client.GetItem<Article>("on_roasts").ExecuteAsync();
+        var html = await result.Value.Elements.BodyCopy.ToHtmlAsync(resolver);
+
+        // Assert
+        Assert.True(result.IsSuccess);
+        // h3 uses specific resolver
+        Assert.Contains("<h3 class=\"heading\">", html);
+        Assert.DoesNotContain("<h3 class=\"fallback-applied\">", html);
+
+        // Other tags use fallback
+        Assert.Contains("<p class=\"fallback-applied\">", html);
+        Assert.Contains("<ul class=\"fallback-applied\">", html);
+        Assert.Contains("<li class=\"fallback-applied\">", html);
+    }
+
+    #endregion
+
+    #region Resolver Interaction Tests
+
+    [Fact]
+    public async Task IntegrationTest_MixedResolvers_AllTypesWorkTogether()
+    {
+        // Arrange
+        var client = await CreateDeliveryClientAsync("coffee_beverages_explained.json");
+
+        var resolver = new HtmlResolverBuilder()
+            .WithContentResolver("tweet", c => "<div class=\"tweet\"></div>")
+            .WithContentResolver("hosted_video", c => "<div class=\"video\"></div>")
+            .WithTextNodeResolver(async (text, _) => System.Text.Encodings.Web.HtmlEncoder.Default.Encode(text.Text))
+            .WithHtmlNodeResolver("h3", async (node, resolveChildren) =>
+            {
+                var content = await resolveChildren(node.Children);
+                return $"<h3 class=\"custom-heading\">{content}</h3>";
+            })
+            .Build();
+
+        // Act
+        var result = await client.GetItem<Article>("coffee_beverages_explained").ExecuteAsync();
+        var html = await result.Value.Elements.BodyCopy.ToHtmlAsync(resolver);
+
+        // Assert
+        Assert.True(result.IsSuccess);
+        // Each resolver type should work
+        Assert.Contains("<div class=\"tweet\">", html);
+        Assert.Contains("<div class=\"video\">", html);
     }
 
     #endregion
