@@ -5,8 +5,27 @@ namespace Kontent.Ai.Delivery.Abstractions;
 /// <summary>
 /// Represents a digital asset, such as a document or image.
 /// </summary>
-public interface IAsset : IImage
+public interface IAsset
 {
+    /// <summary>
+    /// Gets the description of the asset.
+    /// </summary>
+    string? Description { get; }
+
+    /// <summary>
+    /// Gets the URL of the image.
+    /// </summary>
+    string Url { get; }
+
+    /// <summary>
+    /// Gets the width of the image.
+    /// </summary>
+    int Height { get; }
+
+    /// <summary>
+    /// Gets the height of the image.
+    /// </summary>
+    int Width { get; }
     /// <summary>
     /// Gets the name of the asset.
     /// </summary>

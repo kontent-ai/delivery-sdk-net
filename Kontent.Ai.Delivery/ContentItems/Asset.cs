@@ -13,7 +13,7 @@ public sealed record Asset : IAsset
 
     /// <inheritdoc/>
     [JsonPropertyName("description")]
-    public string Description { get; init; } = string.Empty;
+    public string? Description { get; init; }
 
     /// <inheritdoc/>
     [JsonPropertyName("type")]
