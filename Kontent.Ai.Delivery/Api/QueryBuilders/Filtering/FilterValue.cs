@@ -1,136 +1,224 @@
 using System.Globalization;
 using System.Text.Encodings.Web;
-using ValueOf;
 
 namespace Kontent.Ai.Delivery.Api.QueryBuilders.Filtering;
 
 /// <summary>
-/// Base class for all filter values.
-/// </summary>
-public abstract class FilterValue<T, TSelf>
-    : ValueOf<T, TSelf>, IFilterValue
-    where TSelf : FilterValue<T, TSelf>, new()
-{
-    /// <summary>
-    /// Serializes the filter value to a string format suitable for the API.
-    /// </summary>
-    protected abstract string SerializeInternal();
-
-    string IFilterValue.Serialize() => SerializeInternal();
-}
-
-/// <summary>
 /// Represents an empty filter value.
 /// </summary>
-public sealed class EmptyValue : FilterValue<string, EmptyValue>
+public sealed record EmptyValue : IFilterValue
 {
+    private static readonly EmptyValue Instance = new();
+
+    private EmptyValue() { }
+
+    /// <summary>
+    /// Creates an empty filter value.
+    /// </summary>
+    public static EmptyValue From() => Instance;
+
     /// <inheritdoc />
-    protected override string SerializeInternal() => "";
+    public string Serialize() => string.Empty;
 }
 
 /// <summary>
 /// Represents a single string value.
 /// </summary>
-public sealed class StringValue : FilterValue<string, StringValue>
+public sealed record StringValue(string Value) : IFilterValue
 {
-    /// <inheritdoc />
-    protected override string SerializeInternal() =>
-        UrlEncoder.Default.Encode(Value);
+    /// <summary>
+    /// Creates a string filter value.
+    /// </summary>
+    public static StringValue From(string value) => new(value);
 
     /// <summary>
     /// Implicitly converts a <see cref="StringValue"/> to a <see cref="string"/>.
     /// </summary>
-    /// <param name="value">The <see cref="StringValue"/> to convert.</param>
-    /// <returns>The converted <see cref="string"/>.</returns>
     public static implicit operator string(StringValue value) => value.Value;
+
+    /// <inheritdoc />
+    public string Serialize() => UrlEncoder.Default.Encode(Value);
 }
 
 /// <summary>
 /// Represents a numeric (double) value.
 /// </summary>
-public sealed class NumericValue : FilterValue<double, NumericValue>
+public sealed record NumericValue(double Value) : IFilterValue
 {
+    /// <summary>
+    /// Creates a numeric filter value.
+    /// </summary>
+    public static NumericValue From(double value) => new(value);
+
     /// <inheritdoc />
-    protected override string SerializeInternal() =>
-        Value.ToString(CultureInfo.InvariantCulture);
+    public string Serialize() => Value.ToString(CultureInfo.InvariantCulture);
 }
 
 /// <summary>
 /// Represents a DateTime value.
 /// </summary>
-public sealed class DateTimeValue : FilterValue<DateTime, DateTimeValue>
+public sealed record DateTimeValue(DateTime Value) : IFilterValue
 {
+    /// <summary>
+    /// Creates a DateTime filter value.
+    /// </summary>
+    public static DateTimeValue From(DateTime value) => new(value);
+
     /// <inheritdoc />
-    protected override string SerializeInternal() =>
-        Value.ToString("yyyy-MM-ddTHH:mm:ssZ", CultureInfo.InvariantCulture);
+    public string Serialize() => Value.ToString("yyyy-MM-ddTHH:mm:ssZ", CultureInfo.InvariantCulture);
 }
 
 /// <summary>
 /// Represents a Boolean value.
 /// </summary>
-public sealed class BooleanValue : FilterValue<bool, BooleanValue>
+public sealed record BooleanValue(bool Value) : IFilterValue
 {
+    /// <summary>
+    /// Creates a boolean filter value.
+    /// </summary>
+    public static BooleanValue From(bool value) => new(value);
+
     /// <inheritdoc />
-    protected override string SerializeInternal() =>
-        Value.ToString().ToLowerInvariant();
+    public string Serialize() => Value.ToString().ToLowerInvariant();
 }
 
 /// <summary>
 /// Represents an array of strings.
 /// </summary>
-public sealed class StringArrayValue : FilterValue<string[], StringArrayValue>
+public sealed record StringArrayValue(string[] Value) : IFilterValue
 {
+    /// <summary>
+    /// Creates a string array filter value.
+    /// </summary>
+    public static StringArrayValue From(string[] value) => new(value);
+
     /// <inheritdoc />
-    protected override string SerializeInternal() =>
-        string.Join(",", Value.Select(UrlEncoder.Default.Encode));
+    public string Serialize() => string.Join(",", Value.Select(UrlEncoder.Default.Encode));
+
+    /// <inheritdoc />
+    public bool Equals(StringArrayValue? other)
+    {
+        if (other is null) return false;
+        if (ReferenceEquals(this, other)) return true;
+        return Value.SequenceEqual(other.Value);
+    }
+
+    /// <inheritdoc />
+    public override int GetHashCode()
+    {
+        var hash = new HashCode();
+        foreach (var item in Value)
+        {
+            hash.Add(item);
+        }
+        return hash.ToHashCode();
+    }
 }
 
 /// <summary>
 /// Represents an array of doubles.
 /// </summary>
-public sealed class NumericArrayValue : FilterValue<double[], NumericArrayValue>
+public sealed record NumericArrayValue(double[] Value) : IFilterValue
 {
+    /// <summary>
+    /// Creates a numeric array filter value.
+    /// </summary>
+    public static NumericArrayValue From(double[] value) => new(value);
+
     /// <inheritdoc />
-    protected override string SerializeInternal() =>
-        string.Join(",", Value.Select(v => v.ToString(CultureInfo.InvariantCulture)));
+    public string Serialize() => string.Join(",", Value.Select(v => v.ToString(CultureInfo.InvariantCulture)));
+
+    /// <inheritdoc />
+    public bool Equals(NumericArrayValue? other)
+    {
+        if (other is null) return false;
+        if (ReferenceEquals(this, other)) return true;
+        return Value.SequenceEqual(other.Value);
+    }
+
+    /// <inheritdoc />
+    public override int GetHashCode()
+    {
+        var hash = new HashCode();
+        foreach (var item in Value)
+        {
+            hash.Add(item);
+        }
+        return hash.ToHashCode();
+    }
 }
 
 /// <summary>
 /// Represents an array of DateTime values.
 /// </summary>
-public sealed class DateTimeArrayValue : FilterValue<DateTime[], DateTimeArrayValue>
+public sealed record DateTimeArrayValue(DateTime[] Value) : IFilterValue
 {
+    /// <summary>
+    /// Creates a DateTime array filter value.
+    /// </summary>
+    public static DateTimeArrayValue From(DateTime[] value) => new(value);
+
     /// <inheritdoc />
-    protected override string SerializeInternal() =>
-        string.Join(",", Value.Select(v => v.ToString("yyyy-MM-ddTHH:mm:ssZ", CultureInfo.InvariantCulture)));
+    public string Serialize() => string.Join(",", Value.Select(v => v.ToString("yyyy-MM-ddTHH:mm:ssZ", CultureInfo.InvariantCulture)));
+
+    /// <inheritdoc />
+    public bool Equals(DateTimeArrayValue? other)
+    {
+        if (other is null) return false;
+        if (ReferenceEquals(this, other)) return true;
+        return Value.SequenceEqual(other.Value);
+    }
+
+    /// <inheritdoc />
+    public override int GetHashCode()
+    {
+        var hash = new HashCode();
+        foreach (var item in Value)
+        {
+            hash.Add(item);
+        }
+        return hash.ToHashCode();
+    }
 }
 
 /// <summary>
 /// Represents a numeric range with lower and upper bounds.
 /// </summary>
-public sealed class NumericRangeValue : FilterValue<(double Lower, double Upper), NumericRangeValue>
+public sealed record NumericRangeValue(double Lower, double Upper) : IFilterValue
 {
+    /// <summary>
+    /// Creates a numeric range filter value.
+    /// </summary>
+    public static NumericRangeValue From((double Lower, double Upper) range) => new(range.Lower, range.Upper);
+
     /// <inheritdoc />
-    protected override string SerializeInternal() =>
-        $"{Value.Lower.ToString(CultureInfo.InvariantCulture)},{Value.Upper.ToString(CultureInfo.InvariantCulture)}";
+    public string Serialize() => $"{Lower.ToString(CultureInfo.InvariantCulture)},{Upper.ToString(CultureInfo.InvariantCulture)}";
 }
 
 /// <summary>
 /// Represents a date range with lower and upper bounds.
 /// </summary>
-public sealed class DateRangeValue : FilterValue<(DateTime Lower, DateTime Upper), DateRangeValue>
+public sealed record DateRangeValue(DateTime Lower, DateTime Upper) : IFilterValue
 {
+    /// <summary>
+    /// Creates a date range filter value.
+    /// </summary>
+    public static DateRangeValue From((DateTime Lower, DateTime Upper) range) => new(range.Lower, range.Upper);
+
     /// <inheritdoc />
-    protected override string SerializeInternal() =>
-        $"{Value.Lower:yyyy-MM-ddTHH:mm:ssZ},{Value.Upper:yyyy-MM-ddTHH:mm:ssZ}";
+    public string Serialize() => $"{Lower:yyyy-MM-ddTHH:mm:ssZ},{Upper:yyyy-MM-ddTHH:mm:ssZ}";
 }
 
 /// <summary>
 /// Represents a string range with lower and upper bounds.
 /// </summary>
-public sealed class StringRangeValue : FilterValue<(string Lower, string Upper), StringRangeValue>
+public sealed record StringRangeValue(string Lower, string Upper) : IFilterValue
 {
+    /// <summary>
+    /// Creates a string range filter value.
+    /// </summary>
+    public static StringRangeValue From((string Lower, string Upper) range) => new(range.Lower, range.Upper);
+
     /// <inheritdoc />
-    protected override string SerializeInternal() =>
-        $"{UrlEncoder.Default.Encode(Value.Lower)},{UrlEncoder.Default.Encode(Value.Upper)}";
+    public string Serialize() => $"{UrlEncoder.Default.Encode(Lower)},{UrlEncoder.Default.Encode(Upper)}";
 }
