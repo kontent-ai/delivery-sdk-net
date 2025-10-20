@@ -1,3 +1,5 @@
+using System;
+
 namespace Kontent.Ai.Delivery.Abstractions;
 
 /// <summary>
@@ -75,6 +77,9 @@ public readonly record struct ItemSystemPath
 
     /// <inheritdoc />
     public string Serialize() => _value;
+
+    /// <inheritdoc />
+    public override string ToString() => _value;
 }
 
 /// <summary>
@@ -106,8 +111,16 @@ public readonly record struct TypeSystemPath
     /// </summary>
     public static TypeSystemPath LastModified { get; } = new("system.last_modified");
 
+    /// <summary>
+    /// Implicitly converts a <see cref="TypeSystemPath"/> to a string.
+    /// </summary>
+    public static implicit operator string(TypeSystemPath path) => path._value;
+
     /// <inheritdoc />
     public string Serialize() => _value;
+
+    /// <inheritdoc />
+    public override string ToString() => _value;
 }
 
 /// <summary>
@@ -146,6 +159,9 @@ public readonly record struct TaxonomySystemPath
 
     /// <inheritdoc />
     public string Serialize() => _value;
+
+    /// <inheritdoc />
+    public override string ToString() => _value;
 }
 
 /// <summary>
@@ -155,12 +171,37 @@ public readonly record struct ElementPath
     : IPropertyPath
 {
     private readonly string _value;
+    private readonly string _codename;
 
-    private ElementPath(string value) => _value = value;
+    private ElementPath(string codename, string fullPath)
+    {
+        _codename = codename;
+        _value = fullPath;
+    }
+
+    /// <summary>
+    /// Gets the element codename (without the "elements." prefix).
+    /// </summary>
+    public string Codename => _codename;
 
     // internal factory: only code in this assembly can create ElementPath
     internal static ElementPath FromCodename(string codename)
-        => new($"elements.{codename}");
+    {
+        if (string.IsNullOrWhiteSpace(codename))
+        {
+            throw new ArgumentException("Element codename cannot be null or whitespace.", nameof(codename));
+        }
+
+        // Validate codename doesn't contain invalid characters
+        if (codename.Contains(' '))
+        {
+            throw new ArgumentException(
+                $"Element codename '{codename}' contains spaces. Element codenames should not contain spaces.",
+                nameof(codename));
+        }
+
+        return new ElementPath(codename, $"elements.{codename}");
+    }
 
     /// <summary>
     /// Returns the string representation of the element path.
@@ -172,6 +213,9 @@ public readonly record struct ElementPath
     /// Implicitly converts an <see cref="ElementPath"/> to a string.
     /// </summary>
     public static implicit operator string(ElementPath path) => path._value;
+
+    /// <inheritdoc />
+    public override string ToString() => _value;
 }
 
 /// <summary>
@@ -182,7 +226,14 @@ public static class Elements
     /// <summary>
     /// Creates an element property path for the specified element codename.
     /// </summary>
-    /// <param name="codename">The element codename.</param>
+    /// <param name="codename">The element codename (e.g., "title", "author", "publish_date").</param>
     /// <returns>The element property path (elements.{codename}).</returns>
+    /// <exception cref="ArgumentException">Thrown when codename is null, empty, or contains invalid characters.</exception>
+    /// <example>
+    /// <code>
+    /// var titlePath = Elements.GetPath("title");        // Returns elements.title
+    /// var authorPath = Elements.GetPath("author_name"); // Returns elements.author_name
+    /// </code>
+    /// </example>
     public static ElementPath GetPath(string codename) => ElementPath.FromCodename(codename);
 }
