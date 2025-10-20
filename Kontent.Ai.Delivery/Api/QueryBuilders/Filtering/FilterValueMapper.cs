@@ -1,20 +1,32 @@
 namespace Kontent.Ai.Delivery.Api.QueryBuilders.Filtering;
 
+/// <summary>
+/// Maps OneOf discriminated union types to concrete FilterValue implementations.
+/// </summary>
 internal static class FilterValueMapper
 {
-    public static IFilterValue From(Scalar s) => s.Match<IFilterValue>(
+    /// <summary>
+    /// Maps a scalar value (string, double, DateTime, or bool) to its corresponding FilterValue type.
+    /// </summary>
+    public static IFilterValue From(ScalarValue s) => s.Match<IFilterValue>(
         StringValue.From,
         NumericValue.From,
         DateTimeValue.From,
         BooleanValue.From
     );
 
-    public static IFilterValue From(RangeTuple r) => r.Match<IFilterValue>(
+    /// <summary>
+    /// Maps range bounds (numeric or date tuple) to its corresponding FilterValue type.
+    /// </summary>
+    public static IFilterValue From(RangeBounds r) => r.Match<IFilterValue>(
         NumericRangeValue.From,
         DateRangeValue.From
     );
 
-    public static IFilterValue From(Comparable c) => c.Match<IFilterValue>(
+    /// <summary>
+    /// Maps a comparable value (double, DateTime, or string) to its corresponding FilterValue type.
+    /// </summary>
+    public static IFilterValue From(ComparableValue c) => c.Match<IFilterValue>(
         NumericValue.From,
         DateTimeValue.From,
         StringValue.From

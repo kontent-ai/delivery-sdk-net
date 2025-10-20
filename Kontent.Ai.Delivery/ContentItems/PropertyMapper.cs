@@ -1,15 +1,14 @@
 using System.Collections.Concurrent;
 using System.Reflection;
-using Kontent.Ai.Delivery.ContentItems.Attributes;
 using System.Text.Json.Serialization;
 
 namespace Kontent.Ai.Delivery.ContentItems;
 
 /// <summary>
-/// Default provider for mapping Kontent.ai content item fields to model properties.
-/// Caches reflection results for optimal performance.
+/// Maps Kontent.ai element codenames to model properties using JsonPropertyName.
+/// Honors JsonIgnore and caches match results.
 /// </summary>
-internal class PropertyMapper : IPropertyMapper // TODO: this is just a boolean checker now, consider renaming?
+internal class PropertyMapper : IPropertyMapper
 {
     // Cache property matching results to avoid repeated reflection overhead
     // Key: (PropertyInfo, fieldName), Value: bool match result
@@ -29,33 +28,14 @@ internal class PropertyMapper : IPropertyMapper // TODO: this is just a boolean 
 
         var cacheKey = (modelProperty, fieldName);
 
-        // Check cache first for O(1) lookup
         if (_matchCache.TryGetValue(cacheKey, out var cachedResult))
-        {
             return cachedResult;
-        }
 
-        // Cache miss - perform matching logic
-        var ignoreAttribute = modelProperty.GetCustomAttribute<JsonIgnoreAttribute>();
-        if (ignoreAttribute != null)
-        {
-            // JsonIgnore means no match - cache null to avoid repeated checks
-            _matchCache[cacheKey] = false;
-            return false;
-        }
+        if (modelProperty.GetCustomAttribute<JsonIgnoreAttribute>() != null)
+            return _matchCache[cacheKey] = false;
 
-        var propertyName = GetPropertyNameFromAttribute(modelProperty);
-        var isMatch = propertyName != null
-            ? fieldName.Equals(propertyName, StringComparison.Ordinal)
-            : fieldName.Replace("_", "").Equals(modelProperty.Name, StringComparison.OrdinalIgnoreCase); // Default mapping
-
-        // Cache the result to avoid repeated reflection
-        _matchCache[cacheKey] = isMatch;
-
-        return isMatch;
+        var jsonName = modelProperty.GetCustomAttribute<JsonPropertyNameAttribute>()?.Name;
+        var isMatch = jsonName != null && fieldName.Equals(jsonName, StringComparison.Ordinal);
+        return _matchCache[cacheKey] = isMatch;
     }
-
-    private static string? GetPropertyNameFromAttribute(PropertyInfo modelProperty)
-        => modelProperty.GetCustomAttribute<PropertyNameAttribute>()?.PropertyName  // Try to get the name of the property name attribute
-        ?? modelProperty.GetCustomAttribute<JsonPropertyNameAttribute>()?.Name; // Try to get the name of JSON serialization property
 }
