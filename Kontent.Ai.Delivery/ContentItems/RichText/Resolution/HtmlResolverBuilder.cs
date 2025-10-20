@@ -1,5 +1,6 @@
 using System.Collections.ObjectModel;
 using System.Text.Encodings.Web;
+using System.Text.Unicode;
 
 namespace Kontent.Ai.Delivery.ContentItems.RichText.Resolution;
 
@@ -172,9 +173,13 @@ public sealed class HtmlResolverBuilder : IHtmlResolverBuilder
         // Always provide built-in defaults for elements that have sensible default rendering
         var resolversWithDefaults = new Dictionary<Type, Delegate>(_resolvers);
 
-        // Default text node resolver - HTML-encodes text content
+        // Create HTML encoder that preserves Unicode characters (emojis, smart quotes, accented chars)
+        // but still encodes HTML-reserved characters (<, >, &, ", ') for security
+        var unicodeEncoder = HtmlEncoder.Create(UnicodeRanges.All);
+
+        // Default text node resolver - HTML-encodes reserved chars but preserves Unicode
         resolversWithDefaults.TryAdd(typeof(ITextNode), new BlockResolver<ITextNode>(
-            (block, _, _) => ValueTask.FromResult(HtmlEncoder.Default.Encode(block.Text))
+            (block, _, _) => ValueTask.FromResult(unicodeEncoder.Encode(block.Text))
         ));
 
         // Default inline image resolver - generates proper HTML figure element

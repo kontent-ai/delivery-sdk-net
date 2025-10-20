@@ -492,16 +492,19 @@ public class RichTextIntegrationTests
         // Arrange
         var client = await CreateDeliveryClientAsync("on_roasts.json");
 
+        // Create encoder that preserves Unicode (emojis, smart quotes) but encodes HTML-reserved chars
+        var encoder = System.Text.Encodings.Web.HtmlEncoder.Create(System.Text.Unicode.UnicodeRanges.All);
+
         var resolver = new HtmlResolverBuilder()
             .WithTextNodeResolver(async (textNode, ctx, resolveChildren) =>
             {
                 var text = textNode.Text;
 
-                // Apply text-level transformations (e.g., smart quotes, special characters)
+                // Apply text-level transformations (e.g., adding emoji)
                 text = text.Replace("roast", "roast ☕");
 
-                // HTML-encode to ensure safe output
-                return System.Text.Encodings.Web.HtmlEncoder.Default.Encode(text);
+                // HTML-encode reserved chars but preserve Unicode
+                return encoder.Encode(text);
             })
             .Build();
 
@@ -511,7 +514,8 @@ public class RichTextIntegrationTests
 
         // Assert
         Assert.True(result.IsSuccess);
-        Assert.Contains("roast ☕", html);
+        Assert.Contains("roast ☕", html); // Emoji should be preserved, not encoded
+        Assert.Contains("There\u2019s", html); // Smart quote (U+2019) should be preserved
     }
 
     #endregion
