@@ -1,7 +1,5 @@
-using System.Text;
+using System.Collections.ObjectModel;
 using System.Text.Encodings.Web;
-using Kontent.Ai.Delivery.Abstractions;
-using Kontent.Ai.Delivery.Abstractions.ContentItems.RichText.Blocks;
 
 namespace Kontent.Ai.Delivery.ContentItems.RichText.Resolution;
 
@@ -15,7 +13,7 @@ namespace Kontent.Ai.Delivery.ContentItems.RichText.Resolution;
 /// </para>
 /// <list type="bullet">
 ///   <item><description><see cref="IContentItemLink"/> - Links to other content items (requires URL generation logic)</description></item>
-///   <item><description><see cref="IInlineContentItem"/> - Embedded content items (requires rendering logic)</description></item>
+///   <item><description><see cref="IEmbeddedContent"/> - Embedded content items/components (requires rendering logic)</description></item>
 /// </list>
 /// <para>
 /// Custom resolvers override the built-in defaults.
@@ -29,7 +27,10 @@ namespace Kontent.Ai.Delivery.ContentItems.RichText.Resolution;
 ///         ["article"] = "/articles/{urlslug}",
 ///         ["product"] = "/products/{urlslug}"
 ///     }))
-///     .WithInlineContentItemResolver((item, ctx, _) => ValueTask.FromResult($"&lt;div class='embed'&gt;{item.ContentItem.System.Name}&lt;/div&gt;"))
+///     .WithContentResolver("tweet", (content, ctx) =>
+///         $"&lt;div class='tweet'&gt;{content.Name}&lt;/div&gt;")
+///     .WithContentResolver("video", (content, ctx) =>
+///         $"&lt;video src='{content.Content.Url}'&gt;&lt;/video&gt;")
 ///     .Build();
 ///
 /// var html = await richText.ToHtmlAsync(resolver);
@@ -39,6 +40,7 @@ public sealed class HtmlResolverBuilder : IHtmlResolverBuilder
 {
     private readonly Dictionary<Type, Delegate> _resolvers = new();
     private readonly List<ConditionalHtmlNodeResolver> _conditionalHtmlNodeResolvers = new();
+    private readonly Dictionary<string, Func<IEmbeddedContent, IHtmlResolutionContext, ValueTask<string>>> _embeddedContentResolvers = new(StringComparer.OrdinalIgnoreCase);
     private readonly HtmlResolverOptions _options = new();
 
     /// <inheritdoc />
@@ -50,10 +52,41 @@ public sealed class HtmlResolverBuilder : IHtmlResolverBuilder
     }
 
     /// <inheritdoc />
-    public IHtmlResolverBuilder WithInlineContentItemResolver(BlockResolver<IInlineContentItem> resolver)
+    public IHtmlResolverBuilder WithContentResolver(
+        string contentTypeCodename,
+        Func<IEmbeddedContent, IHtmlResolutionContext, ValueTask<string>> resolver)
     {
+        ArgumentException.ThrowIfNullOrWhiteSpace(contentTypeCodename);
         ArgumentNullException.ThrowIfNull(resolver);
-        _resolvers[typeof(IInlineContentItem)] = resolver;
+
+        _embeddedContentResolvers[contentTypeCodename] = resolver;
+        return this;
+    }
+
+    /// <inheritdoc />
+    public IHtmlResolverBuilder WithContentResolver(
+        string contentTypeCodename,
+        Func<IEmbeddedContent, IHtmlResolutionContext, string> resolver)
+    {
+        ArgumentException.ThrowIfNullOrWhiteSpace(contentTypeCodename);
+        ArgumentNullException.ThrowIfNull(resolver);
+
+        // Wrap synchronous resolver in ValueTask
+        _embeddedContentResolvers[contentTypeCodename] = (content, context) =>
+            ValueTask.FromResult(resolver(content, context));
+        return this;
+    }
+
+    /// <inheritdoc />
+    public IHtmlResolverBuilder WithContentResolvers(
+        IReadOnlyDictionary<string, Func<IEmbeddedContent, IHtmlResolutionContext, string>> resolvers)
+    {
+        ArgumentNullException.ThrowIfNull(resolvers);
+
+        foreach (var (codename, resolver) in resolvers)
+        {
+            WithContentResolver(codename, resolver);
+        }
         return this;
     }
 
@@ -160,15 +193,16 @@ public sealed class HtmlResolverBuilder : IHtmlResolverBuilder
             ? (BlockResolver<IHtmlNode>)htmlResolver
             : DefaultResolvers.HtmlElementResolver();
 
-        // Note: IContentItemLink and IInlineContentItem have NO defaults
+        // Note: IContentItemLink and IEmbeddedContent have NO defaults
         // They require explicit configuration and will show diagnostic comments if missing
 
-        // Create options with conditional resolvers and default fallback
+        // Create options with conditional resolvers, embedded content resolvers, and default fallback
         var options = new HtmlResolverOptions
         {
             ConditionalHtmlNodeResolvers = _conditionalHtmlNodeResolvers.ToArray(),
             DefaultHtmlNodeResolver = defaultHtmlNodeResolver,
-            ThrowOnMissingResolver = _options.ThrowOnMissingResolver
+            ThrowOnMissingResolver = _options.ThrowOnMissingResolver,
+            EmbeddedContentResolvers = _embeddedContentResolvers.Count > 0 ? _embeddedContentResolvers : null
         };
 
         // Create resolver dictionary excluding IHtmlNode (handled via options)

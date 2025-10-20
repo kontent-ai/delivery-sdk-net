@@ -1,7 +1,6 @@
 using System.Collections.Frozen;
 using System.Text;
 using Kontent.Ai.Delivery.Abstractions;
-using Kontent.Ai.Delivery.Abstractions.ContentItems.RichText.Blocks;
 using Kontent.Ai.Delivery.ContentItems.RichText;
 
 namespace Kontent.Ai.Delivery.ContentItems.RichText.Resolution;
@@ -15,8 +14,11 @@ internal sealed class HtmlResolver : IHtmlResolver
     // Performance cache: maps tag names to their dedicated resolvers for O(1) lookup
     private readonly FrozenDictionary<string, BlockResolver<IHtmlNode>> _tagResolverCache;
 
+    // Codename-based resolvers for embedded content (components/linked items)
+    private readonly FrozenDictionary<string, Func<IEmbeddedContent, IHtmlResolutionContext, ValueTask<string>>> _embeddedContentResolvers;
+
     // Diagnostic messages for app-specific resolvers that require configuration
-    private const string MissingInlineContentItemResolver = "<!-- [Kontent.ai SDK] Missing resolver for items or components of type: {0} -->";
+    private const string MissingEmbeddedContentResolver = "<!-- [Kontent.ai SDK] Missing resolver for embedded content of type \"{0}\" (item: {1}, codename: {2}) -->";
     private const string MissingContentItemLinkResolver = "<!-- [Kontent.ai SDK] Missing resolver for link to a content type: \"{0}\" (item ID: {1}) -->";
 
     public HtmlResolver(
@@ -33,6 +35,12 @@ internal sealed class HtmlResolver : IHtmlResolver
                 c => c.Description![4..],  // Extract tag name from "Tag=..." description
                 c => c.Resolver,
                 StringComparer.OrdinalIgnoreCase);
+
+        // Build immutable embedded content resolver cache (codename-based dispatch)
+        _embeddedContentResolvers = options.EmbeddedContentResolvers?.ToFrozenDictionary(
+            kvp => kvp.Key,
+            kvp => kvp.Value,
+            StringComparer.OrdinalIgnoreCase) ?? FrozenDictionary<string, Func<IEmbeddedContent, IHtmlResolutionContext, ValueTask<string>>>.Empty;
     }
 
     public async ValueTask<string> ResolveAsync(
@@ -75,12 +83,13 @@ internal sealed class HtmlResolver : IHtmlResolver
                 ? throw new InvalidOperationException($"No resolver registered for IContentItemLink (item ID: {link.ItemId})")
                 : ValueTask.FromResult(string.Format(MissingContentItemLinkResolver, link.Metadata?.ContentTypeCodename ?? "unknown", link.ItemId)),
 
-            IInlineContentItem item when _resolvers.TryGetValue(typeof(IInlineContentItem), out var resolver)
-                => ((BlockResolver<IInlineContentItem>)resolver)(item, context, _ => ValueTask.FromResult(string.Empty)),
+            // Embedded content (components/linked items) - codename-based dispatch
+            IEmbeddedContent content when _embeddedContentResolvers.TryGetValue(content.ContentTypeCodename, out var resolver)
+                => resolver(content, context),
 
-            IInlineContentItem item => _options.ThrowOnMissingResolver
-                ? throw new InvalidOperationException($"No resolver registered for IInlineContentItem")
-                : ValueTask.FromResult(string.Format(MissingInlineContentItemResolver, item.ContentItem?.GetType().GetGenericArguments().FirstOrDefault()?.Name ?? "unknown")),
+            IEmbeddedContent content => _options.ThrowOnMissingResolver
+                ? throw new InvalidOperationException($"No resolver registered for embedded content type: {content.ContentTypeCodename}")
+                : ValueTask.FromResult(string.Format(MissingEmbeddedContentResolver, content.ContentTypeCodename, content.Id, content.Codename)),
 
             _ => throw new InvalidOperationException($"Unknown block type: {block.GetType().Name}")
         };
@@ -150,4 +159,10 @@ internal sealed record HtmlResolverOptions
     /// Fallback resolver for HTML nodes when no conditional resolver matches.
     /// </summary>
     public BlockResolver<IHtmlNode>? DefaultHtmlNodeResolver { get; init; }
+
+    /// <summary>
+    /// Codename-based resolvers for embedded content (components and linked items).
+    /// Key is the content type codename, value is the resolver function.
+    /// </summary>
+    public IReadOnlyDictionary<string, Func<IEmbeddedContent, IHtmlResolutionContext, ValueTask<string>>>? EmbeddedContentResolvers { get; init; }
 }

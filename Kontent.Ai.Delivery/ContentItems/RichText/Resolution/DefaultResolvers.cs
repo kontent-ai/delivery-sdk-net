@@ -54,34 +54,6 @@ public static class DefaultResolvers
     }
 
     /// <summary>
-    /// Creates a simple pass-through resolver for inline content items that renders them as comments.
-    /// Useful for scenarios where inline content should not be displayed but preserved for debugging.
-    /// </summary>
-    /// <returns>A block resolver for inline content items.</returns>
-    public static BlockResolver<IInlineContentItem> CommentResolver()
-    {
-        return (block, _, _) =>
-        {
-            // Try to extract codename from common patterns without using dynamic
-            var codename = block.ContentItem?.GetType().Name ?? "unknown";
-
-            // Attempt to get codename from System property if available
-            var systemProperty = block.ContentItem?.GetType().GetProperty("System");
-            if (systemProperty != null)
-            {
-                var systemValue = systemProperty.GetValue(block.ContentItem);
-                var codenameProperty = systemValue?.GetType().GetProperty("Codename");
-                if (codenameProperty != null)
-                {
-                    codename = codenameProperty.GetValue(systemValue) as string ?? codename;
-                }
-            }
-
-            return ValueTask.FromResult($"<!-- Inline content item: {codename} -->");
-        };
-    }
-
-    /// <summary>
     /// Creates a default resolver for HTML elements that renders them with their original structure.
     /// </summary>
     /// <returns>A block resolver for HTML elements.</returns>

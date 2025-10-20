@@ -68,13 +68,13 @@ public static class RichTextExtensions
     }
 
     /// <summary>
-    /// Gets all inline content items from rich text content.
+    /// Gets all embedded content (components and linked items) from the rich text content.
     /// </summary>
     /// <param name="richText">The rich text content to search.</param>
-    /// <returns>An enumerable of all inline content items.</returns>
-    public static IEnumerable<IInlineContentItem> GetInlineContentItems(this IRichTextContent richText)
+    /// <returns>An enumerable of all embedded content blocks.</returns>
+    public static IEnumerable<IEmbeddedContent> GetEmbeddedContent(this IRichTextContent richText)
     {
-        return richText.GetBlocks<IInlineContentItem>();
+        return richText.GetBlocks<IEmbeddedContent>();
     }
 
     /// <summary>

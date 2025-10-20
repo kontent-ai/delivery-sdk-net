@@ -1,4 +1,4 @@
-namespace Kontent.Ai.Delivery.Abstractions.ContentItems.RichText.Blocks;
+namespace Kontent.Ai.Delivery.Abstractions;
 
 /// <summary>
 /// Represents text content within a rich text HTML node.

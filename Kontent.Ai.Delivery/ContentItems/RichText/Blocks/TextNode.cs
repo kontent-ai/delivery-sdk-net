@@ -1,5 +1,3 @@
-using Kontent.Ai.Delivery.Abstractions.ContentItems.RichText.Blocks;
-
 namespace Kontent.Ai.Delivery.ContentItems.RichText.Blocks;
 
 /// <inheritdoc cref="ITextNode"/>
