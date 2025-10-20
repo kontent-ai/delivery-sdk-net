@@ -37,10 +37,10 @@ internal sealed class ItemFilters : IItemFilters
         => new Filter(path.Serialize(), FilterOperator.All, StringArrayValue.From(values));
 
     public IFilter Empty(IPropertyPath path)
-        => new Filter(path.Serialize(), FilterOperator.Empty, EmptyValue.From());
+        => new Filter(path.Serialize(), FilterOperator.Empty, null);
 
     public IFilter NotEmpty(IPropertyPath path)
-        => new Filter(path.Serialize(), FilterOperator.NotEmpty, EmptyValue.From());
+        => new Filter(path.Serialize(), FilterOperator.NotEmpty, null);
 
     public IFilter In(IPropertyPath path, string[] values)
         => new Filter(path.Serialize(), FilterOperator.In, StringArrayValue.From(values));
