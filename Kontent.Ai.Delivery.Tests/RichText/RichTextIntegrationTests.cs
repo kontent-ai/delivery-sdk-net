@@ -245,10 +245,9 @@ public class RichTextIntegrationTests
 
         var resolver = new HtmlResolverBuilder()
             .WithContentResolver("tweet", (content, ctx) => "<div>FIRST</div>")
-            .WithContentResolvers(new Dictionary<string, Func<IEmbeddedContent, IHtmlResolutionContext, string>> // TODO: alias this somehow or use a tuple?
-            {
-                ["tweet"] = (content, ctx) => "<div>SECOND</div>"
-            })
+            .WithContentResolvers(
+                ("tweet", (content, ctx) => "<div>SECOND</div>")
+            )
             .Build();
 
         // Act
@@ -259,6 +258,30 @@ public class RichTextIntegrationTests
         Assert.True(result.IsSuccess);
         Assert.Contains("<div>SECOND</div>", html);
         Assert.DoesNotContain("<div>FIRST</div>", html);
+    }
+
+    [Fact]
+    public async Task IntegrationTest_BulkContentResolvers_ParamsTupleSyntax()
+    {
+        // Arrange
+        var client = await CreateDeliveryClientAsync("coffee_beverages_explained.json");
+
+        // Use the cleaner params tuple syntax for registering multiple resolvers
+        var resolver = new HtmlResolverBuilder()
+            .WithContentResolvers(
+                ("tweet", (content, ctx) => $"<div class=\"tweet-params\">{content.Name}</div>"),
+                ("hosted_video", (content, ctx) => $"<div class=\"video-params\" data-id=\"{content.Id}\"></div>")
+            )
+            .Build();
+
+        // Act
+        var result = await client.GetItem<Article>("coffee_beverages_explained").ExecuteAsync();
+        var html = await result.Value.Elements.BodyCopy.ToHtmlAsync(resolver);
+
+        // Assert
+        Assert.True(result.IsSuccess);
+        Assert.Contains("<div class=\"tweet-params\">", html);
+        Assert.Contains("<div class=\"video-params\"", html);
     }
 
     #endregion
@@ -319,6 +342,93 @@ public class RichTextIntegrationTests
         // Verify nested formatting is preserved in link text
         Assert.Contains("<a href=", html);
         Assert.Contains("class=\"custom-link\"", html);
+    }
+
+    [Fact]
+    public async Task IntegrationTest_ContentItemLinkResolver_TypeSpecific_SingleRegistration()
+    {
+        // Arrange
+        var client = await CreateDeliveryClientAsync("coffee_processing_techniques.json");
+
+        var resolver = new HtmlResolverBuilder()
+            // Register type-specific resolver for "coffee" content type
+            .WithContentItemLinkResolver("coffee", async (link, context, resolveChildren) =>
+            {
+                var innerHtml = await resolveChildren(link.Children);
+                return $"<a href=\"/coffee/{link.Metadata?.UrlSlug}\" class=\"coffee-specific\">{innerHtml}</a>";
+            })
+            .Build();
+
+        // Act
+        var result = await client.GetItem<Article>("coffee_processing_techniques").ExecuteAsync();
+        var html = await result.Value.Elements.BodyCopy.ToHtmlAsync(resolver);
+
+        // Assert
+        Assert.Contains("class=\"coffee-specific\"", html);
+        Assert.Contains("href=\"/coffee/", html);
+    }
+
+    [Fact]
+    public async Task IntegrationTest_ContentItemLinkResolver_TypeSpecific_BulkDictionary()
+    {
+        // Arrange
+        var client = await CreateDeliveryClientAsync("coffee_processing_techniques.json");
+
+        var linkResolvers = new Dictionary<string, BlockResolver<IContentItemLink>>
+        {
+            ["coffee"] = async (link, context, resolveChildren) =>
+            {
+                var innerHtml = await resolveChildren(link.Children);
+                return $"<a href=\"/coffee/{link.Metadata?.UrlSlug}\" class=\"coffee-dict\">{innerHtml}</a>";
+            },
+            ["article"] = async (link, context, resolveChildren) =>
+            {
+                var innerHtml = await resolveChildren(link.Children);
+                return $"<a href=\"/articles/{link.Metadata?.UrlSlug}\" class=\"article-dict\">{innerHtml}</a>";
+            }
+        };
+
+        var resolver = new HtmlResolverBuilder()
+            .WithContentItemLinkResolvers(linkResolvers)
+            .Build();
+
+        // Act
+        var result = await client.GetItem<Article>("coffee_processing_techniques").ExecuteAsync();
+        var html = await result.Value.Elements.BodyCopy.ToHtmlAsync(resolver);
+
+        // Assert
+        Assert.Contains("class=\"coffee-dict\"", html);
+        Assert.Contains("href=\"/coffee/", html);
+    }
+
+    [Fact]
+    public async Task IntegrationTest_ContentItemLinkResolver_TypeSpecific_BulkTuples()
+    {
+        // Arrange
+        var client = await CreateDeliveryClientAsync("coffee_processing_techniques.json");
+
+        var resolver = new HtmlResolverBuilder()
+            .WithContentItemLinkResolvers(
+                ("coffee", async (link, context, resolveChildren) =>
+                {
+                    var innerHtml = await resolveChildren(link.Children);
+                    return $"<a href=\"/coffee/{link.Metadata?.UrlSlug}\" class=\"coffee-tuple\">{innerHtml}</a>";
+                }),
+                ("article", async (link, context, resolveChildren) =>
+                {
+                    var innerHtml = await resolveChildren(link.Children);
+                    return $"<a href=\"/articles/{link.Metadata?.UrlSlug}\" class=\"article-tuple\">{innerHtml}</a>";
+                })
+            )
+            .Build();
+
+        // Act
+        var result = await client.GetItem<Article>("coffee_processing_techniques").ExecuteAsync();
+        var html = await result.Value.Elements.BodyCopy.ToHtmlAsync(resolver);
+
+        // Assert
+        Assert.Contains("class=\"coffee-tuple\"", html);
+        Assert.Contains("href=\"/coffee/", html);
     }
 
     #endregion

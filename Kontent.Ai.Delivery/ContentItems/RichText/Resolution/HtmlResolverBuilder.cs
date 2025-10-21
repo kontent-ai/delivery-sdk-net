@@ -42,6 +42,7 @@ public sealed class HtmlResolverBuilder : IHtmlResolverBuilder
     private readonly Dictionary<Type, Delegate> _resolvers = new();
     private readonly List<ConditionalHtmlNodeResolver> _conditionalHtmlNodeResolvers = new();
     private readonly Dictionary<string, Func<IEmbeddedContent, IHtmlResolutionContext, ValueTask<string>>> _embeddedContentResolvers = new(StringComparer.OrdinalIgnoreCase);
+    private readonly Dictionary<string, BlockResolver<IContentItemLink>> _contentItemLinkResolvers = new(StringComparer.OrdinalIgnoreCase);
     private readonly HtmlResolverOptions _options = new();
 
     /// <inheritdoc />
@@ -49,6 +50,44 @@ public sealed class HtmlResolverBuilder : IHtmlResolverBuilder
     {
         ArgumentNullException.ThrowIfNull(resolver);
         _resolvers[typeof(IContentItemLink)] = resolver;
+        return this;
+    }
+
+    /// <inheritdoc />
+    public IHtmlResolverBuilder WithContentItemLinkResolver(
+        string contentTypeCodename,
+        BlockResolver<IContentItemLink> resolver)
+    {
+        ArgumentException.ThrowIfNullOrWhiteSpace(contentTypeCodename);
+        ArgumentNullException.ThrowIfNull(resolver);
+
+        _contentItemLinkResolvers[contentTypeCodename] = resolver;
+        return this;
+    }
+
+    /// <inheritdoc />
+    public IHtmlResolverBuilder WithContentItemLinkResolvers(
+        IReadOnlyDictionary<string, BlockResolver<IContentItemLink>> resolvers)
+    {
+        ArgumentNullException.ThrowIfNull(resolvers);
+
+        foreach (var (codename, resolver) in resolvers)
+        {
+            WithContentItemLinkResolver(codename, resolver);
+        }
+        return this;
+    }
+
+    /// <inheritdoc />
+    public IHtmlResolverBuilder WithContentItemLinkResolvers(
+        params (string ContentTypeCodename, BlockResolver<IContentItemLink> Resolver)[] resolvers)
+    {
+        ArgumentNullException.ThrowIfNull(resolvers);
+
+        foreach (var (codename, resolver) in resolvers)
+        {
+            WithContentItemLinkResolver(codename, resolver);
+        }
         return this;
     }
 
@@ -81,6 +120,19 @@ public sealed class HtmlResolverBuilder : IHtmlResolverBuilder
     /// <inheritdoc />
     public IHtmlResolverBuilder WithContentResolvers(
         IReadOnlyDictionary<string, Func<IEmbeddedContent, IHtmlResolutionContext, string>> resolvers)
+    {
+        ArgumentNullException.ThrowIfNull(resolvers);
+
+        foreach (var (codename, resolver) in resolvers)
+        {
+            WithContentResolver(codename, resolver);
+        }
+        return this;
+    }
+
+    /// <inheritdoc />
+    public IHtmlResolverBuilder WithContentResolvers(
+        params (string ContentTypeCodename, Func<IEmbeddedContent, IHtmlResolutionContext, string> Resolver)[] resolvers)
     {
         ArgumentNullException.ThrowIfNull(resolvers);
 
@@ -201,13 +253,14 @@ public sealed class HtmlResolverBuilder : IHtmlResolverBuilder
         // Note: IContentItemLink and IEmbeddedContent have NO defaults
         // They require explicit configuration and will show diagnostic comments if missing
 
-        // Create options with conditional resolvers, embedded content resolvers, and default fallback
+        // Create options with conditional resolvers, embedded content resolvers, content item link resolvers, and default fallback
         var options = new HtmlResolverOptions
         {
             ConditionalHtmlNodeResolvers = _conditionalHtmlNodeResolvers.ToArray(),
             DefaultHtmlNodeResolver = defaultHtmlNodeResolver,
             ThrowOnMissingResolver = _options.ThrowOnMissingResolver,
-            EmbeddedContentResolvers = _embeddedContentResolvers.Count > 0 ? _embeddedContentResolvers : null
+            EmbeddedContentResolvers = _embeddedContentResolvers.Count > 0 ? _embeddedContentResolvers : null,
+            ContentItemLinkResolvers = _contentItemLinkResolvers.Count > 0 ? _contentItemLinkResolvers : null
         };
 
         // Create resolver dictionary excluding IHtmlNode (handled via options)

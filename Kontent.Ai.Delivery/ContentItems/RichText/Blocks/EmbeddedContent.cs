@@ -5,7 +5,7 @@ namespace Kontent.Ai.Delivery.ContentItems.RichText.Blocks;
 
 /// <inheritdoc cref="IEmbeddedContent" />
 [DebuggerDisplay("Type = {ContentTypeCodename}, Codename = {Codename}")]
-internal record EmbeddedContent( // TODO: consider renaming to ComponentOrItem
+internal record EmbeddedContent(
     string ContentTypeCodename,
     string Codename,
     string? Name,

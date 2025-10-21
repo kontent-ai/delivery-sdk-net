@@ -104,7 +104,7 @@ internal class RichTextParser(IHtmlParser parser, IContentDependencyExtractor de
         if (contentItem is IContentItem<IElementsModel> typedItem)
         {
             var id = Guid.TryParse(typedItem.System.Id, out var parsedId) ? parsedId : Guid.Empty;
-            return new EmbeddedContent(
+            return new EmbeddedContent( // TODO: consider making generic and using the type parameter
                 typedItem.System.Type,
                 typedItem.System.Codename,
                 typedItem.System.Name,

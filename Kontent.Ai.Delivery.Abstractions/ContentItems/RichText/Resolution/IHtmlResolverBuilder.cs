@@ -10,11 +10,39 @@ namespace Kontent.Ai.Delivery.Abstractions;
 public interface IHtmlResolverBuilder
 {
     /// <summary>
-    /// Registers a resolver for content item link blocks.
+    /// Registers a global resolver for all content item link blocks.
+    /// This resolver will be used for all content item links unless a type-specific resolver is registered.
     /// </summary>
     /// <param name="resolver">The resolver function.</param>
     /// <returns>This builder for method chaining.</returns>
     IHtmlResolverBuilder WithContentItemLinkResolver(BlockResolver<IContentItemLink> resolver);
+
+    /// <summary>
+    /// Registers a resolver for content item link blocks of a specific content type.
+    /// Type-specific resolvers take precedence over the global resolver.
+    /// </summary>
+    /// <param name="contentTypeCodename">The codename of the content type to resolve (e.g., "article", "product").</param>
+    /// <param name="resolver">The resolver function for this content type.</param>
+    /// <returns>This builder for method chaining.</returns>
+    IHtmlResolverBuilder WithContentItemLinkResolver(
+        string contentTypeCodename,
+        BlockResolver<IContentItemLink> resolver);
+
+    /// <summary>
+    /// Registers multiple resolvers for content item link blocks using a dictionary.
+    /// </summary>
+    /// <param name="resolvers">Dictionary mapping content type codenames to their resolver functions.</param>
+    /// <returns>This builder for method chaining.</returns>
+    IHtmlResolverBuilder WithContentItemLinkResolvers(
+        IReadOnlyDictionary<string, BlockResolver<IContentItemLink>> resolvers);
+
+    /// <summary>
+    /// Registers multiple resolvers for content item link blocks using tuples.
+    /// </summary>
+    /// <param name="resolvers">Tuples of (content type codename, resolver function).</param>
+    /// <returns>This builder for method chaining.</returns>
+    IHtmlResolverBuilder WithContentItemLinkResolvers(
+        params (string ContentTypeCodename, BlockResolver<IContentItemLink> Resolver)[] resolvers);
 
     /// <summary>
     /// Registers an async resolver for embedded content (components or linked items) of a specific content type.
@@ -43,6 +71,14 @@ public interface IHtmlResolverBuilder
     /// <returns>This builder for method chaining.</returns>
     IHtmlResolverBuilder WithContentResolvers(
         IReadOnlyDictionary<string, Func<IEmbeddedContent, IHtmlResolutionContext, string>> resolvers);
+
+    /// <summary>
+    /// Registers multiple resolvers for embedded content using tuples.
+    /// </summary>
+    /// <param name="resolvers">Tuples of (content type codename, resolver function).</param>
+    /// <returns>This builder for method chaining.</returns>
+    IHtmlResolverBuilder WithContentResolvers(
+        params (string ContentTypeCodename, Func<IEmbeddedContent, IHtmlResolutionContext, string> Resolver)[] resolvers);
 
     /// <summary>
     /// Registers a resolver for inline image blocks.

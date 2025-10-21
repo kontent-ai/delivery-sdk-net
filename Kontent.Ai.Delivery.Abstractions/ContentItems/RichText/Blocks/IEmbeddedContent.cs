@@ -8,7 +8,7 @@ namespace Kontent.Ai.Delivery.Abstractions;
 public interface IEmbeddedContent : IRichTextBlock
 {
     /// <summary>
-    /// Gets the codename of the content type (e.g., "article", "tweet", "quote").
+    /// Gets the codename of the content type.
     /// </summary>
     string ContentTypeCodename { get; }
 

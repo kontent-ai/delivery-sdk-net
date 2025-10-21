@@ -4,8 +4,7 @@ using System.Collections.Generic;
 namespace Kontent.Ai.Delivery.Abstractions;
 
 /// <summary>
-/// Represents a content item link block within rich text.
-/// Content item links are anchor tags with data-item-id attributes that reference other content items.
+/// Represents a block with nested children.
 /// </summary>
 public interface IBlockWithChildren : IRichTextBlock
 {

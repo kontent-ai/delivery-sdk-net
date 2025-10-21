@@ -17,6 +17,9 @@ internal sealed class HtmlResolver : IHtmlResolver
     // Codename-based resolvers for embedded content (components/linked items)
     private readonly FrozenDictionary<string, Func<IEmbeddedContent, IHtmlResolutionContext, ValueTask<string>>> _embeddedContentResolvers;
 
+    // Content-type-specific resolvers for content item links
+    private readonly FrozenDictionary<string, BlockResolver<IContentItemLink>> _contentItemLinkResolvers;
+
     // Diagnostic messages for app-specific resolvers that require configuration
     private const string MissingEmbeddedContentResolver = "<!-- [Kontent.ai SDK] Missing resolver for embedded content of type \"{0}\" (item: {1}, codename: {2}) -->";
     private const string MissingContentItemLinkResolver = "<!-- [Kontent.ai SDK] Missing resolver for link to a content type: \"{0}\" (item ID: {1}) -->";
@@ -41,6 +44,12 @@ internal sealed class HtmlResolver : IHtmlResolver
             kvp => kvp.Key,
             kvp => kvp.Value,
             StringComparer.OrdinalIgnoreCase) ?? FrozenDictionary<string, Func<IEmbeddedContent, IHtmlResolutionContext, ValueTask<string>>>.Empty;
+
+        // Build immutable content item link resolver cache (content-type-based dispatch)
+        _contentItemLinkResolvers = options.ContentItemLinkResolvers?.ToFrozenDictionary(
+            kvp => kvp.Key,
+            kvp => kvp.Value,
+            StringComparer.OrdinalIgnoreCase) ?? FrozenDictionary<string, BlockResolver<IContentItemLink>>.Empty;
     }
 
     public async ValueTask<string> ResolveAsync(
@@ -76,11 +85,18 @@ internal sealed class HtmlResolver : IHtmlResolver
             IInlineImage image when _resolvers.TryGetValue(typeof(IInlineImage), out var resolver)
                 => ((BlockResolver<IInlineImage>)resolver)(image, context, _ => ValueTask.FromResult(string.Empty)),
 
+            // Content item link resolution - type-specific takes precedence
+            IContentItemLink link when link.Metadata?.ContentTypeCodename != null
+                && _contentItemLinkResolvers.TryGetValue(link.Metadata.ContentTypeCodename, out var typeResolver)
+                => typeResolver(link, context, children => ResolveChildrenAsync(children, context)),
+
+            // Fallback to global content item link resolver
             IContentItemLink link when _resolvers.TryGetValue(typeof(IContentItemLink), out var resolver)
                 => ((BlockResolver<IContentItemLink>)resolver)(link, context, children => ResolveChildrenAsync(children, context)),
 
+            // No resolver found for content item link
             IContentItemLink link => _options.ThrowOnMissingResolver
-                ? throw new InvalidOperationException($"No resolver registered for IContentItemLink (item ID: {link.ItemId})")
+                ? throw new InvalidOperationException($"No resolver registered for IContentItemLink (type: {link.Metadata?.ContentTypeCodename ?? "unknown"}, item ID: {link.ItemId})")
                 : ValueTask.FromResult(string.Format(MissingContentItemLinkResolver, link.Metadata?.ContentTypeCodename ?? "unknown", link.ItemId)),
 
             // Embedded content (components/linked items) - codename-based dispatch
@@ -143,7 +159,7 @@ internal sealed class HtmlResolver : IHtmlResolver
 internal sealed record HtmlResolverOptions
 {
     /// <summary>
-    /// When true, throws an exception if a block type has no registered resolver.
+    /// When true, throws an exception if embedded content or content item link have no registered resolver.
     /// When false, silently skips blocks without resolvers.
     /// Default: false.
     /// </summary>
@@ -165,4 +181,10 @@ internal sealed record HtmlResolverOptions
     /// Key is the content type codename, value is the resolver function.
     /// </summary>
     public IReadOnlyDictionary<string, Func<IEmbeddedContent, IHtmlResolutionContext, ValueTask<string>>>? EmbeddedContentResolvers { get; init; }
+
+    /// <summary>
+    /// Content-type-specific resolvers for content item links.
+    /// Key is the content type codename, value is the resolver function.
+    /// </summary>
+    public IReadOnlyDictionary<string, BlockResolver<IContentItemLink>>? ContentItemLinkResolvers { get; init; }
 }
