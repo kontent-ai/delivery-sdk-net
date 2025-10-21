@@ -12,18 +12,16 @@ public static class RichTextExtensions
     /// </summary>
     /// <param name="richText">The structured rich text content.</param>
     /// <param name="resolver">Optional HTML resolver. If null, uses default resolvers.</param>
-    /// <param name="context">Optional resolution context for passing linked items and other state.</param>
     /// <returns>The HTML representation of the rich text content.</returns>
     public static ValueTask<string> ToHtmlAsync(
         this IRichTextContent richText,
-        IHtmlResolver? resolver = null,
-        IHtmlResolutionContext? context = null)
+        IHtmlResolver? resolver = null)
     {
         ArgumentNullException.ThrowIfNull(richText);
 
         resolver ??= new HtmlResolverBuilder().Build();
 
-        return resolver.ResolveAsync(richText, context);
+        return resolver.ResolveAsync(richText);
     }
 
     /// <summary>

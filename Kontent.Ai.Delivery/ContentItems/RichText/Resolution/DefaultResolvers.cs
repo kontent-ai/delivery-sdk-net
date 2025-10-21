@@ -31,7 +31,7 @@ public static class DefaultResolvers
     {
         ArgumentNullException.ThrowIfNull(typePatterns);
 
-        return async (block, context, resolveChildren) =>
+        return async (block, resolveChildren) =>
         {
             var innerHtml = await resolveChildren(block.Children);
 
@@ -59,7 +59,7 @@ public static class DefaultResolvers
     /// <returns>A block resolver for HTML elements.</returns>
     public static BlockResolver<IHtmlNode> HtmlElementResolver()
     {
-        return async (block, context, resolveChildren) =>
+        return async (block, resolveChildren) =>
         {
             var children = await resolveChildren(block.Children);
             var attributes = BuildAttributes(block.Attributes);

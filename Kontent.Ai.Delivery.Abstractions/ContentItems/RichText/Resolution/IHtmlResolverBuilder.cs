@@ -52,7 +52,7 @@ public interface IHtmlResolverBuilder
     /// <returns>This builder for method chaining.</returns>
     IHtmlResolverBuilder WithContentResolver(
         string contentTypeCodename,
-        Func<IEmbeddedContent, IHtmlResolutionContext, ValueTask<string>> resolver);
+        Func<IEmbeddedContent, ValueTask<string>> resolver);
 
     /// <summary>
     /// Registers a synchronous resolver for embedded content (components or linked items) of a specific content type.
@@ -62,7 +62,7 @@ public interface IHtmlResolverBuilder
     /// <returns>This builder for method chaining.</returns>
     IHtmlResolverBuilder WithContentResolver(
         string contentTypeCodename,
-        Func<IEmbeddedContent, IHtmlResolutionContext, string> resolver);
+        Func<IEmbeddedContent, string> resolver);
 
     /// <summary>
     /// Registers multiple resolvers for embedded content using a dictionary.
@@ -70,7 +70,7 @@ public interface IHtmlResolverBuilder
     /// <param name="resolvers">Dictionary mapping content type codenames to their resolver functions.</param>
     /// <returns>This builder for method chaining.</returns>
     IHtmlResolverBuilder WithContentResolvers(
-        IReadOnlyDictionary<string, Func<IEmbeddedContent, IHtmlResolutionContext, string>> resolvers);
+        IReadOnlyDictionary<string, Func<IEmbeddedContent, string>> resolvers);
 
     /// <summary>
     /// Registers multiple resolvers for embedded content using tuples.
@@ -78,7 +78,7 @@ public interface IHtmlResolverBuilder
     /// <param name="resolvers">Tuples of (content type codename, resolver function).</param>
     /// <returns>This builder for method chaining.</returns>
     IHtmlResolverBuilder WithContentResolvers(
-        params (string ContentTypeCodename, Func<IEmbeddedContent, IHtmlResolutionContext, string> Resolver)[] resolvers);
+        params (string ContentTypeCodename, Func<IEmbeddedContent, string> Resolver)[] resolvers);
 
     /// <summary>
     /// Registers a resolver for inline image blocks.

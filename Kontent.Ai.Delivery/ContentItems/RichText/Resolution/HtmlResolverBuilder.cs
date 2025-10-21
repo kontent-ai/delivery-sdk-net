@@ -41,7 +41,7 @@ public sealed class HtmlResolverBuilder : IHtmlResolverBuilder
 {
     private readonly Dictionary<Type, Delegate> _resolvers = new();
     private readonly List<ConditionalHtmlNodeResolver> _conditionalHtmlNodeResolvers = new();
-    private readonly Dictionary<string, Func<IEmbeddedContent, IHtmlResolutionContext, ValueTask<string>>> _embeddedContentResolvers = new(StringComparer.OrdinalIgnoreCase);
+    private readonly Dictionary<string, Func<IEmbeddedContent, ValueTask<string>>> _embeddedContentResolvers = new(StringComparer.OrdinalIgnoreCase);
     private readonly Dictionary<string, BlockResolver<IContentItemLink>> _contentItemLinkResolvers = new(StringComparer.OrdinalIgnoreCase);
     private readonly HtmlResolverOptions _options = new();
 
@@ -94,7 +94,7 @@ public sealed class HtmlResolverBuilder : IHtmlResolverBuilder
     /// <inheritdoc />
     public IHtmlResolverBuilder WithContentResolver(
         string contentTypeCodename,
-        Func<IEmbeddedContent, IHtmlResolutionContext, ValueTask<string>> resolver)
+        Func<IEmbeddedContent, ValueTask<string>> resolver)
     {
         ArgumentException.ThrowIfNullOrWhiteSpace(contentTypeCodename);
         ArgumentNullException.ThrowIfNull(resolver);
@@ -106,20 +106,20 @@ public sealed class HtmlResolverBuilder : IHtmlResolverBuilder
     /// <inheritdoc />
     public IHtmlResolverBuilder WithContentResolver(
         string contentTypeCodename,
-        Func<IEmbeddedContent, IHtmlResolutionContext, string> resolver)
+        Func<IEmbeddedContent, string> resolver)
     {
         ArgumentException.ThrowIfNullOrWhiteSpace(contentTypeCodename);
         ArgumentNullException.ThrowIfNull(resolver);
 
         // Wrap synchronous resolver in ValueTask
-        _embeddedContentResolvers[contentTypeCodename] = (content, context) =>
-            ValueTask.FromResult(resolver(content, context));
+        _embeddedContentResolvers[contentTypeCodename] = content =>
+            ValueTask.FromResult(resolver(content));
         return this;
     }
 
     /// <inheritdoc />
     public IHtmlResolverBuilder WithContentResolvers(
-        IReadOnlyDictionary<string, Func<IEmbeddedContent, IHtmlResolutionContext, string>> resolvers)
+        IReadOnlyDictionary<string, Func<IEmbeddedContent, string>> resolvers)
     {
         ArgumentNullException.ThrowIfNull(resolvers);
 
@@ -132,7 +132,7 @@ public sealed class HtmlResolverBuilder : IHtmlResolverBuilder
 
     /// <inheritdoc />
     public IHtmlResolverBuilder WithContentResolvers(
-        params (string ContentTypeCodename, Func<IEmbeddedContent, IHtmlResolutionContext, string> Resolver)[] resolvers)
+        params (string ContentTypeCodename, Func<IEmbeddedContent, string> Resolver)[] resolvers)
     {
         ArgumentNullException.ThrowIfNull(resolvers);
 
@@ -231,12 +231,12 @@ public sealed class HtmlResolverBuilder : IHtmlResolverBuilder
 
         // Default text node resolver - HTML-encodes reserved chars but preserves Unicode
         resolversWithDefaults.TryAdd(typeof(ITextNode), new BlockResolver<ITextNode>(
-            (block, _, _) => ValueTask.FromResult(unicodeEncoder.Encode(block.Text))
+            (block, _) => ValueTask.FromResult(unicodeEncoder.Encode(block.Text))
         ));
 
         // Default inline image resolver - generates proper HTML figure element
         resolversWithDefaults.TryAdd(typeof(IInlineImage), new BlockResolver<IInlineImage>(
-            (block, _, _) =>
+            (block, _) =>
             {
                 var url = HtmlEncoder.Default.Encode(block.Url ?? string.Empty);
                 var description = HtmlEncoder.Default.Encode(block.Description ?? string.Empty);

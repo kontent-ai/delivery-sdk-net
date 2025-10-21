@@ -121,9 +121,9 @@ public class RichTextIntegrationTests
         var client = await CreateDeliveryClientAsync("coffee_beverages_explained.json");
 
         var resolver = new HtmlResolverBuilder()
-            .WithContentResolver("tweet", (content, ctx) =>
+            .WithContentResolver("tweet", (content) =>
                 "<div class=\"tweet-embed\">[Tweet content]</div>")
-            .WithContentResolver("hosted_video", (content, ctx) =>
+            .WithContentResolver("hosted_video", (content) =>
                 "<div class=\"video-embed\">[Video content]</div>")
             .Build();
 
@@ -177,14 +177,14 @@ public class RichTextIntegrationTests
         var client = await CreateDeliveryClientAsync("coffee_beverages_explained.json");
 
         var resolver = new HtmlResolverBuilder()
-            .WithContentResolver("tweet", async (content, ctx) =>
+            .WithContentResolver("tweet", async (content) =>
             {
                 // Simulate async database lookup
                 await Task.Delay(1);
                 var tweetData = $"Tweet by {content.Codename}";
                 return $"<div class=\"tweet\" data-id=\"{content.Id}\">{tweetData}</div>";
             })
-            .WithContentResolver("hosted_video", async (content, ctx) =>
+            .WithContentResolver("hosted_video", async (content) =>
             {
                 await Task.Delay(1);
                 return $"<div class=\"video\" data-codename=\"{content.Codename}\"><iframe src=\"video.mp4\"></iframe></div>";
@@ -214,11 +214,11 @@ public class RichTextIntegrationTests
         // Arrange
         var client = await CreateDeliveryClientAsync("coffee_beverages_explained.json");
 
-        var contentResolvers = new Dictionary<string, Func<IEmbeddedContent, IHtmlResolutionContext, string>>
+        var contentResolvers = new Dictionary<string, Func<IEmbeddedContent, string>>
         {
-            ["tweet"] = (content, ctx) =>
+            ["tweet"] = (content) =>
                 $"<blockquote class=\"twitter-tweet\">{content.Name}</blockquote>",
-            ["hosted_video"] = (content, ctx) =>
+            ["hosted_video"] = (content) =>
                 $"<video class=\"hosted\" data-item=\"{content.Id}\"></video>"
         };
 
@@ -244,9 +244,9 @@ public class RichTextIntegrationTests
         var client = await CreateDeliveryClientAsync("coffee_beverages_explained.json");
 
         var resolver = new HtmlResolverBuilder()
-            .WithContentResolver("tweet", (content, ctx) => "<div>FIRST</div>")
+            .WithContentResolver("tweet", (content) => "<div>FIRST</div>")
             .WithContentResolvers(
-                ("tweet", (content, ctx) => "<div>SECOND</div>")
+                ("tweet", (content) => "<div>SECOND</div>")
             )
             .Build();
 
@@ -269,8 +269,8 @@ public class RichTextIntegrationTests
         // Use the cleaner params tuple syntax for registering multiple resolvers
         var resolver = new HtmlResolverBuilder()
             .WithContentResolvers(
-                ("tweet", (content, ctx) => $"<div class=\"tweet-params\">{content.Name}</div>"),
-                ("hosted_video", (content, ctx) => $"<div class=\"video-params\" data-id=\"{content.Id}\"></div>")
+                ("tweet", (content) => $"<div class=\"tweet-params\">{content.Name}</div>"),
+                ("hosted_video", (content) => $"<div class=\"video-params\" data-id=\"{content.Id}\"></div>")
             )
             .Build();
 
@@ -295,7 +295,7 @@ public class RichTextIntegrationTests
         var client = await CreateDeliveryClientAsync("coffee_processing_techniques.json");
 
         var resolver = new HtmlResolverBuilder()
-            .WithContentItemLinkResolver(async (link, context, resolveChildren) =>
+            .WithContentItemLinkResolver(async (link, resolveChildren) =>
             {
                 var innerHtml = await resolveChildren(link.Children);
 
@@ -325,7 +325,7 @@ public class RichTextIntegrationTests
         var client = await CreateDeliveryClientAsync("coffee_processing_techniques.json");
 
         var resolver = new HtmlResolverBuilder()
-            .WithContentItemLinkResolver(async (link, context, resolveChildren) =>
+            .WithContentItemLinkResolver(async (link, resolveChildren) =>
             {
                 // Resolve children (which may contain <strong>, <em>, etc.)
                 var innerHtml = await resolveChildren(link.Children);
@@ -352,7 +352,7 @@ public class RichTextIntegrationTests
 
         var resolver = new HtmlResolverBuilder()
             // Register type-specific resolver for "coffee" content type
-            .WithContentItemLinkResolver("coffee", async (link, context, resolveChildren) =>
+            .WithContentItemLinkResolver("coffee", async (link, resolveChildren) =>
             {
                 var innerHtml = await resolveChildren(link.Children);
                 return $"<a href=\"/coffee/{link.Metadata?.UrlSlug}\" class=\"coffee-specific\">{innerHtml}</a>";
@@ -376,12 +376,12 @@ public class RichTextIntegrationTests
 
         var linkResolvers = new Dictionary<string, BlockResolver<IContentItemLink>>
         {
-            ["coffee"] = async (link, context, resolveChildren) =>
+            ["coffee"] = async (link, resolveChildren) =>
             {
                 var innerHtml = await resolveChildren(link.Children);
                 return $"<a href=\"/coffee/{link.Metadata?.UrlSlug}\" class=\"coffee-dict\">{innerHtml}</a>";
             },
-            ["article"] = async (link, context, resolveChildren) =>
+            ["article"] = async (link, resolveChildren) =>
             {
                 var innerHtml = await resolveChildren(link.Children);
                 return $"<a href=\"/articles/{link.Metadata?.UrlSlug}\" class=\"article-dict\">{innerHtml}</a>";
@@ -409,12 +409,12 @@ public class RichTextIntegrationTests
 
         var resolver = new HtmlResolverBuilder()
             .WithContentItemLinkResolvers(
-                ("coffee", async (link, context, resolveChildren) =>
+                ("coffee", async (link, resolveChildren) =>
                 {
                     var innerHtml = await resolveChildren(link.Children);
                     return $"<a href=\"/coffee/{link.Metadata?.UrlSlug}\" class=\"coffee-tuple\">{innerHtml}</a>";
                 }),
-                ("article", async (link, context, resolveChildren) =>
+                ("article", async (link, resolveChildren) =>
                 {
                     var innerHtml = await resolveChildren(link.Children);
                     return $"<a href=\"/articles/{link.Metadata?.UrlSlug}\" class=\"article-tuple\">{innerHtml}</a>";
@@ -606,7 +606,7 @@ public class RichTextIntegrationTests
         var encoder = System.Text.Encodings.Web.HtmlEncoder.Create(System.Text.Unicode.UnicodeRanges.All);
 
         var resolver = new HtmlResolverBuilder()
-            .WithTextNodeResolver(async (textNode, ctx, resolveChildren) =>
+            .WithTextNodeResolver(async (textNode, resolveChildren) =>
             {
                 var text = textNode.Text;
 
@@ -639,7 +639,7 @@ public class RichTextIntegrationTests
         var client = await CreateDeliveryClientAsync("on_roasts.json");
 
         var resolver = new HtmlResolverBuilder()
-            .WithHtmlNodeResolver("h3", async (node, ctx, resolveChildren) =>
+            .WithHtmlNodeResolver("h3", async (node, resolveChildren) =>
             {
                 var content = await resolveChildren(node.Children);
                 return $"<h2 class=\"section-header\">{content}</h2>"; // Convert h3 to h2
@@ -665,7 +665,7 @@ public class RichTextIntegrationTests
         var client = await CreateDeliveryClientAsync("on_roasts.json");
 
         var resolver = new HtmlResolverBuilder()
-            .WithHtmlNodeResolver("H3", async (node, ctx, resolveChildren) => // Uppercase
+            .WithHtmlNodeResolver("H3", async (node, resolveChildren) => // Uppercase
             {
                 var content = await resolveChildren(node.Children);
                 return $"<div class=\"uppercase-match\">{content}</div>";
@@ -689,7 +689,7 @@ public class RichTextIntegrationTests
         var client = await CreateDeliveryClientAsync("on_roasts.json");
 
         var resolver = new HtmlResolverBuilder()
-            .WithHtmlNodeResolver("li", async (node, ctx, resolveChildren) =>
+            .WithHtmlNodeResolver("li", async (node, resolveChildren) =>
             {
                 var content = await resolveChildren(node.Children);
                 return $"<li class=\"custom-bullet\"><span class=\"icon\">✓</span> {content}</li>";
@@ -720,7 +720,7 @@ public class RichTextIntegrationTests
             // First: matches h3 tags
             .WithHtmlNodeResolver(
                 predicate: node => node.TagName == "h3",
-                resolver: async (node, ctx, resolveChildren) =>
+                resolver: async (node, resolveChildren) =>
                 {
                     var content = await resolveChildren(node.Children);
                     return $"<h3 class=\"first-match\">{content}</h3>";
@@ -729,7 +729,7 @@ public class RichTextIntegrationTests
             // Second: also matches h3 tags (should never execute)
             .WithHtmlNodeResolver(
                 predicate: node => node.TagName == "h3",
-                resolver: async (node, ctx, resolveChildren) =>
+                resolver: async (node, resolveChildren) =>
                 {
                     var content = await resolveChildren(node.Children);
                     return $"<h3 class=\"second-match\">{content}</h3>";
@@ -759,13 +759,13 @@ public class RichTextIntegrationTests
 
         var resolver = new HtmlResolverBuilder()
             // Conditional: only matches h3
-            .WithHtmlNodeResolver("h3", async (node, ctx, resolveChildren) =>
+            .WithHtmlNodeResolver("h3", async (node, resolveChildren) =>
             {
                 var content = await resolveChildren(node.Children);
                 return $"<h3 class=\"heading\">{content}</h3>";
             })
             // Fallback: applies to all other nodes (p, ul, li, etc.)
-            .WithHtmlElementResolver(async (node, ctx, resolveChildren) =>
+            .WithHtmlElementResolver(async (node, resolveChildren) =>
             {
                 var content = await resolveChildren(node.Children);
                 return $"<{node.TagName} class=\"fallback-applied\">{content}</{node.TagName}>";
@@ -799,10 +799,10 @@ public class RichTextIntegrationTests
         var client = await CreateDeliveryClientAsync("coffee_beverages_explained.json");
 
         var resolver = new HtmlResolverBuilder()
-            .WithContentResolver("tweet", (c, ctx) => "<div class=\"tweet\"></div>")
-            .WithContentResolver("hosted_video", (c, ctx) => "<div class=\"video\"></div>")
-            .WithTextNodeResolver(async (text, ctx, _) => System.Text.Encodings.Web.HtmlEncoder.Default.Encode(text.Text))
-            .WithHtmlNodeResolver("h3", async (node, ctx, resolveChildren) =>
+            .WithContentResolver("tweet", c => "<div class=\"tweet\"></div>")
+            .WithContentResolver("hosted_video", c => "<div class=\"video\"></div>")
+            .WithTextNodeResolver(async (text, _) => System.Text.Encodings.Web.HtmlEncoder.Default.Encode(text.Text))
+            .WithHtmlNodeResolver("h3", async (node, resolveChildren) =>
             {
                 var content = await resolveChildren(node.Children);
                 return $"<h3 class=\"custom-heading\">{content}</h3>";

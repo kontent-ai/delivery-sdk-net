@@ -1,6 +1,5 @@
 using System;
 using System.Collections.Generic;
-using System.Threading;
 using System.Threading.Tasks;
 
 namespace Kontent.Ai.Delivery.Abstractions;
@@ -10,12 +9,10 @@ namespace Kontent.Ai.Delivery.Abstractions;
 /// </summary>
 /// <typeparam name="TBlock">The type of rich text block to resolve.</typeparam>
 /// <param name="block">The block to resolve.</param>
-/// <param name="context">The resolution context containing shared state.</param>
 /// <param name="resolveChildren">Function to resolve child blocks recursively.</param>
 /// <returns>The HTML representation of the block.</returns>
 public delegate ValueTask<string> BlockResolver<in TBlock>(
     TBlock block,
-    IHtmlResolutionContext context,
     Func<IEnumerable<IRichTextBlock>, ValueTask<string>> resolveChildren
 ) where TBlock : IRichTextBlock;
 
@@ -35,29 +32,7 @@ public interface IHtmlResolver
     /// Resolves rich text content into an HTML string.
     /// </summary>
     /// <param name="richText">The structured rich text content to resolve.</param>
-    /// <param name="context">Optional resolution context for passing shared state.</param>
     /// <returns>The HTML representation of the rich text content.</returns>
-    ValueTask<string> ResolveAsync(IRichTextContent richText, IHtmlResolutionContext? context = null);
-}
-
-/// <summary>
-/// Context for HTML resolution, providing access to linked items and other shared state.
-/// </summary>
-public interface IHtmlResolutionContext
-{
-    /// <summary>
-    /// Dictionary of linked content items by codename, used for resolving inline content items.
-    /// </summary>
-    IReadOnlyDictionary<string, object>? LinkedItems { get; }
-
-    /// <summary>
-    /// Cancellation token for async operations.
-    /// </summary>
-    CancellationToken CancellationToken { get; }
-
-    /// <summary>
-    /// Optional service provider for dependency injection scenarios.
-    /// </summary>
-    IServiceProvider? Services { get; }
+    ValueTask<string> ResolveAsync(IRichTextContent richText);
 }
 
