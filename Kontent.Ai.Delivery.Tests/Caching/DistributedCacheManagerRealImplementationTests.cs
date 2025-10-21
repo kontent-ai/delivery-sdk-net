@@ -249,7 +249,7 @@ public class DistributedCacheManagerRealImplementationTests
             .ToArray();
 
         var results = await Task.WhenAll(verifyTasks);
-        Assert.All(results, r => Assert.NotNull(r));
+        Assert.All(results, Assert.NotNull);
     }
 
     [Fact]

@@ -514,7 +514,7 @@ public class DistributedCacheManagerTests
         var results = await Task.WhenAll(tasks);
 
         // Assert
-        Assert.All(results, r => Assert.NotNull(r));
+        Assert.All(results, Assert.NotNull);
     }
 
     [Fact]
@@ -717,7 +717,7 @@ public class DistributedCacheManagerTests
         }
 
         // Assert
-        Assert.All(results, r => Assert.Null(r));
+        Assert.All(results, Assert.Null);
     }
 
     [Fact]

@@ -425,7 +425,7 @@ public class MemoryCacheManagerTests : IDisposable
         var results = await Task.WhenAll(tasks);
 
         // Assert
-        Assert.All(results, r => Assert.NotNull(r));
+        Assert.All(results, Assert.NotNull);
     }
 
     [Fact]
@@ -453,7 +453,7 @@ public class MemoryCacheManagerTests : IDisposable
         var results = await Task.WhenAll(verifyTasks);
 
         // Assert
-        Assert.All(results, r => Assert.Null(r));
+        Assert.All(results, Assert.Null);
     }
 
     [Fact]
@@ -682,7 +682,7 @@ public class MemoryCacheManagerTests : IDisposable
         }
 
         // Assert
-        Assert.All(results, r => Assert.Null(r));
+        Assert.All(results, Assert.Null);
     }
 
     [Fact]

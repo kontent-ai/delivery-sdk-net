@@ -38,7 +38,6 @@ public static class RefitSettingsProvider
         // Register converters
         // ContentItemConverterFactory now handles both ContentItem and Elements processing inline
         jsonSerializerOptions.Converters.Add(new ContentItemConverterFactory());
-        jsonSerializerOptions.Converters.Add(new ContentElementConverter());
 
         return jsonSerializerOptions;
     }
