@@ -157,12 +157,12 @@ public class RichTextIntegrationTests
         // Verify specific expected items by content type
         var tweetItem = embeddedContent.FirstOrDefault(e => e.ContentTypeCodename == "tweet");
         Assert.NotNull(tweetItem);
-        Assert.NotNull(tweetItem.Content);
+        Assert.NotNull(tweetItem.Elements);
         Assert.NotEmpty(tweetItem.Codename);
 
         var videoItem = embeddedContent.FirstOrDefault(e => e.ContentTypeCodename == "hosted_video");
         Assert.NotNull(videoItem);
-        Assert.NotNull(videoItem.Content);
+        Assert.NotNull(videoItem.Elements);
         Assert.NotEmpty(videoItem.Codename);
     }
 

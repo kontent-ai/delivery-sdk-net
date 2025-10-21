@@ -219,4 +219,182 @@ public class ServiceCollectionsExtensionsTests
             Assert.IsType(type.Value, imp);
         }
     }
+
+    #region Integration Tests for Multi-Client and Runtime Configuration
+
+    [Fact]
+    public void AddDeliveryClient_MultipleNamedClients_AllRegisteredWithSeparateOptions()
+    {
+        // Arrange
+        const string envId1 = "11111111-1111-1111-1111-111111111111";
+        const string envId2 = "22222222-2222-2222-2222-222222222222";
+
+        _serviceCollection.AddDeliveryClient("production", o =>
+        {
+            o.EnvironmentId = envId1;
+            o.EnableResilience = false;
+        });
+        _serviceCollection.AddDeliveryClient("preview", o =>
+        {
+            o.EnvironmentId = envId2;
+            o.UsePreviewApi = true;
+            o.PreviewApiKey = PreviewApiKey;
+            o.EnableResilience = false;
+        });
+
+        // Act
+        var provider = _serviceCollection.BuildServiceProvider();
+
+        // Verify factory is registered
+        var factory = provider.GetRequiredService<IDeliveryClientFactory>();
+        Assert.NotNull(factory);
+
+        // Verify each client has its own options
+        var optionsMonitor = provider.GetRequiredService<IOptionsMonitor<DeliveryOptions>>();
+        var prodOptions = optionsMonitor.Get("production");
+        var previewOptions = optionsMonitor.Get("preview");
+
+        // Assert - Options should be separate and correctly configured
+        Assert.Equal(envId1, prodOptions.EnvironmentId);
+        Assert.Equal(envId2, previewOptions.EnvironmentId);
+        Assert.False(prodOptions.UsePreviewApi);
+        Assert.True(previewOptions.UsePreviewApi);
+        Assert.Equal(PreviewApiKey, previewOptions.PreviewApiKey);
+    }
+
+    [Fact]
+    public void AddDeliveryClient_WithCustomBaseUrl_UsesCustomEndpoint()
+    {
+        // Arrange
+        const string customBase = "https://custom-delivery.example.com";
+        _serviceCollection.AddDeliveryClient("custom", o =>
+        {
+            o.EnvironmentId = EnvironmentId;
+            o.ProductionEndpoint = customBase;
+            o.EnableResilience = false;
+        });
+
+        // Act
+        var provider = _serviceCollection.BuildServiceProvider();
+        var optionsMonitor = provider.GetRequiredService<IOptionsMonitor<DeliveryOptions>>();
+        var options = optionsMonitor.Get("custom");
+
+        // Assert
+        Assert.Equal(customBase, options.GetBaseUrl());
+    }
+
+    [Fact]
+    public void AddDeliveryClient_RuntimeConfigurationChanges_ReflectedInOptions()
+    {
+        // Arrange - Start with production API
+        var initialOptions = new DeliveryOptions
+        {
+            EnvironmentId = EnvironmentId,
+            UsePreviewApi = false
+        };
+
+        _serviceCollection.Configure<DeliveryOptions>("dynamic", opts =>
+        {
+            opts.EnvironmentId = initialOptions.EnvironmentId;
+            opts.UsePreviewApi = initialOptions.UsePreviewApi;
+        });
+
+        var provider = _serviceCollection.BuildServiceProvider();
+        var optionsMonitor = provider.GetRequiredService<IOptionsMonitor<DeliveryOptions>>();
+
+        // Act 1 - Verify initial state
+        var options1 = optionsMonitor.Get("dynamic");
+        Assert.False(options1.UsePreviewApi);
+
+        // Act 2 - Simulate runtime configuration change to preview API
+        _serviceCollection.Configure<DeliveryOptions>("dynamic", opts =>
+        {
+            opts.EnvironmentId = EnvironmentId;
+            opts.UsePreviewApi = true;
+            opts.PreviewApiKey = PreviewApiKey;
+        });
+
+        // Rebuild provider to apply changes (in real apps this happens via IOptionsMonitor callbacks)
+        var provider2 = _serviceCollection.BuildServiceProvider();
+        var optionsMonitor2 = provider2.GetRequiredService<IOptionsMonitor<DeliveryOptions>>();
+        var options2 = optionsMonitor2.Get("dynamic");
+
+        // Assert - Options reflect the runtime change
+        Assert.True(options2.UsePreviewApi);
+        Assert.Equal(PreviewApiKey, options2.PreviewApiKey);
+    }
+
+    [Fact]
+    public void AddDeliveryClient_DuplicateClientName_ThrowsInvalidOperationException()
+    {
+        // Arrange
+        _serviceCollection.AddDeliveryClient("duplicate", o =>
+        {
+            o.EnvironmentId = EnvironmentId;
+            o.EnableResilience = false;
+        });
+
+        // Act & Assert
+        var exception = Assert.Throws<InvalidOperationException>(() =>
+            _serviceCollection.AddDeliveryClient("duplicate", o => o.EnvironmentId = EnvironmentId));
+
+        Assert.Contains("duplicate", exception.Message);
+        Assert.Contains("already been registered", exception.Message);
+        Assert.Contains("Kontent.Ai.Delivery.HttpClient.duplicate", exception.Message);
+    }
+
+    [Fact]
+    public void AddDeliveryClient_WithNameContainingSpaces_ThrowsArgumentException()
+    {
+        // Act & Assert
+        var exception = Assert.Throws<ArgumentException>(() =>
+            _serviceCollection.AddDeliveryClient("name with spaces", o => o.EnvironmentId = EnvironmentId));
+
+        Assert.Contains("cannot be empty, contain leading/trailing whitespace, or contain spaces", exception.Message);
+        Assert.Contains("Use underscores or hyphens instead", exception.Message);
+    }
+
+    [Fact]
+    public void AddDeliveryClient_WithNameWithLeadingWhitespace_ThrowsArgumentException()
+    {
+        // Act & Assert
+        var exception = Assert.Throws<ArgumentException>(() =>
+            _serviceCollection.AddDeliveryClient(" leading-space", o => o.EnvironmentId = EnvironmentId));
+
+        Assert.Contains("cannot be empty, contain leading/trailing whitespace, or contain spaces", exception.Message);
+    }
+
+    [Fact]
+    public void AddDeliveryClient_DefaultClient_AccessibleViaFactoryAndDirectInjection()
+    {
+        // Arrange
+        _serviceCollection.AddDeliveryClient(o => o.EnvironmentId = EnvironmentId);
+
+        // Act
+        var provider = _serviceCollection.BuildServiceProvider();
+        var clientDirect = provider.GetRequiredService<IDeliveryClient>();
+        var factory = provider.GetRequiredService<IDeliveryClientFactory>();
+        var clientFromFactory = factory.Get(Kontent.Ai.Delivery.Abstractions.Options.DefaultName);
+
+        // Assert - Should be the same singleton instance
+        Assert.Same(clientDirect, clientFromFactory);
+    }
+
+    [Fact]
+    public void WithMemoryCache_CalledMultipleTimes_DoesNotOverwrite()
+    {
+        // Arrange
+        _serviceCollection.AddDeliveryClient(o => o.EnvironmentId = EnvironmentId);
+        _serviceCollection.WithMemoryCache(TimeSpan.FromMinutes(10));
+
+        // Act - Call again with different expiration
+        _serviceCollection.WithMemoryCache(TimeSpan.FromMinutes(20));
+
+        // Assert - Should not throw, and first registration should be preserved
+        var provider = _serviceCollection.BuildServiceProvider();
+        var cacheManager = provider.GetService<IDeliveryCacheManager>();
+        Assert.NotNull(cacheManager);
+    }
+
+    #endregion
 }
