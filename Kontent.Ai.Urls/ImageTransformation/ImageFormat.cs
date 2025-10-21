@@ -1,4 +1,4 @@
-﻿namespace Kontent.Ai.Urls.ImageTransformation;
+namespace Kontent.Ai.Urls.ImageTransformation;
 
 /// <summary>
 /// Supported image formats.

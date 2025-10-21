@@ -4,10 +4,8 @@ using System.IO;
 using System.Linq;
 using System.Threading.Tasks;
 using Kontent.Ai.Delivery.Abstractions;
-using Kontent.Ai.Delivery.Configuration;
 using Kontent.Ai.Delivery.ContentItems.RichText.Resolution;
 using Kontent.Ai.Delivery.Extensions;
-using Kontent.Ai.Delivery.Tests.Factories;
 using Kontent.Ai.Delivery.Tests.Models.ContentTypes;
 using Microsoft.Extensions.DependencyInjection;
 using RichardSzalay.MockHttp;
@@ -157,12 +155,12 @@ public class RichTextIntegrationTests
         // Verify specific expected items by content type
         var tweetItem = embeddedContent.FirstOrDefault(e => e.ContentTypeCodename == "tweet");
         Assert.NotNull(tweetItem);
-        Assert.NotNull(tweetItem.Content);
+        Assert.NotNull(tweetItem.Elements);
         Assert.NotEmpty(tweetItem.Codename);
 
         var videoItem = embeddedContent.FirstOrDefault(e => e.ContentTypeCodename == "hosted_video");
         Assert.NotNull(videoItem);
-        Assert.NotNull(videoItem.Content);
+        Assert.NotNull(videoItem.Elements);
         Assert.NotEmpty(videoItem.Codename);
     }
 
@@ -450,7 +448,11 @@ public class RichTextIntegrationTests
                     ""name"": ""Empty Article"",
                     ""codename"": ""empty_article"",
                     ""language"": ""en-US"",
-                    ""type"": ""article""
+                    ""type"": ""article"",
+                    ""collection"": ""default"",
+                    ""workflow"": ""default"",
+                    ""workflow_step"": ""published"",
+                    ""last_modified"": ""2021-01-01T00:00:00Z""
                 },
                 ""elements"": {
                     ""body_copy"": {
@@ -863,7 +865,11 @@ public class RichTextIntegrationTests
                     ""name"": ""HTML Entities Test"",
                     ""codename"": ""html_entities_test"",
                     ""language"": ""en-US"",
-                    ""type"": ""article""
+                    ""type"": ""article"",
+                    ""collection"": ""default"",
+                    ""workflow"": ""default"",
+                    ""workflow_step"": ""published"",
+                    ""last_modified"": ""2021-01-01T00:00:00Z""
                 },
                 ""elements"": {
                     ""body_copy"": {
@@ -925,7 +931,11 @@ public class RichTextIntegrationTests
                     ""name"": ""Output Test"",
                     ""codename"": ""output_test"",
                     ""language"": ""en-US"",
-                    ""type"": ""article""
+                    ""type"": ""article"",
+                    ""collection"": ""default"",
+                    ""workflow"": ""default"",
+                    ""workflow_step"": ""published"",
+                    ""last_modified"": ""2021-01-01T00:00:00Z""
                 },
                 ""elements"": {
                     ""body_copy"": {
@@ -984,7 +994,11 @@ public class RichTextIntegrationTests
                     ""name"": ""Plain Text Test"",
                     ""codename"": ""plain_text_test"",
                     ""language"": ""en-US"",
-                    ""type"": ""article""
+                    ""type"": ""article"",
+                    ""collection"": ""default"",
+                    ""workflow"": ""default"",
+                    ""workflow_step"": ""published"",
+                    ""last_modified"": ""2021-01-01T00:00:00Z""
                 },
                 ""elements"": {
                     ""body_copy"": {

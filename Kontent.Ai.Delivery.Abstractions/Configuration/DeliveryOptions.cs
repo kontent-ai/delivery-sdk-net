@@ -83,6 +83,7 @@ public sealed class DeliveryOptions : IValidatableObject
     /// <summary>
     /// Validates cross-field constraints for delivery options.
     /// Ensures mutual exclusivity of <see cref="UsePreviewApi"/> and <see cref="UseSecureAccess"/>.
+    /// Validates that <see cref="EnvironmentId"/> is not an empty GUID.
     /// Uses yield semantics so other attribute-based validations also execute.
     /// </summary>
     public IEnumerable<ValidationResult> Validate(ValidationContext validationContext)
@@ -92,6 +93,13 @@ public sealed class DeliveryOptions : IValidatableObject
             yield return new ValidationResult(
                 "Cannot use both Preview API and Secure Access simultaneously.",
                 [nameof(UsePreviewApi), nameof(UseSecureAccess)]);
+        }
+
+        if (Guid.TryParse(EnvironmentId, out var environmentGuid) && environmentGuid == Guid.Empty)
+        {
+            yield return new ValidationResult(
+                "EnvironmentId cannot be an empty GUID.",
+                [nameof(EnvironmentId)]);
         }
     }
 }

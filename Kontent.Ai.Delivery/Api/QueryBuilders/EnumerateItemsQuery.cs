@@ -57,7 +57,7 @@ internal sealed class EnumerateItemsQuery<TModel>(IDeliveryApi api, Func<bool?> 
 
     public async IAsyncEnumerable<IContentItem<TModel>> EnumerateItemsAsync([EnumeratorCancellation] CancellationToken cancellationToken = default)
     {
-            
+
         bool? wait = _waitForLoadingNewContentOverride ?? _getDefaultWaitForNewContent();
         string? token = null;
 

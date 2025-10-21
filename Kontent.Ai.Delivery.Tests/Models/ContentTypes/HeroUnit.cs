@@ -9,14 +9,14 @@ namespace Kontent.Ai.Delivery.Tests.Models.ContentTypes;
 public record HeroUnit : IElementsModel
 {
     [JsonPropertyName("image")]
-    public IEnumerable<Asset> Image { get; init; }
+    public required IEnumerable<Asset> Image { get; init; }
 
     [JsonPropertyName("marketing_message")]
-    public string MarketingMessage { get; init; }
+    public required string MarketingMessage { get; init; }
 
     [JsonPropertyName("sitemap")]
-    public IEnumerable<TaxonomyTerm> Sitemap { get; init; }
+    public required IEnumerable<TaxonomyTerm> Sitemap { get; init; }
 
     [JsonPropertyName("title")]
-    public string Title { get; init; }
+    public required string Title { get; init; }
 }

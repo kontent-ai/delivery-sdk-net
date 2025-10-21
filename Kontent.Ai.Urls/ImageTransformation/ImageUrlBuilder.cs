@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.Collections.Generic;
 using System.Globalization;
 using System.Linq;
@@ -18,7 +18,7 @@ namespace Kontent.Ai.Urls.ImageTransformation;
 public sealed class ImageUrlBuilder(Uri assetUrl)
 {
     private readonly Uri _assetUrl = assetUrl ?? throw new ArgumentNullException(nameof(assetUrl));
-    private readonly Dictionary<string, StringValues> _queryParameters = new();
+    private readonly Dictionary<string, StringValues> _queryParameters = [];
     private string Query => _queryParameters.Any() ? $"?{string.Join("&", _queryParameters.Select(x => $"{x.Key}={x.Value}"))}" : "";
 
     /// <summary>

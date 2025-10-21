@@ -26,5 +26,3 @@ internal sealed class TypeElementQuery(IDeliveryApi api, string contentTypeCoden
         return deliveryResult;
     }
 }
-
-

@@ -1,11 +1,6 @@
-using System;
-using System.Collections.Generic;
-using System.Linq;
 using System.Text;
 using System.Text.Json;
 using System.Threading;
-using System.Threading.Tasks;
-using Kontent.Ai.Delivery.Abstractions;
 using Microsoft.Extensions.Caching.Distributed;
 
 namespace Kontent.Ai.Delivery.Caching;

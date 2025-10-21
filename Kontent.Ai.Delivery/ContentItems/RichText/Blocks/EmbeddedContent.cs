@@ -10,7 +10,7 @@ internal record EmbeddedContent(
     string Codename,
     string? Name,
     Guid Id,
-    object? Content
+    object? Elements
 ) : IEmbeddedContent
 {
     /// <summary>

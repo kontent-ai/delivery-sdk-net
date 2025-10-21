@@ -1,4 +1,4 @@
-﻿using FluentAssertions;
+using FluentAssertions;
 using Kontent.Ai.Delivery.Abstractions;
 using Xunit;
 

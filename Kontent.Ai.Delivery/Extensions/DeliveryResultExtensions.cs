@@ -29,5 +29,3 @@ internal static class DeliveryResultExtensions
             result.Error);
     }
 }
-
-

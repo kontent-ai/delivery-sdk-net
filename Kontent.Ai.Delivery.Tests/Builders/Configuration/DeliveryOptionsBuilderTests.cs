@@ -11,82 +11,6 @@ public class DeliveryOptionsBuilderTests
         "eyJ0eXAiOiwq14X65DLCJhbGciOiJIUzI1NiJ-.eyJqdGkiOiABCjJlM2FiOTBjOGM0ODVmYjdmZTDEFRQZGM1NDIyMCIsImlhdCI6IjE1Mjg454wexiLCJleHAiOiIxODc0NDg3NjqasdfwicHJvamVjdF9pZCI6Ij" +
         "g1OTEwOTlkN2458198ewqewZjI3Yzg5M2FhZTJiNTE4IiwidmVyIjoiMS4wLjAiLCJhdWQiewqgsdaWV3LmRlbGl2ZXIua2VudGljb2Nsb3VkLmNvbSJ9._tSzbNDpbE55dsaLUTGsdgesg4b693TFuhRCRsDyoc";
 
-    private const string SecuredApiKey =
-        "eyJ0eXAiOiwq14X65DLCJhbGciOiJIUzI1NiJ9.eyJqdGkiOiABCjJlM2FiOTBjOGM0ODVmYjdmZTDEFRQZGM1ND123QEwclhdCI6IjE1Mjg454wexiLCJleHAiOiIxODc0NDg3NjqasdfwicHJvamVjdF9pZCI6Ij" +
-        "g1OTEwOTlkN2458198ewqewZjI3Yzg5M2FhZTJiNTE4IiwidmVyIjoiMS4wLjAiLCJhdWQiewqgsdaWV3LmRlbGl2ZXIua2VudGljb2Nsb3VkLmNvbSJ9.wtSzbNDpbE55dsaLUTGsdgesg4b693TFuhRCRsDyoc";
-    private readonly Guid _guid = new Guid(EnvironmentId);
-
-    [Fact]
-    [Obsolete]
-    public void BuildWithEnvironmentIdAndUseProductionApi()
-    {
-        var deliveryOptions = DeliveryOptionsBuilder
-            .CreateInstance()
-            .WithEnvironmentId(EnvironmentId)
-            .UseProductionApi()
-            .Build();
-
-        Assert.Equal(EnvironmentId, deliveryOptions.EnvironmentId);
-        Assert.False(deliveryOptions.UsePreviewApi);
-        Assert.False(deliveryOptions.UseSecureAccess);
-    }
-
-    [Fact]
-    [Obsolete]
-    public void BuildWithEnvironmentIdAndPreviewApi()
-    {
-        var deliveryOptions = DeliveryOptionsBuilder
-            .CreateInstance()
-            .WithEnvironmentId(EnvironmentId)
-            .UsePreviewApi(PreviewApiKey)
-            .Build();
-
-        Assert.Equal(EnvironmentId, deliveryOptions.EnvironmentId);
-        Assert.True(deliveryOptions.UsePreviewApi);
-        Assert.Equal(PreviewApiKey, deliveryOptions.PreviewApiKey);
-    }
-
-    [Fact]
-    [Obsolete]
-    public void BuildWithEnvironmentIdAndSecuredProductionApi()
-    {
-        var deliveryOptions = DeliveryOptionsBuilder
-            .CreateInstance()
-            .WithEnvironmentId(EnvironmentId)
-            .UseProductionApi(SecuredApiKey)
-            .Build();
-
-        Assert.Equal(EnvironmentId, deliveryOptions.EnvironmentId);
-        Assert.True(deliveryOptions.UseSecureAccess);
-        Assert.Equal(SecuredApiKey, deliveryOptions.SecureAccessApiKey);
-    }
-
-    // [Fact]
-    // [Obsolete]
-    // public void BuildWithRetryPolicyOptions()
-    // {
-    //     var retryOptions = new DefaultRetryPolicyOptions();
-
-    //     var deliveryOptions = DeliveryOptionsBuilder
-    //         .Create(EnvironmentId)
-    //         .UseProduction()
-    //         .Build();
-
-    //     Assert.Equal(retryOptions, deliveryOptions.DefaultRetryPolicyOptions);
-    // }
-
-    // [Fact]
-    // [Obsolete]
-    // public void BuildWithNullRetryPolicyOptions_ThrowsException()
-    // {
-    //     Assert.Throws<ArgumentNullException>(() => DeliveryOptionsBuilder
-    //         .CreateInstance()
-    //         .WithEnvironmentId(EnvironmentId)
-    //         .UseProductionApi()
-    //         .WithDefaultRetryPolicyOptions(null)
-    //         .Build());
-    // }
-
     [Fact]
     public void BuildWithDisabledRetryLogic()
     {
@@ -112,19 +36,6 @@ public class DeliveryOptionsBuilderTests
 
         Assert.True(deliveryOptions.WaitForLoadingNewContent);
     }
-
-    // [Fact]
-    // [Obsolete]
-    // public void BuildWithIncludeTotalCount()
-    // {
-    //     var deliveryOptions = DeliveryOptionsBuilder
-    //         .Create(Guid.NewGuid())
-    //         .UseProduction()
-    //         .IncludeTotalCount()
-    //         .Build();
-
-    //     Assert.True(deliveryOptions.IncludeTotalCount);
-    // }
 
     [Fact]
     public void BuildWithCustomEndpointForPreviewApi()

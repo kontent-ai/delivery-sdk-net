@@ -1,4 +1,4 @@
-﻿namespace Kontent.Ai.Delivery.Abstractions;
+namespace Kontent.Ai.Delivery.Abstractions;
 
 interface ITaxonomyElement : IContentElement
 {

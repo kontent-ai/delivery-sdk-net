@@ -68,4 +68,3 @@ public interface IDeliveryOptionsBuilder
     /// </summary>
     DeliveryOptions Build();
 }
-

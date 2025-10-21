@@ -6,7 +6,7 @@ namespace Kontent.Ai.Delivery.Configuration;
 public class DeliveryOptionsBuilder : IDeliveryOptionsBuilder // TODO: add injection of type and model providers etc.
 {
     private DeliveryOptions _options = new();
-    private DeliveryOptionsBuilder() {}
+    private DeliveryOptionsBuilder() { }
 
     /// <summary>
     /// Creates a new instance of the <see cref="DeliveryOptionsBuilder"/> class.
@@ -132,4 +132,3 @@ public class DeliveryOptionsBuilder : IDeliveryOptionsBuilder // TODO: add injec
     /// </summary>
     public DeliveryOptions Build() => _options;
 }
-

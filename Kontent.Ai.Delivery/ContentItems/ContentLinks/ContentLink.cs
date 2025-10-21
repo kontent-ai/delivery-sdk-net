@@ -1,4 +1,4 @@
-﻿using System.Text.Json.Serialization;
+using System.Text.Json.Serialization;
 using System.Diagnostics;
 
 namespace Kontent.Ai.Delivery.ContentItems.ContentLinks;
@@ -35,4 +35,3 @@ internal sealed class ContentLink() : IContentLink // TODO: improve, nullability
         get; set;
     }
 }
-

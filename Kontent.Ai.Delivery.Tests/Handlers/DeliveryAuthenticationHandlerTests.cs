@@ -84,6 +84,48 @@ public class DeliveryAuthenticationHandlerTests
     }
 
     [Fact]
+    public async Task SendAsync_WhenKeyBecomesEmpty_ClearsAuthorizationHeader()
+    {
+        // Arrange - Start with a key
+        var optionsWithKey = new DeliveryOptions
+        {
+            EnvironmentId = TestEnvironmentId,
+            UsePreviewApi = true,
+            PreviewApiKey = TestPreviewApiKey
+        };
+
+        var optionsWithoutKey = new DeliveryOptions
+        {
+            EnvironmentId = TestEnvironmentId,
+            UsePreviewApi = false
+        };
+
+        var optionsMonitor = new TestOptionsMonitor<DeliveryOptions>(optionsWithKey);
+        var handler = new DeliveryAuthenticationHandler(optionsMonitor);
+        handler.InnerHandler = new TestHandler();
+
+        // Act 1 - First request with key
+        var request1 = new HttpRequestMessage(HttpMethod.Get, "https://deliver.kontent.ai/items");
+        await InvokeSendAsync(handler, request1);
+
+        // Assert 1 - Header is set
+        Assert.NotNull(request1.Headers.Authorization);
+        Assert.Equal(TestPreviewApiKey, request1.Headers.Authorization.Parameter);
+
+        // Simulate configuration change to remove key
+        optionsMonitor.ChangeCurrentValue(optionsWithoutKey);
+
+        // Act 2 - Second request without key
+        var request2 = new HttpRequestMessage(HttpMethod.Get, "https://deliver.kontent.ai/items");
+        // Pre-populate with old auth header to simulate request reuse or stale state
+        request2.Headers.Authorization = new System.Net.Http.Headers.AuthenticationHeaderValue("Bearer", "old-stale-key");
+        await InvokeSendAsync(handler, request2);
+
+        // Assert 2 - Header is cleared (not left with stale value)
+        Assert.Null(request2.Headers.Authorization);
+    }
+
+    [Fact]
     public async Task SendAsync_WithEnvironmentId_InjectsIntoPath()
     {
         // Arrange
@@ -200,6 +242,119 @@ public class DeliveryAuthenticationHandlerTests
         Assert.Equal($"/{TestEnvironmentId}/items", request.RequestUri.AbsolutePath);
     }
 
+    [Fact]
+    public async Task SendAsync_WithCustomBaseUrl_UsesCustomBase()
+    {
+        // Arrange
+        var options = new DeliveryOptions
+        {
+            EnvironmentId = TestEnvironmentId,
+            ProductionEndpoint = "https://custom-delivery.example.com"
+        };
+
+        var handler = CreateHandler(options);
+        var request = new HttpRequestMessage(HttpMethod.Get, "https://custom-delivery.example.com/items");
+
+        // Act
+        var response = await InvokeSendAsync(handler, request);
+
+        // Assert
+        Assert.NotNull(request.RequestUri);
+        Assert.Equal("https", request.RequestUri.Scheme);
+        Assert.Equal("custom-delivery.example.com", request.RequestUri.Host);
+        Assert.Equal($"/{TestEnvironmentId}/items", request.RequestUri.AbsolutePath);
+    }
+
+    [Fact]
+    public async Task SendAsync_WithAssetCdnUrl_LeavesUntouched()
+    {
+        // Arrange
+        var options = new DeliveryOptions
+        {
+            EnvironmentId = TestEnvironmentId
+        };
+
+        var handler = CreateHandler(options);
+        var assetUrl = "https://assets-eu-01.kc-usercontent.com/abc123/def456/image.png";
+        var request = new HttpRequestMessage(HttpMethod.Get, assetUrl);
+
+        // Act
+        var response = await InvokeSendAsync(handler, request);
+
+        // Assert - Asset URL should NOT be rewritten to delivery API base
+        Assert.NotNull(request.RequestUri);
+        Assert.Equal("assets-eu-01.kc-usercontent.com", request.RequestUri.Host);
+        Assert.Equal("/abc123/def456/image.png", request.RequestUri.AbsolutePath);
+        Assert.DoesNotContain(TestEnvironmentId, request.RequestUri.AbsolutePath);
+    }
+
+    [Fact]
+    public async Task SendAsync_WithExternalWebhookUrl_LeavesUntouched()
+    {
+        // Arrange
+        var options = new DeliveryOptions
+        {
+            EnvironmentId = TestEnvironmentId
+        };
+
+        var handler = CreateHandler(options);
+        var webhookUrl = "https://external-service.com/webhook/callback?token=abc123";
+        var request = new HttpRequestMessage(HttpMethod.Post, webhookUrl);
+
+        // Act
+        var response = await InvokeSendAsync(handler, request);
+
+        // Assert - External URL should NOT be rewritten
+        Assert.NotNull(request.RequestUri);
+        Assert.Equal("external-service.com", request.RequestUri.Host);
+        Assert.Equal("/webhook/callback", request.RequestUri.AbsolutePath);
+        Assert.Equal("?token=abc123", request.RequestUri.Query);
+        Assert.DoesNotContain(TestEnvironmentId, request.RequestUri.AbsolutePath);
+    }
+
+    [Fact]
+    public async Task SendAsync_WithRelativeUri_InjectsEnvironmentId()
+    {
+        // Arrange
+        var options = new DeliveryOptions
+        {
+            EnvironmentId = TestEnvironmentId
+        };
+
+        var handler = CreateHandler(options);
+        var request = new HttpRequestMessage(HttpMethod.Get, new Uri("/items", UriKind.Relative));
+
+        // Act
+        var response = await InvokeSendAsync(handler, request);
+
+        // Assert - Relative URI should have environment ID injected
+        Assert.NotNull(request.RequestUri);
+        Assert.Equal($"/{TestEnvironmentId}/items", request.RequestUri.AbsolutePath);
+    }
+
+    [Fact]
+    public async Task SendAsync_WithManagementApiUrl_LeavesUntouched()
+    {
+        // Arrange
+        var options = new DeliveryOptions
+        {
+            EnvironmentId = TestEnvironmentId
+        };
+
+        var handler = CreateHandler(options);
+        var managementUrl = $"https://manage.kontent.ai/{TestEnvironmentId}/content-items";
+        var request = new HttpRequestMessage(HttpMethod.Get, managementUrl);
+
+        // Act
+        var response = await InvokeSendAsync(handler, request);
+
+        // Assert - Management API URL should NOT be rewritten to delivery API
+        Assert.NotNull(request.RequestUri);
+        Assert.Equal("manage.kontent.ai", request.RequestUri.Host);
+        Assert.Equal($"/{TestEnvironmentId}/content-items", request.RequestUri.AbsolutePath);
+        // Environment ID should not be duplicated since it's already in the path
+    }
+
     private static DeliveryAuthenticationHandler CreateHandler(DeliveryOptions options)
     {
         var optionsMonitor = new TestOptionsMonitor<DeliveryOptions>(options);
@@ -241,8 +396,8 @@ public class DeliveryAuthenticationHandlerTests
     private class TestOptionsMonitor<TOptions> : IOptionsMonitor<TOptions>
         where TOptions : class
     {
-        private readonly TOptions _currentValue;
-        private readonly Dictionary<string, TOptions> _namedOptions = new();
+        private TOptions _currentValue;
+        private readonly Dictionary<string, TOptions> _namedOptions = [];
 
         public TestOptionsMonitor(TOptions currentValue)
         {
@@ -268,6 +423,11 @@ public class DeliveryAuthenticationHandlerTests
         public void AddNamedOptions(string name, TOptions options)
         {
             _namedOptions[name] = options;
+        }
+
+        public void ChangeCurrentValue(TOptions newValue)
+        {
+            _currentValue = newValue;
         }
 
         private class EmptyDisposable : IDisposable

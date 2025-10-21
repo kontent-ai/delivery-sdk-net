@@ -5,7 +5,6 @@ using System.Text;
 using System.Text.Json;
 using System.Threading;
 using System.Threading.Tasks;
-using Kontent.Ai.Delivery.Abstractions;
 using Kontent.Ai.Delivery.Caching;
 using Microsoft.Extensions.Caching.Distributed;
 using Xunit;
@@ -216,7 +215,7 @@ public class DistributedCacheManagerTests
                 Description = "Nested description",
                 Tags = new[] { "tag1", "tag2", "tag3" }
             },
-            Items = new List<int> { 1, 2, 3, 4, 5 }
+            Items = [1, 2, 3, 4, 5]
         };
 
         // Act
@@ -514,7 +513,7 @@ public class DistributedCacheManagerTests
         var results = await Task.WhenAll(tasks);
 
         // Assert
-        Assert.All(results, r => Assert.NotNull(r));
+        Assert.All(results, Assert.NotNull);
     }
 
     [Fact]
@@ -717,7 +716,7 @@ public class DistributedCacheManagerTests
         }
 
         // Assert
-        Assert.All(results, r => Assert.Null(r));
+        Assert.All(results, Assert.Null);
     }
 
     [Fact]
@@ -803,7 +802,7 @@ public class DistributedCacheManagerTests
     /// </summary>
     private class MockDistributedCache : IDistributedCache
     {
-        private readonly Dictionary<string, byte[]> _cache = new();
+        private readonly Dictionary<string, byte[]> _cache = [];
         private readonly object _lock = new();
 
         public byte[]? Get(string key)

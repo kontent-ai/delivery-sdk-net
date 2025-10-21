@@ -1,4 +1,4 @@
-﻿namespace Kontent.Ai.Delivery.ContentItems;
+namespace Kontent.Ai.Delivery.ContentItems;
 
 /// <summary>
 /// Default type provider that returns null for all mappings,

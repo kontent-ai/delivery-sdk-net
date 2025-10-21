@@ -49,5 +49,3 @@ public class FilterTests
         Assert.Equal("elements.date[range]=2020-01-01T00:00:00Z,2020-12-31T00:00:00Z", $"{result.Key}={result.Value}");
     }
 }
-
-

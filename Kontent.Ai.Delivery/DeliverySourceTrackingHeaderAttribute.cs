@@ -1,4 +1,4 @@
-﻿namespace Kontent.Ai.Delivery;
+namespace Kontent.Ai.Delivery;
 
 /// <summary>
 /// An attribute allowing library authors to set a custom tracking header in order to be able to gather analytics about their plug-ins.

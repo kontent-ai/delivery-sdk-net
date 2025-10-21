@@ -1,5 +1,4 @@
 using AngleSharp.Html.Parser;
-using Kontent.Ai.Delivery.Abstractions;
 using Kontent.Ai.Delivery.Caching;
 using Kontent.Ai.Delivery.Configuration;
 using Kontent.Ai.Delivery.ContentItems;
@@ -21,6 +20,8 @@ namespace Kontent.Ai.Delivery.Extensions;
 /// </summary>
 public static class ServiceCollectionExtensions
 {
+    private static readonly object _registryLock = new();
+
     /// <summary>
     /// Registers the Kontent.ai Delivery client with the specified options instance.
     /// </summary>
@@ -39,9 +40,12 @@ public static class ServiceCollectionExtensions
     {
         ArgumentNullException.ThrowIfNull(deliveryOptions);
 
-        return services
-            .RegisterOptions(deliveryOptions)
-            .RegisterServices(configureHttpClient, configureResilience, configureRefit);
+        return services.AddDeliveryClient(
+            Abstractions.Options.DefaultName,
+            options => options.Configure(deliveryOptions),
+            configureHttpClient,
+            configureResilience,
+            configureRefit);
     }
 
     /// <summary>
@@ -65,9 +69,12 @@ public static class ServiceCollectionExtensions
         var builder = DeliveryOptionsBuilder.CreateInstance();
         var options = buildDeliveryOptions(builder);
 
-        return services
-            .RegisterOptions(options)
-            .RegisterServices(configureHttpClient, configureResilience, configureRefit);
+        return services.AddDeliveryClient(
+            Abstractions.Options.DefaultName,
+            opts => opts.Configure(options),
+            configureHttpClient,
+            configureResilience,
+            configureRefit);
     }
 
     /// <summary>
@@ -88,10 +95,9 @@ public static class ServiceCollectionExtensions
             ? configuration
             : configuration.GetSection(configurationSectionName);
 
-
-        return services
-            .Configure<DeliveryOptions>(section)
-            .RegisterServices();
+        return services.AddDeliveryClient(
+            Abstractions.Options.DefaultName,
+            options => section.Bind(options));
     }
 
     /// <summary>
@@ -106,9 +112,9 @@ public static class ServiceCollectionExtensions
     {
         ArgumentNullException.ThrowIfNull(configureOptions);
 
-        return services
-            .Configure(configureOptions)
-            .RegisterServices();
+        return services.AddDeliveryClient(
+            Abstractions.Options.DefaultName,
+            configureOptions);
     }
 
     /// <summary>
@@ -125,30 +131,122 @@ public static class ServiceCollectionExtensions
         Action<IHttpClientBuilder>? configureHttpClient,
         Action<ResiliencePipelineBuilder<HttpResponseMessage>>? configureResilience = null)
     {
-        ArgumentNullException.ThrowIfNull(configureOptions);
-
-        return services
-            .Configure(configureOptions)
-            .RegisterServices(configureHttpClient, configureResilience);
+        return services.AddDeliveryClient(
+            Abstractions.Options.DefaultName,
+            configureOptions,
+            configureHttpClient,
+            configureResilience);
     }
 
     /// <summary>
-    /// Core registration method containing all service registrations.
+    /// Registers a named Kontent.ai Delivery client with the specified configuration.
     /// </summary>
-    private static IServiceCollection RegisterServices(
+    /// <remarks>
+    /// <para>
+    /// The registered client can be accessed in two ways:
+    /// <list type="bullet">
+    /// <item>Via <see cref="IDeliveryClientFactory"/>: <c>factory.Get("name")</c></item>
+    /// <item>Via keyed services injection: <c>[FromKeyedServices("name")] IDeliveryClient client</c></item>
+    /// </list>
+    /// </para>
+    /// <para>
+    /// The client supports reactive configuration updates via <see cref="IOptionsMonitor{TOptions}"/>.
+    /// Changes to API keys and other options will be picked up automatically at runtime.
+    /// </para>
+    /// <para>
+    /// Note: The HTTP client's BaseAddress is set once during initialization and will not update
+    /// with runtime configuration changes. However, the authentication handler monitors options
+    /// changes to support scenarios like API key rotation and endpoint switching.
+    /// </para>
+    /// </remarks>
+    /// <param name="services">The service collection.</param>
+    /// <param name="name">The name of the client. Must be unique across all registrations.</param>
+    /// <param name="configureOptions">Action to configure the delivery options.</param>
+    /// <param name="configureHttpClient">Optional action to configure the HTTP client.</param>
+    /// <param name="configureResilience">Optional action to configure resilience policies.</param>
+    /// <param name="configureRefit">Optional action to configure Refit settings.</param>
+    /// <returns>The service collection for chaining.</returns>
+    /// <exception cref="InvalidOperationException">Thrown when a client with the same name is already registered.</exception>
+    public static IServiceCollection AddDeliveryClient(
         this IServiceCollection services,
+        string name,
+        Action<DeliveryOptions> configureOptions,
         Action<IHttpClientBuilder>? configureHttpClient = null,
         Action<ResiliencePipelineBuilder<HttpResponseMessage>>? configureResilience = null,
         Action<RefitSettings>? configureRefit = null)
     {
-        services.AddOptions<DeliveryOptions>()
+        ArgumentException.ThrowIfNullOrWhiteSpace(name, nameof(name));
+        ArgumentNullException.ThrowIfNull(configureOptions);
+
+        // Validate name doesn't contain only whitespace
+        if (string.IsNullOrWhiteSpace(name) || name.Trim() != name || name.Contains(' '))
+        {
+            throw new ArgumentException(
+                "Client name cannot be empty, contain leading/trailing whitespace, or contain spaces. Use underscores or hyphens instead.",
+                nameof(name));
+        }
+
+        // Validate name uniqueness
+        var registry = GetOrCreateRegistry(services);
+        if (!registry.TryRegister(name))
+        {
+            var httpClientName = $"Kontent.Ai.Delivery.HttpClient.{name}";
+            throw new InvalidOperationException(
+                $"A DeliveryClient with the name '{name}' has already been registered. " +
+                $"HTTP client name: '{httpClientName}'. Each client must have a unique name.");
+        }
+
+        // Register named options
+        services.Configure<DeliveryOptions>(name, configureOptions);
+        services.AddOptions<DeliveryOptions>(name)
             .ValidateDataAnnotations()
             .ValidateOnStart();
 
-        RegisterDependencies(services);
-        RegisterHttpClient(services, configureHttpClient, configureResilience, configureRefit);
+        // Also configure unnamed options for backward compatibility if this is the default name
+        if (name == Abstractions.Options.DefaultName)
+        {
+            services.Configure(configureOptions);
+            services.AddOptions<DeliveryOptions>()
+                .ValidateDataAnnotations()
+                .ValidateOnStart();
+        }
 
-        services.TryAddSingleton<IDeliveryClient, DeliveryClient>();
+        // Register dependencies (only once)
+        RegisterDependencies(services);
+
+        // Register named HTTP client and Refit API
+        RegisterNamedHttpClient(services, name, configureHttpClient, configureResilience, configureRefit);
+
+        // Register keyed IDeliveryClient
+        services.AddKeyedSingleton<IDeliveryClient>(name, (sp, key) =>
+        {
+            var clientName = (string)key!;
+            var optionsMonitor = sp.GetRequiredService<IOptionsMonitor<DeliveryOptions>>();
+            var namedMonitor = new Configuration.NamedOptionsMonitor<DeliveryOptions>(optionsMonitor, clientName);
+
+            var deliveryApi = sp.GetRequiredKeyedService<IDeliveryApi>(clientName);
+            var elementsPostProcessor = sp.GetRequiredService<IElementsPostProcessor>();
+            var cacheManager = sp.GetService<IDeliveryCacheManager>();
+
+            return new DeliveryClient(
+                deliveryApi,
+                namedMonitor,
+                elementsPostProcessor,
+                cacheManager);
+        });
+
+        // Register factory
+        services.TryAddSingleton<IDeliveryClientFactory, DeliveryClientFactory>();
+
+        // Register default client accessors if this is the default name (backward compatibility)
+        if (name == Abstractions.Options.DefaultName)
+        {
+            services.TryAddSingleton<IDeliveryApi>(sp =>
+                sp.GetRequiredKeyedService<IDeliveryApi>(Abstractions.Options.DefaultName));
+
+            services.TryAddSingleton<IDeliveryClient>(sp =>
+                sp.GetRequiredKeyedService<IDeliveryClient>(Abstractions.Options.DefaultName));
+        }
 
         return services;
     }
@@ -183,8 +281,7 @@ public static class ServiceCollectionExtensions
         Action<ResiliencePipelineBuilder<HttpResponseMessage>>? configureResilience,
         Action<RefitSettings>? configureRefit)
     {
-        var refitSettings = RefitSettingsProvider.CreateDefaultSettings();
-        configureRefit?.Invoke(refitSettings);
+        var refitSettings = CreateRefitSettings(configureRefit);
 
         var httpClientBuilder = services
             .AddRefitClient<IDeliveryApi>(refitSettings)
@@ -194,12 +291,88 @@ public static class ServiceCollectionExtensions
                 httpClient.BaseAddress = new Uri(options.GetBaseUrl(), UriKind.Absolute);
             });
 
-        // Add resilience handler
-        httpClientBuilder.AddResilienceHandler("delivery", (builder, context) =>
+        // Add resilience and message handlers
+        ConfigureResilienceHandler(httpClientBuilder, "delivery", optionsName: null, configureResilience);
+        AddMessageHandlers(httpClientBuilder, optionsName: null);
+
+        // Apply custom configuration
+        configureHttpClient?.Invoke(httpClientBuilder);
+    }
+
+    /// <summary>
+    /// Registers and configures a named HTTP client with Refit.
+    /// </summary>
+    private static void RegisterNamedHttpClient(
+        IServiceCollection services,
+        string name,
+        Action<IHttpClientBuilder>? configureHttpClient,
+        Action<ResiliencePipelineBuilder<HttpResponseMessage>>? configureResilience,
+        Action<RefitSettings>? configureRefit)
+    {
+        var refitSettings = CreateRefitSettings(configureRefit);
+
+        // Register named HTTP client with unique name to avoid conflicts
+        var httpClientName = $"Kontent.Ai.Delivery.HttpClient.{name}";
+        var httpClientBuilder = services
+            .AddHttpClient(httpClientName)
+            .ConfigureHttpClient((serviceProvider, httpClient) =>
+            {
+                var optionsMonitor = serviceProvider.GetRequiredService<IOptionsMonitor<DeliveryOptions>>();
+                var options = optionsMonitor.Get(name);
+                // Note: BaseAddress is static and won't update with runtime configuration changes.
+                // The DeliveryAuthenticationHandler handles runtime endpoint switching.
+                httpClient.BaseAddress = new Uri(options.GetBaseUrl(), UriKind.Absolute);
+            });
+
+        // Add resilience and message handlers
+        ConfigureResilienceHandler(httpClientBuilder, $"delivery_{name}", name, configureResilience);
+        AddMessageHandlers(httpClientBuilder, name);
+
+        // Bind Refit client to the HTTP pipeline using typed client pattern
+        httpClientBuilder.AddTypedClient(http => RestService.For<IDeliveryApi>(http, refitSettings));
+
+        // Apply custom configuration
+        configureHttpClient?.Invoke(httpClientBuilder);
+
+        // Register keyed IDeliveryApi - retrieve from HTTP client factory
+        // The typed client is created and managed by the HTTP pipeline
+        services.AddKeyedTransient<IDeliveryApi>(name, (sp, _) =>
         {
-            var options = context.ServiceProvider
-                .GetRequiredService<IOptionsMonitor<DeliveryOptions>>()
-                .CurrentValue;
+            var httpClientFactory = sp.GetRequiredService<IHttpClientFactory>();
+            var httpClient = httpClientFactory.CreateClient(httpClientName);
+            return RestService.For<IDeliveryApi>(httpClient, refitSettings);
+        });
+    }
+
+    /// <summary>
+    /// Creates and configures Refit settings with optional customization.
+    /// </summary>
+    private static RefitSettings CreateRefitSettings(Action<RefitSettings>? configureRefit)
+    {
+        var refitSettings = RefitSettingsProvider.CreateDefaultSettings();
+        configureRefit?.Invoke(refitSettings);
+        return refitSettings;
+    }
+
+    /// <summary>
+    /// Configures the resilience handler for an HTTP client.
+    /// </summary>
+    /// <param name="httpClientBuilder">The HTTP client builder.</param>
+    /// <param name="resilienceHandlerName">The name of the resilience handler.</param>
+    /// <param name="optionsName">The name of the options to retrieve, or null for default options.</param>
+    /// <param name="configureResilience">Optional custom resilience configuration.</param>
+    private static void ConfigureResilienceHandler(
+        IHttpClientBuilder httpClientBuilder,
+        string resilienceHandlerName,
+        string? optionsName,
+        Action<ResiliencePipelineBuilder<HttpResponseMessage>>? configureResilience)
+    {
+        httpClientBuilder.AddResilienceHandler(resilienceHandlerName, (builder, context) =>
+        {
+            var optionsMonitor = context.ServiceProvider.GetRequiredService<IOptionsMonitor<DeliveryOptions>>();
+            var options = optionsName is null
+                ? optionsMonitor.CurrentValue
+                : optionsMonitor.Get(optionsName);
 
             if (!options.EnableResilience)
                 return;
@@ -213,18 +386,30 @@ public static class ServiceCollectionExtensions
                 ConfigureDefaultResilience(builder);
             }
         });
-
-        // Add message handlers
-        httpClientBuilder
-            .AddHttpMessageHandler<TrackingHandler>()
-            .AddHttpMessageHandler<DeliveryAuthenticationHandler>();
-
-        // Apply custom configuration
-        configureHttpClient?.Invoke(httpClientBuilder);
     }
 
-    private static IServiceCollection RegisterOptions(this IServiceCollection services, DeliveryOptions options) =>
-        services.Configure<DeliveryOptions>(o => o.Configure(options));
+    /// <summary>
+    /// Adds tracking and authentication message handlers to an HTTP client.
+    /// </summary>
+    /// <param name="httpClientBuilder">The HTTP client builder.</param>
+    /// <param name="optionsName">The name of the options for the authentication handler, or null for default options.</param>
+    private static void AddMessageHandlers(IHttpClientBuilder httpClientBuilder, string? optionsName)
+    {
+        httpClientBuilder.AddHttpMessageHandler<TrackingHandler>();
+
+        if (optionsName is null)
+        {
+            // Default options - use parameterless constructor
+            httpClientBuilder.AddHttpMessageHandler<DeliveryAuthenticationHandler>();
+        }
+        else
+        {
+            // Named options - pass name to constructor
+            httpClientBuilder.AddHttpMessageHandler(sp => new DeliveryAuthenticationHandler(
+                sp.GetRequiredService<IOptionsMonitor<DeliveryOptions>>(),
+                optionsName));
+        }
+    }
 
     private static void ConfigureDefaultResilience(ResiliencePipelineBuilder<HttpResponseMessage> builder)
     {
@@ -280,14 +465,16 @@ public static class ServiceCollectionExtensions
         // Register IMemoryCache if not already registered
         services.AddMemoryCache();
 
-        // Register the cache manager as a singleton
+        // Register the cache manager as a singleton (only if not already registered)
+        // This prevents accidental overwrites if called multiple times
         services.TryAddSingleton<IDeliveryCacheManager>(sp =>
             new MemoryCacheManager(
                 sp.GetRequiredService<IMemoryCache>(),
                 defaultExpiration));
 
         // Override default no-op extractor with actual implementation
-        services.AddSingleton<IContentDependencyExtractor, ContentDependencyExtractor>();
+        // Use TryAddSingleton to avoid replacing if already customized
+        services.TryAddSingleton<IContentDependencyExtractor, ContentDependencyExtractor>();
 
         return services;
     }
@@ -327,17 +514,41 @@ public static class ServiceCollectionExtensions
     {
         ArgumentNullException.ThrowIfNull(services);
 
-        // Register the cache manager as a singleton
+        // Register the cache manager as a singleton (only if not already registered)
         // The IDistributedCache dependency will be resolved from services
         // If it's not registered, this will fail at runtime with a clear error
+        // This prevents accidental overwrites if called multiple times
         services.TryAddSingleton<IDeliveryCacheManager>(sp =>
             new DistributedCacheManager(
                 sp.GetRequiredService<IDistributedCache>(),
                 defaultExpiration));
 
         // Override default no-op extractor with actual implementation
-        services.AddSingleton<IContentDependencyExtractor, ContentDependencyExtractor>();
+        // Use TryAddSingleton to avoid replacing if already customized
+        services.TryAddSingleton<IContentDependencyExtractor, ContentDependencyExtractor>();
 
         return services;
+    }
+
+    /// <summary>
+    /// Gets or creates the singleton DeliveryClientRegistry instance.
+    /// Thread-safe to prevent race conditions during concurrent registrations.
+    /// </summary>
+    private static DeliveryClientRegistry GetOrCreateRegistry(IServiceCollection services)
+    {
+        lock (_registryLock)
+        {
+            var descriptor = services.FirstOrDefault(d =>
+                d.ServiceType == typeof(DeliveryClientRegistry));
+
+            if (descriptor?.ImplementationInstance is DeliveryClientRegistry existing)
+            {
+                return existing;
+            }
+
+            var registry = new DeliveryClientRegistry();
+            services.AddSingleton(registry);
+            return registry;
+        }
     }
 }

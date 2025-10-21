@@ -1,4 +1,4 @@
-﻿using System.Text.Json.Serialization;
+using System.Text.Json.Serialization;
 
 namespace Kontent.Ai.Delivery.ContentItems.DateTimes;
 
@@ -17,4 +17,3 @@ internal sealed class DateTimeContent() : IDateTimeContent
         get; internal set;
     }
 }
-

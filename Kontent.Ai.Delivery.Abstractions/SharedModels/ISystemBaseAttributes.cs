@@ -1,4 +1,4 @@
-﻿namespace Kontent.Ai.Delivery.Abstractions;
+namespace Kontent.Ai.Delivery.Abstractions;
 
 /// <summary>
 /// Represents system base attributes of any object in Kontent.

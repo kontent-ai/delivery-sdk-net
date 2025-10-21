@@ -79,5 +79,3 @@ internal sealed class TypeQuery(
         return deliveryResult;
     }
 }
-
-

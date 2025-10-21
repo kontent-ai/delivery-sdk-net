@@ -25,7 +25,7 @@ internal sealed record DeliveryTaxonomyListingResponse : IDeliveryTaxonomyListin
         get; init;
     }
 
-    IList<ITaxonomyGroup> IDeliveryTaxonomyListingResponse.Taxonomies => Taxonomies.Cast<ITaxonomyGroup>().ToList();
+    IList<ITaxonomyGroup> IDeliveryTaxonomyListingResponse.Taxonomies => [.. Taxonomies.Cast<ITaxonomyGroup>()];
 
     IPagination IPageable.Pagination => Pagination;
 }

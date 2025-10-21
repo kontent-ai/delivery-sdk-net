@@ -3,7 +3,8 @@
 namespace Kontent.Ai.Delivery;
 
 /// <summary>
-/// A factory class for <see cref="IDeliveryClient"/>
+/// A factory class for <see cref="IDeliveryClient"/>.
+/// Supports both default (unnamed) and named client retrieval.
 /// </summary>
 /// <remarks>
 /// Initializes a new instance of the <see cref="DeliveryClientFactory"/> class.
@@ -11,16 +12,13 @@ namespace Kontent.Ai.Delivery;
 /// <param name="serviceProvider">An <see cref="IServiceProvider"/> instance.</param>
 public class DeliveryClientFactory(IServiceProvider serviceProvider) : IDeliveryClientFactory
 {
-    private readonly IServiceProvider _serviceProvider = serviceProvider;
-    private string _notImplementExceptionMessage = "The default implementation does not support retrieving clients by name. Please use the Kontent.Ai.Delivery.Extensions.Autofac.DependencyInjection or implement your own factory.";
+    /// <inheritdoc />
+    public IDeliveryClient Get() => Get(Options.DefaultName);
 
     /// <inheritdoc />
-    public IDeliveryClient Get(string name) => throw new NotImplementedException(_notImplementExceptionMessage);
-
-    /// <inheritdoc />	
-    public IDeliveryClient Get()
+    public IDeliveryClient Get(string name)
     {
-        return _serviceProvider.GetRequiredService<IDeliveryClient>();
+        ArgumentException.ThrowIfNullOrWhiteSpace(name, nameof(name));
+        return serviceProvider.GetRequiredKeyedService<IDeliveryClient>(name);
     }
-
 }

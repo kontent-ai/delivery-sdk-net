@@ -28,12 +28,12 @@ public interface IEmbeddedContent : IRichTextBlock
     Guid Id { get; }
 
     /// <summary>
-    /// Gets the resolved content item object.
-    /// Cast this to your strongly-typed model to access its properties.
+    /// Retrieves elements of the linked item or component from modular_content
+    /// Cast this to your strongly-typed model for simple access to its properties.
     /// </summary>
     /// <remarks>
     /// This property is null if the content item could not be resolved
-    /// (e.g., due to depth limits or missing modular content).
+    /// (e.g., due to depth limits).
     /// </remarks>
-    object? Content { get; }
+    object? Elements { get; }
 }

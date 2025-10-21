@@ -1,4 +1,3 @@
-using System;
 using System.Text.Json;
 using Kontent.Ai.Delivery.Abstractions.ContentItems.Processing;
 

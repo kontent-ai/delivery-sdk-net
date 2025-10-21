@@ -1,4 +1,4 @@
-﻿using System.Text.Json.Serialization;
+using System.Text.Json.Serialization;
 using System.Diagnostics;
 
 namespace Kontent.Ai.Delivery.ContentItems;

@@ -1,4 +1,3 @@
-using System.Collections.ObjectModel;
 using System.Text.Encodings.Web;
 using System.Text.Unicode;
 
@@ -39,8 +38,8 @@ namespace Kontent.Ai.Delivery.ContentItems.RichText.Resolution;
 /// </example>
 public sealed class HtmlResolverBuilder : IHtmlResolverBuilder
 {
-    private readonly Dictionary<Type, Delegate> _resolvers = new();
-    private readonly List<ConditionalHtmlNodeResolver> _conditionalHtmlNodeResolvers = new();
+    private readonly Dictionary<Type, Delegate> _resolvers = [];
+    private readonly List<ConditionalHtmlNodeResolver> _conditionalHtmlNodeResolvers = [];
     private readonly Dictionary<string, Func<IEmbeddedContent, ValueTask<string>>> _embeddedContentResolvers = new(StringComparer.OrdinalIgnoreCase);
     private readonly Dictionary<string, BlockResolver<IContentItemLink>> _contentItemLinkResolvers = new(StringComparer.OrdinalIgnoreCase);
     private readonly HtmlResolverOptions _options = new();

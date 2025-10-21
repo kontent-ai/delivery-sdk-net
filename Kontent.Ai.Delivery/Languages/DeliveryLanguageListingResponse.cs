@@ -19,7 +19,7 @@ internal sealed record DeliveryLanguageListingResponse : IDeliveryLanguageListin
         get; init;
     }
 
-    IList<ILanguage> IDeliveryLanguageListingResponse.Languages => Languages.Cast<ILanguage>().ToList();
+    IList<ILanguage> IDeliveryLanguageListingResponse.Languages => [.. Languages.Cast<ILanguage>()];
 
     IPagination IPageable.Pagination => Pagination;
 }

@@ -1,4 +1,4 @@
-﻿namespace Kontent.Ai.Delivery.Abstractions;
+namespace Kontent.Ai.Delivery.Abstractions;
 
 /// <summary>
 /// Represents a faulty JSON response from Kontent.ai Delivery API.

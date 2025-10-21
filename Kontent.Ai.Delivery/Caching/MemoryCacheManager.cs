@@ -1,10 +1,5 @@
-using System;
 using System.Collections.Concurrent;
-using System.Collections.Generic;
-using System.Linq;
 using System.Threading;
-using System.Threading.Tasks;
-using Kontent.Ai.Delivery.Abstractions;
 using Microsoft.Extensions.Caching.Memory;
 using Microsoft.Extensions.Primitives;
 
@@ -151,7 +146,7 @@ public sealed class MemoryCacheManager : IDeliveryCacheManager, IDisposable
         cancellationToken.ThrowIfCancellationRequested();
 
         // Materialize dependencies to avoid multiple enumeration
-        var dependencyList = dependencies as IList<string> ?? dependencies.ToList();
+        var dependencyList = dependencies as IList<string> ?? [.. dependencies];
 
         // Create cache entry options
         var entryOptions = new MemoryCacheEntryOptions
