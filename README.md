@@ -10,7 +10,8 @@
 
 The official .NET SDK for the [Kontent.ai Delivery API](https://kontent.ai/learn/docs/apis/openapi/delivery-api/), enabling you to retrieve content from your Kontent.ai projects with a modern, type-safe, and highly extensible client library.
 
-> [!IMPORTANT] This is a beta release of the modernized SDK. While the core functionality is stable and production-ready, some features are still being polished. All the documentation and implementation is subject to change prior to production release. Feedback is welcome in the corresponding [pull request](https://github.com/kontent-ai/delivery-sdk-net/pull/407).
+> [!IMPORTANT]
+> The modernized delivery SDK is currently in beta. While the core functionality is stable and production-ready, some features are still being polished. All the documentation and implementation is subject to change prior to production release. Feedback is welcome in the corresponding [pull request](https://github.com/kontent-ai/delivery-sdk-net/pull/407).
 
 ## Table of Contents
 
