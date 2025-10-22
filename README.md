@@ -1,28 +1,18 @@
 # Kontent.ai Delivery SDK for .NET
 
-[![Build Status](https://img.shields.io/github/actions/workflow/status/kontent-ai/delivery-sdk-net/build.yml?branch=vnext)](https://github.com/kontent-ai/delivery-sdk-net/actions)
-[![codecov](https://codecov.io/gh/kontent-ai/delivery-sdk-net/branch/vnext/graph/badge.svg)](https://codecov.io/gh/kontent-ai/delivery-sdk-net)
-[![NuGet](https://img.shields.io/nuget/v/Kontent.Ai.Delivery.svg)](https://www.nuget.org/packages/Kontent.Ai.Delivery)
-[![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
+![Last modified][last-commit]
+[![Issues][issues-shield]][issues-url]
+[![Contributors][contributors-shield]][contributors-url]
+[![MIT License][license-shield]][license-url]
+[![codecov][codecov-shield]][codecov-url]
+[![NuGet][nuget-shield]][nuget-url]
+[![Stack Overflow][stack-shield]](https://stackoverflow.com/tags/kontent-ai)
 
 The official .NET SDK for the [Kontent.ai Delivery API](https://kontent.ai/learn/docs/apis/openapi/delivery-api/), enabling you to retrieve content from your Kontent.ai projects with a modern, type-safe, and highly extensible client library.
 
-> **Note**: This is a beta release of the modernized SDK. While the core functionality is stable and production-ready, some features are still being polished. Feedback and contributions are welcome!
+> [!IMPORTANT] This is a beta release of the modernized SDK. While the core functionality is stable and production-ready, some features are still being polished. All the documentation and implementation is subject to change prior to production release. Feedback is welcome in the corresponding [pull request](https://github.com/kontent-ai/delivery-sdk-net/pull/407).
 
-## ( Features
-
-- **Dependency Injection First**: Built for modern .NET applications with first-class DI support
-- **Strongly-Typed Models**: Full support for generated models with compile-time safety
-- **Flexible Querying**: Fluent API with comprehensive filtering, sorting, and pagination
-- **Rich Text Resolution**: Powerful, customizable HTML rendering with async support
-- **Multi-Language Support**: Built-in support for language variants and fallbacks
-- **Caching Ready**: Transparent caching with memory and distributed cache providers
-- **Preview API Support**: Seamless switching between production and preview content
-- **Extensible Architecture**: Multiple extension points for custom behaviors
-- **Resilient by Default**: Built-in retry policies and error handling
-- **Named Clients**: Support for multi-tenant and multi-environment scenarios
-
-## =Ë Table of Contents
+## Table of Contents
 
 - [Installation](#-installation)
 - [Quick Start](#-quick-start)
@@ -41,7 +31,7 @@ The official .NET SDK for the [Kontent.ai Delivery API](https://kontent.ai/learn
 - [Contributing](#-contributing)
 - [License](#-license)
 
-## =æ Installation
+## Installation
 
 Install the SDK via NuGet Package Manager:
 
@@ -55,7 +45,7 @@ Or via the Package Manager Console:
 Install-Package Kontent.Ai.Delivery
 ```
 
-## =€ Quick Start
+## Quick Start
 
 Here's a minimal example to get you started:
 
@@ -84,7 +74,7 @@ if (result.IsSuccess)
 }
 ```
 
-## =Ö Basic Usage
+## Basic Usage
 
 ### Setting Up the Delivery Client
 
@@ -250,9 +240,12 @@ For more advanced filtering scenarios, see the [Advanced Filtering Guide](docs/a
 
 ### Working with Strongly-Typed Models
 
-The SDK supports strongly-typed models for compile-time safety and IntelliSense support.
+The SDK supports strongly-typed models for compile-time safety and IntelliSense support. Using the SDK with strongly typed models is recommended.
 
 #### Generate Models
+
+> [!WARNING]
+> Model generator has not been updated yet if you see this. See for example [Article.cs](./Kontent.Ai.Delivery.Tests/Models/ContentTypes/Article.cs) and its siblings for examples of the new model structure.
 
 Use the [Kontent.ai Model Generator](https://github.com/kontent-ai/model-generator-net) to generate C# classes from your content types:
 
@@ -264,11 +257,11 @@ KontentModelGenerator --environmentid <your-environment-id> --outputdir Models
 #### Use Strongly-Typed Models
 
 ```csharp
-public class Article
+public record Article
 {
     public string Title { get; set; }
     public string Summary { get; set; }
-    public RichTextElement BodyCopy { get; set; }
+    public RichTextContent BodyCopy { get; set; }
     public DateTime PublishDate { get; set; }
     public IEnumerable<Author> Authors { get; set; }
 }
@@ -290,7 +283,7 @@ if (result.IsSuccess)
 
 ### Rich Text Resolution
 
-Rich text elements contain structured content that needs to be resolved to HTML.
+Rich text elements may contain structured content that needs to be resolved prior to being rendered.
 
 #### Basic HTML Rendering
 
@@ -331,13 +324,12 @@ var html = await article.BodyCopy.ToHtmlAsync(resolver);
 var resolver = new HtmlResolverBuilder()
     .WithContentResolver("tweet", content =>
     {
-        var tweetText = content.Elements["tweet_text"]?.ToString();
-        var author = content.Elements["author"]?.ToString();
-        return $"<blockquote class=\"twitter-tweet\">{tweetText}<cite>{author}</cite></blockquote>";
+        var tweet = content.Elements as Tweet; // cast to your strongly typed model
+        return $"<blockquote class=\"twitter-tweet\">{tweet.Text}<cite>{tweet.Author}</cite></blockquote>";
     })
     .WithContentResolver("video", async content =>
     {
-        var videoId = content.Elements["video_id"]?.ToString();
+        var videoId = content.Elements["video_id"]?.ToString(); // dynamic access without strongly typed model
         return $"<div class=\"video-wrapper\"><iframe src=\"https://youtube.com/embed/{videoId}\"></iframe></div>";
     })
     .Build();
@@ -359,8 +351,9 @@ var result = await client.GetItem("homepage")
     .WithLanguage("es-ES")
     .ExecuteAsync();
 
-// Get multiple items in German
+// Get all articles in German (strongly typed)
 var articlesResult = await client.GetItems<Article>()
+    .Filter(f => f.Equals(ItemSystemPath.Codename, "article"))
     .WithLanguage("de-DE")
     .ExecuteAsync();
 ```
@@ -368,6 +361,8 @@ var articlesResult = await client.GetItems<Article>()
 #### Language Fallbacks
 
 Language fallbacks are configured in your Kontent.ai project. The SDK respects these settings automatically. If content is not available in the requested language, the SDK returns content according to your fallback configuration.
+
+In order to ignore language callbacks, you can combine `.WithLanguage` and filtering on `system.language`, setting both to the desired language codename. See [Ignoring language fallbacks](https://kontent.ai/learn/develop/hello-world/get-localized-content/typescript#a-ignoring-language-fallbacks) in Kontent.ai documentation for more details.
 
 #### Get Available Languages
 
@@ -458,7 +453,7 @@ var client = isPreviewMode ? factory.Get("preview") : factory.Get("production");
 
 For more on named clients and multi-environment scenarios, see the [Multi-Client Scenarios Guide](docs/multi-client-scenarios.md).
 
-## ™ Configuration Options
+## Configuration Options
 
 The `DeliveryOptions` class provides comprehensive configuration:
 
@@ -513,7 +508,7 @@ services.AddDeliveryClient(
     });
 ```
 
-## =¨ Important Considerations
+## Important Considerations
 
 ### API Rate Limits
 
@@ -555,7 +550,7 @@ When using generated models:
 - Handle optional properties with nullable types
 - Consider versioning strategies if you have long-running deployments
 
-## =Ú Advanced Documentation
+## Advanced Documentation
 
 For more advanced scenarios and in-depth guides, explore the following documentation:
 
@@ -566,7 +561,7 @@ For more advanced scenarios and in-depth guides, explore the following documenta
 - **[Custom Type Converters](docs/custom-type-converters.md)** - Extensibility through custom element converters
 - **[Performance Optimization](docs/performance-optimization.md)** - Query optimization, monitoring, best practices
 
-## > Contributing
+## Contributing
 
 Contributions are welcome! Please see our [Contributing Guide](CONTRIBUTING.md) for details on how to:
 
@@ -575,10 +570,25 @@ Contributions are welcome! Please see our [Contributing Guide](CONTRIBUTING.md) 
 - Follow our coding standards
 - Run tests locally
 
-## =Ý License
+## License
 
 This project is licensed under the MIT License - see the [LICENSE](LICENSE) file for details.
 
 ---
 
 **Questions or feedback?** Visit our [GitHub Issues](https://github.com/kontent-ai/delivery-sdk-net/issues) or check the [Kontent.ai Developer Hub](https://kontent.ai/learn/docs).
+
+
+[last-commit]: https://img.shields.io/github/last-commit/kontent-ai/delivery-sdk-net/vnext?style=for-the-badge
+[contributors-shield]: https://img.shields.io/github/contributors/kontent-ai/delivery-sdk-net?style=for-the-badge
+[contributors-url]: https://github.com/kontent-ai/delivery-sdk-net/graphs/contributors
+[issues-shield]: https://img.shields.io/github/issues/kontent-ai/delivery-sdk-net.svg?style=for-the-badge
+[issues-url]: https://github.com/kontent-ai/delivery-sdk-net/issues
+[license-shield]: https://img.shields.io/github/license/kontent-ai/delivery-sdk-net?label=license&style=for-the-badge
+[license-url]: https://github.com/kontent-ai/delivery-sdk-net/blob/main/LICENSE
+[stack-shield]: https://img.shields.io/badge/Stack%20Overflow-ASK%20NOW-FE7A16.svg?logo=stackoverflow&logoColor=white&style=for-the-badge
+[discord-shield]: https://img.shields.io/discord/821885171984891914?label=Discord&logo=Discord&logoColor=white&style=for-the-badge
+[codecov-shield]: https://img.shields.io/codecov/c/github/kontent-ai/delivery-sdk-net/main.svg?style=for-the-badge
+[codecov-url]: https://app.codecov.io/github/kontent-ai/delivery-sdk-net
+[nuget-url]: https://www.nuget.org/packages/Kontent.Ai.Delivery
+[nuget-shield]: https://img.shields.io/nuget/vpre/Kontent.Ai.Delivery.svg?style=for-the-badge
