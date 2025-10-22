@@ -11,7 +11,7 @@ namespace Kontent.Ai.Delivery.Tests.Models.ContentTypes;
 public record Article : IElementsModel
 {
     [JsonPropertyName("body_copy")]
-    public RichTextContent? BodyCopy { get; init; }                    // null in sample
+    public RichTextContent? BodyCopy { get; init; }
 
     [JsonPropertyName("metadata__meta_description")]
     public string? MetadataMetaDescription { get; init; }
@@ -50,13 +50,13 @@ public record Article : IElementsModel
     public string? MetaKeywords { get; init; }
 
     [JsonPropertyName("personas")]
-    public IEnumerable<TaxonomyTerm>? Personas { get; init; }          // null in sample
+    public IEnumerable<TaxonomyTerm>? Personas { get; init; }
 
     [JsonPropertyName("post_date")]
-    public DateTime? PostDate { get; init; }                           // "2014-11-02T00:00:00Z" OK
+    public DateTime? PostDate { get; init; }
 
     [JsonPropertyName("related_articles")]
-    public IEnumerable<string>? RelatedArticles { get; init; }         // ["on_roasts", "..."]
+    public IEnumerable<string>? RelatedArticles { get; init; }
 
     [JsonPropertyName("sitemap")]
     public IEnumerable<TaxonomyTerm>? Sitemap { get; init; }
@@ -65,7 +65,7 @@ public record Article : IElementsModel
     public string? Summary { get; init; }
 
     [JsonPropertyName("teaser_image")]
-    public IEnumerable<Asset>? TeaserImage { get; init; }              // null in sample
+    public IEnumerable<Asset>? TeaserImage { get; init; }
 
     [JsonPropertyName("title")]
     public string? Title { get; init; }
