@@ -1,4 +1,3 @@
-using System.Text;
 using System.Text.Encodings.Web;
 
 namespace Kontent.Ai.Delivery.ContentItems.RichText.Resolution;

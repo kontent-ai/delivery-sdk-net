@@ -1,4 +1,4 @@
-﻿using Kontent.Ai.Delivery.ContentItems.RichText.Attributes;
+using Kontent.Ai.Delivery.ContentItems.RichText.Attributes;
 using System.Text.Json.Serialization;
 using System.Diagnostics;
 

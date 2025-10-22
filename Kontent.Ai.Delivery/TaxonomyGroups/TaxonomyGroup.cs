@@ -20,5 +20,5 @@ internal sealed record TaxonomyGroup : ITaxonomyGroup
 
     ITaxonomyGroupSystemAttributes ITaxonomyGroup.System => System;
 
-    IList<ITaxonomyTermDetails> ITaxonomyGroup.Terms => Terms.Cast<ITaxonomyTermDetails>().ToList();
+    IList<ITaxonomyTermDetails> ITaxonomyGroup.Terms => [.. Terms.Cast<ITaxonomyTermDetails>()];
 }

@@ -1,5 +1,3 @@
-using Kontent.Ai.Delivery.Abstractions;
-
 namespace Kontent.Ai.Delivery.ContentItems.RichText.Resolution;
 
 /// <summary>

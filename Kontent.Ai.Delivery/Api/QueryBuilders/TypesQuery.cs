@@ -108,5 +108,3 @@ internal sealed class TypesQuery(
         return result;
     }
 }
-
-

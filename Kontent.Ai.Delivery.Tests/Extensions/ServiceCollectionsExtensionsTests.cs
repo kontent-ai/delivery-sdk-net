@@ -5,14 +5,11 @@ using System.IO;
 using AngleSharp.Html.Parser;
 using Kontent.Ai.Delivery.Abstractions;
 using Kontent.Ai.Delivery.Api;
-using Kontent.Ai.Delivery.Configuration;
 using Kontent.Ai.Delivery.ContentItems;
 using Kontent.Ai.Delivery.Extensions;
-using Microsoft.Extensions.Http.Resilience;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Options;
-using Refit;
 using Xunit;
 
 namespace Kontent.Ai.Delivery.Tests.Extensions;

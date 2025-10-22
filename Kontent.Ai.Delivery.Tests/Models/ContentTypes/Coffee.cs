@@ -9,71 +9,71 @@ namespace Kontent.Ai.Delivery.Tests.Models.ContentTypes;
 public record Coffee : IElementsModel
 {
     [JsonPropertyName("altitude")]
-    public string Altitude { get; init; }
+    public required string Altitude { get; init; }
 
     [JsonPropertyName("country")]
-    public string Country { get; init; }
+    public required string Country { get; init; }
 
     [JsonPropertyName("farm")]
-    public string Farm { get; init; }
+    public required string Farm { get; init; }
 
     [JsonPropertyName("image")]
-    public IEnumerable<Asset> Image { get; init; }
+    public required IEnumerable<Asset> Image { get; init; }
 
     [JsonPropertyName("long_description")]
-    public string LongDescription { get; init; }
+    public required string LongDescription { get; init; }
 
     [JsonPropertyName("metadata__meta_description")]
-    public string MetadataMetaDescription { get; init; }
+    public required string MetadataMetaDescription { get; init; }
 
     [JsonPropertyName("metadata__meta_title")]
-    public string MetadataMetaTitle { get; init; }
+    public required string MetadataMetaTitle { get; init; }
 
     [JsonPropertyName("metadata__og_description")]
-    public string MetadataOgDescription { get; init; }
+    public required string MetadataOgDescription { get; init; }
 
     [JsonPropertyName("metadata__og_image")]
-    public IEnumerable<Asset> MetadataOgImage { get; init; }
+    public required IEnumerable<Asset> MetadataOgImage { get; init; }
 
     [JsonPropertyName("metadata__og_title")]
-    public string MetadataOgTitle { get; init; }
+    public required string MetadataOgTitle { get; init; }
 
     [JsonPropertyName("metadata__twitter_creator")]
-    public IEnumerable<Asset> MetadataTwitterCreator { get; init; }
+    public required IEnumerable<Asset> MetadataTwitterCreator { get; init; }
 
     [JsonPropertyName("metadata__twitter_description")]
-    public string MetadataTwitterDescription { get; init; }
+    public required string MetadataTwitterDescription { get; init; }
 
     [JsonPropertyName("metadata__twitter_image")]
-    public IEnumerable<Asset> MetadataTwitterImage { get; init; }
+    public required IEnumerable<Asset> MetadataTwitterImage { get; init; }
 
     [JsonPropertyName("metadata__twitter_site")]
-    public string MetadataTwitterSite { get; init; }
+    public required string MetadataTwitterSite { get; init; }
 
     [JsonPropertyName("metadata__twitter_title")]
-    public string MetadataTwitterTitle { get; init; }
+    public required string MetadataTwitterTitle { get; init; }
 
     [JsonPropertyName("price")]
     public decimal? Price { get; init; }
 
     [JsonPropertyName("processing")]
-    public IEnumerable<TaxonomyTerm> Processing { get; init; }
+    public required IEnumerable<TaxonomyTerm> Processing { get; init; }
 
     [JsonPropertyName("product_name")]
-    public string ProductName { get; init; }
+    public required string ProductName { get; init; }
 
     [JsonPropertyName("product_status")]
-    public IEnumerable<TaxonomyTerm> ProductStatus { get; init; }
+    public required IEnumerable<TaxonomyTerm> ProductStatus { get; init; }
 
     [JsonPropertyName("short_description")]
-    public string ShortDescription { get; init; }
+    public required string ShortDescription { get; init; }
 
     [JsonPropertyName("sitemap")]
-    public IEnumerable<TaxonomyTerm> Sitemap { get; init; }
+    public required IEnumerable<TaxonomyTerm> Sitemap { get; init; }
 
     [JsonPropertyName("url_pattern")]
-    public string UrlPattern { get; init; }
+    public required string UrlPattern { get; init; }
 
     [JsonPropertyName("variety")]
-    public string Variety { get; init; }
+    public required string Variety { get; init; }
 }

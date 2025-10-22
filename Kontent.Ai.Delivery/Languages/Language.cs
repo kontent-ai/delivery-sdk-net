@@ -1,4 +1,4 @@
-﻿using System.Text.Json.Serialization;
+using System.Text.Json.Serialization;
 using System.Diagnostics;
 
 namespace Kontent.Ai.Delivery.Languages;
@@ -12,7 +12,7 @@ internal sealed record Language : ILanguage
 {
     /// <inheritdoc/>
     [JsonPropertyName("system")]
-    public LanguageSystemAttributes System { get; init; }
+    public required LanguageSystemAttributes System { get; init; }
 
     ILanguageSystemAttributes ILanguage.System => System;
 }

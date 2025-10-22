@@ -9,29 +9,29 @@ namespace Kontent.Ai.Delivery.Tests.Models.ContentTypes;
 public record Cafe : IElementsModel
 {
     [JsonPropertyName("city")]
-    public string City { get; init; }
+    public required string City { get; init; }
 
     [JsonPropertyName("country")]
-    public string Country { get; init; }
+    public required string Country { get; init; }
 
     [JsonPropertyName("email")]
-    public string Email { get; init; }
+    public required string Email { get; init; }
 
     [JsonPropertyName("phone")]
-    public string Phone { get; init; }
+    public required string Phone { get; init; }
 
     [JsonPropertyName("photo")]
-    public IEnumerable<Asset> Photo { get; init; }
+    public required IEnumerable<Asset> Photo { get; init; }
 
     [JsonPropertyName("sitemap")]
-    public IEnumerable<TaxonomyTerm> Sitemap { get; init; }
+    public required IEnumerable<TaxonomyTerm> Sitemap { get; init; }
 
     [JsonPropertyName("state")]
-    public string State { get; init; }
+    public required string State { get; init; }
 
     [JsonPropertyName("street")]
-    public string Street { get; init; }
+    public required string Street { get; init; }
 
     [JsonPropertyName("zip_code")]
-    public string ZipCode { get; init; }
+    public required string ZipCode { get; init; }
 }

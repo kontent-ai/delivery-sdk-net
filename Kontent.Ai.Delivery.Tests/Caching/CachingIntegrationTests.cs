@@ -598,7 +598,7 @@ public class CachingIntegrationTests
 
     private class TestCacheManager : IDeliveryCacheManager
     {
-        public List<CachedItem> CachedItems { get; } = new();
+        public List<CachedItem> CachedItems { get; } = [];
 
         public Task<T?> GetAsync<T>(string cacheKey, System.Threading.CancellationToken cancellationToken = default) where T : class
         {
@@ -612,7 +612,7 @@ public class CachingIntegrationTests
             {
                 Key = cacheKey,
                 Value = value,
-                Dependencies = dependencies.ToList()
+                Dependencies = [.. dependencies]
             });
             return Task.CompletedTask;
         }
@@ -626,7 +626,7 @@ public class CachingIntegrationTests
         {
             public string Key { get; set; } = "";
             public object? Value { get; set; }
-            public List<string> Dependencies { get; set; } = new();
+            public List<string> Dependencies { get; set; } = [];
         }
     }
 

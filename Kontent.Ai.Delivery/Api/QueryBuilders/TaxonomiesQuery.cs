@@ -102,5 +102,3 @@ internal sealed class TaxonomiesQuery(
         return result;
     }
 }
-
-

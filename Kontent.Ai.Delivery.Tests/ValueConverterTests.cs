@@ -1,15 +1,11 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.IO;
-using System.Linq;
 using System.Threading.Tasks;
 using Kontent.Ai.Delivery.Abstractions;
 using Kontent.Ai.Delivery.Extensions;
-using Kontent.Ai.Delivery.Tests.Models.ContentTypes;
 using Microsoft.Extensions.DependencyInjection;
 using NodaTime;
 using RichardSzalay.MockHttp;
-using Xunit;
 
 namespace Kontent.Ai.Delivery.Tests;
 
@@ -47,14 +43,5 @@ public class ValueConverterTests
     {
         _guid = Guid.NewGuid().ToString();
         _baseUrl = $"https://deliver.kontent.ai/{_guid}";
-    }
-
-
-    private IDeliveryClient CreateClient(MockHttpMessageHandler mockHttp, DeliveryOptions options = null)
-    {
-        var services = new ServiceCollection();
-        var opts = options ?? new DeliveryOptions { EnvironmentId = _guid };
-        services.AddDeliveryClient(opts, configureHttpClient: b => b.ConfigurePrimaryHttpMessageHandler(() => mockHttp));
-        return services.BuildServiceProvider().GetRequiredService<IDeliveryClient>();
     }
 }

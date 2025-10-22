@@ -43,5 +43,3 @@ internal sealed class LanguagesQuery(IDeliveryApi api, Func<bool?> getDefaultWai
         return deliveryResult.Map(response => response.Languages.AsReadOnly());
     }
 }
-
-

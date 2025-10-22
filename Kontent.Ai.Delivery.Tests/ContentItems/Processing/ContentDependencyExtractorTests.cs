@@ -389,7 +389,7 @@ public class ContentDependencyExtractorTests
         public string Type { get; set; } = "rich_text";
         public IDictionary<Guid, IInlineImage> Images { get; set; } = new Dictionary<Guid, IInlineImage>();
         public IDictionary<Guid, IContentLink> Links { get; set; } = new Dictionary<Guid, IContentLink>();
-        public List<string> ModularContent { get; set; } = new List<string>();
+        public List<string> ModularContent { get; set; } = [];
     }
 
     private class MockInlineImage : IInlineImage

@@ -22,5 +22,5 @@ internal sealed record TaxonomyTermDetails() : ITaxonomyTermDetails
     /// <inheritdoc/>
     [JsonPropertyName("terms")]
     public IList<TaxonomyTermDetails> Terms { get; init; }
-    IList<ITaxonomyTermDetails> ITaxonomyTermDetails.Terms => Terms.Cast<ITaxonomyTermDetails>().ToList();
+    IList<ITaxonomyTermDetails> ITaxonomyTermDetails.Terms => [.. Terms.Cast<ITaxonomyTermDetails>()];
 }

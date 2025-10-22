@@ -1,7 +1,5 @@
 using System.Collections.Frozen;
 using System.Text;
-using Kontent.Ai.Delivery.Abstractions;
-using Kontent.Ai.Delivery.ContentItems.RichText;
 
 namespace Kontent.Ai.Delivery.ContentItems.RichText.Resolution;
 

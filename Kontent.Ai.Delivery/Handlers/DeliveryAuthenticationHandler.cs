@@ -98,8 +98,8 @@ public sealed class DeliveryAuthenticationHandler : DelegatingHandler
             var ub = new UriBuilder(request.RequestUri)
             {
                 Scheme = baseUri.Scheme,
-                Host   = baseUri.Host,
-                Port   = baseUri.IsDefaultPort ? -1 : baseUri.Port
+                Host = baseUri.Host,
+                Port = baseUri.IsDefaultPort ? -1 : baseUri.Port
             };
             request.RequestUri = ub.Uri;
         }

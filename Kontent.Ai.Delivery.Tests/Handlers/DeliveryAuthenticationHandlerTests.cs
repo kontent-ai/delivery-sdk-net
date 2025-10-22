@@ -397,7 +397,7 @@ public class DeliveryAuthenticationHandlerTests
         where TOptions : class
     {
         private TOptions _currentValue;
-        private readonly Dictionary<string, TOptions> _namedOptions = new();
+        private readonly Dictionary<string, TOptions> _namedOptions = [];
 
         public TestOptionsMonitor(TOptions currentValue)
         {

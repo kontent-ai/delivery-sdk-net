@@ -35,4 +35,3 @@ public interface IHtmlResolver
     /// <returns>The HTML representation of the rich text content.</returns>
     ValueTask<string> ResolveAsync(IRichTextContent richText);
 }
-

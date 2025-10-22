@@ -5,7 +5,6 @@ using System.Threading;
 using AngleSharp.Html.Parser;
 using Microsoft.Extensions.Options;
 using Kontent.Ai.Delivery.Abstractions.ContentItems.Processing;
-using Kontent.Ai.Delivery.ContentItems.Processing;
 using Kontent.Ai.Delivery.ContentItems.ContentLinks;
 using Kontent.Ai.Delivery.ContentItems.RichText.Blocks;
 
@@ -63,9 +62,7 @@ internal sealed class ElementsPostProcessor(
         var elementsType = item.Elements.GetType();
         var writableProperties = _writablePropertiesCache.GetOrAdd(
             elementsType,
-            static t => t.GetProperties(BindingFlags.Instance | BindingFlags.Public)
-                .Where(p => p.CanWrite)
-                .ToArray());
+            static t => [.. t.GetProperties(BindingFlags.Instance | BindingFlags.Public).Where(p => p.CanWrite)]);
 
         var resolvingContext = CreateResolvingContext(modularContent);
 
@@ -227,21 +224,6 @@ internal sealed class ElementsPostProcessor(
             }
         };
 
-    // Simple property type predicates
-    private static bool IsRichTextProperty(PropertyInfo property) =>
-        typeof(IRichTextContent).IsAssignableFrom(property.PropertyType);
-
-    private static bool IsAssetProperty(PropertyInfo property) =>
-        GetEnumerableElementType(property.PropertyType) is Type elementType &&
-        (typeof(IAsset).IsAssignableFrom(elementType) || elementType == typeof(Asset));
-
-    private static bool IsTaxonomyProperty(PropertyInfo property) =>
-        GetEnumerableElementType(property.PropertyType) is Type elementType &&
-        typeof(ITaxonomyTerm).IsAssignableFrom(elementType);
-
-    private static bool IsDateTimeContentProperty(PropertyInfo property) =>
-        typeof(IDateTimeContent).IsAssignableFrom(property.PropertyType);
-
     // Group processors
     private Task ProcessRichTextGroupAsync(
         IReadOnlyList<PropertyInfo> properties,
@@ -295,18 +277,6 @@ internal sealed class ElementsPostProcessor(
             : type.GetInterfaces().FirstOrDefault(i => i.IsGenericType && i.GetGenericTypeDefinition() == typeof(IEnumerable<>));
 
         return enumerableInterface?.GetGenericArguments().FirstOrDefault();
-    }
-
-    // JSON extraction helpers
-    private static bool TryGetStringValue(JsonElement element, out string value)
-    {
-        if (element.TryGetProperty("value", out var valueEl) && valueEl.ValueKind == JsonValueKind.String)
-        {
-            value = valueEl.GetString() ?? string.Empty;
-            return true;
-        }
-        value = string.Empty;
-        return false;
     }
 
     private static bool TryGetArrayValue(JsonElement element, out JsonElement arrayValue)
@@ -364,9 +334,9 @@ internal sealed class ElementsPostProcessor(
     private static List<string> DeserializeModularContent(JsonElement root)
     {
         if (!root.TryGetProperty("modular_content", out var modularEl) || modularEl.ValueKind != JsonValueKind.Array)
-            return new List<string>();
+            return [];
         var list = JsonSerializer.Deserialize<List<string>>(modularEl.GetRawText());
-        return list ?? new List<string>();
+        return list ?? [];
     }
 
     private IReadOnlyList<Asset> DeserializeAssets(
@@ -475,6 +445,6 @@ internal sealed class ElementsPostProcessor(
         public string Value { get; set; } = string.Empty;
         public IDictionary<Guid, IInlineImage> Images { get; set; } = new Dictionary<Guid, IInlineImage>();
         public IDictionary<Guid, IContentLink> Links { get; set; } = new Dictionary<Guid, IContentLink>();
-        public List<string> ModularContent { get; set; } = new List<string>();
+        public List<string> ModularContent { get; set; } = [];
     }
 }

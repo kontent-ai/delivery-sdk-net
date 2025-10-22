@@ -4,14 +4,10 @@ using Kontent.Ai.Delivery.Abstractions;
 using BenchmarkDotNet.Attributes;
 using RichardSzalay.MockHttp;
 using System.Threading.Tasks;
-using BenchmarkDotNet.Jobs;
-using Kontent.Ai.Delivery;
 using System.Collections.Generic;
 using Kontent.Ai.Delivery.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Kontent.Ai.Delivery.Extensions;
-using Kontent.Ai.Delivery.ContentItems.ContentLinks;
-using Kontent.Ai.Delivery.ContentItems;
 using Kontent.Ai.Delivery.Benchmarks.ContentTypes;
 
 namespace Kontent.Ai.Delivery.Benchmarks;

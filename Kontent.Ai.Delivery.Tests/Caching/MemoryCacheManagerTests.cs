@@ -3,7 +3,6 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
-using Kontent.Ai.Delivery.Abstractions;
 using Kontent.Ai.Delivery.Caching;
 using Microsoft.Extensions.Caching.Memory;
 using Xunit;
@@ -714,7 +713,7 @@ public class MemoryCacheManagerTests : IDisposable
                 Description = "Nested description",
                 Tags = new[] { "tag1", "tag2", "tag3" }
             },
-            Items = new List<int> { 1, 2, 3, 4, 5 }
+            Items = [1, 2, 3, 4, 5]
         };
 
         // Act

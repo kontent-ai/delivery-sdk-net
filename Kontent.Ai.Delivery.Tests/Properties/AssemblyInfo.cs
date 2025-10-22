@@ -1,4 +1,4 @@
-﻿using Kontent.Ai.Delivery;
+using Kontent.Ai.Delivery;
 using System;
 using System.Reflection;
 using System.Runtime.InteropServices;

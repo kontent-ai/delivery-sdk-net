@@ -1,4 +1,4 @@
-﻿using Kontent.Ai.Delivery.Extensions;
+using Kontent.Ai.Delivery.Extensions;
 using System.Diagnostics;
 using Xunit;
 

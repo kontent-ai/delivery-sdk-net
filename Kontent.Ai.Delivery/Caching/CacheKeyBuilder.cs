@@ -1,8 +1,5 @@
 using System.Security.Cryptography;
 using System.Text;
-using Kontent.Ai.Delivery.Api.QueryParams.Items;
-using Kontent.Ai.Delivery.Api.QueryParams.TaxonomyGroups;
-using Kontent.Ai.Delivery.Api.QueryParams.Types;
 
 namespace Kontent.Ai.Delivery.Caching;
 

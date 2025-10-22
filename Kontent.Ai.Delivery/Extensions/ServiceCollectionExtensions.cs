@@ -1,5 +1,4 @@
 using AngleSharp.Html.Parser;
-using Kontent.Ai.Delivery.Abstractions;
 using Kontent.Ai.Delivery.Caching;
 using Kontent.Ai.Delivery.Configuration;
 using Kontent.Ai.Delivery.ContentItems;
@@ -13,7 +12,6 @@ using Microsoft.Extensions.DependencyInjection.Extensions;
 using Microsoft.Extensions.Http.Resilience;
 using Microsoft.Extensions.Options;
 using Polly;
-using Refit;
 
 namespace Kontent.Ai.Delivery.Extensions;
 
@@ -253,32 +251,6 @@ public static class ServiceCollectionExtensions
         return services;
     }
 
-    /// <summary>
-    /// Core registration method containing all service registrations.
-    /// </summary>
-    private static IServiceCollection RegisterServices(
-        this IServiceCollection services,
-        Action<IHttpClientBuilder>? configureHttpClient = null,
-        Action<ResiliencePipelineBuilder<HttpResponseMessage>>? configureResilience = null,
-        Action<RefitSettings>? configureRefit = null)
-    {
-        services.AddOptions<DeliveryOptions>()
-            .ValidateDataAnnotations()
-            .ValidateOnStart();
-
-        RegisterDependencies(services);
-        RegisterHttpClient(services, configureHttpClient, configureResilience, configureRefit);
-
-        // Register factory
-        services.TryAddSingleton<IDeliveryClientFactory, DeliveryClientFactory>();
-
-        // Register default client accessor for backward compatibility
-        services.TryAddSingleton<IDeliveryClient>(sp =>
-            sp.GetRequiredKeyedService<IDeliveryClient>(Abstractions.Options.DefaultName));
-
-        return services;
-    }
-
     private static void RegisterDependencies(IServiceCollection services)
     {
         // JSON serialization
@@ -438,9 +410,6 @@ public static class ServiceCollectionExtensions
                 optionsName));
         }
     }
-
-    private static IServiceCollection RegisterOptions(this IServiceCollection services, DeliveryOptions options) =>
-        services.Configure<DeliveryOptions>(o => o.Configure(options));
 
     private static void ConfigureDefaultResilience(ResiliencePipelineBuilder<HttpResponseMessage> builder)
     {
