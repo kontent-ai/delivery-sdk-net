@@ -41,9 +41,9 @@ internal sealed record ContentItemSystemAttributes : IContentItemSystemAttribute
 
     /// <inheritdoc/>
     [JsonPropertyName("workflow")]
-    public required string Workflow { get; init; }
+    public string? Workflow { get; init; }
 
     /// <inheritdoc/>
     [JsonPropertyName("workflow_step")]
-    public required string WorkflowStep { get; init; }
+    public string? WorkflowStep { get; init; } // TODO: WF and step are not present on components in linked items, fix nullability
 }
