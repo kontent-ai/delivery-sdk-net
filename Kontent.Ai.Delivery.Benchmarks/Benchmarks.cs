@@ -1,5 +1,3 @@
-using System;
-
 namespace Kontent.Ai.Delivery.Benchmarks;
 
 internal static class Benchmarks

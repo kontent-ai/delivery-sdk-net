@@ -1,7 +1,4 @@
-using System.Collections.Generic;
 using System.Text.Json;
-using System.Threading;
-using System.Threading.Tasks;
 using Kontent.Ai.Delivery.Abstractions.ContentItems.Processing;
 
 namespace Kontent.Ai.Delivery.Abstractions;

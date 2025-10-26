@@ -1,5 +1,3 @@
-using System;
-using System.Collections.Generic;
 using Kontent.Ai.Urls.ImageTransformation;
 using Xunit;
 

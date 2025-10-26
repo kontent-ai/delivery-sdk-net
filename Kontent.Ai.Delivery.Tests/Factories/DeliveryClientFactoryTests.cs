@@ -1,4 +1,3 @@
-using System;
 using FluentAssertions;
 using Kontent.Ai.Delivery.Abstractions;
 using Microsoft.Extensions.DependencyInjection;

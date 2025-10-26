@@ -1,5 +1,3 @@
-using System;
-using System.Collections.Generic;
 using System.ComponentModel.DataAnnotations;
 using Kontent.Ai.Delivery.Abstractions;
 using Xunit;

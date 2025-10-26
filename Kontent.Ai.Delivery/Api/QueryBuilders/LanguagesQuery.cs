@@ -1,5 +1,3 @@
-using System.Threading;
-
 namespace Kontent.Ai.Delivery.Api.QueryBuilders;
 
 /// <inheritdoc cref="ILanguagesQuery"/>

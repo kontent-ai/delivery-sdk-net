@@ -1,4 +1,3 @@
-using System.Threading;
 using System.Runtime.CompilerServices;
 
 namespace Kontent.Ai.Delivery.Api.QueryBuilders;

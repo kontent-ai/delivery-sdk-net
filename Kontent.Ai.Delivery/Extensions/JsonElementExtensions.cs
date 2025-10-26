@@ -1,6 +1,6 @@
 using System.Text.Json;
 
-namespace Kontent.Ai.Delivery.Serialization.Converters;
+namespace Kontent.Ai.Delivery.Extensions;
 
 /// <summary>
 /// Extension methods for JsonElement to support content item deserialization.

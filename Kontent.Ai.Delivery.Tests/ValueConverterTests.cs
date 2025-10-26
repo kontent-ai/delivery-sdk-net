@@ -1,11 +1,5 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Threading.Tasks;
-using Kontent.Ai.Delivery.Abstractions;
-using Kontent.Ai.Delivery.Extensions;
-using Microsoft.Extensions.DependencyInjection;
+﻿using Kontent.Ai.Delivery.Abstractions;
 using NodaTime;
-using RichardSzalay.MockHttp;
 
 namespace Kontent.Ai.Delivery.Tests;
 

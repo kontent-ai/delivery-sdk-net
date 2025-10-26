@@ -1,10 +1,6 @@
-﻿using System;
-using System.IO;
-using Kontent.Ai.Delivery.Abstractions;
+﻿using Kontent.Ai.Delivery.Abstractions;
 using BenchmarkDotNet.Attributes;
 using RichardSzalay.MockHttp;
-using System.Threading.Tasks;
-using System.Collections.Generic;
 using Kontent.Ai.Delivery.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Kontent.Ai.Delivery.Extensions;

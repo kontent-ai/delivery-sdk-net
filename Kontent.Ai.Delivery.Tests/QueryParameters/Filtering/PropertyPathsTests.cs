@@ -1,4 +1,3 @@
-using System;
 using Kontent.Ai.Delivery.Abstractions;
 using Xunit;
 

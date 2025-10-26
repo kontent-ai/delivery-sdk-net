@@ -1,6 +1,3 @@
-using System;
-using System.Collections.Generic;
-using System.Linq;
 using Kontent.Ai.Delivery.Abstractions;
 
 namespace Kontent.Ai.Delivery.Tests.Models.ContentTypes;

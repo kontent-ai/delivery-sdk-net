@@ -1,6 +1,5 @@
 using System.Text;
 using System.Text.Json;
-using System.Threading;
 using Microsoft.Extensions.Caching.Distributed;
 
 namespace Kontent.Ai.Delivery.Caching;

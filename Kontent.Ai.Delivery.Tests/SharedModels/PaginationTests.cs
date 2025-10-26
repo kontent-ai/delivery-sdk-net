@@ -1,4 +1,3 @@
-using System;
 using Kontent.Ai.Delivery.SharedModels;
 using Newtonsoft.Json;
 using Xunit;
