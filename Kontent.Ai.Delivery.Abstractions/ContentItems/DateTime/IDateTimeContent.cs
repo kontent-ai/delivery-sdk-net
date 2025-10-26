@@ -1,5 +1,3 @@
-using System;
-
 namespace Kontent.Ai.Delivery.Abstractions;
 
 /// <summary>
@@ -10,10 +8,10 @@ public interface IDateTimeContent
     /// <summary>
     /// Gets the value of DateTime element
     /// </summary>
-    public DateTime? Value { get; }
+    DateTime? Value { get; }
 
     /// <summary>
     /// Gets the Timezone of DateTime element
     /// </summary>
-    public string DisplayTimezone { get; }
+    string? DisplayTimezone { get; }
 }

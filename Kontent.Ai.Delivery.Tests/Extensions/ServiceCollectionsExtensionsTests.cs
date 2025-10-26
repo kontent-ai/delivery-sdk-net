@@ -1,7 +1,4 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Collections.ObjectModel;
-using System.IO;
+﻿using System.Collections.ObjectModel;
 using AngleSharp.Html.Parser;
 using Kontent.Ai.Delivery.Abstractions;
 using Kontent.Ai.Delivery.Api;
@@ -190,7 +187,7 @@ public class ServiceCollectionsExtensionsTests
 
     [Theory]
     [MemberData(nameof(DeliveryOptionsConfigurationParameters))]
-    public void AddDeliveryClientWithConfiguration_AllServicesAreRegistered(string fileNamePostfix, string customSectionName = null)
+    public void AddDeliveryClientWithConfiguration_AllServicesAreRegistered(string fileNamePostfix, string? customSectionName = null)
     {
         var jsonConfigurationPath = Path.Combine(
             Environment.CurrentDirectory,

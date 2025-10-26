@@ -5,33 +5,20 @@ namespace Kontent.Ai.Delivery.ContentItems.ContentLinks;
 
 /// <inheritdoc cref="IContentLink"/>
 [DebuggerDisplay("Codename = {" + nameof(IContentLink.Codename) + "}")]
-[method: JsonConstructor]
-internal sealed class ContentLink() : IContentLink // TODO: improve, nullability etc.
+internal sealed record ContentLink() : IContentLink // TODO: improve, nullability etc.
 {
     /// <inheritdoc/>
-    Guid IContentLink.Id
-    {
-        get; set;
-    }
+    Guid IContentLink.Id { get; set; }
 
     /// <inheritdoc/>
     [JsonPropertyName("codename")]
-    public string Codename
-    {
-        get; set;
-    }
+    public required string Codename { get; init; }
 
     /// <inheritdoc/>
     [JsonPropertyName("url_slug")]
-    public string UrlSlug
-    {
-        get; set;
-    }
+    public required string UrlSlug { get; init; }
 
     /// <inheritdoc/>
     [JsonPropertyName("type")]
-    public string ContentTypeCodename
-    {
-        get; set;
-    }
+    public required string ContentTypeCodename { get; init; }
 }

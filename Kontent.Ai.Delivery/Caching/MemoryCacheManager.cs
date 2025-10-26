@@ -1,5 +1,4 @@
 using System.Collections.Concurrent;
-using System.Threading;
 using Microsoft.Extensions.Caching.Memory;
 using Microsoft.Extensions.Primitives;
 
@@ -30,51 +29,41 @@ namespace Kontent.Ai.Delivery.Caching;
 /// </list>
 /// </para>
 /// </remarks>
-public sealed class MemoryCacheManager : IDeliveryCacheManager, IDisposable
+/// <remarks>
+/// Initializes a new instance of the <see cref="MemoryCacheManager"/> class.
+/// </remarks>
+/// <param name="memoryCache">The underlying memory cache instance.</param>
+/// <param name="defaultExpiration">
+/// Default expiration time for cache entries. If null, defaults to 1 hour.
+/// </param>
+/// <exception cref="ArgumentNullException">
+/// Thrown when <paramref name="memoryCache"/> is null.
+/// </exception>
+public sealed class MemoryCacheManager(IMemoryCache memoryCache, TimeSpan? defaultExpiration = null) : IDeliveryCacheManager, IDisposable
 {
-    private readonly IMemoryCache _cache;
-    private readonly TimeSpan _defaultExpiration;
+    private readonly IMemoryCache _cache = memoryCache ?? throw new ArgumentNullException(nameof(memoryCache));
+    private readonly TimeSpan _defaultExpiration = defaultExpiration ?? TimeSpan.FromHours(1);
 
     // Reverse index: dependency key -> set of cache keys that depend on it
     // Using ConcurrentDictionary for thread-safe access with HashSet for efficient lookups
-    private readonly ConcurrentDictionary<string, HashSet<string>> _reverseIndex;
+    private readonly ConcurrentDictionary<string, HashSet<string>> _reverseIndex = new ConcurrentDictionary<string, HashSet<string>>(StringComparer.OrdinalIgnoreCase);
 
     // Locks for synchronizing reverse index updates per dependency key
     // This prevents race conditions when multiple threads update the same dependency
-    private readonly ConcurrentDictionary<string, SemaphoreSlim> _dependencyLocks;
+    private readonly ConcurrentDictionary<string, SemaphoreSlim> _dependencyLocks = new ConcurrentDictionary<string, SemaphoreSlim>(StringComparer.OrdinalIgnoreCase);
 
     // Track all CancellationTokenSources for proper disposal
-    private readonly ConcurrentDictionary<string, CancellationTokenSource> _cancellationTokens;
+    private readonly ConcurrentDictionary<string, CancellationTokenSource> _cancellationTokens = new ConcurrentDictionary<string, CancellationTokenSource>(StringComparer.OrdinalIgnoreCase);
 
     // Track dependency CancellationTokenSources separately for proper lifecycle management
     // These are stored in both _cache and this dictionary to ensure cleanup when evicted
-    private readonly ConcurrentDictionary<string, CancellationTokenSource> _dependencyCancellationTokens;
+    private readonly ConcurrentDictionary<string, CancellationTokenSource> _dependencyCancellationTokens = new ConcurrentDictionary<string, CancellationTokenSource>(StringComparer.OrdinalIgnoreCase);
 
     // Prefix for storing CancellationTokenSource in cache (to differentiate from actual values)
     private const string CancellationTokenPrefix = "__cts:";
 
     // Flag to track disposal
     private bool _disposed;
-
-    /// <summary>
-    /// Initializes a new instance of the <see cref="MemoryCacheManager"/> class.
-    /// </summary>
-    /// <param name="memoryCache">The underlying memory cache instance.</param>
-    /// <param name="defaultExpiration">
-    /// Default expiration time for cache entries. If null, defaults to 1 hour.
-    /// </param>
-    /// <exception cref="ArgumentNullException">
-    /// Thrown when <paramref name="memoryCache"/> is null.
-    /// </exception>
-    public MemoryCacheManager(IMemoryCache memoryCache, TimeSpan? defaultExpiration = null)
-    {
-        _cache = memoryCache ?? throw new ArgumentNullException(nameof(memoryCache));
-        _defaultExpiration = defaultExpiration ?? TimeSpan.FromHours(1);
-        _reverseIndex = new ConcurrentDictionary<string, HashSet<string>>(StringComparer.OrdinalIgnoreCase);
-        _dependencyLocks = new ConcurrentDictionary<string, SemaphoreSlim>(StringComparer.OrdinalIgnoreCase);
-        _cancellationTokens = new ConcurrentDictionary<string, CancellationTokenSource>(StringComparer.OrdinalIgnoreCase);
-        _dependencyCancellationTokens = new ConcurrentDictionary<string, CancellationTokenSource>(StringComparer.OrdinalIgnoreCase);
-    }
 
     /// <inheritdoc />
     public Task<T?> GetAsync<T>(string cacheKey, CancellationToken cancellationToken = default)

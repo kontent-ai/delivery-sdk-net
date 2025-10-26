@@ -1,4 +1,3 @@
-using System;
 using System.Globalization;
 using Kontent.Ai.Delivery.Api.QueryBuilders.Filtering;
 using Xunit;

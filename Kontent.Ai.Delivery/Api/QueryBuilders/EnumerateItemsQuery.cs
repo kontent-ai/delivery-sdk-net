@@ -1,4 +1,3 @@
-using System.Threading;
 using System.Runtime.CompilerServices;
 using Kontent.Ai.Delivery.Api.QueryBuilders.Filtering;
 

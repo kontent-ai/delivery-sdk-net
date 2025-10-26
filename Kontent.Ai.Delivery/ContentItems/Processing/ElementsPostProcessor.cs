@@ -1,7 +1,6 @@
 using System.Collections.Concurrent;
 using System.Reflection;
 using System.Text.Json;
-using System.Threading;
 using AngleSharp.Html.Parser;
 using Microsoft.Extensions.Options;
 using Kontent.Ai.Delivery.Abstractions.ContentItems.Processing;

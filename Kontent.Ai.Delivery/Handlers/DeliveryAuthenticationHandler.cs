@@ -1,6 +1,5 @@
 using System.Net.Http.Headers;
 using Microsoft.Extensions.Options;
-using System.Threading;
 
 namespace Kontent.Ai.Delivery.Handlers;
 

@@ -7,22 +7,16 @@ namespace Kontent.Ai.Delivery.Configuration;
 /// This enables reactive configuration updates while maintaining named option isolation.
 /// </summary>
 /// <typeparam name="TOptions">The options type.</typeparam>
-internal sealed class NamedOptionsMonitor<TOptions> : IOptionsMonitor<TOptions>
+/// <remarks>
+/// Initializes a new instance of the <see cref="NamedOptionsMonitor{TOptions}"/> class.
+/// </remarks>
+/// <param name="monitor">The underlying options monitor.</param>
+/// <param name="name">The name of the options instance to retrieve.</param>
+internal sealed class NamedOptionsMonitor<TOptions>(IOptionsMonitor<TOptions> monitor, string name) : IOptionsMonitor<TOptions>
     where TOptions : class
 {
-    private readonly IOptionsMonitor<TOptions> _monitor;
-    private readonly string _name;
-
-    /// <summary>
-    /// Initializes a new instance of the <see cref="NamedOptionsMonitor{TOptions}"/> class.
-    /// </summary>
-    /// <param name="monitor">The underlying options monitor.</param>
-    /// <param name="name">The name of the options instance to retrieve.</param>
-    public NamedOptionsMonitor(IOptionsMonitor<TOptions> monitor, string name)
-    {
-        _monitor = monitor ?? throw new ArgumentNullException(nameof(monitor));
-        _name = name ?? throw new ArgumentNullException(nameof(name));
-    }
+    private readonly IOptionsMonitor<TOptions> _monitor = monitor ?? throw new ArgumentNullException(nameof(monitor));
+    private readonly string _name = name ?? throw new ArgumentNullException(nameof(name));
 
     /// <summary>
     /// Gets the current value of the named options instance.

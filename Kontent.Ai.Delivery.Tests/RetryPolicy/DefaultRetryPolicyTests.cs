@@ -1,8 +1,4 @@
-﻿using System;
-using System.IO;
-using System.Net;
-using System.Net.Http;
-using System.Threading.Tasks;
+﻿using System.Net;
 using Kontent.Ai.Delivery.Abstractions;
 using Kontent.Ai.Delivery.Extensions;
 using Microsoft.Extensions.DependencyInjection;
@@ -67,7 +63,7 @@ public class DefaultRetryPolicyTests
                 .Respond(HttpStatusCode.InternalServerError);
 
         mockHttp.Expect(HttpMethod.Get, itemsUrl)
-                .Respond("application/json", itemsJson);   
+                .Respond("application/json", itemsJson);
 
         var behavior = new TestBehaviorHandler();
         var client = BuildClient(env, mockHttp, behavior, b =>

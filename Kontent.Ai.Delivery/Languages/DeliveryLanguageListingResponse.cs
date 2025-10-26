@@ -7,14 +7,14 @@ internal sealed record DeliveryLanguageListingResponse : IDeliveryLanguageListin
 {
     /// <inheritdoc/>
     [JsonPropertyName("languages")]
-    public IList<Language> Languages
+    public IList<Language>? Languages
     {
         get; init;
     }
 
     /// <inheritdoc/>
     [JsonPropertyName("pagination")]
-    public Pagination Pagination
+    public Pagination? Pagination
     {
         get; init;
     }

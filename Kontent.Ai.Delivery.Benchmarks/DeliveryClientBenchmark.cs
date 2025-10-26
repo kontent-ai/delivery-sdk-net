@@ -1,10 +1,6 @@
-﻿using System;
-using System.IO;
-using Kontent.Ai.Delivery.Abstractions;
+﻿using Kontent.Ai.Delivery.Abstractions;
 using BenchmarkDotNet.Attributes;
 using RichardSzalay.MockHttp;
-using System.Threading.Tasks;
-using System.Collections.Generic;
 using Kontent.Ai.Delivery.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Kontent.Ai.Delivery.Extensions;
@@ -14,7 +10,7 @@ namespace Kontent.Ai.Delivery.Benchmarks;
 
 public class DeliveryClientBenchmark
 {
-    private IDeliveryClient _client;
+    private IDeliveryClient? _client;
 
     private static IDeliveryClient CreateClient(MockHttpMessageHandler mockHttp, DeliveryOptions options)
     {
@@ -57,7 +53,7 @@ public class DeliveryClientBenchmark
         var _deliveryOptions = DeliveryOptionsBuilder.CreateInstance().WithEnvironmentId(environmentId).UseProductionApi().Build();
         _client = CreateClient(mockHttp, _deliveryOptions);
     }
-    
+
     [Benchmark]
     public async Task<IDeliveryResult<IContentItem<Article>>> GetItemAsync()
     {

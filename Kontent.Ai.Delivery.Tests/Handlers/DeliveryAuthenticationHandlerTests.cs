@@ -1,8 +1,3 @@
-using System;
-using System.Collections.Generic;
-using System.Net.Http;
-using System.Threading;
-using System.Threading.Tasks;
 using Microsoft.Extensions.Options;
 using Xunit;
 using Kontent.Ai.Delivery.Abstractions;
@@ -358,8 +353,10 @@ public class DeliveryAuthenticationHandlerTests
     private static DeliveryAuthenticationHandler CreateHandler(DeliveryOptions options)
     {
         var optionsMonitor = new TestOptionsMonitor<DeliveryOptions>(options);
-        var handler = new DeliveryAuthenticationHandler(optionsMonitor);
-        handler.InnerHandler = new TestHandler();
+        var handler = new DeliveryAuthenticationHandler(optionsMonitor)
+        {
+            InnerHandler = new TestHandler()
+        };
         return handler;
     }
 
@@ -369,14 +366,11 @@ public class DeliveryAuthenticationHandlerTests
     {
         // Use reflection to invoke the protected SendAsync method
         var sendAsyncMethod = typeof(DeliveryAuthenticationHandler)
-            .GetMethod("SendAsync", System.Reflection.BindingFlags.NonPublic | System.Reflection.BindingFlags.Instance);
-
-        if (sendAsyncMethod == null)
-            throw new InvalidOperationException("SendAsync method not found");
-
-        var task = (Task<HttpResponseMessage>)sendAsyncMethod.Invoke(
+            .GetMethod("SendAsync", System.Reflection.BindingFlags.NonPublic | System.Reflection.BindingFlags.Instance) ?? throw new InvalidOperationException("SendAsync method not found");
+        var task = sendAsyncMethod.Invoke(
             handler,
-            [request, CancellationToken.None]);
+            [request, CancellationToken.None]) as Task<HttpResponseMessage>
+            ?? throw new InvalidOperationException("SendAsync returned null");
 
         return await task;
     }
@@ -393,16 +387,11 @@ public class DeliveryAuthenticationHandlerTests
     }
 
     // Test implementation of IOptionsMonitor
-    private class TestOptionsMonitor<TOptions> : IOptionsMonitor<TOptions>
+    private class TestOptionsMonitor<TOptions>(TOptions currentValue) : IOptionsMonitor<TOptions>
         where TOptions : class
     {
-        private TOptions _currentValue;
+        private TOptions _currentValue = currentValue;
         private readonly Dictionary<string, TOptions> _namedOptions = [];
-
-        public TestOptionsMonitor(TOptions currentValue)
-        {
-            _currentValue = currentValue;
-        }
 
         public TOptions CurrentValue => _currentValue;
 

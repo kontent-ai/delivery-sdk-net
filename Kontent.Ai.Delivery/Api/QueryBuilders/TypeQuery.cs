@@ -1,4 +1,3 @@
-using System.Threading;
 using Kontent.Ai.Delivery.Caching;
 
 namespace Kontent.Ai.Delivery.Api.QueryBuilders;

@@ -10,5 +10,5 @@ internal sealed record MultipleChoiceElement() : ContentElement, IMultipleChoice
 {
     /// <inheritdoc/>
     [JsonPropertyName("options")]
-    public IList<IMultipleChoiceOption> Options { get; init; }
+    public IList<IMultipleChoiceOption>? Options { get; init; }
 }

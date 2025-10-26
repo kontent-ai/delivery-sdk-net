@@ -1,5 +1,3 @@
-using System.Collections.Generic;
-
 namespace Kontent.Ai.Delivery.Abstractions;
 
 /// <summary>
@@ -15,6 +13,7 @@ public interface IContentItemSystemAttributes : ISystemAttributes
     /// <summary>
     /// Gets a list of codenames of sitemap items to which the content item is assigned.
     /// </summary>
+    [Obsolete("Sitemap locations are deprecated and will be removed in the future.")]
     IList<string>? SitemapLocation { get; }
 
     /// <summary>

@@ -1,9 +1,6 @@
-﻿using System.Text.Json.Serialization;
-
-namespace Kontent.Ai.Delivery.ContentItems.RichText;
+﻿namespace Kontent.Ai.Delivery.ContentItems.RichText;
 
 /// <inheritdoc cref="IRichTextContent" />
-[method: JsonConstructor] // TODO: consider using this in other classes instead of explicit implementation
 public class RichTextContent() : List<IRichTextBlock>, IRichTextContent
 {
     /// <summary>

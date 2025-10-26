@@ -16,6 +16,7 @@ This guide provides comprehensive coverage of the Kontent.ai Delivery SDK's filt
   - [Text Search](#text-search)
   - [Multi-Value Operators](#multi-value-operators)
   - [Null and Empty Checks](#null-and-empty-checks)
+- [.Where with Preconstructed Filters](#where-with-preconstructed-filters)
 - [Combining Filters](#combining-filters)
 - [Advanced Query Patterns](#advanced-query-patterns)
 - [Performance Considerations](#performance-considerations)
@@ -122,6 +123,35 @@ Match items where a property does not equal a specific value:
 .Filter(f => f.NotEquals(ItemSystemPath.Collection, "archived"))
 .Filter(f => f.NotEquals(Elements.GetPath("status"), "draft"))
 ```
+
+## .Where with Preconstructed Filters
+
+In addition to the lambda-based `Filter(...)` helper, you can pass an existing `IFilter` instance directly via `.Where(...)`. This is useful when:
+
+- **Reusing** the same filter across queries
+- **Building conditionally** based on runtime input
+- **Sharing** filters between methods or modules
+
+```csharp
+// Create filters explicitly
+var typeIsArticle = new Filter(
+    ItemSystemPath.Type,
+    FilterOperator.Equals,
+    StringValue.From("article"));
+
+var priceInRange = new Filter(
+    Elements.GetPath("price"),
+    FilterOperator.Range,
+    NumericRangeValue.From((100.0, 500.0)));
+
+// Apply prebuilt filters using .Where
+var result = await client.GetItems<Product>()
+    .Where(typeIsArticle)
+    .Where(priceInRange)
+    .ExecuteAsync();
+```
+
+You can freely combine `.Where(prebuiltFilter)` with `.Filter(f => ...)` in the same query; all conditions are ANDed together.
 
 ### Comparison Operators
 

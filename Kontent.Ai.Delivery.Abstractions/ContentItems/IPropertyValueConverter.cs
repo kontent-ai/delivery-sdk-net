@@ -1,5 +1,3 @@
-using System.Threading.Tasks;
-
 namespace Kontent.Ai.Delivery.Abstractions;
 
 /// <summary>

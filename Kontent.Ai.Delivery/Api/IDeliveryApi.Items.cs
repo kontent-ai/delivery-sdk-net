@@ -1,5 +1,4 @@
 using Kontent.Ai.Delivery.ContentItems;
-using System.Threading;
 
 namespace Kontent.Ai.Delivery.Api;
 

@@ -13,15 +13,15 @@ internal sealed record TaxonomyGroupSystemAttributes() : ITaxonomyGroupSystemAtt
 {
     /// <inheritdoc/>
     [JsonPropertyName("id")]
-    public string Id { get; init; }
+    public string? Id { get; init; }
 
     /// <inheritdoc/>
     [JsonPropertyName("name")]
-    public string Name { get; init; }
+    public string? Name { get; init; }
 
     /// <inheritdoc/>
     [JsonPropertyName("codename")]
-    public string Codename { get; init; }
+    public string? Codename { get; init; }
 
     /// <inheritdoc/>
     [JsonPropertyName("last_modified")]

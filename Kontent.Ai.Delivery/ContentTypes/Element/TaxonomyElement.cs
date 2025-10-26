@@ -10,5 +10,5 @@ internal sealed record TaxonomyElement() : ContentElement, ITaxonomyElement
 {
     /// <inheritdoc/>
     [JsonPropertyName("taxonomy_group")]
-    public string TaxonomyGroup { get; init; }
+    public string? TaxonomyGroup { get; init; }
 }

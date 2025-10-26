@@ -2,18 +2,11 @@ using System.Text.Json.Serialization;
 
 namespace Kontent.Ai.Delivery.ContentItems.DateTimes;
 
-[method: JsonConstructor]
-internal sealed class DateTimeContent() : IDateTimeContent
+internal sealed record DateTimeContent() : IDateTimeContent
 {
     [JsonPropertyName("value")]
-    public DateTime? Value
-    {
-        get; internal set;
-    }
+    public DateTime? Value { get; init; }
 
     [JsonPropertyName("display_timezone")]
-    public string DisplayTimezone
-    {
-        get; internal set;
-    }
+    public string? DisplayTimezone { get; init; }
 }
