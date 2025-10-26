@@ -11,10 +11,12 @@ Rich text elements in Kontent.ai contain structured content that needs to be res
   - [Global Link Resolver](#global-link-resolver)
   - [Type-Specific Link Resolvers](#type-specific-link-resolvers)
   - [URL Pattern Resolver](#url-pattern-resolver)
+  - [Tuple-Based Link Resolvers](#tuple-based-link-resolvers)
 - [Embedded Content Resolvers](#embedded-content-resolvers)
   - [Type-Specific Content Resolvers](#type-specific-content-resolvers)
   - [Async Content Resolvers](#async-content-resolvers)
   - [Nested Content Resolution](#nested-content-resolution)
+  - [Tuple-Based Content Resolvers](#tuple-based-content-resolvers)
 - [Inline Image Resolvers](#inline-image-resolvers)
 - [Custom HTML Node Resolvers](#custom-html-node-resolvers)
 - [Resolution Context](#resolution-context)
@@ -178,6 +180,23 @@ var resolver = new HtmlResolverBuilder()
 - `{id}`: Uses item GUID
 - `{name}`: Uses `System.Name`
 
+### Tuple-Based Link Resolvers
+
+Pass multiple type-specific link resolvers using tuple overloads:
+
+```csharp
+var resolver = new HtmlResolverBuilder()
+    .WithContentItemLinkResolvers(
+        ("article", (link, _) =>
+            ValueTask.FromResult($"<a href=\"/articles/{link.Metadata?.UrlSlug}\">{link.Text}</a>")),
+        ("product", (link, _) =>
+            ValueTask.FromResult($"<a href=\"/shop/products/{link.Metadata?.UrlSlug}\">{link.Text}</a>")),
+        ("author", (link, _) =>
+            ValueTask.FromResult($"<a href=\"/about/team/{link.Metadata?.System.Codename}\">{link.Text}</a>"))
+    )
+    .Build();
+```
+
 ### Advanced Link Resolution
 
 Add custom attributes and classes:
@@ -307,6 +326,36 @@ var resolver = new HtmlResolverBuilder()
                 <div class=""callout-body"">{bodyHtml}</div>
             </div>";
     })
+    .Build();
+```
+
+### Tuple-Based Content Resolvers
+
+Register multiple simple (synchronous) content resolvers using tuples:
+
+```csharp
+var resolver = new HtmlResolverBuilder()
+    .WithContentResolvers(
+        ("tweet", content =>
+        {
+            var url = content.Elements["url"]?.ToString();
+            return $"<div class=\"twitter-embed\"><a href=\"{url}\">View Tweet</a></div>";
+        }),
+        ("quote", content =>
+        {
+            var text = content.Elements["quote_text"]?.ToString();
+            var by = content.Elements["attribution"]?.ToString();
+            return by != null
+                ? $"<blockquote><p>{text}</p><cite>{by}</cite></blockquote>"
+                : $"<blockquote><p>{text}</p></blockquote>";
+        }),
+        ("code_snippet", content =>
+        {
+            var code = content.Elements["code"]?.ToString();
+            var lang = content.Elements["language"]?.ToString() ?? "plaintext";
+            return $"<pre><code class=\"language-{lang}\">{System.Web.HttpUtility.HtmlEncode(code)}</code></pre>";
+        })
+    )
     .Build();
 ```
 
