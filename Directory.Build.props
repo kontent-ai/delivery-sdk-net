@@ -1,7 +1,39 @@
 <Project>
   <PropertyGroup>
     <LangVersion>latest</LangVersion>
+    <Nullable>enable</Nullable>
+    <ImplicitUsings>enable</ImplicitUsings>
     <EnableNETAnalyzers>true</EnableNETAnalyzers>
     <EnforceCodeStyleInBuild>true</EnforceCodeStyleInBuild>
+    <!-- Enable CI-specific deterministic/source-linked builds when running in CI -->
+    <ContinuousIntegrationBuild Condition="'$(CI)'=='true'">true</ContinuousIntegrationBuild>
   </PropertyGroup>
+
+  <!-- Shared packaging and SourceLink configuration for packable projects only -->
+  <PropertyGroup Condition="'$(IsPackable)'=='true'">
+    <GenerateAssemblyInfo>true</GenerateAssemblyInfo>
+    <GenerateDocumentationFile>true</GenerateDocumentationFile>
+    <PublishRepositoryUrl>true</PublishRepositoryUrl>
+    <IncludeSymbols>true</IncludeSymbols>
+    <SymbolPackageFormat>snupkg</SymbolPackageFormat>
+    <EmbedUntrackedSources>true</EmbedUntrackedSources>
+
+    <Authors>Kontent s.r.o.</Authors>
+    <Product>Kontent.ai</Product>
+    <Copyright>© 2025 Kontent s.r.o. All rights reserved.</Copyright>
+    <PackageLicenseExpression>MIT</PackageLicenseExpression>
+    <PackageProjectUrl>https://github.com/kontent-ai/delivery-sdk-net</PackageProjectUrl>
+    <RepositoryUrl>https://github.com/kontent-ai/delivery-sdk-net.git</RepositoryUrl>
+    <RepositoryType>git</RepositoryType>
+
+    <!-- Prefer embedded icon/readme over legacy URL -->
+    <PackageReadmeFile>README.md</PackageReadmeFile>
+    <PackageIcon>kai-logo-symbol-color-rgb.png</PackageIcon>
+  </PropertyGroup>
+
+  <ItemGroup Condition="'$(IsPackable)'=='true'">
+    <PackageReference Include="Microsoft.SourceLink.GitHub" Version="1.1.1" PrivateAssets="All" />
+    <None Include="../README.md" Pack="true" PackagePath="" />
+    <None Include="../kai-logo-symbol-color-rgb.png" Pack="true" PackagePath="" />
+  </ItemGroup>
 </Project>
