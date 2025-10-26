@@ -255,7 +255,7 @@ public sealed class HtmlResolverBuilder : IHtmlResolverBuilder
         // Create options with conditional resolvers, embedded content resolvers, content item link resolvers, and default fallback
         var options = new HtmlResolverOptions
         {
-            ConditionalHtmlNodeResolvers = _conditionalHtmlNodeResolvers.ToArray(),
+            ConditionalHtmlNodeResolvers = [.. _conditionalHtmlNodeResolvers],
             DefaultHtmlNodeResolver = defaultHtmlNodeResolver,
             ThrowOnMissingResolver = _options.ThrowOnMissingResolver,
             EmbeddedContentResolvers = _embeddedContentResolvers.Count > 0 ? _embeddedContentResolvers : null,

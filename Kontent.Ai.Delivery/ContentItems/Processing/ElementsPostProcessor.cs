@@ -7,6 +7,7 @@ using Microsoft.Extensions.Options;
 using Kontent.Ai.Delivery.Abstractions.ContentItems.Processing;
 using Kontent.Ai.Delivery.ContentItems.ContentLinks;
 using Kontent.Ai.Delivery.ContentItems.RichText.Blocks;
+using Kontent.Ai.Delivery.ContentItems.Processing;
 
 namespace Kontent.Ai.Delivery.ContentItems;
 
@@ -232,7 +233,7 @@ internal sealed class ElementsPostProcessor(
         ResolvingContext context,
         DependencyTrackingContext? dependencyContext,
         object target)
-        => ProcessPropertiesAsync<IRichTextContent>(
+        => ProcessPropertiesAsync(
             properties,
             prop => ProcessRichTextPropertyAsync(prop, elementsJson, contentType, context, dependencyContext),
             (prop, value) => prop.SetValue(target, value));
@@ -243,7 +244,7 @@ internal sealed class ElementsPostProcessor(
         string contentType,
         DependencyTrackingContext? dependencyContext,
         object target)
-        => ProcessPropertiesAsync<object>(
+        => ProcessPropertiesAsync(
             properties,
             prop => ProcessAssetPropertyAsync(prop, elementsJson, contentType, dependencyContext),
             (prop, value) => prop.SetValue(target, value));
@@ -254,7 +255,7 @@ internal sealed class ElementsPostProcessor(
         string contentType,
         DependencyTrackingContext? dependencyContext,
         object target)
-        => ProcessPropertiesAsync<object>(
+        => ProcessPropertiesAsync(
             properties,
             prop => ProcessTaxonomyPropertyAsync(prop, elementsJson, contentType, dependencyContext),
             (prop, value) => prop.SetValue(target, value));
@@ -264,7 +265,7 @@ internal sealed class ElementsPostProcessor(
         JsonElement elementsJson,
         string contentType,
         object target)
-        => ProcessPropertiesAsync<object>(
+        => ProcessPropertiesAsync(
             properties,
             prop => ProcessDateTimePropertyAsync(prop, elementsJson, contentType),
             (prop, value) => prop.SetValue(target, value));
@@ -342,16 +343,9 @@ internal sealed class ElementsPostProcessor(
     private IReadOnlyList<Asset> DeserializeAssets(
         JsonElement valueArray,
         DependencyTrackingContext? dependencyContext)
-    {
-        // Note: Asset tracking will be implemented in Phase 2 when asset IDs are exposed in the model.
-        // For now, we accept the context parameter for API consistency but don't track assets.
-        // Rich text inline images are tracked separately in RichTextParser.
-
-        return valueArray.EnumerateArray()
+        => [.. valueArray.EnumerateArray()
             .Where(asset => asset.ValueKind == JsonValueKind.Object)
-            .Select(asset => CreateAsset(asset, deliveryOptions.CurrentValue.DefaultRenditionPreset))
-            .ToList();
-    }
+            .Select(asset => CreateAsset(asset, deliveryOptions.CurrentValue.DefaultRenditionPreset))];
 
     private IReadOnlyList<TaxonomyTerm> DeserializeTaxonomyTerms(
         JsonElement elementValue,
@@ -364,13 +358,12 @@ internal sealed class ElementsPostProcessor(
         if (!elementValue.TryGetProperty("value", out var valueArray) ||
             valueArray.ValueKind != JsonValueKind.Array)
         {
-            return Array.Empty<TaxonomyTerm>();
+            return [];
         }
 
-        return valueArray.EnumerateArray()
+        return [.. valueArray.EnumerateArray()
             .Where(term => term.ValueKind == JsonValueKind.Object)
-            .Select(CreateTaxonomyTerm)
-            .ToList();
+            .Select(CreateTaxonomyTerm)];
     }
 
     private static Asset CreateAsset(JsonElement assetElement, string? defaultPreset)
@@ -435,7 +428,7 @@ internal sealed class ElementsPostProcessor(
     private static DateTime? GetDateTimeProperty(JsonElement element, string propertyName) =>
         element.TryGetProperty(propertyName, out var prop) && prop.ValueKind == JsonValueKind.String
             ? prop.GetDateTime()
-            : (DateTime?)null;
+            : null;
 
     private sealed class RichTextElementShim : IRichTextElementValue
     {

@@ -65,7 +65,7 @@ internal sealed class TypeQuery(
                 await _cacheManager.SetAsync(
                     cacheKey,
                     deliveryResult,
-                    dependencies: Array.Empty<string>(), // Metadata queries don't track dependencies
+                    dependencies: [], // Metadata queries don't track dependencies
                     expiration: null,
                     cancellationToken: cancellationToken)
                     .ConfigureAwait(false);

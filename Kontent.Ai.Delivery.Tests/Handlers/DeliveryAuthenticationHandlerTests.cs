@@ -376,7 +376,7 @@ public class DeliveryAuthenticationHandlerTests
 
         var task = (Task<HttpResponseMessage>)sendAsyncMethod.Invoke(
             handler,
-            new object[] { request, CancellationToken.None });
+            [request, CancellationToken.None]);
 
         return await task;
     }

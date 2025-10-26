@@ -16,7 +16,7 @@ internal record ContentItemLink(
     /// Default constructor for JSON deserialization.
     /// </summary>
     [JsonConstructor]
-    public ContentItemLink() : this(Guid.Empty, null, Array.Empty<IRichTextBlock>(), new Dictionary<string, string>())
+    public ContentItemLink() : this(Guid.Empty, null, [], new Dictionary<string, string>())
     {
     }
 }

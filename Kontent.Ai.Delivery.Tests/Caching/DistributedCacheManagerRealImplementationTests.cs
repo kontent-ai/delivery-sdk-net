@@ -68,8 +68,8 @@ public class DistributedCacheManagerRealImplementationTests
         var value2 = new TestValue { Id = 2, Name = "Second" };
 
         // Act
-        await _cacheManager.SetAsync(key, value1, Array.Empty<string>());
-        await _cacheManager.SetAsync(key, value2, Array.Empty<string>());
+        await _cacheManager.SetAsync(key, value1, []);
+        await _cacheManager.SetAsync(key, value2, []);
         var result = await _cacheManager.GetAsync<TestValue>(key);
 
         // Assert
@@ -90,7 +90,7 @@ public class DistributedCacheManagerRealImplementationTests
         var value = new TestValue { Id = 100, Name = "To Be Invalidated" };
         var dependency = "invalidate_dep";
 
-        await _cacheManager.SetAsync(key, value, new[] { dependency });
+        await _cacheManager.SetAsync(key, value, [dependency]);
 
         // Act
         await _cacheManager.InvalidateAsync(default, dependency);
@@ -110,9 +110,9 @@ public class DistributedCacheManagerRealImplementationTests
         var value = new TestValue { Id = 1, Name = "Test" };
         var sharedDependency = "shared_real_dep";
 
-        await _cacheManager.SetAsync(key1, value, new[] { sharedDependency });
-        await _cacheManager.SetAsync(key2, value, new[] { sharedDependency });
-        await _cacheManager.SetAsync(key3, value, new[] { "other_dep_real" });
+        await _cacheManager.SetAsync(key1, value, [sharedDependency]);
+        await _cacheManager.SetAsync(key2, value, [sharedDependency]);
+        await _cacheManager.SetAsync(key3, value, ["other_dep_real"]);
 
         // Act
         await _cacheManager.InvalidateAsync(default, sharedDependency);
@@ -136,9 +136,9 @@ public class DistributedCacheManagerRealImplementationTests
         var key3 = "multi_key3";
         var value = new TestValue { Id = 1, Name = "Test" };
 
-        await _cacheManager.SetAsync(key1, value, new[] { "multi_dep1" });
-        await _cacheManager.SetAsync(key2, value, new[] { "multi_dep2" });
-        await _cacheManager.SetAsync(key3, value, new[] { "multi_dep3" });
+        await _cacheManager.SetAsync(key1, value, ["multi_dep1"]);
+        await _cacheManager.SetAsync(key2, value, ["multi_dep2"]);
+        await _cacheManager.SetAsync(key3, value, ["multi_dep3"]);
 
         // Act
         await _cacheManager.InvalidateAsync(default, "multi_dep1", "multi_dep2");
@@ -169,13 +169,13 @@ public class DistributedCacheManagerRealImplementationTests
             Nested = new NestedValue
             {
                 Description = "Nested description",
-                Tags = new[] { "tag1", "tag2", "tag3" }
+                Tags = ["tag1", "tag2", "tag3"]
             },
-            Items = new[] { 10, 20, 30 }
+            Items = [10, 20, 30]
         };
 
         // Act
-        await _cacheManager.SetAsync(key, value, Array.Empty<string>());
+        await _cacheManager.SetAsync(key, value, []);
         var result = await _cacheManager.GetAsync<ComplexValue>(key);
 
         // Assert
@@ -196,7 +196,7 @@ public class DistributedCacheManagerRealImplementationTests
         var value = new TestValue { Id = 99, Name = null };
 
         // Act
-        await _cacheManager.SetAsync(key, value, Array.Empty<string>());
+        await _cacheManager.SetAsync(key, value, []);
         var result = await _cacheManager.GetAsync<TestValue>(key);
 
         // Assert
@@ -214,7 +214,7 @@ public class DistributedCacheManagerRealImplementationTests
         value.Self = value; // Circular reference
 
         // Act
-        await _cacheManager.SetAsync(key, value, Array.Empty<string>());
+        await _cacheManager.SetAsync(key, value, []);
         var result = await _cacheManager.GetAsync<CircularValue>(key);
 
         // Assert
@@ -237,7 +237,7 @@ public class DistributedCacheManagerRealImplementationTests
             .Select(i => _cacheManager.SetAsync(
                 $"concurrent_real_key_{i}",
                 new TestValue { Id = i, Name = $"Test_{i}" },
-                new[] { $"concurrent_real_dep_{i}" }))
+                [$"concurrent_real_dep_{i}"]))
             .ToArray();
 
         // Act
@@ -258,7 +258,7 @@ public class DistributedCacheManagerRealImplementationTests
         // Arrange
         var key = "concurrent_get_real_key";
         var value = new TestValue { Id = 42, Name = "Concurrent Test" };
-        await _cacheManager.SetAsync(key, value, Array.Empty<string>());
+        await _cacheManager.SetAsync(key, value, []);
 
         // Act - concurrent reads
         var tasks = Enumerable.Range(0, 50)
@@ -288,7 +288,7 @@ public class DistributedCacheManagerRealImplementationTests
         var value = new TestValue { Id = 1, Name = "Long Key Test" };
 
         // Act
-        await _cacheManager.SetAsync(key, value, Array.Empty<string>());
+        await _cacheManager.SetAsync(key, value, []);
         var result = await _cacheManager.GetAsync<TestValue>(key);
 
         // Assert
