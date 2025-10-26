@@ -76,6 +76,81 @@ public static class RichTextExtensions
     }
 
     /// <summary>
+    /// Filters rich text blocks to return only strongly-typed embedded content of a specific model type.
+    /// </summary>
+    /// <typeparam name="TModel">The model type to filter by.</typeparam>
+    /// <param name="richText">The rich text content to filter.</param>
+    /// <returns>A sequence of strongly-typed embedded content matching the specified model type.</returns>
+    /// <example>
+    /// <code>
+    /// // Get all embedded articles from rich text
+    /// var articles = richText.GetEmbeddedContent&lt;Article&gt;();
+    /// foreach (var article in articles)
+    /// {
+    ///     Console.WriteLine(article.Elements.Title);
+    /// }
+    /// </code>
+    /// </example>
+    public static IEnumerable<IEmbeddedContent<TModel>> GetEmbeddedContent<TModel>(
+        this IRichTextContent richText)
+        where TModel : IElementsModel
+    {
+        ArgumentNullException.ThrowIfNull(richText);
+
+        return richText.OfType<IEmbeddedContent<TModel>>();
+    }
+
+    /// <summary>
+    /// Filters a sequence of rich text blocks to return only strongly-typed embedded content of a specific model type.
+    /// </summary>
+    /// <typeparam name="TModel">The model type to filter by.</typeparam>
+    /// <param name="blocks">The sequence of rich text blocks to filter.</param>
+    /// <returns>A sequence of strongly-typed embedded content matching the specified model type.</returns>
+    /// <example>
+    /// <code>
+    /// // Get all embedded coffee products from rich text blocks
+    /// var coffees = richText
+    ///     .GetEmbeddedContentOfType&lt;Coffee&gt;()
+    ///     .Select(c => c.Elements);
+    /// </code>
+    /// </example>
+    public static IEnumerable<IEmbeddedContent<TModel>> GetEmbeddedContentOfType<TModel>(
+        this IEnumerable<IRichTextBlock> blocks)
+        where TModel : IElementsModel
+    {
+        ArgumentNullException.ThrowIfNull(blocks);
+
+        return blocks.OfType<IEmbeddedContent<TModel>>();
+    }
+
+    /// <summary>
+    /// Extracts the strongly-typed elements from all embedded content of a specific model type in rich text.
+    /// </summary>
+    /// <typeparam name="TModel">The model type to extract.</typeparam>
+    /// <param name="richText">The rich text content to process.</param>
+    /// <returns>A sequence of strongly-typed element models.</returns>
+    /// <example>
+    /// <code>
+    /// // Get all article element models directly
+    /// var articleElements = richText.GetEmbeddedElements&lt;Article&gt;();
+    /// foreach (var article in articleElements)
+    /// {
+    ///     Console.WriteLine(article.Title);
+    /// }
+    /// </code>
+    /// </example>
+    public static IEnumerable<TModel> GetEmbeddedElements<TModel>(
+        this IRichTextContent richText)
+        where TModel : IElementsModel
+    {
+        ArgumentNullException.ThrowIfNull(richText);
+
+        return richText
+            .OfType<IEmbeddedContent<TModel>>()
+            .Select(e => e.Elements);
+    }
+
+    /// <summary>
     /// Gets all inline images from rich text content.
     /// </summary>
     /// <param name="richText">The rich text content to search.</param>

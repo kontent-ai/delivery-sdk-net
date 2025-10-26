@@ -15,6 +15,9 @@ internal sealed class HtmlResolver : IHtmlResolver
     // Codename-based resolvers for embedded content (components/linked items)
     private readonly FrozenDictionary<string, Func<IEmbeddedContent, ValueTask<string>>> _embeddedContentResolvers;
 
+    // Type-based resolvers for strongly-typed embedded content (takes precedence over codename-based)
+    private readonly FrozenDictionary<Type, Func<IEmbeddedContent, ValueTask<string>>> _typeBasedContentResolvers;
+
     // Content-type-specific resolvers for content item links
     private readonly FrozenDictionary<string, BlockResolver<IContentItemLink>> _contentItemLinkResolvers;
 
@@ -42,6 +45,11 @@ internal sealed class HtmlResolver : IHtmlResolver
             kvp => kvp.Key,
             kvp => kvp.Value,
             StringComparer.OrdinalIgnoreCase) ?? FrozenDictionary<string, Func<IEmbeddedContent, ValueTask<string>>>.Empty;
+
+        // Build immutable type-based content resolver cache (model type dispatch - takes precedence)
+        _typeBasedContentResolvers = options.TypeBasedContentResolvers?.ToFrozenDictionary(
+            kvp => kvp.Key,
+            kvp => kvp.Value) ?? FrozenDictionary<Type, Func<IEmbeddedContent, ValueTask<string>>>.Empty;
 
         // Build immutable content item link resolver cache (content-type-based dispatch)
         _contentItemLinkResolvers = options.ContentItemLinkResolvers?.ToFrozenDictionary(
@@ -92,16 +100,39 @@ internal sealed class HtmlResolver : IHtmlResolver
                 ? throw new InvalidOperationException($"No resolver registered for IContentItemLink (type: {link.Metadata?.ContentTypeCodename ?? "unknown"}, item ID: {link.ItemId})")
                 : ValueTask.FromResult(string.Format(MissingContentItemLinkResolver, link.Metadata?.ContentTypeCodename ?? "unknown", link.ItemId)),
 
-            // Embedded content (components/linked items) - codename-based dispatch
-            IEmbeddedContent content when _embeddedContentResolvers.TryGetValue(content.ContentTypeCodename, out var resolver)
-                => resolver(content),
-
-            IEmbeddedContent content => _options.ThrowOnMissingResolver
-                ? throw new InvalidOperationException($"No resolver registered for embedded content type: {content.ContentTypeCodename}")
-                : ValueTask.FromResult(string.Format(MissingEmbeddedContentResolver, content.ContentTypeCodename, content.Id, content.Codename)),
+            // Embedded content (components/linked items) - type-based dispatch takes precedence
+            IEmbeddedContent content => ResolveEmbeddedContentAsync(content),
 
             _ => throw new InvalidOperationException($"Unknown block type: {block.GetType().Name}")
         };
+    }
+
+    private ValueTask<string> ResolveEmbeddedContentAsync(IEmbeddedContent content)
+    {
+        // Priority 1: Type-based resolver (for strongly-typed embedded content)
+        var contentType = content.GetType();
+        if (contentType.IsGenericType &&
+            contentType.GetGenericTypeDefinition().Name.StartsWith("EmbeddedContent"))
+        {
+            // Extract model type from EmbeddedContent<T>
+            var modelType = contentType.GetGenericArguments()[0];
+            if (_typeBasedContentResolvers.TryGetValue(modelType, out var typeResolver))
+            {
+                return typeResolver(content);
+            }
+        }
+
+        // Priority 2: Codename-based resolver (existing fallback)
+        if (_embeddedContentResolvers.TryGetValue(content.ContentTypeCodename, out var codenameResolver))
+        {
+            return codenameResolver(content);
+        }
+
+        // Priority 3: Missing resolver handling
+        return _options.ThrowOnMissingResolver
+            ? throw new InvalidOperationException($"No resolver registered for embedded content type: {content.ContentTypeCodename}")
+            : ValueTask.FromResult(string.Format(MissingEmbeddedContentResolver,
+                content.ContentTypeCodename, content.Id, content.Codename));
     }
 
     private async ValueTask<string> ResolveHtmlNodeAsync(IHtmlNode node)
@@ -170,6 +201,13 @@ internal sealed record HtmlResolverOptions
     /// Key is the content type codename, value is the resolver function.
     /// </summary>
     public IReadOnlyDictionary<string, Func<IEmbeddedContent, ValueTask<string>>>? EmbeddedContentResolvers { get; init; }
+
+    /// <summary>
+    /// Type-based resolvers for strongly-typed embedded content.
+    /// Key is the model type (e.g., typeof(Article)), value is the resolver function.
+    /// Takes precedence over codename-based resolvers.
+    /// </summary>
+    public IReadOnlyDictionary<Type, Func<IEmbeddedContent, ValueTask<string>>>? TypeBasedContentResolvers { get; init; }
 
     /// <summary>
     /// Content-type-specific resolvers for content item links.

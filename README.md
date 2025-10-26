@@ -187,6 +187,20 @@ var result = await client.GetItems()
     .ExecuteAsync();
 ```
 
+#### Using .Where with Preconstructed Filters
+
+```csharp
+// Build a filter object (useful for reuse or conditional composition)
+var filter = new Filter(
+    ItemSystemPath.Type,
+    FilterOperator.Equals,
+    StringValue.From("article"));
+
+var result = await client.GetItems()
+    .Where(filter) // accepts IFilter
+    .ExecuteAsync();
+```
+
 #### Common Filter Operators
 
 ```csharp
@@ -304,14 +318,16 @@ if (result.IsSuccess)
 
 ```csharp
 var resolver = new HtmlResolverBuilder()
-    .WithContentItemLinkResolver("article", (link, _) =>
+    .WithContentItemLinkResolver("article", async (link, resolveChildren) =>
     {
         var url = $"/articles/{link.Metadata?.UrlSlug}";
-        return ValueTask.FromResult($"<a href=\"{url}\">{link.Text}</a>");
+        var innerHtml = await resolveChildren(link.Children);
+        return ValueTask.FromResult($"<a href=\"{url}\">{innerHtml}</a>");
     })
     .WithContentItemLinkResolver("product", (link, _) =>
     {
         var url = $"/shop/{link.Metadata?.UrlSlug}";
+        var innerHtml = await resolveChildren(link.Children);
         return ValueTask.FromResult($"<a href=\"{url}\">{link.Text}</a>");
     })
     .Build();
@@ -321,21 +337,84 @@ var html = await article.BodyCopy.ToHtmlAsync(resolver);
 
 #### Embedded Content Resolution
 
+**Type-Safe Resolvers with Strongly-Typed Models:**
+
 ```csharp
 var resolver = new HtmlResolverBuilder()
-    .WithContentResolver("tweet", content =>
+    // Type-safe resolver with compile-time checking
+    .WithContentResolver<Tweet>(tweet =>
+        $"<blockquote class=\"twitter-tweet\">{tweet.Elements.TweetText}<cite>@{tweet.Elements.AuthorHandle}</cite></blockquote>")
+    // Async type-safe resolver
+    .WithContentResolver<Video>(async video =>
     {
-        var tweet = content.Elements as Tweet; // cast to your strongly typed model
-        return $"<blockquote class=\"twitter-tweet\">{tweet.Text}<cite>{tweet.Author}</cite></blockquote>";
-    })
-    .WithContentResolver("video", async content =>
-    {
-        var videoId = content.Elements["video_id"]?.ToString(); // dynamic access without strongly typed model
-        return $"<div class=\"video-wrapper\"><iframe src=\"https://youtube.com/embed/{videoId}\"></iframe></div>";
+        var metadata = await _videoService.GetMetadataAsync(video.Elements.VideoId);
+        return $"<div class=\"video-wrapper\"><iframe src=\"https://youtube.com/embed/{video.Elements.VideoId}\" title=\"{metadata.Title}\"></iframe></div>";
     })
     .Build();
 
 var html = await article.BodyCopy.ToHtmlAsync(resolver);
+```
+
+**Codename-Based Resolvers:**
+
+```csharp
+var resolver = new HtmlResolverBuilder()
+    .WithContentResolver("tweet", content =>
+    {
+        // Requires manual casting
+        if (content is IEmbeddedContent<Tweet> tweet)
+        {
+            return $"<blockquote>{tweet.Elements.TweetText}</blockquote>";
+        }
+        return string.Empty;
+    })
+    .Build();
+```
+
+**Batch Registration with Tuples:**
+
+```csharp
+var resolver = new HtmlResolverBuilder()
+    .WithContentResolvers(
+        (typeof(Tweet), content =>
+            content is IEmbeddedContent<Tweet> t
+                ? $"<blockquote>{t.Elements.TweetText}</blockquote>"
+                : ""),
+        (typeof(Video), content =>
+            content is IEmbeddedContent<Video> v
+                ? $"<iframe src=\"https://youtube.com/embed/{v.Elements.VideoId}\"></iframe>"
+                : ""),
+        (typeof(Quote), content =>
+            content is IEmbeddedContent<Quote> q
+                ? $"<blockquote><p>{q.Elements.Text}</p><cite>{q.Elements.Author}</cite></blockquote>"
+                : "")
+    )
+    .Build();
+```
+
+**Pattern Matching for Multiple Types:**
+
+```csharp
+// Access strongly-typed embedded content via pattern matching
+foreach (var block in article.BodyCopy)
+{
+    switch (block)
+    {
+        case IEmbeddedContent<Tweet> tweet:
+            Console.WriteLine($"Tweet: {tweet.Elements.TweetText}");
+            break;
+        case IEmbeddedContent<Video> video:
+            Console.WriteLine($"Video: {video.Elements.Title}");
+            break;
+        case IEmbeddedContent<Quote> quote:
+            Console.WriteLine($"Quote: {quote.Elements.Text}");
+            break;
+    }
+}
+
+// Or use extension methods for filtering
+var tweets = article.BodyCopy.GetEmbeddedContent<Tweet>();
+var tweetElements = article.BodyCopy.GetEmbeddedElements<Tweet>();
 ```
 
 For advanced rich text scenarios including custom HTML nodes and complex resolution strategies, see the [Rich Text Customization Guide](docs/rich-text-customization.md).
@@ -491,7 +570,7 @@ You can also configure HTTP client behavior:
 
 ```csharp
 services.AddDeliveryClient(
-    options => options.EnvironmentId = "your-id",
+	buildDeliveryOptions: builder => builder.WithEnvironmentId("your-environment-id").Build(),
     configureHttpClient: builder =>
     {
         builder.ConfigureHttpClient(client =>
