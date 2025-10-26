@@ -36,7 +36,7 @@ internal sealed class TypesQuery(
         return this;
     }
 
-    public ITypesQuery Where(Func<ITypeFilters, IFilter> filterBuilder)
+    public ITypesQuery Filter(Func<ITypeFilters, IFilter> filterBuilder)
     {
         var filter = filterBuilder(_filters);
         var (key, value) = filter.ToQueryParameter();

@@ -32,7 +32,7 @@ public interface ITypesQuery
     /// Adds a filter to the query using a filter builder function.
     /// </summary>
     /// <param name="filterBuilder">Function that builds a filter using the types filter builder.</param>
-    ITypesQuery Where(Func<ITypeFilters, IFilter> filterBuilder);
+    ITypesQuery Filter(Func<ITypeFilters, IFilter> filterBuilder);
 
     /// <summary>
     /// Adds a filter to the query.

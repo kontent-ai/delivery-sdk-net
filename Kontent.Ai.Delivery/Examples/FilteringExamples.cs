@@ -196,24 +196,24 @@ public class FilteringExamples(IDeliveryClient client)
     {
         // Basic type filtering
         var articleType = await _client.GetTypes()
-            .Where(f => f.Equals(TypeSystemPath.Codename, "article"))
+            .Filter(f => f.Equals(TypeSystemPath.Codename, "article"))
             .ExecuteAsync();
 
         // Multiple types
         var contentTypes = await _client.GetTypes()
-            .Where(f => f.In(TypeSystemPath.Codename,
+            .Filter(f => f.In(TypeSystemPath.Codename,
                 "article", "blog_post", "news"))
             .ExecuteAsync();
 
         // Types modified recently
         var recentlyModifiedTypes = await _client.GetTypes()
-            .Where(f => f.GreaterThan(TypeSystemPath.LastModified,
+            .Filter(f => f.GreaterThan(TypeSystemPath.LastModified,
                 DateTime.UtcNow.AddMonths(-3)))
             .ExecuteAsync();
 
         // Types within date range
         var typesInRange = await _client.GetTypes()
-            .Where(f => f.Range(TypeSystemPath.LastModified,
+            .Filter(f => f.Range(TypeSystemPath.LastModified,
                 DateTime.Parse("2024-01-01"),
                 DateTime.Parse("2024-06-30")))
             .ExecuteAsync();
