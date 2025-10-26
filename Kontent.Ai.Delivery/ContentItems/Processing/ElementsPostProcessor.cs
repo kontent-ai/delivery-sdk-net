@@ -46,6 +46,10 @@ internal sealed class ElementsPostProcessor(
 
     private static readonly Func<PropertyInfo, bool> _isDateTimeContentProperty = static property =>
         typeof(IDateTimeContent).IsAssignableFrom(property.PropertyType);
+
+    private static readonly Func<PropertyInfo, bool> _isLinkedItemsProperty = static property =>
+        GetEnumerableElementType(property.PropertyType) is Type elementType &&
+        typeof(IEmbeddedContent).IsAssignableFrom(elementType);
     /// <summary>
     /// Hydrates advanced element types on a strongly typed content item.
     /// </summary>
@@ -64,13 +68,14 @@ internal sealed class ElementsPostProcessor(
             elementsType,
             static t => [.. t.GetProperties(BindingFlags.Instance | BindingFlags.Public).Where(p => p.CanWrite)]);
 
-        var resolvingContext = CreateResolvingContext(modularContent);
+        var resolvingContext = CreateResolvingContext(modularContent, dependencyContext);
 
         // Group properties by target processing once to avoid repeated filtering
         var richTextProps = writableProperties.Where(_isRichTextProperty).ToArray();
         var assetProps = writableProperties.Where(_isAssetProperty).ToArray();
         var taxonomyProps = writableProperties.Where(_isTaxonomyProperty).ToArray();
         var dateTimeProps = writableProperties.Where(_isDateTimeContentProperty).ToArray();
+        var linkedItemsProps = writableProperties.Where(_isLinkedItemsProperty).ToArray();
 
         if (richTextProps.Length > 0)
         {
@@ -90,6 +95,11 @@ internal sealed class ElementsPostProcessor(
         if (dateTimeProps.Length > 0)
         {
             await ProcessDateTimeGroupAsync(dateTimeProps, elementsJson, item.System.Type, item.Elements).ConfigureAwait(false);
+        }
+
+        if (linkedItemsProps.Length > 0)
+        {
+            await ProcessLinkedItemsGroupAsync(linkedItemsProps, elementsJson, item.System.Type, resolvingContext, dependencyContext, item.Elements).ConfigureAwait(false);
         }
     }
 
@@ -201,26 +211,81 @@ internal sealed class ElementsPostProcessor(
         return Task.FromResult<object?>(result);
     }
 
+    private async Task<object?> ProcessLinkedItemsPropertyAsync(
+        PropertyInfo property,
+        JsonElement elementsJson,
+        string contentType,
+        ResolvingContext context,
+        DependencyTrackingContext? dependencyContext)
+    {
+        var element = FindElement(elementsJson, property, contentType);
+        if (!element.HasValue)
+            return null;
+
+        var (_, elementValue) = element.Value;
+        if (!TryGetArrayValue(elementValue, out var arrayValue))
+            return null;
+
+        // Extract codenames from the value array
+        var codenames = arrayValue.EnumerateArray()
+            .Select(el => el.GetString())
+            .Where(s => !string.IsNullOrEmpty(s))
+            .ToList();
+
+        if (codenames.Count == 0)
+            return Array.Empty<IEmbeddedContent>();
+
+        // Track dependencies for cache invalidation
+        if (dependencyContext is not null)
+        {
+            foreach (var codename in codenames)
+            {
+                dependencyContext.TrackItem(codename);
+            }
+        }
+
+        // Hydrate items in parallel using same infrastructure as rich text
+        var itemTasks = codenames.Select(async codename =>
+        {
+            var contentItem = await context.GetLinkedItem(codename!);
+            if (contentItem is null) return null;
+
+            return EmbeddedContentFactory.CreateEmbeddedContent(contentItem);
+        });
+
+        var items = await Task.WhenAll(itemTasks).ConfigureAwait(false);
+
+        // Filter out nulls (unresolved items)
+        return items.Where(i => i is not null).ToList();
+    }
+
     private (string Name, JsonElement Value)? FindElement(JsonElement elementsJson, PropertyInfo property, string contentType) =>
         elementsJson.EnumerateObject()
             .Where(prop => propertyMapper.IsMatch(property, prop.Name, contentType))
             .Select(prop => ((string, JsonElement)?)(prop.Name, prop.Value))
             .FirstOrDefault();
 
-    private ResolvingContext CreateResolvingContext(IReadOnlyDictionary<string, JsonElement>? modularContent) =>
+    private ResolvingContext CreateResolvingContext(
+        IReadOnlyDictionary<string, JsonElement>? modularContent,
+        DependencyTrackingContext? dependencyContext) =>
         new()
         {
-            GetLinkedItem = codename =>
+            GetLinkedItem = async codename =>
             {
                 if (modularContent is null || !modularContent.TryGetValue(codename, out var linkedItem))
-                    return Task.FromResult<object>(null!);
+                    return null!;
 
                 var contentType = ExtractContentType(linkedItem);
                 var modelType = typingStrategy.ResolveModelType(contentType);
                 var itemJson = linkedItem.GetRawText();
                 var contentItem = deserializer.DeserializeContentItem(itemJson, modelType);
 
-                return Task.FromResult(contentItem);
+                // Recursively process nested items to hydrate their complex elements
+                // (rich text, assets, taxonomy, other linked items)
+                // This uses the same modularContent dictionary, so recursion depth is naturally limited
+                await ProcessContentItemAsync(contentItem, modularContent, dependencyContext).ConfigureAwait(false);
+
+                return contentItem;
             }
         };
 
@@ -267,6 +332,18 @@ internal sealed class ElementsPostProcessor(
         => ProcessPropertiesAsync(
             properties,
             prop => ProcessDateTimePropertyAsync(prop, elementsJson, contentType),
+            (prop, value) => prop.SetValue(target, value));
+
+    private Task ProcessLinkedItemsGroupAsync(
+        IReadOnlyList<PropertyInfo> properties,
+        JsonElement elementsJson,
+        string contentType,
+        ResolvingContext context,
+        DependencyTrackingContext? dependencyContext,
+        object target)
+        => ProcessPropertiesAsync(
+            properties,
+            prop => ProcessLinkedItemsPropertyAsync(prop, elementsJson, contentType, context, dependencyContext),
             (prop, value) => prop.SetValue(target, value));
 
     // Helper: Get T from IEnumerable<T>
@@ -429,6 +506,56 @@ internal sealed class ElementsPostProcessor(
             ? prop.GetDateTime()
             : null;
 
+    /// <summary>
+    /// Helper method to process a dynamically-typed content item.
+    /// Uses reflection to call ProcessAsync with the correct generic type.
+    /// </summary>
+    private async Task ProcessContentItemAsync(
+        object contentItem,
+        IReadOnlyDictionary<string, JsonElement>? modularContent,
+        DependencyTrackingContext? dependencyContext)
+    {
+        if (contentItem is null)
+            return;
+
+        // ContentItem implements IContentItem<TModel> where TModel : IElementsModel
+        // We need to find the TModel type and call ProcessAsync<TModel>
+        var contentItemType = contentItem.GetType();
+
+        // Find IContentItem<TModel> interface
+        var iContentItemInterface = contentItemType.GetInterfaces()
+            .FirstOrDefault(i => i.IsGenericType &&
+                               i.GetGenericTypeDefinition() == typeof(IContentItem<>));
+
+        if (iContentItemInterface is null)
+            return;
+
+        var modelType = iContentItemInterface.GetGenericArguments()[0];
+
+        // Get ProcessAsync<TModel> method
+        var processMethod = typeof(ElementsPostProcessor)
+            .GetMethod(nameof(ProcessAsync), BindingFlags.Instance | BindingFlags.Public)
+            ?.MakeGenericMethod(modelType);
+
+        if (processMethod is null)
+            return;
+
+        // Invoke ProcessAsync<TModel>(item, modularContent, dependencyContext, cancellationToken)
+        var task = (Task?)processMethod.Invoke(this,
+        [
+            contentItem,
+            modularContent,
+            dependencyContext,
+            CancellationToken.None
+        ]);
+
+        if (task is not null)
+            await task.ConfigureAwait(false);
+    }
+    /// <summary>
+    /// Shim class to adapt rich text element value for parsing.
+    /// </summary>
+    // TODO: explain this more thoroughly and consider simplification
     private sealed class RichTextElementShim : IRichTextElementValue
     {
         public string Type { get; set; } = string.Empty;

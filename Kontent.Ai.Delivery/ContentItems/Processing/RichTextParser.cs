@@ -1,5 +1,3 @@
-using System.Collections.Concurrent;
-using System.Reflection;
 using AngleSharp.Dom;
 using AngleSharp.Html.Parser;
 using Kontent.Ai.Delivery.Abstractions.ContentItems.Processing;
@@ -10,9 +8,6 @@ namespace Kontent.Ai.Delivery.ContentItems.Processing;
 
 internal class RichTextParser(IHtmlParser parser, IContentDependencyExtractor dependencyExtractor) : IElementValueConverter<string, IRichTextContent>
 {
-    // Reflection cache for efficient generic type construction
-    private static readonly ConcurrentDictionary<Type, ConstructorInfo> _constructorCache = new();
-    private static readonly ConcurrentDictionary<Type, Type> _embeddedContentTypeCache = new();
     public async Task<IRichTextContent?> ConvertAsync<TElement>(
         TElement contentElement,
         ResolvingContext context) where TElement : IContentElementValue<string>
@@ -104,69 +99,17 @@ internal class RichTextParser(IHtmlParser parser, IContentDependencyExtractor de
 
         var contentItem = await context.GetLinkedItem(codename);
 
-        // Handle null (depth limit reached) - return non-generic placeholder
-        if (contentItem is null)
+        // Use factory for consistent type conversion (shared with linked items processing)
+        var embeddedContent = EmbeddedContentFactory.CreateEmbeddedContent(contentItem);
+
+        // Handle case where content item couldn't be resolved (depth limit, etc.)
+        // Factory returns placeholder with codename for better error messages
+        if (embeddedContent.Codename == "unknown" && contentItem is null)
         {
             return new EmbeddedContent("unknown", codename, null, Guid.Empty, null);
         }
 
-        // Try to extract type information and create generic EmbeddedContent<T>
-        var contentItemType = contentItem.GetType();
-
-        // Check if it's ContentItem<T>
-        if (contentItemType.IsGenericType &&
-            contentItemType.GetGenericTypeDefinition() == typeof(ContentItem<>))
-        {
-            var modelType = contentItemType.GetGenericArguments()[0];
-
-            // Get or create cached generic EmbeddedContent<T> type
-            var embeddedContentType = _embeddedContentTypeCache.GetOrAdd(
-                modelType,
-                static t => typeof(EmbeddedContent<>).MakeGenericType(t));
-
-            // Get or create cached constructor
-            var constructor = _constructorCache.GetOrAdd(
-                modelType,
-                static t =>
-                {
-                    var embeddedType = typeof(EmbeddedContent<>).MakeGenericType(t);
-                    return embeddedType.GetConstructor(
-                        [typeof(string), typeof(string), typeof(string), typeof(Guid), t])
-                        ?? throw new InvalidOperationException($"Constructor not found for EmbeddedContent<{t.Name}>");
-                });
-
-            // Extract metadata using dynamic to avoid complex reflection
-            dynamic dynamicItem = contentItem;
-            var id = Guid.TryParse((string)dynamicItem.System.Id, out var parsedId) ? parsedId : Guid.Empty;
-
-            // Invoke constructor with cached ConstructorInfo
-            var embeddedContent = constructor.Invoke(
-            [
-                (string)dynamicItem.System.Type,
-                (string)dynamicItem.System.Codename,
-                (string?)dynamicItem.System.Name,
-                id,
-                dynamicItem.Elements
-            ]);
-
-            return (IRichTextBlock)embeddedContent;
-        }
-
-        // Fallback to non-generic for unknown types
-        if (contentItem is IContentItem<IElementsModel> typedItem)
-        {
-            var id = Guid.TryParse(typedItem.System.Id, out var parsedId) ? parsedId : Guid.Empty;
-            return new EmbeddedContent(
-                typedItem.System.Type,
-                typedItem.System.Codename,
-                typedItem.System.Name,
-                id,
-                typedItem.Elements);
-        }
-
-        // Ultimate fallback
-        // TODO: check what happen if this path is hit
-        return new EmbeddedContent("unknown", codename, null, Guid.Empty, null);
+        return embeddedContent;
     }
 
     private async Task<IRichTextBlock> ParseContentItemLinkAsync(

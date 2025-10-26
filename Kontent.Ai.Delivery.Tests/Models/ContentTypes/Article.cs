@@ -54,7 +54,7 @@ public record Article : IElementsModel
     public DateTime? PostDate { get; init; }
 
     [JsonPropertyName("related_articles")]
-    public IEnumerable<string>? RelatedArticles { get; init; }
+    public IEnumerable<IEmbeddedContent>? RelatedArticles { get; init; }
 
     [JsonPropertyName("sitemap")]
     public IEnumerable<TaxonomyTerm>? Sitemap { get; init; }
