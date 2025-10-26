@@ -2,6 +2,7 @@ using System;
 using Kontent.Ai.Delivery.Abstractions;
 using Kontent.Ai.Delivery.Api.QueryBuilders.Filtering;
 using Xunit;
+using Kontent.Ai.Delivery.Extensions;
 
 namespace Kontent.Ai.Delivery.Tests.QueryParameters.Filtering;
 

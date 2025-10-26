@@ -12,9 +12,13 @@ public interface IFilter
     /// </summary>
     string PropertyPath { get; }
 
-    /// <summary>
-    /// Serializes this filter to the Kontent.ai API query parameter format.
+    // <summary>
+    /// Gets the filter operator.
     /// </summary>
-    /// <returns>The serialized filter string.</returns>
-    KeyValuePair<string, string> ToQueryParameter();
+    FilterOperator Operator { get; }
+
+    /// <summary>
+    /// Gets the filter value (null for Empty/NotEmpty operators).
+    /// </summary>
+    IFilterValue? Value { get; }
 }
