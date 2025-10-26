@@ -22,6 +22,7 @@ The official .NET SDK for the [Kontent.ai Delivery API](https://kontent.ai/learn
   - [Retrieving Content](#retrieving-content)
   - [Filtering and Querying](#filtering-and-querying)
   - [Working with Strongly-Typed Models](#working-with-strongly-typed-models)
+  - [Working with Linked Items](#working-with-linked-items)
   - [Rich Text Resolution](#rich-text-resolution)
   - [Multi-Language Support](#multi-language-support)
   - [Caching](#caching)
@@ -187,6 +188,20 @@ var result = await client.GetItems()
     .ExecuteAsync();
 ```
 
+#### Using .Where with Preconstructed Filters
+
+```csharp
+// Build a filter object (useful for reuse or conditional composition)
+var filter = new Filter(
+    ItemSystemPath.Type,
+    FilterOperator.Equals,
+    StringValue.From("article"));
+
+var result = await client.GetItems()
+    .Where(filter) // accepts IFilter
+    .ExecuteAsync();
+```
+
 #### Common Filter Operators
 
 ```csharp
@@ -246,7 +261,9 @@ The SDK supports strongly-typed models for compile-time safety and IntelliSense 
 #### Generate Models
 
 > [!WARNING]
-> Model generator has not been updated yet if you see this. See for example [Article.cs](./Kontent.Ai.Delivery.Tests/Models/ContentTypes/Article.cs) and its siblings for examples of the new model structure.
+> Model generator with updated delivery model capabilities is currently out as [10.0.0-beta](https://www.nuget.org/packages/Kontent.Ai.ModelGenerator/10.0.0-beta). Make sure to use it with the delivery SDK beta as the older model format is not supported anymore.
+>
+> Please note that the beta version has been trimmed down significantly and only supports default delivery models. Further functionality will be added along with management SDK updates.
 
 Use the [Kontent.ai Model Generator](https://github.com/kontent-ai/model-generator-net) to generate C# classes from your content types:
 
@@ -264,7 +281,7 @@ public record Article
     public string Summary { get; set; }
     public RichTextContent BodyCopy { get; set; }
     public DateTime PublishDate { get; set; }
-    public IEnumerable<Author> Authors { get; set; }
+    public IEnumerable<IEmbeddedContent> RelatedArticles { get; set; }
 }
 
 // Query with strong typing
@@ -278,6 +295,157 @@ if (result.IsSuccess)
     foreach (var article in result.Value)
     {
         Console.WriteLine($"{article.Title} - {article.PublishDate}");
+    }
+}
+```
+
+### Working with Linked Items
+
+Linked items elements (modular content) are automatically hydrated to strongly-typed embedded content, providing compile-time type safety and runtime type resolution.
+
+#### Defining Linked Items in Models
+
+Linked items properties use `IEnumerable<IEmbeddedContent>` to support runtime typing where each item can be a different content type:
+
+```csharp
+public record Article
+{
+    [JsonPropertyName("title")]
+    public string Title { get; init; }
+
+    [JsonPropertyName("summary")]
+    public string Summary { get; init; }
+
+    [JsonPropertyName("related_articles")]
+    public IEnumerable<IEmbeddedContent>? RelatedArticles { get; init; }
+
+    [JsonPropertyName("recommended_products")]
+    public IEnumerable<IEmbeddedContent>? RecommendedProducts { get; init; }
+}
+```
+
+#### Accessing Linked Items with Type Safety
+
+Use pattern matching to access strongly-typed content:
+
+```csharp
+var result = await client.GetItem<Article>("my-article").ExecuteAsync();
+
+if (result.IsSuccess)
+{
+    var article = result.Value.Elements;
+
+    // Pattern matching for type-safe access
+    foreach (var linkedItem in article.RelatedArticles!)
+    {
+        switch (linkedItem)
+        {
+            case IEmbeddedContent<Article> relatedArticle:
+                Console.WriteLine($"Related: {relatedArticle.Elements.Title}");
+                Console.WriteLine($"  Summary: {relatedArticle.Elements.Summary}");
+                break;
+
+            case IEmbeddedContent<Product> product:
+                Console.WriteLine($"Product: {product.Elements.Name}");
+                Console.WriteLine($"  Price: ${product.Elements.Price}");
+                break;
+        }
+    }
+}
+```
+
+#### Filtering Linked Items by Type
+
+Use LINQ to filter linked items by specific types:
+
+```csharp
+// Get only articles from mixed linked items
+var articles = article.RelatedArticles!
+    .OfType<IEmbeddedContent<Article>>()
+    .ToList();
+
+foreach (var relatedArticle in articles)
+{
+    // Direct access to strongly-typed elements
+    Console.WriteLine($"Article: {relatedArticle.Elements.Title}");
+}
+
+// Get only products
+var products = article.RecommendedProducts!
+    .OfType<IEmbeddedContent<Product>>()
+    .ToList();
+```
+
+#### Accessing Metadata
+
+All linked items include metadata regardless of their type:
+
+```csharp
+foreach (var linkedItem in article.RelatedArticles!)
+{
+    // Access metadata for all types
+    Console.WriteLine($"Type: {linkedItem.ContentTypeCodename}");
+    Console.WriteLine($"Codename: {linkedItem.Codename}");
+    Console.WriteLine($"Name: {linkedItem.Name}");
+    Console.WriteLine($"ID: {linkedItem.Id}");
+
+    // Then access type-specific elements
+    if (linkedItem is IEmbeddedContent<Article> typedArticle)
+    {
+        Console.WriteLine($"Title: {typedArticle.Elements.Title}");
+    }
+}
+```
+
+#### Extracting Element Models
+
+You can extract just the element models without the `IEmbeddedContent` wrapper:
+
+```csharp
+// Get just the element models using LINQ
+var articleElements = article.RelatedArticles!
+    .OfType<IEmbeddedContent<Article>>()
+    .Select(a => a.Elements)
+    .ToList();
+
+foreach (var articleElement in articleElements)
+{
+    // Direct access to model without IEmbeddedContent wrapper
+    Console.WriteLine(articleElement.Title);
+}
+```
+
+#### Mixed Content Types
+
+Linked items elements can contain multiple content types, and all are preserved:
+
+```csharp
+public record HomePage
+{
+    [JsonPropertyName("featured_content")]
+    public IEnumerable<IEmbeddedContent> FeaturedContent { get; init; }
+}
+
+var home = await client.GetItem<HomePage>("homepage").ExecuteAsync();
+
+// Featured content might contain articles, products, videos, etc.
+foreach (var item in home.Value.Elements.FeaturedContent)
+{
+    switch (item)
+    {
+        case IEmbeddedContent<Article> article:
+            RenderArticleCard(article.Elements);
+            break;
+        case IEmbeddedContent<Product> product:
+            RenderProductCard(product.Elements);
+            break;
+        case IEmbeddedContent<Video> video:
+            RenderVideoEmbed(video.Elements);
+            break;
+        default:
+            // Handle unknown types gracefully
+            Console.WriteLine($"Unknown type: {item.ContentTypeCodename}");
+            break;
     }
 }
 ```
@@ -304,14 +472,16 @@ if (result.IsSuccess)
 
 ```csharp
 var resolver = new HtmlResolverBuilder()
-    .WithContentItemLinkResolver("article", (link, _) =>
+    .WithContentItemLinkResolver("article", async (link, resolveChildren) =>
     {
         var url = $"/articles/{link.Metadata?.UrlSlug}";
-        return ValueTask.FromResult($"<a href=\"{url}\">{link.Text}</a>");
+        var innerHtml = await resolveChildren(link.Children);
+        return ValueTask.FromResult($"<a href=\"{url}\">{innerHtml}</a>");
     })
     .WithContentItemLinkResolver("product", (link, _) =>
     {
         var url = $"/shop/{link.Metadata?.UrlSlug}";
+        var innerHtml = await resolveChildren(link.Children);
         return ValueTask.FromResult($"<a href=\"{url}\">{link.Text}</a>");
     })
     .Build();
@@ -321,21 +491,84 @@ var html = await article.BodyCopy.ToHtmlAsync(resolver);
 
 #### Embedded Content Resolution
 
+**Type-Safe Resolvers with Strongly-Typed Models:**
+
 ```csharp
 var resolver = new HtmlResolverBuilder()
-    .WithContentResolver("tweet", content =>
+    // Type-safe resolver with compile-time checking
+    .WithContentResolver<Tweet>(tweet =>
+        $"<blockquote class=\"twitter-tweet\">{tweet.Elements.TweetText}<cite>@{tweet.Elements.AuthorHandle}</cite></blockquote>")
+    // Async type-safe resolver
+    .WithContentResolver<Video>(async video =>
     {
-        var tweet = content.Elements as Tweet; // cast to your strongly typed model
-        return $"<blockquote class=\"twitter-tweet\">{tweet.Text}<cite>{tweet.Author}</cite></blockquote>";
-    })
-    .WithContentResolver("video", async content =>
-    {
-        var videoId = content.Elements["video_id"]?.ToString(); // dynamic access without strongly typed model
-        return $"<div class=\"video-wrapper\"><iframe src=\"https://youtube.com/embed/{videoId}\"></iframe></div>";
+        var metadata = await _videoService.GetMetadataAsync(video.Elements.VideoId);
+        return $"<div class=\"video-wrapper\"><iframe src=\"https://youtube.com/embed/{video.Elements.VideoId}\" title=\"{metadata.Title}\"></iframe></div>";
     })
     .Build();
 
 var html = await article.BodyCopy.ToHtmlAsync(resolver);
+```
+
+**Codename-Based Resolvers:**
+
+```csharp
+var resolver = new HtmlResolverBuilder()
+    .WithContentResolver("tweet", content =>
+    {
+        // Requires manual casting
+        if (content is IEmbeddedContent<Tweet> tweet)
+        {
+            return $"<blockquote>{tweet.Elements.TweetText}</blockquote>";
+        }
+        return string.Empty;
+    })
+    .Build();
+```
+
+**Batch Registration with Tuples:**
+
+```csharp
+var resolver = new HtmlResolverBuilder()
+    .WithContentResolvers(
+        (typeof(Tweet), content =>
+            content is IEmbeddedContent<Tweet> t
+                ? $"<blockquote>{t.Elements.TweetText}</blockquote>"
+                : ""),
+        (typeof(Video), content =>
+            content is IEmbeddedContent<Video> v
+                ? $"<iframe src=\"https://youtube.com/embed/{v.Elements.VideoId}\"></iframe>"
+                : ""),
+        (typeof(Quote), content =>
+            content is IEmbeddedContent<Quote> q
+                ? $"<blockquote><p>{q.Elements.Text}</p><cite>{q.Elements.Author}</cite></blockquote>"
+                : "")
+    )
+    .Build();
+```
+
+**Pattern Matching for Multiple Types:**
+
+```csharp
+// Access strongly-typed embedded content via pattern matching
+foreach (var block in article.BodyCopy)
+{
+    switch (block)
+    {
+        case IEmbeddedContent<Tweet> tweet:
+            Console.WriteLine($"Tweet: {tweet.Elements.TweetText}");
+            break;
+        case IEmbeddedContent<Video> video:
+            Console.WriteLine($"Video: {video.Elements.Title}");
+            break;
+        case IEmbeddedContent<Quote> quote:
+            Console.WriteLine($"Quote: {quote.Elements.Text}");
+            break;
+    }
+}
+
+// Or use extension methods for filtering
+var tweets = article.BodyCopy.GetEmbeddedContent<Tweet>();
+var tweetElements = article.BodyCopy.GetEmbeddedElements<Tweet>();
 ```
 
 For advanced rich text scenarios including custom HTML nodes and complex resolution strategies, see the [Rich Text Customization Guide](docs/rich-text-customization.md).
@@ -491,7 +724,7 @@ You can also configure HTTP client behavior:
 
 ```csharp
 services.AddDeliveryClient(
-    options => options.EnvironmentId = "your-id",
+	buildDeliveryOptions: builder => builder.WithEnvironmentId("your-environment-id").Build(),
     configureHttpClient: builder =>
     {
         builder.ConfigureHttpClient(client =>

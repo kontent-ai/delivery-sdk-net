@@ -9,7 +9,7 @@ namespace Kontent.Ai.Delivery.Tests.Models.ContentTypes;
 public record Article : IElementsModel
 {
     [JsonPropertyName("body_copy")]
-    public RichTextContent? BodyCopy { get; init; }
+    public RichTextContent BodyCopy { get; init; } = default!;
 
     [JsonPropertyName("metadata__meta_description")]
     public string? MetadataMetaDescription { get; init; }
@@ -54,7 +54,7 @@ public record Article : IElementsModel
     public DateTime? PostDate { get; init; }
 
     [JsonPropertyName("related_articles")]
-    public IEnumerable<string>? RelatedArticles { get; init; }
+    public IEnumerable<IEmbeddedContent>? RelatedArticles { get; init; }
 
     [JsonPropertyName("sitemap")]
     public IEnumerable<TaxonomyTerm>? Sitemap { get; init; }

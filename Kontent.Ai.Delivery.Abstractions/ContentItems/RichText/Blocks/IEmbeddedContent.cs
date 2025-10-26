@@ -35,3 +35,36 @@ public interface IEmbeddedContent : IRichTextBlock
     /// </remarks>
     object? Elements { get; }
 }
+
+/// <summary>
+/// Represents embedded content (component or linked item) within rich text with strongly-typed elements.
+/// </summary>
+/// <typeparam name="TModel">The model type of the embedded content elements.</typeparam>
+/// <remarks>
+/// This interface extends <see cref="IEmbeddedContent"/> to provide compile-time type safety
+/// for accessing elements of embedded content. Use pattern matching for type-safe access:
+/// <code>
+/// foreach (var block in richTextContent)
+/// {
+///     switch (block)
+///     {
+///         case IEmbeddedContent&lt;Article&gt; article:
+///             var title = article.Elements.Title;
+///             Console.WriteLine($"Article: {title}");
+///             break;
+///         case IEmbeddedContent&lt;Coffee&gt; coffee:
+///             var name = coffee.Elements.ProductName;
+///             Console.WriteLine($"Coffee: {name}");
+///             break;
+///     }
+/// }
+/// </code>
+/// </remarks>
+public interface IEmbeddedContent<out TModel> : IEmbeddedContent // TODO: consider having strongly typed embedded content direct (without nested access required)
+    where TModel : IElementsModel
+{
+    /// <summary>
+    /// Gets the strongly-typed elements of the embedded content.
+    /// </summary>
+    new TModel Elements { get; }
+}

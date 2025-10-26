@@ -99,20 +99,17 @@ internal class RichTextParser(IHtmlParser parser, IContentDependencyExtractor de
 
         var contentItem = await context.GetLinkedItem(codename);
 
-        // Extract metadata from content item (or use defaults if null due to depth limit)
-        if (contentItem is IContentItem<IElementsModel> typedItem)
+        // Use factory for consistent type conversion (shared with linked items processing)
+        var embeddedContent = EmbeddedContentFactory.CreateEmbeddedContent(contentItem);
+
+        // Handle case where content item couldn't be resolved (depth limit, etc.)
+        // Factory returns placeholder with codename for better error messages
+        if (embeddedContent.Codename == "unknown" && contentItem is null)
         {
-            var id = Guid.TryParse(typedItem.System.Id, out var parsedId) ? parsedId : Guid.Empty;
-            return new EmbeddedContent( // TODO: consider making generic and using the type parameter
-                typedItem.System.Type,
-                typedItem.System.Codename,
-                typedItem.System.Name,
-                id,
-                contentItem);
+            return new EmbeddedContent("unknown", codename, null, Guid.Empty, null);
         }
-        // TODO: check what happens when unnknown is returned this way
-        // Content item is null (depth limit reached) - return placeholder with minimal metadata
-        return new EmbeddedContent("unknown", codename, null, Guid.Empty, null);
+
+        return embeddedContent;
     }
 
     private async Task<IRichTextBlock> ParseContentItemLinkAsync(

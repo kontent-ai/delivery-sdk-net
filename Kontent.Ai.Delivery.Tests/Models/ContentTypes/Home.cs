@@ -8,16 +8,16 @@ namespace Kontent.Ai.Delivery.Tests.Models.ContentTypes;
 public record Home : IElementsModel
 {
     [JsonPropertyName("articles")]
-    public required IEnumerable<string> Articles { get; init; }
+    public required IEnumerable<IEmbeddedContent> Articles { get; init; }
 
     [JsonPropertyName("cafes")]
-    public required IEnumerable<string> Cafes { get; init; }
+    public required IEnumerable<IEmbeddedContent> Cafes { get; init; }
 
     [JsonPropertyName("contact")]
     public required string Contact { get; init; }
 
     [JsonPropertyName("hero_unit")]
-    public required IEnumerable<string> HeroUnit { get; init; }
+    public required IEnumerable<IEmbeddedContent> HeroUnit { get; init; }
 
     [JsonPropertyName("metadata__meta_description")]
     public required string MetadataMetaDescription { get; init; }
@@ -50,7 +50,7 @@ public record Home : IElementsModel
     public required string MetadataTwitterTitle { get; init; }
 
     [JsonPropertyName("our_story")]
-    public required IEnumerable<string> OurStory { get; init; }
+    public required IEnumerable<IEmbeddedContent> OurStory { get; init; }
 
     [JsonPropertyName("sitemap")]
     public required IEnumerable<TaxonomyTerm> Sitemap { get; init; }

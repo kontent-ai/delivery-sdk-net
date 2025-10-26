@@ -41,6 +41,7 @@ public sealed class HtmlResolverBuilder : IHtmlResolverBuilder
     private readonly Dictionary<Type, Delegate> _resolvers = [];
     private readonly List<ConditionalHtmlNodeResolver> _conditionalHtmlNodeResolvers = [];
     private readonly Dictionary<string, Func<IEmbeddedContent, ValueTask<string>>> _embeddedContentResolvers = new(StringComparer.OrdinalIgnoreCase);
+    private readonly Dictionary<Type, Func<IEmbeddedContent, ValueTask<string>>> _typeBasedContentResolvers = [];
     private readonly Dictionary<string, BlockResolver<IContentItemLink>> _contentItemLinkResolvers = new(StringComparer.OrdinalIgnoreCase);
     private readonly HtmlResolverOptions _options = new();
 
@@ -139,6 +140,70 @@ public sealed class HtmlResolverBuilder : IHtmlResolverBuilder
         {
             WithContentResolver(codename, resolver);
         }
+        return this;
+    }
+
+    /// <inheritdoc />
+    public IHtmlResolverBuilder WithContentResolver<TModel>(
+        Func<IEmbeddedContent<TModel>, ValueTask<string>> resolver)
+        where TModel : IElementsModel
+    {
+        ArgumentNullException.ThrowIfNull(resolver);
+
+        // Wrap the generic resolver to work with the base interface
+        _typeBasedContentResolvers[typeof(TModel)] = content =>
+            content is IEmbeddedContent<TModel> typed
+                ? resolver(typed)
+                : ValueTask.FromResult(string.Empty);
+
+        return this;
+    }
+
+    /// <inheritdoc />
+    public IHtmlResolverBuilder WithContentResolver<TModel>(
+        Func<IEmbeddedContent<TModel>, string> resolver)
+        where TModel : IElementsModel
+    {
+        ArgumentNullException.ThrowIfNull(resolver);
+
+        // Wrap synchronous generic resolver
+        _typeBasedContentResolvers[typeof(TModel)] = content =>
+            content is IEmbeddedContent<TModel> typed
+                ? ValueTask.FromResult(resolver(typed))
+                : ValueTask.FromResult(string.Empty);
+
+        return this;
+    }
+
+    /// <inheritdoc />
+    public IHtmlResolverBuilder WithContentResolvers(
+        IReadOnlyDictionary<Type, Func<IEmbeddedContent, string>> resolvers)
+    {
+        ArgumentNullException.ThrowIfNull(resolvers);
+
+        foreach (var (type, resolver) in resolvers)
+        {
+            // Wrap synchronous resolver in ValueTask
+            _typeBasedContentResolvers[type] = content =>
+                ValueTask.FromResult(resolver(content));
+        }
+
+        return this;
+    }
+
+    /// <inheritdoc />
+    public IHtmlResolverBuilder WithContentResolvers(
+        params (Type ModelType, Func<IEmbeddedContent, string> Resolver)[] resolvers)
+    {
+        ArgumentNullException.ThrowIfNull(resolvers);
+
+        foreach (var (type, resolver) in resolvers)
+        {
+            // Wrap synchronous resolver in ValueTask
+            _typeBasedContentResolvers[type] = content =>
+                ValueTask.FromResult(resolver(content));
+        }
+
         return this;
     }
 
@@ -259,6 +324,7 @@ public sealed class HtmlResolverBuilder : IHtmlResolverBuilder
             DefaultHtmlNodeResolver = defaultHtmlNodeResolver,
             ThrowOnMissingResolver = _options.ThrowOnMissingResolver,
             EmbeddedContentResolvers = _embeddedContentResolvers.Count > 0 ? _embeddedContentResolvers : null,
+            TypeBasedContentResolvers = _typeBasedContentResolvers.Count > 0 ? _typeBasedContentResolvers : null,
             ContentItemLinkResolvers = _contentItemLinkResolvers.Count > 0 ? _contentItemLinkResolvers : null
         };
 

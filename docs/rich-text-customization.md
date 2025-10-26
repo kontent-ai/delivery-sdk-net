@@ -220,14 +220,100 @@ var resolver = new HtmlResolverBuilder()
 
 Embedded content (formerly inline content items) are components displayed within rich text.
 
-### Type-Specific Content Resolvers
+### Type-Safe Content Resolvers (Recommended)
 
-Define how each content type should be rendered:
+The SDK supports strongly-typed embedded content resolvers that provide compile-time type safety and IntelliSense:
+
+```csharp
+var resolver = new HtmlResolverBuilder()
+    .WithContentResolver<Tweet>(tweet =>
+    {
+        // Strongly-typed access to elements - no casting required!
+        var tweetText = tweet.Elements.TweetText;
+        var author = tweet.Elements.AuthorHandle;
+        var tweetUrl = tweet.Elements.TweetUrl;
+
+        return $@"
+            <blockquote class=""twitter-tweet"">
+                <p>{tweetText}</p>
+                <cite>@{author}</cite>
+                <a href=""{tweetUrl}"">View on Twitter</a>
+            </blockquote>";
+    })
+    .WithContentResolver<Quote>(quote =>
+    {
+        var quoteText = quote.Elements.QuoteText;
+        var attribution = quote.Elements.Attribution;
+
+        return $@"
+            <blockquote class=""pullquote"">
+                <p>{quoteText}</p>
+                {(attribution != null ? $"<cite>{attribution}</cite>" : "")}
+            </blockquote>";
+    })
+    .Build();
+```
+
+**Benefits of Type-Safe Resolvers:**
+- ✅ Compile-time type checking
+- ✅ IntelliSense support for element properties
+- ✅ Refactoring-friendly (rename detection)
+- ✅ No runtime casting or null checks for element access
+
+**Strongly-Typed Embedded Content Interface:**
+
+```csharp
+public interface IEmbeddedContent<out TModel> : IEmbeddedContent
+    where TModel : IElementsModel
+{
+    TModel Elements { get; }  // Strongly-typed elements
+}
+```
+
+### Pattern Matching with Embedded Content
+
+Use pattern matching to filter and process specific embedded content types:
+
+```csharp
+// Process rich text blocks with pattern matching
+foreach (var block in article.Elements.BodyCopy)
+{
+    switch (block)
+    {
+        case IEmbeddedContent<Tweet> tweet:
+            Console.WriteLine($"Found tweet by @{tweet.Elements.AuthorHandle}");
+            break;
+
+        case IEmbeddedContent<Video> video:
+            Console.WriteLine($"Found video: {video.Elements.Title}");
+            break;
+
+        case IEmbeddedContent<Quote> quote:
+            Console.WriteLine($"Found quote: {quote.Elements.QuoteText}");
+            break;
+    }
+}
+
+// Or use LINQ extension methods
+var allTweets = article.Elements.BodyCopy
+    .GetEmbeddedContent<Tweet>()
+    .ToList();
+
+var allQuoteTexts = article.Elements.BodyCopy
+    .GetEmbeddedElements<Quote>()
+    .Select(q => q.QuoteText)
+    .ToList();
+```
+
+### Codename-Based Content Resolvers (Legacy)
+
+For scenarios where you don't have strongly-typed models, you can still use codename-based resolvers:
 
 ```csharp
 var resolver = new HtmlResolverBuilder()
     .WithContentResolver("tweet", content =>
     {
+        // Requires manual element access and casting
         var tweetText = content.Elements["tweet_text"]?.ToString();
         var author = content.Elements["author_handle"]?.ToString();
         var tweetUrl = content.Elements["tweet_url"]?.ToString();
@@ -239,41 +325,25 @@ var resolver = new HtmlResolverBuilder()
                 <a href=""{tweetUrl}"">View on Twitter</a>
             </blockquote>";
     })
-    .WithContentResolver("quote", content =>
-    {
-        var quoteText = content.Elements["quote_text"]?.ToString();
-        var attribution = content.Elements["attribution"]?.ToString();
-
-        return $@"
-            <blockquote class=""pullquote"">
-                <p>{quoteText}</p>
-                {(attribution != null ? $"<cite>{attribution}</cite>" : "")}
-            </blockquote>";
-    })
     .Build();
 ```
 
-**Content Properties:**
-
-```csharp
-public interface IContentItem
-{
-    IContentItemSystem System { get; }              // System properties
-    IDictionary<string, object?> Elements { get; }  // Element values
-}
-```
+**Resolver Priority:**
+1. Type-based resolvers (highest priority)
+2. Codename-based resolvers
+3. Default/missing resolver handling
 
 ### Async Content Resolvers
 
-Use async resolvers when you need to fetch additional data:
+Use async resolvers when you need to fetch additional data. Type-safe async resolvers provide the same benefits with `async`/`await`:
 
 ```csharp
 var resolver = new HtmlResolverBuilder()
-    .WithContentResolver("video", async content =>
+    .WithContentResolver<HostedVideo>(async video =>
     {
-        var videoId = content.Elements["video_id"]?.ToString();
+        var videoId = video.Elements.VideoId;
 
-        // Fetch video metadata from external API
+        // Fetch video metadata from external API with full type safety
         var videoData = await _videoService.GetVideoDataAsync(videoId);
 
         return $@"
@@ -285,12 +355,12 @@ var resolver = new HtmlResolverBuilder()
                 <p class=""video-caption"">{videoData.Description}</p>
             </div>";
     })
-    .WithContentResolver("product_showcase", async content =>
+    .WithContentResolver<ProductShowcase>(async showcase =>
     {
-        var productId = content.Elements["product_reference"]?.ToString();
+        var productReference = showcase.Elements.ProductReference;
 
         // Fetch real-time product data
-        var product = await _productService.GetProductAsync(productId);
+        var product = await _productService.GetProductAsync(productReference.Id);
 
         return $@"
             <div class=""product-card"">
@@ -331,7 +401,32 @@ var resolver = new HtmlResolverBuilder()
 
 ### Tuple-Based Content Resolvers
 
-Register multiple simple (synchronous) content resolvers using tuples:
+Register multiple content resolvers using tuples for batch registration.
+
+**Type-Safe Tuple Resolvers:**
+
+```csharp
+var resolver = new HtmlResolverBuilder()
+    .WithContentResolvers(
+        (typeof(Tweet), content =>
+            content is IEmbeddedContent<Tweet> tweet
+                ? $"<div class=\"twitter-embed\"><a href=\"{tweet.Elements.Url}\">View Tweet</a></div>"
+                : string.Empty),
+        (typeof(Quote), content =>
+            content is IEmbeddedContent<Quote> quote
+                ? quote.Elements.Attribution != null
+                    ? $"<blockquote><p>{quote.Elements.QuoteText}</p><cite>{quote.Elements.Attribution}</cite></blockquote>"
+                    : $"<blockquote><p>{quote.Elements.QuoteText}</p></blockquote>"
+                : string.Empty),
+        (typeof(CodeSnippet), content =>
+            content is IEmbeddedContent<CodeSnippet> snippet
+                ? $"<pre><code class=\"language-{snippet.Elements.Language}\">{System.Web.HttpUtility.HtmlEncode(snippet.Elements.Code)}</code></pre>"
+                : string.Empty)
+    )
+    .Build();
+```
+
+**Codename-Based Tuple Resolvers (Legacy):**
 
 ```csharp
 var resolver = new HtmlResolverBuilder()
@@ -569,10 +664,10 @@ public IHtmlResolver CreateBlogResolver(string baseUrl)
             var slug = link.Metadata?.UrlSlug ?? link.ItemId.ToString();
             return ValueTask.FromResult($"<a href=\"{baseUrl}/authors/{slug}\">{link.Text}</a>");
         })
-        // Tweet embeds
-        .WithContentResolver("tweet", content =>
+        // Type-safe tweet embeds
+        .WithContentResolver<Tweet>(tweet =>
         {
-            var tweetUrl = content.Elements["url"]?.ToString();
+            var tweetUrl = tweet.Elements.Url;
             return $@"
                 <div class=""twitter-embed"">
                     <blockquote class=""twitter-tweet"">
@@ -581,12 +676,12 @@ public IHtmlResolver CreateBlogResolver(string baseUrl)
                     <script async src=""https://platform.twitter.com/widgets.js""></script>
                 </div>";
         })
-        // Code snippets
-        .WithContentResolver("code_snippet", content =>
+        // Type-safe code snippets
+        .WithContentResolver<CodeSnippet>(snippet =>
         {
-            var code = content.Elements["code"]?.ToString();
-            var language = content.Elements["language"]?.ToString() ?? "plaintext";
-            var caption = content.Elements["caption"]?.ToString();
+            var code = snippet.Elements.Code;
+            var language = snippet.Elements.Language ?? "plaintext";
+            var caption = snippet.Elements.Caption;
 
             return $@"
                 <figure class=""code-sample"">
@@ -636,10 +731,10 @@ public class ProductContentResolver
                         <span class=""price"">${product.CurrentPrice:F2}</span>
                     </a>";
             })
-            // Product showcase component
-            .WithContentResolver("product_showcase", async content =>
+            // Type-safe product showcase component
+            .WithContentResolver<ProductShowcase>(async showcase =>
             {
-                var productRef = content.Elements["product"] as IContentItem;
+                var productRef = showcase.Elements.Product;
                 if (productRef == null) return "";
 
                 var productId = Guid.Parse(productRef.System.Id);
@@ -686,12 +781,12 @@ public IHtmlResolver CreateDocumentationResolver()
             return ValueTask.FromResult(
                 $"<a href=\"/api/{apiPath}\" class=\"api-link\"><code>{link.Text}</code></a>");
         })
-        // Code examples
-        .WithContentResolver("code_example", content =>
+        // Type-safe code examples
+        .WithContentResolver<CodeExample>(example =>
         {
-            var code = content.Elements["code"]?.ToString();
-            var language = content.Elements["language"]?.ToString() ?? "csharp";
-            var title = content.Elements["title"]?.ToString();
+            var code = example.Elements.Code;
+            var language = example.Elements.Language ?? "csharp";
+            var title = example.Elements.Title;
 
             return $@"
                 <div class=""code-example"">
@@ -702,12 +797,12 @@ public IHtmlResolver CreateDocumentationResolver()
                     </button>
                 </div>";
         })
-        // Callout boxes
-        .WithContentResolver("callout", content =>
+        // Type-safe callout boxes
+        .WithContentResolver<Callout>(callout =>
         {
-            var type = content.Elements["type"]?.ToString() ?? "info";
-            var title = content.Elements["title"]?.ToString();
-            var bodyElement = content.Elements["body"] as RichTextElement;
+            var type = callout.Elements.Type ?? "info";
+            var title = callout.Elements.Title;
+            var bodyElement = callout.Elements.Body;
 
             var body = bodyElement?.ToHtmlAsync().Result ?? "";
 
@@ -740,19 +835,43 @@ private string GenerateId(string text)
 
 ## Best Practices
 
-### 1. Performance Optimization
+### 1. Use Type-Safe Resolvers
 
-**Use Synchronous Resolvers When Possible:**
+**Prefer type-safe resolvers over codename-based resolvers:**
 
 ```csharp
-// Good: Synchronous
+// ✅ Good: Type-safe with compile-time checking
+.WithContentResolver<Quote>(quote =>
+{
+    return $"<blockquote>{quote.Elements.Text}</blockquote>";
+})
+
+// ❌ Avoid: Codename-based with runtime errors
 .WithContentResolver("quote", content =>
 {
     return $"<blockquote>{content.Elements["text"]}</blockquote>";
 })
+```
+
+**Benefits:**
+- Compile-time type safety prevents runtime errors
+- IntelliSense support improves developer experience
+- Refactoring tools work correctly with strongly-typed properties
+- Better performance (no dictionary lookups for element access)
+
+### 2. Performance Optimization
+
+**Use Synchronous Resolvers When Possible:**
+
+```csharp
+// Good: Synchronous type-safe resolver
+.WithContentResolver<Quote>(quote =>
+{
+    return $"<blockquote>{quote.Elements.Text}</blockquote>";
+})
 
 // Only use async when necessary
-.WithContentResolver("product", async content =>
+.WithContentResolver<ProductShowcase>(async showcase =>
 {
     var data = await _externalService.GetDataAsync();  // Genuinely async
     return $"<div>{data}</div>";
@@ -799,23 +918,24 @@ using System.Web;
 ```csharp
 public class RichTextResolvers
 {
-    public static string ResolveTweet(IContentItem content)
+    // Type-safe resolver methods
+    public static string ResolveTweet(IEmbeddedContent<Tweet> tweet)
     {
-        var url = content.Elements["url"]?.ToString();
+        var url = tweet.Elements.Url;
         return $"<blockquote class=\"twitter-tweet\"><a href=\"{url}\">Tweet</a></blockquote>";
     }
 
-    public static string ResolveVideo(IContentItem content)
+    public static string ResolveVideo(IEmbeddedContent<HostedVideo> video)
     {
-        var videoId = content.Elements["video_id"]?.ToString();
+        var videoId = video.Elements.VideoId;
         return $"<iframe src=\"https://youtube.com/embed/{videoId}\"></iframe>";
     }
 }
 
-// Usage
+// Usage with type-safe resolvers
 var resolver = new HtmlResolverBuilder()
-    .WithContentResolver("tweet", RichTextResolvers.ResolveTweet)
-    .WithContentResolver("video", RichTextResolvers.ResolveVideo)
+    .WithContentResolver<Tweet>(RichTextResolvers.ResolveTweet)
+    .WithContentResolver<HostedVideo>(RichTextResolvers.ResolveVideo)
     .Build();
 ```
 
@@ -838,27 +958,30 @@ public class HtmlResolverFactory
     public IHtmlResolver CreateResolver()
     {
         return new HtmlResolverBuilder()
-            .WithContentResolver("product", ResolveProductAsync)
+            .WithContentResolver<ProductShowcase>(ResolveProductAsync)
             .Build();
     }
 
-    internal async Task<string> ResolveProductAsync(IContentItem content)
+    // Type-safe testable method
+    internal async Task<string> ResolveProductAsync(IEmbeddedContent<ProductShowcase> showcase)
     {
-        // Testable method
-        var productId = Guid.Parse(content.System.Id);
+        var productId = Guid.Parse(showcase.Elements.Product.System.Id);
         var product = await _productService.GetProductAsync(productId);
         return $"<div>{product.Name}</div>";
     }
 }
 
-// In tests
+// In tests - easier to test with strongly-typed mocks
 [Fact]
 public async Task ResolveProductAsync_ReturnsCorrectHtml()
 {
     var mockService = new Mock<IProductService>();
     var factory = new HtmlResolverFactory(mockService.Object, config);
 
-    var html = await factory.ResolveProductAsync(mockContent);
+    // Create strongly-typed test data
+    var mockShowcase = CreateMockShowcase();
+
+    var html = await factory.ResolveProductAsync(mockShowcase);
 
     Assert.Contains("Product Name", html);
 }

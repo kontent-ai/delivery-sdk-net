@@ -8,7 +8,7 @@ namespace Kontent.Ai.Delivery.Tests.Models.ContentTypes;
 public record AboutUs : IElementsModel
 {
     [JsonPropertyName("facts")]
-    public required IEnumerable<string> Facts { get; init; }
+    public required IEnumerable<IEmbeddedContent> Facts { get; init; }
 
     [JsonPropertyName("metadata__meta_description")]
     public required string MetadataMetaDescription { get; init; }

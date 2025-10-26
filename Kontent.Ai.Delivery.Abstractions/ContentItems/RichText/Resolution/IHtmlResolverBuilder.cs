@@ -77,6 +77,72 @@ public interface IHtmlResolverBuilder
         params (string ContentTypeCodename, Func<IEmbeddedContent, string> Resolver)[] resolvers);
 
     /// <summary>
+    /// Registers a type-safe async resolver for strongly-typed embedded content of a specific model type.
+    /// Provides compile-time type safety by accepting <see cref="IEmbeddedContent{TModel}"/> instead of object casting.
+    /// </summary>
+    /// <typeparam name="TModel">The model type of the embedded content elements.</typeparam>
+    /// <param name="resolver">The async resolver function that receives strongly-typed embedded content.</param>
+    /// <returns>This builder for method chaining.</returns>
+    /// <example>
+    /// <code>
+    /// builder.WithContentResolver&lt;Article&gt;(article =&gt;
+    ///     new ValueTask&lt;string&gt;($"&lt;div&gt;{article.Elements.Title}&lt;/div&gt;"));
+    /// </code>
+    /// </example>
+    IHtmlResolverBuilder WithContentResolver<TModel>(
+        Func<IEmbeddedContent<TModel>, ValueTask<string>> resolver)
+        where TModel : IElementsModel;
+
+    /// <summary>
+    /// Registers a type-safe synchronous resolver for strongly-typed embedded content of a specific model type.
+    /// Provides compile-time type safety by accepting <see cref="IEmbeddedContent{TModel}"/> instead of object casting.
+    /// </summary>
+    /// <typeparam name="TModel">The model type of the embedded content elements.</typeparam>
+    /// <param name="resolver">The synchronous resolver function that receives strongly-typed embedded content.</param>
+    /// <returns>This builder for method chaining.</returns>
+    /// <example>
+    /// <code>
+    /// builder.WithContentResolver&lt;Article&gt;(article =&gt;
+    ///     $"&lt;div&gt;{article.Elements.Title}&lt;/div&gt;");
+    /// </code>
+    /// </example>
+    IHtmlResolverBuilder WithContentResolver<TModel>(
+        Func<IEmbeddedContent<TModel>, string> resolver)
+        where TModel : IElementsModel;
+
+    /// <summary>
+    /// Registers multiple type-based resolvers for embedded content using a dictionary.
+    /// The dictionary keys are model types, allowing type-based dispatch instead of codename-based.
+    /// </summary>
+    /// <param name="resolvers">Dictionary mapping model types to their resolver functions.</param>
+    /// <returns>This builder for method chaining.</returns>
+    /// <remarks>
+    /// Note: The resolver function accepts non-generic <see cref="IEmbeddedContent"/> to support
+    /// heterogeneous dictionaries. Use pattern matching inside the resolver for type-safe access:
+    /// <code>
+    /// content switch { IEmbeddedContent&lt;Article&gt; a =&gt; ..., _ =&gt; "" }
+    /// </code>
+    /// </remarks>
+    IHtmlResolverBuilder WithContentResolvers(
+        IReadOnlyDictionary<Type, Func<IEmbeddedContent, string>> resolvers);
+
+    /// <summary>
+    /// Registers multiple type-based resolvers for embedded content using tuples.
+    /// </summary>
+    /// <param name="resolvers">Tuples of (model type, resolver function).</param>
+    /// <returns>This builder for method chaining.</returns>
+    /// <example>
+    /// <code>
+    /// builder.WithContentResolvers(
+    ///     (typeof(Article), content =&gt; content is IEmbeddedContent&lt;Article&gt; a ? $"&lt;div&gt;{a.Elements.Title}&lt;/div&gt;" : ""),
+    ///     (typeof(Coffee), content =&gt; content is IEmbeddedContent&lt;Coffee&gt; c ? $"&lt;div&gt;{c.Elements.ProductName}&lt;/div&gt;" : "")
+    /// );
+    /// </code>
+    /// </example>
+    IHtmlResolverBuilder WithContentResolvers(
+        params (Type ModelType, Func<IEmbeddedContent, string> Resolver)[] resolvers);
+
+    /// <summary>
     /// Registers a resolver for inline image blocks.
     /// </summary>
     /// <param name="resolver">The resolver function.</param>
