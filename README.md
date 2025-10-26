@@ -22,6 +22,7 @@ The official .NET SDK for the [Kontent.ai Delivery API](https://kontent.ai/learn
   - [Retrieving Content](#retrieving-content)
   - [Filtering and Querying](#filtering-and-querying)
   - [Working with Strongly-Typed Models](#working-with-strongly-typed-models)
+  - [Working with Linked Items](#working-with-linked-items)
   - [Rich Text Resolution](#rich-text-resolution)
   - [Multi-Language Support](#multi-language-support)
   - [Caching](#caching)
@@ -278,7 +279,7 @@ public record Article
     public string Summary { get; set; }
     public RichTextContent BodyCopy { get; set; }
     public DateTime PublishDate { get; set; }
-    public IEnumerable<Author> Authors { get; set; }
+    public IEnumerable<IEmbeddedContent> RelatedArticles { get; set; }
 }
 
 // Query with strong typing
@@ -292,6 +293,157 @@ if (result.IsSuccess)
     foreach (var article in result.Value)
     {
         Console.WriteLine($"{article.Title} - {article.PublishDate}");
+    }
+}
+```
+
+### Working with Linked Items
+
+Linked items elements (modular content) are automatically hydrated to strongly-typed embedded content, providing compile-time type safety and runtime type resolution.
+
+#### Defining Linked Items in Models
+
+Linked items properties use `IEnumerable<IEmbeddedContent>` to support runtime typing where each item can be a different content type:
+
+```csharp
+public record Article
+{
+    [JsonPropertyName("title")]
+    public string Title { get; init; }
+
+    [JsonPropertyName("summary")]
+    public string Summary { get; init; }
+
+    [JsonPropertyName("related_articles")]
+    public IEnumerable<IEmbeddedContent>? RelatedArticles { get; init; }
+
+    [JsonPropertyName("recommended_products")]
+    public IEnumerable<IEmbeddedContent>? RecommendedProducts { get; init; }
+}
+```
+
+#### Accessing Linked Items with Type Safety
+
+Use pattern matching to access strongly-typed content:
+
+```csharp
+var result = await client.GetItem<Article>("my-article").ExecuteAsync();
+
+if (result.IsSuccess)
+{
+    var article = result.Value.Elements;
+
+    // Pattern matching for type-safe access
+    foreach (var linkedItem in article.RelatedArticles!)
+    {
+        switch (linkedItem)
+        {
+            case IEmbeddedContent<Article> relatedArticle:
+                Console.WriteLine($"Related: {relatedArticle.Elements.Title}");
+                Console.WriteLine($"  Summary: {relatedArticle.Elements.Summary}");
+                break;
+
+            case IEmbeddedContent<Product> product:
+                Console.WriteLine($"Product: {product.Elements.Name}");
+                Console.WriteLine($"  Price: ${product.Elements.Price}");
+                break;
+        }
+    }
+}
+```
+
+#### Filtering Linked Items by Type
+
+Use LINQ to filter linked items by specific types:
+
+```csharp
+// Get only articles from mixed linked items
+var articles = article.RelatedArticles!
+    .OfType<IEmbeddedContent<Article>>()
+    .ToList();
+
+foreach (var relatedArticle in articles)
+{
+    // Direct access to strongly-typed elements
+    Console.WriteLine($"Article: {relatedArticle.Elements.Title}");
+}
+
+// Get only products
+var products = article.RecommendedProducts!
+    .OfType<IEmbeddedContent<Product>>()
+    .ToList();
+```
+
+#### Accessing Metadata
+
+All linked items include metadata regardless of their type:
+
+```csharp
+foreach (var linkedItem in article.RelatedArticles!)
+{
+    // Access metadata for all types
+    Console.WriteLine($"Type: {linkedItem.ContentTypeCodename}");
+    Console.WriteLine($"Codename: {linkedItem.Codename}");
+    Console.WriteLine($"Name: {linkedItem.Name}");
+    Console.WriteLine($"ID: {linkedItem.Id}");
+
+    // Then access type-specific elements
+    if (linkedItem is IEmbeddedContent<Article> typedArticle)
+    {
+        Console.WriteLine($"Title: {typedArticle.Elements.Title}");
+    }
+}
+```
+
+#### Extracting Element Models
+
+You can extract just the element models without the `IEmbeddedContent` wrapper:
+
+```csharp
+// Get just the element models using LINQ
+var articleElements = article.RelatedArticles!
+    .OfType<IEmbeddedContent<Article>>()
+    .Select(a => a.Elements)
+    .ToList();
+
+foreach (var articleElement in articleElements)
+{
+    // Direct access to model without IEmbeddedContent wrapper
+    Console.WriteLine(articleElement.Title);
+}
+```
+
+#### Mixed Content Types
+
+Linked items elements can contain multiple content types, and all are preserved:
+
+```csharp
+public record HomePage
+{
+    [JsonPropertyName("featured_content")]
+    public IEnumerable<IEmbeddedContent> FeaturedContent { get; init; }
+}
+
+var home = await client.GetItem<HomePage>("homepage").ExecuteAsync();
+
+// Featured content might contain articles, products, videos, etc.
+foreach (var item in home.Value.Elements.FeaturedContent)
+{
+    switch (item)
+    {
+        case IEmbeddedContent<Article> article:
+            RenderArticleCard(article.Elements);
+            break;
+        case IEmbeddedContent<Product> product:
+            RenderProductCard(product.Elements);
+            break;
+        case IEmbeddedContent<Video> video:
+            RenderVideoEmbed(video.Elements);
+            break;
+        default:
+            // Handle unknown types gracefully
+            Console.WriteLine($"Unknown type: {item.ContentTypeCodename}");
+            break;
     }
 }
 ```

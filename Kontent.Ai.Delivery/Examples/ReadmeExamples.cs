@@ -187,8 +187,26 @@ public static class ReadmeExamples
         public string Summary { get; set; } = string.Empty;
         public RichTextContent BodyCopy { get; set; } = new();
         public DateTime PublishDate { get; set; }
-        public IEnumerable<Author> Authors { get; set; } = Array.Empty<Author>();
+        public IEnumerable<IEmbeddedContent>? RelatedArticles { get; set; }
     }
+
+    public record Product : IElementsModel
+    {
+        public string Name { get; set; } = string.Empty;
+        public decimal Price { get; set; }
+    }
+
+    public record Video : IElementsModel
+    {
+        public string Title { get; set; } = string.Empty;
+        public string VideoId { get; set; } = string.Empty;
+    }
+
+    public record HomePage : IElementsModel
+    {
+        public IEnumerable<IEmbeddedContent> FeaturedContent { get; set; } = Array.Empty<IEmbeddedContent>();
+    }
+
     public record Author(string Name);
 
     // Query with strong typing
@@ -204,6 +222,135 @@ public static class ReadmeExamples
             foreach (var article in result.Value)
             {
                 Console.WriteLine($"{article.Elements.Title} - {article.Elements.PublishDate}");
+            }
+        }
+    }
+
+    // Linked Items - Accessing with Type Safety
+    public static async Task LinkedItemsWithTypeSafetyAsync(IDeliveryClient client)
+    {
+        var result = await client.GetItem<Article>("my-article").ExecuteAsync();
+
+        if (result.IsSuccess)
+        {
+            var article = result.Value.Elements;
+
+            // Pattern matching for type-safe access
+            foreach (var linkedItem in article.RelatedArticles!)
+            {
+                switch (linkedItem)
+                {
+                    case IEmbeddedContent<Article> relatedArticle:
+                        Console.WriteLine($"Related: {relatedArticle.Elements.Title}");
+                        Console.WriteLine($"  Summary: {relatedArticle.Elements.Summary}");
+                        break;
+
+                    case IEmbeddedContent<Product> product:
+                        Console.WriteLine($"Product: {product.Elements.Name}");
+                        Console.WriteLine($"  Price: ${product.Elements.Price}");
+                        break;
+                }
+            }
+        }
+    }
+
+    // Linked Items - Filtering by Type
+    public static async Task LinkedItemsFilteringByTypeAsync(IDeliveryClient client)
+    {
+        var result = await client.GetItem<Article>("my-article").ExecuteAsync();
+
+        if (result.IsSuccess)
+        {
+            var article = result.Value.Elements;
+
+            // Get only articles from mixed linked items
+            var articles = article.RelatedArticles!
+                .OfType<IEmbeddedContent<Article>>()
+                .ToList();
+
+            foreach (var relatedArticle in articles)
+            {
+                // Direct access to strongly-typed elements
+                Console.WriteLine($"Article: {relatedArticle.Elements.Title}");
+            }
+        }
+    }
+
+    // Linked Items - Accessing Metadata
+    public static async Task LinkedItemsAccessingMetadataAsync(IDeliveryClient client)
+    {
+        var result = await client.GetItem<Article>("my-article").ExecuteAsync();
+
+        if (result.IsSuccess)
+        {
+            var article = result.Value.Elements;
+
+            foreach (var linkedItem in article.RelatedArticles!)
+            {
+                // Access metadata for all types
+                Console.WriteLine($"Type: {linkedItem.ContentTypeCodename}");
+                Console.WriteLine($"Codename: {linkedItem.Codename}");
+                Console.WriteLine($"Name: {linkedItem.Name}");
+                Console.WriteLine($"ID: {linkedItem.Id}");
+
+                // Then access type-specific elements
+                if (linkedItem is IEmbeddedContent<Article> typedArticle)
+                {
+                    Console.WriteLine($"Title: {typedArticle.Elements.Title}");
+                }
+            }
+        }
+    }
+
+    // Linked Items - Extracting Element Models
+    public static async Task LinkedItemsExtractingElementModelsAsync(IDeliveryClient client)
+    {
+        var result = await client.GetItem<Article>("my-article").ExecuteAsync();
+
+        if (result.IsSuccess)
+        {
+            var article = result.Value.Elements;
+
+            // Get just the element models using LINQ
+            var articleElements = article.RelatedArticles!
+                .OfType<IEmbeddedContent<Article>>()
+                .Select(a => a.Elements)
+                .ToList();
+
+            foreach (var articleElement in articleElements)
+            {
+                // Direct access to model without IEmbeddedContent wrapper
+                Console.WriteLine(articleElement.Title);
+            }
+        }
+    }
+
+    // Linked Items - Mixed Content Types
+    public static async Task LinkedItemsMixedContentTypesAsync(IDeliveryClient client)
+    {
+        var home = await client.GetItem<HomePage>("homepage").ExecuteAsync();
+
+        if (home.IsSuccess)
+        {
+            // Featured content might contain articles, products, videos, etc.
+            foreach (var item in home.Value.Elements.FeaturedContent)
+            {
+                switch (item)
+                {
+                    case IEmbeddedContent<Article> article:
+                        Console.WriteLine($"Article: {article.Elements.Title}");
+                        break;
+                    case IEmbeddedContent<Product> product:
+                        Console.WriteLine($"Product: {product.Elements.Name}");
+                        break;
+                    case IEmbeddedContent<Video> video:
+                        Console.WriteLine($"Video: {video.Elements.Title}");
+                        break;
+                    default:
+                        // Handle unknown types gracefully
+                        Console.WriteLine($"Unknown type: {item.ContentTypeCodename}");
+                        break;
+                }
             }
         }
     }
