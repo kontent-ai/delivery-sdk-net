@@ -68,7 +68,7 @@ public class ContentDependencyExtractorTests
     {
         // Arrange
         var element = new MockRichTextElement();
-        element.ModularContent.AddRange(new[] { "hero_section", "testimonial", "cta_button" });
+        element.ModularContent.AddRange(["hero_section", "testimonial", "cta_button"]);
 
         var context = new DependencyTrackingContext();
 

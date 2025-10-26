@@ -197,7 +197,7 @@ public static class ServiceCollectionExtensions
         }
 
         // Register named options
-        services.Configure<DeliveryOptions>(name, configureOptions);
+        services.Configure(name, configureOptions);
         services.AddOptions<DeliveryOptions>(name)
             .ValidateDataAnnotations()
             .ValidateOnStart();
@@ -222,7 +222,7 @@ public static class ServiceCollectionExtensions
         {
             var clientName = (string)key!;
             var optionsMonitor = sp.GetRequiredService<IOptionsMonitor<DeliveryOptions>>();
-            var namedMonitor = new Configuration.NamedOptionsMonitor<DeliveryOptions>(optionsMonitor, clientName);
+            var namedMonitor = new NamedOptionsMonitor<DeliveryOptions>(optionsMonitor, clientName);
 
             var deliveryApi = sp.GetRequiredKeyedService<IDeliveryApi>(clientName);
             var elementsPostProcessor = sp.GetRequiredService<IElementsPostProcessor>();
@@ -241,10 +241,10 @@ public static class ServiceCollectionExtensions
         // Register default client accessors if this is the default name (backward compatibility)
         if (name == Abstractions.Options.DefaultName)
         {
-            services.TryAddSingleton<IDeliveryApi>(sp =>
+            services.TryAddSingleton(sp =>
                 sp.GetRequiredKeyedService<IDeliveryApi>(Abstractions.Options.DefaultName));
 
-            services.TryAddSingleton<IDeliveryClient>(sp =>
+            services.TryAddSingleton(sp =>
                 sp.GetRequiredKeyedService<IDeliveryClient>(Abstractions.Options.DefaultName));
         }
 
@@ -336,7 +336,7 @@ public static class ServiceCollectionExtensions
 
         // Register keyed IDeliveryApi - retrieve from HTTP client factory
         // The typed client is created and managed by the HTTP pipeline
-        services.AddKeyedTransient<IDeliveryApi>(name, (sp, _) =>
+        services.AddKeyedTransient(name, (sp, _) =>
         {
             var httpClientFactory = sp.GetRequiredService<IHttpClientFactory>();
             var httpClient = httpClientFactory.CreateClient(httpClientName);

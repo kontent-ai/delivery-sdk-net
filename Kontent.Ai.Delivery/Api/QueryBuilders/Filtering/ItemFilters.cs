@@ -54,10 +54,10 @@ internal sealed class ItemFilters : IItemFilters
     public IFilter NotIn(IPropertyPath path, double[] values)
         => new Filter(path.Serialize(), FilterOperator.NotIn, NumericArrayValue.From(values));
 
-    public IFilter In(IPropertyPath path, System.DateTime[] values)
+    public IFilter In(IPropertyPath path, DateTime[] values)
         => new Filter(path.Serialize(), FilterOperator.In, DateTimeArrayValue.From(values));
 
-    public IFilter NotIn(IPropertyPath path, System.DateTime[] values)
+    public IFilter NotIn(IPropertyPath path, DateTime[] values)
         => new Filter(path.Serialize(), FilterOperator.NotIn, DateTimeArrayValue.From(values));
 
 }

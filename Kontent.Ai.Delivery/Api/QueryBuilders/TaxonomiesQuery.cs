@@ -88,7 +88,7 @@ internal sealed class TaxonomiesQuery(
                 await _cacheManager.SetAsync(
                     cacheKey,
                     result,
-                    dependencies: Array.Empty<string>(), // Metadata queries don't track dependencies
+                    dependencies: [], // Metadata queries don't track dependencies
                     expiration: null,
                     cancellationToken: cancellationToken)
                     .ConfigureAwait(false);

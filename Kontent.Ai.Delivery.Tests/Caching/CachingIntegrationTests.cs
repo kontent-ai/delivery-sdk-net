@@ -606,7 +606,7 @@ public class CachingIntegrationTests
             return Task.FromResult(item?.Value as T);
         }
 
-        public Task SetAsync<T>(string cacheKey, T value, System.Collections.Generic.IEnumerable<string> dependencies, TimeSpan? expiration = null, System.Threading.CancellationToken cancellationToken = default) where T : class
+        public Task SetAsync<T>(string cacheKey, T value, IEnumerable<string> dependencies, TimeSpan? expiration = null, System.Threading.CancellationToken cancellationToken = default) where T : class
         {
             CachedItems.Add(new CachedItem
             {

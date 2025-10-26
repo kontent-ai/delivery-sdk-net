@@ -34,13 +34,12 @@ public class ServiceCollectionsExtensionsTests
     );
 
     public static IEnumerable<object[]> DeliveryOptionsConfigurationParameters =>
-       new[]
-       {
+       [
             new[] {"as_root"},
-            new[] {"under_default_key", "DeliveryOptions"},
-            new[] {"under_custom_key", "CustomNameForDeliveryOptions"},
-            new[] {"nested_under_default_key", "Options:DeliveryOptions"}
-       };
+            ["under_default_key", "DeliveryOptions"],
+            ["under_custom_key", "CustomNameForDeliveryOptions"],
+            ["nested_under_default_key", "Options:DeliveryOptions"]
+       ];
 
 
     public ServiceCollectionsExtensionsTests()

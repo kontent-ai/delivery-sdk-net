@@ -17,6 +17,6 @@ internal sealed class HtmlNode : IHtmlNode
     {
         TagName = tagName ?? throw new ArgumentNullException(nameof(tagName));
         Attributes = attributes ?? new ReadOnlyDictionary<string, string>(new Dictionary<string, string>());
-        Children = children ?? Array.Empty<IRichTextBlock>();
+        Children = children ?? [];
     }
 }

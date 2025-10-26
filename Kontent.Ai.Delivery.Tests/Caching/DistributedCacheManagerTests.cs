@@ -192,7 +192,7 @@ public class DistributedCacheManagerTests
         var value = new TestCacheValue { Id = 42, Name = "Test Value" };
 
         // Act
-        await _cacheManager.SetAsync(key, value, Array.Empty<string>());
+        await _cacheManager.SetAsync(key, value, []);
         var result = await _cacheManager.GetAsync<TestCacheValue>(key);
 
         // Assert
@@ -213,13 +213,13 @@ public class DistributedCacheManagerTests
             Nested = new NestedValue
             {
                 Description = "Nested description",
-                Tags = new[] { "tag1", "tag2", "tag3" }
+                Tags = ["tag1", "tag2", "tag3"]
             },
             Items = [1, 2, 3, 4, 5]
         };
 
         // Act
-        await _cacheManager.SetAsync(key, value, Array.Empty<string>());
+        await _cacheManager.SetAsync(key, value, []);
         var result = await _cacheManager.GetAsync<ComplexCacheValue>(key);
 
         // Assert
@@ -240,7 +240,7 @@ public class DistributedCacheManagerTests
         var value = new TestCacheValue { Id = 1, Name = null };
 
         // Act
-        await _cacheManager.SetAsync(key, value, Array.Empty<string>());
+        await _cacheManager.SetAsync(key, value, []);
         var result = await _cacheManager.GetAsync<TestCacheValue>(key);
 
         // Assert
@@ -258,7 +258,7 @@ public class DistributedCacheManagerTests
         value.Self = value; // Circular reference
 
         // Act
-        await _cacheManager.SetAsync(key, value, Array.Empty<string>());
+        await _cacheManager.SetAsync(key, value, []);
         var result = await _cacheManager.GetAsync<CircularReferenceValue>(key);
 
         // Assert
@@ -396,7 +396,7 @@ public class DistributedCacheManagerTests
     public async Task InvalidateAsync_EmptyDependencies_DoesNotThrow()
     {
         // Act & Assert
-        await _cacheManager.InvalidateAsync(default, Array.Empty<string>());
+        await _cacheManager.InvalidateAsync(default, []);
     }
 
     [Fact]
@@ -408,9 +408,9 @@ public class DistributedCacheManagerTests
         var key3 = "key3";
         var value = new TestCacheValue { Id = 1, Name = "Test" };
 
-        await _cacheManager.SetAsync(key1, value, new[] { "dep1" });
-        await _cacheManager.SetAsync(key2, value, new[] { "dep2" });
-        await _cacheManager.SetAsync(key3, value, new[] { "dep3" });
+        await _cacheManager.SetAsync(key1, value, ["dep1"]);
+        await _cacheManager.SetAsync(key2, value, ["dep2"]);
+        await _cacheManager.SetAsync(key3, value, ["dep3"]);
 
         // Act
         await _cacheManager.InvalidateAsync(default, "dep1", "dep2");
@@ -435,9 +435,9 @@ public class DistributedCacheManagerTests
         var value = new TestCacheValue { Id = 1, Name = "Test" };
         var sharedDependency = "shared_dep";
 
-        await _cacheManager.SetAsync(key1, value, new[] { sharedDependency });
-        await _cacheManager.SetAsync(key2, value, new[] { sharedDependency });
-        await _cacheManager.SetAsync(key3, value, new[] { "other_dep" });
+        await _cacheManager.SetAsync(key1, value, [sharedDependency]);
+        await _cacheManager.SetAsync(key2, value, [sharedDependency]);
+        await _cacheManager.SetAsync(key3, value, ["other_dep"]);
 
         // Act
         await _cacheManager.InvalidateAsync(default, sharedDependency);
@@ -460,7 +460,7 @@ public class DistributedCacheManagerTests
         var value = new TestCacheValue { Id = 1, Name = "Test" };
         var dependency = "dep1";
 
-        await _cacheManager.SetAsync(key, value, new[] { dependency });
+        await _cacheManager.SetAsync(key, value, [dependency]);
 
         // Act
         await _cacheManager.InvalidateAsync(default, dependency);
@@ -480,7 +480,7 @@ public class DistributedCacheManagerTests
         var value = new TestCacheValue { Id = 1, Name = "Test" };
         var dependency = "dep1";
 
-        await _cacheManager.SetAsync(key, value, new[] { dependency });
+        await _cacheManager.SetAsync(key, value, [dependency]);
 
         // Act - invalidate multiple times
         await _cacheManager.InvalidateAsync(default, dependency);
@@ -503,7 +503,7 @@ public class DistributedCacheManagerTests
         // Arrange
         var key = "test_key";
         var value = new TestCacheValue { Id = 1, Name = "Test" };
-        await _cacheManager.SetAsync(key, value, Array.Empty<string>());
+        await _cacheManager.SetAsync(key, value, []);
 
         // Act - concurrent reads
         var tasks = Enumerable.Range(0, 100)
@@ -525,7 +525,7 @@ public class DistributedCacheManagerTests
             .Select(i => _cacheManager.SetAsync(
                 $"key_{i}",
                 new TestCacheValue { Id = i, Name = $"Test_{i}" },
-                new[] { sharedDependency }))
+                [sharedDependency]))
             .ToList();
 
         // Act
@@ -556,7 +556,7 @@ public class DistributedCacheManagerTests
         var dependency = "dep1";
         var key = "test_key";
         var value = new TestCacheValue { Id = 1, Name = "Test" };
-        await _cacheManager.SetAsync(key, value, new[] { dependency });
+        await _cacheManager.SetAsync(key, value, [dependency]);
 
         // Act - concurrent invalidation
         var tasks = Enumerable.Range(0, 50)
@@ -597,7 +597,7 @@ public class DistributedCacheManagerTests
 
         // Act & Assert
         await Assert.ThrowsAsync<OperationCanceledException>(() =>
-            _cacheManager.SetAsync("key", value, Array.Empty<string>(), cancellationToken: cts.Token));
+            _cacheManager.SetAsync("key", value, [], cancellationToken: cts.Token));
     }
 
     #endregion
@@ -612,7 +612,7 @@ public class DistributedCacheManagerTests
         var value = new TestCacheValue { Id = 1, Name = "Test" };
 
         // Act
-        await _cacheManager.SetAsync(key, value, Array.Empty<string>());
+        await _cacheManager.SetAsync(key, value, []);
 
         // Verify the cache uses "cache:" prefix
         var cacheEntry = _mockCache.Get("cache:" + key);
@@ -630,7 +630,7 @@ public class DistributedCacheManagerTests
         var dependency = "dep1";
 
         // Act
-        await _cacheManager.SetAsync(key, value, new[] { dependency });
+        await _cacheManager.SetAsync(key, value, [dependency]);
 
         // Verify the dependency uses "dep:" prefix
         var depEntry = _mockCache.Get("dep:" + dependency);
@@ -651,7 +651,7 @@ public class DistributedCacheManagerTests
         var value = new TestCacheValue { Id = 1, Name = "Test" };
 
         // Act
-        await _cacheManager.SetAsync(key, value, Array.Empty<string>());
+        await _cacheManager.SetAsync(key, value, []);
         var result = await _cacheManager.GetAsync<TestCacheValue>(key);
 
         // Assert
@@ -667,7 +667,7 @@ public class DistributedCacheManagerTests
         var dependency = new string('b', 1000);
 
         // Act
-        await _cacheManager.SetAsync(key, value, new[] { dependency });
+        await _cacheManager.SetAsync(key, value, [dependency]);
         await _cacheManager.InvalidateAsync(default, dependency);
         var result = await _cacheManager.GetAsync<TestCacheValue>(key);
 
@@ -700,7 +700,7 @@ public class DistributedCacheManagerTests
 
         foreach (var key in keys)
         {
-            await _cacheManager.SetAsync(key, value, new[] { $"dep_{key}" });
+            await _cacheManager.SetAsync(key, value, [$"dep_{key}"]);
         }
 
         var dependenciesToInvalidate = keys.Select(k => $"dep_{k}").ToArray();
@@ -725,7 +725,7 @@ public class DistributedCacheManagerTests
         // Arrange
         var key = "test_key";
         var value = new TestCacheValue { Id = 1, Name = "Test" };
-        await _cacheManager.SetAsync(key, value, Array.Empty<string>());
+        await _cacheManager.SetAsync(key, value, []);
 
         // Act - try to get as different type
         var result = await _cacheManager.GetAsync<OtherTestValue>(key);

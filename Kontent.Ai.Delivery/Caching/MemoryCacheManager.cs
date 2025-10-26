@@ -100,7 +100,7 @@ public sealed class MemoryCacheManager : IDeliveryCacheManager, IDisposable
                 // Handle potential deserialization issues gracefully
                 if (cached is T typedValue)
                 {
-                    return Task.FromResult<T?>(typedValue);
+                    return Task.FromResult(typedValue);
                 }
 
                 // Type mismatch or corruption - treat as cache miss

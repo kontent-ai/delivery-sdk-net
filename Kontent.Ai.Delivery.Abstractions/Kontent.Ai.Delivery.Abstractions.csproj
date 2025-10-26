@@ -2,34 +2,24 @@
 
   <PropertyGroup>
     <TargetFramework>net8.0</TargetFramework>
-    <Authors>Kontent s.r.o.</Authors>
     <Company>Kontent s.r.o.</Company>
-    <Product>Kontent.ai</Product>
-    <Copyright>© 2022 Kontent s.r.o. All rights reserved.</Copyright>
     <Description>Kontent.ai Delivery Abstractions</Description>
-    <PackageReadmeFile>README.md</PackageReadmeFile>
-    <PackageIcon>kai-logo-symbol-color-rgb.png</PackageIcon>
-    <PackageLicenseExpression>MIT</PackageLicenseExpression>
-    <PackageProjectUrl>https://github.com/kontent-ai/delivery-sdk-net</PackageProjectUrl>
-    <PackageIconUrl>https://github.com/kontent-ai/.github/blob/main/logos/kai-logo-symbol-color-rgb.png?raw=true</PackageIconUrl>
-    <RepositoryUrl>https://github.com/kontent-ai/delivery-sdk-net.git</RepositoryUrl>
-    <RepositoryType>git</RepositoryType>
     <PackageTags>kontent-ai;mvc;aspnet;aspnetmvc</PackageTags>
-    <GenerateAssemblyInfo>true</GenerateAssemblyInfo>
-    <GenerateDocumentationFile>true</GenerateDocumentationFile>
-    <PublishRepositoryUrl>true</PublishRepositoryUrl>
-    <IncludeSymbols>true</IncludeSymbols>
-    <SymbolPackageFormat>snupkg</SymbolPackageFormat>
-    <EmbedUntrackedSources>true</EmbedUntrackedSources>
-    <Nullable>enable</Nullable>
   </PropertyGroup>
 
   <ItemGroup>
-    <None Include="../README.md" Pack="true" PackagePath="" />
-    <None Include="../kai-logo-symbol-color-rgb.png" Pack="true" PackagePath="" />
-    <PackageReference Include="Microsoft.SourceLink.GitHub" Version="1.1.1" />
+    <PackageReference Include="Microsoft.SourceLink.GitHub" Version="1.1.1" PrivateAssets="All" />
     <PackageReference Include="OneOf" Version="3.0.271" />
     <!-- OneOf for type-safe filter unions -->
+  </ItemGroup>
+
+  <ItemGroup>
+    <AssemblyAttribute Include="System.Runtime.CompilerServices.InternalsVisibleTo">
+      <_Parameter1>Kontent.Ai.Delivery.Tests</_Parameter1>
+    </AssemblyAttribute>
+    <AssemblyAttribute Include="System.Runtime.CompilerServices.InternalsVisibleTo">
+      <_Parameter1>Kontent.Ai.Delivery</_Parameter1>
+    </AssemblyAttribute>
   </ItemGroup>
 
 </Project>

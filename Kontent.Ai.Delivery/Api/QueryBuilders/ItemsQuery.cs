@@ -163,7 +163,7 @@ internal sealed class ItemsQuery<TModel>(
 
         // ========== 4. BUILD RESULT ==========
         var result = DeliveryResult.Success<IReadOnlyList<IContentItem<TModel>>>(
-            (IReadOnlyList<IContentItem<TModel>>)items,
+            items,
             deliveryResult.RequestUrl ?? string.Empty,
             deliveryResult.StatusCode,
             deliveryResult.HasStaleContent,

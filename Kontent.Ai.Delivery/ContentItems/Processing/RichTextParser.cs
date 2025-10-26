@@ -4,7 +4,7 @@ using Kontent.Ai.Delivery.Abstractions.ContentItems.Processing;
 using Kontent.Ai.Delivery.ContentItems.RichText;
 using Kontent.Ai.Delivery.ContentItems.RichText.Blocks;
 
-namespace Kontent.Ai.Delivery.ContentItems;
+namespace Kontent.Ai.Delivery.ContentItems.Processing;
 
 internal class RichTextParser(IHtmlParser parser, IContentDependencyExtractor dependencyExtractor) : IElementValueConverter<string, IRichTextContent>
 {

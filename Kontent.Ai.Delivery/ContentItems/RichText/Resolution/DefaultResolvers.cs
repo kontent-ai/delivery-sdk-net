@@ -104,6 +104,6 @@ public static class DefaultResolvers
     /// </summary>
     private static string BuildAttributes(IReadOnlyDictionary<string, string> existingAttributes)
     {
-        return BuildAttributes(existingAttributes, Array.Empty<(string, string)>());
+        return BuildAttributes(existingAttributes, []);
     }
 }
