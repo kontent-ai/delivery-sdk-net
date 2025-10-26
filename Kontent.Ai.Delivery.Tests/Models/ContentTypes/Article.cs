@@ -9,7 +9,7 @@ namespace Kontent.Ai.Delivery.Tests.Models.ContentTypes;
 public record Article : IElementsModel
 {
     [JsonPropertyName("body_copy")]
-    public RichTextContent? BodyCopy { get; init; }
+    public RichTextContent BodyCopy { get; init; } = default!;
 
     [JsonPropertyName("metadata__meta_description")]
     public string? MetadataMetaDescription { get; init; }

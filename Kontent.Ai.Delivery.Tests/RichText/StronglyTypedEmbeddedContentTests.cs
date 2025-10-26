@@ -72,15 +72,16 @@ public class StronglyTypedEmbeddedContentTests
 
         // Act
         var response = await client.GetItem<Article>(ArticleWithEmbeddedTweetsCodename).ExecuteAsync();
-        var tweets = response.Value.Elements.BodyCopy.GetEmbeddedContent<Tweet>().ToList(); // TODO: fix null accessibility warning
+        var tweets = response.Value?.Elements?.BodyCopy.GetEmbeddedContent<Tweet>().ToList(); // TODO: fix null accessibility warning
 
         // Assert
+        Assert.NotNull(tweets);
         Assert.NotEmpty(tweets);
         foreach (var tweet in tweets)
         {
             Assert.NotNull(tweet.Elements);
             Assert.NotNull(tweet.Elements.DisplayOptions);
-            Assert.IsAssignableFrom<IEmbeddedContent<Tweet>>(tweet);
+            Assert.IsType<IEmbeddedContent<Tweet>>(tweet, exactMatch: false);
         }
     }
 

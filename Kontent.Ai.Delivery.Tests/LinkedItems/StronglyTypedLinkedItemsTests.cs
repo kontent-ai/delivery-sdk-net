@@ -35,7 +35,7 @@ public class StronglyTypedLinkedItemsTests
         foreach (var article in relatedArticles)
         {
             Assert.NotNull(article);
-            Assert.IsAssignableFrom<IEmbeddedContent>(article);
+            Assert.IsType<IEmbeddedContent>(article, exactMatch: false);
             Assert.Equal("article", article.ContentTypeCodename);
             Assert.NotEmpty(article.Codename);
         }
