@@ -7,20 +7,20 @@ namespace Kontent.Ai.Delivery.Tests.Models.ContentTypes;
 public record Office : IElementsModel
 {
     [JsonPropertyName("city")]
-    public string City { get; init; }
+    public string? City { get; init; }
 
     [JsonPropertyName("country")]
-    public string Country { get; init; }
+    public string? Country { get; init; }
 
     [JsonPropertyName("sitemap")]
-    public IEnumerable<TaxonomyTerm> Sitemap { get; init; }
+    public IEnumerable<TaxonomyTerm>? Sitemap { get; init; }
 
     [JsonPropertyName("state")]
-    public string State { get; init; }
+    public string? State { get; init; }
 
     [JsonPropertyName("street")]
-    public string Street { get; init; }
+    public string? Street { get; init; }
 
     [JsonPropertyName("zip_code")]
-    public string ZipCode { get; init; }
+    public string? ZipCode { get; init; }
 }

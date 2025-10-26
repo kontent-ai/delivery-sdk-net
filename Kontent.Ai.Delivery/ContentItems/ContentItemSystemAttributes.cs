@@ -25,6 +25,7 @@ internal sealed record ContentItemSystemAttributes : IContentItemSystemAttribute
 
     /// <inheritdoc/>
     [JsonPropertyName("sitemap_locations")]
+    [Obsolete("Sitemap locations are deprecated and will be removed in the future.")]
     public IList<string>? SitemapLocation { get; init; }
 
     /// <inheritdoc/>

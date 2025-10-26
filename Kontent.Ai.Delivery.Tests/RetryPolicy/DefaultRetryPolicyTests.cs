@@ -63,7 +63,7 @@ public class DefaultRetryPolicyTests
                 .Respond(HttpStatusCode.InternalServerError);
 
         mockHttp.Expect(HttpMethod.Get, itemsUrl)
-                .Respond("application/json", itemsJson);   
+                .Respond("application/json", itemsJson);
 
         var behavior = new TestBehaviorHandler();
         var client = BuildClient(env, mockHttp, behavior, b =>

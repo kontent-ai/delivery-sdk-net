@@ -10,7 +10,7 @@ namespace Kontent.Ai.Delivery.Benchmarks;
 
 public class DeliveryClientBenchmark
 {
-    private IDeliveryClient _client;
+    private IDeliveryClient? _client;
 
     private static IDeliveryClient CreateClient(MockHttpMessageHandler mockHttp, DeliveryOptions options)
     {
@@ -53,7 +53,7 @@ public class DeliveryClientBenchmark
         var _deliveryOptions = DeliveryOptionsBuilder.CreateInstance().WithEnvironmentId(environmentId).UseProductionApi().Build();
         _client = CreateClient(mockHttp, _deliveryOptions);
     }
-    
+
     [Benchmark]
     public async Task<IDeliveryResult<IContentItem<Article>>> GetItemAsync()
     {

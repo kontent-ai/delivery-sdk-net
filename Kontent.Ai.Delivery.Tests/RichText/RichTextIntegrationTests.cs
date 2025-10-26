@@ -406,12 +406,14 @@ public class RichTextIntegrationTests
                 {
                     var innerHtml = await resolveChildren(link.Children);
                     return $"<a href=\"/coffee/{link.Metadata?.UrlSlug}\" class=\"coffee-tuple\">{innerHtml}</a>";
-                }),
+                }
+        ),
                 ("article", async (link, resolveChildren) =>
                 {
                     var innerHtml = await resolveChildren(link.Children);
                     return $"<a href=\"/articles/{link.Metadata?.UrlSlug}\" class=\"article-tuple\">{innerHtml}</a>";
-                })
+                }
+        )
             )
             .Build();
 
@@ -603,7 +605,7 @@ public class RichTextIntegrationTests
         var encoder = System.Text.Encodings.Web.HtmlEncoder.Create(System.Text.Unicode.UnicodeRanges.All);
 
         var resolver = new HtmlResolverBuilder()
-            .WithTextNodeResolver(async (textNode, resolveChildren) =>
+            .WithTextNodeResolver((textNode, resolveChildren) =>
             {
                 var text = textNode.Text;
 
@@ -611,7 +613,7 @@ public class RichTextIntegrationTests
                 text = text.Replace("roast", "roast ☕");
 
                 // HTML-encode reserved chars but preserve Unicode
-                return encoder.Encode(text);
+                return new ValueTask<string>(encoder.Encode(text));
             })
             .Build();
 
@@ -798,7 +800,7 @@ public class RichTextIntegrationTests
         var resolver = new HtmlResolverBuilder()
             .WithContentResolver("tweet", c => "<div class=\"tweet\"></div>")
             .WithContentResolver("hosted_video", c => "<div class=\"video\"></div>")
-            .WithTextNodeResolver(async (text, _) => System.Text.Encodings.Web.HtmlEncoder.Default.Encode(text.Text))
+            .WithTextNodeResolver((text, _) => new ValueTask<string>(System.Text.Encodings.Web.HtmlEncoder.Default.Encode(text.Text)))
             .WithHtmlNodeResolver("h3", async (node, resolveChildren) =>
             {
                 var content = await resolveChildren(node.Children);
@@ -808,7 +810,7 @@ public class RichTextIntegrationTests
 
         // Act
         var result = await client.GetItem<Article>("coffee_beverages_explained").ExecuteAsync();
-        var html = await result.Value.Elements.BodyCopy.ToHtmlAsync(resolver);
+        var html = await result.Value.Elements.BodyCopy.ToHtmlAsync(resolver); // TODO: fix nullability or add default
 
         // Assert
         Assert.True(result.IsSuccess);

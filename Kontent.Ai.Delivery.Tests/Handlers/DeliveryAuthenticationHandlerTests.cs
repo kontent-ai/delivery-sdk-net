@@ -387,16 +387,11 @@ public class DeliveryAuthenticationHandlerTests
     }
 
     // Test implementation of IOptionsMonitor
-    private class TestOptionsMonitor<TOptions> : IOptionsMonitor<TOptions>
+    private class TestOptionsMonitor<TOptions>(TOptions currentValue) : IOptionsMonitor<TOptions>
         where TOptions : class
     {
-        private TOptions _currentValue;
+        private TOptions _currentValue = currentValue;
         private readonly Dictionary<string, TOptions> _namedOptions = [];
-
-        public TestOptionsMonitor(TOptions currentValue)
-        {
-            _currentValue = currentValue;
-        }
 
         public TOptions CurrentValue => _currentValue;
 

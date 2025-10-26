@@ -13,13 +13,13 @@ public class LanguageSystemAttributes() : ILanguageSystemAttributes
 {
     /// <inheritdoc/>
     [JsonPropertyName("codename")]
-    public string Codename { get; internal set; }
+    public string? Codename { get; internal set; }
 
     /// <inheritdoc/>
     [JsonPropertyName("id")]
-    public string Id { get; internal set; }
+    public string? Id { get; internal set; }
 
     /// <inheritdoc/>
     [JsonPropertyName("name")]
-    public string Name { get; internal set; }
+    public string? Name { get; internal set; }
 }

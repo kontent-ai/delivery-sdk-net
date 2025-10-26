@@ -11,7 +11,7 @@ internal sealed record DeliveryTaxonomyListingResponse : IDeliveryTaxonomyListin
     /// Gets paging information.
     /// </summary>
     [JsonPropertyName("pagination")]
-    public Pagination Pagination
+    public Pagination? Pagination
     {
         get; init;
     }
@@ -20,7 +20,7 @@ internal sealed record DeliveryTaxonomyListingResponse : IDeliveryTaxonomyListin
     /// Gets a read-only list of taxonomy groups.
     /// </summary>
     [JsonPropertyName("taxonomies")]
-    public IList<TaxonomyGroup> Taxonomies
+    public IList<TaxonomyGroup>? Taxonomies
     {
         get; init;
     }

@@ -13,14 +13,14 @@ internal sealed record TaxonomyTermDetails() : ITaxonomyTermDetails
 {
     /// <inheritdoc/>
     [JsonPropertyName("name")]
-    public string Name { get; init; }
+    public string? Name { get; init; }
 
     /// <inheritdoc/>
     [JsonPropertyName("codename")]
-    public string Codename { get; init; }
+    public string? Codename { get; init; }
 
     /// <inheritdoc/>
     [JsonPropertyName("terms")]
-    public IList<TaxonomyTermDetails> Terms { get; init; }
+    public IList<TaxonomyTermDetails>? Terms { get; init; }
     IList<ITaxonomyTermDetails> ITaxonomyTermDetails.Terms => [.. Terms.Cast<ITaxonomyTermDetails>()];
 }

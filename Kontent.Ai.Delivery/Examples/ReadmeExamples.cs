@@ -11,376 +11,376 @@ using Polly;
 
 public static class ReadmeExamples
 {
-	// Quick Start
-	public static async Task QuickStartAsync()
-	{
-		var services = new ServiceCollection();
+    // Quick Start
+    public static async Task QuickStartAsync()
+    {
+        var services = new ServiceCollection();
 
-		services.AddDeliveryClient(options =>
-		{
-			options.EnvironmentId = "your-environment-id";
-		});
+        services.AddDeliveryClient(options =>
+        {
+            options.EnvironmentId = "your-environment-id";
+        });
 
-		var serviceProvider = services.BuildServiceProvider();
-		var client = serviceProvider.GetRequiredService<IDeliveryClient>();
+        var serviceProvider = services.BuildServiceProvider();
+        var client = serviceProvider.GetRequiredService<IDeliveryClient>();
 
-		var result = await client.GetItem("homepage").ExecuteAsync();
+        var result = await client.GetItem("homepage").ExecuteAsync();
 
-		if (result.IsSuccess)
-		{
-			var item = result.Value;
-			Console.WriteLine($"Title: {item.System.Name}");
-		}
-	}
+        if (result.IsSuccess)
+        {
+            var item = result.Value;
+            Console.WriteLine($"Title: {item.System.Name}");
+        }
+    }
 
-	// Basic Registration
-	public static void BasicRegistration(IServiceCollection services)
-	{
-		services.AddDeliveryClient(options =>
-		{
-			options.EnvironmentId = "your-environment-id";
-		});
-	}
+    // Basic Registration
+    public static void BasicRegistration(IServiceCollection services)
+    {
+        services.AddDeliveryClient(options =>
+        {
+            options.EnvironmentId = "your-environment-id";
+        });
+    }
 
-	// Registration from Configuration (only demonstrates signature; not runnable here)
-	public static void RegistrationFromConfiguration(IServiceCollection services, Microsoft.Extensions.Configuration.IConfiguration configuration)
-	{
-		services.AddDeliveryClient(configuration, "DeliveryOptions");
-	}
+    // Registration from Configuration (only demonstrates signature; not runnable here)
+    public static void RegistrationFromConfiguration(IServiceCollection services, Microsoft.Extensions.Configuration.IConfiguration configuration)
+    {
+        services.AddDeliveryClient(configuration, "DeliveryOptions");
+    }
 
-	// Using the Builder Pattern
-	public static void UsingBuilderPattern(IServiceCollection services)
-	{
-		services.AddDeliveryClient(builder =>
-			builder.WithEnvironmentId("your-environment-id")
-			   .UseProductionApi()
-			   .Build());
-	}
+    // Using the Builder Pattern
+    public static void UsingBuilderPattern(IServiceCollection services)
+    {
+        services.AddDeliveryClient(builder =>
+            builder.WithEnvironmentId("your-environment-id")
+               .UseProductionApi()
+               .Build());
+    }
 
-	// Get a Single Item (dynamic)
-	public static async Task GetSingleItemAsync(IDeliveryClient client)
-	{
-		var result = await client.GetItem("coffee_beverages_explained").ExecuteAsync();
-		if (result.IsSuccess)
-		{
-			var article = result.Value;
-			Console.WriteLine($"Title: {article.System.Name}");
-		}
-	}
+    // Get a Single Item (dynamic)
+    public static async Task GetSingleItemAsync(IDeliveryClient client)
+    {
+        var result = await client.GetItem("coffee_beverages_explained").ExecuteAsync();
+        if (result.IsSuccess)
+        {
+            var article = result.Value;
+            Console.WriteLine($"Title: {article.System.Name}");
+        }
+    }
 
-	// Get Multiple Items (dynamic)
-	public static async Task GetMultipleItemsAsync(IDeliveryClient client)
-	{
-		var result = await client.GetItems()
-			.Limit(10)
-			.ExecuteAsync();
+    // Get Multiple Items (dynamic)
+    public static async Task GetMultipleItemsAsync(IDeliveryClient client)
+    {
+        var result = await client.GetItems()
+            .Limit(10)
+            .ExecuteAsync();
 
-		if (result.IsSuccess)
-		{
-			foreach (var item in result.Value)
-			{
-				Console.WriteLine($"- {item.System.Name}");
-			}
-		}
-	}
+        if (result.IsSuccess)
+        {
+            foreach (var item in result.Value)
+            {
+                Console.WriteLine($"- {item.System.Name}");
+            }
+        }
+    }
 
-	// Items feed pagination
-	public static async Task ItemsFeedAsync(IDeliveryClient client)
-	{
-		var query = client.GetItemsFeed()
-			.OrderBy(ItemSystemPath.LastModified, true);
+    // Items feed pagination
+    public static async Task ItemsFeedAsync(IDeliveryClient client)
+    {
+        var query = client.GetItemsFeed()
+            .OrderBy(ItemSystemPath.LastModified, true);
 
-		await foreach (var item in query.EnumerateItemsAsync())
-		{
-			Console.WriteLine($"Item: {item.System.Name}");
-		}
-	}
+        await foreach (var item in query.EnumerateItemsAsync())
+        {
+            Console.WriteLine($"Item: {item.System.Name}");
+        }
+    }
 
-	// Content types and taxonomies
-	public static async Task TypesAndTaxonomiesAsync(IDeliveryClient client)
-	{
-		var typeResult = await client.GetType("article").ExecuteAsync();
-		var taxonomiesResult = await client.GetTaxonomies().ExecuteAsync();
-		var taxonomyResult = await client.GetTaxonomy("product_categories").ExecuteAsync();
+    // Content types and taxonomies
+    public static async Task TypesAndTaxonomiesAsync(IDeliveryClient client)
+    {
+        var typeResult = await client.GetType("article").ExecuteAsync();
+        var taxonomiesResult = await client.GetTaxonomies().ExecuteAsync();
+        var taxonomyResult = await client.GetTaxonomy("product_categories").ExecuteAsync();
 
-		_ = typeResult;
-		_ = taxonomiesResult;
-		_ = taxonomyResult;
-	}
+        _ = typeResult;
+        _ = taxonomiesResult;
+        _ = taxonomyResult;
+    }
 
-	// Basic filtering
-	public static async Task BasicFilteringAsync(IDeliveryClient client)
-	{
-		var result = await client.GetItems()
-			.Filter(f => f.Equals(ItemSystemPath.Type, "article"))
-			.Filter(f => f.Contains(Elements.GetPath("title"), "coffee"))
-			.Limit(20)
-			.ExecuteAsync();
+    // Basic filtering
+    public static async Task BasicFilteringAsync(IDeliveryClient client)
+    {
+        var result = await client.GetItems()
+            .Filter(f => f.Equals(ItemSystemPath.Type, "article"))
+            .Filter(f => f.Contains(Elements.GetPath("title"), "coffee"))
+            .Limit(20)
+            .ExecuteAsync();
 
-		_ = result;
-	}
+        _ = result;
+    }
 
-	// Using .Where with preconstructed filters - not available publicly (Filter is internal). Commented out for later fix.
-	public static async Task UsingWhereWithPreconstructedFilterAsync(IDeliveryClient client)
-	{
+    // Using .Where with preconstructed filters - not available publicly (Filter is internal). Commented out for later fix.
+    public static async Task UsingWhereWithPreconstructedFilterAsync(IDeliveryClient client)
+    {
 
-		var filter = new Filter(
-			ItemSystemPath.Type,
-			FilterOperator.Equals,
-			StringValue.From("article"));
+        var filter = new Filter(
+            ItemSystemPath.Type,
+            FilterOperator.Equals,
+            StringValue.From("article"));
 
-		var result = await client.GetItems()
-			.Where(filter)
-			.ExecuteAsync();
-			
-		await Task.CompletedTask;
-	}
+        var result = await client.GetItems()
+            .Where(filter)
+            .ExecuteAsync();
 
-	// Common filter operators
-	public static async Task CommonFilterOperatorsAsync(IDeliveryClient client)
-	{
-		var result = await client.GetItems()
-			.Filter(f => f.Equals(ItemSystemPath.Type, "product"))
-			.Filter(f => f.NotEquals(ItemSystemPath.Collection, "archived"))
-			.Filter(f => f.GreaterThan(Elements.GetPath("price"), 100.0))
-			.Filter(f => f.LessThanOrEqual(Elements.GetPath("rating"), 4.5))
-			.Filter(f => f.Range(Elements.GetPath("price"), (50.0, 500.0)))
-			.Filter(f => f.In(ItemSystemPath.Type, new[] { "article", "blog_post" }))
-			.Filter(f => f.Any(Elements.GetPath("tags"), "featured", "trending"))
-			.Filter(f => f.All(Elements.GetPath("categories"), "tech", "news"))
-			.Filter(f => f.NotEmpty(Elements.GetPath("description")))
-			.ExecuteAsync();
+        await Task.CompletedTask;
+    }
 
-		_ = result;
-	}
+    // Common filter operators
+    public static async Task CommonFilterOperatorsAsync(IDeliveryClient client)
+    {
+        var result = await client.GetItems()
+            .Filter(f => f.Equals(ItemSystemPath.Type, "product"))
+            .Filter(f => f.NotEquals(ItemSystemPath.Collection, "archived"))
+            .Filter(f => f.GreaterThan(Elements.GetPath("price"), 100.0))
+            .Filter(f => f.LessThanOrEqual(Elements.GetPath("rating"), 4.5))
+            .Filter(f => f.Range(Elements.GetPath("price"), (50.0, 500.0)))
+            .Filter(f => f.In(ItemSystemPath.Type, new[] { "article", "blog_post" }))
+            .Filter(f => f.Any(Elements.GetPath("tags"), "featured", "trending"))
+            .Filter(f => f.All(Elements.GetPath("categories"), "tech", "news"))
+            .Filter(f => f.NotEmpty(Elements.GetPath("description")))
+            .ExecuteAsync();
 
-	// Ordering and pagination
-	public static async Task OrderingAndPaginationAsync(IDeliveryClient client)
-	{
-		var result = await client.GetItems()
-			.OrderBy(ItemSystemPath.LastModified, ascending: false)
-			.Skip(0)
-			.Limit(10)
-			.ExecuteAsync();
+        _ = result;
+    }
 
-		_ = result;
-	}
+    // Ordering and pagination
+    public static async Task OrderingAndPaginationAsync(IDeliveryClient client)
+    {
+        var result = await client.GetItems()
+            .OrderBy(ItemSystemPath.LastModified, ascending: false)
+            .Skip(0)
+            .Limit(10)
+            .ExecuteAsync();
 
-	// Getting total count
-	public static async Task GettingTotalCountAsync(IDeliveryClient client)
-	{
-		var result = await client.GetItems()
-			.WithTotalCount()
-			.Limit(10)
-			.ExecuteAsync();
+        _ = result;
+    }
 
-		if (result.IsSuccess)
-		{
-			// result.Value is a listing response; adapt to available API in your app
-		}
-	}
+    // Getting total count
+    public static async Task GettingTotalCountAsync(IDeliveryClient client)
+    {
+        var result = await client.GetItems()
+            .WithTotalCount()
+            .Limit(10)
+            .ExecuteAsync();
 
-	// Strongly typed model example (definition only; usage depends on generator)
-	public record Article : IElementsModel
-	{
-		public string Title { get; set; } = string.Empty;
-		public string Summary { get; set; } = string.Empty;
-		public RichTextContent BodyCopy { get; set; } = new();
-		public DateTime PublishDate { get; set; }
-		public IEnumerable<Author> Authors { get; set; } = Array.Empty<Author>();
-	}
-	public record Author(string Name);
+        if (result.IsSuccess)
+        {
+            // result.Value is a listing response; adapt to available API in your app
+        }
+    }
 
-	// Query with strong typing
-	public static async Task StrongTypingQueryAsync(IDeliveryClient client)
-	{
-		var result = await client.GetItems<Article>()
-			.Filter(f => f.Equals(ItemSystemPath.Type, "article"))
-			.WithLanguage("en-US")
-			.ExecuteAsync();
+    // Strongly typed model example (definition only; usage depends on generator)
+    public record Article : IElementsModel
+    {
+        public string Title { get; set; } = string.Empty;
+        public string Summary { get; set; } = string.Empty;
+        public RichTextContent BodyCopy { get; set; } = new();
+        public DateTime PublishDate { get; set; }
+        public IEnumerable<Author> Authors { get; set; } = Array.Empty<Author>();
+    }
+    public record Author(string Name);
 
-		if (result.IsSuccess)
-		{
-			foreach (var article in result.Value)
-			{
-				Console.WriteLine($"{article.Elements.Title} - {article.Elements.PublishDate}");
-			}
-		}
-	}
+    // Query with strong typing
+    public static async Task StrongTypingQueryAsync(IDeliveryClient client)
+    {
+        var result = await client.GetItems<Article>()
+            .Filter(f => f.Equals(ItemSystemPath.Type, "article"))
+            .WithLanguage("en-US")
+            .ExecuteAsync();
 
-	// Basic HTML rendering for Rich Text
-	public static async Task RichTextBasicRenderingAsync(IDeliveryClient client)
-	{
-		var result = await client.GetItem<Article>("my-article").ExecuteAsync();
-		if (result.IsSuccess)
-		{
-			var article = result.Value;
-			var html = await article.Elements.BodyCopy.ToHtmlAsync();
-			_ = html;
-		}
-	}
+        if (result.IsSuccess)
+        {
+            foreach (var article in result.Value)
+            {
+                Console.WriteLine($"{article.Elements.Title} - {article.Elements.PublishDate}");
+            }
+        }
+    }
 
-	// Custom Link Resolution
-	public static async Task RichTextCustomLinkResolutionAsync(IRichTextContent rich, IContentItemLink sampleLink)
-	{
-		var resolver = new HtmlResolverBuilder()
-			.WithContentItemLinkResolver("article", async (link, resolveChildren) =>
-			{
-				var url = $"/articles/{link.Metadata?.UrlSlug}";
-				var innerHtml = await resolveChildren(link.Children);
-				return await ValueTask.FromResult($"<a href=\"{url}\">{innerHtml}</a>");
-			})
-			.WithContentItemLinkResolver("product", async (link, resolveChildren) =>
-			{
-				var url = $"/shop/{link.Metadata?.UrlSlug}";
-				var innerHtml = await resolveChildren(link.Children);
-				return await ValueTask.FromResult($"<a href=\"{url}\">{innerHtml}</a>");
-			})
-			.Build();
+    // Basic HTML rendering for Rich Text
+    public static async Task RichTextBasicRenderingAsync(IDeliveryClient client)
+    {
+        var result = await client.GetItem<Article>("my-article").ExecuteAsync();
+        if (result.IsSuccess)
+        {
+            var article = result.Value;
+            var html = await article.Elements.BodyCopy.ToHtmlAsync();
+            _ = html;
+        }
+    }
 
-		var html = await rich.ToHtmlAsync(resolver);
-		_ = html;
-	}
+    // Custom Link Resolution
+    public static async Task RichTextCustomLinkResolutionAsync(IRichTextContent rich, IContentItemLink sampleLink)
+    {
+        var resolver = new HtmlResolverBuilder()
+            .WithContentItemLinkResolver("article", async (link, resolveChildren) =>
+            {
+                var url = $"/articles/{link.Metadata?.UrlSlug}";
+                var innerHtml = await resolveChildren(link.Children);
+                return await ValueTask.FromResult($"<a href=\"{url}\">{innerHtml}</a>");
+            })
+            .WithContentItemLinkResolver("product", async (link, resolveChildren) =>
+            {
+                var url = $"/shop/{link.Metadata?.UrlSlug}";
+                var innerHtml = await resolveChildren(link.Children);
+                return await ValueTask.FromResult($"<a href=\"{url}\">{innerHtml}</a>");
+            })
+            .Build();
 
-	// Embedded Content Resolution
-	public static async Task RichTextEmbeddedContentResolutionAsync(IRichTextContent rich)
-	{
-		var resolver = new HtmlResolverBuilder()
-			.WithContentResolver("tweet", content =>
-			{
-				var tweet = content.Elements as Tweet; // sample cast
-				return $"<blockquote class=\"twitter-tweet\">{tweet?.Text}<cite>{tweet?.Author}</cite></blockquote>";
-			})
-			.WithContentResolver("video", async content =>
-			{
-				var videoId = content.Elements is IDictionary<string, object> dict && dict.TryGetValue("video_id", out var v)
-					? v?.ToString()
-					: null;
-				return $"<div class=\"video-wrapper\"><iframe src=\"https://youtube.com/embed/{videoId}\"></iframe></div>";
-			})
-			.Build();
+        var html = await rich.ToHtmlAsync(resolver);
+        _ = html;
+    }
 
-		var html = await rich.ToHtmlAsync(resolver);
-		_ = html;
-	}
+    // Embedded Content Resolution
+    public static async Task RichTextEmbeddedContentResolutionAsync(IRichTextContent rich)
+    {
+        var resolver = new HtmlResolverBuilder()
+            .WithContentResolver("tweet", content =>
+            {
+                var tweet = content.Elements as Tweet; // sample cast
+                return $"<blockquote class=\"twitter-tweet\">{tweet?.Text}<cite>{tweet?.Author}</cite></blockquote>";
+            })
+            .WithContentResolver("video", content =>
+            {
+                var videoId = content.Elements is IDictionary<string, object> dict && dict.TryGetValue("video_id", out var v)
+                    ? v?.ToString()
+                    : null;
+                return new ValueTask<string>($"<div class=\"video-wrapper\"><iframe src=\"https://youtube.com/embed/{videoId}\"></iframe></div>");
+            })
+            .Build();
 
-	// Multi-language retrieval
-	public static async Task MultiLanguageAsync(IDeliveryClient client)
-	{
-		var resultEs = await client.GetItem("homepage")
-			.WithLanguage("es-ES")
-			.ExecuteAsync();
+        var html = await rich.ToHtmlAsync(resolver);
+        _ = html;
+    }
 
-		var articlesDe = await client.GetItems<Article>()
-			.Filter(f => f.Equals(ItemSystemPath.Type, "article"))
-			.WithLanguage("de-DE")
-			.ExecuteAsync();
+    // Multi-language retrieval
+    public static async Task MultiLanguageAsync(IDeliveryClient client)
+    {
+        var resultEs = await client.GetItem("homepage")
+            .WithLanguage("es-ES")
+            .ExecuteAsync();
 
-		_ = resultEs;
-		_ = articlesDe;
-	}
+        var articlesDe = await client.GetItems<Article>()
+            .Filter(f => f.Equals(ItemSystemPath.Type, "article"))
+            .WithLanguage("de-DE")
+            .ExecuteAsync();
 
-	// Get Languages
-	public static async Task GetLanguagesAsync(IDeliveryClient client)
-	{
-		var result = await client.GetLanguages().ExecuteAsync();
-		if (result.IsSuccess)
-		{
-			foreach (var language in result.Value)
-			{
-				Console.WriteLine($"{language.System.Name} ({language.System.Codename})");
-			}
-		}
-	}
+        _ = resultEs;
+        _ = articlesDe;
+    }
 
-	// Memory cache configuration
-	public static void MemoryCacheConfig(IServiceCollection services)
-	{
-		services.AddDeliveryClient(options =>
-		{
-			options.EnvironmentId = "your-environment-id";
-		})
-		.WithMemoryCache(defaultExpiration: TimeSpan.FromHours(1));
-	}
+    // Get Languages
+    public static async Task GetLanguagesAsync(IDeliveryClient client)
+    {
+        var result = await client.GetLanguages().ExecuteAsync();
+        if (result.IsSuccess)
+        {
+            foreach (var language in result.Value)
+            {
+                Console.WriteLine($"{language.System.Name} ({language.System.Codename})");
+            }
+        }
+    }
 
-	// Distributed cache configuration (requires distributed cache registered; keep as demo)
-	public static void DistributedCacheConfig(IServiceCollection services)
-	{
-		services.AddDeliveryClient(options =>
-		{
-			options.EnvironmentId = "your-environment-id";
-		})
-		.WithDistributedCache(defaultExpiration: TimeSpan.FromHours(2));
-	}
+    // Memory cache configuration
+    public static void MemoryCacheConfig(IServiceCollection services)
+    {
+        services.AddDeliveryClient(options =>
+        {
+            options.EnvironmentId = "your-environment-id";
+        })
+        .WithMemoryCache(defaultExpiration: TimeSpan.FromHours(1));
+    }
 
-	// Preview API enablement
-	public static void EnablePreviewApi(IServiceCollection services)
-	{
-		services.AddDeliveryClient(options =>
-		{
-			options.EnvironmentId = "your-environment-id";
-			options.UsePreviewApi = true;
-			options.PreviewApiKey = "your-preview-api-key";
-		});
-	}
+    // Distributed cache configuration (requires distributed cache registered; keep as demo)
+    public static void DistributedCacheConfig(IServiceCollection services)
+    {
+        services.AddDeliveryClient(options =>
+        {
+            options.EnvironmentId = "your-environment-id";
+        })
+        .WithDistributedCache(defaultExpiration: TimeSpan.FromHours(2));
+    }
 
-	// Dynamic switching via named clients
-	public static IDeliveryClient DynamicSwitching(IServiceProvider serviceProvider, bool isPreviewMode)
-	{
-		var factory = serviceProvider.GetRequiredService<IDeliveryClientFactory>();
-		var client = isPreviewMode ? factory.Get("preview") : factory.Get("production");
-		return client;
-	}
+    // Preview API enablement
+    public static void EnablePreviewApi(IServiceCollection services)
+    {
+        services.AddDeliveryClient(options =>
+        {
+            options.EnvironmentId = "your-environment-id";
+            options.UsePreviewApi = true;
+            options.PreviewApiKey = "your-preview-api-key";
+        });
+    }
 
-	// Configuration options sample
-	public static void ConfigureOptions(IServiceCollection services)
-	{
-		services.AddDeliveryClient(options =>
-		{
-			options.EnvironmentId = "your-environment-id";
-			options.UsePreviewApi = false;
-			options.PreviewApiKey = "your-preview-api-key";
-			options.UseSecureAccess = false;
-			options.SecureAccessApiKey = "your-secure-api-key";
-			options.EnableResilience = true;
-			options.WaitForLoadingNewContent = false;
-			options.DefaultRenditionPreset = "default";
-			options.ProductionEndpoint = "https://deliver.kontent.ai";
-			options.PreviewEndpoint = "https://preview-deliver.kontent.ai";
-		});
-	}
+    // Dynamic switching via named clients
+    public static IDeliveryClient DynamicSwitching(IServiceProvider serviceProvider, bool isPreviewMode)
+    {
+        var factory = serviceProvider.GetRequiredService<IDeliveryClientFactory>();
+        var client = isPreviewMode ? factory.Get("preview") : factory.Get("production");
+        return client;
+    }
 
-	// HTTP client behavior configuration
-	public static void ConfigureHttpAndResilience(IServiceCollection services)
-	{
-		services.AddDeliveryClient(
-			buildDeliveryOptions: builder => builder.WithEnvironmentId("your-environment-id").Build(),
-			configureHttpClient: builder =>
-			{
-				builder.ConfigureHttpClient(client =>
-				{
-					client.Timeout = TimeSpan.FromSeconds(60);
-				});
-			},
-			configureResilience: builder =>
-			{
-				builder.AddRetry(new HttpRetryStrategyOptions
-				{
-					MaxRetryAttempts = 5,
-					Delay = TimeSpan.FromSeconds(2)
-				});
-			});
-	}
+    // Configuration options sample
+    public static void ConfigureOptions(IServiceCollection services)
+    {
+        services.AddDeliveryClient(options =>
+        {
+            options.EnvironmentId = "your-environment-id";
+            options.UsePreviewApi = false;
+            options.PreviewApiKey = "your-preview-api-key";
+            options.UseSecureAccess = false;
+            options.SecureAccessApiKey = "your-secure-api-key";
+            options.EnableResilience = true;
+            options.WaitForLoadingNewContent = false;
+            options.DefaultRenditionPreset = "default";
+            options.ProductionEndpoint = "https://deliver.kontent.ai";
+            options.PreviewEndpoint = "https://preview-deliver.kontent.ai";
+        });
+    }
 
-	// Depth parameter example
-	public static async Task DepthParameterAsync(IDeliveryClient client)
-	{
-		var result = await client.GetItem("article")
-			.Depth(2)
-			.ExecuteAsync();
-		_ = result;
-	}
+    // HTTP client behavior configuration
+    public static void ConfigureHttpAndResilience(IServiceCollection services)
+    {
+        services.AddDeliveryClient(
+            buildDeliveryOptions: builder => builder.WithEnvironmentId("your-environment-id").Build(),
+            configureHttpClient: builder =>
+            {
+                builder.ConfigureHttpClient(client =>
+                {
+                    client.Timeout = TimeSpan.FromSeconds(60);
+                });
+            },
+            configureResilience: builder =>
+            {
+                builder.AddRetry(new HttpRetryStrategyOptions
+                {
+                    MaxRetryAttempts = 5,
+                    Delay = TimeSpan.FromSeconds(2)
+                });
+            });
+    }
 
-	// Placeholder types used in examples
-	public record Tweet(string Text, string Author);
+    // Depth parameter example
+    public static async Task DepthParameterAsync(IDeliveryClient client)
+    {
+        var result = await client.GetItem("article")
+            .Depth(2)
+            .ExecuteAsync();
+        _ = result;
+    }
+
+    // Placeholder types used in examples
+    public record Tweet(string Text, string Author);
 }

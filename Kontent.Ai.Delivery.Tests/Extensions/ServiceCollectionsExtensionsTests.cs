@@ -187,7 +187,7 @@ public class ServiceCollectionsExtensionsTests
 
     [Theory]
     [MemberData(nameof(DeliveryOptionsConfigurationParameters))]
-    public void AddDeliveryClientWithConfiguration_AllServicesAreRegistered(string fileNamePostfix, string customSectionName = null)
+    public void AddDeliveryClientWithConfiguration_AllServicesAreRegistered(string fileNamePostfix, string? customSectionName = null)
     {
         var jsonConfigurationPath = Path.Combine(
             Environment.CurrentDirectory,
