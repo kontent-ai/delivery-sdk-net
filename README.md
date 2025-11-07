@@ -261,7 +261,9 @@ The SDK supports strongly-typed models for compile-time safety and IntelliSense 
 #### Generate Models
 
 > [!WARNING]
-> Model generator has not been updated yet if you see this. See for example [Article.cs](./Kontent.Ai.Delivery.Tests/Models/ContentTypes/Article.cs) and its siblings for examples of the new model structure.
+> Model generator with updated delivery model capabilities is currently out as [10.0.0-beta](https://www.nuget.org/packages/Kontent.Ai.ModelGenerator/10.0.0-beta). Make sure to use it with the delivery SDK beta as the older model format is not supported anymore.
+>
+> Please note that the beta version has been trimmed down significantly and only supports default delivery models. Further functionality will be added along with management SDK updates.
 
 Use the [Kontent.ai Model Generator](https://github.com/kontent-ai/model-generator-net) to generate C# classes from your content types:
 
