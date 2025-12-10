@@ -119,8 +119,10 @@ public class ContentDependencyExtractorTests
     public void ExtractFromRichTextElement_WithNullImages_DoesNotThrow()
     {
         // Arrange
-        var element = new MockRichTextElement();
-        element.Images = null!;  // Test null handling
+        var element = new MockRichTextElement
+        {
+            Images = null!  // Test null handling
+        };
         element.ModularContent.Add("item1");
 
         var context = new DependencyTrackingContext();
