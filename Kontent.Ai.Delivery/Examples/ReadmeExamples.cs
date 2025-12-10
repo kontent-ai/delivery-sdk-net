@@ -2,9 +2,11 @@ namespace Kontent.Ai.Delivery.Examples;
 
 using Kontent.Ai.Delivery.Abstractions;
 using Kontent.Ai.Delivery.Api.QueryBuilders.Filtering;
+using Kontent.Ai.Delivery.Configuration;
 using Kontent.Ai.Delivery.ContentItems.RichText;
 using Kontent.Ai.Delivery.ContentItems.RichText.Resolution;
 using Kontent.Ai.Delivery.Extensions;
+using Microsoft.Extensions.Caching.Distributed;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Http.Resilience;
 using Polly;
@@ -149,6 +151,7 @@ public static class ReadmeExamples
             .Filter(f => f.Any(Elements.GetPath("tags"), "featured", "trending"))
             .Filter(f => f.All(Elements.GetPath("categories"), "tech", "news"))
             .Filter(f => f.NotEmpty(Elements.GetPath("description")))
+            .Filter(f => f.In(ItemSystemPath.Collection, ["tech", "news"]))
             .ExecuteAsync();
 
         _ = result;
@@ -185,7 +188,7 @@ public static class ReadmeExamples
     {
         public string Title { get; set; } = string.Empty;
         public string Summary { get; set; } = string.Empty;
-        public RichTextContent BodyCopy { get; set; } = new();
+        public RichTextContent BodyCopy { get; set; } = [];
         public DateTime PublishDate { get; set; }
         public IEnumerable<IEmbeddedContent>? RelatedArticles { get; set; }
     }
@@ -530,4 +533,89 @@ public static class ReadmeExamples
 
     // Placeholder types used in examples
     public record Tweet(string Text, string Author);
+
+    // ===== DeliveryClientBuilder Examples (Non-DI Scenarios) =====
+
+    // Simple usage with environment ID
+    public static IDeliveryClient BuilderSimpleUsage()
+    {
+        var client = DeliveryClientBuilder
+            .WithEnvironmentId("your-environment-id")
+            .Build();
+
+        return client;
+    }
+
+    // Using environment ID as Guid
+    public static IDeliveryClient BuilderWithGuidEnvironmentId()
+    {
+        var client = DeliveryClientBuilder
+            .WithEnvironmentId(Guid.Parse("550cec62-90a6-4ab3-b3e4-3d0bb4c04f5c"))
+            .Build();
+
+        return client;
+    }
+
+    // With custom type provider
+    public static IDeliveryClient BuilderWithTypeProvider(ITypeProvider typeProvider)
+    {
+        var client = DeliveryClientBuilder
+            .WithEnvironmentId("your-environment-id")
+            .WithTypeProvider(typeProvider)
+            .Build();
+
+        return client;
+    }
+
+    // With memory cache
+    public static IDeliveryClient BuilderWithMemoryCache()
+    {
+        var client = DeliveryClientBuilder
+            .WithEnvironmentId("your-environment-id")
+            .WithMemoryCache(TimeSpan.FromMinutes(30))
+            .Build();
+
+        return client;
+    }
+
+    // With distributed cache
+    public static IDeliveryClient BuilderWithDistributedCache(IDistributedCache distributedCache)
+    {
+        var client = DeliveryClientBuilder
+            .WithEnvironmentId("your-environment-id")
+            .WithDistributedCache(distributedCache, TimeSpan.FromHours(1))
+            .Build();
+
+        return client;
+    }
+
+    // With full options using WithOptions
+    public static IDeliveryClient BuilderWithFullOptions()
+    {
+        var client = DeliveryClientBuilder
+            .WithOptions(builder => builder
+                .WithEnvironmentId("your-environment-id")
+                .UsePreviewApi("your-preview-api-key")
+                .Build())
+            .WithMemoryCache(TimeSpan.FromMinutes(15))
+            .Build();
+
+        return client;
+    }
+
+    // Combined: type provider + memory cache
+    public static IDeliveryClient BuilderFullExample(ITypeProvider typeProvider)
+    {
+        var client = DeliveryClientBuilder
+            .WithOptions(builder => builder
+                .WithEnvironmentId("your-environment-id")
+                .UseProductionApi()
+                .WithDefaultRenditionPreset("mobile")
+                .Build())
+            .WithTypeProvider(typeProvider)
+            .WithMemoryCache(TimeSpan.FromHours(1))
+            .Build();
+
+        return client;
+    }
 }

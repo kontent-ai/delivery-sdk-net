@@ -97,7 +97,7 @@ public static class ServiceCollectionExtensions
 
         return services.AddDeliveryClient(
             Abstractions.Options.DefaultName,
-            options => section.Bind(options));
+            section.Bind);
     }
 
     /// <summary>

@@ -96,8 +96,10 @@ public class DeliveryAuthenticationHandlerTests
         };
 
         var optionsMonitor = new TestOptionsMonitor<DeliveryOptions>(optionsWithKey);
-        var handler = new DeliveryAuthenticationHandler(optionsMonitor);
-        handler.InnerHandler = new TestHandler();
+        var handler = new DeliveryAuthenticationHandler(optionsMonitor)
+        {
+            InnerHandler = new TestHandler()
+        };
 
         // Act 1 - First request with key
         var request1 = new HttpRequestMessage(HttpMethod.Get, "https://deliver.kontent.ai/items");
@@ -183,16 +185,19 @@ public class DeliveryAuthenticationHandlerTests
         var optionsMonitor = new TestOptionsMonitor<DeliveryOptions>(defaultOptions);
         optionsMonitor.AddNamedOptions("named", namedOptions);
 
-        var handler = new DeliveryAuthenticationHandler(optionsMonitor, "named");
-        handler.InnerHandler = new TestHandler();
+        var handler = new DeliveryAuthenticationHandler(optionsMonitor, "named")
+        {
+            InnerHandler = new TestHandler()
+        };
         var request = new HttpRequestMessage(HttpMethod.Get, "https://deliver.kontent.ai/items");
 
         // Act
-        var response = await InvokeSendAsync(handler, request);
+        _ = await InvokeSendAsync(handler, request);
 
         // Assert
         Assert.NotNull(request.Headers.Authorization);
         Assert.Equal(TestPreviewApiKey, request.Headers.Authorization.Parameter);
+        Assert.NotNull(request.RequestUri);
         Assert.Contains(TestEnvironmentId, request.RequestUri.AbsolutePath);
     }
 
@@ -226,8 +231,10 @@ public class DeliveryAuthenticationHandlerTests
         };
 
         var handler = CreateHandler(options);
-        var request = new HttpRequestMessage(HttpMethod.Get, "https://deliver.kontent.ai");
-        request.RequestUri = new Uri("https://deliver.kontent.ai/items", UriKind.Absolute);
+        var request = new HttpRequestMessage(HttpMethod.Get, "https://deliver.kontent.ai")
+        {
+            RequestUri = new Uri("https://deliver.kontent.ai/items", UriKind.Absolute)
+        };
 
         // Act
         var response = await InvokeSendAsync(handler, request);

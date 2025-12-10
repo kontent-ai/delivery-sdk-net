@@ -115,6 +115,36 @@ services.AddDeliveryClient(builder =>
            .Build());
 ```
 
+#### Without Dependency Injection
+
+For console applications, scripts, or scenarios where DI is not available, use `DeliveryClientBuilder` directly:
+
+```csharp
+using Kontent.Ai.Delivery.Configuration;
+
+// Simple usage
+var client = DeliveryClientBuilder
+    .WithEnvironmentId("your-environment-id")
+    .Build();
+
+// With caching and type provider
+var client = DeliveryClientBuilder
+    .WithOptions(builder => builder
+        .WithEnvironmentId("your-environment-id")
+        .UsePreviewApi("your-preview-api-key")
+        .Build())
+    .WithTypeProvider(new GeneratedTypeProvider())
+    .WithMemoryCache(TimeSpan.FromMinutes(30))
+    .Build();
+```
+
+The builder supports:
+- `.WithEnvironmentId(string|Guid)` - Configure for Production API with environment ID
+- `.WithOptions(Func<IDeliveryOptionsBuilder, DeliveryOptions>)` - Full configuration via options builder
+- `.WithTypeProvider(ITypeProvider)` - Custom type provider for strongly-typed models
+- `.WithMemoryCache(TimeSpan?)` - Enable in-memory caching
+- `.WithDistributedCache(IDistributedCache, TimeSpan?)` - Enable distributed caching
+
 ### Retrieving Content
 
 #### Get a Single Item
