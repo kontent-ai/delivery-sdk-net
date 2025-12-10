@@ -20,7 +20,14 @@ Caching is essential for production applications using the Kontent.ai Delivery A
   - [Manual Invalidation](#manual-invalidation)
   - [Webhook-Based Invalidation](#webhook-based-invalidation)
   - [Timed Invalidation](#timed-invalidation)
+- [Per-Client Caching](#per-client-caching)
+  - [Enabling Caching for Named Clients](#enabling-caching-for-named-clients)
+  - [Cache Key Prefixing](#cache-key-prefixing)
+  - [Distributed Cache for Named Clients](#distributed-cache-for-named-clients)
 - [Multi-Tenant Caching](#multi-tenant-caching)
+  - [Complete Multi-Tenant Example](#complete-multi-tenant-example)
+  - [Per-Tenant Cache Invalidation](#per-tenant-cache-invalidation)
+  - [Selective Caching (Production vs Preview)](#selective-caching-production-vs-preview)
 - [Best Practices](#best-practices)
 - [Monitoring and Diagnostics](#monitoring-and-diagnostics)
 - [Troubleshooting](#troubleshooting)
@@ -565,55 +572,139 @@ public class CacheInvalidationService : BackgroundService
 services.AddHostedService<CacheInvalidationService>();
 ```
 
-## Multi-Tenant Caching
+## Per-Client Caching
 
-When serving multiple environments or brands:
+The SDK supports per-client cache configuration using keyed services, allowing different named clients to have independent caching strategies.
 
-### Named Clients with Separate Caches
+### Enabling Caching for Named Clients
+
+Use `AddDeliveryMemoryCache` or `AddDeliveryDistributedCache` to enable caching for specific named clients:
 
 ```csharp
-services.AddDeliveryClient("brand-a", options =>
+// Register named clients
+services.AddDeliveryClient("production", options =>
 {
-    options.EnvironmentId = "brand-a-environment-id";
-})
-.WithMemoryCache(defaultExpiration: TimeSpan.FromHours(1));
+    options.EnvironmentId = "production-environment-id";
+});
 
-services.AddDeliveryClient("brand-b", options =>
+services.AddDeliveryClient("preview", options =>
 {
-    options.EnvironmentId = "brand-b-environment-id";
-})
-.WithMemoryCache(defaultExpiration: TimeSpan.FromHours(1));
+    options.EnvironmentId = "preview-environment-id";
+    options.UsePreviewApi = true;
+    options.PreviewApiKey = "your-preview-api-key";
+});
+
+// Enable caching ONLY for production client
+services.AddDeliveryMemoryCache("production",
+    keyPrefix: "prod",
+    defaultExpiration: TimeSpan.FromHours(1));
+
+// Preview client has no cache - always fetches fresh content
 ```
-
-Cache keys automatically include the environment ID, preventing conflicts.
 
 ### Cache Key Prefixing
 
-For distributed caches, use instance names:
+When multiple clients share the same underlying cache (e.g., same `IMemoryCache` or Redis instance), key prefixes prevent collisions:
 
 ```csharp
+// Both clients share IMemoryCache but have isolated entries
+services.AddDeliveryMemoryCache("client1", keyPrefix: "brand-a");
+services.AddDeliveryMemoryCache("client2", keyPrefix: "brand-b");
+```
+
+Key prefixes are automatically applied to all cache keys and dependency tracking.
+
+### Distributed Cache for Named Clients
+
+```csharp
+// Register distributed cache implementation
 services.AddStackExchangeRedisCache(options =>
 {
     options.Configuration = "localhost:6379";
-    options.InstanceName = $"Tenant_{tenantId}_";
 });
+
+// Register client
+services.AddDeliveryClient("production", options =>
+{
+    options.EnvironmentId = "production-environment-id";
+});
+
+// Enable distributed caching for the client
+services.AddDeliveryDistributedCache("production",
+    keyPrefix: "prod",
+    defaultExpiration: TimeSpan.FromHours(2));
+```
+
+## Multi-Tenant Caching
+
+When serving multiple environments or brands, use per-client caching with distinct key prefixes:
+
+### Complete Multi-Tenant Example
+
+```csharp
+// Register tenant clients
+services.AddDeliveryClient("tenant-a", options =>
+{
+    options.EnvironmentId = "tenant-a-environment-id";
+});
+
+services.AddDeliveryClient("tenant-b", options =>
+{
+    options.EnvironmentId = "tenant-b-environment-id";
+});
+
+// Configure caching for each tenant (order doesn't matter)
+services.AddDeliveryMemoryCache("tenant-a", keyPrefix: "tenant-a");
+services.AddDeliveryMemoryCache("tenant-b", keyPrefix: "tenant-b");
+
+// Access clients via factory
+var factory = serviceProvider.GetRequiredService<IDeliveryClientFactory>();
+var tenantAClient = factory.Get("tenant-a");
+var tenantBClient = factory.Get("tenant-b");
 ```
 
 ### Per-Tenant Cache Invalidation
 
 ```csharp
-public class TenantCacheManager
+public class TenantCacheService
 {
-    private readonly IDeliveryClientFactory _clientFactory;
+    private readonly IServiceProvider _serviceProvider;
 
     public async Task InvalidateTenantCacheAsync(string tenantId, params string[] dependencies)
     {
-        var client = _clientFactory.Get(tenantId);
-        var cacheManager = /* get cache manager for this client */;
+        // Get the keyed cache manager for the specific tenant
+        var cacheManager = _serviceProvider.GetKeyedService<IDeliveryCacheManager>(tenantId);
 
-        await cacheManager.InvalidateAsync(default, dependencies);
+        if (cacheManager != null)
+        {
+            await cacheManager.InvalidateAsync(default, dependencies);
+        }
     }
 }
+```
+
+### Selective Caching (Production vs Preview)
+
+A common pattern is to cache production content but not preview content:
+
+```csharp
+// Production: cached for performance
+services.AddDeliveryMemoryCache("production",
+    keyPrefix: "prod",
+    defaultExpiration: TimeSpan.FromHours(2));
+services.AddDeliveryClient("production", options =>
+{
+    options.EnvironmentId = "your-environment-id";
+});
+
+// Preview: no caching for fresh content during editing
+services.AddDeliveryClient("preview", options =>
+{
+    options.EnvironmentId = "your-environment-id";
+    options.UsePreviewApi = true;
+    options.PreviewApiKey = "your-preview-api-key";
+});
+// No AddDeliveryMemoryCache for "preview" = no caching
 ```
 
 ## Best Practices

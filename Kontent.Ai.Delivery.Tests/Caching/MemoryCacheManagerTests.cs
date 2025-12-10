@@ -727,6 +727,182 @@ public class MemoryCacheManagerTests : IDisposable
 
     #endregion
 
+    #region Key Prefix Isolation Tests
+
+    [Fact]
+    public async Task SetAsync_WithDifferentPrefixes_IsolatesCacheEntries()
+    {
+        // Arrange - two managers sharing the same IMemoryCache with different prefixes
+        var sharedCache = new MemoryCache(new MemoryCacheOptions());
+        using var manager1 = new MemoryCacheManager(sharedCache, keyPrefix: "client1");
+        using var manager2 = new MemoryCacheManager(sharedCache, keyPrefix: "client2");
+
+        var key = "same_key";
+        var value1 = new TestCacheValue { Id = 1, Name = "Client1Value" };
+        var value2 = new TestCacheValue { Id = 2, Name = "Client2Value" };
+
+        // Act - both managers set the same logical key
+        await manager1.SetAsync(key, value1, []);
+        await manager2.SetAsync(key, value2, []);
+
+        var result1 = await manager1.GetAsync<TestCacheValue>(key);
+        var result2 = await manager2.GetAsync<TestCacheValue>(key);
+
+        // Assert - each manager gets its own value
+        Assert.NotNull(result1);
+        Assert.NotNull(result2);
+        Assert.Equal(1, result1.Id);
+        Assert.Equal("Client1Value", result1.Name);
+        Assert.Equal(2, result2.Id);
+        Assert.Equal("Client2Value", result2.Name);
+
+        sharedCache.Dispose();
+    }
+
+    [Fact]
+    public async Task InvalidateAsync_WithDifferentPrefixes_OnlyAffectsOwnEntries()
+    {
+        // Arrange - two managers sharing the same IMemoryCache with different prefixes
+        var sharedCache = new MemoryCache(new MemoryCacheOptions());
+        using var manager1 = new MemoryCacheManager(sharedCache, keyPrefix: "client1");
+        using var manager2 = new MemoryCacheManager(sharedCache, keyPrefix: "client2");
+
+        var key = "same_key";
+        var dependency = "same_dep";
+        var value1 = new TestCacheValue { Id = 1, Name = "Client1Value" };
+        var value2 = new TestCacheValue { Id = 2, Name = "Client2Value" };
+
+        await manager1.SetAsync(key, value1, [dependency]);
+        await manager2.SetAsync(key, value2, [dependency]);
+
+        // Act - invalidate only in manager1
+        await manager1.InvalidateAsync(default, dependency);
+
+        var result1 = await manager1.GetAsync<TestCacheValue>(key);
+        var result2 = await manager2.GetAsync<TestCacheValue>(key);
+
+        // Assert - only manager1's entry is invalidated
+        Assert.Null(result1);
+        Assert.NotNull(result2);
+        Assert.Equal(2, result2.Id);
+
+        sharedCache.Dispose();
+    }
+
+    [Fact]
+    public async Task GetAsync_WithDifferentPrefixes_DoesNotCrossContaminate()
+    {
+        // Arrange - two managers sharing the same IMemoryCache with different prefixes
+        var sharedCache = new MemoryCache(new MemoryCacheOptions());
+        using var manager1 = new MemoryCacheManager(sharedCache, keyPrefix: "client1");
+        using var manager2 = new MemoryCacheManager(sharedCache, keyPrefix: "client2");
+
+        var key = "unique_key";
+        var value = new TestCacheValue { Id = 1, Name = "OnlyInClient1" };
+
+        // Act - set only in manager1
+        await manager1.SetAsync(key, value, []);
+
+        var result1 = await manager1.GetAsync<TestCacheValue>(key);
+        var result2 = await manager2.GetAsync<TestCacheValue>(key);
+
+        // Assert - manager2 should not see manager1's entry
+        Assert.NotNull(result1);
+        Assert.Null(result2);
+
+        sharedCache.Dispose();
+    }
+
+    [Fact]
+    public async Task SetAsync_WithNullPrefix_UsesUnprefixedKeys()
+    {
+        // Arrange - manager without prefix
+        var sharedCache = new MemoryCache(new MemoryCacheOptions());
+        using var managerNoPrefix = new MemoryCacheManager(sharedCache, keyPrefix: null);
+        using var managerWithPrefix = new MemoryCacheManager(sharedCache, keyPrefix: "prefixed");
+
+        var key = "test_key";
+        var value1 = new TestCacheValue { Id = 1, Name = "NoPrefix" };
+        var value2 = new TestCacheValue { Id = 2, Name = "WithPrefix" };
+
+        // Act
+        await managerNoPrefix.SetAsync(key, value1, []);
+        await managerWithPrefix.SetAsync(key, value2, []);
+
+        var result1 = await managerNoPrefix.GetAsync<TestCacheValue>(key);
+        var result2 = await managerWithPrefix.GetAsync<TestCacheValue>(key);
+
+        // Assert - both should have separate entries
+        Assert.NotNull(result1);
+        Assert.NotNull(result2);
+        Assert.Equal(1, result1.Id);
+        Assert.Equal(2, result2.Id);
+
+        sharedCache.Dispose();
+    }
+
+    [Fact]
+    public async Task InvalidateAsync_WithSharedDependencyName_OnlyInvalidatesOwnPrefix()
+    {
+        // Arrange - three entries: two with same key/dep in different prefixes, one unrelated
+        var sharedCache = new MemoryCache(new MemoryCacheOptions());
+        using var manager1 = new MemoryCacheManager(sharedCache, keyPrefix: "prod");
+        using var manager2 = new MemoryCacheManager(sharedCache, keyPrefix: "preview");
+
+        var dependency = "content_type_article";
+
+        await manager1.SetAsync("item1", new TestCacheValue { Id = 1 }, [dependency]);
+        await manager1.SetAsync("item2", new TestCacheValue { Id = 2 }, [dependency]);
+        await manager2.SetAsync("item1", new TestCacheValue { Id = 10 }, [dependency]);
+        await manager2.SetAsync("item2", new TestCacheValue { Id = 20 }, [dependency]);
+
+        // Act - invalidate dependency only in production manager
+        await manager1.InvalidateAsync(default, dependency);
+
+        // Assert - only production entries are invalidated
+        Assert.Null(await manager1.GetAsync<TestCacheValue>("item1"));
+        Assert.Null(await manager1.GetAsync<TestCacheValue>("item2"));
+        Assert.NotNull(await manager2.GetAsync<TestCacheValue>("item1"));
+        Assert.NotNull(await manager2.GetAsync<TestCacheValue>("item2"));
+
+        sharedCache.Dispose();
+    }
+
+    [Fact]
+    public async Task ConcurrentOperations_WithDifferentPrefixes_MaintainsIsolation()
+    {
+        // Arrange
+        var sharedCache = new MemoryCache(new MemoryCacheOptions());
+        using var manager1 = new MemoryCacheManager(sharedCache, keyPrefix: "client1");
+        using var manager2 = new MemoryCacheManager(sharedCache, keyPrefix: "client2");
+
+        var dependency = "shared_dep_name";
+
+        // Act - concurrent sets from both managers
+        var tasks1 = Enumerable.Range(0, 25)
+            .Select(i => manager1.SetAsync($"key_{i}", new TestCacheValue { Id = i }, [dependency]));
+        var tasks2 = Enumerable.Range(0, 25)
+            .Select(i => manager2.SetAsync($"key_{i}", new TestCacheValue { Id = i + 100 }, [dependency]));
+
+        await Task.WhenAll(tasks1.Concat(tasks2));
+
+        // Invalidate only manager1's entries
+        await manager1.InvalidateAsync(default, dependency);
+
+        // Assert - manager1 entries invalidated, manager2 entries intact
+        var verify1 = await Task.WhenAll(Enumerable.Range(0, 25)
+            .Select(i => manager1.GetAsync<TestCacheValue>($"key_{i}")));
+        var verify2 = await Task.WhenAll(Enumerable.Range(0, 25)
+            .Select(i => manager2.GetAsync<TestCacheValue>($"key_{i}")));
+
+        Assert.All(verify1, Assert.Null);
+        Assert.All(verify2, Assert.NotNull);
+
+        sharedCache.Dispose();
+    }
+
+    #endregion
+
     #region Test Helper Classes
 
     private class TestCacheValue
