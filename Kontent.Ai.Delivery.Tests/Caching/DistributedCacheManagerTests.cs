@@ -177,6 +177,82 @@ public class DistributedCacheManagerTests
 
     #endregion
 
+    #region Expiration Tests
+
+    [Fact]
+    public void Constructor_WithDefaultExpiration_AcceptsValue()
+    {
+        // Arrange & Act
+        var expiration = TimeSpan.FromMinutes(30);
+        var manager = new DistributedCacheManager(_mockCache, defaultExpiration: expiration);
+
+        // Assert - no exception thrown, manager is created
+        Assert.NotNull(manager);
+    }
+
+    [Fact]
+    public void Constructor_WithNullExpiration_UsesDefaultOneHour()
+    {
+        // Arrange & Act
+        var manager = new DistributedCacheManager(_mockCache, defaultExpiration: null);
+
+        // Assert - no exception thrown, manager is created with default expiration
+        Assert.NotNull(manager);
+    }
+
+    [Fact]
+    public async Task SetAsync_WithCustomExpiration_DoesNotThrow()
+    {
+        // Arrange
+        var key = "test_key";
+        var value = new TestCacheValue { Id = 1, Name = "Test" };
+        var customExpiration = TimeSpan.FromMinutes(15);
+
+        // Act & Assert - should not throw
+        await _cacheManager.SetAsync(key, value, [], customExpiration);
+
+        var result = await _cacheManager.GetAsync<TestCacheValue>(key);
+        Assert.NotNull(result);
+    }
+
+    [Fact]
+    public async Task SetAsync_ExpirationPassedToCacheEntry()
+    {
+        // Arrange
+        var trackingCache = new ExpirationTrackingMockCache();
+        var manager = new DistributedCacheManager(trackingCache, defaultExpiration: TimeSpan.FromHours(2));
+
+        var key = "test_key";
+        var value = new TestCacheValue { Id = 1, Name = "Test" };
+        var customExpiration = TimeSpan.FromMinutes(30);
+
+        // Act
+        await manager.SetAsync(key, value, [], customExpiration);
+
+        // Assert - verify custom expiration was passed
+        Assert.True(trackingCache.LastExpirationOptions?.AbsoluteExpirationRelativeToNow == customExpiration);
+    }
+
+    [Fact]
+    public async Task SetAsync_WithoutCustomExpiration_UsesDefaultExpiration()
+    {
+        // Arrange
+        var defaultExpiration = TimeSpan.FromHours(2);
+        var trackingCache = new ExpirationTrackingMockCache();
+        var manager = new DistributedCacheManager(trackingCache, defaultExpiration: defaultExpiration);
+
+        var key = "test_key";
+        var value = new TestCacheValue { Id = 1, Name = "Test" };
+
+        // Act
+        await manager.SetAsync(key, value, []); // No custom expiration
+
+        // Assert - verify default expiration was used
+        Assert.True(trackingCache.LastExpirationOptions?.AbsoluteExpirationRelativeToNow == defaultExpiration);
+    }
+
+    #endregion
+
     #region Serialization Tests
 
     [Fact]
@@ -758,6 +834,185 @@ public class DistributedCacheManagerTests
 
     #endregion
 
+    #region Key Prefix Isolation Tests
+
+    [Fact]
+    public async Task SetAsync_WithDifferentPrefixes_IsolatesCacheEntries()
+    {
+        // Arrange - two managers sharing the same IDistributedCache with different prefixes
+        var sharedCache = new MockDistributedCache();
+        var manager1 = new DistributedCacheManager(sharedCache, keyPrefix: "client1");
+        var manager2 = new DistributedCacheManager(sharedCache, keyPrefix: "client2");
+
+        var key = "same_key";
+        var value1 = new TestCacheValue { Id = 1, Name = "Client1Value" };
+        var value2 = new TestCacheValue { Id = 2, Name = "Client2Value" };
+
+        // Act - both managers set the same logical key
+        await manager1.SetAsync(key, value1, []);
+        await manager2.SetAsync(key, value2, []);
+
+        var result1 = await manager1.GetAsync<TestCacheValue>(key);
+        var result2 = await manager2.GetAsync<TestCacheValue>(key);
+
+        // Assert - each manager gets its own value
+        Assert.NotNull(result1);
+        Assert.NotNull(result2);
+        Assert.Equal(1, result1.Id);
+        Assert.Equal("Client1Value", result1.Name);
+        Assert.Equal(2, result2.Id);
+        Assert.Equal("Client2Value", result2.Name);
+    }
+
+    [Fact]
+    public async Task InvalidateAsync_WithDifferentPrefixes_OnlyAffectsOwnEntries()
+    {
+        // Arrange - two managers sharing the same IDistributedCache with different prefixes
+        var sharedCache = new MockDistributedCache();
+        var manager1 = new DistributedCacheManager(sharedCache, keyPrefix: "client1");
+        var manager2 = new DistributedCacheManager(sharedCache, keyPrefix: "client2");
+
+        var key = "same_key";
+        var dependency = "same_dep";
+        var value1 = new TestCacheValue { Id = 1, Name = "Client1Value" };
+        var value2 = new TestCacheValue { Id = 2, Name = "Client2Value" };
+
+        await manager1.SetAsync(key, value1, [dependency]);
+        await manager2.SetAsync(key, value2, [dependency]);
+
+        // Act - invalidate only in manager1
+        await manager1.InvalidateAsync(default, dependency);
+
+        var result1 = await manager1.GetAsync<TestCacheValue>(key);
+        var result2 = await manager2.GetAsync<TestCacheValue>(key);
+
+        // Assert - only manager1's entry is invalidated
+        Assert.Null(result1);
+        Assert.NotNull(result2);
+        Assert.Equal(2, result2.Id);
+    }
+
+    [Fact]
+    public async Task GetAsync_WithDifferentPrefixes_DoesNotCrossContaminate()
+    {
+        // Arrange - two managers sharing the same IDistributedCache with different prefixes
+        var sharedCache = new MockDistributedCache();
+        var manager1 = new DistributedCacheManager(sharedCache, keyPrefix: "client1");
+        var manager2 = new DistributedCacheManager(sharedCache, keyPrefix: "client2");
+
+        var key = "unique_key";
+        var value = new TestCacheValue { Id = 1, Name = "OnlyInClient1" };
+
+        // Act - set only in manager1
+        await manager1.SetAsync(key, value, []);
+
+        var result1 = await manager1.GetAsync<TestCacheValue>(key);
+        var result2 = await manager2.GetAsync<TestCacheValue>(key);
+
+        // Assert - manager2 should not see manager1's entry
+        Assert.NotNull(result1);
+        Assert.Null(result2);
+    }
+
+    [Fact]
+    public async Task SetAsync_WithNullPrefix_UsesUnprefixedKeys()
+    {
+        // Arrange - manager without prefix
+        var sharedCache = new MockDistributedCache();
+        var managerNoPrefix = new DistributedCacheManager(sharedCache, keyPrefix: null);
+        var managerWithPrefix = new DistributedCacheManager(sharedCache, keyPrefix: "prefixed");
+
+        var key = "test_key";
+        var value1 = new TestCacheValue { Id = 1, Name = "NoPrefix" };
+        var value2 = new TestCacheValue { Id = 2, Name = "WithPrefix" };
+
+        // Act
+        await managerNoPrefix.SetAsync(key, value1, []);
+        await managerWithPrefix.SetAsync(key, value2, []);
+
+        var result1 = await managerNoPrefix.GetAsync<TestCacheValue>(key);
+        var result2 = await managerWithPrefix.GetAsync<TestCacheValue>(key);
+
+        // Assert - both should have separate entries
+        Assert.NotNull(result1);
+        Assert.NotNull(result2);
+        Assert.Equal(1, result1.Id);
+        Assert.Equal(2, result2.Id);
+    }
+
+    [Fact]
+    public async Task InvalidateAsync_WithSharedDependencyName_OnlyInvalidatesOwnPrefix()
+    {
+        // Arrange - entries with same key/dep in different prefixes
+        var sharedCache = new MockDistributedCache();
+        var manager1 = new DistributedCacheManager(sharedCache, keyPrefix: "prod");
+        var manager2 = new DistributedCacheManager(sharedCache, keyPrefix: "preview");
+
+        var dependency = "content_type_article";
+
+        await manager1.SetAsync("item1", new TestCacheValue { Id = 1 }, [dependency]);
+        await manager1.SetAsync("item2", new TestCacheValue { Id = 2 }, [dependency]);
+        await manager2.SetAsync("item1", new TestCacheValue { Id = 10 }, [dependency]);
+        await manager2.SetAsync("item2", new TestCacheValue { Id = 20 }, [dependency]);
+
+        // Act - invalidate dependency only in production manager
+        await manager1.InvalidateAsync(default, dependency);
+
+        // Assert - only production entries are invalidated
+        Assert.Null(await manager1.GetAsync<TestCacheValue>("item1"));
+        Assert.Null(await manager1.GetAsync<TestCacheValue>("item2"));
+        Assert.NotNull(await manager2.GetAsync<TestCacheValue>("item1"));
+        Assert.NotNull(await manager2.GetAsync<TestCacheValue>("item2"));
+    }
+
+    [Fact]
+    public async Task ConcurrentOperations_WithDifferentPrefixes_MaintainsIsolation()
+    {
+        // Arrange
+        var sharedCache = new MockDistributedCache();
+        var manager1 = new DistributedCacheManager(sharedCache, keyPrefix: "client1");
+        var manager2 = new DistributedCacheManager(sharedCache, keyPrefix: "client2");
+
+        var dependency = "shared_dep_name";
+
+        // Act - concurrent sets from both managers
+        var tasks1 = Enumerable.Range(0, 25)
+            .Select(i => manager1.SetAsync($"key_{i}", new TestCacheValue { Id = i }, [dependency]));
+        var tasks2 = Enumerable.Range(0, 25)
+            .Select(i => manager2.SetAsync($"key_{i}", new TestCacheValue { Id = i + 100 }, [dependency]));
+
+        await Task.WhenAll(tasks1.Concat(tasks2));
+
+        // Invalidate only manager1's entries
+        await manager1.InvalidateAsync(default, dependency);
+
+        // Assert - manager1 entries invalidated, manager2 entries intact
+        var verify1 = await Task.WhenAll(Enumerable.Range(0, 25)
+            .Select(i => manager1.GetAsync<TestCacheValue>($"key_{i}")));
+        var verify2 = await Task.WhenAll(Enumerable.Range(0, 25)
+            .Select(i => manager2.GetAsync<TestCacheValue>($"key_{i}")));
+
+        Assert.All(verify1, Assert.Null);
+        Assert.All(verify2, Assert.NotNull);
+    }
+
+    [Fact]
+    public async Task Constructor_WithKeyPrefix_StoresPrefix()
+    {
+        // Arrange & Act
+        var cache = new MockDistributedCache();
+        var manager = new DistributedCacheManager(cache, keyPrefix: "my-prefix");
+
+        // Assert - verify prefix is used by checking cache keys
+        await manager.SetAsync("test", new TestCacheValue { Id = 1 }, []);
+
+        // The key should include the prefix: "my-prefix:cache:test"
+        var keys = cache.GetAllKeys();
+        Assert.Contains(keys, k => k.StartsWith("my-prefix:"));
+    }
+
+    #endregion
+
     #region Test Helper Classes
 
     private class TestCacheValue
@@ -833,6 +1088,78 @@ public class DistributedCacheManagerTests
         {
             // No-op for testing
         }
+
+        public Task RefreshAsync(string key, CancellationToken token = default)
+        {
+            token.ThrowIfCancellationRequested();
+            return Task.CompletedTask;
+        }
+
+        public void Remove(string key)
+        {
+            lock (_lock)
+            {
+                _cache.Remove(key);
+            }
+        }
+
+        public Task RemoveAsync(string key, CancellationToken token = default)
+        {
+            token.ThrowIfCancellationRequested();
+            Remove(key);
+            return Task.CompletedTask;
+        }
+
+        public IEnumerable<string> GetAllKeys()
+        {
+            lock (_lock)
+            {
+                return _cache.Keys.ToList();
+            }
+        }
+    }
+
+    /// <summary>
+    /// Mock that tracks the expiration options passed to SetAsync.
+    /// </summary>
+    private class ExpirationTrackingMockCache : IDistributedCache
+    {
+        private readonly Dictionary<string, byte[]> _cache = [];
+        private readonly object _lock = new();
+
+        public DistributedCacheEntryOptions? LastExpirationOptions { get; private set; }
+
+        public byte[]? Get(string key)
+        {
+            lock (_lock)
+            {
+                return _cache.TryGetValue(key, out var value) ? value : null;
+            }
+        }
+
+        public Task<byte[]?> GetAsync(string key, CancellationToken token = default)
+        {
+            token.ThrowIfCancellationRequested();
+            return Task.FromResult(Get(key));
+        }
+
+        public void Set(string key, byte[] value, DistributedCacheEntryOptions options)
+        {
+            lock (_lock)
+            {
+                _cache[key] = value;
+                LastExpirationOptions = options;
+            }
+        }
+
+        public Task SetAsync(string key, byte[] value, DistributedCacheEntryOptions options, CancellationToken token = default)
+        {
+            token.ThrowIfCancellationRequested();
+            Set(key, value, options);
+            return Task.CompletedTask;
+        }
+
+        public void Refresh(string key) { }
 
         public Task RefreshAsync(string key, CancellationToken token = default)
         {

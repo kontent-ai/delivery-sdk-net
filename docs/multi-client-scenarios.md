@@ -106,8 +106,8 @@ services.AddDeliveryClient("brand-b", options =>
 services.AddDeliveryClient("brand-c", options =>
 {
     options.EnvironmentId = "brand-c-environment-id";
-})
-.WithMemoryCache(defaultExpiration: TimeSpan.FromHours(1));
+});
+services.AddDeliveryMemoryCache("brand-c", defaultExpiration: TimeSpan.FromHours(1));
 
 var serviceProvider = services.BuildServiceProvider();
 ```
@@ -291,8 +291,8 @@ foreach (var tenant in tenants)
     services.AddDeliveryClient(tenant.Name, options =>
     {
         options.EnvironmentId = tenant.EnvironmentId;
-    })
-    .WithMemoryCache(defaultExpiration: tenant.CacheExpiration);
+    });
+    services.AddDeliveryMemoryCache(tenant.Name, defaultExpiration: tenant.CacheExpiration);
 }
 ```
 
@@ -389,7 +389,7 @@ public static class TenantRegistration
 
         foreach (var tenant in tenants)
         {
-            var builder = services.AddDeliveryClient(tenant.Name, options =>
+            services.AddDeliveryClient(tenant.Name, options =>
             {
                 options.EnvironmentId = tenant.EnvironmentId;
                 options.UsePreviewApi = tenant.UsePreview;
@@ -399,7 +399,7 @@ public static class TenantRegistration
 
             if (tenant.CacheExpiration > TimeSpan.Zero)
             {
-                builder.WithMemoryCache(tenant.CacheExpiration);
+                services.AddDeliveryMemoryCache(tenant.Name, defaultExpiration: tenant.CacheExpiration);
             }
         }
     }
@@ -524,16 +524,16 @@ services.AddDeliveryClient("production", options =>
 {
     options.EnvironmentId = "your-environment-id";
     options.UsePreviewApi = false;
-})
-.WithMemoryCache(defaultExpiration: TimeSpan.FromHours(2));
+});
+services.AddDeliveryMemoryCache("production", defaultExpiration: TimeSpan.FromHours(2));
 
 services.AddDeliveryClient("preview", options =>
 {
     options.EnvironmentId = "your-environment-id";
     options.UsePreviewApi = true;
     options.PreviewApiKey = "your-preview-api-key";
-})
-.WithMemoryCache(defaultExpiration: TimeSpan.FromMinutes(5));
+});
+services.AddDeliveryMemoryCache("preview", defaultExpiration: TimeSpan.FromMinutes(5));
 ```
 
 ### Preview Mode Service
@@ -631,33 +631,33 @@ public static class DeliveryClientRegistration
         if (environment.IsDevelopment())
         {
             // Development: shorter cache, preview API
-            services.AddDeliveryClient(options =>
+            services.AddDeliveryClient("default", options =>
             {
                 options.EnvironmentId = configuration["Kontent:EnvironmentId"];
                 options.UsePreviewApi = true;
                 options.PreviewApiKey = configuration["Kontent:PreviewApiKey"];
-            })
-            .WithMemoryCache(TimeSpan.FromMinutes(5));
+            });
+            services.AddDeliveryMemoryCache("default", defaultExpiration: TimeSpan.FromMinutes(5));
         }
         else if (environment.IsStaging())
         {
             // Staging: moderate cache, production API
-            services.AddDeliveryClient(options =>
+            services.AddDeliveryClient("default", options =>
             {
                 options.EnvironmentId = configuration["Kontent:EnvironmentId"];
                 options.UsePreviewApi = false;
-            })
-            .WithMemoryCache(TimeSpan.FromMinutes(30));
+            });
+            services.AddDeliveryMemoryCache("default", defaultExpiration: TimeSpan.FromMinutes(30));
         }
         else // Production
         {
             // Production: distributed cache, production API, resilience
-            services.AddDeliveryClient(options =>
+            services.AddDeliveryClient("default", options =>
             {
                 options.EnvironmentId = configuration["Kontent:EnvironmentId"];
                 options.EnableResilience = true;
-            })
-            .WithDistributedCache(TimeSpan.FromHours(4));
+            });
+            services.AddDeliveryDistributedCache("default", defaultExpiration: TimeSpan.FromHours(4));
         }
     }
 }

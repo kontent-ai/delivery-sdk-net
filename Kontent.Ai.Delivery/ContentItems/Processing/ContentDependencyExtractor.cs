@@ -10,7 +10,7 @@ namespace Kontent.Ai.Delivery.ContentItems.Processing;
 /// <remarks>
 /// <para>
 /// This implementation is registered when caching is enabled via
-/// <c>WithMemoryCache()</c> or <c>WithDistributedCache()</c> extension methods.
+/// <c>AddDeliveryMemoryCache()</c> or <c>AddDeliveryDistributedCache()</c> extension methods.
 /// </para>
 /// <para>
 /// All extraction logic for cache dependencies is centralized in this class,

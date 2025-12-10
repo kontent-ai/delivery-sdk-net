@@ -443,24 +443,27 @@ public static class ReadmeExamples
         }
     }
 
-    // Memory cache configuration
+    // Memory cache configuration (single client)
     public static void MemoryCacheConfig(IServiceCollection services)
     {
         services.AddDeliveryClient(options =>
         {
             options.EnvironmentId = "your-environment-id";
-        })
-        .WithMemoryCache(defaultExpiration: TimeSpan.FromHours(1));
+        });
+        services.AddDeliveryMemoryCache(defaultExpiration: TimeSpan.FromHours(1));
     }
 
     // Distributed cache configuration (requires distributed cache registered; keep as demo)
     public static void DistributedCacheConfig(IServiceCollection services)
     {
+        // First register distributed cache provider (e.g., Redis)
+        // services.AddStackExchangeRedisCache(options => options.Configuration = "localhost");
+
         services.AddDeliveryClient(options =>
         {
             options.EnvironmentId = "your-environment-id";
-        })
-        .WithDistributedCache(defaultExpiration: TimeSpan.FromHours(2));
+        });
+        services.AddDeliveryDistributedCache(defaultExpiration: TimeSpan.FromHours(2));
     }
 
     // Preview API enablement

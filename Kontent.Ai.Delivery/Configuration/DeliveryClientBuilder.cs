@@ -315,6 +315,7 @@ public sealed class DeliveryClientBuilder
                 services.AddSingleton<IDeliveryCacheManager>(sp =>
                     new MemoryCacheManager(
                         sp.GetRequiredService<IMemoryCache>(),
+                        keyPrefix: null,
                         _cacheExpiration));
                 services.AddSingleton<IContentDependencyExtractor, ContentDependencyExtractor>();
                 break;
@@ -325,6 +326,7 @@ public sealed class DeliveryClientBuilder
                 services.AddSingleton<IDeliveryCacheManager>(sp =>
                     new DistributedCacheManager(
                         sp.GetRequiredService<IDistributedCache>(),
+                        keyPrefix: null,
                         _cacheExpiration));
                 services.AddSingleton<IContentDependencyExtractor, ContentDependencyExtractor>();
                 break;

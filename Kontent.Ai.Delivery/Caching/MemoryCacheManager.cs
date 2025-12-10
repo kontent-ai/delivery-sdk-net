@@ -33,15 +33,23 @@ namespace Kontent.Ai.Delivery.Caching;
 /// Initializes a new instance of the <see cref="MemoryCacheManager"/> class.
 /// </remarks>
 /// <param name="memoryCache">The underlying memory cache instance.</param>
+/// <param name="keyPrefix">
+/// Optional prefix for all cache keys. Used to isolate cache entries when multiple clients share the same IMemoryCache.
+/// For example, "production" or "preview:myproject".
+/// </param>
 /// <param name="defaultExpiration">
 /// Default expiration time for cache entries. If null, defaults to 1 hour.
 /// </param>
 /// <exception cref="ArgumentNullException">
 /// Thrown when <paramref name="memoryCache"/> is null.
 /// </exception>
-public sealed class MemoryCacheManager(IMemoryCache memoryCache, TimeSpan? defaultExpiration = null) : IDeliveryCacheManager, IDisposable
+public sealed class MemoryCacheManager(
+    IMemoryCache memoryCache,
+    string? keyPrefix = null,
+    TimeSpan? defaultExpiration = null) : IDeliveryCacheManager, IDisposable
 {
     private readonly IMemoryCache _cache = memoryCache ?? throw new ArgumentNullException(nameof(memoryCache));
+    private readonly string? _keyPrefix = keyPrefix;
     private readonly TimeSpan _defaultExpiration = defaultExpiration ?? TimeSpan.FromHours(1);
 
     // Reverse index: dependency key -> set of cache keys that depend on it
@@ -65,6 +73,14 @@ public sealed class MemoryCacheManager(IMemoryCache memoryCache, TimeSpan? defau
     // Flag to track disposal
     private bool _disposed;
 
+    private string KeyPrefixSegment => _keyPrefix is null ? "" : $"{_keyPrefix}:";
+
+    /// <summary>
+    /// Applies the key prefix to a cache key if one is configured.
+    /// Thread-safe: uses readonly field initialized in constructor.
+    /// </summary>
+    private string PrefixKey(string key) => $"{KeyPrefixSegment}{key}";
+
     /// <inheritdoc />
     public Task<T?> GetAsync<T>(string cacheKey, CancellationToken cancellationToken = default)
         where T : class
@@ -83,8 +99,11 @@ public sealed class MemoryCacheManager(IMemoryCache memoryCache, TimeSpan? defau
             // Check cancellation before cache operation
             cancellationToken.ThrowIfCancellationRequested();
 
+            // Apply key prefix for cache isolation
+            var prefixedKey = PrefixKey(cacheKey);
+
             // Attempt to retrieve from cache
-            if (_cache.TryGetValue(cacheKey, out var cached))
+            if (_cache.TryGetValue(prefixedKey, out var cached))
             {
                 // Handle potential deserialization issues gracefully
                 if (cached is T typedValue)
@@ -94,7 +113,7 @@ public sealed class MemoryCacheManager(IMemoryCache memoryCache, TimeSpan? defau
 
                 // Type mismatch or corruption - treat as cache miss
                 // Remove the corrupted entry to prevent repeated failures
-                _cache.Remove(cacheKey);
+                _cache.Remove(prefixedKey);
             }
 
             return Task.FromResult<T?>(null);
@@ -137,6 +156,9 @@ public sealed class MemoryCacheManager(IMemoryCache memoryCache, TimeSpan? defau
         // Materialize dependencies to avoid multiple enumeration
         var dependencyList = dependencies as IList<string> ?? [.. dependencies];
 
+        // Apply key prefix for cache isolation - use prefixed key consistently
+        var prefixedCacheKey = PrefixKey(cacheKey);
+
         // Create cache entry options
         var entryOptions = new MemoryCacheEntryOptions
         {
@@ -165,11 +187,17 @@ public sealed class MemoryCacheManager(IMemoryCache memoryCache, TimeSpan? defau
         });
 
         // Link dependencies using CancellationTokens
-        foreach (var dependency in dependencyList.Where(d => !string.IsNullOrWhiteSpace(d)))
+        // Note: Dependencies use prefixed keys to maintain consistency with cache keys
+        var prefixedDependencies = dependencyList
+            .Where(d => !string.IsNullOrWhiteSpace(d))
+            .Select(PrefixKey)
+            .ToList();
+
+        foreach (var prefixedDependency in prefixedDependencies)
         {
             // Get or create a CancellationTokenSource for this dependency
             var dependencyCts = await GetOrCreateDependencyCancellationTokenAsync(
-                dependency,
+                prefixedDependency,
                 cancellationToken).ConfigureAwait(false);
 
             if (dependencyCts != null)
@@ -177,19 +205,19 @@ public sealed class MemoryCacheManager(IMemoryCache memoryCache, TimeSpan? defau
                 // Link the dependency's cancellation to this entry's eviction
                 entryOptions.AddExpirationToken(new CancellationChangeToken(dependencyCts.Token));
 
-                // Update reverse index
-                await UpdateReverseIndexAsync(dependency, cacheKey, cancellationToken).ConfigureAwait(false);
+                // Update reverse index with prefixed keys
+                await UpdateReverseIndexAsync(prefixedDependency, prefixedCacheKey, cancellationToken).ConfigureAwait(false);
             }
         }
 
         // Also link to the entry's own CancellationToken for direct invalidation
         entryOptions.AddExpirationToken(new CancellationChangeToken(entryCts.Token));
 
-        // Store the CancellationTokenSource for this entry
-        _cancellationTokens.TryAdd(cacheKey, entryCts);
+        // Store the CancellationTokenSource for this entry (use prefixed key for consistency)
+        _cancellationTokens.TryAdd(prefixedCacheKey, entryCts);
 
-        // Store in cache
-        _cache.Set(cacheKey, value, entryOptions);
+        // Store in cache with prefixed key for isolation
+        _cache.Set(prefixedCacheKey, value, entryOptions);
     }
 
     /// <inheritdoc />
@@ -203,12 +231,12 @@ public sealed class MemoryCacheManager(IMemoryCache memoryCache, TimeSpan? defau
             return;
         }
 
-        // Process each dependency key
+        // Process each dependency key with prefix applied for consistency
         var tasks = new List<Task>();
 
         foreach (var dependencyKey in dependencyKeys.Where(k => !string.IsNullOrWhiteSpace(k)))
         {
-            tasks.Add(InvalidateDependencyAsync(dependencyKey, cancellationToken));
+            tasks.Add(InvalidateDependencyAsync(PrefixKey(dependencyKey), cancellationToken));
         }
 
         // Wait for all invalidations to complete

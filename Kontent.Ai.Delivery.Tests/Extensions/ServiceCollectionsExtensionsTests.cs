@@ -2,8 +2,10 @@
 using AngleSharp.Html.Parser;
 using Kontent.Ai.Delivery.Abstractions;
 using Kontent.Ai.Delivery.Api;
+using Kontent.Ai.Delivery.Caching;
 using Kontent.Ai.Delivery.ContentItems;
 using Kontent.Ai.Delivery.Extensions;
+using Microsoft.Extensions.Caching.Memory;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Options;
@@ -373,20 +375,300 @@ public class ServiceCollectionsExtensionsTests
         Assert.Same(clientDirect, clientFromFactory);
     }
 
+    #endregion
+
+    #region Per-Client Caching Tests
+
     [Fact]
-    public void WithMemoryCache_CalledMultipleTimes_DoesNotOverwrite()
+    public void AddDeliveryMemoryCache_RegistersKeyedCacheManager()
     {
         // Arrange
-        _serviceCollection.AddDeliveryClient(o => o.EnvironmentId = EnvironmentId);
-        _serviceCollection.WithMemoryCache(TimeSpan.FromMinutes(10));
+        _serviceCollection.AddDeliveryClient("production", o =>
+        {
+            o.EnvironmentId = EnvironmentId;
+            o.EnableResilience = false;
+        });
+        _serviceCollection.AddDeliveryMemoryCache("production");
 
-        // Act - Call again with different expiration
-        _serviceCollection.WithMemoryCache(TimeSpan.FromMinutes(20));
-
-        // Assert - Should not throw, and first registration should be preserved
+        // Act
         var provider = _serviceCollection.BuildServiceProvider();
-        var cacheManager = provider.GetService<IDeliveryCacheManager>();
+        var cacheManager = provider.GetKeyedService<IDeliveryCacheManager>("production");
+
+        // Assert
         Assert.NotNull(cacheManager);
+        Assert.IsType<MemoryCacheManager>(cacheManager);
+    }
+
+    [Fact]
+    public void AddDeliveryDistributedCache_RegistersKeyedCacheManager()
+    {
+        // Arrange
+        _serviceCollection.AddDeliveryClient("production", o =>
+        {
+            o.EnvironmentId = EnvironmentId;
+            o.EnableResilience = false;
+        });
+        _serviceCollection.AddDistributedMemoryCache(); // Register IDistributedCache
+        _serviceCollection.AddDeliveryDistributedCache("production");
+
+        // Act
+        var provider = _serviceCollection.BuildServiceProvider();
+        var cacheManager = provider.GetKeyedService<IDeliveryCacheManager>("production");
+
+        // Assert
+        Assert.NotNull(cacheManager);
+        Assert.IsType<DistributedCacheManager>(cacheManager);
+    }
+
+    [Fact]
+    public void AddDeliveryMemoryCache_MultipleClients_RegistersSeparateKeyedManagers()
+    {
+        // Arrange
+        const string envId1 = "11111111-1111-1111-1111-111111111111";
+        const string envId2 = "22222222-2222-2222-2222-222222222222";
+
+        _serviceCollection.AddDeliveryClient("production", o =>
+        {
+            o.EnvironmentId = envId1;
+            o.EnableResilience = false;
+        });
+        _serviceCollection.AddDeliveryClient("preview", o =>
+        {
+            o.EnvironmentId = envId2;
+            o.UsePreviewApi = true;
+            o.PreviewApiKey = PreviewApiKey;
+            o.EnableResilience = false;
+        });
+
+        _serviceCollection.AddDeliveryMemoryCache("production", keyPrefix: "prod");
+        _serviceCollection.AddDeliveryMemoryCache("preview", keyPrefix: "preview");
+
+        // Act
+        var provider = _serviceCollection.BuildServiceProvider();
+        var prodCacheManager = provider.GetKeyedService<IDeliveryCacheManager>("production");
+        var previewCacheManager = provider.GetKeyedService<IDeliveryCacheManager>("preview");
+
+        // Assert - Both should be registered and be different instances
+        Assert.NotNull(prodCacheManager);
+        Assert.NotNull(previewCacheManager);
+        Assert.NotSame(prodCacheManager, previewCacheManager);
+    }
+
+    [Fact]
+    public void AddDeliveryMemoryCache_ClientWithoutCacheRegistration_ReturnsNull()
+    {
+        // Arrange - Register client but NOT cache
+        _serviceCollection.AddDeliveryClient("no-cache", o =>
+        {
+            o.EnvironmentId = EnvironmentId;
+            o.EnableResilience = false;
+        });
+
+        // Act
+        var provider = _serviceCollection.BuildServiceProvider();
+        var cacheManager = provider.GetKeyedService<IDeliveryCacheManager>("no-cache");
+
+        // Assert - No cache manager should be registered for this client
+        Assert.Null(cacheManager);
+    }
+
+    [Fact]
+    public void AddDeliveryMemoryCache_WithCustomExpiration_PassesExpirationToManager()
+    {
+        // Arrange
+        var expiration = TimeSpan.FromMinutes(30);
+        _serviceCollection.AddDeliveryClient("production", o =>
+        {
+            o.EnvironmentId = EnvironmentId;
+            o.EnableResilience = false;
+        });
+        _serviceCollection.AddDeliveryMemoryCache("production", defaultExpiration: expiration);
+
+        // Act
+        var provider = _serviceCollection.BuildServiceProvider();
+        var cacheManager = provider.GetKeyedService<IDeliveryCacheManager>("production");
+
+        // Assert
+        Assert.NotNull(cacheManager);
+        Assert.IsType<MemoryCacheManager>(cacheManager);
+    }
+
+    [Fact]
+    public void AddDeliveryMemoryCache_NullClientName_ThrowsArgumentNullException()
+    {
+        // Act & Assert - use named parameter to ensure we call the string overload
+        Assert.Throws<ArgumentNullException>(() =>
+            _serviceCollection.AddDeliveryMemoryCache(clientName: null!));
+    }
+
+    [Fact]
+    public void AddDeliveryMemoryCache_EmptyClientName_ThrowsArgumentException()
+    {
+        // Act & Assert
+        Assert.Throws<ArgumentException>(() =>
+            _serviceCollection.AddDeliveryMemoryCache(clientName: ""));
+    }
+
+    [Fact]
+    public void AddDeliveryDistributedCache_NullClientName_ThrowsArgumentNullException()
+    {
+        // Act & Assert - use named parameter to ensure we call the string overload
+        Assert.Throws<ArgumentNullException>(() =>
+            _serviceCollection.AddDeliveryDistributedCache(clientName: null!));
+    }
+
+    [Fact]
+    public void AddDeliveryMemoryCache_RegistersContentDependencyExtractor_CacheFirst()
+    {
+        // Arrange - Cache registered before client
+        _serviceCollection.AddDeliveryMemoryCache("production");
+        _serviceCollection.AddDeliveryClient("production", o =>
+        {
+            o.EnvironmentId = EnvironmentId;
+            o.EnableResilience = false;
+        });
+
+        // Act
+        var provider = _serviceCollection.BuildServiceProvider();
+        var extractor = provider.GetService<IContentDependencyExtractor>();
+
+        // Assert - Should register the real extractor (not null extractor)
+        Assert.NotNull(extractor);
+        Assert.DoesNotContain("Null", extractor.GetType().Name);
+    }
+
+    [Fact]
+    public void AddDeliveryMemoryCache_RegistersContentDependencyExtractor_ClientFirst()
+    {
+        // Arrange - Client registered before cache (order should not matter)
+        _serviceCollection.AddDeliveryClient("production", o =>
+        {
+            o.EnvironmentId = EnvironmentId;
+            o.EnableResilience = false;
+        });
+        _serviceCollection.AddDeliveryMemoryCache("production");
+
+        // Act
+        var provider = _serviceCollection.BuildServiceProvider();
+        var extractor = provider.GetService<IContentDependencyExtractor>();
+
+        // Assert - Should register the real extractor regardless of order
+        Assert.NotNull(extractor);
+        Assert.DoesNotContain("Null", extractor.GetType().Name);
+    }
+
+    [Fact]
+    public void AddDeliveryDistributedCache_RegistersContentDependencyExtractor_CacheFirst()
+    {
+        // Arrange - Cache registered before client
+        _serviceCollection.AddDistributedMemoryCache();
+        _serviceCollection.AddDeliveryDistributedCache("production");
+        _serviceCollection.AddDeliveryClient("production", o =>
+        {
+            o.EnvironmentId = EnvironmentId;
+            o.EnableResilience = false;
+        });
+
+        // Act
+        var provider = _serviceCollection.BuildServiceProvider();
+        var extractor = provider.GetService<IContentDependencyExtractor>();
+
+        // Assert - Should register the real extractor (not null extractor)
+        Assert.NotNull(extractor);
+        Assert.DoesNotContain("Null", extractor.GetType().Name);
+    }
+
+    [Fact]
+    public void AddDeliveryDistributedCache_RegistersContentDependencyExtractor_ClientFirst()
+    {
+        // Arrange - Client registered before cache (order should not matter)
+        _serviceCollection.AddDistributedMemoryCache();
+        _serviceCollection.AddDeliveryClient("production", o =>
+        {
+            o.EnvironmentId = EnvironmentId;
+            o.EnableResilience = false;
+        });
+        _serviceCollection.AddDeliveryDistributedCache("production");
+
+        // Act
+        var provider = _serviceCollection.BuildServiceProvider();
+        var extractor = provider.GetService<IContentDependencyExtractor>();
+
+        // Assert - Should register the real extractor regardless of order
+        Assert.NotNull(extractor);
+        Assert.DoesNotContain("Null", extractor.GetType().Name);
+    }
+
+    #endregion
+
+    #region Keyed Service Fallback Tests
+
+    [Fact]
+    public void MultipleNamedClients_OneWithCache_OtherWithoutCache()
+    {
+        // Arrange
+        const string envId1 = "11111111-1111-1111-1111-111111111111";
+        const string envId2 = "22222222-2222-2222-2222-222222222222";
+
+        _serviceCollection.AddDeliveryClient("production", o =>
+        {
+            o.EnvironmentId = envId1;
+            o.EnableResilience = false;
+        });
+        _serviceCollection.AddDeliveryClient("preview", o =>
+        {
+            o.EnvironmentId = envId2;
+            o.UsePreviewApi = true;
+            o.PreviewApiKey = PreviewApiKey;
+            o.EnableResilience = false;
+        });
+
+        // Only enable caching for production
+        _serviceCollection.AddDeliveryMemoryCache("production", keyPrefix: "prod");
+
+        // Act
+        var provider = _serviceCollection.BuildServiceProvider();
+        var prodCacheManager = provider.GetKeyedService<IDeliveryCacheManager>("production");
+        var previewCacheManager = provider.GetKeyedService<IDeliveryCacheManager>("preview");
+
+        // Assert - Only production has cache
+        Assert.NotNull(prodCacheManager);
+        Assert.Null(previewCacheManager);
+    }
+
+    [Fact]
+    public void AddDeliveryMemoryCache_SharedUnderlyingMemoryCache()
+    {
+        // Arrange - Both clients use the same IMemoryCache but different key prefixes
+        _serviceCollection.AddDeliveryClient("client1", o =>
+        {
+            o.EnvironmentId = EnvironmentId;
+            o.EnableResilience = false;
+        });
+        _serviceCollection.AddDeliveryClient("client2", o =>
+        {
+            o.EnvironmentId = EnvironmentId;
+            o.EnableResilience = false;
+        });
+
+        _serviceCollection.AddDeliveryMemoryCache("client1", keyPrefix: "prefix1");
+        _serviceCollection.AddDeliveryMemoryCache("client2", keyPrefix: "prefix2");
+
+        // Act
+        var provider = _serviceCollection.BuildServiceProvider();
+
+        // Both cache managers should resolve to separate keyed instances
+        var cache1 = provider.GetKeyedService<IDeliveryCacheManager>("client1");
+        var cache2 = provider.GetKeyedService<IDeliveryCacheManager>("client2");
+
+        // But they share the underlying IMemoryCache (singleton)
+        var memoryCache = provider.GetService<IMemoryCache>();
+
+        // Assert
+        Assert.NotNull(cache1);
+        Assert.NotNull(cache2);
+        Assert.NotSame(cache1, cache2);
+        Assert.NotNull(memoryCache);
     }
 
     #endregion

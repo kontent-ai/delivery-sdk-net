@@ -57,25 +57,36 @@ namespace Kontent.Ai.Delivery.Caching;
 public sealed class DistributedCacheManager : IDeliveryCacheManager
 {
     private readonly IDistributedCache _cache;
+    private readonly string? _keyPrefix;
     private readonly TimeSpan _defaultExpiration;
     private readonly JsonSerializerOptions _jsonOptions;
 
     private const string CacheKeyPrefix = "cache:";
     private const string DependencyKeyPrefix = "dep:";
 
+    private string KeyPrefixSegment => _keyPrefix is null ? "" : $"{_keyPrefix}:";
+
     /// <summary>
     /// Initializes a new instance of the <see cref="DistributedCacheManager"/> class.
     /// </summary>
     /// <param name="cache">The distributed cache implementation (Redis, SQL Server, etc.).</param>
+    /// <param name="keyPrefix">
+    /// Optional prefix for all cache keys. Used to isolate cache entries when multiple clients share the same distributed cache.
+    /// For example, "production" or "preview:myproject".
+    /// </param>
     /// <param name="defaultExpiration">
     /// Default expiration time for cache entries. If null, defaults to 1 hour.
     /// </param>
     /// <exception cref="ArgumentNullException">
     /// Thrown when <paramref name="cache"/> is null.
     /// </exception>
-    public DistributedCacheManager(IDistributedCache cache, TimeSpan? defaultExpiration = null)
+    public DistributedCacheManager(
+        IDistributedCache cache,
+        string? keyPrefix = null,
+        TimeSpan? defaultExpiration = null)
     {
         _cache = cache ?? throw new ArgumentNullException(nameof(cache));
+        _keyPrefix = keyPrefix;
         _defaultExpiration = defaultExpiration ?? TimeSpan.FromHours(1);
 
         _jsonOptions = new JsonSerializerOptions
@@ -359,6 +370,9 @@ public sealed class DistributedCacheManager : IDeliveryCacheManager
         }
     }
 
-    private static string GetCacheKey(string cacheKey) => string.Concat(CacheKeyPrefix, cacheKey);
-    private static string GetDependencyKey(string dependencyKey) => string.Concat(DependencyKeyPrefix, dependencyKey);
+    private string GetCacheKey(string cacheKey) =>
+        $"{KeyPrefixSegment}{CacheKeyPrefix}{cacheKey}";
+
+    private string GetDependencyKey(string dependencyKey) =>
+        $"{KeyPrefixSegment}{DependencyKeyPrefix}{dependencyKey}";
 }
