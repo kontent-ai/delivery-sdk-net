@@ -375,22 +375,6 @@ public class ServiceCollectionsExtensionsTests
         Assert.Same(clientDirect, clientFromFactory);
     }
 
-    [Fact]
-    public void WithMemoryCache_CalledMultipleTimes_DoesNotOverwrite()
-    {
-        // Arrange
-        _serviceCollection.AddDeliveryClient(o => o.EnvironmentId = EnvironmentId);
-        _serviceCollection.WithMemoryCache(TimeSpan.FromMinutes(10));
-
-        // Act - Call again with different expiration
-        _serviceCollection.WithMemoryCache(TimeSpan.FromMinutes(20));
-
-        // Assert - Should not throw, and first registration should be preserved
-        var provider = _serviceCollection.BuildServiceProvider();
-        var cacheManager = provider.GetService<IDeliveryCacheManager>();
-        Assert.NotNull(cacheManager);
-    }
-
     #endregion
 
     #region Per-Client Caching Tests
@@ -512,9 +496,9 @@ public class ServiceCollectionsExtensionsTests
     [Fact]
     public void AddDeliveryMemoryCache_NullClientName_ThrowsArgumentNullException()
     {
-        // Act & Assert
+        // Act & Assert - use named parameter to ensure we call the string overload
         Assert.Throws<ArgumentNullException>(() =>
-            _serviceCollection.AddDeliveryMemoryCache(null!));
+            _serviceCollection.AddDeliveryMemoryCache(clientName: null!));
     }
 
     [Fact]
@@ -522,15 +506,15 @@ public class ServiceCollectionsExtensionsTests
     {
         // Act & Assert
         Assert.Throws<ArgumentException>(() =>
-            _serviceCollection.AddDeliveryMemoryCache(""));
+            _serviceCollection.AddDeliveryMemoryCache(clientName: ""));
     }
 
     [Fact]
     public void AddDeliveryDistributedCache_NullClientName_ThrowsArgumentNullException()
     {
-        // Act & Assert
+        // Act & Assert - use named parameter to ensure we call the string overload
         Assert.Throws<ArgumentNullException>(() =>
-            _serviceCollection.AddDeliveryDistributedCache(null!));
+            _serviceCollection.AddDeliveryDistributedCache(clientName: null!));
     }
 
     [Fact]
@@ -618,58 +602,6 @@ public class ServiceCollectionsExtensionsTests
     #endregion
 
     #region Keyed Service Fallback Tests
-
-    [Fact]
-    public void NamedClient_WithGlobalCache_UsesGlobalCacheViaFallback()
-    {
-        // Arrange - Use deprecated global cache registration
-        _serviceCollection.AddDeliveryClient("my-client", o =>
-        {
-            o.EnvironmentId = EnvironmentId;
-            o.EnableResilience = false;
-        });
-#pragma warning disable CS0618 // Type or member is obsolete
-        _serviceCollection.WithMemoryCache(TimeSpan.FromMinutes(10));
-#pragma warning restore CS0618
-
-        // Act
-        var provider = _serviceCollection.BuildServiceProvider();
-
-        // The named client should fall back to the global cache manager
-        var globalCacheManager = provider.GetService<IDeliveryCacheManager>();
-        var keyedCacheManager = provider.GetKeyedService<IDeliveryCacheManager>("my-client");
-
-        // Assert - Global cache should be registered, but not as keyed
-        Assert.NotNull(globalCacheManager);
-        Assert.Null(keyedCacheManager); // No keyed registration
-
-        // The fallback behavior is handled internally by DeliveryClient resolution
-    }
-
-    [Fact]
-    public void NamedClient_WithBothKeyedAndGlobalCache_PrefersKeyedCache()
-    {
-        // Arrange - Register both global and keyed cache
-        _serviceCollection.AddDeliveryClient("my-client", o =>
-        {
-            o.EnvironmentId = EnvironmentId;
-            o.EnableResilience = false;
-        });
-#pragma warning disable CS0618 // Type or member is obsolete
-        _serviceCollection.WithMemoryCache(TimeSpan.FromMinutes(10)); // Global
-#pragma warning restore CS0618
-        _serviceCollection.AddDeliveryMemoryCache("my-client", keyPrefix: "my-client"); // Keyed
-
-        // Act
-        var provider = _serviceCollection.BuildServiceProvider();
-        var globalCacheManager = provider.GetService<IDeliveryCacheManager>();
-        var keyedCacheManager = provider.GetKeyedService<IDeliveryCacheManager>("my-client");
-
-        // Assert - Both should be registered
-        Assert.NotNull(globalCacheManager);
-        Assert.NotNull(keyedCacheManager);
-        Assert.NotSame(globalCacheManager, keyedCacheManager);
-    }
 
     [Fact]
     public void MultipleNamedClients_OneWithCache_OtherWithoutCache()

@@ -227,11 +227,8 @@ public static class ServiceCollectionExtensions
             var deliveryApi = sp.GetRequiredKeyedService<IDeliveryApi>(clientName);
             var elementsPostProcessor = sp.GetRequiredService<IElementsPostProcessor>();
 
-            // Resolve keyed cache manager for this client, with fallback to global for backward compatibility
-            // New per-client caching: AddDeliveryMemoryCache(clientName)
-            // Deprecated global caching: WithMemoryCache() - falls back to non-keyed cache manager
-            var cacheManager = sp.GetKeyedService<IDeliveryCacheManager>(clientName)
-                ?? sp.GetService<IDeliveryCacheManager>();
+            // Resolve keyed cache manager for this client (registered via AddDeliveryMemoryCache/AddDeliveryDistributedCache)
+            var cacheManager = sp.GetKeyedService<IDeliveryCacheManager>(clientName);
 
             return new DeliveryClient(
                 deliveryApi,
@@ -444,101 +441,34 @@ public static class ServiceCollectionExtensions
             System.Net.HttpStatusCode.GatewayTimeout;
 
     /// <summary>
-    /// Enables in-memory caching for the Delivery Client using <see cref="IMemoryCache"/>.
+    /// Registers a memory cache manager for the default Delivery client.
     /// </summary>
     /// <param name="services">The service collection.</param>
     /// <param name="defaultExpiration">
     /// Default cache entry expiration time. If null, defaults to 1 hour.
-    /// Individual queries can override this using query parameters.
     /// </param>
     /// <returns>The service collection for chaining.</returns>
     /// <remarks>
     /// <para>
-    /// This method registers:
-    /// <list type="bullet">
-    /// <item><description><see cref="IMemoryCache"/> - The underlying memory cache (if not already registered)</description></item>
-    /// <item><description><see cref="IDeliveryCacheManager"/> - Memory cache manager implementation</description></item>
-    /// </list>
+    /// This is a convenience overload for single-client scenarios. It registers caching
+    /// for the default (unnamed) Delivery client registered via <c>AddDeliveryClient(options => ...)</c>.
+    /// </para>
+    /// <para>
+    /// Example usage:
+    /// <code>
+    /// services.AddDeliveryClient(o => o.EnvironmentId = envId);
+    /// services.AddDeliveryMemoryCache(defaultExpiration: TimeSpan.FromHours(2));
+    /// </code>
     /// </para>
     /// </remarks>
-    [Obsolete("Use AddDeliveryMemoryCache(clientName) for per-client caching. " +
-              "Global caching applies to all clients and will be removed in a future version.")]
-    public static IServiceCollection WithMemoryCache(
+    public static IServiceCollection AddDeliveryMemoryCache(
         this IServiceCollection services,
         TimeSpan? defaultExpiration = null)
     {
-        ArgumentNullException.ThrowIfNull(services);
-
-        // Register IMemoryCache if not already registered
-        services.AddMemoryCache();
-
-        // Register the cache manager as a singleton (only if not already registered)
-        // This prevents accidental overwrites if called multiple times
-        services.TryAddSingleton<IDeliveryCacheManager>(sp =>
-            new MemoryCacheManager(
-                sp.GetRequiredService<IMemoryCache>(),
-                keyPrefix: null,
-                defaultExpiration));
-
-        // Override default no-op extractor with actual implementation
-        // Use TryAddSingleton to avoid replacing if already customized
-        services.TryAddSingleton<IContentDependencyExtractor, ContentDependencyExtractor>();
-
-        return services;
-    }
-
-    /// <summary>
-    /// Enables distributed caching for the Delivery Client using <see cref="IDistributedCache"/>.
-    /// </summary>
-    /// <param name="services">The service collection.</param>
-    /// <param name="defaultExpiration">
-    /// Default cache entry expiration time. If null, defaults to 1 hour.
-    /// Individual queries can override this using query parameters.
-    /// </param>
-    /// <returns>The service collection for chaining.</returns>
-    /// <remarks>
-    /// <para>
-    /// This method registers:
-    /// <list type="bullet">
-    /// <item><description><see cref="IDeliveryCacheManager"/> - Distributed cache manager implementation</description></item>
-    /// </list>
-    /// </para>
-    /// <para>
-    /// <b>Prerequisites:</b> You must register an <see cref="IDistributedCache"/> implementation before calling this method.
-    /// Common implementations:
-    /// <list type="bullet">
-    /// <item><description>Redis: <c>services.AddStackExchangeRedisCache(options => ...)</c></description></item>
-    /// <item><description>SQL Server: <c>services.AddDistributedSqlServerCache(options => ...)</c></description></item>
-    /// <item><description>NCache: <c>services.AddNCacheDistributedCache(options => ...)</c></description></item>
-    /// </list>
-    /// </para>
-    /// </remarks>
-    /// <exception cref="InvalidOperationException">
-    /// Thrown when no <see cref="IDistributedCache"/> implementation is registered.
-    /// </exception>
-    [Obsolete("Use AddDeliveryDistributedCache(clientName) for per-client caching. " +
-              "Global caching applies to all clients and will be removed in a future version.")]
-    public static IServiceCollection WithDistributedCache(
-        this IServiceCollection services,
-        TimeSpan? defaultExpiration = null)
-    {
-        ArgumentNullException.ThrowIfNull(services);
-
-        // Register the cache manager as a singleton (only if not already registered)
-        // The IDistributedCache dependency will be resolved from services
-        // If it's not registered, this will fail at runtime with a clear error
-        // This prevents accidental overwrites if called multiple times
-        services.TryAddSingleton<IDeliveryCacheManager>(sp =>
-            new DistributedCacheManager(
-                sp.GetRequiredService<IDistributedCache>(),
-                keyPrefix: null,
-                defaultExpiration));
-
-        // Override default no-op extractor with actual implementation
-        // Use TryAddSingleton to avoid replacing if already customized
-        services.TryAddSingleton<IContentDependencyExtractor, ContentDependencyExtractor>();
-
-        return services;
+        return services.AddDeliveryMemoryCache(
+            Abstractions.Options.DefaultName,
+            keyPrefix: null,
+            defaultExpiration);
     }
 
     /// <summary>
@@ -594,6 +524,46 @@ public static class ServiceCollectionExtensions
         services.Replace(ServiceDescriptor.Singleton<IContentDependencyExtractor, ContentDependencyExtractor>());
 
         return services;
+    }
+
+    /// <summary>
+    /// Registers a distributed cache manager for the default Delivery client.
+    /// </summary>
+    /// <param name="services">The service collection.</param>
+    /// <param name="defaultExpiration">
+    /// Default cache entry expiration time. If null, defaults to 1 hour.
+    /// </param>
+    /// <returns>The service collection for chaining.</returns>
+    /// <remarks>
+    /// <para>
+    /// This is a convenience overload for single-client scenarios. It registers caching
+    /// for the default (unnamed) Delivery client registered via <c>AddDeliveryClient(options => ...)</c>.
+    /// </para>
+    /// <para>
+    /// <b>Prerequisites:</b> You must register an <see cref="IDistributedCache"/> implementation before calling this method.
+    /// Common implementations:
+    /// <list type="bullet">
+    /// <item><description>Redis: <c>services.AddStackExchangeRedisCache(options => ...)</c></description></item>
+    /// <item><description>SQL Server: <c>services.AddDistributedSqlServerCache(options => ...)</c></description></item>
+    /// </list>
+    /// </para>
+    /// <para>
+    /// Example usage:
+    /// <code>
+    /// services.AddStackExchangeRedisCache(options => options.Configuration = "localhost");
+    /// services.AddDeliveryClient(o => o.EnvironmentId = envId);
+    /// services.AddDeliveryDistributedCache(defaultExpiration: TimeSpan.FromHours(2));
+    /// </code>
+    /// </para>
+    /// </remarks>
+    public static IServiceCollection AddDeliveryDistributedCache(
+        this IServiceCollection services,
+        TimeSpan? defaultExpiration = null)
+    {
+        return services.AddDeliveryDistributedCache(
+            Abstractions.Options.DefaultName,
+            keyPrefix: null,
+            defaultExpiration);
     }
 
     /// <summary>

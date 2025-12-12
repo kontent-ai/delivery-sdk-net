@@ -341,14 +341,14 @@ public class CachingIntegrationTests
             EnvironmentId = _guid.ToString()
         };
 
-        services.AddMemoryCache();
+        // Use per-client caching with custom mock cache manager
         var mockCacheManager = new TestCacheManager();
-        services.AddSingleton<IDeliveryCacheManager>(mockCacheManager);
-        services.AddDeliveryClient(options, configureHttpClient: b =>
-            b.ConfigurePrimaryHttpMessageHandler(() => mock));
+        services.AddDeliveryClient("test", o => o.Configure(options),
+            configureHttpClient: b => b.ConfigurePrimaryHttpMessageHandler(() => mock));
+        services.AddKeyedSingleton<IDeliveryCacheManager>("test", mockCacheManager);
 
         var serviceProvider = services.BuildServiceProvider();
-        var client = serviceProvider.GetRequiredService<IDeliveryClient>();
+        var client = serviceProvider.GetRequiredKeyedService<IDeliveryClient>("test");
 
         // Act
         var result = await client.GetItem<Article>(itemCodename).ExecuteAsync();
@@ -389,14 +389,14 @@ public class CachingIntegrationTests
             EnvironmentId = _guid.ToString()
         };
 
-        services.AddMemoryCache();
+        // Use per-client caching with custom mock cache manager
         var mockCacheManager = new TestCacheManager();
-        services.AddSingleton<IDeliveryCacheManager>(mockCacheManager);
-        services.AddDeliveryClient(options, configureHttpClient: b =>
-            b.ConfigurePrimaryHttpMessageHandler(() => mock));
+        services.AddDeliveryClient("test", o => o.Configure(options),
+            configureHttpClient: b => b.ConfigurePrimaryHttpMessageHandler(() => mock));
+        services.AddKeyedSingleton<IDeliveryCacheManager>("test", mockCacheManager);
 
         var serviceProvider = services.BuildServiceProvider();
-        var client = serviceProvider.GetRequiredService<IDeliveryClient>();
+        var client = serviceProvider.GetRequiredKeyedService<IDeliveryClient>("test");
 
         // Act
         var result = await client.GetItem<Article>(itemCodename).ExecuteAsync();
@@ -560,12 +560,12 @@ public class CachingIntegrationTests
             EnvironmentId = _guid.ToString()
         };
 
-        // Use the fluent API for cleaner registration
-        services.AddDeliveryClient(options, configureHttpClient: b =>
-                b.ConfigurePrimaryHttpMessageHandler(() => mockHttp))
-            .WithMemoryCache();
+        // Use per-client caching API
+        services.AddDeliveryClient("test", o => o.Configure(options),
+            configureHttpClient: b => b.ConfigurePrimaryHttpMessageHandler(() => mockHttp));
+        services.AddDeliveryMemoryCache("test");
 
-        return services.BuildServiceProvider().GetRequiredService<IDeliveryClient>();
+        return services.BuildServiceProvider().GetRequiredKeyedService<IDeliveryClient>("test");
     }
 
     private IDeliveryClient CreateClientWithDistributedCache(MockHttpMessageHandler mockHttp)
@@ -579,12 +579,12 @@ public class CachingIntegrationTests
         var mockDistributedCache = new MockDistributedCache();
         services.AddSingleton<IDistributedCache>(mockDistributedCache);
 
-        // Use the fluent API for cleaner registration
-        services.AddDeliveryClient(options, configureHttpClient: b =>
-                b.ConfigurePrimaryHttpMessageHandler(() => mockHttp))
-            .WithDistributedCache();
+        // Use per-client caching API
+        services.AddDeliveryClient("test", o => o.Configure(options),
+            configureHttpClient: b => b.ConfigurePrimaryHttpMessageHandler(() => mockHttp));
+        services.AddDeliveryDistributedCache("test");
 
-        return services.BuildServiceProvider().GetRequiredService<IDeliveryClient>();
+        return services.BuildServiceProvider().GetRequiredKeyedService<IDeliveryClient>("test");
     }
 
     #endregion

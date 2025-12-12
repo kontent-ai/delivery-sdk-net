@@ -103,23 +103,27 @@ using Microsoft.Extensions.DependencyInjection;
 
 var services = new ServiceCollection();
 
+// Single client scenario - no name required
 services.AddDeliveryClient(options =>
 {
     options.EnvironmentId = "your-environment-id";
-})
-.WithMemoryCache(defaultExpiration: TimeSpan.FromHours(1));
+});
+services.AddDeliveryMemoryCache(defaultExpiration: TimeSpan.FromHours(1));
 
 var serviceProvider = services.BuildServiceProvider();
 ```
 
-#### Custom Expiration
+#### Named Clients
+
+For multi-client scenarios, use named clients:
 
 ```csharp
-services.AddDeliveryClient(options =>
+services.AddDeliveryClient("production", options =>
 {
     options.EnvironmentId = "your-environment-id";
-})
-.WithMemoryCache(defaultExpiration: TimeSpan.FromMinutes(30));
+});
+
+services.AddDeliveryMemoryCache("production", defaultExpiration: TimeSpan.FromMinutes(30));
 ```
 
 #### Advanced Memory Cache Configuration
@@ -131,11 +135,12 @@ services.AddMemoryCache(options =>
     options.CompactionPercentage = 0.25;  // Remove 25% when limit hit
 });
 
-services.AddDeliveryClient(options =>
+services.AddDeliveryClient("production", options =>
 {
     options.EnvironmentId = "your-environment-id";
-})
-.WithMemoryCache(defaultExpiration: TimeSpan.FromHours(1));
+});
+
+services.AddDeliveryMemoryCache("production", defaultExpiration: TimeSpan.FromHours(1));
 ```
 
 ### Distributed Cache Setup
@@ -152,12 +157,16 @@ services.AddStackExchangeRedisCache(options =>
     options.InstanceName = "KontentCache_";
 });
 
-// Add delivery client with distributed caching
+// Single client scenario
 services.AddDeliveryClient(options =>
 {
     options.EnvironmentId = "your-environment-id";
-})
-.WithDistributedCache(defaultExpiration: TimeSpan.FromHours(2));
+});
+services.AddDeliveryDistributedCache(defaultExpiration: TimeSpan.FromHours(2));
+
+// Or with named clients for multi-client scenarios:
+// services.AddDeliveryClient("production", options => { ... });
+// services.AddDeliveryDistributedCache("production", defaultExpiration: TimeSpan.FromHours(2));
 ```
 
 #### Redis with Connection Multiplexer
@@ -179,11 +188,12 @@ services.AddStackExchangeRedisCache(options =>
     options.InstanceName = "Kontent_";
 });
 
-services.AddDeliveryClient(options =>
+services.AddDeliveryClient("production", options =>
 {
     options.EnvironmentId = "your-environment-id";
-})
-.WithDistributedCache(defaultExpiration: TimeSpan.FromHours(4));
+});
+
+services.AddDeliveryDistributedCache("production", defaultExpiration: TimeSpan.FromHours(4));
 ```
 
 #### SQL Server Distributed Cache
@@ -196,11 +206,12 @@ services.AddDistributedSqlServerCache(options =>
     options.TableName = "KontentCache";
 });
 
-services.AddDeliveryClient(options =>
+services.AddDeliveryClient("production", options =>
 {
     options.EnvironmentId = "your-environment-id";
-})
-.WithDistributedCache(defaultExpiration: TimeSpan.FromHours(1));
+});
+
+services.AddDeliveryDistributedCache("production", defaultExpiration: TimeSpan.FromHours(1));
 ```
 
 #### Azure Cache for Redis
@@ -212,11 +223,12 @@ services.AddStackExchangeRedisCache(options =>
     options.InstanceName = "Production_Kontent_";
 });
 
-services.AddDeliveryClient(options =>
+services.AddDeliveryClient("production", options =>
 {
     options.EnvironmentId = "your-environment-id";
-})
-.WithDistributedCache(defaultExpiration: TimeSpan.FromHours(6));
+});
+
+services.AddDeliveryDistributedCache("production", defaultExpiration: TimeSpan.FromHours(6));
 ```
 
 ### Custom Cache Manager
@@ -344,8 +356,8 @@ This enables targeted cache invalidation when specific content changes.
 Cache entries expire after a fixed duration:
 
 ```csharp
-services.AddDeliveryClient(options => { ... })
-    .WithMemoryCache(defaultExpiration: TimeSpan.FromHours(2));
+services.AddDeliveryClient("production", options => { ... });
+services.AddDeliveryMemoryCache("production", defaultExpiration: TimeSpan.FromHours(2));
 ```
 
 #### Sliding Expiration
@@ -713,16 +725,16 @@ services.AddDeliveryClient("preview", options =>
 
 ```csharp
 // Frequently changing content (news, live data)
-.WithMemoryCache(defaultExpiration: TimeSpan.FromMinutes(5))
+services.AddDeliveryMemoryCache("news-client", defaultExpiration: TimeSpan.FromMinutes(5));
 
 // Moderately dynamic content (blog posts, products)
-.WithMemoryCache(defaultExpiration: TimeSpan.FromHours(1))
+services.AddDeliveryMemoryCache("blog-client", defaultExpiration: TimeSpan.FromHours(1));
 
 // Rarely changing content (about pages, navigation)
-.WithMemoryCache(defaultExpiration: TimeSpan.FromHours(6))
+services.AddDeliveryMemoryCache("static-client", defaultExpiration: TimeSpan.FromHours(6));
 
 // Very stable content (archived content, documentation)
-.WithMemoryCache(defaultExpiration: TimeSpan.FromDays(1))
+services.AddDeliveryMemoryCache("docs-client", defaultExpiration: TimeSpan.FromDays(1));
 ```
 
 ### 2. Implement Webhook Invalidation

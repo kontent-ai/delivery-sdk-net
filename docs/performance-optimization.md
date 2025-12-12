@@ -158,8 +158,8 @@ Always configure caching in production:
 
 ```csharp
 // Development: Short cache
-services.AddDeliveryClient(options => { ... })
-    .WithMemoryCache(TimeSpan.FromMinutes(5));
+services.AddDeliveryClient("dev", options => { ... });
+services.AddDeliveryMemoryCache("dev", defaultExpiration: TimeSpan.FromMinutes(5));
 
 // Production: Longer cache with distributed storage
 services.AddStackExchangeRedisCache(options =>
@@ -167,8 +167,8 @@ services.AddStackExchangeRedisCache(options =>
     options.Configuration = "redis:6379";
 });
 
-services.AddDeliveryClient(options => { ... })
-    .WithDistributedCache(TimeSpan.FromHours(4));
+services.AddDeliveryClient("prod", options => { ... });
+services.AddDeliveryDistributedCache("prod", defaultExpiration: TimeSpan.FromHours(4));
 ```
 
 ### Cache Warming
@@ -645,12 +645,12 @@ services.AddStackExchangeRedisCache(options =>
     options.InstanceName = "Production_";
 });
 
-services.AddDeliveryClient(options =>
+services.AddDeliveryClient("production", options =>
 {
     options.EnvironmentId = configuration["Kontent:EnvironmentId"];
     options.EnableResilience = true;
-})
-.WithDistributedCache(TimeSpan.FromHours(4));
+});
+services.AddDeliveryDistributedCache("production", defaultExpiration: TimeSpan.FromHours(4));
 ```
 
 ### 2. Configure Retry Policies

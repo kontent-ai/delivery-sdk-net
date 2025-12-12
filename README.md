@@ -649,11 +649,16 @@ The SDK supports both in-memory and distributed caching for improved performance
 #### Memory Cache
 
 ```csharp
+// Single client scenario
 services.AddDeliveryClient(options =>
 {
     options.EnvironmentId = "your-environment-id";
-})
-.WithMemoryCache(defaultExpiration: TimeSpan.FromHours(1));
+});
+services.AddDeliveryMemoryCache(defaultExpiration: TimeSpan.FromHours(1));
+
+// Multi-client scenario - use named clients
+services.AddDeliveryClient("production", options => { ... });
+services.AddDeliveryMemoryCache("production", defaultExpiration: TimeSpan.FromHours(1));
 ```
 
 #### Distributed Cache (Redis, SQL Server, etc.)
@@ -665,12 +670,12 @@ services.AddStackExchangeRedisCache(options =>
     options.Configuration = "localhost:6379";
 });
 
-// Then add delivery client with distributed caching
+// Single client scenario
 services.AddDeliveryClient(options =>
 {
     options.EnvironmentId = "your-environment-id";
-})
-.WithDistributedCache(defaultExpiration: TimeSpan.FromHours(2));
+});
+services.AddDeliveryDistributedCache(defaultExpiration: TimeSpan.FromHours(2));
 ```
 
 Caching is transparent - once configured, all queries are automatically cached. Cache keys are built from query parameters, ensuring proper cache hits.
