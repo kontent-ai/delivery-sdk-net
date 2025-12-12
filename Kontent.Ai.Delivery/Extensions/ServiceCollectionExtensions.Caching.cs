@@ -5,6 +5,7 @@ using Microsoft.Extensions.Caching.Distributed;
 using Microsoft.Extensions.Caching.Memory;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.DependencyInjection.Extensions;
+using Microsoft.Extensions.Logging;
 
 namespace Kontent.Ai.Delivery.Extensions;
 
@@ -87,7 +88,8 @@ public static partial class ServiceCollectionExtensions
             new MemoryCacheManager(
                 sp.GetRequiredService<IMemoryCache>(),
                 keyPrefix ?? clientName,
-                defaultExpiration));
+                defaultExpiration,
+                sp.GetService<ILogger<MemoryCacheManager>>()));
 
         // Enable dependency extraction for cache invalidation
         // Replace ensures real extractor is used regardless of registration order
@@ -186,7 +188,8 @@ public static partial class ServiceCollectionExtensions
             new DistributedCacheManager(
                 sp.GetRequiredService<IDistributedCache>(),
                 keyPrefix ?? clientName,
-                defaultExpiration));
+                defaultExpiration,
+                sp.GetService<ILogger<DistributedCacheManager>>()));
 
         // Enable dependency extraction for cache invalidation
         // Replace ensures real extractor is used regardless of registration order

@@ -69,6 +69,11 @@ internal static class HttpRequestHeadersExtensions
         return $"{PackageRepositoryHost};{sdkPackageId};{sdkVersion}";
     }
 
+    /// <summary>
+    /// Gets the SDK version string for logging purposes.
+    /// </summary>
+    internal static string GetSdkVersion() => Sdk.Value;
+
     internal static string? GetSource()
     {
         Assembly? originatingAssembly = GetOriginatingAssembly();

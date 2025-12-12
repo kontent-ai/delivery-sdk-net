@@ -1,5 +1,7 @@
 using System.Collections.Concurrent;
+using Kontent.Ai.Delivery.Logging;
 using Microsoft.Extensions.Caching.Memory;
+using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Primitives;
 
 namespace Kontent.Ai.Delivery.Caching;
@@ -46,11 +48,13 @@ namespace Kontent.Ai.Delivery.Caching;
 public sealed class MemoryCacheManager(
     IMemoryCache memoryCache,
     string? keyPrefix = null,
-    TimeSpan? defaultExpiration = null) : IDeliveryCacheManager, IDisposable
+    TimeSpan? defaultExpiration = null,
+    ILogger<MemoryCacheManager>? logger = null) : IDeliveryCacheManager, IDisposable
 {
     private readonly IMemoryCache _cache = memoryCache ?? throw new ArgumentNullException(nameof(memoryCache));
     private readonly string? _keyPrefix = keyPrefix;
     private readonly TimeSpan _defaultExpiration = defaultExpiration ?? TimeSpan.FromHours(1);
+    private readonly ILogger<MemoryCacheManager>? _logger = logger;
 
     // Reverse index: dependency key -> set of cache keys that depend on it
     // Using ConcurrentDictionary for thread-safe access with HashSet for efficient lookups
@@ -175,6 +179,10 @@ public sealed class MemoryCacheManager(
             // The 'is' pattern safely handles null - only enters block if key is non-null string
             if (key is string keyString)
             {
+                // Log eviction
+                if (_logger != null)
+                    LoggerMessages.CacheEntryEvicted(_logger, keyString, reason.ToString());
+
                 // Clean up reverse index when entry is evicted
                 CleanupReverseIndexForKey(keyString);
 
@@ -218,6 +226,10 @@ public sealed class MemoryCacheManager(
 
         // Store in cache with prefixed key for isolation
         _cache.Set(prefixedCacheKey, value, entryOptions);
+
+        // Log successful cache set
+        if (_logger != null)
+            LoggerMessages.CacheSetCompleted(_logger, cacheKey, dependencyList.Count);
     }
 
     /// <inheritdoc />
@@ -231,12 +243,18 @@ public sealed class MemoryCacheManager(
             return;
         }
 
+        var validKeys = dependencyKeys.Where(k => !string.IsNullOrWhiteSpace(k)).ToList();
+
+        // Log invalidation start
+        if (_logger != null && validKeys.Count > 0)
+            LoggerMessages.CacheInvalidateStarting(_logger, validKeys.Count);
+
         // Process each dependency key with prefix applied for consistency
         var tasks = new List<Task>();
 
-        foreach (var dependencyKey in dependencyKeys.Where(k => !string.IsNullOrWhiteSpace(k)))
+        foreach (var dependencyKey in validKeys)
         {
-            tasks.Add(InvalidateDependencyAsync(PrefixKey(dependencyKey), cancellationToken));
+            tasks.Add(InvalidateDependencyAsync(PrefixKey(dependencyKey), dependencyKey, cancellationToken));
         }
 
         // Wait for all invalidations to complete
@@ -246,7 +264,7 @@ public sealed class MemoryCacheManager(
     /// <summary>
     /// Invalidates all cache entries that depend on the specified dependency key.
     /// </summary>
-    private async Task InvalidateDependencyAsync(string dependencyKey, CancellationToken cancellationToken)
+    private async Task InvalidateDependencyAsync(string dependencyKey, string originalKey, CancellationToken cancellationToken)
     {
         // Get the lock for this dependency to ensure thread-safe operations
         var lockObj = _dependencyLocks.GetOrAdd(dependencyKey, _ => new SemaphoreSlim(1, 1));
@@ -285,6 +303,10 @@ public sealed class MemoryCacheManager(
                 // Also remove from cache
                 _cache.Remove(dependencyCtsKey);
             }
+
+            // Log invalidation completed
+            if (_logger != null)
+                LoggerMessages.CacheInvalidateCompleted(_logger, originalKey);
         }
         finally
         {

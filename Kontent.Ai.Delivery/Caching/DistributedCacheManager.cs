@@ -1,6 +1,8 @@
 using System.Text;
 using System.Text.Json;
+using Kontent.Ai.Delivery.Logging;
 using Microsoft.Extensions.Caching.Distributed;
+using Microsoft.Extensions.Logging;
 
 namespace Kontent.Ai.Delivery.Caching;
 
@@ -60,6 +62,7 @@ public sealed class DistributedCacheManager : IDeliveryCacheManager
     private readonly string? _keyPrefix;
     private readonly TimeSpan _defaultExpiration;
     private readonly JsonSerializerOptions _jsonOptions;
+    private readonly ILogger<DistributedCacheManager>? _logger;
 
     private const string CacheKeyPrefix = "cache:";
     private const string DependencyKeyPrefix = "dep:";
@@ -83,11 +86,13 @@ public sealed class DistributedCacheManager : IDeliveryCacheManager
     public DistributedCacheManager(
         IDistributedCache cache,
         string? keyPrefix = null,
-        TimeSpan? defaultExpiration = null)
+        TimeSpan? defaultExpiration = null,
+        ILogger<DistributedCacheManager>? logger = null)
     {
         _cache = cache ?? throw new ArgumentNullException(nameof(cache));
         _keyPrefix = keyPrefix;
         _defaultExpiration = defaultExpiration ?? TimeSpan.FromHours(1);
+        _logger = logger;
 
         _jsonOptions = new JsonSerializerOptions
         {
@@ -192,12 +197,18 @@ public sealed class DistributedCacheManager : IDeliveryCacheManager
                     cancellationToken)
                     .ConfigureAwait(false);
             }
-            catch
+            catch (Exception ex)
             {
                 // Reverse index update failure should not break caching
                 // Worst case: invalidation might miss this entry
+                if (_logger != null)
+                    LoggerMessages.CacheSetFailed(_logger, $"dep:{dependency}", ex);
             }
         }
+
+        // Log successful cache set
+        if (_logger != null)
+            LoggerMessages.CacheSetCompleted(_logger, cacheKey, dependencyList.Count);
     }
 
     /// <inheritdoc />
@@ -209,12 +220,16 @@ public sealed class DistributedCacheManager : IDeliveryCacheManager
             return;
         }
 
+        var validKeys = dependencyKeys.Where(k => !string.IsNullOrWhiteSpace(k)).ToList();
+
+        // Log invalidation start
+        if (_logger != null && validKeys.Count > 0)
+            LoggerMessages.CacheInvalidateStarting(_logger, validKeys.Count);
+
         try
         {
             // Process each dependency key
-            var tasks = dependencyKeys
-                .Where(k => !string.IsNullOrWhiteSpace(k))
-                .Select(k => InvalidateDependencyAsync(k, cancellationToken));
+            var tasks = validKeys.Select(k => InvalidateDependencyAsync(k, cancellationToken));
 
             await Task.WhenAll(tasks).ConfigureAwait(false);
         }
@@ -256,6 +271,9 @@ public sealed class DistributedCacheManager : IDeliveryCacheManager
         }
         catch (NotSupportedException ex)
         {
+            if (_logger != null)
+                LoggerMessages.CacheSerializationFailed(_logger, "unknown", typeof(T).Name, ex);
+
             throw new InvalidOperationException(
                 $"Type {typeof(T).Name} cannot be serialized for distributed caching. " +
                 $"Consider using MemoryCacheManager instead or implementing custom serialization. " +
@@ -269,6 +287,9 @@ public sealed class DistributedCacheManager : IDeliveryCacheManager
         }
         catch (Exception ex)
         {
+            if (_logger != null)
+                LoggerMessages.CacheSerializationFailed(_logger, "unknown", typeof(T).Name, ex);
+
             throw new InvalidOperationException(
                 $"Failed to serialize type {typeof(T).Name} for distributed caching. " +
                 $"The type may contain unsupported constructs (e.g., delegates, circular references without proper handling). " +
@@ -313,6 +334,10 @@ public sealed class DistributedCacheManager : IDeliveryCacheManager
 
             // Remove the dependency index itself
             await _cache.RemoveAsync(indexKey, cancellationToken).ConfigureAwait(false);
+
+            // Log invalidation completed
+            if (_logger != null)
+                LoggerMessages.CacheInvalidateCompleted(_logger, dependencyKey);
         }
         catch
         {

@@ -2,6 +2,7 @@ using Kontent.Ai.Delivery.Configuration;
 using Kontent.Ai.Delivery.Handlers;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Http.Resilience;
+using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
 using Polly;
 
@@ -105,19 +106,24 @@ public static partial class ServiceCollectionExtensions
     /// <param name="optionsName">The name of the options for the authentication handler, or null for default options.</param>
     private static void AddMessageHandlers(IHttpClientBuilder httpClientBuilder, string? optionsName)
     {
-        httpClientBuilder.AddHttpMessageHandler<TrackingHandler>();
+        // Tracking handler with optional logger
+        httpClientBuilder.AddHttpMessageHandler(sp => new TrackingHandler(
+            sp.GetService<ILogger<TrackingHandler>>()));
 
         if (optionsName is null)
         {
-            // Default options - use parameterless constructor
-            httpClientBuilder.AddHttpMessageHandler<DeliveryAuthenticationHandler>();
+            // Default options - use parameterless constructor with optional logger
+            httpClientBuilder.AddHttpMessageHandler(sp => new DeliveryAuthenticationHandler(
+                sp.GetRequiredService<IOptionsMonitor<DeliveryOptions>>(),
+                sp.GetService<ILogger<DeliveryAuthenticationHandler>>()));
         }
         else
         {
-            // Named options - pass name to constructor
+            // Named options - pass name to constructor with optional logger
             httpClientBuilder.AddHttpMessageHandler(sp => new DeliveryAuthenticationHandler(
                 sp.GetRequiredService<IOptionsMonitor<DeliveryOptions>>(),
-                optionsName));
+                optionsName,
+                sp.GetService<ILogger<DeliveryAuthenticationHandler>>()));
         }
     }
 

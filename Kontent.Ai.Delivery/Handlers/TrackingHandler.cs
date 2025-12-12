@@ -1,3 +1,7 @@
+using Kontent.Ai.Delivery.Extensions;
+using Kontent.Ai.Delivery.Logging;
+using Microsoft.Extensions.Logging;
+
 namespace Kontent.Ai.Delivery.Handlers;
 
 /// <summary>
@@ -6,11 +10,15 @@ namespace Kontent.Ai.Delivery.Handlers;
 /// </summary>
 public sealed class TrackingHandler : DelegatingHandler
 {
+    private readonly ILogger<TrackingHandler>? _logger;
+
     /// <summary>
     /// Initializes a new instance of the TrackingHandler.
     /// </summary>
-    public TrackingHandler()
+    /// <param name="logger">Optional logger instance.</param>
+    public TrackingHandler(ILogger<TrackingHandler>? logger = null)
     {
+        _logger = logger;
     }
 
     /// <summary>
@@ -26,6 +34,10 @@ public sealed class TrackingHandler : DelegatingHandler
         // Add tracking headers to the request
         request.Headers.AddSdkTrackingHeader();
         request.Headers.AddSourceTrackingHeader();
+
+        // Log tracking headers added (at Trace level since this happens on every request)
+        if (_logger != null)
+            LoggerMessages.HttpTrackingHeadersAdded(_logger, HttpRequestHeadersExtensions.GetSdkVersion());
 
         // Continue with the request pipeline
         return await base.SendAsync(request, cancellationToken).ConfigureAwait(false);

@@ -7,6 +7,8 @@ using Microsoft.Extensions.Caching.Distributed;
 using Microsoft.Extensions.Caching.Memory;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Http.Resilience;
+using Microsoft.Extensions.Logging;
+using Microsoft.Extensions.Logging.Abstractions;
 using Microsoft.Extensions.Options;
 using Polly;
 
@@ -54,6 +56,7 @@ public sealed class DeliveryClientBuilder
     private IDistributedCache? _distributedCache;
     private TimeSpan? _cacheExpiration;
     private CacheType _cacheType = CacheType.None;
+    private ILoggerFactory? _loggerFactory;
 
     private enum CacheType
     {
@@ -191,6 +194,42 @@ public sealed class DeliveryClientBuilder
     }
 
     /// <summary>
+    /// Sets a custom logger factory for diagnostic logging.
+    /// </summary>
+    /// <param name="loggerFactory">
+    /// The logger factory instance. Use your preferred logging framework (Serilog, NLog, etc.)
+    /// or Microsoft.Extensions.Logging directly.
+    /// </param>
+    /// <returns>The builder instance for method chaining.</returns>
+    /// <exception cref="ArgumentNullException">Thrown when <paramref name="loggerFactory"/> is null.</exception>
+    /// <remarks>
+    /// <para>
+    /// If not set, logging is disabled (<see cref="NullLoggerFactory"/> is used internally).
+    /// </para>
+    /// <para>
+    /// Example usage:
+    /// <code>
+    /// var loggerFactory = LoggerFactory.Create(builder =>
+    /// {
+    ///     builder.AddConsole();
+    ///     builder.SetMinimumLevel(LogLevel.Debug);
+    /// });
+    ///
+    /// var client = DeliveryClientBuilder
+    ///     .WithEnvironmentId("your-environment-id")
+    ///     .WithLoggerFactory(loggerFactory)
+    ///     .Build();
+    /// </code>
+    /// </para>
+    /// </remarks>
+    public DeliveryClientBuilder WithLoggerFactory(ILoggerFactory loggerFactory)
+    {
+        ArgumentNullException.ThrowIfNull(loggerFactory);
+        _loggerFactory = loggerFactory;
+        return this;
+    }
+
+    /// <summary>
     /// Builds and returns a configured <see cref="IDeliveryClient"/> instance.
     /// </summary>
     /// <returns>A fully configured <see cref="IDeliveryClient"/> instance.</returns>
@@ -237,6 +276,10 @@ public sealed class DeliveryClientBuilder
             .ValidateDataAnnotations()
             .ValidateOnStart();
 
+        // Register logger factory (user-provided or null logger)
+        var loggerFactory = _loggerFactory ?? NullLoggerFactory.Instance;
+        services.AddSingleton(loggerFactory);
+
         // Register JSON serialization options (shared across SDK)
         services.AddSingleton(RefitSettingsProvider.CreateDefaultJsonSerializerOptions());
 
@@ -259,14 +302,17 @@ public sealed class DeliveryClientBuilder
         services.AddSingleton<IItemTypingStrategy, DefaultItemTypingStrategy>();
 
         // Register caching services based on configuration
-        ConfigureCaching(services);
+        ConfigureCaching(services, loggerFactory);
 
         // Register elements post-processor
         services.AddSingleton<IElementsPostProcessor, ElementsPostProcessor>();
 
-        // Register HTTP handlers
-        services.AddTransient<TrackingHandler>();
-        services.AddTransient<DeliveryAuthenticationHandler>();
+        // Register HTTP handlers with loggers
+        services.AddTransient(sp => new TrackingHandler(
+            loggerFactory.CreateLogger<TrackingHandler>()));
+        services.AddTransient(sp => new DeliveryAuthenticationHandler(
+            sp.GetRequiredService<IOptionsMonitor<DeliveryOptions>>(),
+            loggerFactory.CreateLogger<DeliveryAuthenticationHandler>()));
 
         // Register and configure HTTP client with Refit
         var refitSettings = RefitSettingsProvider.CreateDefaultSettings();
@@ -289,23 +335,25 @@ public sealed class DeliveryClientBuilder
         httpClientBuilder.AddHttpMessageHandler<TrackingHandler>();
         httpClientBuilder.AddHttpMessageHandler<DeliveryAuthenticationHandler>();
 
-        // Register the DeliveryClient
+        // Register the DeliveryClient with logger
         services.AddSingleton<IDeliveryClient>(sp =>
         {
             var deliveryApi = sp.GetRequiredService<IDeliveryApi>();
             var optionsMonitor = sp.GetRequiredService<IOptionsMonitor<DeliveryOptions>>();
             var elementsPostProcessor = sp.GetRequiredService<IElementsPostProcessor>();
             var cacheManager = sp.GetService<IDeliveryCacheManager>();
+            var logger = loggerFactory.CreateLogger<DeliveryClient>();
 
             return new DeliveryClient(
                 deliveryApi,
                 optionsMonitor,
                 elementsPostProcessor,
-                cacheManager);
+                cacheManager,
+                logger);
         });
     }
 
-    private void ConfigureCaching(IServiceCollection services)
+    private void ConfigureCaching(IServiceCollection services, ILoggerFactory loggerFactory)
     {
         switch (_cacheType)
         {
@@ -316,7 +364,8 @@ public sealed class DeliveryClientBuilder
                     new MemoryCacheManager(
                         sp.GetRequiredService<IMemoryCache>(),
                         keyPrefix: null,
-                        _cacheExpiration));
+                        _cacheExpiration,
+                        loggerFactory.CreateLogger<MemoryCacheManager>()));
                 services.AddSingleton<IContentDependencyExtractor, ContentDependencyExtractor>();
                 break;
 
@@ -327,7 +376,8 @@ public sealed class DeliveryClientBuilder
                     new DistributedCacheManager(
                         sp.GetRequiredService<IDistributedCache>(),
                         keyPrefix: null,
-                        _cacheExpiration));
+                        _cacheExpiration,
+                        loggerFactory.CreateLogger<DistributedCacheManager>()));
                 services.AddSingleton<IContentDependencyExtractor, ContentDependencyExtractor>();
                 break;
 

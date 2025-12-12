@@ -1,3 +1,4 @@
+using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
 
 namespace Kontent.Ai.Delivery;
@@ -12,16 +13,19 @@ namespace Kontent.Ai.Delivery;
 /// <param name="deliveryOptions">The settings of the Kontent.ai environment.</param>
 /// <param name="elementsPostProcessor">The elements post processor.</param>
 /// <param name="cacheManager">Optional cache manager for caching API responses (injected when EnableCaching is true).</param>
+/// <param name="logger">Optional logger for diagnostic output.</param>
 internal sealed class DeliveryClient(
     IDeliveryApi deliveryApi,
     IOptionsMonitor<DeliveryOptions> deliveryOptions,
     IElementsPostProcessor elementsPostProcessor,
-    IDeliveryCacheManager? cacheManager = null) : IDeliveryClient
+    IDeliveryCacheManager? cacheManager = null,
+    ILogger<DeliveryClient>? logger = null) : IDeliveryClient
 {
     private readonly IDeliveryApi _deliveryApi = deliveryApi ?? throw new ArgumentNullException(nameof(deliveryApi));
     private readonly IOptionsMonitor<DeliveryOptions> _deliveryOptions = deliveryOptions ?? throw new ArgumentNullException(nameof(deliveryOptions));
     private readonly IElementsPostProcessor _elementsPostProcessor = elementsPostProcessor ?? throw new ArgumentNullException(nameof(elementsPostProcessor));
     private readonly IDeliveryCacheManager? _cacheManager = cacheManager;
+    private readonly ILogger<DeliveryClient>? _logger = logger;
 
     public IItemQuery<T> GetItem<T>(string codename) where T : IElementsModel
     {
@@ -30,7 +34,7 @@ internal sealed class DeliveryClient(
             throw new ArgumentException("Entered item codename is not valid.", nameof(codename));
         }
 
-        return new ItemQuery<T>(_deliveryApi, codename, GetDefaultWaitForLoadingNewContent, _elementsPostProcessor, _cacheManager);
+        return new ItemQuery<T>(_deliveryApi, codename, GetDefaultWaitForLoadingNewContent, _elementsPostProcessor, _cacheManager, _logger);
     }
 
     public IDynamicItemQuery GetItem(string codename)
@@ -45,7 +49,7 @@ internal sealed class DeliveryClient(
 
     public IItemsQuery<T> GetItems<T>() where T : IElementsModel
     {
-        return new ItemsQuery<T>(_deliveryApi, GetDefaultWaitForLoadingNewContent, _elementsPostProcessor, _cacheManager);
+        return new ItemsQuery<T>(_deliveryApi, GetDefaultWaitForLoadingNewContent, _elementsPostProcessor, _cacheManager, _logger);
     }
 
     public IDynamicItemsQuery GetItems()
@@ -70,12 +74,12 @@ internal sealed class DeliveryClient(
             throw new ArgumentException("Entered type codename is not valid.", nameof(codename));
         }
 
-        return new TypeQuery(_deliveryApi, codename, GetDefaultWaitForLoadingNewContent, _cacheManager);
+        return new TypeQuery(_deliveryApi, codename, GetDefaultWaitForLoadingNewContent, _cacheManager, _logger);
     }
 
     public ITypesQuery GetTypes()
     {
-        return new TypesQuery(_deliveryApi, GetDefaultWaitForLoadingNewContent, _cacheManager);
+        return new TypesQuery(_deliveryApi, GetDefaultWaitForLoadingNewContent, _cacheManager, _logger);
     }
 
     public ITypeElementQuery GetContentElement(string contentTypeCodename, string contentElementCodename)
