@@ -4,11 +4,22 @@ using System.Diagnostics;
 namespace Kontent.Ai.Delivery.ContentItems.ContentLinks;
 
 /// <inheritdoc cref="IContentLink"/>
-[DebuggerDisplay("Codename = {" + nameof(IContentLink.Codename) + "}")]
-internal sealed record ContentLink() : IContentLink // TODO: improve, nullability etc.
+[DebuggerDisplay("Id = {Id}, Codename = {" + nameof(IContentLink.Codename) + "}")]
+internal sealed record ContentLink() : IContentLink
 {
+    /// <summary>
+    /// The unique identifier of the content item this link points to.
+    /// This is populated from the dictionary key when deserializing rich text links.
+    /// </summary>
+    [JsonIgnore]
+    public Guid Id { get; set; }
+
     /// <inheritdoc/>
-    Guid IContentLink.Id { get; set; }
+    Guid IContentLink.Id
+    {
+        get => Id;
+        set => Id = value;
+    }
 
     /// <inheritdoc/>
     [JsonPropertyName("codename")]

@@ -1,10 +1,13 @@
+using System.Text.Json;
 using Kontent.Ai.Delivery.Caching;
+using Kontent.Ai.Delivery.Configuration;
 using Kontent.Ai.Delivery.ContentItems;
 using Kontent.Ai.Delivery.ContentItems.Processing;
 using Microsoft.Extensions.Caching.Distributed;
 using Microsoft.Extensions.Caching.Memory;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.DependencyInjection.Extensions;
+using Microsoft.Extensions.Logging;
 
 namespace Kontent.Ai.Delivery.Extensions;
 
@@ -49,6 +52,7 @@ public static partial class ServiceCollectionExtensions
     /// <param name="keyPrefix">
     /// Optional prefix for cache keys. If null, defaults to the client name.
     /// Used to isolate cache entries when multiple clients share the same <see cref="IMemoryCache"/>.
+    /// Set to empty string (<c>""</c>) to disable prefixing.
     /// </param>
     /// <param name="defaultExpiration">
     /// Default cache entry expiration time. If null, defaults to 1 hour.
@@ -87,7 +91,8 @@ public static partial class ServiceCollectionExtensions
             new MemoryCacheManager(
                 sp.GetRequiredService<IMemoryCache>(),
                 keyPrefix ?? clientName,
-                defaultExpiration));
+                defaultExpiration,
+                sp.GetService<ILogger<MemoryCacheManager>>()));
 
         // Enable dependency extraction for cache invalidation
         // Replace ensures real extractor is used regardless of registration order
@@ -144,6 +149,7 @@ public static partial class ServiceCollectionExtensions
     /// <param name="keyPrefix">
     /// Optional prefix for cache keys. If null, defaults to the client name.
     /// Used to isolate cache entries when multiple clients share the same <see cref="IDistributedCache"/>.
+    /// Set to empty string (<c>""</c>) to disable prefixing.
     /// </param>
     /// <param name="defaultExpiration">
     /// Default cache entry expiration time. If null, defaults to 1 hour.
@@ -182,11 +188,19 @@ public static partial class ServiceCollectionExtensions
         ArgumentException.ThrowIfNullOrWhiteSpace(clientName);
 
         // Register keyed cache manager for this client
+        // Use the SDK's JsonSerializerOptions with converters for proper content item serialization
         services.AddKeyedSingleton<IDeliveryCacheManager>(clientName, (sp, _) =>
-            new DistributedCacheManager(
+        {
+            var jsonOptions = sp.GetService<JsonSerializerOptions>()
+                ?? RefitSettingsProvider.CreateDefaultJsonSerializerOptions();
+
+            return new DistributedCacheManager(
                 sp.GetRequiredService<IDistributedCache>(),
                 keyPrefix ?? clientName,
-                defaultExpiration));
+                defaultExpiration,
+                jsonOptions,
+                sp.GetService<ILogger<DistributedCacheManager>>());
+        });
 
         // Enable dependency extraction for cache invalidation
         // Replace ensures real extractor is used regardless of registration order

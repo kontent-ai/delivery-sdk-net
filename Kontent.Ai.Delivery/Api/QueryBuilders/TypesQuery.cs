@@ -1,5 +1,8 @@
+using System.Diagnostics;
 using Kontent.Ai.Delivery.Api.QueryBuilders.Filtering;
 using Kontent.Ai.Delivery.Caching;
+using Kontent.Ai.Delivery.Logging;
+using Microsoft.Extensions.Logging;
 
 namespace Kontent.Ai.Delivery.Api.QueryBuilders;
 
@@ -7,7 +10,8 @@ namespace Kontent.Ai.Delivery.Api.QueryBuilders;
 internal sealed class TypesQuery(
     IDeliveryApi api,
     Func<bool?> getDefaultWaitForNewContent,
-    IDeliveryCacheManager? cacheManager) : ITypesQuery
+    IDeliveryCacheManager? cacheManager,
+    ILogger? logger = null) : ITypesQuery
 {
     private readonly IDeliveryApi _api = api;
     private readonly TypeFilters _filters = new();
@@ -16,6 +20,7 @@ internal sealed class TypesQuery(
     private bool? _waitForLoadingNewContentOverride;
     private readonly Func<bool?> _getDefaultWaitForNewContent = getDefaultWaitForNewContent;
     private readonly IDeliveryCacheManager? _cacheManager = cacheManager;
+    private readonly ILogger? _logger = logger;
 
     public ITypesQuery WithElements(params string[] elementCodenames)
     {
@@ -58,6 +63,9 @@ internal sealed class TypesQuery(
 
     public async Task<IDeliveryResult<IReadOnlyList<IContentType>>> ExecuteAsync(CancellationToken cancellationToken = default)
     {
+        // Start timing if logging is enabled
+        var stopwatch = _logger?.IsEnabled(LogLevel.Information) == true ? Stopwatch.StartNew() : null;
+
         // Cache check (if enabled)
         string? cacheKey = null;
         if (_cacheManager != null)
@@ -70,12 +78,25 @@ internal sealed class TypesQuery(
 
                 if (cached != null)
                 {
-                    return cached; // Cache hit
+                    // Log cache hit
+                    if (_logger != null)
+                    {
+                        LoggerMessages.QueryCacheHit(_logger, cacheKey);
+                        LoggerMessages.QueryCompleted(_logger, "Types", "list",
+                            stopwatch?.ElapsedMilliseconds ?? 0, cached.StatusCode, cacheHit: true);
+                    }
+                    return cached;
                 }
+
+                // Log cache miss
+                if (_logger != null)
+                    LoggerMessages.QueryCacheMiss(_logger, cacheKey);
             }
-            catch (Exception)
+            catch (Exception ex)
             {
                 // Cache read failed - continue with API call
+                if (_logger != null && cacheKey != null)
+                    LoggerMessages.CacheGetFailed(_logger, cacheKey, ex);
             }
         }
 
@@ -98,10 +119,20 @@ internal sealed class TypesQuery(
                     cancellationToken: cancellationToken)
                     .ConfigureAwait(false);
             }
-            catch (Exception)
+            catch (Exception ex)
             {
                 // Cache write failed - still return result
+                if (_logger != null)
+                    LoggerMessages.CacheSetFailed(_logger, cacheKey, ex);
             }
+        }
+
+        // Log completion
+        if (_logger != null)
+        {
+            stopwatch?.Stop();
+            LoggerMessages.QueryCompleted(_logger, "Types", "list",
+                stopwatch?.ElapsedMilliseconds ?? 0, result.StatusCode, cacheHit: false);
         }
 
         return result;

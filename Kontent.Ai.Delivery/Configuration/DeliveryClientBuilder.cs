@@ -1,14 +1,8 @@
-using AngleSharp.Html.Parser;
-using Kontent.Ai.Delivery.Caching;
-using Kontent.Ai.Delivery.ContentItems;
-using Kontent.Ai.Delivery.ContentItems.Processing;
-using Kontent.Ai.Delivery.Handlers;
+using Kontent.Ai.Delivery.Abstractions;
+using Kontent.Ai.Delivery.Extensions;
 using Microsoft.Extensions.Caching.Distributed;
-using Microsoft.Extensions.Caching.Memory;
 using Microsoft.Extensions.DependencyInjection;
-using Microsoft.Extensions.Http.Resilience;
-using Microsoft.Extensions.Options;
-using Polly;
+using Microsoft.Extensions.Logging;
 
 namespace Kontent.Ai.Delivery.Configuration;
 
@@ -31,12 +25,12 @@ namespace Kontent.Ai.Delivery.Configuration;
 /// Example usage:
 /// <code>
 /// // Simple usage with environment ID
-/// var client = DeliveryClientBuilder
+/// using var container = DeliveryClientBuilder
 ///     .WithEnvironmentId("your-environment-id")
 ///     .Build();
 ///
 /// // With preview API and type provider
-/// var client = DeliveryClientBuilder
+/// using var container2 = DeliveryClientBuilder
 ///     .WithOptions(opts => opts
 ///         .WithEnvironmentId("your-environment-id")
 ///         .UsePreviewApi("preview-api-key")
@@ -54,6 +48,7 @@ public sealed class DeliveryClientBuilder
     private IDistributedCache? _distributedCache;
     private TimeSpan? _cacheExpiration;
     private CacheType _cacheType = CacheType.None;
+    private ILoggerFactory? _loggerFactory;
 
     private enum CacheType
     {
@@ -191,6 +186,42 @@ public sealed class DeliveryClientBuilder
     }
 
     /// <summary>
+    /// Sets a custom logger factory for diagnostic logging.
+    /// </summary>
+    /// <param name="loggerFactory">
+    /// The logger factory instance. Use your preferred logging framework (Serilog, NLog, etc.)
+    /// or Microsoft.Extensions.Logging directly.
+    /// </param>
+    /// <returns>The builder instance for method chaining.</returns>
+    /// <exception cref="ArgumentNullException">Thrown when <paramref name="loggerFactory"/> is null.</exception>
+    /// <remarks>
+    /// <para>
+    /// If not set, logging is disabled (<see cref="NullLoggerFactory"/> is used internally).
+    /// </para>
+    /// <para>
+    /// Example usage:
+    /// <code>
+    /// var loggerFactory = LoggerFactory.Create(builder =>
+    /// {
+    ///     builder.AddConsole();
+    ///     builder.SetMinimumLevel(LogLevel.Debug);
+    /// });
+    ///
+    /// var client = DeliveryClientBuilder
+    ///     .WithEnvironmentId("your-environment-id")
+    ///     .WithLoggerFactory(loggerFactory)
+    ///     .Build();
+    /// </code>
+    /// </para>
+    /// </remarks>
+    public DeliveryClientBuilder WithLoggerFactory(ILoggerFactory loggerFactory)
+    {
+        ArgumentNullException.ThrowIfNull(loggerFactory);
+        _loggerFactory = loggerFactory;
+        return this;
+    }
+
+    /// <summary>
     /// Builds and returns a configured <see cref="IDeliveryClient"/> instance.
     /// </summary>
     /// <returns>A fully configured <see cref="IDeliveryClient"/> instance.</returns>
@@ -200,14 +231,24 @@ public sealed class DeliveryClientBuilder
     /// <remarks>
     /// <para>
     /// This method validates the configuration and builds all required dependencies.
-    /// The returned client is thread-safe and can be reused for the lifetime of the application.
+    /// The returned container owns the client and its dependencies - dispose it when done.
     /// </para>
     /// <para>
     /// The builder can be used to create multiple client instances, but each call to <see cref="Build"/>
     /// creates a new independent client with its own HTTP client and cache (if configured).
     /// </para>
+    /// <example>
+    /// <code>
+    /// using var container = DeliveryClientBuilder
+    ///     .WithEnvironmentId("your-env-id")
+    ///     .Build();
+    ///
+    /// var client = container.Client;
+    /// var result = await client.Items&lt;Article&gt;().ExecuteAsync();
+    /// </code>
+    /// </example>
     /// </remarks>
-    public IDeliveryClient Build()
+    public IDeliveryClientContainer Build()
     {
         if (_deliveryOptions is null)
         {
@@ -215,182 +256,65 @@ public sealed class DeliveryClientBuilder
                 "DeliveryOptions must be configured. Call WithEnvironmentId() or WithOptions() before Build().");
         }
 
-        // Validate options using DataAnnotations
-        ValidateOptions(_deliveryOptions);
-
-        // Build the service provider with all required dependencies
         var services = new ServiceCollection();
-
         ConfigureServices(services);
 
-        var serviceProvider = services.BuildServiceProvider();
+        // Validate options and build dependencies (options validation happens during provider build due to ValidateOnStart)
+        var serviceProvider = services.BuildServiceProvider(
+            new ServiceProviderOptions { ValidateOnBuild = true, ValidateScopes = true });
 
-        return serviceProvider.GetRequiredService<IDeliveryClient>();
+        var client = serviceProvider.GetRequiredService<IDeliveryClient>();
+
+        // Return a container that owns the service provider lifetime
+        return new DeliveryClientContainer(serviceProvider, client);
     }
 
     private void ConfigureServices(IServiceCollection services)
     {
-        // Register options
-        var deliveryOptions = _deliveryOptions!;
-        services.Configure<DeliveryOptions>(opt => ConfigureOptions(opt, deliveryOptions));
-        services.AddOptions<DeliveryOptions>()
-            .ValidateDataAnnotations()
-            .ValidateOnStart();
+        ArgumentNullException.ThrowIfNull(services);
 
-        // Register JSON serialization options (shared across SDK)
-        services.AddSingleton(RefitSettingsProvider.CreateDefaultJsonSerializerOptions());
+        // Optional logging: if caller provides a factory, wire up ILogger<T> support.
+        if (_loggerFactory is not null)
+        {
+            services.AddSingleton(_loggerFactory);
+            services.AddSingleton(typeof(ILogger<>), typeof(Logger<>));
+        }
 
-        // Register core services
-        services.AddSingleton<IPropertyMapper, PropertyMapper>();
-        services.AddSingleton<IContentDeserializer, ContentDeserializer>();
-        services.AddSingleton<IHtmlParser, HtmlParser>();
-
-        // Register ITypeProvider (custom or default)
+        // Optional type provider override (must be registered before AddDeliveryClient so TryAdd doesn't overwrite it).
         if (_typeProvider is not null)
         {
-            services.AddSingleton(_typeProvider);
-        }
-        else
-        {
-            services.AddSingleton<ITypeProvider, TypeProvider>();
+            services.AddSingleton<ITypeProvider>(_typeProvider);
         }
 
-        // Register typing strategy
-        services.AddSingleton<IItemTypingStrategy, DefaultItemTypingStrategy>();
-
-        // Register caching services based on configuration
-        ConfigureCaching(services);
-
-        // Register elements post-processor
-        services.AddSingleton<IElementsPostProcessor, ElementsPostProcessor>();
-
-        // Register HTTP handlers
-        services.AddTransient<TrackingHandler>();
-        services.AddTransient<DeliveryAuthenticationHandler>();
-
-        // Register and configure HTTP client with Refit
-        var refitSettings = RefitSettingsProvider.CreateDefaultSettings();
-
-        var httpClientBuilder = services
-            .AddRefitClient<IDeliveryApi>(refitSettings)
-            .ConfigureHttpClient((sp, httpClient) =>
-            {
-                var optionsMonitor = sp.GetRequiredService<IOptionsMonitor<DeliveryOptions>>();
-                httpClient.BaseAddress = new Uri(optionsMonitor.CurrentValue.GetBaseUrl(), UriKind.Absolute);
-            });
-
-        // Configure resilience
-        if (_deliveryOptions!.EnableResilience)
+        // If distributed caching is enabled, we need to register the provided IDistributedCache.
+        if (_cacheType == CacheType.Distributed)
         {
-            httpClientBuilder.AddResilienceHandler("delivery", ConfigureDefaultResilience);
+            services.AddSingleton(_distributedCache!);
         }
 
-        // Add message handlers
-        httpClientBuilder.AddHttpMessageHandler<TrackingHandler>();
-        httpClientBuilder.AddHttpMessageHandler<DeliveryAuthenticationHandler>();
+        // Register the SDK using the same DI registration path as normal applications.
+        services.AddDeliveryClient(_deliveryOptions!);
 
-        // Register the DeliveryClient
-        services.AddSingleton<IDeliveryClient>(sp =>
-        {
-            var deliveryApi = sp.GetRequiredService<IDeliveryApi>();
-            var optionsMonitor = sp.GetRequiredService<IOptionsMonitor<DeliveryOptions>>();
-            var elementsPostProcessor = sp.GetRequiredService<IElementsPostProcessor>();
-            var cacheManager = sp.GetService<IDeliveryCacheManager>();
-
-            return new DeliveryClient(
-                deliveryApi,
-                optionsMonitor,
-                elementsPostProcessor,
-                cacheManager);
-        });
-    }
-
-    private void ConfigureCaching(IServiceCollection services)
-    {
+        // Register caching (if enabled). Empty string disables prefixing (see cache managers).
         switch (_cacheType)
         {
             case CacheType.Memory:
-                // Create and register IMemoryCache
-                services.AddMemoryCache();
-                services.AddSingleton<IDeliveryCacheManager>(sp =>
-                    new MemoryCacheManager(
-                        sp.GetRequiredService<IMemoryCache>(),
-                        keyPrefix: null,
-                        _cacheExpiration));
-                services.AddSingleton<IContentDependencyExtractor, ContentDependencyExtractor>();
+                services.AddDeliveryMemoryCache(
+                    clientName: Abstractions.Options.DefaultName,
+                    keyPrefix: "",
+                    defaultExpiration: _cacheExpiration);
                 break;
 
             case CacheType.Distributed:
-                // Register the provided distributed cache
-                services.AddSingleton(_distributedCache!);
-                services.AddSingleton<IDeliveryCacheManager>(sp =>
-                    new DistributedCacheManager(
-                        sp.GetRequiredService<IDistributedCache>(),
-                        keyPrefix: null,
-                        _cacheExpiration));
-                services.AddSingleton<IContentDependencyExtractor, ContentDependencyExtractor>();
+                services.AddDeliveryDistributedCache(
+                    clientName: Abstractions.Options.DefaultName,
+                    keyPrefix: "",
+                    defaultExpiration: _cacheExpiration);
                 break;
 
             case CacheType.None:
             default:
-                // No caching - use null extractor
-                services.AddSingleton<IContentDependencyExtractor>(NullContentDependencyExtractor.Instance);
                 break;
-        }
-    }
-
-    private static void ConfigureDefaultResilience(ResiliencePipelineBuilder<HttpResponseMessage> builder)
-    {
-        // Retry policy
-        builder.AddRetry(new HttpRetryStrategyOptions
-        {
-            MaxRetryAttempts = 3,
-            Delay = TimeSpan.FromSeconds(1),
-            BackoffType = DelayBackoffType.Exponential,
-            UseJitter = true,
-            ShouldHandle = args => ValueTask.FromResult(
-                args.Outcome.Result?.IsSuccessStatusCode == false &&
-                IsRetryableStatusCode(args.Outcome.Result?.StatusCode))
-        });
-
-        // Timeout policy
-        builder.AddTimeout(TimeSpan.FromSeconds(30));
-    }
-
-    private static bool IsRetryableStatusCode(System.Net.HttpStatusCode? statusCode)
-        => statusCode is
-            System.Net.HttpStatusCode.TooManyRequests or
-            System.Net.HttpStatusCode.RequestTimeout or
-            System.Net.HttpStatusCode.InternalServerError or
-            System.Net.HttpStatusCode.BadGateway or
-            System.Net.HttpStatusCode.ServiceUnavailable or
-            System.Net.HttpStatusCode.GatewayTimeout;
-
-    private static void ConfigureOptions(DeliveryOptions target, DeliveryOptions source)
-    {
-        target.EnvironmentId = source.EnvironmentId;
-        target.EnableResilience = source.EnableResilience;
-        target.ProductionEndpoint = source.ProductionEndpoint;
-        target.PreviewEndpoint = source.PreviewEndpoint;
-        target.PreviewApiKey = source.PreviewApiKey;
-        target.UsePreviewApi = source.UsePreviewApi;
-        target.UseSecureAccess = source.UseSecureAccess;
-        target.SecureAccessApiKey = source.SecureAccessApiKey;
-        target.IncludeTotalCount = source.IncludeTotalCount;
-        target.WaitForLoadingNewContent = source.WaitForLoadingNewContent;
-        target.DefaultRenditionPreset = source.DefaultRenditionPreset;
-    }
-
-    private static void ValidateOptions(DeliveryOptions options)
-    {
-        var validationContext = new System.ComponentModel.DataAnnotations.ValidationContext(options);
-        var validationResults = new List<System.ComponentModel.DataAnnotations.ValidationResult>();
-
-        if (!System.ComponentModel.DataAnnotations.Validator.TryValidateObject(
-            options, validationContext, validationResults, validateAllProperties: true))
-        {
-            var errors = string.Join("; ", validationResults.Select(r => r.ErrorMessage));
-            throw new InvalidOperationException($"Invalid DeliveryOptions: {errors}");
         }
     }
 }

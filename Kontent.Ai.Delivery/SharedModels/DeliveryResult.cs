@@ -1,7 +1,7 @@
 namespace Kontent.Ai.Delivery.SharedModels;
 
 /// <summary>
-/// Concrete implementation of <see cref="IDeliveryResult{T}"/> for functional error handling.
+/// Concrete implementation of <see cref="IDeliveryResult{T}"/>.
 /// </summary>
 /// <typeparam name="T">The type of the result value.</typeparam>
 internal sealed class DeliveryResult<T> : IDeliveryResult<T>

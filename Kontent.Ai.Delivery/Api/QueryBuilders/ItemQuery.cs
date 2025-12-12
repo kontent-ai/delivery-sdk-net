@@ -1,5 +1,9 @@
+using System.Diagnostics;
 using Kontent.Ai.Delivery.Abstractions.ContentItems.Processing;
 using Kontent.Ai.Delivery.Caching;
+using Kontent.Ai.Delivery.ContentItems;
+using Kontent.Ai.Delivery.Logging;
+using Microsoft.Extensions.Logging;
 
 namespace Kontent.Ai.Delivery.Api.QueryBuilders;
 
@@ -9,7 +13,8 @@ internal sealed class ItemQuery<TModel>(
     string codename,
     Func<bool?> getDefaultWaitForNewContent,
     IElementsPostProcessor elementsPostProcessor,
-    IDeliveryCacheManager? cacheManager) : IItemQuery<TModel>
+    IDeliveryCacheManager? cacheManager,
+    ILogger? logger = null) : IItemQuery<TModel>
     where TModel : IElementsModel
 {
     private readonly IDeliveryApi _api = api;
@@ -18,6 +23,7 @@ internal sealed class ItemQuery<TModel>(
     private SingleItemParams _params = new();
     private readonly IElementsPostProcessor _elementsPostProcessor = elementsPostProcessor;
     private readonly IDeliveryCacheManager? _cacheManager = cacheManager;
+    private readonly ILogger? _logger = logger;
     private bool? _waitForLoadingNewContentOverride;
 
     public IItemQuery<TModel> WithLanguage(string languageCodename)
@@ -52,6 +58,9 @@ internal sealed class ItemQuery<TModel>(
 
     public async Task<IDeliveryResult<IContentItem<TModel>>> ExecuteAsync(CancellationToken cancellationToken = default)
     {
+        // Start timing if logging is enabled
+        var stopwatch = _logger?.IsEnabled(LogLevel.Information) == true ? Stopwatch.StartNew() : null;
+
         // ========== 1. CACHE CHECK (if enabled) ==========
         string? cacheKey = null;
         if (_cacheManager != null)
@@ -59,18 +68,39 @@ internal sealed class ItemQuery<TModel>(
             try
             {
                 cacheKey = CacheKeyBuilder.BuildItemKey(_codename, _params);
-                var cached = await _cacheManager.GetAsync<IDeliveryResult<IContentItem<TModel>>>(cacheKey, cancellationToken)
+                // Cache ContentItem directly - it's the concrete type that serializes properly
+                var cachedItem = await _cacheManager.GetAsync<ContentItem<TModel>>(cacheKey, cancellationToken)
                     .ConfigureAwait(false);
 
-                if (cached != null)
+                if (cachedItem != null)
                 {
-                    return cached; // Cache hit
+                    // Build DeliveryResult from cached item
+                    var cachedResult = DeliveryResult.Success<IContentItem<TModel>>(
+                        cachedItem,
+                        requestUrl: cacheKey,
+                        statusCode: 200,
+                        hasStaleContent: false,
+                        continuationToken: null);
+
+                    // Log cache hit and return
+                    if (_logger != null)
+                    {
+                        LoggerMessages.QueryCacheHit(_logger, cacheKey);
+                        LoggerMessages.QueryCompleted(_logger, "Item", _codename,
+                            stopwatch?.ElapsedMilliseconds ?? 0, 200, cacheHit: true);
+                    }
+                    return cachedResult;
                 }
+
+                // Log cache miss
+                if (_logger != null)
+                    LoggerMessages.QueryCacheMiss(_logger, cacheKey);
             }
-            catch (Exception)
+            catch (Exception ex)
             {
                 // Cache read failed - continue with API call
-                // In production, this should be logged
+                if (_logger != null && cacheKey != null)
+                    LoggerMessages.CacheGetFailed(_logger, cacheKey, ex);
             }
         }
 
@@ -83,6 +113,11 @@ internal sealed class ItemQuery<TModel>(
 
         if (!deliveryResult.IsSuccess)
         {
+            // Log query failure
+            if (_logger != null)
+                LoggerMessages.QueryFailed(_logger, "Item", _codename, deliveryResult.StatusCode,
+                    deliveryResult.Error?.Message, exception: null);
+
             return DeliveryResult.Failure<IContentItem<TModel>>(
                 deliveryResult.RequestUrl ?? string.Empty,
                 deliveryResult.StatusCode,
@@ -125,19 +160,34 @@ internal sealed class ItemQuery<TModel>(
         {
             try
             {
-                await _cacheManager.SetAsync(
-                    cacheKey,
-                    result,
-                    dependencyContext.Dependencies,
-                    expiration: null, // Use cache manager's default
-                    cancellationToken: cancellationToken)
-                    .ConfigureAwait(false);
+                // Cache the ContentItem directly (concrete type for proper serialization)
+                if (item is ContentItem<TModel> concreteItem)
+                {
+                    await _cacheManager.SetAsync(
+                        cacheKey,
+                        concreteItem,
+                        dependencyContext.Dependencies,
+                        expiration: null, // Use cache manager's default
+                        cancellationToken: cancellationToken)
+                        .ConfigureAwait(false);
+                }
             }
-            catch (Exception)
+            catch (Exception ex)
             {
                 // Cache write failed - still return result to caller
-                // In production, this should be logged
+                if (_logger != null)
+                    LoggerMessages.CacheSetFailed(_logger, cacheKey, ex);
             }
+        }
+
+        // Log successful completion
+        if (_logger != null)
+        {
+            stopwatch?.Stop();
+            if (deliveryResult.HasStaleContent)
+                LoggerMessages.QueryStaleContent(_logger, _codename);
+            LoggerMessages.QueryCompleted(_logger, "Item", _codename,
+                stopwatch?.ElapsedMilliseconds ?? 0, deliveryResult.StatusCode, cacheHit: false);
         }
 
         return result;

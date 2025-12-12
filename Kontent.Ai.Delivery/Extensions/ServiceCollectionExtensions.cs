@@ -3,6 +3,7 @@ using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.DependencyInjection.Extensions;
 using Microsoft.Extensions.Http.Resilience;
+using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
 using Polly;
 
@@ -221,11 +222,15 @@ public static partial class ServiceCollectionExtensions
             // Resolve keyed cache manager for this client (registered via AddDeliveryMemoryCache/AddDeliveryDistributedCache)
             var cacheManager = sp.GetKeyedService<IDeliveryCacheManager>(clientName);
 
+            // Resolve logger (optional - will be null if no logging is configured)
+            var logger = sp.GetService<ILogger<DeliveryClient>>();
+
             return new DeliveryClient(
                 deliveryApi,
                 namedMonitor,
                 elementsPostProcessor,
-                cacheManager);
+                cacheManager,
+                logger);
         });
 
         // Register factory

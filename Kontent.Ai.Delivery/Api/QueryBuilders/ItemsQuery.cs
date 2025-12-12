@@ -1,6 +1,10 @@
+using System.Diagnostics;
 using Kontent.Ai.Delivery.Abstractions.ContentItems.Processing;
 using Kontent.Ai.Delivery.Api.QueryBuilders.Filtering;
 using Kontent.Ai.Delivery.Caching;
+using Kontent.Ai.Delivery.ContentItems;
+using Kontent.Ai.Delivery.Logging;
+using Microsoft.Extensions.Logging;
 
 namespace Kontent.Ai.Delivery.Api.QueryBuilders;
 
@@ -9,12 +13,14 @@ internal sealed class ItemsQuery<TModel>(
     IDeliveryApi api,
     Func<bool?> getDefaultWaitForNewContent,
     IElementsPostProcessor elementsPostProcessor,
-    IDeliveryCacheManager? cacheManager) : IItemsQuery<TModel> where TModel : IElementsModel
+    IDeliveryCacheManager? cacheManager,
+    ILogger? logger = null) : IItemsQuery<TModel> where TModel : IElementsModel
 {
     private readonly IDeliveryApi _api = api;
     private readonly Func<bool?> _getDefaultWaitForNewContent = getDefaultWaitForNewContent;
     private readonly IElementsPostProcessor _elementsPostProcessor = elementsPostProcessor;
     private readonly IDeliveryCacheManager? _cacheManager = cacheManager;
+    private readonly ILogger? _logger = logger;
     private readonly ItemFilters _filters = new();
     private readonly Dictionary<string, string> _serializedFilters = [];
     private ListItemsParams _params = new();
@@ -91,6 +97,9 @@ internal sealed class ItemsQuery<TModel>(
 
     public async Task<IDeliveryResult<IReadOnlyList<IContentItem<TModel>>>> ExecuteAsync(CancellationToken cancellationToken = default)
     {
+        // Start timing if logging is enabled
+        var stopwatch = _logger?.IsEnabled(LogLevel.Information) == true ? Stopwatch.StartNew() : null;
+
         // ========== 1. CACHE CHECK (if enabled) ==========
         string? cacheKey = null;
         if (_cacheManager != null)
@@ -98,18 +107,40 @@ internal sealed class ItemsQuery<TModel>(
             try
             {
                 cacheKey = CacheKeyBuilder.BuildItemsKey(_params, _serializedFilters);
-                var cached = await _cacheManager.GetAsync<IDeliveryResult<IReadOnlyList<IContentItem<TModel>>>>(cacheKey, cancellationToken)
+                // Cache List<ContentItem> directly - concrete type for proper serialization
+                var cachedItems = await _cacheManager.GetAsync<List<ContentItem<TModel>>>(cacheKey, cancellationToken)
                     .ConfigureAwait(false);
 
-                if (cached != null)
+                if (cachedItems != null)
                 {
-                    return cached; // Cache hit
+                    // Build DeliveryResult from cached items
+                    var interfaceItems = cachedItems.Cast<IContentItem<TModel>>().ToList().AsReadOnly();
+                    var cachedResult = DeliveryResult.Success<IReadOnlyList<IContentItem<TModel>>>(
+                        interfaceItems,
+                        requestUrl: cacheKey,
+                        statusCode: 200,
+                        hasStaleContent: false,
+                        continuationToken: null);
+
+                    // Log cache hit and return
+                    if (_logger != null)
+                    {
+                        LoggerMessages.QueryCacheHit(_logger, cacheKey);
+                        LoggerMessages.QueryCompleted(_logger, "Items", "list",
+                            stopwatch?.ElapsedMilliseconds ?? 0, 200, cacheHit: true);
+                    }
+                    return cachedResult;
                 }
+
+                // Log cache miss
+                if (_logger != null)
+                    LoggerMessages.QueryCacheMiss(_logger, cacheKey);
             }
-            catch (Exception)
+            catch (Exception ex)
             {
                 // Cache read failed - continue with API call
-                // In production, this should be logged
+                if (_logger != null && cacheKey != null)
+                    LoggerMessages.CacheGetFailed(_logger, cacheKey, ex);
             }
         }
 
@@ -122,6 +153,11 @@ internal sealed class ItemsQuery<TModel>(
 
         if (!deliveryResult.IsSuccess)
         {
+            // Log query failure
+            if (_logger != null)
+                LoggerMessages.QueryFailed(_logger, "Items", "list", deliveryResult.StatusCode,
+                    deliveryResult.Error?.Message, exception: null);
+
             return DeliveryResult.Failure<IReadOnlyList<IContentItem<TModel>>>(
                 deliveryResult.RequestUrl ?? string.Empty,
                 deliveryResult.StatusCode,
@@ -173,19 +209,35 @@ internal sealed class ItemsQuery<TModel>(
         {
             try
             {
+                // Cache List<ContentItem> directly (concrete type for proper serialization)
+                var concreteItems = items
+                    .OfType<ContentItem<TModel>>()
+                    .ToList();
+
                 await _cacheManager.SetAsync(
                     cacheKey,
-                    result,
+                    concreteItems,
                     dependencyContext.Dependencies,
                     expiration: null, // Use cache manager's default
                     cancellationToken: cancellationToken)
                     .ConfigureAwait(false);
             }
-            catch (Exception)
+            catch (Exception ex)
             {
                 // Cache write failed - still return result to caller
-                // In production, this should be logged
+                if (_logger != null)
+                    LoggerMessages.CacheSetFailed(_logger, cacheKey, ex);
             }
+        }
+
+        // Log successful completion
+        if (_logger != null)
+        {
+            stopwatch?.Stop();
+            if (deliveryResult.HasStaleContent)
+                LoggerMessages.QueryStaleContent(_logger, "list");
+            LoggerMessages.QueryCompleted(_logger, "Items", "list",
+                stopwatch?.ElapsedMilliseconds ?? 0, deliveryResult.StatusCode, cacheHit: false);
         }
 
         return result;

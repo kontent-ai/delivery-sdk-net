@@ -1,4 +1,6 @@
 using System.Net.Http.Headers;
+using Kontent.Ai.Delivery.Logging;
+using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
 
 namespace Kontent.Ai.Delivery.Handlers;
@@ -10,26 +12,38 @@ public sealed class DeliveryAuthenticationHandler : DelegatingHandler
 {
     private readonly IOptionsMonitor<DeliveryOptions> _monitor;
     private readonly string? _name;
+    private readonly ILogger<DeliveryAuthenticationHandler>? _logger;
 
     /// <summary>
     /// Initializes a new instance of the <see cref="DeliveryAuthenticationHandler"/> class.
     /// </summary>
     /// <param name="monitor">Instance of <see cref="IOptionsMonitor{DeliveryOptions}"/>.</param>
+    /// <param name="logger">Optional logger instance.</param>
     /// <exception cref="ArgumentNullException"></exception>
-    public DeliveryAuthenticationHandler(IOptionsMonitor<DeliveryOptions> monitor) =>
+    public DeliveryAuthenticationHandler(
+        IOptionsMonitor<DeliveryOptions> monitor,
+        ILogger<DeliveryAuthenticationHandler>? logger = null)
+    {
         _monitor = monitor ?? throw new ArgumentNullException(nameof(monitor));
+        _logger = logger;
+    }
 
     /// <summary>
     /// Initializes a new instance of the <see cref="DeliveryAuthenticationHandler"/> class with named options.
     /// </summary>
     /// <param name="monitor">Instance of <see cref="IOptionsMonitor{DeliveryOptions}"/>.</param>
     /// <param name="optionsName">The name of the options.</param>
+    /// <param name="logger">Optional logger instance.</param>
     /// <exception cref="ArgumentNullException"></exception>
-    public DeliveryAuthenticationHandler(IOptionsMonitor<DeliveryOptions> monitor, string optionsName)
+    public DeliveryAuthenticationHandler(
+        IOptionsMonitor<DeliveryOptions> monitor,
+        string optionsName,
+        ILogger<DeliveryAuthenticationHandler>? logger = null)
     {
         _monitor = monitor ?? throw new ArgumentNullException(nameof(monitor));
         ArgumentException.ThrowIfNullOrWhiteSpace(optionsName);
         _name = optionsName;
+        _logger = logger;
     }
 
     /// <summary>
@@ -74,9 +88,24 @@ public sealed class DeliveryAuthenticationHandler : DelegatingHandler
 
         // 1) Auth (Bearer key) - always assign to ensure stale headers are cleared
         var apiKey = opts.GetApiKey();
-        request.Headers.Authorization = !string.IsNullOrWhiteSpace(apiKey)
-            ? new AuthenticationHeaderValue("Bearer", apiKey)
-            : null;
+        if (!string.IsNullOrWhiteSpace(apiKey))
+        {
+            request.Headers.Authorization = new AuthenticationHeaderValue("Bearer", apiKey);
+
+            // Log auth type (NEVER log the actual API key)
+            if (_logger != null)
+            {
+                var authType = opts.UsePreviewApi ? "Preview" :
+                               opts.UseSecureAccess ? "SecureAccess" : "Production";
+                LoggerMessages.HttpAuthSet(_logger, authType, opts.EnvironmentId ?? "unknown");
+            }
+        }
+        else
+        {
+            request.Headers.Authorization = null;
+            if (_logger != null)
+                LoggerMessages.HttpAuthCleared(_logger);
+        }
 
         // 2) Base endpoint rewrite (runtime switchable prod/preview)
         var baseUri = new Uri(opts.GetBaseUrl().TrimEnd('/'), UriKind.Absolute);
@@ -94,6 +123,7 @@ public sealed class DeliveryAuthenticationHandler : DelegatingHandler
         {
             // Absolute URI targeting Kontent.ai API - rewrite to support runtime endpoint switching
             // This allows switching between preview/production at runtime even though BaseAddress is static
+            var originalHost = request.RequestUri.Host;
             var ub = new UriBuilder(request.RequestUri)
             {
                 Scheme = baseUri.Scheme,
@@ -101,6 +131,10 @@ public sealed class DeliveryAuthenticationHandler : DelegatingHandler
                 Port = baseUri.IsDefaultPort ? -1 : baseUri.Port
             };
             request.RequestUri = ub.Uri;
+
+            // Log endpoint rewriting if host changed
+            if (_logger != null && !originalHost.Equals(baseUri.Host, StringComparison.OrdinalIgnoreCase))
+                LoggerMessages.HttpEndpointRewritten(_logger, originalHost, baseUri.Host);
         }
         // else: External absolute URI (CDN, webhooks, etc.) - leave untouched
 
@@ -124,6 +158,10 @@ public sealed class DeliveryAuthenticationHandler : DelegatingHandler
             {
                 var ub = new UriBuilder(uri) { Path = envPrefix + path }; // "/env" + "/items/..." => "/env/items/..."
                 request.RequestUri = ub.Uri;                               // keeps query/fragment/host intact
+
+                // Log environment ID injection
+                if (_logger != null)
+                    LoggerMessages.HttpEnvironmentIdInjected(_logger, env);
             }
         }
 
