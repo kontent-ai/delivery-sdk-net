@@ -67,7 +67,8 @@ public sealed class DistributedCacheManager : IDeliveryCacheManager
     private const string CacheKeyPrefix = "cache:";
     private const string DependencyKeyPrefix = "dep:";
 
-    private string KeyPrefixSegment => _keyPrefix is null ? "" : $"{_keyPrefix}:";
+    // Treat null/empty prefix as "no prefix". Empty string can be used by callers to explicitly disable prefixing.
+    private string KeyPrefixSegment => string.IsNullOrEmpty(_keyPrefix) ? "" : $"{_keyPrefix}:";
 
     /// <summary>
     /// Initializes a new instance of the <see cref="DistributedCacheManager"/> class.
@@ -80,6 +81,7 @@ public sealed class DistributedCacheManager : IDeliveryCacheManager
     /// <param name="defaultExpiration">
     /// Default expiration time for cache entries. If null, defaults to 1 hour.
     /// </param>
+    /// <param name="logger">Optional logger for cache operations.</param>
     /// <exception cref="ArgumentNullException">
     /// Thrown when <paramref name="cache"/> is null.
     /// </exception>
@@ -88,20 +90,60 @@ public sealed class DistributedCacheManager : IDeliveryCacheManager
         string? keyPrefix = null,
         TimeSpan? defaultExpiration = null,
         ILogger<DistributedCacheManager>? logger = null)
+        : this(cache, keyPrefix, defaultExpiration, jsonSerializerOptions: null, logger)
+    {
+    }
+
+    /// <summary>
+    /// Initializes a new instance of the <see cref="DistributedCacheManager"/> class with custom JSON serialization options.
+    /// </summary>
+    /// <param name="cache">The distributed cache implementation (Redis, SQL Server, etc.).</param>
+    /// <param name="keyPrefix">
+    /// Optional prefix for all cache keys. Used to isolate cache entries when multiple clients share the same distributed cache.
+    /// For example, "production" or "preview:myproject".
+    /// </param>
+    /// <param name="defaultExpiration">
+    /// Default expiration time for cache entries. If null, defaults to 1 hour.
+    /// </param>
+    /// <param name="jsonSerializerOptions">
+    /// Custom JSON serialization options. If null, default options with ReferenceHandler.Preserve are used.
+    /// When caching SDK response types (ContentItem, DeliveryResult), provide the options from
+    /// <see cref="Configuration.RefitSettingsProvider.CreateDefaultJsonSerializerOptions"/> to ensure
+    /// proper serialization of content items.
+    /// </param>
+    /// <param name="logger">Optional logger for cache operations.</param>
+    /// <exception cref="ArgumentNullException">
+    /// Thrown when <paramref name="cache"/> is null.
+    /// </exception>
+    public DistributedCacheManager(
+        IDistributedCache cache,
+        string? keyPrefix,
+        TimeSpan? defaultExpiration,
+        JsonSerializerOptions? jsonSerializerOptions,
+        ILogger<DistributedCacheManager>? logger = null)
     {
         _cache = cache ?? throw new ArgumentNullException(nameof(cache));
         _keyPrefix = keyPrefix;
         _defaultExpiration = defaultExpiration ?? TimeSpan.FromHours(1);
         _logger = logger;
 
-        _jsonOptions = new JsonSerializerOptions
+        if (jsonSerializerOptions != null)
         {
-            ReferenceHandler = System.Text.Json.Serialization.ReferenceHandler.Preserve,
-            WriteIndented = false,
-            PropertyNameCaseInsensitive = true,
-            DefaultIgnoreCondition = System.Text.Json.Serialization.JsonIgnoreCondition.WhenWritingNull,
-            MaxDepth = 64 // Handle deep object graphs (e.g., nested content items)
-        };
+            // Use provided options but ensure we have safe defaults for caching
+            _jsonOptions = jsonSerializerOptions;
+        }
+        else
+        {
+            // Default options for simple types (not SDK response types)
+            _jsonOptions = new JsonSerializerOptions
+            {
+                ReferenceHandler = System.Text.Json.Serialization.ReferenceHandler.Preserve,
+                WriteIndented = false,
+                PropertyNameCaseInsensitive = true,
+                DefaultIgnoreCondition = System.Text.Json.Serialization.JsonIgnoreCondition.WhenWritingNull,
+                MaxDepth = 64 // Handle deep object graphs (e.g., nested content items)
+            };
+        }
     }
 
     /// <inheritdoc />

@@ -52,13 +52,32 @@ internal sealed class ElementsPostProcessor(
         typeof(IEmbeddedContent).IsAssignableFrom(elementType);
     /// <summary>
     /// Hydrates advanced element types on a strongly typed content item.
+    /// This is the public entry point that creates a fresh HydrationContext.
     /// </summary>
-    public async Task ProcessAsync<TModel>(
+    public Task ProcessAsync<TModel>(
         IContentItem<TModel> item,
         IReadOnlyDictionary<string, JsonElement>? modularContent,
         DependencyTrackingContext? dependencyContext = null,
         CancellationToken cancellationToken = default) where TModel : IElementsModel
     {
+        // Create a fresh hydration context for this processing request
+        var hydrationContext = new HydrationContext();
+        return ProcessAsyncInternal(item, modularContent, dependencyContext, hydrationContext, cancellationToken);
+    }
+
+    /// <summary>
+    /// Internal implementation that accepts HydrationContext for cycle detection and caching.
+    /// Called by public ProcessAsync and recursively via reflection for nested items.
+    /// </summary>
+    private async Task ProcessAsyncInternal<TModel>(
+        IContentItem<TModel> item,
+        IReadOnlyDictionary<string, JsonElement>? modularContent,
+        DependencyTrackingContext? dependencyContext,
+        HydrationContext hydrationContext,
+        CancellationToken cancellationToken) where TModel : IElementsModel
+    {
+        cancellationToken.ThrowIfCancellationRequested();
+
         if (item is not ContentItem<TModel> concrete || !concrete.RawElements.HasValue || concrete.RawElements.Value.ValueKind != JsonValueKind.Object)
             return;
 
@@ -68,7 +87,7 @@ internal sealed class ElementsPostProcessor(
             elementsType,
             static t => [.. t.GetProperties(BindingFlags.Instance | BindingFlags.Public).Where(p => p.CanWrite)]);
 
-        var resolvingContext = CreateResolvingContext(modularContent, dependencyContext);
+        var resolvingContext = CreateResolvingContext(modularContent, dependencyContext, hydrationContext, cancellationToken);
 
         // Group properties by target processing once to avoid repeated filtering
         var richTextProps = writableProperties.Where(_isRichTextProperty).ToArray();
@@ -79,26 +98,31 @@ internal sealed class ElementsPostProcessor(
 
         if (richTextProps.Length > 0)
         {
+            cancellationToken.ThrowIfCancellationRequested();
             await ProcessRichTextGroupAsync(richTextProps, elementsJson, item.System.Type, resolvingContext, dependencyContext, item.Elements).ConfigureAwait(false);
         }
 
         if (assetProps.Length > 0)
         {
+            cancellationToken.ThrowIfCancellationRequested();
             await ProcessAssetGroupAsync(assetProps, elementsJson, item.System.Type, dependencyContext, item.Elements).ConfigureAwait(false);
         }
 
         if (taxonomyProps.Length > 0)
         {
+            cancellationToken.ThrowIfCancellationRequested();
             await ProcessTaxonomyGroupAsync(taxonomyProps, elementsJson, item.System.Type, dependencyContext, item.Elements).ConfigureAwait(false);
         }
 
         if (dateTimeProps.Length > 0)
         {
+            cancellationToken.ThrowIfCancellationRequested();
             await ProcessDateTimeGroupAsync(dateTimeProps, elementsJson, item.System.Type, item.Elements).ConfigureAwait(false);
         }
 
         if (linkedItemsProps.Length > 0)
         {
+            cancellationToken.ThrowIfCancellationRequested();
             await ProcessLinkedItemsGroupAsync(linkedItemsProps, elementsJson, item.System.Type, resolvingContext, dependencyContext, item.Elements).ConfigureAwait(false);
         }
     }
@@ -267,27 +291,71 @@ internal sealed class ElementsPostProcessor(
 
     private ResolvingContext CreateResolvingContext(
         IReadOnlyDictionary<string, JsonElement>? modularContent,
-        DependencyTrackingContext? dependencyContext) =>
-        new()
+        DependencyTrackingContext? dependencyContext,
+        HydrationContext? hydrationContext = null,
+        CancellationToken cancellationToken = default)
+    {
+        // Create or reuse hydration context for cycle detection and caching
+        hydrationContext ??= new HydrationContext();
+
+        return new()
         {
             GetLinkedItem = async codename =>
             {
                 if (modularContent is null || !modularContent.TryGetValue(codename, out var linkedItem))
                     return null!;
 
+                // Check if already fully resolved - return cached instance
+                if (hydrationContext.ResolvedItems.TryGetValue(codename, out var cachedItem))
+                    return cachedItem;
+
                 var contentType = ExtractContentType(linkedItem);
                 var modelType = typingStrategy.ResolveModelType(contentType);
                 var itemJson = linkedItem.GetRawText();
                 var contentItem = deserializer.DeserializeContentItem(itemJson, modelType);
 
-                // Recursively process nested items to hydrate their complex elements
-                // (rich text, assets, taxonomy, other linked items)
-                // This uses the same modularContent dictionary, so recursion depth is naturally limited
-                await ProcessContentItemAsync(contentItem, modularContent, dependencyContext).ConfigureAwait(false);
+                // Cycle detected - return shallow item (deserialized but not recursively hydrated)
+                // This breaks the infinite loop while preserving the reference
+                if (!hydrationContext.ProcessingItems.Add(codename))
+                {
+                    return contentItem;
+                }
 
-                return contentItem;
+                try
+                {
+                    // Recursively process nested items to hydrate their complex elements
+                    // (rich text, assets, taxonomy, other linked items)
+                    await ProcessContentItemAsync(contentItem, modularContent, dependencyContext, hydrationContext, cancellationToken).ConfigureAwait(false);
+
+                    // Cache the fully resolved item for reuse
+                    hydrationContext.ResolvedItems[codename] = contentItem;
+
+                    return contentItem;
+                }
+                finally
+                {
+                    // Remove from processing set after completion (allows re-entry from different paths)
+                    hydrationContext.ProcessingItems.Remove(codename);
+                }
             }
         };
+    }
+
+    /// <summary>
+    /// Internal context for tracking hydration state to prevent cycles and cache resolved items.
+    /// </summary>
+    private sealed class HydrationContext
+    {
+        /// <summary>
+        /// Items currently being processed (for cycle detection).
+        /// </summary>
+        public HashSet<string> ProcessingItems { get; } = new(StringComparer.Ordinal);
+
+        /// <summary>
+        /// Items that have been fully resolved (for caching/reuse within same request).
+        /// </summary>
+        public Dictionary<string, object> ResolvedItems { get; } = new(StringComparer.Ordinal);
+    }
 
     // Group processors
     private Task ProcessRichTextGroupAsync(
@@ -402,7 +470,11 @@ internal sealed class ElementsPostProcessor(
             {
                 var link = JsonSerializer.Deserialize<ContentLink>(prop.Value.GetRawText());
                 if (link is not null)
+                {
+                    // Set the Id from the dictionary key (API returns ID as the key, not in the JSON object)
+                    link.Id = id;
                     result[id] = link;
+                }
             }
         }
         return result;
@@ -508,18 +580,22 @@ internal sealed class ElementsPostProcessor(
 
     /// <summary>
     /// Helper method to process a dynamically-typed content item.
-    /// Uses reflection to call ProcessAsync with the correct generic type.
+    /// Uses reflection to call the internal ProcessAsyncInternal with the correct generic type.
     /// </summary>
     private async Task ProcessContentItemAsync(
         object contentItem,
         IReadOnlyDictionary<string, JsonElement>? modularContent,
-        DependencyTrackingContext? dependencyContext)
+        DependencyTrackingContext? dependencyContext,
+        HydrationContext hydrationContext,
+        CancellationToken cancellationToken)
     {
+        cancellationToken.ThrowIfCancellationRequested();
+
         if (contentItem is null)
             return;
 
         // ContentItem implements IContentItem<TModel> where TModel : IElementsModel
-        // We need to find the TModel type and call ProcessAsync<TModel>
+        // We need to find the TModel type and call ProcessAsyncInternal<TModel>
         var contentItemType = contentItem.GetType();
 
         // Find IContentItem<TModel> interface
@@ -532,21 +608,22 @@ internal sealed class ElementsPostProcessor(
 
         var modelType = iContentItemInterface.GetGenericArguments()[0];
 
-        // Get ProcessAsync<TModel> method
+        // Get ProcessAsyncInternal<TModel> method (internal method that accepts HydrationContext)
         var processMethod = typeof(ElementsPostProcessor)
-            .GetMethod(nameof(ProcessAsync), BindingFlags.Instance | BindingFlags.Public)
+            .GetMethod(nameof(ProcessAsyncInternal), BindingFlags.Instance | BindingFlags.NonPublic)
             ?.MakeGenericMethod(modelType);
 
         if (processMethod is null)
             return;
 
-        // Invoke ProcessAsync<TModel>(item, modularContent, dependencyContext, cancellationToken)
+        // Invoke ProcessAsyncInternal<TModel>(item, modularContent, dependencyContext, hydrationContext, cancellationToken)
         var task = (Task?)processMethod.Invoke(this,
         [
             contentItem,
             modularContent,
             dependencyContext,
-            CancellationToken.None
+            hydrationContext,
+            cancellationToken
         ]);
 
         if (task is not null)

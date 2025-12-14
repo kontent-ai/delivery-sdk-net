@@ -77,7 +77,8 @@ public sealed class MemoryCacheManager(
     // Flag to track disposal
     private bool _disposed;
 
-    private string KeyPrefixSegment => _keyPrefix is null ? "" : $"{_keyPrefix}:";
+    // Treat null/empty prefix as "no prefix". Empty string can be used by callers to explicitly disable prefixing.
+    private string KeyPrefixSegment => string.IsNullOrEmpty(_keyPrefix) ? "" : $"{_keyPrefix}:";
 
     /// <summary>
     /// Applies the key prefix to a cache key if one is configured.

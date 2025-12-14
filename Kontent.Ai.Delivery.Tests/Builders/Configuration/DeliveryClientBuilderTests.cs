@@ -16,33 +16,37 @@ public class DeliveryClientBuilderTests
     public void Build_WithEnvironmentIdString_CreatesClient()
     {
         // Act
-        var client = DeliveryClientBuilder
+        using var container = DeliveryClientBuilder
             .WithEnvironmentId(EnvironmentId)
             .Build();
 
         // Assert
-        Assert.NotNull(client);
-        Assert.IsAssignableFrom<IDeliveryClient>(client);
+        Assert.NotNull(container);
+        Assert.IsAssignableFrom<IDeliveryClientContainer>(container);
+        Assert.NotNull(container.Client);
+        Assert.IsAssignableFrom<IDeliveryClient>(container.Client);
     }
 
     [Fact]
     public void Build_WithEnvironmentIdGuid_CreatesClient()
     {
         // Act
-        var client = DeliveryClientBuilder
+        using var container = DeliveryClientBuilder
             .WithEnvironmentId(EnvironmentIdGuid)
             .Build();
 
         // Assert
-        Assert.NotNull(client);
-        Assert.IsAssignableFrom<IDeliveryClient>(client);
+        Assert.NotNull(container);
+        Assert.IsAssignableFrom<IDeliveryClientContainer>(container);
+        Assert.NotNull(container.Client);
+        Assert.IsAssignableFrom<IDeliveryClient>(container.Client);
     }
 
     [Fact]
     public void Build_WithOptions_CreatesClient()
     {
         // Act
-        var client = DeliveryClientBuilder
+        using var container = DeliveryClientBuilder
             .WithOptions(builder => builder
                 .WithEnvironmentId(EnvironmentId)
                 .UseProductionApi()
@@ -50,15 +54,17 @@ public class DeliveryClientBuilderTests
             .Build();
 
         // Assert
-        Assert.NotNull(client);
-        Assert.IsAssignableFrom<IDeliveryClient>(client);
+        Assert.NotNull(container);
+        Assert.IsAssignableFrom<IDeliveryClientContainer>(container);
+        Assert.NotNull(container.Client);
+        Assert.IsAssignableFrom<IDeliveryClient>(container.Client);
     }
 
     [Fact]
     public void Build_WithPreviewApi_CreatesClient()
     {
         // Act
-        var client = DeliveryClientBuilder
+        using var container = DeliveryClientBuilder
             .WithOptions(builder => builder
                 .WithEnvironmentId(EnvironmentId)
                 .UsePreviewApi(TestPreviewApiKey)
@@ -66,7 +72,8 @@ public class DeliveryClientBuilderTests
             .Build();
 
         // Assert
-        Assert.NotNull(client);
+        Assert.NotNull(container);
+        Assert.NotNull(container.Client);
     }
 
     [Fact]
@@ -76,39 +83,42 @@ public class DeliveryClientBuilderTests
         var typeProvider = new TestTypeProvider();
 
         // Act
-        var client = DeliveryClientBuilder
+        using var container = DeliveryClientBuilder
             .WithEnvironmentId(EnvironmentId)
             .WithTypeProvider(typeProvider)
             .Build();
 
         // Assert
-        Assert.NotNull(client);
+        Assert.NotNull(container);
+        Assert.NotNull(container.Client);
     }
 
     [Fact]
     public void Build_WithMemoryCache_CreatesClient()
     {
         // Act
-        var client = DeliveryClientBuilder
+        using var container = DeliveryClientBuilder
             .WithEnvironmentId(EnvironmentId)
             .WithMemoryCache(TimeSpan.FromMinutes(30))
             .Build();
 
         // Assert
-        Assert.NotNull(client);
+        Assert.NotNull(container);
+        Assert.NotNull(container.Client);
     }
 
     [Fact]
     public void Build_WithMemoryCacheDefaultExpiration_CreatesClient()
     {
         // Act
-        var client = DeliveryClientBuilder
+        using var container = DeliveryClientBuilder
             .WithEnvironmentId(EnvironmentId)
             .WithMemoryCache()
             .Build();
 
         // Assert
-        Assert.NotNull(client);
+        Assert.NotNull(container);
+        Assert.NotNull(container.Client);
     }
 
     [Fact]
@@ -118,13 +128,14 @@ public class DeliveryClientBuilderTests
         var distributedCache = new TestDistributedCache();
 
         // Act
-        var client = DeliveryClientBuilder
+        using var container = DeliveryClientBuilder
             .WithEnvironmentId(EnvironmentId)
             .WithDistributedCache(distributedCache, TimeSpan.FromHours(1))
             .Build();
 
         // Assert
-        Assert.NotNull(client);
+        Assert.NotNull(container);
+        Assert.NotNull(container.Client);
     }
 
     [Fact]
@@ -134,7 +145,7 @@ public class DeliveryClientBuilderTests
         var typeProvider = new TestTypeProvider();
 
         // Act
-        var client = DeliveryClientBuilder
+        using var container = DeliveryClientBuilder
             .WithOptions(builder => builder
                 .WithEnvironmentId(EnvironmentId)
                 .UseProductionApi()
@@ -145,7 +156,8 @@ public class DeliveryClientBuilderTests
             .Build();
 
         // Assert
-        Assert.NotNull(client);
+        Assert.NotNull(container);
+        Assert.NotNull(container.Client);
     }
 
     [Fact]
@@ -183,14 +195,15 @@ public class DeliveryClientBuilderTests
         var distributedCache = new TestDistributedCache();
 
         // Act - last cache type wins
-        var client = DeliveryClientBuilder
+        using var container = DeliveryClientBuilder
             .WithEnvironmentId(EnvironmentId)
             .WithDistributedCache(distributedCache)
             .WithMemoryCache(TimeSpan.FromMinutes(30))
             .Build();
 
         // Assert
-        Assert.NotNull(client);
+        Assert.NotNull(container);
+        Assert.NotNull(container.Client);
     }
 
     [Fact]
@@ -200,14 +213,15 @@ public class DeliveryClientBuilderTests
         var distributedCache = new TestDistributedCache();
 
         // Act - last cache type wins
-        var client = DeliveryClientBuilder
+        using var container = DeliveryClientBuilder
             .WithEnvironmentId(EnvironmentId)
             .WithMemoryCache(TimeSpan.FromMinutes(30))
             .WithDistributedCache(distributedCache, TimeSpan.FromHours(1))
             .Build();
 
         // Assert
-        Assert.NotNull(client);
+        Assert.NotNull(container);
+        Assert.NotNull(container.Client);
     }
 
     [Fact]
@@ -230,26 +244,27 @@ public class DeliveryClientBuilderTests
     public void Build_MultipleClients_AreIndependent()
     {
         // Act
-        var client1 = DeliveryClientBuilder
+        using var container1 = DeliveryClientBuilder
             .WithEnvironmentId(EnvironmentId)
             .Build();
 
-        var client2 = DeliveryClientBuilder
+        using var container2 = DeliveryClientBuilder
             .WithEnvironmentId(EnvironmentId)
             .WithMemoryCache()
             .Build();
 
         // Assert
-        Assert.NotNull(client1);
-        Assert.NotNull(client2);
-        Assert.NotSame(client1, client2);
+        Assert.NotNull(container1);
+        Assert.NotNull(container2);
+        Assert.NotSame(container1, container2);
+        Assert.NotSame(container1.Client, container2.Client);
     }
 
     [Fact]
     public void Build_WithSecureAccess_CreatesClient()
     {
         // Act
-        var client = DeliveryClientBuilder
+        using var container = DeliveryClientBuilder
             .WithOptions(builder => builder
                 .WithEnvironmentId(EnvironmentId)
                 .UseProductionApi(TestSecureApiKey)
@@ -257,14 +272,15 @@ public class DeliveryClientBuilderTests
             .Build();
 
         // Assert
-        Assert.NotNull(client);
+        Assert.NotNull(container);
+        Assert.NotNull(container.Client);
     }
 
     [Fact]
     public void Build_WithDisabledResilience_CreatesClient()
     {
         // Act
-        var client = DeliveryClientBuilder
+        using var container = DeliveryClientBuilder
             .WithOptions(builder => builder
                 .WithEnvironmentId(EnvironmentId)
                 .UseProductionApi()
@@ -273,7 +289,8 @@ public class DeliveryClientBuilderTests
             .Build();
 
         // Assert
-        Assert.NotNull(client);
+        Assert.NotNull(container);
+        Assert.NotNull(container.Client);
     }
 
     // Simple test implementation of ITypeProvider

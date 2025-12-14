@@ -2,6 +2,7 @@ using System.Diagnostics;
 using Kontent.Ai.Delivery.Abstractions.ContentItems.Processing;
 using Kontent.Ai.Delivery.Api.QueryBuilders.Filtering;
 using Kontent.Ai.Delivery.Caching;
+using Kontent.Ai.Delivery.ContentItems;
 using Kontent.Ai.Delivery.Logging;
 using Microsoft.Extensions.Logging;
 
@@ -106,19 +107,29 @@ internal sealed class ItemsQuery<TModel>(
             try
             {
                 cacheKey = CacheKeyBuilder.BuildItemsKey(_params, _serializedFilters);
-                var cached = await _cacheManager.GetAsync<IDeliveryResult<IReadOnlyList<IContentItem<TModel>>>>(cacheKey, cancellationToken)
+                // Cache List<ContentItem> directly - concrete type for proper serialization
+                var cachedItems = await _cacheManager.GetAsync<List<ContentItem<TModel>>>(cacheKey, cancellationToken)
                     .ConfigureAwait(false);
 
-                if (cached != null)
+                if (cachedItems != null)
                 {
+                    // Build DeliveryResult from cached items
+                    var interfaceItems = cachedItems.Cast<IContentItem<TModel>>().ToList().AsReadOnly();
+                    var cachedResult = DeliveryResult.Success<IReadOnlyList<IContentItem<TModel>>>(
+                        interfaceItems,
+                        requestUrl: cacheKey,
+                        statusCode: 200,
+                        hasStaleContent: false,
+                        continuationToken: null);
+
                     // Log cache hit and return
                     if (_logger != null)
                     {
                         LoggerMessages.QueryCacheHit(_logger, cacheKey);
                         LoggerMessages.QueryCompleted(_logger, "Items", "list",
-                            stopwatch?.ElapsedMilliseconds ?? 0, cached.StatusCode, cacheHit: true);
+                            stopwatch?.ElapsedMilliseconds ?? 0, 200, cacheHit: true);
                     }
-                    return cached;
+                    return cachedResult;
                 }
 
                 // Log cache miss
@@ -198,9 +209,14 @@ internal sealed class ItemsQuery<TModel>(
         {
             try
             {
+                // Cache List<ContentItem> directly (concrete type for proper serialization)
+                var concreteItems = items
+                    .OfType<ContentItem<TModel>>()
+                    .ToList();
+
                 await _cacheManager.SetAsync(
                     cacheKey,
-                    result,
+                    concreteItems,
                     dependencyContext.Dependencies,
                     expiration: null, // Use cache manager's default
                     cancellationToken: cancellationToken)

@@ -1,6 +1,7 @@
 using System.Diagnostics;
 using Kontent.Ai.Delivery.Abstractions.ContentItems.Processing;
 using Kontent.Ai.Delivery.Caching;
+using Kontent.Ai.Delivery.ContentItems;
 using Kontent.Ai.Delivery.Logging;
 using Microsoft.Extensions.Logging;
 
@@ -67,19 +68,28 @@ internal sealed class ItemQuery<TModel>(
             try
             {
                 cacheKey = CacheKeyBuilder.BuildItemKey(_codename, _params);
-                var cached = await _cacheManager.GetAsync<IDeliveryResult<IContentItem<TModel>>>(cacheKey, cancellationToken)
+                // Cache ContentItem directly - it's the concrete type that serializes properly
+                var cachedItem = await _cacheManager.GetAsync<ContentItem<TModel>>(cacheKey, cancellationToken)
                     .ConfigureAwait(false);
 
-                if (cached != null)
+                if (cachedItem != null)
                 {
+                    // Build DeliveryResult from cached item
+                    var cachedResult = DeliveryResult.Success<IContentItem<TModel>>(
+                        cachedItem,
+                        requestUrl: cacheKey,
+                        statusCode: 200,
+                        hasStaleContent: false,
+                        continuationToken: null);
+
                     // Log cache hit and return
                     if (_logger != null)
                     {
                         LoggerMessages.QueryCacheHit(_logger, cacheKey);
                         LoggerMessages.QueryCompleted(_logger, "Item", _codename,
-                            stopwatch?.ElapsedMilliseconds ?? 0, cached.StatusCode, cacheHit: true);
+                            stopwatch?.ElapsedMilliseconds ?? 0, 200, cacheHit: true);
                     }
-                    return cached;
+                    return cachedResult;
                 }
 
                 // Log cache miss
@@ -150,13 +160,17 @@ internal sealed class ItemQuery<TModel>(
         {
             try
             {
-                await _cacheManager.SetAsync(
-                    cacheKey,
-                    result,
-                    dependencyContext.Dependencies,
-                    expiration: null, // Use cache manager's default
-                    cancellationToken: cancellationToken)
-                    .ConfigureAwait(false);
+                // Cache the ContentItem directly (concrete type for proper serialization)
+                if (item is ContentItem<TModel> concreteItem)
+                {
+                    await _cacheManager.SetAsync(
+                        cacheKey,
+                        concreteItem,
+                        dependencyContext.Dependencies,
+                        expiration: null, // Use cache manager's default
+                        cancellationToken: cancellationToken)
+                        .ConfigureAwait(false);
+                }
             }
             catch (Exception ex)
             {

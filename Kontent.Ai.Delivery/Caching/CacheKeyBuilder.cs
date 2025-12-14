@@ -261,22 +261,39 @@ internal static class CacheKeyBuilder
     }
 
     /// <summary>
-    /// Computes stable, short hash (first 8 chars of base64-encoded SHA256).
+    /// Computes stable, short hash using URL-safe base64 encoding of SHA256.
     /// </summary>
     /// <param name="input">The string to hash.</param>
-    /// <returns>An 8-character hash providing ~2^48 (281 trillion) possible values.</returns>
+    /// <returns>An 8-character URL-safe hash providing ~2^48 (281 trillion) possible values.</returns>
     /// <remarks>
+    /// <para>
+    /// Uses URL-safe base64 encoding (replacing '+' with '-', '/' with '_', and removing '=')
+    /// to ensure compatibility with all cache backends. Standard base64 includes characters
+    /// that may cause issues with certain cache implementations (e.g., Redis, Memcached).
+    /// </para>
+    /// <para>
     /// Collision probability is acceptable for cache keys. If collision occurs,
     /// both queries would share the same cache entry (incorrect but not catastrophic).
+    /// </para>
     /// </remarks>
     private static string ComputeStableHash(string input)
     {
         var bytes = Encoding.UTF8.GetBytes(input);
         var hash = SHA256.HashData(bytes);
 
-        // Base64 encode and take first 8 chars (6 bytes of entropy)
+        // Base64 encode and convert to URL-safe variant
+        var base64 = Convert.ToBase64String(hash);
+
+        // Replace standard base64 chars with URL-safe alternatives
+        // '+' -> '-', '/' -> '_', remove '=' padding
+        var urlSafe = base64
+            .Replace('+', '-')
+            .Replace('/', '_')
+            .TrimEnd('=');
+
+        // Take first 8 chars (6 bytes of entropy)
         // This gives us 2^48 = 281 trillion possible values
-        return Convert.ToBase64String(hash)[..8];
+        return urlSafe[..8];
     }
 
     /// <summary>

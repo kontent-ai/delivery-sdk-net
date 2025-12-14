@@ -42,7 +42,7 @@ The SDK follows a **layered architecture** with clear separation of concerns:
 **Core Principles:**
 - **DI-First**: All components designed for dependency injection
 - **Type Safety**: Leverages OneOf, records, and generic types
-- **Immutability**: Configuration objects are immutable records
+- **Configuration**: Uses fluent builders (`DeliveryOptionsBuilder`) for type-safe configuration
 - **Async**: Proper async/await throughout, no sync-over-async
 - **Testability**: Interface-based design enables easy mocking
 
@@ -1168,21 +1168,25 @@ public async Task<IDeliveryResult<IReadOnlyList<IContentItem<TModel>>>> ExecuteA
 
 ## Key Architectural Patterns
 
-### 1. Immutable Configuration
+### 1. Configuration via Builders
 
-All configuration uses C# records:
+Configuration uses fluent builders for type-safe setup:
 
 ```csharp
-public record DeliveryOptions
+// DeliveryOptions is a mutable configuration class with validation
+public sealed class DeliveryOptions : IValidatableObject
 {
-    public string? EnvironmentId { get; init; }
-    public bool UsePreviewApi { get; init; }
-    public string? PreviewApiKey { get; init; }
-    // ... other properties
+    public string EnvironmentId { get; set; }
+    public bool UsePreviewApi { get; set; }
+    public string? PreviewApiKey { get; set; }
+    // ... other properties with data annotations for validation
 }
 
-// Usage with 'with' expression
-var newOptions = existingOptions with { UsePreviewApi = true };
+// Use DeliveryOptionsBuilder for fluent configuration
+var options = DeliveryOptionsBuilder.CreateInstance()
+    .WithEnvironmentId("your-env-id")
+    .UsePreviewApi("your-preview-key")
+    .Build();
 ```
 
 ### 2. Result Type Pattern

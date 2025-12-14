@@ -540,62 +540,65 @@ public static class ReadmeExamples
     // ===== DeliveryClientBuilder Examples (Non-DI Scenarios) =====
 
     // Simple usage with environment ID
-    public static IDeliveryClient BuilderSimpleUsage()
+    public static IDeliveryClientContainer BuilderSimpleUsage()
     {
-        var client = DeliveryClientBuilder
+        // Build() returns IDeliveryClientContainer - caller should dispose when done
+        var container = DeliveryClientBuilder
             .WithEnvironmentId("your-environment-id")
             .Build();
 
-        return client;
+        return container;
     }
 
     // Using environment ID as Guid
-    public static IDeliveryClient BuilderWithGuidEnvironmentId()
+    public static IDeliveryClientContainer BuilderWithGuidEnvironmentId()
     {
-        var client = DeliveryClientBuilder
+        // Build() returns IDeliveryClientContainer - caller should dispose when done
+        var container = DeliveryClientBuilder
             .WithEnvironmentId(Guid.Parse("550cec62-90a6-4ab3-b3e4-3d0bb4c04f5c"))
             .Build();
 
-        return client;
+        return container;
     }
 
     // With custom type provider
-    public static IDeliveryClient BuilderWithTypeProvider(ITypeProvider typeProvider)
+    public static IDeliveryClientContainer BuilderWithTypeProvider(ITypeProvider typeProvider)
     {
-        var client = DeliveryClientBuilder
+        // Caller owns the container and should dispose it when done
+        var container = DeliveryClientBuilder
             .WithEnvironmentId("your-environment-id")
             .WithTypeProvider(typeProvider)
             .Build();
 
-        return client;
+        return container;
     }
 
     // With memory cache
-    public static IDeliveryClient BuilderWithMemoryCache()
+    public static IDeliveryClientContainer BuilderWithMemoryCache()
     {
-        var client = DeliveryClientBuilder
+        var container = DeliveryClientBuilder
             .WithEnvironmentId("your-environment-id")
             .WithMemoryCache(TimeSpan.FromMinutes(30))
             .Build();
 
-        return client;
+        return container;
     }
 
     // With distributed cache
-    public static IDeliveryClient BuilderWithDistributedCache(IDistributedCache distributedCache)
+    public static IDeliveryClientContainer BuilderWithDistributedCache(IDistributedCache distributedCache)
     {
-        var client = DeliveryClientBuilder
+        var container = DeliveryClientBuilder
             .WithEnvironmentId("your-environment-id")
             .WithDistributedCache(distributedCache, TimeSpan.FromHours(1))
             .Build();
 
-        return client;
+        return container;
     }
 
     // With full options using WithOptions
-    public static IDeliveryClient BuilderWithFullOptions()
+    public static IDeliveryClientContainer BuilderWithFullOptions()
     {
-        var client = DeliveryClientBuilder
+        var container = DeliveryClientBuilder
             .WithOptions(builder => builder
                 .WithEnvironmentId("your-environment-id")
                 .UsePreviewApi("your-preview-api-key")
@@ -603,13 +606,13 @@ public static class ReadmeExamples
             .WithMemoryCache(TimeSpan.FromMinutes(15))
             .Build();
 
-        return client;
+        return container;
     }
 
     // Combined: type provider + memory cache
-    public static IDeliveryClient BuilderFullExample(ITypeProvider typeProvider)
+    public static IDeliveryClientContainer BuilderFullExample(ITypeProvider typeProvider)
     {
-        var client = DeliveryClientBuilder
+        var container = DeliveryClientBuilder
             .WithOptions(builder => builder
                 .WithEnvironmentId("your-environment-id")
                 .UseProductionApi()
@@ -619,6 +622,6 @@ public static class ReadmeExamples
             .WithMemoryCache(TimeSpan.FromHours(1))
             .Build();
 
-        return client;
+        return container;
     }
 }
