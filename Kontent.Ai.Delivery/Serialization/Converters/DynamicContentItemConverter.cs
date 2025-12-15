@@ -63,6 +63,6 @@ internal sealed class DynamicContentItemConverter<TModel> : JsonConverter<Conten
                     StringComparer.Ordinal)
             : new Dictionary<string, JsonElement>(StringComparer.Ordinal);
 
-        return (TModel)(IElementsModel)new DynamicElements(map);
+        return (TModel)(IDynamicElements)new DynamicElements(map);
     }
 }

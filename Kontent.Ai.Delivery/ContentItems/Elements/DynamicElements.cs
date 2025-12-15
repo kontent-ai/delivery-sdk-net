@@ -12,6 +12,6 @@ namespace Kontent.Ai.Delivery.ContentItems;
 /// </remarks>
 /// <param name="inner">Dictionary of element names to JsonElement values.</param>
 public sealed class DynamicElements(IDictionary<string, JsonElement> inner)
-        : ReadOnlyDictionary<string, JsonElement>(inner), IElementsModel
+        : ReadOnlyDictionary<string, JsonElement>(inner), IDynamicElements
 {
 }
