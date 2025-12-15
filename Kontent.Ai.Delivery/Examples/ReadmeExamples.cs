@@ -122,10 +122,9 @@ public static class ReadmeExamples
         _ = result;
     }
 
-    // Using .Where with preconstructed filters - not available publicly (Filter is internal). Commented out for later fix.
+    // Using .Where with preconstructed filters (accepts IFilter).
     public static async Task UsingWhereWithPreconstructedFilterAsync(IDeliveryClient client)
     {
-
         var filter = new Filter(
             ItemSystemPath.Type,
             FilterOperator.Equals,

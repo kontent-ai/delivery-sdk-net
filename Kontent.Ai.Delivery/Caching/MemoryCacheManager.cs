@@ -67,13 +67,6 @@ public sealed class MemoryCacheManager(
     // Track all CancellationTokenSources for proper disposal
     private readonly ConcurrentDictionary<string, CancellationTokenSource> _cancellationTokens = new ConcurrentDictionary<string, CancellationTokenSource>(StringComparer.OrdinalIgnoreCase);
 
-    // Track dependency CancellationTokenSources separately for proper lifecycle management
-    // These are stored in both _cache and this dictionary to ensure cleanup when evicted
-    private readonly ConcurrentDictionary<string, CancellationTokenSource> _dependencyCancellationTokens = new ConcurrentDictionary<string, CancellationTokenSource>(StringComparer.OrdinalIgnoreCase);
-
-    // Prefix for storing CancellationTokenSource in cache (to differentiate from actual values)
-    private const string CancellationTokenPrefix = "__cts:";
-
     // Flag to track disposal
     private bool _disposed;
 
@@ -113,11 +106,18 @@ public sealed class MemoryCacheManager(
                 // Handle potential deserialization issues gracefully
                 if (cached is T typedValue)
                 {
-                    return Task.FromResult(typedValue);
+                    return Task.FromResult<T?>(typedValue);
                 }
 
                 // Type mismatch or corruption - treat as cache miss
                 // Remove the corrupted entry to prevent repeated failures
+                _cache.Remove(prefixedKey);
+            }
+            else
+            {
+                // Best-effort cleanup: if the entry has expired but hasn't been scavenged yet,
+                // removing it here triggers eviction callbacks which also clean up reverse indexes
+                // and reverse index entries.
                 _cache.Remove(prefixedKey);
             }
 
@@ -195,7 +195,7 @@ public sealed class MemoryCacheManager(
             }
         });
 
-        // Link dependencies using CancellationTokens
+        // Track dependencies in the reverse index
         // Note: Dependencies use prefixed keys to maintain consistency with cache keys
         var prefixedDependencies = dependencyList
             .Where(d => !string.IsNullOrWhiteSpace(d))
@@ -204,19 +204,8 @@ public sealed class MemoryCacheManager(
 
         foreach (var prefixedDependency in prefixedDependencies)
         {
-            // Get or create a CancellationTokenSource for this dependency
-            var dependencyCts = await GetOrCreateDependencyCancellationTokenAsync(
-                prefixedDependency,
-                cancellationToken).ConfigureAwait(false);
-
-            if (dependencyCts != null)
-            {
-                // Link the dependency's cancellation to this entry's eviction
-                entryOptions.AddExpirationToken(new CancellationChangeToken(dependencyCts.Token));
-
-                // Update reverse index with prefixed keys
-                await UpdateReverseIndexAsync(prefixedDependency, prefixedCacheKey, cancellationToken).ConfigureAwait(false);
-            }
+            // Update reverse index with prefixed keys
+            await UpdateReverseIndexAsync(prefixedDependency, prefixedCacheKey, cancellationToken).ConfigureAwait(false);
         }
 
         // Also link to the entry's own CancellationToken for direct invalidation
@@ -273,19 +262,18 @@ public sealed class MemoryCacheManager(
         await lockObj.WaitAsync(cancellationToken).ConfigureAwait(false);
         try
         {
-            // Cancel the dependency's CancellationTokenSource
-            // This will trigger eviction of all dependent entries
-            var dependencyCtsKey = CancellationTokenPrefix + dependencyKey;
-            if (_cache.TryGetValue(dependencyCtsKey, out var ctsObj) && ctsObj is CancellationTokenSource cts)
-            {
-                cts.Cancel();
-            }
-
             // Get all cache keys that depend on this dependency
             if (_reverseIndex.TryGetValue(dependencyKey, out var affectedKeys))
             {
+                List<string> affectedKeysSnapshot;
+                lock (affectedKeys)
+                {
+                    // Snapshot to avoid enumerating while eviction callbacks mutate the set.
+                    affectedKeysSnapshot = affectedKeys.ToList();
+                }
+
                 // Also directly cancel each affected entry's CTS for immediate effect
-                foreach (var cacheKey in affectedKeys)
+                foreach (var cacheKey in affectedKeysSnapshot)
                 {
                     if (_cancellationTokens.TryGetValue(cacheKey, out var entryCts))
                     {
@@ -297,90 +285,9 @@ public sealed class MemoryCacheManager(
                 _reverseIndex.TryRemove(dependencyKey, out _);
             }
 
-            // Clean up dependency CancellationTokenSource after cancellation
-            if (_dependencyCancellationTokens.TryRemove(dependencyKey, out var dependencyCts))
-            {
-                dependencyCts.Dispose();
-                // Also remove from cache
-                _cache.Remove(dependencyCtsKey);
-            }
-
             // Log invalidation completed
             if (_logger != null)
                 LoggerMessages.CacheInvalidateCompleted(_logger, originalKey);
-        }
-        finally
-        {
-            lockObj.Release();
-        }
-    }
-
-    /// <summary>
-    /// Gets or creates a CancellationTokenSource for a dependency key.
-    /// Tracks the CTS in both the cache and _dependencyCancellationTokens for proper lifecycle management.
-    /// </summary>
-    /// <remarks>
-    /// The CTS is stored in the cache for dependency tracking and in _dependencyCancellationTokens
-    /// for proper disposal. A post-eviction callback ensures cleanup when the cache entry is removed.
-    /// </remarks>
-    private async Task<CancellationTokenSource?> GetOrCreateDependencyCancellationTokenAsync(
-        string dependencyKey,
-        CancellationToken cancellationToken)
-    {
-        var ctsKey = CancellationTokenPrefix + dependencyKey;
-        var lockObj = _dependencyLocks.GetOrAdd(dependencyKey, _ => new SemaphoreSlim(1, 1));
-
-        await lockObj.WaitAsync(cancellationToken).ConfigureAwait(false);
-        try
-        {
-            // Check if CTS already exists in our tracking dictionary
-            if (_dependencyCancellationTokens.TryGetValue(dependencyKey, out var existingCts))
-            {
-                if (!existingCts.IsCancellationRequested)
-                {
-                    return existingCts;
-                }
-                else
-                {
-                    // CTS was cancelled, remove it
-                    _dependencyCancellationTokens.TryRemove(dependencyKey, out _);
-                    existingCts.Dispose();
-                }
-            }
-
-            // Create new CTS
-            var cts = new CancellationTokenSource();
-
-            // Store in cache with no expiration (managed manually)
-            var options = new MemoryCacheEntryOptions
-            {
-                Priority = CacheItemPriority.NeverRemove
-            };
-
-            // Register post-eviction callback to clean up when cache entry is removed
-            options.RegisterPostEvictionCallback((key, value, reason, state) =>
-            {
-                // The 'is' pattern safely handles null - only enters block if value is non-null CancellationTokenSource
-                if (value is CancellationTokenSource evictedCts)
-                {
-                    // Remove from tracking dictionary and dispose
-                    if (_dependencyCancellationTokens.TryRemove(dependencyKey, out var trackedCts))
-                    {
-                        // ReferenceEquals check prevents double-disposal if CTS was replaced
-                        if (ReferenceEquals(trackedCts, evictedCts))
-                        {
-                            trackedCts.Dispose();
-                        }
-                    }
-                }
-            });
-
-            _cache.Set(ctsKey, cts, options);
-
-            // Track in our dictionary for proper disposal
-            _dependencyCancellationTokens.TryAdd(dependencyKey, cts);
-
-            return cts;
         }
         finally
         {
@@ -418,13 +325,10 @@ public sealed class MemoryCacheManager(
 
     /// <summary>
     /// Removes a cache key from all reverse index entries.
-    /// Uses semaphore locking for consistency with UpdateReverseIndexAsync.
     /// </summary>
     /// <remarks>
-    /// This method is called from cache eviction callbacks, which are synchronous.
-    /// We use Wait() instead of WaitAsync() since we're in a synchronous context.
-    /// Semaphore usage ensures consistency with other reverse index operations.
-    /// A timeout is used to prevent indefinite blocking in case of unexpected issues.
+    /// Called from cache eviction callbacks (synchronous). We must not wait on semaphores here:
+    /// eviction callbacks can run while other operations hold locks, risking deadlocks/timeouts.
     /// </remarks>
     private void CleanupReverseIndexForKey(string cacheKey)
     {
@@ -432,37 +336,21 @@ public sealed class MemoryCacheManager(
         foreach (var kvp in _reverseIndex.ToArray()) // ToArray to avoid modification during enumeration
         {
             var dependencyKey = kvp.Key;
-            var lockObj = _dependencyLocks.GetOrAdd(dependencyKey, _ => new SemaphoreSlim(1, 1));
-
-            // Use synchronous Wait with timeout since this is called from eviction callback
-            // Timeout prevents indefinite blocking if semaphore is somehow abandoned
-            if (!lockObj.Wait(TimeSpan.FromSeconds(5)))
+            // We intentionally avoid waiting on per-dependency semaphores here because eviction callbacks
+            // can be invoked while other operations hold those semaphores (risking deadlocks/timeouts).
+            // Reverse-index mutation is protected by locking the per-dependency HashSet instance.
+            if (_reverseIndex.TryGetValue(dependencyKey, out var keys))
             {
-                // Unable to acquire lock within timeout - skip this dependency
-                // This is acceptable as it only affects cleanup, not cache correctness
-                continue;
-            }
-
-            try
-            {
-                // Re-check if the dependency still exists after acquiring lock
-                if (_reverseIndex.TryGetValue(dependencyKey, out var keys))
+                lock (keys)
                 {
-                    lock (keys)
-                    {
-                        keys.Remove(cacheKey);
+                    keys.Remove(cacheKey);
 
-                        // If no more keys depend on this dependency, remove the entry
-                        if (keys.Count == 0)
-                        {
-                            _reverseIndex.TryRemove(dependencyKey, out _);
-                        }
+                    // If no more keys depend on this dependency, remove the entry
+                    if (keys.Count == 0)
+                    {
+                        _reverseIndex.TryRemove(dependencyKey, out _);
                     }
                 }
-            }
-            finally
-            {
-                lockObj.Release();
             }
         }
     }
@@ -492,13 +380,6 @@ public sealed class MemoryCacheManager(
             cts?.Dispose();
         }
         _cancellationTokens.Clear();
-
-        // Dispose all dependency CancellationTokenSources
-        foreach (var cts in _dependencyCancellationTokens.Values)
-        {
-            cts?.Dispose();
-        }
-        _dependencyCancellationTokens.Clear();
 
         // Dispose all semaphores
         foreach (var semaphore in _dependencyLocks.Values)

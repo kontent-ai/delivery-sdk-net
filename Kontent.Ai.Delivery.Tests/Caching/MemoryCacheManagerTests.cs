@@ -1,3 +1,5 @@
+using System.Collections.Concurrent;
+using System.Reflection;
 using Kontent.Ai.Delivery.Caching;
 using Microsoft.Extensions.Caching.Memory;
 using Xunit;
@@ -195,6 +197,45 @@ public class MemoryCacheManagerTests : IDisposable
 
         // Assert
         Assert.Null(result);
+    }
+
+    [Fact]
+    public async Task ReverseIndex_IsCleanedUp_WhenLastDependentEntryExpires()
+    {
+        // Arrange
+        using var cache = new MemoryCache(new MemoryCacheOptions
+        {
+            // Make expirations deterministic in tests (default is ~1 minute).
+            ExpirationScanFrequency = TimeSpan.FromMilliseconds(10)
+        });
+        using var manager = new MemoryCacheManager(cache);
+
+        var key = "test_key";
+        var value = new TestCacheValue { Id = 1, Name = "Test" };
+        var dependency = "dep1";
+        var expiration = TimeSpan.FromMilliseconds(50);
+
+        // Act - create entry with a dependency (this creates a reverse-index entry for that dependency)
+        await manager.SetAsync(key, value, [dependency], expiration);
+
+        // Assert precondition: reverse index contains the dependency
+        var reverseIndex = GetPrivateField<ConcurrentDictionary<string, HashSet<string>>>(
+            manager,
+            "_reverseIndex");
+        Assert.True(reverseIndex.ContainsKey(dependency));
+
+        // Let the entry expire and trigger eviction/scavenging
+        await Task.Delay(200);
+        cache.Compact(1.0);
+        var result = await manager.GetAsync<TestCacheValue>(key);
+
+        // Assert: entry expired and dependency CTS is cleaned up (no unbounded growth)
+        Assert.Null(result);
+        var entryTokens = GetPrivateField<ConcurrentDictionary<string, CancellationTokenSource>>(
+            manager,
+            "_cancellationTokens");
+        Assert.DoesNotContain(key, entryTokens.Keys);
+        Assert.False(reverseIndex.ContainsKey(dependency));
     }
 
     #endregion
@@ -902,6 +943,13 @@ public class MemoryCacheManagerTests : IDisposable
     }
 
     #endregion
+
+    private static TField GetPrivateField<TField>(object instance, string fieldName)
+    {
+        var field = instance.GetType().GetField(fieldName, BindingFlags.Instance | BindingFlags.NonPublic);
+        Assert.NotNull(field);
+        return (TField)field!.GetValue(instance)!;
+    }
 
     #region Test Helper Classes
 

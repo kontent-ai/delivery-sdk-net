@@ -261,7 +261,7 @@ var result = await client.GetItems()
 
 ```csharp
 var result = await client.GetItems()
-    .OrderBy(ItemSystemPath.LastModified, descending: true)
+    .OrderBy(ItemSystemPath.LastModified, ascending: false)
     .Skip(0)
     .Limit(10)
     .ExecuteAsync();
@@ -273,11 +273,12 @@ var result = await client.GetItems()
 var result = await client.GetItems()
     .WithTotalCount()
     .Limit(10)
-    .ExecuteAsync();
+    .ExecuteResponseAsync();
 
 if (result.IsSuccess)
 {
-    Console.WriteLine($"Total items: {result.Value.TotalCount}");
+    // Total count is returned in response pagination metadata
+    Console.WriteLine($"Total items: {result.Value.Pagination.TotalCount}");
     Console.WriteLine($"Returned: {result.Value.Items.Count}");
 }
 ```
@@ -508,7 +509,7 @@ var resolver = new HtmlResolverBuilder()
         var innerHtml = await resolveChildren(link.Children);
         return ValueTask.FromResult($"<a href=\"{url}\">{innerHtml}</a>");
     })
-    .WithContentItemLinkResolver("product", (link, _) =>
+    .WithContentItemLinkResolver("product", async (link, resolveChildren) =>
     {
         var url = $"/shop/{link.Metadata?.UrlSlug}";
         var innerHtml = await resolveChildren(link.Children);
