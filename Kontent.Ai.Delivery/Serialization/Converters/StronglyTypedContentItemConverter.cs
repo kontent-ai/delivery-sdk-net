@@ -1,4 +1,5 @@
 using System.Buffers;
+using System.Runtime.CompilerServices;
 using System.Text.Json;
 using System.Text.Json.Serialization;
 using Kontent.Ai.Delivery.ContentItems;
@@ -19,6 +20,14 @@ namespace Kontent.Ai.Delivery.Serialization.Converters;
 /// </summary>
 internal sealed class StronglyTypedContentItemConverter<TModel> : JsonConverter<ContentItem<TModel>>
 {
+    /// <summary>
+    /// Cache for JsonSerializerOptions without the ContentItemConverterFactory.
+    /// Uses ConditionalWeakTable to allow GC of options that are no longer referenced elsewhere
+    /// while caching those that are still in use. This is critical for performance as
+    /// JsonSerializerOptions caches type metadata internally.
+    /// </summary>
+    private static readonly ConditionalWeakTable<JsonSerializerOptions, JsonSerializerOptions> OptionsCache = new();
+
     public override ContentItem<TModel> Read(
         ref Utf8JsonReader reader,
         Type typeToConvert,
@@ -69,7 +78,7 @@ internal sealed class StronglyTypedContentItemConverter<TModel> : JsonConverter<
             // Fallback for non-object elements - deserialize directly
             return JsonSerializer.Deserialize<TModel>(
                 elementsElement.GetRawText(),
-                CreateOptionsWithoutContentItemConverter(options))!;
+                GetOptionsWithoutContentItemConverter(options))!;
         }
 
         // Flatten elements: extract only the "value" JSON into a synthetic object payload.
@@ -114,18 +123,25 @@ internal sealed class StronglyTypedContentItemConverter<TModel> : JsonConverter<
         // Deserialize the flattened JSON without triggering this converter again
         return JsonSerializer.Deserialize<TModel>(
             buffer.WrittenSpan,
-            CreateOptionsWithoutContentItemConverter(options))!;
+            GetOptionsWithoutContentItemConverter(options))!;
     }
 
     /// <summary>
-    /// Creates a copy of JsonSerializerOptions without the ContentItemConverterFactory
-    /// to prevent infinite recursion during deserialization.
+    /// Gets or creates a copy of JsonSerializerOptions without the ContentItemConverterFactory
+    /// to prevent infinite recursion during deserialization. Results are cached to preserve
+    /// STJ's internal metadata caching and avoid allocations on every deserialization.
     /// </summary>
-    private static JsonSerializerOptions CreateOptionsWithoutContentItemConverter(JsonSerializerOptions options)
+    private static JsonSerializerOptions GetOptionsWithoutContentItemConverter(JsonSerializerOptions options)
     {
-        var newOptions = new JsonSerializerOptions(options);
-        newOptions.Converters.Remove(
-            newOptions.Converters.FirstOrDefault(c => c is ContentItemConverterFactory));
-        return newOptions;
+        return OptionsCache.GetValue(options, static opts =>
+        {
+            var newOptions = new JsonSerializerOptions(opts);
+            var converterToRemove = newOptions.Converters.FirstOrDefault(c => c is ContentItemConverterFactory);
+            if (converterToRemove is not null)
+            {
+                newOptions.Converters.Remove(converterToRemove);
+            }
+            return newOptions;
+        });
     }
 }
