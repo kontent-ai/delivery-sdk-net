@@ -18,7 +18,6 @@ namespace Kontent.Ai.Delivery.Serialization.Converters;
 /// TO:   { "title": "Hello" }
 /// </summary>
 internal sealed class StronglyTypedContentItemConverter<TModel> : JsonConverter<ContentItem<TModel>>
-    where TModel : IElementsModel
 {
     public override ContentItem<TModel> Read(
         ref Utf8JsonReader reader,

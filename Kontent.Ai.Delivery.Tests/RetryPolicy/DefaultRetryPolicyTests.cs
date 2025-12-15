@@ -43,7 +43,7 @@ public class DefaultRetryPolicyTests
             });
         });
 
-        var result = await client.GetItems<IElementsModel>().ExecuteAsync();
+        var result = await client.GetItems<IDynamicElements>().ExecuteAsync();
 
         Assert.True(result.IsSuccess);
         Assert.Equal(1, behavior.Attempts);
@@ -86,7 +86,7 @@ public class DefaultRetryPolicyTests
             });
         });
 
-        var result = await client.GetItems<IElementsModel>().ExecuteAsync();
+        var result = await client.GetItems<IDynamicElements>().ExecuteAsync();
 
         Assert.True(result.IsSuccess);
         Assert.Equal(2, behavior.Attempts);
@@ -124,7 +124,7 @@ public class DefaultRetryPolicyTests
             });
         });
 
-        var result = await client.GetItems<IElementsModel>().ExecuteAsync();
+        var result = await client.GetItems<IDynamicElements>().ExecuteAsync();
 
         Assert.False(result.IsSuccess);
         // total tries = initial + retries
@@ -163,7 +163,7 @@ public class DefaultRetryPolicyTests
             });
         });
 
-        var result = await client.GetItems<IElementsModel>().ExecuteAsync();
+        var result = await client.GetItems<IDynamicElements>().ExecuteAsync();
 
         Assert.True(result.IsSuccess);
         Assert.Equal(2, behavior.Attempts);

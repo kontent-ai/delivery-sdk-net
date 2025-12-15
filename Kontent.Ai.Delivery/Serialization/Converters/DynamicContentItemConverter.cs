@@ -6,11 +6,10 @@ namespace Kontent.Ai.Delivery.Serialization.Converters;
 
 /// <summary>
 /// Deserializes ContentItem in dynamic mode, preserving full element structure.
-/// Used when the model type is IElementsModel or DynamicElements.
+/// Used when the model type is IDynamicElements or DynamicElements.
 /// Elements are stored as raw JsonElements containing type, name, and value properties.
 /// </summary>
 internal sealed class DynamicContentItemConverter<TModel> : JsonConverter<ContentItem<TModel>>
-    where TModel : IElementsModel
 {
     public override ContentItem<TModel> Read(
         ref Utf8JsonReader reader,
@@ -63,6 +62,6 @@ internal sealed class DynamicContentItemConverter<TModel> : JsonConverter<Conten
                     StringComparer.Ordinal)
             : new Dictionary<string, JsonElement>(StringComparer.Ordinal);
 
-        return (TModel)(IElementsModel)new DynamicElements(map);
+        return (TModel)(IDynamicElements)new DynamicElements(map);
     }
 }

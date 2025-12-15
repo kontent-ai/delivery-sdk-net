@@ -93,7 +93,6 @@ public static class RichTextExtensions
     /// </example>
     public static IEnumerable<IEmbeddedContent<TModel>> GetEmbeddedContent<TModel>(
         this IRichTextContent richText)
-        where TModel : IElementsModel
     {
         ArgumentNullException.ThrowIfNull(richText);
 
@@ -116,7 +115,6 @@ public static class RichTextExtensions
     /// </example>
     public static IEnumerable<IEmbeddedContent<TModel>> GetEmbeddedContentOfType<TModel>(
         this IEnumerable<IRichTextBlock> blocks)
-        where TModel : IElementsModel
     {
         ArgumentNullException.ThrowIfNull(blocks);
 
@@ -141,7 +139,6 @@ public static class RichTextExtensions
     /// </example>
     public static IEnumerable<TModel> GetEmbeddedElements<TModel>(
         this IRichTextContent richText)
-        where TModel : IElementsModel
     {
         ArgumentNullException.ThrowIfNull(richText);
 

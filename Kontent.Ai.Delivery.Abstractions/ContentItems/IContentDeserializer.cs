@@ -9,7 +9,7 @@ public interface IContentDeserializer
     /// Deserializes a JSON string into a ContentItem with the specified model type.
     /// </summary>
     /// <param name="json">The JSON string representing the content item.</param>
-    /// <param name="modelType">The model type that implements <see cref="IElementsModel"/>.</param>
+    /// <param name="modelType">The model type (any POCO or <see cref="IDynamicElements"/>).</param>
     /// <returns>The deserialized content item as an object (cast to IContentItem&lt;TModel&gt; as needed).</returns>
     object DeserializeContentItem(string json, Type modelType);
 }

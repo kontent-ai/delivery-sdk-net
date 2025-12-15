@@ -86,23 +86,22 @@ internal sealed class DynamicItemsQuery(
         return this;
     }
 
-    public async Task<IDeliveryResult<IReadOnlyList<IContentItem<IElementsModel>>>> ExecuteAsync(CancellationToken cancellationToken = default)
+    public async Task<IDeliveryResult<IReadOnlyList<IContentItem<IDynamicElements>>>> ExecuteAsync(CancellationToken cancellationToken = default)
     {
-
         // Get raw response from Refit API
         bool? wait = _waitForLoadingNewContentOverride ?? _getDefaultWaitForNewContent();
-        var rawResponse = await _api.GetItemsInternalAsync<IElementsModel>(_params, _serializedFilters, wait).ConfigureAwait(false);
+        var rawResponse = await _api.GetItemsInternalAsync<IDynamicElements>(_params, _serializedFilters, wait).ConfigureAwait(false);
 
         // Convert IApiResponse to IDeliveryResult
         var deliveryResult = await rawResponse.ToDeliveryResultAsync();
 
-        // Map from IDeliveryItemListingResponse<IElementsModel> to IReadOnlyList<IContentItem>
+        // Map from IDeliveryItemListingResponse<IDynamicElements> to IReadOnlyList<IContentItem>
         return deliveryResult.Map(response => response.Items);
     }
 
-    public async Task<IDeliveryResult<IReadOnlyList<IContentItem<IElementsModel>>>> ExecuteAllAsync(CancellationToken cancellationToken = default)
+    public async Task<IDeliveryResult<IReadOnlyList<IContentItem<IDynamicElements>>>> ExecuteAllAsync(CancellationToken cancellationToken = default)
     {
-        var all = new List<IContentItem<DynamicElements>>();
+        var all = new List<IContentItem<IDynamicElements>>();
         var skip = _params.Skip ?? 0;
         var limit = _params.Limit;
         string? requestUrl = null;
@@ -113,14 +112,14 @@ internal sealed class DynamicItemsQuery(
             var pageParams = _params with { Skip = skip, Limit = limit };
 
             var wait = _waitForLoadingNewContentOverride ?? _getDefaultWaitForNewContent();
-            var response = await _api.GetItemsInternalAsync<IElementsModel>(pageParams, _serializedFilters, wait).ConfigureAwait(false);
+            var response = await _api.GetItemsInternalAsync<IDynamicElements>(pageParams, _serializedFilters, wait).ConfigureAwait(false);
 
             // Convert to delivery result
             var deliveryResult = await response.ToDeliveryResultAsync();
 
             if (!deliveryResult.IsSuccess)
             {
-                return DeliveryResult.Failure<IReadOnlyList<IContentItem<DynamicElements>>>(
+                return DeliveryResult.Failure<IReadOnlyList<IContentItem<IDynamicElements>>>(
                     deliveryResult.RequestUrl ?? string.Empty,
                     deliveryResult.StatusCode,
                     deliveryResult.Error!,
@@ -137,7 +136,7 @@ internal sealed class DynamicItemsQuery(
             if (pageCount == 0)
                 break;
 
-            all.AddRange((IEnumerable<IContentItem<DynamicElements>>)items);
+            all.AddRange(items);
             skip += pageCount;
 
             // Stop if we got fewer than requested (page exhausted)
@@ -145,7 +144,7 @@ internal sealed class DynamicItemsQuery(
                 break;
         }
 
-        return DeliveryResult.Success<IReadOnlyList<IContentItem<DynamicElements>>>(
+        return DeliveryResult.Success<IReadOnlyList<IContentItem<IDynamicElements>>>(
             all,
             requestUrl ?? string.Empty,
             200,

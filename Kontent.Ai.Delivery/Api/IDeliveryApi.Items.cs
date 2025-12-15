@@ -19,7 +19,7 @@ public partial interface IDeliveryApi
     internal Task<IApiResponse<DeliveryItemResponse<TModel>>> GetItemInternalAsync<TModel>(
         string codename,
         [Query] SingleItemParams? queryParameters = null,
-        [Header(HttpRequestHeadersExtensions.WaitForLoadingNewContentHeaderName)] bool? waitForLoadingNewContent = null) where TModel : IElementsModel;
+        [Header(HttpRequestHeadersExtensions.WaitForLoadingNewContentHeaderName)] bool? waitForLoadingNewContent = null);
 
     /// <summary>
     /// Gets multiple content items with optional filtering.
@@ -33,7 +33,7 @@ public partial interface IDeliveryApi
     internal Task<IApiResponse<DeliveryItemListingResponse<TModel>>> GetItemsInternalAsync<TModel>(
         [Query] ListItemsParams? queryParameters = null,
         [Query] Dictionary<string, string>? filters = null,
-        [Header(HttpRequestHeadersExtensions.WaitForLoadingNewContentHeaderName)] bool? waitForLoadingNewContent = null) where TModel : IElementsModel;
+        [Header(HttpRequestHeadersExtensions.WaitForLoadingNewContentHeaderName)] bool? waitForLoadingNewContent = null);
 
     /// <summary>
     /// Gets content items feed for enumeration.
@@ -51,5 +51,5 @@ public partial interface IDeliveryApi
         [Query] Dictionary<string, string>? filters = null,
         [Header("X-Continuation")] string? continuation = null,
         [Header(HttpRequestHeadersExtensions.WaitForLoadingNewContentHeaderName)] bool? waitForLoadingNewContent = null,
-        CancellationToken cancellationToken = default) where TModel : IElementsModel;
+        CancellationToken cancellationToken = default);
 }

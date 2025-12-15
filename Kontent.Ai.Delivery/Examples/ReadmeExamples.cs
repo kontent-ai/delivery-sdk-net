@@ -184,7 +184,8 @@ public static class ReadmeExamples
     }
 
     // Strongly typed model example (definition only; usage depends on generator)
-    public record Article : IElementsModel
+    // Models are now plain POCOs - no interface required!
+    public record Article
     {
         public string Title { get; set; } = string.Empty;
         public string Summary { get; set; } = string.Empty;
@@ -193,19 +194,19 @@ public static class ReadmeExamples
         public IEnumerable<IEmbeddedContent>? RelatedArticles { get; set; }
     }
 
-    public record Product : IElementsModel
+    public record Product
     {
         public string Name { get; set; } = string.Empty;
         public decimal Price { get; set; }
     }
 
-    public record Video : IElementsModel
+    public record Video
     {
         public string Title { get; set; } = string.Empty;
         public string VideoId { get; set; } = string.Empty;
     }
 
-    public record HomePage : IElementsModel
+    public record HomePage
     {
         public IEnumerable<IEmbeddedContent> FeaturedContent { get; set; } = Array.Empty<IEmbeddedContent>();
     }

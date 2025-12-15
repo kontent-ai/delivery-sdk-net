@@ -6,7 +6,6 @@ namespace Kontent.Ai.Delivery.ContentItems;
 
 /// <inheritdoc cref="IContentItem{TModel}" />
 internal sealed record ContentItem<TModel> : IContentItem<TModel>
-    where TModel : IElementsModel
 {
     /// <inheritdoc/>
     [JsonPropertyName("system")]

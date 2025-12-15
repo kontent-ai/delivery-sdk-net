@@ -4,7 +4,7 @@ using Kontent.Ai.Delivery.SharedModels;
 
 namespace Kontent.Ai.Delivery.Tests.Models.ContentTypes;
 
-public record Office : IElementsModel
+public record Office
 {
     [JsonPropertyName("city")]
     public string? City { get; init; }

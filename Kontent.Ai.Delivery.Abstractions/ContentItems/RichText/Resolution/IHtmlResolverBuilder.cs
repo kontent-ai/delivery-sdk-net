@@ -90,8 +90,7 @@ public interface IHtmlResolverBuilder
     /// </code>
     /// </example>
     IHtmlResolverBuilder WithContentResolver<TModel>(
-        Func<IEmbeddedContent<TModel>, ValueTask<string>> resolver)
-        where TModel : IElementsModel;
+        Func<IEmbeddedContent<TModel>, ValueTask<string>> resolver);
 
     /// <summary>
     /// Registers a type-safe synchronous resolver for strongly-typed embedded content of a specific model type.
@@ -107,8 +106,7 @@ public interface IHtmlResolverBuilder
     /// </code>
     /// </example>
     IHtmlResolverBuilder WithContentResolver<TModel>(
-        Func<IEmbeddedContent<TModel>, string> resolver)
-        where TModel : IElementsModel;
+        Func<IEmbeddedContent<TModel>, string> resolver);
 
     /// <summary>
     /// Registers multiple type-based resolvers for embedded content using a dictionary.

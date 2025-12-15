@@ -87,7 +87,7 @@ public class IncludeTotalCountTests
             .WithQueryString("includeTotalCount", bool.TrueString)
             .Respond("application/json", responseJson);
         var client = CreateClient();
-        await client.GetItems<IElementsModel>().WithTotalCount().ExecuteAsync();
+        await client.GetItems<IDynamicElements>().WithTotalCount().ExecuteAsync();
 
         _mockHttp.VerifyNoOutstandingExpectation();
     }
@@ -102,7 +102,7 @@ public class IncludeTotalCountTests
             .WithQueryString("includeTotalCount", bool.TrueString)
             .Respond("application/json", responseJson);
         var client = CreateClient();
-        await client.GetItems<IElementsModel>()
+        await client.GetItems<IDynamicElements>()
             .Where(new Api.QueryBuilders.Filtering.Filter(
                 "system.type",
                 FilterOperator.Equals,

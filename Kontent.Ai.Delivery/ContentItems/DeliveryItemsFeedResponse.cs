@@ -4,7 +4,6 @@ namespace Kontent.Ai.Delivery.ContentItems;
 
 /// <inheritdoc cref="IDeliveryItemsFeedResponse{T}" />
 internal sealed record DeliveryItemsFeedResponse<TModel> : IDeliveryItemsFeedResponse<TModel>
-    where TModel : IElementsModel
 {
     /// <inheritdoc/>
     [JsonPropertyName("items")]

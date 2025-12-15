@@ -12,7 +12,7 @@ public interface IDeliveryClient
     /// <typeparam name="T">Type of the model. (Or <see cref="object"/> if the return type is not yet known.)</typeparam>
     /// <param name="codename">The codename of a content item.</param>
     /// <returns>A query builder that can be configured and executed to retrieve the content item.</returns>
-    IItemQuery<T> GetItem<T>(string codename) where T : IElementsModel;
+    IItemQuery<T> GetItem<T>(string codename);
 
     /// <summary>
     /// Returns a query builder for retrieving a single content item with runtime/dynamic mapping.
@@ -26,7 +26,7 @@ public interface IDeliveryClient
     /// </summary>
     /// <typeparam name="T">Type of the model. (Or <see cref="object"/> if the return type is not yet known.)</typeparam>
     /// <returns>A query builder that can be configured and executed to retrieve content items.</returns>
-    IItemsQuery<T> GetItems<T>() where T : IElementsModel;
+    IItemsQuery<T> GetItems<T>();
 
     /// <summary>
     /// Returns a query builder for retrieving multiple content items with runtime/dynamic mapping.
@@ -39,13 +39,13 @@ public interface IDeliveryClient
     /// </summary>
     /// <typeparam name="T">Type of the model. (Or <see cref="object"/> if the return type is not yet known.)</typeparam>
     /// <returns>A query builder that can be configured and executed to enumerate through content items.</returns>
-    IEnumerateItemsQuery<T> GetItemsFeed<T>() where T : IElementsModel;
+    IEnumerateItemsQuery<T> GetItemsFeed<T>();
 
     /// <summary>
     /// Returns a query builder for enumerating through content items using a feed with runtime/dynamic mapping.
     /// </summary>
     /// <returns>A query builder that can be configured and executed to enumerate through content items.</returns>
-    IEnumerateItemsQuery<IElementsModel> GetItemsFeed();
+    IEnumerateItemsQuery<IDynamicElements> GetItemsFeed();
 
     /// <summary>
     /// Returns a query builder for retrieving a single content type.

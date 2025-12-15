@@ -179,7 +179,7 @@ public class DeliveryClientTests
             PreviewApiKey = "abc.def.ghi"
         });
 
-        var result = await client.GetItems<IElementsModel>().ExecuteAsync();
+        var result = await client.GetItems<IDynamicElements>().ExecuteAsync();
         Assert.True(result.IsSuccess);
     }
     [Fact]
@@ -193,7 +193,7 @@ public class DeliveryClientTests
         var client = CreateClient(mock);
 
         var filter = new Filter(ItemSystemPath.Type, FilterOperator.Equals, StringValue.From("article"));
-        var result = await client.GetItems<IElementsModel>()
+        var result = await client.GetItems<IDynamicElements>()
             .Where(filter)
             .ExecuteAsync();
 
@@ -210,7 +210,7 @@ public class DeliveryClientTests
             .Respond(headers, "application/json", await File.ReadAllTextAsync(Path.Combine(Environment.CurrentDirectory, $"Fixtures{Path.DirectorySeparatorChar}DeliveryClient{Path.DirectorySeparatorChar}coffee_beverages_explained.json")));
 
         var client = CreateClient(mock);
-        var result = await client.GetItem<IElementsModel>("coffee_beverages_explained").ExecuteAsync();
+        var result = await client.GetItem<IDynamicElements>("coffee_beverages_explained").ExecuteAsync();
 
         Assert.True(result.HasStaleContent);
     }
@@ -231,7 +231,7 @@ public class DeliveryClientTests
             SecureAccessApiKey = key
         });
 
-        var result = await client.GetItems<IElementsModel>().ExecuteAsync();
+        var result = await client.GetItems<IDynamicElements>().ExecuteAsync();
 
         Assert.True(result.IsSuccess);
         mock.VerifyNoOutstandingExpectation();

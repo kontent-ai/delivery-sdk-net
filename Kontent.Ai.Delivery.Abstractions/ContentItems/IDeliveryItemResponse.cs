@@ -5,7 +5,6 @@ namespace Kontent.Ai.Delivery.Abstractions;
 /// </summary>
 /// <typeparam name="TModel">The type of a content item in the response.</typeparam>
 public interface IDeliveryItemResponse<out TModel>
-    where TModel : IElementsModel
 {
     /// <summary>
     /// Gets the content item.

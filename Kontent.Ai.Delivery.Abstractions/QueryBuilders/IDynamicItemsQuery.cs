@@ -87,12 +87,12 @@ public interface IDynamicItemsQuery
     /// </summary>
     /// <param name="cancellationToken">Cancellation token for the operation.</param>
     /// <returns>A delivery result containing the content items or errors.</returns>
-    Task<IDeliveryResult<IReadOnlyList<IContentItem<IElementsModel>>>> ExecuteAsync(CancellationToken cancellationToken = default);
+    Task<IDeliveryResult<IReadOnlyList<IContentItem<IDynamicElements>>>> ExecuteAsync(CancellationToken cancellationToken = default);
 
     /// <summary>
     /// Executes the built query to retrieve all content items across all pages.
     /// </summary>
     /// <param name="cancellationToken">Cancellation token for the operation.</param>
     /// <returns>A delivery result containing all content items or errors.</returns>
-    Task<IDeliveryResult<IReadOnlyList<IContentItem<IElementsModel>>>> ExecuteAllAsync(CancellationToken cancellationToken = default);
+    Task<IDeliveryResult<IReadOnlyList<IContentItem<IDynamicElements>>>> ExecuteAllAsync(CancellationToken cancellationToken = default);
 }

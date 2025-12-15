@@ -5,7 +5,6 @@ namespace Kontent.Ai.Delivery.Api.QueryBuilders;
 
 /// <inheritdoc cref="IEnumerateItemsQuery{TModel}"/>
 internal sealed class EnumerateItemsQuery<TModel>(IDeliveryApi api, Func<bool?> getDefaultWaitForNewContent, IElementsPostProcessor elementsPostProcessor) : IEnumerateItemsQuery<TModel>
-    where TModel : IElementsModel
 {
     private readonly IDeliveryApi _api = api;
     private readonly Func<bool?> _getDefaultWaitForNewContent = getDefaultWaitForNewContent;

@@ -5,7 +5,7 @@ using Kontent.Ai.Delivery.SharedModels;
 
 namespace Kontent.Ai.Delivery.Tests.Models.ContentTypes;
 
-public record HeroUnit : IElementsModel
+public record HeroUnit
 {
     [JsonPropertyName("image")]
     public required IEnumerable<Asset> Image { get; init; }

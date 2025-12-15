@@ -64,8 +64,7 @@ public partial interface IDeliveryApi
     internal Task<IApiResponse<DeliveryItemResponse<TModel>>> GetItemInternalAsync<TModel>(
         string codename,
         [Query] SingleItemParams? queryParameters = null,
-        [Header(HttpRequestHeadersExtensions.WaitForLoadingNewContentHeaderName)] bool? waitForLoadingNewContent = null)
-        where TModel : IElementsModel;
+        [Header(HttpRequestHeadersExtensions.WaitForLoadingNewContentHeaderName)] bool? waitForLoadingNewContent = null);
 
     /// <summary>
     /// Gets multiple content items with filtering
@@ -74,8 +73,7 @@ public partial interface IDeliveryApi
     internal Task<IApiResponse<DeliveryItemListingResponse<TModel>>> GetItemsInternalAsync<TModel>(
         [Query] ListItemsParams? queryParameters = null,
         [Query] Dictionary<string, string>? filters = null,
-        [Header(HttpRequestHeadersExtensions.WaitForLoadingNewContentHeaderName)] bool? waitForLoadingNewContent = null)
-        where TModel : IElementsModel;
+        [Header(HttpRequestHeadersExtensions.WaitForLoadingNewContentHeaderName)] bool? waitForLoadingNewContent = null);
 }
 ```
 
@@ -87,8 +85,8 @@ public partial interface IDeliveryApi
    - Type-safe parameter validation
 
 2. **Generic Methods**: `TModel` supports both strongly-typed and dynamic content
-   - Constraints like `where TModel : IElementsModel` ensure type safety
-   - Allows generated models and dynamic types in same API
+   - Strongly typed models are plain POCOs (no interface required)
+   - Dynamic access uses `IDynamicElements` for dictionary-based element access
 
 3. **Separate Filters Dictionary**: Filters passed as `Dictionary<string, string>` for maximum flexibility
    - Filters are dynamic (type-dependent operators)

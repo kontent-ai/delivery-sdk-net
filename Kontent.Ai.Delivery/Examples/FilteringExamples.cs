@@ -363,12 +363,9 @@ public class FilteringExamples(IDeliveryClient client)
 /// <inheritdoc/>
 
 // Example model classes (these would typically be generated)
-public class Article : IElementsModel { }
-/// <inheritdoc/>
-public class Product : IElementsModel { }
-/// <inheritdoc/>
-public class BlogPost : IElementsModel { }
-/// <inheritdoc/>
-public class Event : IElementsModel { }
-/// <inheritdoc/>
-public class ContentItem : IElementsModel { }
+// Models are now plain POCOs - no interface required!
+public class Article { }
+public class Product { }
+public class BlogPost { }
+public class Event { }
+public class ContentItem { }

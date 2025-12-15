@@ -42,16 +42,16 @@ internal sealed class DynamicItemQuery(
         return this;
     }
 
-    public async Task<IDeliveryResult<IContentItem<IElementsModel>>> ExecuteAsync(CancellationToken cancellationToken = default)
+    public async Task<IDeliveryResult<IContentItem<IDynamicElements>>> ExecuteAsync(CancellationToken cancellationToken = default)
     {
         // Get raw response from Refit API
         bool? wait = _waitForLoadingNewContentOverride ?? _getDefaultWaitForNewContent();
-        var rawResponse = await _api.GetItemInternalAsync<IElementsModel>(_codename, _params, wait).ConfigureAwait(false);
+        var rawResponse = await _api.GetItemInternalAsync<IDynamicElements>(_codename, _params, wait).ConfigureAwait(false);
 
         // Convert IApiResponse to IDeliveryResult
         var deliveryResult = await rawResponse.ToDeliveryResultAsync();
 
-        // Map from IDeliveryItemResponse<IElementsModel> to IContentItem<DynamicElements>
+        // Map from IDeliveryItemResponse<IDynamicElements> to IContentItem<IDynamicElements>
         return deliveryResult.Map(response => response.Item);
     }
 }

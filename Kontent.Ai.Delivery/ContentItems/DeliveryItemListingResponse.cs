@@ -5,7 +5,6 @@ namespace Kontent.Ai.Delivery.ContentItems;
 
 /// <inheritdoc cref="IDeliveryItemListingResponse{TModel}" />
 internal sealed record DeliveryItemListingResponse<TModel> : IDeliveryItemListingResponse<TModel>
-    where TModel : IElementsModel
 {
     [JsonPropertyName("items")]
     public required IReadOnlyList<ContentItem<TModel>> Items { get; init; } = [];

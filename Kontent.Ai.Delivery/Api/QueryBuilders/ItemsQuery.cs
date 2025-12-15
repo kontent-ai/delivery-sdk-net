@@ -14,7 +14,7 @@ internal sealed class ItemsQuery<TModel>(
     Func<bool?> getDefaultWaitForNewContent,
     IElementsPostProcessor elementsPostProcessor,
     IDeliveryCacheManager? cacheManager,
-    ILogger? logger = null) : IItemsQuery<TModel> where TModel : IElementsModel
+    ILogger? logger = null) : IItemsQuery<TModel>
 {
     private readonly IDeliveryApi _api = api;
     private readonly Func<bool?> _getDefaultWaitForNewContent = getDefaultWaitForNewContent;

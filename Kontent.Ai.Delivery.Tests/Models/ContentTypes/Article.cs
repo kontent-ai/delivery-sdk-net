@@ -6,7 +6,7 @@ using Kontent.Ai.Delivery.SharedModels;
 
 namespace Kontent.Ai.Delivery.Tests.Models.ContentTypes;
 
-public record Article : IElementsModel
+public record Article
 {
     [JsonPropertyName("body_copy")]
     public RichTextContent BodyCopy { get; init; } = default!;

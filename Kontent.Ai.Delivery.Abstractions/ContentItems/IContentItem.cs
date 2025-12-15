@@ -6,7 +6,6 @@ namespace Kontent.Ai.Delivery.Abstractions;
 /// <typeparam name="TModel">Strongly typed elements of a content item.</typeparam>
 
 public interface IContentItem<out TModel>
-    where TModel : IElementsModel
 {
     /// <summary>
     /// Represents system attributes of a content item.
@@ -18,8 +17,3 @@ public interface IContentItem<out TModel>
     /// </summary>
     public TModel Elements { get; }
 }
-
-/// <summary>
-/// Represents the elements of a content item.
-/// </summary>
-public interface IElementsModel { }
