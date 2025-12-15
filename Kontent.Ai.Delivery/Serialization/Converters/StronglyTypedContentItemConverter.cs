@@ -1,5 +1,5 @@
+using System.Buffers;
 using System.Text.Json;
-using System.Text.Json.Nodes;
 using System.Text.Json.Serialization;
 using Kontent.Ai.Delivery.ContentItems;
 
@@ -72,45 +72,48 @@ internal sealed class StronglyTypedContentItemConverter<TModel> : JsonConverter<
                 CreateOptionsWithoutContentItemConverter(options))!;
         }
 
-        // Flatten elements: extract "value" property from each element
-        var jsonObject = new JsonObject();
+        // Flatten elements: extract only the "value" JSON into a synthetic object payload.
+        // Use Utf8JsonWriter to avoid JsonNode/JsonObject allocations and ToJsonString roundtrip.
+        var buffer = new ArrayBufferWriter<byte>(4096);
+        using var writer = new Utf8JsonWriter(buffer);
+
+        writer.WriteStartObject();
 
         foreach (var prop in elementsElement.EnumerateObject())
         {
-            if (prop.Value.ValueKind == JsonValueKind.Object)
-            {
-                // Detect element type for special handling
-                var elementType = prop.Value.GetElementType();
+            writer.WritePropertyName(prop.Name);
 
-                if (prop.Value.TryGetProperty("value", out var value))
-                {
-                    // Complex types are set to null - will be hydrated by ElementsPostProcessor
-                    // Simple types (text, number, datetime, etc.) are deserialized directly
-                    if (JsonElementExtensions.IsComplexElementType(elementType))
-                    {
-                        jsonObject[prop.Name] = null;
-                    }
-                    else
-                    {
-                        jsonObject[prop.Name] = JsonNode.Parse(value.GetRawText());
-                    }
-                }
-                else
-                {
-                    jsonObject[prop.Name] = null;
-                }
-            }
-            else
+            if (prop.Value.ValueKind != JsonValueKind.Object)
             {
-                jsonObject[prop.Name] = null;
+                writer.WriteNullValue();
+                continue;
             }
+
+            var elementType = prop.Value.GetElementType();
+
+            if (!prop.Value.TryGetProperty("value", out var value))
+            {
+                writer.WriteNullValue();
+                continue;
+            }
+
+            // Complex types are set to null - they will be hydrated later.
+            if (JsonElementExtensions.IsComplexElementType(elementType))
+            {
+                writer.WriteNullValue();
+                continue;
+            }
+
+            // Simple types write their "value" JSON as-is (string/number/bool/array/object).
+            value.WriteTo(writer);
         }
 
-        var flattenedJson = jsonObject.ToJsonString();
+        writer.WriteEndObject();
+        writer.Flush();
 
         // Deserialize the flattened JSON without triggering this converter again
         return JsonSerializer.Deserialize<TModel>(
-            flattenedJson,
+            buffer.WrittenSpan,
             CreateOptionsWithoutContentItemConverter(options))!;
     }
 

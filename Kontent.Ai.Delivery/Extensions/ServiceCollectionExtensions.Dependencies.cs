@@ -26,6 +26,7 @@ public static partial class ServiceCollectionExtensions
         services.TryAddSingleton<ITypeProvider, TypeProvider>();
         services.TryAddSingleton<IItemTypingStrategy, DefaultItemTypingStrategy>();
         services.TryAddSingleton<IContentDeserializer, ContentDeserializer>();
+        services.TryAddSingleton<HydrationEngine>();
         services.TryAddSingleton<IElementsPostProcessor, ElementsPostProcessor>();
         services.TryAddSingleton<IHtmlParser, HtmlParser>();
 

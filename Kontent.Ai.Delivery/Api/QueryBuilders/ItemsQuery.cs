@@ -25,6 +25,7 @@ internal sealed class ItemsQuery<TModel>(
     private readonly Dictionary<string, string> _serializedFilters = [];
     private ListItemsParams _params = new();
     private bool? _waitForLoadingNewContentOverride;
+    private static bool IsDynamicModel => typeof(TModel) == typeof(IDynamicElements) || typeof(TModel) == typeof(DynamicElements);
 
     public IItemsQuery<TModel> WithLanguage(string languageCodename)
     {
@@ -186,10 +187,14 @@ internal sealed class ItemsQuery<TModel>(
         }
 
         // Post-process each item (will track additional dependencies: assets, taxonomies)
-        foreach (var item in items)
+        // Dynamic mode intentionally stays raw (no hydration).
+        if (!IsDynamicModel)
         {
-            await _elementsPostProcessor.ProcessAsync(item, resp.ModularContent, dependencyContext, cancellationToken)
-                .ConfigureAwait(false);
+            foreach (var item in items)
+            {
+                await _elementsPostProcessor.ProcessAsync(item, resp.ModularContent, dependencyContext, cancellationToken)
+                    .ConfigureAwait(false);
+            }
         }
 
         // ========== 4. BUILD RESULT ==========
@@ -288,7 +293,10 @@ internal sealed class ItemsQuery<TModel>(
                 foreach (var item in items)
                 {
                     // NOTE: ExecuteAllAsync intentionally does NOT use caching - it's for bulk operations where freshness is critical
-                    await _elementsPostProcessor.ProcessAsync(item, deliveryResult.Value.ModularContent, null, cancellationToken).ConfigureAwait(false);
+                    if (!IsDynamicModel)
+                    {
+                        await _elementsPostProcessor.ProcessAsync(item, deliveryResult.Value.ModularContent, null, cancellationToken).ConfigureAwait(false);
+                    }
                     all.Add(item);
                 }
             }
