@@ -5,6 +5,7 @@ using System.Text.Json.Serialization;
 using AngleSharp.Html.Parser;
 using Kontent.Ai.Delivery.Abstractions;
 using Kontent.Ai.Delivery.Abstractions.ContentItems.Processing;
+using Kontent.Ai.Delivery.ContentItems;
 using Kontent.Ai.Delivery.ContentItems.ContentLinks;
 using Kontent.Ai.Delivery.ContentItems.DateTimes;
 using Kontent.Ai.Delivery.ContentItems.RichText.Blocks;
@@ -55,45 +56,28 @@ internal sealed class HydrationEngine(
             return Task.CompletedTask;
         }
 
-        var contentItemType = contentItem.GetType();
-        if (!contentItemType.IsGenericType || contentItemType.GetGenericTypeDefinition() != typeof(ContentItem<>))
+        if (contentItem is not IHydratableContentItem hydratable)
         {
             return Task.CompletedTask;
         }
 
-        // Elements (POCO) to set values on
-        var elements = contentItemType.GetProperty(nameof(ContentItem<object>.Elements), BindingFlags.Instance | BindingFlags.Public)
-            ?.GetValue(contentItem);
-
-        if (elements is null)
-        {
-            return Task.CompletedTask;
-        }
-
-        // System attributes for content type
-        var system = contentItemType.GetProperty(nameof(ContentItem<object>.System), BindingFlags.Instance | BindingFlags.Public)
-            ?.GetValue(contentItem) as ContentItemSystemAttributes;
-
-        var contentType = system?.Type ?? string.Empty;
-
-        // Captured raw element envelopes (codename -> { type, name, value, ... })
-        var rawElementsProp = contentItemType.GetProperty("RawElements", BindingFlags.Instance | BindingFlags.NonPublic);
-        var rawElements = rawElementsProp?.GetValue(contentItem) as JsonElement?;
+        var elements = hydratable.ElementsObject;
+        var contentType = hydratable.SystemAttributes?.Type ?? string.Empty;
+        var rawElements = hydratable.RawElements;
 
         if (!rawElements.HasValue || rawElements.Value.ValueKind != JsonValueKind.Object)
         {
             return Task.CompletedTask;
         }
 
-        var elementEnvelopes = BuildElementEnvelopeMap(rawElements.Value);
         var resolvingContext = CreateResolvingContext(modularContent, dependencyContext, hydrationContext, cancellationToken);
 
-        return HydrateElementsAsync(elements, elementEnvelopes, contentType, resolvingContext, modularContent, dependencyContext, hydrationContext, cancellationToken);
+        return HydrateElementsAsync(elements, rawElements.Value, contentType, resolvingContext, modularContent, dependencyContext, hydrationContext, cancellationToken);
     }
 
     private async Task HydrateElementsAsync(
         object elements,
-        IReadOnlyDictionary<string, JsonElement> elementEnvelopes,
+        JsonElement rawElements,
         string contentType,
         ResolvingContext resolvingContext,
         IReadOnlyDictionary<string, JsonElement>? modularContent,
@@ -119,7 +103,7 @@ internal sealed class HydrationEngine(
                 continue;
             }
 
-            if (!elementEnvelopes.TryGetValue(elementCodename, out var elementEnvelope) || elementEnvelope.ValueKind != JsonValueKind.Object)
+            if (!rawElements.TryGetProperty(elementCodename, out var elementEnvelope) || elementEnvelope.ValueKind != JsonValueKind.Object)
             {
                 continue;
             }
@@ -384,10 +368,6 @@ internal sealed class HydrationEngine(
         public HashSet<string> ProcessingItems { get; } = new(StringComparer.Ordinal);
         public Dictionary<string, object> ResolvedItems { get; } = new(StringComparer.Ordinal);
     }
-
-    private static IReadOnlyDictionary<string, JsonElement> BuildElementEnvelopeMap(JsonElement rawElements)
-        => rawElements.EnumerateObject()
-            .ToDictionary(p => p.Name, p => p.Value, StringComparer.Ordinal);
 
     private static string? GetElementCodename(PropertyInfo property)
     {
