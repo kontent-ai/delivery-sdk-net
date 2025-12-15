@@ -129,7 +129,7 @@ public sealed class DistributedCacheManager : IDeliveryCacheManager
 
         if (jsonSerializerOptions != null)
         {
-            // Use provided options but ensure we have safe defaults for caching
+            // Use provided options (caller is responsible for proper configuration)
             _jsonOptions = jsonSerializerOptions;
         }
         else

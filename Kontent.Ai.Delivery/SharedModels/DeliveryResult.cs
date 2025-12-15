@@ -1,3 +1,5 @@
+using System.Net.Http.Headers;
+
 namespace Kontent.Ai.Delivery.SharedModels;
 
 /// <summary>
@@ -27,20 +29,28 @@ internal sealed class DeliveryResult<T> : IDeliveryResult<T>
     /// <inheritdoc/>
     public string? RequestUrl { get; }
 
+    /// <inheritdoc/>
+    public HttpResponseHeaders? ResponseHeaders { get; }
+
+    /// <inheritdoc/>
+    public bool IsCacheHit { get; }
+
     /// <summary>
-    /// Creates a successful result.
+    /// Creates a successful result from an API response.
     /// </summary>
     /// <param name="value">The result value.</param>
+    /// <param name="requestUrl">The request URL.</param>
     /// <param name="statusCode">The HTTP status code.</param>
     /// <param name="hasStaleContent">Whether the content is stale.</param>
     /// <param name="continuationToken">The continuation token for pagination.</param>
-    /// <param name="requestUrl">The request URL.</param>
+    /// <param name="responseHeaders">The HTTP response headers.</param>
     internal DeliveryResult(
         T value,
         string requestUrl,
-        int statusCode = 200,
-        bool hasStaleContent = false,
-        string? continuationToken = null)
+        int statusCode,
+        bool hasStaleContent,
+        string? continuationToken,
+        HttpResponseHeaders? responseHeaders)
     {
         Value = value;
         IsSuccess = true;
@@ -48,6 +58,24 @@ internal sealed class DeliveryResult<T> : IDeliveryResult<T>
         HasStaleContent = hasStaleContent;
         ContinuationToken = continuationToken;
         RequestUrl = requestUrl;
+        ResponseHeaders = responseHeaders;
+        IsCacheHit = false;
+    }
+
+    /// <summary>
+    /// Creates a successful result from SDK cache.
+    /// </summary>
+    /// <param name="value">The cached value.</param>
+    internal DeliveryResult(T value)
+    {
+        Value = value;
+        IsSuccess = true;
+        StatusCode = 200;
+        HasStaleContent = false;
+        ContinuationToken = null;
+        RequestUrl = null;
+        ResponseHeaders = null;
+        IsCacheHit = true;
     }
 
     /// <summary>
@@ -56,10 +84,12 @@ internal sealed class DeliveryResult<T> : IDeliveryResult<T>
     /// <param name="requestUrl">The request URL.</param>
     /// <param name="statusCode">The HTTP status code.</param>
     /// <param name="error">The error that occurred.</param>
+    /// <param name="responseHeaders">The HTTP response headers.</param>
     internal DeliveryResult(
         string requestUrl,
         int statusCode,
-        IError? error)
+        IError? error,
+        HttpResponseHeaders? responseHeaders)
     {
         Value = default!;
         IsSuccess = false;
@@ -68,6 +98,8 @@ internal sealed class DeliveryResult<T> : IDeliveryResult<T>
         HasStaleContent = false;
         ContinuationToken = null;
         RequestUrl = requestUrl;
+        ResponseHeaders = responseHeaders;
+        IsCacheHit = false;
     }
 }
 
@@ -77,22 +109,33 @@ internal sealed class DeliveryResult<T> : IDeliveryResult<T>
 internal static class DeliveryResult
 {
     /// <summary>
-    /// Creates a successful result.
+    /// Creates a successful result from an API response.
     /// </summary>
     /// <typeparam name="T">The type of the result value.</typeparam>
     /// <param name="value">The result value.</param>
+    /// <param name="requestUrl">The request URL.</param>
     /// <param name="statusCode">The HTTP status code.</param>
     /// <param name="hasStaleContent">Whether the content is stale.</param>
     /// <param name="continuationToken">The continuation token for pagination.</param>
-    /// <param name="requestUrl">The request URL.</param>
+    /// <param name="responseHeaders">The HTTP response headers.</param>
     /// <returns>A successful result.</returns>
     public static IDeliveryResult<T> Success<T>(
         T value,
         string requestUrl,
-        int statusCode = 200,
-        bool hasStaleContent = false,
-        string? continuationToken = null)
-    => new DeliveryResult<T>(value, requestUrl, statusCode, hasStaleContent, continuationToken);
+        int statusCode,
+        bool hasStaleContent,
+        string? continuationToken,
+        HttpResponseHeaders? responseHeaders)
+    => new DeliveryResult<T>(value, requestUrl, statusCode, hasStaleContent, continuationToken, responseHeaders);
+
+    /// <summary>
+    /// Creates a successful result from SDK cache.
+    /// </summary>
+    /// <typeparam name="T">The type of the result value.</typeparam>
+    /// <param name="value">The cached value.</param>
+    /// <returns>A successful cache hit result.</returns>
+    public static IDeliveryResult<T> CacheHit<T>(T value)
+    => new DeliveryResult<T>(value);
 
     /// <summary>
     /// Creates a failed result.
@@ -101,10 +144,12 @@ internal static class DeliveryResult
     /// <param name="requestUrl">The request URL.</param>
     /// <param name="statusCode">The HTTP status code.</param>
     /// <param name="error">The error that occurred.</param>
+    /// <param name="responseHeaders">The HTTP response headers.</param>
     /// <returns>A failed result.</returns>
     public static IDeliveryResult<T> Failure<T>(
         string requestUrl,
         int statusCode,
-        IError? error)
-    => new DeliveryResult<T>(requestUrl, statusCode, error);
+        IError? error,
+        HttpResponseHeaders? responseHeaders = null)
+    => new DeliveryResult<T>(requestUrl, statusCode, error, responseHeaders);
 }

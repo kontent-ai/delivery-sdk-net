@@ -115,12 +115,7 @@ internal sealed class ItemsQuery<TModel>(
                 {
                     // Build DeliveryResult from cached items
                     var interfaceItems = cachedItems.Cast<IContentItem<TModel>>().ToList().AsReadOnly();
-                    var cachedResult = DeliveryResult.Success<IReadOnlyList<IContentItem<TModel>>>(
-                        interfaceItems,
-                        requestUrl: cacheKey,
-                        statusCode: 200,
-                        hasStaleContent: false,
-                        continuationToken: null);
+                    var cachedResult = DeliveryResult.CacheHit<IReadOnlyList<IContentItem<TModel>>>(interfaceItems);
 
                     // Log cache hit and return
                     if (_logger != null)
@@ -161,7 +156,8 @@ internal sealed class ItemsQuery<TModel>(
             return DeliveryResult.Failure<IReadOnlyList<IContentItem<TModel>>>(
                 deliveryResult.RequestUrl ?? string.Empty,
                 deliveryResult.StatusCode,
-                deliveryResult.Error);
+                deliveryResult.Error,
+                deliveryResult.ResponseHeaders);
         }
 
         // ========== 3. POST-PROCESS WITH DEPENDENCY TRACKING ==========
@@ -202,7 +198,8 @@ internal sealed class ItemsQuery<TModel>(
             deliveryResult.RequestUrl ?? string.Empty,
             deliveryResult.StatusCode,
             deliveryResult.HasStaleContent,
-            deliveryResult.ContinuationToken);
+            deliveryResult.ContinuationToken,
+            deliveryResult.ResponseHeaders);
 
         // ========== 5. CACHE RESULT (if enabled) ==========
         if (_cacheManager != null && dependencyContext != null && cacheKey != null)
@@ -213,6 +210,12 @@ internal sealed class ItemsQuery<TModel>(
                 var concreteItems = items
                     .OfType<ContentItem<TModel>>()
                     .ToList();
+
+                // Warn if some items couldn't be cached due to type mismatch
+                if (concreteItems.Count != items.Count && _logger != null)
+                {
+                    LoggerMessages.CachePartialItemsWarning(_logger, concreteItems.Count, items.Count);
+                }
 
                 await _cacheManager.SetAsync(
                     cacheKey,
@@ -249,6 +252,7 @@ internal sealed class ItemsQuery<TModel>(
         var skip = _params.Skip ?? 0;
         var limit = _params.Limit;
         string? requestUrl = null;
+        System.Net.Http.Headers.HttpResponseHeaders? responseHeaders = null;
 
         while (true)
         {
@@ -265,11 +269,13 @@ internal sealed class ItemsQuery<TModel>(
                 return DeliveryResult.Failure<IReadOnlyList<IContentItem<TModel>>>(
                     deliveryResult.RequestUrl ?? string.Empty,
                     deliveryResult.StatusCode,
-                    deliveryResult.Error!);
+                    deliveryResult.Error!,
+                    deliveryResult.ResponseHeaders);
             }
 
-            // Capture request URL from first request
+            // Capture request URL and headers from first request
             requestUrl ??= deliveryResult.RequestUrl;
+            responseHeaders ??= deliveryResult.ResponseHeaders;
 
             var items = deliveryResult.Value.Items;
             var pageCount = items?.Count ?? 0;
@@ -299,6 +305,7 @@ internal sealed class ItemsQuery<TModel>(
             requestUrl ?? string.Empty,
             200,
             hasStaleContent: false,
-            continuationToken: null);
+            continuationToken: null,
+            responseHeaders: responseHeaders);
     }
 }

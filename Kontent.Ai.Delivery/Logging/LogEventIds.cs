@@ -55,6 +55,9 @@ internal static class LogEventIds
     /// <summary>Deserialization failed during cache operation.</summary>
     public const int CacheDeserializationFailed = 1141;
 
+    /// <summary>Partial items cached due to type mismatch.</summary>
+    public const int CachePartialItemsWarning = 1150;
+
     // ========== HTTP Handlers (1200-1299) ==========
 
     /// <summary>Authentication header was set on request.</summary>

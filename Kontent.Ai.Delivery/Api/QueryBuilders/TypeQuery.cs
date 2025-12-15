@@ -1,6 +1,8 @@
 using System.Diagnostics;
 using Kontent.Ai.Delivery.Caching;
+using Kontent.Ai.Delivery.ContentTypes;
 using Kontent.Ai.Delivery.Logging;
+using Kontent.Ai.Delivery.SharedModels;
 using Microsoft.Extensions.Logging;
 
 namespace Kontent.Ai.Delivery.Api.QueryBuilders;
@@ -45,7 +47,7 @@ internal sealed class TypeQuery(
             try
             {
                 cacheKey = CacheKeyBuilder.BuildTypeKey(_codename, _params);
-                var cached = await _cacheManager.GetAsync<IDeliveryResult<IContentType>>(cacheKey, cancellationToken)
+                var cached = await _cacheManager.GetAsync<ContentType>(cacheKey, cancellationToken)
                     .ConfigureAwait(false);
 
                 if (cached != null)
@@ -55,9 +57,9 @@ internal sealed class TypeQuery(
                     {
                         LoggerMessages.QueryCacheHit(_logger, cacheKey);
                         LoggerMessages.QueryCompleted(_logger, "Type", _codename,
-                            stopwatch?.ElapsedMilliseconds ?? 0, cached.StatusCode, cacheHit: true);
+                            stopwatch?.ElapsedMilliseconds ?? 0, 200, cacheHit: true);
                     }
-                    return cached;
+                    return DeliveryResult.CacheHit<IContentType>(cached);
                 }
 
                 // Log cache miss
@@ -84,7 +86,7 @@ internal sealed class TypeQuery(
             {
                 await _cacheManager.SetAsync(
                     cacheKey,
-                    deliveryResult,
+                    (ContentType)deliveryResult.Value,
                     dependencies: [], // Metadata queries don't track dependencies
                     expiration: null,
                     cancellationToken: cancellationToken)

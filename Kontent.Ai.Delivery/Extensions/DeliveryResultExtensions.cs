@@ -15,17 +15,26 @@ internal static class DeliveryResultExtensions
         if (result.IsSuccess)
         {
             var mapped = map(result.Value);
+
+            // Preserve cache hit status - use CacheHit factory for cached results
+            if (result.IsCacheHit)
+            {
+                return DeliveryResult.CacheHit(mapped);
+            }
+
             return DeliveryResult.Success(
                 mapped,
                 result.RequestUrl ?? string.Empty,
                 result.StatusCode,
                 result.HasStaleContent,
-                result.ContinuationToken);
+                result.ContinuationToken,
+                result.ResponseHeaders);
         }
 
         return DeliveryResult.Failure<TOut>(
             result.RequestUrl ?? string.Empty,
             result.StatusCode,
-            result.Error);
+            result.Error,
+            result.ResponseHeaders);
     }
 }

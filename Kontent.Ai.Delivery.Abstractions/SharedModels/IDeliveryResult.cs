@@ -1,3 +1,5 @@
+using System.Net.Http.Headers;
+
 namespace Kontent.Ai.Delivery.Abstractions;
 
 /// <summary>
@@ -41,4 +43,23 @@ public interface IDeliveryResult<out T>
     /// Gets the URL used to retrieve this response for debugging purposes.
     /// </summary>
     string? RequestUrl { get; }
+
+    /// <summary>
+    /// Gets the HTTP response headers from the Delivery API.
+    /// Returns <c>null</c> when the result is served from SDK cache (<see cref="IsCacheHit"/> is <c>true</c>).
+    /// </summary>
+    HttpResponseHeaders? ResponseHeaders { get; }
+
+    /// <summary>
+    /// Gets a value indicating whether this result was served from the SDK's local cache
+    /// (MemoryCacheManager or DistributedCacheManager).
+    /// When <c>true</c>, <see cref="ResponseHeaders"/> will be <c>null</c> and properties like
+    /// <see cref="StatusCode"/>, <see cref="HasStaleContent"/>, and <see cref="ContinuationToken"/>
+    /// contain synthetic values.
+    /// </summary>
+    /// <remarks>
+    /// This is distinct from CDN-level caching (e.g., Fastly). To check for CDN cache hits,
+    /// inspect the <see cref="ResponseHeaders"/> for headers like <c>X-Cache</c>.
+    /// </remarks>
+    bool IsCacheHit { get; }
 }

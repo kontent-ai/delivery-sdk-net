@@ -24,7 +24,8 @@ internal static class RefitApiResponseExtensions
                 requestUrl: apiResponse.RequestMessage?.RequestUri?.ToString() ?? string.Empty,
                 statusCode: (int)apiResponse.StatusCode,
                 hasStaleContent: ExtractHasStaleContent(apiResponse),
-                continuationToken: ExtractContinuationToken(apiResponse)
+                continuationToken: ExtractContinuationToken(apiResponse),
+                responseHeaders: apiResponse.Headers
             ));
         }
 
@@ -42,16 +43,21 @@ internal static class RefitApiResponseExtensions
     {
         var url = apiResponse.RequestMessage?.RequestUri?.ToString() ?? string.Empty;
         var status = (int)apiResponse.StatusCode;
+        var headers = apiResponse.Headers;
 
         if (apiResponse.Error is not ApiException apiEx)
         {
             var fallback = new Error { Message = "Unknown error", ErrorCode = status };
-            return Task.FromResult(DeliveryResult.Failure<T>(url, status, fallback));
+            return Task.FromResult(DeliveryResult.Failure<T>(url, status, fallback, headers));
         }
 
-        return MapApiExceptionAsync(apiEx, url, status);
+        return MapApiExceptionAsync(apiEx, url, status, headers);
 
-        static async Task<IDeliveryResult<T>> MapApiExceptionAsync(ApiException ex, string url, int status)
+        static async Task<IDeliveryResult<T>> MapApiExceptionAsync(
+            ApiException ex,
+            string url,
+            int status,
+            System.Net.Http.Headers.HttpResponseHeaders? headers)
         {
             Error error;
             try
@@ -62,11 +68,11 @@ internal static class RefitApiResponseExtensions
             }
             catch
             {
-                // Body isn’t JSON or deserialization failed – fall back to best available message.
+                // Body isn't JSON or deserialization failed – fall back to best available message.
                 error = new Error { Message = ex.InnerException?.Message ?? ex.Message, ErrorCode = status };
             }
 
-            return DeliveryResult.Failure<T>(url, status, error);
+            return DeliveryResult.Failure<T>(url, status, error, headers);
         }
     }
 
