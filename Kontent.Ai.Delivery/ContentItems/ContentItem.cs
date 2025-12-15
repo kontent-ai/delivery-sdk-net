@@ -5,7 +5,7 @@ namespace Kontent.Ai.Delivery.ContentItems;
 
 
 /// <inheritdoc cref="IContentItem{TModel}" />
-internal sealed record ContentItem<TModel> : IContentItem<TModel>
+internal sealed record ContentItem<TModel> : IContentItem<TModel>, IHydratableContentItem
 {
     /// <inheritdoc/>
     [JsonPropertyName("system")]
@@ -20,4 +20,8 @@ internal sealed record ContentItem<TModel> : IContentItem<TModel>
     // Captured raw elements JsonElement for post-processing (not serialized)
     [JsonIgnore]
     internal JsonElement? RawElements { get; init; }
+
+    ContentItemSystemAttributes IHydratableContentItem.SystemAttributes => System;
+    object IHydratableContentItem.ElementsObject => Elements!;
+    JsonElement? IHydratableContentItem.RawElements => RawElements;
 }

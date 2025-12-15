@@ -27,7 +27,8 @@ internal class RichTextParser(IHtmlParser parser, IContentDependencyExtractor de
         if (contentElement is not IRichTextElementValue element)
             return null;
 
-        var document = await parser.ParseDocumentAsync(element.Value);
+        // Parsing the HTML itself is synchronous; keep async only for linked-item resolution.
+        var document = parser.ParseDocument(element.Value);
 
         if (document.Body == null)
             throw new InvalidOperationException("Failed to parse rich text HTML: document body is null.");

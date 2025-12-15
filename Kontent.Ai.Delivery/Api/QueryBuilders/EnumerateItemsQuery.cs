@@ -13,6 +13,9 @@ internal sealed class EnumerateItemsQuery<TModel>(IDeliveryApi api, Func<bool?> 
     private bool? _waitForLoadingNewContentOverride;
     private readonly ItemFilters _filters = new();
     private readonly Dictionary<string, string> _serializedFilters = [];
+    private static bool IsDynamicModel =>
+        typeof(TModel) == typeof(Kontent.Ai.Delivery.Abstractions.IDynamicElements) ||
+        typeof(TModel) == typeof(Kontent.Ai.Delivery.ContentItems.DynamicElements);
 
     public IEnumerateItemsQuery<TModel> WithLanguage(string languageCodename)
     {
@@ -70,7 +73,11 @@ internal sealed class EnumerateItemsQuery<TModel>(IDeliveryApi api, Func<bool?> 
 
             foreach (var item in resp.Content.Items)
             {
-                await _elementsPostProcessor.ProcessAsync(item, null, null, cancellationToken).ConfigureAwait(false);
+                // Dynamic mode intentionally stays raw (no hydration).
+                if (!IsDynamicModel)
+                {
+                    await _elementsPostProcessor.ProcessAsync(item, null, null, cancellationToken).ConfigureAwait(false);
+                }
                 yield return item;
             }
 

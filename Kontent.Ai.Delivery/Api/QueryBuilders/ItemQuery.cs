@@ -24,6 +24,7 @@ internal sealed class ItemQuery<TModel>(
     private readonly IDeliveryCacheManager? _cacheManager = cacheManager;
     private readonly ILogger? _logger = logger;
     private bool? _waitForLoadingNewContentOverride;
+    private static bool IsDynamicModel => typeof(TModel) == typeof(IDynamicElements) || typeof(TModel) == typeof(DynamicElements);
 
     public IItemQuery<TModel> WithLanguage(string languageCodename)
     {
@@ -139,8 +140,12 @@ internal sealed class ItemQuery<TModel>(
         }
 
         // Post-process to hydrate IRichTextContent, assets, taxonomy (will track additional dependencies)
-        await _elementsPostProcessor.ProcessAsync(item, resp.ModularContent, dependencyContext, cancellationToken)
-            .ConfigureAwait(false);
+        // Dynamic mode intentionally stays raw (no hydration).
+        if (!IsDynamicModel)
+        {
+            await _elementsPostProcessor.ProcessAsync(item, resp.ModularContent, dependencyContext, cancellationToken)
+                .ConfigureAwait(false);
+        }
 
         // ========== 4. BUILD RESULT ==========
         var result = DeliveryResult.Success<IContentItem<TModel>>(
