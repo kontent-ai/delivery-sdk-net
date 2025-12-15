@@ -25,6 +25,5 @@ public interface IElementsPostProcessor
         IContentItem<TModel> item,
         IReadOnlyDictionary<string, JsonElement>? modularContent,
         DependencyTrackingContext? dependencyContext = null,
-        CancellationToken cancellationToken = default)
-        where TModel : IElementsModel;
+        CancellationToken cancellationToken = default);
 }

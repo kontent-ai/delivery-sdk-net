@@ -4,7 +4,7 @@ using Kontent.Ai.Delivery.SharedModels;
 
 namespace Kontent.Ai.Delivery.Tests.Models.ContentTypes;
 
-public record Tweet : IElementsModel
+public record Tweet
 {
     [JsonPropertyName("display_options")]
     public IEnumerable<MultipleChoiceOption>? DisplayOptions { get; init; }

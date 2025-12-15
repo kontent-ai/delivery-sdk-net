@@ -58,7 +58,7 @@ internal sealed class ElementsPostProcessor(
         IContentItem<TModel> item,
         IReadOnlyDictionary<string, JsonElement>? modularContent,
         DependencyTrackingContext? dependencyContext = null,
-        CancellationToken cancellationToken = default) where TModel : IElementsModel
+        CancellationToken cancellationToken = default)
     {
         // Create a fresh hydration context for this processing request
         var hydrationContext = new HydrationContext();
@@ -74,7 +74,7 @@ internal sealed class ElementsPostProcessor(
         IReadOnlyDictionary<string, JsonElement>? modularContent,
         DependencyTrackingContext? dependencyContext,
         HydrationContext hydrationContext,
-        CancellationToken cancellationToken) where TModel : IElementsModel
+        CancellationToken cancellationToken)
     {
         cancellationToken.ThrowIfCancellationRequested();
 
@@ -594,7 +594,7 @@ internal sealed class ElementsPostProcessor(
         if (contentItem is null)
             return;
 
-        // ContentItem implements IContentItem<TModel> where TModel : IElementsModel
+        // ContentItem implements IContentItem<TModel> where TModel is any POCO
         // We need to find the TModel type and call ProcessAsyncInternal<TModel>
         var contentItemType = contentItem.GetType();
 

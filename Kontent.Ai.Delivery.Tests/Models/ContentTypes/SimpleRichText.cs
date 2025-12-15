@@ -3,7 +3,7 @@ using System.Text.Json.Serialization;
 
 namespace Kontent.Ai.Delivery.Tests.Models.ContentTypes;
 
-public class SimpleRichText : IElementsModel
+public class SimpleRichText
 {
     [JsonPropertyName("rich_text")]
     public required IRichTextContent RichText { get; init; }

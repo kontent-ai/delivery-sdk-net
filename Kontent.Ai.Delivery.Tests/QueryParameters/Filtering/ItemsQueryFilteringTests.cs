@@ -25,7 +25,7 @@ public class ItemsQueryFilteringTests
         var provider = services.BuildServiceProvider();
         var client = provider.GetRequiredService<IDeliveryClient>();
 
-        var result = await client.GetItems<IElementsModel>()
+        var result = await client.GetItems<IDynamicElements>()
             .Where(new Api.QueryBuilders.Filtering.ItemFilters().Equals(ItemSystemPath.Type, "article"))
             .ExecuteAsync();
 

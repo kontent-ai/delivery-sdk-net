@@ -15,7 +15,6 @@ internal sealed class ItemQuery<TModel>(
     IElementsPostProcessor elementsPostProcessor,
     IDeliveryCacheManager? cacheManager,
     ILogger? logger = null) : IItemQuery<TModel>
-    where TModel : IElementsModel
 {
     private readonly IDeliveryApi _api = api;
     private readonly string _codename = codename;

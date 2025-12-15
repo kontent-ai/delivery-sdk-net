@@ -19,7 +19,7 @@ internal static class EmbeddedContentFactory
     /// Attempts to create strongly-typed EmbeddedContent&lt;TModel&gt; when possible,
     /// falls back to non-generic EmbeddedContent for unknown types.
     /// </summary>
-    /// <param name="contentItem">The content item to wrap. Can be ContentItem&lt;T&gt; or IContentItem&lt;IElementsModel&gt;.</param>
+    /// <param name="contentItem">The content item to wrap. Can be ContentItem&lt;T&gt; or IContentItem&lt;IDynamicElements&gt;.</param>
     /// <returns>An IEmbeddedContent instance wrapping the content item.</returns>
     public static IEmbeddedContent CreateEmbeddedContent(object? contentItem)
     {
@@ -40,7 +40,7 @@ internal static class EmbeddedContentFactory
         }
 
         // Fallback to non-generic for unknown types
-        if (contentItem is IContentItem<IElementsModel> typedItem)
+        if (contentItem is IContentItem<IDynamicElements> typedItem)
         {
             return CreateNonGenericEmbeddedContent(typedItem);
         }
@@ -91,9 +91,9 @@ internal static class EmbeddedContentFactory
     }
 
     /// <summary>
-    /// Creates a non-generic EmbeddedContent from an IContentItem&lt;IElementsModel&gt;.
+    /// Creates a non-generic EmbeddedContent from an IContentItem&lt;IDynamicElements&gt;.
     /// </summary>
-    private static IEmbeddedContent CreateNonGenericEmbeddedContent(IContentItem<IElementsModel> item)
+    private static IEmbeddedContent CreateNonGenericEmbeddedContent(IContentItem<IDynamicElements> item)
     {
         var id = Guid.TryParse(item.System.Id, out var parsedId) ? parsedId : Guid.Empty;
         return new EmbeddedContent(

@@ -27,7 +27,7 @@ internal sealed class DeliveryClient(
     private readonly IDeliveryCacheManager? _cacheManager = cacheManager;
     private readonly ILogger<DeliveryClient>? _logger = logger;
 
-    public IItemQuery<T> GetItem<T>(string codename) where T : IElementsModel
+    public IItemQuery<T> GetItem<T>(string codename)
     {
         if (string.IsNullOrEmpty(codename))
         {
@@ -47,7 +47,7 @@ internal sealed class DeliveryClient(
         return new DynamicItemQuery(_deliveryApi, codename, GetDefaultWaitForLoadingNewContent);
     }
 
-    public IItemsQuery<T> GetItems<T>() where T : IElementsModel
+    public IItemsQuery<T> GetItems<T>()
     {
         return new ItemsQuery<T>(_deliveryApi, GetDefaultWaitForLoadingNewContent, _elementsPostProcessor, _cacheManager, _logger);
     }
@@ -57,14 +57,14 @@ internal sealed class DeliveryClient(
         return new DynamicItemsQuery(_deliveryApi, GetDefaultWaitForLoadingNewContent);
     }
 
-    public IEnumerateItemsQuery<T> GetItemsFeed<T>() where T : IElementsModel
+    public IEnumerateItemsQuery<T> GetItemsFeed<T>()
     {
         return new EnumerateItemsQuery<T>(_deliveryApi, GetDefaultWaitForLoadingNewContent, _elementsPostProcessor);
     }
 
-    public IEnumerateItemsQuery<IElementsModel> GetItemsFeed()
+    public IEnumerateItemsQuery<IDynamicElements> GetItemsFeed()
     {
-        return new EnumerateItemsQuery<IElementsModel>(_deliveryApi, GetDefaultWaitForLoadingNewContent, _elementsPostProcessor);
+        return new EnumerateItemsQuery<IDynamicElements>(_deliveryApi, GetDefaultWaitForLoadingNewContent, _elementsPostProcessor);
     }
 
     public ITypeQuery GetType(string codename)

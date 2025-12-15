@@ -24,7 +24,7 @@ internal sealed class ContentDeserializer(JsonSerializerOptions options) : ICont
     /// Uses cached compiled delegates for optimal performance.
     /// </summary>
     /// <param name="json">The JSON string to deserialize.</param>
-    /// <param name="modelType">The model type implementing <see cref="IElementsModel"/>.</param>
+    /// <param name="modelType">The model type (any POCO or <see cref="IDynamicElements"/>).</param>
     /// <returns>The deserialized ContentItem as an object.</returns>
     public object DeserializeContentItem(string json, Type modelType)
     {
@@ -36,14 +36,6 @@ internal sealed class ContentDeserializer(JsonSerializerOptions options) : ICont
         if (modelType == null)
         {
             throw new ArgumentNullException(nameof(modelType));
-        }
-
-        // Validate that modelType implements IElementsModel
-        if (!typeof(IElementsModel).IsAssignableFrom(modelType))
-        {
-            throw new ArgumentException(
-                $"Model type {modelType.Name} must implement {nameof(IElementsModel)}",
-                nameof(modelType));
         }
 
         var deserializer = _compiledDeserializers.GetOrAdd(modelType, BuildDeserializer);

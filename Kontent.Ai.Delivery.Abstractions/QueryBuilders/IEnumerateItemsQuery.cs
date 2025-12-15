@@ -5,7 +5,6 @@ namespace Kontent.Ai.Delivery.Abstractions;
 /// </summary>
 /// <typeparam name="TModel">Strongly typed elements model of the content items.</typeparam>
 public interface IEnumerateItemsQuery<TModel>
-    where TModel : IElementsModel
 {
     /// <summary>
     /// Sets the language codename for the request.

@@ -5,7 +5,7 @@ using Kontent.Ai.Delivery.SharedModels;
 
 namespace Kontent.Ai.Delivery.Tests.Models.ContentTypes;
 
-public record FactAboutUs : IElementsModel
+public record FactAboutUs
 {
     [JsonPropertyName("description")]
     public required string Description { get; init; }

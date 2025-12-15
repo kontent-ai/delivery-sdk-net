@@ -146,7 +146,6 @@ public sealed class HtmlResolverBuilder : IHtmlResolverBuilder
     /// <inheritdoc />
     public IHtmlResolverBuilder WithContentResolver<TModel>(
         Func<IEmbeddedContent<TModel>, ValueTask<string>> resolver)
-        where TModel : IElementsModel
     {
         ArgumentNullException.ThrowIfNull(resolver);
 
@@ -162,7 +161,6 @@ public sealed class HtmlResolverBuilder : IHtmlResolverBuilder
     /// <inheritdoc />
     public IHtmlResolverBuilder WithContentResolver<TModel>(
         Func<IEmbeddedContent<TModel>, string> resolver)
-        where TModel : IElementsModel
     {
         ArgumentNullException.ThrowIfNull(resolver);
 

@@ -5,7 +5,7 @@ using Kontent.Ai.Delivery.SharedModels;
 
 namespace Kontent.Ai.Delivery.Tests.Models.ContentTypes;
 
-public record Home : IElementsModel
+public record Home
 {
     [JsonPropertyName("articles")]
     public required IEnumerable<IEmbeddedContent> Articles { get; init; }

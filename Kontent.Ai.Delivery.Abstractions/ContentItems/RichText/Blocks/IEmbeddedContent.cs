@@ -61,7 +61,6 @@ public interface IEmbeddedContent : IRichTextBlock
 /// </code>
 /// </remarks>
 public interface IEmbeddedContent<out TModel> : IEmbeddedContent // TODO: consider having strongly typed embedded content direct (without nested access required)
-    where TModel : IElementsModel
 {
     /// <summary>
     /// Gets the strongly-typed elements of the embedded content.

@@ -4,7 +4,7 @@ using Kontent.Ai.Delivery.SharedModels;
 
 namespace Kontent.Ai.Delivery.Tests.Models.ContentTypes;
 
-public record HostedVideo : IElementsModel
+public record HostedVideo
 {
     [JsonPropertyName("video_host")]
     public IEnumerable<MultipleChoiceOption>? VideoHost { get; init; }

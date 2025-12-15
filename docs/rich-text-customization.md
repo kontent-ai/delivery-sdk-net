@@ -264,7 +264,6 @@ var resolver = new HtmlResolverBuilder()
 
 ```csharp
 public interface IEmbeddedContent<out TModel> : IEmbeddedContent
-    where TModel : IElementsModel
 {
     TModel Elements { get; }  // Strongly-typed elements
 }

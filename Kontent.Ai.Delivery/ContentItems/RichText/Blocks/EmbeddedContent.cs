@@ -21,7 +21,6 @@ internal record EmbeddedContent<TModel>(
     Guid Id,
     TModel Elements
 ) : IEmbeddedContent<TModel>
-    where TModel : IElementsModel
 {
     /// <summary>
     /// Explicit interface implementation for non-generic access.
