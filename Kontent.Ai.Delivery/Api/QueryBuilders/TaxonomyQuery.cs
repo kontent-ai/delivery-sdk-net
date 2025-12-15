@@ -1,4 +1,6 @@
 using Kontent.Ai.Delivery.Caching;
+using Kontent.Ai.Delivery.SharedModels;
+using Kontent.Ai.Delivery.TaxonomyGroups;
 
 namespace Kontent.Ai.Delivery.Api.QueryBuilders;
 
@@ -30,12 +32,12 @@ internal sealed class TaxonomyQuery(
             try
             {
                 cacheKey = CacheKeyBuilder.BuildTaxonomyKey(_codename);
-                var cached = await _cacheManager.GetAsync<IDeliveryResult<ITaxonomyGroup>>(cacheKey, cancellationToken)
+                var cached = await _cacheManager.GetAsync<TaxonomyGroup>(cacheKey, cancellationToken)
                     .ConfigureAwait(false);
 
                 if (cached != null)
                 {
-                    return cached; // Cache hit
+                    return DeliveryResult.CacheHit<ITaxonomyGroup>(cached);
                 }
             }
             catch (Exception)
@@ -56,7 +58,7 @@ internal sealed class TaxonomyQuery(
             {
                 await _cacheManager.SetAsync(
                     cacheKey,
-                    deliveryResult,
+                    (TaxonomyGroup)deliveryResult.Value,
                     dependencies: [], // Metadata queries don't track dependencies
                     expiration: null,
                     cancellationToken: cancellationToken)

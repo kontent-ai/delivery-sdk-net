@@ -75,12 +75,7 @@ internal sealed class ItemQuery<TModel>(
                 if (cachedItem != null)
                 {
                     // Build DeliveryResult from cached item
-                    var cachedResult = DeliveryResult.Success<IContentItem<TModel>>(
-                        cachedItem,
-                        requestUrl: cacheKey,
-                        statusCode: 200,
-                        hasStaleContent: false,
-                        continuationToken: null);
+                    var cachedResult = DeliveryResult.CacheHit<IContentItem<TModel>>(cachedItem);
 
                     // Log cache hit and return
                     if (_logger != null)
@@ -121,7 +116,8 @@ internal sealed class ItemQuery<TModel>(
             return DeliveryResult.Failure<IContentItem<TModel>>(
                 deliveryResult.RequestUrl ?? string.Empty,
                 deliveryResult.StatusCode,
-                deliveryResult.Error);
+                deliveryResult.Error,
+                deliveryResult.ResponseHeaders);
         }
 
         // ========== 3. POST-PROCESS WITH DEPENDENCY TRACKING ==========
@@ -153,7 +149,8 @@ internal sealed class ItemQuery<TModel>(
             deliveryResult.RequestUrl ?? string.Empty,
             deliveryResult.StatusCode,
             deliveryResult.HasStaleContent,
-            deliveryResult.ContinuationToken);
+            deliveryResult.ContinuationToken,
+            deliveryResult.ResponseHeaders);
 
         // ========== 5. CACHE RESULT (if enabled) ==========
         if (_cacheManager != null && dependencyContext != null && cacheKey != null)

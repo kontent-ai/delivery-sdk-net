@@ -1,7 +1,9 @@
 using System.Diagnostics;
 using Kontent.Ai.Delivery.Api.QueryBuilders.Filtering;
 using Kontent.Ai.Delivery.Caching;
+using Kontent.Ai.Delivery.ContentTypes;
 using Kontent.Ai.Delivery.Logging;
+using Kontent.Ai.Delivery.SharedModels;
 using Microsoft.Extensions.Logging;
 
 namespace Kontent.Ai.Delivery.Api.QueryBuilders;
@@ -73,7 +75,7 @@ internal sealed class TypesQuery(
             try
             {
                 cacheKey = CacheKeyBuilder.BuildTypesKey(_params, _serializedFilters);
-                var cached = await _cacheManager.GetAsync<IDeliveryResult<IReadOnlyList<IContentType>>>(cacheKey, cancellationToken)
+                var cached = await _cacheManager.GetAsync<List<ContentType>>(cacheKey, cancellationToken)
                     .ConfigureAwait(false);
 
                 if (cached != null)
@@ -83,9 +85,10 @@ internal sealed class TypesQuery(
                     {
                         LoggerMessages.QueryCacheHit(_logger, cacheKey);
                         LoggerMessages.QueryCompleted(_logger, "Types", "list",
-                            stopwatch?.ElapsedMilliseconds ?? 0, cached.StatusCode, cacheHit: true);
+                            stopwatch?.ElapsedMilliseconds ?? 0, 200, cacheHit: true);
                     }
-                    return cached;
+                    var cachedResult = cached.Cast<IContentType>().ToList().AsReadOnly();
+                    return DeliveryResult.CacheHit<IReadOnlyList<IContentType>>(cachedResult);
                 }
 
                 // Log cache miss
@@ -111,9 +114,11 @@ internal sealed class TypesQuery(
         {
             try
             {
+                // Cache the concrete types for proper serialization
+                var typesToCache = result.Value.Cast<ContentType>().ToList();
                 await _cacheManager.SetAsync(
                     cacheKey,
-                    result,
+                    typesToCache,
                     dependencies: [], // Metadata queries don't track dependencies
                     expiration: null,
                     cancellationToken: cancellationToken)

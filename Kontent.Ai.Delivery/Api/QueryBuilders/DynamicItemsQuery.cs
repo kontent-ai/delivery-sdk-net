@@ -106,6 +106,7 @@ internal sealed class DynamicItemsQuery(
         var skip = _params.Skip ?? 0;
         var limit = _params.Limit;
         string? requestUrl = null;
+        System.Net.Http.Headers.HttpResponseHeaders? responseHeaders = null;
 
         while (true)
         {
@@ -122,11 +123,13 @@ internal sealed class DynamicItemsQuery(
                 return DeliveryResult.Failure<IReadOnlyList<IContentItem<DynamicElements>>>(
                     deliveryResult.RequestUrl ?? string.Empty,
                     deliveryResult.StatusCode,
-                    deliveryResult.Error!);
+                    deliveryResult.Error!,
+                    deliveryResult.ResponseHeaders);
             }
 
-            // Capture request URL from first request
+            // Capture request URL and headers from first request
             requestUrl ??= deliveryResult.RequestUrl;
+            responseHeaders ??= deliveryResult.ResponseHeaders;
 
             var items = deliveryResult.Value.Items;
             var pageCount = items.Count;
@@ -147,6 +150,7 @@ internal sealed class DynamicItemsQuery(
             requestUrl ?? string.Empty,
             200,
             hasStaleContent: false,
-            continuationToken: null);
+            continuationToken: null,
+            responseHeaders: responseHeaders);
     }
 }

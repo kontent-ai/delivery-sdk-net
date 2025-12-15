@@ -453,6 +453,33 @@ public static class ReadmeExamples
         services.AddDeliveryMemoryCache(defaultExpiration: TimeSpan.FromHours(1));
     }
 
+    // Detecting cache hits and accessing response headers
+    public static async Task DetectingCacheHitsAsync(IDeliveryClient client)
+    {
+        var result = await client.GetItem<Article>("my-article").ExecuteAsync();
+
+        if (result.IsSuccess)
+        {
+            if (result.IsCacheHit)
+            {
+                // Response served from SDK cache (Memory or Distributed)
+                // Note: ResponseHeaders, RequestUrl, and other metadata are not available for cache hits
+                Console.WriteLine("Served from SDK cache");
+            }
+            else
+            {
+                // Response from API - headers are available
+                Console.WriteLine($"Request URL: {result.RequestUrl}");
+
+                // Check for CDN cache hit (Fastly)
+                if (result.ResponseHeaders?.TryGetValues("X-Cache", out var cacheValues) == true)
+                {
+                    Console.WriteLine($"CDN Cache: {string.Join(", ", cacheValues)}");
+                }
+            }
+        }
+    }
+
     // Distributed cache configuration (requires distributed cache registered; keep as demo)
     public static void DistributedCacheConfig(IServiceCollection services)
     {

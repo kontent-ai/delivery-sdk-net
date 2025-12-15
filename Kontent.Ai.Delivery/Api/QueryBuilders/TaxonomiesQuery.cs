@@ -1,5 +1,7 @@
 using Kontent.Ai.Delivery.Api.QueryBuilders.Filtering;
 using Kontent.Ai.Delivery.Caching;
+using Kontent.Ai.Delivery.SharedModels;
+using Kontent.Ai.Delivery.TaxonomyGroups;
 
 namespace Kontent.Ai.Delivery.Api.QueryBuilders;
 
@@ -59,12 +61,13 @@ internal sealed class TaxonomiesQuery(
             try
             {
                 cacheKey = CacheKeyBuilder.BuildTaxonomiesKey(_params, _serializedFilters);
-                var cached = await _cacheManager.GetAsync<IDeliveryResult<IReadOnlyList<ITaxonomyGroup>>>(cacheKey, cancellationToken)
+                var cached = await _cacheManager.GetAsync<List<TaxonomyGroup>>(cacheKey, cancellationToken)
                     .ConfigureAwait(false);
 
                 if (cached != null)
                 {
-                    return cached; // Cache hit
+                    var cachedResult = cached.Cast<ITaxonomyGroup>().ToList().AsReadOnly();
+                    return DeliveryResult.CacheHit<IReadOnlyList<ITaxonomyGroup>>(cachedResult);
                 }
             }
             catch (Exception)
@@ -84,9 +87,11 @@ internal sealed class TaxonomiesQuery(
         {
             try
             {
+                // Cache the concrete types for proper serialization
+                var taxonomiesToCache = result.Value.Cast<TaxonomyGroup>().ToList();
                 await _cacheManager.SetAsync(
                     cacheKey,
-                    result,
+                    taxonomiesToCache,
                     dependencies: [], // Metadata queries don't track dependencies
                     expiration: null,
                     cancellationToken: cancellationToken)

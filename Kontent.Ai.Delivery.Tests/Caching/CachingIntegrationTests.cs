@@ -50,6 +50,14 @@ public class CachingIntegrationTests
         Assert.NotNull(result2.Value);
         Assert.Equal(result1.Value.Elements.Title, result2.Value.Elements.Title);
 
+        // Verify IsCacheHit property
+        Assert.False(result1.IsCacheHit); // First call is API response
+        Assert.True(result2.IsCacheHit);  // Second call is cache hit
+
+        // Verify ResponseHeaders property
+        Assert.NotNull(result1.ResponseHeaders); // API response has headers
+        Assert.Null(result2.ResponseHeaders);    // Cache hit has no headers
+
         // Verify only one API call was made
         mock.VerifyNoOutstandingExpectation();
     }
@@ -84,6 +92,14 @@ public class CachingIntegrationTests
         Assert.NotEmpty(result1.Value);
         Assert.NotEmpty(result2.Value);
         Assert.Equal(result1.Value.Count, result2.Value.Count);
+
+        // Verify IsCacheHit property
+        Assert.False(result1.IsCacheHit); // First call is API response
+        Assert.True(result2.IsCacheHit);  // Second call is cache hit
+
+        // Verify ResponseHeaders property
+        Assert.NotNull(result1.ResponseHeaders); // API response has headers
+        Assert.Null(result2.ResponseHeaders);    // Cache hit has no headers
 
         // Verify only one API call was made
         mock.VerifyNoOutstandingExpectation();
@@ -161,6 +177,14 @@ public class CachingIntegrationTests
         Assert.Equal("Article", result1.Value.System.Name);
         Assert.Equal("Article", result2.Value.System.Name);
 
+        // Verify IsCacheHit property
+        Assert.False(result1.IsCacheHit); // First call is API response
+        Assert.True(result2.IsCacheHit);  // Second call is cache hit
+
+        // Verify ResponseHeaders property
+        Assert.NotNull(result1.ResponseHeaders); // API response has headers
+        Assert.Null(result2.ResponseHeaders);    // Cache hit has no headers
+
         // Verify only one API call was made
         mock.VerifyNoOutstandingExpectation();
     }
@@ -190,6 +214,14 @@ public class CachingIntegrationTests
         Assert.True(result2.IsSuccess);
         Assert.Equal("personas", result1.Value.System.Codename);
         Assert.Equal("personas", result2.Value.System.Codename);
+
+        // Verify IsCacheHit property
+        Assert.False(result1.IsCacheHit); // First call is API response
+        Assert.True(result2.IsCacheHit);  // Second call is cache hit
+
+        // Verify ResponseHeaders property
+        Assert.NotNull(result1.ResponseHeaders); // API response has headers
+        Assert.Null(result2.ResponseHeaders);    // Cache hit has no headers
 
         // Verify only one API call was made
         mock.VerifyNoOutstandingExpectation();
@@ -513,6 +545,14 @@ public class CachingIntegrationTests
         // Both calls hit the API (no caching)
         Assert.NotNull(result1.Value);
         Assert.NotNull(result2.Value);
+
+        // Verify IsCacheHit is false for both (no caching)
+        Assert.False(result1.IsCacheHit);
+        Assert.False(result2.IsCacheHit);
+
+        // Verify ResponseHeaders is present for both (direct API responses)
+        Assert.NotNull(result1.ResponseHeaders);
+        Assert.NotNull(result2.ResponseHeaders);
     }
 
     [Fact]

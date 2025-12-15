@@ -680,6 +680,37 @@ services.AddDeliveryDistributedCache(defaultExpiration: TimeSpan.FromHours(2));
 
 Caching is transparent - once configured, all queries are automatically cached. Cache keys are built from query parameters, ensuring proper cache hits.
 
+#### Detecting Cache Hits
+
+The SDK provides the `IsCacheHit` property on all delivery results to indicate when a response was served from the SDK's local cache:
+
+```csharp
+var result = await client.GetItem<Article>("my-article").ExecuteAsync();
+
+if (result.IsSuccess)
+{
+    if (result.IsCacheHit)
+    {
+        // Response served from SDK cache (Memory or Distributed)
+        // Note: ResponseHeaders, RequestUrl, and other metadata are not available for cache hits
+        Console.WriteLine("Served from SDK cache");
+    }
+    else
+    {
+        // Response from API - headers are available
+        Console.WriteLine($"Request URL: {result.RequestUrl}");
+
+        // Check for CDN cache hit (Fastly)
+        if (result.ResponseHeaders?.TryGetValues("X-Cache", out var cacheValues) == true)
+        {
+            Console.WriteLine($"CDN Cache: {string.Join(", ", cacheValues)}");
+        }
+    }
+}
+```
+
+> **Note**: `IsCacheHit` indicates SDK-level caching only. For CDN-level cache information (Fastly), inspect the `ResponseHeaders` property for headers like `X-Cache`.
+
 For advanced caching strategies including cache invalidation, webhook integration, and multi-tenant scenarios, see the [Caching Guide](docs/caching-guide.md).
 
 ### Preview API
@@ -810,6 +841,7 @@ var result = await client.GetItem("article")
 - **Memory cache** can lead to memory pressure with large content - monitor your application's memory usage
 - **Distributed cache** is recommended for production scenarios with multiple application instances
 - Always implement **cache invalidation** strategies, ideally using webhooks
+- **Cache hit semantics**: When `IsCacheHit` is `true`, properties like `ResponseHeaders`, `RequestUrl`, and `ContinuationToken` are not available (null). Use `IsCacheHit` to differentiate between API responses and cached results
 
 ### Strong Typing Synchronization
 

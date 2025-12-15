@@ -110,6 +110,12 @@ internal static partial class LoggerMessages
         Message = "Failed to deserialize cached value for key '{CacheKey}' (Type: {TypeName})")]
     public static partial void CacheDeserializationFailed(ILogger logger, string cacheKey, string typeName, Exception exception);
 
+    [LoggerMessage(
+        EventId = LogEventIds.CachePartialItemsWarning,
+        Level = LogLevel.Warning,
+        Message = "Partial cache: Only {CachedCount} of {TotalCount} items could be cached. Some items may not be the expected concrete type.")]
+    public static partial void CachePartialItemsWarning(ILogger logger, int cachedCount, int totalCount);
+
     // ========== HTTP Handlers ==========
 
     [LoggerMessage(
