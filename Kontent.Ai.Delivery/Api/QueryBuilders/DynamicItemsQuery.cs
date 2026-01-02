@@ -1,5 +1,5 @@
 using System.Net;
-using Kontent.Ai.Delivery.Api.QueryBuilders.Filtering;
+using Kontent.Ai.Delivery.Api.Filtering;
 
 namespace Kontent.Ai.Delivery.Api.QueryBuilders;
 
@@ -12,14 +12,19 @@ internal sealed class DynamicItemsQuery(
 {
     private readonly IDeliveryApi _api = api;
     private readonly Func<bool?> _getDefaultWaitForNewContent = getDefaultWaitForNewContent;
-    private readonly ItemFilters _filters = new();
-    private readonly Dictionary<string, string> _serializedFilters = [];
+    private readonly List<KeyValuePair<string, string>> _serializedFilters = [];
     private ListItemsParams _params = new();
     private bool? _waitForLoadingNewContentOverride;
 
-    public IDynamicItemsQuery WithLanguage(string languageCodename)
+    public IDynamicItemsQuery WithLanguage(string languageCodename, LanguageFallbackMode languageFallbackMode = LanguageFallbackMode.Enabled)
     {
         _params = _params with { Language = languageCodename };
+        if (languageFallbackMode == LanguageFallbackMode.Disabled)
+        {
+            _serializedFilters.Add(new KeyValuePair<string, string>(
+                FilterPath.System("language") + FilterSuffix.Eq,
+                FilterValueSerializer.Serialize(languageCodename)));
+        }
         return this;
     }
 
@@ -53,9 +58,14 @@ internal sealed class DynamicItemsQuery(
         return this;
     }
 
-    public IDynamicItemsQuery OrderBy(string elementOrAttributePath, bool ascending = true)
+    public IDynamicItemsQuery OrderBy(string elementOrAttributePath, OrderingMode orderingMode = OrderingMode.Ascending)
     {
-        _params = _params with { OrderBy = ascending ? $"{elementOrAttributePath}[asc]" : $"{elementOrAttributePath}[desc]" };
+        _params = _params with
+        {
+            OrderBy = orderingMode == OrderingMode.Ascending
+                ? $"{elementOrAttributePath}[asc]"
+                : $"{elementOrAttributePath}[desc]"
+        };
         return this;
     }
 
@@ -71,18 +81,10 @@ internal sealed class DynamicItemsQuery(
         return this;
     }
 
-    public IDynamicItemsQuery Filter(Func<IItemFilters, IFilter> filterBuilder)
+    public IDynamicItemsQuery Where(Func<IItemsFilterBuilder, IItemsFilterBuilder> build)
     {
-        var filter = filterBuilder(_filters);
-        var (key, value) = filter.ToQueryParameter();
-        _serializedFilters.Add(key, value);
-        return this;
-    }
-
-    public IDynamicItemsQuery Where(IFilter filter)
-    {
-        var (key, value) = filter.ToQueryParameter();
-        _serializedFilters.Add(key, value);
+        ArgumentNullException.ThrowIfNull(build);
+        build(new ItemsFilterBuilder(_serializedFilters));
         return this;
     }
 
@@ -90,7 +92,10 @@ internal sealed class DynamicItemsQuery(
     {
         // Get raw response from Refit API
         bool? wait = _waitForLoadingNewContentOverride ?? _getDefaultWaitForNewContent();
-        var rawResponse = await _api.GetItemsInternalAsync<IDynamicElements>(_params, _serializedFilters, wait).ConfigureAwait(false);
+        var rawResponse = await _api.GetItemsInternalAsync<IDynamicElements>(
+            _params,
+            FilterQueryParams.ToQueryDictionary(_serializedFilters),
+            wait).ConfigureAwait(false);
 
         // Convert IApiResponse to IDeliveryResult
         var deliveryResult = await rawResponse.ToDeliveryResultAsync();
@@ -112,7 +117,10 @@ internal sealed class DynamicItemsQuery(
             var pageParams = _params with { Skip = skip, Limit = limit };
 
             var wait = _waitForLoadingNewContentOverride ?? _getDefaultWaitForNewContent();
-            var response = await _api.GetItemsInternalAsync<IDynamicElements>(pageParams, _serializedFilters, wait).ConfigureAwait(false);
+            var response = await _api.GetItemsInternalAsync<IDynamicElements>(
+                pageParams,
+                FilterQueryParams.ToQueryDictionary(_serializedFilters),
+                wait).ConfigureAwait(false);
 
             // Convert to delivery result
             var deliveryResult = await response.ToDeliveryResultAsync();

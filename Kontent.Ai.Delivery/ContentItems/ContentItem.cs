@@ -3,7 +3,6 @@ using System.Text.Json;
 
 namespace Kontent.Ai.Delivery.ContentItems;
 
-
 /// <inheritdoc cref="IContentItem{TModel}" />
 internal sealed record ContentItem<TModel> : IContentItem<TModel>, IHydratableContentItem
 {

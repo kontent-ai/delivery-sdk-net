@@ -9,8 +9,9 @@ public interface IDynamicItemsQuery
     /// Sets the language codename for the request.
     /// </summary>
     /// <param name="languageCodename">Language codename.</param>
+    /// <param name="languageFallbackMode">Language fallback mode.</param>
     /// <returns>The query builder for method chaining.</returns>
-    IDynamicItemsQuery WithLanguage(string languageCodename);
+    IDynamicItemsQuery WithLanguage(string languageCodename, LanguageFallbackMode languageFallbackMode = LanguageFallbackMode.Enabled);
 
     /// <summary>
     /// Includes only specified element codenames in the response.
@@ -51,9 +52,9 @@ public interface IDynamicItemsQuery
     /// Orders the results by the specified element or system attribute.
     /// </summary>
     /// <param name="elementOrAttributePath">Element or attribute path for ordering.</param>
-    /// <param name="ascending">Whether to order in ascending order.</param>
+    /// <param name="orderingMode">Ordering mode (ascending/descending).</param>
     /// <returns>The query builder for method chaining.</returns>
-    IDynamicItemsQuery OrderBy(string elementOrAttributePath, bool ascending = true);
+    IDynamicItemsQuery OrderBy(string elementOrAttributePath, OrderingMode orderingMode = OrderingMode.Ascending);
 
     /// <summary>
     /// Includes the total count in the response for pagination purposes.
@@ -69,18 +70,14 @@ public interface IDynamicItemsQuery
     IDynamicItemsQuery WaitForLoadingNewContent(bool enabled = true);
 
     /// <summary>
-    /// Adds a filter using the fluent filter builder.
+    /// Adds filtering conditions to the query.
     /// </summary>
-    /// <param name="filterBuilder">Function to build the filter.</param>
+    /// <remarks>
+    /// The returned query uses AND semantics between conditions (multiple query parameters).
+    /// </remarks>
+    /// <param name="build">Builder function that appends one or more filtering conditions.</param>
     /// <returns>The query builder for method chaining.</returns>
-    IDynamicItemsQuery Filter(Func<IItemFilters, IFilter> filterBuilder);
-
-    /// <summary>
-    /// Adds a pre-built filter to the query.
-    /// </summary>
-    /// <param name="filter">The filter to add.</param>
-    /// <returns>The query builder for method chaining.</returns>
-    IDynamicItemsQuery Where(IFilter filter);
+    IDynamicItemsQuery Where(Func<IItemsFilterBuilder, IItemsFilterBuilder> build);
 
     /// <summary>
     /// Executes the built query and returns a functional result.

@@ -1,7 +1,7 @@
 using System.Diagnostics;
 using System.Net;
 using Kontent.Ai.Delivery.Abstractions.ContentItems.Processing;
-using Kontent.Ai.Delivery.Api.QueryBuilders.Filtering;
+using Kontent.Ai.Delivery.Api.Filtering;
 using Kontent.Ai.Delivery.Caching;
 using Kontent.Ai.Delivery.ContentItems;
 using Kontent.Ai.Delivery.Logging;
@@ -22,15 +22,20 @@ internal sealed class ItemsQuery<TModel>(
     private readonly IElementsPostProcessor _elementsPostProcessor = elementsPostProcessor;
     private readonly IDeliveryCacheManager? _cacheManager = cacheManager;
     private readonly ILogger? _logger = logger;
-    private readonly ItemFilters _filters = new();
-    private readonly Dictionary<string, string> _serializedFilters = [];
+    private readonly List<KeyValuePair<string, string>> _serializedFilters = [];
     private ListItemsParams _params = new();
     private bool? _waitForLoadingNewContentOverride;
     private static bool IsDynamicModel => typeof(TModel) == typeof(IDynamicElements) || typeof(TModel) == typeof(DynamicElements);
 
-    public IItemsQuery<TModel> WithLanguage(string languageCodename)
+    public IItemsQuery<TModel> WithLanguage(string languageCodename, LanguageFallbackMode languageFallbackMode = LanguageFallbackMode.Enabled)
     {
         _params = _params with { Language = languageCodename };
+        if (languageFallbackMode == LanguageFallbackMode.Disabled)
+        {
+            _serializedFilters.Add(new KeyValuePair<string, string>(
+                FilterPath.System("language") + FilterSuffix.Eq,
+                FilterValueSerializer.Serialize(languageCodename)));
+        }
         return this;
     }
 
@@ -64,9 +69,14 @@ internal sealed class ItemsQuery<TModel>(
         return this;
     }
 
-    public IItemsQuery<TModel> OrderBy(string elementOrAttributePath, bool ascending = true)
+    public IItemsQuery<TModel> OrderBy(string elementOrAttributePath, OrderingMode orderingMode = OrderingMode.Ascending)
     {
-        _params = _params with { OrderBy = ascending ? $"{elementOrAttributePath}[asc]" : $"{elementOrAttributePath}[desc]" };
+        _params = _params with
+        {
+            OrderBy = orderingMode == OrderingMode.Ascending
+                ? $"{elementOrAttributePath}[asc]"
+                : $"{elementOrAttributePath}[desc]"
+        };
         return this;
     }
 
@@ -82,18 +92,10 @@ internal sealed class ItemsQuery<TModel>(
         return this;
     }
 
-    public IItemsQuery<TModel> Filter(Func<IItemFilters, IFilter> filterBuilder)
+    public IItemsQuery<TModel> Where(Func<IItemsFilterBuilder, IItemsFilterBuilder> build)
     {
-        var filter = filterBuilder(_filters);
-        var (key, value) = filter.ToQueryParameter();
-        _serializedFilters.Add(key, value);
-        return this;
-    }
-
-    public IItemsQuery<TModel> Where(IFilter filter)
-    {
-        var (key, value) = filter.ToQueryParameter();
-        _serializedFilters.Add(key, value);
+        ArgumentNullException.ThrowIfNull(build);
+        build(new ItemsFilterBuilder(_serializedFilters));
         return this;
     }
 
@@ -143,7 +145,10 @@ internal sealed class ItemsQuery<TModel>(
 
         // ========== 2. API CALL (cache miss or disabled) ==========
         bool? wait = _waitForLoadingNewContentOverride ?? _getDefaultWaitForNewContent();
-        var rawResponse = await _api.GetItemsInternalAsync<TModel>(_params, _serializedFilters, wait).ConfigureAwait(false);
+        var rawResponse = await _api.GetItemsInternalAsync<TModel>(
+            _params,
+            FilterQueryParams.ToQueryDictionary(_serializedFilters),
+            wait).ConfigureAwait(false);
 
         // Convert IApiResponse to IDeliveryResult
         var deliveryResult = await rawResponse.ToDeliveryResultAsync().ConfigureAwait(false);
@@ -265,7 +270,10 @@ internal sealed class ItemsQuery<TModel>(
             var pageParams = _params with { Skip = skip, Limit = limit };
 
             var wait = _waitForLoadingNewContentOverride ?? _getDefaultWaitForNewContent();
-            var response = await _api.GetItemsInternalAsync<TModel>(pageParams, _serializedFilters, wait).ConfigureAwait(false);
+            var response = await _api.GetItemsInternalAsync<TModel>(
+                pageParams,
+                FilterQueryParams.ToQueryDictionary(_serializedFilters),
+                wait).ConfigureAwait(false);
 
             // Convert to delivery result
             var deliveryResult = await response.ToDeliveryResultAsync().ConfigureAwait(false);

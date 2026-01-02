@@ -24,16 +24,13 @@ public interface ITypesQuery
     ITypesQuery Limit(int limit);
 
     /// <summary>
-    /// Adds a filter to the query using a filter builder function.
+    /// Adds filtering conditions to the query.
     /// </summary>
-    /// <param name="filterBuilder">Function that builds a filter using the types filter builder.</param>
-    ITypesQuery Filter(Func<ITypeFilters, IFilter> filterBuilder);
-
-    /// <summary>
-    /// Adds a filter to the query.
-    /// </summary>
-    /// <param name="filter">The filter to add.</param>
-    ITypesQuery Where(IFilter filter);
+    /// <remarks>
+    /// The returned query uses AND semantics between conditions (multiple query parameters).
+    /// </remarks>
+    /// <param name="build">Builder function that appends one or more filtering conditions.</param>
+    ITypesQuery Where(Func<ITypesFilterBuilder, ITypesFilterBuilder> build);
 
     /// <summary>
     /// Overrides the global option for waiting on the newest content for this specific request.

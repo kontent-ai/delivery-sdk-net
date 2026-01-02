@@ -60,8 +60,7 @@ internal sealed class HtmlResolver : IHtmlResolver
 
     public async ValueTask<string> ResolveAsync(IRichTextContent richText)
     {
-        if (richText == null)
-            throw new ArgumentNullException(nameof(richText));
+        ArgumentNullException.ThrowIfNull(richText);
 
         var htmlBuilder = new StringBuilder();
 

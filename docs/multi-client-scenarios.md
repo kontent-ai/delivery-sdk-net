@@ -435,7 +435,7 @@ public class NikeBrandService : IBrandContentService
     public async Task<IEnumerable<Product>> GetFeaturedProductsAsync()
     {
         var result = await _client.GetItems<Product>()
-            .Filter(f => f.Any(Elements.GetPath("tags"), "featured"))
+            .Where(f => f.Element("tags").ContainsAny("featured"))
             .Limit(10)
             .ExecuteAsync();
         return result.Value;
@@ -502,7 +502,7 @@ public class AggregatedContentService
         {
             var client = _factory.Get(brandName);
             var result = await client.GetItems<Product>()
-                .Filter(f => f.Any(Elements.GetPath("tags"), "featured"))
+                .Where(f => f.Element("tags").ContainsAny("featured"))
                 .Limit(5)
                 .ExecuteAsync();
 
@@ -768,8 +768,8 @@ public class RegionalContentService
         var client = _factory.Get(clientName);
 
         var result = await client.GetItems<Product>()
-            .Filter(f => f.Equals(ItemSystemPath.Type, "product"))
-            .Filter(f => f.GreaterThan(Elements.GetPath("stock"), 0.0))
+            .Where(f => f.System("type").IsEqualTo("product"))
+            .Where(f => f.Element("stock").IsGreaterThan(0.0))
             .ExecuteAsync();
 
         return result.Value;

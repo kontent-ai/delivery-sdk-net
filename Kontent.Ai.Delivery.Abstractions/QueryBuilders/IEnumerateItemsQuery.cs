@@ -10,7 +10,8 @@ public interface IEnumerateItemsQuery<TModel>
     /// Sets the language codename for the request.
     /// </summary>
     /// <param name="languageCodename">Language codename.</param>
-    IEnumerateItemsQuery<TModel> WithLanguage(string languageCodename);
+    /// <param name="languageFallbackMode">Language fallback mode.</param>
+    IEnumerateItemsQuery<TModel> WithLanguage(string languageCodename, LanguageFallbackMode languageFallbackMode = LanguageFallbackMode.Enabled);
     /// <summary>
     /// Includes only specified element codenames in the response.
     /// </summary>
@@ -20,8 +21,8 @@ public interface IEnumerateItemsQuery<TModel>
     /// Orders the items by the given path in ascending or descending order.
     /// </summary>
     /// <param name="elementOrAttributePath">Element or attribute path.</param>
-    /// <param name="ascending">True for ascending; false for descending.</param>
-    IEnumerateItemsQuery<TModel> OrderBy(string elementOrAttributePath, bool ascending = true);
+    /// <param name="orderingMode">Ordering mode (ascending/descending).</param>
+    IEnumerateItemsQuery<TModel> OrderBy(string elementOrAttributePath, OrderingMode orderingMode = OrderingMode.Ascending);
 
     /// <summary>
     /// Overrides the global option for waiting on the newest content for this specific request.
@@ -30,18 +31,14 @@ public interface IEnumerateItemsQuery<TModel>
     IEnumerateItemsQuery<TModel> WaitForLoadingNewContent(bool enabled = true);
 
     /// <summary>
-    /// Adds a filter to the query using a filter builder function.
+    /// Adds filtering conditions to the query.
     /// </summary>
-    /// <param name="filterBuilder">Function that builds a filter using the items filter builder.</param>
+    /// <remarks>
+    /// The returned query uses AND semantics between conditions (multiple query parameters).
+    /// </remarks>
+    /// <param name="build">Builder function that appends one or more filtering conditions.</param>
     /// <returns>The query builder for method chaining.</returns>
-    IEnumerateItemsQuery<TModel> Filter(Func<IItemFilters, IFilter> filterBuilder);
-
-    /// <summary>
-    /// Adds a filter to the query.
-    /// </summary>
-    /// <param name="filter">The filter to add.</param>
-    /// <returns>The query builder for method chaining.</returns>
-    IEnumerateItemsQuery<TModel> Where(IFilter filter);
+    IEnumerateItemsQuery<TModel> Where(Func<IItemsFilterBuilder, IItemsFilterBuilder> build);
 
     /// <summary>
     /// Enumerates content items using the Delivery API items-feed endpoint.

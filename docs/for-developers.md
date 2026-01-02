@@ -132,118 +132,27 @@ public static JsonSerializerOptions CreateDefaultJsonSerializerOptions()
 - **CollectionFormat.Multi**: Required for API array parameters
 - **Custom converters**: Handle polymorphic deserialization
 
-## Filter System with OneOf
+## Filtering (fluent DSL)
 
-### Discriminated Union Types
+Filtering is expressed using a small DSL that **maps to** Delivery API filtering query parameters and operator suffixes.
 
-**Location**: `Kontent.Ai.Delivery.Abstractions/QueryBuilders/Filtering/IItemFilters.cs`
+The public surface is intentionally more ergonomic (verbose, discoverable method names), while the underlying serialization stays faithful to the wire format (e.g. `system.type[eq]=article`). The SDK also enforces endpoint capabilities at compile time (items vs types vs taxonomies expose different operator sets).
 
-The SDK uses **OneOf** library for type-safe discriminated unions:
+**Key ideas:**
+- `.System("<property>")` targets `system.<property>`
+- `.Element("<codename>")` targets `elements.<codename>` (items only)
+- Operators match Delivery API semantics: `IsEqualTo`, `IsNotEqualTo`, `IsGreaterThan`, `IsGreaterThanOrEqualTo`, `IsLessThan`, `IsLessThanOrEqualTo`, `IsWithinRange`, `IsIn`, `IsNotIn`, `Contains`, `ContainsAny`, `ContainsAll`, `IsEmpty`, `IsNotEmpty`
+- Filters are combined using logical **AND** (each operator adds another query parameter)
 
-```csharp
-// Type aliases using OneOf
-using ScalarValue = OneOf.OneOf<string, double, DateTime, bool>;
-using ComparableValue = OneOf.OneOf<double, DateTime, string>;
-using RangeBounds = OneOf.OneOf<(double Lower, double Upper), (DateTime Lower, DateTime Upper)>;
-```
-
-**Why OneOf:**
-- **Compile-time safety**: Can't pass wrong types to filter operators
-- **Exhaustive matching**: Compiler ensures all cases handled
-- **Zero allocation**: No boxing overhead for value types
-- **Pattern matching**: Clean, functional-style type discrimination
-
-### Filter Value Hierarchy
-
-**Location**: `Kontent.Ai.Delivery/Api/QueryBuilders/Filtering/FilterValue.cs`
-
-Each filter value type implements `IFilterValue` for URL serialization:
+Example:
 
 ```csharp
-public interface IFilterValue
-{
-    string Serialize();
-}
-
-public sealed record StringValue(string Value) : IFilterValue
-{
-    public string Serialize() => UrlEncoder.Default.Encode(Value);
-}
-
-public sealed record NumericValue(double Value) : IFilterValue
-{
-    public string Serialize() => Value.ToString(CultureInfo.InvariantCulture);
-}
-
-public sealed record DateTimeValue(DateTime Value) : IFilterValue
-{
-    public string Serialize() => Value.ToString("yyyy-MM-ddTHH:mm:ssZ", CultureInfo.InvariantCulture);
-}
-
-public sealed record NumericRangeValue(double Lower, double Upper) : IFilterValue
-{
-    public string Serialize() => $"{Lower.ToString(CultureInfo.InvariantCulture)},{Upper.ToString(CultureInfo.InvariantCulture)}";
-}
-```
-
-### OneOf Mapping Pattern
-
-**Location**: `Kontent.Ai.Delivery/Api/QueryBuilders/Filtering/FilterValueMapper.cs`
-
-The mapper uses OneOf's `Match` method for type-safe discrimination:
-
-```csharp
-internal static class FilterValueMapper
-{
-    /// <summary>
-    /// Maps scalar value to concrete FilterValue type using pattern matching
-    /// </summary>
-    public static IFilterValue From(ScalarValue value) => value.Match<IFilterValue>(
-        StringValue.From,        // Case: string
-        NumericValue.From,       // Case: double
-        DateTimeValue.From,      // Case: DateTime
-        BooleanValue.From        // Case: bool
-    );
-
-    /// <summary>
-    /// Maps comparable value to concrete FilterValue type
-    /// </summary>
-    public static IFilterValue From(ComparableValue value) => value.Match<IFilterValue>(
-        NumericValue.From,       // Case: double
-        DateTimeValue.From,      // Case: DateTime
-        StringValue.From         // Case: string
-    );
-
-    /// <summary>
-    /// Maps range bounds to concrete FilterValue type
-    /// </summary>
-    public static IFilterValue From(RangeBounds range) => range.Match<IFilterValue>(
-        NumericRangeValue.From,  // Case: (double, double)
-        DateRangeValue.From      // Case: (DateTime, DateTime)
-    );
-}
-```
-
-**Benefits:**
-- **Type erasure eliminated**: No runtime type checking
-- **Compiler verification**: All union members must be handled
-- **Performance**: Direct delegate invocation, no reflection
-
-### Filter Building Flow
-
-```
-User Code:
-  .Filter(f => f.Equals(ItemSystemPath.Title, "Hello"))
-         ↓
-IItemFilters.Equals(path, ScalarValue)
-         ↓
-ScalarValue.Match() discriminates to StringValue
-         ↓
-IFilter.ToQueryParameter() -> ("system.title", "Hello")
-         ↓
-Added to _serializedFilters dictionary
-         ↓
-Serialized to query string: ?system.title=Hello
+var result = await client.GetItems()
+    .Where(f => f
+        .System("type").IsEqualTo("article")
+        .Element("category").Contains("coffee")
+        .System("last_modified").IsGreaterThan(DateTime.UtcNow.AddDays(-30)))
+    .ExecuteAsync();
 ```
 
 ## HTTP Pipeline & Delegating Handlers

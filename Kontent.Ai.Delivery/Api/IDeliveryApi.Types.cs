@@ -29,7 +29,7 @@ public partial interface IDeliveryApi
     [Get("/types")]
     internal Task<IApiResponse<DeliveryTypeListingResponse>> GetTypesInternalAsync(
         [Query] ListTypesParams? queryParameters = null,
-        [Query] Dictionary<string, string>? filters = null,
+        [Query] Dictionary<string, string[]>? filters = null,
         [Header(HttpRequestHeadersExtensions.WaitForLoadingNewContentHeaderName)] bool? waitForLoadingNewContent = null);
 
     /// <summary>

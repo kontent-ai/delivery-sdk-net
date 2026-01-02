@@ -1,5 +1,5 @@
 using System.Runtime.CompilerServices;
-using Kontent.Ai.Delivery.Api.QueryBuilders.Filtering;
+using Kontent.Ai.Delivery.Api.Filtering;
 
 namespace Kontent.Ai.Delivery.Api.QueryBuilders;
 
@@ -11,15 +11,20 @@ internal sealed class EnumerateItemsQuery<TModel>(IDeliveryApi api, Func<bool?> 
     private readonly IElementsPostProcessor _elementsPostProcessor = elementsPostProcessor;
     private EnumItemsParams _params = new();
     private bool? _waitForLoadingNewContentOverride;
-    private readonly ItemFilters _filters = new();
-    private readonly Dictionary<string, string> _serializedFilters = [];
+    private readonly List<KeyValuePair<string, string>> _serializedFilters = [];
     private static bool IsDynamicModel =>
         typeof(TModel) == typeof(Kontent.Ai.Delivery.Abstractions.IDynamicElements) ||
         typeof(TModel) == typeof(Kontent.Ai.Delivery.ContentItems.DynamicElements);
 
-    public IEnumerateItemsQuery<TModel> WithLanguage(string languageCodename)
+    public IEnumerateItemsQuery<TModel> WithLanguage(string languageCodename, LanguageFallbackMode languageFallbackMode = LanguageFallbackMode.Enabled)
     {
         _params = _params with { Language = languageCodename };
+        if (languageFallbackMode == LanguageFallbackMode.Disabled)
+        {
+            _serializedFilters.Add(new KeyValuePair<string, string>(
+                FilterPath.System("language") + FilterSuffix.Eq,
+                FilterValueSerializer.Serialize(languageCodename)));
+        }
         return this;
     }
 
@@ -29,9 +34,14 @@ internal sealed class EnumerateItemsQuery<TModel>(IDeliveryApi api, Func<bool?> 
         return this;
     }
 
-    public IEnumerateItemsQuery<TModel> OrderBy(string elementOrAttributePath, bool ascending = true)
+    public IEnumerateItemsQuery<TModel> OrderBy(string elementOrAttributePath, OrderingMode orderingMode = OrderingMode.Ascending)
     {
-        _params = _params with { OrderBy = ascending ? $"{elementOrAttributePath}[asc]" : $"{elementOrAttributePath}[desc]" };
+        _params = _params with
+        {
+            OrderBy = orderingMode == OrderingMode.Ascending
+                ? $"{elementOrAttributePath}[asc]"
+                : $"{elementOrAttributePath}[desc]"
+        };
         return this;
     }
 
@@ -41,18 +51,10 @@ internal sealed class EnumerateItemsQuery<TModel>(IDeliveryApi api, Func<bool?> 
         return this;
     }
 
-    public IEnumerateItemsQuery<TModel> Filter(Func<IItemFilters, IFilter> filterBuilder)
+    public IEnumerateItemsQuery<TModel> Where(Func<IItemsFilterBuilder, IItemsFilterBuilder> build)
     {
-        var filter = filterBuilder(_filters);
-        var (key, value) = filter.ToQueryParameter();
-        _serializedFilters.Add(key, value);
-        return this;
-    }
-
-    public IEnumerateItemsQuery<TModel> Where(IFilter filter)
-    {
-        var (key, value) = filter.ToQueryParameter();
-        _serializedFilters.Add(key, value);
+        ArgumentNullException.ThrowIfNull(build);
+        build(new ItemsFilterBuilder(_serializedFilters));
         return this;
     }
 
@@ -65,7 +67,12 @@ internal sealed class EnumerateItemsQuery<TModel>(IDeliveryApi api, Func<bool?> 
         while (true)
         {
             var resp = await _api
-                .GetItemsFeedInternalAsync<TModel>(_params, _serializedFilters, token, wait, cancellationToken)
+                .GetItemsFeedInternalAsync<TModel>(
+                    _params,
+                    FilterQueryParams.ToQueryDictionary(_serializedFilters),
+                    token,
+                    wait,
+                    cancellationToken)
                 .ConfigureAwait(false);
 
             if (!resp.IsSuccessStatusCode || resp.Content is null)

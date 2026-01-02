@@ -33,7 +33,7 @@ public class DeliveryClientBenchmark
 
         mockHttp
             .When($"{baseUrl}/items")
-            .WithQueryString("system.type=article")
+            .WithQueryString("system.type[eq]", "article")
             .Respond("application/json",
                 await File.ReadAllTextAsync(Path.Combine(Environment.CurrentDirectory, $"Fixtures{Path.DirectorySeparatorChar}full_articles.json")));
 
@@ -50,6 +50,6 @@ public class DeliveryClientBenchmark
     [Benchmark]
     public async Task<IDeliveryResult<IReadOnlyList<IContentItem<Article>>>> GetItemsAsync()
     {
-        return await _client.GetItems<Article>().Filter(filter => filter.Equals(ItemSystemPath.Type, "article")).ExecuteAsync();
+        return await _client.GetItems<Article>().Where(f => f.System("type").IsEqualTo("article")).ExecuteAsync();
     }
 }

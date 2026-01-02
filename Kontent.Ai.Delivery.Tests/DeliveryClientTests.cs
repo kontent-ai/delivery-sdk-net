@@ -1,6 +1,6 @@
 using System.Net;
 using Kontent.Ai.Delivery.Abstractions;
-using Kontent.Ai.Delivery.Api.QueryBuilders.Filtering;
+using Kontent.Ai.Delivery.Api.Filtering;
 using Kontent.Ai.Delivery.Extensions;
 using Kontent.Ai.Delivery.Tests.Models.ContentTypes;
 using Microsoft.Extensions.DependencyInjection;
@@ -135,7 +135,7 @@ public class DeliveryClientTests
             .Respond("application/json", await File.ReadAllTextAsync(Path.Combine(Environment.CurrentDirectory, $"Fixtures{Path.DirectorySeparatorChar}DeliveryClient{Path.DirectorySeparatorChar}articles_feed.json")));
 
         var client = CreateClient(mock);
-        var items = await client.GetItemsFeed<Article>().Filter(f => f.Equals(ItemSystemPath.Type, "article")).EnumerateAllAsync();
+        var items = await client.GetItemsFeed<Article>().Where(f => f.System("type").IsEqualTo("article")).EnumerateAllAsync();
 
         Assert.NotEmpty(items);
     }
@@ -193,9 +193,8 @@ public class DeliveryClientTests
 
         var client = CreateClient(mock);
 
-        var filter = new Filter(ItemSystemPath.Type, FilterOperator.Equals, StringValue.From("article"));
         var result = await client.GetItems<IDynamicElements>()
-            .Where(filter)
+            .Where(f => f.System("type").IsEqualTo("article"))
             .ExecuteAsync();
 
         Assert.True(result.IsSuccess);

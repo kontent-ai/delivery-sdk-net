@@ -1,4 +1,4 @@
-using Kontent.Ai.Delivery.Api.QueryBuilders.Filtering;
+using Kontent.Ai.Delivery.Api.Filtering;
 using Kontent.Ai.Delivery.Caching;
 using Kontent.Ai.Delivery.TaxonomyGroups;
 
@@ -11,8 +11,7 @@ internal sealed class TaxonomiesQuery(
     IDeliveryCacheManager? cacheManager) : ITaxonomiesQuery
 {
     private readonly IDeliveryApi _api = api;
-    private readonly TaxonomyFilters _filters = new();
-    private readonly Dictionary<string, string> _serializedFilters = [];
+    private readonly List<KeyValuePair<string, string>> _serializedFilters = [];
     private ListTaxonomyGroupsParams _params = new();
     private bool? _waitForLoadingNewContentOverride;
     private readonly Func<bool?> _getDefaultWaitForNewContent = getDefaultWaitForNewContent;
@@ -30,18 +29,10 @@ internal sealed class TaxonomiesQuery(
         return this;
     }
 
-    public ITaxonomiesQuery Where(Func<ITaxonomyFilters, IFilter> filterBuilder)
+    public ITaxonomiesQuery Where(Func<ITaxonomiesFilterBuilder, ITaxonomiesFilterBuilder> build)
     {
-        var filter = filterBuilder(_filters);
-        var (key, value) = filter.ToQueryParameter();
-        _serializedFilters.Add(key, value);
-        return this;
-    }
-
-    public ITaxonomiesQuery Where(IFilter filter)
-    {
-        var (key, value) = filter.ToQueryParameter();
-        _serializedFilters.Add(key, value);
+        ArgumentNullException.ThrowIfNull(build);
+        build(new TaxonomiesFilterBuilder(_serializedFilters));
         return this;
     }
 
@@ -77,7 +68,10 @@ internal sealed class TaxonomiesQuery(
 
         // API call
         bool? wait = _waitForLoadingNewContentOverride ?? _getDefaultWaitForNewContent();
-        var response = await _api.GetTaxonomiesInternalAsync(_params, _serializedFilters, wait).ConfigureAwait(false);
+        var response = await _api.GetTaxonomiesInternalAsync(
+            _params,
+            FilterQueryParams.ToQueryDictionary(_serializedFilters),
+            wait).ConfigureAwait(false);
         var deliveryResult = await response.ToDeliveryResultAsync().ConfigureAwait(false);
         var result = deliveryResult.Map(response => response.Taxonomies.AsReadOnly());
 

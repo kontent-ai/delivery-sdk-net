@@ -33,10 +33,7 @@ internal sealed class ContentDeserializer(JsonSerializerOptions options) : ICont
             throw new ArgumentException("JSON cannot be null or empty", nameof(json));
         }
 
-        if (modelType == null)
-        {
-            throw new ArgumentNullException(nameof(modelType));
-        }
+        ArgumentNullException.ThrowIfNull(modelType);
 
         var deserializer = _compiledDeserializers.GetOrAdd(modelType, BuildDeserializer);
         return deserializer(json, _options);

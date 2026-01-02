@@ -183,7 +183,7 @@ For large datasets, use the items feed for efficient pagination:
 
 ```csharp
 var query = client.GetItemsFeed()
-    .OrderBy(ItemSystemPath.LastModified, true);
+    .OrderBy("system.last_modified");
 
 await foreach (var item in query.ExecuteAsync())
 {
@@ -212,56 +212,55 @@ The SDK provides a type-safe filtering API with support for various operators:
 
 ```csharp
 var result = await client.GetItems()
-    .Filter(f => f.Equals(ItemSystemPath.Type, "article"))
-    .Filter(f => f.Contains(Elements.GetPath("title"), "coffee"))
+    .Where(f => f
+        .System("type").IsEqualTo("article")
+        // [contains] is for arrays (taxonomy/linked items/multiple choice), not strings.
+        // See Delivery API docs: https://kontent.ai/learn/docs/apis/delivery-api/filtering-parameters?sl=1
+        .Element("category").Contains("coffee"))
     .Limit(20)
     .ExecuteAsync();
 ```
 
-#### Using .Where with Preconstructed Filters
+#### Conditional Composition (instead of LINQ-like .Where)
 
 ```csharp
-// Build a filter object (useful for reuse or conditional composition)
-var filter = new Filter(
-    ItemSystemPath.Type,
-    FilterOperator.Equals,
-    StringValue.From("article"));
+var query = client.GetItems();
 
-var result = await client.GetItems()
-    .Where(filter) // accepts IFilter
-    .ExecuteAsync();
+if (onlyArticles)
+{
+    query = query.Where(f => f.System("type").IsEqualTo("article"));
+}
+
+var result = await query.ExecuteAsync();
 ```
 
 #### Common Filter Operators
 
 ```csharp
-// Equality
-.Filter(f => f.Equals(ItemSystemPath.Type, "product"))
-.Filter(f => f.NotEquals(ItemSystemPath.Collection, "archived"))
-
-// Comparison (numbers, dates, strings)
-.Filter(f => f.GreaterThan(Elements.GetPath("price"), 100.0))
-.Filter(f => f.LessThanOrEqual(Elements.GetPath("rating"), 4.5))
-
-// Range (inclusive)
-.Filter(f => f.Range(Elements.GetPath("price"), (50.0, 500.0)))
-
-// Array membership
-.Filter(f => f.In(ItemSystemPath.Type, new[] { "article", "blog_post" }))
-
-// Multi-value element matching
-.Filter(f => f.Any(Elements.GetPath("tags"), "featured", "trending"))
-.Filter(f => f.All(Elements.GetPath("categories"), "tech", "news"))
-
-// Null/empty checks
-.Filter(f => f.NotEmpty(Elements.GetPath("description")))
+var query = client.GetItems()
+    .Where(f => f
+        // Equality
+        .System("type").IsEqualTo("product")
+        .System("collection").IsNotEqualTo("archived")
+        // Comparison (numbers, dates, strings)
+        .Element("price").IsGreaterThan(100.0)
+        .Element("rating").IsLessThanOrEqualTo(4.5)
+        // Range (inclusive)
+        .Element("price").IsWithinRange(50.0, 500.0)
+        // Array membership
+        .System("type").IsIn("article", "blog_post")
+        // Multi-value element matching
+        .Element("tags").ContainsAny("featured", "trending")
+        .Element("categories").ContainsAll("tech", "news")
+        // Null/empty checks
+        .Element("description").IsNotEmpty());
 ```
 
 #### Ordering and Pagination
 
 ```csharp
 var result = await client.GetItems()
-    .OrderBy(ItemSystemPath.LastModified, ascending: false)
+    .OrderBy("system.last_modified", OrderingMode.Descending)
     .Skip(0)
     .Limit(10)
     .ExecuteAsync();
@@ -317,7 +316,7 @@ public record Article
 
 // Query with strong typing
 var result = await client.GetItems<Article>()
-    .Filter(f => f.Equals(ItemSystemPath.Type, "article"))
+    .Where(f => f.System("type").IsEqualTo("article"))
     .WithLanguage("en-US")
     .ExecuteAsync();
 
@@ -618,7 +617,7 @@ var result = await client.GetItem("homepage")
 
 // Get all articles in German (strongly typed)
 var articlesResult = await client.GetItems<Article>()
-    .Filter(f => f.Equals(ItemSystemPath.Codename, "article"))
+    .Where(f => f.System("type").IsEqualTo("article"))
     .WithLanguage("de-DE")
     .ExecuteAsync();
 ```
@@ -627,7 +626,19 @@ var articlesResult = await client.GetItems<Article>()
 
 Language fallbacks are configured in your Kontent.ai project. The SDK respects these settings automatically. If content is not available in the requested language, the SDK returns content according to your fallback configuration.
 
-In order to ignore language callbacks, you can combine `.WithLanguage` and filtering on `system.language`, setting both to the desired language codename. See [Ignoring language fallbacks](https://kontent.ai/learn/develop/hello-world/get-localized-content/typescript#a-ignoring-language-fallbacks) in Kontent.ai documentation for more details.
+By default, `.WithLanguage("<lang>")` requests a language variant while still allowing fallbacks configured in Kontent.ai (this is equivalent to using the Delivery API `language=<lang>` parameter without also filtering by `system.language`).
+
+To **disable language fallbacks** for a specific query (return only items that are actually translated into the requested language), use:
+
+```csharp
+var result = await client.GetItems<Article>()
+    .WithLanguage("es-ES", LanguageFallbackMode.Disabled)
+    .ExecuteAsync();
+```
+
+When `LanguageFallbackMode.Disabled` is used, the SDK automatically adds the equivalent of `system.language[eq]=<lang>` to the request (so the query uses both `language=<lang>` and `system.language=<lang>` as described in Kontent.ai docs).
+
+You can still achieve the same behavior manually by combining `.WithLanguage` and filtering on `system.language`, setting both to the desired language codename. See [Ignoring language fallbacks](https://kontent.ai/learn/develop/hello-world/get-localized-content/typescript#a-ignoring-language-fallbacks) in Kontent.ai documentation for more details.
 
 #### Get Available Languages
 

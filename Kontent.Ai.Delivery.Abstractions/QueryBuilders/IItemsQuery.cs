@@ -10,8 +10,9 @@ public interface IItemsQuery<TModel>
     /// Sets the language codename for the request.
     /// </summary>
     /// <param name="languageCodename">Language codename.</param>
+    /// <param name="languageFallbackMode">Language fallback mode.</param>
     /// <returns>The query builder for method chaining.</returns>
-    IItemsQuery<TModel> WithLanguage(string languageCodename);
+    IItemsQuery<TModel> WithLanguage(string languageCodename, LanguageFallbackMode languageFallbackMode = LanguageFallbackMode.Enabled);
 
     /// <summary>
     /// Includes only specified element codenames in the response.
@@ -52,9 +53,9 @@ public interface IItemsQuery<TModel>
     /// Orders the items by the given path in ascending or descending order.
     /// </summary>
     /// <param name="elementOrAttributePath">Element or attribute path.</param>
-    /// <param name="ascending">True for ascending; false for descending.</param>
+    /// <param name="orderingMode">Ordering mode (ascending/descending).</param>
     /// <returns>The query builder for method chaining.</returns>
-    IItemsQuery<TModel> OrderBy(string elementOrAttributePath, bool ascending = true);
+    IItemsQuery<TModel> OrderBy(string elementOrAttributePath, OrderingMode orderingMode = OrderingMode.Ascending);
 
     /// <summary>
     /// Requests the total count to be included in the response.
@@ -70,18 +71,14 @@ public interface IItemsQuery<TModel>
     IItemsQuery<TModel> WaitForLoadingNewContent(bool enabled = true);
 
     /// <summary>
-    /// Adds a filter to the query using a filter builder function.
+    /// Adds filtering conditions to the query.
     /// </summary>
-    /// <param name="filterBuilder">Function that builds a filter using the items filter builder.</param>
+    /// <remarks>
+    /// The returned query uses AND semantics between conditions (multiple query parameters).
+    /// </remarks>
+    /// <param name="build">Builder function that appends one or more filtering conditions.</param>
     /// <returns>The query builder for method chaining.</returns>
-    IItemsQuery<TModel> Filter(Func<IItemFilters, IFilter> filterBuilder);
-
-    /// <summary>
-    /// Adds a filter to the query.
-    /// </summary>
-    /// <param name="filter">The filter to add.</param>
-    /// <returns>The query builder for method chaining.</returns>
-    IItemsQuery<TModel> Where(IFilter filter);
+    IItemsQuery<TModel> Where(Func<IItemsFilterBuilder, IItemsFilterBuilder> build);
 
     /// <summary>
     /// Executes the built query and returns a functional result.
