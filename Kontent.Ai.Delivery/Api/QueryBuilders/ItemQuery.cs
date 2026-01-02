@@ -1,4 +1,5 @@
 using System.Diagnostics;
+using System.Net;
 using Kontent.Ai.Delivery.Abstractions.ContentItems.Processing;
 using Kontent.Ai.Delivery.Caching;
 using Kontent.Ai.Delivery.ContentItems;
@@ -82,7 +83,7 @@ internal sealed class ItemQuery<TModel>(
                     {
                         LoggerMessages.QueryCacheHit(_logger, cacheKey);
                         LoggerMessages.QueryCompleted(_logger, "Item", _codename,
-                            stopwatch?.ElapsedMilliseconds ?? 0, 200, cacheHit: true);
+                            stopwatch?.ElapsedMilliseconds ?? 0, HttpStatusCode.OK, cacheHit: true);
                     }
                     return cachedResult;
                 }

@@ -1,4 +1,5 @@
 using Microsoft.Extensions.Logging;
+using System.Net;
 
 namespace Kontent.Ai.Delivery.Logging;
 
@@ -27,7 +28,7 @@ internal static partial class LoggerMessages
         string queryType,
         string identifier,
         long elapsedMs,
-        int statusCode,
+        HttpStatusCode statusCode,
         bool cacheHit);
 
     [LoggerMessage(
@@ -38,7 +39,7 @@ internal static partial class LoggerMessages
         ILogger logger,
         string queryType,
         string identifier,
-        int statusCode,
+        HttpStatusCode statusCode,
         string? errorMessage,
         Exception? exception);
 
@@ -159,7 +160,7 @@ internal static partial class LoggerMessages
         int attemptNumber,
         int maxAttempts,
         string requestUri,
-        int statusCode,
+        HttpStatusCode statusCode,
         long delayMs);
 
     [LoggerMessage(
@@ -170,7 +171,7 @@ internal static partial class LoggerMessages
         ILogger logger,
         int maxAttempts,
         string requestUri,
-        int statusCode);
+        HttpStatusCode statusCode);
 
     [LoggerMessage(
         EventId = LogEventIds.ResilienceTimeout,

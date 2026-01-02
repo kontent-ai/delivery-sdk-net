@@ -1,3 +1,4 @@
+using System.Net;
 using Kontent.Ai.Delivery.Abstractions;
 using Kontent.Ai.Delivery.Extensions;
 using Kontent.Ai.Delivery.Tests.Models.ContentTypes;
@@ -43,7 +44,7 @@ public class ComplexElementsHydrationTests
 
         // Assert - Basic response
         Assert.True(result.IsSuccess);
-        Assert.Equal(200, result.StatusCode);
+        Assert.Equal(HttpStatusCode.OK, result.StatusCode);
         Assert.NotNull(result.Value.Elements);
 
         // Assert - String element (baseline)
@@ -92,7 +93,7 @@ public class ComplexElementsHydrationTests
 
         // Assert - Basic response
         Assert.True(result.IsSuccess);
-        Assert.Equal(200, result.StatusCode);
+        Assert.Equal(HttpStatusCode.OK, result.StatusCode);
         Assert.NotNull(result.Value.Elements);
 
         // Assert - String element (baseline)

@@ -1,8 +1,8 @@
 using System.Diagnostics;
+using System.Net;
 using Kontent.Ai.Delivery.Caching;
 using Kontent.Ai.Delivery.ContentTypes;
 using Kontent.Ai.Delivery.Logging;
-using Kontent.Ai.Delivery.SharedModels;
 using Microsoft.Extensions.Logging;
 
 namespace Kontent.Ai.Delivery.Api.QueryBuilders;
@@ -57,7 +57,7 @@ internal sealed class TypeQuery(
                     {
                         LoggerMessages.QueryCacheHit(_logger, cacheKey);
                         LoggerMessages.QueryCompleted(_logger, "Type", _codename,
-                            stopwatch?.ElapsedMilliseconds ?? 0, 200, cacheHit: true);
+                            stopwatch?.ElapsedMilliseconds ?? 0, HttpStatusCode.OK, cacheHit: true);
                     }
                     return DeliveryResult.CacheHit<IContentType>(cached);
                 }

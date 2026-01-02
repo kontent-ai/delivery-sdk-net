@@ -1,5 +1,3 @@
-using System.Collections.ObjectModel;
-
 namespace Kontent.Ai.Delivery.ContentItems.RichText.Blocks;
 
 /// <summary>

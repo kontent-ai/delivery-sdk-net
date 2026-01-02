@@ -1,5 +1,4 @@
 using System.Text.Json.Serialization;
-using Kontent.Ai.Delivery.Abstractions;
 using Kontent.Ai.Delivery.SharedModels;
 
 namespace Kontent.Ai.Delivery.Tests.Models.ContentTypes;

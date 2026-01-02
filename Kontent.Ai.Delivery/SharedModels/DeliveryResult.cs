@@ -1,4 +1,5 @@
 using System.Net.Http.Headers;
+using System.Net;
 
 namespace Kontent.Ai.Delivery.SharedModels;
 
@@ -18,7 +19,7 @@ internal sealed class DeliveryResult<T> : IDeliveryResult<T>
     public IError? Error { get; }
 
     /// <inheritdoc/>
-    public int StatusCode { get; }
+    public HttpStatusCode StatusCode { get; }
 
     /// <inheritdoc/>
     public bool HasStaleContent { get; }
@@ -47,7 +48,7 @@ internal sealed class DeliveryResult<T> : IDeliveryResult<T>
     internal DeliveryResult(
         T value,
         string requestUrl,
-        int statusCode,
+        HttpStatusCode statusCode,
         bool hasStaleContent,
         string? continuationToken,
         HttpResponseHeaders? responseHeaders)
@@ -70,7 +71,7 @@ internal sealed class DeliveryResult<T> : IDeliveryResult<T>
     {
         Value = value;
         IsSuccess = true;
-        StatusCode = 200;
+        StatusCode = HttpStatusCode.OK;
         HasStaleContent = false;
         ContinuationToken = null;
         RequestUrl = null;
@@ -87,7 +88,7 @@ internal sealed class DeliveryResult<T> : IDeliveryResult<T>
     /// <param name="responseHeaders">The HTTP response headers.</param>
     internal DeliveryResult(
         string requestUrl,
-        int statusCode,
+        HttpStatusCode statusCode,
         IError? error,
         HttpResponseHeaders? responseHeaders)
     {
@@ -122,7 +123,7 @@ internal static class DeliveryResult
     public static IDeliveryResult<T> Success<T>(
         T value,
         string requestUrl,
-        int statusCode,
+        HttpStatusCode statusCode,
         bool hasStaleContent,
         string? continuationToken,
         HttpResponseHeaders? responseHeaders)
@@ -148,7 +149,7 @@ internal static class DeliveryResult
     /// <returns>A failed result.</returns>
     public static IDeliveryResult<T> Failure<T>(
         string requestUrl,
-        int statusCode,
+        HttpStatusCode statusCode,
         IError? error,
         HttpResponseHeaders? responseHeaders = null)
     => new DeliveryResult<T>(requestUrl, statusCode, error, responseHeaders);

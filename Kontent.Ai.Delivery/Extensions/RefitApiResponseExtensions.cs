@@ -1,3 +1,5 @@
+using System.Net;
+
 namespace Kontent.Ai.Delivery.Extensions;
 
 /// <summary>
@@ -22,7 +24,7 @@ internal static class RefitApiResponseExtensions
             return Task.FromResult(DeliveryResult.Success(
                 value: apiResponse.Content,
                 requestUrl: apiResponse.RequestMessage?.RequestUri?.ToString() ?? string.Empty,
-                statusCode: (int)apiResponse.StatusCode,
+                statusCode: apiResponse.StatusCode,
                 hasStaleContent: ExtractHasStaleContent(apiResponse),
                 continuationToken: ExtractContinuationToken(apiResponse),
                 responseHeaders: apiResponse.Headers
@@ -42,12 +44,12 @@ internal static class RefitApiResponseExtensions
     private static Task<IDeliveryResult<T>> MapFailureAsync<T>(IApiResponse<T> apiResponse)
     {
         var url = apiResponse.RequestMessage?.RequestUri?.ToString() ?? string.Empty;
-        var status = (int)apiResponse.StatusCode;
+        var status = apiResponse.StatusCode;
         var headers = apiResponse.Headers;
 
         if (apiResponse.Error is not ApiException apiEx)
         {
-            var fallback = new Error { Message = "Unknown error", ErrorCode = status };
+            var fallback = new Error { Message = "Unknown error", ErrorCode = (int)status };
             return Task.FromResult(DeliveryResult.Failure<T>(url, status, fallback, headers));
         }
 
@@ -56,7 +58,7 @@ internal static class RefitApiResponseExtensions
         static async Task<IDeliveryResult<T>> MapApiExceptionAsync(
             ApiException ex,
             string url,
-            int status,
+            HttpStatusCode status,
             System.Net.Http.Headers.HttpResponseHeaders? headers)
         {
             Error error;
@@ -64,12 +66,12 @@ internal static class RefitApiResponseExtensions
             {
                 // Try to parse a structured Kontent API error from the body.
                 var parsed = await ex.GetContentAsAsync<Error>().ConfigureAwait(false);
-                error = parsed ?? new Error { Message = ex.Message, ErrorCode = status };
+                error = parsed ?? new Error { Message = ex.Message, ErrorCode = (int)status };
             }
             catch
             {
                 // Body isn't JSON or deserialization failed – fall back to best available message.
-                error = new Error { Message = ex.InnerException?.Message ?? ex.Message, ErrorCode = status };
+                error = new Error { Message = ex.InnerException?.Message ?? ex.Message, ErrorCode = (int)status };
             }
 
             return DeliveryResult.Failure<T>(url, status, error, headers);

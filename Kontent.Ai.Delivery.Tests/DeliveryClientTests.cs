@@ -1,3 +1,4 @@
+using System.Net;
 using Kontent.Ai.Delivery.Abstractions;
 using Kontent.Ai.Delivery.Api.QueryBuilders.Filtering;
 using Kontent.Ai.Delivery.Extensions;
@@ -33,7 +34,7 @@ public class DeliveryClientTests
         var result = await client.GetItem<Article>("coffee_beverages_explained").ExecuteAsync();
 
         Assert.True(result.IsSuccess);
-        Assert.Equal(200, result.StatusCode);
+        Assert.Equal(HttpStatusCode.OK, result.StatusCode);
         Assert.False(string.IsNullOrEmpty(result.RequestUrl));
         Assert.False(string.IsNullOrEmpty(result.Value.Elements.Title));
         Assert.NotNull(result.Value.Elements.TeaserImage); // TODO: fix this and extend tests to all other elements
