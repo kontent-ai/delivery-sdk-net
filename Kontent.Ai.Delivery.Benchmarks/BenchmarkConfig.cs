@@ -11,8 +11,8 @@ internal class BenchmarkConfig : ManualConfig
     {
         Add(DefaultConfig.Instance);
 
-        var rootFolder = AppContext.BaseDirectory;
-        var runFolder = DateTime.UtcNow.ToString("dd-MM-yyyy_hh-MM-ss");
+        var rootFolder = Environment.CurrentDirectory;
+        var runFolder = DateTime.UtcNow.ToString("yyyy-MM-dd_HH-mm-ss");
         ArtifactsPath = Path.Combine(rootFolder, BenchmarkArtifactsFolder, runFolder);
 
         AddDiagnoser(MemoryDiagnoser.Default);
