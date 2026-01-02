@@ -1,5 +1,5 @@
 using System.Net;
-using Kontent.Ai.Delivery.Api.QueryBuilders.Filtering;
+using Kontent.Ai.Delivery.Api.Filtering;
 
 namespace Kontent.Ai.Delivery.Api.QueryBuilders;
 
@@ -12,7 +12,6 @@ internal sealed class DynamicItemsQuery(
 {
     private readonly IDeliveryApi _api = api;
     private readonly Func<bool?> _getDefaultWaitForNewContent = getDefaultWaitForNewContent;
-    private readonly ItemFilters _filters = new();
     private readonly Dictionary<string, string> _serializedFilters = [];
     private ListItemsParams _params = new();
     private bool? _waitForLoadingNewContentOverride;
@@ -71,18 +70,10 @@ internal sealed class DynamicItemsQuery(
         return this;
     }
 
-    public IDynamicItemsQuery Filter(Func<IItemFilters, IFilter> filterBuilder)
+    public IDynamicItemsQuery Filter(Func<IItemsFilterBuilder, IItemsFilterBuilder> build)
     {
-        var filter = filterBuilder(_filters);
-        var (key, value) = filter.ToQueryParameter();
-        _serializedFilters.Add(key, value);
-        return this;
-    }
-
-    public IDynamicItemsQuery Where(IFilter filter)
-    {
-        var (key, value) = filter.ToQueryParameter();
-        _serializedFilters.Add(key, value);
+        ArgumentNullException.ThrowIfNull(build);
+        build(new ItemsFilterBuilder(_serializedFilters));
         return this;
     }
 

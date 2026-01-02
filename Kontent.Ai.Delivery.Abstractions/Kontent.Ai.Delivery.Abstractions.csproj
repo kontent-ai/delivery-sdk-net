@@ -8,8 +8,6 @@
   </PropertyGroup>
 
   <ItemGroup>
-    <PackageReference Include="OneOf" Version="3.0.271" />
-    <!-- OneOf for type-safe filter unions -->
   </ItemGroup>
 
   <ItemGroup>

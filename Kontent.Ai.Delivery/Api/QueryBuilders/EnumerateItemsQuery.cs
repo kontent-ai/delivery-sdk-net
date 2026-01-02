@@ -1,5 +1,5 @@
 using System.Runtime.CompilerServices;
-using Kontent.Ai.Delivery.Api.QueryBuilders.Filtering;
+using Kontent.Ai.Delivery.Api.Filtering;
 
 namespace Kontent.Ai.Delivery.Api.QueryBuilders;
 
@@ -11,7 +11,6 @@ internal sealed class EnumerateItemsQuery<TModel>(IDeliveryApi api, Func<bool?> 
     private readonly IElementsPostProcessor _elementsPostProcessor = elementsPostProcessor;
     private EnumItemsParams _params = new();
     private bool? _waitForLoadingNewContentOverride;
-    private readonly ItemFilters _filters = new();
     private readonly Dictionary<string, string> _serializedFilters = [];
     private static bool IsDynamicModel =>
         typeof(TModel) == typeof(Kontent.Ai.Delivery.Abstractions.IDynamicElements) ||
@@ -41,18 +40,10 @@ internal sealed class EnumerateItemsQuery<TModel>(IDeliveryApi api, Func<bool?> 
         return this;
     }
 
-    public IEnumerateItemsQuery<TModel> Filter(Func<IItemFilters, IFilter> filterBuilder)
+    public IEnumerateItemsQuery<TModel> Filter(Func<IItemsFilterBuilder, IItemsFilterBuilder> build)
     {
-        var filter = filterBuilder(_filters);
-        var (key, value) = filter.ToQueryParameter();
-        _serializedFilters.Add(key, value);
-        return this;
-    }
-
-    public IEnumerateItemsQuery<TModel> Where(IFilter filter)
-    {
-        var (key, value) = filter.ToQueryParameter();
-        _serializedFilters.Add(key, value);
+        ArgumentNullException.ThrowIfNull(build);
+        build(new ItemsFilterBuilder(_serializedFilters));
         return this;
     }
 

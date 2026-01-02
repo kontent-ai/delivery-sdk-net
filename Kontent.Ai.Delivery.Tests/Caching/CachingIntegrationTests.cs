@@ -78,12 +78,12 @@ public class CachingIntegrationTests
 
         // Act - First call (cache miss)
         var result1 = await client.GetItems<Article>()
-            .Filter(f => f.Equals(ItemSystemPath.Type, "article"))
+            .Filter(f => f.System("type").Eq("article"))
             .ExecuteAsync();
 
         // Act - Second call (cache hit)
         var result2 = await client.GetItems<Article>()
-            .Filter(f => f.Equals(ItemSystemPath.Type, "article"))
+            .Filter(f => f.System("type").Eq("article"))
             .ExecuteAsync();
 
         // Assert
@@ -285,12 +285,12 @@ public class CachingIntegrationTests
 
         // Act - First call (cache miss)
         var result1 = await client.GetItems<Article>()
-            .Filter(f => f.Equals(ItemSystemPath.Type, "article"))
+            .Filter(f => f.System("type").Eq("article"))
             .ExecuteAsync();
 
         // Act - Second call (may or may not be cache hit depending on serialization)
         var result2 = await client.GetItems<Article>()
-            .Filter(f => f.Equals(ItemSystemPath.Type, "article"))
+            .Filter(f => f.System("type").Eq("article"))
             .ExecuteAsync();
 
         // Assert
@@ -485,7 +485,7 @@ public class CachingIntegrationTests
         // Act - Cache both queries
         var singleResult = await client.GetItem<Article>(itemCodename).ExecuteAsync();
         var listResult = await client.GetItems<Article>()
-            .Filter(f => f.Equals(ItemSystemPath.Type, "article"))
+            .Filter(f => f.System("type").Eq("article"))
             .ExecuteAsync();
 
         // Invalidate the shared dependency (the item itself)
@@ -494,7 +494,7 @@ public class CachingIntegrationTests
         // Both queries should now hit the API again
         var singleResult2 = await client.GetItem<Article>(itemCodename).ExecuteAsync();
         var listResult2 = await client.GetItems<Article>()
-            .Filter(f => f.Equals(ItemSystemPath.Type, "article"))
+            .Filter(f => f.System("type").Eq("article"))
             .ExecuteAsync();
 
         // Assert

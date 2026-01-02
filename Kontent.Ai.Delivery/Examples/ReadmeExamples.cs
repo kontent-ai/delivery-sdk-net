@@ -1,7 +1,6 @@
 namespace Kontent.Ai.Delivery.Examples;
 
 using Kontent.Ai.Delivery.Abstractions;
-using Kontent.Ai.Delivery.Api.QueryBuilders.Filtering;
 using Kontent.Ai.Delivery.Configuration;
 using Kontent.Ai.Delivery.ContentItems.RichText;
 using Kontent.Ai.Delivery.ContentItems.RichText.Resolution;
@@ -90,7 +89,7 @@ public static class ReadmeExamples
     public static async Task ItemsFeedAsync(IDeliveryClient client)
     {
         var query = client.GetItemsFeed()
-            .OrderBy(ItemSystemPath.LastModified, true);
+            .OrderBy("system.last_modified", true);
 
         await foreach (var item in query.EnumerateItemsAsync())
         {
@@ -114,43 +113,42 @@ public static class ReadmeExamples
     public static async Task BasicFilteringAsync(IDeliveryClient client)
     {
         var result = await client.GetItems()
-            .Filter(f => f.Equals(ItemSystemPath.Type, "article"))
-            .Filter(f => f.Contains(Elements.GetPath("title"), "coffee"))
+            .Filter(f => f
+                .System("type").Eq("article")
+                .Element("category").Contains("coffee"))
             .Limit(20)
             .ExecuteAsync();
 
         _ = result;
     }
 
-    // Using .Where with preconstructed filters (accepts IFilter).
-    public static async Task UsingWhereWithPreconstructedFilterAsync(IDeliveryClient client)
+    // Conditional composition example (without LINQ-like .Where).
+    public static async Task ConditionalFilteringAsync(IDeliveryClient client, bool onlyArticles)
     {
-        var filter = new Filter(
-            ItemSystemPath.Type,
-            FilterOperator.Equals,
-            StringValue.From("article"));
+        var query = client.GetItems();
+        if (onlyArticles)
+        {
+            query = query.Filter(f => f.System("type").Eq("article"));
+        }
 
-        var result = await client.GetItems()
-            .Where(filter)
-            .ExecuteAsync();
-
-        await Task.CompletedTask;
+        _ = await query.ExecuteAsync();
     }
 
     // Common filter operators
     public static async Task CommonFilterOperatorsAsync(IDeliveryClient client)
     {
         var result = await client.GetItems()
-            .Filter(f => f.Equals(ItemSystemPath.Type, "product"))
-            .Filter(f => f.NotEquals(ItemSystemPath.Collection, "archived"))
-            .Filter(f => f.GreaterThan(Elements.GetPath("price"), 100.0))
-            .Filter(f => f.LessThanOrEqual(Elements.GetPath("rating"), 4.5))
-            .Filter(f => f.Range(Elements.GetPath("price"), (50.0, 500.0)))
-            .Filter(f => f.In(ItemSystemPath.Type, new[] { "article", "blog_post" }))
-            .Filter(f => f.Any(Elements.GetPath("tags"), "featured", "trending"))
-            .Filter(f => f.All(Elements.GetPath("categories"), "tech", "news"))
-            .Filter(f => f.NotEmpty(Elements.GetPath("description")))
-            .Filter(f => f.In(ItemSystemPath.Collection, ["tech", "news"]))
+            .Filter(f => f
+                .System("type").Eq("product")
+                .System("collection").Neq("archived")
+                .Element("price").Gt(100.0)
+                .Element("rating").Lte(4.5)
+                .Element("price").Range(50.0, 500.0)
+                .System("type").In("article", "blog_post")
+                .Element("tags").Any("featured", "trending")
+                .Element("categories").All("tech", "news")
+                .Element("description").Nempty()
+                .System("collection").In("tech", "news"))
             .ExecuteAsync();
 
         _ = result;
@@ -160,7 +158,7 @@ public static class ReadmeExamples
     public static async Task OrderingAndPaginationAsync(IDeliveryClient client)
     {
         var result = await client.GetItems()
-            .OrderBy(ItemSystemPath.LastModified, ascending: false)
+            .OrderBy("system.last_modified", ascending: false)
             .Skip(0)
             .Limit(10)
             .ExecuteAsync();
@@ -216,7 +214,7 @@ public static class ReadmeExamples
     public static async Task StrongTypingQueryAsync(IDeliveryClient client)
     {
         var result = await client.GetItems<Article>()
-            .Filter(f => f.Equals(ItemSystemPath.Type, "article"))
+            .Filter(f => f.System("type").Eq("article"))
             .WithLanguage("en-US")
             .ExecuteAsync();
 
@@ -422,7 +420,7 @@ public static class ReadmeExamples
             .ExecuteAsync();
 
         var articlesDe = await client.GetItems<Article>()
-            .Filter(f => f.Equals(ItemSystemPath.Type, "article"))
+            .Filter(f => f.System("type").Eq("article"))
             .WithLanguage("de-DE")
             .ExecuteAsync();
 

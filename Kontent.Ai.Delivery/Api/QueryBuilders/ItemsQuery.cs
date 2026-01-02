@@ -1,7 +1,7 @@
 using System.Diagnostics;
 using System.Net;
 using Kontent.Ai.Delivery.Abstractions.ContentItems.Processing;
-using Kontent.Ai.Delivery.Api.QueryBuilders.Filtering;
+using Kontent.Ai.Delivery.Api.Filtering;
 using Kontent.Ai.Delivery.Caching;
 using Kontent.Ai.Delivery.ContentItems;
 using Kontent.Ai.Delivery.Logging;
@@ -22,7 +22,6 @@ internal sealed class ItemsQuery<TModel>(
     private readonly IElementsPostProcessor _elementsPostProcessor = elementsPostProcessor;
     private readonly IDeliveryCacheManager? _cacheManager = cacheManager;
     private readonly ILogger? _logger = logger;
-    private readonly ItemFilters _filters = new();
     private readonly Dictionary<string, string> _serializedFilters = [];
     private ListItemsParams _params = new();
     private bool? _waitForLoadingNewContentOverride;
@@ -82,18 +81,10 @@ internal sealed class ItemsQuery<TModel>(
         return this;
     }
 
-    public IItemsQuery<TModel> Filter(Func<IItemFilters, IFilter> filterBuilder)
+    public IItemsQuery<TModel> Filter(Func<IItemsFilterBuilder, IItemsFilterBuilder> build)
     {
-        var filter = filterBuilder(_filters);
-        var (key, value) = filter.ToQueryParameter();
-        _serializedFilters.Add(key, value);
-        return this;
-    }
-
-    public IItemsQuery<TModel> Where(IFilter filter)
-    {
-        var (key, value) = filter.ToQueryParameter();
-        _serializedFilters.Add(key, value);
+        ArgumentNullException.ThrowIfNull(build);
+        build(new ItemsFilterBuilder(_serializedFilters));
         return this;
     }
 

@@ -30,18 +30,14 @@ public interface IEnumerateItemsQuery<TModel>
     IEnumerateItemsQuery<TModel> WaitForLoadingNewContent(bool enabled = true);
 
     /// <summary>
-    /// Adds a filter to the query using a filter builder function.
+    /// Adds filtering conditions to the query.
     /// </summary>
-    /// <param name="filterBuilder">Function that builds a filter using the items filter builder.</param>
+    /// <remarks>
+    /// The returned query uses AND semantics between conditions (multiple query parameters).
+    /// </remarks>
+    /// <param name="build">Builder function that appends one or more filtering conditions.</param>
     /// <returns>The query builder for method chaining.</returns>
-    IEnumerateItemsQuery<TModel> Filter(Func<IItemFilters, IFilter> filterBuilder);
-
-    /// <summary>
-    /// Adds a filter to the query.
-    /// </summary>
-    /// <param name="filter">The filter to add.</param>
-    /// <returns>The query builder for method chaining.</returns>
-    IEnumerateItemsQuery<TModel> Where(IFilter filter);
+    IEnumerateItemsQuery<TModel> Filter(Func<IItemsFilterBuilder, IItemsFilterBuilder> build);
 
     /// <summary>
     /// Enumerates content items using the Delivery API items-feed endpoint.

@@ -103,10 +103,7 @@ public class IncludeTotalCountTests
             .Respond("application/json", responseJson);
         var client = CreateClient();
         await client.GetItems<IDynamicElements>()
-            .Where(new Api.QueryBuilders.Filtering.Filter(
-                "system.type",
-                FilterOperator.Equals,
-                Api.QueryBuilders.Filtering.StringValue.From("cafe")))
+            .Filter(f => f.System("type").Eq("cafe"))
             .WithTotalCount()
             .ExecuteAsync();
 

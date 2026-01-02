@@ -319,7 +319,7 @@ await client.GetItem("homepage").WithLanguage("de-DE").ExecuteAsync();
 await client.GetItems().Limit(10).ExecuteAsync();
 // Key: "items_{hash-of-filters}_en-US_0_10"
 
-await client.GetItems().Filter(f => f.Equals(ItemSystemPath.Type, "article")).ExecuteAsync();
+await client.GetItems().Filter(f => f.System("type").Eq("article")).ExecuteAsync();
 // Key: "items_{hash-with-type-filter}_en-US_0"
 ```
 
@@ -811,8 +811,8 @@ public class CacheWarmupService : IHostedService
 
         // Pre-load recent articles
         await _client.GetItems<Article>()
-            .Filter(f => f.Equals(ItemSystemPath.Type, "article"))
-            .OrderBy(ItemSystemPath.LastModified, descending: true)
+            .Filter(f => f.System("type").Eq("article"))
+            .OrderBy("system.last_modified", ascending: false)
             .Limit(10)
             .ExecuteAsync(cancellationToken);
     }

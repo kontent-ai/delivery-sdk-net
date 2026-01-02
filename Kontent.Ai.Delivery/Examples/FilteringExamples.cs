@@ -1,5 +1,3 @@
-using Kontent.Ai.Delivery.Api.QueryBuilders.Filtering;
-
 namespace Kontent.Ai.Delivery.Examples;
 
 /// <summary>
@@ -18,25 +16,36 @@ public class FilteringExamples(IDeliveryClient client)
     {
         // Filter by content type
         var articles = await _client.GetItems<Article>()
-            .Filter(f => f.Equals(ItemSystemPath.Type, "article"))
+            .Filter(f => f.System("type").Eq("article"))
             .ExecuteAsync();
 
-        // Filter by multiple system properties
+        // Filter by multiple system properties (multiple Filter calls)
         var recentEnglishArticles = await _client.GetItems<Article>()
-            .Filter(f => f.Equals(ItemSystemPath.Type, "article"))
-            .Filter(f => f.Equals(ItemSystemPath.Language, "en-US"))
-            .Filter(f => f.GreaterThan(ItemSystemPath.LastModified, DateTime.UtcNow.AddDays(-30)))
+            .Filter(f => f
+                .System("type").Eq("article")
+                .System("language").Eq("en-US")
+                .System("last_modified").Gt(DateTime.UtcNow.AddDays(-30)))
+            .ExecuteAsync();
+
+        // Filter by multiple system properties (single Filter call with chaining)
+        var recentEnglishArticlesChained = await _client.GetItems<Article>()
+            .Filter(f => f
+                .System("type").Eq("article")
+                .System("language").Eq("en-US")
+                .System("last_modified").Gt(DateTime.UtcNow.AddDays(-30)))
             .ExecuteAsync();
 
         // Filter by content item ID
         var specificItem = await _client.GetItems<ContentItem>()
-            .Filter(f => f.Equals(ItemSystemPath.Id, "f4b3fc05-e988-4dae-9ac1-a94aba566474"))
+            .Filter(f => f.System("id").Eq("f4b3fc05-e988-4dae-9ac1-a94aba566474"))
             .ExecuteAsync();
 
         // Filter by collection
         var newsItems = await _client.GetItems<ContentItem>()
-            .Filter(f => f.Equals(ItemSystemPath.Collection, "news"))
+            .Filter(f => f.System("collection").Eq("news"))
             .ExecuteAsync();
+
+        _ = recentEnglishArticlesChained;
     }
 
     /// <summary>
@@ -44,37 +53,36 @@ public class FilteringExamples(IDeliveryClient client)
     /// </summary>
     public async Task ElementPropertyFiltering()
     {
-        // String contains operator
-        var coffeeArticles = await _client.GetItems<Article>()
-            .Filter(f => f.Contains(Elements.GetPath("title"), "coffee"))
+        var coffeeArticle = await _client.GetItems<Article>()
+            .Filter(f => f.Element("title").Eq("Coffee"))
             .ExecuteAsync();
 
         // Numeric comparison operators
         var expensiveProducts = await _client.GetItems<Product>()
-            .Filter(f => f.GreaterThanOrEqual(Elements.GetPath("price"), 1000))
+            .Filter(f => f.Element("price").Gte(1000))
             .ExecuteAsync();
 
         var affordableProducts = await _client.GetItems<Product>()
-            .Filter(f => f.LessThan(Elements.GetPath("price"), 100))
+            .Filter(f => f.Element("price").Lt(100))
             .ExecuteAsync();
 
         // Range operator for numeric values
         var midRangeProducts = await _client.GetItems<Product>()
-            .Filter(f => f.Range(Elements.GetPath("price"), (100, 500)))
+            .Filter(f => f.Element("price").Range(100, 500))
             .ExecuteAsync();
 
         // Boolean filtering
         var featuredProducts = await _client.GetItems<Product>()
-            .Filter(f => f.Equals(Elements.GetPath("is_featured"), true))
+            .Filter(f => f.Element("is_featured").Eq(true))
             .ExecuteAsync();
 
         // Empty/NotEmpty operators
         var itemsWithDescription = await _client.GetItems<ContentItem>()
-            .Filter(f => f.NotEmpty(Elements.GetPath("description")))
+            .Filter(f => f.Element("description").Nempty())
             .ExecuteAsync();
 
         var itemsWithoutImage = await _client.GetItems<ContentItem>()
-            .Filter(f => f.Empty(Elements.GetPath("thumbnail")))
+            .Filter(f => f.Element("thumbnail").Empty())
             .ExecuteAsync();
     }
 
@@ -85,32 +93,27 @@ public class FilteringExamples(IDeliveryClient client)
     {
         // IN operator - matches any of the specified values
         var techArticles = await _client.GetItems<Article>()
-            .Filter(f => f.In(Elements.GetPath("category"),
-                ["technology", "programming", "software"]))
+            .Filter(f => f.Element("category").In("technology", "programming", "software"))
             .ExecuteAsync();
 
         // NOT IN operator - excludes specified values
         var nonDraftItems = await _client.GetItems<ContentItem>()
-            .Filter(f => f.NotIn(ItemSystemPath.WorkflowStep,
-                ["draft", "review", "archived"]))
+            .Filter(f => f.System("workflow_step").Nin("draft", "review", "archived"))
             .ExecuteAsync();
 
         // ANY operator - array contains any of the specified values
         var taggedArticles = await _client.GetItems<Article>()
-            .Filter(f => f.Any(Elements.GetPath("tags"),
-                "featured", "trending", "popular"))
+            .Filter(f => f.Element("tags").Any("featured", "trending", "popular"))
             .ExecuteAsync();
 
         // ALL operator - array contains all specified values
         var completeProducts = await _client.GetItems<Product>()
-            .Filter(f => f.All(Elements.GetPath("required_features"),
-                "warranty", "manual", "support"))
+            .Filter(f => f.Element("required_features").All("warranty", "manual", "support"))
             .ExecuteAsync();
 
         // Multiple values in system properties
         var selectedTypes = await _client.GetItems<ContentItem>()
-            .Filter(f => f.In(ItemSystemPath.Type,
-                ["article", "blog_post", "news"]))
+            .Filter(f => f.System("type").In("article", "blog_post", "news"))
             .ExecuteAsync();
     }
 
@@ -123,26 +126,24 @@ public class FilteringExamples(IDeliveryClient client)
 
         // Items modified in the last week
         var recentItems = await _client.GetItems<ContentItem>()
-            .Filter(f => f.GreaterThan(ItemSystemPath.LastModified, now.AddDays(-7)))
+            .Filter(f => f.System("last_modified").Gt(now.AddDays(-7)))
             .ExecuteAsync();
 
         // Items modified between two dates
         var dateRangeItems = await _client.GetItems<ContentItem>()
-            .Filter(f => f.Range(ItemSystemPath.LastModified,
-                (now.AddMonths(-3), now.AddMonths(-1))))
+            .Filter(f => f.System("last_modified").Range(now.AddMonths(-3), now.AddMonths(-1)))
             .ExecuteAsync();
 
         // Events happening in the future
         var upcomingEvents = await _client.GetItems<Event>()
-            .Filter(f => f.GreaterThan(Elements.GetPath("event_date"), now))
+            .Filter(f => f.Element("event_date").Gt(now))
             .ExecuteAsync();
 
         // Articles published this year
         var thisYearArticles = await _client.GetItems<Article>()
-            .Filter(f => f.GreaterThanOrEqual(Elements.GetPath("publish_date"),
-                new DateTime(now.Year, 1, 1)))
-            .Filter(f => f.LessThan(Elements.GetPath("publish_date"),
-                new DateTime(now.Year + 1, 1, 1)))
+            .Filter(f => f
+                .Element("publish_date").Gte(new DateTime(now.Year, 1, 1))
+                .Element("publish_date").Lt(new DateTime(now.Year + 1, 1, 1)))
             .ExecuteAsync();
     }
 
@@ -153,13 +154,13 @@ public class FilteringExamples(IDeliveryClient client)
     {
         // E-commerce product filtering
         var filteredProducts = await _client.GetItems<Product>()
-            .Filter(f => f.Equals(ItemSystemPath.Type, "product"))
-            .Filter(f => f.Range(Elements.GetPath("price"), (50, 500)))
-            .Filter(f => f.GreaterThanOrEqual(Elements.GetPath("rating"), 4.0))
-            .Filter(f => f.Any(Elements.GetPath("categories"),
-                "electronics", "computers", "accessories"))
-            .Filter(f => f.NotEmpty(Elements.GetPath("description")))
-            .Filter(f => f.Equals(Elements.GetPath("in_stock"), true))
+            .Filter(f => f
+                .System("type").Eq("product")
+                .Element("price").Range(50, 500)
+                .Element("rating").Gte(4.0)
+                .Element("categories").Any("electronics", "computers", "accessories")
+                .Element("description").Nempty()
+                .Element("in_stock").Eq(true))
             .WithLanguage("en-US")
             .Limit(20)
             .OrderBy("elements.rating", false) // Descending
@@ -167,25 +168,27 @@ public class FilteringExamples(IDeliveryClient client)
 
         // Blog post filtering with multiple criteria
         var qualityBlogPosts = await _client.GetItems<BlogPost>()
-            .Filter(f => f.Equals(ItemSystemPath.Type, "blog_post"))
-            .Filter(f => f.GreaterThan(ItemSystemPath.LastModified,
-                DateTime.UtcNow.AddMonths(-6)))
-            .Filter(f => f.Contains(Elements.GetPath("title"), "tutorial"))
-            .Filter(f => f.All(Elements.GetPath("tags"),
-                "verified", "complete"))
-            .Filter(f => f.NotEquals(Elements.GetPath("status"), "draft"))
-            .Filter(f => f.GreaterThan(Elements.GetPath("word_count"), 1000))
+            .Filter(f => f
+                .System("type").Eq("blog_post")
+                .System("last_modified").Gt(DateTime.UtcNow.AddMonths(-6))
+                .Element("tags").Any("tutorial")
+                .Element("tags").All("verified", "complete")
+                .Element("status").Neq("draft")
+                .Element("word_count").Gt(1000))
             .WithTotalCount()
             .ExecuteAsync();
 
+        var test = await _client.GetItems<Article>()
+            .Filter(f => f.System("type").Eq("article"))
+            .ExecuteAllAsync();
+
         // Content audit query
         var outdatedContent = await _client.GetItems<ContentItem>()
-            .Filter(f => f.LessThan(ItemSystemPath.LastModified,
-                DateTime.UtcNow.AddYears(-2)))
-            .Filter(f => f.Empty(Elements.GetPath("seo_description")))
-            .Filter(f => f.NotIn(ItemSystemPath.Type,
-                ["navigation", "settings", "configuration"]))
-            .Filter(f => f.NotEquals(ItemSystemPath.Collection, "archive"))
+            .Filter(f => f
+                .System("last_modified").Lt(DateTime.UtcNow.AddYears(-2))
+                .Element("seo_description").Empty()
+                .System("type").Nin("navigation", "settings", "configuration")
+                .System("collection").Neq("archive"))
             .ExecuteAsync();
     }
 
@@ -196,32 +199,28 @@ public class FilteringExamples(IDeliveryClient client)
     {
         // Basic type filtering
         var articleType = await _client.GetTypes()
-            .Filter(f => f.Equals(TypeSystemPath.Codename, "article"))
+            .Filter(f => f.System("codename").Eq("article"))
             .ExecuteAsync();
 
         // Multiple types
         var contentTypes = await _client.GetTypes()
-            .Filter(f => f.In(TypeSystemPath.Codename,
-                "article", "blog_post", "news"))
+            .Filter(f => f.System("codename").In("article", "blog_post", "news"))
             .ExecuteAsync();
 
         // Types modified recently
         var recentlyModifiedTypes = await _client.GetTypes()
-            .Filter(f => f.GreaterThan(TypeSystemPath.LastModified,
-                DateTime.UtcNow.AddMonths(-3)))
+            .Filter(f => f.System("last_modified").Gt(DateTime.UtcNow.AddMonths(-3)))
             .ExecuteAsync();
 
         // Types within date range
         var typesInRange = await _client.GetTypes()
-            .Filter(f => f.Range(TypeSystemPath.LastModified,
-                DateTime.Parse("2024-01-01"),
-                DateTime.Parse("2024-06-30")))
+            .Filter(f => f.System("last_modified").Range(DateTime.Parse("2024-01-01"), DateTime.Parse("2024-06-30")))
             .ExecuteAsync();
 
         // Note: Types endpoint has limited filtering support
         // The following would NOT compile (compile-time safety):
-        // .Where(f => f.Contains(Elements.GetPath("name"), "text")) // ❌ Elements not supported
-        // .Where(f => f.All(TypeSystemPath.Codename, "a", "b"))    // ❌ Collection operators not supported
+        // .Filter(f => f.Element("name").Contains("text"))        // ❌ Elements not supported on types
+        // .Filter(f => f.System("codename").All("a", "b"))        // ❌ ALL operator not supported on types
     }
 
     /// <summary>
@@ -231,25 +230,24 @@ public class FilteringExamples(IDeliveryClient client)
     {
         // Basic taxonomy filtering
         var categoriesTaxonomy = await _client.GetTaxonomies()
-            .Where(f => f.Equals(TaxonomySystemPath.Codename, "categories"))
+            .Filter(f => f.System("codename").Eq("categories"))
             .ExecuteAsync();
 
         // Exclude specific taxonomy
         var nonInternalTaxonomies = await _client.GetTaxonomies()
-            .Where(f => f.NotEquals(TaxonomySystemPath.Codename, "internal"))
+            .Filter(f => f.System("codename").Neq("internal"))
             .ExecuteAsync();
 
         // Date equality (exact match only for taxonomies)
         var specificDateTaxonomy = await _client.GetTaxonomies()
-            .Where(f => f.Equals(TaxonomySystemPath.LastModified,
-                DateTime.Parse("2024-08-14T10:30:00Z")))
+            .Filter(f => f.System("last_modified").Eq(DateTime.Parse("2024-08-14T10:30:00Z")))
             .ExecuteAsync();
 
         // Note: Taxonomies endpoint has very limited filtering support
         // The following would NOT compile (compile-time safety):
-        // .Where(f => f.Range(TaxonomySystemPath.LastModified, from, to)) // ❌ Range not supported
-        // .Where(f => f.In(TaxonomySystemPath.Codename, "a", "b"))       // ❌ IN operator not supported
-        // .Where(f => f.GreaterThan(TaxonomySystemPath.LastModified, date)) // ❌ Comparison operators not supported
+        // .Filter(f => f.System("last_modified").Range(from, to))        // ❌ Range not supported on taxonomies
+        // .Filter(f => f.System("codename").In("a", "b"))                // ❌ IN operator not supported on taxonomies
+        // .Filter(f => f.System("last_modified").Gt(date))               // ❌ Comparison operators not supported on taxonomies
     }
 
     /// <summary>
@@ -260,9 +258,10 @@ public class FilteringExamples(IDeliveryClient client)
         // Full query with filters and all other parameters
         var comprehensiveQuery = await _client.GetItems<Article>()
             // Filters
-            .Filter(f => f.Equals(ItemSystemPath.Type, "article"))
-            .Filter(f => f.Contains(Elements.GetPath("title"), "guide"))
-            .Filter(f => f.Any(Elements.GetPath("tags"), "beginner", "intermediate"))
+            .Filter(f => f
+                .System("type").Eq("article")
+                .Element("tags").Any("guide")
+                .Element("tags").Any("beginner", "intermediate"))
             // Other query parameters
             .WithLanguage("en-US")
             .WithElements("title", "summary", "content", "author")
@@ -278,8 +277,9 @@ public class FilteringExamples(IDeliveryClient client)
         for (int page = 0; page < 5; page++)
         {
             var pagedResults = await _client.GetItems<Product>()
-                .Filter(f => f.Equals(Elements.GetPath("category"), "electronics"))
-                .Filter(f => f.GreaterThan(Elements.GetPath("price"), 100))
+                .Filter(f => f
+                    .Element("category").Eq("electronics")
+                    .Element("price").Gt(100))
                 .Skip(page * pageSize)
                 .Limit(pageSize)
                 .ExecuteAsync();
@@ -289,74 +289,36 @@ public class FilteringExamples(IDeliveryClient client)
     }
 
     /// <summary>
-    /// Example 9: Direct filter creation (advanced usage).
-    /// </summary>
-    public async Task DirectFilterCreation()
-    {
-        // Sometimes you might want to create filters directly
-        var customFilter = new Filter(
-            ItemSystemPath.Type,
-            FilterOperator.Equals,
-            StringValue.From("article")
-        );
-
-        // Use the direct filter
-        var results = await _client.GetItems<Article>()
-            .Where(customFilter)
-            .ExecuteAsync();
-
-        // Create complex value filters
-        var rangeFilter = new Filter(
-            Elements.GetPath("price"),
-            FilterOperator.Range,
-            NumericRangeValue.From((100, 500))
-        );
-
-        var arrayFilter = new Filter(
-            Elements.GetPath("tags"),
-            FilterOperator.In,
-            StringArrayValue.From(["featured", "popular", "trending"])
-        );
-
-        // Apply multiple direct filters
-        var complexResults = await _client.GetItems<Product>()
-            .Where(rangeFilter)
-            .Where(arrayFilter)
-            .ExecuteAsync();
-    }
-
-    /// <summary>
     /// Example 10: Special characters and encoding.
     /// </summary>
     public async Task SpecialCharacterHandling()
     {
         // Filters handle special characters automatically
         var specialChars = await _client.GetItems<Article>()
-            .Filter(f => f.Contains(Elements.GetPath("title"), "coffee & tea"))
+            .Filter(f => f.Element("title").Eq("coffee & tea"))
             .ExecuteAsync();
-        // Generates: elements.title[contains]=coffee%20%26%20tea
+        // Generates: elements.title[eq]=coffee%20%26%20tea
 
         // Unicode characters
         var unicodeSearch = await _client.GetItems<Article>()
-            .Filter(f => f.Contains(Elements.GetPath("title"), "café naïve"))
+            .Filter(f => f.Element("title").Eq("café naïve"))
             .ExecuteAsync();
         // Properly URL-encoded in the query string
 
         // Multiple values with special characters
         var specialCategories = await _client.GetItems<Product>()
-            .Filter(f => f.In(Elements.GetPath("category"),
-                ["home & garden", "sports & outdoors", "arts & crafts"]))
+            .Filter(f => f.Element("category").In("home & garden", "sports & outdoors", "arts & crafts"))
             .ExecuteAsync();
         // Each value is properly encoded in the comma-separated list
 
         // Collection expressions with string arrays
         var modernSyntax = await _client.GetItems<Product>()
-            .Filter(f => f.In(ItemSystemPath.Type, ["product", "variant", "bundle"]))
+            .Filter(f => f.System("type").In("product", "variant", "bundle"))
             .ExecuteAsync();
 
         // Collection expressions with numeric arrays
         var ratedItems = await _client.GetItems<Product>()
-            .Filter(f => f.In(Elements.GetPath("rating"), [4.0, 5.0]))
+            .Filter(f => f.Element("rating").In(4.0, 5.0))
             .ExecuteAsync();
     }
 }

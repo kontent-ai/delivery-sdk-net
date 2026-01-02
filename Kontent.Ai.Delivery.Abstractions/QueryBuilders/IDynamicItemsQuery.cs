@@ -69,18 +69,14 @@ public interface IDynamicItemsQuery
     IDynamicItemsQuery WaitForLoadingNewContent(bool enabled = true);
 
     /// <summary>
-    /// Adds a filter using the fluent filter builder.
+    /// Adds filtering conditions to the query.
     /// </summary>
-    /// <param name="filterBuilder">Function to build the filter.</param>
+    /// <remarks>
+    /// The returned query uses AND semantics between conditions (multiple query parameters).
+    /// </remarks>
+    /// <param name="build">Builder function that appends one or more filtering conditions.</param>
     /// <returns>The query builder for method chaining.</returns>
-    IDynamicItemsQuery Filter(Func<IItemFilters, IFilter> filterBuilder);
-
-    /// <summary>
-    /// Adds a pre-built filter to the query.
-    /// </summary>
-    /// <param name="filter">The filter to add.</param>
-    /// <returns>The query builder for method chaining.</returns>
-    IDynamicItemsQuery Where(IFilter filter);
+    IDynamicItemsQuery Filter(Func<IItemsFilterBuilder, IItemsFilterBuilder> build);
 
     /// <summary>
     /// Executes the built query and returns a functional result.

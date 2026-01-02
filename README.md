@@ -183,7 +183,7 @@ For large datasets, use the items feed for efficient pagination:
 
 ```csharp
 var query = client.GetItemsFeed()
-    .OrderBy(ItemSystemPath.LastModified, true);
+    .OrderBy("system.last_modified", true);
 
 await foreach (var item in query.ExecuteAsync())
 {
@@ -212,56 +212,55 @@ The SDK provides a type-safe filtering API with support for various operators:
 
 ```csharp
 var result = await client.GetItems()
-    .Filter(f => f.Equals(ItemSystemPath.Type, "article"))
-    .Filter(f => f.Contains(Elements.GetPath("title"), "coffee"))
+    .Filter(f => f
+        .System("type").Eq("article")
+        // [contains] is for arrays (taxonomy/linked items/multiple choice), not strings.
+        // See Delivery API docs: https://kontent.ai/learn/docs/apis/delivery-api/filtering-parameters?sl=1
+        .Element("category").Contains("coffee"))
     .Limit(20)
     .ExecuteAsync();
 ```
 
-#### Using .Where with Preconstructed Filters
+#### Conditional Composition (instead of LINQ-like .Where)
 
 ```csharp
-// Build a filter object (useful for reuse or conditional composition)
-var filter = new Filter(
-    ItemSystemPath.Type,
-    FilterOperator.Equals,
-    StringValue.From("article"));
+var query = client.GetItems();
 
-var result = await client.GetItems()
-    .Where(filter) // accepts IFilter
-    .ExecuteAsync();
+if (onlyArticles)
+{
+    query = query.Filter(f => f.System("type").Eq("article"));
+}
+
+var result = await query.ExecuteAsync();
 ```
 
 #### Common Filter Operators
 
 ```csharp
-// Equality
-.Filter(f => f.Equals(ItemSystemPath.Type, "product"))
-.Filter(f => f.NotEquals(ItemSystemPath.Collection, "archived"))
-
-// Comparison (numbers, dates, strings)
-.Filter(f => f.GreaterThan(Elements.GetPath("price"), 100.0))
-.Filter(f => f.LessThanOrEqual(Elements.GetPath("rating"), 4.5))
-
-// Range (inclusive)
-.Filter(f => f.Range(Elements.GetPath("price"), (50.0, 500.0)))
-
-// Array membership
-.Filter(f => f.In(ItemSystemPath.Type, new[] { "article", "blog_post" }))
-
-// Multi-value element matching
-.Filter(f => f.Any(Elements.GetPath("tags"), "featured", "trending"))
-.Filter(f => f.All(Elements.GetPath("categories"), "tech", "news"))
-
-// Null/empty checks
-.Filter(f => f.NotEmpty(Elements.GetPath("description")))
+var query = client.GetItems()
+    .Filter(f => f
+        // Equality
+        .System("type").Eq("product")
+        .System("collection").Neq("archived")
+        // Comparison (numbers, dates, strings)
+        .Element("price").Gt(100.0)
+        .Element("rating").Lte(4.5)
+        // Range (inclusive)
+        .Element("price").Range(50.0, 500.0)
+        // Array membership
+        .System("type").In("article", "blog_post")
+        // Multi-value element matching
+        .Element("tags").Any("featured", "trending")
+        .Element("categories").All("tech", "news")
+        // Null/empty checks
+        .Element("description").Nempty());
 ```
 
 #### Ordering and Pagination
 
 ```csharp
 var result = await client.GetItems()
-    .OrderBy(ItemSystemPath.LastModified, ascending: false)
+    .OrderBy("system.last_modified", ascending: false)
     .Skip(0)
     .Limit(10)
     .ExecuteAsync();
@@ -317,7 +316,7 @@ public record Article
 
 // Query with strong typing
 var result = await client.GetItems<Article>()
-    .Filter(f => f.Equals(ItemSystemPath.Type, "article"))
+    .Filter(f => f.System("type").Eq("article"))
     .WithLanguage("en-US")
     .ExecuteAsync();
 
@@ -618,7 +617,7 @@ var result = await client.GetItem("homepage")
 
 // Get all articles in German (strongly typed)
 var articlesResult = await client.GetItems<Article>()
-    .Filter(f => f.Equals(ItemSystemPath.Codename, "article"))
+    .Filter(f => f.System("type").Eq("article"))
     .WithLanguage("de-DE")
     .ExecuteAsync();
 ```

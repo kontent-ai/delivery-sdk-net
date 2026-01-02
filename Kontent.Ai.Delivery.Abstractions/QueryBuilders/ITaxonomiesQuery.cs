@@ -18,16 +18,13 @@ public interface ITaxonomiesQuery
     ITaxonomiesQuery Limit(int limit);
 
     /// <summary>
-    /// Adds a filter to the query using a filter builder function.
+    /// Adds filtering conditions to the query.
     /// </summary>
-    /// <param name="filterBuilder">Function that builds a filter using the taxonomy filter builder.</param>
-    ITaxonomiesQuery Where(Func<ITaxonomyFilters, IFilter> filterBuilder);
-
-    /// <summary>
-    /// Adds a filter to the query.
-    /// </summary>
-    /// <param name="filter">The filter to add.</param>
-    ITaxonomiesQuery Where(IFilter filter);
+    /// <remarks>
+    /// The returned query uses AND semantics between conditions (multiple query parameters).
+    /// </remarks>
+    /// <param name="build">Builder function that appends one or more filtering conditions.</param>
+    ITaxonomiesQuery Filter(Func<ITaxonomiesFilterBuilder, ITaxonomiesFilterBuilder> build);
 
     /// <summary>
     /// Overrides the global option for waiting on the newest content for this specific request.

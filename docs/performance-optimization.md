@@ -85,7 +85,7 @@ var result = await client.GetItem<Article>("my-article")
 ```csharp
 // Optimal query: minimal depth + only needed elements
 var result = await client.GetItems<Article>()
-    .Filter(f => f.Equals(ItemSystemPath.Type, "article"))
+    .Filter(f => f.System("type").Eq("article"))
     .WithElements("title", "summary", "featured_image")
     .Depth(0)  // No linked content
     .Limit(20)
@@ -97,10 +97,10 @@ var result = await client.GetItems<Article>()
 Use indexed system properties when possible:
 
 ```csharp
-.Filter(f => f.Equals(ItemSystemPath.Type, "article"))
-.Filter(f => f.Equals(ItemSystemPath.Collection, "blog"))
-.Filter(f => f.GreaterThan(ItemSystemPath.LastModified, cutoffDate))
-.Filter(f => f.Equals(Elements.GetPath("category"), "tech"))
+.Filter(f => f.System("type").Eq("article"))
+.Filter(f => f.System("collection").Eq("blog"))
+.Filter(f => f.System("last_modified").Gt(cutoffDate))
+.Filter(f => f.Element("category").Eq("tech"))
 ```
 
 ### Pagination Strategies
@@ -113,8 +113,8 @@ For user-facing pagination:
 public async Task<PagedResult<Article>> GetArticlesAsync(int page, int pageSize)
 {
     var result = await client.GetItems<Article>()
-        .Filter(f => f.Equals(ItemSystemPath.Type, "article"))
-        .OrderBy(ItemSystemPath.LastModified, descending: true)
+        .Filter(f => f.System("type").Eq("article"))
+        .OrderBy("system.last_modified", ascending: false)
         .Skip(page * pageSize)
         .Limit(pageSize)
         .WithTotalCount()
@@ -137,9 +137,9 @@ For processing all items efficiently:
 ```csharp
 // ✅ Best for bulk: Automatic pagination with continuation tokens
 var query = client.GetItemsFeed<Article>()
-    .Filter(f => f.Equals(ItemSystemPath.Type, "article"))
+    .Filter(f => f.System("type").Eq("article"))
     .WithElements("title", "url_slug")  // Only needed elements
-    .OrderBy(ItemSystemPath.Codename, ascending: true);
+    .OrderBy("system.codename", ascending: true);
 
 await foreach (var article in query.ExecuteAsync())
 {
@@ -211,8 +211,8 @@ public class CacheWarmupService : IHostedService
 
         // Warm recent articles
         await client.GetItems<Article>()
-            .Filter(f => f.Equals(ItemSystemPath.Type, "article"))
-            .OrderBy(ItemSystemPath.LastModified, descending: true)
+            .Filter(f => f.System("type").Eq("article"))
+            .OrderBy("system.last_modified", ascending: false)
             .Limit(20)
             .ExecuteAsync(cancellationToken);
     }
@@ -351,11 +351,11 @@ public async Task<DashboardData> GetDashboardDataAsync()
     // Execute queries in parallel
     var homepageTask = client.GetItem<HomePage>("homepage").ExecuteAsync();
     var articlesTask = client.GetItems<Article>()
-        .OrderBy(ItemSystemPath.LastModified, descending: true)
+        .OrderBy("system.last_modified", ascending: false)
         .Limit(5)
         .ExecuteAsync();
     var productsTask = client.GetItems<Product>()
-        .Filter(f => f.Any(Elements.GetPath("tags"), "featured"))
+        .Filter(f => f.Element("tags").Any("featured"))
         .Limit(10)
         .ExecuteAsync();
 
@@ -381,7 +381,7 @@ Retrieve multiple items efficiently:
 // ✅ Good: Single query with filter
 var codenamesList = new[] { "article1", "article2", "article3" };
 var result = await client.GetItems<Article>()
-    .Filter(f => f.In(ItemSystemPath.Codename, codenamesList))
+    .Filter(f => f.System("codename").In(codenamesList))
     .ExecuteAsync();
 
 // ❌ Bad: Multiple queries
