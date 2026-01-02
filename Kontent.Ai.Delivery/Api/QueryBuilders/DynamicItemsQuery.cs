@@ -1,5 +1,5 @@
+using System.Net;
 using Kontent.Ai.Delivery.Api.QueryBuilders.Filtering;
-using Kontent.Ai.Delivery.ContentItems;
 
 namespace Kontent.Ai.Delivery.Api.QueryBuilders;
 
@@ -147,7 +147,7 @@ internal sealed class DynamicItemsQuery(
         return DeliveryResult.Success<IReadOnlyList<IContentItem<IDynamicElements>>>(
             all,
             requestUrl ?? string.Empty,
-            200,
+            HttpStatusCode.OK,
             hasStaleContent: false,
             continuationToken: null,
             responseHeaders: responseHeaders);

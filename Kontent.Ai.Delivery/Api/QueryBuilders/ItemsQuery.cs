@@ -1,4 +1,5 @@
 using System.Diagnostics;
+using System.Net;
 using Kontent.Ai.Delivery.Abstractions.ContentItems.Processing;
 using Kontent.Ai.Delivery.Api.QueryBuilders.Filtering;
 using Kontent.Ai.Delivery.Caching;
@@ -123,7 +124,7 @@ internal sealed class ItemsQuery<TModel>(
                     {
                         LoggerMessages.QueryCacheHit(_logger, cacheKey);
                         LoggerMessages.QueryCompleted(_logger, "Items", "list",
-                            stopwatch?.ElapsedMilliseconds ?? 0, 200, cacheHit: true);
+                            stopwatch?.ElapsedMilliseconds ?? 0, HttpStatusCode.OK, cacheHit: true);
                     }
                     return cachedResult;
                 }
@@ -311,7 +312,7 @@ internal sealed class ItemsQuery<TModel>(
         return DeliveryResult.Success<IReadOnlyList<IContentItem<TModel>>>(
             all.AsReadOnly(),
             requestUrl ?? string.Empty,
-            200,
+            HttpStatusCode.OK,
             hasStaleContent: false,
             continuationToken: null,
             responseHeaders: responseHeaders);

@@ -1,4 +1,5 @@
 using System.Collections.Concurrent;
+using System.Diagnostics;
 using System.Reflection;
 using Kontent.Ai.Delivery.Caching;
 using Microsoft.Extensions.Caching.Memory;
@@ -234,6 +235,19 @@ public class MemoryCacheManagerTests : IDisposable
         var entryTokens = GetPrivateField<ConcurrentDictionary<string, CancellationTokenSource>>(
             manager,
             "_cancellationTokens");
+
+        // Post-eviction callbacks are not guaranteed to have run synchronously at this point.
+        // On slower/contended environments (e.g., CI runners), the cache entry can be gone
+        // while the callback cleanup is still pending.
+        var cleanedUp = await WaitUntilAsync(
+            () => !entryTokens.ContainsKey(key) && !reverseIndex.ContainsKey(dependency),
+            timeout: TimeSpan.FromSeconds(2),
+            pollInterval: TimeSpan.FromMilliseconds(10));
+
+        Assert.True(
+            cleanedUp,
+            $"Expected cleanup for key '{key}' and dependency '{dependency}', but cleanup did not complete in time. " +
+            $"Tokens: [{string.Join(", ", entryTokens.Keys)}], ReverseIndexKeys: [{string.Join(", ", reverseIndex.Keys)}]");
         Assert.DoesNotContain(key, entryTokens.Keys);
         Assert.False(reverseIndex.ContainsKey(dependency));
     }
@@ -949,6 +963,22 @@ public class MemoryCacheManagerTests : IDisposable
         var field = instance.GetType().GetField(fieldName, BindingFlags.Instance | BindingFlags.NonPublic);
         Assert.NotNull(field);
         return (TField)field!.GetValue(instance)!;
+    }
+
+    private static async Task<bool> WaitUntilAsync(Func<bool> condition, TimeSpan timeout, TimeSpan pollInterval)
+    {
+        if (condition())
+            return true;
+
+        var sw = Stopwatch.StartNew();
+        while (sw.Elapsed < timeout)
+        {
+            await Task.Delay(pollInterval);
+            if (condition())
+                return true;
+        }
+
+        return condition();
     }
 
     #region Test Helper Classes

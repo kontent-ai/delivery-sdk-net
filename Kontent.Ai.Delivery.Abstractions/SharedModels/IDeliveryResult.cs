@@ -1,4 +1,5 @@
 using System.Net.Http.Headers;
+using System.Net;
 
 namespace Kontent.Ai.Delivery.Abstractions;
 
@@ -26,7 +27,7 @@ public interface IDeliveryResult<out T>
     /// <summary>
     /// Gets the HTTP status code of the response.
     /// </summary>
-    int StatusCode { get; }
+    HttpStatusCode StatusCode { get; }
 
     /// <summary>
     /// Gets a value indicating whether the content is stale.

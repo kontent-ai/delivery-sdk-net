@@ -14,20 +14,7 @@ public class DeliveryClientBenchmark
 
     private static IDeliveryClient CreateClient(MockHttpMessageHandler mockHttp, DeliveryOptions options)
     {
-        var services = new ServiceCollection(); // TODO: cleanup
-
-        // services.AddSingleton<IModelProvider>(sp =>
-        // {
-        //     var contentItemsProcessor = new InlineContentItemsProcessor();
-        //     var customResolver = new DefaultContentLinkUrlResolver();
-        //     var typeProvider = new CustomTypeProvider();
-        //     var propertyMapper = new PropertyMapper();
-        //     var htmlParser = new HtmlParser();
-        //     var optionsMonitor = DeliveryOptionsFactory.CreateMonitor(new DeliveryOptions { EnvironmentId = guid });
-        //     // Use the same JSON options as Refit
-        //     var jsonOptions = RefitSettingsProvider.CreateDefaultJsonSerializerOptions();
-        //     return new ModelProvider(typeProvider, propertyMapper, contentItemsProcessor, customResolver, jsonOptions, htmlParser, optionsMonitor);
-        // });
+        var services = new ServiceCollection();
 
         services.AddDeliveryClient(options, configureHttpClient: b => b.ConfigurePrimaryHttpMessageHandler(() => mockHttp));
         return services.BuildServiceProvider().GetRequiredService<IDeliveryClient>();
