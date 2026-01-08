@@ -56,7 +56,7 @@ internal static class CacheKeyBuilder
     /// <param name="parameters">The query parameters.</param>
     /// <param name="filters">The filter dictionary from fluent API.</param>
     /// <returns>Cache key in format: <c>items:lang={language}:depth={depth}:skip={skip}:limit={limit}:filters={hash}</c></returns>
-    public static string BuildItemsKey(ListItemsParams parameters, IReadOnlyDictionary<string, string> filters)
+    public static string BuildItemsKey(ListItemsParams parameters, IReadOnlyList<KeyValuePair<string, string>> filters)
     {
         var builder = new StringBuilder(256);
         builder.Append("items").Append(Separator);
@@ -78,7 +78,7 @@ internal static class CacheKeyBuilder
     /// <param name="parameters">The query parameters.</param>
     /// <param name="filters">The filter dictionary from fluent API.</param>
     /// <returns>Cache key in format: <c>types:skip={skip}:limit={limit}:elements={sorted}:filters={hash}</c></returns>
-    public static string BuildTypesKey(ListTypesParams parameters, IReadOnlyDictionary<string, string> filters)
+    public static string BuildTypesKey(ListTypesParams parameters, IReadOnlyList<KeyValuePair<string, string>> filters)
     {
         var builder = new StringBuilder(128);
         builder.Append("types").Append(Separator);
@@ -113,7 +113,7 @@ internal static class CacheKeyBuilder
     /// <param name="parameters">The query parameters.</param>
     /// <param name="filters">The filter dictionary from fluent API.</param>
     /// <returns>Cache key in format: <c>taxonomies:skip={skip}:limit={limit}:filters={hash}</c></returns>
-    public static string BuildTaxonomiesKey(ListTaxonomyGroupsParams parameters, IReadOnlyDictionary<string, string> filters)
+    public static string BuildTaxonomiesKey(ListTaxonomyGroupsParams parameters, IReadOnlyList<KeyValuePair<string, string>> filters)
     {
         var builder = new StringBuilder(128);
         builder.Append("taxonomies").Append(Separator);
@@ -240,15 +240,17 @@ internal static class CacheKeyBuilder
     /// Filters are hashed because they can be very long (e.g., complex queries with many conditions).
     /// </para>
     /// </remarks>
-    private static void AppendFilters(StringBuilder builder, IReadOnlyDictionary<string, string> filters)
+    private static void AppendFilters(StringBuilder builder, IReadOnlyList<KeyValuePair<string, string>> filters)
     {
         if (filters.Count == 0)
             return;
 
         builder.Append("filters=");
 
-        // Sort by key for determinism
-        var sortedFilters = filters.OrderBy(kvp => kvp.Key, StringComparer.OrdinalIgnoreCase);
+        // Sort by key then value for determinism (and to preserve duplicates in the hash)
+        var sortedFilters = filters
+            .OrderBy(kvp => kvp.Key, StringComparer.OrdinalIgnoreCase)
+            .ThenBy(kvp => kvp.Value, StringComparer.Ordinal);
 
         // Build stable string representation
         var filterString = string.Join("&",

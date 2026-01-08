@@ -140,7 +140,7 @@ internal static class FilterSuffix
     internal const string Nempty = "[nempty]";
 }
 
-internal readonly struct ItemFieldFilter<TBuilder>(TBuilder builder, string path, Action<string, string> add)
+internal readonly struct ItemFieldFilter<TBuilder>(TBuilder builder, string path, Action<KeyValuePair<string, string>> add)
     : IItemFieldFilter<TBuilder>
 {
     public TBuilder IsEqualTo(string value) => AddValue(FilterSuffix.Eq, FilterValueSerializer.Serialize(value));
@@ -187,24 +187,24 @@ internal readonly struct ItemFieldFilter<TBuilder>(TBuilder builder, string path
 
     public TBuilder IsEmpty()
     {
-        add(path, FilterSuffix.Empty);
+        add(new KeyValuePair<string, string>(path, FilterSuffix.Empty));
         return builder;
     }
 
     public TBuilder IsNotEmpty()
     {
-        add(path, FilterSuffix.Nempty);
+        add(new KeyValuePair<string, string>(path, FilterSuffix.Nempty));
         return builder;
     }
 
     private TBuilder AddValue(string suffix, string value)
     {
-        add(path + suffix, value);
+        add(new KeyValuePair<string, string>(path + suffix, value));
         return builder;
     }
 }
 
-internal readonly struct TypeFieldFilter<TBuilder>(TBuilder builder, string path, Action<string, string> add)
+internal readonly struct TypeFieldFilter<TBuilder>(TBuilder builder, string path, Action<KeyValuePair<string, string>> add)
     : ITypeFieldFilter<TBuilder>
 {
     public TBuilder IsEqualTo(string value) => AddValue(FilterSuffix.Eq, FilterValueSerializer.Serialize(value));
@@ -224,12 +224,12 @@ internal readonly struct TypeFieldFilter<TBuilder>(TBuilder builder, string path
 
     private TBuilder AddValue(string suffix, string value)
     {
-        add(path + suffix, value);
+        add(new KeyValuePair<string, string>(path + suffix, value));
         return builder;
     }
 }
 
-internal readonly struct TaxonomyFieldFilter<TBuilder>(TBuilder builder, string path, Action<string, string> add)
+internal readonly struct TaxonomyFieldFilter<TBuilder>(TBuilder builder, string path, Action<KeyValuePair<string, string>> add)
     : ITaxonomyFieldFilter<TBuilder>
 {
     public TBuilder IsEqualTo(string value) => AddValue(FilterSuffix.Eq, FilterValueSerializer.Serialize(value));
@@ -240,12 +240,12 @@ internal readonly struct TaxonomyFieldFilter<TBuilder>(TBuilder builder, string 
 
     private TBuilder AddValue(string suffix, string value)
     {
-        add(path + suffix, value);
+        add(new KeyValuePair<string, string>(path + suffix, value));
         return builder;
     }
 }
 
-internal sealed class ItemsFilterBuilder(IDictionary<string, string> filters) : IItemsFilterBuilder
+internal sealed class ItemsFilterBuilder(ICollection<KeyValuePair<string, string>> filters) : IItemsFilterBuilder
 {
     public IItemFieldFilter<IItemsFilterBuilder> System(string propertyName)
         => new ItemFieldFilter<IItemsFilterBuilder>(this, FilterPath.System(propertyName), filters.Add);
@@ -254,13 +254,13 @@ internal sealed class ItemsFilterBuilder(IDictionary<string, string> filters) : 
         => new ItemFieldFilter<IItemsFilterBuilder>(this, FilterPath.Element(elementCodename), filters.Add);
 }
 
-internal sealed class TypesFilterBuilder(IDictionary<string, string> filters) : ITypesFilterBuilder
+internal sealed class TypesFilterBuilder(ICollection<KeyValuePair<string, string>> filters) : ITypesFilterBuilder
 {
     public ITypeFieldFilter<ITypesFilterBuilder> System(string propertyName)
         => new TypeFieldFilter<ITypesFilterBuilder>(this, FilterPath.System(propertyName), filters.Add);
 }
 
-internal sealed class TaxonomiesFilterBuilder(IDictionary<string, string> filters) : ITaxonomiesFilterBuilder
+internal sealed class TaxonomiesFilterBuilder(ICollection<KeyValuePair<string, string>> filters) : ITaxonomiesFilterBuilder
 {
     public ITaxonomyFieldFilter<ITaxonomiesFilterBuilder> System(string propertyName)
         => new TaxonomyFieldFilter<ITaxonomiesFilterBuilder>(this, FilterPath.System(propertyName), filters.Add);

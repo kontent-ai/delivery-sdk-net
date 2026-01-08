@@ -9,8 +9,9 @@ public interface IDynamicItemsQuery
     /// Sets the language codename for the request.
     /// </summary>
     /// <param name="languageCodename">Language codename.</param>
+    /// <param name="languageFallbackMode">Language fallback mode.</param>
     /// <returns>The query builder for method chaining.</returns>
-    IDynamicItemsQuery WithLanguage(string languageCodename);
+    IDynamicItemsQuery WithLanguage(string languageCodename, LanguageFallbackMode languageFallbackMode = LanguageFallbackMode.Enabled);
 
     /// <summary>
     /// Includes only specified element codenames in the response.

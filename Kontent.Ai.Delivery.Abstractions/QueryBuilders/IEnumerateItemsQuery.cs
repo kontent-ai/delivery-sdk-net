@@ -10,7 +10,8 @@ public interface IEnumerateItemsQuery<TModel>
     /// Sets the language codename for the request.
     /// </summary>
     /// <param name="languageCodename">Language codename.</param>
-    IEnumerateItemsQuery<TModel> WithLanguage(string languageCodename);
+    /// <param name="languageFallbackMode">Language fallback mode.</param>
+    IEnumerateItemsQuery<TModel> WithLanguage(string languageCodename, LanguageFallbackMode languageFallbackMode = LanguageFallbackMode.Enabled);
     /// <summary>
     /// Includes only specified element codenames in the response.
     /// </summary>

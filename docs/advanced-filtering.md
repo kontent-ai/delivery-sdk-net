@@ -112,6 +112,22 @@ var result = await client.GetItems()
     .ExecuteAsync();
 ```
 
+## Language fallback control
+
+Kontent.ai language fallbacks are controlled by how you combine the Delivery API `language` parameter with filtering on `system.language`.
+
+- **Default behavior (fallbacks allowed)**: `.WithLanguage("es-ES")` requests the Spanish variant, and the API may fall back to the default language for items that are not translated.
+- **Fallbacks disabled (only translated items)**: `.WithLanguage("es-ES", LanguageFallbackMode.Disabled)` automatically adds `system.language[eq]=es-ES` to the query, so only items actually translated into `es-ES` are returned.
+
+Manual equivalent:
+
+```csharp
+var result = await client.GetItems()
+    .WithLanguage("es-ES")
+    .Where(f => f.System("language").IsEqualTo("es-ES"))
+    .ExecuteAsync();
+```
+
 ## Conditional composition (recommended)
 
 Instead of building “filter objects”, use normal C# branching:

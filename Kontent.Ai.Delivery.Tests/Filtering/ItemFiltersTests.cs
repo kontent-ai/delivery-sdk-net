@@ -8,69 +8,69 @@ public class ItemFiltersTests
     [Fact]
     public void Eq_String_BuildsCorrectFilter()
     {
-        var dict = new Dictionary<string, string>();
-        var f = new ItemsFilterBuilder(dict);
+        var filters = new List<KeyValuePair<string, string>>();
+        var f = new ItemsFilterBuilder(filters);
 
         f.System("type").IsEqualTo("article");
 
-        Assert.Equal("article", dict["system.type[eq]"]);
+        Assert.Contains(new KeyValuePair<string, string>("system.type[eq]", "article"), filters);
     }
 
     [Fact]
     public void Eq_Number_BuildsCorrectFilter()
     {
-        var dict = new Dictionary<string, string>();
-        var f = new ItemsFilterBuilder(dict);
+        var filters = new List<KeyValuePair<string, string>>();
+        var f = new ItemsFilterBuilder(filters);
 
         f.Element("price").IsEqualTo(99.99);
 
-        Assert.Equal("99.99", dict["elements.price[eq]"]);
+        Assert.Contains(new KeyValuePair<string, string>("elements.price[eq]", "99.99"), filters);
     }
 
     [Fact]
     public void Eq_DateTime_BuildsCorrectFilter()
     {
-        var dict = new Dictionary<string, string>();
-        var f = new ItemsFilterBuilder(dict);
+        var filters = new List<KeyValuePair<string, string>>();
+        var f = new ItemsFilterBuilder(filters);
         var date = new DateTime(2024, 8, 14, 10, 30, 0, DateTimeKind.Utc);
 
         f.Element("publish_date").IsEqualTo(date);
 
-        Assert.Equal("2024-08-14T10:30:00Z", dict["elements.publish_date[eq]"]);
+        Assert.Contains(new KeyValuePair<string, string>("elements.publish_date[eq]", "2024-08-14T10:30:00Z"), filters);
     }
 
     [Fact]
     public void Contains_EncodesCorrectly()
     {
-        var dict = new Dictionary<string, string>();
-        var f = new ItemsFilterBuilder(dict);
+        var filters = new List<KeyValuePair<string, string>>();
+        var f = new ItemsFilterBuilder(filters);
 
         // Delivery API [contains] is only valid for arrays (taxonomy/linked items/multiple choice/custom elements),
         // not strings. Use an array-like element codename in examples.
         f.Element("category").Contains("coffee & tea");
 
-        Assert.Contains("%26", dict["elements.category[contains]"]);
+        Assert.Contains("%26", filters.Single(kvp => kvp.Key == "elements.category[contains]").Value);
     }
 
     [Fact]
     public void Range_Numeric_BuildsCorrectFilter()
     {
-        var dict = new Dictionary<string, string>();
-        var f = new ItemsFilterBuilder(dict);
+        var filters = new List<KeyValuePair<string, string>>();
+        var f = new ItemsFilterBuilder(filters);
 
         f.Element("price").IsWithinRange(10.0, 100.0);
 
-        Assert.Equal("10,100", dict["elements.price[range]"]);
+        Assert.Contains(new KeyValuePair<string, string>("elements.price[range]", "10,100"), filters);
     }
 
     [Fact]
     public void Empty_BuildsCorrectFilter()
     {
-        var dict = new Dictionary<string, string>();
-        var f = new ItemsFilterBuilder(dict);
+        var filters = new List<KeyValuePair<string, string>>();
+        var f = new ItemsFilterBuilder(filters);
 
         f.Element("description").IsEmpty();
 
-        Assert.Equal("[empty]", dict["elements.description"]);
+        Assert.Contains(new KeyValuePair<string, string>("elements.description", "[empty]"), filters);
     }
 }

@@ -11,7 +11,7 @@ internal sealed class TaxonomiesQuery(
     IDeliveryCacheManager? cacheManager) : ITaxonomiesQuery
 {
     private readonly IDeliveryApi _api = api;
-    private readonly Dictionary<string, string> _serializedFilters = [];
+    private readonly List<KeyValuePair<string, string>> _serializedFilters = [];
     private ListTaxonomyGroupsParams _params = new();
     private bool? _waitForLoadingNewContentOverride;
     private readonly Func<bool?> _getDefaultWaitForNewContent = getDefaultWaitForNewContent;
@@ -68,7 +68,10 @@ internal sealed class TaxonomiesQuery(
 
         // API call
         bool? wait = _waitForLoadingNewContentOverride ?? _getDefaultWaitForNewContent();
-        var response = await _api.GetTaxonomiesInternalAsync(_params, _serializedFilters, wait).ConfigureAwait(false);
+        var response = await _api.GetTaxonomiesInternalAsync(
+            _params,
+            FilterQueryParams.ToQueryDictionary(_serializedFilters),
+            wait).ConfigureAwait(false);
         var deliveryResult = await response.ToDeliveryResultAsync().ConfigureAwait(false);
         var result = deliveryResult.Map(response => response.Taxonomies.AsReadOnly());
 

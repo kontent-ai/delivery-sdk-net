@@ -11,14 +11,20 @@ internal sealed class EnumerateItemsQuery<TModel>(IDeliveryApi api, Func<bool?> 
     private readonly IElementsPostProcessor _elementsPostProcessor = elementsPostProcessor;
     private EnumItemsParams _params = new();
     private bool? _waitForLoadingNewContentOverride;
-    private readonly Dictionary<string, string> _serializedFilters = [];
+    private readonly List<KeyValuePair<string, string>> _serializedFilters = [];
     private static bool IsDynamicModel =>
         typeof(TModel) == typeof(Kontent.Ai.Delivery.Abstractions.IDynamicElements) ||
         typeof(TModel) == typeof(Kontent.Ai.Delivery.ContentItems.DynamicElements);
 
-    public IEnumerateItemsQuery<TModel> WithLanguage(string languageCodename)
+    public IEnumerateItemsQuery<TModel> WithLanguage(string languageCodename, LanguageFallbackMode languageFallbackMode = LanguageFallbackMode.Enabled)
     {
         _params = _params with { Language = languageCodename };
+        if (languageFallbackMode == LanguageFallbackMode.Disabled)
+        {
+            _serializedFilters.Add(new KeyValuePair<string, string>(
+                FilterPath.System("language") + FilterSuffix.Eq,
+                FilterValueSerializer.Serialize(languageCodename)));
+        }
         return this;
     }
 
@@ -56,7 +62,12 @@ internal sealed class EnumerateItemsQuery<TModel>(IDeliveryApi api, Func<bool?> 
         while (true)
         {
             var resp = await _api
-                .GetItemsFeedInternalAsync<TModel>(_params, _serializedFilters, token, wait, cancellationToken)
+                .GetItemsFeedInternalAsync<TModel>(
+                    _params,
+                    FilterQueryParams.ToQueryDictionary(_serializedFilters),
+                    token,
+                    wait,
+                    cancellationToken)
                 .ConfigureAwait(false);
 
             if (!resp.IsSuccessStatusCode || resp.Content is null)

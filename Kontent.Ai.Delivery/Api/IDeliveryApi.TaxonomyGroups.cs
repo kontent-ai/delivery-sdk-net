@@ -26,6 +26,6 @@ public partial interface IDeliveryApi
     [Get("/taxonomies")]
     internal Task<IApiResponse<DeliveryTaxonomyListingResponse>> GetTaxonomiesInternalAsync(
         [Query] ListTaxonomyGroupsParams? queryParameters = null,
-        [Query] Dictionary<string, string>? filters = null,
+        [Query] Dictionary<string, string[]>? filters = null,
         [Header(HttpRequestHeadersExtensions.WaitForLoadingNewContentHeaderName)] bool? waitForLoadingNewContent = null);
 }

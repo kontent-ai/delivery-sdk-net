@@ -22,14 +22,20 @@ internal sealed class ItemsQuery<TModel>(
     private readonly IElementsPostProcessor _elementsPostProcessor = elementsPostProcessor;
     private readonly IDeliveryCacheManager? _cacheManager = cacheManager;
     private readonly ILogger? _logger = logger;
-    private readonly Dictionary<string, string> _serializedFilters = [];
+    private readonly List<KeyValuePair<string, string>> _serializedFilters = [];
     private ListItemsParams _params = new();
     private bool? _waitForLoadingNewContentOverride;
     private static bool IsDynamicModel => typeof(TModel) == typeof(IDynamicElements) || typeof(TModel) == typeof(DynamicElements);
 
-    public IItemsQuery<TModel> WithLanguage(string languageCodename)
+    public IItemsQuery<TModel> WithLanguage(string languageCodename, LanguageFallbackMode languageFallbackMode = LanguageFallbackMode.Enabled)
     {
         _params = _params with { Language = languageCodename };
+        if (languageFallbackMode == LanguageFallbackMode.Disabled)
+        {
+            _serializedFilters.Add(new KeyValuePair<string, string>(
+                FilterPath.System("language") + FilterSuffix.Eq,
+                FilterValueSerializer.Serialize(languageCodename)));
+        }
         return this;
     }
 
@@ -134,7 +140,10 @@ internal sealed class ItemsQuery<TModel>(
 
         // ========== 2. API CALL (cache miss or disabled) ==========
         bool? wait = _waitForLoadingNewContentOverride ?? _getDefaultWaitForNewContent();
-        var rawResponse = await _api.GetItemsInternalAsync<TModel>(_params, _serializedFilters, wait).ConfigureAwait(false);
+        var rawResponse = await _api.GetItemsInternalAsync<TModel>(
+            _params,
+            FilterQueryParams.ToQueryDictionary(_serializedFilters),
+            wait).ConfigureAwait(false);
 
         // Convert IApiResponse to IDeliveryResult
         var deliveryResult = await rawResponse.ToDeliveryResultAsync().ConfigureAwait(false);
@@ -256,7 +265,10 @@ internal sealed class ItemsQuery<TModel>(
             var pageParams = _params with { Skip = skip, Limit = limit };
 
             var wait = _waitForLoadingNewContentOverride ?? _getDefaultWaitForNewContent();
-            var response = await _api.GetItemsInternalAsync<TModel>(pageParams, _serializedFilters, wait).ConfigureAwait(false);
+            var response = await _api.GetItemsInternalAsync<TModel>(
+                pageParams,
+                FilterQueryParams.ToQueryDictionary(_serializedFilters),
+                wait).ConfigureAwait(false);
 
             // Convert to delivery result
             var deliveryResult = await response.ToDeliveryResultAsync().ConfigureAwait(false);
