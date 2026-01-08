@@ -60,12 +60,16 @@ public sealed class MemoryCacheManager(
     // Using ConcurrentDictionary for thread-safe access with HashSet for efficient lookups
     private readonly ConcurrentDictionary<string, HashSet<string>> _reverseIndex = new ConcurrentDictionary<string, HashSet<string>>(StringComparer.OrdinalIgnoreCase);
 
-    // Locks for synchronizing reverse index updates per dependency key
-    // This prevents race conditions when multiple threads update the same dependency
-    private readonly ConcurrentDictionary<string, SemaphoreSlim> _dependencyLocks = new ConcurrentDictionary<string, SemaphoreSlim>(StringComparer.OrdinalIgnoreCase);
+    // Bounded lock striping for reverse-index updates.
+    // Avoids unbounded growth of per-dependency lock objects while still providing good contention behavior.
+    private const int LockStripeCount = 64; // power-of-two for fast modulo
+    private readonly SemaphoreSlim[] _reverseIndexLocks = CreateLockStripes(LockStripeCount);
 
-    // Track all CancellationTokenSources for proper disposal
-    private readonly ConcurrentDictionary<string, CancellationTokenSource> _cancellationTokens = new ConcurrentDictionary<string, CancellationTokenSource>(StringComparer.OrdinalIgnoreCase);
+    // Track current entry metadata per cache key. This is generation-safe for overwrite scenarios:
+    // eviction callbacks validate that they're cleaning up the currently-registered entry before removing metadata.
+    private readonly ConcurrentDictionary<string, CacheEntryMetadata> _entries = new ConcurrentDictionary<string, CacheEntryMetadata>(StringComparer.OrdinalIgnoreCase);
+
+    private sealed record CacheEntryMetadata(CancellationTokenSource Cts, string[] Dependencies);
 
     // Flag to track disposal
     private bool _disposed;
@@ -78,6 +82,25 @@ public sealed class MemoryCacheManager(
     /// Thread-safe: uses readonly field initialized in constructor.
     /// </summary>
     private string PrefixKey(string key) => $"{KeyPrefixSegment}{key}";
+
+    private static SemaphoreSlim[] CreateLockStripes(int count)
+    {
+        var locks = new SemaphoreSlim[count];
+        for (var i = 0; i < locks.Length; i++)
+        {
+            locks[i] = new SemaphoreSlim(1, 1);
+        }
+        return locks;
+    }
+
+    private SemaphoreSlim GetLockStripe(string dependencyKey)
+    {
+        // StringComparer.OrdinalIgnoreCase is used by the dictionaries, so use it for hashing too.
+        // Note: string hash codes are randomized per-process (fine for lock striping).
+        var hash = StringComparer.OrdinalIgnoreCase.GetHashCode(dependencyKey);
+        var index = hash & (LockStripeCount - 1);
+        return _reverseIndexLocks[index];
+    }
 
     /// <inheritdoc />
     public Task<T?> GetAsync<T>(string cacheKey, CancellationToken cancellationToken = default)
@@ -161,6 +184,18 @@ public sealed class MemoryCacheManager(
         // Apply key prefix for cache isolation - use prefixed key consistently
         var prefixedCacheKey = PrefixKey(cacheKey);
 
+        // Materialize + prefix + de-duplicate dependencies (order doesn't matter).
+        // Dependencies are stored prefixed so invalidation remains isolated per cache manager.
+        var prefixedDependencies = dependencyList
+            .Where(d => !string.IsNullOrWhiteSpace(d))
+            .Select(PrefixKey)
+            .Distinct(StringComparer.OrdinalIgnoreCase)
+            .ToArray();
+
+        // Create a CancellationTokenSource for this cache entry (drives invalidation via CancellationChangeToken)
+        var entryCts = new CancellationTokenSource();
+        var entryMetadata = new CacheEntryMetadata(entryCts, prefixedDependencies);
+
         // Create cache entry options
         var entryOptions = new MemoryCacheEntryOptions
         {
@@ -168,48 +203,53 @@ public sealed class MemoryCacheManager(
             Priority = CacheItemPriority.Normal
         };
 
-        // Create a CancellationTokenSource for this cache entry
-        var entryCts = new CancellationTokenSource();
-
         // Register for cleanup when the entry is evicted
         entryOptions.RegisterPostEvictionCallback((key, value, reason, state) =>
         {
-            // The 'is' pattern safely handles null - only enters block if key is non-null string
-            if (key is string keyString)
+            if (key is string keyString && state is CacheEntryMetadata evictedMetadata)
             {
                 // Log eviction
                 if (_logger != null)
                     LoggerMessages.CacheEntryEvicted(_logger, keyString, reason.ToString());
 
-                // Clean up reverse index when entry is evicted
-                CleanupReverseIndexForKey(keyString);
+                // Clean up reverse index when entry is evicted.
+                // Generation-safe: only remove the cacheKey from a dependency set if the current entry
+                // no longer depends on that dependency.
+                CleanupReverseIndexForKey(keyString, evictedMetadata);
 
-                // Dispose the CancellationTokenSource
-                if (_cancellationTokens.TryRemove(keyString, out var cts))
+                // Remove entry metadata only if it still matches (avoid old eviction callbacks
+                // deleting metadata for a newer overwriting entry).
+                if (_entries.TryGetValue(keyString, out var current) &&
+                    ReferenceEquals(current.Cts, evictedMetadata.Cts))
                 {
-                    cts.Dispose();
+                    _entries.TryRemove(keyString, out _);
+                }
+
+                // Always dispose the CTS for the evicted entry (safe even if this callback is from an older overwrite).
+                try
+                {
+                    evictedMetadata.Cts.Dispose();
+                }
+                catch
+                {
+                    // Best-effort cleanup; never throw from eviction callbacks.
                 }
             }
-        });
-
-        // Track dependencies in the reverse index
-        // Note: Dependencies use prefixed keys to maintain consistency with cache keys
-        var prefixedDependencies = dependencyList
-            .Where(d => !string.IsNullOrWhiteSpace(d))
-            .Select(PrefixKey)
-            .ToList();
-
-        foreach (var prefixedDependency in prefixedDependencies)
-        {
-            // Update reverse index with prefixed keys
-            await UpdateReverseIndexAsync(prefixedDependency, prefixedCacheKey, cancellationToken).ConfigureAwait(false);
-        }
+        }, state: entryMetadata);
 
         // Also link to the entry's own CancellationToken for direct invalidation
         entryOptions.AddExpirationToken(new CancellationChangeToken(entryCts.Token));
 
-        // Store the CancellationTokenSource for this entry (use prefixed key for consistency)
-        _cancellationTokens.TryAdd(prefixedCacheKey, entryCts);
+        // Update reverse index for dependencies.
+        // Note: We intentionally do not try to eagerly remove stale dependencies for overwritten keys here.
+        // Eviction callbacks and invalidation both guard against stale associations by validating the current entry's dependencies.
+        foreach (var prefixedDependency in prefixedDependencies)
+        {
+            await UpdateReverseIndexAsync(prefixedDependency, prefixedCacheKey, cancellationToken).ConfigureAwait(false);
+        }
+
+        // Publish current entry metadata (overwrite-safe)
+        _entries.AddOrUpdate(prefixedCacheKey, entryMetadata, (_, _) => entryMetadata);
 
         // Store in cache with prefixed key for isolation
         _cache.Set(prefixedCacheKey, value, entryOptions);
@@ -253,8 +293,8 @@ public sealed class MemoryCacheManager(
     /// </summary>
     private async Task InvalidateDependencyAsync(string dependencyKey, string originalKey, CancellationToken cancellationToken)
     {
-        // Get the lock for this dependency to ensure thread-safe operations
-        var lockObj = _dependencyLocks.GetOrAdd(dependencyKey, _ => new SemaphoreSlim(1, 1));
+        // Use a bounded stripe lock to coordinate reverse-index access for this dependency.
+        var lockObj = GetLockStripe(dependencyKey);
 
         await lockObj.WaitAsync(cancellationToken).ConfigureAwait(false);
         try
@@ -267,19 +307,31 @@ public sealed class MemoryCacheManager(
                 {
                     // Snapshot to avoid enumerating while eviction callbacks mutate the set.
                     affectedKeysSnapshot = affectedKeys.ToList();
+
+                    // Keep the reverse-index entry, but clear its current contents.
+                    // This avoids races where concurrent SetAsync would add to a HashSet instance that
+                    // is no longer referenced by the dictionary (which would happen if we removed it).
+                    affectedKeys.Clear();
                 }
 
                 // Also directly cancel each affected entry's CTS for immediate effect
                 foreach (var cacheKey in affectedKeysSnapshot)
                 {
-                    if (_cancellationTokens.TryGetValue(cacheKey, out var entryCts))
+                    // Guard against stale reverse-index associations: only invalidate if the *current*
+                    // entry still depends on this dependency key.
+                    if (_entries.TryGetValue(cacheKey, out var metadata) &&
+                        metadata.Dependencies.Contains(dependencyKey, StringComparer.OrdinalIgnoreCase))
                     {
-                        entryCts.Cancel();
+                        try
+                        {
+                            metadata.Cts.Cancel();
+                        }
+                        catch (ObjectDisposedException)
+                        {
+                            // Entry already evicted/disposed; ignore.
+                        }
                     }
                 }
-
-                // Clean up the reverse index for this dependency
-                _reverseIndex.TryRemove(dependencyKey, out _);
             }
 
             // Log invalidation completed
@@ -300,7 +352,7 @@ public sealed class MemoryCacheManager(
         string cacheKey,
         CancellationToken cancellationToken)
     {
-        var lockObj = _dependencyLocks.GetOrAdd(dependencyKey, _ => new SemaphoreSlim(1, 1));
+        var lockObj = GetLockStripe(dependencyKey);
 
         await lockObj.WaitAsync(cancellationToken).ConfigureAwait(false);
         try
@@ -327,19 +379,28 @@ public sealed class MemoryCacheManager(
     /// Called from cache eviction callbacks (synchronous). We must not wait on semaphores here:
     /// eviction callbacks can run while other operations hold locks, risking deadlocks/timeouts.
     /// </remarks>
-    private void CleanupReverseIndexForKey(string cacheKey)
+    private void CleanupReverseIndexForKey(string cacheKey, CacheEntryMetadata evictedMetadata)
     {
-        // Iterate through all dependencies and remove this cache key
-        foreach (var kvp in _reverseIndex.ToArray()) // ToArray to avoid modification during enumeration
+        // Iterate through known dependencies and remove this cache key.
+        // We intentionally avoid waiting on stripe locks here because eviction callbacks can be invoked while
+        // other operations hold those locks (risking deadlocks/timeouts).
+        foreach (var dependencyKey in evictedMetadata.Dependencies)
         {
-            var dependencyKey = kvp.Key;
-            // We intentionally avoid waiting on per-dependency semaphores here because eviction callbacks
-            // can be invoked while other operations hold those semaphores (risking deadlocks/timeouts).
-            // Reverse-index mutation is protected by locking the per-dependency HashSet instance.
             if (_reverseIndex.TryGetValue(dependencyKey, out var keys))
             {
                 lock (keys)
                 {
+                    // Generation-safe removal:
+                    // - If the *current* entry is this exact evicted entry -> remove.
+                    // - Otherwise, only remove if the current entry no longer depends on the dependency
+                    //   (this eviction callback might be from an older overwrite).
+                    if (_entries.TryGetValue(cacheKey, out var current) &&
+                        !ReferenceEquals(current.Cts, evictedMetadata.Cts) &&
+                        current.Dependencies.Contains(dependencyKey, StringComparer.OrdinalIgnoreCase))
+                    {
+                        continue;
+                    }
+
                     keys.Remove(cacheKey);
 
                     // If no more keys depend on this dependency, remove the entry
@@ -357,10 +418,8 @@ public sealed class MemoryCacheManager(
     /// </summary>
     private void ThrowIfDisposed()
     {
-        if (_disposed)
-        {
-            throw new ObjectDisposedException(nameof(MemoryCacheManager));
-        }
+        ObjectDisposedException.ThrowIf(_disposed, nameof(MemoryCacheManager));
+
     }
 
     /// <inheritdoc />
@@ -372,18 +431,31 @@ public sealed class MemoryCacheManager(
         _disposed = true;
 
         // Dispose all entry CancellationTokenSources
-        foreach (var cts in _cancellationTokens.Values)
+        foreach (var entry in _entries.Values)
         {
-            cts?.Dispose();
+            try
+            {
+                entry?.Cts.Dispose();
+            }
+            catch
+            {
+                // Best-effort
+            }
         }
-        _cancellationTokens.Clear();
+        _entries.Clear();
 
-        // Dispose all semaphores
-        foreach (var semaphore in _dependencyLocks.Values)
+        // Dispose all lock stripes
+        foreach (var semaphore in _reverseIndexLocks)
         {
-            semaphore?.Dispose();
+            try
+            {
+                semaphore.Dispose();
+            }
+            catch
+            {
+                // Best-effort
+            }
         }
-        _dependencyLocks.Clear();
 
         // Clear reverse index
         _reverseIndex.Clear();

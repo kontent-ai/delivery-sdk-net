@@ -233,8 +233,8 @@ internal static class CacheKeyBuilder
     /// Order-independent: {("a", "1"), ("b", "2")} and {("b", "2"), ("a", "1")} produce the same hash.
     /// </para>
     /// <para>
-    /// Uses first 8 characters of base64-encoded SHA256 for brevity while maintaining low collision probability
-    /// (~1 in 281 trillion for 8 chars).
+    /// Uses the first 12 characters of base64-encoded SHA256 for brevity while maintaining an extremely
+    /// low collision probability (~72 bits of entropy, i.e. ~2^72 possible values).
     /// </para>
     /// <para>
     /// Filters are hashed because they can be very long (e.g., complex queries with many conditions).
@@ -266,7 +266,7 @@ internal static class CacheKeyBuilder
     /// Computes stable, short hash using URL-safe base64 encoding of SHA256.
     /// </summary>
     /// <param name="input">The string to hash.</param>
-    /// <returns>An 8-character URL-safe hash providing ~2^48 (281 trillion) possible values.</returns>
+    /// <returns>A 12-character URL-safe hash providing ~2^72 possible values.</returns>
     /// <remarks>
     /// <para>
     /// Uses URL-safe base64 encoding (replacing '+' with '-', '/' with '_', and removing '=')
@@ -293,9 +293,9 @@ internal static class CacheKeyBuilder
             .Replace('/', '_')
             .TrimEnd('=');
 
-        // Take first 8 chars (6 bytes of entropy)
-        // This gives us 2^48 = 281 trillion possible values
-        return urlSafe[..8];
+        // Take first 12 chars (12 * 6 = 72 bits of entropy)
+        // This gives us 2^72 possible values (extremely low collision probability).
+        return urlSafe[..12];
     }
 
     /// <summary>
