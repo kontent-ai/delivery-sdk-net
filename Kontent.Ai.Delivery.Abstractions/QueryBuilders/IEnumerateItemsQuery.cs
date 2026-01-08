@@ -21,8 +21,8 @@ public interface IEnumerateItemsQuery<TModel>
     /// Orders the items by the given path in ascending or descending order.
     /// </summary>
     /// <param name="elementOrAttributePath">Element or attribute path.</param>
-    /// <param name="ascending">True for ascending; false for descending.</param>
-    IEnumerateItemsQuery<TModel> OrderBy(string elementOrAttributePath, bool ascending = true);
+    /// <param name="orderingMode">Ordering mode (ascending/descending).</param>
+    IEnumerateItemsQuery<TModel> OrderBy(string elementOrAttributePath, OrderingMode orderingMode = OrderingMode.Ascending);
 
     /// <summary>
     /// Overrides the global option for waiting on the newest content for this specific request.

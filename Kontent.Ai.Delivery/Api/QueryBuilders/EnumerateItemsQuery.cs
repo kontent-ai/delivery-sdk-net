@@ -34,9 +34,14 @@ internal sealed class EnumerateItemsQuery<TModel>(IDeliveryApi api, Func<bool?> 
         return this;
     }
 
-    public IEnumerateItemsQuery<TModel> OrderBy(string elementOrAttributePath, bool ascending = true)
+    public IEnumerateItemsQuery<TModel> OrderBy(string elementOrAttributePath, OrderingMode orderingMode = OrderingMode.Ascending)
     {
-        _params = _params with { OrderBy = ascending ? $"{elementOrAttributePath}[asc]" : $"{elementOrAttributePath}[desc]" };
+        _params = _params with
+        {
+            OrderBy = orderingMode == OrderingMode.Ascending
+                ? $"{elementOrAttributePath}[asc]"
+                : $"{elementOrAttributePath}[desc]"
+        };
         return this;
     }
 

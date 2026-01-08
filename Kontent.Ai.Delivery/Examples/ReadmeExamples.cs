@@ -89,7 +89,7 @@ public static class ReadmeExamples
     public static async Task ItemsFeedAsync(IDeliveryClient client)
     {
         var query = client.GetItemsFeed()
-            .OrderBy("system.last_modified", true);
+            .OrderBy("system.last_modified");
 
         await foreach (var item in query.EnumerateItemsAsync())
         {
@@ -158,7 +158,7 @@ public static class ReadmeExamples
     public static async Task OrderingAndPaginationAsync(IDeliveryClient client)
     {
         var result = await client.GetItems()
-            .OrderBy("system.last_modified", ascending: false)
+            .OrderBy("system.last_modified", OrderingMode.Descending)
             .Skip(0)
             .Limit(10)
             .ExecuteAsync();

@@ -163,7 +163,7 @@ public class FilteringExamples(IDeliveryClient client)
                 .Element("in_stock").IsEqualTo(true))
             .WithLanguage("en-US")
             .Limit(20)
-            .OrderBy("elements.rating", false) // Descending
+            .OrderBy("elements.rating", OrderingMode.Descending) // Descending
             .ExecuteAsync();
 
         // Blog post filtering with multiple criteria
@@ -268,7 +268,7 @@ public class FilteringExamples(IDeliveryClient client)
             .Depth(2)
             .Skip(20)
             .Limit(10)
-            .OrderBy("system.last_modified", false)
+            .OrderBy("system.last_modified", OrderingMode.Descending)
             .WithTotalCount()
             .ExecuteAsync();
 

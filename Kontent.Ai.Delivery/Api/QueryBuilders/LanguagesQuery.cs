@@ -8,9 +8,14 @@ internal sealed class LanguagesQuery(IDeliveryApi api, Func<bool?> getDefaultWai
     private LanguagesParams _params = new();
     private bool? _waitForLoadingNewContentOverride;
 
-    public ILanguagesQuery OrderBy(string elementOrAttributePath, bool ascending = true)
+    public ILanguagesQuery OrderBy(string elementOrAttributePath, OrderingMode orderingMode = OrderingMode.Ascending)
     {
-        _params = _params with { OrderBy = ascending ? $"{elementOrAttributePath}[asc]" : $"{elementOrAttributePath}[desc]" };
+        _params = _params with
+        {
+            OrderBy = orderingMode == OrderingMode.Ascending
+                ? $"{elementOrAttributePath}[asc]"
+                : $"{elementOrAttributePath}[desc]"
+        };
         return this;
     }
 

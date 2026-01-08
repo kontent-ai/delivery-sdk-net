@@ -53,9 +53,9 @@ public interface IItemsQuery<TModel>
     /// Orders the items by the given path in ascending or descending order.
     /// </summary>
     /// <param name="elementOrAttributePath">Element or attribute path.</param>
-    /// <param name="ascending">True for ascending; false for descending.</param>
+    /// <param name="orderingMode">Ordering mode (ascending/descending).</param>
     /// <returns>The query builder for method chaining.</returns>
-    IItemsQuery<TModel> OrderBy(string elementOrAttributePath, bool ascending = true);
+    IItemsQuery<TModel> OrderBy(string elementOrAttributePath, OrderingMode orderingMode = OrderingMode.Ascending);
 
     /// <summary>
     /// Requests the total count to be included in the response.

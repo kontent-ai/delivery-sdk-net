@@ -107,7 +107,7 @@ var result = await client.GetItems()
     .WithLanguage("en-US")
     .WithElements("title", "summary")
     .Depth(2)
-    .OrderBy("system.last_modified", ascending: false)
+    .OrderBy("system.last_modified", OrderingMode.Descending)
     .Limit(10)
     .ExecuteAsync();
 ```

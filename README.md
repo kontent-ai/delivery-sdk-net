@@ -183,7 +183,7 @@ For large datasets, use the items feed for efficient pagination:
 
 ```csharp
 var query = client.GetItemsFeed()
-    .OrderBy("system.last_modified", true);
+    .OrderBy("system.last_modified");
 
 await foreach (var item in query.ExecuteAsync())
 {
@@ -260,7 +260,7 @@ var query = client.GetItems()
 
 ```csharp
 var result = await client.GetItems()
-    .OrderBy("system.last_modified", ascending: false)
+    .OrderBy("system.last_modified", OrderingMode.Descending)
     .Skip(0)
     .Limit(10)
     .ExecuteAsync();

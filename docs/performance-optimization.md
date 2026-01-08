@@ -114,7 +114,7 @@ public async Task<PagedResult<Article>> GetArticlesAsync(int page, int pageSize)
 {
     var result = await client.GetItems<Article>()
         .Where(f => f.System("type").IsEqualTo("article"))
-        .OrderBy("system.last_modified", ascending: false)
+        .OrderBy("system.last_modified", OrderingMode.Descending)
         .Skip(page * pageSize)
         .Limit(pageSize)
         .WithTotalCount()
@@ -139,7 +139,7 @@ For processing all items efficiently:
 var query = client.GetItemsFeed<Article>()
     .Where(f => f.System("type").IsEqualTo("article"))
     .WithElements("title", "url_slug")  // Only needed elements
-    .OrderBy("system.codename", ascending: true);
+    .OrderBy("system.codename", OrderingMode.Ascending);
 
 await foreach (var article in query.ExecuteAsync())
 {
@@ -212,7 +212,7 @@ public class CacheWarmupService : IHostedService
         // Warm recent articles
         await client.GetItems<Article>()
             .Where(f => f.System("type").IsEqualTo("article"))
-            .OrderBy("system.last_modified", ascending: false)
+            .OrderBy("system.last_modified", OrderingMode.Descending)
             .Limit(20)
             .ExecuteAsync(cancellationToken);
     }
@@ -351,7 +351,7 @@ public async Task<DashboardData> GetDashboardDataAsync()
     // Execute queries in parallel
     var homepageTask = client.GetItem<HomePage>("homepage").ExecuteAsync();
     var articlesTask = client.GetItems<Article>()
-        .OrderBy("system.last_modified", ascending: false)
+        .OrderBy("system.last_modified", OrderingMode.Descending)
         .Limit(5)
         .ExecuteAsync();
     var productsTask = client.GetItems<Product>()

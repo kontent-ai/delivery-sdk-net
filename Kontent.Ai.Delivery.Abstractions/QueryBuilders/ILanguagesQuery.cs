@@ -9,8 +9,8 @@ public interface ILanguagesQuery
     /// Orders the items by the given path in ascending or descending order.
     /// </summary>
     /// <param name="elementOrAttributePath">Element or attribute path.</param>
-    /// <param name="ascending">True for ascending; false for descending.</param>
-    ILanguagesQuery OrderBy(string elementOrAttributePath, bool ascending = true);
+    /// <param name="orderingMode">Ordering mode (ascending/descending).</param>
+    ILanguagesQuery OrderBy(string elementOrAttributePath, OrderingMode orderingMode = OrderingMode.Ascending);
 
     /// <summary>
     /// Sets the number of languages to skip.
