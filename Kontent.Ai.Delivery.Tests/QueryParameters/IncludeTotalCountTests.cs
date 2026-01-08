@@ -103,7 +103,7 @@ public class IncludeTotalCountTests
             .Respond("application/json", responseJson);
         var client = CreateClient();
         await client.GetItems<IDynamicElements>()
-            .Filter(f => f.System("type").Eq("cafe"))
+            .Where(f => f.System("type").IsEqualTo("cafe"))
             .WithTotalCount()
             .ExecuteAsync();
 

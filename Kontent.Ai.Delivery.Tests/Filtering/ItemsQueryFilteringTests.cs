@@ -26,7 +26,7 @@ public class ItemsQueryFilteringTests
         var client = provider.GetRequiredService<IDeliveryClient>();
 
         var result = await client.GetItems<IDynamicElements>()
-            .Filter(f => f.System("type").Eq("article"))
+            .Where(f => f.System("type").IsEqualTo("article"))
             .ExecuteAsync();
 
         Assert.True(result.IsSuccess);
@@ -40,7 +40,7 @@ public class ItemsQueryFilteringTests
         var itemsUrl = $"{baseUrl}/items";
         var mockHttp = new MockHttpMessageHandler();
 
-        // One Filter(...) call with chaining must serialize to multiple query params (AND semantics)
+        // One Where(...) call with chaining must serialize to multiple query params (AND semantics)
         mockHttp.When($"{itemsUrl}?system.type%5Beq%5D=article&system.language%5Beq%5D=en-US")
             .Respond("application/json", await File.ReadAllTextAsync(Path.Combine(Environment.CurrentDirectory, $"Fixtures{Path.DirectorySeparatorChar}DeliveryClient{Path.DirectorySeparatorChar}items.json")));
 
@@ -51,9 +51,9 @@ public class ItemsQueryFilteringTests
         var client = provider.GetRequiredService<IDeliveryClient>();
 
         var result = await client.GetItems<IDynamicElements>()
-            .Filter(f => f
-                .System("type").Eq("article")
-                .System("language").Eq("en-US"))
+            .Where(f => f
+                .System("type").IsEqualTo("article")
+                .System("language").IsEqualTo("en-US"))
             .ExecuteAsync();
 
         Assert.True(result.IsSuccess);

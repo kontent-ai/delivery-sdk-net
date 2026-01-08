@@ -29,7 +29,7 @@ internal sealed class TaxonomiesQuery(
         return this;
     }
 
-    public ITaxonomiesQuery Filter(Func<ITaxonomiesFilterBuilder, ITaxonomiesFilterBuilder> build)
+    public ITaxonomiesQuery Where(Func<ITaxonomiesFilterBuilder, ITaxonomiesFilterBuilder> build)
     {
         ArgumentNullException.ThrowIfNull(build);
         build(new TaxonomiesFilterBuilder(_serializedFilters));

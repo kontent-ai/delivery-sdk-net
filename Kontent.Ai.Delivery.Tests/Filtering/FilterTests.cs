@@ -11,7 +11,7 @@ public class FilterTests
         var dict = new Dictionary<string, string>();
         var f = new ItemsFilterBuilder(dict);
 
-        f.Element("title").Empty();
+        f.Element("title").IsEmpty();
 
         Assert.Equal("[empty]", dict["elements.title"]);
     }
@@ -22,7 +22,7 @@ public class FilterTests
         var dict = new Dictionary<string, string>();
         var f = new ItemsFilterBuilder(dict);
 
-        f.Element("tags").In("a", "b");
+        f.Element("tags").IsIn("a", "b");
 
         Assert.Equal("a,b", dict["elements.tags[in]"]);
     }
@@ -33,7 +33,7 @@ public class FilterTests
         var dict = new Dictionary<string, string>();
         var f = new ItemsFilterBuilder(dict);
 
-        f.Element("date").Range(DateTime.Parse("2020-01-01"), DateTime.Parse("2020-12-31"));
+        f.Element("date").IsWithinRange(DateTime.Parse("2020-01-01"), DateTime.Parse("2020-12-31"));
 
         Assert.Equal("2020-01-01T00:00:00Z,2020-12-31T00:00:00Z", dict["elements.date[range]"]);
     }

@@ -7,11 +7,11 @@ namespace Kontent.Ai.Delivery.Abstractions;
 /// <typeparam name="TBuilder">Parent builder type to return to for fluent chaining.</typeparam>
 public interface ITaxonomyFieldFilter<out TBuilder>
 {
-    TBuilder Eq(string value);
-    TBuilder Eq(DateTime value);
+    TBuilder IsEqualTo(string value);
+    TBuilder IsEqualTo(DateTime value);
 
-    TBuilder Neq(string value);
-    TBuilder Neq(DateTime value);
+    TBuilder IsNotEqualTo(string value);
+    TBuilder IsNotEqualTo(DateTime value);
 }
 
 

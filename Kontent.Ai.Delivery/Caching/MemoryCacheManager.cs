@@ -147,14 +147,11 @@ public sealed class MemoryCacheManager(
         ThrowIfDisposed();
 
         // Validate inputs according to interface contract
-        if (cacheKey == null)
-            throw new ArgumentNullException(nameof(cacheKey));
+        ArgumentNullException.ThrowIfNull(cacheKey);
         if (string.IsNullOrWhiteSpace(cacheKey))
             throw new ArgumentException("Cache key cannot be empty or whitespace.", nameof(cacheKey));
-        if (value == null)
-            throw new ArgumentNullException(nameof(value));
-        if (dependencies == null)
-            throw new ArgumentNullException(nameof(dependencies));
+        ArgumentNullException.ThrowIfNull(value);
+        ArgumentNullException.ThrowIfNull(dependencies);
 
         cancellationToken.ThrowIfCancellationRequested();
 

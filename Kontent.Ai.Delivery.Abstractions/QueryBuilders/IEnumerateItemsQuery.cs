@@ -37,7 +37,7 @@ public interface IEnumerateItemsQuery<TModel>
     /// </remarks>
     /// <param name="build">Builder function that appends one or more filtering conditions.</param>
     /// <returns>The query builder for method chaining.</returns>
-    IEnumerateItemsQuery<TModel> Filter(Func<IItemsFilterBuilder, IItemsFilterBuilder> build);
+    IEnumerateItemsQuery<TModel> Where(Func<IItemsFilterBuilder, IItemsFilterBuilder> build);
 
     /// <summary>
     /// Enumerates content items using the Delivery API items-feed endpoint.

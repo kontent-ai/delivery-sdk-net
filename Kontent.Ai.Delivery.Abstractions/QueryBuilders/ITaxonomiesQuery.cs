@@ -24,7 +24,7 @@ public interface ITaxonomiesQuery
     /// The returned query uses AND semantics between conditions (multiple query parameters).
     /// </remarks>
     /// <param name="build">Builder function that appends one or more filtering conditions.</param>
-    ITaxonomiesQuery Filter(Func<ITaxonomiesFilterBuilder, ITaxonomiesFilterBuilder> build);
+    ITaxonomiesQuery Where(Func<ITaxonomiesFilterBuilder, ITaxonomiesFilterBuilder> build);
 
     /// <summary>
     /// Overrides the global option for waiting on the newest content for this specific request.

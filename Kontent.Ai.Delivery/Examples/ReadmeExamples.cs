@@ -113,8 +113,8 @@ public static class ReadmeExamples
     public static async Task BasicFilteringAsync(IDeliveryClient client)
     {
         var result = await client.GetItems()
-            .Filter(f => f
-                .System("type").Eq("article")
+            .Where(f => f
+                .System("type").IsEqualTo("article")
                 .Element("category").Contains("coffee"))
             .Limit(20)
             .ExecuteAsync();
@@ -128,7 +128,7 @@ public static class ReadmeExamples
         var query = client.GetItems();
         if (onlyArticles)
         {
-            query = query.Filter(f => f.System("type").Eq("article"));
+            query = query.Where(f => f.System("type").IsEqualTo("article"));
         }
 
         _ = await query.ExecuteAsync();
@@ -138,17 +138,17 @@ public static class ReadmeExamples
     public static async Task CommonFilterOperatorsAsync(IDeliveryClient client)
     {
         var result = await client.GetItems()
-            .Filter(f => f
-                .System("type").Eq("product")
-                .System("collection").Neq("archived")
-                .Element("price").Gt(100.0)
-                .Element("rating").Lte(4.5)
-                .Element("price").Range(50.0, 500.0)
-                .System("type").In("article", "blog_post")
-                .Element("tags").Any("featured", "trending")
-                .Element("categories").All("tech", "news")
-                .Element("description").Nempty()
-                .System("collection").In("tech", "news"))
+            .Where(f => f
+                .System("type").IsEqualTo("product")
+                .System("collection").IsNotEqualTo("archived")
+                .Element("price").IsGreaterThan(100.0)
+                .Element("rating").IsLessThanOrEqualTo(4.5)
+                .Element("price").IsWithinRange(50.0, 500.0)
+                .System("type").IsIn("article", "blog_post")
+                .Element("tags").ContainsAny("featured", "trending")
+                .Element("categories").ContainsAll("tech", "news")
+                .Element("description").IsNotEmpty()
+                .System("collection").IsIn("tech", "news"))
             .ExecuteAsync();
 
         _ = result;
@@ -214,7 +214,7 @@ public static class ReadmeExamples
     public static async Task StrongTypingQueryAsync(IDeliveryClient client)
     {
         var result = await client.GetItems<Article>()
-            .Filter(f => f.System("type").Eq("article"))
+            .Where(f => f.System("type").IsEqualTo("article"))
             .WithLanguage("en-US")
             .ExecuteAsync();
 
@@ -420,7 +420,7 @@ public static class ReadmeExamples
             .ExecuteAsync();
 
         var articlesDe = await client.GetItems<Article>()
-            .Filter(f => f.System("type").Eq("article"))
+            .Where(f => f.System("type").IsEqualTo("article"))
             .WithLanguage("de-DE")
             .ExecuteAsync();
 

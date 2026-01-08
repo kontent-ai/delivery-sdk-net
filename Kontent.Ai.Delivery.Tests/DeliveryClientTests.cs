@@ -135,7 +135,7 @@ public class DeliveryClientTests
             .Respond("application/json", await File.ReadAllTextAsync(Path.Combine(Environment.CurrentDirectory, $"Fixtures{Path.DirectorySeparatorChar}DeliveryClient{Path.DirectorySeparatorChar}articles_feed.json")));
 
         var client = CreateClient(mock);
-        var items = await client.GetItemsFeed<Article>().Filter(f => f.System("type").Eq("article")).EnumerateAllAsync();
+        var items = await client.GetItemsFeed<Article>().Where(f => f.System("type").IsEqualTo("article")).EnumerateAllAsync();
 
         Assert.NotEmpty(items);
     }
@@ -194,7 +194,7 @@ public class DeliveryClientTests
         var client = CreateClient(mock);
 
         var result = await client.GetItems<IDynamicElements>()
-            .Filter(f => f.System("type").Eq("article"))
+            .Where(f => f.System("type").IsEqualTo("article"))
             .ExecuteAsync();
 
         Assert.True(result.IsSuccess);

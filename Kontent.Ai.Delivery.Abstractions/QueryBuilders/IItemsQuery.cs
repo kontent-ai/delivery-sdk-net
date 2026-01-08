@@ -77,7 +77,7 @@ public interface IItemsQuery<TModel>
     /// </remarks>
     /// <param name="build">Builder function that appends one or more filtering conditions.</param>
     /// <returns>The query builder for method chaining.</returns>
-    IItemsQuery<TModel> Filter(Func<IItemsFilterBuilder, IItemsFilterBuilder> build);
+    IItemsQuery<TModel> Where(Func<IItemsFilterBuilder, IItemsFilterBuilder> build);
 
     /// <summary>
     /// Executes the built query and returns a functional result.

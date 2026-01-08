@@ -7,55 +7,55 @@ namespace Kontent.Ai.Delivery.Abstractions;
 public interface IItemFieldFilter<out TBuilder>
 {
     // Equality
-    TBuilder Eq(string value);
-    TBuilder Eq(double value);
-    TBuilder Eq(DateTime value);
-    TBuilder Eq(bool value);
+    TBuilder IsEqualTo(string value);
+    TBuilder IsEqualTo(double value);
+    TBuilder IsEqualTo(DateTime value);
+    TBuilder IsEqualTo(bool value);
 
-    TBuilder Neq(string value);
-    TBuilder Neq(double value);
-    TBuilder Neq(DateTime value);
-    TBuilder Neq(bool value);
+    TBuilder IsNotEqualTo(string value);
+    TBuilder IsNotEqualTo(double value);
+    TBuilder IsNotEqualTo(DateTime value);
+    TBuilder IsNotEqualTo(bool value);
 
     // Comparison
-    TBuilder Lt(double value);
-    TBuilder Lt(DateTime value);
-    TBuilder Lt(string value);
+    TBuilder IsLessThan(double value);
+    TBuilder IsLessThan(DateTime value);
+    TBuilder IsLessThan(string value);
 
-    TBuilder Lte(double value);
-    TBuilder Lte(DateTime value);
-    TBuilder Lte(string value);
+    TBuilder IsLessThanOrEqualTo(double value);
+    TBuilder IsLessThanOrEqualTo(DateTime value);
+    TBuilder IsLessThanOrEqualTo(string value);
 
-    TBuilder Gt(double value);
-    TBuilder Gt(DateTime value);
-    TBuilder Gt(string value);
+    TBuilder IsGreaterThan(double value);
+    TBuilder IsGreaterThan(DateTime value);
+    TBuilder IsGreaterThan(string value);
 
-    TBuilder Gte(double value);
-    TBuilder Gte(DateTime value);
-    TBuilder Gte(string value);
+    TBuilder IsGreaterThanOrEqualTo(double value);
+    TBuilder IsGreaterThanOrEqualTo(DateTime value);
+    TBuilder IsGreaterThanOrEqualTo(string value);
 
     // Range (inclusive)
-    TBuilder Range(double lower, double upper);
-    TBuilder Range(DateTime lower, DateTime upper);
-    TBuilder Range(string lower, string upper);
+    TBuilder IsWithinRange(double lower, double upper);
+    TBuilder IsWithinRange(DateTime lower, DateTime upper);
+    TBuilder IsWithinRange(string lower, string upper);
 
     // Collections
-    TBuilder In(params string[] values);
-    TBuilder In(params double[] values);
-    TBuilder In(params DateTime[] values);
+    TBuilder IsIn(params string[] values);
+    TBuilder IsIn(params double[] values);
+    TBuilder IsIn(params DateTime[] values);
 
-    TBuilder Nin(params string[] values);
-    TBuilder Nin(params double[] values);
-    TBuilder Nin(params DateTime[] values);
+    TBuilder IsNotIn(params string[] values);
+    TBuilder IsNotIn(params double[] values);
+    TBuilder IsNotIn(params DateTime[] values);
 
     // Text / array operators
     TBuilder Contains(string value);
-    TBuilder Any(params string[] values);
-    TBuilder All(params string[] values);
+    TBuilder ContainsAny(params string[] values);
+    TBuilder ContainsAll(params string[] values);
 
     // Empty checks
-    TBuilder Empty();
-    TBuilder Nempty();
+    TBuilder IsEmpty();
+    TBuilder IsNotEmpty();
 }
 
 

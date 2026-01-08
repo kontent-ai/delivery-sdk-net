@@ -81,7 +81,7 @@ internal sealed class ItemsQuery<TModel>(
         return this;
     }
 
-    public IItemsQuery<TModel> Filter(Func<IItemsFilterBuilder, IItemsFilterBuilder> build)
+    public IItemsQuery<TModel> Where(Func<IItemsFilterBuilder, IItemsFilterBuilder> build)
     {
         ArgumentNullException.ThrowIfNull(build);
         build(new ItemsFilterBuilder(_serializedFilters));

@@ -212,8 +212,8 @@ The SDK provides a type-safe filtering API with support for various operators:
 
 ```csharp
 var result = await client.GetItems()
-    .Filter(f => f
-        .System("type").Eq("article")
+    .Where(f => f
+        .System("type").IsEqualTo("article")
         // [contains] is for arrays (taxonomy/linked items/multiple choice), not strings.
         // See Delivery API docs: https://kontent.ai/learn/docs/apis/delivery-api/filtering-parameters?sl=1
         .Element("category").Contains("coffee"))
@@ -228,7 +228,7 @@ var query = client.GetItems();
 
 if (onlyArticles)
 {
-    query = query.Filter(f => f.System("type").Eq("article"));
+    query = query.Where(f => f.System("type").IsEqualTo("article"));
 }
 
 var result = await query.ExecuteAsync();
@@ -238,22 +238,22 @@ var result = await query.ExecuteAsync();
 
 ```csharp
 var query = client.GetItems()
-    .Filter(f => f
+    .Where(f => f
         // Equality
-        .System("type").Eq("product")
-        .System("collection").Neq("archived")
+        .System("type").IsEqualTo("product")
+        .System("collection").IsNotEqualTo("archived")
         // Comparison (numbers, dates, strings)
-        .Element("price").Gt(100.0)
-        .Element("rating").Lte(4.5)
+        .Element("price").IsGreaterThan(100.0)
+        .Element("rating").IsLessThanOrEqualTo(4.5)
         // Range (inclusive)
-        .Element("price").Range(50.0, 500.0)
+        .Element("price").IsWithinRange(50.0, 500.0)
         // Array membership
-        .System("type").In("article", "blog_post")
+        .System("type").IsIn("article", "blog_post")
         // Multi-value element matching
-        .Element("tags").Any("featured", "trending")
-        .Element("categories").All("tech", "news")
+        .Element("tags").ContainsAny("featured", "trending")
+        .Element("categories").ContainsAll("tech", "news")
         // Null/empty checks
-        .Element("description").Nempty());
+        .Element("description").IsNotEmpty());
 ```
 
 #### Ordering and Pagination
@@ -316,7 +316,7 @@ public record Article
 
 // Query with strong typing
 var result = await client.GetItems<Article>()
-    .Filter(f => f.System("type").Eq("article"))
+    .Where(f => f.System("type").IsEqualTo("article"))
     .WithLanguage("en-US")
     .ExecuteAsync();
 
@@ -617,7 +617,7 @@ var result = await client.GetItem("homepage")
 
 // Get all articles in German (strongly typed)
 var articlesResult = await client.GetItems<Article>()
-    .Filter(f => f.System("type").Eq("article"))
+    .Where(f => f.System("type").IsEqualTo("article"))
     .WithLanguage("de-DE")
     .ExecuteAsync();
 ```

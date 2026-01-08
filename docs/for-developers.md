@@ -134,21 +134,24 @@ public static JsonSerializerOptions CreateDefaultJsonSerializerOptions()
 
 ## Filtering (fluent DSL)
 
-Filtering is expressed using a small DSL that mirrors Delivery API query parameters and operators.
+Filtering is expressed using a small DSL that **maps to** Delivery API filtering query parameters and operator suffixes.
+
+The public surface is intentionally more ergonomic (verbose, discoverable method names), while the underlying serialization stays faithful to the wire format (e.g. `system.type[eq]=article`). The SDK also enforces endpoint capabilities at compile time (items vs types vs taxonomies expose different operator sets).
 
 **Key ideas:**
 - `.System("<property>")` targets `system.<property>`
 - `.Element("<codename>")` targets `elements.<codename>` (items only)
-- Operators match Delivery API semantics: `Eq`, `Neq`, `Gt`, `Gte`, `Lt`, `Lte`, `Range`, `In`, `Nin`, `Contains`, `Any`, `All`, `Empty`, `Nempty`
+- Operators match Delivery API semantics: `IsEqualTo`, `IsNotEqualTo`, `IsGreaterThan`, `IsGreaterThanOrEqualTo`, `IsLessThan`, `IsLessThanOrEqualTo`, `IsWithinRange`, `IsIn`, `IsNotIn`, `Contains`, `ContainsAny`, `ContainsAll`, `IsEmpty`, `IsNotEmpty`
+- Filters are combined using logical **AND** (each operator adds another query parameter)
 
 Example:
 
 ```csharp
 var result = await client.GetItems()
-    .Filter(f => f
-        .System("type").Eq("article")
-        .Element("title").Contains("coffee")
-        .System("last_modified").Gt(DateTime.UtcNow.AddDays(-30)))
+    .Where(f => f
+        .System("type").IsEqualTo("article")
+        .Element("category").Contains("coffee")
+        .System("last_modified").IsGreaterThan(DateTime.UtcNow.AddDays(-30)))
     .ExecuteAsync();
 ```
 

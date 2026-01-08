@@ -8,22 +8,22 @@ namespace Kontent.Ai.Delivery.Abstractions;
 public interface ITypeFieldFilter<out TBuilder>
 {
     // Equality
-    TBuilder Eq(string value);
-    TBuilder Eq(DateTime value);
+    TBuilder IsEqualTo(string value);
+    TBuilder IsEqualTo(DateTime value);
 
-    TBuilder Neq(string value);
-    TBuilder Neq(DateTime value);
+    TBuilder IsNotEqualTo(string value);
+    TBuilder IsNotEqualTo(DateTime value);
 
     // Collection (strings only)
-    TBuilder In(params string[] values);
-    TBuilder Nin(params string[] values);
+    TBuilder IsIn(params string[] values);
+    TBuilder IsNotIn(params string[] values);
 
     // Date comparisons (system.last_modified etc.)
-    TBuilder Range(DateTime lower, DateTime upper);
-    TBuilder Lt(DateTime value);
-    TBuilder Lte(DateTime value);
-    TBuilder Gt(DateTime value);
-    TBuilder Gte(DateTime value);
+    TBuilder IsWithinRange(DateTime lower, DateTime upper);
+    TBuilder IsLessThan(DateTime value);
+    TBuilder IsLessThanOrEqualTo(DateTime value);
+    TBuilder IsGreaterThan(DateTime value);
+    TBuilder IsGreaterThanOrEqualTo(DateTime value);
 }
 
 

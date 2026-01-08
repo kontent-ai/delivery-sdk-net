@@ -41,7 +41,7 @@ internal sealed class TypesQuery(
         return this;
     }
 
-    public ITypesQuery Filter(Func<ITypesFilterBuilder, ITypesFilterBuilder> build)
+    public ITypesQuery Where(Func<ITypesFilterBuilder, ITypesFilterBuilder> build)
     {
         ArgumentNullException.ThrowIfNull(build);
         build(new TypesFilterBuilder(_serializedFilters));

@@ -76,7 +76,7 @@ public interface IDynamicItemsQuery
     /// </remarks>
     /// <param name="build">Builder function that appends one or more filtering conditions.</param>
     /// <returns>The query builder for method chaining.</returns>
-    IDynamicItemsQuery Filter(Func<IItemsFilterBuilder, IItemsFilterBuilder> build);
+    IDynamicItemsQuery Where(Func<IItemsFilterBuilder, IItemsFilterBuilder> build);
 
     /// <summary>
     /// Executes the built query and returns a functional result.

@@ -70,7 +70,7 @@ internal sealed class DynamicItemsQuery(
         return this;
     }
 
-    public IDynamicItemsQuery Filter(Func<IItemsFilterBuilder, IItemsFilterBuilder> build)
+    public IDynamicItemsQuery Where(Func<IItemsFilterBuilder, IItemsFilterBuilder> build)
     {
         ArgumentNullException.ThrowIfNull(build);
         build(new ItemsFilterBuilder(_serializedFilters));

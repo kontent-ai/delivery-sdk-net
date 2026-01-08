@@ -11,7 +11,7 @@ public class ItemFiltersTests
         var dict = new Dictionary<string, string>();
         var f = new ItemsFilterBuilder(dict);
 
-        f.System("type").Eq("article");
+        f.System("type").IsEqualTo("article");
 
         Assert.Equal("article", dict["system.type[eq]"]);
     }
@@ -22,7 +22,7 @@ public class ItemFiltersTests
         var dict = new Dictionary<string, string>();
         var f = new ItemsFilterBuilder(dict);
 
-        f.Element("price").Eq(99.99);
+        f.Element("price").IsEqualTo(99.99);
 
         Assert.Equal("99.99", dict["elements.price[eq]"]);
     }
@@ -34,7 +34,7 @@ public class ItemFiltersTests
         var f = new ItemsFilterBuilder(dict);
         var date = new DateTime(2024, 8, 14, 10, 30, 0, DateTimeKind.Utc);
 
-        f.Element("publish_date").Eq(date);
+        f.Element("publish_date").IsEqualTo(date);
 
         Assert.Equal("2024-08-14T10:30:00Z", dict["elements.publish_date[eq]"]);
     }
@@ -58,7 +58,7 @@ public class ItemFiltersTests
         var dict = new Dictionary<string, string>();
         var f = new ItemsFilterBuilder(dict);
 
-        f.Element("price").Range(10.0, 100.0);
+        f.Element("price").IsWithinRange(10.0, 100.0);
 
         Assert.Equal("10,100", dict["elements.price[range]"]);
     }
@@ -69,7 +69,7 @@ public class ItemFiltersTests
         var dict = new Dictionary<string, string>();
         var f = new ItemsFilterBuilder(dict);
 
-        f.Element("description").Empty();
+        f.Element("description").IsEmpty();
 
         Assert.Equal("[empty]", dict["elements.description"]);
     }

@@ -50,6 +50,6 @@ public class DeliveryClientBenchmark
     [Benchmark]
     public async Task<IDeliveryResult<IReadOnlyList<IContentItem<Article>>>> GetItemsAsync()
     {
-        return await _client.GetItems<Article>().Filter(f => f.System("type").Eq("article")).ExecuteAsync();
+        return await _client.GetItems<Article>().Where(f => f.System("type").IsEqualTo("article")).ExecuteAsync();
     }
 }

@@ -40,7 +40,7 @@ internal sealed class EnumerateItemsQuery<TModel>(IDeliveryApi api, Func<bool?> 
         return this;
     }
 
-    public IEnumerateItemsQuery<TModel> Filter(Func<IItemsFilterBuilder, IItemsFilterBuilder> build)
+    public IEnumerateItemsQuery<TModel> Where(Func<IItemsFilterBuilder, IItemsFilterBuilder> build)
     {
         ArgumentNullException.ThrowIfNull(build);
         build(new ItemsFilterBuilder(_serializedFilters));

@@ -5,20 +5,20 @@ The underlying API merges multiple filtering parameters using logical **AND** (m
 
 ## Overview
 
-Filtering is added via `.Filter(...)` on query builders. A single `.Filter(...)` call can add **multiple** conditions:
+Filtering is added via `.Where(...)` on query builders. A single `.Where(...)` call can add **multiple** conditions:
 
 ```csharp
 var result = await client.GetItems()
-    .Filter(f => f
-        .System("type").Eq("article")
+    .Where(f => f
+        .System("type").IsEqualTo("article")
         // [contains] is for arrays (e.g. taxonomy, linked items, multiple choice), not strings.
         // See Delivery API docs: https://kontent.ai/learn/docs/apis/delivery-api/filtering-parameters?sl=1
         .Element("category").Contains("coffee")
-        .System("last_modified").Gt(DateTime.UtcNow.AddDays(-30)))
+        .System("last_modified").IsGreaterThan(DateTime.UtcNow.AddDays(-30)))
     .ExecuteAsync();
 ```
 
-You can also chain multiple `.Filter(...)` calls; all conditions are still ANDed together.
+You can also chain multiple `.Where(...)` calls; all conditions are still ANDed together.
 
 ## Property paths
 
@@ -33,77 +33,77 @@ The DSL builds property paths for you:
 
 ### Equality
 
-- `Eq(...)` → `[eq]`
-- `Neq(...)` → `[neq]`
+- `IsEqualTo(...)` → `[eq]`
+- `IsNotEqualTo(...)` → `[neq]`
 
 ```csharp
 // system.type[eq]=article
-.Filter(f => f.System("type").Eq("article"))
+.Where(f => f.System("type").IsEqualTo("article"))
 
 // elements.status[neq]=draft
-.Filter(f => f.Element("status").Neq("draft"))
+.Where(f => f.Element("status").IsNotEqualTo("draft"))
 ```
 
 ### Comparison
 
-- `Lt(...)` → `[lt]`
-- `Lte(...)` → `[lte]`
-- `Gt(...)` → `[gt]`
-- `Gte(...)` → `[gte]`
+- `IsLessThan(...)` → `[lt]`
+- `IsLessThanOrEqualTo(...)` → `[lte]`
+- `IsGreaterThan(...)` → `[gt]`
+- `IsGreaterThanOrEqualTo(...)` → `[gte]`
 
 ```csharp
-.Filter(f => f.Element("price").Gt(100.0))
-.Filter(f => f.System("last_modified").Lte(DateTime.UtcNow.AddDays(-7)))
+.Where(f => f.Element("price").IsGreaterThan(100.0))
+.Where(f => f.System("last_modified").IsLessThanOrEqualTo(DateTime.UtcNow.AddDays(-7)))
 ```
 
 ### Range (inclusive)
 
-- `Range(lower, upper)` → `[range]` with `lower,upper`
+- `IsWithinRange(lower, upper)` → `[range]` with `lower,upper`
 
 ```csharp
-.Filter(f => f.Element("price").Range(100.0, 500.0))
-.Filter(f => f.System("last_modified").Range(DateTime.Parse("2024-01-01"), DateTime.Parse("2024-06-30")))
+.Where(f => f.Element("price").IsWithinRange(100.0, 500.0))
+.Where(f => f.System("last_modified").IsWithinRange(DateTime.Parse("2024-01-01"), DateTime.Parse("2024-06-30")))
 ```
 
 ### Collection membership
 
-- `In(...)` → `[in]`
-- `Nin(...)` → `[nin]`
+- `IsIn(...)` → `[in]`
+- `IsNotIn(...)` → `[nin]`
 
 ```csharp
-.Filter(f => f.System("type").In("article", "blog_post", "news"))
-.Filter(f => f.Element("rating").In(4.0, 5.0))
+.Where(f => f.System("type").IsIn("article", "blog_post", "news"))
+.Where(f => f.Element("rating").IsIn(4.0, 5.0))
 ```
 
 ### Arrays
 
 - `Contains("...")` → `[contains]` (array contains a value)
-- `Any(...)` → `[any]` (array contains at least one)
-- `All(...)` → `[all]` (array contains all)
+- `ContainsAny(...)` → `[any]` (array contains at least one)
+- `ContainsAll(...)` → `[all]` (array contains all)
 
 ```csharp
-.Filter(f => f.Element("category").Contains("coffee"))
-.Filter(f => f.Element("tags").Any("featured", "trending"))
-.Filter(f => f.Element("required_features").All("warranty", "manual"))
+.Where(f => f.Element("category").Contains("coffee"))
+.Where(f => f.Element("tags").ContainsAny("featured", "trending"))
+.Where(f => f.Element("required_features").ContainsAll("warranty", "manual"))
 ```
 
 ### Empty checks
 
-- `Empty()` → `[empty]`
-- `Nempty()` → `[nempty]`
+- `IsEmpty()` → `[empty]`
+- `IsNotEmpty()` → `[nempty]`
 
 ```csharp
-.Filter(f => f.Element("seo_description").Empty())
-.Filter(f => f.Element("summary").Nempty())
+.Where(f => f.Element("seo_description").IsEmpty())
+.Where(f => f.Element("summary").IsNotEmpty())
 ```
 
 ## Combining filters with other query parameters
 
 ```csharp
 var result = await client.GetItems()
-    .Filter(f => f
-        .System("type").Eq("article")
-        .Element("tags").Any("beginner", "intermediate"))
+    .Where(f => f
+        .System("type").IsEqualTo("article")
+        .Element("tags").ContainsAny("beginner", "intermediate"))
     .WithLanguage("en-US")
     .WithElements("title", "summary")
     .Depth(2)
@@ -121,14 +121,14 @@ var query = client.GetItems();
 
 if (onlyArticles)
 {
-    query = query.Filter(f => f.System("type").Eq("article"));
+    query = query.Where(f => f.System("type").IsEqualTo("article"));
 }
 
 if (!string.IsNullOrWhiteSpace(searchText))
 {
     // Note: Delivery API doesn't support substring contains on strings.
     // Use [contains]/[any]/[all] only for arrays (taxonomy, linked items, multiple choice).
-    query = query.Filter(f => f.Element("category").Contains(searchText));
+    query = query.Where(f => f.Element("category").Contains(searchText));
 }
 
 var result = await query.ExecuteAsync();
