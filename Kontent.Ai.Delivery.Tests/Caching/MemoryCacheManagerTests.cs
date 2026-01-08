@@ -1,6 +1,7 @@
 using System.Collections.Concurrent;
 using System.Diagnostics;
 using System.Reflection;
+using Kontent.Ai.Delivery.Abstractions;
 using Kontent.Ai.Delivery.Caching;
 using Microsoft.Extensions.Caching.Memory;
 using Xunit;
@@ -201,6 +202,38 @@ public class MemoryCacheManagerTests : IDisposable
     }
 
     [Fact]
+    public async Task PurgeAsync_RemovesAllExistingEntries()
+    {
+        // Arrange
+        var key1 = "k1";
+        var key2 = "k2";
+        await _cacheManager.SetAsync(key1, new TestCacheValue { Id = 1, Name = "One" }, dependencies: ["dep1"]);
+        await _cacheManager.SetAsync(key2, new TestCacheValue { Id = 2, Name = "Two" }, dependencies: ["dep2"]);
+
+        // Act
+        await ((IDeliveryCachePurger)_cacheManager).PurgeAsync();
+
+        // Assert
+        Assert.Null(await _cacheManager.GetAsync<TestCacheValue>(key1));
+        Assert.Null(await _cacheManager.GetAsync<TestCacheValue>(key2));
+    }
+
+    [Fact]
+    public async Task PurgeAsync_DoesNotAffectEntriesCreatedAfterPurge()
+    {
+        // Arrange
+        await _cacheManager.SetAsync("old", new TestCacheValue { Id = 1, Name = "Old" }, dependencies: ["dep"]);
+
+        // Act
+        await ((IDeliveryCachePurger)_cacheManager).PurgeAsync();
+        await _cacheManager.SetAsync("new", new TestCacheValue { Id = 2, Name = "New" }, dependencies: ["dep"]);
+
+        // Assert
+        Assert.Null(await _cacheManager.GetAsync<TestCacheValue>("old"));
+        Assert.NotNull(await _cacheManager.GetAsync<TestCacheValue>("new"));
+    }
+
+    [Fact]
     public async Task ReverseIndex_IsCleanedUp_WhenLastDependentEntryExpires()
     {
         // Arrange
@@ -232,23 +265,21 @@ public class MemoryCacheManagerTests : IDisposable
 
         // Assert: entry expired and dependency CTS is cleaned up (no unbounded growth)
         Assert.Null(result);
-        var entryTokens = GetPrivateField<ConcurrentDictionary<string, CancellationTokenSource>>(
-            manager,
-            "_cancellationTokens");
+        var entries = GetPrivateField<object>(manager, "_entries");
 
         // Post-eviction callbacks are not guaranteed to have run synchronously at this point.
         // On slower/contended environments (e.g., CI runners), the cache entry can be gone
         // while the callback cleanup is still pending.
         var cleanedUp = await WaitUntilAsync(
-            () => !entryTokens.ContainsKey(key) && !reverseIndex.ContainsKey(dependency),
+            () => !ConcurrentDictionaryContainsKey(entries, key) && !reverseIndex.ContainsKey(dependency),
             timeout: TimeSpan.FromSeconds(2),
             pollInterval: TimeSpan.FromMilliseconds(10));
 
         Assert.True(
             cleanedUp,
             $"Expected cleanup for key '{key}' and dependency '{dependency}', but cleanup did not complete in time. " +
-            $"Tokens: [{string.Join(", ", entryTokens.Keys)}], ReverseIndexKeys: [{string.Join(", ", reverseIndex.Keys)}]");
-        Assert.DoesNotContain(key, entryTokens.Keys);
+            $"Entries: [{string.Join(", ", GetConcurrentDictionaryKeys(entries))}], ReverseIndexKeys: [{string.Join(", ", reverseIndex.Keys)}]");
+        Assert.DoesNotContain(key, GetConcurrentDictionaryKeys(entries));
         Assert.False(reverseIndex.ContainsKey(dependency));
     }
 
@@ -503,6 +534,45 @@ public class MemoryCacheManagerTests : IDisposable
 
         // Assert
         Assert.All(results, Assert.Null);
+    }
+
+    [Fact]
+    public async Task SetAsync_OverwriteSameKey_InvalidationCancelsCurrentEntry()
+    {
+        // Arrange
+        var key = "test_key";
+        var dependency = "dep1";
+
+        await _cacheManager.SetAsync(key, new TestCacheValue { Id = 1, Name = "First" }, [dependency]);
+        await _cacheManager.SetAsync(key, new TestCacheValue { Id = 2, Name = "Second" }, [dependency]);
+
+        // Act
+        await _cacheManager.InvalidateAsync(default, dependency);
+        var result = await _cacheManager.GetAsync<TestCacheValue>(key);
+
+        // Assert
+        Assert.Null(result);
+    }
+
+    [Fact]
+    public async Task SetAsync_OverwriteSameKey_ChangingDependencies_DoesNotInvalidateOnOldDependency()
+    {
+        // Arrange
+        var key = "test_key";
+        await _cacheManager.SetAsync(key, new TestCacheValue { Id = 1, Name = "Old" }, ["dep_old"]);
+        await _cacheManager.SetAsync(key, new TestCacheValue { Id = 2, Name = "New" }, ["dep_new"]);
+
+        // Act - invalidate the old dependency
+        await _cacheManager.InvalidateAsync(default, "dep_old");
+        var result = await _cacheManager.GetAsync<TestCacheValue>(key);
+
+        // Assert - entry should remain since it no longer depends on dep_old
+        Assert.NotNull(result);
+        Assert.Equal(2, result.Id);
+
+        // And invalidating the new dependency should remove it
+        await _cacheManager.InvalidateAsync(default, "dep_new");
+        Assert.Null(await _cacheManager.GetAsync<TestCacheValue>(key));
     }
 
     [Fact]
@@ -979,6 +1049,22 @@ public class MemoryCacheManagerTests : IDisposable
         }
 
         return condition();
+    }
+
+    private static bool ConcurrentDictionaryContainsKey(object dictionary, string key)
+    {
+        var method = dictionary.GetType().GetMethod("ContainsKey", [typeof(string)]);
+        Assert.NotNull(method);
+        return (bool)method!.Invoke(dictionary, [key])!;
+    }
+
+    private static IEnumerable<string> GetConcurrentDictionaryKeys(object dictionary)
+    {
+        var keysProp = dictionary.GetType().GetProperty("Keys");
+        Assert.NotNull(keysProp);
+        var keys = keysProp!.GetValue(dictionary);
+        Assert.NotNull(keys);
+        return ((System.Collections.IEnumerable)keys!).Cast<object>().Select(k => k?.ToString() ?? "");
     }
 
     #region Test Helper Classes

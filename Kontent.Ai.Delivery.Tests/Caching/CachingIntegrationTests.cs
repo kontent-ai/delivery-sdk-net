@@ -63,6 +63,57 @@ public class CachingIntegrationTests
     }
 
     [Fact]
+    public async Task MemoryCache_GetItem_ExpiresAfterTtl_HitsApiAgain()
+    {
+        // Arrange
+        var mock = new MockHttpMessageHandler();
+        var itemCodename = "coffee_beverages_explained";
+        var fixtureContent = await File.ReadAllTextAsync(
+            Path.Combine(Environment.CurrentDirectory,
+                $"Fixtures{Path.DirectorySeparatorChar}DeliveryClient{Path.DirectorySeparatorChar}{itemCodename}.json"));
+
+        var services = new ServiceCollection();
+        var options = new DeliveryOptions
+        {
+            EnvironmentId = _guid.ToString()
+        };
+
+        // Named client with keyed cache manager and short TTL
+        services.AddDeliveryClient("test", o => o.Configure(options),
+            configureHttpClient: b => b.ConfigurePrimaryHttpMessageHandler(() => mock));
+        services.AddDeliveryMemoryCache("test", defaultExpiration: TimeSpan.FromMilliseconds(50));
+
+        var client = services.BuildServiceProvider().GetRequiredKeyedService<IDeliveryClient>("test");
+
+        // First call should hit API
+        mock.Expect($"{BaseUrl}/items/{itemCodename}")
+            .Respond("application/json", fixtureContent);
+
+        // Act - First call (cache miss)
+        var result1 = await client.GetItem<Article>(itemCodename).ExecuteAsync();
+
+        // Act - Second call (cache hit)
+        var result2 = await client.GetItem<Article>(itemCodename).ExecuteAsync();
+
+        // Assert (so far) - only one API call should have been made
+        Assert.False(result1.IsCacheHit);
+        Assert.True(result2.IsCacheHit);
+        mock.VerifyNoOutstandingExpectation();
+
+        // Wait past TTL
+        await Task.Delay(200);
+
+        // Third call should hit API again (cache entry expired)
+        mock.Expect($"{BaseUrl}/items/{itemCodename}")
+            .Respond("application/json", fixtureContent);
+
+        var result3 = await client.GetItem<Article>(itemCodename).ExecuteAsync();
+
+        Assert.False(result3.IsCacheHit);
+        mock.VerifyNoOutstandingExpectation();
+    }
+
+    [Fact]
     public async Task MemoryCache_GetItems_CacheHitOnSecondCall()
     {
         // Arrange

@@ -405,7 +405,7 @@ private static void AppendFilters(
     var filterString = string.Join("&",
         sortedFilters.Select(kvp => $"{kvp.Key}={kvp.Value}"));
 
-    // Hash for brevity (first 8 chars of base64-encoded SHA256)
+    // Hash for brevity (first 12 chars of base64-encoded SHA256)
     var hash = ComputeStableHash(filterString);
     builder.Append(hash).Append(Separator);
 }
@@ -415,7 +415,7 @@ private static void AppendFilters(
 - **Human-readable**: Easy debugging ("items:type=article" vs "8F3A9B2C")
 - **Order-independent**: Same parameters → same key regardless of order
 - **Deterministic**: Always produces same key for same parameters
-- **Collision-resistant**: 8-char base64 hash = 2^48 combinations
+- **Collision-resistant**: 12-char base64 hash = 2^72 combinations
 
 ### Dependency Tracking
 

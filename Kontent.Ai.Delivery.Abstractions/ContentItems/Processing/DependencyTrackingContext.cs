@@ -97,10 +97,37 @@ public sealed class DependencyTrackingContext
             return;
         }
 
+
+        if (IsComponentCodename(codename))
+        {
+            return;
+        }
+
         lock (_lock)
         {
             _dependencies.Add($"{ItemPrefix}{codename}");
         }
+    }
+
+    private static bool IsComponentCodename(string value)
+    {
+        // Component keys appear as normalized id keys in the Delivery API response:
+        //   n27ec1626_93ac_0129_64e5_1beeda45416c
+
+        if (value.Length < 2 || (value[0] != 'n' && value[0] != 'N'))
+        {
+            return false;
+        }
+
+        // Component keys are identifiable by the third group (index 2) starting with "01".
+        var parts = value.Split('_');
+        if (parts.Length <= 2)
+        {
+            return false;
+        }
+
+        var thirdGroup = parts[2];
+        return thirdGroup.Length == 4 && thirdGroup.StartsWith("01", StringComparison.OrdinalIgnoreCase);
     }
 
     /// <summary>

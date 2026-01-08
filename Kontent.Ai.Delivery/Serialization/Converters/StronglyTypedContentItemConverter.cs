@@ -26,7 +26,7 @@ internal sealed class StronglyTypedContentItemConverter<TModel> : JsonConverter<
     /// while caching those that are still in use. This is critical for performance as
     /// JsonSerializerOptions caches type metadata internally.
     /// </summary>
-    private static readonly ConditionalWeakTable<JsonSerializerOptions, JsonSerializerOptions> OptionsCache = new();
+    private static readonly ConditionalWeakTable<JsonSerializerOptions, JsonSerializerOptions> OptionsCache = [];
 
     public override ContentItem<TModel> Read(
         ref Utf8JsonReader reader,
