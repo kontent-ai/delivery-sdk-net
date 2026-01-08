@@ -49,7 +49,7 @@ public sealed class MemoryCacheManager(
     IMemoryCache memoryCache,
     string? keyPrefix = null,
     TimeSpan? defaultExpiration = null,
-    ILogger<MemoryCacheManager>? logger = null) : IDeliveryCacheManager, IDisposable
+    ILogger<MemoryCacheManager>? logger = null) : IDeliveryCacheManager, IDeliveryCachePurger, IDisposable
 {
     private readonly IMemoryCache _cache = memoryCache ?? throw new ArgumentNullException(nameof(memoryCache));
     private readonly string? _keyPrefix = keyPrefix;
@@ -58,7 +58,7 @@ public sealed class MemoryCacheManager(
 
     // Reverse index: dependency key -> set of cache keys that depend on it
     // Using ConcurrentDictionary for thread-safe access with HashSet for efficient lookups
-    private readonly ConcurrentDictionary<string, HashSet<string>> _reverseIndex = new ConcurrentDictionary<string, HashSet<string>>(StringComparer.OrdinalIgnoreCase);
+    private readonly ConcurrentDictionary<string, HashSet<string>> _reverseIndex = new(StringComparer.OrdinalIgnoreCase);
 
     // Bounded lock striping for reverse-index updates.
     // Avoids unbounded growth of per-dependency lock objects while still providing good contention behavior.
@@ -67,20 +67,17 @@ public sealed class MemoryCacheManager(
 
     // Track current entry metadata per cache key. This is generation-safe for overwrite scenarios:
     // eviction callbacks validate that they're cleaning up the currently-registered entry before removing metadata.
-    private readonly ConcurrentDictionary<string, CacheEntryMetadata> _entries = new ConcurrentDictionary<string, CacheEntryMetadata>(StringComparer.OrdinalIgnoreCase);
+    private readonly ConcurrentDictionary<string, CacheEntryMetadata> _entries = new(StringComparer.OrdinalIgnoreCase);
 
     private sealed record CacheEntryMetadata(CancellationTokenSource Cts, string[] Dependencies);
-
-    // Flag to track disposal
     private bool _disposed;
 
-    // Treat null/empty prefix as "no prefix". Empty string can be used by callers to explicitly disable prefixing.
-    private string KeyPrefixSegment => string.IsNullOrEmpty(_keyPrefix) ? "" : $"{_keyPrefix}:";
+    // Global purge token: all cache entries link to this token so PurgeAsync can invalidate everything efficiently.
+    // Token registration in SetAsync is done under _purgeLock so PurgeAsync can safely cancel+dispose the old CTS
 
-    /// <summary>
-    /// Applies the key prefix to a cache key if one is configured.
-    /// Thread-safe: uses readonly field initialized in constructor.
-    /// </summary>
+    private readonly object _purgeLock = new();
+    private CancellationTokenSource _purgeCts = new();
+    private string KeyPrefixSegment => string.IsNullOrEmpty(_keyPrefix) ? "" : $"{_keyPrefix}:";
     private string PrefixKey(string key) => $"{KeyPrefixSegment}{key}";
 
     private static SemaphoreSlim[] CreateLockStripes(int count)
@@ -93,10 +90,11 @@ public sealed class MemoryCacheManager(
         return locks;
     }
 
+    /// <summary>
+    /// Gets the lock stripe for the given dependency key by using value of lower 6 bits of the hash code (0-63).
+    /// </summary>
     private SemaphoreSlim GetLockStripe(string dependencyKey)
     {
-        // StringComparer.OrdinalIgnoreCase is used by the dictionaries, so use it for hashing too.
-        // Note: string hash codes are randomized per-process (fine for lock striping).
         var hash = StringComparer.OrdinalIgnoreCase.GetHashCode(dependencyKey);
         var index = hash & (LockStripeCount - 1);
         return _reverseIndexLocks[index];
@@ -148,13 +146,10 @@ public sealed class MemoryCacheManager(
         }
         catch (OperationCanceledException)
         {
-            // Re-throw cancellation exceptions
             throw;
         }
         catch
         {
-            // Treat any other exception as a cache miss
-            // This ensures cache failures don't break the application
             return Task.FromResult<T?>(null);
         }
     }
@@ -240,6 +235,12 @@ public sealed class MemoryCacheManager(
         // Also link to the entry's own CancellationToken for direct invalidation
         entryOptions.AddExpirationToken(new CancellationChangeToken(entryCts.Token));
 
+        // Also link to the global purge token so we can invalidate all entries in O(1).
+        lock (_purgeLock)
+        {
+            entryOptions.AddExpirationToken(new CancellationChangeToken(_purgeCts.Token));
+        }
+
         // Update reverse index for dependencies.
         // Note: We intentionally do not try to eagerly remove stale dependencies for overwritten keys here.
         // Eviction callbacks and invalidation both guard against stale associations by validating the current entry's dependencies.
@@ -286,6 +287,42 @@ public sealed class MemoryCacheManager(
 
         // Wait for all invalidations to complete
         await Task.WhenAll(tasks).ConfigureAwait(false);
+    }
+
+    /// <inheritdoc />
+    public Task PurgeAsync(CancellationToken cancellationToken = default)
+    {
+        ThrowIfDisposed();
+        cancellationToken.ThrowIfCancellationRequested();
+
+        CancellationTokenSource toCancel;
+        lock (_purgeLock)
+        {
+            toCancel = _purgeCts;
+            _purgeCts = new CancellationTokenSource();
+        }
+
+        try
+        {
+            toCancel.Cancel();
+        }
+        catch (ObjectDisposedException)
+        {
+            // Best-effort; never throw from purge.
+        }
+        finally
+        {
+            try
+            {
+                toCancel.Dispose();
+            }
+            catch
+            {
+                // Best-effort
+            }
+        }
+
+        return Task.CompletedTask;
     }
 
     /// <summary>
@@ -429,6 +466,10 @@ public sealed class MemoryCacheManager(
             return;
 
         _disposed = true;
+
+        // Cancel purge token first to quickly expire all entries, then dispose it.
+        try { _purgeCts.Cancel(); } catch { /* Best-effort */ }
+        try { _purgeCts.Dispose(); } catch { /* Best-effort */ }
 
         // Dispose all entry CancellationTokenSources
         foreach (var entry in _entries.Values)

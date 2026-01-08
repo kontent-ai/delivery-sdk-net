@@ -4,7 +4,7 @@ namespace Kontent.Ai.Delivery.Tests.Models.ContentTypes;
 
 public class CustomTypeProvider : ITypeProvider
 {
-    private static readonly Dictionary<Type, string> _codenames = new Dictionary<Type, string>
+    private static readonly Dictionary<Type, string> _codenames = new()
     {
         {typeof(AboutUs), "about_us"},
         {typeof(Accessory), "accessory"},

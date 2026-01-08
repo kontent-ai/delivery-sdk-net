@@ -723,6 +723,22 @@ if (result.IsSuccess)
 
 > **Note**: `IsCacheHit` indicates SDK-level caching only. For CDN-level cache information (Fastly), inspect the `ResponseHeaders` property for headers like `X-Cache`.
 
+#### Purging the SDK Memory Cache
+
+If you're using the SDK's in-memory cache (`AddDeliveryMemoryCache`), you can invalidate **all** cached entries at once using the optional `IDeliveryCachePurger` capability:
+
+```csharp
+using Kontent.Ai.Delivery.Abstractions;
+
+var cacheManager = serviceProvider.GetRequiredService<IDeliveryCacheManager>();
+if (cacheManager is IDeliveryCachePurger purger)
+{
+    await purger.PurgeAsync();
+}
+```
+
+> **Note**: Purge-all is not supported for generic distributed caches (`IDistributedCache`). Use provider-specific tools or key-prefix rotation.
+
 For advanced caching strategies including cache invalidation, webhook integration, and multi-tenant scenarios, see the [Caching Guide](docs/caching-guide.md).
 
 ### Preview API

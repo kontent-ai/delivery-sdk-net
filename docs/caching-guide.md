@@ -398,6 +398,26 @@ await cacheManager.InvalidateAsync(default,
 await cacheManager.InvalidateAsync(default, $"item_{articleCodename}");
 ```
 
+### Purge All (Memory Cache)
+
+Sometimes you need to invalidate **everything at once** (e.g., after a deployment, emergency rollback, or a major content model change).
+
+The SDK exposes an **optional** capability interface `IDeliveryCachePurger` that is implemented by the in-memory cache manager (`MemoryCacheManager`).
+
+> **Note**: Purge-all is not supported for generic distributed caches (`IDistributedCache`) because they don't provide key enumeration. For distributed caches, use provider-specific purge tooling or key-prefix rotation.
+
+```csharp
+using Kontent.Ai.Delivery.Abstractions;
+using Microsoft.Extensions.DependencyInjection;
+
+var cacheManager = serviceProvider.GetRequiredService<IDeliveryCacheManager>();
+
+if (cacheManager is IDeliveryCachePurger purger)
+{
+    await purger.PurgeAsync();
+}
+```
+
 ### Webhook-Based Invalidation
 
 Implement automatic cache invalidation using Kontent.ai webhooks:

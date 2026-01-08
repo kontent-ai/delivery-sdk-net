@@ -19,7 +19,7 @@ public class ServiceCollectionsExtensionsTests
     private const string EnvironmentId = "d79786fb-042c-47ec-8e5c-beaf93e38b84";
     private const string PreviewApiKey = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJqdGkiOiIwNDllNjllNDBjMDI0NzU3YmE2Y2RmODQzMjI0NGI2ZCIsImlhdCI6MTYyNzkwNDk0MSwibmJmIjoxNjI3OTA0OTQxLCJleHAiOjE5NzM1MDQ5NDEsInZlciI6IjEuMC4wIiwicHJvamVjdF9pZCI6IjZlYTk4NWNlMWM4ZjAwZWRiZmJkNGU1OGJkNGYzZDFiIiwiYXVkIjoicHJldmlldy5kZWxpdmVyLmtlbnRpY29jbG91ZC5jb20ifQ.j5uH5LVIT45bP4VeSkNRynzyR_vqHfHelNXpy7R8C0w";
 
-    private readonly ReadOnlyDictionary<Type, Type> _expectedInterfacesWithImplementationTypes = new ReadOnlyDictionary<Type, Type>(
+    private readonly ReadOnlyDictionary<Type, Type> _expectedInterfacesWithImplementationTypes = new(
         new Dictionary<Type, Type>
         {
             { typeof(ITypeProvider), typeof(TypeProvider) },

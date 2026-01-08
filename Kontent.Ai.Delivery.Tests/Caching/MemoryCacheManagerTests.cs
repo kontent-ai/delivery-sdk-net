@@ -1,6 +1,7 @@
 using System.Collections.Concurrent;
 using System.Diagnostics;
 using System.Reflection;
+using Kontent.Ai.Delivery.Abstractions;
 using Kontent.Ai.Delivery.Caching;
 using Microsoft.Extensions.Caching.Memory;
 using Xunit;
@@ -198,6 +199,38 @@ public class MemoryCacheManagerTests : IDisposable
 
         // Assert
         Assert.Null(result);
+    }
+
+    [Fact]
+    public async Task PurgeAsync_RemovesAllExistingEntries()
+    {
+        // Arrange
+        var key1 = "k1";
+        var key2 = "k2";
+        await _cacheManager.SetAsync(key1, new TestCacheValue { Id = 1, Name = "One" }, dependencies: ["dep1"]);
+        await _cacheManager.SetAsync(key2, new TestCacheValue { Id = 2, Name = "Two" }, dependencies: ["dep2"]);
+
+        // Act
+        await ((IDeliveryCachePurger)_cacheManager).PurgeAsync();
+
+        // Assert
+        Assert.Null(await _cacheManager.GetAsync<TestCacheValue>(key1));
+        Assert.Null(await _cacheManager.GetAsync<TestCacheValue>(key2));
+    }
+
+    [Fact]
+    public async Task PurgeAsync_DoesNotAffectEntriesCreatedAfterPurge()
+    {
+        // Arrange
+        await _cacheManager.SetAsync("old", new TestCacheValue { Id = 1, Name = "Old" }, dependencies: ["dep"]);
+
+        // Act
+        await ((IDeliveryCachePurger)_cacheManager).PurgeAsync();
+        await _cacheManager.SetAsync("new", new TestCacheValue { Id = 2, Name = "New" }, dependencies: ["dep"]);
+
+        // Assert
+        Assert.Null(await _cacheManager.GetAsync<TestCacheValue>("old"));
+        Assert.NotNull(await _cacheManager.GetAsync<TestCacheValue>("new"));
     }
 
     [Fact]
