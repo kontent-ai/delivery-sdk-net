@@ -1,4 +1,5 @@
 using Kontent.Ai.Delivery.Configuration;
+using Kontent.Ai.Delivery.ContentItems.Mapping;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.DependencyInjection.Extensions;
@@ -216,7 +217,7 @@ public static partial class ServiceCollectionExtensions
             var namedMonitor = new NamedOptionsMonitor<DeliveryOptions>(optionsMonitor, clientName);
 
             var deliveryApi = sp.GetRequiredKeyedService<IDeliveryApi>(clientName);
-            var elementsPostProcessor = sp.GetRequiredService<IElementsPostProcessor>();
+            var contentItemMapper = sp.GetRequiredService<ContentItemMapper>();
 
             // Resolve keyed cache manager for this client (registered via AddDeliveryMemoryCache/AddDeliveryDistributedCache)
             var cacheManager = sp.GetKeyedService<IDeliveryCacheManager>(clientName);
@@ -227,7 +228,7 @@ public static partial class ServiceCollectionExtensions
             return new DeliveryClient(
                 deliveryApi,
                 namedMonitor,
-                elementsPostProcessor,
+                contentItemMapper,
                 cacheManager,
                 logger);
         });

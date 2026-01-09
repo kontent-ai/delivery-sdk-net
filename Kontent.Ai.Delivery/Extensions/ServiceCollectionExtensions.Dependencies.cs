@@ -1,6 +1,7 @@
 using AngleSharp.Html.Parser;
 using Kontent.Ai.Delivery.Configuration;
 using Kontent.Ai.Delivery.ContentItems;
+using Kontent.Ai.Delivery.ContentItems.Mapping;
 using Kontent.Ai.Delivery.ContentItems.Processing;
 using Kontent.Ai.Delivery.Handlers;
 using Microsoft.Extensions.DependencyInjection;
@@ -26,8 +27,7 @@ public static partial class ServiceCollectionExtensions
         services.TryAddSingleton<ITypeProvider, TypeProvider>();
         services.TryAddSingleton<IItemTypingStrategy, DefaultItemTypingStrategy>();
         services.TryAddSingleton<IContentDeserializer, ContentDeserializer>();
-        services.TryAddSingleton<HydrationEngine>();
-        services.TryAddSingleton<IElementsPostProcessor, ElementsPostProcessor>();
+        services.TryAddSingleton<ContentItemMapper>();
         services.TryAddSingleton<IHtmlParser, HtmlParser>();
 
         // Dependency extraction - default to no-op when caching is disabled

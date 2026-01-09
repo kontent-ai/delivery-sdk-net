@@ -31,7 +31,7 @@ internal static class JsonElementExtensions
     }
 
     /// <summary>
-    /// Checks if an element type requires complex post-processing by ElementsPostProcessor.
+    /// Checks if an element type requires complex post-processing by ContentItemMapper.
     /// Complex types (rich_text, taxonomy, asset, modular_content) are set to null during initial deserialization
     /// and hydrated later with fully-parsed objects.
     /// </summary>

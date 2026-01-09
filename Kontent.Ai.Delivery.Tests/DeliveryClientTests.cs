@@ -1,6 +1,5 @@
 using System.Net;
 using Kontent.Ai.Delivery.Abstractions;
-using Kontent.Ai.Delivery.Api.Filtering;
 using Kontent.Ai.Delivery.Extensions;
 using Kontent.Ai.Delivery.Tests.Models.ContentTypes;
 using Microsoft.Extensions.DependencyInjection;

@@ -1,5 +1,4 @@
 using System.Text.Json;
-using Kontent.Ai.Delivery.Abstractions.ContentItems.Processing;
 
 namespace Kontent.Ai.Delivery.ContentItems.Processing;
 
@@ -14,7 +13,7 @@ namespace Kontent.Ai.Delivery.ContentItems.Processing;
 /// </para>
 /// <para>
 /// All extraction logic for cache dependencies is centralized in this class,
-/// keeping the content processors (<see cref="ElementsPostProcessor"/> and
+/// keeping the content processors (<see cref="ContentItemMapper"/> and
 /// <see cref="RichTextParser"/>) focused solely on their primary responsibility
 /// of processing content.
 /// </para>

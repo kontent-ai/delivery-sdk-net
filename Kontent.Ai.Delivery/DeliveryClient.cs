@@ -1,3 +1,4 @@
+using Kontent.Ai.Delivery.ContentItems.Mapping;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
 
@@ -11,19 +12,19 @@ namespace Kontent.Ai.Delivery;
 /// </remarks>
 /// <param name="deliveryApi">The Refit-generated API client.</param>
 /// <param name="deliveryOptions">The settings of the Kontent.ai environment.</param>
-/// <param name="elementsPostProcessor">The elements post processor.</param>
+/// <param name="contentItemMapper">The content item mapper for element hydration.</param>
 /// <param name="cacheManager">Optional cache manager for caching API responses (injected when EnableCaching is true).</param>
 /// <param name="logger">Optional logger for diagnostic output.</param>
 internal sealed class DeliveryClient(
     IDeliveryApi deliveryApi,
     IOptionsMonitor<DeliveryOptions> deliveryOptions,
-    IElementsPostProcessor elementsPostProcessor,
+    ContentItemMapper contentItemMapper,
     IDeliveryCacheManager? cacheManager = null,
     ILogger<DeliveryClient>? logger = null) : IDeliveryClient
 {
     private readonly IDeliveryApi _deliveryApi = deliveryApi ?? throw new ArgumentNullException(nameof(deliveryApi));
     private readonly IOptionsMonitor<DeliveryOptions> _deliveryOptions = deliveryOptions ?? throw new ArgumentNullException(nameof(deliveryOptions));
-    private readonly IElementsPostProcessor _elementsPostProcessor = elementsPostProcessor ?? throw new ArgumentNullException(nameof(elementsPostProcessor));
+    private readonly ContentItemMapper _contentItemMapper = contentItemMapper ?? throw new ArgumentNullException(nameof(contentItemMapper));
     private readonly IDeliveryCacheManager? _cacheManager = cacheManager;
     private readonly ILogger<DeliveryClient>? _logger = logger;
 
@@ -34,7 +35,7 @@ internal sealed class DeliveryClient(
             throw new ArgumentException("Entered item codename is not valid.", nameof(codename));
         }
 
-        return new ItemQuery<T>(_deliveryApi, codename, GetDefaultWaitForLoadingNewContent, _elementsPostProcessor, _cacheManager, _logger);
+        return new ItemQuery<T>(_deliveryApi, codename, GetDefaultWaitForLoadingNewContent, _contentItemMapper, _cacheManager, _logger);
     }
 
     public IDynamicItemQuery GetItem(string codename)
@@ -49,7 +50,7 @@ internal sealed class DeliveryClient(
 
     public IItemsQuery<T> GetItems<T>()
     {
-        return new ItemsQuery<T>(_deliveryApi, GetDefaultWaitForLoadingNewContent, _elementsPostProcessor, _cacheManager, _logger);
+        return new ItemsQuery<T>(_deliveryApi, GetDefaultWaitForLoadingNewContent, _contentItemMapper, _cacheManager, _logger);
     }
 
     public IDynamicItemsQuery GetItems()
@@ -59,12 +60,12 @@ internal sealed class DeliveryClient(
 
     public IEnumerateItemsQuery<T> GetItemsFeed<T>()
     {
-        return new EnumerateItemsQuery<T>(_deliveryApi, GetDefaultWaitForLoadingNewContent, _elementsPostProcessor);
+        return new EnumerateItemsQuery<T>(_deliveryApi, GetDefaultWaitForLoadingNewContent, _contentItemMapper);
     }
 
     public IEnumerateItemsQuery<IDynamicElements> GetItemsFeed()
     {
-        return new EnumerateItemsQuery<IDynamicElements>(_deliveryApi, GetDefaultWaitForLoadingNewContent, _elementsPostProcessor);
+        return new EnumerateItemsQuery<IDynamicElements>(_deliveryApi, GetDefaultWaitForLoadingNewContent, _contentItemMapper);
     }
 
     public ITypeQuery GetType(string codename)
