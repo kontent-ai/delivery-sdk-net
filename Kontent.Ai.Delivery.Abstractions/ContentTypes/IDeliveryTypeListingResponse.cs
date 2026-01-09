@@ -8,5 +8,5 @@ public interface IDeliveryTypeListingResponse : IPageable
     /// <summary>
     /// Gets a read-only list of content types.
     /// </summary>
-    IList<IContentType> Types { get; }
+    IReadOnlyList<IContentType> Types { get; }
 }

@@ -130,5 +130,18 @@ public class DeliveryOptionsBuilder : IDeliveryOptionsBuilder // TODO: add injec
     /// <summary>
     /// Returns a new instance of the <see cref="DeliveryOptions"/> class.
     /// </summary>
-    public DeliveryOptions Build() => _options;
+    public DeliveryOptions Build() => new()
+    {
+        EnvironmentId = _options.EnvironmentId,
+        EnableResilience = _options.EnableResilience,
+        ProductionEndpoint = _options.ProductionEndpoint,
+        PreviewEndpoint = _options.PreviewEndpoint,
+        PreviewApiKey = _options.PreviewApiKey,
+        UsePreviewApi = _options.UsePreviewApi,
+        UseSecureAccess = _options.UseSecureAccess,
+        SecureAccessApiKey = _options.SecureAccessApiKey,
+        IncludeTotalCount = _options.IncludeTotalCount,
+        WaitForLoadingNewContent = _options.WaitForLoadingNewContent,
+        DefaultRenditionPreset = _options.DefaultRenditionPreset
+    };
 }

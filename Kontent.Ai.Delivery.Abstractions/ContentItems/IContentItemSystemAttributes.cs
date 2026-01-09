@@ -28,11 +28,13 @@ public interface IContentItemSystemAttributes : ISystemAttributes
 
     /// <summary>
     /// Gets the codename of the workflow which the content item is assigned to.
+    /// May be null for components in linked items.
     /// </summary>
-    public string Workflow { get; }
+    public string? Workflow { get; }
 
     /// <summary>
     /// Gets the codename of the workflow step which the content item is assigned to.
+    /// May be null for components in linked items.
     /// </summary>
-    public string WorkflowStep { get; }
+    public string? WorkflowStep { get; }
 }

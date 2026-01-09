@@ -7,19 +7,12 @@ internal sealed record DeliveryLanguageListingResponse : IDeliveryLanguageListin
 {
     /// <inheritdoc/>
     [JsonPropertyName("languages")]
-    public IList<Language>? Languages
-    {
-        get; init;
-    }
+    public required IReadOnlyList<Language> Languages { get; init; }
 
     /// <inheritdoc/>
     [JsonPropertyName("pagination")]
-    public Pagination? Pagination
-    {
-        get; init;
-    }
+    public required Pagination Pagination { get; init; }
 
-    IList<ILanguage> IDeliveryLanguageListingResponse.Languages => [.. Languages.Cast<ILanguage>()];
-
+    IReadOnlyList<ILanguage> IDeliveryLanguageListingResponse.Languages => Languages;
     IPagination IPageable.Pagination => Pagination;
 }

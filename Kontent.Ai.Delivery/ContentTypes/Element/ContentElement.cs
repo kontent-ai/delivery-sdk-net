@@ -8,7 +8,6 @@ namespace Kontent.Ai.Delivery.ContentTypes.Element;
 /// Constructor used for deserialization (e.g. for caching purposes), contains no logic.
 /// </summary>
 [DebuggerDisplay("Name = {" + nameof(Name) + "}")]
-[method: JsonConstructor]
 internal record ContentElement() : IContentElement
 {
     /// <inheritdoc/>

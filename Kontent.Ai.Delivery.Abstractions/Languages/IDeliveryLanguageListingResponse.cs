@@ -8,5 +8,5 @@ public interface IDeliveryLanguageListingResponse : IPageable
     /// <summary>
     /// Gets a read-only list of languages.
     /// </summary>
-    IList<ILanguage> Languages { get; }
+    IReadOnlyList<ILanguage> Languages { get; }
 }

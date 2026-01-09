@@ -12,13 +12,12 @@ internal sealed record TaxonomyGroup : ITaxonomyGroup
 {
     /// <inheritdoc/>
     [JsonPropertyName("system")]
-    public TaxonomyGroupSystemAttributes? System { get; init; }
+    public required TaxonomyGroupSystemAttributes System { get; init; }
 
     /// <inheritdoc/>
     [JsonPropertyName("terms")]
-    public IList<TaxonomyTermDetails>? Terms { get; init; }
+    public required IReadOnlyList<TaxonomyTermDetails> Terms { get; init; }
 
     ITaxonomyGroupSystemAttributes ITaxonomyGroup.System => System;
-
-    IList<ITaxonomyTermDetails> ITaxonomyGroup.Terms => [.. Terms.Cast<ITaxonomyTermDetails>()];
+    IReadOnlyList<ITaxonomyTermDetails> ITaxonomyGroup.Terms => Terms;
 }

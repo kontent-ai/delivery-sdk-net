@@ -43,6 +43,6 @@ internal sealed class LanguagesQuery(IDeliveryApi api, Func<bool?> getDefaultWai
         var response = await _api.GetLanguagesInternalAsync(_params, wait).ConfigureAwait(false);
         var deliveryResult = await response.ToDeliveryResultAsync().ConfigureAwait(false);
 
-        return deliveryResult.Map(response => response.Languages.AsReadOnly());
+        return deliveryResult.Map(response => response.Languages);
     }
 }

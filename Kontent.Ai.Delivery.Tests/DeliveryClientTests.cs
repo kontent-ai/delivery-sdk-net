@@ -205,7 +205,7 @@ public class DeliveryClientTests
     public async Task StaleContentHeader_IsSurfaced()
     {
         var mock = new MockHttpMessageHandler();
-        var headers = new[] { new System.Collections.Generic.KeyValuePair<string, string>("X-Stale-Content", "1") };
+        var headers = new[] { new KeyValuePair<string, string>("X-Stale-Content", "1") };
         mock.When($"{BaseUrl}/items/coffee_beverages_explained")
             .Respond(headers, "application/json", await File.ReadAllTextAsync(Path.Combine(Environment.CurrentDirectory, $"Fixtures{Path.DirectorySeparatorChar}DeliveryClient{Path.DirectorySeparatorChar}coffee_beverages_explained.json")));
 

@@ -8,5 +8,5 @@ public interface IDeliveryTaxonomyListingResponse : IPageable
     /// <summary>
     /// Gets a read-only list of taxonomy groups.
     /// </summary>
-    IList<ITaxonomyGroup> Taxonomies { get; }
+    IReadOnlyList<ITaxonomyGroup> Taxonomies { get; }
 }

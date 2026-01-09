@@ -281,7 +281,7 @@ public sealed class DeliveryClientBuilder
         // Optional type provider override (must be registered before AddDeliveryClient so TryAdd doesn't overwrite it).
         if (_typeProvider is not null)
         {
-            services.AddSingleton<ITypeProvider>(_typeProvider);
+            services.AddSingleton(_typeProvider);
         }
 
         // If distributed caching is enabled, we need to register the provided IDistributedCache.

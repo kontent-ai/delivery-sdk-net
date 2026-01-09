@@ -14,9 +14,8 @@ internal sealed record ContentType : IContentType
 
     /// <inheritdoc/>
     [JsonPropertyName("elements")]
-    public required IDictionary<string, ContentElement> Elements { get; init; }
+    public required IReadOnlyDictionary<string, ContentElement> Elements { get; init; }
 
-    IDictionary<string, IContentElement> IContentType.Elements => Elements.ToDictionary(x => x.Key, x => (IContentElement)x.Value);
-
+    IReadOnlyDictionary<string, IContentElement> IContentType.Elements => Elements.ToDictionary(x => x.Key, x => (IContentElement)x.Value);
     IContentTypeSystemAttributes IContentType.System => System;
 }

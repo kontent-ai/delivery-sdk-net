@@ -10,7 +10,7 @@ public class DeliverySourceTrackingHeaderAttribute : Attribute
     /// <summary>
     /// Name of the package (e.g. Acme.Kontent.Ai.AwesomeTool)
     /// </summary>
-    public string PackageName { get; }
+    public string? PackageName { get; }
 
     /// <summary>
     /// Major version according to https://semver.org/
@@ -30,7 +30,7 @@ public class DeliverySourceTrackingHeaderAttribute : Attribute
     /// <summary>
     /// Pre-release label according to https://semver.org/ (will be appended with a hyphen)
     /// </summary>
-    public string PreReleaseLabel { get; }
+    public string? PreReleaseLabel { get; }
 
     /// <summary>
     /// Determines whether or not to load the version from the calling assembly.

@@ -11,21 +11,14 @@ internal sealed record DeliveryTaxonomyListingResponse : IDeliveryTaxonomyListin
     /// Gets paging information.
     /// </summary>
     [JsonPropertyName("pagination")]
-    public Pagination? Pagination
-    {
-        get; init;
-    }
+    public required Pagination Pagination { get; init; }
 
     /// <summary>
     /// Gets a read-only list of taxonomy groups.
     /// </summary>
     [JsonPropertyName("taxonomies")]
-    public IList<TaxonomyGroup>? Taxonomies
-    {
-        get; init;
-    }
+    public required IReadOnlyList<TaxonomyGroup> Taxonomies { get; init; }
 
-    IList<ITaxonomyGroup> IDeliveryTaxonomyListingResponse.Taxonomies => [.. Taxonomies.Cast<ITaxonomyGroup>()];
-
+    IReadOnlyList<ITaxonomyGroup> IDeliveryTaxonomyListingResponse.Taxonomies => Taxonomies;
     IPagination IPageable.Pagination => Pagination;
 }
