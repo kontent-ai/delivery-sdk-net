@@ -288,11 +288,11 @@ public static class ReadmeExamples
 
             foreach (var linkedItem in article.RelatedArticles!)
             {
-                // Access metadata for all types
-                Console.WriteLine($"Type: {linkedItem.ContentTypeCodename}");
-                Console.WriteLine($"Codename: {linkedItem.Codename}");
-                Console.WriteLine($"Name: {linkedItem.Name}");
-                Console.WriteLine($"ID: {linkedItem.Id}");
+                // Access system metadata for all types
+                Console.WriteLine($"Type: {linkedItem.System.Type}");
+                Console.WriteLine($"Codename: {linkedItem.System.Codename}");
+                Console.WriteLine($"Name: {linkedItem.System.Name}");
+                Console.WriteLine($"ID: {linkedItem.System.Id}");
 
                 // Then access type-specific elements
                 if (linkedItem is IEmbeddedContent<Article> typedArticle)
@@ -349,7 +349,7 @@ public static class ReadmeExamples
                         break;
                     default:
                         // Handle unknown types gracefully
-                        Console.WriteLine($"Unknown type: {item.ContentTypeCodename}");
+                        Console.WriteLine($"Unknown type: {item.System.Type}");
                         break;
                 }
             }

@@ -2,47 +2,27 @@ namespace Kontent.Ai.Delivery.Abstractions;
 
 /// <summary>
 /// Represents embedded content (component or linked item) within rich text.
+/// This is a marker interface that combines <see cref="IContentItem"/> with <see cref="IRichTextBlock"/>
+/// to allow content items to appear in rich text blocks.
 /// </summary>
-public interface IEmbeddedContent : IRichTextBlock
-{
-    /// <summary>
-    /// Gets the codename of the content type.
-    /// </summary>
-    string ContentTypeCodename { get; }
-
-    /// <summary>
-    /// Gets the codename of the content item.
-    /// </summary>
-    string Codename { get; }
-
-    /// <summary>
-    /// Gets the name of the content item.
-    /// </summary>
-    string? Name { get; }
-
-    /// <summary>
-    /// Gets the identifier of the content item.
-    /// </summary>
-    Guid Id { get; }
-
-    /// <summary>
-    /// Retrieves elements of the linked item or component from modular_content
-    /// Cast this to your strongly-typed model for simple access to its properties.
-    /// </summary>
-    /// <remarks>
-    /// This property is null if the content item could not be resolved
-    /// (e.g., due to depth limits).
-    /// </remarks>
-    object? Elements { get; }
-}
+/// <remarks>
+/// Access content item properties via the <see cref="IContentItem.System"/> property:
+/// <code>
+/// var type = embeddedContent.System.Type;
+/// var codename = embeddedContent.System.Codename;
+/// var id = embeddedContent.System.Id;
+/// </code>
+/// </remarks>
+public interface IEmbeddedContent : IContentItem, IRichTextBlock;
 
 /// <summary>
 /// Represents embedded content (component or linked item) within rich text with strongly-typed elements.
 /// </summary>
 /// <typeparam name="TModel">The model type of the embedded content elements.</typeparam>
 /// <remarks>
-/// This interface extends <see cref="IEmbeddedContent"/> to provide compile-time type safety
-/// for accessing elements of embedded content. Use pattern matching for type-safe access:
+/// This interface extends <see cref="IEmbeddedContent"/> and <see cref="IContentItem{TModel}"/>
+/// to provide compile-time type safety for accessing elements of embedded content.
+/// Use pattern matching for type-safe access:
 /// <code>
 /// foreach (var block in richTextContent)
 /// {
@@ -60,10 +40,4 @@ public interface IEmbeddedContent : IRichTextBlock
 /// }
 /// </code>
 /// </remarks>
-public interface IEmbeddedContent<out TModel> : IEmbeddedContent // TODO: consider having strongly typed embedded content direct (without nested access required)
-{
-    /// <summary>
-    /// Gets the strongly-typed elements of the embedded content.
-    /// </summary>
-    new TModel Elements { get; }
-}
+public interface IEmbeddedContent<out TModel> : IEmbeddedContent, IContentItem<TModel>;

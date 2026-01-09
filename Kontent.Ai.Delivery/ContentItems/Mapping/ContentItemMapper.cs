@@ -270,12 +270,12 @@ internal sealed class ContentItemMapper
             context.CancellationToken.ThrowIfCancellationRequested();
 
             var linked = await resolvingContext.GetLinkedItem(codename!).ConfigureAwait(false);
-            if (linked is null)
-            {
-                continue;
-            }
 
-            items.Add(EmbeddedContentFactory.CreateEmbeddedContent(linked));
+            // ContentItem<T> implements IEmbeddedContent<T>, so we can cast directly
+            if (linked is IEmbeddedContent embeddedContent)
+            {
+                items.Add(embeddedContent);
+            }
         }
 
         return items;

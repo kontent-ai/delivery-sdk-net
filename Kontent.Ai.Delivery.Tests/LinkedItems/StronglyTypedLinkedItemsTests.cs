@@ -32,8 +32,8 @@ public class StronglyTypedLinkedItemsTests
         {
             Assert.NotNull(article);
             Assert.IsType<IEmbeddedContent>(article, exactMatch: false);
-            Assert.Equal("article", article.ContentTypeCodename);
-            Assert.NotEmpty(article.Codename);
+            Assert.Equal("article", article.System.Type);
+            Assert.NotEmpty(article.System.Codename);
         }
     }
 
@@ -122,15 +122,15 @@ public class StronglyTypedLinkedItemsTests
         Assert.Equal(2, relatedArticles.Count);
 
         var expectedCodenames = new[] { "coffee_processing_techniques", "origins_of_arabica_bourbon" };
-        var actualCodenames = relatedArticles.Select(a => a.Codename).ToList();
+        var actualCodenames = relatedArticles.Select(a => a.System.Codename).ToList();
 
         Assert.Equal(expectedCodenames, actualCodenames);
 
         foreach (var article in relatedArticles)
         {
-            Assert.Equal("article", article.ContentTypeCodename);
-            Assert.NotEmpty(article.Codename);
-            Assert.NotEqual(Guid.Empty, article.Id);
+            Assert.Equal("article", article.System.Type);
+            Assert.NotEmpty(article.System.Codename);
+            Assert.NotEqual(Guid.Empty, article.System.Id);
         }
     }
 
@@ -164,12 +164,12 @@ public class StronglyTypedLinkedItemsTests
         // Assert - verify specific article data
         var processingTechniques = relatedArticles
             .OfType<IEmbeddedContent<Article>>()
-            .FirstOrDefault(a => a.Codename == "coffee_processing_techniques");
+            .FirstOrDefault(a => a.System.Codename == "coffee_processing_techniques");
 
         Assert.NotNull(processingTechniques);
         Assert.Equal("Coffee processing techniques", processingTechniques.Elements.Title);
         Assert.NotNull(processingTechniques.Elements.Summary);
-        Assert.Equal(new Guid("117cdfae-52cf-4885-b271-66aef6825612"), processingTechniques.Id);
+        Assert.Equal(new Guid("117cdfae-52cf-4885-b271-66aef6825612"), processingTechniques.System.Id);
     }
 
     [Fact]
@@ -193,7 +193,7 @@ public class StronglyTypedLinkedItemsTests
         Assert.Equal(2, embeddedInRichText.Count);
 
         // Verify embedded content types
-        var codenames = embeddedInRichText.Select(e => e.Codename).ToList();
+        var codenames = embeddedInRichText.Select(e => e.System.Codename).ToList();
         Assert.Contains("americano", codenames);
         Assert.Contains("how_to_make_a_cappuccino", codenames);
 
@@ -217,11 +217,11 @@ public class StronglyTypedLinkedItemsTests
 
         var processingTechniques = relatedArticles
             .OfType<IEmbeddedContent<Article>>()
-            .FirstOrDefault(a => a.Codename == "coffee_processing_techniques");
+            .FirstOrDefault(a => a.System.Codename == "coffee_processing_techniques");
 
         var arabicaBourbon = relatedArticles
             .OfType<IEmbeddedContent<Article>>()
-            .FirstOrDefault(a => a.Codename == "origins_of_arabica_bourbon");
+            .FirstOrDefault(a => a.System.Codename == "origins_of_arabica_bourbon");
 
         // Verify both articles are fully hydrated
         Assert.NotNull(processingTechniques);

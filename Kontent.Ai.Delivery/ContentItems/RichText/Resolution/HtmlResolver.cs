@@ -111,9 +111,9 @@ internal sealed class HtmlResolver : IHtmlResolver
         // Priority 1: Type-based resolver (for strongly-typed embedded content)
         var contentType = content.GetType();
         if (contentType.IsGenericType &&
-            contentType.GetGenericTypeDefinition().Name.StartsWith("EmbeddedContent"))
+            contentType.GetGenericTypeDefinition().Name.StartsWith("ContentItem"))
         {
-            // Extract model type from EmbeddedContent<T>
+            // Extract model type from ContentItem<T>
             var modelType = contentType.GetGenericArguments()[0];
             if (_typeBasedContentResolvers.TryGetValue(modelType, out var typeResolver))
             {
@@ -122,16 +122,16 @@ internal sealed class HtmlResolver : IHtmlResolver
         }
 
         // Priority 2: Codename-based resolver (existing fallback)
-        if (_embeddedContentResolvers.TryGetValue(content.ContentTypeCodename, out var codenameResolver))
+        if (_embeddedContentResolvers.TryGetValue(content.System.Type, out var codenameResolver))
         {
             return codenameResolver(content);
         }
 
         // Priority 3: Missing resolver handling
         return _options.ThrowOnMissingResolver
-            ? throw new InvalidOperationException($"No resolver registered for embedded content type: {content.ContentTypeCodename}")
+            ? throw new InvalidOperationException($"No resolver registered for embedded content type: {content.System.Type}")
             : ValueTask.FromResult(string.Format(MissingEmbeddedContentResolver,
-                content.ContentTypeCodename, content.Id, content.Codename));
+                content.System.Type, content.System.Id, content.System.Codename));
     }
 
     private async ValueTask<string> ResolveHtmlNodeAsync(IHtmlNode node)

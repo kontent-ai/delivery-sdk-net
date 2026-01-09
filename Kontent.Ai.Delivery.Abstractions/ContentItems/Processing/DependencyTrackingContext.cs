@@ -111,10 +111,7 @@ public sealed class DependencyTrackingContext
 
     private static bool IsComponentCodename(string value)
     {
-        // Component keys appear as normalized id keys in the Delivery API response:
-        //   n27ec1626_93ac_0129_64e5_1beeda45416c
-
-        if (value.Length < 2 || (value[0] != 'n' && value[0] != 'N'))
+        if (string.IsNullOrWhiteSpace(value))
         {
             return false;
         }

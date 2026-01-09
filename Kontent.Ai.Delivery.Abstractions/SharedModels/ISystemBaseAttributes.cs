@@ -13,7 +13,7 @@ public interface ISystemBaseAttributes
     /// <summary>
     /// Gets the identifier of the object.
     /// </summary>
-    string Id { get; }
+    Guid Id { get; }
 
     /// <summary>
     /// Gets the name of the object.

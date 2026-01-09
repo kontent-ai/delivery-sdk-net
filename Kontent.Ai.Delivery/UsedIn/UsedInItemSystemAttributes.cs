@@ -9,7 +9,7 @@ internal sealed record UsedInItemSystemAttributes : IUsedInItemSystemAttributes
 {
     /// <inheritdoc/>
     [JsonPropertyName("id")]
-    public required string Id { get; init; }
+    public required Guid Id { get; init; }
 
     /// <inheritdoc/>
     [JsonPropertyName("name")]
