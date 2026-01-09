@@ -1,7 +1,6 @@
 using System.Text.Json;
 using AngleSharp.Html.Parser;
 using Kontent.Ai.Delivery.Abstractions;
-using Kontent.Ai.Delivery.Abstractions.ContentItems.Processing;
 using Kontent.Ai.Delivery.Configuration;
 using Kontent.Ai.Delivery.ContentItems;
 using Kontent.Ai.Delivery.ContentItems.Mapping;

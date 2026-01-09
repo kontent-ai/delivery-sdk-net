@@ -28,7 +28,6 @@ public static partial class ServiceCollectionExtensions
         services.TryAddSingleton<IItemTypingStrategy, DefaultItemTypingStrategy>();
         services.TryAddSingleton<IContentDeserializer, ContentDeserializer>();
         services.TryAddSingleton<ContentItemMapper>();
-        services.TryAddSingleton<IElementsPostProcessor, ElementsPostProcessor>();
         services.TryAddSingleton<IHtmlParser, HtmlParser>();
 
         // Dependency extraction - default to no-op when caching is disabled

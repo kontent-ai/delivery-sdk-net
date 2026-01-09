@@ -69,7 +69,7 @@ internal sealed class StronglyTypedContentItemConverter<TModel> : JsonConverter<
     /// Parses elements in strongly-typed mode by flattening the structure.
     /// Extracts only the "value" property from each element for simple types.
     /// Complex types (rich_text, taxonomy, asset) are set to null and will be
-    /// hydrated later by ElementsPostProcessor.
+    /// hydrated later by ContentItemMapper.
     /// </summary>
     private static TModel ParseStronglyTypedElements(JsonElement elementsElement, JsonSerializerOptions options)
     {

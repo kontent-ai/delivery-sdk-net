@@ -1,7 +1,6 @@
 using System.Collections.Concurrent;
 using System.Text.Json;
 using AngleSharp.Html.Parser;
-using Kontent.Ai.Delivery.Abstractions.ContentItems.Processing;
 using Kontent.Ai.Delivery.ContentItems.ContentLinks;
 using Kontent.Ai.Delivery.ContentItems.DateTimes;
 using Kontent.Ai.Delivery.ContentItems.Processing;
@@ -12,7 +11,7 @@ namespace Kontent.Ai.Delivery.ContentItems.Mapping;
 
 /// <summary>
 /// Centralized content item mapper for converting JSON element envelopes to strongly-typed model properties.
-/// This is Phase 1 of the single-pass mapping architecture - works alongside existing HydrationEngine.
+/// Handles post-deserialization hydration of complex element types (rich text, assets, taxonomy, linked items).
 /// </summary>
 internal sealed class ContentItemMapper
 {
@@ -41,10 +40,44 @@ internal sealed class ContentItemMapper
     }
 
     /// <summary>
+    /// Completes element hydration on a deserialized content item.
+    /// Called by query builders after initial deserialization to populate
+    /// complex element types (rich text, assets, taxonomy, linked items).
+    /// </summary>
+    /// <param name="item">The partially deserialized content item.</param>
+    /// <param name="modularContent">Dictionary of linked items from API response.</param>
+    /// <param name="dependencyContext">Optional context for cache dependency tracking.</param>
+    /// <param name="cancellationToken">Cancellation token.</param>
+    public Task CompleteItemAsync<TModel>(
+        IContentItem<TModel> item,
+        IReadOnlyDictionary<string, JsonElement>? modularContent,
+        DependencyTrackingContext? dependencyContext = null,
+        CancellationToken cancellationToken = default)
+    {
+        cancellationToken.ThrowIfCancellationRequested();
+
+        if (item is not ContentItem<TModel> concrete ||
+            !concrete.RawElements.HasValue ||
+            concrete.RawElements.Value.ValueKind != JsonValueKind.Object)
+        {
+            return Task.CompletedTask;
+        }
+
+        var context = new MappingContext
+        {
+            ModularContent = modularContent,
+            DependencyContext = dependencyContext,
+            CancellationToken = cancellationToken
+        };
+
+        return MapElementsAsync(concrete.Elements!, concrete.RawElements!.Value, context);
+    }
+
+    /// <summary>
     /// Maps element JSON envelopes to model properties.
     /// Used for post-deserialization completion of complex types.
     /// </summary>
-    public async Task MapElementsAsync(
+    internal async Task MapElementsAsync(
         object elements,
         JsonElement rawElements,
         MappingContext context)
@@ -252,57 +285,63 @@ internal sealed class ContentItemMapper
     {
         return new ResolvingContext
         {
-            GetLinkedItem = async codename =>
+            GetLinkedItem = codename => ResolveLinkedItemAsync(codename, context)
+        };
+    }
+
+    /// <summary>
+    /// Resolves a linked item by codename from modular content.
+    /// Handles cycle detection, memoization, and recursive hydration.
+    /// </summary>
+    private async Task<object> ResolveLinkedItemAsync(string codename, MappingContext context)
+    {
+        context.CancellationToken.ThrowIfCancellationRequested();
+
+        if (context.ModularContent is null ||
+            !context.ModularContent.TryGetValue(codename, out var linkedItem))
+        {
+            return null!;
+        }
+
+        // Already resolved in this request - return cached instance
+        if (context.ResolvedItems.TryGetValue(codename, out var cached))
+        {
+            return cached;
+        }
+
+        var contentType = ExtractContentType(linkedItem);
+        var modelType = _typingStrategy.ResolveModelType(contentType);
+        var itemJson = linkedItem.GetRawText();
+        var contentItem = _deserializer.DeserializeContentItem(itemJson, modelType);
+
+        // Cycle detected: return shallow (deserialized) item without recursive mapping
+        if (!context.ProcessingItems.Add(codename))
+        {
+            return contentItem;
+        }
+
+        try
+        {
+            // Skip hydration for dynamic mode items (they keep raw JSON envelopes)
+            if (modelType != typeof(DynamicElements) && modelType != typeof(IDynamicElements))
             {
-                context.CancellationToken.ThrowIfCancellationRequested();
-
-                if (context.ModularContent is null ||
-                    !context.ModularContent.TryGetValue(codename, out var linkedItem))
+                if (contentItem is IRawContentItem rawContentItem &&
+                    rawContentItem.RawElements.HasValue)
                 {
-                    return null!;
-                }
-
-                // Already resolved in this request
-                if (context.ResolvedItems.TryGetValue(codename, out var cached))
-                {
-                    return cached;
-                }
-
-                var contentType = ExtractContentType(linkedItem);
-                var modelType = _typingStrategy.ResolveModelType(contentType);
-                var itemJson = linkedItem.GetRawText();
-                var contentItem = _deserializer.DeserializeContentItem(itemJson, modelType);
-
-                // Cycle detected: return shallow (deserialized) item and do NOT recursively map.
-                if (!context.ProcessingItems.Add(codename))
-                {
-                    return contentItem;
-                }
-
-                try
-                {
-                    // Do not map dynamic mode items (raw envelopes only)
-                    if (modelType != typeof(DynamicElements) && modelType != typeof(IDynamicElements))
-                    {
-                        if (contentItem is IRawContentItem rawContentItem &&
-                            rawContentItem.RawElements.HasValue)
-                        {
-                            await MapElementsAsync(
-                                rawContentItem.Elements,
-                                rawContentItem.RawElements.Value,
-                                context).ConfigureAwait(false);
-                        }
-                    }
-
-                    context.ResolvedItems[codename] = contentItem;
-                    return contentItem;
-                }
-                finally
-                {
-                    context.ProcessingItems.Remove(codename);
+                    await MapElementsAsync(
+                        rawContentItem.Elements,
+                        rawContentItem.RawElements.Value,
+                        context).ConfigureAwait(false);
                 }
             }
-        };
+
+            context.ResolvedItems[codename] = contentItem;
+            return contentItem;
+        }
+        finally
+        {
+            context.ProcessingItems.Remove(codename);
+        }
     }
 
     #region JSON Helpers

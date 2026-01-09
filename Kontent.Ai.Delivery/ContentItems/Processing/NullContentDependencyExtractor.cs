@@ -1,5 +1,4 @@
 using System.Text.Json;
-using Kontent.Ai.Delivery.Abstractions.ContentItems.Processing;
 
 namespace Kontent.Ai.Delivery.ContentItems.Processing;
 

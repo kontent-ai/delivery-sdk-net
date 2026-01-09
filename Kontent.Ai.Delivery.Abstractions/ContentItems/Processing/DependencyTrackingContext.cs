@@ -1,4 +1,4 @@
-namespace Kontent.Ai.Delivery.Abstractions.ContentItems.Processing;
+namespace Kontent.Ai.Delivery.Abstractions;
 
 /// <summary>
 /// Tracks cache dependencies discovered during content item processing.

@@ -1,14 +1,15 @@
 using System.Runtime.CompilerServices;
 using Kontent.Ai.Delivery.Api.Filtering;
+using Kontent.Ai.Delivery.ContentItems.Mapping;
 
 namespace Kontent.Ai.Delivery.Api.QueryBuilders;
 
 /// <inheritdoc cref="IEnumerateItemsQuery{TModel}"/>
-internal sealed class EnumerateItemsQuery<TModel>(IDeliveryApi api, Func<bool?> getDefaultWaitForNewContent, IElementsPostProcessor elementsPostProcessor) : IEnumerateItemsQuery<TModel>
+internal sealed class EnumerateItemsQuery<TModel>(IDeliveryApi api, Func<bool?> getDefaultWaitForNewContent, ContentItemMapper contentItemMapper) : IEnumerateItemsQuery<TModel>
 {
     private readonly IDeliveryApi _api = api;
     private readonly Func<bool?> _getDefaultWaitForNewContent = getDefaultWaitForNewContent;
-    private readonly IElementsPostProcessor _elementsPostProcessor = elementsPostProcessor;
+    private readonly ContentItemMapper _contentItemMapper = contentItemMapper;
     private EnumItemsParams _params = new();
     private bool? _waitForLoadingNewContentOverride;
     private readonly List<KeyValuePair<string, string>> _serializedFilters = [];
@@ -83,7 +84,7 @@ internal sealed class EnumerateItemsQuery<TModel>(IDeliveryApi api, Func<bool?> 
                 // Dynamic mode intentionally stays raw (no hydration).
                 if (!IsDynamicModel)
                 {
-                    await _elementsPostProcessor.ProcessAsync(item, resp.Content.ModularContent, null, cancellationToken).ConfigureAwait(false);
+                    await _contentItemMapper.CompleteItemAsync(item, resp.Content.ModularContent, null, cancellationToken).ConfigureAwait(false);
                 }
                 yield return item;
             }

@@ -1,8 +1,8 @@
 using System.Diagnostics;
 using System.Net;
-using Kontent.Ai.Delivery.Abstractions.ContentItems.Processing;
 using Kontent.Ai.Delivery.Caching;
 using Kontent.Ai.Delivery.ContentItems;
+using Kontent.Ai.Delivery.ContentItems.Mapping;
 using Kontent.Ai.Delivery.Logging;
 using Microsoft.Extensions.Logging;
 
@@ -13,7 +13,7 @@ internal sealed class ItemQuery<TModel>(
     IDeliveryApi api,
     string codename,
     Func<bool?> getDefaultWaitForNewContent,
-    IElementsPostProcessor elementsPostProcessor,
+    ContentItemMapper contentItemMapper,
     IDeliveryCacheManager? cacheManager,
     ILogger? logger = null) : IItemQuery<TModel>
 {
@@ -21,7 +21,7 @@ internal sealed class ItemQuery<TModel>(
     private readonly string _codename = codename;
     private readonly Func<bool?> _getDefaultWaitForNewContent = getDefaultWaitForNewContent;
     private SingleItemParams _params = new();
-    private readonly IElementsPostProcessor _elementsPostProcessor = elementsPostProcessor;
+    private readonly ContentItemMapper _contentItemMapper = contentItemMapper;
     private readonly IDeliveryCacheManager? _cacheManager = cacheManager;
     private readonly ILogger? _logger = logger;
     private bool? _waitForLoadingNewContentOverride;
@@ -144,7 +144,7 @@ internal sealed class ItemQuery<TModel>(
         // Dynamic mode intentionally stays raw (no hydration).
         if (!IsDynamicModel)
         {
-            await _elementsPostProcessor.ProcessAsync(item, resp.ModularContent, dependencyContext, cancellationToken)
+            await _contentItemMapper.CompleteItemAsync(item, resp.ModularContent, dependencyContext, cancellationToken)
                 .ConfigureAwait(false);
         }
 

@@ -1,4 +1,3 @@
-using Kontent.Ai.Delivery.Abstractions.ContentItems.Processing;
 using Xunit;
 
 namespace Kontent.Ai.Delivery.Abstractions.Tests.ContentItems.Processing;

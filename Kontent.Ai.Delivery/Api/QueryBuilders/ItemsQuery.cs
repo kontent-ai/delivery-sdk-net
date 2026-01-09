@@ -1,9 +1,9 @@
 using System.Diagnostics;
 using System.Net;
-using Kontent.Ai.Delivery.Abstractions.ContentItems.Processing;
 using Kontent.Ai.Delivery.Api.Filtering;
 using Kontent.Ai.Delivery.Caching;
 using Kontent.Ai.Delivery.ContentItems;
+using Kontent.Ai.Delivery.ContentItems.Mapping;
 using Kontent.Ai.Delivery.Logging;
 using Microsoft.Extensions.Logging;
 
@@ -13,13 +13,13 @@ namespace Kontent.Ai.Delivery.Api.QueryBuilders;
 internal sealed class ItemsQuery<TModel>(
     IDeliveryApi api,
     Func<bool?> getDefaultWaitForNewContent,
-    IElementsPostProcessor elementsPostProcessor,
+    ContentItemMapper contentItemMapper,
     IDeliveryCacheManager? cacheManager,
     ILogger? logger = null) : IItemsQuery<TModel>
 {
     private readonly IDeliveryApi _api = api;
     private readonly Func<bool?> _getDefaultWaitForNewContent = getDefaultWaitForNewContent;
-    private readonly IElementsPostProcessor _elementsPostProcessor = elementsPostProcessor;
+    private readonly ContentItemMapper _contentItemMapper = contentItemMapper;
     private readonly IDeliveryCacheManager? _cacheManager = cacheManager;
     private readonly ILogger? _logger = logger;
     private readonly List<KeyValuePair<string, string>> _serializedFilters = [];
@@ -198,7 +198,7 @@ internal sealed class ItemsQuery<TModel>(
         {
             foreach (var item in items)
             {
-                await _elementsPostProcessor.ProcessAsync(item, resp.ModularContent, dependencyContext, cancellationToken)
+                await _contentItemMapper.CompleteItemAsync(item, resp.ModularContent, dependencyContext, cancellationToken)
                     .ConfigureAwait(false);
             }
         }
@@ -304,7 +304,7 @@ internal sealed class ItemsQuery<TModel>(
                     // NOTE: ExecuteAllAsync intentionally does NOT use caching - it's for bulk operations where freshness is critical
                     if (!IsDynamicModel)
                     {
-                        await _elementsPostProcessor.ProcessAsync(item, deliveryResult.Value.ModularContent, null, cancellationToken).ConfigureAwait(false);
+                        await _contentItemMapper.CompleteItemAsync(item, deliveryResult.Value.ModularContent, null, cancellationToken).ConfigureAwait(false);
                     }
                     all.Add(item);
                 }
