@@ -8,20 +8,19 @@ namespace Kontent.Ai.Delivery.TaxonomyGroups;
 /// Initializes a new instance of the <see cref="TaxonomyGroupSystemAttributes"/> class.
 /// </summary>
 [DebuggerDisplay("Id = {" + nameof(Id) + "}")]
-[method: JsonConstructor]
 internal sealed record TaxonomyGroupSystemAttributes() : ITaxonomyGroupSystemAttributes
 {
     /// <inheritdoc/>
     [JsonPropertyName("id")]
-    public string? Id { get; init; }
+    public required string Id { get; init; }
 
     /// <inheritdoc/>
     [JsonPropertyName("name")]
-    public string? Name { get; init; }
+    public required string Name { get; init; }
 
     /// <inheritdoc/>
     [JsonPropertyName("codename")]
-    public string? Codename { get; init; }
+    public required string Codename { get; init; }
 
     /// <inheritdoc/>
     [JsonPropertyName("last_modified")]

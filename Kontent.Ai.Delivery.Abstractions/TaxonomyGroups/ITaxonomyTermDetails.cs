@@ -18,5 +18,5 @@ public interface ITaxonomyTermDetails
     /// <summary>
     /// Gets a readonly collection that contains child terms of the taxonomy term.
     /// </summary>
-    IList<ITaxonomyTermDetails> Terms { get; }
+    IReadOnlyList<ITaxonomyTermDetails> Terms { get; }
 }

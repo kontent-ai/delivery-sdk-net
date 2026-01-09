@@ -8,7 +8,6 @@ namespace Kontent.Ai.Delivery.ContentTypes;
 /// Initializes a new instance of the <see cref="ContentTypeSystemAttributes"/> class.
 /// </summary>
 [DebuggerDisplay("Id = {" + nameof(Id) + "}")]
-[method: JsonConstructor]
 internal sealed record ContentTypeSystemAttributes() : IContentTypeSystemAttributes
 {
     /// <inheritdoc/>

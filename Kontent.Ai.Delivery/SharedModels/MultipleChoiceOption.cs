@@ -8,7 +8,6 @@ namespace Kontent.Ai.Delivery.SharedModels;
 /// Initializes a new instance of the <see cref="MultipleChoiceOption"/> class with the specified JSON data.
 /// </summary>
 [DebuggerDisplay("Name = {" + nameof(Name) + "}")]
-[method: JsonConstructor]
 public sealed record MultipleChoiceOption() : IMultipleChoiceOption
 {
     /// <inheritdoc/>

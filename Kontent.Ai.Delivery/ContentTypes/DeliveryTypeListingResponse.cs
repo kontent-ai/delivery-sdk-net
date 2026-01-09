@@ -11,9 +11,8 @@ internal sealed record DeliveryTypeListingResponse : IDeliveryTypeListingRespons
 
     /// <inheritdoc/>
     [JsonPropertyName("types")]
-    public required IList<ContentType> Types { get; init; }
+    public required IReadOnlyList<ContentType> Types { get; init; }
 
-    IList<IContentType> IDeliveryTypeListingResponse.Types => [.. Types.Cast<IContentType>()];
-
+    IReadOnlyList<IContentType> IDeliveryTypeListingResponse.Types => Types;
     IPagination IPageable.Pagination => Pagination;
 }

@@ -101,7 +101,7 @@ internal sealed class TypesQuery(
             FilterQueryParams.ToQueryDictionary(_serializedFilters),
             wait).ConfigureAwait(false);
         var deliveryResult = await response.ToDeliveryResultAsync().ConfigureAwait(false);
-        var result = deliveryResult.Map(response => response.Types.AsReadOnly());
+        var result = deliveryResult.Map(response => response.Types);
 
         // Cache result (if enabled) - metadata queries use empty dependencies (rely on TTL for invalidation)
         if (_cacheManager != null && result.IsSuccess && cacheKey != null)

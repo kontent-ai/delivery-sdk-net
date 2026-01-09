@@ -73,7 +73,7 @@ internal sealed class TaxonomiesQuery(
             FilterQueryParams.ToQueryDictionary(_serializedFilters),
             wait).ConfigureAwait(false);
         var deliveryResult = await response.ToDeliveryResultAsync().ConfigureAwait(false);
-        var result = deliveryResult.Map(response => response.Taxonomies.AsReadOnly());
+        var result = deliveryResult.Map(response => response.Taxonomies);
 
         // Cache result (if enabled) - metadata queries use empty dependencies (rely on TTL for invalidation)
         if (_cacheManager != null && result.IsSuccess && cacheKey != null)

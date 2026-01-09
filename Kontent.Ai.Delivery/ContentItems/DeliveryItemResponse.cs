@@ -14,7 +14,7 @@ internal sealed record DeliveryItemResponse<TModel> : IDeliveryItemResponse<TMod
     /// Raw modular content used for resolving linked items/inline content.
     /// </summary>
     [JsonPropertyName("modular_content")]
-    public required Dictionary<string, JsonElement> ModularContent { get; init; } = [];
+    public required Dictionary<string, JsonElement> ModularContent { get; init; }
 
     IContentItem<TModel> IDeliveryItemResponse<TModel>.Item => Item;
 }

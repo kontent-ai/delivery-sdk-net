@@ -8,13 +8,13 @@ internal sealed record DeliveryItemsFeedResponse<TModel> : IDeliveryItemsFeedRes
 {
     /// <inheritdoc/>
     [JsonPropertyName("items")]
-    public required IReadOnlyList<ContentItem<TModel>> Items { get; init; } = [];
+    public required IReadOnlyList<ContentItem<TModel>> Items { get; init; }
 
     /// <summary>
     /// Raw modular content used for resolving linked items/inline content.
     /// </summary>
     [JsonPropertyName("modular_content")]
-    public Dictionary<string, JsonElement> ModularContent { get; init; } = [];
+    public required Dictionary<string, JsonElement> ModularContent { get; init; }
 
     IReadOnlyList<IContentItem<TModel>> IDeliveryItemsFeedResponse<TModel>.Items => Items;
 }
