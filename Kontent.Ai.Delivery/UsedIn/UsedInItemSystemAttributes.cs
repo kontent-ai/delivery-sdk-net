@@ -4,46 +4,42 @@ using System.Text.Json.Serialization;
 namespace Kontent.Ai.Delivery.UsedIn;
 
 /// <inheritdoc/>
-/// <summary>
-/// Initializes a new instance of the <see cref="UsedInItemSystemAttributes"/> class.
-/// </summary>
 [DebuggerDisplay("Id = {" + nameof(Id) + "}")]
-[method: JsonConstructor]
-internal sealed class UsedInItemSystemAttributes() : IUsedInItemSystemAttributes
+internal sealed record UsedInItemSystemAttributes : IUsedInItemSystemAttributes
 {
     /// <inheritdoc/>
     [JsonPropertyName("id")]
-    public string? Id { get; internal set; }
+    public required string Id { get; init; }
 
     /// <inheritdoc/>
     [JsonPropertyName("name")]
-    public string? Name { get; internal set; }
+    public required string Name { get; init; }
 
     /// <inheritdoc/>
     [JsonPropertyName("codename")]
-    public string? Codename { get; internal set; }
+    public required string Codename { get; init; }
 
     /// <inheritdoc/>
     [JsonPropertyName("type")]
-    public string? Type { get; internal set; }
+    public required string Type { get; init; }
 
     /// <inheritdoc/>
     [JsonPropertyName("last_modified")]
-    public DateTime LastModified { get; internal set; }
+    public required DateTime LastModified { get; init; }
 
     /// <inheritdoc/>
     [JsonPropertyName("language")]
-    public string? Language { get; internal set; }
+    public required string Language { get; init; }
 
     /// <inheritdoc/>
     [JsonPropertyName("collection")]
-    public string? Collection { get; internal set; }
+    public required string Collection { get; init; }
 
     /// <inheritdoc/>
     [JsonPropertyName("workflow")]
-    public string? Workflow { get; internal set; }
+    public required string Workflow { get; init; }
 
     /// <inheritdoc/>
     [JsonPropertyName("workflow_step")]
-    public string? WorkflowStep { get; internal set; }
+    public required string WorkflowStep { get; init; }
 }

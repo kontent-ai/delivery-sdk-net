@@ -38,7 +38,7 @@ internal sealed class NamedOptionsMonitor<TOptions>(IOptionsMonitor<TOptions> mo
     /// </summary>
     /// <param name="listener">The callback to invoke when options change.</param>
     /// <returns>A disposable that removes the change callback when disposed.</returns>
-    public IDisposable OnChange(Action<TOptions, string> listener) =>
+    public IDisposable? OnChange(Action<TOptions, string?> listener) =>
         _monitor.OnChange((options, name) =>
         {
             if (name == _name)
