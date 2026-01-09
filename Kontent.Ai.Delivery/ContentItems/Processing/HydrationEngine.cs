@@ -54,13 +54,12 @@ internal sealed class HydrationEngine(
             return Task.CompletedTask;
         }
 
-        if (contentItem is not IHydratableContentItem hydratable)
+        if (contentItem is not IRawContentItem hydratable)
         {
             return Task.CompletedTask;
         }
 
-        var elements = hydratable.ElementsObject;
-        var contentType = hydratable.SystemAttributes?.Type ?? string.Empty;
+        var elements = hydratable.Elements;
         var rawElements = hydratable.RawElements;
 
         if (!rawElements.HasValue || rawElements.Value.ValueKind != JsonValueKind.Object)
@@ -70,13 +69,12 @@ internal sealed class HydrationEngine(
 
         var resolvingContext = CreateResolvingContext(modularContent, dependencyContext, hydrationContext, cancellationToken);
 
-        return HydrateElementsAsync(elements, rawElements.Value, contentType, resolvingContext, modularContent, dependencyContext, hydrationContext, cancellationToken);
+        return HydrateElementsAsync(elements, rawElements.Value, resolvingContext, modularContent, dependencyContext, hydrationContext, cancellationToken);
     }
 
     private async Task HydrateElementsAsync(
         object elements,
         JsonElement rawElements,
-        string contentType,
         ResolvingContext resolvingContext,
         IReadOnlyDictionary<string, JsonElement>? modularContent,
         DependencyTrackingContext? dependencyContext,

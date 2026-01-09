@@ -4,7 +4,7 @@ using System.Text.Json;
 namespace Kontent.Ai.Delivery.ContentItems;
 
 /// <inheritdoc cref="IContentItem{TModel}" />
-internal sealed record ContentItem<TModel> : IContentItem<TModel>, IHydratableContentItem
+internal sealed record ContentItem<TModel> : IContentItem<TModel>, IRawContentItem
 {
     /// <inheritdoc/>
     [JsonPropertyName("system")]
@@ -20,7 +20,6 @@ internal sealed record ContentItem<TModel> : IContentItem<TModel>, IHydratableCo
     [JsonIgnore]
     internal JsonElement? RawElements { get; init; }
 
-    ContentItemSystemAttributes IHydratableContentItem.SystemAttributes => System;
-    object IHydratableContentItem.ElementsObject => Elements!;
-    JsonElement? IHydratableContentItem.RawElements => RawElements;
+    object IRawContentItem.Elements => Elements!;
+    JsonElement? IRawContentItem.RawElements => RawElements;
 }
