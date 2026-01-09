@@ -686,13 +686,13 @@ public class CachingIntegrationTests
     {
         public List<CachedItem> CachedItems { get; } = [];
 
-        public Task<T?> GetAsync<T>(string cacheKey, System.Threading.CancellationToken cancellationToken = default) where T : class
+        public Task<T?> GetAsync<T>(string cacheKey, CancellationToken cancellationToken = default) where T : class
         {
             var item = CachedItems.FirstOrDefault(i => i.Key == cacheKey);
             return Task.FromResult(item?.Value as T);
         }
 
-        public Task SetAsync<T>(string cacheKey, T value, IEnumerable<string> dependencies, TimeSpan? expiration = null, System.Threading.CancellationToken cancellationToken = default) where T : class
+        public Task SetAsync<T>(string cacheKey, T value, IEnumerable<string> dependencies, TimeSpan? expiration = null, CancellationToken cancellationToken = default) where T : class
         {
             CachedItems.Add(new CachedItem
             {
@@ -703,7 +703,7 @@ public class CachingIntegrationTests
             return Task.CompletedTask;
         }
 
-        public Task InvalidateAsync(System.Threading.CancellationToken cancellationToken = default, params string[] dependencyKeys)
+        public Task InvalidateAsync(CancellationToken cancellationToken = default, params string[] dependencyKeys)
         {
             return Task.CompletedTask;
         }
@@ -721,22 +721,22 @@ public class CachingIntegrationTests
         private readonly System.Collections.Concurrent.ConcurrentDictionary<string, byte[]> _cache = new();
 
         public byte[]? Get(string key) => _cache.TryGetValue(key, out var value) ? value : null;
-        public Task<byte[]?> GetAsync(string key, System.Threading.CancellationToken token = default) =>
+        public Task<byte[]?> GetAsync(string key, CancellationToken token = default) =>
             Task.FromResult(Get(key));
 
         public void Set(string key, byte[] value, DistributedCacheEntryOptions options) =>
             _cache[key] = value;
-        public Task SetAsync(string key, byte[] value, DistributedCacheEntryOptions options, System.Threading.CancellationToken token = default)
+        public Task SetAsync(string key, byte[] value, DistributedCacheEntryOptions options, CancellationToken token = default)
         {
             Set(key, value, options);
             return Task.CompletedTask;
         }
 
         public void Refresh(string key) { }
-        public Task RefreshAsync(string key, System.Threading.CancellationToken token = default) => Task.CompletedTask;
+        public Task RefreshAsync(string key, CancellationToken token = default) => Task.CompletedTask;
 
         public void Remove(string key) => _cache.TryRemove(key, out _);
-        public Task RemoveAsync(string key, System.Threading.CancellationToken token = default)
+        public Task RemoveAsync(string key, CancellationToken token = default)
         {
             Remove(key);
             return Task.CompletedTask;

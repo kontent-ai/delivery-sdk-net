@@ -17,7 +17,7 @@ public static partial class ServiceCollectionExtensions
         IServiceCollection services,
         string name,
         Action<IHttpClientBuilder>? configureHttpClient,
-        Action<Polly.ResiliencePipelineBuilder<HttpResponseMessage>>? configureResilience,
+        Action<ResiliencePipelineBuilder<HttpResponseMessage>>? configureResilience,
         Action<RefitSettings>? configureRefit)
     {
         var refitSettings = CreateRefitSettings(configureRefit);
@@ -39,14 +39,10 @@ public static partial class ServiceCollectionExtensions
         ConfigureResilienceHandler(httpClientBuilder, $"delivery_{name}", name, configureResilience);
         AddMessageHandlers(httpClientBuilder, name);
 
-        // Bind Refit client to the HTTP pipeline using typed client pattern
-        httpClientBuilder.AddTypedClient(http => RestService.For<IDeliveryApi>(http, refitSettings));
-
         // Apply custom configuration
         configureHttpClient?.Invoke(httpClientBuilder);
 
-        // Register keyed IDeliveryApi - retrieve from HTTP client factory
-        // The typed client is created and managed by the HTTP pipeline
+        // Register keyed IDeliveryApi - create Refit client from the configured HTTP pipeline
         services.AddKeyedTransient(name, (sp, _) =>
         {
             var httpClientFactory = sp.GetRequiredService<IHttpClientFactory>();
@@ -76,7 +72,7 @@ public static partial class ServiceCollectionExtensions
         IHttpClientBuilder httpClientBuilder,
         string resilienceHandlerName,
         string? optionsName,
-        Action<Polly.ResiliencePipelineBuilder<HttpResponseMessage>>? configureResilience)
+        Action<ResiliencePipelineBuilder<HttpResponseMessage>>? configureResilience)
     {
         httpClientBuilder.AddResilienceHandler(resilienceHandlerName, (builder, context) =>
         {

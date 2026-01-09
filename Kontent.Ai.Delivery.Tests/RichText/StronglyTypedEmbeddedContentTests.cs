@@ -153,7 +153,7 @@ public class StronglyTypedEmbeddedContentTests
         // Arrange
         var client = await CreateDeliveryClientAsync("coffee_beverages_explained.json");
 
-        var resolvers = new System.Collections.Generic.Dictionary<Type, Func<IEmbeddedContent, string>>
+        var resolvers = new Dictionary<Type, Func<IEmbeddedContent, string>>
         {
             [typeof(Tweet)] = content =>
             {

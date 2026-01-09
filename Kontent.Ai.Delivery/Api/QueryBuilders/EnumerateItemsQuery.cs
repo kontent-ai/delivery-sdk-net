@@ -13,8 +13,8 @@ internal sealed class EnumerateItemsQuery<TModel>(IDeliveryApi api, Func<bool?> 
     private bool? _waitForLoadingNewContentOverride;
     private readonly List<KeyValuePair<string, string>> _serializedFilters = [];
     private static bool IsDynamicModel =>
-        typeof(TModel) == typeof(Kontent.Ai.Delivery.Abstractions.IDynamicElements) ||
-        typeof(TModel) == typeof(Kontent.Ai.Delivery.ContentItems.DynamicElements);
+        typeof(TModel) == typeof(IDynamicElements) ||
+        typeof(TModel) == typeof(ContentItems.DynamicElements);
 
     public IEnumerateItemsQuery<TModel> WithLanguage(string languageCodename, LanguageFallbackMode languageFallbackMode = LanguageFallbackMode.Enabled)
     {
@@ -83,7 +83,7 @@ internal sealed class EnumerateItemsQuery<TModel>(IDeliveryApi api, Func<bool?> 
                 // Dynamic mode intentionally stays raw (no hydration).
                 if (!IsDynamicModel)
                 {
-                    await _elementsPostProcessor.ProcessAsync(item, null, null, cancellationToken).ConfigureAwait(false);
+                    await _elementsPostProcessor.ProcessAsync(item, resp.Content.ModularContent, null, cancellationToken).ConfigureAwait(false);
                 }
                 yield return item;
             }

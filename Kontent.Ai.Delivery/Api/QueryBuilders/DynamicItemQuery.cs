@@ -49,7 +49,7 @@ internal sealed class DynamicItemQuery(
         var rawResponse = await _api.GetItemInternalAsync<IDynamicElements>(_codename, _params, wait).ConfigureAwait(false);
 
         // Convert IApiResponse to IDeliveryResult
-        var deliveryResult = await rawResponse.ToDeliveryResultAsync();
+        var deliveryResult = await rawResponse.ToDeliveryResultAsync().ConfigureAwait(false);
 
         // Map from IDeliveryItemResponse<IDynamicElements> to IContentItem<IDynamicElements>
         return deliveryResult.Map(response => response.Item);

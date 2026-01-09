@@ -196,7 +196,7 @@ public class DefaultRetryPolicyTests
 
         public int Attempts { get; private set; }
 
-        protected override Task<HttpResponseMessage> SendAsync(HttpRequestMessage request, System.Threading.CancellationToken cancellationToken)
+        protected override Task<HttpResponseMessage> SendAsync(HttpRequestMessage request, CancellationToken cancellationToken)
         {
             Attempts++;
             if (_throwsOnFirstAttempt && Attempts == 1)
