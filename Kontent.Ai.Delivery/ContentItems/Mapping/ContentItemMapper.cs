@@ -219,7 +219,7 @@ internal sealed class ContentItemMapper
 
         if (codenames.Count == 0)
         {
-            return Array.Empty<IEmbeddedContent>();
+            return [];
         }
 
         // Track dependencies for cache invalidation
