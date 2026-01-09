@@ -98,7 +98,7 @@ internal sealed class DynamicItemsQuery(
             wait).ConfigureAwait(false);
 
         // Convert IApiResponse to IDeliveryResult
-        var deliveryResult = await rawResponse.ToDeliveryResultAsync();
+        var deliveryResult = await rawResponse.ToDeliveryResultAsync().ConfigureAwait(false);
 
         // Map from IDeliveryItemListingResponse<IDynamicElements> to IReadOnlyList<IContentItem>
         return deliveryResult.Map(response => response.Items);
@@ -123,7 +123,7 @@ internal sealed class DynamicItemsQuery(
                 wait).ConfigureAwait(false);
 
             // Convert to delivery result
-            var deliveryResult = await response.ToDeliveryResultAsync();
+            var deliveryResult = await response.ToDeliveryResultAsync().ConfigureAwait(false);
 
             if (!deliveryResult.IsSuccess)
             {
