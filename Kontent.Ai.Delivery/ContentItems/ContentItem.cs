@@ -20,6 +20,7 @@ internal sealed record ContentItem<TModel> : IContentItem<TModel>, IRawContentIt
     [JsonIgnore]
     internal JsonElement? RawElements { get; init; }
 
+    // IRawContentItem implementation for type-erased access to elements and raw JSON
     object IRawContentItem.Elements => Elements!;
     JsonElement? IRawContentItem.RawElements => RawElements;
 }

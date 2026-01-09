@@ -79,14 +79,6 @@ public sealed class DeliveryOptions : IValidatableObject
     public string? DefaultRenditionPreset { get; set; }
 
     /// <summary>
-    /// Gets or sets a value indicating whether the SDK should use the new single-pass content item mapper
-    /// instead of the legacy two-phase hydration engine.
-    /// Default is <c>true</c> (uses new ContentItemMapper).
-    /// Set to <c>false</c> to fall back to the legacy HydrationEngine if you encounter issues.
-    /// </summary>
-    public bool UseNewMapper { get; set; } = true;
-
-    /// <summary>
     /// Validates cross-field constraints for delivery options.
     /// Ensures mutual exclusivity of <see cref="UsePreviewApi"/> and <see cref="UseSecureAccess"/>.
     /// Validates that <see cref="EnvironmentId"/> is not an empty GUID.

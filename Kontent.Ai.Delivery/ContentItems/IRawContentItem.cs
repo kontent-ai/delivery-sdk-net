@@ -3,7 +3,8 @@ using System.Text.Json;
 namespace Kontent.Ai.Delivery.ContentItems;
 
 /// <summary>
-/// Internal interface providing access to raw JSON data for content item hydration.
+/// Internal interface providing type-erased access to raw JSON data for content item mapping.
+/// Used by ContentItemMapper to access RawElements on linked items without knowing TModel.
 /// </summary>
 internal interface IRawContentItem
 {
@@ -17,5 +18,3 @@ internal interface IRawContentItem
     /// </summary>
     JsonElement? RawElements { get; }
 }
-
-
