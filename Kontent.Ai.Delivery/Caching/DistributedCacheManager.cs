@@ -56,7 +56,7 @@ namespace Kontent.Ai.Delivery.Caching;
 /// or using a cache provider that supports atomic SET operations.
 /// </para>
 /// </remarks>
-public sealed class DistributedCacheManager : IDeliveryCacheManager
+internal sealed class DistributedCacheManager : IDeliveryCacheManager
 {
     private readonly IDistributedCache _cache;
     private readonly string? _keyPrefix;

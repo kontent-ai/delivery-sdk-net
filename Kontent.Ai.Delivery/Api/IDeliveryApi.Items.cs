@@ -5,7 +5,7 @@ namespace Kontent.Ai.Delivery.Api;
 /// <summary>
 /// Refit interface for Kontent.ai Delivery API.
 /// </summary>
-public partial interface IDeliveryApi
+internal partial interface IDeliveryApi
 {
     /// <summary>
     /// Gets a single content item by its codename.

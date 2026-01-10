@@ -2,7 +2,7 @@ using Kontent.Ai.Delivery.Languages;
 
 namespace Kontent.Ai.Delivery.Api;
 
-public partial interface IDeliveryApi
+internal partial interface IDeliveryApi
 {
     /// <summary>
     /// Gets all active languages assigned to the environment.

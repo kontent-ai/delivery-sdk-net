@@ -45,7 +45,7 @@ namespace Kontent.Ai.Delivery.Caching;
 /// <exception cref="ArgumentNullException">
 /// Thrown when <paramref name="memoryCache"/> is null.
 /// </exception>
-public sealed class MemoryCacheManager(
+internal sealed class MemoryCacheManager(
     IMemoryCache memoryCache,
     string? keyPrefix = null,
     TimeSpan? defaultExpiration = null,
