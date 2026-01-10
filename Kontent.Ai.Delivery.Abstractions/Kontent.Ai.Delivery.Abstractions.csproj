@@ -16,6 +16,9 @@
       <_Parameter1>Kontent.Ai.Delivery.Tests</_Parameter1>
     </AssemblyAttribute>
     <AssemblyAttribute Include="System.Runtime.CompilerServices.InternalsVisibleTo">
+      <_Parameter1>Kontent.Ai.Delivery.Abstractions.Tests</_Parameter1>
+    </AssemblyAttribute>
+    <AssemblyAttribute Include="System.Runtime.CompilerServices.InternalsVisibleTo">
       <_Parameter1>Kontent.Ai.Delivery</_Parameter1>
     </AssemblyAttribute>
   </ItemGroup>

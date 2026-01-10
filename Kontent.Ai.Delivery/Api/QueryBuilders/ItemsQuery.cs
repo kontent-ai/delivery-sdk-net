@@ -101,6 +101,10 @@ internal sealed class ItemsQuery<TModel>(
 
     public async Task<IDeliveryResult<IReadOnlyList<IContentItem<TModel>>>> ExecuteAsync(CancellationToken cancellationToken = default)
     {
+        // Log query starting
+        if (_logger != null)
+            LoggerMessages.QueryStarting(_logger, "Items", "list");
+
         // Start timing if logging is enabled
         var stopwatch = _logger?.IsEnabled(LogLevel.Information) == true ? Stopwatch.StartNew() : null;
 
@@ -259,11 +263,16 @@ internal sealed class ItemsQuery<TModel>(
 
     public async Task<IDeliveryResult<IReadOnlyList<IContentItem<TModel>>>> ExecuteAllAsync(CancellationToken cancellationToken = default)
     {
+        // Log pagination start
+        if (_logger != null)
+            LoggerMessages.PaginationStarted(_logger, "Items");
+
         var all = new List<IContentItem<TModel>>();
         var skip = _params.Skip ?? 0;
         var limit = _params.Limit;
         string? requestUrl = null;
         System.Net.Http.Headers.HttpResponseHeaders? responseHeaders = null;
+        int pageNumber = 0;
 
         while (true)
         {
@@ -280,12 +289,17 @@ internal sealed class ItemsQuery<TModel>(
 
             if (!deliveryResult.IsSuccess)
             {
+                if (_logger != null)
+                    LoggerMessages.PaginationStoppedEarly(_logger, "Items");
+
                 return DeliveryResult.Failure<IReadOnlyList<IContentItem<TModel>>>(
                     deliveryResult.RequestUrl ?? string.Empty,
                     deliveryResult.StatusCode,
                     deliveryResult.Error!,
                     deliveryResult.ResponseHeaders);
             }
+
+            pageNumber++;
 
             // Capture request URL and headers from first request
             requestUrl ??= deliveryResult.RequestUrl;
@@ -310,12 +324,20 @@ internal sealed class ItemsQuery<TModel>(
                 }
             }
 
+            // Log pagination progress
+            if (_logger != null)
+                LoggerMessages.ItemsPaginationProgress(_logger, pageNumber, all.Count);
+
             skip += pageCount;
 
             // Stop if we got fewer than requested (page exhausted)
             if (limit.HasValue && pageCount < limit.Value)
                 break;
         }
+
+        // Log pagination completed
+        if (_logger != null)
+            LoggerMessages.PaginationCompleted(_logger, "Items", pageNumber, all.Count);
 
         return DeliveryResult.Success<IReadOnlyList<IContentItem<TModel>>>(
             all.AsReadOnly(),

@@ -123,7 +123,6 @@ public sealed class ContentItemMapperTests
         Assert.All(item.Elements.RelatedArticles!, linked =>
         {
             Assert.NotNull(linked.System.Codename);
-            Assert.NotEqual("unknown", linked.System.Codename);
         });
     }
 

@@ -8,7 +8,7 @@ namespace Kontent.Ai.Delivery.Handlers;
 /// <summary>
 /// DelegatingHandler that injects authentication header and environment ID into a request.
 /// </summary>
-public sealed class DeliveryAuthenticationHandler : DelegatingHandler
+internal sealed class DeliveryAuthenticationHandler : DelegatingHandler
 {
     private readonly IOptionsMonitor<DeliveryOptions> _monitor;
     private readonly string? _name;

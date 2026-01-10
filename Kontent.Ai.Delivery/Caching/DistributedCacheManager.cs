@@ -56,7 +56,7 @@ namespace Kontent.Ai.Delivery.Caching;
 /// or using a cache provider that supports atomic SET operations.
 /// </para>
 /// </remarks>
-public sealed class DistributedCacheManager : IDeliveryCacheManager
+internal sealed class DistributedCacheManager : IDeliveryCacheManager
 {
     private readonly IDistributedCache _cache;
     private readonly string? _keyPrefix;
@@ -277,10 +277,12 @@ public sealed class DistributedCacheManager : IDeliveryCacheManager
             // Re-throw cancellation exceptions
             throw;
         }
-        catch
+        catch (Exception ex)
         {
             // Invalidation failures should not break the application
             // Worst case: stale entries remain until TTL expires
+            if (_logger != null)
+                LoggerMessages.CacheInvalidationFailed(_logger, ex);
         }
     }
 

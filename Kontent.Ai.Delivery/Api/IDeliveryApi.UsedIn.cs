@@ -3,7 +3,7 @@ using Kontent.Ai.Delivery.UsedIn;
 namespace Kontent.Ai.Delivery.Api;
 
 /// <inheritdoc cref="IDeliveryApi"/>
-public partial interface IDeliveryApi
+internal partial interface IDeliveryApi
 {
     /// <summary>
     /// Gets content items that use the specified content item.

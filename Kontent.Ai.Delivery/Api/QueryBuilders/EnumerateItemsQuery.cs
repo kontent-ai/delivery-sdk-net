@@ -1,15 +1,22 @@
 using System.Runtime.CompilerServices;
 using Kontent.Ai.Delivery.Api.Filtering;
 using Kontent.Ai.Delivery.ContentItems.Mapping;
+using Kontent.Ai.Delivery.Logging;
+using Microsoft.Extensions.Logging;
 
 namespace Kontent.Ai.Delivery.Api.QueryBuilders;
 
 /// <inheritdoc cref="IEnumerateItemsQuery{TModel}"/>
-internal sealed class EnumerateItemsQuery<TModel>(IDeliveryApi api, Func<bool?> getDefaultWaitForNewContent, ContentItemMapper contentItemMapper) : IEnumerateItemsQuery<TModel>
+internal sealed class EnumerateItemsQuery<TModel>(
+    IDeliveryApi api,
+    Func<bool?> getDefaultWaitForNewContent,
+    ContentItemMapper contentItemMapper,
+    ILogger? logger = null) : IEnumerateItemsQuery<TModel>
 {
     private readonly IDeliveryApi _api = api;
     private readonly Func<bool?> _getDefaultWaitForNewContent = getDefaultWaitForNewContent;
     private readonly ContentItemMapper _contentItemMapper = contentItemMapper;
+    private readonly ILogger? _logger = logger;
     private EnumItemsParams _params = new();
     private bool? _waitForLoadingNewContentOverride;
     private readonly List<KeyValuePair<string, string>> _serializedFilters = [];
@@ -61,9 +68,14 @@ internal sealed class EnumerateItemsQuery<TModel>(IDeliveryApi api, Func<bool?> 
 
     public async IAsyncEnumerable<IContentItem<TModel>> EnumerateItemsAsync([EnumeratorCancellation] CancellationToken cancellationToken = default)
     {
+        // Log pagination start
+        if (_logger != null)
+            LoggerMessages.PaginationStarted(_logger, "ItemsFeed");
 
         bool? wait = _waitForLoadingNewContentOverride ?? _getDefaultWaitForNewContent();
         string? token = null;
+        int pageCount = 0;
+        int totalItems = 0;
 
         while (true)
         {
@@ -77,7 +89,13 @@ internal sealed class EnumerateItemsQuery<TModel>(IDeliveryApi api, Func<bool?> 
                 .ConfigureAwait(false);
 
             if (!resp.IsSuccessStatusCode || resp.Content is null)
+            {
+                if (_logger != null)
+                    LoggerMessages.PaginationStoppedEarly(_logger, "ItemsFeed");
                 yield break;
+            }
+
+            pageCount++;
 
             foreach (var item in resp.Content.Items)
             {
@@ -86,12 +104,17 @@ internal sealed class EnumerateItemsQuery<TModel>(IDeliveryApi api, Func<bool?> 
                 {
                     await _contentItemMapper.CompleteItemAsync(item, resp.Content.ModularContent, null, cancellationToken).ConfigureAwait(false);
                 }
+                totalItems++;
                 yield return item;
             }
 
             token = resp.Continuation();
             if (string.IsNullOrEmpty(token))
+            {
+                if (_logger != null)
+                    LoggerMessages.PaginationCompleted(_logger, "ItemsFeed", pageCount, totalItems);
                 yield break;
+            }
         }
     }
 

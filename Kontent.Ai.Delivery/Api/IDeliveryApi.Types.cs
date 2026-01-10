@@ -4,7 +4,7 @@ using Kontent.Ai.Delivery.ContentTypes.Element;
 namespace Kontent.Ai.Delivery.Api;
 
 /// <inheritdoc cref="IDeliveryApi"/>
-public partial interface IDeliveryApi
+internal partial interface IDeliveryApi
 {
     /// <summary>
     /// Gets a single content type by its codename.

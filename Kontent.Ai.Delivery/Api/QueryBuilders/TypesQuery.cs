@@ -56,6 +56,10 @@ internal sealed class TypesQuery(
 
     public async Task<IDeliveryResult<IReadOnlyList<IContentType>>> ExecuteAsync(CancellationToken cancellationToken = default)
     {
+        // Log query starting
+        if (_logger != null)
+            LoggerMessages.QueryStarting(_logger, "Types", "list");
+
         // Start timing if logging is enabled
         var stopwatch = _logger?.IsEnabled(LogLevel.Information) == true ? Stopwatch.StartNew() : null;
 

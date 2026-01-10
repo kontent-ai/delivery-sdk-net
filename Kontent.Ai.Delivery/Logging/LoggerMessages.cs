@@ -94,6 +94,12 @@ internal static partial class LoggerMessages
     public static partial void CacheInvalidateCompleted(ILogger logger, string dependencyKey);
 
     [LoggerMessage(
+        EventId = LogEventIds.CacheInvalidationFailed,
+        Level = LogLevel.Warning,
+        Message = "Cache invalidation failed for dependencies, stale entries may remain")]
+    public static partial void CacheInvalidationFailed(ILogger logger, Exception exception);
+
+    [LoggerMessage(
         EventId = LogEventIds.CacheEntryEvicted,
         Level = LogLevel.Debug,
         Message = "Cache entry evicted: '{CacheKey}' (Reason: {EvictionReason})")]
@@ -181,6 +187,88 @@ internal static partial class LoggerMessages
         ILogger logger,
         double timeoutSeconds,
         string requestUri);
+
+    // ========== Content Mapping ==========
+
+    [LoggerMessage(
+        EventId = LogEventIds.LinkedItemNotFound,
+        Level = LogLevel.Debug,
+        Message = "Linked item '{Codename}' not found in modular_content. Check depth parameter of the query.")]
+    public static partial void LinkedItemNotFound(ILogger logger, string codename);
+
+    [LoggerMessage(
+        EventId = LogEventIds.EmbeddedContentNotFound,
+        Level = LogLevel.Debug,
+        Message = "Embedded content item '{Codename}' referenced in rich text not found in modular_content. Check depth parameter of the query.")]
+    public static partial void EmbeddedContentNotFound(ILogger logger, string codename);
+
+    [LoggerMessage(
+        EventId = LogEventIds.CircularReferenceDetected,
+        Level = LogLevel.Debug,
+        Message = "Circular reference detected for linked item '{Codename}', returning shallow copy")]
+    public static partial void CircularReferenceDetected(ILogger logger, string codename);
+
+    [LoggerMessage(
+        EventId = LogEventIds.RichTextParsingFailed,
+        Level = LogLevel.Error,
+        Message = "Rich text parsing failed: HTML document body is null for element '{ElementCodename}'")]
+    public static partial void RichTextParsingFailed(ILogger logger, string elementCodename);
+
+    [LoggerMessage(
+        EventId = LogEventIds.EmbeddedContentMissingCodename,
+        Level = LogLevel.Error,
+        Message = "Embedded content element missing 'data-codename' attribute in rich text")]
+    public static partial void EmbeddedContentMissingCodename(ILogger logger);
+
+    [LoggerMessage(
+        EventId = LogEventIds.AssetUrlParsingFailed,
+        Level = LogLevel.Debug,
+        Message = "Asset URL '{Url}' could not be parsed for dependency tracking")]
+    public static partial void AssetUrlParsingFailed(ILogger logger, string url);
+
+    [LoggerMessage(
+        EventId = LogEventIds.RichTextLinkIdParsingFailed,
+        Level = LogLevel.Debug,
+        Message = "Rich text link 'data-item-id' attribute '{DataItemId}' could not be parsed as GUID")]
+    public static partial void RichTextLinkIdParsingFailed(ILogger logger, string dataItemId);
+
+    [LoggerMessage(
+        EventId = LogEventIds.InlineImageNotFound,
+        Level = LogLevel.Debug,
+        Message = "Inline image with asset ID '{AssetId}' not found in response images")]
+    public static partial void InlineImageNotFound(ILogger logger, Guid assetId);
+
+    [LoggerMessage(
+        EventId = LogEventIds.ContentTypeFallbackToDynamic,
+        Level = LogLevel.Debug,
+        Message = "Content type '{ContentTypeCodename}' has no mapped model, using DynamicElements")]
+    public static partial void ContentTypeFallbackToDynamic(ILogger logger, string contentTypeCodename);
+
+    // ========== Pagination ==========
+
+    [LoggerMessage(
+        EventId = LogEventIds.PaginationStarted,
+        Level = LogLevel.Debug,
+        Message = "Starting {QueryType} pagination enumeration")]
+    public static partial void PaginationStarted(ILogger logger, string queryType);
+
+    [LoggerMessage(
+        EventId = LogEventIds.PaginationStoppedEarly,
+        Level = LogLevel.Warning,
+        Message = "Pagination stopped early for {QueryType}: response unsuccessful or null content")]
+    public static partial void PaginationStoppedEarly(ILogger logger, string queryType);
+
+    [LoggerMessage(
+        EventId = LogEventIds.PaginationCompleted,
+        Level = LogLevel.Debug,
+        Message = "Pagination completed for {QueryType}: {PageCount} pages, {TotalItems} items")]
+    public static partial void PaginationCompleted(ILogger logger, string queryType, int pageCount, int totalItems);
+
+    [LoggerMessage(
+        EventId = LogEventIds.ItemsPaginationProgress,
+        Level = LogLevel.Debug,
+        Message = "Items pagination progress: page {PageNumber}, {ItemsSoFar} items fetched")]
+    public static partial void ItemsPaginationProgress(ILogger logger, int pageNumber, int itemsSoFar);
 
     // ========== Service Registration ==========
 

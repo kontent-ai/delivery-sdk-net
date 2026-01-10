@@ -26,7 +26,7 @@ namespace Kontent.Ai.Delivery.Abstractions;
 /// These formats align with the cache invalidation strategy in <see cref="IDeliveryCacheManager"/>.
 /// </para>
 /// </remarks>
-public sealed class DependencyTrackingContext
+internal sealed class DependencyTrackingContext
 {
     /// <summary>
     /// Prefix for content item dependency keys.

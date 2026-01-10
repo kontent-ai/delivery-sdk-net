@@ -3,7 +3,7 @@ using Kontent.Ai.Delivery.TaxonomyGroups;
 namespace Kontent.Ai.Delivery.Api;
 
 /// <inheritdoc cref="IDeliveryApi"/>
-public partial interface IDeliveryApi
+internal partial interface IDeliveryApi
 {
     /// <summary>
     /// Gets a single taxonomy group by its codename.

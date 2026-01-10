@@ -7,7 +7,7 @@ namespace Kontent.Ai.Delivery.Handlers;
 /// DelegatingHandler that injects SDK and source tracking headers on every request.
 /// This handler automatically adds X-KC-SDKID and X-KC-SOURCE headers according to Kontent.ai guidelines.
 /// </summary>
-public sealed class TrackingHandler : DelegatingHandler
+internal sealed class TrackingHandler : DelegatingHandler
 {
     private readonly ILogger<TrackingHandler>? _logger;
 
