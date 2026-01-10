@@ -1,4 +1,4 @@
-﻿using System.Text.Json.Serialization;
+using System.Text.Json.Serialization;
 
 namespace Kontent.Ai.Delivery.TaxonomyGroups;
 
@@ -19,6 +19,24 @@ internal sealed record DeliveryTaxonomyListingResponse : IDeliveryTaxonomyListin
     [JsonPropertyName("taxonomies")]
     public required IReadOnlyList<TaxonomyGroup> Taxonomies { get; init; }
 
+    /// <summary>
+    /// Delegate that fetches the next page when invoked. Injected by the query builder.
+    /// </summary>
+    [JsonIgnore]
+    internal Func<CancellationToken, Task<IDeliveryResult<IDeliveryTaxonomyListingResponse>>>? NextPageFetcher { get; init; }
+
     IReadOnlyList<ITaxonomyGroup> IDeliveryTaxonomyListingResponse.Taxonomies => Taxonomies;
     IPagination IPageable.Pagination => Pagination;
+
+    /// <inheritdoc/>
+    public bool HasNextPage => !string.IsNullOrEmpty(Pagination.NextPageUrl);
+
+    /// <inheritdoc/>
+    public async Task<IDeliveryResult<IDeliveryTaxonomyListingResponse>?> FetchNextPageAsync(CancellationToken cancellationToken = default)
+    {
+        if (!HasNextPage || NextPageFetcher == null)
+            return null;
+
+        return await NextPageFetcher(cancellationToken).ConfigureAwait(false);
+    }
 }

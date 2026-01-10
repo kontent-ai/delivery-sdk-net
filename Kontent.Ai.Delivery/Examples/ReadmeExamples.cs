@@ -78,22 +78,113 @@ public static class ReadmeExamples
 
         if (result.IsSuccess)
         {
-            foreach (var item in result.Value)
+            foreach (var item in result.Value.Items)
             {
                 Console.WriteLine($"- {item.System.Name}");
             }
         }
     }
 
-    // Items feed pagination
-    public static async Task ItemsFeedAsync(IDeliveryClient client)
+    // Items feed pagination - Option 1: EnumerateItemsAsync (IAsyncEnumerable)
+    public static async Task ItemsFeedEnumerateItemsAsync(IDeliveryClient client)
     {
-        var query = client.GetItemsFeed()
-            .OrderBy("system.last_modified");
-
-        await foreach (var item in query.EnumerateItemsAsync())
+        await foreach (var item in client.GetItemsFeed().EnumerateItemsAsync())
         {
             Console.WriteLine($"Item: {item.System.Name}");
+        }
+    }
+
+    // Items feed pagination - Option 2: EnumerateAllAsync (get all items at once)
+    public static async Task ItemsFeedEnumerateAllAsync(IDeliveryClient client)
+    {
+        var allItemsResult = await client.GetItemsFeed()
+            .OrderBy("system.last_modified")
+            .EnumerateAllAsync();
+
+        if (allItemsResult.IsSuccess)
+        {
+            foreach (var item in allItemsResult.Value.Items)
+            {
+                Console.WriteLine($"Item: {item.System.Name}");
+            }
+        }
+    }
+
+    // Items feed pagination - Option 3: Manual pagination with FetchNextPageAsync
+    public static async Task ItemsFeedFetchNextPageAsync(IDeliveryClient client)
+    {
+        var firstPage = await client.GetItemsFeed().ExecuteAsync();
+        if (firstPage.IsSuccess)
+        {
+            foreach (var item in firstPage.Value.Items)
+            {
+                Console.WriteLine($"Item: {item.System.Name}");
+            }
+
+            // Fetch next page if available
+            var currentPage = firstPage;
+            while (currentPage.Value.HasNextPage)
+            {
+                var nextPage = await currentPage.Value.FetchNextPageAsync();
+                if (nextPage?.IsSuccess == true)
+                {
+                    foreach (var item in nextPage.Value.Items)
+                    {
+                        Console.WriteLine($"Item: {item.System.Name}");
+                    }
+                    currentPage = nextPage;
+                }
+                else break;
+            }
+        }
+    }
+
+    // Items listing pagination - ExecuteAllAsync (fetches all pages automatically)
+    public static async Task ItemsListingExecuteAllAsync(IDeliveryClient client)
+    {
+        var allArticles = await client.GetItems<Article>()
+            .Where(f => f.System("type").IsEqualTo("article"))
+            .Limit(10)  // Page size
+            .ExecuteAllAsync();
+
+        if (allArticles.IsSuccess)
+        {
+            foreach (var article in allArticles.Value.Items)
+            {
+                Console.WriteLine($"Article: {article.Elements.Title}");
+            }
+        }
+    }
+
+    // Items listing pagination - Manual pagination with FetchNextPageAsync
+    public static async Task ItemsListingFetchNextPageAsync(IDeliveryClient client)
+    {
+        var firstPage = await client.GetItems<Article>()
+            .Limit(10)
+            .WithTotalCount()
+            .ExecuteAsync();
+
+        if (firstPage.IsSuccess)
+        {
+            Console.WriteLine($"Total items: {firstPage.Value.Pagination.TotalCount}");
+
+            foreach (var article in firstPage.Value.Items)
+            {
+                Console.WriteLine($"Article: {article.Elements.Title}");
+            }
+
+            // Fetch next page if available
+            if (firstPage.Value.HasNextPage)
+            {
+                var nextPage = await firstPage.Value.FetchNextPageAsync();
+                if (nextPage?.IsSuccess == true)
+                {
+                    foreach (var article in nextPage.Value.Items)
+                    {
+                        Console.WriteLine($"Article: {article.Elements.Title}");
+                    }
+                }
+            }
         }
     }
 
@@ -220,7 +311,7 @@ public static class ReadmeExamples
 
         if (result.IsSuccess)
         {
-            foreach (var article in result.Value)
+            foreach (var article in result.Value.Items)
             {
                 Console.WriteLine($"{article.Elements.Title} - {article.Elements.PublishDate}");
             }
@@ -434,7 +525,7 @@ public static class ReadmeExamples
         var result = await client.GetLanguages().ExecuteAsync();
         if (result.IsSuccess)
         {
-            foreach (var language in result.Value)
+            foreach (var language in result.Value.Languages)
             {
                 Console.WriteLine($"{language.System.Name} ({language.System.Codename})");
             }

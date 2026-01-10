@@ -13,6 +13,24 @@ internal sealed record DeliveryTypeListingResponse : IDeliveryTypeListingRespons
     [JsonPropertyName("types")]
     public required IReadOnlyList<ContentType> Types { get; init; }
 
+    /// <summary>
+    /// Delegate that fetches the next page when invoked. Injected by the query builder.
+    /// </summary>
+    [JsonIgnore]
+    internal Func<CancellationToken, Task<IDeliveryResult<IDeliveryTypeListingResponse>>>? NextPageFetcher { get; init; }
+
     IReadOnlyList<IContentType> IDeliveryTypeListingResponse.Types => Types;
     IPagination IPageable.Pagination => Pagination;
+
+    /// <inheritdoc/>
+    public bool HasNextPage => !string.IsNullOrEmpty(Pagination.NextPageUrl);
+
+    /// <inheritdoc/>
+    public async Task<IDeliveryResult<IDeliveryTypeListingResponse>?> FetchNextPageAsync(CancellationToken cancellationToken = default)
+    {
+        if (!HasNextPage || NextPageFetcher == null)
+            return null;
+
+        return await NextPageFetcher(cancellationToken).ConfigureAwait(false);
+    }
 }

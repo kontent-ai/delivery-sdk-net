@@ -54,7 +54,7 @@ internal sealed class TypesQuery(
         return this;
     }
 
-    public async Task<IDeliveryResult<IReadOnlyList<IContentType>>> ExecuteAsync(CancellationToken cancellationToken = default)
+    public async Task<IDeliveryResult<IDeliveryTypeListingResponse>> ExecuteAsync(CancellationToken cancellationToken = default)
     {
         // Log query starting
         if (_logger != null)
@@ -70,7 +70,7 @@ internal sealed class TypesQuery(
             try
             {
                 cacheKey = CacheKeyBuilder.BuildTypesKey(_params, _serializedFilters);
-                var cached = await _cacheManager.GetAsync<List<ContentType>>(cacheKey, cancellationToken)
+                var cached = await _cacheManager.GetAsync<DeliveryTypeListingResponse>(cacheKey, cancellationToken)
                     .ConfigureAwait(false);
 
                 if (cached != null)
@@ -82,8 +82,14 @@ internal sealed class TypesQuery(
                         LoggerMessages.QueryCompleted(_logger, "Types", "list",
                             stopwatch?.ElapsedMilliseconds ?? 0, HttpStatusCode.OK, cacheHit: true);
                     }
-                    var cachedResult = cached.Cast<IContentType>().ToList().AsReadOnly();
-                    return DeliveryResult.CacheHit<IReadOnlyList<IContentType>>(cachedResult);
+
+                    // Reconstruct with NextPageFetcher
+                    var cachedWithFetcher = cached with
+                    {
+                        NextPageFetcher = CreateNextPageFetcher(cached.Pagination)
+                    };
+
+                    return DeliveryResult.CacheHit<IDeliveryTypeListingResponse>(cachedWithFetcher);
                 }
 
                 // Log cache miss
@@ -105,18 +111,41 @@ internal sealed class TypesQuery(
             FilterQueryParams.ToQueryDictionary(_serializedFilters),
             wait).ConfigureAwait(false);
         var deliveryResult = await response.ToDeliveryResultAsync().ConfigureAwait(false);
-        var result = deliveryResult.Map(response => response.Types);
+
+        if (!deliveryResult.IsSuccess)
+        {
+            return DeliveryResult.Failure<IDeliveryTypeListingResponse>(
+                deliveryResult.RequestUrl ?? string.Empty,
+                deliveryResult.StatusCode,
+                deliveryResult.Error,
+                deliveryResult.ResponseHeaders);
+        }
+
+        var resp = deliveryResult.Value;
+
+        // Build response with next page fetcher
+        var responseWithFetcher = resp with
+        {
+            NextPageFetcher = CreateNextPageFetcher(resp.Pagination)
+        };
+
+        var result = DeliveryResult.Success<IDeliveryTypeListingResponse>(
+            responseWithFetcher,
+            deliveryResult.RequestUrl ?? string.Empty,
+            deliveryResult.StatusCode,
+            deliveryResult.HasStaleContent,
+            deliveryResult.ContinuationToken,
+            deliveryResult.ResponseHeaders);
 
         // Cache result (if enabled) - metadata queries use empty dependencies (rely on TTL for invalidation)
-        if (_cacheManager != null && result.IsSuccess && cacheKey != null)
+        if (_cacheManager != null && cacheKey != null)
         {
             try
             {
-                // Cache the concrete types for proper serialization
-                var typesToCache = result.Value.Cast<ContentType>().ToList();
+                // Cache response without NextPageFetcher (delegates can't be serialized)
                 await _cacheManager.SetAsync(
                     cacheKey,
-                    typesToCache,
+                    resp,
                     dependencies: [], // Metadata queries don't track dependencies
                     expiration: null,
                     cancellationToken: cancellationToken)
@@ -139,5 +168,31 @@ internal sealed class TypesQuery(
         }
 
         return result;
+    }
+
+    private Func<CancellationToken, Task<IDeliveryResult<IDeliveryTypeListingResponse>>>? CreateNextPageFetcher(IPagination pagination)
+    {
+        if (string.IsNullOrEmpty(pagination.NextPageUrl))
+            return null;
+
+        // Calculate next skip value
+        var nextSkip = pagination.Skip + pagination.Count;
+
+        return async (ct) =>
+        {
+            var nextQuery = new TypesQuery(_api, _getDefaultWaitForNewContent, _cacheManager, _logger)
+            {
+                _params = _params with { Skip = nextSkip },
+                _waitForLoadingNewContentOverride = _waitForLoadingNewContentOverride
+            };
+
+            // Copy filters
+            foreach (var filter in _serializedFilters)
+            {
+                nextQuery._serializedFilters.Add(filter);
+            }
+
+            return await nextQuery.ExecuteAsync(ct).ConfigureAwait(false);
+        };
     }
 }

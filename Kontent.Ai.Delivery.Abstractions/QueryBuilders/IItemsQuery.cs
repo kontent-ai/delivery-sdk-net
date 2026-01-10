@@ -81,17 +81,17 @@ public interface IItemsQuery<TModel>
     IItemsQuery<TModel> Where(Func<IItemsFilterBuilder, IItemsFilterBuilder> build);
 
     /// <summary>
-    /// Executes the built query and returns a functional result.
+    /// Executes the built query and returns the response with pagination metadata.
     /// </summary>
     /// <param name="cancellationToken">Cancellation token for the operation.</param>
-    /// <returns>A delivery result containing the content items or errors.</returns>
-    Task<IDeliveryResult<IReadOnlyList<IContentItem<TModel>>>> ExecuteAsync(CancellationToken cancellationToken = default);
+    /// <returns>A delivery result containing the response with items and pagination info.</returns>
+    Task<IDeliveryResult<IDeliveryItemListingResponse<TModel>>> ExecuteAsync(CancellationToken cancellationToken = default);
 
     /// <summary>
     /// Executes the query and retrieves all items by paging under the hood.
     /// Use with care on large environments due to latency/memory.
     /// </summary>
     /// <param name="cancellationToken">Cancellation token for the operation.</param>
-    /// <returns>A delivery result containing all matching items or errors.</returns>
-    Task<IDeliveryResult<IReadOnlyList<IContentItem<TModel>>>> ExecuteAllAsync(CancellationToken cancellationToken = default);
+    /// <returns>A delivery result containing all matching items.</returns>
+    Task<IDeliveryResult<IDeliveryItemListingResponse<TModel>>> ExecuteAllAsync(CancellationToken cancellationToken = default);
 }

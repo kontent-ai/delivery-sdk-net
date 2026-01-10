@@ -41,6 +41,14 @@ public interface IEnumerateItemsQuery<TModel>
     IEnumerateItemsQuery<TModel> Where(Func<IItemsFilterBuilder, IItemsFilterBuilder> build);
 
     /// <summary>
+    /// Executes the query and returns the first page of items.
+    /// Use <see cref="IDeliveryItemsFeedResponse{TModel}.FetchNextPageAsync"/> to retrieve subsequent pages.
+    /// </summary>
+    /// <param name="cancellationToken">Cancellation token.</param>
+    /// <returns>The first page of items with ability to fetch subsequent pages.</returns>
+    Task<IDeliveryResult<IDeliveryItemsFeedResponse<TModel>>> ExecuteAsync(CancellationToken cancellationToken = default);
+
+    /// <summary>
     /// Enumerates content items using the Delivery API items-feed endpoint.
     /// </summary>
     /// <param name="cancellationToken">Cancellation token to stop enumeration and cancel in-flight requests.</param>
@@ -52,5 +60,5 @@ public interface IEnumerateItemsQuery<TModel>
     /// </summary>
     /// <param name="cancellationToken">Cancellation token to stop enumeration and cancel in-flight requests.</param>
     /// <returns>All items aggregated into a read-only list.</returns>
-    Task<IReadOnlyList<IContentItem<TModel>>> EnumerateAllAsync(CancellationToken cancellationToken = default);
+    Task<IDeliveryResult<IDeliveryItemsFeedResponse<TModel>>> EnumerateAllAsync(CancellationToken cancellationToken = default);
 }

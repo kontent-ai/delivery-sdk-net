@@ -1,5 +1,7 @@
+using System.Net;
 using Kontent.Ai.Delivery.Api.Filtering;
 using Kontent.Ai.Delivery.Caching;
+using Kontent.Ai.Delivery.Extensions;
 using Kontent.Ai.Delivery.TaxonomyGroups;
 
 namespace Kontent.Ai.Delivery.Api.QueryBuilders;
@@ -42,7 +44,7 @@ internal sealed class TaxonomiesQuery(
         return this;
     }
 
-    public async Task<IDeliveryResult<IReadOnlyList<ITaxonomyGroup>>> ExecuteAsync(CancellationToken cancellationToken = default)
+    public async Task<IDeliveryResult<IDeliveryTaxonomyListingResponse>> ExecuteAsync(CancellationToken cancellationToken = default)
     {
         // Cache check (if enabled)
         string? cacheKey = null;
@@ -51,13 +53,18 @@ internal sealed class TaxonomiesQuery(
             try
             {
                 cacheKey = CacheKeyBuilder.BuildTaxonomiesKey(_params, _serializedFilters);
-                var cached = await _cacheManager.GetAsync<List<TaxonomyGroup>>(cacheKey, cancellationToken)
+                var cached = await _cacheManager.GetAsync<DeliveryTaxonomyListingResponse>(cacheKey, cancellationToken)
                     .ConfigureAwait(false);
 
                 if (cached != null)
                 {
-                    var cachedResult = cached.Cast<ITaxonomyGroup>().ToList().AsReadOnly();
-                    return DeliveryResult.CacheHit<IReadOnlyList<ITaxonomyGroup>>(cachedResult);
+                    // Reconstruct with NextPageFetcher
+                    var cachedWithFetcher = cached with
+                    {
+                        NextPageFetcher = CreateNextPageFetcher(cached.Pagination)
+                    };
+
+                    return DeliveryResult.CacheHit<IDeliveryTaxonomyListingResponse>(cachedWithFetcher);
                 }
             }
             catch (Exception)
@@ -73,18 +80,41 @@ internal sealed class TaxonomiesQuery(
             FilterQueryParams.ToQueryDictionary(_serializedFilters),
             wait).ConfigureAwait(false);
         var deliveryResult = await response.ToDeliveryResultAsync().ConfigureAwait(false);
-        var result = deliveryResult.Map(response => response.Taxonomies);
+
+        if (!deliveryResult.IsSuccess)
+        {
+            return DeliveryResult.Failure<IDeliveryTaxonomyListingResponse>(
+                deliveryResult.RequestUrl ?? string.Empty,
+                deliveryResult.StatusCode,
+                deliveryResult.Error,
+                deliveryResult.ResponseHeaders);
+        }
+
+        var resp = deliveryResult.Value;
+
+        // Build response with next page fetcher
+        var responseWithFetcher = resp with
+        {
+            NextPageFetcher = CreateNextPageFetcher(resp.Pagination)
+        };
+
+        var result = DeliveryResult.Success<IDeliveryTaxonomyListingResponse>(
+            responseWithFetcher,
+            deliveryResult.RequestUrl ?? string.Empty,
+            deliveryResult.StatusCode,
+            deliveryResult.HasStaleContent,
+            deliveryResult.ContinuationToken,
+            deliveryResult.ResponseHeaders);
 
         // Cache result (if enabled) - metadata queries use empty dependencies (rely on TTL for invalidation)
-        if (_cacheManager != null && result.IsSuccess && cacheKey != null)
+        if (_cacheManager != null && cacheKey != null)
         {
             try
             {
-                // Cache the concrete types for proper serialization
-                var taxonomiesToCache = result.Value.Cast<TaxonomyGroup>().ToList();
+                // Cache response without NextPageFetcher (delegates can't be serialized)
                 await _cacheManager.SetAsync(
                     cacheKey,
-                    taxonomiesToCache,
+                    resp,
                     dependencies: [], // Metadata queries don't track dependencies
                     expiration: null,
                     cancellationToken: cancellationToken)
@@ -97,5 +127,31 @@ internal sealed class TaxonomiesQuery(
         }
 
         return result;
+    }
+
+    private Func<CancellationToken, Task<IDeliveryResult<IDeliveryTaxonomyListingResponse>>>? CreateNextPageFetcher(IPagination pagination)
+    {
+        if (string.IsNullOrEmpty(pagination.NextPageUrl))
+            return null;
+
+        // Calculate next skip value
+        var nextSkip = pagination.Skip + pagination.Count;
+
+        return async (ct) =>
+        {
+            var nextQuery = new TaxonomiesQuery(_api, _getDefaultWaitForNewContent, _cacheManager)
+            {
+                _params = _params with { Skip = nextSkip },
+                _waitForLoadingNewContentOverride = _waitForLoadingNewContentOverride
+            };
+
+            // Copy filters
+            foreach (var filter in _serializedFilters)
+            {
+                nextQuery._serializedFilters.Add(filter);
+            }
+
+            return await nextQuery.ExecuteAsync(ct).ConfigureAwait(false);
+        };
     }
 }

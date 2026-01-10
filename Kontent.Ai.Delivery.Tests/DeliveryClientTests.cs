@@ -66,7 +66,7 @@ public class DeliveryClientTests
         var result = await client.GetTypes().Skip(1).ExecuteAsync();
 
         Assert.True(result.IsSuccess);
-        Assert.NotEmpty(result.Value);
+        Assert.NotEmpty(result.Value.Types);
     }
 
     [Fact]
@@ -108,7 +108,7 @@ public class DeliveryClientTests
         var result = await client.GetTaxonomies().Skip(1).ExecuteAsync();
 
         Assert.True(result.IsSuccess);
-        Assert.NotEmpty(result.Value);
+        Assert.NotEmpty(result.Value.Taxonomies);
     }
 
     [Fact]
@@ -122,7 +122,7 @@ public class DeliveryClientTests
         var result = await client.GetLanguages().Skip(1).ExecuteAsync();
 
         Assert.True(result.IsSuccess);
-        Assert.NotEmpty(result.Value);
+        Assert.NotEmpty(result.Value.Languages);
     }
 
     [Fact]
@@ -134,9 +134,10 @@ public class DeliveryClientTests
             .Respond("application/json", await File.ReadAllTextAsync(Path.Combine(Environment.CurrentDirectory, $"Fixtures{Path.DirectorySeparatorChar}DeliveryClient{Path.DirectorySeparatorChar}articles_feed.json")));
 
         var client = CreateClient(mock);
-        var items = await client.GetItemsFeed<Article>().Where(f => f.System("type").IsEqualTo("article")).EnumerateAllAsync();
+        var result = await client.GetItemsFeed<Article>().Where(f => f.System("type").IsEqualTo("article")).EnumerateAllAsync();
 
-        Assert.NotEmpty(items);
+        Assert.True(result.IsSuccess);
+        Assert.NotEmpty(result.Value.Items);
     }
 
     [Fact]
@@ -197,7 +198,7 @@ public class DeliveryClientTests
             .ExecuteAsync();
 
         Assert.True(result.IsSuccess);
-        Assert.NotEmpty(result.Value);
+        Assert.NotEmpty(result.Value.Items);
     }
 
     [Fact]

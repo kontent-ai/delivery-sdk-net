@@ -1,4 +1,4 @@
-﻿using System.Text.Json.Serialization;
+using System.Text.Json.Serialization;
 
 namespace Kontent.Ai.Delivery.Languages;
 
@@ -13,6 +13,24 @@ internal sealed record DeliveryLanguageListingResponse : IDeliveryLanguageListin
     [JsonPropertyName("pagination")]
     public required Pagination Pagination { get; init; }
 
+    /// <summary>
+    /// Delegate that fetches the next page when invoked. Injected by the query builder.
+    /// </summary>
+    [JsonIgnore]
+    internal Func<CancellationToken, Task<IDeliveryResult<IDeliveryLanguageListingResponse>>>? NextPageFetcher { get; init; }
+
     IReadOnlyList<ILanguage> IDeliveryLanguageListingResponse.Languages => Languages;
     IPagination IPageable.Pagination => Pagination;
+
+    /// <inheritdoc/>
+    public bool HasNextPage => !string.IsNullOrEmpty(Pagination.NextPageUrl);
+
+    /// <inheritdoc/>
+    public async Task<IDeliveryResult<IDeliveryLanguageListingResponse>?> FetchNextPageAsync(CancellationToken cancellationToken = default)
+    {
+        if (!HasNextPage || NextPageFetcher == null)
+            return null;
+
+        return await NextPageFetcher(cancellationToken).ConfigureAwait(false);
+    }
 }

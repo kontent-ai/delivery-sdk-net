@@ -490,31 +490,31 @@ Resolved HTML string
 Parses HTML into a typed block tree:
 
 ```csharp
-internal class RichTextParser : IElementValueConverter<string, IRichTextContent>
+internal class RichTextParser(
+    IHtmlParser parser,
+    IContentDependencyExtractor dependencyExtractor,
+    ILogger? logger = null)
 {
-    private readonly IHtmlParser _parser;  // AngleSharp
-    private readonly IContentDependencyExtractor _dependencyExtractor;
-
     internal async Task<IRichTextContent?> ConvertAsync<TElement>(
         TElement contentElement,
-        ResolvingContext context,
+        Func<string, Task<object>> getLinkedItem,
         DependencyTrackingContext? dependencyContext)
         where TElement : IContentElementValue<string>
     {
         if (contentElement is not IRichTextElementValue element)
             return null;
 
-        // Parse HTML to DOM
-        var document = await _parser.ParseDocumentAsync(element.Value);
+        // Parse HTML to DOM (synchronous)
+        var document = parser.ParseDocument(element.Value);
 
         // Extract dependencies for caching
-        _dependencyExtractor.ExtractFromRichTextElement(element, dependencyContext);
+        dependencyExtractor.ExtractFromRichTextElement(element, dependencyContext);
 
         // Recursively parse DOM nodes to typed blocks
         var blocks = new List<IRichTextBlock>();
         foreach (var childNode in document.Body.ChildNodes)
         {
-            var block = await ParseNodeAsync(childNode, element, context);
+            var block = await ParseNodeAsync(childNode, element, getLinkedItem);
             if (block != null)
                 blocks.Add(block);
         }
@@ -533,13 +533,13 @@ internal class RichTextParser : IElementValueConverter<string, IRichTextContent>
     private async Task<IRichTextBlock?> ParseNodeAsync(
         INode node,
         IRichTextElementValue element,
-        ResolvingContext context)
+        Func<string, Task<object>> getLinkedItem)
     {
         return node switch
         {
             // Embedded content: <object type="application/kenticocloud" data-codename="...">
             IElement { TagName: "OBJECT" } el
-                => await ParseEmbeddedContentAsync(el, context),
+                => await ParseEmbeddedContentAsync(el, getLinkedItem),
 
             // Inline image: <figure><img data-asset-id="..."></figure>
             IElement { TagName: "FIGURE" } el when TryGetInlineImage(el, element, out var image)
@@ -547,11 +547,11 @@ internal class RichTextParser : IElementValueConverter<string, IRichTextContent>
 
             // Content link: <a data-item-id="...">...</a>
             IElement { TagName: "A" } el when TryGetItemId(el, out var itemId)
-                => await ParseContentItemLinkAsync(el, itemId, element, context),
+                => await ParseContentItemLinkAsync(el, itemId, element, getLinkedItem),
 
             // Generic HTML element (recurse)
             IElement el
-                => await ParseHtmlElementAsync(el, element, context),
+                => await ParseHtmlElementAsync(el, element, getLinkedItem),
 
             // Text node
             IText text when !string.IsNullOrWhiteSpace(text.TextContent)
@@ -560,48 +560,6 @@ internal class RichTextParser : IElementValueConverter<string, IRichTextContent>
             _ => null
         };
     }
-}
-```
-
-### Resolution Context
-
-**Purpose**: Enables lazy-loading of linked items during resolution
-
-```csharp
-public class ResolvingContext
-{
-    public Func<string, Task<object>>? GetLinkedItem { get; init; }
-    public string? Language { get; init; }
-}
-
-// Created during post-processing:
-private ResolvingContext CreateResolvingContext(
-    IReadOnlyDictionary<string, JsonElement>? modularContent)
-{
-    return new ResolvingContext
-    {
-        GetLinkedItem = async codename =>
-        {
-            if (modularContent == null ||
-                !modularContent.TryGetValue(codename, out var linkedItemJson))
-                return null;
-
-            // Extract content type
-            var contentType = linkedItemJson
-                .GetProperty("system")
-                .GetProperty("type")
-                .GetString();
-
-            // Resolve CLR type from content type codename
-            var modelType = _typeProvider.TryGetModelType(contentType)
-                ?? typeof(DynamicContentItem);
-
-            // Deserialize
-            var json = linkedItemJson.GetRawText();
-            return _deserializer.DeserializeContentItem(json, modelType);
-        },
-        Language = /* ... */
-    };
 }
 ```
 

@@ -10,22 +10,14 @@ namespace Kontent.Ai.Delivery.ContentItems.Processing;
 internal class RichTextParser(
     IHtmlParser parser,
     IContentDependencyExtractor dependencyExtractor,
-    ILogger? logger = null) : IElementValueConverter<string, IRichTextContent>
+    ILogger? logger = null)
 {
-    public async Task<IRichTextContent?> ConvertAsync<TElement>(
-        TElement contentElement,
-        ResolvingContext context) where TElement : IContentElementValue<string>
-    {
-        // Public interface method - delegates to internal implementation
-        return await ConvertAsync(contentElement, context, null).ConfigureAwait(false);
-    }
-
     /// <summary>
-    /// Internal conversion method with dependency tracking support.
+    /// Converts a rich text element to structured content.
     /// </summary>
     internal async Task<IRichTextContent?> ConvertAsync<TElement>(
         TElement contentElement,
-        ResolvingContext context,
+        Func<string, Task<object>> getLinkedItem,
         DependencyTrackingContext? dependencyContext) where TElement : IContentElementValue<string>
     {
         if (contentElement is not IRichTextElementValue element)
@@ -49,7 +41,7 @@ internal class RichTextParser(
         var blocks = new List<IRichTextBlock>();
         foreach (var childNode in document.Body.ChildNodes)
         {
-            var block = await ParseNodeAsync(childNode, element, context);
+            var block = await ParseNodeAsync(childNode, element, getLinkedItem);
             if (block != null)
                 blocks.Add(block);
         }
@@ -71,23 +63,23 @@ internal class RichTextParser(
     private async Task<IRichTextBlock?> ParseNodeAsync(
         INode node,
         IRichTextElementValue element,
-        ResolvingContext context)
+        Func<string, Task<object>> getLinkedItem)
     {
         return node switch
         {
             // Parse special Kontent.ai elements
             IElement { TagName: "OBJECT" } el
-                => await ParseEmbeddedContentAsync(el, context),
+                => await ParseEmbeddedContentAsync(el, getLinkedItem),
 
             IElement { TagName: "FIGURE" } el when TryGetInlineImage(el, element, out var image)
                 => image,
 
             IElement { TagName: "A" } el when TryGetItemId(el, out var itemId)
-                => await ParseContentItemLinkAsync(el, itemId, element, context),
+                => await ParseContentItemLinkAsync(el, itemId, element, getLinkedItem),
 
             // Parse all HTML elements into structured tree
             IElement el
-                => await ParseHtmlElementAsync(el, element, context),
+                => await ParseHtmlElementAsync(el, element, getLinkedItem),
 
             // Text nodes become TextNode leaf blocks
             IText text when !string.IsNullOrWhiteSpace(text.TextContent)
@@ -98,7 +90,7 @@ internal class RichTextParser(
     }
 
 
-    private async Task<IRichTextBlock?> ParseEmbeddedContentAsync(IElement element, ResolvingContext context)
+    private async Task<IRichTextBlock?> ParseEmbeddedContentAsync(IElement element, Func<string, Task<object>> getLinkedItem)
     {
         var codename = element.GetAttribute("data-codename");
         if (string.IsNullOrEmpty(codename))
@@ -112,7 +104,7 @@ internal class RichTextParser(
                 $"Element HTML: {element.OuterHtml}");
         }
 
-        var contentItem = await context.GetLinkedItem(codename);
+        var contentItem = await getLinkedItem(codename);
 
         // ContentItem<T> implements IEmbeddedContent<T>, so we can cast directly
         // If content item couldn't be resolved (depth limit, etc.), return null
@@ -133,7 +125,7 @@ internal class RichTextParser(
         IElement anchorElement,
         Guid itemId,
         IRichTextElementValue elementValue,
-        ResolvingContext context)
+        Func<string, Task<object>> getLinkedItem)
     {
         // Get metadata from Links dictionary
         var metadata = elementValue.Links?.TryGetValue(itemId, out var link) == true ? link : null;
@@ -142,7 +134,7 @@ internal class RichTextParser(
         var children = new List<IRichTextBlock>();
         foreach (var childNode in anchorElement.ChildNodes)
         {
-            var childBlock = await ParseNodeAsync(childNode, elementValue, context);
+            var childBlock = await ParseNodeAsync(childNode, elementValue, getLinkedItem);
             if (childBlock != null)
                 children.Add(childBlock);
         }
@@ -158,13 +150,13 @@ internal class RichTextParser(
     private async Task<IRichTextBlock> ParseHtmlElementAsync(
         IElement element,
         IRichTextElementValue elementValue,
-        ResolvingContext context)
+        Func<string, Task<object>> getLinkedItem)
     {
         // Parse all children recursively into tree structure
         var children = new List<IRichTextBlock>();
         foreach (var childNode in element.ChildNodes)
         {
-            var childBlock = await ParseNodeAsync(childNode, elementValue, context);
+            var childBlock = await ParseNodeAsync(childNode, elementValue, getLinkedItem);
             if (childBlock != null)
                 children.Add(childBlock);
         }
