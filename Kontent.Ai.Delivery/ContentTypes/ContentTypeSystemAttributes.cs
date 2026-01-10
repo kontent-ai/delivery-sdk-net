@@ -12,7 +12,7 @@ internal sealed record ContentTypeSystemAttributes() : IContentTypeSystemAttribu
 {
     /// <inheritdoc/>
     [JsonPropertyName("id")]
-    public required string Id { get; init; }
+    public required Guid Id { get; init; }
 
     /// <inheritdoc/>
     [JsonPropertyName("name")]

@@ -148,15 +148,15 @@ public class RichTextIntegrationTests
         Assert.Equal(ExpectedEmbeddedItemCount, embeddedContent.Count);
 
         // Verify specific expected items by content type
-        var tweetItem = embeddedContent.FirstOrDefault(e => e.ContentTypeCodename == "tweet");
+        var tweetItem = embeddedContent.FirstOrDefault(e => e.System.Type == "tweet");
         Assert.NotNull(tweetItem);
         Assert.NotNull(tweetItem.Elements);
-        Assert.NotEmpty(tweetItem.Codename);
+        Assert.NotEmpty(tweetItem.System.Codename);
 
-        var videoItem = embeddedContent.FirstOrDefault(e => e.ContentTypeCodename == "hosted_video");
+        var videoItem = embeddedContent.FirstOrDefault(e => e.System.Type == "hosted_video");
         Assert.NotNull(videoItem);
         Assert.NotNull(videoItem.Elements);
-        Assert.NotEmpty(videoItem.Codename);
+        Assert.NotEmpty(videoItem.System.Codename);
     }
 
     #endregion
@@ -174,13 +174,13 @@ public class RichTextIntegrationTests
             {
                 // Simulate async database lookup
                 await Task.Delay(1);
-                var tweetData = $"Tweet by {content.Codename}";
-                return $"<div class=\"tweet\" data-id=\"{content.Id}\">{tweetData}</div>";
+                var tweetData = $"Tweet by {content.System.Codename}";
+                return $"<div class=\"tweet\" data-id=\"{content.System.Id}\">{tweetData}</div>";
             })
             .WithContentResolver("hosted_video", async (content) =>
             {
                 await Task.Delay(1);
-                return $"<div class=\"video\" data-codename=\"{content.Codename}\"><iframe src=\"video.mp4\"></iframe></div>";
+                return $"<div class=\"video\" data-codename=\"{content.System.Codename}\"><iframe src=\"video.mp4\"></iframe></div>";
             })
             .Build();
 
@@ -210,9 +210,9 @@ public class RichTextIntegrationTests
         var contentResolvers = new Dictionary<string, Func<IEmbeddedContent, string>>
         {
             ["tweet"] = (content) =>
-                $"<blockquote class=\"twitter-tweet\">{content.Name}</blockquote>",
+                $"<blockquote class=\"twitter-tweet\">{content.System.Name}</blockquote>",
             ["hosted_video"] = (content) =>
-                $"<video class=\"hosted\" data-item=\"{content.Id}\"></video>"
+                $"<video class=\"hosted\" data-item=\"{content.System.Id}\"></video>"
         };
 
         var resolver = new HtmlResolverBuilder()
@@ -262,8 +262,8 @@ public class RichTextIntegrationTests
         // Use the cleaner params tuple syntax for registering multiple resolvers
         var resolver = new HtmlResolverBuilder()
             .WithContentResolvers(
-                ("tweet", (content) => $"<div class=\"tweet-params\">{content.Name}</div>"),
-                ("hosted_video", (content) => $"<div class=\"video-params\" data-id=\"{content.Id}\"></div>")
+                ("tweet", (content) => $"<div class=\"tweet-params\">{content.System.Name}</div>"),
+                ("hosted_video", (content) => $"<div class=\"video-params\" data-id=\"{content.System.Id}\"></div>")
             )
             .Build();
 

@@ -87,7 +87,7 @@ internal class RichTextParser(IHtmlParser parser, IContentDependencyExtractor de
     }
 
 
-    private async Task<IRichTextBlock> ParseInlineContentItemAsync(IElement element, ResolvingContext context)
+    private async Task<IRichTextBlock?> ParseInlineContentItemAsync(IElement element, ResolvingContext context)
     {
         var codename = element.GetAttribute("data-codename");
         if (string.IsNullOrEmpty(codename))
@@ -99,17 +99,10 @@ internal class RichTextParser(IHtmlParser parser, IContentDependencyExtractor de
 
         var contentItem = await context.GetLinkedItem(codename);
 
-        // Use factory for consistent type conversion (shared with linked items processing)
-        var embeddedContent = EmbeddedContentFactory.CreateEmbeddedContent(contentItem);
-
-        // Handle case where content item couldn't be resolved (depth limit, etc.)
-        // Factory returns placeholder with codename for better error messages
-        if (embeddedContent.Codename == "unknown" && contentItem is null)
-        {
-            return new EmbeddedContent("unknown", codename, null, Guid.Empty, null);
-        }
-
-        return embeddedContent;
+        // ContentItem<T> implements IEmbeddedContent<T>, so we can cast directly
+        // If content item couldn't be resolved (depth limit, etc.), return null
+        // Null blocks are filtered out by the caller
+        return contentItem as IEmbeddedContent;
     }
 
     private async Task<IRichTextBlock> ParseContentItemLinkAsync(

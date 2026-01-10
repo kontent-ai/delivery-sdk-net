@@ -122,8 +122,8 @@ public sealed class ContentItemMapperTests
         Assert.NotEmpty(item.Elements.RelatedArticles!);
         Assert.All(item.Elements.RelatedArticles!, linked =>
         {
-            Assert.NotNull(linked.Codename);
-            Assert.NotEqual("unknown", linked.Codename);
+            Assert.NotNull(linked.System.Codename);
+            Assert.NotEqual("unknown", linked.System.Codename);
         });
     }
 
@@ -146,6 +146,34 @@ public sealed class ContentItemMapperTests
 
         Assert.NotNull(item.Elements.RelatedArticles);
         Assert.NotEmpty(item.Elements.RelatedArticles!);
+    }
+
+    [Fact]
+    public async Task MapElementsAsync_HandlesRecursiveInlineLinkedItems_WithoutStackOverflow()
+    {
+        // This fixture has on_roasts with body_copy rich text containing an inline reference to itself
+        var json = await LoadFixtureAsync("onroast_recursive_inline_linked_items.json");
+        var response = JsonSerializer.Deserialize<DeliveryItemResponse<Article>>(json, _jsonOptions)!;
+        var item = response.Item;
+        var rawItem = (IRawContentItem)item;
+
+        var context = new MappingContext
+        {
+            ModularContent = response.ModularContent,
+            CancellationToken = CancellationToken.None
+        };
+
+        // Should not throw StackOverflowException - cycle detection should break the recursion
+        await _mapper.MapElementsAsync(item.Elements, rawItem.RawElements!.Value, context);
+
+        // Rich text content should be parsed despite self-reference
+        Assert.NotNull(item.Elements.BodyCopy);
+        Assert.NotEmpty(item.Elements.BodyCopy);
+
+        // The embedded content item should be resolved (shallow due to cycle detection)
+        var embeddedContent = item.Elements.BodyCopy.OfType<IEmbeddedContent>().FirstOrDefault();
+        Assert.NotNull(embeddedContent);
+        Assert.Equal("on_roasts", embeddedContent.System.Codename);
     }
 
     [Fact]
@@ -212,6 +240,78 @@ public sealed class ContentItemMapperTests
 
         await Assert.ThrowsAsync<OperationCanceledException>(() =>
             _mapper.MapElementsAsync(item.Elements, rawItem.RawElements!.Value, context));
+    }
+
+    [Fact]
+    public async Task MapElementsAsync_WithEmptyModularContent_GracefullyHandlesMissingLinkedItems()
+    {
+        // Arrange - simulates depth=0 where linked items are referenced but not in modular_content
+        var json = await LoadFixtureAsync("coffee_beverages_explained.json");
+        var response = JsonSerializer.Deserialize<DeliveryItemResponse<Article>>(json, _jsonOptions)!;
+        var item = response.Item;
+        var rawItem = (IRawContentItem)item;
+
+        // Create context with empty modular_content (simulating depth=0 response)
+        var context = new MappingContext
+        {
+            ModularContent = new Dictionary<string, JsonElement>(), // Empty - items not resolved
+            CancellationToken = CancellationToken.None
+        };
+
+        // Act - should not throw
+        await _mapper.MapElementsAsync(item.Elements, rawItem.RawElements!.Value, context);
+
+        // Assert - linked items list should be empty (not null, not throwing)
+        Assert.NotNull(item.Elements.RelatedArticles);
+        Assert.Empty(item.Elements.RelatedArticles!);
+    }
+
+    [Fact]
+    public async Task MapElementsAsync_WithNullModularContent_GracefullyHandlesMissingLinkedItems()
+    {
+        // Arrange - null modular_content
+        var json = await LoadFixtureAsync("coffee_beverages_explained.json");
+        var response = JsonSerializer.Deserialize<DeliveryItemResponse<Article>>(json, _jsonOptions)!;
+        var item = response.Item;
+        var rawItem = (IRawContentItem)item;
+
+        var context = new MappingContext
+        {
+            ModularContent = null, // Null modular content
+            CancellationToken = CancellationToken.None
+        };
+
+        // Act - should not throw
+        await _mapper.MapElementsAsync(item.Elements, rawItem.RawElements!.Value, context);
+
+        // Assert - linked items list should be empty (not null, not throwing)
+        Assert.NotNull(item.Elements.RelatedArticles);
+        Assert.Empty(item.Elements.RelatedArticles!);
+    }
+
+    [Fact]
+    public async Task MapElementsAsync_WithEmptyModularContent_GracefullyHandlesMissingEmbeddedContent()
+    {
+        // Arrange - fixture has embedded tweets in rich text, but modular_content is empty
+        var json = await LoadFixtureAsync("coffee_beverages_explained.json");
+        var response = JsonSerializer.Deserialize<DeliveryItemResponse<Article>>(json, _jsonOptions)!;
+        var item = response.Item;
+        var rawItem = (IRawContentItem)item;
+
+        // Create context with empty modular_content (simulating depth=0 response)
+        var context = new MappingContext
+        {
+            ModularContent = new Dictionary<string, JsonElement>(), // Empty - items not resolved
+            CancellationToken = CancellationToken.None
+        };
+
+        // Act - should not throw
+        await _mapper.MapElementsAsync(item.Elements, rawItem.RawElements!.Value, context);
+
+        // Assert - rich text should have blocks, but no embedded content (they're filtered out)
+        Assert.NotNull(item.Elements.BodyCopy);
+        var embeddedContent = item.Elements.BodyCopy.OfType<IEmbeddedContent>().ToList();
+        Assert.Empty(embeddedContent); // Missing items are gracefully omitted
     }
 
     private static async Task<string> LoadFixtureAsync(string filename)

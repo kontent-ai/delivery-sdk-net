@@ -21,7 +21,7 @@ public class StronglyTypedEmbeddedContentTests
 
         var resolver = new HtmlResolverBuilder()
             .WithContentResolver<Tweet>(tweet =>
-                $"<div class=\"typed-tweet\" data-codename=\"{tweet.Codename}\">{tweet.Elements.DisplayOptions?.FirstOrDefault()?.Name ?? "No options"}</div>")
+                $"<div class=\"typed-tweet\" data-codename=\"{tweet.System.Codename}\">{tweet.Elements.DisplayOptions?.FirstOrDefault()?.Name ?? "No options"}</div>")
             .Build();
 
         // Act
@@ -211,9 +211,9 @@ public class StronglyTypedEmbeddedContentTests
         Assert.NotEmpty(tweets);
         foreach (var tweet in tweets)
         {
-            Assert.Equal("tweet", tweet.ContentTypeCodename);
-            Assert.NotEmpty(tweet.Codename);
-            Assert.NotEqual(Guid.Empty, tweet.Id);
+            Assert.Equal("tweet", tweet.System.Type);
+            Assert.NotEmpty(tweet.System.Codename);
+            Assert.NotEqual(Guid.Empty, tweet.System.Id);
         }
     }
 

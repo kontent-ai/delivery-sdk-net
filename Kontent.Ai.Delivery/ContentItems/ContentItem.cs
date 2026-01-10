@@ -4,7 +4,11 @@ using System.Text.Json.Serialization;
 namespace Kontent.Ai.Delivery.ContentItems;
 
 /// <inheritdoc cref="IContentItem{TModel}" />
-internal sealed record ContentItem<TModel> : IContentItem<TModel>, IRawContentItem
+/// <remarks>
+/// ContentItem implements <see cref="IEmbeddedContent{TModel}"/> which allows it to be used
+/// directly in rich text blocks without a wrapper class.
+/// </remarks>
+internal sealed record ContentItem<TModel> : IEmbeddedContent<TModel>, IRawContentItem
 {
     [JsonPropertyName("system")]
     public required ContentItemSystemAttributes System { get; init; }
@@ -19,7 +23,8 @@ internal sealed record ContentItem<TModel> : IContentItem<TModel>, IRawContentIt
     internal JsonElement? RawElements { get; init; }
 
     // Explicit interface implementations
-    IContentItemSystemAttributes IContentItem<TModel>.System => System;
+    IContentItemSystemAttributes IContentItem.System => System;
+    object? IContentItem.Elements => Elements;
     object IRawContentItem.Elements => Elements!;
     JsonElement? IRawContentItem.RawElements => RawElements;
 }

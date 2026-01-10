@@ -1,19 +1,29 @@
 namespace Kontent.Ai.Delivery.Abstractions;
 
 /// <summary>
-/// Represents a content item with elements.
+/// Represents a content item with system attributes and elements.
 /// </summary>
-/// <typeparam name="TModel">Strongly typed elements of a content item.</typeparam>
-
-public interface IContentItem<out TModel>
+public interface IContentItem
 {
     /// <summary>
-    /// Represents system attributes of a content item.
+    /// Gets the system attributes of the content item.
     /// </summary>
-    public IContentItemSystemAttributes System { get; }
+    IContentItemSystemAttributes System { get; }
 
     /// <summary>
-    /// Represents the elements of a content item.
+    /// Gets the elements of the content item (untyped).
     /// </summary>
-    public TModel Elements { get; }
+    object? Elements { get; }
+}
+
+/// <summary>
+/// Represents a content item with strongly-typed elements.
+/// </summary>
+/// <typeparam name="TModel">Strongly typed elements of a content item.</typeparam>
+public interface IContentItem<out TModel> : IContentItem
+{
+    /// <summary>
+    /// Gets the strongly-typed elements of the content item.
+    /// </summary>
+    new TModel Elements { get; }
 }
