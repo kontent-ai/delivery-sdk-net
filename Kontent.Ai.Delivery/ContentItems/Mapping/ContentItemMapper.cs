@@ -97,7 +97,7 @@ internal sealed class ContentItemMapper
 
         var elementsType = elements.GetType();
         var properties = _propertyCache.GetOrAdd(elementsType, PropertyMappingInfo.CreateMappings);
-        var resolvingContext = CreateResolvingContext(context);
+        var getLinkedItem = CreateLinkedItemResolver(context);
 
         foreach (var prop in properties)
         {
@@ -109,7 +109,7 @@ internal sealed class ContentItemMapper
                 continue;
             }
 
-            var value = await MapElementAsync(prop, envelope, resolvingContext, context).ConfigureAwait(false);
+            var value = await MapElementAsync(prop, envelope, getLinkedItem, context).ConfigureAwait(false);
             if (value is not null)
             {
                 prop.SetValue(elements, value);
@@ -120,13 +120,13 @@ internal sealed class ContentItemMapper
     private async Task<object?> MapElementAsync(
         PropertyMappingInfo prop,
         JsonElement envelope,
-        ResolvingContext resolvingContext,
+        Func<string, Task<object>> getLinkedItem,
         MappingContext context)
     {
         // Rich text
         if (typeof(IRichTextContent).IsAssignableFrom(prop.PropertyType))
         {
-            return await MapRichTextAsync(prop.ElementCodename, envelope, resolvingContext, context.DependencyContext)
+            return await MapRichTextAsync(prop.ElementCodename, envelope, getLinkedItem, context.DependencyContext)
                 .ConfigureAwait(false);
         }
 
@@ -155,7 +155,7 @@ internal sealed class ContentItemMapper
         if (prop.EnumerableElementType is not null &&
             typeof(IEmbeddedContent).IsAssignableFrom(prop.EnumerableElementType))
         {
-            return await MapLinkedItemsAsync(envelope, resolvingContext, context).ConfigureAwait(false);
+            return await MapLinkedItemsAsync(envelope, getLinkedItem, context).ConfigureAwait(false);
         }
 
         return null;
@@ -164,7 +164,7 @@ internal sealed class ContentItemMapper
     private async Task<IRichTextContent?> MapRichTextAsync(
         string elementCodename,
         JsonElement envelope,
-        ResolvingContext context,
+        Func<string, Task<object>> getLinkedItem,
         DependencyTrackingContext? dependencyContext)
     {
         if (!envelope.TryGetProperty("value", out var valueEl) || valueEl.ValueKind != JsonValueKind.String)
@@ -183,7 +183,7 @@ internal sealed class ContentItemMapper
             ModularContent = DeserializeModularContent(envelope)
         };
 
-        return await _richTextParser.ConvertAsync(shim, context, dependencyContext).ConfigureAwait(false);
+        return await _richTextParser.ConvertAsync(shim, getLinkedItem, dependencyContext).ConfigureAwait(false);
     }
 
     private IReadOnlyList<Asset>? MapAssets(JsonElement envelope, DependencyTrackingContext? dependencyContext)
@@ -241,7 +241,7 @@ internal sealed class ContentItemMapper
 
     private async Task<IReadOnlyList<IEmbeddedContent>?> MapLinkedItemsAsync(
         JsonElement envelope,
-        ResolvingContext resolvingContext,
+        Func<string, Task<object>> getLinkedItem,
         MappingContext context)
     {
         context.CancellationToken.ThrowIfCancellationRequested();
@@ -275,7 +275,7 @@ internal sealed class ContentItemMapper
         {
             context.CancellationToken.ThrowIfCancellationRequested();
 
-            var linked = await resolvingContext.GetLinkedItem(codename!).ConfigureAwait(false);
+            var linked = await getLinkedItem(codename!).ConfigureAwait(false);
 
             // ContentItem<T> implements IEmbeddedContent<T>, so we can cast directly
             if (linked is IEmbeddedContent embeddedContent)
@@ -287,12 +287,9 @@ internal sealed class ContentItemMapper
         return items;
     }
 
-    private ResolvingContext CreateResolvingContext(MappingContext context)
+    private Func<string, Task<object>> CreateLinkedItemResolver(MappingContext context)
     {
-        return new ResolvingContext
-        {
-            GetLinkedItem = codename => ResolveLinkedItemAsync(codename, context)
-        };
+        return codename => ResolveLinkedItemAsync(codename, context);
     }
 
     /// <summary>
