@@ -1,4 +1,6 @@
 using System.Collections.Concurrent;
+using Kontent.Ai.Delivery.Logging;
+using Microsoft.Extensions.Logging;
 
 namespace Kontent.Ai.Delivery.ContentItems;
 
@@ -10,9 +12,11 @@ namespace Kontent.Ai.Delivery.ContentItems;
 /// Initializes a new instance of <see cref="DefaultItemTypingStrategy"/>.
 /// </remarks>
 /// <param name="typeProvider">The type provider to use for resolving model types.</param>
-internal sealed class DefaultItemTypingStrategy(ITypeProvider typeProvider) : IItemTypingStrategy
+/// <param name="logger">Optional logger for diagnostic output.</param>
+internal sealed class DefaultItemTypingStrategy(ITypeProvider typeProvider, ILogger<DefaultItemTypingStrategy>? logger = null) : IItemTypingStrategy
 {
     private readonly ITypeProvider _typeProvider = typeProvider ?? throw new ArgumentNullException(nameof(typeProvider));
+    private readonly ILogger<DefaultItemTypingStrategy>? _logger = logger;
     private readonly ConcurrentDictionary<string, Type> _cache = new();
 
     /// <summary>
@@ -25,10 +29,19 @@ internal sealed class DefaultItemTypingStrategy(ITypeProvider typeProvider) : II
     {
         if (string.IsNullOrEmpty(contentTypeCodename))
         {
+            if (_logger != null)
+                LoggerMessages.ContentTypeFallbackToDynamic(_logger, contentTypeCodename ?? "(null)");
             return typeof(DynamicElements);
         }
 
         return _cache.GetOrAdd(contentTypeCodename, codename =>
-            _typeProvider.TryGetModelType(codename) ?? typeof(DynamicElements));
+        {
+            var modelType = _typeProvider.TryGetModelType(codename);
+            if (modelType == null && _logger != null)
+            {
+                LoggerMessages.ContentTypeFallbackToDynamic(_logger, codename);
+            }
+            return modelType ?? typeof(DynamicElements);
+        });
     }
 }

@@ -2,10 +2,15 @@ using AngleSharp.Dom;
 using AngleSharp.Html.Parser;
 using Kontent.Ai.Delivery.ContentItems.RichText;
 using Kontent.Ai.Delivery.ContentItems.RichText.Blocks;
+using Kontent.Ai.Delivery.Logging;
+using Microsoft.Extensions.Logging;
 
 namespace Kontent.Ai.Delivery.ContentItems.Processing;
 
-internal class RichTextParser(IHtmlParser parser, IContentDependencyExtractor dependencyExtractor) : IElementValueConverter<string, IRichTextContent>
+internal class RichTextParser(
+    IHtmlParser parser,
+    IContentDependencyExtractor dependencyExtractor,
+    ILogger? logger = null) : IElementValueConverter<string, IRichTextContent>
 {
     public async Task<IRichTextContent?> ConvertAsync<TElement>(
         TElement contentElement,
@@ -30,7 +35,13 @@ internal class RichTextParser(IHtmlParser parser, IContentDependencyExtractor de
         var document = parser.ParseDocument(element.Value);
 
         if (document.Body == null)
+        {
+            if (logger is not null)
+            {
+                LoggerMessages.RichTextParsingFailed(logger, element.Codename);
+            }
             throw new InvalidOperationException("Failed to parse rich text HTML: document body is null.");
+        }
 
         // Extract dependencies for caching (delegated to extractor)
         dependencyExtractor.ExtractFromRichTextElement(element, dependencyContext);
@@ -66,7 +77,7 @@ internal class RichTextParser(IHtmlParser parser, IContentDependencyExtractor de
         {
             // Parse special Kontent.ai elements
             IElement { TagName: "OBJECT" } el
-                => await ParseInlineContentItemAsync(el, context),
+                => await ParseEmbeddedContentAsync(el, context),
 
             IElement { TagName: "FIGURE" } el when TryGetInlineImage(el, element, out var image)
                 => image,
@@ -87,13 +98,17 @@ internal class RichTextParser(IHtmlParser parser, IContentDependencyExtractor de
     }
 
 
-    private async Task<IRichTextBlock?> ParseInlineContentItemAsync(IElement element, ResolvingContext context)
+    private async Task<IRichTextBlock?> ParseEmbeddedContentAsync(IElement element, ResolvingContext context)
     {
         var codename = element.GetAttribute("data-codename");
         if (string.IsNullOrEmpty(codename))
         {
+            if (logger is not null)
+            {
+                LoggerMessages.EmbeddedContentMissingCodename(logger);
+            }
             throw new InvalidOperationException(
-                "Inline content item is missing required 'data-codename' attribute. " +
+                "Embedded item/component is missing required 'data-codename' attribute. " +
                 $"Element HTML: {element.OuterHtml}");
         }
 
@@ -102,7 +117,16 @@ internal class RichTextParser(IHtmlParser parser, IContentDependencyExtractor de
         // ContentItem<T> implements IEmbeddedContent<T>, so we can cast directly
         // If content item couldn't be resolved (depth limit, etc.), return null
         // Null blocks are filtered out by the caller
-        return contentItem as IEmbeddedContent;
+        if (contentItem is not IEmbeddedContent embeddedContent)
+        {
+            if (logger is not null)
+            {
+                LoggerMessages.EmbeddedContentNotFound(logger, codename);
+            }
+            return null;
+        }
+
+        return embeddedContent;
     }
 
     private async Task<IRichTextBlock> ParseContentItemLinkAsync(
@@ -151,13 +175,22 @@ internal class RichTextParser(IHtmlParser parser, IContentDependencyExtractor de
         return new HtmlNode(element.TagName.ToLowerInvariant(), attributes, children);
     }
 
-    private static bool TryGetItemId(IElement element, out Guid itemId)
+    private bool TryGetItemId(IElement element, out Guid itemId)
     {
         var dataItemId = element.GetAttribute("data-item-id");
-        return Guid.TryParse(dataItemId, out itemId);
+        if (Guid.TryParse(dataItemId, out itemId))
+        {
+            return true;
+        }
+
+        if (!string.IsNullOrEmpty(dataItemId) && logger is not null)
+        {
+            LoggerMessages.RichTextLinkIdParsingFailed(logger, dataItemId);
+        }
+        return false;
     }
 
-    private static bool TryGetInlineImage(
+    private bool TryGetInlineImage(
         IElement figureBlock,
         IRichTextElementValue element,
         out IInlineImage image)
@@ -165,14 +198,29 @@ internal class RichTextParser(IHtmlParser parser, IContentDependencyExtractor de
         var img = figureBlock.Children
             .FirstOrDefault(child => child.TagName?.Equals("img", StringComparison.OrdinalIgnoreCase) == true);
 
-        if (img is not null &&
-            Guid.TryParse(img.GetAttribute("data-asset-id"), out var assetId) &&
-            element.Images.TryGetValue(assetId, out var inlineImage))
+        if (img is null)
+        {
+            image = null!;
+            return false;
+        }
+
+        var dataAssetId = img.GetAttribute("data-asset-id");
+        if (!Guid.TryParse(dataAssetId, out var assetId))
+        {
+            image = null!;
+            return false;
+        }
+
+        if (element.Images.TryGetValue(assetId, out var inlineImage))
         {
             image = inlineImage;
             return true;
         }
 
+        if (logger is not null)
+        {
+            LoggerMessages.InlineImageNotFound(logger, assetId);
+        }
         image = null!;
         return false;
     }

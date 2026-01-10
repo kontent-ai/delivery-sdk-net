@@ -29,6 +29,18 @@ internal static class LogEventIds
     /// <summary>Response contains stale content.</summary>
     public const int QueryStaleContent = 1040;
 
+    /// <summary>Pagination enumeration started.</summary>
+    public const int PaginationStarted = 1050;
+
+    /// <summary>Pagination stopped early due to error or null content.</summary>
+    public const int PaginationStoppedEarly = 1051;
+
+    /// <summary>Pagination enumeration completed.</summary>
+    public const int PaginationCompleted = 1052;
+
+    /// <summary>Items pagination progress update.</summary>
+    public const int ItemsPaginationProgress = 1053;
+
     // ========== Cache Operations (1100-1199) ==========
 
     /// <summary>Cache read operation failed.</summary>
@@ -54,6 +66,9 @@ internal static class LogEventIds
 
     /// <summary>Deserialization failed during cache operation.</summary>
     public const int CacheDeserializationFailed = 1141;
+
+    /// <summary>Cache invalidation operation failed.</summary>
+    public const int CacheInvalidationFailed = 1143;
 
     /// <summary>Partial items cached due to type mismatch.</summary>
     public const int CachePartialItemsWarning = 1150;
@@ -85,6 +100,35 @@ internal static class LogEventIds
 
     /// <summary>Request timed out.</summary>
     public const int ResilienceTimeout = 1310;
+
+    // ========== Content Mapping (1400-1499) ==========
+
+    /// <summary>Linked item not found in modular_content (possibly due to depth limit).</summary>
+    public const int LinkedItemNotFound = 1400;
+
+    /// <summary>Embedded content item not found in modular_content (possibly due to depth limit).</summary>
+    public const int EmbeddedContentNotFound = 1401;
+
+    /// <summary>Circular reference detected during linked item resolution.</summary>
+    public const int CircularReferenceDetected = 1402;
+
+    /// <summary>Rich text HTML parsing failed.</summary>
+    public const int RichTextParsingFailed = 1403;
+
+    /// <summary>Embedded content element missing required codename attribute.</summary>
+    public const int EmbeddedContentMissingCodename = 1404;
+
+    /// <summary>Asset URL could not be parsed for dependency tracking.</summary>
+    public const int AssetUrlParsingFailed = 1405;
+
+    /// <summary>Rich text link item ID could not be parsed as GUID.</summary>
+    public const int RichTextLinkIdParsingFailed = 1406;
+
+    /// <summary>Inline image asset not found in response.</summary>
+    public const int InlineImageNotFound = 1407;
+
+    /// <summary>Content type has no mapped model, falling back to dynamic.</summary>
+    public const int ContentTypeFallbackToDynamic = 1408;
 
     // ========== Service Registration (1500-1599) ==========
 

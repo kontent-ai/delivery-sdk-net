@@ -5,6 +5,8 @@ using Kontent.Ai.Delivery.ContentItems.ContentLinks;
 using Kontent.Ai.Delivery.ContentItems.DateTimes;
 using Kontent.Ai.Delivery.ContentItems.Processing;
 using Kontent.Ai.Delivery.ContentItems.RichText.Blocks;
+using Kontent.Ai.Delivery.Logging;
+using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
 
 namespace Kontent.Ai.Delivery.ContentItems.Mapping;
@@ -20,6 +22,7 @@ internal sealed class ContentItemMapper
     private readonly IOptionsMonitor<DeliveryOptions> _deliveryOptions;
     private readonly IContentDependencyExtractor _dependencyExtractor;
     private readonly RichTextParser _richTextParser;
+    private readonly ILogger<ContentItemMapper>? _logger;
 
     private static readonly ConcurrentDictionary<Type, PropertyMappingInfo[]> _propertyCache = new();
 
@@ -28,15 +31,18 @@ internal sealed class ContentItemMapper
         IContentDeserializer deserializer,
         IHtmlParser htmlParser,
         IOptionsMonitor<DeliveryOptions> deliveryOptions,
-        IContentDependencyExtractor dependencyExtractor)
+        IContentDependencyExtractor dependencyExtractor,
+        ILogger<ContentItemMapper>? logger = null)
     {
         _typingStrategy = typingStrategy ?? throw new ArgumentNullException(nameof(typingStrategy));
         _deserializer = deserializer ?? throw new ArgumentNullException(nameof(deserializer));
         _deliveryOptions = deliveryOptions ?? throw new ArgumentNullException(nameof(deliveryOptions));
         _dependencyExtractor = dependencyExtractor ?? throw new ArgumentNullException(nameof(dependencyExtractor));
+        _logger = logger;
         _richTextParser = new RichTextParser(
             htmlParser ?? throw new ArgumentNullException(nameof(htmlParser)),
-            dependencyExtractor);
+            dependencyExtractor,
+            logger);
     }
 
     /// <summary>
@@ -300,6 +306,10 @@ internal sealed class ContentItemMapper
         if (context.ModularContent is null ||
             !context.ModularContent.TryGetValue(codename, out var linkedItem))
         {
+            if (_logger is not null)
+            {
+                LoggerMessages.LinkedItemNotFound(_logger, codename);
+            }
             return null!;
         }
 
@@ -317,6 +327,10 @@ internal sealed class ContentItemMapper
         // Cycle detected: return shallow (deserialized) item without recursive mapping
         if (!context.ProcessingItems.Add(codename))
         {
+            if (_logger is not null)
+            {
+                LoggerMessages.CircularReferenceDetected(_logger, codename);
+            }
             return contentItem;
         }
 
@@ -476,7 +490,7 @@ internal sealed class ContentItemMapper
             ? prop.GetDateTime()
             : null;
 
-    private static void TrackAssetDependencyFromUrl(JsonElement assetElement, DependencyTrackingContext? dependencyContext)
+    private void TrackAssetDependencyFromUrl(JsonElement assetElement, DependencyTrackingContext? dependencyContext)
     {
         if (dependencyContext is null)
         {
@@ -491,12 +505,20 @@ internal sealed class ContentItemMapper
 
         if (!Uri.TryCreate(url, UriKind.Absolute, out var uri))
         {
+            if (_logger is not null)
+            {
+                LoggerMessages.AssetUrlParsingFailed(_logger, url);
+            }
             return;
         }
 
         // Expected: "/", "{environmentId}/", "{assetId}/", "{filename}"
         if (uri.Segments.Length < 3)
         {
+            if (_logger is not null)
+            {
+                LoggerMessages.AssetUrlParsingFailed(_logger, url);
+            }
             return;
         }
 
@@ -504,6 +526,10 @@ internal sealed class ContentItemMapper
         if (Guid.TryParse(assetIdSegment, out var assetId))
         {
             dependencyContext.TrackAsset(assetId);
+        }
+        else if (_logger is not null)
+        {
+            LoggerMessages.AssetUrlParsingFailed(_logger, url);
         }
     }
 

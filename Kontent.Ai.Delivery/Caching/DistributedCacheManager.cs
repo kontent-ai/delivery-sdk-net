@@ -277,10 +277,12 @@ public sealed class DistributedCacheManager : IDeliveryCacheManager
             // Re-throw cancellation exceptions
             throw;
         }
-        catch
+        catch (Exception ex)
         {
             // Invalidation failures should not break the application
             // Worst case: stale entries remain until TTL expires
+            if (_logger != null)
+                LoggerMessages.CacheInvalidationFailed(_logger, ex);
         }
     }
 
