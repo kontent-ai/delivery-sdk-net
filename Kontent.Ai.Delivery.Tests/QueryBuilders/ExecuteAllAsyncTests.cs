@@ -44,8 +44,8 @@ public sealed class ExecuteAllAsyncTests
 
         Assert.True(result.IsSuccess);
         Assert.Equal(HttpStatusCode.OK, result.StatusCode);
-        Assert.Equal(3, result.Value.Count);
-        Assert.Equal(["a0", "a1", "a2"], result.Value.Select(i => i.System.Codename).ToArray());
+        Assert.Equal(3, result.Value.Items.Count);
+        Assert.Equal(["a0", "a1", "a2"], result.Value.Items.Select(i => i.System.Codename).ToArray());
 
         mockHttp.VerifyNoOutstandingExpectation();
     }
@@ -85,8 +85,8 @@ public sealed class ExecuteAllAsyncTests
 
         Assert.True(result.IsSuccess);
         Assert.Equal(HttpStatusCode.OK, result.StatusCode);
-        Assert.Equal(3, result.Value.Count);
-        Assert.Equal(["a0", "a1", "a2"], result.Value.Select(i => i.System.Codename).ToArray());
+        Assert.Equal(3, result.Value.Items.Count);
+        Assert.Equal(["a0", "a1", "a2"], result.Value.Items.Select(i => i.System.Codename).ToArray());
 
         mockHttp.VerifyNoOutstandingExpectation();
     }
@@ -125,12 +125,12 @@ public sealed class ExecuteAllAsyncTests
 
         Assert.True(result.IsSuccess);
         Assert.Equal(HttpStatusCode.OK, result.StatusCode);
-        Assert.Equal(3, result.Value.Count);
-        Assert.Equal(["a0", "a1", "a2"], result.Value.Select(i => i.System.Codename).ToArray());
+        Assert.Equal(3, result.Value.Items.Count);
+        Assert.Equal(["a0", "a1", "a2"], result.Value.Items.Select(i => i.System.Codename).ToArray());
 
         // Sanity-check that element deserialization worked (not strictly required for the pagination test,
         // but ensures the typed path is exercised).
-        Assert.All(result.Value, i => Assert.Equal("Title 0", i.Elements.Title));
+        Assert.All(result.Value.Items, i => Assert.Equal("Title 0", i.Elements.Title));
 
         mockHttp.VerifyNoOutstandingExpectation();
     }

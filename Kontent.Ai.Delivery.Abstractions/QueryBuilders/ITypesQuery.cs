@@ -40,8 +40,9 @@ public interface ITypesQuery
 
     /// <summary>
     /// Executes the built query and returns a functional result.
+    /// Use <see cref="IDeliveryTypeListingResponse.FetchNextPageAsync"/> to retrieve subsequent pages.
     /// </summary>
     /// <param name="cancellationToken">Cancellation token for the operation.</param>
-    /// <returns>A delivery result containing the content types or errors.</returns>
-    Task<IDeliveryResult<IReadOnlyList<IContentType>>> ExecuteAsync(CancellationToken cancellationToken = default);
+    /// <returns>A delivery result containing the content types with pagination support.</returns>
+    Task<IDeliveryResult<IDeliveryTypeListingResponse>> ExecuteAsync(CancellationToken cancellationToken = default);
 }

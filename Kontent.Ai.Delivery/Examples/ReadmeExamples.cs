@@ -78,7 +78,7 @@ public static class ReadmeExamples
 
         if (result.IsSuccess)
         {
-            foreach (var item in result.Value)
+            foreach (var item in result.Value.Items)
             {
                 Console.WriteLine($"- {item.System.Name}");
             }
@@ -220,7 +220,7 @@ public static class ReadmeExamples
 
         if (result.IsSuccess)
         {
-            foreach (var article in result.Value)
+            foreach (var article in result.Value.Items)
             {
                 Console.WriteLine($"{article.Elements.Title} - {article.Elements.PublishDate}");
             }
@@ -434,7 +434,7 @@ public static class ReadmeExamples
         var result = await client.GetLanguages().ExecuteAsync();
         if (result.IsSuccess)
         {
-            foreach (var language in result.Value)
+            foreach (var language in result.Value.Languages)
             {
                 Console.WriteLine($"{language.System.Name} ({language.System.Codename})");
             }

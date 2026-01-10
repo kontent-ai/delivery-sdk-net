@@ -1,5 +1,7 @@
 using System.Net;
 using Kontent.Ai.Delivery.Api.Filtering;
+using Kontent.Ai.Delivery.ContentItems;
+using Kontent.Ai.Delivery.SharedModels;
 
 namespace Kontent.Ai.Delivery.Api.QueryBuilders;
 
@@ -88,7 +90,7 @@ internal sealed class DynamicItemsQuery(
         return this;
     }
 
-    public async Task<IDeliveryResult<IReadOnlyList<IContentItem<IDynamicElements>>>> ExecuteAsync(CancellationToken cancellationToken = default)
+    public async Task<IDeliveryResult<IDeliveryItemListingResponse<IDynamicElements>>> ExecuteAsync(CancellationToken cancellationToken = default)
     {
         // Get raw response from Refit API
         bool? wait = _waitForLoadingNewContentOverride ?? _getDefaultWaitForNewContent();
@@ -100,13 +102,61 @@ internal sealed class DynamicItemsQuery(
         // Convert IApiResponse to IDeliveryResult
         var deliveryResult = await rawResponse.ToDeliveryResultAsync().ConfigureAwait(false);
 
-        // Map from IDeliveryItemListingResponse<IDynamicElements> to IReadOnlyList<IContentItem>
-        return deliveryResult.Map(response => response.Items);
+        if (!deliveryResult.IsSuccess)
+        {
+            return DeliveryResult.Failure<IDeliveryItemListingResponse<IDynamicElements>>(
+                deliveryResult.RequestUrl ?? string.Empty,
+                deliveryResult.StatusCode,
+                deliveryResult.Error,
+                deliveryResult.ResponseHeaders);
+        }
+
+        // Add next page fetcher to the response
+        var resp = deliveryResult.Value;
+        var responseWithFetcher = resp with
+        {
+            NextPageFetcher = CreateNextPageFetcher(resp.Pagination)
+        };
+
+        return DeliveryResult.Success<IDeliveryItemListingResponse<IDynamicElements>>(
+            responseWithFetcher,
+            deliveryResult.RequestUrl ?? string.Empty,
+            deliveryResult.StatusCode,
+            deliveryResult.HasStaleContent,
+            deliveryResult.ContinuationToken,
+            deliveryResult.ResponseHeaders);
     }
 
-    public async Task<IDeliveryResult<IReadOnlyList<IContentItem<IDynamicElements>>>> ExecuteAllAsync(CancellationToken cancellationToken = default)
+    private Func<CancellationToken, Task<IDeliveryResult<IDeliveryItemListingResponse<IDynamicElements>>>>? CreateNextPageFetcher(IPagination pagination)
     {
-        var all = new List<IContentItem<IDynamicElements>>();
+        if (string.IsNullOrEmpty(pagination.NextPageUrl)) // TODO: why calculate nest skip value when it's returned by the API?
+            return null;
+
+        // Calculate next skip value
+        var nextSkip = pagination.Skip + pagination.Count;
+
+        return async (ct) =>
+        {
+            // Create a new query with updated skip
+            var nextQuery = new DynamicItemsQuery(_api, _getDefaultWaitForNewContent)
+            {
+                _params = _params with { Skip = nextSkip },
+                _waitForLoadingNewContentOverride = _waitForLoadingNewContentOverride
+            };
+
+            // Copy filters
+            foreach (var filter in _serializedFilters)
+            {
+                nextQuery._serializedFilters.Add(filter);
+            }
+
+            return await nextQuery.ExecuteAsync(ct).ConfigureAwait(false);
+        };
+    }
+
+    public async Task<IDeliveryResult<IDeliveryItemListingResponse<IDynamicElements>>> ExecuteAllAsync(CancellationToken cancellationToken = default)
+    {
+        var all = new List<ContentItem<IDynamicElements>>();
         var skip = _params.Skip ?? 0;
         var limit = _params.Limit;
         string? requestUrl = null;
@@ -127,7 +177,7 @@ internal sealed class DynamicItemsQuery(
 
             if (!deliveryResult.IsSuccess)
             {
-                return DeliveryResult.Failure<IReadOnlyList<IContentItem<IDynamicElements>>>(
+                return DeliveryResult.Failure<IDeliveryItemListingResponse<IDynamicElements>>(
                     deliveryResult.RequestUrl ?? string.Empty,
                     deliveryResult.StatusCode,
                     deliveryResult.Error!,
@@ -152,8 +202,24 @@ internal sealed class DynamicItemsQuery(
                 break;
         }
 
-        return DeliveryResult.Success<IReadOnlyList<IContentItem<IDynamicElements>>>(
-            all,
+        // Create a synthetic response with all items
+        var allItemsResponse = new DeliveryItemListingResponse<IDynamicElements>
+        {
+            Items = all,
+            Pagination = new Pagination
+            {
+                Skip = _params.Skip ?? 0,
+                Limit = all.Count,
+                Count = all.Count,
+                NextPageUrl = null,
+                TotalCount = all.Count
+            },
+            ModularContent = [],
+            NextPageFetcher = null
+        };
+
+        return DeliveryResult.Success<IDeliveryItemListingResponse<IDynamicElements>>(
+            allItemsResponse,
             requestUrl ?? string.Empty,
             HttpStatusCode.OK,
             hasStaleContent: false,

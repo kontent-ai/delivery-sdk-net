@@ -99,7 +99,7 @@ internal sealed class ItemsQuery<TModel>(
         return this;
     }
 
-    public async Task<IDeliveryResult<IReadOnlyList<IContentItem<TModel>>>> ExecuteAsync(CancellationToken cancellationToken = default)
+    public async Task<IDeliveryResult<IDeliveryItemListingResponse<TModel>>> ExecuteAsync(CancellationToken cancellationToken = default)
     {
         // Log query starting
         if (_logger != null)
@@ -115,15 +115,19 @@ internal sealed class ItemsQuery<TModel>(
             try
             {
                 cacheKey = CacheKeyBuilder.BuildItemsKey(_params, _serializedFilters);
-                // Cache List<ContentItem> directly - concrete type for proper serialization
-                var cachedItems = await _cacheManager.GetAsync<List<ContentItem<TModel>>>(cacheKey, cancellationToken)
+                // Cache the response (without NextPageFetcher - we'll add it after)
+                var cachedResponse = await _cacheManager.GetAsync<DeliveryItemListingResponse<TModel>>(cacheKey, cancellationToken)
                     .ConfigureAwait(false);
 
-                if (cachedItems != null)
+                if (cachedResponse != null)
                 {
-                    // Build DeliveryResult from cached items
-                    var interfaceItems = cachedItems.Cast<IContentItem<TModel>>().ToList().AsReadOnly();
-                    var cachedResult = DeliveryResult.CacheHit<IReadOnlyList<IContentItem<TModel>>>(interfaceItems);
+                    // Reconstruct with NextPageFetcher (delegates can't be cached)
+                    var cachedResponseWithFetcher = cachedResponse with
+                    {
+                        NextPageFetcher = CreateNextPageFetcher(cachedResponse.Pagination)
+                    };
+
+                    var cachedResult = DeliveryResult.CacheHit<IDeliveryItemListingResponse<TModel>>(cachedResponseWithFetcher);
 
                     // Log cache hit and return
                     if (_logger != null)
@@ -164,7 +168,7 @@ internal sealed class ItemsQuery<TModel>(
                 LoggerMessages.QueryFailed(_logger, "Items", "list", deliveryResult.StatusCode,
                     deliveryResult.Error?.Message, exception: null);
 
-            return DeliveryResult.Failure<IReadOnlyList<IContentItem<TModel>>>(
+            return DeliveryResult.Failure<IDeliveryItemListingResponse<TModel>>(
                 deliveryResult.RequestUrl ?? string.Empty,
                 deliveryResult.StatusCode,
                 deliveryResult.Error,
@@ -207,9 +211,14 @@ internal sealed class ItemsQuery<TModel>(
             }
         }
 
-        // ========== 4. BUILD RESULT ==========
-        var result = DeliveryResult.Success<IReadOnlyList<IContentItem<TModel>>>(
-            items,
+        // ========== 4. BUILD RESULT WITH NEXT PAGE FETCHER ==========
+        var responseWithFetcher = resp with
+        {
+            NextPageFetcher = CreateNextPageFetcher(resp.Pagination)
+        };
+
+        var result = DeliveryResult.Success<IDeliveryItemListingResponse<TModel>>(
+            responseWithFetcher,
             deliveryResult.RequestUrl ?? string.Empty,
             deliveryResult.StatusCode,
             deliveryResult.HasStaleContent,
@@ -221,22 +230,12 @@ internal sealed class ItemsQuery<TModel>(
         {
             try
             {
-                // Cache List<ContentItem> directly (concrete type for proper serialization)
-                var concreteItems = items
-                    .OfType<ContentItem<TModel>>()
-                    .ToList();
-
-                // Warn if some items couldn't be cached due to type mismatch
-                if (concreteItems.Count != items.Count && _logger != null)
-                {
-                    LoggerMessages.CachePartialItemsWarning(_logger, concreteItems.Count, items.Count);
-                }
-
+                // Cache response without NextPageFetcher (delegates can't be serialized)
                 await _cacheManager.SetAsync(
                     cacheKey,
-                    concreteItems,
+                    resp, // Original response without NextPageFetcher
                     dependencyContext.Dependencies,
-                    expiration: null, // Use cache manager's default
+                    expiration: null,
                     cancellationToken: cancellationToken)
                     .ConfigureAwait(false);
             }
@@ -261,13 +260,40 @@ internal sealed class ItemsQuery<TModel>(
         return result;
     }
 
-    public async Task<IDeliveryResult<IReadOnlyList<IContentItem<TModel>>>> ExecuteAllAsync(CancellationToken cancellationToken = default)
+    private Func<CancellationToken, Task<IDeliveryResult<IDeliveryItemListingResponse<TModel>>>>? CreateNextPageFetcher(IPagination pagination)
+    {
+        if (string.IsNullOrEmpty(pagination.NextPageUrl))
+            return null;
+
+        // Calculate next skip value
+        var nextSkip = pagination.Skip + pagination.Count;
+
+        return async (ct) =>
+        {
+            // Create a new query with updated skip
+            var nextQuery = new ItemsQuery<TModel>(_api, _getDefaultWaitForNewContent, _contentItemMapper, _cacheManager, _logger)
+            {
+                _params = _params with { Skip = nextSkip },
+                _waitForLoadingNewContentOverride = _waitForLoadingNewContentOverride
+            };
+
+            // Copy filters
+            foreach (var filter in _serializedFilters)
+            {
+                nextQuery._serializedFilters.Add(filter);
+            }
+
+            return await nextQuery.ExecuteAsync(ct).ConfigureAwait(false);
+        };
+    }
+
+    public async Task<IDeliveryResult<IDeliveryItemListingResponse<TModel>>> ExecuteAllAsync(CancellationToken cancellationToken = default)
     {
         // Log pagination start
         if (_logger != null)
             LoggerMessages.PaginationStarted(_logger, "Items");
 
-        var all = new List<IContentItem<TModel>>();
+        var all = new List<ContentItem<TModel>>();
         var skip = _params.Skip ?? 0;
         var limit = _params.Limit;
         string? requestUrl = null;
@@ -292,7 +318,7 @@ internal sealed class ItemsQuery<TModel>(
                 if (_logger != null)
                     LoggerMessages.PaginationStoppedEarly(_logger, "Items");
 
-                return DeliveryResult.Failure<IReadOnlyList<IContentItem<TModel>>>(
+                return DeliveryResult.Failure<IDeliveryItemListingResponse<TModel>>(
                     deliveryResult.RequestUrl ?? string.Empty,
                     deliveryResult.StatusCode,
                     deliveryResult.Error!,
@@ -339,8 +365,24 @@ internal sealed class ItemsQuery<TModel>(
         if (_logger != null)
             LoggerMessages.PaginationCompleted(_logger, "Items", pageNumber, all.Count);
 
-        return DeliveryResult.Success<IReadOnlyList<IContentItem<TModel>>>(
-            all.AsReadOnly(),
+        // Create a synthetic response with all items (no next page since we fetched everything)
+        var allItemsResponse = new DeliveryItemListingResponse<TModel>
+        {
+            Items = all,
+            Pagination = new Pagination
+            {
+                Skip = _params.Skip ?? 0,
+                Limit = all.Count,
+                Count = all.Count,
+                NextPageUrl = null, // No more pages
+                TotalCount = all.Count
+            },
+            ModularContent = new Dictionary<string, System.Text.Json.JsonElement>(),
+            NextPageFetcher = null // No next page
+        };
+
+        return DeliveryResult.Success<IDeliveryItemListingResponse<TModel>>(
+            allItemsResponse,
             requestUrl ?? string.Empty,
             HttpStatusCode.OK,
             hasStaleContent: false,

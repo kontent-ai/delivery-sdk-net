@@ -32,8 +32,9 @@ public interface ILanguagesQuery
 
     /// <summary>
     /// Executes the built query and returns a functional result.
+    /// Use <see cref="IDeliveryLanguageListingResponse.FetchNextPageAsync"/> to retrieve subsequent pages.
     /// </summary>
     /// <param name="cancellationToken">Cancellation token for the operation.</param>
-    /// <returns>A delivery result containing the languages or errors.</returns>
-    Task<IDeliveryResult<IReadOnlyList<ILanguage>>> ExecuteAsync(CancellationToken cancellationToken = default);
+    /// <returns>A delivery result containing the languages with pagination support.</returns>
+    Task<IDeliveryResult<IDeliveryLanguageListingResponse>> ExecuteAsync(CancellationToken cancellationToken = default);
 }

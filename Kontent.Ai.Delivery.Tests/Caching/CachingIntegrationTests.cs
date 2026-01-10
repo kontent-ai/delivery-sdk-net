@@ -140,9 +140,9 @@ public class CachingIntegrationTests
         // Assert
         Assert.True(result1.IsSuccess);
         Assert.True(result2.IsSuccess);
-        Assert.NotEmpty(result1.Value);
-        Assert.NotEmpty(result2.Value);
-        Assert.Equal(result1.Value.Count, result2.Value.Count);
+        Assert.NotEmpty(result1.Value.Items);
+        Assert.NotEmpty(result2.Value.Items);
+        Assert.Equal(result1.Value.Items.Count, result2.Value.Items.Count);
 
         // Verify IsCacheHit property
         Assert.False(result1.IsCacheHit); // First call is API response
@@ -347,9 +347,9 @@ public class CachingIntegrationTests
         // Assert
         Assert.True(result1.IsSuccess);
         Assert.True(result2.IsSuccess);
-        Assert.NotEmpty(result1.Value);
-        Assert.NotEmpty(result2.Value);
-        Assert.Equal(result1.Value.Count, result2.Value.Count);
+        Assert.NotEmpty(result1.Value.Items);
+        Assert.NotEmpty(result2.Value.Items);
+        Assert.Equal(result1.Value.Items.Count, result2.Value.Items.Count);
 
         // Note: We don't verify the number of API calls here because
         // distributed cache serialization of complex types may not always work perfectly
