@@ -212,7 +212,7 @@ internal sealed class DynamicItemsQuery(
                 Skip = _params.Skip ?? 0,
                 Limit = all.Count,
                 Count = all.Count,
-                NextPageUrl = null,
+                NextPageUrl = string.Empty,
                 TotalCount = all.Count
             },
             ModularContent = new Dictionary<string, JsonElement>(),

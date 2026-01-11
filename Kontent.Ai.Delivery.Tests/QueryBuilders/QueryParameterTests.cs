@@ -362,7 +362,8 @@ public sealed class QueryParameterTests
                 "pagination": {
                     "skip": 0,
                     "limit": 100,
-                    "count": {{codenames.Count}}
+                    "count": {{codenames.Count}},
+                    "next_page": ""
                 },
                 "modular_content": {}
             }

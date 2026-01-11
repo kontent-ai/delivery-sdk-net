@@ -374,7 +374,7 @@ internal sealed class ItemsQuery<TModel>(
                 Skip = _params.Skip ?? 0,
                 Limit = all.Count,
                 Count = all.Count,
-                NextPageUrl = null, // No more pages
+                NextPageUrl = string.Empty,
                 TotalCount = all.Count
             },
             ModularContent = new Dictionary<string, System.Text.Json.JsonElement>(),
