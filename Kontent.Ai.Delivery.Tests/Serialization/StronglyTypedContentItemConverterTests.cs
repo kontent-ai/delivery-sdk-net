@@ -119,7 +119,7 @@ public class StronglyTypedContentItemConverterTests
     }
 
     [Fact]
-    public void Deserialize_WithDateTimeElement_DeserializesCorrectly()
+    public void Deserialize_WithDateTimeElement_LeavesNullForHydration()
     {
         // Arrange
         var options = CreateOptionsWithConverter<Article>();
@@ -127,10 +127,10 @@ public class StronglyTypedContentItemConverterTests
         // Act
         var result = JsonSerializer.Deserialize<ContentItem<Article>>(SimpleArticleJson, options);
 
-        // Assert
+        // Assert - DateTime is a complex type, so it should be null after initial deserialization
+        // The ContentItemMapper will hydrate it later with the full IDateTimeContent object
         Assert.NotNull(result);
-        Assert.NotNull(result.Elements.PostDate);
-        Assert.Equal(new DateTime(2024, 1, 15, 10, 30, 0, DateTimeKind.Utc), result.Elements.PostDate);
+        Assert.Null(result.Elements.PostDate);
     }
 
     [Fact]

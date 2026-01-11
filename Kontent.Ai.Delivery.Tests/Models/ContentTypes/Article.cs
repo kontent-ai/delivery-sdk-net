@@ -51,7 +51,7 @@ public record Article
     public IEnumerable<TaxonomyTerm>? Personas { get; init; }
 
     [JsonPropertyName("post_date")]
-    public DateTime? PostDate { get; init; }
+    public IDateTimeContent? PostDate { get; init; }
 
     [JsonPropertyName("related_articles")]
     public IEnumerable<IEmbeddedContent>? RelatedArticles { get; init; }
