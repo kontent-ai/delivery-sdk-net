@@ -120,7 +120,7 @@ internal sealed class ContentItemMapper
     private async Task<object?> MapElementAsync(
         PropertyMappingInfo prop,
         JsonElement envelope,
-        Func<string, Task<object>> getLinkedItem,
+        Func<string, Task<object?>> getLinkedItem,
         MappingContext context)
     {
         // Rich text
@@ -164,7 +164,7 @@ internal sealed class ContentItemMapper
     private async Task<IRichTextContent?> MapRichTextAsync(
         string elementCodename,
         JsonElement envelope,
-        Func<string, Task<object>> getLinkedItem,
+        Func<string, Task<object?>> getLinkedItem,
         DependencyTrackingContext? dependencyContext)
     {
         if (!envelope.TryGetProperty("value", out var valueEl) || valueEl.ValueKind != JsonValueKind.String)
@@ -186,7 +186,7 @@ internal sealed class ContentItemMapper
         return await _richTextParser.ConvertAsync(shim, getLinkedItem, dependencyContext).ConfigureAwait(false);
     }
 
-    private IReadOnlyList<Asset>? MapAssets(JsonElement envelope, DependencyTrackingContext? dependencyContext)
+    private List<Asset>? MapAssets(JsonElement envelope, DependencyTrackingContext? dependencyContext)
     {
         if (!TryGetArrayValue(envelope, out var arrayValue))
         {
@@ -239,9 +239,9 @@ internal sealed class ContentItemMapper
         };
     }
 
-    private async Task<IReadOnlyList<IEmbeddedContent>?> MapLinkedItemsAsync(
+    private static async Task<IReadOnlyList<IEmbeddedContent>?> MapLinkedItemsAsync(
         JsonElement envelope,
-        Func<string, Task<object>> getLinkedItem,
+        Func<string, Task<object?>> getLinkedItem,
         MappingContext context)
     {
         context.CancellationToken.ThrowIfCancellationRequested();
@@ -287,7 +287,7 @@ internal sealed class ContentItemMapper
         return items;
     }
 
-    private Func<string, Task<object>> CreateLinkedItemResolver(MappingContext context)
+    private Func<string, Task<object?>> CreateLinkedItemResolver(MappingContext context)
     {
         return codename => ResolveLinkedItemAsync(codename, context);
     }
@@ -295,8 +295,9 @@ internal sealed class ContentItemMapper
     /// <summary>
     /// Resolves a linked item by codename from modular content.
     /// Handles cycle detection, memoization, and recursive hydration.
+    /// Returns null if the linked item is not found in the modular content.
     /// </summary>
-    private async Task<object> ResolveLinkedItemAsync(string codename, MappingContext context)
+    private async Task<object?> ResolveLinkedItemAsync(string codename, MappingContext context)
     {
         context.CancellationToken.ThrowIfCancellationRequested();
 
@@ -307,7 +308,7 @@ internal sealed class ContentItemMapper
             {
                 LoggerMessages.LinkedItemNotFound(_logger, codename);
             }
-            return null!;
+            return null;
         }
 
         // Already resolved in this request - return cached instance
@@ -362,10 +363,10 @@ internal sealed class ContentItemMapper
             ? type.GetString() ?? string.Empty
             : string.Empty;
 
-    private static IDictionary<Guid, IInlineImage> DeserializeInlineImages(JsonElement root)
+    private static Dictionary<Guid, IInlineImage> DeserializeInlineImages(JsonElement root)
     {
         if (!root.TryGetProperty("images", out var imagesEl) || imagesEl.ValueKind != JsonValueKind.Object)
-            return new Dictionary<Guid, IInlineImage>();
+            return [];
 
         var result = new Dictionary<Guid, IInlineImage>();
         foreach (var prop in imagesEl.EnumerateObject())
@@ -381,10 +382,10 @@ internal sealed class ContentItemMapper
         return result;
     }
 
-    private static IDictionary<Guid, IContentLink> DeserializeContentLinks(JsonElement root)
+    private static Dictionary<Guid, IContentLink> DeserializeContentLinks(JsonElement root)
     {
         if (!root.TryGetProperty("links", out var linksEl) || linksEl.ValueKind != JsonValueKind.Object)
-            return new Dictionary<Guid, IContentLink>();
+            return [];
 
         var result = new Dictionary<Guid, IContentLink>();
         foreach (var prop in linksEl.EnumerateObject())

@@ -49,7 +49,12 @@ internal static class RefitApiResponseExtensions
 
         if (apiResponse.Error is not ApiException apiEx)
         {
-            var fallback = new Error { Message = "Unknown error", ErrorCode = (int)status };
+            var fallback = new Error
+            {
+                Message = "Unknown error",
+                ErrorCode = (int)status,
+                Exception = apiResponse.Error
+            };
             return Task.FromResult(DeliveryResult.Failure<T>(url, status, fallback, headers));
         }
 
@@ -66,12 +71,40 @@ internal static class RefitApiResponseExtensions
             {
                 // Try to parse a structured Kontent API error from the body.
                 var parsed = await ex.GetContentAsAsync<Error>().ConfigureAwait(false);
-                error = parsed ?? new Error { Message = ex.Message, ErrorCode = (int)status };
+                if (parsed is not null)
+                {
+                    // Preserve the exception in the parsed error
+                    error = parsed with { Exception = ex };
+                }
+                else
+                {
+                    error = new Error { Message = ex.Message, ErrorCode = (int)status, Exception = ex };
+                }
             }
             catch
             {
-                // Body isn't JSON or deserialization failed – fall back to best available message.
-                error = new Error { Message = ex.InnerException?.Message ?? ex.Message, ErrorCode = (int)status };
+                // Body isn't JSON or deserialization failed.
+                // Use Refit's formatted message as the base (includes HTTP context),
+                // and append the raw response body for debugging if available.
+                var rawBody = ex.Content;
+                string message;
+
+                if (!string.IsNullOrWhiteSpace(rawBody))
+                {
+                    // Truncate very long responses (e.g., HTML error pages) to keep the message readable
+                    const int maxBodyLength = 500;
+                    var truncatedBody = rawBody.Length > maxBodyLength
+                        ? rawBody[..maxBodyLength] + "... (truncated)"
+                        : rawBody;
+
+                    message = $"{ex.Message} | Raw response: {truncatedBody}";
+                }
+                else
+                {
+                    message = ex.Message;
+                }
+
+                error = new Error { Message = message, ErrorCode = (int)status, Exception = ex };
             }
 
             return DeliveryResult.Failure<T>(url, status, error, headers);

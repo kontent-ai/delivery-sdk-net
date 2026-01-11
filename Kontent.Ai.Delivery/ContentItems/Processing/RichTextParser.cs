@@ -17,7 +17,7 @@ internal class RichTextParser(
     /// </summary>
     internal async Task<IRichTextContent?> ConvertAsync<TElement>(
         TElement contentElement,
-        Func<string, Task<object>> getLinkedItem,
+        Func<string, Task<object?>> getLinkedItem,
         DependencyTrackingContext? dependencyContext) where TElement : IContentElementValue<string>
     {
         if (contentElement is not IRichTextElementValue element)
@@ -63,7 +63,7 @@ internal class RichTextParser(
     private async Task<IRichTextBlock?> ParseNodeAsync(
         INode node,
         IRichTextElementValue element,
-        Func<string, Task<object>> getLinkedItem)
+        Func<string, Task<object?>> getLinkedItem)
     {
         return node switch
         {
@@ -90,7 +90,7 @@ internal class RichTextParser(
     }
 
 
-    private async Task<IRichTextBlock?> ParseEmbeddedContentAsync(IElement element, Func<string, Task<object>> getLinkedItem)
+    private async Task<IRichTextBlock?> ParseEmbeddedContentAsync(IElement element, Func<string, Task<object?>> getLinkedItem)
     {
         var codename = element.GetAttribute("data-codename");
         if (string.IsNullOrEmpty(codename))
@@ -125,7 +125,7 @@ internal class RichTextParser(
         IElement anchorElement,
         Guid itemId,
         IRichTextElementValue elementValue,
-        Func<string, Task<object>> getLinkedItem)
+        Func<string, Task<object?>> getLinkedItem)
     {
         // Get metadata from Links dictionary
         var metadata = elementValue.Links?.TryGetValue(itemId, out var link) == true ? link : null;
@@ -150,7 +150,7 @@ internal class RichTextParser(
     private async Task<IRichTextBlock> ParseHtmlElementAsync(
         IElement element,
         IRichTextElementValue elementValue,
-        Func<string, Task<object>> getLinkedItem)
+        Func<string, Task<object?>> getLinkedItem)
     {
         // Parse all children recursively into tree structure
         var children = new List<IRichTextBlock>();

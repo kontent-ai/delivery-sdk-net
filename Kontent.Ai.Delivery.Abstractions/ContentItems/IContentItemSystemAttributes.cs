@@ -14,7 +14,7 @@ public interface IContentItemSystemAttributes : ISystemAttributes
     /// Gets a list of codenames of sitemap items to which the content item is assigned.
     /// </summary>
     [Obsolete("Sitemap locations are deprecated and will be removed in the future.")]
-    IList<string>? SitemapLocation { get; }
+    IReadOnlyList<string>? SitemapLocation { get; }
 
     /// <summary>
     /// Gets the codename of the content type, for example "article".

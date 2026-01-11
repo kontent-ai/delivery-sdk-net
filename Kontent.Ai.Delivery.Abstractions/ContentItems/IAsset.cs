@@ -42,5 +42,5 @@ public interface IAsset
     /// <summary>
     /// Gets dictionary of asset renditions.
     /// </summary>
-    Dictionary<string, IAssetRendition> Renditions { get; }
+    IReadOnlyDictionary<string, IAssetRendition> Renditions { get; }
 }

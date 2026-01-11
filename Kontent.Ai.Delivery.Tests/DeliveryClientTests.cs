@@ -32,13 +32,52 @@ public class DeliveryClientTests
 
         var result = await client.GetItem<Article>("coffee_beverages_explained").ExecuteAsync();
 
+        // Result metadata
         Assert.True(result.IsSuccess);
         Assert.Equal(HttpStatusCode.OK, result.StatusCode);
         Assert.False(string.IsNullOrEmpty(result.RequestUrl));
-        Assert.False(string.IsNullOrEmpty(result.Value.Elements.Title));
-        Assert.NotNull(result.Value.Elements.TeaserImage); // TODO: fix this and extend tests to all other elements
-        Assert.NotNull(result.Value.Elements.Personas);
-        Assert.True(result.Value.Elements.Personas.Any());
+
+        // System info
+        Assert.Equal("coffee_beverages_explained", result.Value.System.Codename);
+        Assert.Equal("en-US", result.Value.System.Language);
+        Assert.Equal("article", result.Value.System.Type);
+
+        var elements = result.Value.Elements;
+
+        // Text elements
+        Assert.Equal("Coffee Beverages Explained", elements.Title);
+        Assert.False(string.IsNullOrEmpty(elements.Summary));
+        Assert.False(string.IsNullOrEmpty(elements.MetaDescription));
+        Assert.False(string.IsNullOrEmpty(elements.MetaKeywords));
+
+        // URL slug element
+        Assert.Equal("coffee-beverages-explained", elements.UrlPattern);
+
+        // Date/time element
+        Assert.NotNull(elements.PostDate);
+        Assert.Equal(new DateTime(2014, 11, 18, 0, 0, 0, DateTimeKind.Utc), elements.PostDate.Value);
+
+        // Asset element
+        Assert.NotNull(elements.TeaserImage);
+        var asset = elements.TeaserImage.First();
+        Assert.Equal("coffee-beverages-explained-1080px.jpg", asset.Name);
+        Assert.Equal("image/jpeg", asset.Type);
+        Assert.Equal(800, asset.Width);
+        Assert.Equal(600, asset.Height);
+        Assert.False(string.IsNullOrEmpty(asset.Url));
+
+        // Taxonomy element
+        Assert.NotNull(elements.Personas);
+        var taxonomyTerm = elements.Personas.First();
+        Assert.Equal("coffee_lover", taxonomyTerm.Codename);
+        Assert.Equal("Coffee lover", taxonomyTerm.Name);
+
+        // Rich text element - RichTextContent is a List<IRichTextBlock>
+        Assert.NotNull(elements.BodyCopy);
+        Assert.NotEmpty(elements.BodyCopy);
+
+        // Modular content (linked items) element - empty in this fixture
+        Assert.NotNull(elements.RelatedArticles);
     }
 
     [Fact]
