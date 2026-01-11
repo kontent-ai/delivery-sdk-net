@@ -1,4 +1,5 @@
 using System.Text.Json.Serialization;
+using Kontent.Ai.Delivery.Abstractions;
 
 namespace Kontent.Ai.Delivery.SharedModels;
 
@@ -6,8 +7,11 @@ namespace Kontent.Ai.Delivery.SharedModels;
 internal sealed record Error : IError
 {
     /// <inheritdoc/>
+    /// <remarks>
+    /// Defaults to "Unknown error" to handle API responses that omit the message field.
+    /// </remarks>
     [JsonPropertyName("message")]
-    public required string Message { get; init; }
+    public string Message { get; init; } = "Unknown error";
 
     /// <inheritdoc/>
     [JsonPropertyName("request_id")]
@@ -20,4 +24,11 @@ internal sealed record Error : IError
     /// <inheritdoc/>
     [JsonPropertyName("specific_code")]
     public int? SpecificCode { get; init; }
+
+    /// <inheritdoc/>
+    /// <remarks>
+    /// This property is not serialized to JSON as exceptions are not meant to be persisted.
+    /// </remarks>
+    [JsonIgnore]
+    public Exception? Exception { get; init; }
 }

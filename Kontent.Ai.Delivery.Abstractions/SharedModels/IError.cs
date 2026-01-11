@@ -24,4 +24,14 @@ public interface IError
     /// Gets specific code of error.
     /// </summary>
     int? SpecificCode { get; }
+
+    /// <summary>
+    /// Gets the underlying exception that caused the error, if available.
+    /// Useful for debugging and accessing detailed error information such as stack traces.
+    /// </summary>
+    /// <remarks>
+    /// This may contain the HTTP client exception (e.g., from Refit) which includes
+    /// additional context like the original request and response details.
+    /// </remarks>
+    Exception? Exception { get; }
 }

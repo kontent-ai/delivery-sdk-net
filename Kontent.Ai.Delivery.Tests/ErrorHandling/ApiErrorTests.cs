@@ -185,13 +185,14 @@ public sealed class ApiErrorTests
     }
 
     [Fact]
-    public async Task ErrorResponse_HandlesNonJsonError()
+    public async Task ErrorResponse_HandlesNonJsonError_CombinesRefitMessageWithRawBody()
     {
         // Arrange - Plain text error (e.g., from proxy or CDN)
         var mock = new MockHttpMessageHandler();
+        const string rawErrorMessage = "Bad Gateway - upstream server unavailable";
 
         mock.When($"{BaseUrl}/items/some_item")
-            .Respond(HttpStatusCode.BadGateway, "text/plain", "Bad Gateway - upstream server unavailable");
+            .Respond(HttpStatusCode.BadGateway, "text/plain", rawErrorMessage);
 
         var client = CreateClient(mock);
 
@@ -202,8 +203,88 @@ public sealed class ApiErrorTests
         Assert.False(result.IsSuccess);
         Assert.Equal(HttpStatusCode.BadGateway, result.StatusCode);
         Assert.NotNull(result.Error);
-        // Error should have a message even for non-JSON responses
+        // Should contain both Refit's formatted message and the raw response
+        Assert.Contains("Raw response:", result.Error.Message);
+        Assert.Contains(rawErrorMessage, result.Error.Message);
+    }
+
+    [Fact]
+    public async Task ErrorResponse_HandlesHtmlErrorPage_CombinesRefitMessageWithRawBody()
+    {
+        // Arrange - HTML error page (e.g., from proxy, load balancer, or CDN)
+        var mock = new MockHttpMessageHandler();
+        const string htmlError = "<html><body><h1>502 Bad Gateway</h1><p>nginx</p></body></html>";
+
+        mock.When($"{BaseUrl}/items/some_item")
+            .Respond(HttpStatusCode.BadGateway, "text/html", htmlError);
+
+        var client = CreateClient(mock);
+
+        // Act
+        var result = await client.GetItem<IDynamicElements>("some_item").ExecuteAsync();
+
+        // Assert
+        Assert.False(result.IsSuccess);
+        Assert.Equal(HttpStatusCode.BadGateway, result.StatusCode);
+        Assert.NotNull(result.Error);
+        // Should contain Refit's message with HTTP context, plus the raw HTML
+        Assert.Contains("Raw response:", result.Error.Message);
+        Assert.Contains("502 Bad Gateway", result.Error.Message);
+        Assert.Contains("nginx", result.Error.Message);
+    }
+
+    [Fact]
+    public async Task ErrorResponse_LongHtmlPage_TruncatesRawBody()
+    {
+        // Arrange - Very long HTML error page
+        var mock = new MockHttpMessageHandler();
+        var longHtml = "<html><body>" + new string('x', 1000) + "</body></html>";
+
+        mock.When($"{BaseUrl}/items/some_item")
+            .Respond(HttpStatusCode.BadGateway, "text/html", longHtml);
+
+        var client = CreateClient(mock);
+
+        // Act
+        var result = await client.GetItem<IDynamicElements>("some_item").ExecuteAsync();
+
+        // Assert
+        Assert.False(result.IsSuccess);
+        Assert.NotNull(result.Error);
+        // Long responses should be truncated to keep the message readable
+        Assert.Contains("(truncated)", result.Error.Message);
+        // Message should not contain the full 1000+ characters
+        Assert.True(result.Error.Message.Length < 700);
+    }
+
+    [Fact]
+    public async Task ErrorResponse_WithoutMessageField_UsesDefaultMessage()
+    {
+        // Arrange - JSON error without message field (only error_code)
+        var mock = new MockHttpMessageHandler();
+        var errorJson = """
+            {
+                "error_code": 100,
+                "request_id": "req-no-message"
+            }
+            """;
+
+        mock.When($"{BaseUrl}/items/some_item")
+            .Respond(HttpStatusCode.NotFound, "application/json", errorJson);
+
+        var client = CreateClient(mock);
+
+        // Act
+        var result = await client.GetItem<IDynamicElements>("some_item").ExecuteAsync();
+
+        // Assert
+        Assert.False(result.IsSuccess);
+        Assert.Equal(HttpStatusCode.NotFound, result.StatusCode);
+        Assert.NotNull(result.Error);
+        // Should have a default message when message field is missing
         Assert.False(string.IsNullOrEmpty(result.Error.Message));
+        Assert.Equal(100, result.Error.ErrorCode);
+        Assert.Equal("req-no-message", result.Error.RequestId);
     }
 
     [Fact]
@@ -246,6 +327,32 @@ public sealed class ApiErrorTests
         Assert.NotNull(result.Error);
         // Should still have an error message even if JSON parsing failed
         Assert.False(string.IsNullOrEmpty(result.Error.Message));
+    }
+
+    [Fact]
+    public async Task ErrorResponse_ExceptionProperty_ContainsUnderlyingException()
+    {
+        // Arrange - Any error response should populate the Exception property
+        var mock = new MockHttpMessageHandler();
+        var errorJson = BuildKontentErrorJson(
+            message: "Test error for exception property",
+            requestId: "req-exception-test",
+            errorCode: 100);
+
+        mock.When($"{BaseUrl}/items/some_item")
+            .Respond(HttpStatusCode.NotFound, "application/json", errorJson);
+
+        var client = CreateClient(mock);
+
+        // Act
+        var result = await client.GetItem<IDynamicElements>("some_item").ExecuteAsync();
+
+        // Assert
+        Assert.False(result.IsSuccess);
+        Assert.NotNull(result.Error);
+        Assert.NotNull(result.Error.Exception);
+        // The exception should be accessible for debugging - it contains status code info
+        Assert.Contains("404", result.Error.Exception.Message);
     }
 
     #endregion
