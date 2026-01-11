@@ -32,7 +32,9 @@ public static class RefitSettingsProvider
         var jsonSerializerOptions = new JsonSerializerOptions
         {
             PropertyNamingPolicy = JsonNamingPolicy.CamelCase,
-            PropertyNameCaseInsensitive = true
+            PropertyNameCaseInsensitive = true,
+            MaxDepth = 124 // limit set to the same value as is GraphQL API limit
+            // TODO: confirm depth for rest api
         };
 
         // Register converters

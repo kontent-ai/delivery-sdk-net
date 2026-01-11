@@ -128,7 +128,7 @@ internal sealed class DynamicItemsQuery(
             deliveryResult.ResponseHeaders);
     }
 
-    private Func<CancellationToken, Task<IDeliveryResult<IDeliveryItemListingResponse<IDynamicElements>>>>? CreateNextPageFetcher(IPagination pagination)
+    private Func<CancellationToken, Task<IDeliveryResult<IDeliveryItemListingResponse<IDynamicElements>>>>? CreateNextPageFetcher(Pagination pagination)
     {
         if (string.IsNullOrEmpty(pagination.NextPageUrl)) // TODO: why calculate nest skip value when it's returned by the API?
             return null;
