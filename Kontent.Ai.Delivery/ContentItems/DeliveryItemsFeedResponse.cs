@@ -14,7 +14,7 @@ internal sealed record DeliveryItemsFeedResponse<TModel> : IDeliveryItemsFeedRes
     /// Raw modular content used for resolving linked items/inline content.
     /// </summary>
     [JsonPropertyName("modular_content")]
-    public required Dictionary<string, JsonElement> ModularContent { get; init; }
+    public required IReadOnlyDictionary<string, JsonElement> ModularContent { get; init; }
 
     /// <summary>
     /// Delegate that fetches the next page when invoked. Injected by the query builder.

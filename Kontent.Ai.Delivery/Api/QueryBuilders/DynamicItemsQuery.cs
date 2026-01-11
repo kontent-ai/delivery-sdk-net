@@ -1,4 +1,5 @@
 using System.Net;
+using System.Text.Json;
 using Kontent.Ai.Delivery.Api.Filtering;
 using Kontent.Ai.Delivery.ContentItems;
 using Kontent.Ai.Delivery.SharedModels;
@@ -214,7 +215,7 @@ internal sealed class DynamicItemsQuery(
                 NextPageUrl = null,
                 TotalCount = all.Count
             },
-            ModularContent = [],
+            ModularContent = new Dictionary<string, JsonElement>(),
             NextPageFetcher = null
         };
 

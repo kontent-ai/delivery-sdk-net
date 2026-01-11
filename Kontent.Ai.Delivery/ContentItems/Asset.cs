@@ -37,5 +37,5 @@ public sealed record Asset : IAsset
 
     /// <inheritdoc/>
     [JsonPropertyName("renditions")]
-    public required Dictionary<string, IAssetRendition> Renditions { get; init; }
+    public required IReadOnlyDictionary<string, IAssetRendition> Renditions { get; init; }
 }

@@ -635,6 +635,147 @@ public sealed class PaginationIntegrationTests
 
     #endregion
 
+    #region Types Pagination Tests
+
+    [Fact]
+    public async Task TypesListing_FetchPageByPage_WorksCorrectly()
+    {
+        var env = Guid.NewGuid().ToString();
+        var typesUrl = $"https://deliver.kontent.ai/{env}/types";
+        var allCodenames = new[] { "article", "author", "category" };
+
+        var mockHttp = new MockHttpMessageHandler();
+
+        mockHttp.Expect(typesUrl)
+            .WithQueryString("limit", "1")
+            .Respond("application/json", BuildTypesListingJson(skip: 0, limit: 1, totalCount: 3, codenames: [allCodenames[0]], hasNextPage: true));
+
+        for (int i = 1; i < 3; i++)
+        {
+            mockHttp.Expect(typesUrl)
+                .WithQueryString("skip", i.ToString())
+                .WithQueryString("limit", "1")
+                .Respond("application/json", BuildTypesListingJson(skip: i, limit: 1, totalCount: 3, codenames: [allCodenames[i]], hasNextPage: i < 2));
+        }
+
+        var client = BuildClient(env, mockHttp);
+
+        var types = new List<IContentType>();
+        var firstPage = await client.GetTypes().Limit(1).ExecuteAsync();
+        Assert.True(firstPage.IsSuccess);
+        types.AddRange(firstPage.Value.Types);
+
+        var currentPage = firstPage.Value;
+        while (currentPage.HasNextPage)
+        {
+            var next = await currentPage.FetchNextPageAsync();
+            Assert.NotNull(next);
+            Assert.True(next.IsSuccess);
+            types.AddRange(next.Value.Types);
+            currentPage = next.Value;
+        }
+
+        Assert.Equal(3, types.Count);
+        Assert.Equal(allCodenames, types.Select(t => t.System.Codename).ToArray());
+        mockHttp.VerifyNoOutstandingExpectation();
+    }
+
+    #endregion
+
+    #region Taxonomies Pagination Tests
+
+    [Fact]
+    public async Task TaxonomiesListing_FetchPageByPage_WorksCorrectly()
+    {
+        var env = Guid.NewGuid().ToString();
+        var taxonomiesUrl = $"https://deliver.kontent.ai/{env}/taxonomies";
+        var allCodenames = new[] { "personas", "categories", "tags" };
+
+        var mockHttp = new MockHttpMessageHandler();
+
+        mockHttp.Expect(taxonomiesUrl)
+            .WithQueryString("limit", "1")
+            .Respond("application/json", BuildTaxonomiesListingJson(skip: 0, limit: 1, totalCount: 3, codenames: [allCodenames[0]], hasNextPage: true));
+
+        for (int i = 1; i < 3; i++)
+        {
+            mockHttp.Expect(taxonomiesUrl)
+                .WithQueryString("skip", i.ToString())
+                .WithQueryString("limit", "1")
+                .Respond("application/json", BuildTaxonomiesListingJson(skip: i, limit: 1, totalCount: 3, codenames: [allCodenames[i]], hasNextPage: i < 2));
+        }
+
+        var client = BuildClient(env, mockHttp);
+
+        var taxonomies = new List<ITaxonomyGroup>();
+        var firstPage = await client.GetTaxonomies().Limit(1).ExecuteAsync();
+        Assert.True(firstPage.IsSuccess);
+        taxonomies.AddRange(firstPage.Value.Taxonomies);
+
+        var currentPage = firstPage.Value;
+        while (currentPage.HasNextPage)
+        {
+            var next = await currentPage.FetchNextPageAsync();
+            Assert.NotNull(next);
+            Assert.True(next.IsSuccess);
+            taxonomies.AddRange(next.Value.Taxonomies);
+            currentPage = next.Value;
+        }
+
+        Assert.Equal(3, taxonomies.Count);
+        Assert.Equal(allCodenames, taxonomies.Select(t => t.System.Codename).ToArray());
+        mockHttp.VerifyNoOutstandingExpectation();
+    }
+
+    #endregion
+
+    #region Languages Pagination Tests
+
+    [Fact]
+    public async Task LanguagesListing_FetchPageByPage_WorksCorrectly()
+    {
+        var env = Guid.NewGuid().ToString();
+        var languagesUrl = $"https://deliver.kontent.ai/{env}/languages";
+        var allCodenames = new[] { "en-US", "es-ES", "de-DE" };
+
+        var mockHttp = new MockHttpMessageHandler();
+
+        mockHttp.Expect(languagesUrl)
+            .WithQueryString("limit", "1")
+            .Respond("application/json", BuildLanguagesListingJson(skip: 0, limit: 1, totalCount: 3, codenames: [allCodenames[0]], hasNextPage: true));
+
+        for (int i = 1; i < 3; i++)
+        {
+            mockHttp.Expect(languagesUrl)
+                .WithQueryString("skip", i.ToString())
+                .WithQueryString("limit", "1")
+                .Respond("application/json", BuildLanguagesListingJson(skip: i, limit: 1, totalCount: 3, codenames: [allCodenames[i]], hasNextPage: i < 2));
+        }
+
+        var client = BuildClient(env, mockHttp);
+
+        var languages = new List<ILanguage>();
+        var firstPage = await client.GetLanguages().Limit(1).ExecuteAsync();
+        Assert.True(firstPage.IsSuccess);
+        languages.AddRange(firstPage.Value.Languages);
+
+        var currentPage = firstPage.Value;
+        while (currentPage.HasNextPage)
+        {
+            var next = await currentPage.FetchNextPageAsync();
+            Assert.NotNull(next);
+            Assert.True(next.IsSuccess);
+            languages.AddRange(next.Value.Languages);
+            currentPage = next.Value;
+        }
+
+        Assert.Equal(3, languages.Count);
+        Assert.Equal(allCodenames, languages.Select(l => l.System.Codename).ToArray());
+        mockHttp.VerifyNoOutstandingExpectation();
+    }
+
+    #endregion
+
     #region Helpers
 
     private static IDeliveryClient BuildClient(string env, MockHttpMessageHandler mockHttp)
@@ -668,6 +809,39 @@ public sealed class PaginationIntegrationTests
         var response = new HttpResponseMessage(HttpStatusCode.OK) { Content = new StringContent(json, System.Text.Encoding.UTF8, "application/json") };
         if (!string.IsNullOrEmpty(continuationToken)) response.Headers.Add("X-Continuation", continuationToken);
         return response;
+    }
+
+    private static string BuildTypesListingJson(int skip, int limit, int totalCount, IReadOnlyList<string> codenames, bool hasNextPage = false)
+    {
+        var typesJson = string.Join(",", codenames.Select(codename =>
+            $"{{\"system\": {{\"id\": \"{Guid.NewGuid()}\", \"name\": \"{codename}\", \"codename\": \"{codename}\", \"last_modified\": \"2024-01-01T00:00:00Z\"}}, \"elements\": {{}}}}"
+        ));
+
+        var nextPageUrl = hasNextPage ? $",\"next_page\": \"https://deliver.kontent.ai/types?skip={skip + limit}&limit={limit}\"" : "";
+
+        return $"{{\"types\": [{typesJson}], \"pagination\": {{\"skip\": {skip}, \"limit\": {limit}, \"count\": {codenames.Count}, \"total_count\": {totalCount}{nextPageUrl}}}}}";
+    }
+
+    private static string BuildTaxonomiesListingJson(int skip, int limit, int totalCount, IReadOnlyList<string> codenames, bool hasNextPage = false)
+    {
+        var taxonomiesJson = string.Join(",", codenames.Select(codename =>
+            $"{{\"system\": {{\"id\": \"{Guid.NewGuid()}\", \"name\": \"{codename}\", \"codename\": \"{codename}\", \"last_modified\": \"2024-01-01T00:00:00Z\"}}, \"terms\": []}}"
+        ));
+
+        var nextPageUrl = hasNextPage ? $",\"next_page\": \"https://deliver.kontent.ai/taxonomies?skip={skip + limit}&limit={limit}\"" : "";
+
+        return $"{{\"taxonomies\": [{taxonomiesJson}], \"pagination\": {{\"skip\": {skip}, \"limit\": {limit}, \"count\": {codenames.Count}, \"total_count\": {totalCount}{nextPageUrl}}}}}";
+    }
+
+    private static string BuildLanguagesListingJson(int skip, int limit, int totalCount, IReadOnlyList<string> codenames, bool hasNextPage = false)
+    {
+        var languagesJson = string.Join(",", codenames.Select(codename =>
+            $"{{\"system\": {{\"id\": \"{Guid.NewGuid()}\", \"name\": \"{codename}\", \"codename\": \"{codename}\"}}}}"
+        ));
+
+        var nextPageUrl = hasNextPage ? $",\"next_page\": \"https://deliver.kontent.ai/languages?skip={skip + limit}&limit={limit}\"" : "";
+
+        return $"{{\"languages\": [{languagesJson}], \"pagination\": {{\"skip\": {skip}, \"limit\": {limit}, \"count\": {codenames.Count}, \"total_count\": {totalCount}{nextPageUrl}}}}}";
     }
 
     private sealed record TestArticle
