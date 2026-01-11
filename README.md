@@ -494,7 +494,7 @@ The SDK supports strongly-typed models for compile-time safety and IntelliSense 
 #### Generate Models
 
 > [!WARNING]
-> Model generator with updated delivery model capabilities is currently out as [10.0.0-beta](https://www.nuget.org/packages/Kontent.Ai.ModelGenerator/10.0.0-beta). Make sure to use it with the delivery SDK beta as the older model format is not supported anymore.
+> Model generator with updated delivery model capabilities is currently out as [10.0.0-beta-2](https://www.nuget.org/packages/Kontent.Ai.ModelGenerator/10.0.0-beta-2). Make sure to use it with the delivery SDK beta as the older model format is not supported anymore.
 >
 > Please note that the beta version has been trimmed down significantly and only supports default delivery models. Further functionality will be added along with management SDK updates.
 
