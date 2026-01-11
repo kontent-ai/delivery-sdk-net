@@ -29,7 +29,7 @@ public class DeliveryOptionsValidatorTests
     [Fact]
     public void ValidateOptions_WithNullEnvironmentId_Fails()
     {
-        var options = new DeliveryOptions { EnvironmentId = null };
+        var options = new DeliveryOptions { EnvironmentId = null! };
 
         var isValid = TryValidate(options, out var results);
 

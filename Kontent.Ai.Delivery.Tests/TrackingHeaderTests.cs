@@ -33,7 +33,7 @@ public class TrackingHeaderTests
     public void SourceGeneratedCorrectly()
     {
         var sourceAssembly = HttpRequestHeadersExtensions.GetOriginatingAssembly();
-        var sourceFileVersionInfo = FileVersionInfo.GetVersionInfo(sourceAssembly.Location);
+        var sourceFileVersionInfo = FileVersionInfo.GetVersionInfo(sourceAssembly!.Location);
         var sourceVersion = sourceFileVersionInfo.ProductVersion;
 
         // Act
