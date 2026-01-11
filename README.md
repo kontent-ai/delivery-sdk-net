@@ -27,6 +27,7 @@ The official .NET SDK for the [Kontent.ai Delivery API](https://kontent.ai/learn
   - [Multi-Language Support](#multi-language-support)
   - [Caching](#caching)
   - [Preview API](#preview-api)
+  - [Image Transformation](#image-transformation)
 - [Configuration Options](#-configuration-options)
 - [Important Considerations](#-important-considerations)
 - [Advanced Documentation](#-advanced-documentation)
@@ -838,6 +839,138 @@ var client = isPreviewMode ? factory.Get("preview") : factory.Get("production");
 ```
 
 For more on named clients and multi-environment scenarios, see the [Multi-Client Scenarios Guide](docs/multi-client-scenarios.md).
+
+### Image Transformation
+
+The SDK includes `ImageUrlBuilder` for dynamically transforming images served from Kontent.ai. This allows you to resize, crop, and optimize images on-the-fly without storing multiple versions.
+
+#### Basic Usage
+
+```csharp
+using Kontent.Ai.Urls.ImageTransformation;
+
+// Get an image URL from your content
+var imageUrl = article.HeroImage.Url;
+
+// Apply transformations
+var transformedUrl = new ImageUrlBuilder(imageUrl)
+    .WithWidth(800)
+    .WithHeight(600)
+    .WithFitMode(ImageFitMode.Crop)
+    .Url;
+```
+
+#### Resizing
+
+```csharp
+// Resize to specific dimensions
+var resized = new ImageUrlBuilder(imageUrl)
+    .WithWidth(1200)
+    .WithHeight(630)
+    .Url;
+
+// Resize with device pixel ratio for high-DPI displays
+var retinaReady = new ImageUrlBuilder(imageUrl)
+    .WithWidth(400)
+    .WithDpr(2.0)  // Serves 800px image for 2x displays
+    .Url;
+```
+
+#### Fit Modes
+
+Control how the image fits within the target dimensions:
+
+```csharp
+// Clip: Fit within boundaries without cropping (default)
+var clipped = new ImageUrlBuilder(imageUrl)
+    .WithWidth(800)
+    .WithHeight(600)
+    .WithFitMode(ImageFitMode.Clip)
+    .Url;
+
+// Scale: Stretch to exact dimensions (may distort)
+var scaled = new ImageUrlBuilder(imageUrl)
+    .WithWidth(800)
+    .WithHeight(600)
+    .WithFitMode(ImageFitMode.Scale)
+    .Url;
+
+// Crop: Fill dimensions and crop excess
+var cropped = new ImageUrlBuilder(imageUrl)
+    .WithWidth(800)
+    .WithHeight(600)
+    .WithFitMode(ImageFitMode.Crop)
+    .Url;
+```
+
+#### Cropping
+
+```csharp
+// Rectangle crop: extract a specific region (x, y, width, height)
+var rectangleCrop = new ImageUrlBuilder(imageUrl)
+    .WithRectangleCrop(100, 50, 400, 300)
+    .Url;
+
+// Focal point crop: crop centered on a point with zoom
+var focalPointCrop = new ImageUrlBuilder(imageUrl)
+    .WithWidth(800)
+    .WithHeight(600)
+    .WithFocalPointCrop(0.5, 0.3, 1.5)  // x, y (0-1 normalized), zoom
+    .Url;
+```
+
+#### Format Conversion and Optimization
+
+```csharp
+// Convert to WebP for smaller file sizes
+var webp = new ImageUrlBuilder(imageUrl)
+    .WithFormat(ImageFormat.Webp)
+    .WithQuality(80)
+    .Url;
+
+// Automatic WebP with fallback for unsupported browsers
+var autoFormat = new ImageUrlBuilder(imageUrl)
+    .WithAutomaticFormat(ImageFormat.Jpg)
+    .Url;
+
+// Control WebP compression mode
+var lossless = new ImageUrlBuilder(imageUrl)
+    .WithFormat(ImageFormat.Webp)
+    .WithCompression(ImageCompression.Lossless)
+    .Url;
+
+// Progressive JPEG for better perceived loading
+var progressive = new ImageUrlBuilder(imageUrl)
+    .WithFormat(ImageFormat.Pjpg)
+    .WithQuality(85)
+    .Url;
+```
+
+#### Combining Transformations
+
+All transformations can be chained together:
+
+```csharp
+var optimizedHero = new ImageUrlBuilder(imageUrl)
+    .WithWidth(1920)
+    .WithHeight(1080)
+    .WithFitMode(ImageFitMode.Crop)
+    .WithFocalPointCrop(0.5, 0.4, 1.0)
+    .WithFormat(ImageFormat.Webp)
+    .WithQuality(80)
+    .Url;
+```
+
+#### Available Formats
+
+| Format | Enum Value | Description |
+|--------|------------|-------------|
+| GIF | `ImageFormat.Gif` | Animated image support |
+| PNG | `ImageFormat.Png` | Lossless with transparency |
+| PNG8 | `ImageFormat.Png8` | 8-bit palette PNG |
+| JPEG | `ImageFormat.Jpg` | Lossy compression |
+| Progressive JPEG | `ImageFormat.Pjpg` | JPEG with progressive loading |
+| WebP | `ImageFormat.Webp` | Modern format, best compression |
 
 ## Configuration Options
 
