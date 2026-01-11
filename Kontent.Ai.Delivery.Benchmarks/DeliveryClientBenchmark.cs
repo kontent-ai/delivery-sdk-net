@@ -10,7 +10,7 @@ namespace Kontent.Ai.Delivery.Benchmarks;
 
 public class DeliveryClientBenchmark
 {
-    private IDeliveryClient? _client;
+    private IDeliveryClient _client = null!; // Initialized in GlobalSetup
 
     private static IDeliveryClient CreateClient(MockHttpMessageHandler mockHttp, DeliveryOptions options)
     {

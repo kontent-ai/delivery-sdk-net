@@ -32,6 +32,6 @@ public class PaginationTests
     private Pagination SerializeThenDeserializeUsingJson(Pagination pagination)
     {
         var json = JsonConvert.SerializeObject(pagination);
-        return JsonConvert.DeserializeObject<Pagination>(json);
+        return JsonConvert.DeserializeObject<Pagination>(json)!;
     }
 }

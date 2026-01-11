@@ -48,13 +48,13 @@ public class ServiceCollectionsExtensionsTests
     [Fact]
     public void AddDeliveryClientWithNullDeliveryOptions_ThrowsArgumentNullException()
     {
-        Assert.Throws<ArgumentNullException>(() => _serviceCollection.AddDeliveryClient(deliveryOptions: null));
+        Assert.Throws<ArgumentNullException>(() => _serviceCollection.AddDeliveryClient(deliveryOptions: null!));
     }
 
     [Fact]
     public void AddDeliveryClientWithNullBuildDeliveryOptions_ThrowsArgumentNullException()
     {
-        Assert.Throws<ArgumentNullException>(() => _serviceCollection.AddDeliveryClient(configureOptions: null));
+        Assert.Throws<ArgumentNullException>(() => _serviceCollection.AddDeliveryClient(configureOptions: null!));
     }
 
     [Fact]
@@ -93,7 +93,7 @@ public class ServiceCollectionsExtensionsTests
     public void AddDeliveryClientWithBuilderDelegate_Null_ThrowsArgumentNullException()
     {
         Assert.Throws<ArgumentNullException>(() => _serviceCollection.AddDeliveryClient(
-            buildDeliveryOptions: null));
+            buildDeliveryOptions: null!));
     }
 
     [Fact]
@@ -199,7 +199,7 @@ public class ServiceCollectionsExtensionsTests
             .AddJsonFile(jsonConfigurationPath)
             .Build();
 
-        _serviceCollection.AddDeliveryClient(fakeConfiguration, customSectionName);
+        _serviceCollection.AddDeliveryClient(fakeConfiguration, customSectionName!);
         var provider = _serviceCollection.BuildServiceProvider();
 
         AssertDefaultServiceCollection(provider, _expectedInterfacesWithImplementationTypes);
