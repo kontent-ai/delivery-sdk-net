@@ -123,24 +123,7 @@ public static class ReadmeExamples
         }
     }
 
-    // Items listing pagination - ExecuteAllAsync (fetches all pages automatically)
-    public static async Task ItemsListingExecuteAllAsync(IDeliveryClient client)
-    {
-        var allArticles = await client.GetItems<Article>()
-            .Where(f => f.System("type").IsEqualTo("article"))
-            .Limit(10)  // Page size
-            .ExecuteAllAsync();
-
-        if (allArticles.IsSuccess)
-        {
-            foreach (var article in allArticles.Value.Items)
-            {
-                Console.WriteLine($"Article: {article.Elements.Title}");
-            }
-        }
-    }
-
-    // Items listing pagination - Manual pagination with FetchNextPageAsync
+    // Items listing pagination - FetchNextPageAsync
     public static async Task ItemsListingFetchNextPageAsync(IDeliveryClient client)
     {
         var firstPage = await client.GetItems<Article>()

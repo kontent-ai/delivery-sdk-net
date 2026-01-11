@@ -85,11 +85,4 @@ public interface IDynamicItemsQuery
     /// <param name="cancellationToken">Cancellation token for the operation.</param>
     /// <returns>A delivery result containing the response with items and pagination info.</returns>
     Task<IDeliveryResult<IDeliveryItemListingResponse<IDynamicElements>>> ExecuteAsync(CancellationToken cancellationToken = default);
-
-    /// <summary>
-    /// Executes the built query to retrieve all content items across all pages.
-    /// </summary>
-    /// <param name="cancellationToken">Cancellation token for the operation.</param>
-    /// <returns>A delivery result containing all content items.</returns>
-    Task<IDeliveryResult<IDeliveryItemListingResponse<IDynamicElements>>> ExecuteAllAsync(CancellationToken cancellationToken = default);
 }

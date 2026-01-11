@@ -220,25 +220,28 @@ if (firstPage.IsSuccess)
 }
 ```
 
-For standard skip/limit pagination with `GetItems()`, you can also fetch all pages automatically:
+For standard skip/limit pagination with `GetItems()`, use `FetchNextPageAsync()` to iterate through pages:
 
 ```csharp
-// Fetch all pages at once using ExecuteAllAsync
-var allArticles = await client.GetItems<Article>()
-    .Where(f => f.System("type").IsEqualTo("article"))
-    .Limit(10)  // Page size
-    .ExecuteAllAsync();
-
-// Or use manual pagination with FetchNextPageAsync
 var firstPage = await client.GetItems<Article>()
     .Limit(10)
     .WithTotalCount()
     .ExecuteAsync();
 
-if (firstPage.IsSuccess && firstPage.Value.HasNextPage)
+if (firstPage.IsSuccess)
 {
-    var nextPage = await firstPage.Value.FetchNextPageAsync();
-    // Continue processing...
+    // Process first page
+    foreach (var item in firstPage.Value.Items)
+    {
+        Console.WriteLine($"Item: {item.System.Name}");
+    }
+
+    // Fetch next page if available
+    if (firstPage.Value.HasNextPage)
+    {
+        var nextPage = await firstPage.Value.FetchNextPageAsync();
+        // Continue processing...
+    }
 }
 ```
 
