@@ -20,13 +20,18 @@ The official .NET SDK for the [Kontent.ai Delivery API](https://kontent.ai/learn
 - [Basic Usage](#-basic-usage)
   - [Setting Up the Delivery Client](#setting-up-the-delivery-client)
   - [Retrieving Content](#retrieving-content)
+  - [Content Types and Elements](#content-types-and-elements)
+  - [Taxonomies](#taxonomies)
+  - [Reference Lookups (Used In)](#reference-lookups-used-in)
   - [Filtering and Querying](#filtering-and-querying)
   - [Working with Strongly-Typed Models](#working-with-strongly-typed-models)
+  - [Dynamic Content Access](#dynamic-content-access)
   - [Working with Linked Items](#working-with-linked-items)
   - [Rich Text Resolution](#rich-text-resolution)
   - [Multi-Language Support](#multi-language-support)
   - [Caching](#caching)
   - [Preview API](#preview-api)
+  - [Asset Renditions](#asset-renditions)
   - [Image Transformation](#image-transformation)
 - [Configuration Options](#-configuration-options)
 - [Important Considerations](#-important-considerations)
@@ -250,17 +255,158 @@ if (firstPage.IsSuccess && firstPage.Value.HasNextPage)
 }
 ```
 
-#### Get Content Types and Taxonomies
+### Content Types and Elements
+
+Content types define the structure of your content. The SDK provides methods to retrieve content type definitions and their elements.
+
+#### Get a Single Content Type
 
 ```csharp
-// Get a content type
-var typeResult = await client.GetType("article").ExecuteAsync();
+var result = await client.GetType("article").ExecuteAsync();
 
-// Get all taxonomies
-var taxonomiesResult = await client.GetTaxonomies().ExecuteAsync();
+if (result.IsSuccess)
+{
+    var contentType = result.Value;
+    Console.WriteLine($"Type: {contentType.System.Name}");
+    Console.WriteLine($"Codename: {contentType.System.Codename}");
 
-// Get a specific taxonomy
-var taxonomyResult = await client.GetTaxonomy("product_categories").ExecuteAsync();
+    // Access element definitions
+    foreach (var (codename, element) in contentType.Elements)
+    {
+        Console.WriteLine($"  - {element.Name} ({element.Type})");
+    }
+}
+```
+
+#### Get Multiple Content Types
+
+```csharp
+var result = await client.GetTypes()
+    .Limit(10)
+    .ExecuteAsync();
+
+if (result.IsSuccess)
+{
+    foreach (var contentType in result.Value.Types)
+    {
+        Console.WriteLine($"{contentType.System.Name}: {contentType.Elements.Count} elements");
+    }
+
+    // Pagination support
+    if (result.Value.HasNextPage)
+    {
+        var nextPage = await result.Value.FetchNextPageAsync();
+    }
+}
+```
+
+#### Get a Specific Content Element
+
+Retrieve a single element definition from a content type:
+
+```csharp
+var result = await client.GetContentElement("article", "body_copy").ExecuteAsync();
+
+if (result.IsSuccess)
+{
+    var element = result.Value.Element;
+    Console.WriteLine($"Element: {element.Name}");
+    Console.WriteLine($"Type: {element.Type}");
+}
+```
+
+### Taxonomies
+
+Taxonomies provide hierarchical classification for your content.
+
+#### Get a Single Taxonomy Group
+
+```csharp
+var result = await client.GetTaxonomy("product_categories").ExecuteAsync();
+
+if (result.IsSuccess)
+{
+    var taxonomy = result.Value;
+    Console.WriteLine($"Taxonomy: {taxonomy.System.Name}");
+
+    // Access hierarchical terms
+    foreach (var term in taxonomy.Terms)
+    {
+        PrintTerm(term, 0);
+    }
+}
+
+void PrintTerm(ITaxonomyTermDetails term, int indent)
+{
+    var prefix = new string(' ', indent * 2);
+    Console.WriteLine($"{prefix}- {term.System.Name} ({term.System.Codename})");
+
+    // Recursively print child terms
+    foreach (var childTerm in term.Terms)
+    {
+        PrintTerm(childTerm, indent + 1);
+    }
+}
+```
+
+#### Get Multiple Taxonomy Groups
+
+```csharp
+var result = await client.GetTaxonomies()
+    .Limit(10)
+    .ExecuteAsync();
+
+if (result.IsSuccess)
+{
+    foreach (var taxonomy in result.Value.Taxonomies)
+    {
+        Console.WriteLine($"{taxonomy.System.Name}: {taxonomy.Terms.Count} top-level terms");
+    }
+}
+```
+
+### Reference Lookups (Used In)
+
+Find which content items reference a specific item or asset. This is useful for impact analysis before making changes.
+
+#### Find Items Using a Content Item
+
+```csharp
+// Find all items that reference the "john_doe" author
+var result = await client.GetItemUsedIn("john_doe").EnumerateAllAsync();
+
+Console.WriteLine($"'{codename}' is used in {result.Count} items:");
+foreach (var usage in result)
+{
+    Console.WriteLine($"  - {usage.System.Name} ({usage.System.Type})");
+}
+
+// Or enumerate asynchronously for large result sets
+await foreach (var usage in client.GetItemUsedIn("john_doe").EnumerateItemsAsync())
+{
+    Console.WriteLine($"Referenced by: {usage.System.Name}");
+}
+```
+
+#### Find Items Using an Asset
+
+```csharp
+// Find all items that use a specific asset
+var assetCodename = "hero_image";
+var usages = await client.GetAssetUsedIn(assetCodename).EnumerateAllAsync();
+
+if (usages.Count > 0)
+{
+    Console.WriteLine($"Asset '{assetCodename}' is used in:");
+    foreach (var usage in usages)
+    {
+        Console.WriteLine($"  - {usage.System.Name}");
+    }
+}
+else
+{
+    Console.WriteLine("Asset is not used anywhere - safe to delete");
+}
 ```
 
 ### Filtering and Querying
@@ -341,6 +487,26 @@ if (result.IsSuccess)
 }
 ```
 
+#### Element Projection
+
+Reduce response size and improve performance by selecting only the elements you need:
+
+```csharp
+// Include only specific elements
+var result = await client.GetItems<Article>()
+    .WithElements("title", "summary", "url_slug")
+    .Limit(20)
+    .ExecuteAsync();
+
+// Exclude specific elements (get all except these)
+var result = await client.GetItems<Article>()
+    .WithoutElements("body_copy", "metadata")
+    .Limit(20)
+    .ExecuteAsync();
+```
+
+**Performance tip**: For listing pages that only show titles and summaries, use `.WithElements()` to reduce payload size by 50-80%.
+
 For more advanced filtering scenarios, see the [Advanced Filtering Guide](docs/advanced-filtering.md).
 
 ### Working with Strongly-Typed Models
@@ -387,6 +553,54 @@ if (result.IsSuccess)
     }
 }
 ```
+
+### Dynamic Content Access
+
+When you don't have strongly-typed models or need to access content dynamically (e.g., for CMS-driven applications), use the untyped query methods.
+
+#### Retrieve Content Without Type Parameters
+
+```csharp
+// Get a single item dynamically
+var result = await client.GetItem("homepage").ExecuteAsync();
+
+if (result.IsSuccess)
+{
+    var item = result.Value;
+    Console.WriteLine($"Name: {item.System.Name}");
+    Console.WriteLine($"Type: {item.System.Type}");
+
+    // Access elements via IDynamicElements (dictionary-like access)
+    var elements = item.Elements;
+    if (elements.TryGetValue("title", out var titleElement))
+    {
+        Console.WriteLine($"Title: {titleElement}");
+    }
+}
+
+// Get multiple items dynamically
+var itemsResult = await client.GetItems()
+    .Where(f => f.System("type").IsEqualTo("article"))
+    .Limit(10)
+    .ExecuteAsync();
+
+if (itemsResult.IsSuccess)
+{
+    foreach (var item in itemsResult.Value.Items)
+    {
+        Console.WriteLine($"- {item.System.Name}");
+    }
+}
+```
+
+#### When to Use Dynamic Access
+
+- **CMS-driven applications**: Content structure not known at compile time
+- **Generic content browsers**: Displaying any content type
+- **Prototyping**: Quick exploration without model generation
+- **Migration tools**: Processing content across many types
+
+For production applications with known content types, prefer [strongly-typed models](#working-with-strongly-typed-models) for better type safety and IntelliSense support.
 
 ### Working with Linked Items
 
@@ -840,6 +1054,54 @@ var client = isPreviewMode ? factory.Get("preview") : factory.Get("production");
 
 For more on named clients and multi-environment scenarios, see the [Multi-Client Scenarios Guide](docs/multi-client-scenarios.md).
 
+### Asset Renditions
+
+Assets can have pre-configured renditions (image presets) defined in Kontent.ai. Access these directly without applying additional transformations.
+
+#### Accessing Asset Renditions
+
+```csharp
+var result = await client.GetItem<Article>("my-article").ExecuteAsync();
+
+if (result.IsSuccess)
+{
+    var article = result.Value.Elements;
+
+    foreach (var asset in article.TeaserImage)
+    {
+        // Original asset URL
+        Console.WriteLine($"Original: {asset.Url}");
+        Console.WriteLine($"Size: {asset.Width}x{asset.Height}");
+
+        // Access pre-configured renditions
+        if (asset.Renditions.TryGetValue("thumbnail", out var thumbnail))
+        {
+            Console.WriteLine($"Thumbnail: {thumbnail.Url}");
+            Console.WriteLine($"Thumbnail size: {thumbnail.Width}x{thumbnail.Height}");
+        }
+
+        if (asset.Renditions.TryGetValue("hero", out var hero))
+        {
+            Console.WriteLine($"Hero: {hero.Url}");
+        }
+    }
+}
+```
+
+#### Default Rendition Preset
+
+Configure a default rendition preset to use across all asset URLs:
+
+```csharp
+services.AddDeliveryClient(options =>
+{
+    options.EnvironmentId = "your-environment-id";
+    options.DefaultRenditionPreset = "web";  // Apply "web" preset to all assets
+});
+```
+
+When set, all asset URLs returned by the SDK will automatically include the specified rendition preset's transformations.
+
 ### Image Transformation
 
 The SDK includes `ImageUrlBuilder` for dynamically transforming images served from Kontent.ai. This allows you to resize, crop, and optimize images on-the-fly without storing multiple versions.
@@ -1070,6 +1332,103 @@ When using generated models:
 - Handle optional properties with nullable types
 - Consider versioning strategies if you have long-running deployments
 
+### Error Handling
+
+The SDK uses a result pattern instead of throwing exceptions for API errors. This makes error handling explicit and predictable.
+
+#### Checking for Errors
+
+```csharp
+var result = await client.GetItem<Article>("my-article").ExecuteAsync();
+
+if (result.IsSuccess)
+{
+    var article = result.Value;
+    // Process article
+}
+else
+{
+    // Handle error
+    var error = result.Error;
+    Console.WriteLine($"Error: {error.Message}");
+    Console.WriteLine($"Status: {result.StatusCode}");
+
+    // Error details for debugging/logging
+    if (error.RequestId != null)
+        Console.WriteLine($"Request ID: {error.RequestId}");
+
+    if (error.ErrorCode.HasValue)
+        Console.WriteLine($"Error Code: {error.ErrorCode}");
+}
+```
+
+#### IError Properties
+
+| Property | Description |
+|----------|-------------|
+| `Message` | Human-readable error description |
+| `RequestId` | Unique request ID for Kontent.ai support |
+| `ErrorCode` | Kontent.ai-specific error code |
+| `SpecificCode` | More specific error code |
+| `Exception` | Underlying exception (for network errors, etc.) |
+
+### Response Metadata
+
+Every API response includes metadata for debugging, cache control, and monitoring.
+
+#### Accessing Response Metadata
+
+```csharp
+var result = await client.GetItem<Article>("my-article").ExecuteAsync();
+
+if (result.IsSuccess)
+{
+    // Request URL for debugging
+    Console.WriteLine($"Request URL: {result.RequestUrl}");
+
+    // HTTP status code
+    Console.WriteLine($"Status: {result.StatusCode}");
+
+    // Check if served from SDK cache
+    if (result.IsCacheHit)
+    {
+        Console.WriteLine("Served from SDK cache");
+    }
+    else
+    {
+        // Response headers available for fresh responses
+        if (result.ResponseHeaders != null)
+        {
+            // Check CDN cache status (Fastly)
+            if (result.ResponseHeaders.TryGetValues("X-Cache", out var cacheValues))
+            {
+                Console.WriteLine($"CDN Cache: {string.Join(", ", cacheValues)}");
+            }
+        }
+    }
+
+    // Check if newer content might be available
+    if (result.HasStaleContent)
+    {
+        Console.WriteLine("Content may be stale - newer version exists");
+    }
+}
+```
+
+#### IDeliveryResult Properties
+
+| Property | Description |
+|----------|-------------|
+| `IsSuccess` | Whether the request succeeded |
+| `Value` | The response content (when successful) |
+| `Error` | Error details (when failed) |
+| `StatusCode` | HTTP status code |
+| `RequestUrl` | Full request URL for debugging |
+| `ResponseHeaders` | HTTP response headers (null for cache hits) |
+| `IsCacheHit` | Whether response was served from SDK cache |
+| `HasStaleContent` | Whether newer content may be available |
+| `ContinuationToken` | Pagination token (for feed responses) |
+
 ## Advanced Documentation
 
 For more advanced scenarios and in-depth guides, explore the following documentation:
@@ -1079,6 +1438,7 @@ For more advanced scenarios and in-depth guides, explore the following documenta
 - **[Caching Guide](docs/caching-guide.md)** - Cache strategies, invalidation, webhook integration
 - **[Multi-Client Scenarios](docs/multi-client-scenarios.md)** - Named clients, multi-tenant architectures
 - **[Performance Optimization](docs/performance-optimization.md)** - Query optimization, monitoring, best practices
+- **[Extensibility Guide](docs/extensibility-guide.md)** - Custom type providers, property mappers, SDK extension points
 
 ## Contributing
 
