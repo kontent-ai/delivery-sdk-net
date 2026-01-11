@@ -306,29 +306,104 @@ services.AddSingleton<IDeliveryCacheManager, CustomCacheManager>();
 
 ### Cache Keys
 
-Cache keys are automatically generated from query parameters:
+Cache keys are automatically generated from query parameters using a deterministic, human-readable format.
+
+#### Key Format
+
+The general format is: `{queryType}:{identifier}:{params}:{filters}`
+
+| Query Type | Format | Example |
+|------------|--------|---------|
+| Single Item | `item:{codename}:lang={lang}:depth={n}:elements={sorted}` | `item:homepage:lang=en-US:depth=2` |
+| List Items | `items:lang={lang}:depth={n}:skip={n}:limit={n}:filters={hash}` | `items:lang=en-US:skip=0:limit=10` |
+| Single Type | `type:{codename}:elements={sorted}` | `type:article:elements=name\|codename` |
+| List Types | `types:skip={n}:limit={n}:elements={sorted}:filters={hash}` | `types:skip=0:limit=25` |
+| Single Taxonomy | `taxonomy:{codename}` | `taxonomy:categories` |
+| List Taxonomies | `taxonomies:skip={n}:limit={n}:filters={hash}` | `taxonomies:skip=0:limit=100` |
+
+#### Key Properties
+
+- **Deterministic**: Same parameters always produce the same key
+- **Order-independent**: Arrays and filter dictionaries in different orders produce the same key
+- **Human-readable**: Common parameters are visible for debugging (e.g., `lang=en-US:depth=2`)
+- **Efficient**: Filters are hashed to keep keys compact when queries are complex
+
+#### Examples
 
 ```csharp
-// Different queries = different cache keys
-await client.GetItem("homepage").ExecuteAsync();
-// Key: "item_homepage_en-US_0"
+// Single item query
+await client.GetItem<Article>("homepage").ExecuteAsync();
+// Key: item:homepage
 
-await client.GetItem("homepage").WithLanguage("de-DE").ExecuteAsync();
-// Key: "item_homepage_de-DE_0"
+// Item with language and depth
+await client.GetItem<Article>("homepage")
+    .WithLanguage("de-DE")
+    .Depth(2)
+    .ExecuteAsync();
+// Key: item:homepage:lang=de-DE:depth=2
 
-await client.GetItems().Limit(10).ExecuteAsync();
-// Key: "items_{hash-of-filters}_en-US_0_10"
+// Item with element projection
+await client.GetItem<Article>("homepage")
+    .WithElements("title", "description")
+    .ExecuteAsync();
+// Key: item:homepage:elements=description|title  (sorted alphabetically)
 
-await client.GetItems().Where(f => f.System("type").IsEqualTo("article")).ExecuteAsync();
-// Key: "items_{hash-with-type-filter}_en-US_0"
+// Items listing with pagination
+await client.GetItems<Article>()
+    .Skip(10)
+    .Limit(5)
+    .ExecuteAsync();
+// Key: items:skip=10:limit=5
+
+// Items with filters (filters are hashed for brevity)
+await client.GetItems<Article>()
+    .Where(f => f.System("type").IsEqualTo("article"))
+    .Where(f => f.Element("category").IsIn("news", "blog"))
+    .ExecuteAsync();
+// Key: items:filters=A7F3E2B9C1D5  (12-char hash of sorted filter parameters)
+
+// Taxonomy query
+await client.GetTaxonomy("categories").ExecuteAsync();
+// Key: taxonomy:categories
 ```
 
-Cache keys include:
-- Query type (item, items, taxonomy, etc.)
-- Filters and parameters
-- Language
-- Depth
-- Pagination (skip/limit)
+#### Filter Hashing
+
+When queries include filters, they are hashed using SHA256 (first 12 characters of URL-safe base64):
+
+- Filters are sorted by key, then by value before hashing
+- This ensures `{("a", "1"), ("b", "2")}` and `{("b", "2"), ("a", "1")}` produce the same hash
+- The 12-character hash provides ~72 bits of entropy (extremely low collision probability)
+
+#### Key Prefixing
+
+**Default (single-client) scenario:**
+```csharp
+services.AddDeliveryClient(o => o.EnvironmentId = "...");
+services.AddDeliveryMemoryCache();
+// Keys have NO prefix: item:homepage, items:skip=0:limit=10, etc.
+```
+
+**Named clients (multi-client scenario):**
+```csharp
+services.AddDeliveryClient("production", o => o.EnvironmentId = "...");
+services.AddDeliveryMemoryCache("production");
+// Keys are prefixed with client name: production:item:homepage, etc.
+```
+
+**Custom prefix:**
+```csharp
+services.AddDeliveryMemoryCache("production", keyPrefix: "prod");
+// Keys become: prod:item:homepage, prod:items:skip=0:limit=10, etc.
+```
+
+**No prefix (explicit):**
+```csharp
+services.AddDeliveryMemoryCache("production", keyPrefix: "");
+// Keys have no prefix even for named clients
+```
+
+This prevents cache collisions when multiple clients share the same underlying cache.
 
 ### Dependency Tracking
 

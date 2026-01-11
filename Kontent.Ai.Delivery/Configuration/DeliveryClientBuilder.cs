@@ -298,14 +298,14 @@ public sealed class DeliveryClientBuilder
         {
             case CacheType.Memory:
                 services.AddDeliveryMemoryCache(
-                    clientName: Abstractions.Options.DefaultName,
+                    clientName: Options.DefaultName,
                     keyPrefix: "",
                     defaultExpiration: _cacheExpiration);
                 break;
 
             case CacheType.Distributed:
                 services.AddDeliveryDistributedCache(
-                    clientName: Abstractions.Options.DefaultName,
+                    clientName: Options.DefaultName,
                     keyPrefix: "",
                     defaultExpiration: _cacheExpiration);
                 break;
