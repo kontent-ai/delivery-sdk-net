@@ -1,5 +1,6 @@
 using System.Diagnostics;
 using System.Net;
+using Kontent.Ai.Delivery.Api.QueryBuilders.Helpers;
 using Kontent.Ai.Delivery.Caching;
 using Kontent.Ai.Delivery.ContentTypes;
 using Kontent.Ai.Delivery.Logging;
@@ -37,81 +38,60 @@ internal sealed class TypeQuery(
 
     public async Task<IDeliveryResult<IContentType>> ExecuteAsync(CancellationToken cancellationToken = default)
     {
-        // Log query starting
-        if (_logger != null)
-            LoggerMessages.QueryStarting(_logger, "Type", _codename);
+        LogQueryStarting();
+        var stopwatch = StartTimingIfEnabled();
 
-        // Start timing if logging is enabled
-        var stopwatch = _logger?.IsEnabled(LogLevel.Information) == true ? Stopwatch.StartNew() : null;
-
-        // Cache check (if enabled)
+        // 1. CACHE CHECK
         string? cacheKey = null;
         if (_cacheManager != null)
         {
-            try
+            cacheKey = CacheKeyBuilder.BuildTypeKey(_codename, _params);
+            var cached = await QueryCacheHelper.TryGetCachedAsync<ContentType>(
+                _cacheManager, cacheKey, _logger, cancellationToken).ConfigureAwait(false);
+            if (cached != null)
             {
-                cacheKey = CacheKeyBuilder.BuildTypeKey(_codename, _params);
-                var cached = await _cacheManager.GetAsync<ContentType>(cacheKey, cancellationToken)
-                    .ConfigureAwait(false);
-
-                if (cached != null)
-                {
-                    // Log cache hit
-                    if (_logger != null)
-                    {
-                        LoggerMessages.QueryCacheHit(_logger, cacheKey);
-                        LoggerMessages.QueryCompleted(_logger, "Type", _codename,
-                            stopwatch?.ElapsedMilliseconds ?? 0, HttpStatusCode.OK, cacheHit: true);
-                    }
-                    return DeliveryResult.CacheHit<IContentType>(cached);
-                }
-
-                // Log cache miss
-                if (_logger != null)
-                    LoggerMessages.QueryCacheMiss(_logger, cacheKey);
-            }
-            catch (Exception ex)
-            {
-                // Cache read failed - continue with API call
-                if (_logger != null && cacheKey != null)
-                    LoggerMessages.CacheGetFailed(_logger, cacheKey, ex);
+                LogQueryCompleted(stopwatch, HttpStatusCode.OK, cacheHit: true);
+                return DeliveryResult.CacheHit<IContentType>(cached);
             }
         }
 
-        // API call
-        bool? wait = _waitForLoadingNewContentOverride ?? _getDefaultWaitForNewContent();
-        var response = await _api.GetTypeInternalAsync(_codename, _params, wait).ConfigureAwait(false);
-        var deliveryResult = await response.ToDeliveryResultAsync().ConfigureAwait(false);
+        // 2. API CALL
+        var deliveryResult = await FetchFromApiAsync().ConfigureAwait(false);
 
-        // Cache result (if enabled) - metadata queries use empty dependencies (rely on TTL for invalidation)
+        // 3. CACHE & LOG COMPLETION
+        // Metadata queries use empty dependencies (rely on TTL for invalidation)
         if (_cacheManager != null && deliveryResult.IsSuccess && cacheKey != null)
         {
-            try
-            {
-                await _cacheManager.SetAsync(
-                    cacheKey,
-                    (ContentType)deliveryResult.Value,
-                    dependencies: [], // Metadata queries don't track dependencies
-                    expiration: null,
-                    cancellationToken: cancellationToken)
-                    .ConfigureAwait(false);
-            }
-            catch (Exception ex)
-            {
-                // Cache write failed - still return result
-                if (_logger != null)
-                    LoggerMessages.CacheSetFailed(_logger, cacheKey, ex);
-            }
+            await QueryCacheHelper.TrySetCachedAsync(
+                _cacheManager, cacheKey, (ContentType)deliveryResult.Value,
+                dependencies: [], _logger, cancellationToken).ConfigureAwait(false);
         }
 
-        // Log completion
-        if (_logger != null)
-        {
-            stopwatch?.Stop();
-            LoggerMessages.QueryCompleted(_logger, "Type", _codename,
-                stopwatch?.ElapsedMilliseconds ?? 0, deliveryResult.StatusCode, cacheHit: false);
-        }
-
+        LogQueryCompleted(stopwatch, deliveryResult.StatusCode, cacheHit: false);
         return deliveryResult;
+    }
+
+    private async Task<IDeliveryResult<IContentType>> FetchFromApiAsync()
+    {
+        bool? wait = _waitForLoadingNewContentOverride ?? _getDefaultWaitForNewContent();
+        var response = await _api.GetTypeInternalAsync(_codename, _params, wait).ConfigureAwait(false);
+        return await response.ToDeliveryResultAsync().ConfigureAwait(false);
+    }
+
+    private void LogQueryStarting()
+    {
+        if (_logger != null)
+            LoggerMessages.QueryStarting(_logger, "Type", _codename);
+    }
+
+    private Stopwatch? StartTimingIfEnabled() =>
+        _logger?.IsEnabled(LogLevel.Information) == true ? Stopwatch.StartNew() : null;
+
+    private void LogQueryCompleted(Stopwatch? stopwatch, HttpStatusCode statusCode, bool cacheHit)
+    {
+        if (_logger == null) return;
+        stopwatch?.Stop();
+        LoggerMessages.QueryCompleted(_logger, "Type", _codename,
+            stopwatch?.ElapsedMilliseconds ?? 0, statusCode, cacheHit);
     }
 }

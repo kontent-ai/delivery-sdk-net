@@ -1,6 +1,7 @@
 using System.Diagnostics;
 using System.Net;
 using Kontent.Ai.Delivery.Api.Filtering;
+using Kontent.Ai.Delivery.Api.QueryBuilders.Helpers;
 using Kontent.Ai.Delivery.Caching;
 using Kontent.Ai.Delivery.ContentTypes;
 using Kontent.Ai.Delivery.Logging;
@@ -56,62 +57,26 @@ internal sealed class TypesQuery(
 
     public async Task<IDeliveryResult<IDeliveryTypeListingResponse>> ExecuteAsync(CancellationToken cancellationToken = default)
     {
-        // Log query starting
-        if (_logger != null)
-            LoggerMessages.QueryStarting(_logger, "Types", "list");
+        LogQueryStarting();
+        var stopwatch = StartTimingIfEnabled();
 
-        // Start timing if logging is enabled
-        var stopwatch = _logger?.IsEnabled(LogLevel.Information) == true ? Stopwatch.StartNew() : null;
-
-        // Cache check (if enabled)
+        // 1. CACHE CHECK
         string? cacheKey = null;
         if (_cacheManager != null)
         {
-            try
+            cacheKey = CacheKeyBuilder.BuildTypesKey(_params, _serializedFilters);
+            var cached = await QueryCacheHelper.TryGetCachedAsync<DeliveryTypeListingResponse>(
+                _cacheManager, cacheKey, _logger, cancellationToken).ConfigureAwait(false);
+            if (cached != null)
             {
-                cacheKey = CacheKeyBuilder.BuildTypesKey(_params, _serializedFilters);
-                var cached = await _cacheManager.GetAsync<DeliveryTypeListingResponse>(cacheKey, cancellationToken)
-                    .ConfigureAwait(false);
-
-                if (cached != null)
-                {
-                    // Log cache hit
-                    if (_logger != null)
-                    {
-                        LoggerMessages.QueryCacheHit(_logger, cacheKey);
-                        LoggerMessages.QueryCompleted(_logger, "Types", "list",
-                            stopwatch?.ElapsedMilliseconds ?? 0, HttpStatusCode.OK, cacheHit: true);
-                    }
-
-                    // Reconstruct with NextPageFetcher
-                    var cachedWithFetcher = cached with
-                    {
-                        NextPageFetcher = CreateNextPageFetcher(cached.Pagination)
-                    };
-
-                    return DeliveryResult.CacheHit<IDeliveryTypeListingResponse>(cachedWithFetcher);
-                }
-
-                // Log cache miss
-                if (_logger != null)
-                    LoggerMessages.QueryCacheMiss(_logger, cacheKey);
-            }
-            catch (Exception ex)
-            {
-                // Cache read failed - continue with API call
-                if (_logger != null && cacheKey != null)
-                    LoggerMessages.CacheGetFailed(_logger, cacheKey, ex);
+                var cachedWithFetcher = cached with { NextPageFetcher = CreateNextPageFetcher(cached.Pagination) };
+                LogQueryCompleted(stopwatch, HttpStatusCode.OK, cacheHit: true);
+                return DeliveryResult.CacheHit<IDeliveryTypeListingResponse>(cachedWithFetcher);
             }
         }
 
-        // API call
-        bool? wait = _waitForLoadingNewContentOverride ?? _getDefaultWaitForNewContent();
-        var response = await _api.GetTypesInternalAsync(
-            _params,
-            FilterQueryParams.ToQueryDictionary(_serializedFilters),
-            wait).ConfigureAwait(false);
-        var deliveryResult = await response.ToDeliveryResultAsync().ConfigureAwait(false);
-
+        // 2. API CALL
+        var deliveryResult = await FetchFromApiAsync().ConfigureAwait(false);
         if (!deliveryResult.IsSuccess)
         {
             return DeliveryResult.Failure<IDeliveryTypeListingResponse>(
@@ -121,14 +86,9 @@ internal sealed class TypesQuery(
                 deliveryResult.ResponseHeaders);
         }
 
+        // 3. BUILD RESULT WITH NEXT PAGE FETCHER
         var resp = deliveryResult.Value;
-
-        // Build response with next page fetcher
-        var responseWithFetcher = resp with
-        {
-            NextPageFetcher = CreateNextPageFetcher(resp.Pagination)
-        };
-
+        var responseWithFetcher = resp with { NextPageFetcher = CreateNextPageFetcher(resp.Pagination) };
         var result = DeliveryResult.Success<IDeliveryTypeListingResponse>(
             responseWithFetcher,
             deliveryResult.RequestUrl ?? string.Empty,
@@ -137,37 +97,27 @@ internal sealed class TypesQuery(
             deliveryResult.ContinuationToken,
             deliveryResult.ResponseHeaders);
 
-        // Cache result (if enabled) - metadata queries use empty dependencies (rely on TTL for invalidation)
+        // 4. CACHE & LOG COMPLETION
+        // Metadata queries use empty dependencies (rely on TTL for invalidation)
         if (_cacheManager != null && cacheKey != null)
         {
-            try
-            {
-                // Cache response without NextPageFetcher (delegates can't be serialized)
-                await _cacheManager.SetAsync(
-                    cacheKey,
-                    resp,
-                    dependencies: [], // Metadata queries don't track dependencies
-                    expiration: null,
-                    cancellationToken: cancellationToken)
-                    .ConfigureAwait(false);
-            }
-            catch (Exception ex)
-            {
-                // Cache write failed - still return result
-                if (_logger != null)
-                    LoggerMessages.CacheSetFailed(_logger, cacheKey, ex);
-            }
+            await QueryCacheHelper.TrySetCachedAsync(
+                _cacheManager, cacheKey, resp, dependencies: [], _logger, cancellationToken)
+                .ConfigureAwait(false);
         }
 
-        // Log completion
-        if (_logger != null)
-        {
-            stopwatch?.Stop();
-            LoggerMessages.QueryCompleted(_logger, "Types", "list",
-                stopwatch?.ElapsedMilliseconds ?? 0, result.StatusCode, cacheHit: false);
-        }
-
+        LogQueryCompleted(stopwatch, result.StatusCode, cacheHit: false);
         return result;
+    }
+
+    private async Task<IDeliveryResult<DeliveryTypeListingResponse>> FetchFromApiAsync()
+    {
+        bool? wait = _waitForLoadingNewContentOverride ?? _getDefaultWaitForNewContent();
+        var response = await _api.GetTypesInternalAsync(
+            _params,
+            FilterQueryParams.ToQueryDictionary(_serializedFilters),
+            wait).ConfigureAwait(false);
+        return await response.ToDeliveryResultAsync().ConfigureAwait(false);
     }
 
     private Func<CancellationToken, Task<IDeliveryResult<IDeliveryTypeListingResponse>>>? CreateNextPageFetcher(IPagination pagination)
@@ -175,7 +125,6 @@ internal sealed class TypesQuery(
         if (string.IsNullOrEmpty(pagination.NextPageUrl))
             return null;
 
-        // Calculate next skip value
         var nextSkip = pagination.Skip + pagination.Count;
 
         return async (ct) =>
@@ -186,13 +135,27 @@ internal sealed class TypesQuery(
                 _waitForLoadingNewContentOverride = _waitForLoadingNewContentOverride
             };
 
-            // Copy filters
             foreach (var filter in _serializedFilters)
-            {
                 nextQuery._serializedFilters.Add(filter);
-            }
 
             return await nextQuery.ExecuteAsync(ct).ConfigureAwait(false);
         };
+    }
+
+    private void LogQueryStarting()
+    {
+        if (_logger != null)
+            LoggerMessages.QueryStarting(_logger, "Types", "list");
+    }
+
+    private Stopwatch? StartTimingIfEnabled() =>
+        _logger?.IsEnabled(LogLevel.Information) == true ? Stopwatch.StartNew() : null;
+
+    private void LogQueryCompleted(Stopwatch? stopwatch, HttpStatusCode statusCode, bool cacheHit)
+    {
+        if (_logger == null) return;
+        stopwatch?.Stop();
+        LoggerMessages.QueryCompleted(_logger, "Types", "list",
+            stopwatch?.ElapsedMilliseconds ?? 0, statusCode, cacheHit);
     }
 }

@@ -1,5 +1,5 @@
-using System.Text.Json;
 using Kontent.Ai.Delivery.Api.Filtering;
+using Kontent.Ai.Delivery.ContentItems;
 using Kontent.Ai.Delivery.SharedModels;
 
 namespace Kontent.Ai.Delivery.Api.QueryBuilders;
@@ -91,16 +91,8 @@ internal sealed class DynamicItemsQuery(
 
     public async Task<IDeliveryResult<IDeliveryItemListingResponse<IDynamicElements>>> ExecuteAsync(CancellationToken cancellationToken = default)
     {
-        // Get raw response from Refit API
-        bool? wait = _waitForLoadingNewContentOverride ?? _getDefaultWaitForNewContent();
-        var rawResponse = await _api.GetItemsInternalAsync<IDynamicElements>(
-            _params,
-            FilterQueryParams.ToQueryDictionary(_serializedFilters),
-            wait).ConfigureAwait(false);
-
-        // Convert IApiResponse to IDeliveryResult
-        var deliveryResult = await rawResponse.ToDeliveryResultAsync().ConfigureAwait(false);
-
+        // API CALL
+        var deliveryResult = await FetchFromApiAsync().ConfigureAwait(false);
         if (!deliveryResult.IsSuccess)
         {
             return DeliveryResult.Failure<IDeliveryItemListingResponse<IDynamicElements>>(
@@ -110,12 +102,9 @@ internal sealed class DynamicItemsQuery(
                 deliveryResult.ResponseHeaders);
         }
 
-        // Add next page fetcher to the response
+        // BUILD RESULT WITH NEXT PAGE FETCHER
         var resp = deliveryResult.Value;
-        var responseWithFetcher = resp with
-        {
-            NextPageFetcher = CreateNextPageFetcher(resp.Pagination)
-        };
+        var responseWithFetcher = resp with { NextPageFetcher = CreateNextPageFetcher(resp.Pagination) };
 
         return DeliveryResult.Success<IDeliveryItemListingResponse<IDynamicElements>>(
             responseWithFetcher,
@@ -126,28 +115,33 @@ internal sealed class DynamicItemsQuery(
             deliveryResult.ResponseHeaders);
     }
 
+    private async Task<IDeliveryResult<DeliveryItemListingResponse<IDynamicElements>>> FetchFromApiAsync()
+    {
+        bool? wait = _waitForLoadingNewContentOverride ?? _getDefaultWaitForNewContent();
+        var rawResponse = await _api.GetItemsInternalAsync<IDynamicElements>(
+            _params,
+            FilterQueryParams.ToQueryDictionary(_serializedFilters),
+            wait).ConfigureAwait(false);
+        return await rawResponse.ToDeliveryResultAsync().ConfigureAwait(false);
+    }
+
     private Func<CancellationToken, Task<IDeliveryResult<IDeliveryItemListingResponse<IDynamicElements>>>>? CreateNextPageFetcher(Pagination pagination)
     {
         if (string.IsNullOrEmpty(pagination.NextPageUrl))
             return null;
 
-        // Extract skip from NextPageUrl rather than calculating it
         var nextSkip = ExtractSkipFromUrl(pagination.NextPageUrl);
 
         return async (ct) =>
         {
-            // Create a new query with updated skip
             var nextQuery = new DynamicItemsQuery(_api, _getDefaultWaitForNewContent)
             {
                 _params = _params with { Skip = nextSkip },
                 _waitForLoadingNewContentOverride = _waitForLoadingNewContentOverride
             };
 
-            // Copy filters
             foreach (var filter in _serializedFilters)
-            {
                 nextQuery._serializedFilters.Add(filter);
-            }
 
             return await nextQuery.ExecuteAsync(ct).ConfigureAwait(false);
         };

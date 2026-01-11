@@ -1,3 +1,4 @@
+using Kontent.Ai.Delivery.Api.QueryBuilders.Helpers;
 using Kontent.Ai.Delivery.Caching;
 using Kontent.Ai.Delivery.TaxonomyGroups;
 
@@ -24,51 +25,36 @@ internal sealed class TaxonomyQuery(
 
     public async Task<IDeliveryResult<ITaxonomyGroup>> ExecuteAsync(CancellationToken cancellationToken = default)
     {
-        // Cache check (if enabled)
+        // 1. CACHE CHECK
         string? cacheKey = null;
         if (_cacheManager != null)
         {
-            try
-            {
-                cacheKey = CacheKeyBuilder.BuildTaxonomyKey(_codename);
-                var cached = await _cacheManager.GetAsync<TaxonomyGroup>(cacheKey, cancellationToken)
-                    .ConfigureAwait(false);
-
-                if (cached != null)
-                {
-                    return DeliveryResult.CacheHit<ITaxonomyGroup>(cached);
-                }
-            }
-            catch (Exception)
-            {
-                // Cache read failed - continue with API call
-            }
+            cacheKey = CacheKeyBuilder.BuildTaxonomyKey(_codename);
+            var cached = await QueryCacheHelper.TryGetCachedAsync<TaxonomyGroup>(
+                _cacheManager, cacheKey, logger: null, cancellationToken).ConfigureAwait(false);
+            if (cached != null)
+                return DeliveryResult.CacheHit<ITaxonomyGroup>(cached);
         }
 
-        // API call
-        bool? wait = _waitForLoadingNewContentOverride ?? _getDefaultWaitForNewContent();
-        var response = await _api.GetTaxonomyInternalAsync(_codename, wait).ConfigureAwait(false);
-        var deliveryResult = await response.ToDeliveryResultAsync().ConfigureAwait(false);
+        // 2. API CALL
+        var deliveryResult = await FetchFromApiAsync().ConfigureAwait(false);
 
-        // Cache result (if enabled) - metadata queries use empty dependencies (rely on TTL for invalidation)
+        // 3. CACHE RESULT
+        // Metadata queries use empty dependencies (rely on TTL for invalidation)
         if (_cacheManager != null && deliveryResult.IsSuccess && cacheKey != null)
         {
-            try
-            {
-                await _cacheManager.SetAsync(
-                    cacheKey,
-                    (TaxonomyGroup)deliveryResult.Value,
-                    dependencies: [], // Metadata queries don't track dependencies
-                    expiration: null,
-                    cancellationToken: cancellationToken)
-                    .ConfigureAwait(false);
-            }
-            catch (Exception)
-            {
-                // Cache write failed - still return result
-            }
+            await QueryCacheHelper.TrySetCachedAsync(
+                _cacheManager, cacheKey, (TaxonomyGroup)deliveryResult.Value,
+                dependencies: [], logger: null, cancellationToken).ConfigureAwait(false);
         }
 
         return deliveryResult;
+    }
+
+    private async Task<IDeliveryResult<ITaxonomyGroup>> FetchFromApiAsync()
+    {
+        bool? wait = _waitForLoadingNewContentOverride ?? _getDefaultWaitForNewContent();
+        var response = await _api.GetTaxonomyInternalAsync(_codename, wait).ConfigureAwait(false);
+        return await response.ToDeliveryResultAsync().ConfigureAwait(false);
     }
 }
