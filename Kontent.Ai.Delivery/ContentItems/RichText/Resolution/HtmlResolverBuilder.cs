@@ -282,7 +282,7 @@ public sealed class HtmlResolverBuilder : IHtmlResolverBuilder
     }
 
     /// <inheritdoc />
-    public IHtmlResolver Build() // TODO: ensure resolver handles missing linked item (depth = 0) gracefully
+    public IHtmlResolver Build()
     {
         // Always provide built-in defaults for elements that have sensible default rendering
         var resolversWithDefaults = new Dictionary<Type, Delegate>(_resolvers);

@@ -10,7 +10,6 @@ namespace Kontent.Ai.Delivery.SharedModels;
 [DebuggerDisplay("Count = {" + nameof(Count) + "}, Total = {" + nameof(TotalCount) + "}")]
 internal sealed record Pagination : IPagination
 {
-    private string? _nextPageUrl;
     /// <inheritdoc/>
     [JsonPropertyName("skip")]
     public required int Skip { get; init; }
@@ -29,9 +28,5 @@ internal sealed record Pagination : IPagination
 
     /// <inheritdoc/>
     [JsonPropertyName("next_page")]
-    public string? NextPageUrl
-    {
-        get => _nextPageUrl;
-        init => _nextPageUrl = string.IsNullOrWhiteSpace(value) ? null : value;
-    }
+    public required string NextPageUrl { get; init; }
 }

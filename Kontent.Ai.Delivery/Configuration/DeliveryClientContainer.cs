@@ -13,7 +13,7 @@ namespace Kontent.Ai.Delivery.Configuration;
 internal sealed class DeliveryClientContainer : IDeliveryClientContainer
 {
     private readonly ServiceProvider _serviceProvider;
-    private bool _disposed;
+    private volatile bool _disposed;
 
     /// <summary>
     /// Initializes a new instance of the <see cref="DeliveryClientContainer"/> class.

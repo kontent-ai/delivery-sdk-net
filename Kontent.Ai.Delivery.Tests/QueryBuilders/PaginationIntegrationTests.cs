@@ -794,9 +794,9 @@ public sealed class PaginationIntegrationTests
             $"{{\"system\": {{\"id\": \"{Guid.NewGuid()}\", \"name\": \"{codename}\", \"codename\": \"{codename}\", \"language\": \"default\", \"type\": \"article\", \"collection\": \"default\", \"last_modified\": \"2024-01-01T00:00:00Z\"}}, \"elements\": {{\"title\": {{\"type\": \"text\", \"name\": \"Title\", \"value\": \"Title for {codename}\"}}}}}}"
         ));
 
-        var nextPageUrl = hasNextPage ? $",\"next_page\": \"https://deliver.kontent.ai/items?skip={skip + limit}&limit={limit}\"" : "";
+        var nextPageUrl = hasNextPage ? $"https://deliver.kontent.ai/items?skip={skip + limit}&limit={limit}" : "";
 
-        return $"{{\"items\": [{itemsJson}], \"pagination\": {{\"skip\": {skip}, \"limit\": {limit}, \"count\": {codenames.Count}, \"total_count\": {totalCount}{nextPageUrl}}}, \"modular_content\": {{}}}}";
+        return $"{{\"items\": [{itemsJson}], \"pagination\": {{\"skip\": {skip}, \"limit\": {limit}, \"count\": {codenames.Count}, \"total_count\": {totalCount}, \"next_page\": \"{nextPageUrl}\"}}, \"modular_content\": {{}}}}";
     }
 
     private static HttpResponseMessage CreateFeedResponse(IReadOnlyList<string> codenames, string? continuationToken)
@@ -817,9 +817,9 @@ public sealed class PaginationIntegrationTests
             $"{{\"system\": {{\"id\": \"{Guid.NewGuid()}\", \"name\": \"{codename}\", \"codename\": \"{codename}\", \"last_modified\": \"2024-01-01T00:00:00Z\"}}, \"elements\": {{}}}}"
         ));
 
-        var nextPageUrl = hasNextPage ? $",\"next_page\": \"https://deliver.kontent.ai/types?skip={skip + limit}&limit={limit}\"" : "";
+        var nextPageUrl = hasNextPage ? $"https://deliver.kontent.ai/types?skip={skip + limit}&limit={limit}" : "";
 
-        return $"{{\"types\": [{typesJson}], \"pagination\": {{\"skip\": {skip}, \"limit\": {limit}, \"count\": {codenames.Count}, \"total_count\": {totalCount}{nextPageUrl}}}}}";
+        return $"{{\"types\": [{typesJson}], \"pagination\": {{\"skip\": {skip}, \"limit\": {limit}, \"count\": {codenames.Count}, \"total_count\": {totalCount}, \"next_page\": \"{nextPageUrl}\"}}}}";
     }
 
     private static string BuildTaxonomiesListingJson(int skip, int limit, int totalCount, IReadOnlyList<string> codenames, bool hasNextPage = false)
@@ -828,9 +828,9 @@ public sealed class PaginationIntegrationTests
             $"{{\"system\": {{\"id\": \"{Guid.NewGuid()}\", \"name\": \"{codename}\", \"codename\": \"{codename}\", \"last_modified\": \"2024-01-01T00:00:00Z\"}}, \"terms\": []}}"
         ));
 
-        var nextPageUrl = hasNextPage ? $",\"next_page\": \"https://deliver.kontent.ai/taxonomies?skip={skip + limit}&limit={limit}\"" : "";
+        var nextPageUrl = hasNextPage ? $"https://deliver.kontent.ai/taxonomies?skip={skip + limit}&limit={limit}" : "";
 
-        return $"{{\"taxonomies\": [{taxonomiesJson}], \"pagination\": {{\"skip\": {skip}, \"limit\": {limit}, \"count\": {codenames.Count}, \"total_count\": {totalCount}{nextPageUrl}}}}}";
+        return $"{{\"taxonomies\": [{taxonomiesJson}], \"pagination\": {{\"skip\": {skip}, \"limit\": {limit}, \"count\": {codenames.Count}, \"total_count\": {totalCount}, \"next_page\": \"{nextPageUrl}\"}}}}";
     }
 
     private static string BuildLanguagesListingJson(int skip, int limit, int totalCount, IReadOnlyList<string> codenames, bool hasNextPage = false)
@@ -839,9 +839,9 @@ public sealed class PaginationIntegrationTests
             $"{{\"system\": {{\"id\": \"{Guid.NewGuid()}\", \"name\": \"{codename}\", \"codename\": \"{codename}\"}}}}"
         ));
 
-        var nextPageUrl = hasNextPage ? $",\"next_page\": \"https://deliver.kontent.ai/languages?skip={skip + limit}&limit={limit}\"" : "";
+        var nextPageUrl = hasNextPage ? $"https://deliver.kontent.ai/languages?skip={skip + limit}&limit={limit}" : "";
 
-        return $"{{\"languages\": [{languagesJson}], \"pagination\": {{\"skip\": {skip}, \"limit\": {limit}, \"count\": {codenames.Count}, \"total_count\": {totalCount}{nextPageUrl}}}}}";
+        return $"{{\"languages\": [{languagesJson}], \"pagination\": {{\"skip\": {skip}, \"limit\": {limit}, \"count\": {codenames.Count}, \"total_count\": {totalCount}, \"next_page\": \"{nextPageUrl}\"}}}}";
     }
 
     private sealed record TestArticle

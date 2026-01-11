@@ -161,7 +161,7 @@ public sealed class ExecuteAllAsyncTests
         return $$"""
         {
           "items": [{{itemsJson}}],
-          "pagination": { "skip": {{skip}}, "limit": {{limit}}, "count": {{codenames.Count}} },
+          "pagination": { "skip": {{skip}}, "limit": {{limit}}, "count": {{codenames.Count}}, "next_page": "" },
           "modular_content": {}
         }
         """;

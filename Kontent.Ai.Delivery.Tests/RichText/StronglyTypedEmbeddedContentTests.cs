@@ -66,7 +66,7 @@ public class StronglyTypedEmbeddedContentTests
 
         // Act
         var response = await client.GetItem<Article>(ArticleWithEmbeddedTweetsCodename).ExecuteAsync();
-        var tweets = response.Value?.Elements?.BodyCopy.GetEmbeddedContent<Tweet>().ToList(); // TODO: fix null accessibility warning
+        var tweets = response.Value?.Elements?.BodyCopy.GetEmbeddedContent<Tweet>().ToList();
 
         // Assert
         Assert.NotNull(tweets);

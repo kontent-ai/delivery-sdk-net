@@ -810,7 +810,7 @@ public class RichTextIntegrationTests
 
         // Act
         var result = await client.GetItem<Article>("coffee_beverages_explained").ExecuteAsync();
-        var html = await result.Value.Elements.BodyCopy.ToHtmlAsync(resolver); // TODO: fix nullability or add default
+        var html = await result.Value.Elements.BodyCopy.ToHtmlAsync(resolver);
 
         // Assert
         Assert.True(result.IsSuccess);

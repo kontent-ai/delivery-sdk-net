@@ -8,7 +8,7 @@ public interface IContentElement
     /// <summary>
     /// Gets the codename of the content element.
     /// </summary>
-    string? Codename { get; }
+    string Codename { get; }
 
     /// <summary>
     /// Gets the name of the content element.
