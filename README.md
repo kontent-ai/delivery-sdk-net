@@ -121,6 +121,23 @@ services.AddDeliveryClient(builder =>
            .Build());
 ```
 
+#### Registering a Custom Type Provider
+
+To use strongly-typed models with dependency injection, register your type provider **before** calling `AddDeliveryClient()`:
+
+```csharp
+// Register the generated type provider first
+services.AddSingleton<ITypeProvider, GeneratedTypeProvider>();
+
+// Then register the delivery client
+services.AddDeliveryClient(options =>
+{
+    options.EnvironmentId = "your-environment-id";
+});
+```
+
+The SDK uses `TryAddSingleton` internally, so your registration takes precedence over the default type provider.
+
 #### Without Dependency Injection
 
 For console applications, scripts, or scenarios where DI is not available, use `DeliveryClientBuilder` directly:
@@ -129,12 +146,14 @@ For console applications, scripts, or scenarios where DI is not available, use `
 using Kontent.Ai.Delivery.Configuration;
 
 // Simple usage
-var client = DeliveryClientBuilder
+using var container = DeliveryClientBuilder
     .WithEnvironmentId("your-environment-id")
     .Build();
 
+var client = container.Client;
+
 // With caching and type provider
-var client = DeliveryClientBuilder
+using var container = DeliveryClientBuilder
     .WithOptions(builder => builder
         .WithEnvironmentId("your-environment-id")
         .UsePreviewApi("your-preview-api-key")
@@ -142,6 +161,8 @@ var client = DeliveryClientBuilder
     .WithTypeProvider(new GeneratedTypeProvider())
     .WithMemoryCache(TimeSpan.FromMinutes(30))
     .Build();
+
+var client = container.Client;
 ```
 
 The builder supports:
@@ -176,7 +197,7 @@ var result = await client.GetItems()
 
 if (result.IsSuccess)
 {
-    foreach (var item in result.Value)
+    foreach (var item in result.Value.Items)
     {
         Console.WriteLine($"- {item.System.Name}");
     }
@@ -494,7 +515,7 @@ The SDK supports strongly-typed models for compile-time safety and IntelliSense 
 #### Generate Models
 
 > [!WARNING]
-> Model generator with updated delivery model capabilities is currently out as [10.0.0-beta](https://www.nuget.org/packages/Kontent.Ai.ModelGenerator/10.0.0-beta). Make sure to use it with the delivery SDK beta as the older model format is not supported anymore.
+> Model generator with updated delivery model capabilities is currently out as [10.0.0-beta-2](https://www.nuget.org/packages/Kontent.Ai.ModelGenerator/10.0.0-beta-2). Make sure to use it with the delivery SDK beta as the older model format is not supported anymore.
 >
 > Please note that the beta version has been trimmed down significantly and only supports default delivery models. Further functionality will be added along with management SDK updates.
 
@@ -525,9 +546,9 @@ var result = await client.GetItems<Article>()
 
 if (result.IsSuccess)
 {
-    foreach (var article in result.Value)
+    foreach (var article in result.Value.Items)
     {
-        Console.WriteLine($"{article.Title} - {article.PublishDate}");
+        Console.WriteLine($"{article.Elements.Title} - {article.Elements.PublishDate}");
     }
 }
 ```
@@ -827,6 +848,51 @@ var resolver = new HtmlResolverBuilder()
     .Build();
 ```
 
+#### Registering Resolver with Dependency Injection
+
+To avoid creating the resolver at every call site, register `IHtmlResolver` in your DI container:
+
+```csharp
+// Program.cs - Register the resolver once
+services.AddSingleton<IHtmlResolver>(sp => new HtmlResolverBuilder()
+    .WithContentItemLinkResolver("article", async (link, resolveChildren) =>
+    {
+        var innerHtml = await resolveChildren(link.Children);
+        return $"<a href=\"/articles/{link.Metadata?.UrlSlug}\">{innerHtml}</a>";
+    })
+    .WithContentResolver<Tweet>(tweet =>
+        $"<blockquote>{tweet.Elements.TweetText}</blockquote>")
+    .WithContentResolver<Video>(video =>
+        $"<iframe src=\"https://youtube.com/embed/{video.Elements.VideoId}\"></iframe>")
+    .Build());
+```
+
+Then inject and use it in your services:
+
+```csharp
+public class ArticleService
+{
+    private readonly IDeliveryClient _client;
+    private readonly IHtmlResolver _resolver;
+
+    public ArticleService(IDeliveryClient client, IHtmlResolver resolver)
+    {
+        _client = client;
+        _resolver = resolver;
+    }
+
+    public async Task<string?> GetArticleHtmlAsync(string codename)
+    {
+        var result = await _client.GetItem<Article>(codename).ExecuteAsync();
+
+        if (!result.IsSuccess)
+            return null;
+
+        return await result.Value.Elements.BodyCopy.ToHtmlAsync(_resolver);
+    }
+}
+```
+
 **Pattern Matching for Multiple Types:**
 
 ```csharp
@@ -898,7 +964,7 @@ var result = await client.GetLanguages().ExecuteAsync();
 
 if (result.IsSuccess)
 {
-    foreach (var language in result.Value)
+    foreach (var language in result.Value.Languages)
     {
         Console.WriteLine($"{language.System.Name} ({language.System.Codename})");
     }
