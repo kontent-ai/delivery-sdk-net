@@ -179,15 +179,73 @@ if (result.IsSuccess)
 
 #### Get Items with Pagination
 
-For large datasets, use the items feed for efficient pagination:
+For large datasets, use the items feed for efficient pagination with continuation tokens:
 
 ```csharp
-var query = client.GetItemsFeed()
-    .OrderBy("system.last_modified");
-
-await foreach (var item in query.ExecuteAsync())
+// Option 1: Enumerate items one-by-one using IAsyncEnumerable
+await foreach (var item in client.GetItemsFeed().EnumerateItemsAsync())
 {
     Console.WriteLine($"Item: {item.System.Name}");
+}
+
+// Option 2: Get all items at once
+var allItemsResult = await client.GetItemsFeed()
+    .OrderBy("system.last_modified")
+    .EnumerateAllAsync();
+
+if (allItemsResult.IsSuccess)
+{
+    foreach (var item in allItemsResult.Value.Items)
+    {
+        Console.WriteLine($"Item: {item.System.Name}");
+    }
+}
+
+// Option 3: Manual page-by-page control using FetchNextPageAsync
+var firstPage = await client.GetItemsFeed().ExecuteAsync();
+if (firstPage.IsSuccess)
+{
+    foreach (var item in firstPage.Value.Items)
+    {
+        Console.WriteLine($"Item: {item.System.Name}");
+    }
+
+    // Fetch next page if available
+    while (firstPage.Value.HasNextPage)
+    {
+        var nextPage = await firstPage.Value.FetchNextPageAsync();
+        if (nextPage?.IsSuccess == true)
+        {
+            foreach (var item in nextPage.Value.Items)
+            {
+                Console.WriteLine($"Item: {item.System.Name}");
+            }
+            firstPage = nextPage;
+        }
+        else break;
+    }
+}
+```
+
+For standard skip/limit pagination with `GetItems()`, you can also fetch all pages automatically:
+
+```csharp
+// Fetch all pages at once using ExecuteAllAsync
+var allArticles = await client.GetItems<Article>()
+    .Where(f => f.System("type").IsEqualTo("article"))
+    .Limit(10)  // Page size
+    .ExecuteAllAsync();
+
+// Or use manual pagination with FetchNextPageAsync
+var firstPage = await client.GetItems<Article>()
+    .Limit(10)
+    .WithTotalCount()
+    .ExecuteAsync();
+
+if (firstPage.IsSuccess && firstPage.Value.HasNextPage)
+{
+    var nextPage = await firstPage.Value.FetchNextPageAsync();
+    // Continue processing...
 }
 ```
 
@@ -887,7 +945,6 @@ For more advanced scenarios and in-depth guides, explore the following documenta
 - **[Rich Text Customization](docs/rich-text-customization.md)** - Custom resolvers, URL patterns, async resolution
 - **[Caching Guide](docs/caching-guide.md)** - Cache strategies, invalidation, webhook integration
 - **[Multi-Client Scenarios](docs/multi-client-scenarios.md)** - Named clients, multi-tenant architectures
-- **[Custom Type Converters](docs/custom-type-converters.md)** - Extensibility through custom element converters
 - **[Performance Optimization](docs/performance-optimization.md)** - Query optimization, monitoring, best practices
 
 ## Contributing

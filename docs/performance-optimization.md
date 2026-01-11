@@ -141,10 +141,20 @@ var query = client.GetItemsFeed<Article>()
     .WithElements("title", "url_slug")  // Only needed elements
     .OrderBy("system.codename", OrderingMode.Ascending);
 
-await foreach (var article in query.ExecuteAsync())
+// Option 1: Process items one-by-one via IAsyncEnumerable
+await foreach (var article in query.EnumerateItemsAsync())
 {
-    // Process each article
     await ProcessArticleAsync(article);
+}
+
+// Option 2: Get all items at once
+var allResult = await query.EnumerateAllAsync();
+if (allResult.IsSuccess)
+{
+    foreach (var article in allResult.Value.Items)
+    {
+        await ProcessArticleAsync(article);
+    }
 }
 ```
 
