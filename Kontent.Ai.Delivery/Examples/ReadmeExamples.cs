@@ -94,23 +94,7 @@ public static class ReadmeExamples
         }
     }
 
-    // Items feed pagination - Option 2: EnumerateAllAsync (get all items at once)
-    public static async Task ItemsFeedEnumerateAllAsync(IDeliveryClient client)
-    {
-        var allItemsResult = await client.GetItemsFeed()
-            .OrderBy("system.last_modified")
-            .EnumerateAllAsync();
-
-        if (allItemsResult.IsSuccess)
-        {
-            foreach (var item in allItemsResult.Value.Items)
-            {
-                Console.WriteLine($"Item: {item.System.Name}");
-            }
-        }
-    }
-
-    // Items feed pagination - Option 3: Manual pagination with FetchNextPageAsync
+    // Items feed pagination - Option 2: Manual pagination with FetchNextPageAsync
     public static async Task ItemsFeedFetchNextPageAsync(IDeliveryClient client)
     {
         var firstPage = await client.GetItemsFeed().ExecuteAsync();

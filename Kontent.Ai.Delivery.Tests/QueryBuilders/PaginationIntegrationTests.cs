@@ -281,56 +281,6 @@ public sealed class PaginationIntegrationTests
     #region ItemsFeed (GetItemsFeed) Tests
 
     [Fact]
-    public async Task ItemsFeed_EnumerateAllAsync_Vs_FetchPageByPage_ProducesIdenticalResults()
-    {
-        var allCodenames = new[] { "feed_a", "feed_b", "feed_c", "feed_d" };
-
-        // Mock for EnumerateAllAsync
-        var envAll = Guid.NewGuid().ToString();
-        var feedUrlAll = $"https://deliver.kontent.ai/{envAll}/items-feed";
-        var mockForAll = new MockHttpMessageHandler();
-        mockForAll.Expect(feedUrlAll).Respond(req => CreateFeedResponse(allCodenames[..2], "token1"));
-        mockForAll.Expect(feedUrlAll).WithHeaders("X-Continuation", "token1").Respond(req => CreateFeedResponse(allCodenames[2..], null));
-
-        var clientAll = BuildClient(envAll, mockForAll);
-
-        // Mock for manual FetchNextPageAsync
-        var envManual = Guid.NewGuid().ToString();
-        var feedUrlManual = $"https://deliver.kontent.ai/{envManual}/items-feed";
-        var mockForManual = new MockHttpMessageHandler();
-        mockForManual.Expect(feedUrlManual).Respond(req => CreateFeedResponse(allCodenames[..2], "token1"));
-        mockForManual.Expect(feedUrlManual).WithHeaders("X-Continuation", "token1").Respond(req => CreateFeedResponse(allCodenames[2..], null));
-
-        var clientManual = BuildClient(envManual, mockForManual);
-
-        // Act: EnumerateAllAsync
-        var allResult = await clientAll.GetItemsFeed<TestArticle>().EnumerateAllAsync();
-        Assert.True(allResult.IsSuccess);
-
-        // Act: Manual pagination
-        var manualItems = new List<IContentItem<TestArticle>>();
-        var firstPage = await clientManual.GetItemsFeed<TestArticle>().ExecuteAsync();
-        Assert.True(firstPage.IsSuccess);
-        manualItems.AddRange(firstPage.Value.Items);
-        var currentPage = firstPage.Value;
-
-        while (currentPage.HasNextPage)
-        {
-            var nextResult = await currentPage.FetchNextPageAsync();
-            Assert.NotNull(nextResult);
-            Assert.True(nextResult.IsSuccess);
-            manualItems.AddRange(nextResult.Value.Items);
-            currentPage = nextResult.Value;
-        }
-
-        Assert.Equal(allResult.Value.Items.Count, manualItems.Count);
-        Assert.Equal(allResult.Value.Items.Select(i => i.System.Codename).ToArray(), manualItems.Select(i => i.System.Codename).ToArray());
-
-        mockForAll.VerifyNoOutstandingExpectation();
-        mockForManual.VerifyNoOutstandingExpectation();
-    }
-
-    [Fact]
     public async Task ItemsFeed_EnumerateItemsAsync_Vs_FetchPageByPage_ProducesIdenticalResults()
     {
         var allCodenames = new[] { "async_1", "async_2", "async_3" };

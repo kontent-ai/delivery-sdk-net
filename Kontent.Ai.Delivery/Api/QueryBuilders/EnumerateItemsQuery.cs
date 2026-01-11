@@ -1,7 +1,5 @@
-using System.Net;
 using System.Runtime.CompilerServices;
 using Kontent.Ai.Delivery.Api.Filtering;
-using Kontent.Ai.Delivery.ContentItems;
 using Kontent.Ai.Delivery.ContentItems.Mapping;
 using Kontent.Ai.Delivery.Extensions;
 using Kontent.Ai.Delivery.Logging;
@@ -196,89 +194,5 @@ internal sealed class EnumerateItemsQuery<TModel>(
                 yield break;
             }
         }
-    }
-
-    public async Task<IDeliveryResult<IDeliveryItemsFeedResponse<TModel>>> EnumerateAllAsync(CancellationToken cancellationToken = default)
-    {
-        // Log pagination start
-        if (_logger != null)
-            LoggerMessages.PaginationStarted(_logger, "ItemsFeed");
-
-        var allItems = new List<ContentItem<TModel>>();
-        string? requestUrl = null;
-        System.Net.Http.Headers.HttpResponseHeaders? responseHeaders = null;
-        int pageCount = 0;
-
-        bool? wait = _waitForLoadingNewContentOverride ?? _getDefaultWaitForNewContent();
-        string? token = null;
-
-        while (true)
-        {
-            var resp = await _api
-                .GetItemsFeedInternalAsync<TModel>(
-                    _params,
-                    FilterQueryParams.ToQueryDictionary(_serializedFilters),
-                    token,
-                    wait,
-                    cancellationToken)
-                .ConfigureAwait(false);
-
-            var deliveryResult = await resp.ToDeliveryResultAsync().ConfigureAwait(false);
-
-            if (!deliveryResult.IsSuccess)
-            {
-                if (_logger != null)
-                    LoggerMessages.PaginationStoppedEarly(_logger, "ItemsFeed");
-
-                return DeliveryResult.Failure<IDeliveryItemsFeedResponse<TModel>>(
-                    deliveryResult.RequestUrl ?? string.Empty,
-                    deliveryResult.StatusCode,
-                    deliveryResult.Error,
-                    deliveryResult.ResponseHeaders);
-            }
-
-            pageCount++;
-
-            // Capture request URL and headers from first request
-            requestUrl ??= deliveryResult.RequestUrl;
-            responseHeaders ??= deliveryResult.ResponseHeaders;
-
-            var content = deliveryResult.Value;
-
-            foreach (var item in content.Items)
-            {
-                // Post-process items (hydration for non-dynamic models)
-                if (!IsDynamicModel)
-                {
-                    await _contentItemMapper.CompleteItemAsync(item, content.ModularContent, null, cancellationToken).ConfigureAwait(false);
-                }
-                allItems.Add(item);
-            }
-
-            token = resp.Continuation();
-            if (string.IsNullOrEmpty(token))
-                break;
-        }
-
-        // Log pagination completed
-        if (_logger != null)
-            LoggerMessages.PaginationCompleted(_logger, "ItemsFeed", pageCount, allItems.Count);
-
-        // Create synthetic response with all items (no next page since we fetched everything)
-        var allItemsResponse = new DeliveryItemsFeedResponse<TModel>
-        {
-            Items = allItems,
-            ModularContent = new Dictionary<string, System.Text.Json.JsonElement>(),
-            ContinuationToken = null, // No more pages
-            NextPageFetcher = null // No next page
-        };
-
-        return DeliveryResult.Success<IDeliveryItemsFeedResponse<TModel>>(
-            allItemsResponse,
-            requestUrl ?? string.Empty,
-            HttpStatusCode.OK,
-            hasStaleContent: false,
-            continuationToken: null,
-            responseHeaders: responseHeaders);
     }
 }

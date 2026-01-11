@@ -165,7 +165,7 @@ public class DeliveryClientTests
     }
 
     [Fact]
-    public async Task ItemsFeed_EnumerateAll_Succeeds()
+    public async Task ItemsFeed_EnumerateItemsAsync_Succeeds()
     {
         var mock = new MockHttpMessageHandler();
         mock.When($"{BaseUrl}/items-feed")
@@ -173,36 +173,47 @@ public class DeliveryClientTests
             .Respond("application/json", await File.ReadAllTextAsync(Path.Combine(Environment.CurrentDirectory, $"Fixtures{Path.DirectorySeparatorChar}DeliveryClient{Path.DirectorySeparatorChar}articles_feed.json")));
 
         var client = CreateClient(mock);
-        var result = await client.GetItemsFeed<Article>().Where(f => f.System("type").IsEqualTo("article")).EnumerateAllAsync();
+        var items = new List<IContentItem<Article>>();
+        await foreach (var item in client.GetItemsFeed<Article>().Where(f => f.System("type").IsEqualTo("article")).EnumerateItemsAsync())
+        {
+            items.Add(item);
+        }
 
-        Assert.True(result.IsSuccess);
-        Assert.NotEmpty(result.Value.Items);
+        Assert.NotEmpty(items);
     }
 
     [Fact]
-    public async Task ItemUsedIn_EnumerateAll_Succeeds()
+    public async Task ItemUsedIn_EnumerateItemsAsync_Succeeds()
     {
         var mock = new MockHttpMessageHandler();
         mock.When($"{BaseUrl}/items/coffee_beverages_explained/used-in")
             .Respond("application/json", await File.ReadAllTextAsync(Path.Combine(Environment.CurrentDirectory, $"Fixtures{Path.DirectorySeparatorChar}DeliveryClient{Path.DirectorySeparatorChar}used_in.json")));
 
         var client = CreateClient(mock);
-        var used = await client.GetItemUsedIn("coffee_beverages_explained").EnumerateAllAsync();
+        var items = new List<IUsedInItem>();
+        await foreach (var item in client.GetItemUsedIn("coffee_beverages_explained").EnumerateItemsAsync())
+        {
+            items.Add(item);
+        }
 
-        Assert.NotEmpty(used);
+        Assert.NotEmpty(items);
     }
 
     [Fact]
-    public async Task AssetUsedIn_EnumerateAll_Succeeds()
+    public async Task AssetUsedIn_EnumerateItemsAsync_Succeeds()
     {
         var mock = new MockHttpMessageHandler();
         mock.When($"{BaseUrl}/assets/asset_codename/used-in")
             .Respond("application/json", await File.ReadAllTextAsync(Path.Combine(Environment.CurrentDirectory, $"Fixtures{Path.DirectorySeparatorChar}DeliveryClient{Path.DirectorySeparatorChar}used_in.json")));
 
         var client = CreateClient(mock);
-        var used = await client.GetAssetUsedIn("asset_codename").EnumerateAllAsync();
+        var items = new List<IUsedInItem>();
+        await foreach (var item in client.GetAssetUsedIn("asset_codename").EnumerateItemsAsync())
+        {
+            items.Add(item);
+        }
 
-        Assert.NotEmpty(used);
+        Assert.NotEmpty(items);
     }
 
     [Fact]
