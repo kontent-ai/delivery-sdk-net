@@ -265,8 +265,8 @@ internal sealed class ItemsQuery<TModel>(
         if (string.IsNullOrEmpty(pagination.NextPageUrl))
             return null;
 
-        // Calculate next skip value
-        var nextSkip = pagination.Skip + pagination.Count;
+        // Extract skip from NextPageUrl rather than calculating it
+        var nextSkip = ExtractSkipFromUrl(pagination.NextPageUrl);
 
         return async (ct) =>
         {
@@ -285,6 +285,13 @@ internal sealed class ItemsQuery<TModel>(
 
             return await nextQuery.ExecuteAsync(ct).ConfigureAwait(false);
         };
+    }
+
+    private static int ExtractSkipFromUrl(string url)
+    {
+        var uri = new Uri(url);
+        var query = System.Web.HttpUtility.ParseQueryString(uri.Query);
+        return int.TryParse(query["skip"], out var skip) ? skip : 0;
     }
 
     public async Task<IDeliveryResult<IDeliveryItemListingResponse<TModel>>> ExecuteAllAsync(CancellationToken cancellationToken = default)

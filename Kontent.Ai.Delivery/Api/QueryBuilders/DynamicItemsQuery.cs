@@ -130,11 +130,11 @@ internal sealed class DynamicItemsQuery(
 
     private Func<CancellationToken, Task<IDeliveryResult<IDeliveryItemListingResponse<IDynamicElements>>>>? CreateNextPageFetcher(Pagination pagination)
     {
-        if (string.IsNullOrEmpty(pagination.NextPageUrl)) // TODO: why calculate nest skip value when it's returned by the API?
+        if (string.IsNullOrEmpty(pagination.NextPageUrl))
             return null;
 
-        // Calculate next skip value
-        var nextSkip = pagination.Skip + pagination.Count;
+        // Extract skip from NextPageUrl rather than calculating it
+        var nextSkip = ExtractSkipFromUrl(pagination.NextPageUrl);
 
         return async (ct) =>
         {
@@ -153,6 +153,13 @@ internal sealed class DynamicItemsQuery(
 
             return await nextQuery.ExecuteAsync(ct).ConfigureAwait(false);
         };
+    }
+
+    private static int ExtractSkipFromUrl(string url)
+    {
+        var uri = new Uri(url);
+        var query = System.Web.HttpUtility.ParseQueryString(uri.Query);
+        return int.TryParse(query["skip"], out var skip) ? skip : 0;
     }
 
     public async Task<IDeliveryResult<IDeliveryItemListingResponse<IDynamicElements>>> ExecuteAllAsync(CancellationToken cancellationToken = default)
