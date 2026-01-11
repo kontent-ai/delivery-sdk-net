@@ -185,7 +185,7 @@ if (result.IsSuccess)
 
 #### Get Items with Pagination
 
-For large datasets, use the items feed for paginated enumeration with continuation tokens (e.g. for cache warmup):
+For large datasets, use the items feed for paginated enumeration with continuation tokens (e.g. for search index building, data synchronization, or bulk exports):
 
 ```csharp
 // Option 1: Enumerate all items one-by-one using IAsyncEnumerable

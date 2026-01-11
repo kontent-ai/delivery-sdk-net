@@ -1,5 +1,6 @@
 using System.Diagnostics;
 using System.Net;
+using Kontent.Ai.Delivery.Api.QueryBuilders.Helpers;
 using Kontent.Ai.Delivery.Caching;
 using Kontent.Ai.Delivery.ContentItems;
 using Kontent.Ai.Delivery.ContentItems.Mapping;
@@ -59,101 +60,37 @@ internal sealed class ItemQuery<TModel>(
 
     public async Task<IDeliveryResult<IContentItem<TModel>>> ExecuteAsync(CancellationToken cancellationToken = default)
     {
-        // Log query starting
-        if (_logger != null)
-            LoggerMessages.QueryStarting(_logger, "Item", _codename);
+        LogQueryStarting();
+        var stopwatch = StartTimingIfEnabled();
 
-        // Start timing if logging is enabled
-        var stopwatch = _logger?.IsEnabled(LogLevel.Information) == true ? Stopwatch.StartNew() : null;
-
-        // ========== 1. CACHE CHECK (if enabled) ==========
+        // 1. CACHE CHECK
         string? cacheKey = null;
         if (_cacheManager != null)
         {
-            try
+            cacheKey = CacheKeyBuilder.BuildItemKey(_codename, _params);
+            var cached = await QueryCacheHelper.TryGetCachedAsync<ContentItem<TModel>>(
+                _cacheManager, cacheKey, _logger, cancellationToken).ConfigureAwait(false);
+            if (cached != null)
             {
-                cacheKey = CacheKeyBuilder.BuildItemKey(_codename, _params);
-                // Cache ContentItem directly - it's the concrete type that serializes properly
-                var cachedItem = await _cacheManager.GetAsync<ContentItem<TModel>>(cacheKey, cancellationToken)
-                    .ConfigureAwait(false);
-
-                if (cachedItem != null)
-                {
-                    // Build DeliveryResult from cached item
-                    var cachedResult = DeliveryResult.CacheHit<IContentItem<TModel>>(cachedItem);
-
-                    // Log cache hit and return
-                    if (_logger != null)
-                    {
-                        LoggerMessages.QueryCacheHit(_logger, cacheKey);
-                        LoggerMessages.QueryCompleted(_logger, "Item", _codename,
-                            stopwatch?.ElapsedMilliseconds ?? 0, HttpStatusCode.OK, cacheHit: true);
-                    }
-                    return cachedResult;
-                }
-
-                // Log cache miss
-                if (_logger != null)
-                    LoggerMessages.QueryCacheMiss(_logger, cacheKey);
-            }
-            catch (Exception ex)
-            {
-                // Cache read failed - continue with API call
-                if (_logger != null && cacheKey != null)
-                    LoggerMessages.CacheGetFailed(_logger, cacheKey, ex);
+                LogQueryCompleted(stopwatch, HttpStatusCode.OK, cacheHit: true);
+                return DeliveryResult.CacheHit<IContentItem<TModel>>(cached);
             }
         }
 
-        // ========== 2. API CALL (cache miss or disabled) ==========
-        bool? wait = _waitForLoadingNewContentOverride ?? _getDefaultWaitForNewContent();
-        var rawResponse = await _api.GetItemInternalAsync<TModel>(_codename, _params, wait).ConfigureAwait(false);
-
-        // Convert IApiResponse to IDeliveryResult
-        var deliveryResult = await rawResponse.ToDeliveryResultAsync().ConfigureAwait(false);
-
+        // 2. API CALL
+        var deliveryResult = await FetchFromApiAsync().ConfigureAwait(false);
         if (!deliveryResult.IsSuccess)
         {
-            // Log query failure
-            if (_logger != null)
-                LoggerMessages.QueryFailed(_logger, "Item", _codename, deliveryResult.StatusCode,
-                    deliveryResult.Error?.Message, exception: null);
-
-            return DeliveryResult.Failure<IContentItem<TModel>>(
-                deliveryResult.RequestUrl ?? string.Empty,
-                deliveryResult.StatusCode,
-                deliveryResult.Error,
-                deliveryResult.ResponseHeaders);
+            LogQueryFailed(deliveryResult);
+            return CreateFailureResult(deliveryResult);
         }
 
-        // ========== 3. POST-PROCESS WITH DEPENDENCY TRACKING ==========
-        var resp = deliveryResult.Value;
-        var item = resp.Item;
+        // 3. POST-PROCESS
+        var (item, dependencies) = await ProcessItemAsync(deliveryResult.Value, cancellationToken)
+            .ConfigureAwait(false);
 
-        // Create dependency context only if caching enabled
-        var dependencyContext = _cacheManager != null ? new DependencyTrackingContext() : null;
-
-        // Track primary item dependency
-        dependencyContext?.TrackItem(item.System.Codename);
-
-        // Track modular content dependencies
-        if (dependencyContext != null && resp.ModularContent != null)
-        {
-            foreach (var codename in resp.ModularContent.Keys)
-            {
-                dependencyContext.TrackItem(codename);
-            }
-        }
-
-        // Post-process to hydrate IRichTextContent, assets, taxonomy (will track additional dependencies)
-        // Dynamic mode intentionally stays raw (no hydration).
-        if (!IsDynamicModel)
-        {
-            await _contentItemMapper.CompleteItemAsync(item, resp.ModularContent, dependencyContext, cancellationToken)
-                .ConfigureAwait(false);
-        }
-
-        // ========== 4. BUILD RESULT ==========
-        var result = DeliveryResult.Success<IContentItem<TModel>>(
+        // 4. BUILD RESULT
+        var result = DeliveryResult.Success(
             item,
             deliveryResult.RequestUrl ?? string.Empty,
             deliveryResult.StatusCode,
@@ -161,41 +98,81 @@ internal sealed class ItemQuery<TModel>(
             deliveryResult.ContinuationToken,
             deliveryResult.ResponseHeaders);
 
-        // ========== 5. CACHE RESULT (if enabled) ==========
-        if (_cacheManager != null && dependencyContext != null && cacheKey != null)
+        // 5. CACHE & LOG COMPLETION
+        if (_cacheManager != null && cacheKey != null && item is ContentItem<TModel> concreteItem)
         {
-            try
-            {
-                // Cache the ContentItem directly (concrete type for proper serialization)
-                if (item is ContentItem<TModel> concreteItem)
-                {
-                    await _cacheManager.SetAsync(
-                        cacheKey,
-                        concreteItem,
-                        dependencyContext.Dependencies,
-                        expiration: null, // Use cache manager's default
-                        cancellationToken: cancellationToken)
-                        .ConfigureAwait(false);
-                }
-            }
-            catch (Exception ex)
-            {
-                // Cache write failed - still return result to caller
-                if (_logger != null)
-                    LoggerMessages.CacheSetFailed(_logger, cacheKey, ex);
-            }
+            await QueryCacheHelper.TrySetCachedAsync(
+                _cacheManager, cacheKey, concreteItem, dependencies, _logger, cancellationToken)
+                .ConfigureAwait(false);
         }
 
-        // Log successful completion
-        if (_logger != null)
-        {
-            stopwatch?.Stop();
-            if (deliveryResult.HasStaleContent)
-                LoggerMessages.QueryStaleContent(_logger, _codename);
-            LoggerMessages.QueryCompleted(_logger, "Item", _codename,
-                stopwatch?.ElapsedMilliseconds ?? 0, deliveryResult.StatusCode, cacheHit: false);
-        }
-
+        LogQueryCompleted(stopwatch, deliveryResult.StatusCode, cacheHit: false, deliveryResult.HasStaleContent);
         return result;
+    }
+
+    private async Task<IDeliveryResult<DeliveryItemResponse<TModel>>> FetchFromApiAsync()
+    {
+        bool? wait = _waitForLoadingNewContentOverride ?? _getDefaultWaitForNewContent();
+        var rawResponse = await _api.GetItemInternalAsync<TModel>(_codename, _params, wait)
+            .ConfigureAwait(false);
+        return await rawResponse.ToDeliveryResultAsync().ConfigureAwait(false);
+    }
+
+    private async Task<(IContentItem<TModel> Item, IEnumerable<string> Dependencies)> ProcessItemAsync(
+        DeliveryItemResponse<TModel> resp, CancellationToken cancellationToken)
+    {
+        var item = resp.Item;
+        var dependencyContext = _cacheManager != null ? new DependencyTrackingContext() : null;
+
+        dependencyContext?.TrackItem(item.System.Codename);
+        if (dependencyContext != null && resp.ModularContent != null)
+        {
+            foreach (var codename in resp.ModularContent.Keys)
+                dependencyContext.TrackItem(codename);
+        }
+
+        // Hydrate rich text, assets, taxonomy (tracks additional dependencies)
+        // Dynamic mode intentionally stays raw (no hydration)
+        if (!IsDynamicModel)
+        {
+            await _contentItemMapper.CompleteItemAsync(item, resp.ModularContent, dependencyContext, cancellationToken)
+                .ConfigureAwait(false);
+        }
+
+        return (item, dependencyContext?.Dependencies ?? []);
+    }
+
+    private static IDeliveryResult<IContentItem<TModel>> CreateFailureResult(
+        IDeliveryResult<DeliveryItemResponse<TModel>> deliveryResult) =>
+        DeliveryResult.Failure<IContentItem<TModel>>(
+            deliveryResult.RequestUrl ?? string.Empty,
+            deliveryResult.StatusCode,
+            deliveryResult.Error,
+            deliveryResult.ResponseHeaders);
+
+    private void LogQueryStarting()
+    {
+        if (_logger != null)
+            LoggerMessages.QueryStarting(_logger, "Item", _codename);
+    }
+
+    private Stopwatch? StartTimingIfEnabled() =>
+        _logger?.IsEnabled(LogLevel.Information) == true ? Stopwatch.StartNew() : null;
+
+    private void LogQueryFailed(IDeliveryResult<DeliveryItemResponse<TModel>> deliveryResult)
+    {
+        if (_logger != null)
+            LoggerMessages.QueryFailed(_logger, "Item", _codename, deliveryResult.StatusCode,
+                deliveryResult.Error?.Message, exception: null);
+    }
+
+    private void LogQueryCompleted(Stopwatch? stopwatch, HttpStatusCode statusCode, bool cacheHit, bool hasStaleContent = false)
+    {
+        if (_logger == null) return;
+        stopwatch?.Stop();
+        if (hasStaleContent)
+            LoggerMessages.QueryStaleContent(_logger, _codename);
+        LoggerMessages.QueryCompleted(_logger, "Item", _codename,
+            stopwatch?.ElapsedMilliseconds ?? 0, statusCode, cacheHit);
     }
 }

@@ -210,28 +210,7 @@ public static partial class ServiceCollectionExtensions
         RegisterNamedHttpClient(services, name, configureHttpClient, configureResilience, configureRefit);
 
         // Register keyed IDeliveryClient
-        services.AddKeyedSingleton<IDeliveryClient>(name, (sp, key) =>
-        {
-            var clientName = (string)key!;
-            var optionsMonitor = sp.GetRequiredService<IOptionsMonitor<DeliveryOptions>>();
-            var namedMonitor = new NamedOptionsMonitor<DeliveryOptions>(optionsMonitor, clientName);
-
-            var deliveryApi = sp.GetRequiredKeyedService<IDeliveryApi>(clientName);
-            var contentItemMapper = sp.GetRequiredService<ContentItemMapper>();
-
-            // Resolve keyed cache manager for this client (registered via AddDeliveryMemoryCache/AddDeliveryDistributedCache)
-            var cacheManager = sp.GetKeyedService<IDeliveryCacheManager>(clientName);
-
-            // Resolve logger (optional - will be null if no logging is configured)
-            var logger = sp.GetService<ILogger<DeliveryClient>>();
-
-            return new DeliveryClient(
-                deliveryApi,
-                namedMonitor,
-                contentItemMapper,
-                cacheManager,
-                logger);
-        });
+        services.AddKeyedSingleton<IDeliveryClient>(name, CreateDeliveryClient);
 
         // Register factory
         services.TryAddSingleton<IDeliveryClientFactory, DeliveryClientFactory>();
@@ -247,5 +226,31 @@ public static partial class ServiceCollectionExtensions
         }
 
         return services;
+    }
+
+    /// <summary>
+    /// Factory method for creating keyed DeliveryClient instances.
+    /// </summary>
+    private static IDeliveryClient CreateDeliveryClient(IServiceProvider sp, object? key)
+    {
+        var clientName = (string)key!;
+        var optionsMonitor = sp.GetRequiredService<IOptionsMonitor<DeliveryOptions>>();
+        var namedMonitor = new NamedOptionsMonitor<DeliveryOptions>(optionsMonitor, clientName);
+
+        var deliveryApi = sp.GetRequiredKeyedService<IDeliveryApi>(clientName);
+        var contentItemMapper = sp.GetRequiredService<ContentItemMapper>();
+
+        // Resolve keyed cache manager for this client (registered via AddDeliveryMemoryCache/AddDeliveryDistributedCache)
+        var cacheManager = sp.GetKeyedService<IDeliveryCacheManager>(clientName);
+
+        // Resolve logger (optional - will be null if no logging is configured)
+        var logger = sp.GetService<ILogger<DeliveryClient>>();
+
+        return new DeliveryClient(
+            deliveryApi,
+            namedMonitor,
+            contentItemMapper,
+            cacheManager,
+            logger);
     }
 }

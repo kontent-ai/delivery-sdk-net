@@ -368,7 +368,7 @@ public class ServiceCollectionsExtensionsTests
         var provider = _serviceCollection.BuildServiceProvider();
         var clientDirect = provider.GetRequiredService<IDeliveryClient>();
         var factory = provider.GetRequiredService<IDeliveryClientFactory>();
-        var clientFromFactory = factory.Get(Kontent.Ai.Delivery.Abstractions.Options.DefaultName);
+        var clientFromFactory = factory.Get(Abstractions.Options.DefaultName);
 
         // Assert - Should be the same singleton instance
         Assert.Same(clientDirect, clientFromFactory);

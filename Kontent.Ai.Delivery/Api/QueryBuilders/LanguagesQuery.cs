@@ -42,10 +42,8 @@ internal sealed class LanguagesQuery(IDeliveryApi api, Func<bool?> getDefaultWai
 
     public async Task<IDeliveryResult<IDeliveryLanguageListingResponse>> ExecuteAsync(CancellationToken cancellationToken = default)
     {
-        bool? wait = _waitForLoadingNewContentOverride ?? _getDefaultWaitForNewContent();
-        var response = await _api.GetLanguagesInternalAsync(_params, wait).ConfigureAwait(false);
-        var deliveryResult = await response.ToDeliveryResultAsync().ConfigureAwait(false);
-
+        // API CALL
+        var deliveryResult = await FetchFromApiAsync().ConfigureAwait(false);
         if (!deliveryResult.IsSuccess)
         {
             return DeliveryResult.Failure<IDeliveryLanguageListingResponse>(
@@ -55,13 +53,9 @@ internal sealed class LanguagesQuery(IDeliveryApi api, Func<bool?> getDefaultWai
                 deliveryResult.ResponseHeaders);
         }
 
+        // BUILD RESULT WITH NEXT PAGE FETCHER
         var resp = deliveryResult.Value;
-
-        // Build response with next page fetcher
-        var responseWithFetcher = resp with
-        {
-            NextPageFetcher = CreateNextPageFetcher(resp.Pagination)
-        };
+        var responseWithFetcher = resp with { NextPageFetcher = CreateNextPageFetcher(resp.Pagination) };
 
         return DeliveryResult.Success<IDeliveryLanguageListingResponse>(
             responseWithFetcher,
@@ -72,12 +66,18 @@ internal sealed class LanguagesQuery(IDeliveryApi api, Func<bool?> getDefaultWai
             deliveryResult.ResponseHeaders);
     }
 
+    private async Task<IDeliveryResult<DeliveryLanguageListingResponse>> FetchFromApiAsync()
+    {
+        bool? wait = _waitForLoadingNewContentOverride ?? _getDefaultWaitForNewContent();
+        var response = await _api.GetLanguagesInternalAsync(_params, wait).ConfigureAwait(false);
+        return await response.ToDeliveryResultAsync().ConfigureAwait(false);
+    }
+
     private Func<CancellationToken, Task<IDeliveryResult<IDeliveryLanguageListingResponse>>>? CreateNextPageFetcher(IPagination pagination)
     {
         if (string.IsNullOrEmpty(pagination.NextPageUrl))
             return null;
 
-        // Calculate next skip value
         var nextSkip = pagination.Skip + pagination.Count;
 
         return async (ct) =>

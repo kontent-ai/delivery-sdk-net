@@ -38,8 +38,8 @@ public static partial class ServiceCollectionExtensions
         TimeSpan? defaultExpiration = null)
     {
         return services.AddDeliveryMemoryCache(
-            Abstractions.Options.DefaultName,
-            keyPrefix: null,
+            Options.DefaultName,
+            keyPrefix: string.Empty, // No prefix for default single-client scenario
             defaultExpiration);
     }
 
@@ -135,8 +135,8 @@ public static partial class ServiceCollectionExtensions
         TimeSpan? defaultExpiration = null)
     {
         return services.AddDeliveryDistributedCache(
-            Abstractions.Options.DefaultName,
-            keyPrefix: null,
+            Options.DefaultName,
+            keyPrefix: string.Empty, // No prefix for default single-client scenario
             defaultExpiration);
     }
 
