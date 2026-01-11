@@ -5,6 +5,7 @@ using Microsoft.Extensions.Http.Resilience;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
 using Polly;
+using Polly.Retry;
 
 namespace Kontent.Ai.Delivery.Extensions;
 
@@ -125,7 +126,7 @@ public static partial class ServiceCollectionExtensions
 
     private static void ConfigureDefaultResilience(ResiliencePipelineBuilder<HttpResponseMessage> builder)
     {
-        // Retry policy
+        // Retry policy with Retry-After header support
         builder.AddRetry(new HttpRetryStrategyOptions
         {
             MaxRetryAttempts = 3,
@@ -134,11 +135,28 @@ public static partial class ServiceCollectionExtensions
             UseJitter = true,
             ShouldHandle = args => ValueTask.FromResult(
                 args.Outcome.Result?.IsSuccessStatusCode == false &&
-                IsRetryableStatusCode(args.Outcome.Result?.StatusCode))
+                IsRetryableStatusCode(args.Outcome.Result?.StatusCode)),
+            DelayGenerator = GetRetryAfterDelay
         });
 
         // Timeout policy
         builder.AddTimeout(TimeSpan.FromSeconds(30));
+    }
+
+    /// <summary>
+    /// Extracts the retry delay from the Retry-After header on 429 responses.
+    /// Kontent.ai returns Retry-After as seconds until the next request is allowed.
+    /// </summary>
+    private static ValueTask<TimeSpan?> GetRetryAfterDelay(RetryDelayGeneratorArguments<HttpResponseMessage> args)
+    {
+        if (args.Outcome.Result is { StatusCode: System.Net.HttpStatusCode.TooManyRequests } response
+            && response.Headers.RetryAfter?.Delta is { } retryAfter)
+        {
+            return ValueTask.FromResult<TimeSpan?>(retryAfter);
+        }
+
+        // Fall back to default exponential backoff
+        return ValueTask.FromResult<TimeSpan?>(null);
     }
 
     private static bool IsRetryableStatusCode(System.Net.HttpStatusCode? statusCode)

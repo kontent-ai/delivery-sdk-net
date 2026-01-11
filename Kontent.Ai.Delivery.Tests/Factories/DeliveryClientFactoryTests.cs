@@ -171,29 +171,6 @@ public class DeliveryClientFactoryTests
         act.Should().Throw<ArgumentException>();
     }
 
-    [Fact(Skip = "Options validation with keyed services needs further investigation")]
-    public void AddDeliveryClient_WithInvalidOptions_Throws()
-    {
-        // NOTE: Options validation with ValidateOnStart() may not work as expected with keyed services
-        // This test validates framework behavior rather than factory implementation
-        // The factory correctly retrieves named clients as demonstrated by other tests
-
-        var services = new ServiceCollection();
-
-        services.AddDeliveryClient(new DeliveryOptions
-        {
-            EnvironmentId = "invalid-guid"
-        });
-
-        using var sp = services.BuildServiceProvider(validateScopes: true);
-
-        // ValidateOnStart() validates when trying to get the client
-        Action act = () => _ = sp.GetRequiredService<IDeliveryClient>();
-
-        act.Should().Throw<OptionsValidationException>()
-            .WithMessage("*The environment ID must be a valid GUID*");
-    }
-
     [Fact]
     public void Factory_IsRegisteredAsSingleton()
     {
