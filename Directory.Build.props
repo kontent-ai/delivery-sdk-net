@@ -5,12 +5,15 @@
     <ImplicitUsings>enable</ImplicitUsings>
     <EnableNETAnalyzers>true</EnableNETAnalyzers>
     <EnforceCodeStyleInBuild>true</EnforceCodeStyleInBuild>
-    <!-- Enable CI-specific deterministic/source-linked builds when running in CI -->
+    <!-- Deterministic builds for reproducibility -->
+    <Deterministic>true</Deterministic>
+    <!-- Enable CI-specific source-linked builds when running in CI -->
     <ContinuousIntegrationBuild Condition="'$(CI)'=='true'">true</ContinuousIntegrationBuild>
   </PropertyGroup>
 
-  <!-- Shared packaging and SourceLink configuration for packable projects only -->
-  <PropertyGroup Condition="'$(IsPackable)'=='true'">
+  <!-- Shared packaging and SourceLink configuration -->
+  <!-- Note: Test/benchmark projects set IsPackable=false to exclude themselves -->
+  <PropertyGroup>
     <GenerateAssemblyInfo>true</GenerateAssemblyInfo>
     <GenerateDocumentationFile>true</GenerateDocumentationFile>
     <PublishRepositoryUrl>true</PublishRepositoryUrl>
@@ -20,20 +23,19 @@
 
     <Authors>Kontent s.r.o.</Authors>
     <Product>Kontent.ai</Product>
-    <Copyright>© 2025 Kontent s.r.o. All rights reserved.</Copyright>
+    <Copyright>© 2026 Kontent s.r.o. All rights reserved.</Copyright>
     <PackageLicenseExpression>MIT</PackageLicenseExpression>
     <PackageProjectUrl>https://github.com/kontent-ai/delivery-sdk-net</PackageProjectUrl>
     <RepositoryUrl>https://github.com/kontent-ai/delivery-sdk-net.git</RepositoryUrl>
     <RepositoryType>git</RepositoryType>
 
-    <!-- Prefer embedded icon/readme over legacy URL -->
     <PackageReadmeFile>README.md</PackageReadmeFile>
-    <PackageIcon>kai-logo-symbol-color-rgb.png</PackageIcon>
+    <PackageIcon>kontent-ai-k-icon-color.png</PackageIcon>
   </PropertyGroup>
 
-  <ItemGroup Condition="'$(IsPackable)'=='true'">
-    <PackageReference Include="Microsoft.SourceLink.GitHub" Version="1.1.1" PrivateAssets="All" />
-    <None Include="../README.md" Pack="true" PackagePath="" />
-    <None Include="../kai-logo-symbol-color-rgb.png" Pack="true" PackagePath="" />
+  <ItemGroup>
+    <PackageReference Include="Microsoft.SourceLink.GitHub" Version="8.0.0" PrivateAssets="All" />
+    <None Include="../README.md" Pack="true" PackagePath="" Condition="Exists('../README.md')" />
+    <None Include="../kontent-ai-k-icon-color.png" Pack="true" PackagePath="" Condition="Exists('../kontent-ai-k-icon-color.png')" />
   </ItemGroup>
 </Project>
