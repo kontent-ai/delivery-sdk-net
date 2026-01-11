@@ -34,16 +34,6 @@ internal sealed class ItemUsedInQuery(IDeliveryApi api, string codename, Func<bo
                 yield break;
         }
     }
-
-    public async Task<IReadOnlyList<IUsedInItem>> EnumerateAllAsync(CancellationToken cancellationToken = default)
-    {
-        var results = new List<IUsedInItem>();
-        await foreach (var item in EnumerateItemsAsync(cancellationToken).WithCancellation(cancellationToken))
-        {
-            results.Add(item);
-        }
-        return results.AsReadOnly();
-    }
 }
 
 /// <inheritdoc cref="IAssetUsedInQuery"/>
@@ -77,15 +67,5 @@ internal sealed class AssetUsedInQuery(IDeliveryApi api, string codename, Func<b
             if (string.IsNullOrEmpty(token))
                 yield break;
         }
-    }
-
-    public async Task<IReadOnlyList<IUsedInItem>> EnumerateAllAsync(CancellationToken cancellationToken = default)
-    {
-        var results = new List<IUsedInItem>();
-        await foreach (var item in EnumerateItemsAsync(cancellationToken).WithCancellation(cancellationToken))
-        {
-            results.Add(item);
-        }
-        return results.AsReadOnly();
     }
 }

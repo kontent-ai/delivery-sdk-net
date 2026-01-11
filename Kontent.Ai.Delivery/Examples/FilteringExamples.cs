@@ -178,10 +178,6 @@ public class FilteringExamples(IDeliveryClient client)
             .WithTotalCount()
             .ExecuteAsync();
 
-        var test = await _client.GetItems<Article>()
-            .Where(f => f.System("type").IsEqualTo("article"))
-            .ExecuteAllAsync();
-
         // Content audit query
         var outdatedContent = await _client.GetItems<ContentItem>()
             .Where(f => f

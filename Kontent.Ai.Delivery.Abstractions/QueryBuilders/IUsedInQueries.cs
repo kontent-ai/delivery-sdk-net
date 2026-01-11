@@ -17,13 +17,6 @@ public interface IItemUsedInQuery
     /// <param name="cancellationToken">Cancellation token to stop enumeration and cancel in-flight requests.</param>
     /// <returns>Async sequence of used-in items.</returns>
     IAsyncEnumerable<IUsedInItem> EnumerateItemsAsync(CancellationToken cancellationToken = default);
-
-    /// <summary>
-    /// Convenience method that enumerates all used-in items and returns them as a list.
-    /// </summary>
-    /// <param name="cancellationToken">Cancellation token.</param>
-    /// <returns>All used-in items aggregated into a read-only list.</returns>
-    Task<IReadOnlyList<IUsedInItem>> EnumerateAllAsync(CancellationToken cancellationToken = default);
 }
 
 /// <summary>
@@ -43,11 +36,4 @@ public interface IAssetUsedInQuery
     /// <param name="cancellationToken">Cancellation token to stop enumeration and cancel in-flight requests.</param>
     /// <returns>Async sequence of used-in items.</returns>
     IAsyncEnumerable<IUsedInItem> EnumerateItemsAsync(CancellationToken cancellationToken = default);
-
-    /// <summary>
-    /// Convenience method that enumerates all used-in items and returns them as a list.
-    /// </summary>
-    /// <param name="cancellationToken">Cancellation token.</param>
-    /// <returns>All used-in items aggregated into a read-only list.</returns>
-    Task<IReadOnlyList<IUsedInItem>> EnumerateAllAsync(CancellationToken cancellationToken = default);
 }

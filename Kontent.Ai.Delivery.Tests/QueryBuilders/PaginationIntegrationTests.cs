@@ -92,77 +92,6 @@ public sealed class PaginationIntegrationTests
     }
 
     [Fact]
-    public async Task ItemListing_ExecuteAllAsync_Vs_FetchPageByPage_ProducesIdenticalResults()
-    {
-        var allCodenames = new[] { "alpha", "beta", "gamma" };
-
-        // Mock for ExecuteAllAsync
-        var envExecAll = Guid.NewGuid().ToString();
-        var itemsUrlExecAll = $"https://deliver.kontent.ai/{envExecAll}/items";
-        var mockForExecuteAll = new MockHttpMessageHandler();
-
-        for (int i = 0; i < 3; i++)
-        {
-            mockForExecuteAll.Expect(itemsUrlExecAll)
-                .WithQueryString("skip", i.ToString())
-                .WithQueryString("limit", "1")
-                .Respond("application/json", BuildItemsListingJson(skip: i, limit: 1, totalCount: 3, codenames: [allCodenames[i]]));
-        }
-        mockForExecuteAll.Expect(itemsUrlExecAll)
-            .WithQueryString("skip", "3")
-            .WithQueryString("limit", "1")
-            .Respond("application/json", BuildItemsListingJson(skip: 3, limit: 1, totalCount: 3, codenames: []));
-
-        var clientExecuteAll = BuildClient(envExecAll, mockForExecuteAll);
-
-        // Mock for manual pagination
-        var envManual = Guid.NewGuid().ToString();
-        var itemsUrlManual = $"https://deliver.kontent.ai/{envManual}/items";
-        var mockForManual = new MockHttpMessageHandler();
-
-        mockForManual.Expect(itemsUrlManual)
-            .WithQueryString("limit", "1")
-            .Respond("application/json", BuildItemsListingJson(skip: 0, limit: 1, totalCount: 3, codenames: [allCodenames[0]], hasNextPage: true));
-
-        for (int i = 1; i < 3; i++)
-        {
-            mockForManual.Expect(itemsUrlManual)
-                .WithQueryString("skip", i.ToString())
-                .WithQueryString("limit", "1")
-                .Respond("application/json", BuildItemsListingJson(skip: i, limit: 1, totalCount: 3, codenames: [allCodenames[i]], hasNextPage: i < 2));
-        }
-
-        var clientManual = BuildClient(envManual, mockForManual);
-
-        // Act
-        var executeAllResult = await clientExecuteAll.GetItems<TestArticle>().Limit(1).ExecuteAllAsync();
-        Assert.True(executeAllResult.IsSuccess);
-
-        var manualItems = new List<IContentItem<TestArticle>>();
-        var page = await clientManual.GetItems<TestArticle>().Limit(1).ExecuteAsync();
-        Assert.True(page.IsSuccess);
-        manualItems.AddRange(page.Value.Items);
-
-        while (page.Value.HasNextPage)
-        {
-            var next = await page.Value.FetchNextPageAsync();
-            Assert.NotNull(next);
-            Assert.True(next.IsSuccess);
-            manualItems.AddRange(next.Value.Items);
-            page = next;
-        }
-
-        // Assert
-        Assert.Equal(executeAllResult.Value.Items.Count, manualItems.Count);
-        Assert.Equal(
-            executeAllResult.Value.Items.Select(i => i.System.Codename).Order().ToArray(),
-            manualItems.Select(i => i.System.Codename).Order().ToArray());
-
-        mockForExecuteAll.VerifyNoOutstandingExpectation();
-        mockForManual.VerifyNoOutstandingExpectation();
-    }
-
-    [Fact]
     public async Task ItemListing_DynamicQuery_FetchPageByPage_WorksCorrectly()
     {
         var env = Guid.NewGuid().ToString();
@@ -279,56 +208,6 @@ public sealed class PaginationIntegrationTests
     #endregion
 
     #region ItemsFeed (GetItemsFeed) Tests
-
-    [Fact]
-    public async Task ItemsFeed_EnumerateAllAsync_Vs_FetchPageByPage_ProducesIdenticalResults()
-    {
-        var allCodenames = new[] { "feed_a", "feed_b", "feed_c", "feed_d" };
-
-        // Mock for EnumerateAllAsync
-        var envAll = Guid.NewGuid().ToString();
-        var feedUrlAll = $"https://deliver.kontent.ai/{envAll}/items-feed";
-        var mockForAll = new MockHttpMessageHandler();
-        mockForAll.Expect(feedUrlAll).Respond(req => CreateFeedResponse(allCodenames[..2], "token1"));
-        mockForAll.Expect(feedUrlAll).WithHeaders("X-Continuation", "token1").Respond(req => CreateFeedResponse(allCodenames[2..], null));
-
-        var clientAll = BuildClient(envAll, mockForAll);
-
-        // Mock for manual FetchNextPageAsync
-        var envManual = Guid.NewGuid().ToString();
-        var feedUrlManual = $"https://deliver.kontent.ai/{envManual}/items-feed";
-        var mockForManual = new MockHttpMessageHandler();
-        mockForManual.Expect(feedUrlManual).Respond(req => CreateFeedResponse(allCodenames[..2], "token1"));
-        mockForManual.Expect(feedUrlManual).WithHeaders("X-Continuation", "token1").Respond(req => CreateFeedResponse(allCodenames[2..], null));
-
-        var clientManual = BuildClient(envManual, mockForManual);
-
-        // Act: EnumerateAllAsync
-        var allResult = await clientAll.GetItemsFeed<TestArticle>().EnumerateAllAsync();
-        Assert.True(allResult.IsSuccess);
-
-        // Act: Manual pagination
-        var manualItems = new List<IContentItem<TestArticle>>();
-        var firstPage = await clientManual.GetItemsFeed<TestArticle>().ExecuteAsync();
-        Assert.True(firstPage.IsSuccess);
-        manualItems.AddRange(firstPage.Value.Items);
-        var currentPage = firstPage.Value;
-
-        while (currentPage.HasNextPage)
-        {
-            var nextResult = await currentPage.FetchNextPageAsync();
-            Assert.NotNull(nextResult);
-            Assert.True(nextResult.IsSuccess);
-            manualItems.AddRange(nextResult.Value.Items);
-            currentPage = nextResult.Value;
-        }
-
-        Assert.Equal(allResult.Value.Items.Count, manualItems.Count);
-        Assert.Equal(allResult.Value.Items.Select(i => i.System.Codename).ToArray(), manualItems.Select(i => i.System.Codename).ToArray());
-
-        mockForAll.VerifyNoOutstandingExpectation();
-        mockForManual.VerifyNoOutstandingExpectation();
-    }
 
     [Fact]
     public async Task ItemsFeed_EnumerateItemsAsync_Vs_FetchPageByPage_ProducesIdenticalResults()

@@ -185,29 +185,16 @@ if (result.IsSuccess)
 
 #### Get Items with Pagination
 
-For large datasets, use the items feed for efficient pagination with continuation tokens:
+For large datasets, use the items feed for paginated enumeration with continuation tokens (e.g. for cache warmup):
 
 ```csharp
-// Option 1: Enumerate items one-by-one using IAsyncEnumerable
+// Option 1: Enumerate all items one-by-one using IAsyncEnumerable
 await foreach (var item in client.GetItemsFeed().EnumerateItemsAsync())
 {
     Console.WriteLine($"Item: {item.System.Name}");
 }
 
-// Option 2: Get all items at once
-var allItemsResult = await client.GetItemsFeed()
-    .OrderBy("system.last_modified")
-    .EnumerateAllAsync();
-
-if (allItemsResult.IsSuccess)
-{
-    foreach (var item in allItemsResult.Value.Items)
-    {
-        Console.WriteLine($"Item: {item.System.Name}");
-    }
-}
-
-// Option 3: Manual page-by-page control using FetchNextPageAsync
+// Option 2: Manual page-by-page control using FetchNextPageAsync
 var firstPage = await client.GetItemsFeed().ExecuteAsync();
 if (firstPage.IsSuccess)
 {
@@ -233,25 +220,28 @@ if (firstPage.IsSuccess)
 }
 ```
 
-For standard skip/limit pagination with `GetItems()`, you can also fetch all pages automatically:
+For standard skip/limit pagination with `GetItems()`, use `FetchNextPageAsync()` to iterate through pages:
 
 ```csharp
-// Fetch all pages at once using ExecuteAllAsync
-var allArticles = await client.GetItems<Article>()
-    .Where(f => f.System("type").IsEqualTo("article"))
-    .Limit(10)  // Page size
-    .ExecuteAllAsync();
-
-// Or use manual pagination with FetchNextPageAsync
 var firstPage = await client.GetItems<Article>()
     .Limit(10)
     .WithTotalCount()
     .ExecuteAsync();
 
-if (firstPage.IsSuccess && firstPage.Value.HasNextPage)
+if (firstPage.IsSuccess)
 {
-    var nextPage = await firstPage.Value.FetchNextPageAsync();
-    // Continue processing...
+    // Process first page
+    foreach (var item in firstPage.Value.Items)
+    {
+        Console.WriteLine($"Item: {item.System.Name}");
+    }
+
+    // Fetch next page if available
+    if (firstPage.Value.HasNextPage)
+    {
+        var nextPage = await firstPage.Value.FetchNextPageAsync();
+        // Continue processing...
+    }
 }
 ```
 
@@ -373,18 +363,9 @@ Find which content items reference a specific item or asset. This is useful for 
 
 ```csharp
 // Find all items that reference the "john_doe" author
-var result = await client.GetItemUsedIn("john_doe").EnumerateAllAsync();
-
-Console.WriteLine($"'{codename}' is used in {result.Count} items:");
-foreach (var usage in result)
-{
-    Console.WriteLine($"  - {usage.System.Name} ({usage.System.Type})");
-}
-
-// Or enumerate asynchronously for large result sets
 await foreach (var usage in client.GetItemUsedIn("john_doe").EnumerateItemsAsync())
 {
-    Console.WriteLine($"Referenced by: {usage.System.Name}");
+    Console.WriteLine($"Referenced by: {usage.System.Name} ({usage.System.Type})");
 }
 ```
 
@@ -393,17 +374,14 @@ await foreach (var usage in client.GetItemUsedIn("john_doe").EnumerateItemsAsync
 ```csharp
 // Find all items that use a specific asset
 var assetCodename = "hero_image";
-var usages = await client.GetAssetUsedIn(assetCodename).EnumerateAllAsync();
-
-if (usages.Count > 0)
+var usages = new List<IUsedInItem>();
+await foreach (var usage in client.GetAssetUsedIn(assetCodename).EnumerateItemsAsync())
 {
-    Console.WriteLine($"Asset '{assetCodename}' is used in:");
-    foreach (var usage in usages)
-    {
-        Console.WriteLine($"  - {usage.System.Name}");
-    }
+    usages.Add(usage);
+    Console.WriteLine($"Asset used in: {usage.System.Name}");
 }
-else
+
+if (usages.Count == 0)
 {
     Console.WriteLine("Asset is not used anywhere - safe to delete");
 }

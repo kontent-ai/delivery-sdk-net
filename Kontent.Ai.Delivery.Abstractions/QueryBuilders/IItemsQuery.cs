@@ -86,12 +86,4 @@ public interface IItemsQuery<TModel>
     /// <param name="cancellationToken">Cancellation token for the operation.</param>
     /// <returns>A delivery result containing the response with items and pagination info.</returns>
     Task<IDeliveryResult<IDeliveryItemListingResponse<TModel>>> ExecuteAsync(CancellationToken cancellationToken = default);
-
-    /// <summary>
-    /// Executes the query and retrieves all items by paging under the hood.
-    /// Use with care on large environments due to latency/memory.
-    /// </summary>
-    /// <param name="cancellationToken">Cancellation token for the operation.</param>
-    /// <returns>A delivery result containing all matching items.</returns>
-    Task<IDeliveryResult<IDeliveryItemListingResponse<TModel>>> ExecuteAllAsync(CancellationToken cancellationToken = default);
 }

@@ -30,12 +30,15 @@ public class EnumerateItemsLanguageFallbackTests
         var provider = services.BuildServiceProvider();
         var client = provider.GetRequiredService<IDeliveryClient>();
 
-        var result = await client.GetItemsFeed()
+        var items = new List<IContentItem<IDynamicElements>>();
+        await foreach (var item in client.GetItemsFeed()
             .WithLanguage("es-ES", LanguageFallbackMode.Disabled)
-            .EnumerateAllAsync();
+            .EnumerateItemsAsync())
+        {
+            items.Add(item);
+        }
 
-        Assert.True(result.IsSuccess);
-        Assert.NotEmpty(result.Value.Items);
+        Assert.NotEmpty(items);
         mockHttp.VerifyNoOutstandingExpectation();
     }
 }

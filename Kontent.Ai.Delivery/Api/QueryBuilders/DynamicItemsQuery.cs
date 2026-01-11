@@ -1,7 +1,5 @@
-using System.Net;
 using System.Text.Json;
 using Kontent.Ai.Delivery.Api.Filtering;
-using Kontent.Ai.Delivery.ContentItems;
 using Kontent.Ai.Delivery.SharedModels;
 
 namespace Kontent.Ai.Delivery.Api.QueryBuilders;
@@ -160,78 +158,5 @@ internal sealed class DynamicItemsQuery(
         var uri = new Uri(url);
         var query = System.Web.HttpUtility.ParseQueryString(uri.Query);
         return int.TryParse(query["skip"], out var skip) ? skip : 0;
-    }
-
-    public async Task<IDeliveryResult<IDeliveryItemListingResponse<IDynamicElements>>> ExecuteAllAsync(CancellationToken cancellationToken = default)
-    {
-        var all = new List<ContentItem<IDynamicElements>>();
-        var skip = _params.Skip ?? 0;
-        var limit = _params.Limit;
-        string? requestUrl = null;
-        System.Net.Http.Headers.HttpResponseHeaders? responseHeaders = null;
-
-        while (true)
-        {
-            var pageParams = _params with { Skip = skip, Limit = limit };
-
-            var wait = _waitForLoadingNewContentOverride ?? _getDefaultWaitForNewContent();
-            var response = await _api.GetItemsInternalAsync<IDynamicElements>(
-                pageParams,
-                FilterQueryParams.ToQueryDictionary(_serializedFilters),
-                wait).ConfigureAwait(false);
-
-            // Convert to delivery result
-            var deliveryResult = await response.ToDeliveryResultAsync().ConfigureAwait(false);
-
-            if (!deliveryResult.IsSuccess)
-            {
-                return DeliveryResult.Failure<IDeliveryItemListingResponse<IDynamicElements>>(
-                    deliveryResult.RequestUrl ?? string.Empty,
-                    deliveryResult.StatusCode,
-                    deliveryResult.Error!,
-                    deliveryResult.ResponseHeaders);
-            }
-
-            // Capture request URL and headers from first request
-            requestUrl ??= deliveryResult.RequestUrl;
-            responseHeaders ??= deliveryResult.ResponseHeaders;
-
-            var items = deliveryResult.Value.Items;
-            var pageCount = items.Count;
-
-            if (pageCount == 0)
-                break;
-
-            all.AddRange(items);
-            skip += pageCount;
-
-            // Stop if we got fewer than requested (page exhausted)
-            if (limit.HasValue && pageCount < limit.Value)
-                break;
-        }
-
-        // Create a synthetic response with all items
-        var allItemsResponse = new DeliveryItemListingResponse<IDynamicElements>
-        {
-            Items = all,
-            Pagination = new Pagination
-            {
-                Skip = _params.Skip ?? 0,
-                Limit = all.Count,
-                Count = all.Count,
-                NextPageUrl = string.Empty,
-                TotalCount = all.Count
-            },
-            ModularContent = new Dictionary<string, JsonElement>(),
-            NextPageFetcher = null
-        };
-
-        return DeliveryResult.Success<IDeliveryItemListingResponse<IDynamicElements>>(
-            allItemsResponse,
-            requestUrl ?? string.Empty,
-            HttpStatusCode.OK,
-            hasStaleContent: false,
-            continuationToken: null,
-            responseHeaders: responseHeaders);
     }
 }

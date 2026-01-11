@@ -54,11 +54,4 @@ public interface IEnumerateItemsQuery<TModel>
     /// <param name="cancellationToken">Cancellation token to stop enumeration and cancel in-flight requests.</param>
     /// <returns>Async sequence of strongly typed content items.</returns>
     IAsyncEnumerable<IContentItem<TModel>> EnumerateItemsAsync(CancellationToken cancellationToken = default);
-
-    /// <summary>
-    /// Convenience method that enumerates all items and returns them as a list.
-    /// </summary>
-    /// <param name="cancellationToken">Cancellation token to stop enumeration and cancel in-flight requests.</param>
-    /// <returns>All items aggregated into a read-only list.</returns>
-    Task<IDeliveryResult<IDeliveryItemsFeedResponse<TModel>>> EnumerateAllAsync(CancellationToken cancellationToken = default);
 }
