@@ -1,8 +1,8 @@
 using System.Text.Json.Serialization;
 
-namespace Kontent.Ai.Delivery.ContentItems.DateTimes;
+namespace Kontent.Ai.Delivery.SharedModels;
 
-internal sealed record DateTimeContent() : IDateTimeContent
+public sealed record DateTimeContent() : IDateTimeContent
 {
     [JsonPropertyName("value")]
     public DateTime? Value { get; init; }
