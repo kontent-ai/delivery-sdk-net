@@ -19,6 +19,10 @@ internal record ContentElement() : IContentElement
     public required string Name { get; init; }
 
     /// <inheritdoc/>
+    /// <remarks>
+    /// When deserializing from ContentType.Elements dictionary, this is hydrated from the dictionary key.
+    /// When deserializing from direct element query, this comes from the JSON property.
+    /// </remarks>
     [JsonPropertyName("codename")]
-    public string? Codename { get; init; } // TODO: fix nullability here and in the interface
+    public string Codename { get; init; } = string.Empty;
 }
