@@ -191,55 +191,8 @@ internal sealed class MemoryCacheManager(
         var entryCts = new CancellationTokenSource();
         var entryMetadata = new CacheEntryMetadata(entryCts, prefixedDependencies);
 
-        // Create cache entry options
-        var entryOptions = new MemoryCacheEntryOptions
-        {
-            AbsoluteExpirationRelativeToNow = expiration ?? _defaultExpiration,
-            Priority = CacheItemPriority.Normal
-        };
-
-        // Register for cleanup when the entry is evicted
-        entryOptions.RegisterPostEvictionCallback((key, value, reason, state) =>
-        {
-            if (key is string keyString && state is CacheEntryMetadata evictedMetadata)
-            {
-                // Log eviction
-                if (_logger != null)
-                    LoggerMessages.CacheEntryEvicted(_logger, keyString, reason.ToString());
-
-                // Clean up reverse index when entry is evicted.
-                // Generation-safe: only remove the cacheKey from a dependency set if the current entry
-                // no longer depends on that dependency.
-                CleanupReverseIndexForKey(keyString, evictedMetadata);
-
-                // Remove entry metadata only if it still matches (avoid old eviction callbacks
-                // deleting metadata for a newer overwriting entry).
-                if (_entries.TryGetValue(keyString, out var current) &&
-                    ReferenceEquals(current.Cts, evictedMetadata.Cts))
-                {
-                    _entries.TryRemove(keyString, out _);
-                }
-
-                // Always dispose the CTS for the evicted entry (safe even if this callback is from an older overwrite).
-                try
-                {
-                    evictedMetadata.Cts.Dispose();
-                }
-                catch
-                {
-                    // Best-effort cleanup; never throw from eviction callbacks.
-                }
-            }
-        }, state: entryMetadata);
-
-        // Also link to the entry's own CancellationToken for direct invalidation
-        entryOptions.AddExpirationToken(new CancellationChangeToken(entryCts.Token));
-
-        // Also link to the global purge token so we can invalidate all entries in O(1).
-        lock (_purgeLock)
-        {
-            entryOptions.AddExpirationToken(new CancellationChangeToken(_purgeCts.Token));
-        }
+        // Create cache entry options with eviction handling and expiration tokens
+        var entryOptions = CreateCacheEntryOptions(expiration, entryMetadata, entryCts);
 
         // Update reverse index for dependencies.
         // Note: We intentionally do not try to eagerly remove stale dependencies for overwritten keys here.
@@ -351,24 +304,8 @@ internal sealed class MemoryCacheManager(
                     affectedKeys.Clear();
                 }
 
-                // Also directly cancel each affected entry's CTS for immediate effect
-                foreach (var cacheKey in affectedKeysSnapshot)
-                {
-                    // Guard against stale reverse-index associations: only invalidate if the *current*
-                    // entry still depends on this dependency key.
-                    if (_entries.TryGetValue(cacheKey, out var metadata) &&
-                        metadata.Dependencies.Contains(dependencyKey, StringComparer.OrdinalIgnoreCase))
-                    {
-                        try
-                        {
-                            metadata.Cts.Cancel();
-                        }
-                        catch (ObjectDisposedException)
-                        {
-                            // Entry already evicted/disposed; ignore.
-                        }
-                    }
-                }
+                // Cancel each affected entry's CTS for immediate effect
+                TryCancelAffectedEntries(affectedKeysSnapshot, dependencyKey);
             }
 
             // Log invalidation completed
@@ -406,6 +343,100 @@ internal sealed class MemoryCacheManager(
         finally
         {
             lockObj.Release();
+        }
+    }
+
+    /// <summary>
+    /// Attempts to cancel all affected cache entries that still depend on the specified dependency key.
+    /// </summary>
+    /// <remarks>
+    /// Guards against stale reverse-index associations by verifying each entry still depends on the dependency.
+    /// </remarks>
+    private void TryCancelAffectedEntries(List<string> affectedKeys, string dependencyKey)
+    {
+        foreach (var cacheKey in affectedKeys)
+        {
+            if (!_entries.TryGetValue(cacheKey, out var metadata))
+                continue;
+
+            if (!metadata.Dependencies.Contains(dependencyKey, StringComparer.OrdinalIgnoreCase))
+                continue;
+
+            try
+            {
+                metadata.Cts.Cancel();
+            }
+            catch (ObjectDisposedException)
+            {
+                // Entry already evicted/disposed; ignore
+            }
+        }
+    }
+
+    /// <summary>
+    /// Creates cache entry options with eviction handling and expiration tokens.
+    /// </summary>
+    private MemoryCacheEntryOptions CreateCacheEntryOptions(
+        TimeSpan? expiration,
+        CacheEntryMetadata entryMetadata,
+        CancellationTokenSource entryCts)
+    {
+        var entryOptions = new MemoryCacheEntryOptions
+        {
+            AbsoluteExpirationRelativeToNow = expiration ?? _defaultExpiration,
+            Priority = CacheItemPriority.Normal
+        };
+
+        // Register for cleanup when the entry is evicted
+        entryOptions.RegisterPostEvictionCallback((key, value, reason, state) =>
+        {
+            if (key is string keyString && state is CacheEntryMetadata evictedMetadata)
+                HandleCacheEntryEviction(keyString, evictedMetadata, reason);
+        }, state: entryMetadata);
+
+        // Link to the entry's own CancellationToken for direct invalidation
+        entryOptions.AddExpirationToken(new CancellationChangeToken(entryCts.Token));
+
+        // Link to the global purge token for O(1) invalidation of all entries
+        lock (_purgeLock)
+        {
+            entryOptions.AddExpirationToken(new CancellationChangeToken(_purgeCts.Token));
+        }
+
+        return entryOptions;
+    }
+
+    /// <summary>
+    /// Handles cache entry eviction by cleaning up reverse index and metadata.
+    /// </summary>
+    /// <remarks>
+    /// Called from eviction callbacks. Must be safe for concurrent/repeated calls.
+    /// </remarks>
+    private void HandleCacheEntryEviction(string keyString, CacheEntryMetadata evictedMetadata, EvictionReason reason)
+    {
+        // Log eviction
+        if (_logger != null)
+            LoggerMessages.CacheEntryEvicted(_logger, keyString, reason.ToString());
+
+        // Clean up reverse index (generation-safe)
+        CleanupReverseIndexForKey(keyString, evictedMetadata);
+
+        // Remove entry metadata only if it still matches (avoid old eviction callbacks
+        // deleting metadata for a newer overwriting entry)
+        if (_entries.TryGetValue(keyString, out var current) &&
+            ReferenceEquals(current.Cts, evictedMetadata.Cts))
+        {
+            _entries.TryRemove(keyString, out _);
+        }
+
+        // Dispose the CTS for the evicted entry (safe even if from an older overwrite)
+        try
+        {
+            evictedMetadata.Cts.Dispose();
+        }
+        catch
+        {
+            // Best-effort cleanup; never throw from eviction callbacks
         }
     }
 

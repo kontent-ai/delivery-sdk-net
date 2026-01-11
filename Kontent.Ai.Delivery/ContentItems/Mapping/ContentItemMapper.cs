@@ -333,25 +333,31 @@ internal sealed class ContentItemMapper
 
         try
         {
-            // Skip hydration for dynamic mode items (they keep raw JSON envelopes)
-            if (modelType != typeof(DynamicElements) && modelType != typeof(IDynamicElements))
-            {
-                if (contentItem is IRawContentItem rawContentItem &&
-                    rawContentItem.RawElements.HasValue)
-                {
-                    await MapElementsAsync(
-                        rawContentItem.Elements,
-                        rawContentItem.RawElements.Value,
-                        context).ConfigureAwait(false);
-                }
-            }
-
+            await HydrateContentItemIfNeededAsync(contentItem, modelType, context).ConfigureAwait(false);
             context.ResolvedItems[codename] = contentItem;
             return contentItem;
         }
         finally
         {
             context.ProcessingItems.Remove(codename);
+        }
+    }
+
+    /// <summary>
+    /// Hydrates a content item's complex elements if it's not in dynamic mode.
+    /// </summary>
+    private async Task HydrateContentItemIfNeededAsync(object contentItem, Type modelType, MappingContext context)
+    {
+        // Skip hydration for dynamic mode items (they keep raw JSON envelopes)
+        if (modelType == typeof(DynamicElements) || modelType == typeof(IDynamicElements))
+            return;
+
+        if (contentItem is IRawContentItem rawContentItem && rawContentItem.RawElements.HasValue)
+        {
+            await MapElementsAsync(
+                rawContentItem.Elements,
+                rawContentItem.RawElements.Value,
+                context).ConfigureAwait(false);
         }
     }
 
