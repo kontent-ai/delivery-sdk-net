@@ -17,6 +17,7 @@ Rich text elements in Kontent.ai contain structured content that needs to be res
   - [Async Content Resolvers](#async-content-resolvers)
   - [Nested Content Resolution](#nested-content-resolution)
   - [Tuple-Based Content Resolvers](#tuple-based-content-resolvers)
+- [Rich Text Extension Methods](#rich-text-extension-methods)
 - [Inline Image Resolvers](#inline-image-resolvers)
 - [Custom HTML Node Resolvers](#custom-html-node-resolvers)
 - [Resolution Context](#resolution-context)
@@ -476,6 +477,128 @@ var resolver = new HtmlResolverBuilder()
         return $@"<div class=""image-gallery"">{imageHtml}</div>";
     })
     .Build();
+```
+
+## Rich Text Extension Methods
+
+The SDK provides extension methods on `IRichTextContent` for filtering and extracting specific block types. These are useful for processing rich text programmatically without rendering to HTML.
+
+### Available Extension Methods
+
+| Method | Description |
+|--------|-------------|
+| `GetBlocks<T>()` | Get all blocks of a specific type recursively |
+| `GetContentItemLinks()` | Get all content item links |
+| `GetInlineImages()` | Get all inline images |
+| `GetEmbeddedContent()` | Get all embedded content items |
+| `GetEmbeddedContent<T>()` | Get embedded content of a specific model type |
+| `GetEmbeddedElements<T>()` | Get just the element models (unwrapped from IEmbeddedContent) |
+
+### Examples
+
+#### Get All Inline Images
+
+```csharp
+var article = result.Value.Elements;
+
+// Extract all images for a gallery
+var images = article.BodyCopy.GetInlineImages().ToList();
+
+foreach (var image in images)
+{
+    Console.WriteLine($"Image: {image.Url}");
+    Console.WriteLine($"  Description: {image.Description}");
+    Console.WriteLine($"  Size: {image.Width}x{image.Height}");
+}
+```
+
+#### Get All Content Item Links
+
+```csharp
+// Find all links to content items
+var links = article.BodyCopy.GetContentItemLinks().ToList();
+
+foreach (var link in links)
+{
+    Console.WriteLine($"Link to: {link.Metadata?.Codename}");
+    Console.WriteLine($"  Type: {link.Metadata?.ContentTypeCodename}");
+    Console.WriteLine($"  URL Slug: {link.Metadata?.UrlSlug}");
+}
+```
+
+#### Get Embedded Content by Type
+
+```csharp
+// Get all tweets embedded in the article
+var tweets = article.BodyCopy
+    .GetEmbeddedContent<Tweet>()
+    .ToList();
+
+foreach (var tweet in tweets)
+{
+    Console.WriteLine($"Tweet by @{tweet.Elements.AuthorHandle}:");
+    Console.WriteLine($"  {tweet.Elements.TweetText}");
+}
+
+// Get just the element models (without IEmbeddedContent wrapper)
+var tweetElements = article.BodyCopy
+    .GetEmbeddedElements<Tweet>()
+    .ToList();
+
+foreach (var tweetElement in tweetElements)
+{
+    Console.WriteLine($"Tweet: {tweetElement.TweetText}");
+}
+```
+
+#### Get All Blocks of a Specific Type
+
+```csharp
+// Get all text nodes (for text analysis, word count, etc.)
+var textNodes = article.BodyCopy
+    .GetBlocks<ITextNode>()
+    .ToList();
+
+var wordCount = textNodes
+    .Sum(t => t.Text.Split(' ', StringSplitOptions.RemoveEmptyEntries).Length);
+
+Console.WriteLine($"Word count: {wordCount}");
+
+// Get all HTML nodes with a specific tag
+var headings = article.BodyCopy
+    .GetBlocks<IHtmlNode>()
+    .Where(n => n.TagName is "H1" or "H2" or "H3")
+    .ToList();
+
+Console.WriteLine("Headings in article:");
+foreach (var heading in headings)
+{
+    // Get text content from children
+    var text = string.Join("", heading.Children.OfType<ITextNode>().Select(t => t.Text));
+    Console.WriteLine($"  {heading.TagName}: {text}");
+}
+```
+
+#### Build a Table of Contents
+
+```csharp
+// Extract headings to build a table of contents
+var tocEntries = article.BodyCopy
+    .GetBlocks<IHtmlNode>()
+    .Where(n => n.TagName.StartsWith("H", StringComparison.OrdinalIgnoreCase))
+    .Select(h => new
+    {
+        Level = int.Parse(h.TagName[1..]),
+        Text = string.Join("", h.Children.OfType<ITextNode>().Select(t => t.Text)),
+        Id = h.Attributes.GetValueOrDefault("id")
+    })
+    .ToList();
+
+foreach (var entry in tocEntries)
+{
+    var indent = new string(' ', (entry.Level - 1) * 2);
+    Console.WriteLine($"{indent}- {entry.Text}");
+}
 ```
 
 ## Inline Image Resolvers
@@ -1051,4 +1174,4 @@ var html = await article.Elements.BodyCopy.ToHtmlAsync(resolver);  // ✅
 **Related Documentation**:
 - [Main README](../README.md)
 - [Performance Optimization Guide](performance-optimization.md)
-- [Custom Type Converters](custom-type-converters.md)
+- [Extensibility Guide](extensibility-guide.md)

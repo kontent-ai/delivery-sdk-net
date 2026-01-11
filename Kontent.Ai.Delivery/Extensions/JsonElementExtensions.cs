@@ -32,12 +32,13 @@ internal static class JsonElementExtensions
 
     /// <summary>
     /// Checks if an element type requires complex post-processing by ContentItemMapper.
-    /// Complex types (rich_text, taxonomy, asset, modular_content) are set to null during initial deserialization
+    /// Complex types (rich_text, taxonomy, asset, modular_content, date_time) are set to null during initial deserialization
     /// and hydrated later with fully-parsed objects.
     /// </summary>
     public static bool IsComplexElementType(string? elementType)
         => string.Equals(elementType, "rich_text", StringComparison.OrdinalIgnoreCase)
         || string.Equals(elementType, "taxonomy", StringComparison.OrdinalIgnoreCase)
         || string.Equals(elementType, "asset", StringComparison.OrdinalIgnoreCase)
-        || string.Equals(elementType, "modular_content", StringComparison.OrdinalIgnoreCase);
+        || string.Equals(elementType, "modular_content", StringComparison.OrdinalIgnoreCase)
+        || string.Equals(elementType, "date_time", StringComparison.OrdinalIgnoreCase);
 }

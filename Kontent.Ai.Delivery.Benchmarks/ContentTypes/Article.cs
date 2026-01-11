@@ -1,4 +1,5 @@
 using System.Text.Json.Serialization;
+using Kontent.Ai.Delivery.Abstractions;
 using Kontent.Ai.Delivery.ContentItems;
 using Kontent.Ai.Delivery.ContentItems.RichText;
 using Kontent.Ai.Delivery.SharedModels;
@@ -50,7 +51,7 @@ public record Article
     public IEnumerable<TaxonomyTerm>? Personas { get; init; }
 
     [JsonPropertyName("post_date")]
-    public DateTime? PostDate { get; init; }
+    public IDateTimeContent? PostDate { get; init; }
 
     [JsonPropertyName("related_articles")]
     public IEnumerable<string>? RelatedArticles { get; init; }

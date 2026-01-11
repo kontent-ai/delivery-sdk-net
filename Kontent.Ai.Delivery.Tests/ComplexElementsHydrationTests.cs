@@ -106,9 +106,10 @@ public class ComplexElementsHydrationTests
         Assert.Equal("Coffee lover", personas[0].Name);
         Assert.Equal("coffee_lover", personas[0].Codename);
 
-        // Assert - DateTime element (PostDate)
+        // Assert - DateTime element (PostDate) with timezone
         Assert.NotNull(result.Value.Elements.PostDate);
         Assert.Equal(new DateTime(2014, 11, 18, 0, 0, 0, DateTimeKind.Utc), result.Value.Elements.PostDate.Value);
+        Assert.Equal("Europe/Prague", result.Value.Elements.PostDate.DisplayTimezone);
 
         // Assert - Asset elements with renditions (TeaserImage)
         Assert.NotNull(result.Value.Elements.TeaserImage);
@@ -179,7 +180,8 @@ public class ComplexElementsHydrationTests
 
         // Assert - Verify DateTime is properly deserialized
         Assert.NotNull(result.Value.Elements.PostDate);
-        var postDate = result.Value.Elements.PostDate.Value;
+        Assert.NotNull(result.Value.Elements.PostDate.Value);
+        var postDate = result.Value.Elements.PostDate.Value.Value;
         Assert.Equal(DateTimeKind.Utc, postDate.Kind);
         Assert.Equal(2014, postDate.Year);
         Assert.Equal(11, postDate.Month);
