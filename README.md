@@ -121,6 +121,23 @@ services.AddDeliveryClient(builder =>
            .Build());
 ```
 
+#### Registering a Custom Type Provider
+
+To use strongly-typed models with dependency injection, register your type provider **before** calling `AddDeliveryClient()`:
+
+```csharp
+// Register the generated type provider first
+services.AddSingleton<ITypeProvider, GeneratedTypeProvider>();
+
+// Then register the delivery client
+services.AddDeliveryClient(options =>
+{
+    options.EnvironmentId = "your-environment-id";
+});
+```
+
+The SDK uses `TryAddSingleton` internally, so your registration takes precedence over the default type provider.
+
 #### Without Dependency Injection
 
 For console applications, scripts, or scenarios where DI is not available, use `DeliveryClientBuilder` directly:
@@ -129,12 +146,14 @@ For console applications, scripts, or scenarios where DI is not available, use `
 using Kontent.Ai.Delivery.Configuration;
 
 // Simple usage
-var client = DeliveryClientBuilder
+using var container = DeliveryClientBuilder
     .WithEnvironmentId("your-environment-id")
     .Build();
 
+var client = container.Client;
+
 // With caching and type provider
-var client = DeliveryClientBuilder
+using var container = DeliveryClientBuilder
     .WithOptions(builder => builder
         .WithEnvironmentId("your-environment-id")
         .UsePreviewApi("your-preview-api-key")
@@ -142,6 +161,8 @@ var client = DeliveryClientBuilder
     .WithTypeProvider(new GeneratedTypeProvider())
     .WithMemoryCache(TimeSpan.FromMinutes(30))
     .Build();
+
+var client = container.Client;
 ```
 
 The builder supports:
@@ -176,7 +197,7 @@ var result = await client.GetItems()
 
 if (result.IsSuccess)
 {
-    foreach (var item in result.Value)
+    foreach (var item in result.Value.Items)
     {
         Console.WriteLine($"- {item.System.Name}");
     }
@@ -525,9 +546,9 @@ var result = await client.GetItems<Article>()
 
 if (result.IsSuccess)
 {
-    foreach (var article in result.Value)
+    foreach (var article in result.Value.Items)
     {
-        Console.WriteLine($"{article.Title} - {article.PublishDate}");
+        Console.WriteLine($"{article.Elements.Title} - {article.Elements.PublishDate}");
     }
 }
 ```
@@ -898,7 +919,7 @@ var result = await client.GetLanguages().ExecuteAsync();
 
 if (result.IsSuccess)
 {
-    foreach (var language in result.Value)
+    foreach (var language in result.Value.Languages)
     {
         Console.WriteLine($"{language.System.Name} ({language.System.Codename})");
     }

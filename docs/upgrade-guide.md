@@ -1425,8 +1425,15 @@ services.AddDeliveryClient(Configuration);
 
 **New:**
 ```csharp
-// ITypeProvider still registered the same way
+// ITypeProvider must be registered BEFORE AddDeliveryClient()
+// The SDK uses TryAddSingleton internally, so your registration takes precedence
 services.AddSingleton<ITypeProvider, GeneratedTypeProvider>();
+
+// Then register the delivery client
+services.AddDeliveryClient(options =>
+{
+    options.EnvironmentId = "your-environment-id";
+});
 
 // Rich text resolution is now done at use site via HtmlResolverBuilder
 // (no global registration)
@@ -1439,6 +1446,8 @@ services.AddDeliveryClient(
         builder.AddRetry(new HttpRetryStrategyOptions { /* ... */ });
     });
 ```
+
+> **Important:** The order matters for `ITypeProvider`. Register it before `AddDeliveryClient()` to ensure your custom type provider is used instead of the default.
 
 ### 8.3 Named Clients
 
