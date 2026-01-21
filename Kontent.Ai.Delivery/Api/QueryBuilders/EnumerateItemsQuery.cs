@@ -1,7 +1,6 @@
 using System.Runtime.CompilerServices;
 using Kontent.Ai.Delivery.Api.Filtering;
 using Kontent.Ai.Delivery.ContentItems.Mapping;
-using Kontent.Ai.Delivery.Extensions;
 using Kontent.Ai.Delivery.Logging;
 using Microsoft.Extensions.Logging;
 

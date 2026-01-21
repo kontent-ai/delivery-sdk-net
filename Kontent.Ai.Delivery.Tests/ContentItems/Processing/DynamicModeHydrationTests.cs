@@ -1,6 +1,5 @@
 using System.Text.Json;
 using Kontent.Ai.Delivery.Abstractions;
-using Kontent.Ai.Delivery.Extensions;
 using Microsoft.Extensions.DependencyInjection;
 using RichardSzalay.MockHttp;
 using Xunit;

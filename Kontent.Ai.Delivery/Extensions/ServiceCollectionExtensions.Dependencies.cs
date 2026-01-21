@@ -7,7 +7,7 @@ using Kontent.Ai.Delivery.Handlers;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.DependencyInjection.Extensions;
 
-namespace Kontent.Ai.Delivery.Extensions;
+namespace Kontent.Ai.Delivery;
 
 public static partial class ServiceCollectionExtensions
 {

@@ -7,7 +7,7 @@ using Microsoft.Extensions.Http.Resilience;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
 
-namespace Kontent.Ai.Delivery.Extensions;
+namespace Kontent.Ai.Delivery;
 
 /// <summary>
 /// Extension methods for registering Kontent.ai Delivery SDK services.

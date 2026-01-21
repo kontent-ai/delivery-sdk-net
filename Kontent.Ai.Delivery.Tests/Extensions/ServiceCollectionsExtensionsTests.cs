@@ -4,7 +4,6 @@ using Kontent.Ai.Delivery.Abstractions;
 using Kontent.Ai.Delivery.Api;
 using Kontent.Ai.Delivery.Caching;
 using Kontent.Ai.Delivery.ContentItems;
-using Kontent.Ai.Delivery.Extensions;
 using Microsoft.Extensions.Caching.Memory;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;

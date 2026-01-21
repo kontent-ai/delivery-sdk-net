@@ -1,6 +1,6 @@
 using Kontent.Ai.Delivery.ContentItems.RichText.Resolution;
 
-namespace Kontent.Ai.Delivery.Extensions;
+namespace Kontent.Ai.Delivery;
 
 /// <summary>
 /// Extension methods for working with rich text content.
