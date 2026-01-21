@@ -3,7 +3,6 @@ using BenchmarkDotNet.Attributes;
 using RichardSzalay.MockHttp;
 using Kontent.Ai.Delivery.Configuration;
 using Microsoft.Extensions.DependencyInjection;
-using Kontent.Ai.Delivery.Extensions;
 using Kontent.Ai.Delivery.Benchmarks.ContentTypes;
 
 namespace Kontent.Ai.Delivery.Benchmarks;

@@ -1,4 +1,3 @@
-using Kontent.Ai.Delivery.Extensions;
 using Kontent.Ai.Delivery.Languages;
 
 namespace Kontent.Ai.Delivery.Api.QueryBuilders;

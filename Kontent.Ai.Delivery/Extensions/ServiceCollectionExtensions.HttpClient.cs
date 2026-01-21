@@ -7,7 +7,7 @@ using Microsoft.Extensions.Options;
 using Polly;
 using Polly.Retry;
 
-namespace Kontent.Ai.Delivery.Extensions;
+namespace Kontent.Ai.Delivery;
 
 public static partial class ServiceCollectionExtensions
 {

@@ -8,7 +8,7 @@ using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.DependencyInjection.Extensions;
 using Microsoft.Extensions.Logging;
 
-namespace Kontent.Ai.Delivery.Extensions;
+namespace Kontent.Ai.Delivery;
 
 public static partial class ServiceCollectionExtensions
 {

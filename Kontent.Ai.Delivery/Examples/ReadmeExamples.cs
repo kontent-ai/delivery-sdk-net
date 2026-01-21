@@ -4,7 +4,6 @@ using Kontent.Ai.Delivery.Abstractions;
 using Kontent.Ai.Delivery.Configuration;
 using Kontent.Ai.Delivery.ContentItems.RichText;
 using Kontent.Ai.Delivery.ContentItems.RichText.Resolution;
-using Kontent.Ai.Delivery.Extensions;
 using Microsoft.Extensions.Caching.Distributed;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Http.Resilience;
@@ -622,12 +621,15 @@ public static class ReadmeExamples
 
     // ===== DeliveryClientBuilder Examples (Non-DI Scenarios) =====
 
-    // Simple usage with environment ID
+    // Simple usage with Production API
     public static IDeliveryClientContainer BuilderSimpleUsage()
     {
         // Build() returns IDeliveryClientContainer - caller should dispose when done
         var container = DeliveryClientBuilder
-            .WithEnvironmentId("your-environment-id")
+            .WithOptions(builder => builder
+                .WithEnvironmentId("your-environment-id")
+                .UseProductionApi()
+                .Build())
             .Build();
 
         return container;
@@ -638,7 +640,10 @@ public static class ReadmeExamples
     {
         // Build() returns IDeliveryClientContainer - caller should dispose when done
         var container = DeliveryClientBuilder
-            .WithEnvironmentId(Guid.Parse("550cec62-90a6-4ab3-b3e4-3d0bb4c04f5c"))
+            .WithOptions(builder => builder
+                .WithEnvironmentId(Guid.Parse("550cec62-90a6-4ab3-b3e4-3d0bb4c04f5c"))
+                .UseProductionApi()
+                .Build())
             .Build();
 
         return container;
@@ -649,7 +654,10 @@ public static class ReadmeExamples
     {
         // Caller owns the container and should dispose it when done
         var container = DeliveryClientBuilder
-            .WithEnvironmentId("your-environment-id")
+            .WithOptions(builder => builder
+                .WithEnvironmentId("your-environment-id")
+                .UseProductionApi()
+                .Build())
             .WithTypeProvider(typeProvider)
             .Build();
 
@@ -660,7 +668,10 @@ public static class ReadmeExamples
     public static IDeliveryClientContainer BuilderWithMemoryCache()
     {
         var container = DeliveryClientBuilder
-            .WithEnvironmentId("your-environment-id")
+            .WithOptions(builder => builder
+                .WithEnvironmentId("your-environment-id")
+                .UseProductionApi()
+                .Build())
             .WithMemoryCache(TimeSpan.FromMinutes(30))
             .Build();
 
@@ -671,7 +682,10 @@ public static class ReadmeExamples
     public static IDeliveryClientContainer BuilderWithDistributedCache(IDistributedCache distributedCache)
     {
         var container = DeliveryClientBuilder
-            .WithEnvironmentId("your-environment-id")
+            .WithOptions(builder => builder
+                .WithEnvironmentId("your-environment-id")
+                .UseProductionApi()
+                .Build())
             .WithDistributedCache(distributedCache, TimeSpan.FromHours(1))
             .Build();
 

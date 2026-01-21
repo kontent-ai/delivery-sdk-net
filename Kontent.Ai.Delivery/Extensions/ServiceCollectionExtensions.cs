@@ -7,7 +7,7 @@ using Microsoft.Extensions.Http.Resilience;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
 
-namespace Kontent.Ai.Delivery.Extensions;
+namespace Kontent.Ai.Delivery;
 
 /// <summary>
 /// Extension methods for registering Kontent.ai Delivery SDK services.
@@ -90,6 +90,23 @@ public static partial class ServiceCollectionExtensions
         return services.AddDeliveryClient(
             Abstractions.Options.DefaultName,
             section.Bind);
+    }
+
+    /// <summary>
+    /// Registers the Kontent.ai Delivery client using a configuration section.
+    /// </summary>
+    /// <param name="services">The service collection.</param>
+    /// <param name="configurationSection">The configuration section containing delivery options.</param>
+    /// <returns>The service collection for chaining.</returns>
+    public static IServiceCollection AddDeliveryClient(
+        this IServiceCollection services,
+        IConfigurationSection configurationSection)
+    {
+        ArgumentNullException.ThrowIfNull(configurationSection);
+
+        return services.AddDeliveryClient(
+            Abstractions.Options.DefaultName,
+            configurationSection.Bind);
     }
 
     /// <summary>

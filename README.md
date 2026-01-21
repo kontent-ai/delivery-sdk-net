@@ -145,14 +145,17 @@ For console applications, scripts, or scenarios where DI is not available, use `
 ```csharp
 using Kontent.Ai.Delivery.Configuration;
 
-// Simple usage
+// Simple usage with Production API
 using var container = DeliveryClientBuilder
-    .WithEnvironmentId("your-environment-id")
+    .WithOptions(builder => builder
+        .WithEnvironmentId("your-environment-id")
+        .UseProductionApi()
+        .Build())
     .Build();
 
 var client = container.Client;
 
-// With caching and type provider
+// With Preview API, caching and type provider
 using var container = DeliveryClientBuilder
     .WithOptions(builder => builder
         .WithEnvironmentId("your-environment-id")
@@ -166,8 +169,7 @@ var client = container.Client;
 ```
 
 The builder supports:
-- `.WithEnvironmentId(string|Guid)` - Configure for Production API with environment ID
-- `.WithOptions(Func<IDeliveryOptionsBuilder, DeliveryOptions>)` - Full configuration via options builder
+- `.WithOptions(Func<IDeliveryOptionsBuilder, DeliveryOptions>)` - Configure delivery options (environment ID, API mode, etc.)
 - `.WithTypeProvider(ITypeProvider)` - Custom type provider for strongly-typed models
 - `.WithMemoryCache(TimeSpan?)` - Enable in-memory caching
 - `.WithDistributedCache(IDistributedCache, TimeSpan?)` - Enable distributed caching

@@ -22,12 +22,15 @@ namespace Kontent.Ai.Delivery.Configuration;
 /// <para>
 /// Example usage:
 /// <code>
-/// // Simple usage with environment ID
+/// // Simple usage with Production API
 /// using var container = DeliveryClientBuilder
-///     .WithEnvironmentId("your-environment-id")
+///     .WithOptions(opts => opts
+///         .WithEnvironmentId("your-environment-id")
+///         .UseProductionApi()
+///         .Build())
 ///     .Build();
 ///
-/// // With preview API and type provider
+/// // With Preview API and type provider
 /// using var container2 = DeliveryClientBuilder
 ///     .WithOptions(opts => opts
 ///         .WithEnvironmentId("your-environment-id")
@@ -58,41 +61,7 @@ public sealed class DeliveryClientBuilder
     private DeliveryClientBuilder() { }
 
     /// <summary>
-    /// Creates a builder configured with the specified environment identifier for Production API.
-    /// </summary>
-    /// <param name="environmentId">The identifier of a Kontent.ai environment.</param>
-    /// <returns>A builder for optional client configuration.</returns>
-    public static DeliveryClientBuilder WithEnvironmentId(string environmentId)
-    {
-        var builder = new DeliveryClientBuilder
-        {
-            _deliveryOptions = DeliveryOptionsBuilder.CreateInstance()
-                .WithEnvironmentId(environmentId)
-                .UseProductionApi()
-                .Build()
-        };
-        return builder;
-    }
-
-    /// <summary>
-    /// Creates a builder configured with the specified environment identifier for Production API.
-    /// </summary>
-    /// <param name="environmentId">The identifier of a Kontent.ai environment.</param>
-    /// <returns>A builder for optional client configuration.</returns>
-    public static DeliveryClientBuilder WithEnvironmentId(Guid environmentId)
-    {
-        var builder = new DeliveryClientBuilder
-        {
-            _deliveryOptions = DeliveryOptionsBuilder.CreateInstance()
-                .WithEnvironmentId(environmentId)
-                .UseProductionApi()
-                .Build()
-        };
-        return builder;
-    }
-
-    /// <summary>
-    /// Creates a builder with additional configuration via the options builder.
+    /// Creates a builder with configuration via the options builder.
     /// </summary>
     /// <param name="buildDeliveryOptions">A delegate that creates an instance of the <see cref="DeliveryOptions"/> using the specified <see cref="IDeliveryOptionsBuilder"/>.</param>
     /// <returns>A builder for optional client configuration.</returns>
@@ -205,8 +174,11 @@ public sealed class DeliveryClientBuilder
     ///     builder.SetMinimumLevel(LogLevel.Debug);
     /// });
     ///
-    /// var client = DeliveryClientBuilder
-    ///     .WithEnvironmentId("your-environment-id")
+    /// using var container = DeliveryClientBuilder
+    ///     .WithOptions(opts => opts
+    ///         .WithEnvironmentId("your-environment-id")
+    ///         .UseProductionApi()
+    ///         .Build())
     ///     .WithLoggerFactory(loggerFactory)
     ///     .Build();
     /// </code>
@@ -238,7 +210,10 @@ public sealed class DeliveryClientBuilder
     /// <example>
     /// <code>
     /// using var container = DeliveryClientBuilder
-    ///     .WithEnvironmentId("your-env-id")
+    ///     .WithOptions(opts => opts
+    ///         .WithEnvironmentId("your-env-id")
+    ///         .UseProductionApi()
+    ///         .Build())
     ///     .Build();
     ///
     /// var client = container.Client;
@@ -251,7 +226,7 @@ public sealed class DeliveryClientBuilder
         if (_deliveryOptions is null)
         {
             throw new InvalidOperationException(
-                "DeliveryOptions must be configured. Call WithEnvironmentId() or WithOptions() before Build().");
+                "DeliveryOptions must be configured. Call WithOptions() before Build().");
         }
 
         var services = new ServiceCollection();
