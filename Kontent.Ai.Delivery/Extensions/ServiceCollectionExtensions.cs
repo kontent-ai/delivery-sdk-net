@@ -93,6 +93,23 @@ public static partial class ServiceCollectionExtensions
     }
 
     /// <summary>
+    /// Registers the Kontent.ai Delivery client using a configuration section.
+    /// </summary>
+    /// <param name="services">The service collection.</param>
+    /// <param name="configurationSection">The configuration section containing delivery options.</param>
+    /// <returns>The service collection for chaining.</returns>
+    public static IServiceCollection AddDeliveryClient(
+        this IServiceCollection services,
+        IConfigurationSection configurationSection)
+    {
+        ArgumentNullException.ThrowIfNull(configurationSection);
+
+        return services.AddDeliveryClient(
+            Abstractions.Options.DefaultName,
+            configurationSection.Bind);
+    }
+
+    /// <summary>
     /// Registers the Kontent.ai Delivery client with configuration action.
     /// </summary>
     /// <param name="services">The service collection.</param>
