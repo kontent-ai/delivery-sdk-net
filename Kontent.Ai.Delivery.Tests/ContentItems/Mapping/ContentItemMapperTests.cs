@@ -148,6 +148,83 @@ public sealed class ContentItemMapperTests
     }
 
     [Fact]
+    public async Task MapElementsAsync_CircularReference_ReturnsSameInstance()
+    {
+        // Fixture has: on_roasts -> coffee_processing_techniques -> on_roasts (cycle)
+        var json = await LoadFixtureAsync("onroast_recursive_linked_items.json");
+        var response = JsonSerializer.Deserialize<DeliveryItemResponse<Article>>(json, _jsonOptions)!;
+        var item = response.Item;
+        var rawItem = (IRawContentItem)item;
+
+        var context = new MappingContext
+        {
+            ModularContent = response.ModularContent,
+            CancellationToken = CancellationToken.None
+        };
+
+        // Pre-register the main item in ItemsBeingHydrated to simulate
+        // "on_roasts" being hydrated when its linked items are resolved
+        context.ItemsBeingHydrated["on_roasts"] = item;
+
+        await _mapper.MapElementsAsync(item.Elements, GetRawElements(rawItem), context);
+
+        Assert.NotNull(item.Elements.RelatedArticles);
+        Assert.NotEmpty(item.Elements.RelatedArticles!);
+
+        // Find coffee_processing_techniques in related articles
+        var coffeeProcessing = item.Elements.RelatedArticles!
+            .OfType<IContentItem<Article>>()
+            .FirstOrDefault(a => a.System.Codename == "coffee_processing_techniques");
+
+        Assert.NotNull(coffeeProcessing);
+        Assert.NotNull(coffeeProcessing!.Elements.RelatedArticles);
+
+        // Find on_roasts in coffee_processing_techniques' related articles
+        var circularOnRoasts = coffeeProcessing.Elements.RelatedArticles!
+            .OfType<IContentItem<Article>>()
+            .FirstOrDefault(a => a.System.Codename == "on_roasts");
+
+        Assert.NotNull(circularOnRoasts);
+
+        // The circular reference should point to the SAME instance
+        Assert.Same(item, circularOnRoasts);
+    }
+
+    [Fact]
+    public async Task CompleteItemAsync_CircularReference_ReturnsSameRootInstance()
+    {
+        // Integration test: verify the full production flow via CompleteItemAsync
+        // Fixture has: on_roasts -> coffee_processing_techniques -> on_roasts (cycle)
+        var json = await LoadFixtureAsync("onroast_recursive_linked_items.json");
+        var response = JsonSerializer.Deserialize<DeliveryItemResponse<Article>>(json, _jsonOptions)!;
+        var item = response.Item;
+
+        // Use the production code path
+        await _mapper.CompleteItemAsync(item, response.ModularContent);
+
+        Assert.NotNull(item.Elements.RelatedArticles);
+        Assert.NotEmpty(item.Elements.RelatedArticles!);
+
+        // Find coffee_processing_techniques in related articles
+        var coffeeProcessing = item.Elements.RelatedArticles!
+            .OfType<IContentItem<Article>>()
+            .FirstOrDefault(a => a.System.Codename == "coffee_processing_techniques");
+
+        Assert.NotNull(coffeeProcessing);
+        Assert.NotNull(coffeeProcessing!.Elements.RelatedArticles);
+
+        // Find on_roasts in coffee_processing_techniques' related articles
+        var circularOnRoasts = coffeeProcessing.Elements.RelatedArticles!
+            .OfType<IContentItem<Article>>()
+            .FirstOrDefault(a => a.System.Codename == "on_roasts");
+
+        Assert.NotNull(circularOnRoasts);
+
+        // The circular reference should point to the SAME root instance
+        Assert.Same(item, circularOnRoasts);
+    }
+
+    [Fact]
     public async Task MapElementsAsync_HandlesRecursiveInlineLinkedItems_WithoutStackOverflow()
     {
         // This fixture has on_roasts with body_copy rich text containing an inline reference to itself

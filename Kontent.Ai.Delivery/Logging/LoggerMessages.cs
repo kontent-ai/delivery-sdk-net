@@ -205,7 +205,7 @@ internal static partial class LoggerMessages
     [LoggerMessage(
         EventId = LogEventIds.CircularReferenceDetected,
         Level = LogLevel.Debug,
-        Message = "Circular reference detected for linked item '{Codename}', returning shallow copy")]
+        Message = "Circular reference detected for linked item '{Codename}', returning same instance being hydrated")]
     public static partial void CircularReferenceDetected(ILogger logger, string codename);
 
     [LoggerMessage(

@@ -81,6 +81,10 @@ internal sealed class ContentItemMapper
             CancellationToken = cancellationToken
         };
 
+        // Register root item to enable circular references back to it
+        // (e.g., A -> B -> A should return the same A instance)
+        context.ItemsBeingHydrated[item.System.Codename] = item;
+
         return MapElementsAsync(concrete.Elements!, rawElements, context);
     }
 
@@ -388,6 +392,8 @@ internal sealed class ContentItemMapper
     /// Resolves a linked item by codename from modular content.
     /// Handles cycle detection, memoization, and recursive hydration.
     /// Returns null if the linked item is not found in the modular content.
+    /// When a circular reference is detected, returns the same instance that's currently
+    /// being hydrated, creating proper C# circular references in the object graph.
     /// </summary>
     private async Task<object?> ResolveLinkedItemAsync(string codename, MappingContext context)
     {
@@ -403,26 +409,30 @@ internal sealed class ContentItemMapper
             return null;
         }
 
-        // Already resolved in this request - return cached instance
+        // Already fully resolved in this request - return cached instance
         if (context.ResolvedItems.TryGetValue(codename, out var cached))
         {
             return cached;
         }
 
-        var contentType = ExtractContentType(linkedItem);
-        var modelType = _typingStrategy.ResolveModelType(contentType);
-        var itemJson = linkedItem.GetRawText();
-        var contentItem = _deserializer.DeserializeContentItem(itemJson, modelType);
-
-        // Cycle detected: return shallow (deserialized) item without recursive mapping
-        if (!context.ProcessingItems.Add(codename))
+        // Cycle detected: return the SAME instance being hydrated
+        // This creates proper C# circular references in the object graph
+        if (context.ItemsBeingHydrated.TryGetValue(codename, out var inProgress))
         {
             if (_logger is not null)
             {
                 LoggerMessages.CircularReferenceDetected(_logger, codename);
             }
-            return contentItem;
+            return inProgress;
         }
+
+        // New item: deserialize and store BEFORE hydration
+        var contentType = ExtractContentType(linkedItem);
+        var modelType = _typingStrategy.ResolveModelType(contentType);
+        var itemJson = linkedItem.GetRawText();
+        var contentItem = _deserializer.DeserializeContentItem(itemJson, modelType);
+
+        context.ItemsBeingHydrated[codename] = contentItem;
 
         try
         {
@@ -432,7 +442,7 @@ internal sealed class ContentItemMapper
         }
         finally
         {
-            context.ProcessingItems.Remove(codename);
+            context.ItemsBeingHydrated.Remove(codename);
         }
     }
 

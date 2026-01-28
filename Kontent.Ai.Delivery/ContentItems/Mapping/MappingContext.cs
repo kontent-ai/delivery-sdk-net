@@ -20,13 +20,14 @@ internal sealed class MappingContext
     public DependencyTrackingContext? DependencyContext { get; init; }
 
     /// <summary>
-    /// Cycle detection: codenames currently being mapped.
-    /// Used to detect and break circular references in linked items.
+    /// Items currently being hydrated: codename -> instance.
+    /// Enables returning the same instance during circular reference detection,
+    /// creating proper C# circular references in the object graph.
     /// </summary>
-    public HashSet<string> ProcessingItems { get; } = new(StringComparer.Ordinal);
+    public Dictionary<string, object> ItemsBeingHydrated { get; } = new(StringComparer.Ordinal);
 
     /// <summary>
-    /// Memoization: already-resolved linked items.
+    /// Memoization: fully hydrated linked items.
     /// Avoids re-mapping the same linked item multiple times within a request.
     /// </summary>
     public Dictionary<string, object> ResolvedItems { get; } = new(StringComparer.Ordinal);
