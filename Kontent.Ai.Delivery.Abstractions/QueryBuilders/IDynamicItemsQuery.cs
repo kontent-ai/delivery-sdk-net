@@ -3,6 +3,18 @@ namespace Kontent.Ai.Delivery.Abstractions;
 /// <summary>
 /// Fluent builder for retrieving multiple content items with dynamic content mapping.
 /// </summary>
+/// <remarks>
+/// When a custom <see cref="ITypeProvider"/> is registered, items will be automatically
+/// resolved to their strongly-typed models at runtime. Use pattern matching to access typed items:
+/// <code>
+/// var result = await client.GetItems().ExecuteAsync();
+/// foreach (var item in result.Value.Items)
+/// {
+///     if (item is IContentItem&lt;Article&gt; article)
+///         Console.WriteLine(article.Elements.Title);
+/// }
+/// </code>
+/// </remarks>
 public interface IDynamicItemsQuery
 {
     /// <summary>
@@ -83,6 +95,10 @@ public interface IDynamicItemsQuery
     /// Executes the built query and returns the response with pagination metadata.
     /// </summary>
     /// <param name="cancellationToken">Cancellation token for the operation.</param>
-    /// <returns>A delivery result containing the response with items and pagination info.</returns>
-    Task<IDeliveryResult<IDeliveryItemListingResponse<IDynamicElements>>> ExecuteAsync(CancellationToken cancellationToken = default);
+    /// <returns>
+    /// A delivery result containing the response with items and pagination info.
+    /// Items will be runtime-typed if a custom <see cref="ITypeProvider"/> is registered
+    /// and provides mappings, otherwise they will be <see cref="IContentItem{IDynamicElements}"/>.
+    /// </returns>
+    Task<IDeliveryResult<IDeliveryItemListingResponse>> ExecuteAsync(CancellationToken cancellationToken = default);
 }

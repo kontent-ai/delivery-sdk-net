@@ -29,7 +29,7 @@ public class EnumerateItemsLanguageFallbackTests
         var provider = services.BuildServiceProvider();
         var client = provider.GetRequiredService<IDeliveryClient>();
 
-        var items = new List<IContentItem<IDynamicElements>>();
+        var items = new List<IContentItem>();
         await foreach (var item in client.GetItemsFeed()
             .WithLanguage("es-ES", LanguageFallbackMode.Disabled)
             .EnumerateItemsAsync())

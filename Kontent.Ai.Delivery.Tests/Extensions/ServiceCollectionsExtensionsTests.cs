@@ -204,6 +204,40 @@ public class ServiceCollectionsExtensionsTests
         AssertDefaultServiceCollection(provider, _expectedInterfacesWithImplementationTypes);
     }
 
+    [Fact]
+    public void AddDeliveryClient_WithNullConfigurationSection_ThrowsArgumentNullException()
+    {
+        Assert.Throws<ArgumentNullException>(() =>
+            _serviceCollection.AddDeliveryClient(configurationSection: null!));
+    }
+
+    [Fact]
+    public void AddDeliveryClient_WithConfigurationSection_AllServicesAreRegistered()
+    {
+        // Arrange
+        var jsonConfigurationPath = Path.Combine(
+            Environment.CurrentDirectory,
+            "Fixtures",
+            "ServiceCollectionsExtensions",
+            "deliveryOptions_under_default_key.json");
+        var fakeConfiguration = new ConfigurationBuilder()
+            .AddJsonFile(jsonConfigurationPath)
+            .Build();
+
+        var section = fakeConfiguration.GetSection("DeliveryOptions");
+
+        // Act
+        _serviceCollection.AddDeliveryClient(section);
+        var provider = _serviceCollection.BuildServiceProvider();
+
+        // Assert
+        AssertDefaultServiceCollection(provider, _expectedInterfacesWithImplementationTypes);
+
+        // Verify options were correctly bound from configuration section
+        var optionsMonitor = provider.GetRequiredService<IOptionsMonitor<DeliveryOptions>>();
+        Assert.Equal(EnvironmentId, optionsMonitor.CurrentValue.EnvironmentId);
+    }
+
     private void AssertDefaultServiceCollection(ServiceProvider provider, IDictionary<Type, Type> expectedTypes)
     {
         foreach (var type in expectedTypes)

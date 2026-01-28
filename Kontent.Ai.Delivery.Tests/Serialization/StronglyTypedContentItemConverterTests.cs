@@ -256,7 +256,7 @@ public class StronglyTypedContentItemConverterTests
     }
 
     [Fact]
-    public void Deserialize_PreservesRawElementsForPostProcessing()
+    public void Deserialize_PreservesRawItemJsonForPostProcessing()
     {
         // Arrange
         var options = CreateOptionsWithConverter<Article>();
@@ -266,11 +266,12 @@ public class StronglyTypedContentItemConverterTests
 
         // Assert
         Assert.NotNull(result);
-        Assert.NotNull(result.RawElements);
-        Assert.Equal(JsonValueKind.Object, result.RawElements.Value.ValueKind);
+        Assert.NotNull(result.RawItemJson);
+        Assert.Equal(JsonValueKind.Object, result.RawItemJson.Value.ValueKind);
 
-        // Raw elements should contain the original structure
-        Assert.True(result.RawElements.Value.TryGetProperty("title", out var titleElement));
+        // RawItemJson should contain the full item structure with elements
+        Assert.True(result.RawItemJson.Value.TryGetProperty("elements", out var rawElements));
+        Assert.True(rawElements.TryGetProperty("title", out var titleElement));
         Assert.True(titleElement.TryGetProperty("type", out var typeValue));
         Assert.Equal("text", typeValue.GetString());
     }

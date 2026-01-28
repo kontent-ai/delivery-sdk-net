@@ -49,7 +49,7 @@ public sealed class ContentItemMapperTests
             CancellationToken = CancellationToken.None
         };
 
-        await _mapper.MapElementsAsync(item.Elements, rawItem.RawElements!.Value, context);
+        await _mapper.MapElementsAsync(item.Elements, GetRawElements(rawItem), context);
 
         Assert.NotNull(item.Elements.TeaserImage);
         Assert.NotEmpty(item.Elements.TeaserImage!);
@@ -70,7 +70,7 @@ public sealed class ContentItemMapperTests
             CancellationToken = CancellationToken.None
         };
 
-        await _mapper.MapElementsAsync(item.Elements, rawItem.RawElements!.Value, context);
+        await _mapper.MapElementsAsync(item.Elements, GetRawElements(rawItem), context);
 
         Assert.NotNull(item.Elements.Personas);
         Assert.NotEmpty(item.Elements.Personas!);
@@ -95,7 +95,7 @@ public sealed class ContentItemMapperTests
             CancellationToken = CancellationToken.None
         };
 
-        await _mapper.MapElementsAsync(item.Elements, rawItem.RawElements!.Value, context);
+        await _mapper.MapElementsAsync(item.Elements, GetRawElements(rawItem), context);
 
         Assert.NotNull(item.Elements.BodyCopy);
         Assert.NotEmpty(item.Elements.BodyCopy);
@@ -116,7 +116,7 @@ public sealed class ContentItemMapperTests
             CancellationToken = CancellationToken.None
         };
 
-        await _mapper.MapElementsAsync(item.Elements, rawItem.RawElements!.Value, context);
+        await _mapper.MapElementsAsync(item.Elements, GetRawElements(rawItem), context);
 
         Assert.NotNull(item.Elements.RelatedArticles);
         Assert.NotEmpty(item.Elements.RelatedArticles!);
@@ -141,10 +141,87 @@ public sealed class ContentItemMapperTests
         };
 
         // Should not throw StackOverflowException
-        await _mapper.MapElementsAsync(item.Elements, rawItem.RawElements!.Value, context);
+        await _mapper.MapElementsAsync(item.Elements, GetRawElements(rawItem), context);
 
         Assert.NotNull(item.Elements.RelatedArticles);
         Assert.NotEmpty(item.Elements.RelatedArticles!);
+    }
+
+    [Fact]
+    public async Task MapElementsAsync_CircularReference_ReturnsSameInstance()
+    {
+        // Fixture has: on_roasts -> coffee_processing_techniques -> on_roasts (cycle)
+        var json = await LoadFixtureAsync("onroast_recursive_linked_items.json");
+        var response = JsonSerializer.Deserialize<DeliveryItemResponse<Article>>(json, _jsonOptions)!;
+        var item = response.Item;
+        var rawItem = (IRawContentItem)item;
+
+        var context = new MappingContext
+        {
+            ModularContent = response.ModularContent,
+            CancellationToken = CancellationToken.None
+        };
+
+        // Pre-register the main item in ItemsBeingHydrated to simulate
+        // "on_roasts" being hydrated when its linked items are resolved
+        context.ItemsBeingHydrated["on_roasts"] = item;
+
+        await _mapper.MapElementsAsync(item.Elements, GetRawElements(rawItem), context);
+
+        Assert.NotNull(item.Elements.RelatedArticles);
+        Assert.NotEmpty(item.Elements.RelatedArticles!);
+
+        // Find coffee_processing_techniques in related articles
+        var coffeeProcessing = item.Elements.RelatedArticles!
+            .OfType<IContentItem<Article>>()
+            .FirstOrDefault(a => a.System.Codename == "coffee_processing_techniques");
+
+        Assert.NotNull(coffeeProcessing);
+        Assert.NotNull(coffeeProcessing!.Elements.RelatedArticles);
+
+        // Find on_roasts in coffee_processing_techniques' related articles
+        var circularOnRoasts = coffeeProcessing.Elements.RelatedArticles!
+            .OfType<IContentItem<Article>>()
+            .FirstOrDefault(a => a.System.Codename == "on_roasts");
+
+        Assert.NotNull(circularOnRoasts);
+
+        // The circular reference should point to the SAME instance
+        Assert.Same(item, circularOnRoasts);
+    }
+
+    [Fact]
+    public async Task CompleteItemAsync_CircularReference_ReturnsSameRootInstance()
+    {
+        // Integration test: verify the full production flow via CompleteItemAsync
+        // Fixture has: on_roasts -> coffee_processing_techniques -> on_roasts (cycle)
+        var json = await LoadFixtureAsync("onroast_recursive_linked_items.json");
+        var response = JsonSerializer.Deserialize<DeliveryItemResponse<Article>>(json, _jsonOptions)!;
+        var item = response.Item;
+
+        // Use the production code path
+        await _mapper.CompleteItemAsync(item, response.ModularContent);
+
+        Assert.NotNull(item.Elements.RelatedArticles);
+        Assert.NotEmpty(item.Elements.RelatedArticles!);
+
+        // Find coffee_processing_techniques in related articles
+        var coffeeProcessing = item.Elements.RelatedArticles!
+            .OfType<IContentItem<Article>>()
+            .FirstOrDefault(a => a.System.Codename == "coffee_processing_techniques");
+
+        Assert.NotNull(coffeeProcessing);
+        Assert.NotNull(coffeeProcessing!.Elements.RelatedArticles);
+
+        // Find on_roasts in coffee_processing_techniques' related articles
+        var circularOnRoasts = coffeeProcessing.Elements.RelatedArticles!
+            .OfType<IContentItem<Article>>()
+            .FirstOrDefault(a => a.System.Codename == "on_roasts");
+
+        Assert.NotNull(circularOnRoasts);
+
+        // The circular reference should point to the SAME root instance
+        Assert.Same(item, circularOnRoasts);
     }
 
     [Fact]
@@ -163,7 +240,7 @@ public sealed class ContentItemMapperTests
         };
 
         // Should not throw StackOverflowException - cycle detection should break the recursion
-        await _mapper.MapElementsAsync(item.Elements, rawItem.RawElements!.Value, context);
+        await _mapper.MapElementsAsync(item.Elements, GetRawElements(rawItem), context);
 
         // Rich text content should be parsed despite self-reference
         Assert.NotNull(item.Elements.BodyCopy);
@@ -191,7 +268,7 @@ public sealed class ContentItemMapperTests
             CancellationToken = CancellationToken.None
         };
 
-        await _mapper.MapElementsAsync(item.Elements, rawItem.RawElements!.Value, context);
+        await _mapper.MapElementsAsync(item.Elements, GetRawElements(rawItem), context);
 
         // Asset element payload extracts the asset GUID from the URL path
         var expectedAssetId = Guid.Parse("e700596b-03b0-4cee-ac5c-9212762c027a");
@@ -214,7 +291,7 @@ public sealed class ContentItemMapperTests
             CancellationToken = CancellationToken.None
         };
 
-        await _mapper.MapElementsAsync(item.Elements, rawItem.RawElements!.Value, context);
+        await _mapper.MapElementsAsync(item.Elements, GetRawElements(rawItem), context);
 
         // Should track linked items as dependencies
         Assert.Contains(dependencyContext.Dependencies, d => d.StartsWith("item_"));
@@ -238,7 +315,7 @@ public sealed class ContentItemMapperTests
         };
 
         await Assert.ThrowsAsync<OperationCanceledException>(() =>
-            _mapper.MapElementsAsync(item.Elements, rawItem.RawElements!.Value, context));
+            _mapper.MapElementsAsync(item.Elements, GetRawElements(rawItem), context));
     }
 
     [Fact]
@@ -258,7 +335,7 @@ public sealed class ContentItemMapperTests
         };
 
         // Act - should not throw
-        await _mapper.MapElementsAsync(item.Elements, rawItem.RawElements!.Value, context);
+        await _mapper.MapElementsAsync(item.Elements, GetRawElements(rawItem), context);
 
         // Assert - linked items list should be empty (not null, not throwing)
         Assert.NotNull(item.Elements.RelatedArticles);
@@ -281,7 +358,7 @@ public sealed class ContentItemMapperTests
         };
 
         // Act - should not throw
-        await _mapper.MapElementsAsync(item.Elements, rawItem.RawElements!.Value, context);
+        await _mapper.MapElementsAsync(item.Elements, GetRawElements(rawItem), context);
 
         // Assert - linked items list should be empty (not null, not throwing)
         Assert.NotNull(item.Elements.RelatedArticles);
@@ -305,7 +382,7 @@ public sealed class ContentItemMapperTests
         };
 
         // Act - should not throw
-        await _mapper.MapElementsAsync(item.Elements, rawItem.RawElements!.Value, context);
+        await _mapper.MapElementsAsync(item.Elements, GetRawElements(rawItem), context);
 
         // Assert - rich text should have blocks, but no embedded content (they're filtered out)
         Assert.NotNull(item.Elements.BodyCopy);
@@ -319,6 +396,15 @@ public sealed class ContentItemMapperTests
             Environment.CurrentDirectory,
             $"Fixtures{Path.DirectorySeparatorChar}DeliveryClient{Path.DirectorySeparatorChar}{filename}");
         return await File.ReadAllTextAsync(path);
+    }
+
+    /// <summary>
+    /// Extracts the raw elements JsonElement from the full item JSON.
+    /// </summary>
+    private static JsonElement GetRawElements(IRawContentItem rawItem)
+    {
+        var rawItemJson = rawItem.RawItemJson!.Value;
+        return rawItemJson.GetProperty("elements");
     }
 
     private sealed class StaticOptionsMonitor<T>(T currentValue) : IOptionsMonitor<T>

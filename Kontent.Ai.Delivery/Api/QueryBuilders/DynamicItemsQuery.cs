@@ -1,18 +1,26 @@
 using Kontent.Ai.Delivery.Api.Filtering;
 using Kontent.Ai.Delivery.ContentItems;
+using Kontent.Ai.Delivery.ContentItems.Mapping;
 using Kontent.Ai.Delivery.SharedModels;
 
 namespace Kontent.Ai.Delivery.Api.QueryBuilders;
 
 /// <summary>
 /// Concrete implementation of <see cref="IDynamicItemsQuery"/> using the modernized Result pattern.
+/// Supports runtime type resolution via <see cref="ContentItemMapper.TryRuntimeTypeItemAsync"/>.
 /// </summary>
+/// <remarks>
+/// Cache support is intentionally omitted as the runtime-typed result type varies per item.
+/// Use strongly-typed queries (<see cref="IItemsQuery{TModel}"/>) for cacheable results.
+/// </remarks>
 internal sealed class DynamicItemsQuery(
     IDeliveryApi api,
-    Func<bool?> getDefaultWaitForNewContent) : IDynamicItemsQuery
+    Func<bool?> getDefaultWaitForNewContent,
+    ContentItemMapper contentItemMapper) : IDynamicItemsQuery
 {
     private readonly IDeliveryApi _api = api;
     private readonly Func<bool?> _getDefaultWaitForNewContent = getDefaultWaitForNewContent;
+    private readonly ContentItemMapper _contentItemMapper = contentItemMapper;
     private readonly List<KeyValuePair<string, string>> _serializedFilters = [];
     private ListItemsParams _params = new();
     private bool? _waitForLoadingNewContentOverride;
@@ -89,25 +97,38 @@ internal sealed class DynamicItemsQuery(
         return this;
     }
 
-    public async Task<IDeliveryResult<IDeliveryItemListingResponse<IDynamicElements>>> ExecuteAsync(CancellationToken cancellationToken = default)
+    public async Task<IDeliveryResult<IDeliveryItemListingResponse>> ExecuteAsync(CancellationToken cancellationToken = default)
     {
-        // API CALL
+        // 1. API CALL
         var deliveryResult = await FetchFromApiAsync().ConfigureAwait(false);
         if (!deliveryResult.IsSuccess)
         {
-            return DeliveryResult.Failure<IDeliveryItemListingResponse<IDynamicElements>>(
+            return DeliveryResult.Failure<IDeliveryItemListingResponse>(
                 deliveryResult.RequestUrl ?? string.Empty,
                 deliveryResult.StatusCode,
                 deliveryResult.Error,
                 deliveryResult.ResponseHeaders);
         }
 
-        // BUILD RESULT WITH NEXT PAGE FETCHER
         var resp = deliveryResult.Value;
-        var responseWithFetcher = resp with { NextPageFetcher = CreateNextPageFetcher(resp.Pagination) };
 
-        return DeliveryResult.Success<IDeliveryItemListingResponse<IDynamicElements>>(
-            responseWithFetcher,
+        // 2. RUNTIME TYPE RESOLUTION FOR EACH ITEM
+        var runtimeTypedItems = await _contentItemMapper.RuntimeTypeItemsAsync(
+            resp.Items,
+            resp.ModularContent,
+            cancellationToken).ConfigureAwait(false);
+
+        // 3. BUILD RESULT WITH NEXT PAGE FETCHER
+        var response = new DynamicDeliveryItemListingResponse
+        {
+            Items = runtimeTypedItems,
+            Pagination = resp.Pagination,
+            ModularContent = resp.ModularContent,
+            NextPageFetcher = CreateNextPageFetcher(resp.Pagination)
+        };
+
+        return DeliveryResult.Success<IDeliveryItemListingResponse>(
+            response,
             deliveryResult.RequestUrl ?? string.Empty,
             deliveryResult.StatusCode,
             deliveryResult.HasStaleContent,
@@ -125,7 +146,7 @@ internal sealed class DynamicItemsQuery(
         return await rawResponse.ToDeliveryResultAsync().ConfigureAwait(false);
     }
 
-    private Func<CancellationToken, Task<IDeliveryResult<IDeliveryItemListingResponse<IDynamicElements>>>>? CreateNextPageFetcher(Pagination pagination)
+    private Func<CancellationToken, Task<IDeliveryResult<IDeliveryItemListingResponse>>>? CreateNextPageFetcher(Pagination pagination)
     {
         if (string.IsNullOrEmpty(pagination.NextPageUrl))
             return null;
@@ -134,14 +155,13 @@ internal sealed class DynamicItemsQuery(
 
         return async (ct) =>
         {
-            var nextQuery = new DynamicItemsQuery(_api, _getDefaultWaitForNewContent)
+            var nextQuery = new DynamicItemsQuery(_api, _getDefaultWaitForNewContent, _contentItemMapper)
             {
                 _params = _params with { Skip = nextSkip },
                 _waitForLoadingNewContentOverride = _waitForLoadingNewContentOverride
             };
 
-            foreach (var filter in _serializedFilters)
-                nextQuery._serializedFilters.Add(filter);
+            nextQuery._serializedFilters.AddRange(_serializedFilters);
 
             return await nextQuery.ExecuteAsync(ct).ConfigureAwait(false);
         };
@@ -149,7 +169,9 @@ internal sealed class DynamicItemsQuery(
 
     private static int ExtractSkipFromUrl(string url)
     {
-        var uri = new Uri(url);
+        if (!Uri.TryCreate(url, UriKind.Absolute, out var uri))
+            return 0;
+
         var query = System.Web.HttpUtility.ParseQueryString(uri.Query);
         return int.TryParse(query["skip"], out var skip) ? skip : 0;
     }

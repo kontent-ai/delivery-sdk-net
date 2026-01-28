@@ -163,7 +163,7 @@ public sealed class DeliveryClientBuilder
     /// <exception cref="ArgumentNullException">Thrown when <paramref name="loggerFactory"/> is null.</exception>
     /// <remarks>
     /// <para>
-    /// If not set, logging is disabled (<see cref="NullLoggerFactory"/> is used internally).
+    /// If not set, logging is disabled (no logging services are registered).
     /// </para>
     /// <para>
     /// Example usage:

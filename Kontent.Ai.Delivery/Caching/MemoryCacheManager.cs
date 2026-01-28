@@ -42,6 +42,7 @@ namespace Kontent.Ai.Delivery.Caching;
 /// <param name="defaultExpiration">
 /// Default expiration time for cache entries. If null, defaults to 1 hour.
 /// </param>
+/// <param name="logger"></param>
 /// <exception cref="ArgumentNullException">
 /// Thrown when <paramref name="memoryCache"/> is null.
 /// </exception>
