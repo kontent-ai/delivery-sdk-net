@@ -15,7 +15,10 @@ namespace Kontent.Ai.Delivery.Abstractions;
 /// <example>
 /// <code>
 /// using var container = DeliveryClientBuilder
-///     .WithEnvironmentId("your-env-id")
+///     .WithOptions(opts => opts
+///         .WithEnvironmentId("your-env-id")
+///         .UseProductionApi()
+///         .Build())
 ///     .Build();
 ///
 /// var client = container.Client;

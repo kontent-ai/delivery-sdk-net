@@ -13,42 +13,30 @@ public class DeliveryClientBuilderTests
     private static readonly Guid EnvironmentIdGuid = Guid.Parse(EnvironmentId);
 
     [Fact]
-    public void Build_WithEnvironmentIdString_CreatesClient()
-    {
-        // Act
-        using var container = DeliveryClientBuilder
-            .WithEnvironmentId(EnvironmentId)
-            .Build();
-
-        // Assert
-        Assert.NotNull(container);
-        Assert.IsAssignableFrom<IDeliveryClientContainer>(container);
-        Assert.NotNull(container.Client);
-        Assert.IsAssignableFrom<IDeliveryClient>(container.Client);
-    }
-
-    [Fact]
-    public void Build_WithEnvironmentIdGuid_CreatesClient()
-    {
-        // Act
-        using var container = DeliveryClientBuilder
-            .WithEnvironmentId(EnvironmentIdGuid)
-            .Build();
-
-        // Assert
-        Assert.NotNull(container);
-        Assert.IsAssignableFrom<IDeliveryClientContainer>(container);
-        Assert.NotNull(container.Client);
-        Assert.IsAssignableFrom<IDeliveryClient>(container.Client);
-    }
-
-    [Fact]
     public void Build_WithOptions_CreatesClient()
     {
         // Act
         using var container = DeliveryClientBuilder
             .WithOptions(builder => builder
                 .WithEnvironmentId(EnvironmentId)
+                .UseProductionApi()
+                .Build())
+            .Build();
+
+        // Assert
+        Assert.NotNull(container);
+        Assert.IsAssignableFrom<IDeliveryClientContainer>(container);
+        Assert.NotNull(container.Client);
+        Assert.IsAssignableFrom<IDeliveryClient>(container.Client);
+    }
+
+    [Fact]
+    public void Build_WithOptionsGuid_CreatesClient()
+    {
+        // Act
+        using var container = DeliveryClientBuilder
+            .WithOptions(builder => builder
+                .WithEnvironmentId(EnvironmentIdGuid)
                 .UseProductionApi()
                 .Build())
             .Build();
@@ -84,7 +72,10 @@ public class DeliveryClientBuilderTests
 
         // Act
         using var container = DeliveryClientBuilder
-            .WithEnvironmentId(EnvironmentId)
+            .WithOptions(builder => builder
+                .WithEnvironmentId(EnvironmentId)
+                .UseProductionApi()
+                .Build())
             .WithTypeProvider(typeProvider)
             .Build();
 
@@ -98,7 +89,10 @@ public class DeliveryClientBuilderTests
     {
         // Act
         using var container = DeliveryClientBuilder
-            .WithEnvironmentId(EnvironmentId)
+            .WithOptions(builder => builder
+                .WithEnvironmentId(EnvironmentId)
+                .UseProductionApi()
+                .Build())
             .WithMemoryCache(TimeSpan.FromMinutes(30))
             .Build();
 
@@ -112,7 +106,10 @@ public class DeliveryClientBuilderTests
     {
         // Act
         using var container = DeliveryClientBuilder
-            .WithEnvironmentId(EnvironmentId)
+            .WithOptions(builder => builder
+                .WithEnvironmentId(EnvironmentId)
+                .UseProductionApi()
+                .Build())
             .WithMemoryCache()
             .Build();
 
@@ -129,7 +126,10 @@ public class DeliveryClientBuilderTests
 
         // Act
         using var container = DeliveryClientBuilder
-            .WithEnvironmentId(EnvironmentId)
+            .WithOptions(builder => builder
+                .WithEnvironmentId(EnvironmentId)
+                .UseProductionApi()
+                .Build())
             .WithDistributedCache(distributedCache, TimeSpan.FromHours(1))
             .Build();
 
@@ -174,7 +174,10 @@ public class DeliveryClientBuilderTests
         // Act & Assert
         Assert.Throws<ArgumentNullException>(() =>
             DeliveryClientBuilder
-                .WithEnvironmentId(EnvironmentId)
+                .WithOptions(builder => builder
+                    .WithEnvironmentId(EnvironmentId)
+                    .UseProductionApi()
+                    .Build())
                 .WithTypeProvider(null!));
     }
 
@@ -184,7 +187,10 @@ public class DeliveryClientBuilderTests
         // Act & Assert
         Assert.Throws<ArgumentNullException>(() =>
             DeliveryClientBuilder
-                .WithEnvironmentId(EnvironmentId)
+                .WithOptions(builder => builder
+                    .WithEnvironmentId(EnvironmentId)
+                    .UseProductionApi()
+                    .Build())
                 .WithDistributedCache(null!));
     }
 
@@ -196,7 +202,10 @@ public class DeliveryClientBuilderTests
 
         // Act - last cache type wins
         using var container = DeliveryClientBuilder
-            .WithEnvironmentId(EnvironmentId)
+            .WithOptions(builder => builder
+                .WithEnvironmentId(EnvironmentId)
+                .UseProductionApi()
+                .Build())
             .WithDistributedCache(distributedCache)
             .WithMemoryCache(TimeSpan.FromMinutes(30))
             .Build();
@@ -214,7 +223,10 @@ public class DeliveryClientBuilderTests
 
         // Act - last cache type wins
         using var container = DeliveryClientBuilder
-            .WithEnvironmentId(EnvironmentId)
+            .WithOptions(builder => builder
+                .WithEnvironmentId(EnvironmentId)
+                .UseProductionApi()
+                .Build())
             .WithMemoryCache(TimeSpan.FromMinutes(30))
             .WithDistributedCache(distributedCache, TimeSpan.FromHours(1))
             .Build();
@@ -231,7 +243,11 @@ public class DeliveryClientBuilderTests
         var typeProvider = new TestTypeProvider();
 
         // Act
-        var builder1 = DeliveryClientBuilder.WithEnvironmentId(EnvironmentId);
+        var builder1 = DeliveryClientBuilder
+            .WithOptions(builder => builder
+                .WithEnvironmentId(EnvironmentId)
+                .UseProductionApi()
+                .Build());
         var builder2 = builder1.WithTypeProvider(typeProvider);
         var builder3 = builder2.WithMemoryCache();
 
@@ -245,11 +261,17 @@ public class DeliveryClientBuilderTests
     {
         // Act
         using var container1 = DeliveryClientBuilder
-            .WithEnvironmentId(EnvironmentId)
+            .WithOptions(builder => builder
+                .WithEnvironmentId(EnvironmentId)
+                .UseProductionApi()
+                .Build())
             .Build();
 
         using var container2 = DeliveryClientBuilder
-            .WithEnvironmentId(EnvironmentId)
+            .WithOptions(builder => builder
+                .WithEnvironmentId(EnvironmentId)
+                .UseProductionApi()
+                .Build())
             .WithMemoryCache()
             .Build();
 
