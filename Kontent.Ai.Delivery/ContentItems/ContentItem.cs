@@ -17,14 +17,14 @@ internal sealed record ContentItem<TModel> : IEmbeddedContent<TModel>, IRawConte
     public required TModel Elements { get; init; }
 
     /// <summary>
-    /// Raw JSON elements captured during deserialization for post-processing hydration.
+    /// Raw JSON of the full content item captured during deserialization for post-processing hydration
+    /// and runtime type resolution. Contains system, elements, and any other API response properties.
     /// </summary>
     [JsonIgnore]
-    internal JsonElement? RawElements { get; init; }
+    internal JsonElement? RawItemJson { get; init; }
 
     // Explicit interface implementations
     IContentItemSystemAttributes IContentItem.System => System;
     object? IContentItem.Elements => Elements;
-    object IRawContentItem.Elements => Elements!;
-    JsonElement? IRawContentItem.RawElements => RawElements;
+    JsonElement? IRawContentItem.RawItemJson => RawItemJson;
 }

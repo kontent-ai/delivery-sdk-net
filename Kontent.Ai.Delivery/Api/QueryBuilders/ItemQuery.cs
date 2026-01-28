@@ -78,7 +78,7 @@ internal sealed class ItemQuery<TModel>(
         }
 
         // 2. API CALL
-        var deliveryResult = await FetchFromApiAsync().ConfigureAwait(false);
+        var deliveryResult = await FetchFromApiAsync(cancellationToken).ConfigureAwait(false);
         if (!deliveryResult.IsSuccess)
         {
             LogQueryFailed(deliveryResult);
@@ -110,10 +110,10 @@ internal sealed class ItemQuery<TModel>(
         return result;
     }
 
-    private async Task<IDeliveryResult<DeliveryItemResponse<TModel>>> FetchFromApiAsync()
+    private async Task<IDeliveryResult<DeliveryItemResponse<TModel>>> FetchFromApiAsync(CancellationToken cancellationToken = default)
     {
         bool? wait = _waitForLoadingNewContentOverride ?? _getDefaultWaitForNewContent();
-        var rawResponse = await _api.GetItemInternalAsync<TModel>(_codename, _params, wait)
+        var rawResponse = await _api.GetItemInternalAsync<TModel>(_codename, _params, null, wait, cancellationToken)
             .ConfigureAwait(false);
         return await rawResponse.ToDeliveryResultAsync().ConfigureAwait(false);
     }

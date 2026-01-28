@@ -62,8 +62,14 @@ internal sealed class ContentItemMapper
         cancellationToken.ThrowIfCancellationRequested();
 
         if (item is not ContentItem<TModel> concrete ||
-            !concrete.RawElements.HasValue ||
-            concrete.RawElements.Value.ValueKind != JsonValueKind.Object)
+            !concrete.RawItemJson.HasValue)
+        {
+            return Task.CompletedTask;
+        }
+
+        // Extract elements from the full item JSON
+        if (!concrete.RawItemJson.Value.TryGetProperty("elements", out var rawElements) ||
+            rawElements.ValueKind != JsonValueKind.Object)
         {
             return Task.CompletedTask;
         }
@@ -75,7 +81,94 @@ internal sealed class ContentItemMapper
             CancellationToken = cancellationToken
         };
 
-        return MapElementsAsync(concrete.Elements!, concrete.RawElements!.Value, context);
+        return MapElementsAsync(concrete.Elements!, rawElements, context);
+    }
+
+    /// <summary>
+    /// Attempts to resolve a content item to its runtime type based on the registered ITypeProvider.
+    /// If the type provider returns a mapping for the content type, the item is deserialized and hydrated
+    /// to that type. Otherwise, returns null to indicate the caller should keep the dynamic version.
+    /// </summary>
+    /// <param name="rawItemJson">The full JSON of the content item.</param>
+    /// <param name="modularContent">Dictionary of linked items from API response.</param>
+    /// <param name="dependencyContext">Optional context for cache dependency tracking.</param>
+    /// <param name="cancellationToken">Cancellation token.</param>
+    /// <returns>
+    /// The runtime-typed item, or null if no type mapping exists (caller should keep dynamic version).
+    /// </returns>
+    public async Task<IContentItem?> TryRuntimeTypeItemAsync(
+        JsonElement rawItemJson,
+        IReadOnlyDictionary<string, JsonElement>? modularContent,
+        DependencyTrackingContext? dependencyContext = null,
+        CancellationToken cancellationToken = default)
+    {
+        cancellationToken.ThrowIfCancellationRequested();
+
+        var contentType = ExtractContentType(rawItemJson);
+        var modelType = _typingStrategy.ResolveModelType(contentType);
+
+        // Skip runtime typing if no mapping exists (falls back to DynamicElements)
+        if (modelType == typeof(DynamicElements) || modelType == typeof(IDynamicElements))
+        {
+            return null;
+        }
+
+        // Deserialize to the runtime type
+        var contentItem = _deserializer.DeserializeContentItem(rawItemJson.GetRawText(), modelType);
+
+        // Hydrate complex elements
+        var context = new MappingContext
+        {
+            ModularContent = modularContent,
+            DependencyContext = dependencyContext,
+            CancellationToken = cancellationToken
+        };
+
+        await HydrateContentItemIfNeededAsync(contentItem, modelType, context).ConfigureAwait(false);
+
+        return contentItem as IContentItem;
+    }
+
+    /// <summary>
+    /// Attempts runtime type resolution for a collection of dynamic items.
+    /// Items with type provider mappings are resolved to strongly-typed models;
+    /// items without mappings are kept as dynamic.
+    /// </summary>
+    /// <param name="dynamicItems">Collection of dynamic content items.</param>
+    /// <param name="modularContent">Dictionary of linked items from API response.</param>
+    /// <param name="cancellationToken">Cancellation token.</param>
+    /// <returns>Collection of items with runtime typing applied where possible.</returns>
+    internal async Task<IReadOnlyList<IContentItem>> RuntimeTypeItemsAsync(
+        IReadOnlyList<IContentItem<IDynamicElements>> dynamicItems,
+        IReadOnlyDictionary<string, JsonElement>? modularContent,
+        CancellationToken cancellationToken)
+    {
+        var result = new List<IContentItem>(dynamicItems.Count);
+
+        foreach (var dynamicItem in dynamicItems)
+        {
+            cancellationToken.ThrowIfCancellationRequested();
+
+            if (dynamicItem is IRawContentItem rawContentItem && rawContentItem.RawItemJson.HasValue)
+            {
+                var runtimeItem = await TryRuntimeTypeItemAsync(
+                    rawContentItem.RawItemJson.Value,
+                    modularContent,
+                    dependencyContext: null,
+                    cancellationToken).ConfigureAwait(false);
+
+                if (runtimeItem != null)
+                {
+                    result.Add(runtimeItem);
+                    continue;
+                }
+            }
+
+            // Fall back to dynamic
+            result.Add(dynamicItem);
+        }
+
+        return result;
     }
 
     /// <summary>
@@ -352,12 +445,17 @@ internal sealed class ContentItemMapper
         if (modelType == typeof(DynamicElements) || modelType == typeof(IDynamicElements))
             return;
 
-        if (contentItem is IRawContentItem rawContentItem && rawContentItem.RawElements.HasValue)
+        if (contentItem is IRawContentItem rawContentItem && rawContentItem.RawItemJson.HasValue)
         {
-            await MapElementsAsync(
-                rawContentItem.Elements,
-                rawContentItem.RawElements.Value,
-                context).ConfigureAwait(false);
+            // Extract elements from the full item JSON
+            if (rawContentItem.RawItemJson.Value.TryGetProperty("elements", out var rawElements) &&
+                rawElements.ValueKind == JsonValueKind.Object)
+            {
+                await MapElementsAsync(
+                    rawContentItem.Elements,
+                    rawElements,
+                    context).ConfigureAwait(false);
+            }
         }
     }
 

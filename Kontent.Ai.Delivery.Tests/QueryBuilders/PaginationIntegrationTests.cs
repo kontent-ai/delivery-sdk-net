@@ -113,7 +113,7 @@ public sealed class PaginationIntegrationTests
 
         var client = BuildClient(env, mockHttp);
 
-        var accumulatedItems = new List<IContentItem<IDynamicElements>>();
+        var accumulatedItems = new List<IContentItem>();
         var firstPage = await client.GetItems().Limit(1).ExecuteAsync();
         Assert.True(firstPage.IsSuccess);
 
@@ -267,7 +267,7 @@ public sealed class PaginationIntegrationTests
 
         var client = BuildClient(env, mockHttp);
 
-        var items = new List<IContentItem<IDynamicElements>>();
+        var items = new List<IContentItem>();
         var page = await client.GetItemsFeed().ExecuteAsync();
         Assert.True(page.IsSuccess);
         items.AddRange(page.Value.Items);

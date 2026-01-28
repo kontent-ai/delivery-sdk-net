@@ -51,11 +51,8 @@ internal sealed class StronglyTypedContentItemConverter<TModel> : JsonConverter<
             ? els
             : default;
 
-        // 3. Capture raw elements for post-processing (rich text, taxonomy, assets)
-        var rawElements = elementsElement.ValueKind != JsonValueKind.Undefined
-            && elementsElement.ValueKind != JsonValueKind.Null
-            ? elementsElement.CloneElement()
-            : (JsonElement?)null;
+        // 3. Capture full item JSON for post-processing (hydration) and runtime type resolution
+        var rawItemJson = root.CloneElement();
 
         // 4. Parse elements in strongly-typed mode - flatten structure
         var elements = ParseStronglyTypedElements(elementsElement, options);
@@ -64,7 +61,7 @@ internal sealed class StronglyTypedContentItemConverter<TModel> : JsonConverter<
         {
             System = system,
             Elements = elements,
-            RawElements = rawElements
+            RawItemJson = rawItemJson
         };
     }
 

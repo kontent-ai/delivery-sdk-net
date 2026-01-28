@@ -34,11 +34,8 @@ internal sealed class DynamicContentItemConverter<TModel> : JsonConverter<Conten
             ? els
             : default;
 
-        // 3. Capture raw elements for post-processing
-        var rawElements = elementsElement.ValueKind != JsonValueKind.Undefined
-            && elementsElement.ValueKind != JsonValueKind.Null
-            ? elementsElement.CloneElement()
-            : (JsonElement?)null;
+        // 3. Capture full item JSON for post-processing and runtime type resolution
+        var rawItemJson = root.CloneElement();
 
         // 4. Parse elements in dynamic mode - preserve full structure
         var elements = ParseDynamicElements(elementsElement);
@@ -47,7 +44,7 @@ internal sealed class DynamicContentItemConverter<TModel> : JsonConverter<Conten
         {
             System = system,
             Elements = elements,
-            RawElements = rawElements
+            RawItemJson = rawItemJson
         };
     }
 

@@ -42,10 +42,14 @@ public interface IDeliveryClient
     IEnumerateItemsQuery<T> GetItemsFeed<T>();
 
     /// <summary>
-    /// Returns a query builder for enumerating through content items using a feed with runtime/dynamic mapping.
+    /// Returns a query builder for enumerating through content items using a feed with runtime type resolution.
     /// </summary>
+    /// <remarks>
+    /// When a custom <see cref="ITypeProvider"/> is registered, items will be automatically
+    /// resolved to their strongly-typed models at runtime.
+    /// </remarks>
     /// <returns>A query builder that can be configured and executed to enumerate through content items.</returns>
-    IEnumerateItemsQuery<IDynamicElements> GetItemsFeed();
+    IDynamicEnumerateItemsQuery GetItemsFeed();
 
     /// <summary>
     /// Returns a query builder for retrieving a single content type.

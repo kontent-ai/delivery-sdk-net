@@ -13,13 +13,17 @@ internal partial interface IDeliveryApi
     /// <typeparam name="TModel">The type of content items in the response.</typeparam>
     /// <param name="codename">The codename of the content item.</param>
     /// <param name="queryParameters">Query parameters as a dictionary.</param>
+    /// <param name="filters">Filters as a dictionary.</param>
     /// <param name="waitForLoadingNewContent">Wait for loading new content header.</param>
+    /// <param name="cancellationToken">Cancellation token to cancel the request.</param>
     /// <returns>Raw JSON response containing the content item.</returns>
     [Get("/items/{codename}")]
     internal Task<IApiResponse<DeliveryItemResponse<TModel>>> GetItemInternalAsync<TModel>(
         string codename,
         [Query] SingleItemParams? queryParameters = null,
-        [Header(HttpRequestHeadersExtensions.WaitForLoadingNewContentHeaderName)] bool? waitForLoadingNewContent = null);
+        [Query] Dictionary<string, string[]>? filters = null,
+        [Header(HttpRequestHeadersExtensions.WaitForLoadingNewContentHeaderName)] bool? waitForLoadingNewContent = null,
+        CancellationToken cancellationToken = default);
 
     /// <summary>
     /// Gets multiple content items with optional filtering.

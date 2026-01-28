@@ -1,20 +1,38 @@
+using Kontent.Ai.Delivery.Api.Filtering;
+using Kontent.Ai.Delivery.ContentItems;
+using Kontent.Ai.Delivery.ContentItems.Mapping;
+
 namespace Kontent.Ai.Delivery.Api.QueryBuilders;
 
 /// <inheritdoc cref="IDynamicItemQuery"/>
+/// <remarks>
+/// This query performs runtime type resolution for dynamic items. Cache support is intentionally
+/// omitted as the runtime-typed result type varies per item, making caching complex.
+/// Use strongly-typed queries (<see cref="IItemQuery{TModel}"/>) for cacheable results.
+/// </remarks>
 internal sealed class DynamicItemQuery(
     IDeliveryApi api,
     string codename,
-    Func<bool?> getDefaultWaitForNewContent) : IDynamicItemQuery
+    Func<bool?> getDefaultWaitForNewContent,
+    ContentItemMapper contentItemMapper) : IDynamicItemQuery
 {
     private readonly IDeliveryApi _api = api;
     private readonly string _codename = codename;
     private readonly Func<bool?> _getDefaultWaitForNewContent = getDefaultWaitForNewContent;
+    private readonly ContentItemMapper _contentItemMapper = contentItemMapper;
+    private readonly List<KeyValuePair<string, string>> _serializedFilters = [];
     private SingleItemParams _params = new();
     private bool? _waitForLoadingNewContentOverride;
 
-    public IDynamicItemQuery WithLanguage(string languageCodename)
+    public IDynamicItemQuery WithLanguage(string languageCodename, LanguageFallbackMode languageFallbackMode = LanguageFallbackMode.Enabled)
     {
         _params = _params with { Language = languageCodename };
+        if (languageFallbackMode == LanguageFallbackMode.Disabled)
+        {
+            _serializedFilters.Add(new KeyValuePair<string, string>(
+                FilterPath.System("language") + FilterSuffix.Eq,
+                FilterValueSerializer.Serialize(languageCodename)));
+        }
         return this;
     }
 
@@ -42,16 +60,58 @@ internal sealed class DynamicItemQuery(
         return this;
     }
 
-    public async Task<IDeliveryResult<IContentItem<IDynamicElements>>> ExecuteAsync(CancellationToken cancellationToken = default)
+    public async Task<IDeliveryResult<IContentItem>> ExecuteAsync(CancellationToken cancellationToken = default)
     {
-        // Get raw response from Refit API
+        // 1. FETCH AS DYNAMIC
         bool? wait = _waitForLoadingNewContentOverride ?? _getDefaultWaitForNewContent();
-        var rawResponse = await _api.GetItemInternalAsync<IDynamicElements>(_codename, _params, wait).ConfigureAwait(false);
-
-        // Convert IApiResponse to IDeliveryResult
+        var rawResponse = await _api.GetItemInternalAsync<IDynamicElements>(
+            _codename,
+            _params,
+            FilterQueryParams.ToQueryDictionary(_serializedFilters),
+            wait,
+            cancellationToken).ConfigureAwait(false);
         var deliveryResult = await rawResponse.ToDeliveryResultAsync().ConfigureAwait(false);
 
-        // Map from IDeliveryItemResponse<IDynamicElements> to IContentItem<IDynamicElements>
-        return deliveryResult.Map(response => response.Item);
+        if (!deliveryResult.IsSuccess)
+        {
+            return DeliveryResult.Failure<IContentItem>(
+                deliveryResult.RequestUrl ?? string.Empty,
+                deliveryResult.StatusCode,
+                deliveryResult.Error,
+                deliveryResult.ResponseHeaders);
+        }
+
+        var response = deliveryResult.Value;
+        var dynamicItem = response.Item;
+
+        // 2. ATTEMPT RUNTIME TYPE RESOLUTION
+        if (dynamicItem is IRawContentItem rawContentItem && rawContentItem.RawItemJson.HasValue)
+        {
+            var runtimeItem = await _contentItemMapper.TryRuntimeTypeItemAsync(
+                rawContentItem.RawItemJson.Value,
+                response.ModularContent,
+                dependencyContext: null,
+                cancellationToken).ConfigureAwait(false);
+
+            if (runtimeItem != null)
+            {
+                return DeliveryResult.Success(
+                    runtimeItem,
+                    deliveryResult.RequestUrl ?? string.Empty,
+                    deliveryResult.StatusCode,
+                    deliveryResult.HasStaleContent,
+                    deliveryResult.ContinuationToken,
+                    deliveryResult.ResponseHeaders);
+            }
+        }
+
+        // 3. FALL BACK TO DYNAMIC (no type provider mapping)
+        return DeliveryResult.Success<IContentItem>(
+            dynamicItem,
+            deliveryResult.RequestUrl ?? string.Empty,
+            deliveryResult.StatusCode,
+            deliveryResult.HasStaleContent,
+            deliveryResult.ContinuationToken,
+            deliveryResult.ResponseHeaders);
     }
 }
