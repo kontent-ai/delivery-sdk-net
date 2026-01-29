@@ -193,7 +193,7 @@ public interface IHtmlResolverBuilder
 
     /// <summary>
     /// Registers a fallback resolver for HTML element blocks with structured children.
-    /// This resolver is used when no conditional resolver matches via <see cref="WithHtmlNodeResolver"/>.
+    /// This resolver is used when no conditional resolver matches via WithHtmlNodeResolver.
     /// </summary>
     /// <param name="resolver">The resolver function.</param>
     /// <returns>This builder for method chaining.</returns>

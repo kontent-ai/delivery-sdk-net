@@ -5,7 +5,7 @@ namespace Kontent.Ai.Delivery.Abstractions;
 /// </summary>
 /// <remarks>
 /// <para>
-/// When using <see cref="DeliveryClientBuilder"/> to create a client outside of dependency injection,
+/// When using DeliveryClientBuilder to create a client outside of dependency injection,
 /// this container manages the lifetime of the internal service provider and all registered services
 /// (HttpClient, cache managers, etc.).
 /// </para>

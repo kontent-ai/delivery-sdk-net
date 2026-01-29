@@ -8,6 +8,9 @@ jobs:
   test:
     name: Build and test
     runs-on: ubuntu-latest
+    permissions:
+      id-token: write   # Required for OIDC token issuance
+      contents: write   # Required for uploading release assets
     steps:
       - uses: actions/checkout@v4
       - name: Setup .NET
@@ -16,7 +19,9 @@ jobs:
           dotnet-version: 8.0.x
       - name: Extract version from tag
         id: get_version
-        uses: battila7/get-version-action@v2
+        run: |
+          VERSION="${GITHUB_REF_NAME#v}"
+          echo "version-without-v=$VERSION" >> $GITHUB_OUTPUT
       - name: Restore dependencies
         run: dotnet restore
       - name: Build
@@ -32,13 +37,14 @@ jobs:
         with:
           name: "NuGet packages"
           path: ./artifacts
-      - name: Publish artifacts to NuGet.org
-        run: dotnet nuget push './artifacts/*.nupkg' -s https://api.nuget.org/v3/index.json -k ${NUGET_API_KEY} --skip-duplicate
-        env:
-          NUGET_API_KEY: ${{ secrets.NUGET_API_KEY }}
-      - name: Upload artifacts to the GitHub release
-        uses: Roang-zero1/github-upload-release-artifacts-action@v3.0.0
+      - name: NuGet login
+        uses: NuGet/login@v1
+        id: nuget-login
         with:
-          args: ./artifacts
+          user: ${{ secrets.NUGET_USER }}
+      - name: Publish artifacts to NuGet.org
+        run: dotnet nuget push './artifacts/*.nupkg' -s https://api.nuget.org/v3/index.json -k ${{ steps.nuget-login.outputs.NUGET_API_KEY }} --skip-duplicate
+      - name: Upload artifacts to the GitHub release
+        run: gh release upload "$GITHUB_REF_NAME" ./artifacts/*.nupkg ./artifacts/*.snupkg --clobber
         env:
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
