@@ -875,14 +875,14 @@ private static void RegisterNamedHttpClient(
 ```csharp
 public interface ITypeProvider
 {
-    Type? TryGetModelType(string contentType);
+    Type? GetType(string contentType);
     string? GetCodename(Type contentType);
 }
 
 // Default implementation (returns null → falls back to dynamic)
 internal class TypeProvider : ITypeProvider
 {
-    public Type? TryGetModelType(string contentType) => null;
+    public Type? GetType(string contentType) => null;
     public string? GetCodename(Type contentType) => null;
 }
 
@@ -896,7 +896,7 @@ public class GeneratedTypeProvider : ITypeProvider
         ["homepage"] = typeof(HomePage)
     };
 
-    public Type? TryGetModelType(string contentType)
+    public Type? GetType(string contentType)
         => _typeMap.TryGetValue(contentType, out var type) ? type : null;
 
     public string? GetCodename(Type contentType)

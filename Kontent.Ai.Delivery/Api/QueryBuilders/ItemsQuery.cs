@@ -15,12 +15,14 @@ internal sealed class ItemsQuery<TModel>(
     IDeliveryApi api,
     Func<bool?> getDefaultWaitForNewContent,
     ContentItemMapper contentItemMapper,
+    ITypeProvider typeProvider,
     IDeliveryCacheManager? cacheManager,
     ILogger? logger = null) : IItemsQuery<TModel>
 {
     private readonly IDeliveryApi _api = api;
     private readonly Func<bool?> _getDefaultWaitForNewContent = getDefaultWaitForNewContent;
     private readonly ContentItemMapper _contentItemMapper = contentItemMapper;
+    private readonly ITypeProvider _typeProvider = typeProvider;
     private readonly IDeliveryCacheManager? _cacheManager = cacheManager;
     private readonly ILogger? _logger = logger;
     private readonly List<KeyValuePair<string, string>> _serializedFilters = [];
@@ -96,12 +98,16 @@ internal sealed class ItemsQuery<TModel>(
     public IItemsQuery<TModel> Where(Func<IItemsFilterBuilder, IItemsFilterBuilder> build)
     {
         ArgumentNullException.ThrowIfNull(build);
-        build(new ItemsFilterBuilder(_serializedFilters));
+        var filterBuilder = new ItemsFilterBuilder(_serializedFilters);
+        build(filterBuilder);
         return this;
     }
 
     public async Task<IDeliveryResult<IDeliveryItemListingResponse<TModel>>> ExecuteAsync(CancellationToken cancellationToken = default)
     {
+        // Apply generic type filter before execution
+        ApplyGenericTypeFilter();
+
         LogQueryStarting();
         var stopwatch = StartTimingIfEnabled();
 
@@ -154,6 +160,31 @@ internal sealed class ItemsQuery<TModel>(
 
         LogQueryCompleted(stopwatch, deliveryResult.StatusCode, cacheHit: false, deliveryResult.HasStaleContent);
         return result;
+    }
+
+    private void ApplyGenericTypeFilter()
+    {
+        // Skip for dynamic models
+        if (IsDynamicModel)
+            return;
+
+        // Get the codename for the generic type
+        var codename = _typeProvider.GetCodename(typeof(TModel));
+
+        if (string.IsNullOrEmpty(codename))
+        {
+            // Type provider doesn't know about this type - don't add filter
+            if (_logger != null)
+            {
+                LoggerMessages.GenericQueryTypeCodenameNotFound(_logger, typeof(TModel).Name);
+            }
+            return;
+        }
+
+        // Add the generic type filter
+        _serializedFilters.Add(new KeyValuePair<string, string>(
+            FilterPath.System("type") + FilterSuffix.Eq,
+            FilterValueSerializer.Serialize(codename)));
     }
 
     private async Task<IDeliveryResult<DeliveryItemListingResponse<TModel>>> FetchFromApiAsync()
@@ -217,7 +248,7 @@ internal sealed class ItemsQuery<TModel>(
 
         return async (ct) =>
         {
-            var nextQuery = new ItemsQuery<TModel>(_api, _getDefaultWaitForNewContent, _contentItemMapper, _cacheManager, _logger)
+            var nextQuery = new ItemsQuery<TModel>(_api, _getDefaultWaitForNewContent, _contentItemMapper, _typeProvider, _cacheManager, _logger)
             {
                 _params = _params with { Skip = nextSkip },
                 _waitForLoadingNewContentOverride = _waitForLoadingNewContentOverride
@@ -263,3 +294,4 @@ internal sealed class ItemsQuery<TModel>(
             stopwatch?.ElapsedMilliseconds ?? 0, statusCode, cacheHit);
     }
 }
+

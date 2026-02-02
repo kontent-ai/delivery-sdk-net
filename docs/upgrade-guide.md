@@ -1447,7 +1447,8 @@ services.AddDeliveryClient(
     });
 ```
 
-> **Important:** The order matters for `ITypeProvider`. Register it before `AddDeliveryClient()` to ensure your custom type provider is used instead of the default.
+> [!IMPORTANT]
+> The order matters for `ITypeProvider`. Register it before `AddDeliveryClient()` to ensure your custom type provider is used instead of the default.
 
 ### 8.3 Named Clients
 

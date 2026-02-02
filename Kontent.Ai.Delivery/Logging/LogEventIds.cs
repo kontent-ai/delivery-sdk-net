@@ -130,6 +130,12 @@ internal static class LogEventIds
     /// <summary>Content type has no mapped model, falling back to dynamic.</summary>
     public const int ContentTypeFallbackToDynamic = 1408;
 
+    /// <summary>Generic query has conflicting system.type filter from user.</summary>
+    public const int GenericQueryTypeFilterConflict = 1409;
+
+    /// <summary>Generic query could not resolve content type codename from type provider.</summary>
+    public const int GenericQueryTypeCodenameNotFound = 1410;
+
     // ========== Service Registration (1500-1599) ==========
 
     /// <summary>Delivery client was registered.</summary>

@@ -5,7 +5,7 @@ namespace Kontent.Ai.Delivery.Examples;
 /// of the Kontent.ai Delivery SDK.
 /// </summary>
 /// <inheritdoc/>
-public class FilteringExamples(IDeliveryClient client)
+internal class FilteringExamples(IDeliveryClient client)
 {
     private readonly IDeliveryClient _client = client;
 
@@ -322,8 +322,8 @@ public class FilteringExamples(IDeliveryClient client)
 
 // Example model classes (these would typically be generated)
 // Models are now plain POCOs - no interface required!
-public class Article { }
-public class Product { }
-public class BlogPost { }
-public class Event { }
-public class ContentItem { }
+internal class Article { }
+internal class Product { }
+internal class BlogPost { }
+internal class Event { }
+internal class ContentItem { }

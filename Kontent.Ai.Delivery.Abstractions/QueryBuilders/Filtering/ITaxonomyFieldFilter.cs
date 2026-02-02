@@ -1,3 +1,5 @@
+#pragma warning disable CS1591 // Missing XML comment - filter methods are self-documenting
+
 namespace Kontent.Ai.Delivery.Abstractions;
 
 /// <summary>

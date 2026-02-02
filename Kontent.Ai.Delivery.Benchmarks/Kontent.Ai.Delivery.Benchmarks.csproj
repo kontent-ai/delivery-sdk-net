@@ -6,6 +6,7 @@
     <GenerateProgramFile>false</GenerateProgramFile>
     <IsPackable>false</IsPackable>
     <PlatformTarget>AnyCPU</PlatformTarget>
+    <NoWarn>CS1591</NoWarn>
   </PropertyGroup>
 
   <ItemGroup>

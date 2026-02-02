@@ -1,9 +1,11 @@
 using System.Text.Json.Serialization;
+using Kontent.Ai.Delivery.Attributes;
 using Kontent.Ai.Delivery.ContentItems;
 using Kontent.Ai.Delivery.SharedModels;
 
 namespace Kontent.Ai.Delivery.Tests.Models.ContentTypes;
 
+[ContentTypeCodename("grinder")]
 public record Grinder
 {
     [JsonPropertyName("image")]

@@ -455,7 +455,9 @@ internal sealed class ContentItemMapper
         if (modelType == typeof(DynamicElements) || modelType == typeof(IDynamicElements))
             return;
 
-        if (contentItem is IRawContentItem rawContentItem && rawContentItem.RawItemJson.HasValue)
+        if (contentItem is IRawContentItem rawContentItem &&
+            rawContentItem.RawItemJson.HasValue &&
+            rawContentItem.Elements is not null)
         {
             // Extract elements from the full item JSON
             if (rawContentItem.RawItemJson.Value.TryGetProperty("elements", out var rawElements) &&

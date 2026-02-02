@@ -4,6 +4,7 @@
     <TargetFramework>net8.0</TargetFramework>
     <IsPackable>false</IsPackable>
     <Nullable>enable</Nullable>
+    <NoWarn>CS1591</NoWarn>
   </PropertyGroup>
 
   <ItemGroup>
@@ -43,6 +44,8 @@
   <ItemGroup>
     <ProjectReference Include="..\Kontent.Ai.Delivery.Abstractions\Kontent.Ai.Delivery.Abstractions.csproj" />
     <ProjectReference Include="..\Kontent.Ai.Delivery\Kontent.Ai.Delivery.csproj" />
+    <ProjectReference Include="..\Kontent.Ai.Delivery.Attributes\Kontent.Ai.Delivery.Attributes.csproj" />
+    <ProjectReference Include="..\Kontent.Ai.Delivery.SourceGeneration\Kontent.Ai.Delivery.SourceGeneration.csproj" OutputItemType="Analyzer" ReferenceOutputAssembly="false" />
   </ItemGroup>
 
   <ItemGroup>

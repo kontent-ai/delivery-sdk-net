@@ -13,18 +13,21 @@ namespace Kontent.Ai.Delivery;
 /// <param name="deliveryApi">The Refit-generated API client.</param>
 /// <param name="deliveryOptions">The settings of the Kontent.ai environment.</param>
 /// <param name="contentItemMapper">The content item mapper for element hydration.</param>
+/// <param name="typeProvider">The type provider for content type to CLR type mapping.</param>
 /// <param name="cacheManager">Optional cache manager for caching API responses (injected when EnableCaching is true).</param>
 /// <param name="logger">Optional logger for diagnostic output.</param>
 internal sealed class DeliveryClient(
     IDeliveryApi deliveryApi,
     IOptionsMonitor<DeliveryOptions> deliveryOptions,
     ContentItemMapper contentItemMapper,
+    ITypeProvider typeProvider,
     IDeliveryCacheManager? cacheManager = null,
     ILogger<DeliveryClient>? logger = null) : IDeliveryClient
 {
     private readonly IDeliveryApi _deliveryApi = deliveryApi ?? throw new ArgumentNullException(nameof(deliveryApi));
     private readonly IOptionsMonitor<DeliveryOptions> _deliveryOptions = deliveryOptions ?? throw new ArgumentNullException(nameof(deliveryOptions));
     private readonly ContentItemMapper _contentItemMapper = contentItemMapper ?? throw new ArgumentNullException(nameof(contentItemMapper));
+    private readonly ITypeProvider _typeProvider = typeProvider ?? throw new ArgumentNullException(nameof(typeProvider));
     private readonly IDeliveryCacheManager? _cacheManager = cacheManager;
     private readonly ILogger<DeliveryClient>? _logger = logger;
 
@@ -50,7 +53,7 @@ internal sealed class DeliveryClient(
 
     public IItemsQuery<T> GetItems<T>()
     {
-        return new ItemsQuery<T>(_deliveryApi, GetDefaultWaitForLoadingNewContent, _contentItemMapper, _cacheManager, _logger);
+        return new ItemsQuery<T>(_deliveryApi, GetDefaultWaitForLoadingNewContent, _contentItemMapper, _typeProvider, _cacheManager, _logger);
     }
 
     public IDynamicItemsQuery GetItems()
@@ -60,7 +63,7 @@ internal sealed class DeliveryClient(
 
     public IEnumerateItemsQuery<T> GetItemsFeed<T>()
     {
-        return new EnumerateItemsQuery<T>(_deliveryApi, GetDefaultWaitForLoadingNewContent, _contentItemMapper, _logger);
+        return new EnumerateItemsQuery<T>(_deliveryApi, GetDefaultWaitForLoadingNewContent, _contentItemMapper, _typeProvider, _logger);
     }
 
     public IDynamicEnumerateItemsQuery GetItemsFeed()

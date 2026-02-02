@@ -318,7 +318,7 @@ public class DeliveryClientBuilderTests
     // Simple test implementation of ITypeProvider
     private class TestTypeProvider : ITypeProvider
     {
-        public Type? TryGetModelType(string contentType) => null;
+        public Type? GetType(string contentType) => null;
         public string? GetCodename(Type contentType) => null;
     }
 

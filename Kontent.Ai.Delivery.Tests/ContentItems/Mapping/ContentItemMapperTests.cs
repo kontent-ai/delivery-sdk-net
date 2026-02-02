@@ -5,6 +5,7 @@ using Kontent.Ai.Delivery.Configuration;
 using Kontent.Ai.Delivery.ContentItems;
 using Kontent.Ai.Delivery.ContentItems.Mapping;
 using Kontent.Ai.Delivery.ContentItems.Processing;
+using Kontent.Ai.Delivery.Generated;
 using Kontent.Ai.Delivery.Tests.Models.ContentTypes;
 using Microsoft.Extensions.Options;
 using Xunit;
@@ -20,7 +21,7 @@ public sealed class ContentItemMapperTests
     {
         _jsonOptions = RefitSettingsProvider.CreateDefaultJsonSerializerOptions();
 
-        var typeProvider = new CustomTypeProvider();
+        var typeProvider = new GeneratedTypeProvider();
         var typingStrategy = new DefaultItemTypingStrategy(typeProvider);
         var deserializer = new ContentDeserializer(_jsonOptions);
         var htmlParser = new HtmlParser();

@@ -244,6 +244,18 @@ internal static partial class LoggerMessages
         Message = "Content type '{ContentTypeCodename}' has no mapped model, using DynamicElements")]
     public static partial void ContentTypeFallbackToDynamic(ILogger logger, string contentTypeCodename);
 
+    [LoggerMessage(
+        EventId = LogEventIds.GenericQueryTypeFilterConflict,
+        Level = LogLevel.Warning,
+        Message = "Query uses generic model type '{TypeName}' (codename '{Codename}') and also specifies a system.type filter. Because filters are ANDed, this may narrow results unexpectedly.")]
+    public static partial void GenericQueryTypeFilterConflict(ILogger logger, string typeName, string codename);
+
+    [LoggerMessage(
+        EventId = LogEventIds.GenericQueryTypeCodenameNotFound,
+        Level = LogLevel.Warning,
+        Message = "Generic query for type '{TypeName}' could not resolve content type codename. Ensure the type has [ContentType] attribute and the source generator is referenced.")]
+    public static partial void GenericQueryTypeCodenameNotFound(ILogger logger, string typeName);
+
     // ========== Pagination ==========
 
     [LoggerMessage(

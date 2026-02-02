@@ -1,4 +1,5 @@
 using Kontent.Ai.Delivery.Abstractions;
+using Kontent.Ai.Delivery.Generated;
 using Kontent.Ai.Delivery.Tests.Models.ContentTypes;
 using Microsoft.Extensions.DependencyInjection;
 using RichardSzalay.MockHttp;
@@ -260,7 +261,7 @@ public class StronglyTypedLinkedItemsTests
             new DeliveryOptions { EnvironmentId = guid },
             configureHttpClient: builder => builder.ConfigurePrimaryHttpMessageHandler(() => mockHttp));
 
-        services.AddSingleton<ITypeProvider, CustomTypeProvider>();
+        services.AddSingleton<ITypeProvider, GeneratedTypeProvider>();
 
         var provider = services.BuildServiceProvider();
         return (DeliveryClient)provider.GetRequiredService<IDeliveryClient>();
