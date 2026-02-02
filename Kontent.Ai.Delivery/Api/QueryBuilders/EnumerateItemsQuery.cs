@@ -11,16 +11,19 @@ internal sealed class EnumerateItemsQuery<TModel>(
     IDeliveryApi api,
     Func<bool?> getDefaultWaitForNewContent,
     ContentItemMapper contentItemMapper,
+    ITypeProvider typeProvider,
     ILogger? logger = null) : IEnumerateItemsQuery<TModel>
 {
     private readonly IDeliveryApi _api = api;
     private readonly Func<bool?> _getDefaultWaitForNewContent = getDefaultWaitForNewContent;
     private readonly ContentItemMapper _contentItemMapper = contentItemMapper;
+    private readonly ITypeProvider _typeProvider = typeProvider;
     private readonly ILogger? _logger = logger;
     private EnumItemsParams _params = new();
     private bool? _waitForLoadingNewContentOverride;
     private readonly List<KeyValuePair<string, string>> _serializedFilters = [];
     private string? _continuationToken;
+    private bool _typeFilterApplied;
     private static bool IsDynamicModel =>
         typeof(TModel) == typeof(IDynamicElements) ||
         typeof(TModel) == typeof(ContentItems.DynamicElements);
@@ -63,12 +66,46 @@ internal sealed class EnumerateItemsQuery<TModel>(
     public IEnumerateItemsQuery<TModel> Where(Func<IItemsFilterBuilder, IItemsFilterBuilder> build)
     {
         ArgumentNullException.ThrowIfNull(build);
-        build(new ItemsFilterBuilder(_serializedFilters));
+        var filterBuilder = new ItemsFilterBuilder(_serializedFilters);
+        build(filterBuilder);
         return this;
+    }
+
+    private void ApplyGenericTypeFilter()
+    {
+        // Only apply once
+        if (_typeFilterApplied)
+            return;
+        _typeFilterApplied = true;
+
+        // Skip for dynamic models
+        if (IsDynamicModel)
+            return;
+
+        // Get the codename for the generic type
+        var codename = _typeProvider.GetCodename(typeof(TModel));
+
+        if (string.IsNullOrEmpty(codename))
+        {
+            // Type provider doesn't know about this type - don't add filter
+            if (_logger != null)
+            {
+                LoggerMessages.GenericQueryTypeCodenameNotFound(_logger, typeof(TModel).Name);
+            }
+            return;
+        }
+
+        // Add the generic type filter
+        _serializedFilters.Add(new KeyValuePair<string, string>(
+            FilterPath.System("type") + FilterSuffix.Eq,
+            FilterValueSerializer.Serialize(codename)));
     }
 
     public async Task<IDeliveryResult<IDeliveryItemsFeedResponse<TModel>>> ExecuteAsync(CancellationToken cancellationToken = default)
     {
+        // Apply generic type filter before execution
+        ApplyGenericTypeFilter();
+
         bool? wait = _waitForLoadingNewContentOverride ?? _getDefaultWaitForNewContent();
 
         var resp = await _api
@@ -126,14 +163,15 @@ internal sealed class EnumerateItemsQuery<TModel>(
 
         return async (ct) =>
         {
-            var nextQuery = new EnumerateItemsQuery<TModel>(_api, _getDefaultWaitForNewContent, _contentItemMapper, _logger)
+            var nextQuery = new EnumerateItemsQuery<TModel>(_api, _getDefaultWaitForNewContent, _contentItemMapper, _typeProvider, _logger)
             {
                 _params = _params,
                 _waitForLoadingNewContentOverride = _waitForLoadingNewContentOverride,
-                _continuationToken = continuationToken
+                _continuationToken = continuationToken,
+                _typeFilterApplied = _typeFilterApplied
             };
 
-            // Copy filters
+            // Copy filters (already includes type filter from parent)
             foreach (var filter in _serializedFilters)
             {
                 nextQuery._serializedFilters.Add(filter);
@@ -145,6 +183,9 @@ internal sealed class EnumerateItemsQuery<TModel>(
 
     public async IAsyncEnumerable<IContentItem<TModel>> EnumerateItemsAsync([EnumeratorCancellation] CancellationToken cancellationToken = default)
     {
+        // Apply generic type filter before starting enumeration
+        ApplyGenericTypeFilter();
+
         // Log pagination start
         if (_logger != null)
             LoggerMessages.PaginationStarted(_logger, "ItemsFeed");
