@@ -5,28 +5,53 @@
     <LangVersion>latest</LangVersion>
     <Nullable>enable</Nullable>
     <Company>Kontent s.r.o.</Company>
-    <Description>Kontent.ai Delivery SDK - Source Generator for Content Type Registry</Description>
+    <Description>Kontent.ai Delivery SDK - Source Generator for Content Type Registry. Includes ContentTypeCodenameAttribute for marking model classes.</Description>
     <PackageTags>kontent-ai;source-generation;roslyn;analyzer</PackageTags>
 
     <!-- Analyzer/Generator packaging -->
     <IncludeBuildOutput>false</IncludeBuildOutput>
+    <IncludeSymbols>false</IncludeSymbols> <!-- PDBs are embedded directly in nupkg -->
     <IsRoslynComponent>true</IsRoslynComponent>
     <EnforceExtendedAnalyzerRules>true</EnforceExtendedAnalyzerRules>
     <NoWarn>RS2008;CS1591</NoWarn>
+
+    <!-- Attributes project target framework (for pack path) -->
+    <AttributesTFM>netstandard2.0</AttributesTFM>
   </PropertyGroup>
 
   <ItemGroup>
     <PackageReference Include="Microsoft.CodeAnalysis.CSharp" Version="4.9.2" PrivateAssets="all" />
   </ItemGroup>
 
+  <!-- Reference Attributes for compile-time; PrivateAssets=all prevents it leaking as a dependency -->
   <ItemGroup>
     <ProjectReference Include="..\Kontent.Ai.Delivery.Attributes\Kontent.Ai.Delivery.Attributes.csproj" PrivateAssets="all" />
   </ItemGroup>
 
-  <!-- Pack the analyzer/generator into the analyzers folder -->
+  <!-- Pack generator DLL into analyzers folder -->
   <ItemGroup>
-    <None Include="$(OutputPath)\$(AssemblyName).dll" Pack="true" PackagePath="analyzers/dotnet/cs" Visible="false" />
-    <None Include="$(OutputPath)\Kontent.Ai.Delivery.Attributes.dll" Pack="true" PackagePath="analyzers/dotnet/cs" Visible="false" />
+    <None Include="$(OutputPath)\$(AssemblyName).dll" Pack="true" PackagePath="analyzers/dotnet/cs/" Visible="false" />
+    <None Include="$(OutputPath)\$(AssemblyName).pdb" Pack="true" PackagePath="analyzers/dotnet/cs/" Visible="false" />
   </ItemGroup>
+
+  <!-- Pack Attributes DLL into lib for user code (reference Attributes project output directly) -->
+  <ItemGroup>
+    <None Include="..\Kontent.Ai.Delivery.Attributes\bin\$(Configuration)\$(AttributesTFM)\Kontent.Ai.Delivery.Attributes.dll"
+          Pack="true"
+          PackagePath="lib/$(AttributesTFM)/"
+          Visible="false" />
+    <None Include="..\Kontent.Ai.Delivery.Attributes\bin\$(Configuration)\$(AttributesTFM)\Kontent.Ai.Delivery.Attributes.pdb"
+          Pack="true"
+          PackagePath="lib/$(AttributesTFM)/"
+          Visible="false"
+          Condition="Exists('..\Kontent.Ai.Delivery.Attributes\bin\$(Configuration)\$(AttributesTFM)\Kontent.Ai.Delivery.Attributes.pdb')" />
+  </ItemGroup>
+
+  <!-- Ensure Attributes project is built before packing -->
+  <Target Name="EnsureAttributesBuilt" BeforeTargets="Pack">
+    <MSBuild Projects="..\Kontent.Ai.Delivery.Attributes\Kontent.Ai.Delivery.Attributes.csproj"
+             Targets="Build"
+             Properties="Configuration=$(Configuration);TargetFramework=$(AttributesTFM)" />
+  </Target>
 
 </Project>
