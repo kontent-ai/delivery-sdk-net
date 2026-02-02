@@ -472,7 +472,7 @@ public class RichTextIntegrationTests
             new DeliveryOptions { EnvironmentId = guid },
             configureHttpClient: builder => builder.ConfigurePrimaryHttpMessageHandler(() => mockHttp));
 
-        services.AddSingleton<ITypeProvider, ContentTypeRegistry>();
+        services.AddSingleton<ITypeProvider, GeneratedTypeProvider>();
 
         var provider = services.BuildServiceProvider();
         var client = (DeliveryClient)provider.GetRequiredService<IDeliveryClient>();
@@ -888,7 +888,7 @@ public class RichTextIntegrationTests
         services.AddDeliveryClient(
             new DeliveryOptions { EnvironmentId = guid },
             configureHttpClient: builder => builder.ConfigurePrimaryHttpMessageHandler(() => mockHttp));
-        services.AddSingleton<ITypeProvider, ContentTypeRegistry>();
+        services.AddSingleton<ITypeProvider, GeneratedTypeProvider>();
 
         var provider = services.BuildServiceProvider();
         var client = (DeliveryClient)provider.GetRequiredService<IDeliveryClient>();
@@ -954,7 +954,7 @@ public class RichTextIntegrationTests
         services.AddDeliveryClient(
             new DeliveryOptions { EnvironmentId = guid },
             configureHttpClient: builder => builder.ConfigurePrimaryHttpMessageHandler(() => mockHttp));
-        services.AddSingleton<ITypeProvider, ContentTypeRegistry>();
+        services.AddSingleton<ITypeProvider, GeneratedTypeProvider>();
 
         var provider = services.BuildServiceProvider();
         var client = (DeliveryClient)provider.GetRequiredService<IDeliveryClient>();
@@ -1017,7 +1017,7 @@ public class RichTextIntegrationTests
         services.AddDeliveryClient(
             new DeliveryOptions { EnvironmentId = guid },
             configureHttpClient: builder => builder.ConfigurePrimaryHttpMessageHandler(() => mockHttp));
-        services.AddSingleton<ITypeProvider, ContentTypeRegistry>();
+        services.AddSingleton<ITypeProvider, GeneratedTypeProvider>();
 
         var provider = services.BuildServiceProvider();
         var client = (DeliveryClient)provider.GetRequiredService<IDeliveryClient>();
@@ -1085,7 +1085,7 @@ public class RichTextIntegrationTests
             new DeliveryOptions { EnvironmentId = guid },
             configureHttpClient: builder => builder.ConfigurePrimaryHttpMessageHandler(() => mockHttp));
 
-        services.AddSingleton<ITypeProvider, ContentTypeRegistry>();
+        services.AddSingleton<ITypeProvider, GeneratedTypeProvider>();
 
         var provider = services.BuildServiceProvider();
         return (DeliveryClient)provider.GetRequiredService<IDeliveryClient>();

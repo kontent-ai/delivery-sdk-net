@@ -21,7 +21,7 @@ public sealed class ContentItemMapperTests
     {
         _jsonOptions = RefitSettingsProvider.CreateDefaultJsonSerializerOptions();
 
-        var typeProvider = new ContentTypeRegistry();
+        var typeProvider = new GeneratedTypeProvider();
         var typingStrategy = new DefaultItemTypingStrategy(typeProvider);
         var deserializer = new ContentDeserializer(_jsonOptions);
         var htmlParser = new HtmlParser();

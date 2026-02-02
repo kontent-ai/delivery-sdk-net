@@ -479,7 +479,8 @@ Sometimes you need to invalidate **everything at once** (e.g., after a deploymen
 
 The SDK exposes an **optional** capability interface `IDeliveryCachePurger` that is implemented by the in-memory cache manager (`MemoryCacheManager`).
 
-> **Note**: Purge-all is not supported for generic distributed caches (`IDistributedCache`) because they don't provide key enumeration. For distributed caches, use provider-specific purge tooling or key-prefix rotation.
+> [!NOTE]
+> Purge-all is not supported for generic distributed caches (`IDistributedCache`) because they don't provide key enumeration. For distributed caches, use provider-specific purge tooling or key-prefix rotation.
 
 ```csharp
 using Kontent.Ai.Delivery.Abstractions;

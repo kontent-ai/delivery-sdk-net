@@ -7,8 +7,10 @@ This guide covers how to customize and extend the Kontent.ai Delivery SDK to fit
 - [Overview](#overview)
 - [Type Providers](#type-providers)
   - [ITypeProvider Interface](#itypeprovider-interface)
+  - [Source-Generated Type Provider (Recommended)](#source-generated-type-provider-recommended)
   - [Creating a Custom Type Provider](#creating-a-custom-type-provider)
   - [Registering Type Providers](#registering-type-providers)
+  - [Auto-Discovery](#auto-discovery)
 - [Property Mapping](#property-mapping)
   - [IPropertyMapper Interface](#ipropertymapper-interface)
   - [Creating a Custom Property Mapper](#creating-a-custom-property-mapper)
@@ -37,7 +39,7 @@ public interface ITypeProvider
     /// </summary>
     /// <param name="contentType">The content type codename.</param>
     /// <returns>The CLR type, or null if not found.</returns>
-    Type? TryGetModelType(string contentType);
+    Type? GetType(string contentType);
 
     /// <summary>
     /// Gets the content type codename for a CLR type.
@@ -72,7 +74,7 @@ public class CustomTypeProvider : ITypeProvider
         _codenameMap = _typeMap.ToDictionary(kvp => kvp.Value, kvp => kvp.Key);
     }
 
-    public Type? TryGetModelType(string contentType)
+    public Type? GetType(string contentType)
     {
         return _typeMap.TryGetValue(contentType, out var type) ? type : null;
     }
@@ -84,26 +86,134 @@ public class CustomTypeProvider : ITypeProvider
 }
 ```
 
-### Generated Type Provider
+### Source-Generated Type Provider (Recommended)
 
-The [Kontent.ai Model Generator](https://github.com/kontent-ai/model-generator-net) automatically creates a type provider alongside your models:
+The SDK provides a Roslyn source generator that creates an `ITypeProvider` implementation at compile time. This approach offers several advantages:
+
+- **Compile-time validation** - Duplicate codenames and invalid configurations are caught during build
+- **Auto-discovery** - The SDK automatically finds the generated provider at runtime
+- **Automatic type filtering** - Generic queries like `GetItems<Article>()` automatically add `system.type=article` filter
+- **No runtime reflection** - Type mappings are generated as static dictionaries
+
+#### Setup
+
+Add the required NuGet packages:
+
+```xml
+<PackageReference Include="Kontent.Ai.Delivery.Attributes" Version="19.0.0-beta-6" />
+<PackageReference Include="Kontent.Ai.Delivery.SourceGeneration" Version="19.0.0-beta-6"
+    OutputItemType="Analyzer" ReferenceOutputAssembly="false" />
+```
+
+#### Usage
+
+Decorate your model classes with the `[ContentTypeCodename]` attribute:
+
+```csharp
+using Kontent.Ai.Delivery.Attributes;
+
+[ContentTypeCodename("article")]
+public record Article
+{
+    public string Title { get; init; }
+    public string Summary { get; init; }
+    public RichTextContent BodyCopy { get; init; }
+}
+
+[ContentTypeCodename("product")]
+public record Product
+{
+    public string Name { get; init; }
+    public decimal Price { get; init; }
+}
+
+[ContentTypeCodename("author")]
+public record Author
+{
+    public string Name { get; init; }
+    public string Bio { get; init; }
+}
+```
+
+The source generator produces a `GeneratedTypeProvider` class at compile time:
+
+```csharp
+// Auto-generated in: Kontent.Ai.Delivery.Generated namespace
+public sealed class GeneratedTypeProvider : ITypeProvider
+{
+    private static readonly Dictionary<string, Type> _codenameToType =
+        new(StringComparer.OrdinalIgnoreCase)
+    {
+        { "article", typeof(Article) },
+        { "author", typeof(Author) },
+        { "product", typeof(Product) },
+    };
+
+    private static readonly Dictionary<Type, string> _typeToCodename = new()
+    {
+        { typeof(Article), "article" },
+        { typeof(Author), "author" },
+        { typeof(Product), "product" },
+    };
+
+    public Type? GetModelType(string contentType)
+        => _codenameToType.TryGetValue(contentType, out var type) ? type : null;
+
+    public string? GetCodename(Type contentType)
+        => _typeToCodename.TryGetValue(contentType, out var codename) ? codename : null;
+}
+```
+
+#### Compile-Time Diagnostics
+
+The source generator reports errors during compilation:
+
+| ID | Severity | Description |
+|----|----------|-------------|
+| `KDSG001` | Error | Duplicate codename - two or more types have the same codename |
+| `KDSG002` | Error | Invalid codename - null, empty, or whitespace |
+| `KDSG003` | Error | Unsupported target - interfaces and abstract classes cannot be content types |
+
+Example error:
+
+```
+error KDSG001: Duplicate codename 'article' used by: MyApp.Models.Article, MyApp.Models.BlogPost
+```
+
+#### Model Generator Alternative
+
+The [Kontent.ai Model Generator](https://github.com/kontent-ai/model-generator-net) can also generate models with the `[ContentTypeCodename]` attribute:
 
 ```bash
 dotnet tool install -g Kontent.Ai.ModelGenerator
 KontentModelGenerator --environmentid <your-environment-id> --outputdir Models
 ```
 
-This generates a `TypeProvider` class that maps all your content types to their corresponding models.
+When used with the source generation packages, the generated models automatically participate in compile-time type provider generation.
 
 ### Registering Type Providers
 
-#### With Dependency Injection
+#### Auto-Discovery (Recommended)
+
+When using source generation with `[ContentTypeCodename]` attributes, the SDK automatically discovers the `GeneratedTypeProvider` at runtime. No manual registration is needed:
 
 ```csharp
-// Register your custom type provider
+// Just register the delivery client - type provider is auto-discovered
+services.AddDeliveryClient(options =>
+{
+    options.EnvironmentId = "your-environment-id";
+});
+```
+
+#### Explicit Registration with Dependency Injection
+
+If you need to override auto-discovery or use a custom implementation, register your type provider **before** `AddDeliveryClient()`:
+
+```csharp
+// Register your custom type provider (takes precedence over auto-discovery)
 services.AddSingleton<ITypeProvider, CustomTypeProvider>();
 
-// Or use the generated type provider
+// Or explicitly register the generated type provider
 services.AddSingleton<ITypeProvider, GeneratedTypeProvider>();
 
 // Then register the delivery client
@@ -113,13 +223,42 @@ services.AddDeliveryClient(options =>
 });
 ```
 
+The SDK uses `TryAddSingleton` internally, so your registration takes precedence.
+
 #### Without Dependency Injection
 
 ```csharp
-var client = DeliveryClientBuilder
-    .WithEnvironmentId("your-environment-id")
+// Type provider is auto-discovered from source generation
+using var container = DeliveryClientBuilder
+    .WithOptions(builder => builder
+        .WithEnvironmentId("your-environment-id")
+        .Build())
+    .Build();
+
+// Or explicitly provide a type provider
+using var container = DeliveryClientBuilder
+    .WithOptions(builder => builder
+        .WithEnvironmentId("your-environment-id")
+        .Build())
     .WithTypeProvider(new CustomTypeProvider())
     .Build();
+```
+
+### Auto-Discovery
+
+The SDK's default `TypeProvider` automatically discovers source-generated providers at runtime using this strategy:
+
+1. **Entry assembly first** - Checks the application's entry assembly for `Kontent.Ai.Delivery.Generated.GeneratedTypeProvider`
+2. **Referenced assemblies** - Checks assemblies referenced by the entry assembly
+3. **Calling assembly fallback** - For test scenarios, checks the calling assembly
+
+This bounded search is deterministic and avoids scanning the entire AppDomain. If multiple providers are found, the entry assembly's provider takes precedence.
+
+```csharp
+// The auto-discovery happens transparently when you use the SDK
+var result = await client.GetItems<Article>().ExecuteAsync();
+// ↑ SDK looks up "article" codename via auto-discovered GeneratedTypeProvider
+//   and automatically adds system.type=article filter
 ```
 
 ### How Type Resolution Works
@@ -127,7 +266,7 @@ var client = DeliveryClientBuilder
 When the SDK deserializes content items:
 
 1. It reads the `system.type` property from the JSON
-2. Calls `ITypeProvider.TryGetModelType(contentType)` to get the CLR type
+2. Calls `ITypeProvider.GetType(contentType)` to get the CLR type
 3. If a type is found, deserializes to that type
 4. If no type is found, falls back to dynamic elements (`IDynamicElements`)
 
@@ -239,15 +378,24 @@ Key extension points include:
 
 ## Best Practices
 
-### 1. Use Generated Type Providers
+### 1. Use Source-Generated Type Providers
 
-For most projects, use the model generator rather than creating type providers manually:
+For most projects, use the `[ContentTypeCodename]` attribute with source generation rather than creating type providers manually:
 
-```bash
-KontentModelGenerator --environmentid <your-env-id> --outputdir Models
+```csharp
+using Kontent.Ai.Delivery.Attributes;
+
+[ContentTypeCodename("article")]
+public record Article { /* ... */ }
 ```
 
-This ensures your type mappings stay synchronized with your content types.
+This approach provides:
+- **Compile-time validation** - Errors are caught during build, not at runtime
+- **Auto-discovery** - No manual DI registration needed
+- **Automatic type filtering** - Generic queries automatically filter by content type
+- **Synchronization** - Type mappings are always in sync with your model definitions
+
+If you use the [Kontent.ai Model Generator](https://github.com/kontent-ai/model-generator-net), it generates models with the `[ContentTypeCodename]` attribute automatically.
 
 ### 2. Keep Property Mappers Simple
 
@@ -261,12 +409,12 @@ public record Article
 }
 ```
 
-### 3. Register Extensions Before the Client
+### 3. Registration Order (When Not Using Auto-Discovery)
 
-Register your custom implementations before calling `AddDeliveryClient`:
+When using source generation, type provider registration is automatic. However, if you're registering custom implementations, register them **before** calling `AddDeliveryClient`:
 
 ```csharp
-// ✅ Correct order
+// ✅ Correct order (when overriding auto-discovery)
 services.AddSingleton<ITypeProvider, CustomTypeProvider>();
 services.AddDeliveryClient(options => { ... });
 
@@ -275,27 +423,30 @@ services.AddDeliveryClient(options => { ... });
 services.AddSingleton<ITypeProvider, CustomTypeProvider>();
 ```
 
+> [!NOTE]
+> With source generation, you typically don't need to register the type provider at all - it's auto-discovered.
+
 ### 4. Test Custom Extensions
 
 Write unit tests for custom type providers and property mappers:
 
 ```csharp
 [Fact]
-public void TryGetModelType_ReturnsCorrectType_ForArticle()
+public void GetType_ReturnsCorrectType_ForArticle()
 {
     var provider = new CustomTypeProvider();
 
-    var result = provider.TryGetModelType("article");
+    var result = provider.GetType("article");
 
     Assert.Equal(typeof(Article), result);
 }
 
 [Fact]
-public void TryGetModelType_ReturnsNull_ForUnknownType()
+public void GetType_ReturnsNull_ForUnknownType()
 {
     var provider = new CustomTypeProvider();
 
-    var result = provider.TryGetModelType("unknown_type");
+    var result = provider.GetType("unknown_type");
 
     Assert.Null(result);
 }

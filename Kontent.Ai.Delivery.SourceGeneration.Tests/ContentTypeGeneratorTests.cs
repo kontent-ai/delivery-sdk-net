@@ -29,7 +29,7 @@ public class ContentTypeGeneratorTests
 
         // Assert
         diagnostics.Should().BeEmpty();
-        output.Should().Contain("class ContentTypeRegistry : ITypeProvider");
+        output.Should().Contain("class GeneratedTypeProvider : ITypeProvider");
         output.Should().Contain("\"article\"");
         output.Should().Contain("\"home\"");
         output.Should().Contain("typeof(global::TestApp.Models.Article)");
@@ -51,7 +51,7 @@ public class ContentTypeGeneratorTests
 
         // Assert
         diagnostics.Should().BeEmpty();
-        output.Should().Contain("class ContentTypeRegistry : ITypeProvider");
+        output.Should().Contain("class GeneratedTypeProvider : ITypeProvider");
         output.Should().Contain("private static readonly Dictionary<string, Type> _codenameToType =");
     }
 

@@ -19,7 +19,7 @@ public class RuntimeTypeResolutionTests
     private string BaseUrl => $"https://deliver.kontent.ai/{_guid}";
 
     /// <summary>
-    /// Creates a client with the ContentTypeRegistry registered (enables runtime type resolution).
+    /// Creates a client with the GeneratedTypeProvider registered (enables runtime type resolution).
     /// </summary>
     private IDeliveryClient CreateClientWithTypeProvider(MockHttpMessageHandler mockHttp)
     {
@@ -27,7 +27,7 @@ public class RuntimeTypeResolutionTests
         services.AddDeliveryClient(
             new DeliveryOptions { EnvironmentId = _guid.ToString() },
             configureHttpClient: b => b.ConfigurePrimaryHttpMessageHandler(() => mockHttp));
-        services.AddSingleton<ITypeProvider, ContentTypeRegistry>();
+        services.AddSingleton<ITypeProvider, GeneratedTypeProvider>();
         return services.BuildServiceProvider().GetRequiredService<IDeliveryClient>();
     }
 
@@ -113,7 +113,7 @@ public class RuntimeTypeResolutionTests
     public async Task GetItem_WithTypeProvider_UnmappedType_ReturnsDynamicElements()
     {
         // Arrange - verify that when no type provider mapping exists, items fall back to dynamic
-        // We use GetItems() and check the returned items for types not in ContentTypeRegistry
+        // We use GetItems() and check the returned items for types not in GeneratedTypeProvider
         var mockHttp = new MockHttpMessageHandler();
         mockHttp.When($"{BaseUrl}/items")
             .Respond("application/json", await LoadFixtureAsync("items.json"));
@@ -127,7 +127,7 @@ public class RuntimeTypeResolutionTests
         Assert.True(result.IsSuccess, $"Expected success but got: {result.Error?.Message}");
         Assert.NotEmpty(result.Value.Items);
 
-        // Items with types in ContentTypeRegistry should be runtime-typed
+        // Items with types in GeneratedTypeProvider should be runtime-typed
         var articleItems = result.Value.Items.Where(i => i.System.Type == "article").ToList();
         Assert.NotEmpty(articleItems);
         Assert.All(articleItems, item =>
@@ -136,7 +136,7 @@ public class RuntimeTypeResolutionTests
                 $"Article item should be typed but was {item.GetType().Name}");
         });
 
-        // Items with types NOT in ContentTypeRegistry should remain dynamic
+        // Items with types NOT in GeneratedTypeProvider should remain dynamic
         // The items.json has "grinder" type which is not mapped
         var grinderItems = result.Value.Items.Where(i => i.System.Type == "grinder").ToList();
         if (grinderItems.Any())

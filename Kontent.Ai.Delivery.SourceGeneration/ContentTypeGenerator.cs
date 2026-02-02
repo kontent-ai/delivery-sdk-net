@@ -139,12 +139,12 @@ public sealed class ContentTypeGenerator : IIncrementalGenerator
             .OrderBy(i => i.Codename, StringComparer.OrdinalIgnoreCase)
             .ToList();
 
-        // Always generate the registry (even if empty)
-        var source = GenerateRegistry(finalInfos);
-        context.AddSource("ContentTypeRegistry.g.cs", SourceText.From(source, Encoding.UTF8));
+        // Always generate the type provider (even if empty)
+        var source = GenerateTypeProvider(finalInfos);
+        context.AddSource("GeneratedTypeProvider.g.cs", SourceText.From(source, Encoding.UTF8));
     }
 
-    private static string GenerateRegistry(List<ContentTypeInfo> infos)
+    private static string GenerateTypeProvider(List<ContentTypeInfo> infos)
     {
         var sb = new StringBuilder();
 
@@ -158,9 +158,9 @@ public sealed class ContentTypeGenerator : IIncrementalGenerator
         sb.AppendLine("namespace Kontent.Ai.Delivery.Generated;");
         sb.AppendLine();
         sb.AppendLine("/// <summary>");
-        sb.AppendLine("/// Auto-generated content type registry mapping codenames to CLR types.");
+        sb.AppendLine("/// Auto-generated type provider mapping content type codenames to CLR types.");
         sb.AppendLine("/// </summary>");
-        sb.AppendLine("public sealed class ContentTypeRegistry : ITypeProvider");
+        sb.AppendLine("public sealed class GeneratedTypeProvider : ITypeProvider");
         sb.AppendLine("{");
 
         // Codename to Type dictionary

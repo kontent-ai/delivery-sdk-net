@@ -9,7 +9,7 @@ using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Http.Resilience;
 using Polly;
 
-public static class ReadmeExamples
+internal static class ReadmeExamples
 {
     // Quick Start
     public static async Task QuickStartAsync()
