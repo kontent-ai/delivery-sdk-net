@@ -36,7 +36,7 @@ internal sealed class DefaultItemTypingStrategy(ITypeProvider typeProvider, ILog
 
         return _cache.GetOrAdd(contentTypeCodename, codename =>
         {
-            var modelType = _typeProvider.TryGetModelType(codename);
+            var modelType = _typeProvider.GetType(codename);
             if (modelType == null && _logger != null)
             {
                 LoggerMessages.ContentTypeFallbackToDynamic(_logger, codename);

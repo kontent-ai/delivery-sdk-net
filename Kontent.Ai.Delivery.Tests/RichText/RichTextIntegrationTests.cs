@@ -1,5 +1,6 @@
 using Kontent.Ai.Delivery.Abstractions;
 using Kontent.Ai.Delivery.ContentItems.RichText.Resolution;
+using Kontent.Ai.Delivery.Generated;
 using Kontent.Ai.Delivery.Tests.Models.ContentTypes;
 using Microsoft.Extensions.DependencyInjection;
 using RichardSzalay.MockHttp;
@@ -471,7 +472,7 @@ public class RichTextIntegrationTests
             new DeliveryOptions { EnvironmentId = guid },
             configureHttpClient: builder => builder.ConfigurePrimaryHttpMessageHandler(() => mockHttp));
 
-        services.AddSingleton<ITypeProvider, CustomTypeProvider>();
+        services.AddSingleton<ITypeProvider, ContentTypeRegistry>();
 
         var provider = services.BuildServiceProvider();
         var client = (DeliveryClient)provider.GetRequiredService<IDeliveryClient>();
@@ -887,7 +888,7 @@ public class RichTextIntegrationTests
         services.AddDeliveryClient(
             new DeliveryOptions { EnvironmentId = guid },
             configureHttpClient: builder => builder.ConfigurePrimaryHttpMessageHandler(() => mockHttp));
-        services.AddSingleton<ITypeProvider, CustomTypeProvider>();
+        services.AddSingleton<ITypeProvider, ContentTypeRegistry>();
 
         var provider = services.BuildServiceProvider();
         var client = (DeliveryClient)provider.GetRequiredService<IDeliveryClient>();
@@ -953,7 +954,7 @@ public class RichTextIntegrationTests
         services.AddDeliveryClient(
             new DeliveryOptions { EnvironmentId = guid },
             configureHttpClient: builder => builder.ConfigurePrimaryHttpMessageHandler(() => mockHttp));
-        services.AddSingleton<ITypeProvider, CustomTypeProvider>();
+        services.AddSingleton<ITypeProvider, ContentTypeRegistry>();
 
         var provider = services.BuildServiceProvider();
         var client = (DeliveryClient)provider.GetRequiredService<IDeliveryClient>();
@@ -1016,7 +1017,7 @@ public class RichTextIntegrationTests
         services.AddDeliveryClient(
             new DeliveryOptions { EnvironmentId = guid },
             configureHttpClient: builder => builder.ConfigurePrimaryHttpMessageHandler(() => mockHttp));
-        services.AddSingleton<ITypeProvider, CustomTypeProvider>();
+        services.AddSingleton<ITypeProvider, ContentTypeRegistry>();
 
         var provider = services.BuildServiceProvider();
         var client = (DeliveryClient)provider.GetRequiredService<IDeliveryClient>();
@@ -1084,7 +1085,7 @@ public class RichTextIntegrationTests
             new DeliveryOptions { EnvironmentId = guid },
             configureHttpClient: builder => builder.ConfigurePrimaryHttpMessageHandler(() => mockHttp));
 
-        services.AddSingleton<ITypeProvider, CustomTypeProvider>();
+        services.AddSingleton<ITypeProvider, ContentTypeRegistry>();
 
         var provider = services.BuildServiceProvider();
         return (DeliveryClient)provider.GetRequiredService<IDeliveryClient>();

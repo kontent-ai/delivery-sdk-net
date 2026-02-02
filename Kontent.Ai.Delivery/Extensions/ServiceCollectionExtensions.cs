@@ -256,6 +256,7 @@ public static partial class ServiceCollectionExtensions
 
         var deliveryApi = sp.GetRequiredKeyedService<IDeliveryApi>(clientName);
         var contentItemMapper = sp.GetRequiredService<ContentItemMapper>();
+        var typeProvider = sp.GetRequiredService<ITypeProvider>();
 
         // Resolve keyed cache manager for this client (registered via AddDeliveryMemoryCache/AddDeliveryDistributedCache)
         var cacheManager = sp.GetKeyedService<IDeliveryCacheManager>(clientName);
@@ -267,6 +268,7 @@ public static partial class ServiceCollectionExtensions
             deliveryApi,
             namedMonitor,
             contentItemMapper,
+            typeProvider,
             cacheManager,
             logger);
     }
