@@ -7,7 +7,7 @@ using Microsoft.Extensions.Logging;
 
 namespace Kontent.Ai.Delivery.ContentItems.Processing;
 
-internal class RichTextParser(
+internal sealed class RichTextParser(
     IHtmlParser parser,
     IContentDependencyExtractor dependencyExtractor,
     ILogger? logger = null)

@@ -3,7 +3,7 @@ namespace Kontent.Ai.Delivery.Configuration;
 /// <summary>
 /// A builder of <see cref="DeliveryOptions"/> instances.
 /// </summary>
-public class DeliveryOptionsBuilder : IDeliveryOptionsBuilder
+public sealed class DeliveryOptionsBuilder : IDeliveryOptionsBuilder
 {
     private readonly DeliveryOptions _options = new();
     private DeliveryOptionsBuilder() { }

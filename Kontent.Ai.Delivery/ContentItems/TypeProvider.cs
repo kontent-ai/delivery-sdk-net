@@ -25,7 +25,7 @@ namespace Kontent.Ai.Delivery.ContentItems;
 /// in the DI container.
 /// </para>
 /// </remarks>
-internal class TypeProvider : ITypeProvider
+internal sealed class TypeProvider : ITypeProvider
 {
     private const string GeneratedTypeProviderName = "Kontent.Ai.Delivery.Generated.GeneratedTypeProvider";
 

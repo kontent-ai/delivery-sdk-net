@@ -58,7 +58,7 @@ internal sealed class HtmlResolver : IHtmlResolver
             StringComparer.OrdinalIgnoreCase) ?? FrozenDictionary<string, BlockResolver<IContentItemLink>>.Empty;
     }
 
-    public async ValueTask<string> ResolveAsync(IRichTextContent richText)
+    public async ValueTask<string> ResolveAsync(IRichTextContent richText, CancellationToken cancellationToken = default)
     {
         ArgumentNullException.ThrowIfNull(richText);
 
@@ -66,6 +66,7 @@ internal sealed class HtmlResolver : IHtmlResolver
 
         foreach (var block in richText)
         {
+            cancellationToken.ThrowIfCancellationRequested();
             var resolved = await ResolveBlockAsync(block);
             htmlBuilder.Append(resolved);
         }

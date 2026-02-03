@@ -1,0 +1,13 @@
+{
+  "version": 1,
+  "isRoot": true,
+  "tools": {
+    "slopwatch.cmd": {
+      "version": "0.3.3",
+      "commands": [
+        "slopwatch"
+      ],
+      "rollForward": false
+    }
+  }
+}
