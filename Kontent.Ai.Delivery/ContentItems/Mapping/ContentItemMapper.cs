@@ -20,6 +20,7 @@ internal sealed class ContentItemMapper
     private readonly IContentDeserializer _deserializer;
     private readonly IOptionsMonitor<DeliveryOptions> _deliveryOptions;
     private readonly IContentDependencyExtractor _dependencyExtractor;
+    private readonly JsonSerializerOptions _jsonOptions;
     private readonly RichTextParser _richTextParser;
     private readonly ILogger<ContentItemMapper>? _logger;
 
@@ -31,12 +32,14 @@ internal sealed class ContentItemMapper
         IHtmlParser htmlParser,
         IOptionsMonitor<DeliveryOptions> deliveryOptions,
         IContentDependencyExtractor dependencyExtractor,
+        JsonSerializerOptions jsonOptions,
         ILogger<ContentItemMapper>? logger = null)
     {
         _typingStrategy = typingStrategy ?? throw new ArgumentNullException(nameof(typingStrategy));
         _deserializer = deserializer ?? throw new ArgumentNullException(nameof(deserializer));
         _deliveryOptions = deliveryOptions ?? throw new ArgumentNullException(nameof(deliveryOptions));
         _dependencyExtractor = dependencyExtractor ?? throw new ArgumentNullException(nameof(dependencyExtractor));
+        _jsonOptions = jsonOptions ?? throw new ArgumentNullException(nameof(jsonOptions));
         _logger = logger;
         _richTextParser = new RichTextParser(
             htmlParser ?? throw new ArgumentNullException(nameof(htmlParser)),
@@ -118,7 +121,7 @@ internal sealed class ContentItemMapper
         }
 
         // Deserialize to the runtime type
-        var contentItem = _deserializer.DeserializeContentItem(rawItemJson.GetRawText(), modelType);
+        var contentItem = _deserializer.DeserializeContentItem(rawItemJson, modelType);
 
         // Hydrate complex elements
         var context = new MappingContext
@@ -254,7 +257,40 @@ internal sealed class ContentItemMapper
             return await MapLinkedItemsAsync(envelope, getLinkedItem, context).ConfigureAwait(false);
         }
 
-        return null;
+        // Simple values (text, number, boolean, etc.) - extract from envelope
+        return MapSimpleValue(prop, envelope);
+    }
+
+    /// <summary>
+    /// Maps simple element values (text, number, boolean, etc.) by extracting
+    /// the "value" property from the element envelope and deserializing it.
+    /// </summary>
+    private object? MapSimpleValue(PropertyMappingInfo prop, JsonElement envelope)
+    {
+        if (!envelope.TryGetProperty("value", out var valueElement))
+        {
+            return null;
+        }
+
+        if (valueElement.ValueKind is JsonValueKind.Null or JsonValueKind.Undefined)
+        {
+            return null;
+        }
+
+        try
+        {
+            return JsonSerializer.Deserialize(valueElement, prop.PropertyType, _jsonOptions);
+        }
+        catch (JsonException)
+        {
+            // Compatible behavior: skip on failure
+            return null;
+        }
+        catch (NotSupportedException)
+        {
+            // JsonSerializer throws NotSupportedException for unsupported type patterns
+            return null;
+        }
     }
 
     private async Task<IRichTextContent?> MapRichTextAsync(
@@ -429,8 +465,7 @@ internal sealed class ContentItemMapper
         // New item: deserialize and store BEFORE hydration
         var contentType = ExtractContentType(linkedItem);
         var modelType = _typingStrategy.ResolveModelType(contentType);
-        var itemJson = linkedItem.GetRawText();
-        var contentItem = _deserializer.DeserializeContentItem(itemJson, modelType);
+        var contentItem = _deserializer.DeserializeContentItem(linkedItem, modelType);
 
         context.ItemsBeingHydrated[codename] = contentItem;
 
@@ -488,7 +523,7 @@ internal sealed class ContentItemMapper
         {
             if (Guid.TryParse(prop.Name, out var id))
             {
-                var image = JsonSerializer.Deserialize<InlineImage>(prop.Value.GetRawText());
+                var image = JsonSerializer.Deserialize<InlineImage>(prop.Value);
                 if (image is not null)
                     result[id] = image;
             }
@@ -507,7 +542,7 @@ internal sealed class ContentItemMapper
         {
             if (Guid.TryParse(prop.Name, out var id))
             {
-                var link = JsonSerializer.Deserialize<ContentLink>(prop.Value.GetRawText());
+                var link = JsonSerializer.Deserialize<ContentLink>(prop.Value);
                 if (link is not null)
                 {
                     link.Id = id;
@@ -524,7 +559,7 @@ internal sealed class ContentItemMapper
         if (!root.TryGetProperty("modular_content", out var modularEl) || modularEl.ValueKind != JsonValueKind.Array)
             return [];
 
-        var list = JsonSerializer.Deserialize<List<string>>(modularEl.GetRawText());
+        var list = JsonSerializer.Deserialize<List<string>>(modularEl);
         return list ?? [];
     }
 

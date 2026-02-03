@@ -22,14 +22,12 @@ internal sealed class ContentElementConverter : JsonConverter<ContentElement>
             ? typeEl.GetString()
             : null;
 
-        var json = root.GetRawText();
-
         return elementType switch
         {
             // Derived types don't trigger this converter (JsonConverter<T> only matches exact type)
-            "taxonomy" => JsonSerializer.Deserialize<TaxonomyElement>(json, options)
+            "taxonomy" => JsonSerializer.Deserialize<TaxonomyElement>(root, options)
                 ?? throw new JsonException("Failed to deserialize taxonomy element."),
-            "multiple_choice" => JsonSerializer.Deserialize<MultipleChoiceElement>(json, options)
+            "multiple_choice" => JsonSerializer.Deserialize<MultipleChoiceElement>(root, options)
                 ?? throw new JsonException("Failed to deserialize multiple choice element."),
             // Base type: deserialize manually to avoid infinite recursion
             _ => DeserializeBaseElement(root)

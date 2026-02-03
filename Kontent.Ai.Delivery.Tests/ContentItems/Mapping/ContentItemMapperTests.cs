@@ -33,7 +33,8 @@ public sealed class ContentItemMapperTests
             deserializer,
             htmlParser,
             optionsMonitor,
-            dependencyExtractor);
+            dependencyExtractor,
+            _jsonOptions);
     }
 
     [Fact]

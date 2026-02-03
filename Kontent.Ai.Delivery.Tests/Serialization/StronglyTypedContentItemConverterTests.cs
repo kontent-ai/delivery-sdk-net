@@ -1,4 +1,3 @@
-using System.Runtime.CompilerServices;
 using System.Text.Json;
 using System.Text.Json.Serialization;
 using Kontent.Ai.Delivery.ContentItems;
@@ -8,6 +7,13 @@ using Xunit;
 
 namespace Kontent.Ai.Delivery.Tests.Serialization;
 
+/// <summary>
+/// Tests for StronglyTypedContentItemConverter.
+///
+/// Note: The converter creates an empty model instance with system attributes
+/// and RawItemJson preserved. All property values (simple and complex) are
+/// populated later by ContentItemMapper.CompleteItemAsync().
+/// </summary>
 public class StronglyTypedContentItemConverterTests
 {
     /// <summary>
@@ -102,7 +108,7 @@ public class StronglyTypedContentItemConverterTests
         """;
 
     [Fact]
-    public void Deserialize_WithSimpleTextElements_DeserializesCorrectly()
+    public void Deserialize_ParsesSystemAttributes_Correctly()
     {
         // Arrange
         var options = CreateOptionsWithConverter<Article>();
@@ -114,12 +120,12 @@ public class StronglyTypedContentItemConverterTests
         Assert.NotNull(result);
         Assert.NotNull(result.System);
         Assert.Equal("test_article", result.System.Codename);
-        Assert.Equal("Test Article Title", result.Elements.Title);
-        Assert.Equal("Test summary content", result.Elements.Summary);
+        Assert.Equal("Test Article", result.System.Name);
+        Assert.Equal("article", result.System.Type);
     }
 
     [Fact]
-    public void Deserialize_WithDateTimeElement_LeavesNullForHydration()
+    public void Deserialize_CreatesEmptyElementsInstance()
     {
         // Arrange
         var options = CreateOptionsWithConverter<Article>();
@@ -127,14 +133,16 @@ public class StronglyTypedContentItemConverterTests
         // Act
         var result = JsonSerializer.Deserialize<ContentItem<Article>>(SimpleArticleJson, options);
 
-        // Assert - DateTime is a complex type, so it should be null after initial deserialization
-        // The ContentItemMapper will hydrate it later with the full IDateTimeContent object
+        // Assert - Elements instance is created but properties are null
+        // (ContentItemMapper will populate them during CompleteItemAsync)
         Assert.NotNull(result);
-        Assert.Null(result.Elements.PostDate);
+        Assert.NotNull(result.Elements);
+        Assert.Null(result.Elements.Title);
+        Assert.Null(result.Elements.Summary);
     }
 
     [Fact]
-    public void Deserialize_WithNumberElement_DeserializesCorrectly()
+    public void Deserialize_WithAllElementTypes_CreatesEmptyElementsInstance()
     {
         // Arrange
         var options = CreateOptionsWithConverter<SimpleTestModel>();
@@ -142,68 +150,13 @@ public class StronglyTypedContentItemConverterTests
         // Act
         var result = JsonSerializer.Deserialize<ContentItem<SimpleTestModel>>(SimpleTestModelJson, options);
 
-        // Assert
+        // Assert - All properties are null initially
         Assert.NotNull(result);
-        Assert.Equal("Test Title", result.Elements.Title);
-        Assert.Equal(19.99m, result.Elements.Price);
-        Assert.Equal(42, result.Elements.Count);
-        Assert.True(result.Elements.IsActive);
-    }
-
-    [Fact]
-    public void Deserialize_MultipleTimes_CachesJsonSerializerOptions()
-    {
-        // Arrange
-        var options = CreateOptionsWithConverter<Article>();
-        var cacheField = typeof(StronglyTypedContentItemConverter<Article>)
-            .GetField("OptionsCache", System.Reflection.BindingFlags.NonPublic | System.Reflection.BindingFlags.Static);
-
-        Assert.NotNull(cacheField);
-
-        var cache = cacheField.GetValue(null) as ConditionalWeakTable<JsonSerializerOptions, JsonSerializerOptions>;
-        Assert.NotNull(cache);
-
-        // Clear any existing cache entries by creating fresh options
-        var freshOptions = CreateOptionsWithConverter<Article>();
-
-        // Act - deserialize multiple times with the same options
-        _ = JsonSerializer.Deserialize<ContentItem<Article>>(SimpleArticleJson, freshOptions);
-        var cacheHit1 = cache.TryGetValue(freshOptions, out var cached1);
-
-        _ = JsonSerializer.Deserialize<ContentItem<Article>>(SimpleArticleJson, freshOptions);
-        var cacheHit2 = cache.TryGetValue(freshOptions, out var cached2);
-
-        _ = JsonSerializer.Deserialize<ContentItem<Article>>(SimpleArticleJson, freshOptions);
-        var cacheHit3 = cache.TryGetValue(freshOptions, out var cached3);
-
-        // Assert - all deserializations should use the same cached options
-        Assert.True(cacheHit1, "First deserialization should populate the cache");
-        Assert.True(cacheHit2, "Second deserialization should hit the cache");
-        Assert.True(cacheHit3, "Third deserialization should hit the cache");
-        Assert.Same(cached1, cached2);
-        Assert.Same(cached2, cached3);
-    }
-
-    [Fact]
-    public void Deserialize_WithDifferentOptionsInstances_CreatesSeparateCacheEntries()
-    {
-        // Arrange
-        var options1 = CreateOptionsWithConverter<Article>();
-        var options2 = CreateOptionsWithConverter<Article>();
-
-        var cacheField = typeof(StronglyTypedContentItemConverter<Article>)
-            .GetField("OptionsCache", System.Reflection.BindingFlags.NonPublic | System.Reflection.BindingFlags.Static);
-        var cache = cacheField?.GetValue(null) as ConditionalWeakTable<JsonSerializerOptions, JsonSerializerOptions>;
-        Assert.NotNull(cache);
-
-        // Act
-        _ = JsonSerializer.Deserialize<ContentItem<Article>>(SimpleArticleJson, options1);
-        _ = JsonSerializer.Deserialize<ContentItem<Article>>(SimpleArticleJson, options2);
-
-        // Assert
-        Assert.True(cache.TryGetValue(options1, out var cached1));
-        Assert.True(cache.TryGetValue(options2, out var cached2));
-        Assert.NotSame(cached1, cached2); // Different source options = different cached options
+        Assert.NotNull(result.Elements);
+        Assert.Null(result.Elements.Title);
+        Assert.Null(result.Elements.Price);
+        Assert.Null(result.Elements.Count);
+        Assert.Null(result.Elements.IsActive);
     }
 
     [Fact]
@@ -223,36 +176,14 @@ public class StronglyTypedContentItemConverterTests
 
         var results = await Task.WhenAll(tasks);
 
-        // Assert - all deserializations should succeed
+        // Assert - all deserializations should succeed and produce valid system attributes
         Assert.All(results, result =>
         {
             Assert.NotNull(result);
-            Assert.Equal("Test Article Title", result.Elements.Title);
+            Assert.NotNull(result.System);
+            Assert.Equal("test_article", result.System.Codename);
+            Assert.NotNull(result.Elements);
         });
-    }
-
-    [Fact]
-    public void Deserialize_CachedOptions_DoesNotContainContentItemConverterFactory()
-    {
-        // Arrange
-        var options = CreateOptionsWithConverter<Article>();
-        var cacheField = typeof(StronglyTypedContentItemConverter<Article>)
-            .GetField("OptionsCache", System.Reflection.BindingFlags.NonPublic | System.Reflection.BindingFlags.Static);
-        var cache = cacheField?.GetValue(null) as ConditionalWeakTable<JsonSerializerOptions, JsonSerializerOptions>;
-        Assert.NotNull(cache);
-
-        // Act
-        _ = JsonSerializer.Deserialize<ContentItem<Article>>(SimpleArticleJson, options);
-
-        // Assert
-        Assert.True(cache.TryGetValue(options, out var cachedOptions));
-        Assert.NotNull(cachedOptions);
-
-        // The cached options should NOT contain ContentItemConverterFactory
-        Assert.DoesNotContain(cachedOptions.Converters, c => c is ContentItemConverterFactory);
-
-        // But the original options SHOULD still contain it
-        Assert.Contains(options.Converters, c => c is ContentItemConverterFactory);
     }
 
     [Fact]
@@ -274,6 +205,29 @@ public class StronglyTypedContentItemConverterTests
         Assert.True(rawElements.TryGetProperty("title", out var titleElement));
         Assert.True(titleElement.TryGetProperty("type", out var typeValue));
         Assert.Equal("text", typeValue.GetString());
+
+        // Should also contain the value for later extraction by ContentItemMapper
+        Assert.True(titleElement.TryGetProperty("value", out var valueElement));
+        Assert.Equal("Test Article Title", valueElement.GetString());
+    }
+
+    [Fact]
+    public void Deserialize_MissingSystemProperty_ThrowsJsonException()
+    {
+        // Arrange
+        var options = CreateOptionsWithConverter<Article>();
+        var invalidJson = """
+            {
+                "elements": {
+                    "title": { "type": "text", "value": "Test" }
+                }
+            }
+            """;
+
+        // Act & Assert
+        var exception = Assert.Throws<JsonException>(() =>
+            JsonSerializer.Deserialize<ContentItem<Article>>(invalidJson, options));
+        Assert.Contains("system", exception.Message);
     }
 
     private static JsonSerializerOptions CreateOptionsWithConverter<T>()

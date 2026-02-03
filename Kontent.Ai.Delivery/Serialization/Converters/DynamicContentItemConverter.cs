@@ -25,8 +25,7 @@ internal sealed class DynamicContentItemConverter<TModel> : JsonConverter<Conten
             throw new JsonException("Missing required 'system' property in content item JSON.");
         }
 
-        var systemJson = systemElement.GetRawText();
-        var system = JsonSerializer.Deserialize<ContentItemSystemAttributes>(systemJson, options)
+        var system = JsonSerializer.Deserialize<ContentItemSystemAttributes>(systemElement, options)
             ?? throw new JsonException("Failed to deserialize 'system' property in content item JSON.");
 
         // 2. Get elements JsonElement
