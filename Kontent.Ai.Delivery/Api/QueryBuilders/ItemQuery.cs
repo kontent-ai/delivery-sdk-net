@@ -147,8 +147,8 @@ internal sealed class ItemQuery<TModel>(
         dependencyContext?.TrackItem(item.System.Codename);
         if (dependencyContext != null && resp.ModularContent != null)
         {
-            foreach (var codename in resp.ModularContent.Keys)
-                dependencyContext.TrackItem(codename);
+            foreach (var itemCodename in resp.ModularContent.Keys)
+                dependencyContext.TrackItem(itemCodename);
         }
 
         // Hydrate rich text, assets, taxonomy (tracks additional dependencies)

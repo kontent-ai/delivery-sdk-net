@@ -7,6 +7,7 @@ namespace Kontent.Ai.Delivery.Abstractions;
 /// </summary>
 /// <param name="propertyName">The name of the property that is used to check if the current property is required.</param>
 /// <param name="isValue">The value of the property that is used to check if the current property is required.</param>
+[AttributeUsage(AttributeTargets.Property | AttributeTargets.Field, AllowMultiple = true)]
 public class RequiredIfAttribute(string propertyName, object? isValue) : ValidationAttribute
 {
     private readonly string _propertyName = propertyName ?? throw new ArgumentNullException(nameof(propertyName));

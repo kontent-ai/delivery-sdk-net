@@ -84,7 +84,7 @@ public interface IContentItem`1 : IContentItem
     TModel Elements { get; }
 
 // Kontent.Ai.Delivery.Abstractions
-public interface IContentItemLink : IRichTextBlock, IBlockWithChildren
+public interface IContentItemLink : IBlockWithChildren, IRichTextBlock
     IReadOnlyDictionary`2 Attributes { get; }
     Guid ItemId { get; }
     IContentLink Metadata { get; }

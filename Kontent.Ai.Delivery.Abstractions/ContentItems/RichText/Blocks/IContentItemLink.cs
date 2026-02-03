@@ -4,7 +4,7 @@ namespace Kontent.Ai.Delivery.Abstractions;
 /// Represents a content item link block within rich text.
 /// Content item links are anchor tags with data-item-id attributes that reference other content items.
 /// </summary>
-public interface IContentItemLink : IRichTextBlock, IBlockWithChildren
+public interface IContentItemLink : IBlockWithChildren
 {
     /// <summary>
     /// The unique identifier of the linked content item.

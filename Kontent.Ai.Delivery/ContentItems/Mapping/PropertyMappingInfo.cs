@@ -9,8 +9,6 @@ namespace Kontent.Ai.Delivery.ContentItems.Mapping;
 /// </summary>
 internal sealed class PropertyMappingInfo
 {
-    private readonly Action<object, object> _setter = null!;
-
     /// <summary>
     /// The JSON element codename this property maps to (from JsonPropertyName attribute).
     /// </summary>
@@ -34,12 +32,12 @@ internal sealed class PropertyMappingInfo
     /// <summary>
     /// Compiled setter delegate for fast property assignment.
     /// </summary>
-    public required Action<object, object> Setter { init => _setter = value; }
+    public required Action<object, object> Setter { get; init; }
 
     /// <summary>
     /// Sets the property value on the target object using the compiled setter.
     /// </summary>
-    public void SetValue(object target, object value) => _setter(target, value);
+    public void SetValue(object target, object value) => Setter(target, value);
 
     /// <summary>
     /// Creates property mappings for all writable properties with JsonPropertyName attribute.

@@ -1077,7 +1077,6 @@ public class MemoryCacheManagerTests : IDisposable
 
     private class OtherTestValue
     {
-        public string? Data { get; set; }
     }
 
     private class ComplexCacheValue

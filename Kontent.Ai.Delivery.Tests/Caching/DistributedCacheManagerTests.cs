@@ -1023,7 +1023,7 @@ public class DistributedCacheManagerTests
 
     private class OtherTestValue
     {
-        public string? Data { get; set; }
+        public string? Data { get; }
     }
 
     private class ComplexCacheValue

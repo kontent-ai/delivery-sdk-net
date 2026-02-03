@@ -143,13 +143,12 @@ internal sealed class HtmlResolver : IHtmlResolver
             return await cachedResolver(node, ResolveChildrenAsync);
         }
 
-        // Step 2: Evaluate conditional resolvers in registration order
-        foreach (var conditional in _options.ConditionalHtmlNodeResolvers)
+        // Step 2: Evaluate conditional resolvers in registration order (first match wins)
+        var matchingResolver = _options.ConditionalHtmlNodeResolvers
+            .FirstOrDefault(c => c.Predicate(node));
+        if (matchingResolver != null)
         {
-            if (conditional.Predicate(node))
-            {
-                return await conditional.Resolver(node, ResolveChildrenAsync);
-            }
+            return await matchingResolver.Resolver(node, ResolveChildrenAsync);
         }
 
         // Step 3: Use default HTML node resolver if configured

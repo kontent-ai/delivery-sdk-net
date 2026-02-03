@@ -12,29 +12,28 @@ internal static class DeliveryResultExtensions
     /// <returns>A new result with the mapped value.</returns>
     public static IDeliveryResult<TOut> Map<TIn, TOut>(this IDeliveryResult<TIn> result, Func<TIn, TOut> map)
     {
-        if (result.IsSuccess)
+        if (result is not { IsSuccess: true })
         {
-            var mapped = map(result.Value);
+            return DeliveryResult.Failure<TOut>(
+                result.RequestUrl ?? string.Empty,
+                result.StatusCode,
+                result.Error,
+                result.ResponseHeaders);
+        }
 
-            // Preserve cache hit status - use CacheHit factory for cached results
-            if (result.IsCacheHit)
-            {
-                return DeliveryResult.CacheHit(mapped);
-            }
+        var mapped = map(result.Value);
 
-            return DeliveryResult.Success(
+        // Preserve cache hit status - use CacheHit factory for cached results
+        return result switch
+        {
+            { IsCacheHit: true } => DeliveryResult.CacheHit(mapped),
+            _ => DeliveryResult.Success(
                 mapped,
                 result.RequestUrl ?? string.Empty,
                 result.StatusCode,
                 result.HasStaleContent,
                 result.ContinuationToken,
-                result.ResponseHeaders);
-        }
-
-        return DeliveryResult.Failure<TOut>(
-            result.RequestUrl ?? string.Empty,
-            result.StatusCode,
-            result.Error,
-            result.ResponseHeaders);
+                result.ResponseHeaders)
+        };
     }
 }

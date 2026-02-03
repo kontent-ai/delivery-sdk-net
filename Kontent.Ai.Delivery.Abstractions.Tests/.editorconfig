@@ -1,0 +1,20 @@
+# EditorConfig for Test projects
+
+[*.cs]
+# "Does not throw" tests are valid - they verify operations complete without exception
+dotnet_diagnostic.S2699.severity = none
+
+# Test helper classes may be empty stubs
+dotnet_diagnostic.S2094.severity = none
+
+# Unused variables in tests
+dotnet_diagnostic.S1481.severity = none
+
+# Nested ternary in test utility code is acceptable
+dotnet_diagnostic.S3358.severity = none
+
+# Unused private fields in test fixtures
+dotnet_diagnostic.S1144.severity = none
+
+# Assembly.LoadFrom in test reflection code
+dotnet_diagnostic.S3885.severity = none

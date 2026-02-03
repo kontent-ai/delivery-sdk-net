@@ -42,8 +42,8 @@ internal sealed class RichTextParser(
         if (contentElement is not IRichTextElementValue element)
             return null;
 
-        // Parsing the HTML itself is synchronous; keep async only for linked-item resolution.
-        var document = parser.ParseDocument(element.Value);
+        // Parse the HTML asynchronously
+        var document = await parser.ParseDocumentAsync(element.Value, cancellationToken);
 
         if (document.Body == null)
         {

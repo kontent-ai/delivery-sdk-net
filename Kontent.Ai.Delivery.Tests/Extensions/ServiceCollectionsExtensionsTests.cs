@@ -377,7 +377,7 @@ public class ServiceCollectionsExtensionsTests
         var exception = Assert.Throws<ArgumentException>(() =>
             _serviceCollection.AddDeliveryClient("name with spaces", o => o.EnvironmentId = EnvironmentId));
 
-        Assert.Contains("cannot be empty, contain leading/trailing whitespace, or contain spaces", exception.Message);
+        Assert.Contains("Client name cannot contain leading/trailing whitespace, or contain spaces", exception.Message);
         Assert.Contains("Use underscores or hyphens instead", exception.Message);
     }
 
@@ -388,7 +388,7 @@ public class ServiceCollectionsExtensionsTests
         var exception = Assert.Throws<ArgumentException>(() =>
             _serviceCollection.AddDeliveryClient(" leading-space", o => o.EnvironmentId = EnvironmentId));
 
-        Assert.Contains("cannot be empty, contain leading/trailing whitespace, or contain spaces", exception.Message);
+        Assert.Contains("Client name cannot contain leading/trailing whitespace, or contain spaces", exception.Message);
     }
 
     [Fact]

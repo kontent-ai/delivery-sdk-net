@@ -35,6 +35,9 @@
 
   <ItemGroup>
     <PackageReference Include="Microsoft.SourceLink.GitHub" PrivateAssets="All" />
+    <PackageReference Include="SonarAnalyzer.CSharp"
+                      PrivateAssets="all"
+                      IncludeAssets="runtime; build; native; contentfiles; analyzers; buildtransitive" />
     <None Include="../README.md" Pack="true" PackagePath="" Condition="Exists('../README.md')" />
     <None Include="../kontent-ai-k-icon-color.png" Pack="true" PackagePath="" Condition="Exists('../kontent-ai-k-icon-color.png')" />
   </ItemGroup>

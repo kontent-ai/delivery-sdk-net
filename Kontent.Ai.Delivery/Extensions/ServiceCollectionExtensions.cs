@@ -184,14 +184,14 @@ public static partial class ServiceCollectionExtensions
         Action<Polly.ResiliencePipelineBuilder<HttpResponseMessage>>? configureResilience = null,
         Action<RefitSettings>? configureRefit = null)
     {
-        ArgumentException.ThrowIfNullOrWhiteSpace(name, nameof(name));
+        ArgumentException.ThrowIfNullOrWhiteSpace(name);
         ArgumentNullException.ThrowIfNull(configureOptions);
 
         // Validate name doesn't contain only whitespace
-        if (string.IsNullOrWhiteSpace(name) || name.Trim() != name || name.Contains(' '))
+        if (name.Trim() != name || name.Contains(' '))
         {
             throw new ArgumentException(
-                "Client name cannot be empty, contain leading/trailing whitespace, or contain spaces. Use underscores or hyphens instead.",
+                "Client name cannot contain leading/trailing whitespace, or contain spaces. Use underscores or hyphens instead.",
                 nameof(name));
         }
 
