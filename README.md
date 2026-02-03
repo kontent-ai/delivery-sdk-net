@@ -627,7 +627,7 @@ if (result.IsSuccess)
 
 ### Dynamic Content Access
 
-When you don't have strongly-typed models or need to access content dynamically (e.g., for CMS-driven applications), use the typeless query methods (`GetItem()`, `GetItems()`, `GetItemsFeed()`).
+When you don't have strongly-typed models or need to access content dynamically, use the typeless query methods (`GetItem()`, `GetItems()`, `GetItemsFeed()`). You may also use them for runtime type resolution, if your project uses generated models.
 
 #### Retrieve Content Without Type Parameters
 
