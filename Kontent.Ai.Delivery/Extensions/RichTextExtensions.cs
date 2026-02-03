@@ -1,4 +1,9 @@
+using System.Text.Json;
+using Kontent.Ai.Delivery.ContentItems;
+using Kontent.Ai.Delivery.ContentItems.Elements;
+using Kontent.Ai.Delivery.ContentItems.Processing;
 using Kontent.Ai.Delivery.ContentItems.RichText.Resolution;
+using Kontent.Ai.Delivery.Configuration;
 
 namespace Kontent.Ai.Delivery;
 
@@ -7,6 +12,20 @@ namespace Kontent.Ai.Delivery;
 /// </summary>
 public static class RichTextExtensions
 {
+    private static readonly JsonSerializerOptions RichTextElementDeserializerOptions = new()
+    {
+        Converters = { new RichTextElementDataConverter() }
+    };
+
+    // Cached parser and options for ParseRichTextAsync - safe to reuse as HtmlParser.ParseDocument returns new documents
+    private static readonly Lazy<RichTextParser> DefaultRichTextParser = new(
+        () => RichTextParser.CreateDefault(),
+        LazyThreadSafetyMode.ExecutionAndPublication);
+
+    private static readonly Lazy<JsonSerializerOptions> ContentItemDeserializerOptions = new(
+        () => RefitSettingsProvider.CreateDefaultJsonSerializerOptions(),
+        LazyThreadSafetyMode.ExecutionAndPublication);
+
     /// <summary>
     /// Converts structured rich text content to an HTML string.
     /// </summary>
@@ -155,5 +174,131 @@ public static class RichTextExtensions
     public static IEnumerable<IInlineImage> GetInlineImages(this IRichTextContent richText)
     {
         return richText.GetBlocks<IInlineImage>();
+    }
+
+    /// <summary>
+    /// Parses a raw rich text element from JSON into structured <see cref="IRichTextContent"/>.
+    /// For use with dynamic mode where elements are stored as <see cref="JsonElement"/>.
+    /// </summary>
+    /// <param name="richTextElement">The raw rich text element JSON from a dynamic content item's elements dictionary.</param>
+    /// <param name="modularContent">Optional modular_content dictionary for embedded item resolution.
+    /// Pass the ModularContent from the delivery response to enable embedded content resolution.</param>
+    /// <param name="cancellationToken">A cancellation token to observe while parsing.</param>
+    /// <returns>The parsed rich text content, or null if parsing fails or the element is not a rich text type.</returns>
+    /// <example>
+    /// <code>
+    /// // Fetch dynamic item
+    /// var result = await client.Items
+    ///     .GetDynamic("article-codename")
+    ///     .ExecuteAsync();
+    ///
+    /// var item = result.Value;
+    /// var elements = item.Elements; // IDynamicElements (Dictionary&lt;string, JsonElement&gt;)
+    ///
+    /// // Parse rich text element
+    /// if (elements.TryGetValue("body_copy", out var bodyElement))
+    /// {
+    ///     var richText = await bodyElement.ParseRichTextAsync(result.ModularContent);
+    ///
+    ///     if (richText != null)
+    ///     {
+    ///         // Now RichTextExtensions work!
+    ///         var html = await richText.ToHtmlAsync();
+    ///         var images = richText.GetInlineImages();
+    ///         var embedded = richText.GetEmbeddedContent();
+    ///     }
+    /// }
+    /// </code>
+    /// </example>
+    public static async ValueTask<IRichTextContent?> ParseRichTextAsync(
+        this JsonElement richTextElement,
+        IReadOnlyDictionary<string, JsonElement>? modularContent = null,
+        CancellationToken cancellationToken = default)
+    {
+        // Validate that we have a valid JSON object
+        if (richTextElement.ValueKind != JsonValueKind.Object)
+        {
+            return null;
+        }
+
+        // Optionally validate it's actually a rich_text type
+        if (richTextElement.TryGetProperty("type", out var typeEl) &&
+            !string.Equals(typeEl.GetString(), "rich_text", StringComparison.OrdinalIgnoreCase))
+        {
+            return null;
+        }
+
+        RichTextElementData? elementData;
+        try
+        {
+            elementData = JsonSerializer.Deserialize<RichTextElementData>(richTextElement, RichTextElementDeserializerOptions);
+        }
+        catch (JsonException)
+        {
+            return null;
+        }
+
+        if (elementData is null)
+        {
+            return null;
+        }
+
+        // Build linked item resolver that deserializes from modularContent
+        var getLinkedItem = CreateLinkedItemResolver(modularContent);
+
+        // Parse the rich text using cached parser
+        return await DefaultRichTextParser.Value.ConvertAsync(elementData, getLinkedItem, dependencyContext: null, cancellationToken);
+    }
+
+    /// <summary>
+    /// Creates a linked item resolver function for dynamic mode parsing.
+    /// Resolves embedded content from the modular_content dictionary as ContentItem&lt;IDynamicElements&gt;.
+    /// </summary>
+    private static Func<string, Task<object?>> CreateLinkedItemResolver(
+        IReadOnlyDictionary<string, JsonElement>? modularContent)
+    {
+        if (modularContent is null || modularContent.Count == 0)
+        {
+            return _ => Task.FromResult<object?>(null);
+        }
+
+        // Cache for resolved items to avoid re-deserializing the same item
+        var resolvedItems = new Dictionary<string, IContentItem>(StringComparer.Ordinal);
+
+        // Use cached JSON options with ContentItemConverterFactory for proper deserialization
+        var jsonOptions = ContentItemDeserializerOptions.Value;
+
+        return codename =>
+        {
+            // Check cache first
+            if (resolvedItems.TryGetValue(codename, out var cached))
+            {
+                return Task.FromResult<object?>(cached);
+            }
+
+            // Look up in modular content
+            if (!modularContent.TryGetValue(codename, out var itemJson))
+            {
+                return Task.FromResult<object?>(null);
+            }
+
+            try
+            {
+                // Deserialize to ContentItem<IDynamicElements>
+                // ContentItem<T> implements IEmbeddedContent<T>, so this works directly
+                var contentItem = JsonSerializer.Deserialize<ContentItem<IDynamicElements>>(itemJson, jsonOptions);
+
+                if (contentItem is not null)
+                {
+                    resolvedItems[codename] = contentItem;
+                }
+
+                return Task.FromResult<object?>(contentItem);
+            }
+            catch (JsonException)
+            {
+                return Task.FromResult<object?>(null);
+            }
+        };
     }
 }

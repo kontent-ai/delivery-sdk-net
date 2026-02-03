@@ -479,6 +479,98 @@ var resolver = new HtmlResolverBuilder()
     .Build();
 ```
 
+### Dynamic Mode Resolution
+
+When working with dynamic content (without strongly-typed models), you can still use rich text resolution. Use the `ParseRichTextAsync` extension method to convert a `JsonElement` to `IRichTextContent`:
+
+```csharp
+using System.Text.Json;
+using Kontent.Ai.Delivery;
+using Kontent.Ai.Delivery.Abstractions;
+
+// Fetch dynamic content
+var result = await client.GetItem("my-article").ExecuteAsync();
+
+if (result.IsSuccess && result.Value is IContentItem<IDynamicElements> dynamicItem)
+{
+    var elements = dynamicItem.Elements;
+
+    if (elements.TryGetValue("body_copy", out var richTextElement))
+    {
+        // Parse the rich text element, passing modular_content for embedded items
+        var richText = await richTextElement.ParseRichTextAsync(result.ModularContent);
+
+        if (richText != null)
+        {
+            // Create resolvers using codename-based registration
+            var resolver = new HtmlResolverBuilder()
+                .WithContentResolver("tweet", content =>
+                {
+                    // Cast to generic interface to access dynamic elements
+                    var dynamicContent = (IEmbeddedContent<IDynamicElements>)content;
+                    var elements = dynamicContent.Elements;
+
+                    // Extract element values from JsonElement dictionary
+                    var tweetUrl = elements.TryGetValue("tweet_link", out var linkEl)
+                        ? linkEl.GetProperty("value").GetString()
+                        : "#";
+
+                    var theme = "light";
+                    if (elements.TryGetValue("theme", out var themeEl) &&
+                        themeEl.TryGetProperty("value", out var themeValues) &&
+                        themeValues.GetArrayLength() > 0)
+                    {
+                        theme = themeValues[0].GetProperty("codename").GetString() ?? "light";
+                    }
+
+                    return $@"<blockquote class=""twitter-tweet"" data-theme=""{theme}"">
+                        <a href=""{tweetUrl}"">View Tweet</a>
+                    </blockquote>";
+                })
+                .WithContentResolver("hosted_video", content =>
+                {
+                    var dynamicContent = (IEmbeddedContent<IDynamicElements>)content;
+                    var elements = dynamicContent.Elements;
+
+                    var videoId = elements.TryGetValue("video_id", out var idEl)
+                        ? idEl.GetProperty("value").GetString()
+                        : "";
+
+                    return $@"<iframe src=""https://www.youtube.com/embed/{videoId}"" allowfullscreen></iframe>";
+                })
+                .Build();
+
+            var html = await richText.ToHtmlAsync(resolver);
+        }
+    }
+}
+```
+
+**Key Points for Dynamic Mode:**
+
+1. **Use `ParseRichTextAsync`**: This extension method on `JsonElement` parses the rich text structure and resolves embedded content from the `modular_content` dictionary.
+
+2. **Pass `ModularContent`**: The second parameter accepts the `ModularContent` dictionary from the delivery response, enabling embedded item resolution.
+
+3. **Use codename-based resolvers**: Type-safe resolvers (`WithContentResolver<T>`) won't work because embedded items are deserialized as `ContentItem<IDynamicElements>`. Use codename-based resolvers instead.
+
+4. **Cast to `IEmbeddedContent<IDynamicElements>`**: Inside resolvers, cast to access the `Elements` dictionary as `IDictionary<string, JsonElement>`.
+
+5. **Access `System` metadata**: All embedded content has `System` metadata available (codename, type, id, name, collection, etc.):
+
+```csharp
+.WithContentResolver("any_type", content =>
+{
+    // System metadata is always available
+    var itemId = content.System.Id;
+    var codename = content.System.Codename;
+    var contentType = content.System.Type;
+    var collection = content.System.Collection;
+
+    return $@"<div data-id=""{itemId}"" data-type=""{contentType}"">{content.System.Name}</div>";
+})
+```
+
 ## Rich Text Extension Methods
 
 The SDK provides extension methods on `IRichTextContent` for filtering and extracting specific block types. These are useful for processing rich text programmatically without rendering to HTML.
