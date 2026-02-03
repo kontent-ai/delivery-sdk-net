@@ -52,7 +52,7 @@ internal sealed class StronglyTypedContentItemConverter<TModel> : JsonConverter<
             : default;
 
         // 3. Capture full item JSON for post-processing (hydration) and runtime type resolution
-        var rawItemJson = root.CloneElement();
+        var rawItemJson = root.Clone();
 
         // 4. Parse elements in strongly-typed mode - flatten structure
         var elements = ParseStronglyTypedElements(elementsElement, options);

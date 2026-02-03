@@ -35,7 +35,7 @@ internal sealed class DynamicContentItemConverter<TModel> : JsonConverter<Conten
             : default;
 
         // 3. Capture full item JSON for post-processing and runtime type resolution
-        var rawItemJson = root.CloneElement();
+        var rawItemJson = root.Clone();
 
         // 4. Parse elements in dynamic mode - preserve full structure
         var elements = ParseDynamicElements(elementsElement);
@@ -57,13 +57,20 @@ internal sealed class DynamicContentItemConverter<TModel> : JsonConverter<Conten
     /// </summary>
     private static TModel ParseDynamicElements(JsonElement element)
     {
-        var map = element.ValueKind == JsonValueKind.Object
-            ? element.EnumerateObject()
-                .ToDictionary(
-                    prop => prop.Name,
-                    prop => prop.Value.CloneElement(),
-                    StringComparer.Ordinal)
-            : new Dictionary<string, JsonElement>(StringComparer.Ordinal);
+        if (element.ValueKind != JsonValueKind.Object)
+        {
+            return (TModel)(IDynamicElements)new DynamicElements(
+                new Dictionary<string, JsonElement>(StringComparer.Ordinal));
+        }
+
+        // Clone the parent once - children share the cloned backing memory
+        var clonedElements = element.Clone();
+
+        var map = clonedElements.EnumerateObject()
+            .ToDictionary(
+                prop => prop.Name,
+                prop => prop.Value,
+                StringComparer.Ordinal);
 
         return (TModel)(IDynamicElements)new DynamicElements(map);
     }
