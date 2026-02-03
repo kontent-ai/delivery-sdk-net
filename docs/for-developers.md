@@ -780,10 +780,11 @@ public static IServiceCollection AddDeliveryClient(
             clientName);
 
         var api = sp.GetRequiredKeyedService<IDeliveryApi>(clientName);
-        var processor = sp.GetRequiredService<IElementsPostProcessor>();
-        var cacheManager = sp.GetService<IDeliveryCacheManager>();
+        var contentItemMapper = sp.GetRequiredService<ContentItemMapper>();
+        var typeProvider = sp.GetRequiredService<ITypeProvider>();
+        var cacheManager = sp.GetKeyedService<IDeliveryCacheManager>(clientName);
 
-        return new DeliveryClient(api, namedMonitor, processor, cacheManager);
+        return new DeliveryClient(api, namedMonitor, contentItemMapper, typeProvider, cacheManager);
     });
 
     return services;
@@ -808,8 +809,8 @@ private static void RegisterDependencies(IServiceCollection services)
     services.TryAddSingleton<IItemTypingStrategy, DefaultItemTypingStrategy>();
     services.TryAddSingleton<IContentDeserializer, ContentDeserializer>();
 
-    // Post-processing
-    services.TryAddSingleton<IElementsPostProcessor, ElementsPostProcessor>();
+    // Content mapping and HTML parsing
+    services.TryAddSingleton<ContentItemMapper>();
     services.TryAddSingleton<IHtmlParser, HtmlParser>();
 
     // Default to no-op extractor (overridden when caching enabled)
@@ -908,39 +909,88 @@ public class GeneratedTypeProvider : ITypeProvider
 
 **Location**: `Kontent.Ai.Delivery/ContentItems/ContentDeserializer.cs`
 
+Provides deserialization of JSON content items with cached compiled delegates for performance:
+
 ```csharp
-public class ContentDeserializer : IContentDeserializer
+internal sealed class ContentDeserializer : IContentDeserializer
 {
     private readonly JsonSerializerOptions _options;
 
-    public IContentItem DeserializeContentItem(string itemJson, Type modelType)
+    // Cached compiled delegates per model type
+    private static readonly ConcurrentDictionary<Type, Func<string, JsonSerializerOptions, object>> _stringDeserializers = new();
+    private static readonly ConcurrentDictionary<Type, Func<JsonElement, JsonSerializerOptions, object>> _elementDeserializers = new();
+
+    // String overload for backward compatibility
+    public object DeserializeContentItem(string json, Type modelType)
     {
-        return (IContentItem)JsonSerializer.Deserialize(itemJson, modelType, _options)!;
+        var deserializer = _stringDeserializers.GetOrAdd(modelType, BuildStringDeserializer);
+        return deserializer(json, _options);
+    }
+
+    // JsonElement overload to avoid GetRawText() allocations
+    public object DeserializeContentItem(JsonElement jsonElement, Type modelType)
+    {
+        var deserializer = _elementDeserializers.GetOrAdd(modelType, BuildElementDeserializer);
+        return deserializer(jsonElement, _options);
     }
 }
 ```
 
 ### Custom JSON Converters
 
-**ContentItemConverterFactory**: Handles `ContentItem<T>` deserialization
+**ContentItemConverterFactory**: Dispatches to appropriate converter based on model type
 
 ```csharp
-public class ContentItemConverterFactory : JsonConverterFactory
+internal sealed class ContentItemConverterFactory : JsonConverterFactory
 {
     public override bool CanConvert(Type typeToConvert)
-    {
-        return typeToConvert.IsGenericType &&
-               typeToConvert.GetGenericTypeDefinition() == typeof(ContentItem<>);
-    }
+        => typeToConvert.IsGenericType && typeToConvert.GetGenericTypeDefinition() == typeof(ContentItem<>);
 
     public override JsonConverter CreateConverter(Type typeToConvert, JsonSerializerOptions options)
     {
-        var elementType = typeToConvert.GetGenericArguments()[0];
-        var converterType = typeof(ContentItemConverter<>).MakeGenericType(elementType);
-        return (JsonConverter)Activator.CreateInstance(converterType)!;
+        var modelType = typeToConvert.GetGenericArguments()[0];
+
+        // Dispatch to appropriate converter based on model type
+        return IsDynamicMode(modelType)
+            ? (JsonConverter)Activator.CreateInstance(typeof(DynamicContentItemConverter<>).MakeGenericType(modelType))!
+            : (JsonConverter)Activator.CreateInstance(typeof(StronglyTypedContentItemConverter<>).MakeGenericType(modelType))!;
+    }
+
+    private static bool IsDynamicMode(Type modelType)
+        => modelType == typeof(IDynamicElements) || modelType == typeof(DynamicElements);
+}
+```
+
+**StronglyTypedContentItemConverter**: Creates empty model instances for hydration
+
+```csharp
+internal sealed class StronglyTypedContentItemConverter<TModel> : JsonConverter<ContentItem<TModel>>
+{
+    public override ContentItem<TModel> Read(ref Utf8JsonReader reader, Type typeToConvert, JsonSerializerOptions options)
+    {
+        using var doc = JsonDocument.ParseValue(ref reader);
+        var root = doc.RootElement;
+
+        // Parse system attributes
+        var system = JsonSerializer.Deserialize<ContentItemSystemAttributes>(
+            root.GetProperty("system"), options);
+
+        // Clone full item JSON for post-processing
+        var rawItemJson = root.Clone();
+
+        // Create empty instance - ContentItemMapper will populate ALL properties
+        var elements = Activator.CreateInstance<TModel>();
+
+        return new ContentItem<TModel> { System = system, Elements = elements, RawItemJson = rawItemJson };
     }
 }
 ```
+
+**Key Architecture Decision**: The converters create minimal instances with `RawItemJson` preserved. All element mapping (simple and complex types) happens in `ContentItemMapper.CompleteItemAsync()` during post-processing. This separation allows:
+1. JSON deserializer stays simple and fast (sync)
+2. Post-processing can be async (for linked items resolution)
+3. Single place for element envelope understanding
+4. Easier testing and debugging
 
 ## Query Execution Pipeline
 
@@ -998,10 +1048,10 @@ public async Task<IDeliveryResult<IReadOnlyList<IContentItem<TModel>>>> ExecuteA
     }
 
     // ========== 4. POST-PROCESSING ==========
-    // Hydrate rich text, assets, taxonomies
+    // ContentItemMapper handles ALL element hydration (simple and complex types)
     foreach (var item in items)
     {
-        await _elementsPostProcessor.ProcessAsync(
+        await _contentItemMapper.CompleteItemAsync(
             item,
             response.ModularContent,
             dependencyContext,

@@ -1,3 +1,4 @@
+using System.Linq.Expressions;
 using System.Reflection;
 using System.Text.Json.Serialization;
 
@@ -8,13 +9,15 @@ namespace Kontent.Ai.Delivery.ContentItems.Mapping;
 /// </summary>
 internal sealed class PropertyMappingInfo
 {
+    private readonly Action<object, object> _setter = null!;
+
     /// <summary>
     /// The JSON element codename this property maps to (from JsonPropertyName attribute).
     /// </summary>
     public required string ElementCodename { get; init; }
 
     /// <summary>
-    /// The PropertyInfo for reflection-based value setting.
+    /// The PropertyInfo for type and metadata inspection.
     /// </summary>
     public required PropertyInfo Property { get; init; }
 
@@ -29,9 +32,14 @@ internal sealed class PropertyMappingInfo
     public Type? EnumerableElementType { get; init; }
 
     /// <summary>
-    /// Sets the property value on the target object.
+    /// Compiled setter delegate for fast property assignment.
     /// </summary>
-    public void SetValue(object target, object? value) => Property.SetValue(target, value);
+    public required Action<object, object> Setter { init => _setter = value; }
+
+    /// <summary>
+    /// Sets the property value on the target object using the compiled setter.
+    /// </summary>
+    public void SetValue(object target, object value) => _setter(target, value);
 
     /// <summary>
     /// Creates property mappings for all writable properties with JsonPropertyName attribute.
@@ -49,7 +57,8 @@ internal sealed class PropertyMappingInfo
                 ElementCodename = x.Codename!,
                 Property = x.Property,
                 PropertyType = x.Property.PropertyType,
-                EnumerableElementType = TryGetEnumerableElementType(x.Property.PropertyType)
+                EnumerableElementType = TryGetEnumerableElementType(x.Property.PropertyType),
+                Setter = BuildSetter(x.Property)
             })
             .ToArray();
     }
@@ -64,5 +73,26 @@ internal sealed class PropertyMappingInfo
             : type.GetInterfaces().FirstOrDefault(i => i.IsGenericType && i.GetGenericTypeDefinition() == typeof(IEnumerable<>));
 
         return enumerableInterface?.GetGenericArguments().FirstOrDefault();
+    }
+
+    /// <summary>
+    /// Builds a compiled setter delegate for faster property assignment.
+    /// </summary>
+    private static Action<object, object> BuildSetter(PropertyInfo property)
+    {
+        var targetParam = Expression.Parameter(typeof(object), "target");
+        var valueParam = Expression.Parameter(typeof(object), "value");
+
+        // (TTarget)target
+        var castTarget = Expression.Convert(targetParam, property.DeclaringType!);
+
+        // (TValue)value (handles both reference types and value type unboxing)
+        var castValue = Expression.Convert(valueParam, property.PropertyType);
+
+        // ((TTarget)target).Property = (TValue)value
+        var propertyAccess = Expression.Property(castTarget, property);
+        var assign = Expression.Assign(propertyAccess, castValue);
+
+        return Expression.Lambda<Action<object, object>>(assign, targetParam, valueParam).Compile();
     }
 }

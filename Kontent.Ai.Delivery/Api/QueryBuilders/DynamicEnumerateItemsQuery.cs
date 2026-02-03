@@ -78,7 +78,7 @@ internal sealed class DynamicEnumerateItemsQuery(
                 cancellationToken)
             .ConfigureAwait(false);
 
-        var deliveryResult = await resp.ToDeliveryResultAsync().ConfigureAwait(false);
+        var deliveryResult = await resp.ToDeliveryResultAsync(_logger).ConfigureAwait(false);
 
         if (!deliveryResult.IsSuccess)
         {

@@ -67,6 +67,9 @@ internal static class LogEventIds
     /// <summary>Deserialization failed during cache operation.</summary>
     public const int CacheDeserializationFailed = 1141;
 
+    /// <summary>Failed to parse structured error from API response.</summary>
+    public const int ApiErrorParsingFailed = 1142;
+
     /// <summary>Cache invalidation operation failed.</summary>
     public const int CacheInvalidationFailed = 1143;
 

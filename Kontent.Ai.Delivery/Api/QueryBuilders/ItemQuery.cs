@@ -135,7 +135,7 @@ internal sealed class ItemQuery<TModel>(
         bool? wait = _waitForLoadingNewContentOverride ?? _getDefaultWaitForNewContent();
         var rawResponse = await _api.GetItemInternalAsync<TModel>(_codename, _params, null, wait, cancellationToken)
             .ConfigureAwait(false);
-        return await rawResponse.ToDeliveryResultAsync().ConfigureAwait(false);
+        return await rawResponse.ToDeliveryResultAsync(_logger).ConfigureAwait(false);
     }
 
     private async Task<(IContentItem<TModel> Item, IEnumerable<string> Dependencies)> ProcessItemAsync(

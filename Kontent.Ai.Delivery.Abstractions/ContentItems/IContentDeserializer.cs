@@ -1,3 +1,5 @@
+using System.Text.Json;
+
 namespace Kontent.Ai.Delivery.Abstractions;
 
 /// <summary>
@@ -12,4 +14,18 @@ public interface IContentDeserializer
     /// <param name="modelType">The model type (any POCO or <see cref="IDynamicElements"/>).</param>
     /// <returns>The deserialized content item as an object (cast to IContentItem&lt;TModel&gt; as needed).</returns>
     object DeserializeContentItem(string json, Type modelType);
+
+    /// <summary>
+    /// Deserializes a JsonElement into a ContentItem with the specified model type.
+    /// This overload avoids the string allocation of GetRawText() when the source is already a JsonElement.
+    /// </summary>
+    /// <param name="jsonElement">The JsonElement representing the content item.</param>
+    /// <param name="modelType">The model type (any POCO or <see cref="IDynamicElements"/>).</param>
+    /// <returns>The deserialized content item as an object (cast to IContentItem&lt;TModel&gt; as needed).</returns>
+    /// <remarks>
+    /// Default implementation falls back to GetRawText() for backward compatibility with existing implementations.
+    /// Override in concrete implementations to avoid the string allocation.
+    /// </remarks>
+    object DeserializeContentItem(JsonElement jsonElement, Type modelType)
+        => DeserializeContentItem(jsonElement.GetRawText(), modelType);
 }

@@ -113,9 +113,15 @@ internal static partial class LoggerMessages
 
     [LoggerMessage(
         EventId = LogEventIds.CacheDeserializationFailed,
-        Level = LogLevel.Warning,
+        Level = LogLevel.Debug,
         Message = "Failed to deserialize cached value for key '{CacheKey}' (Type: {TypeName})")]
     public static partial void CacheDeserializationFailed(ILogger logger, string cacheKey, string typeName, Exception exception);
+
+    [LoggerMessage(
+        EventId = LogEventIds.ApiErrorParsingFailed,
+        Level = LogLevel.Debug,
+        Message = "Failed to parse API error response (URL: {Url}, Status: {StatusCode}, BodyLength: {BodyLength})")]
+    public static partial void ApiErrorParsingFailed(ILogger logger, string url, HttpStatusCode statusCode, int bodyLength, Exception exception);
 
     [LoggerMessage(
         EventId = LogEventIds.CachePartialItemsWarning,

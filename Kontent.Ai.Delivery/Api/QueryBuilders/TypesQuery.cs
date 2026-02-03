@@ -143,7 +143,7 @@ internal sealed class TypesQuery(
             FilterQueryParams.ToQueryDictionary(_serializedFilters),
             wait,
             cancellationToken).ConfigureAwait(false);
-        return await response.ToDeliveryResultAsync().ConfigureAwait(false);
+        return await response.ToDeliveryResultAsync(_logger).ConfigureAwait(false);
     }
 
     private Func<CancellationToken, Task<IDeliveryResult<IDeliveryTypeListingResponse>>>? CreateNextPageFetcher(IPagination pagination)

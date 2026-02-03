@@ -181,8 +181,14 @@ internal sealed class DistributedCacheManager : IDeliveryCacheManager
             // Re-throw cancellation exceptions
             throw;
         }
-        catch
+        catch (Exception ex)
         {
+            // Log the deserialization failure for diagnostics
+            if (_logger != null)
+            {
+                LoggerMessages.CacheDeserializationFailed(_logger, cacheKey, typeof(T).Name, ex);
+            }
+
             // Treat any other exception as a cache miss
             // This ensures cache failures don't break the application
             return null;

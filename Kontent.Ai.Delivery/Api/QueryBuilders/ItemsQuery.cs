@@ -212,7 +212,7 @@ internal sealed class ItemsQuery<TModel>(
             FilterQueryParams.ToQueryDictionary(_serializedFilters),
             wait,
             cancellationToken).ConfigureAwait(false);
-        return await rawResponse.ToDeliveryResultAsync().ConfigureAwait(false);
+        return await rawResponse.ToDeliveryResultAsync(_logger).ConfigureAwait(false);
     }
 
     private async Task<(DeliveryItemListingResponse<TModel> Response, IEnumerable<string> Dependencies)> ProcessItemsAsync(
