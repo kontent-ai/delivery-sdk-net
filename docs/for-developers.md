@@ -318,6 +318,42 @@ public interface IDeliveryCacheManager
 }
 ```
 
+### Diagnostics and Logging
+
+The SDK is intentionally resilient: certain failures are treated as "best effort" and **do not break request execution**. To preserve debuggability, the SDK emits **Debug-level** logs for otherwise silent failures, including:
+
+- Cache deserialization failures (treated as cache miss)
+- API error body parsing failures (falls back to a generic error message + raw body snippet)
+
+Enable Debug logging for `Kontent.Ai.Delivery` to surface these diagnostics when investigating production issues.
+
+#### Enable SDK debug logs (Console)
+
+```csharp
+using Kontent.Ai.Delivery;
+using Microsoft.Extensions.DependencyInjection;
+using Microsoft.Extensions.Logging;
+
+var services = new ServiceCollection();
+
+services.AddLogging(logging =>
+{
+    logging.ClearProviders();
+    logging.AddConsole();
+
+    // Show Debug logs for the SDK (tune as needed)
+    logging.SetMinimumLevel(LogLevel.Information);
+    logging.AddFilter("Kontent.Ai.Delivery", LogLevel.Debug);
+});
+
+services.AddDeliveryClient(options =>
+{
+    options.EnvironmentId = "your-environment-id";
+});
+
+var provider = services.BuildServiceProvider();
+```
+
 ### Memory Cache Implementation
 
 **Location**: `Kontent.Ai.Delivery/Caching/MemoryCacheManager.cs`
