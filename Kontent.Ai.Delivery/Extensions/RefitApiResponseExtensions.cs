@@ -1,4 +1,6 @@
 using System.Net;
+using Kontent.Ai.Delivery.Logging;
+using Microsoft.Extensions.Logging;
 
 namespace Kontent.Ai.Delivery.Extensions;
 
@@ -15,8 +17,9 @@ internal static class RefitApiResponseExtensions
     /// </summary>
     /// <typeparam name="T">The type of the response content.</typeparam>
     /// <param name="apiResponse">The Refit API response.</param>
+    /// <param name="logger">Optional logger for diagnostic messages.</param>
     /// <returns>A delivery result containing the response data or errors.</returns>
-    public static Task<IDeliveryResult<T>> ToDeliveryResultAsync<T>(this IApiResponse<T> apiResponse)
+    public static Task<IDeliveryResult<T>> ToDeliveryResultAsync<T>(this IApiResponse<T> apiResponse, ILogger? logger = null)
     {
         // Fast success path: no awaits/allocations
         if (apiResponse.IsSuccessful && apiResponse.Content is not null)
@@ -32,7 +35,7 @@ internal static class RefitApiResponseExtensions
         }
 
         // Defer to the async failure/edge handler
-        return MapFailureAsync(apiResponse);
+        return MapFailureAsync(apiResponse, logger);
     }
 
     /// <summary>
@@ -40,8 +43,9 @@ internal static class RefitApiResponseExtensions
     /// </summary>
     /// <typeparam name="T">The type of the response content.</typeparam>
     /// <param name="apiResponse">The API response.</param>
+    /// <param name="logger">Optional logger for diagnostic messages.</param>
     /// <returns>A delivery result containing the response data or errors.</returns>
-    private static Task<IDeliveryResult<T>> MapFailureAsync<T>(IApiResponse<T> apiResponse)
+    private static Task<IDeliveryResult<T>> MapFailureAsync<T>(IApiResponse<T> apiResponse, ILogger? logger)
     {
         var url = apiResponse.RequestMessage?.RequestUri?.ToString() ?? string.Empty;
         var status = apiResponse.StatusCode;
@@ -58,13 +62,14 @@ internal static class RefitApiResponseExtensions
             return Task.FromResult(DeliveryResult.Failure<T>(url, status, fallback, headers));
         }
 
-        return MapApiExceptionAsync(apiEx, url, status, headers);
+        return MapApiExceptionAsync(apiEx, url, status, headers, logger);
 
         static async Task<IDeliveryResult<T>> MapApiExceptionAsync(
             ApiException ex,
             string url,
             HttpStatusCode status,
-            System.Net.Http.Headers.HttpResponseHeaders? headers)
+            System.Net.Http.Headers.HttpResponseHeaders? headers,
+            ILogger? logger)
         {
             Error error;
             try
@@ -81,8 +86,14 @@ internal static class RefitApiResponseExtensions
                     error = new Error { Message = ex.Message, ErrorCode = (int)status, Exception = ex };
                 }
             }
-            catch
+            catch (Exception parseEx)
             {
+                // Log the deserialization failure for diagnostics
+                if (logger != null)
+                {
+                    LoggerMessages.ApiErrorParsingFailed(logger, url, status, ex.Content?.Length ?? 0, parseEx);
+                }
+
                 // Body isn't JSON or deserialization failed.
                 // Use Refit's formatted message as the base (includes HTTP context),
                 // and append the raw response body for debugging if available.

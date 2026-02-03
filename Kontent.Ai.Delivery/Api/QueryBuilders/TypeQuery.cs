@@ -82,7 +82,7 @@ internal sealed class TypeQuery(
     {
         bool? wait = _waitForLoadingNewContentOverride ?? _getDefaultWaitForNewContent();
         var response = await _api.GetTypeInternalAsync(_codename, _params, wait, cancellationToken).ConfigureAwait(false);
-        return await response.ToDeliveryResultAsync().ConfigureAwait(false);
+        return await response.ToDeliveryResultAsync(_logger).ConfigureAwait(false);
     }
 
     private void LogQueryStarting()
