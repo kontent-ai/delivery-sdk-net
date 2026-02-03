@@ -8,16 +8,6 @@ namespace Kontent.Ai.Delivery.Extensions;
 internal static class JsonElementExtensions
 {
     /// <summary>
-    /// Clones a JsonElement to ensure it survives beyond the JsonDocument lifetime.
-    /// Required when storing JsonElements extracted from a JsonDocument that will be disposed.
-    /// </summary>
-    public static JsonElement CloneElement(this JsonElement element)
-    {
-        using var doc = JsonDocument.Parse(element.GetRawText());
-        return doc.RootElement.Clone();
-    }
-
-    /// <summary>
     /// Extracts the "type" property value from a content element JsonElement.
     /// Returns the element type (e.g., "text", "rich_text", "asset", "taxonomy")
     /// or null if the property is missing or not a string.
