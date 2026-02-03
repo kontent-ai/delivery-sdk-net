@@ -256,4 +256,5 @@ paket-files/
 .idea/
 *.sln.iml
 
-global.json
+# Slopwatch (LLM code quality tool)
+.slopwatch/

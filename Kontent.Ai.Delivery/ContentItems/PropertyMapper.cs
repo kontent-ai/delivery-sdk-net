@@ -8,7 +8,7 @@ namespace Kontent.Ai.Delivery.ContentItems;
 /// Maps Kontent.ai element codenames to model properties using JsonPropertyName.
 /// Honors JsonIgnore and caches match results.
 /// </summary>
-internal class PropertyMapper : IPropertyMapper
+internal sealed class PropertyMapper : IPropertyMapper
 {
     // Cache property matching results to avoid repeated reflection overhead
     // Key: (PropertyInfo, fieldName), Value: bool match result

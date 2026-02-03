@@ -34,7 +34,7 @@
   </PropertyGroup>
 
   <ItemGroup>
-    <PackageReference Include="Microsoft.SourceLink.GitHub" Version="8.0.0" PrivateAssets="All" />
+    <PackageReference Include="Microsoft.SourceLink.GitHub" PrivateAssets="All" />
     <None Include="../README.md" Pack="true" PackagePath="" Condition="Exists('../README.md')" />
     <None Include="../kontent-ai-k-icon-color.png" Pack="true" PackagePath="" Condition="Exists('../kontent-ai-k-icon-color.png')" />
   </ItemGroup>

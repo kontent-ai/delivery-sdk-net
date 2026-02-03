@@ -386,9 +386,11 @@ internal sealed class DistributedCacheManager : IDeliveryCacheManager
             if (_logger != null)
                 LoggerMessages.CacheInvalidateCompleted(_logger, dependencyKey);
         }
-        catch
+        catch (Exception ex)
         {
             // Continue with other invalidations even if this one fails
+            if (_logger != null)
+                LoggerMessages.CacheBestEffortFailed(_logger, $"invalidate:{dependencyKey}", ex);
         }
     }
 
@@ -435,10 +437,12 @@ internal sealed class DistributedCacheManager : IDeliveryCacheManager
             await _cache.SetAsync(indexKey, indexBytes, cacheOptions, cancellationToken)
                 .ConfigureAwait(false);
         }
-        catch
+        catch (Exception ex)
         {
             // Reverse index update failure should not break caching
             // Worst case: invalidation might miss this entry
+            if (_logger != null)
+                LoggerMessages.CacheBestEffortFailed(_logger, $"index:{dependencyKey}", ex);
         }
     }
 

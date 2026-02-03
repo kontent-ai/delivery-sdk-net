@@ -23,5 +23,9 @@ jobs:
       run: dotnet build --no-restore /p:ContinuousIntegrationBuild=true
     - name: Test
       run: dotnet test --no-build --verbosity normal /p:CollectCoverage=true /p:CoverletOutputFormat=opencover
+    - name: Restore local tools
+      run: dotnet tool restore
+    - name: Run Slopwatch
+      run: dotnet slopwatch analyze -d . --fail-on warning
     - name: Codecov
       uses: codecov/codecov-action@v5

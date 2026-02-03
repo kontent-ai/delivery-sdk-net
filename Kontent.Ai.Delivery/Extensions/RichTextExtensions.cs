@@ -31,16 +31,18 @@ public static class RichTextExtensions
     /// </summary>
     /// <param name="richText">The structured rich text content.</param>
     /// <param name="resolver">Optional HTML resolver. If null, uses default resolvers.</param>
+    /// <param name="cancellationToken">A token to cancel the operation.</param>
     /// <returns>The HTML representation of the rich text content.</returns>
     public static ValueTask<string> ToHtmlAsync(
         this IRichTextContent richText,
-        IHtmlResolver? resolver = null)
+        IHtmlResolver? resolver = null,
+        CancellationToken cancellationToken = default)
     {
         ArgumentNullException.ThrowIfNull(richText);
 
         resolver ??= new HtmlResolverBuilder().Build();
 
-        return resolver.ResolveAsync(richText);
+        return resolver.ResolveAsync(richText, cancellationToken);
     }
 
     /// <summary>
