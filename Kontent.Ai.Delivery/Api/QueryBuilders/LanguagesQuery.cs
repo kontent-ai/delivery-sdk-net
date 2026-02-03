@@ -42,7 +42,7 @@ internal sealed class LanguagesQuery(IDeliveryApi api, Func<bool?> getDefaultWai
     public async Task<IDeliveryResult<IDeliveryLanguageListingResponse>> ExecuteAsync(CancellationToken cancellationToken = default)
     {
         // API CALL
-        var deliveryResult = await FetchFromApiAsync().ConfigureAwait(false);
+        var deliveryResult = await FetchFromApiAsync(cancellationToken).ConfigureAwait(false);
         if (!deliveryResult.IsSuccess)
         {
             return DeliveryResult.Failure<IDeliveryLanguageListingResponse>(
@@ -65,10 +65,10 @@ internal sealed class LanguagesQuery(IDeliveryApi api, Func<bool?> getDefaultWai
             deliveryResult.ResponseHeaders);
     }
 
-    private async Task<IDeliveryResult<DeliveryLanguageListingResponse>> FetchFromApiAsync()
+    private async Task<IDeliveryResult<DeliveryLanguageListingResponse>> FetchFromApiAsync(CancellationToken cancellationToken)
     {
         bool? wait = _waitForLoadingNewContentOverride ?? _getDefaultWaitForNewContent();
-        var response = await _api.GetLanguagesInternalAsync(_params, wait).ConfigureAwait(false);
+        var response = await _api.GetLanguagesInternalAsync(_params, wait, cancellationToken).ConfigureAwait(false);
         return await response.ToDeliveryResultAsync().ConfigureAwait(false);
     }
 

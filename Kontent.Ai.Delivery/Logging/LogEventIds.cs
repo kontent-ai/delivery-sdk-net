@@ -136,6 +136,9 @@ internal static class LogEventIds
     /// <summary>Generic query could not resolve content type codename from type provider.</summary>
     public const int GenericQueryTypeCodenameNotFound = 1410;
 
+    /// <summary>Rich text parsing exceeded maximum recursion depth.</summary>
+    public const int RichTextMaxDepthExceeded = 1411;
+
     // ========== Service Registration (1500-1599) ==========
 
     /// <summary>Delivery client was registered.</summary>

@@ -13,7 +13,7 @@ namespace Kontent.Ai.Delivery.ContentItems.Processing;
 /// </para>
 /// <para>
 /// All extraction logic for cache dependencies is centralized in this class,
-/// keeping the content processors (<see cref="ContentItemMapper"/> and
+/// keeping the content processors (<see cref="Mapping.ContentItemMapper"/> and
 /// <see cref="RichTextParser"/>) focused solely on their primary responsibility
 /// of processing content.
 /// </para>

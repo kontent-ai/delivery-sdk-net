@@ -111,55 +111,72 @@ internal sealed class ItemsQuery<TModel>(
         LogQueryStarting();
         var stopwatch = StartTimingIfEnabled();
 
-        // 1. CACHE CHECK
-        string? cacheKey = null;
         if (_cacheManager != null)
         {
-            cacheKey = CacheKeyBuilder.BuildItemsKey(_params, _serializedFilters);
-            var cached = await QueryCacheHelper.TryGetCachedAsync<DeliveryItemListingResponse<TModel>>(
-                _cacheManager, cacheKey, _logger, cancellationToken).ConfigureAwait(false);
-            if (cached != null)
+            var cacheKey = CacheKeyBuilder.BuildItemsKey(_params, _serializedFilters);
+            IDeliveryResult<DeliveryItemListingResponse<TModel>>? apiResult = null;
+
+            // Use stampede-protected cache fetch
+            var cacheResult = await QueryCacheHelper.GetOrFetchAsync(
+                _cacheManager,
+                cacheKey,
+                async ct =>
+                {
+                    apiResult = await FetchFromApiAsync(ct).ConfigureAwait(false);
+                    if (!apiResult.IsSuccess)
+                        return (null, Array.Empty<string>());
+                    // Post-process items (hydration, dependency tracking)
+                    var (response, deps) = await ProcessItemsAsync(apiResult.Value, ct).ConfigureAwait(false);
+                    return (response, deps);
+                },
+                _logger,
+                cancellationToken).ConfigureAwait(false);
+
+            if (cacheResult.IsCacheHit)
             {
                 // Reconstruct with NextPageFetcher (delegates can't be cached)
-                var cachedWithFetcher = cached with { NextPageFetcher = CreateNextPageFetcher(cached.Pagination) };
+                var cachedWithFetcher = cacheResult.Value! with { NextPageFetcher = CreateNextPageFetcher(cacheResult.Value!.Pagination) };
                 LogQueryCompleted(stopwatch, HttpStatusCode.OK, cacheHit: true);
                 return DeliveryResult.CacheHit<IDeliveryItemListingResponse<TModel>>(cachedWithFetcher);
             }
+
+            // Not a cache hit - check if API succeeded
+            if (!apiResult!.IsSuccess)
+            {
+                LogQueryFailed(apiResult);
+                return CreateFailureResult(apiResult);
+            }
+
+            // Fresh fetch succeeded - build result with fetcher
+            var responseWithFetcher = cacheResult.Value! with { NextPageFetcher = CreateNextPageFetcher(cacheResult.Value!.Pagination) };
+            LogQueryCompleted(stopwatch, apiResult.StatusCode, cacheHit: false, apiResult.HasStaleContent);
+            return DeliveryResult.Success<IDeliveryItemListingResponse<TModel>>(
+                responseWithFetcher,
+                apiResult.RequestUrl ?? string.Empty,
+                apiResult.StatusCode,
+                apiResult.HasStaleContent,
+                apiResult.ContinuationToken,
+                apiResult.ResponseHeaders);
         }
 
-        // 2. API CALL
-        var deliveryResult = await FetchFromApiAsync().ConfigureAwait(false);
+        // No caching - direct fetch
+        var deliveryResult = await FetchFromApiAsync(cancellationToken).ConfigureAwait(false);
         if (!deliveryResult.IsSuccess)
         {
             LogQueryFailed(deliveryResult);
             return CreateFailureResult(deliveryResult);
         }
 
-        // 3. POST-PROCESS
-        var (response, dependencies) = await ProcessItemsAsync(deliveryResult.Value, cancellationToken)
-            .ConfigureAwait(false);
-
-        // 4. BUILD RESULT WITH NEXT PAGE FETCHER
-        var responseWithFetcher = response with { NextPageFetcher = CreateNextPageFetcher(response.Pagination) };
-        var result = DeliveryResult.Success<IDeliveryItemListingResponse<TModel>>(
-            responseWithFetcher,
+        var (resp, _) = await ProcessItemsAsync(deliveryResult.Value, cancellationToken).ConfigureAwait(false);
+        var respWithFetcher = resp with { NextPageFetcher = CreateNextPageFetcher(resp.Pagination) };
+        LogQueryCompleted(stopwatch, deliveryResult.StatusCode, cacheHit: false, deliveryResult.HasStaleContent);
+        return DeliveryResult.Success<IDeliveryItemListingResponse<TModel>>(
+            respWithFetcher,
             deliveryResult.RequestUrl ?? string.Empty,
             deliveryResult.StatusCode,
             deliveryResult.HasStaleContent,
             deliveryResult.ContinuationToken,
             deliveryResult.ResponseHeaders);
-
-        // 5. CACHE & LOG COMPLETION
-        if (_cacheManager != null && cacheKey != null)
-        {
-            // Cache response without NextPageFetcher (delegates can't be serialized)
-            await QueryCacheHelper.TrySetCachedAsync(
-                _cacheManager, cacheKey, response, dependencies, _logger, cancellationToken)
-                .ConfigureAwait(false);
-        }
-
-        LogQueryCompleted(stopwatch, deliveryResult.StatusCode, cacheHit: false, deliveryResult.HasStaleContent);
-        return result;
     }
 
     private void ApplyGenericTypeFilter()
@@ -187,13 +204,14 @@ internal sealed class ItemsQuery<TModel>(
             FilterValueSerializer.Serialize(codename)));
     }
 
-    private async Task<IDeliveryResult<DeliveryItemListingResponse<TModel>>> FetchFromApiAsync()
+    private async Task<IDeliveryResult<DeliveryItemListingResponse<TModel>>> FetchFromApiAsync(CancellationToken cancellationToken)
     {
         bool? wait = _waitForLoadingNewContentOverride ?? _getDefaultWaitForNewContent();
         var rawResponse = await _api.GetItemsInternalAsync<TModel>(
             _params,
             FilterQueryParams.ToQueryDictionary(_serializedFilters),
-            wait).ConfigureAwait(false);
+            wait,
+            cancellationToken).ConfigureAwait(false);
         return await rawResponse.ToDeliveryResultAsync().ConfigureAwait(false);
     }
 

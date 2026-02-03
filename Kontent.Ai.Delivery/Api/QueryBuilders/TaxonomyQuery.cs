@@ -25,36 +25,41 @@ internal sealed class TaxonomyQuery(
 
     public async Task<IDeliveryResult<ITaxonomyGroup>> ExecuteAsync(CancellationToken cancellationToken = default)
     {
-        // 1. CACHE CHECK
-        string? cacheKey = null;
         if (_cacheManager != null)
         {
-            cacheKey = CacheKeyBuilder.BuildTaxonomyKey(_codename);
-            var cached = await QueryCacheHelper.TryGetCachedAsync<TaxonomyGroup>(
-                _cacheManager, cacheKey, logger: null, cancellationToken).ConfigureAwait(false);
-            if (cached != null)
-                return DeliveryResult.CacheHit<ITaxonomyGroup>(cached);
+            var cacheKey = CacheKeyBuilder.BuildTaxonomyKey(_codename);
+            IDeliveryResult<ITaxonomyGroup>? apiResult = null;
+
+            // Use stampede-protected cache fetch
+            var cacheResult = await QueryCacheHelper.GetOrFetchAsync(
+                _cacheManager,
+                cacheKey,
+                async ct =>
+                {
+                    apiResult = await FetchFromApiAsync(ct).ConfigureAwait(false);
+                    if (!apiResult.IsSuccess)
+                        return (null, Array.Empty<string>());
+                    // Metadata queries use empty dependencies (rely on TTL for invalidation)
+                    return ((TaxonomyGroup)apiResult.Value, Array.Empty<string>());
+                },
+                logger: null,
+                cancellationToken).ConfigureAwait(false);
+
+            if (cacheResult.IsCacheHit)
+                return DeliveryResult.CacheHit<ITaxonomyGroup>(cacheResult.Value!);
+
+            // Not a cache hit - return the API result (success or failure)
+            return apiResult!;
         }
 
-        // 2. API CALL
-        var deliveryResult = await FetchFromApiAsync().ConfigureAwait(false);
-
-        // 3. CACHE RESULT
-        // Metadata queries use empty dependencies (rely on TTL for invalidation)
-        if (_cacheManager != null && deliveryResult.IsSuccess && cacheKey != null)
-        {
-            await QueryCacheHelper.TrySetCachedAsync(
-                _cacheManager, cacheKey, (TaxonomyGroup)deliveryResult.Value,
-                dependencies: [], logger: null, cancellationToken).ConfigureAwait(false);
-        }
-
-        return deliveryResult;
+        // No caching - direct fetch
+        return await FetchFromApiAsync(cancellationToken).ConfigureAwait(false);
     }
 
-    private async Task<IDeliveryResult<ITaxonomyGroup>> FetchFromApiAsync()
+    private async Task<IDeliveryResult<ITaxonomyGroup>> FetchFromApiAsync(CancellationToken cancellationToken)
     {
         bool? wait = _waitForLoadingNewContentOverride ?? _getDefaultWaitForNewContent();
-        var response = await _api.GetTaxonomyInternalAsync(_codename, wait).ConfigureAwait(false);
+        var response = await _api.GetTaxonomyInternalAsync(_codename, wait, cancellationToken).ConfigureAwait(false);
         return await response.ToDeliveryResultAsync().ConfigureAwait(false);
     }
 }

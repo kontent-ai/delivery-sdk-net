@@ -256,6 +256,12 @@ internal static partial class LoggerMessages
         Message = "Generic query for type '{TypeName}' could not resolve content type codename. Ensure the type has [ContentType] attribute and the source generator is referenced.")]
     public static partial void GenericQueryTypeCodenameNotFound(ILogger logger, string typeName);
 
+    [LoggerMessage(
+        EventId = LogEventIds.RichTextMaxDepthExceeded,
+        Level = LogLevel.Warning,
+        Message = "Rich text parsing exceeded maximum recursion depth ({MaxDepth}). Deeply nested content was truncated.")]
+    public static partial void RichTextMaxDepthExceeded(ILogger logger, int maxDepth);
+
     // ========== Pagination ==========
 
     [LoggerMessage(

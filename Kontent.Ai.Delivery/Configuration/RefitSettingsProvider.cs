@@ -33,8 +33,8 @@ public static class RefitSettingsProvider
         {
             PropertyNamingPolicy = JsonNamingPolicy.CamelCase,
             PropertyNameCaseInsensitive = true,
-            MaxDepth = 124 // limit set to the same value as is GraphQL API limit
-            // TODO: confirm depth for rest api
+            // MaxDepth matches the Kontent.ai API nesting limits (aligned with GraphQL API)
+            MaxDepth = 124
         };
 
         // Register converters

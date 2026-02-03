@@ -106,7 +106,7 @@ public sealed class DeliveryClientBuilder
     /// <returns>The builder instance for method chaining.</returns>
     /// <remarks>
     /// <para>
-    /// The builder creates and manages an <see cref="IMemoryCache"/> instance internally.
+    /// The builder creates and manages an <see cref="Microsoft.Extensions.Caching.Memory.IMemoryCache"/> instance internally.
     /// For scenarios requiring shared cache instances across multiple clients, use DI registration instead.
     /// </para>
     /// <para>

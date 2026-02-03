@@ -1,13 +1,84 @@
+using System.Collections.Concurrent;
+using System.Runtime.CompilerServices;
 using Kontent.Ai.Delivery.Logging;
 using Microsoft.Extensions.Logging;
 
 namespace Kontent.Ai.Delivery.Api.QueryBuilders.Helpers;
 
 /// <summary>
+/// Result of a cache-protected fetch operation.
+/// </summary>
+/// <typeparam name="T">The type of the cached value.</typeparam>
+internal readonly record struct CacheFetchResult<T>(T? Value, IEnumerable<string> Dependencies, bool IsCacheHit) where T : class;
+
+/// <summary>
 /// Provides centralized cache operations with consistent logging for query builders.
+/// Includes cache stampede protection via per-key request coalescing.
 /// </summary>
 internal static class QueryCacheHelper
 {
+    /// <summary>
+    /// Per-manager lock dictionaries to prevent cache stampede (thundering herd) on concurrent cache misses.
+    /// ConditionalWeakTable ensures locks are scoped per cache manager instance (avoiding cross-client collisions)
+    /// and automatically cleaned up when the cache manager is garbage collected.
+    /// </summary>
+    private static readonly ConditionalWeakTable<IDeliveryCacheManager, LockDictionary> _managerLocks = new();
+
+    /// <summary>
+    /// Wrapper around ConcurrentDictionary with cleanup tracking.
+    /// </summary>
+    private sealed class LockDictionary
+    {
+        public ConcurrentDictionary<string, KeyLock> Locks { get; } = new();
+        private int _cleanupCounter;
+
+        /// <summary>
+        /// Increments counter and returns true if cleanup should run.
+        /// </summary>
+        public bool ShouldCleanup() => Interlocked.Increment(ref _cleanupCounter) % CleanupInterval == 0;
+    }
+
+    /// <summary>
+    /// Time in milliseconds after which an unused lock is eligible for cleanup.
+    /// </summary>
+    private const long LockExpirationMs = 5 * 60 * 1000; // 5 minutes
+
+    /// <summary>
+    /// Cleanup runs every N lock acquisitions to avoid overhead on every call.
+    /// </summary>
+    private const int CleanupInterval = 100;
+
+    /// <summary>
+    /// Wraps a SemaphoreSlim with usage tracking for safe expiration-based cleanup.
+    /// </summary>
+    private sealed class KeyLock
+    {
+        public SemaphoreSlim Semaphore { get; } = new(1, 1);
+        private long _lastUsedTicks = Environment.TickCount64;
+        private int _inFlight;
+
+        /// <summary>
+        /// Increments the in-flight counter. Call immediately after GetOrAdd, before WaitAsync.
+        /// </summary>
+        public void IncrementInFlight() => Interlocked.Increment(ref _inFlight);
+
+        /// <summary>
+        /// Decrements the in-flight counter. Call in finally after Semaphore.Release().
+        /// </summary>
+        public void DecrementInFlight()
+        {
+            Interlocked.Decrement(ref _inFlight);
+            _lastUsedTicks = Environment.TickCount64;
+        }
+
+        /// <summary>
+        /// Returns true if lock is expired and no threads are using or waiting for it.
+        /// </summary>
+        public bool CanBeRemoved =>
+            Volatile.Read(ref _inFlight) == 0 &&
+            Environment.TickCount64 - Volatile.Read(ref _lastUsedTicks) > LockExpirationMs;
+    }
+
     /// <summary>
     /// Attempts to retrieve a cached value with logging. Returns null on cache miss or error.
     /// </summary>
@@ -76,6 +147,99 @@ internal static class QueryCacheHelper
         {
             if (logger != null)
                 LoggerMessages.CacheSetFailed(logger, cacheKey, ex);
+        }
+    }
+
+    /// <summary>
+    /// Gets a value from cache or fetches it, with cache stampede protection.
+    /// Uses per-key locking with double-check pattern to ensure only one caller
+    /// fetches the value when multiple concurrent requests have a cache miss.
+    /// </summary>
+    /// <typeparam name="T">The type of the cached value.</typeparam>
+    /// <param name="cacheManager">The cache manager to query.</param>
+    /// <param name="cacheKey">The cache key to look up.</param>
+    /// <param name="fetchFactory">Factory to fetch the value and its dependencies if not cached.</param>
+    /// <param name="logger">Optional logger for cache hit/miss/error logging.</param>
+    /// <param name="cancellationToken">Cancellation token.</param>
+    /// <returns>A result containing the value, dependencies, and whether it was a cache hit.</returns>
+    public static async Task<CacheFetchResult<T>> GetOrFetchAsync<T>(
+        IDeliveryCacheManager cacheManager,
+        string cacheKey,
+        Func<CancellationToken, Task<(T? Value, IEnumerable<string> Dependencies)>> fetchFactory,
+        ILogger? logger,
+        CancellationToken cancellationToken) where T : class
+    {
+        // 1. Fast path: cache hit (no lock needed)
+        var cached = await TryGetCachedAsync<T>(cacheManager, cacheKey, logger, cancellationToken)
+            .ConfigureAwait(false);
+        if (cached != null)
+            return new CacheFetchResult<T>(cached, [], IsCacheHit: true);
+
+        // 2. Acquire per-key lock to prevent stampede (scoped to this cache manager)
+        var lockDict = _managerLocks.GetOrCreateValue(cacheManager);
+        var keyLock = lockDict.Locks.GetOrAdd(cacheKey, _ => new KeyLock());
+        keyLock.IncrementInFlight(); // Track that we're using/waiting for this lock
+
+        // Periodically clean up expired locks (lazy cleanup to avoid background threads)
+        if (lockDict.ShouldCleanup())
+        {
+            CleanupExpiredLocks(lockDict.Locks);
+        }
+
+        try
+        {
+            await keyLock.Semaphore.WaitAsync(cancellationToken).ConfigureAwait(false);
+            try
+            {
+                // 3. Double-check after acquiring lock (another thread may have populated cache)
+                cached = await TryGetCachedAsync<T>(cacheManager, cacheKey, logger, cancellationToken)
+                    .ConfigureAwait(false);
+                if (cached != null)
+                    return new CacheFetchResult<T>(cached, [], IsCacheHit: true);
+
+                // 4. Only one caller executes fetch
+                var (value, dependencies) = await fetchFactory(cancellationToken).ConfigureAwait(false);
+
+                // 5. Cache the result if not null
+                if (value != null)
+                {
+                    await TrySetCachedAsync(cacheManager, cacheKey, value, dependencies, logger, cancellationToken)
+                        .ConfigureAwait(false);
+                }
+
+                return new CacheFetchResult<T>(value, dependencies, IsCacheHit: false);
+            }
+            finally
+            {
+                keyLock.Semaphore.Release();
+            }
+        }
+        finally
+        {
+            keyLock.DecrementInFlight(); // We're done using this lock
+        }
+    }
+
+    /// <summary>
+    /// Removes expired locks that are not in use from the specified dictionary.
+    /// Called lazily during lock acquisition to avoid background threads.
+    /// </summary>
+    /// <remarks>
+    /// This is O(n) over all keys for the given cache manager. For typical SDK usage
+    /// (bounded content types/items), this is acceptable. For extreme key cardinality,
+    /// consider sampling-based cleanup.
+    /// </remarks>
+    private static void CleanupExpiredLocks(ConcurrentDictionary<string, KeyLock> locks)
+    {
+        foreach (var kvp in locks)
+        {
+            // Only remove if no threads are using/waiting and lock is expired
+            if (kvp.Value.CanBeRemoved)
+            {
+                // Try to remove - if another thread started using it, CanBeRemoved
+                // would have returned false, or the lock will be re-added on next use
+                locks.TryRemove(kvp.Key, out _);
+            }
         }
     }
 }
