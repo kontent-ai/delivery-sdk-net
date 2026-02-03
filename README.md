@@ -451,14 +451,27 @@ var result = await client.GetItems()
 > [!TIP]
 > When using strongly-typed queries with source generation (e.g., `GetItems<Article>()`), the `system.type` filter is added automatically based on the `[ContentTypeCodename]` attribute. You only need manual type filtering for dynamic queries.
 
-#### Conditional Composition (instead of LINQ-like .Where)
+#### Incremental query composition (deferred execution)
+
+The query is not sent until you call `ExecuteAsync()`, so you can build it up conditionally:
 
 ```csharp
-var query = client.GetItems();
+var query = client.GetItems()
+    .Limit(20);
 
 if (onlyArticles)
 {
     query = query.Where(f => f.System("type").IsEqualTo("article"));
+}
+
+if (!includeArchived)
+{
+    query = query.Where(f => f.System("collection").IsNotEqualTo("archived"));
+}
+
+if (onlyCoffee)
+{
+    query = query.Where(f => f.Element("category").Contains("coffee"));
 }
 
 var result = await query.ExecuteAsync();
