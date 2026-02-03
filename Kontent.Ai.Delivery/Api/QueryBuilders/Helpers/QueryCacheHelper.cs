@@ -1,13 +1,26 @@
+using System.Collections.Concurrent;
 using Kontent.Ai.Delivery.Logging;
 using Microsoft.Extensions.Logging;
 
 namespace Kontent.Ai.Delivery.Api.QueryBuilders.Helpers;
 
 /// <summary>
+/// Result of a cache-protected fetch operation.
+/// </summary>
+/// <typeparam name="T">The type of the cached value.</typeparam>
+internal readonly record struct CacheFetchResult<T>(T? Value, IEnumerable<string> Dependencies, bool IsCacheHit) where T : class;
+
+/// <summary>
 /// Provides centralized cache operations with consistent logging for query builders.
+/// Includes cache stampede protection via per-key request coalescing.
 /// </summary>
 internal static class QueryCacheHelper
 {
+    /// <summary>
+    /// Per-key locks to prevent cache stampede (thundering herd) on concurrent cache misses.
+    /// </summary>
+    private static readonly ConcurrentDictionary<string, SemaphoreSlim> _keyLocks = new();
+
     /// <summary>
     /// Attempts to retrieve a cached value with logging. Returns null on cache miss or error.
     /// </summary>
@@ -76,6 +89,60 @@ internal static class QueryCacheHelper
         {
             if (logger != null)
                 LoggerMessages.CacheSetFailed(logger, cacheKey, ex);
+        }
+    }
+
+    /// <summary>
+    /// Gets a value from cache or fetches it, with cache stampede protection.
+    /// Uses per-key locking with double-check pattern to ensure only one caller
+    /// fetches the value when multiple concurrent requests have a cache miss.
+    /// </summary>
+    /// <typeparam name="T">The type of the cached value.</typeparam>
+    /// <param name="cacheManager">The cache manager to query.</param>
+    /// <param name="cacheKey">The cache key to look up.</param>
+    /// <param name="fetchFactory">Factory to fetch the value and its dependencies if not cached.</param>
+    /// <param name="logger">Optional logger for cache hit/miss/error logging.</param>
+    /// <param name="cancellationToken">Cancellation token.</param>
+    /// <returns>A result containing the value, dependencies, and whether it was a cache hit.</returns>
+    public static async Task<CacheFetchResult<T>> GetOrFetchAsync<T>(
+        IDeliveryCacheManager cacheManager,
+        string cacheKey,
+        Func<CancellationToken, Task<(T? Value, IEnumerable<string> Dependencies)>> fetchFactory,
+        ILogger? logger,
+        CancellationToken cancellationToken) where T : class
+    {
+        // 1. Fast path: cache hit (no lock needed)
+        var cached = await TryGetCachedAsync<T>(cacheManager, cacheKey, logger, cancellationToken)
+            .ConfigureAwait(false);
+        if (cached != null)
+            return new CacheFetchResult<T>(cached, [], IsCacheHit: true);
+
+        // 2. Acquire per-key lock to prevent stampede
+        var keyLock = _keyLocks.GetOrAdd(cacheKey, _ => new SemaphoreSlim(1, 1));
+        await keyLock.WaitAsync(cancellationToken).ConfigureAwait(false);
+        try
+        {
+            // 3. Double-check after acquiring lock (another thread may have populated cache)
+            cached = await TryGetCachedAsync<T>(cacheManager, cacheKey, logger, cancellationToken)
+                .ConfigureAwait(false);
+            if (cached != null)
+                return new CacheFetchResult<T>(cached, [], IsCacheHit: true);
+
+            // 4. Only one caller executes fetch
+            var (value, dependencies) = await fetchFactory(cancellationToken).ConfigureAwait(false);
+
+            // 5. Cache the result if not null
+            if (value != null)
+            {
+                await TrySetCachedAsync(cacheManager, cacheKey, value, dependencies, logger, cancellationToken)
+                    .ConfigureAwait(false);
+            }
+
+            return new CacheFetchResult<T>(value, dependencies, IsCacheHit: false);
+        }
+        finally
+        {
+            keyLock.Release();
         }
     }
 }

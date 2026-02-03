@@ -13,6 +13,10 @@ internal class RichTextParser(
     ILogger? logger = null)
 {
     /// <summary>
+    /// Maximum depth for recursive rich text parsing to prevent stack overflow on deeply nested content.
+    /// </summary>
+    private const int MaxParsingDepth = 100; // TODO: confirm depth, compare with 124 from RefitSettingsProvider
+    /// <summary>
     /// Converts a rich text element to structured content.
     /// </summary>
     internal async Task<IRichTextContent?> ConvertAsync<TElement>(
@@ -41,7 +45,7 @@ internal class RichTextParser(
         var blocks = new List<IRichTextBlock>();
         foreach (var childNode in document.Body.ChildNodes)
         {
-            var block = await ParseNodeAsync(childNode, element, getLinkedItem);
+            var block = await ParseNodeAsync(childNode, element, getLinkedItem, currentDepth: 0);
             if (block != null)
                 blocks.Add(block);
         }
@@ -63,8 +67,19 @@ internal class RichTextParser(
     private async Task<IRichTextBlock?> ParseNodeAsync(
         INode node,
         IRichTextElementValue element,
-        Func<string, Task<object?>> getLinkedItem)
+        Func<string, Task<object?>> getLinkedItem,
+        int currentDepth)
     {
+        // Guard against excessive recursion depth to prevent stack overflow
+        if (currentDepth > MaxParsingDepth)
+        {
+            if (logger is not null)
+            {
+                LoggerMessages.RichTextMaxDepthExceeded(logger, MaxParsingDepth);
+            }
+            return null;
+        }
+
         return node switch
         {
             // Parse special Kontent.ai elements
@@ -75,11 +90,11 @@ internal class RichTextParser(
                 => image,
 
             IElement { TagName: "A" } el when TryGetItemId(el, out var itemId)
-                => await ParseContentItemLinkAsync(el, itemId, element, getLinkedItem),
+                => await ParseContentItemLinkAsync(el, itemId, element, getLinkedItem, currentDepth),
 
             // Parse all HTML elements into structured tree
             IElement el
-                => await ParseHtmlElementAsync(el, element, getLinkedItem),
+                => await ParseHtmlElementAsync(el, element, getLinkedItem, currentDepth),
 
             // Text nodes become TextNode leaf blocks
             IText text when !string.IsNullOrWhiteSpace(text.TextContent)
@@ -125,7 +140,8 @@ internal class RichTextParser(
         IElement anchorElement,
         Guid itemId,
         IRichTextElementValue elementValue,
-        Func<string, Task<object?>> getLinkedItem)
+        Func<string, Task<object?>> getLinkedItem,
+        int currentDepth)
     {
         // Get metadata from Links dictionary
         var metadata = elementValue.Links?.TryGetValue(itemId, out var link) == true ? link : null;
@@ -134,7 +150,7 @@ internal class RichTextParser(
         var children = new List<IRichTextBlock>();
         foreach (var childNode in anchorElement.ChildNodes)
         {
-            var childBlock = await ParseNodeAsync(childNode, elementValue, getLinkedItem);
+            var childBlock = await ParseNodeAsync(childNode, elementValue, getLinkedItem, currentDepth + 1);
             if (childBlock != null)
                 children.Add(childBlock);
         }
@@ -150,13 +166,14 @@ internal class RichTextParser(
     private async Task<IRichTextBlock> ParseHtmlElementAsync(
         IElement element,
         IRichTextElementValue elementValue,
-        Func<string, Task<object?>> getLinkedItem)
+        Func<string, Task<object?>> getLinkedItem,
+        int currentDepth)
     {
         // Parse all children recursively into tree structure
         var children = new List<IRichTextBlock>();
         foreach (var childNode in element.ChildNodes)
         {
-            var childBlock = await ParseNodeAsync(childNode, elementValue, getLinkedItem);
+            var childBlock = await ParseNodeAsync(childNode, elementValue, getLinkedItem, currentDepth + 1);
             if (childBlock != null)
                 children.Add(childBlock);
         }
@@ -203,7 +220,7 @@ internal class RichTextParser(
             return false;
         }
 
-        if (element.Images.TryGetValue(assetId, out var inlineImage))
+        if (element.Images?.TryGetValue(assetId, out var inlineImage) == true)
         {
             image = inlineImage;
             return true;

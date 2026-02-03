@@ -41,40 +41,47 @@ internal sealed class TypeQuery(
         LogQueryStarting();
         var stopwatch = StartTimingIfEnabled();
 
-        // 1. CACHE CHECK
-        string? cacheKey = null;
         if (_cacheManager != null)
         {
-            cacheKey = CacheKeyBuilder.BuildTypeKey(_codename, _params);
-            var cached = await QueryCacheHelper.TryGetCachedAsync<ContentType>(
-                _cacheManager, cacheKey, _logger, cancellationToken).ConfigureAwait(false);
-            if (cached != null)
+            var cacheKey = CacheKeyBuilder.BuildTypeKey(_codename, _params);
+            IDeliveryResult<IContentType>? apiResult = null;
+
+            // Use stampede-protected cache fetch
+            var cacheResult = await QueryCacheHelper.GetOrFetchAsync(
+                _cacheManager,
+                cacheKey,
+                async ct =>
+                {
+                    apiResult = await FetchFromApiAsync(ct).ConfigureAwait(false);
+                    if (!apiResult.IsSuccess)
+                        return (null, Array.Empty<string>());
+                    // Metadata queries use empty dependencies (rely on TTL for invalidation)
+                    return ((ContentType)apiResult.Value, Array.Empty<string>());
+                },
+                _logger,
+                cancellationToken).ConfigureAwait(false);
+
+            if (cacheResult.IsCacheHit)
             {
                 LogQueryCompleted(stopwatch, HttpStatusCode.OK, cacheHit: true);
-                return DeliveryResult.CacheHit<IContentType>(cached);
+                return DeliveryResult.CacheHit<IContentType>(cacheResult.Value!);
             }
+
+            // Not a cache hit - return the API result (success or failure)
+            LogQueryCompleted(stopwatch, apiResult!.StatusCode, cacheHit: false);
+            return apiResult!;
         }
 
-        // 2. API CALL
-        var deliveryResult = await FetchFromApiAsync().ConfigureAwait(false);
-
-        // 3. CACHE & LOG COMPLETION
-        // Metadata queries use empty dependencies (rely on TTL for invalidation)
-        if (_cacheManager != null && deliveryResult.IsSuccess && cacheKey != null)
-        {
-            await QueryCacheHelper.TrySetCachedAsync(
-                _cacheManager, cacheKey, (ContentType)deliveryResult.Value,
-                dependencies: [], _logger, cancellationToken).ConfigureAwait(false);
-        }
-
+        // No caching - direct fetch
+        var deliveryResult = await FetchFromApiAsync(cancellationToken).ConfigureAwait(false);
         LogQueryCompleted(stopwatch, deliveryResult.StatusCode, cacheHit: false);
         return deliveryResult;
     }
 
-    private async Task<IDeliveryResult<IContentType>> FetchFromApiAsync()
+    private async Task<IDeliveryResult<IContentType>> FetchFromApiAsync(CancellationToken cancellationToken)
     {
         bool? wait = _waitForLoadingNewContentOverride ?? _getDefaultWaitForNewContent();
-        var response = await _api.GetTypeInternalAsync(_codename, _params, wait).ConfigureAwait(false);
+        var response = await _api.GetTypeInternalAsync(_codename, _params, wait, cancellationToken).ConfigureAwait(false);
         return await response.ToDeliveryResultAsync().ConfigureAwait(false);
     }
 

@@ -12,12 +12,14 @@ internal partial interface IDeliveryApi
     /// <param name="codename">The codename of the content type.</param>
     /// <param name="queryParameters">Query parameters as a dictionary.</param>
     /// <param name="waitForLoadingNewContent">Wait for loading new content header.</param>
+    /// <param name="cancellationToken">Cancellation token to cancel the request.</param>
     /// <returns>Raw JSON response containing the content type.</returns>
     [Get("/types/{codename}")]
     internal Task<IApiResponse<ContentType>> GetTypeInternalAsync(
         string codename,
         [Query] SingleTypeParams? queryParameters = null,
-        [Header(HttpRequestHeadersExtensions.WaitForLoadingNewContentHeaderName)] bool? waitForLoadingNewContent = null);
+        [Header(HttpRequestHeadersExtensions.WaitForLoadingNewContentHeaderName)] bool? waitForLoadingNewContent = null,
+        CancellationToken cancellationToken = default);
 
     /// <summary>
     /// Gets multiple content types with optional filtering.
@@ -25,12 +27,14 @@ internal partial interface IDeliveryApi
     /// <param name="queryParameters">Query parameters as a dictionary.</param>
     /// <param name="filters">Filters as a dictionary.</param>
     /// <param name="waitForLoadingNewContent">Wait for loading new content header.</param>
+    /// <param name="cancellationToken">Cancellation token to cancel the request.</param>
     /// <returns>Raw JSON response containing the content types.</returns>
     [Get("/types")]
     internal Task<IApiResponse<DeliveryTypeListingResponse>> GetTypesInternalAsync(
         [Query] ListTypesParams? queryParameters = null,
         [Query] Dictionary<string, string[]>? filters = null,
-        [Header(HttpRequestHeadersExtensions.WaitForLoadingNewContentHeaderName)] bool? waitForLoadingNewContent = null);
+        [Header(HttpRequestHeadersExtensions.WaitForLoadingNewContentHeaderName)] bool? waitForLoadingNewContent = null,
+        CancellationToken cancellationToken = default);
 
     /// <summary>
     /// Gets a content type element.
@@ -38,10 +42,12 @@ internal partial interface IDeliveryApi
     /// <param name="contentTypeCodename">The codename of the content type.</param>
     /// <param name="contentElementCodename">The codename of the content element.</param>
     /// <param name="waitForLoadingNewContent">Wait for loading new content header.</param>
+    /// <param name="cancellationToken">Cancellation token to cancel the request.</param>
     /// <returns>Raw JSON response containing the content element.</returns>
     [Get("/types/{contentTypeCodename}/elements/{contentElementCodename}")]
     internal Task<IApiResponse<ContentElement>> GetContentElementInternalAsync(
         string contentTypeCodename,
         string contentElementCodename,
-        [Header(HttpRequestHeadersExtensions.WaitForLoadingNewContentHeaderName)] bool? waitForLoadingNewContent = null);
+        [Header(HttpRequestHeadersExtensions.WaitForLoadingNewContentHeaderName)] bool? waitForLoadingNewContent = null,
+        CancellationToken cancellationToken = default);
 }

@@ -45,22 +45,56 @@ internal sealed class TaxonomiesQuery(
 
     public async Task<IDeliveryResult<IDeliveryTaxonomyListingResponse>> ExecuteAsync(CancellationToken cancellationToken = default)
     {
-        // 1. CACHE CHECK
-        string? cacheKey = null;
         if (_cacheManager != null)
         {
-            cacheKey = CacheKeyBuilder.BuildTaxonomiesKey(_params, _serializedFilters);
-            var cached = await QueryCacheHelper.TryGetCachedAsync<DeliveryTaxonomyListingResponse>(
-                _cacheManager, cacheKey, logger: null, cancellationToken).ConfigureAwait(false);
-            if (cached != null)
+            var cacheKey = CacheKeyBuilder.BuildTaxonomiesKey(_params, _serializedFilters);
+            IDeliveryResult<DeliveryTaxonomyListingResponse>? apiResult = null;
+
+            // Use stampede-protected cache fetch
+            var cacheResult = await QueryCacheHelper.GetOrFetchAsync(
+                _cacheManager,
+                cacheKey,
+                async ct =>
+                {
+                    apiResult = await FetchFromApiAsync(ct).ConfigureAwait(false);
+                    if (!apiResult.IsSuccess)
+                        return (null, Array.Empty<string>());
+                    // Metadata queries use empty dependencies (rely on TTL for invalidation)
+                    return (apiResult.Value, Array.Empty<string>());
+                },
+                logger: null,
+                cancellationToken).ConfigureAwait(false);
+
+            if (cacheResult.IsCacheHit)
             {
-                var cachedWithFetcher = cached with { NextPageFetcher = CreateNextPageFetcher(cached.Pagination) };
+                // Reconstruct with NextPageFetcher (delegates can't be cached)
+                var cachedWithFetcher = cacheResult.Value! with { NextPageFetcher = CreateNextPageFetcher(cacheResult.Value!.Pagination) };
                 return DeliveryResult.CacheHit<IDeliveryTaxonomyListingResponse>(cachedWithFetcher);
             }
+
+            // Not a cache hit - check if API succeeded
+            if (!apiResult!.IsSuccess)
+            {
+                return DeliveryResult.Failure<IDeliveryTaxonomyListingResponse>(
+                    apiResult.RequestUrl ?? string.Empty,
+                    apiResult.StatusCode,
+                    apiResult.Error,
+                    apiResult.ResponseHeaders);
+            }
+
+            // Fresh fetch succeeded - build result with fetcher
+            var responseWithFetcher = cacheResult.Value! with { NextPageFetcher = CreateNextPageFetcher(cacheResult.Value!.Pagination) };
+            return DeliveryResult.Success<IDeliveryTaxonomyListingResponse>(
+                responseWithFetcher,
+                apiResult.RequestUrl ?? string.Empty,
+                apiResult.StatusCode,
+                apiResult.HasStaleContent,
+                apiResult.ContinuationToken,
+                apiResult.ResponseHeaders);
         }
 
-        // 2. API CALL
-        var deliveryResult = await FetchFromApiAsync().ConfigureAwait(false);
+        // No caching - direct fetch
+        var deliveryResult = await FetchFromApiAsync(cancellationToken).ConfigureAwait(false);
         if (!deliveryResult.IsSuccess)
         {
             return DeliveryResult.Failure<IDeliveryTaxonomyListingResponse>(
@@ -70,36 +104,25 @@ internal sealed class TaxonomiesQuery(
                 deliveryResult.ResponseHeaders);
         }
 
-        // 3. BUILD RESULT WITH NEXT PAGE FETCHER
         var resp = deliveryResult.Value;
-        var responseWithFetcher = resp with { NextPageFetcher = CreateNextPageFetcher(resp.Pagination) };
-        var result = DeliveryResult.Success<IDeliveryTaxonomyListingResponse>(
-            responseWithFetcher,
+        var respWithFetcher = resp with { NextPageFetcher = CreateNextPageFetcher(resp.Pagination) };
+        return DeliveryResult.Success<IDeliveryTaxonomyListingResponse>(
+            respWithFetcher,
             deliveryResult.RequestUrl ?? string.Empty,
             deliveryResult.StatusCode,
             deliveryResult.HasStaleContent,
             deliveryResult.ContinuationToken,
             deliveryResult.ResponseHeaders);
-
-        // 4. CACHE RESULT
-        // Metadata queries use empty dependencies (rely on TTL for invalidation)
-        if (_cacheManager != null && cacheKey != null)
-        {
-            await QueryCacheHelper.TrySetCachedAsync(
-                _cacheManager, cacheKey, resp, dependencies: [], logger: null, cancellationToken)
-                .ConfigureAwait(false);
-        }
-
-        return result;
     }
 
-    private async Task<IDeliveryResult<DeliveryTaxonomyListingResponse>> FetchFromApiAsync()
+    private async Task<IDeliveryResult<DeliveryTaxonomyListingResponse>> FetchFromApiAsync(CancellationToken cancellationToken)
     {
         bool? wait = _waitForLoadingNewContentOverride ?? _getDefaultWaitForNewContent();
         var response = await _api.GetTaxonomiesInternalAsync(
             _params,
             FilterQueryParams.ToQueryDictionary(_serializedFilters),
-            wait).ConfigureAwait(false);
+            wait,
+            cancellationToken).ConfigureAwait(false);
         return await response.ToDeliveryResultAsync().ConfigureAwait(false);
     }
 

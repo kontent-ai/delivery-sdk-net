@@ -32,12 +32,14 @@ internal partial interface IDeliveryApi
     /// <param name="queryParameters">Query parameters as a dictionary.</param>
     /// <param name="filters">Filters as a dictionary.</param>
     /// <param name="waitForLoadingNewContent">Wait for loading new content header.</param>
+    /// <param name="cancellationToken">Cancellation token to cancel the request.</param>
     /// <returns>Raw JSON response containing the content items.</returns>
     [Get("/items")]
     internal Task<IApiResponse<DeliveryItemListingResponse<TModel>>> GetItemsInternalAsync<TModel>(
         [Query] ListItemsParams? queryParameters = null,
         [Query] Dictionary<string, string[]>? filters = null,
-        [Header(HttpRequestHeadersExtensions.WaitForLoadingNewContentHeaderName)] bool? waitForLoadingNewContent = null);
+        [Header(HttpRequestHeadersExtensions.WaitForLoadingNewContentHeaderName)] bool? waitForLoadingNewContent = null,
+        CancellationToken cancellationToken = default);
 
     /// <summary>
     /// Gets content items feed for enumeration.

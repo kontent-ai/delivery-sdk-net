@@ -10,11 +10,13 @@ internal partial interface IDeliveryApi
     /// </summary>
     /// <param name="codename">The codename of the taxonomy group.</param>
     /// <param name="waitForLoadingNewContent">Wait for loading new content header.</param>
+    /// <param name="cancellationToken">Cancellation token to cancel the request.</param>
     /// <returns>Raw JSON response containing the taxonomy group.</returns>
     [Get("/taxonomies/{codename}")]
     internal Task<IApiResponse<TaxonomyGroup>> GetTaxonomyInternalAsync(
         string codename,
-        [Header(HttpRequestHeadersExtensions.WaitForLoadingNewContentHeaderName)] bool? waitForLoadingNewContent = null);
+        [Header(HttpRequestHeadersExtensions.WaitForLoadingNewContentHeaderName)] bool? waitForLoadingNewContent = null,
+        CancellationToken cancellationToken = default);
 
     /// <summary>
     /// Gets multiple taxonomy groups with optional filtering.
@@ -22,10 +24,12 @@ internal partial interface IDeliveryApi
     /// <param name="queryParameters">Query parameters as a dictionary.</param>
     /// <param name="filters">Filters as a dictionary.</param>
     /// <param name="waitForLoadingNewContent">Wait for loading new content header.</param>
+    /// <param name="cancellationToken">Cancellation token to cancel the request.</param>
     /// <returns>Raw JSON response containing the taxonomy groups.</returns>
     [Get("/taxonomies")]
     internal Task<IApiResponse<DeliveryTaxonomyListingResponse>> GetTaxonomiesInternalAsync(
         [Query] ListTaxonomyGroupsParams? queryParameters = null,
         [Query] Dictionary<string, string[]>? filters = null,
-        [Header(HttpRequestHeadersExtensions.WaitForLoadingNewContentHeaderName)] bool? waitForLoadingNewContent = null);
+        [Header(HttpRequestHeadersExtensions.WaitForLoadingNewContentHeaderName)] bool? waitForLoadingNewContent = null,
+        CancellationToken cancellationToken = default);
 }

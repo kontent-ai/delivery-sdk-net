@@ -100,7 +100,7 @@ internal sealed class DynamicItemsQuery(
     public async Task<IDeliveryResult<IDeliveryItemListingResponse>> ExecuteAsync(CancellationToken cancellationToken = default)
     {
         // 1. API CALL
-        var deliveryResult = await FetchFromApiAsync().ConfigureAwait(false);
+        var deliveryResult = await FetchFromApiAsync(cancellationToken).ConfigureAwait(false);
         if (!deliveryResult.IsSuccess)
         {
             return DeliveryResult.Failure<IDeliveryItemListingResponse>(
@@ -136,13 +136,14 @@ internal sealed class DynamicItemsQuery(
             deliveryResult.ResponseHeaders);
     }
 
-    private async Task<IDeliveryResult<DeliveryItemListingResponse<IDynamicElements>>> FetchFromApiAsync()
+    private async Task<IDeliveryResult<DeliveryItemListingResponse<IDynamicElements>>> FetchFromApiAsync(CancellationToken cancellationToken)
     {
         bool? wait = _waitForLoadingNewContentOverride ?? _getDefaultWaitForNewContent();
         var rawResponse = await _api.GetItemsInternalAsync<IDynamicElements>(
             _params,
             FilterQueryParams.ToQueryDictionary(_serializedFilters),
-            wait).ConfigureAwait(false);
+            wait,
+            cancellationToken).ConfigureAwait(false);
         return await rawResponse.ToDeliveryResultAsync().ConfigureAwait(false);
     }
 

@@ -63,21 +63,55 @@ internal sealed class ItemQuery<TModel>(
         LogQueryStarting();
         var stopwatch = StartTimingIfEnabled();
 
-        // 1. CACHE CHECK
-        string? cacheKey = null;
         if (_cacheManager != null)
         {
-            cacheKey = CacheKeyBuilder.BuildItemKey(_codename, _params);
-            var cached = await QueryCacheHelper.TryGetCachedAsync<ContentItem<TModel>>(
-                _cacheManager, cacheKey, _logger, cancellationToken).ConfigureAwait(false);
-            if (cached != null)
+            var cacheKey = CacheKeyBuilder.BuildItemKey(_codename, _params);
+            IDeliveryResult<DeliveryItemResponse<TModel>>? apiResult = null;
+            IContentItem<TModel>? processedItem = null;
+
+            // Use stampede-protected cache fetch
+            var cacheResult = await QueryCacheHelper.GetOrFetchAsync(
+                _cacheManager,
+                cacheKey,
+                async ct =>
+                {
+                    apiResult = await FetchFromApiAsync(ct).ConfigureAwait(false);
+                    if (!apiResult.IsSuccess)
+                        return (null, Array.Empty<string>());
+                    // Post-process item (hydration, dependency tracking)
+                    var (item, deps) = await ProcessItemAsync(apiResult.Value, ct).ConfigureAwait(false);
+                    processedItem = item;
+                    // Only cache if it's the concrete type (not an interface)
+                    return (item as ContentItem<TModel>, deps);
+                },
+                _logger,
+                cancellationToken).ConfigureAwait(false);
+
+            if (cacheResult.IsCacheHit)
             {
                 LogQueryCompleted(stopwatch, HttpStatusCode.OK, cacheHit: true);
-                return DeliveryResult.CacheHit<IContentItem<TModel>>(cached);
+                return DeliveryResult.CacheHit<IContentItem<TModel>>(cacheResult.Value!);
             }
+
+            // Not a cache hit - check if API succeeded
+            if (!apiResult!.IsSuccess)
+            {
+                LogQueryFailed(apiResult);
+                return CreateFailureResult(apiResult);
+            }
+
+            // Fresh fetch succeeded - build result
+            LogQueryCompleted(stopwatch, apiResult.StatusCode, cacheHit: false, apiResult.HasStaleContent);
+            return DeliveryResult.Success(
+                processedItem!,
+                apiResult.RequestUrl ?? string.Empty,
+                apiResult.StatusCode,
+                apiResult.HasStaleContent,
+                apiResult.ContinuationToken,
+                apiResult.ResponseHeaders);
         }
 
-        // 2. API CALL
+        // No caching - direct fetch
         var deliveryResult = await FetchFromApiAsync(cancellationToken).ConfigureAwait(false);
         if (!deliveryResult.IsSuccess)
         {
@@ -85,29 +119,15 @@ internal sealed class ItemQuery<TModel>(
             return CreateFailureResult(deliveryResult);
         }
 
-        // 3. POST-PROCESS
-        var (item, dependencies) = await ProcessItemAsync(deliveryResult.Value, cancellationToken)
-            .ConfigureAwait(false);
-
-        // 4. BUILD RESULT
-        var result = DeliveryResult.Success(
+        var (item, _) = await ProcessItemAsync(deliveryResult.Value, cancellationToken).ConfigureAwait(false);
+        LogQueryCompleted(stopwatch, deliveryResult.StatusCode, cacheHit: false, deliveryResult.HasStaleContent);
+        return DeliveryResult.Success(
             item,
             deliveryResult.RequestUrl ?? string.Empty,
             deliveryResult.StatusCode,
             deliveryResult.HasStaleContent,
             deliveryResult.ContinuationToken,
             deliveryResult.ResponseHeaders);
-
-        // 5. CACHE & LOG COMPLETION
-        if (_cacheManager != null && cacheKey != null && item is ContentItem<TModel> concreteItem)
-        {
-            await QueryCacheHelper.TrySetCachedAsync(
-                _cacheManager, cacheKey, concreteItem, dependencies, _logger, cancellationToken)
-                .ConfigureAwait(false);
-        }
-
-        LogQueryCompleted(stopwatch, deliveryResult.StatusCode, cacheHit: false, deliveryResult.HasStaleContent);
-        return result;
     }
 
     private async Task<IDeliveryResult<DeliveryItemResponse<TModel>>> FetchFromApiAsync(CancellationToken cancellationToken = default)
