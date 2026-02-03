@@ -25,7 +25,7 @@ internal sealed class ContentDependencyExtractor : IContentDependencyExtractor
         IRichTextElementValue element,
         DependencyTrackingContext? context)
     {
-        if (context == null)
+        if (context is null)
         {
             return;
         }
@@ -63,7 +63,7 @@ internal sealed class ContentDependencyExtractor : IContentDependencyExtractor
         JsonElement elementValue,
         DependencyTrackingContext? context)
     {
-        if (context == null)
+        if (context is null)
         {
             return;
         }

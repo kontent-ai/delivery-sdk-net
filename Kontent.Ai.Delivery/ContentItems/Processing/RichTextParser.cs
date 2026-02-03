@@ -42,8 +42,8 @@ internal sealed class RichTextParser(
         if (contentElement is not IRichTextElementValue element)
             return null;
 
-        // Parsing the HTML itself is synchronous; keep async only for linked-item resolution.
-        var document = parser.ParseDocument(element.Value);
+        // Parse the HTML asynchronously
+        var document = await parser.ParseDocumentAsync(element.Value, cancellationToken);
 
         if (document.Body == null)
         {
@@ -57,7 +57,7 @@ internal sealed class RichTextParser(
         // Extract dependencies for caching (delegated to extractor)
         dependencyExtractor.ExtractFromRichTextElement(element, dependencyContext);
 
-        var blocks = new List<IRichTextBlock>();
+        List<IRichTextBlock> blocks = [];
         foreach (var childNode in document.Body.ChildNodes)
         {
             cancellationToken.ThrowIfCancellationRequested();
@@ -165,7 +165,7 @@ internal sealed class RichTextParser(
         var metadata = elementValue.Links?.TryGetValue(itemId, out var link) == true ? link : null;
 
         // Parse children recursively
-        var children = new List<IRichTextBlock>();
+        List<IRichTextBlock> children = [];
         foreach (var childNode in anchorElement.ChildNodes)
         {
             cancellationToken.ThrowIfCancellationRequested();
@@ -190,7 +190,7 @@ internal sealed class RichTextParser(
         CancellationToken cancellationToken)
     {
         // Parse all children recursively into tree structure
-        var children = new List<IRichTextBlock>();
+        List<IRichTextBlock> children = [];
         foreach (var childNode in element.ChildNodes)
         {
             cancellationToken.ThrowIfCancellationRequested();

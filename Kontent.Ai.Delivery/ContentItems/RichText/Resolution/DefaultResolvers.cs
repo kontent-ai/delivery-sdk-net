@@ -104,6 +104,10 @@ public static class DefaultResolvers
     /// </summary>
     private static string BuildAttributes(IReadOnlyDictionary<string, string> existingAttributes)
     {
-        return BuildAttributes(existingAttributes, []);
+        var attributes = existingAttributes
+            .Where(kvp => !string.IsNullOrEmpty(kvp.Value))
+            .Select(kvp => $"{kvp.Key}=\"{HtmlEncoder.Default.Encode(kvp.Value)}\"");
+
+        return string.Join(" ", attributes);
     }
 }

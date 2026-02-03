@@ -99,7 +99,5 @@ public sealed class PropertyMappingInfoTests
         [JsonIgnore]
         [JsonPropertyName("ignored")]
         public string? IgnoredProperty { get; set; }
-
-        public string? UnmappedProperty { get; set; }
     }
 }

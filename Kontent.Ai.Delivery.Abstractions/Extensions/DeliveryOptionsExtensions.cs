@@ -18,5 +18,11 @@ public static class DeliveryOptionsExtensions
     /// </summary>
     /// <param name="options">The delivery options.</param>
     /// <returns>The API key for the delivery API.</returns>
-    public static string? GetApiKey(this DeliveryOptions options) => options.UseSecureAccess ? options.SecureAccessApiKey : options.UsePreviewApi ? options.PreviewApiKey : null;
+    public static string? GetApiKey(this DeliveryOptions options) =>
+        options switch
+        {
+            { UseSecureAccess: true, SecureAccessApiKey: var key } => key,
+            { UsePreviewApi: true, PreviewApiKey: var key } => key,
+            _ => null
+        };
 }

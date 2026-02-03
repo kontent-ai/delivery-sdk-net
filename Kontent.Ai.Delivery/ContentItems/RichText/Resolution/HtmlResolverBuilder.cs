@@ -118,32 +118,6 @@ public sealed class HtmlResolverBuilder : IHtmlResolverBuilder
     }
 
     /// <inheritdoc />
-    public IHtmlResolverBuilder WithContentResolvers(
-        IReadOnlyDictionary<string, Func<IEmbeddedContent, string>> resolvers)
-    {
-        ArgumentNullException.ThrowIfNull(resolvers);
-
-        foreach (var (codename, resolver) in resolvers)
-        {
-            WithContentResolver(codename, resolver);
-        }
-        return this;
-    }
-
-    /// <inheritdoc />
-    public IHtmlResolverBuilder WithContentResolvers(
-        params (string ContentTypeCodename, Func<IEmbeddedContent, string> Resolver)[] resolvers)
-    {
-        ArgumentNullException.ThrowIfNull(resolvers);
-
-        foreach (var (codename, resolver) in resolvers)
-        {
-            WithContentResolver(codename, resolver);
-        }
-        return this;
-    }
-
-    /// <inheritdoc />
     public IHtmlResolverBuilder WithContentResolver<TModel>(
         Func<IEmbeddedContent<TModel>, ValueTask<string>> resolver)
     {
@@ -170,6 +144,32 @@ public sealed class HtmlResolverBuilder : IHtmlResolverBuilder
                 ? ValueTask.FromResult(resolver(typed))
                 : ValueTask.FromResult(string.Empty);
 
+        return this;
+    }
+
+    /// <inheritdoc />
+    public IHtmlResolverBuilder WithContentResolvers(
+        IReadOnlyDictionary<string, Func<IEmbeddedContent, string>> resolvers)
+    {
+        ArgumentNullException.ThrowIfNull(resolvers);
+
+        foreach (var (codename, resolver) in resolvers)
+        {
+            WithContentResolver(codename, resolver);
+        }
+        return this;
+    }
+
+    /// <inheritdoc />
+    public IHtmlResolverBuilder WithContentResolvers(
+        params (string ContentTypeCodename, Func<IEmbeddedContent, string> Resolver)[] resolvers)
+    {
+        ArgumentNullException.ThrowIfNull(resolvers);
+
+        foreach (var (codename, resolver) in resolvers)
+        {
+            WithContentResolver(codename, resolver);
+        }
         return this;
     }
 

@@ -149,3 +149,14 @@ csharp_style_prefer_primary_constructors = true:suggestion
 
 # Collection expression preferences
 csharp_style_prefer_collection_expression = when_types_exactly_match:suggestion
+
+# =============================================================================
+# SonarAnalyzer Suppressions
+# =============================================================================
+
+# Deprecated code reminders - intentional for API evolution
+dotnet_diagnostic.S1133.severity = none
+
+# Expression value is never used - intentional for fluent APIs (StringBuilder, etc.)
+dotnet_diagnostic.IDE0058.severity = none
+csharp_style_unused_value_expression_statement_preference = discard_variable:silent

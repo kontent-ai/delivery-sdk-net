@@ -1,4 +1,4 @@
-﻿using Microsoft.Extensions.DependencyInjection;
+using Microsoft.Extensions.DependencyInjection;
 
 namespace Kontent.Ai.Delivery;
 
@@ -18,7 +18,7 @@ public sealed class DeliveryClientFactory(IServiceProvider serviceProvider) : ID
     /// <inheritdoc />
     public IDeliveryClient Get(string name)
     {
-        ArgumentException.ThrowIfNullOrWhiteSpace(name, nameof(name));
+        ArgumentException.ThrowIfNullOrWhiteSpace(name);
         return serviceProvider.GetRequiredKeyedService<IDeliveryClient>(name);
     }
 }

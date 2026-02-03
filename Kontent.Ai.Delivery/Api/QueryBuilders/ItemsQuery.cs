@@ -304,7 +304,8 @@ internal sealed class ItemsQuery<TModel>(
 
     private void LogQueryCompleted(Stopwatch? stopwatch, HttpStatusCode statusCode, bool cacheHit, bool hasStaleContent = false)
     {
-        if (_logger == null) return;
+        if (_logger is null)
+            return;
         stopwatch?.Stop();
         if (hasStaleContent)
             LoggerMessages.QueryStaleContent(_logger, "list");

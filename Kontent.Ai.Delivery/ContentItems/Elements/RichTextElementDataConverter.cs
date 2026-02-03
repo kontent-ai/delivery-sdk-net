@@ -125,7 +125,7 @@ internal sealed class RichTextElementDataConverter : JsonConverter<RichTextEleme
         if (!root.TryGetProperty("modular_content", out var modularEl) || modularEl.ValueKind != JsonValueKind.Array)
             return [];
 
-        var list = new List<string>();
+        List<string> list = [];
         foreach (var item in modularEl.EnumerateArray())
         {
             var str = item.GetString();

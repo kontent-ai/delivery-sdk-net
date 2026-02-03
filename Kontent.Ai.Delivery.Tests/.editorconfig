@@ -1,0 +1,41 @@
+# EditorConfig for Test projects
+
+[*.cs]
+# "Does not throw" tests are valid - they verify operations complete without exception
+dotnet_diagnostic.S2699.severity = none
+
+# Test helper classes may be empty stubs
+dotnet_diagnostic.S2094.severity = none
+
+# Unused variables in tests (e.g., "var response = ..." to show the call succeeded)
+dotnet_diagnostic.S1481.severity = none
+
+# DateTime.Parse without format provider in test data
+dotnet_diagnostic.S6580.severity = none
+
+# CancellationTokenSource disposal - test methods handle cleanup via test framework
+dotnet_diagnostic.S2930.severity = none
+
+# IDisposable implementation pattern - test fixtures use simplified disposal
+dotnet_diagnostic.S3881.severity = none
+
+# Array creation in params - explicit arrays in test code are acceptable
+dotnet_diagnostic.S3878.severity = none
+
+# Await async methods - .Result is acceptable in test verification code
+dotnet_diagnostic.S6966.severity = none
+
+# Use indexer instead of First() - LINQ is acceptable in tests
+dotnet_diagnostic.S6608.severity = none
+
+# Commented code - test files may have commented alternatives
+dotnet_diagnostic.S125.severity = none
+
+# Unassigned properties in test DTOs
+dotnet_diagnostic.S3459.severity = none
+
+# Unused type parameters in test stubs
+dotnet_diagnostic.S2326.severity = none
+
+# Methods that could be static - test methods may have unused instance context
+dotnet_diagnostic.S2325.severity = none

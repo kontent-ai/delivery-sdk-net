@@ -231,7 +231,7 @@ public class StronglyTypedEmbeddedContentTests
                         : string.Empty),
                 (typeof(HostedVideo), content =>
                     content is IEmbeddedContent<HostedVideo> video
-                        ? $"<div class=\"tuple-video\">Video</div>"
+                        ? $"<div class=\"tuple-video\" video-id=\"{video.Elements.VideoId}\">Video</div>"
                         : string.Empty)
             )
             .Build();

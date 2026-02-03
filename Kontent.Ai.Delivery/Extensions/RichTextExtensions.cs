@@ -1,9 +1,9 @@
 using System.Text.Json;
+using Kontent.Ai.Delivery.Configuration;
 using Kontent.Ai.Delivery.ContentItems;
 using Kontent.Ai.Delivery.ContentItems.Elements;
 using Kontent.Ai.Delivery.ContentItems.Processing;
 using Kontent.Ai.Delivery.ContentItems.RichText.Resolution;
-using Kontent.Ai.Delivery.Configuration;
 
 namespace Kontent.Ai.Delivery;
 

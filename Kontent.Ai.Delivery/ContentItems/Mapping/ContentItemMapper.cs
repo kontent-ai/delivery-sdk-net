@@ -326,7 +326,7 @@ internal sealed class ContentItemMapper
         }
 
         var defaultPreset = _deliveryOptions.CurrentValue.DefaultRenditionPreset;
-        var assets = new List<Asset>();
+        List<Asset> assets = [];
 
         foreach (var assetEl in arrayValue.EnumerateArray())
         {
@@ -490,19 +490,17 @@ internal sealed class ContentItemMapper
         if (modelType == typeof(DynamicElements) || modelType == typeof(IDynamicElements))
             return;
 
+        // Extract elements from the full item JSON
         if (contentItem is IRawContentItem rawContentItem &&
             rawContentItem.RawItemJson.HasValue &&
-            rawContentItem.Elements is not null)
+            rawContentItem.Elements is not null &&
+            rawContentItem.RawItemJson.Value.TryGetProperty("elements", out var rawElements) &&
+            rawElements.ValueKind == JsonValueKind.Object)
         {
-            // Extract elements from the full item JSON
-            if (rawContentItem.RawItemJson.Value.TryGetProperty("elements", out var rawElements) &&
-                rawElements.ValueKind == JsonValueKind.Object)
-            {
-                await MapElementsAsync(
-                    rawContentItem.Elements,
-                    rawElements,
-                    context).ConfigureAwait(false);
-            }
+            await MapElementsAsync(
+                rawContentItem.Elements,
+                rawElements,
+                context).ConfigureAwait(false);
         }
     }
 

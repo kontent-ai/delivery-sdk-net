@@ -78,9 +78,9 @@ internal sealed class DeliveryAuthenticationHandler : DelegatingHandler
     /// Sends an HTTP request with authentication header and environment ID injected.
     /// </summary>
     /// <param name="request">The HTTP request message.</param>
-    /// <param name="ct">The cancellation token.</param>
+    /// <param name="cancellationToken">The cancellation token.</param>
     /// <returns>The HTTP response message.</returns>
-    protected override Task<HttpResponseMessage> SendAsync(HttpRequestMessage request, CancellationToken ct)
+    protected override Task<HttpResponseMessage> SendAsync(HttpRequestMessage request, CancellationToken cancellationToken)
     {
         ArgumentNullException.ThrowIfNull(request);
 
@@ -95,8 +95,7 @@ internal sealed class DeliveryAuthenticationHandler : DelegatingHandler
             // Log auth type (NEVER log the actual API key)
             if (_logger != null)
             {
-                var authType = opts.UsePreviewApi ? "Preview" :
-                               opts.UseSecureAccess ? "SecureAccess" : "Production";
+                var authType = GetAuthType(opts);
                 LoggerMessages.HttpAuthSet(_logger, authType, opts.EnvironmentId ?? "unknown");
             }
         }
@@ -165,6 +164,14 @@ internal sealed class DeliveryAuthenticationHandler : DelegatingHandler
             }
         }
 
-        return base.SendAsync(request, ct);
+        return base.SendAsync(request, cancellationToken);
     }
+
+    private static string GetAuthType(DeliveryOptions opts)
+        => (opts.UsePreviewApi, opts.UseSecureAccess) switch
+        {
+            (true, _) => "Preview",
+            (_, true) => "SecureAccess",
+            _ => "Production"
+        };
 }

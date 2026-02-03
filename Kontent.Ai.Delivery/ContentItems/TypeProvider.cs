@@ -96,25 +96,22 @@ internal sealed class TypeProvider : ITypeProvider
 
     private static IEnumerable<Assembly> GetReferencedAssemblies(Assembly assembly)
     {
-        var loaded = new HashSet<string>();
+        return assembly.GetReferencedAssemblies()
+            .DistinctBy(r => r.FullName)
+            .Select(TryLoadAssembly)
+            .Where(a => a != null)!;
+    }
 
-        foreach (var reference in assembly.GetReferencedAssemblies())
+    private static Assembly? TryLoadAssembly(AssemblyName reference)
+    {
+        try
         {
-            if (loaded.Add(reference.FullName))
-            {
-                Assembly? referencedAssembly = null;
-                try
-                {
-                    referencedAssembly = Assembly.Load(reference);
-                }
-                catch
-                {
-                    // Ignore - assembly might not be loadable
-                }
-
-                if (referencedAssembly != null)
-                    yield return referencedAssembly;
-            }
+            return Assembly.Load(reference);
+        }
+        catch
+        {
+            // Ignore - assembly might not be loadable
+            return null;
         }
     }
 }

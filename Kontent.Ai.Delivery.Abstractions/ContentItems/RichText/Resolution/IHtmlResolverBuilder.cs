@@ -61,22 +61,6 @@ public interface IHtmlResolverBuilder
         Func<IEmbeddedContent, string> resolver);
 
     /// <summary>
-    /// Registers multiple resolvers for embedded content using a dictionary.
-    /// </summary>
-    /// <param name="resolvers">Dictionary mapping content type codenames to their resolver functions.</param>
-    /// <returns>This builder for method chaining.</returns>
-    IHtmlResolverBuilder WithContentResolvers(
-        IReadOnlyDictionary<string, Func<IEmbeddedContent, string>> resolvers);
-
-    /// <summary>
-    /// Registers multiple resolvers for embedded content using tuples.
-    /// </summary>
-    /// <param name="resolvers">Tuples of (content type codename, resolver function).</param>
-    /// <returns>This builder for method chaining.</returns>
-    IHtmlResolverBuilder WithContentResolvers(
-        params (string ContentTypeCodename, Func<IEmbeddedContent, string> Resolver)[] resolvers);
-
-    /// <summary>
     /// Registers a type-safe async resolver for strongly-typed embedded content of a specific model type.
     /// Provides compile-time type safety by accepting <see cref="IEmbeddedContent{TModel}"/> instead of object casting.
     /// </summary>
@@ -107,6 +91,22 @@ public interface IHtmlResolverBuilder
     /// </example>
     IHtmlResolverBuilder WithContentResolver<TModel>(
         Func<IEmbeddedContent<TModel>, string> resolver);
+
+    /// <summary>
+    /// Registers multiple resolvers for embedded content using a dictionary.
+    /// </summary>
+    /// <param name="resolvers">Dictionary mapping content type codenames to their resolver functions.</param>
+    /// <returns>This builder for method chaining.</returns>
+    IHtmlResolverBuilder WithContentResolvers(
+        IReadOnlyDictionary<string, Func<IEmbeddedContent, string>> resolvers);
+
+    /// <summary>
+    /// Registers multiple resolvers for embedded content using tuples.
+    /// </summary>
+    /// <param name="resolvers">Tuples of (content type codename, resolver function).</param>
+    /// <returns>This builder for method chaining.</returns>
+    IHtmlResolverBuilder WithContentResolvers(
+        params (string ContentTypeCodename, Func<IEmbeddedContent, string> Resolver)[] resolvers);
 
     /// <summary>
     /// Registers multiple type-based resolvers for embedded content using a dictionary.

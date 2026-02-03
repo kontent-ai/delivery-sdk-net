@@ -500,8 +500,12 @@ internal sealed class MemoryCacheManager(
         _disposed = true;
 
         // Cancel purge token first to quickly expire all entries, then dispose it.
-        try { _purgeCts.Cancel(); } catch { /* Best-effort */ }
-        try { _purgeCts.Dispose(); } catch { /* Best-effort */ }
+        try
+        { _purgeCts.Cancel(); }
+        catch { /* Best-effort */ }
+        try
+        { _purgeCts.Dispose(); }
+        catch { /* Best-effort */ }
 
         // Dispose all entry CancellationTokenSources
         foreach (var entry in _entries.Values)

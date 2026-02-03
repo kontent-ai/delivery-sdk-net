@@ -215,14 +215,8 @@ internal static class CacheKeyBuilder
     /// </remarks>
     private static void AppendSortedArray(StringBuilder builder, string[] items)
     {
-        // Sort for determinism
-        var sorted = items.OrderBy(x => x, StringComparer.OrdinalIgnoreCase).ToArray();
-
-        for (int i = 0; i < sorted.Length; i++)
-        {
-            if (i > 0) builder.Append(ArraySeparator);
-            builder.Append(sorted[i]);
-        }
+        var sorted = items.OrderBy(x => x, StringComparer.OrdinalIgnoreCase);
+        builder.AppendJoin(ArraySeparator, sorted);
     }
 
     /// <summary>
@@ -242,24 +236,20 @@ internal static class CacheKeyBuilder
     /// </remarks>
     private static void AppendFilters(StringBuilder builder, IReadOnlyList<KeyValuePair<string, string>> filters)
     {
-        if (filters.Count == 0)
+        if (filters is not { Count: > 0 })
             return;
 
-        builder.Append("filters=");
-
-        // Sort by key then value for determinism (and to preserve duplicates in the hash)
+        // Sort by key then value for determinism (preserves duplicate keys in stable order)
         var sortedFilters = filters
             .OrderBy(kvp => kvp.Key, StringComparer.OrdinalIgnoreCase)
-            .ThenBy(kvp => kvp.Value, StringComparer.Ordinal);
-
-        // Build stable string representation
-        var filterString = string.Join("&",
-            sortedFilters.Select(kvp => $"{kvp.Key}={kvp.Value}"));
+            .ThenBy(kvp => kvp.Value, StringComparer.Ordinal)
+            .Select(kvp => $"{kvp.Key}={kvp.Value}");
 
         // Hash for brevity (filters can be very long)
+        var filterString = string.Join('&', sortedFilters);
         var hash = ComputeStableHash(filterString);
-        builder.Append(hash);
-        builder.Append(Separator);
+
+        builder.Append("filters=").Append(hash).Append(Separator);
     }
 
     /// <summary>
@@ -280,22 +270,17 @@ internal static class CacheKeyBuilder
     /// </remarks>
     private static string ComputeStableHash(string input)
     {
-        var bytes = Encoding.UTF8.GetBytes(input);
-        var hash = SHA256.HashData(bytes);
+        // Stack-allocate hash buffer for zero heap allocation
+        Span<byte> hashBuffer = stackalloc byte[SHA256.HashSizeInBytes];
+        SHA256.HashData(Encoding.UTF8.GetBytes(input), hashBuffer);
 
-        // Base64 encode and convert to URL-safe variant
-        var base64 = Convert.ToBase64String(hash);
+        // Take first 9 bytes (9 * 8 / 6 = 12 base64 chars = 72 bits of entropy)
+        // This gives us 2^72 possible values (extremely low collision probability)
+        var base64 = Convert.ToBase64String(hashBuffer[..9]);
 
-        // Replace standard base64 chars with URL-safe alternatives
-        // '+' -> '-', '/' -> '_', remove '=' padding
-        var urlSafe = base64
-            .Replace('+', '-')
-            .Replace('/', '_')
-            .TrimEnd('=');
-
-        // Take first 12 chars (12 * 6 = 72 bits of entropy)
-        // This gives us 2^72 possible values (extremely low collision probability).
-        return urlSafe[..12];
+        // Replace standard base64 chars with URL-safe alternatives: '+' -> '-', '/' -> '_'
+        // No padding removal needed since 9 bytes encodes cleanly to 12 chars
+        return base64.Replace('+', '-').Replace('/', '_');
     }
 
     /// <summary>

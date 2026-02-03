@@ -1,0 +1,21 @@
+# EditorConfig for Examples folder
+# Demo code has intentionally unused variables to show API usage patterns
+
+[*.cs]
+# Unused variables in demo code are intentional
+dotnet_diagnostic.S1481.severity = none
+
+# Empty classes are intentional as model stubs
+dotnet_diagnostic.S2094.severity = none
+
+# DateTime.Parse without format provider is acceptable in demo code
+dotnet_diagnostic.S6580.severity = none
+
+# DateTime without Kind is acceptable in demo code
+dotnet_diagnostic.S6562.severity = none
+
+# Commented code in demo files is acceptable (shows alternative approaches)
+dotnet_diagnostic.S125.severity = none
+
+# Loop simplification suggestions in demo code
+dotnet_diagnostic.S3267.severity = none

@@ -1,7 +1,7 @@
-using Microsoft.Extensions.Options;
-using Xunit;
 using Kontent.Ai.Delivery.Abstractions;
 using Kontent.Ai.Delivery.Handlers;
+using Microsoft.Extensions.Options;
+using Xunit;
 
 namespace Kontent.Ai.Delivery.Tests.Handlers;
 
