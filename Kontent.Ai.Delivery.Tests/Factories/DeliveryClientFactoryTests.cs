@@ -1,8 +1,8 @@
 using FluentAssertions;
 using Kontent.Ai.Delivery.Abstractions;
 using Microsoft.Extensions.DependencyInjection;
-using Xunit;
 using Microsoft.Extensions.Options;
+using Xunit;
 
 namespace Kontent.Ai.Delivery.Tests.Factories;
 

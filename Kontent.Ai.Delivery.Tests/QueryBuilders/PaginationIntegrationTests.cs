@@ -685,7 +685,8 @@ public sealed class PaginationIntegrationTests
 
         var json = $"{{\"items\": [{itemsJson}], \"modular_content\": {{}}}}";
         var response = new HttpResponseMessage(HttpStatusCode.OK) { Content = new StringContent(json, System.Text.Encoding.UTF8, "application/json") };
-        if (!string.IsNullOrEmpty(continuationToken)) response.Headers.Add("X-Continuation", continuationToken);
+        if (!string.IsNullOrEmpty(continuationToken))
+            response.Headers.Add("X-Continuation", continuationToken);
         return response;
     }
 

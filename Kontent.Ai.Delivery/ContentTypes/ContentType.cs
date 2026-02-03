@@ -1,6 +1,6 @@
 using System.Diagnostics;
-using Kontent.Ai.Delivery.ContentTypes.Element;
 using System.Text.Json.Serialization;
+using Kontent.Ai.Delivery.ContentTypes.Element;
 
 namespace Kontent.Ai.Delivery.ContentTypes;
 

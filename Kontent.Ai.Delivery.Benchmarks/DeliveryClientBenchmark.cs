@@ -1,9 +1,9 @@
-﻿using Kontent.Ai.Delivery.Abstractions;
 using BenchmarkDotNet.Attributes;
-using RichardSzalay.MockHttp;
+using Kontent.Ai.Delivery.Abstractions;
+using Kontent.Ai.Delivery.Benchmarks.ContentTypes;
 using Kontent.Ai.Delivery.Configuration;
 using Microsoft.Extensions.DependencyInjection;
-using Kontent.Ai.Delivery.Benchmarks.ContentTypes;
+using RichardSzalay.MockHttp;
 
 namespace Kontent.Ai.Delivery.Benchmarks;
 

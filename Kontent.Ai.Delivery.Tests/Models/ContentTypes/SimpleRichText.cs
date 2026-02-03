@@ -1,5 +1,5 @@
-using Kontent.Ai.Delivery.Abstractions;
 using System.Text.Json.Serialization;
+using Kontent.Ai.Delivery.Abstractions;
 
 namespace Kontent.Ai.Delivery.Tests.Models.ContentTypes;
 

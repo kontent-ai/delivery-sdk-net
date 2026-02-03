@@ -1,4 +1,4 @@
-﻿using System.Diagnostics;
+using System.Diagnostics;
 using System.Text.Json.Serialization;
 
 namespace Kontent.Ai.Delivery.TaxonomyGroups;

@@ -103,21 +103,24 @@ internal static class FilterValueSerializer
     internal static string SerializeArray(string[] values)
     {
         ArgumentNullException.ThrowIfNull(values);
-        if (values.Length == 0) throw new ArgumentException("Array cannot be empty. Provide at least one value.", nameof(values));
+        if (values.Length == 0)
+            throw new ArgumentException("Array cannot be empty. Provide at least one value.", nameof(values));
         return string.Join(",", values.Select(Serialize));
     }
 
     internal static string SerializeArray(double[] values)
     {
         ArgumentNullException.ThrowIfNull(values);
-        if (values.Length == 0) throw new ArgumentException("Array cannot be empty. Provide at least one value.", nameof(values));
+        if (values.Length == 0)
+            throw new ArgumentException("Array cannot be empty. Provide at least one value.", nameof(values));
         return string.Join(",", values.Select(Serialize));
     }
 
     internal static string SerializeArray(DateTime[] values)
     {
         ArgumentNullException.ThrowIfNull(values);
-        if (values.Length == 0) throw new ArgumentException("Array cannot be empty. Provide at least one value.", nameof(values));
+        if (values.Length == 0)
+            throw new ArgumentException("Array cannot be empty. Provide at least one value.", nameof(values));
         return string.Join(",", values.Select(Serialize));
     }
 }

@@ -1,4 +1,4 @@
-﻿using System.Net;
+using System.Net;
 using Kontent.Ai.Delivery.Abstractions;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Http.Resilience;
@@ -31,11 +31,13 @@ public class DefaultRetryPolicyTests
                 BackoffType = DelayBackoffType.Exponential,
                 ShouldHandle = args =>
                 {
-                    if (args.Outcome.Exception is HttpRequestException) return ValueTask.FromResult(true);
+                    if (args.Outcome.Exception is HttpRequestException)
+                        return ValueTask.FromResult(true);
                     if (args.Outcome.Result is HttpResponseMessage rsp)
                     {
                         var sc = (int)rsp.StatusCode;
-                        if (sc == 408 || sc >= 500) return ValueTask.FromResult(true);
+                        if (sc == 408 || sc >= 500)
+                            return ValueTask.FromResult(true);
                     }
                     return ValueTask.FromResult(false);
                 }
@@ -74,11 +76,13 @@ public class DefaultRetryPolicyTests
                 BackoffType = DelayBackoffType.Exponential,
                 ShouldHandle = args =>
                 {
-                    if (args.Outcome.Exception is HttpRequestException) return ValueTask.FromResult(true);
+                    if (args.Outcome.Exception is HttpRequestException)
+                        return ValueTask.FromResult(true);
                     if (args.Outcome.Result is HttpResponseMessage rsp)
                     {
                         var sc = (int)rsp.StatusCode;
-                        if (sc == 408 || sc >= 500) return ValueTask.FromResult(true);
+                        if (sc == 408 || sc >= 500)
+                            return ValueTask.FromResult(true);
                     }
                     return ValueTask.FromResult(false);
                 }
@@ -112,11 +116,13 @@ public class DefaultRetryPolicyTests
                 BackoffType = DelayBackoffType.Exponential,
                 ShouldHandle = args =>
                 {
-                    if (args.Outcome.Exception is HttpRequestException) return ValueTask.FromResult(true);
+                    if (args.Outcome.Exception is HttpRequestException)
+                        return ValueTask.FromResult(true);
                     if (args.Outcome.Result is HttpResponseMessage rsp)
                     {
                         var sc = (int)rsp.StatusCode;
-                        if (sc == 408 || sc >= 500) return ValueTask.FromResult(true);
+                        if (sc == 408 || sc >= 500)
+                            return ValueTask.FromResult(true);
                     }
                     return ValueTask.FromResult(false);
                 }
@@ -151,11 +157,13 @@ public class DefaultRetryPolicyTests
                 BackoffType = DelayBackoffType.Exponential,
                 ShouldHandle = args =>
                 {
-                    if (args.Outcome.Exception is HttpRequestException) return ValueTask.FromResult(true);
+                    if (args.Outcome.Exception is HttpRequestException)
+                        return ValueTask.FromResult(true);
                     if (args.Outcome.Result is HttpResponseMessage rsp)
                     {
                         var sc = (int)rsp.StatusCode;
-                        if (sc == 408 || sc >= 500) return ValueTask.FromResult(true);
+                        if (sc == 408 || sc >= 500)
+                            return ValueTask.FromResult(true);
                     }
                     return ValueTask.FromResult(false);
                 }

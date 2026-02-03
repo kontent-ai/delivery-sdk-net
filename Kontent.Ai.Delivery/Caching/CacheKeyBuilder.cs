@@ -220,7 +220,8 @@ internal static class CacheKeyBuilder
 
         for (int i = 0; i < sorted.Length; i++)
         {
-            if (i > 0) builder.Append(ArraySeparator);
+            if (i > 0)
+                builder.Append(ArraySeparator);
             builder.Append(sorted[i]);
         }
     }

@@ -117,7 +117,8 @@ internal static class ReadmeExamples
                     }
                     currentPage = nextPage;
                 }
-                else break;
+                else
+                    break;
             }
         }
     }

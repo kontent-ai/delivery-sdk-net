@@ -1,5 +1,5 @@
-using System.Net.Http.Headers;
 using System.Net;
+using System.Net.Http.Headers;
 
 namespace Kontent.Ai.Delivery.SharedModels;
 

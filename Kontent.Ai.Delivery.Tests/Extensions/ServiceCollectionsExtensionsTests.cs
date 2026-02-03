@@ -1,4 +1,4 @@
-﻿using System.Collections.ObjectModel;
+using System.Collections.ObjectModel;
 using AngleSharp.Html.Parser;
 using Kontent.Ai.Delivery.Abstractions;
 using Kontent.Ai.Delivery.Api;
