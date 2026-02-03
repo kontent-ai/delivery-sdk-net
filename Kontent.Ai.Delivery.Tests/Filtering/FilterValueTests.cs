@@ -7,16 +7,16 @@ namespace Kontent.Ai.Delivery.Tests.Filtering;
 public class FilterValueTests
 {
     [Fact]
-    public void Serialize_String_UrlEncoded()
-        => Assert.Equal("hello%20world", FilterValueSerializer.Serialize("hello world"));
+    public void Serialize_String_IsNotUrlEncoded()
+        => Assert.Equal("hello world", FilterValueSerializer.Serialize("hello world"));
 
     [Fact]
-    public void Serialize_String_SpecialCharacters()
-        => Assert.Equal("coffee%20%26%20tea", FilterValueSerializer.Serialize("coffee & tea"));
+    public void Serialize_String_SpecialCharacters_AreNotUrlEncoded()
+        => Assert.Equal("coffee & tea", FilterValueSerializer.Serialize("coffee & tea"));
 
     [Fact]
-    public void Serialize_String_UnicodeCharacters()
-        => Assert.Contains("%", FilterValueSerializer.Serialize("café naïve"));
+    public void Serialize_String_UnicodeCharacters_AreNotUrlEncoded()
+        => Assert.Equal("café naïve", FilterValueSerializer.Serialize("café naïve"));
 
     [Fact]
     public void Serialize_String_ThrowsOnNull()
@@ -51,10 +51,10 @@ public class FilterValueTests
     }
 
     [Fact]
-    public void SerializeArray_String_CommaSeparatedAndEncoded()
+    public void SerializeArray_String_CommaSeparated_NotUrlEncoded()
     {
         var serialized = FilterValueSerializer.SerializeArray(["hello world", "foo bar"]);
-        Assert.Equal("hello%20world,foo%20bar", serialized);
+        Assert.Equal("hello world,foo bar", serialized);
     }
 
     [Fact]

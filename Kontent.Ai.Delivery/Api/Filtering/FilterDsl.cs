@@ -1,5 +1,4 @@
 using System.Globalization;
-using System.Text.Encodings.Web;
 
 namespace Kontent.Ai.Delivery.Api.Filtering;
 
@@ -29,14 +28,11 @@ internal static class FilterPath
         }
 
         // Avoid accepting dotted input with the wrong prefix (e.g. System("elements.title")).
-        if (trimmed.Contains('.', StringComparison.Ordinal))
-        {
-            throw new ArgumentException(
+        return trimmed.Contains('.', StringComparison.Ordinal)
+            ? throw new ArgumentException(
                 $"Property name '{name}' must be provided without a prefix. Use '{prefix}.' prefix only.",
-                nameof(name));
-        }
-
-        return $"{prefix}.{trimmed}";
+                nameof(name))
+            : $"{prefix}.{trimmed}";
     }
 }
 
@@ -45,7 +41,8 @@ internal static class FilterValueSerializer
     internal static string Serialize(string value)
     {
         ArgumentNullException.ThrowIfNull(value);
-        return UrlEncoder.Default.Encode(value);
+        // Encoding is handled by Refit.
+        return value;
     }
 
     internal static string Serialize(bool value) => value.ToString().ToLowerInvariant();
@@ -58,6 +55,8 @@ internal static class FilterValueSerializer
         {
             DateTimeKind.Utc => value,
             DateTimeKind.Local => value.ToUniversalTime(),
+            // DateTimeKind.Unspecified is treated as UTC (no offset conversion).
+            // Prefer passing DateTime values with Kind=Utc or use DateTimeOffset and convert explicitly.
             _ => DateTime.SpecifyKind(value, DateTimeKind.Utc)
         };
 
@@ -66,11 +65,9 @@ internal static class FilterValueSerializer
 
     internal static string SerializeRange(double lower, double upper)
     {
-        if (lower > upper)
-        {
-            throw new ArgumentException($"Invalid range: lower bound ({lower}) cannot be greater than upper bound ({upper}).");
-        }
-        return $"{Serialize(lower)},{Serialize(upper)}";
+        return lower > upper
+            ? throw new ArgumentException($"Invalid range: lower bound ({lower}) cannot be greater than upper bound ({upper}).")
+            : $"{Serialize(lower)},{Serialize(upper)}";
     }
 
     internal static string SerializeRange(DateTime lower, DateTime upper)
@@ -78,11 +75,9 @@ internal static class FilterValueSerializer
         // Normalize before comparison to avoid surprising Local/Unspecified ordering.
         var l = DateTime.Parse(Serialize(lower), CultureInfo.InvariantCulture, DateTimeStyles.AdjustToUniversal);
         var u = DateTime.Parse(Serialize(upper), CultureInfo.InvariantCulture, DateTimeStyles.AdjustToUniversal);
-        if (l > u)
-        {
-            throw new ArgumentException($"Invalid date range: lower bound ({lower:yyyy-MM-dd HH:mm:ss}) cannot be after upper bound ({upper:yyyy-MM-dd HH:mm:ss}).");
-        }
-        return $"{Serialize(lower)},{Serialize(upper)}";
+        return l > u
+            ? throw new ArgumentException($"Invalid date range: lower bound ({lower:yyyy-MM-dd HH:mm:ss}) cannot be after upper bound ({upper:yyyy-MM-dd HH:mm:ss}).")
+            : $"{Serialize(lower)},{Serialize(upper)}";
     }
 
     internal static string SerializeRange(string lower, string upper)
@@ -90,38 +85,35 @@ internal static class FilterValueSerializer
         ArgumentNullException.ThrowIfNull(lower);
         ArgumentNullException.ThrowIfNull(upper);
 
-        if (string.Compare(lower, upper, StringComparison.Ordinal) > 0)
-        {
-            throw new ArgumentException(
+        return string.Compare(lower, upper, StringComparison.Ordinal) > 0
+            ? throw new ArgumentException(
                 $"Invalid string range: lower bound (\"{lower}\") is lexicographically after upper bound (\"{upper}\").",
-                nameof(lower));
-        }
-
-        return $"{Serialize(lower)},{Serialize(upper)}";
+                nameof(lower))
+            : $"{Serialize(lower)},{Serialize(upper)}";
     }
 
     internal static string SerializeArray(string[] values)
     {
         ArgumentNullException.ThrowIfNull(values);
-        if (values.Length == 0)
-            throw new ArgumentException("Array cannot be empty. Provide at least one value.", nameof(values));
-        return string.Join(",", values.Select(Serialize));
+        return values.Length == 0
+            ? throw new ArgumentException("Array cannot be empty. Provide at least one value.", nameof(values))
+            : string.Join(",", values.Select(Serialize));
     }
 
     internal static string SerializeArray(double[] values)
     {
         ArgumentNullException.ThrowIfNull(values);
-        if (values.Length == 0)
-            throw new ArgumentException("Array cannot be empty. Provide at least one value.", nameof(values));
-        return string.Join(",", values.Select(Serialize));
+        return values.Length == 0
+            ? throw new ArgumentException("Array cannot be empty. Provide at least one value.", nameof(values))
+            : string.Join(",", values.Select(Serialize));
     }
 
     internal static string SerializeArray(DateTime[] values)
     {
         ArgumentNullException.ThrowIfNull(values);
-        if (values.Length == 0)
-            throw new ArgumentException("Array cannot be empty. Provide at least one value.", nameof(values));
-        return string.Join(",", values.Select(Serialize));
+        return values.Length == 0
+            ? throw new ArgumentException("Array cannot be empty. Provide at least one value.", nameof(values))
+            : string.Join(",", values.Select(Serialize));
     }
 }
 
@@ -190,13 +182,13 @@ internal readonly struct ItemFieldFilter<TBuilder>(TBuilder builder, string path
 
     public TBuilder IsEmpty()
     {
-        add(new KeyValuePair<string, string>(path, FilterSuffix.Empty));
+        add(new KeyValuePair<string, string>(path + FilterSuffix.Empty, string.Empty));
         return builder;
     }
 
     public TBuilder IsNotEmpty()
     {
-        add(new KeyValuePair<string, string>(path, FilterSuffix.Nempty));
+        add(new KeyValuePair<string, string>(path + FilterSuffix.Nempty, string.Empty));
         return builder;
     }
 

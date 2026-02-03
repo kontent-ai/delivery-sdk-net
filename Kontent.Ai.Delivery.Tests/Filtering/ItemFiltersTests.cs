@@ -49,7 +49,7 @@ public class ItemFiltersTests
         // not strings. Use an array-like element codename in examples.
         f.Element("category").Contains("coffee & tea");
 
-        Assert.Contains("%26", filters.Single(kvp => kvp.Key == "elements.category[contains]").Value);
+        Assert.Contains("&", filters.Single(kvp => kvp.Key == "elements.category[contains]").Value);
     }
 
     [Fact]
@@ -71,6 +71,6 @@ public class ItemFiltersTests
 
         f.Element("description").IsEmpty();
 
-        Assert.Contains(new KeyValuePair<string, string>("elements.description", "[empty]"), filters);
+        Assert.Contains(new KeyValuePair<string, string>("elements.description[empty]", string.Empty), filters);
     }
 }

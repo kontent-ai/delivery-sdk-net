@@ -192,7 +192,7 @@ public class FilterTests
 
         f.Element("title").IsEmpty();
 
-        Assert.Contains(new KeyValuePair<string, string>("elements.title", "[empty]"), filters);
+        Assert.Contains(new KeyValuePair<string, string>("elements.title[empty]", string.Empty), filters);
     }
 
     [Fact]
@@ -203,7 +203,7 @@ public class FilterTests
 
         f.Element("description").IsNotEmpty();
 
-        Assert.Contains(new KeyValuePair<string, string>("elements.description", "[nempty]"), filters);
+        Assert.Contains(new KeyValuePair<string, string>("elements.description[nempty]", string.Empty), filters);
     }
 
     #endregion
@@ -322,8 +322,8 @@ public class FilterTests
 
         f.Element("title").IsEqualTo("Hello & World");
 
-        // Values are URL-encoded by the filter builder
-        Assert.Contains(new KeyValuePair<string, string>("elements.title[eq]", "Hello%20%26%20World"), filters);
+        // Values are encoded during request construction (Refit), not in the DSL.
+        Assert.Contains(new KeyValuePair<string, string>("elements.title[eq]", "Hello & World"), filters);
     }
 
     #endregion
