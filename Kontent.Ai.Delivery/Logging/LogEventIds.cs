@@ -76,6 +76,9 @@ internal static class LogEventIds
     /// <summary>Partial items cached due to type mismatch.</summary>
     public const int CachePartialItemsWarning = 1150;
 
+    /// <summary>Best-effort cache operation failed (non-critical).</summary>
+    public const int CacheBestEffortFailed = 1160;
+
     // ========== HTTP Handlers (1200-1299) ==========
 
     /// <summary>Authentication header was set on request.</summary>

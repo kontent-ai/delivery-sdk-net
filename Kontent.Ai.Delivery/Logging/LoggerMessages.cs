@@ -129,6 +129,12 @@ internal static partial class LoggerMessages
         Message = "Partial cache: Only {CachedCount} of {TotalCount} items could be cached. Some items may not be the expected concrete type.")]
     public static partial void CachePartialItemsWarning(ILogger logger, int cachedCount, int totalCount);
 
+    [LoggerMessage(
+        EventId = LogEventIds.CacheBestEffortFailed,
+        Level = LogLevel.Trace,
+        Message = "Best-effort cache operation failed for '{Operation}' (non-critical, cache behavior not affected)")]
+    public static partial void CacheBestEffortFailed(ILogger logger, string operation, Exception exception);
+
     // ========== HTTP Handlers ==========
 
     [LoggerMessage(
