@@ -1144,6 +1144,16 @@ var resolver = new HtmlResolverBuilder()
     .Build();
 ```
 
+### Deeply Nested HTML (Max Parsing Depth)
+
+**Problem**: Very deeply nested rich text HTML can cause excessive recursion or (in extreme cases) a stack overflow during parsing.
+
+**Solution**: The SDK includes a max parsing depth guard in rich text processing. If you suspect deep nesting:
+
+- Simplify the authored HTML structure (e.g., reduce deeply nested lists/tables)
+- Prefer resolving/rendering strategies that avoid creating extremely deep node trees
+- Enable Debug logging for `Kontent.Ai.Delivery` to see diagnostic messages when the max depth is exceeded
+
 ### Async Deadlocks
 
 **Problem**: Application hangs when resolving rich text.

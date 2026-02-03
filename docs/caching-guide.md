@@ -944,6 +944,18 @@ public class StaleWhileRevalidateCache : IDeliveryCacheManager
 }
 ```
 
+### 7. Prevent Cache Stampede (Request Coalescing)
+
+In high-traffic scenarios, a popular cache key can expire (or be invalidated) and cause many concurrent requests to miss the cache at the same time. If every request then calls the Delivery API, you get a spike of redundant calls (the "thundering herd" problem).
+
+The SDK mitigates this for cached query execution by **coalescing concurrent cache misses**:
+- The first request performs the API call and populates the cache
+- Concurrent requests for the same cache key wait for the first request to finish (then read the cached result)
+
+Implementation details:
+- Coalescing is **scoped per `IDeliveryCacheManager` instance** (so different named clients / cache managers do not block each other)
+- Lock entries are cleaned up automatically to avoid unbounded growth in long-running applications
+
 ## Monitoring and Diagnostics
 
 ### Cache Hit Rate
