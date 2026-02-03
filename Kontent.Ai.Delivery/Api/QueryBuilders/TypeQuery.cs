@@ -96,7 +96,7 @@ internal sealed class TypeQuery(
 
     private void LogQueryCompleted(Stopwatch? stopwatch, HttpStatusCode statusCode, bool cacheHit)
     {
-        if (_logger == null)
+        if (_logger is null)
             return;
         stopwatch?.Stop();
         LoggerMessages.QueryCompleted(_logger, "Type", _codename,

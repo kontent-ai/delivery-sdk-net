@@ -96,7 +96,7 @@ internal sealed class TypeProvider : ITypeProvider
 
     private static IEnumerable<Assembly> GetReferencedAssemblies(Assembly assembly)
     {
-        var loaded = new HashSet<string>();
+        HashSet<string> loaded = [];
 
         foreach (var reference in assembly.GetReferencedAssemblies())
         {

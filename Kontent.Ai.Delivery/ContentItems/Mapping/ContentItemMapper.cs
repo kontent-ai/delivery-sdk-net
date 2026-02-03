@@ -326,7 +326,7 @@ internal sealed class ContentItemMapper
         }
 
         var defaultPreset = _deliveryOptions.CurrentValue.DefaultRenditionPreset;
-        var assets = new List<Asset>();
+        List<Asset> assets = [];
 
         foreach (var assetEl in arrayValue.EnumerateArray())
         {
