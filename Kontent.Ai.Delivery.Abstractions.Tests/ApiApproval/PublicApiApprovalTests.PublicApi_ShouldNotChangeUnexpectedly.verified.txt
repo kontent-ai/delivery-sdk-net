@@ -1,0 +1,572 @@
+﻿// Kontent.Ai.Delivery.Abstractions
+public sealed class BlockResolver`1 : MulticastDelegate
+    IAsyncResult BeginInvoke(TBlock block, Func`2 resolveChildren, AsyncCallback callback, Object object)
+    ValueTask`1 EndInvoke(IAsyncResult result)
+    ValueTask`1 Invoke(TBlock block, Func`2 resolveChildren)
+
+// Kontent.Ai.Delivery.Abstractions
+public sealed class DeliveryOptions : IValidatableObject
+    String DefaultRenditionPreset { get; set; }
+    Boolean EnableResilience { get; set; }
+    String EnvironmentId { get; set; }
+    Boolean IncludeTotalCount { get; set; }
+    String PreviewApiKey { get; set; }
+    String PreviewEndpoint { get; set; }
+    String ProductionEndpoint { get; set; }
+    String SecureAccessApiKey { get; set; }
+    Boolean UsePreviewApi { get; set; }
+    Boolean UseSecureAccess { get; set; }
+    Boolean WaitForLoadingNewContent { get; set; }
+    IEnumerable`1 Validate(ValidationContext validationContext)
+
+// Kontent.Ai.Delivery.Abstractions
+public sealed class DeliveryOptionsExtensions
+
+// Kontent.Ai.Delivery.Abstractions
+public sealed class HtmlNodePredicate : MulticastDelegate
+    IAsyncResult BeginInvoke(IHtmlNode node, AsyncCallback callback, Object object)
+    Boolean EndInvoke(IAsyncResult result)
+    Boolean Invoke(IHtmlNode node)
+
+// Kontent.Ai.Delivery.Abstractions
+public interface IAsset
+    String Description { get; }
+    Int32 Height { get; }
+    String Name { get; }
+    IReadOnlyDictionary`2 Renditions { get; }
+    Int32 Size { get; }
+    String Type { get; }
+    String Url { get; }
+    Int32 Width { get; }
+
+// Kontent.Ai.Delivery.Abstractions
+public interface IAssetRendition
+    Int32 Height { get; }
+    String PresetId { get; }
+    String Query { get; }
+    String RenditionId { get; }
+    Int32 Width { get; }
+
+// Kontent.Ai.Delivery.Abstractions
+public interface IAssetUsedInQuery
+    IAsyncEnumerable`1 EnumerateItemsAsync(CancellationToken cancellationToken)
+    IAssetUsedInQuery WaitForLoadingNewContent(Boolean enabled)
+
+// Kontent.Ai.Delivery.Abstractions
+public interface IBlockWithChildren : IRichTextBlock
+    IReadOnlyList`1 Children { get; }
+
+// Kontent.Ai.Delivery.Abstractions
+public interface IContentDeserializer
+    Object DeserializeContentItem(String json, Type modelType)
+    Object DeserializeContentItem(JsonElement jsonElement, Type modelType)
+
+// Kontent.Ai.Delivery.Abstractions
+public interface IContentElement
+    String Codename { get; }
+    String Name { get; }
+    String Type { get; }
+
+// Kontent.Ai.Delivery.Abstractions
+public interface IContentElementValue`1
+    String Codename { get; }
+    String Name { get; }
+    String Type { get; }
+    T Value { get; }
+
+// Kontent.Ai.Delivery.Abstractions
+public interface IContentItem
+    Object Elements { get; }
+    IContentItemSystemAttributes System { get; }
+
+// Kontent.Ai.Delivery.Abstractions
+public interface IContentItem`1 : IContentItem
+    TModel Elements { get; }
+
+// Kontent.Ai.Delivery.Abstractions
+public interface IContentItemLink : IRichTextBlock, IBlockWithChildren
+    IReadOnlyDictionary`2 Attributes { get; }
+    Guid ItemId { get; }
+    IContentLink Metadata { get; }
+
+// Kontent.Ai.Delivery.Abstractions
+public interface IContentItemSystemAttributes : ISystemAttributes, ISystemBaseAttributes
+    String Collection { get; }
+    String Language { get; }
+    IReadOnlyList`1 SitemapLocation { get; }
+    String Type { get; }
+    String Workflow { get; }
+    String WorkflowStep { get; }
+
+// Kontent.Ai.Delivery.Abstractions
+public interface IContentLink
+    String Codename { get; }
+    String ContentTypeCodename { get; }
+    Guid Id { get; }
+    String UrlSlug { get; }
+
+// Kontent.Ai.Delivery.Abstractions
+public interface IContentType
+    IReadOnlyDictionary`2 Elements { get; }
+    IContentTypeSystemAttributes System { get; }
+
+// Kontent.Ai.Delivery.Abstractions
+public interface IContentTypeSystemAttributes : ISystemAttributes, ISystemBaseAttributes
+
+// Kontent.Ai.Delivery.Abstractions
+public interface IDateTimeContent
+    String DisplayTimezone { get; }
+    Nullable`1 Value { get; }
+
+// Kontent.Ai.Delivery.Abstractions
+public interface IDeliveryCacheManager
+    Task`1 GetAsync(String cacheKey, CancellationToken cancellationToken)
+    Task InvalidateAsync(CancellationToken cancellationToken, String[] dependencyKeys)
+    Task SetAsync(String cacheKey, T value, IEnumerable`1 dependencies, Nullable`1 expiration, CancellationToken cancellationToken)
+
+// Kontent.Ai.Delivery.Abstractions
+public interface IDeliveryCachePurger
+    Task PurgeAsync(CancellationToken cancellationToken)
+
+// Kontent.Ai.Delivery.Abstractions
+public interface IDeliveryClient
+    IAssetUsedInQuery GetAssetUsedIn(String codename)
+    ITypeElementQuery GetContentElement(String contentTypeCodename, String contentElementCodename)
+    IItemQuery`1 GetItem(String codename)
+    IDynamicItemQuery GetItem(String codename)
+    IItemsQuery`1 GetItems()
+    IDynamicItemsQuery GetItems()
+    IEnumerateItemsQuery`1 GetItemsFeed()
+    IDynamicEnumerateItemsQuery GetItemsFeed()
+    IItemUsedInQuery GetItemUsedIn(String codename)
+    ILanguagesQuery GetLanguages()
+    ITaxonomiesQuery GetTaxonomies()
+    ITaxonomyQuery GetTaxonomy(String codename)
+    ITypeQuery GetType(String codename)
+    ITypesQuery GetTypes()
+
+// Kontent.Ai.Delivery.Abstractions
+public interface IDeliveryClientContainer : IDisposable, IAsyncDisposable
+    IDeliveryClient Client { get; }
+
+// Kontent.Ai.Delivery.Abstractions
+public interface IDeliveryClientFactory
+    IDeliveryClient Get(String name)
+    IDeliveryClient Get()
+
+// Kontent.Ai.Delivery.Abstractions
+public interface IDeliveryItemListingResponse : IPageable
+    Boolean HasNextPage { get; }
+    IReadOnlyList`1 Items { get; }
+    IReadOnlyDictionary`2 ModularContent { get; }
+    Task`1 FetchNextPageAsync(CancellationToken cancellationToken)
+
+// Kontent.Ai.Delivery.Abstractions
+public interface IDeliveryItemListingResponse`1 : IPageable
+    Boolean HasNextPage { get; }
+    IReadOnlyList`1 Items { get; }
+    Task`1 FetchNextPageAsync(CancellationToken cancellationToken)
+
+// Kontent.Ai.Delivery.Abstractions
+public interface IDeliveryItemsFeedResponse
+    Boolean HasNextPage { get; }
+    IReadOnlyList`1 Items { get; }
+    IReadOnlyDictionary`2 ModularContent { get; }
+    Task`1 FetchNextPageAsync(CancellationToken cancellationToken)
+
+// Kontent.Ai.Delivery.Abstractions
+public interface IDeliveryItemsFeedResponse`1
+    Boolean HasNextPage { get; }
+    IReadOnlyList`1 Items { get; }
+    Task`1 FetchNextPageAsync(CancellationToken cancellationToken)
+
+// Kontent.Ai.Delivery.Abstractions
+public interface IDeliveryLanguageListingResponse : IPageable
+    Boolean HasNextPage { get; }
+    IReadOnlyList`1 Languages { get; }
+    Task`1 FetchNextPageAsync(CancellationToken cancellationToken)
+
+// Kontent.Ai.Delivery.Abstractions
+public interface IDeliveryOptionsBuilder
+    DeliveryOptions Build()
+    IDeliveryOptionsBuilder DisableRetryPolicy()
+    IDeliveryOptionsBuilder UsePreviewApi(String previewApiKey)
+    IDeliveryOptionsBuilder UseProductionApi()
+    IDeliveryOptionsBuilder UseProductionApi(String secureAccessApiKey)
+    IDeliveryOptionsBuilder WaitForLoadingNewContent()
+    IDeliveryOptionsBuilder WithCustomEndpoint(String endpoint)
+    IDeliveryOptionsBuilder WithCustomEndpoint(Uri endpoint)
+    IDeliveryOptionsBuilder WithDefaultRenditionPreset(String presetCodename)
+    IDeliveryOptionsBuilder WithEnvironmentId(String environmentId)
+    IDeliveryOptionsBuilder WithEnvironmentId(Guid environmentId)
+
+// Kontent.Ai.Delivery.Abstractions
+public interface IDeliveryResult`1
+    String ContinuationToken { get; }
+    IError Error { get; }
+    Boolean HasStaleContent { get; }
+    Boolean IsCacheHit { get; }
+    Boolean IsSuccess { get; }
+    String RequestUrl { get; }
+    HttpResponseHeaders ResponseHeaders { get; }
+    HttpStatusCode StatusCode { get; }
+    T Value { get; }
+
+// Kontent.Ai.Delivery.Abstractions
+public interface IDeliveryTaxonomyListingResponse : IPageable
+    Boolean HasNextPage { get; }
+    IReadOnlyList`1 Taxonomies { get; }
+    Task`1 FetchNextPageAsync(CancellationToken cancellationToken)
+
+// Kontent.Ai.Delivery.Abstractions
+public interface IDeliveryTypeListingResponse : IPageable
+    Boolean HasNextPage { get; }
+    IReadOnlyList`1 Types { get; }
+    Task`1 FetchNextPageAsync(CancellationToken cancellationToken)
+
+// Kontent.Ai.Delivery.Abstractions
+public interface IDynamicElements : IReadOnlyDictionary`2, IReadOnlyCollection`1, IEnumerable`1, IEnumerable
+
+// Kontent.Ai.Delivery.Abstractions
+public interface IDynamicEnumerateItemsQuery
+    IAsyncEnumerable`1 EnumerateItemsAsync(CancellationToken cancellationToken)
+    Task`1 ExecuteAsync(CancellationToken cancellationToken)
+    IDynamicEnumerateItemsQuery OrderBy(String elementOrAttributePath, OrderingMode orderingMode)
+    IDynamicEnumerateItemsQuery WaitForLoadingNewContent(Boolean enabled)
+    IDynamicEnumerateItemsQuery Where(Func`2 build)
+    IDynamicEnumerateItemsQuery WithElements(String[] elementCodenames)
+    IDynamicEnumerateItemsQuery WithLanguage(String languageCodename, LanguageFallbackMode languageFallbackMode)
+
+// Kontent.Ai.Delivery.Abstractions
+public interface IDynamicItemQuery
+    IDynamicItemQuery Depth(Int32 depth)
+    Task`1 ExecuteAsync(CancellationToken cancellationToken)
+    IDynamicItemQuery WaitForLoadingNewContent(Boolean enabled)
+    IDynamicItemQuery WithElements(String[] elementCodenames)
+    IDynamicItemQuery WithLanguage(String languageCodename, LanguageFallbackMode languageFallbackMode)
+    IDynamicItemQuery WithoutElements(String[] elementCodenames)
+
+// Kontent.Ai.Delivery.Abstractions
+public interface IDynamicItemsQuery
+    IDynamicItemsQuery Depth(Int32 depth)
+    Task`1 ExecuteAsync(CancellationToken cancellationToken)
+    IDynamicItemsQuery Limit(Int32 limit)
+    IDynamicItemsQuery OrderBy(String elementOrAttributePath, OrderingMode orderingMode)
+    IDynamicItemsQuery Skip(Int32 skip)
+    IDynamicItemsQuery WaitForLoadingNewContent(Boolean enabled)
+    IDynamicItemsQuery Where(Func`2 build)
+    IDynamicItemsQuery WithElements(String[] elementCodenames)
+    IDynamicItemsQuery WithLanguage(String languageCodename, LanguageFallbackMode languageFallbackMode)
+    IDynamicItemsQuery WithoutElements(String[] elementCodenames)
+    IDynamicItemsQuery WithTotalCount()
+
+// Kontent.Ai.Delivery.Abstractions
+public interface IEmbeddedContent : IContentItem, IRichTextBlock
+
+// Kontent.Ai.Delivery.Abstractions
+public interface IEmbeddedContent`1 : IEmbeddedContent, IContentItem, IRichTextBlock, IContentItem`1
+
+// Kontent.Ai.Delivery.Abstractions
+public interface IEnumerateItemsQuery`1
+    IAsyncEnumerable`1 EnumerateItemsAsync(CancellationToken cancellationToken)
+    Task`1 ExecuteAsync(CancellationToken cancellationToken)
+    IEnumerateItemsQuery`1 OrderBy(String elementOrAttributePath, OrderingMode orderingMode)
+    IEnumerateItemsQuery`1 WaitForLoadingNewContent(Boolean enabled)
+    IEnumerateItemsQuery`1 Where(Func`2 build)
+    IEnumerateItemsQuery`1 WithElements(String[] elementCodenames)
+    IEnumerateItemsQuery`1 WithLanguage(String languageCodename, LanguageFallbackMode languageFallbackMode)
+
+// Kontent.Ai.Delivery.Abstractions
+public interface IError
+    Nullable`1 ErrorCode { get; }
+    Exception Exception { get; }
+    String Message { get; }
+    String RequestId { get; }
+    Nullable`1 SpecificCode { get; }
+
+// Kontent.Ai.Delivery.Abstractions
+public interface IHtmlNode : IBlockWithChildren, IRichTextBlock
+    IReadOnlyDictionary`2 Attributes { get; }
+    String TagName { get; }
+
+// Kontent.Ai.Delivery.Abstractions
+public interface IHtmlResolver
+    ValueTask`1 ResolveAsync(IRichTextContent richText, CancellationToken cancellationToken)
+
+// Kontent.Ai.Delivery.Abstractions
+public interface IHtmlResolverBuilder
+    IHtmlResolver Build()
+    IHtmlResolverBuilder WithContentItemLinkResolver(BlockResolver`1 resolver)
+    IHtmlResolverBuilder WithContentItemLinkResolver(String contentTypeCodename, BlockResolver`1 resolver)
+    IHtmlResolverBuilder WithContentItemLinkResolvers(IReadOnlyDictionary`2 resolvers)
+    IHtmlResolverBuilder WithContentItemLinkResolvers(ValueTuple`2[] resolvers)
+    IHtmlResolverBuilder WithContentResolver(String contentTypeCodename, Func`2 resolver)
+    IHtmlResolverBuilder WithContentResolver(String contentTypeCodename, Func`2 resolver)
+    IHtmlResolverBuilder WithContentResolver(Func`2 resolver)
+    IHtmlResolverBuilder WithContentResolver(Func`2 resolver)
+    IHtmlResolverBuilder WithContentResolvers(IReadOnlyDictionary`2 resolvers)
+    IHtmlResolverBuilder WithContentResolvers(ValueTuple`2[] resolvers)
+    IHtmlResolverBuilder WithContentResolvers(IReadOnlyDictionary`2 resolvers)
+    IHtmlResolverBuilder WithContentResolvers(ValueTuple`2[] resolvers)
+    IHtmlResolverBuilder WithHtmlElementResolver(BlockResolver`1 resolver)
+    IHtmlResolverBuilder WithHtmlNodeResolver(HtmlNodePredicate predicate, BlockResolver`1 resolver, String description)
+    IHtmlResolverBuilder WithHtmlNodeResolver(String tagName, BlockResolver`1 resolver)
+    IHtmlResolverBuilder WithHtmlNodeResolverForAttribute(String attributeName, String attributeValue, BlockResolver`1 resolver)
+    IHtmlResolverBuilder WithInlineImageResolver(BlockResolver`1 resolver)
+    IHtmlResolverBuilder WithTextNodeResolver(BlockResolver`1 resolver)
+
+// Kontent.Ai.Delivery.Abstractions
+public interface IInlineImage : IRichTextBlock
+    String Description { get; }
+    Int32 Height { get; }
+    Guid ImageId { get; }
+    String Url { get; }
+    Int32 Width { get; }
+
+// Kontent.Ai.Delivery.Abstractions
+public interface IItemFieldFilter`1
+    TBuilder Contains(String value)
+    TBuilder ContainsAll(String[] values)
+    TBuilder ContainsAny(String[] values)
+    TBuilder IsEmpty()
+    TBuilder IsEqualTo(String value)
+    TBuilder IsEqualTo(Double value)
+    TBuilder IsEqualTo(DateTime value)
+    TBuilder IsEqualTo(Boolean value)
+    TBuilder IsGreaterThan(Double value)
+    TBuilder IsGreaterThan(DateTime value)
+    TBuilder IsGreaterThan(String value)
+    TBuilder IsGreaterThanOrEqualTo(Double value)
+    TBuilder IsGreaterThanOrEqualTo(DateTime value)
+    TBuilder IsGreaterThanOrEqualTo(String value)
+    TBuilder IsIn(String[] values)
+    TBuilder IsIn(Double[] values)
+    TBuilder IsIn(DateTime[] values)
+    TBuilder IsLessThan(Double value)
+    TBuilder IsLessThan(DateTime value)
+    TBuilder IsLessThan(String value)
+    TBuilder IsLessThanOrEqualTo(Double value)
+    TBuilder IsLessThanOrEqualTo(DateTime value)
+    TBuilder IsLessThanOrEqualTo(String value)
+    TBuilder IsNotEmpty()
+    TBuilder IsNotEqualTo(String value)
+    TBuilder IsNotEqualTo(Double value)
+    TBuilder IsNotEqualTo(DateTime value)
+    TBuilder IsNotEqualTo(Boolean value)
+    TBuilder IsNotIn(String[] values)
+    TBuilder IsNotIn(Double[] values)
+    TBuilder IsNotIn(DateTime[] values)
+    TBuilder IsWithinRange(Double lower, Double upper)
+    TBuilder IsWithinRange(DateTime lower, DateTime upper)
+    TBuilder IsWithinRange(String lower, String upper)
+
+// Kontent.Ai.Delivery.Abstractions
+public interface IItemQuery`1
+    IItemQuery`1 Depth(Int32 depth)
+    Task`1 ExecuteAsync(CancellationToken cancellationToken)
+    IItemQuery`1 WaitForLoadingNewContent(Boolean enabled)
+    IItemQuery`1 WithElements(String[] elementCodenames)
+    IItemQuery`1 WithLanguage(String languageCodename)
+    IItemQuery`1 WithoutElements(String[] elementCodenames)
+
+// Kontent.Ai.Delivery.Abstractions
+public interface IItemsFilterBuilder
+    IItemFieldFilter`1 Element(String elementCodename)
+    IItemFieldFilter`1 System(String propertyName)
+
+// Kontent.Ai.Delivery.Abstractions
+public interface IItemsQuery`1
+    IItemsQuery`1 Depth(Int32 depth)
+    Task`1 ExecuteAsync(CancellationToken cancellationToken)
+    IItemsQuery`1 Limit(Int32 limit)
+    IItemsQuery`1 OrderBy(String elementOrAttributePath, OrderingMode orderingMode)
+    IItemsQuery`1 Skip(Int32 skip)
+    IItemsQuery`1 WaitForLoadingNewContent(Boolean enabled)
+    IItemsQuery`1 Where(Func`2 build)
+    IItemsQuery`1 WithElements(String[] elementCodenames)
+    IItemsQuery`1 WithLanguage(String languageCodename, LanguageFallbackMode languageFallbackMode)
+    IItemsQuery`1 WithoutElements(String[] elementCodenames)
+    IItemsQuery`1 WithTotalCount()
+
+// Kontent.Ai.Delivery.Abstractions
+public interface IItemTypingStrategy
+    Type ResolveModelType(String contentTypeCodename)
+
+// Kontent.Ai.Delivery.Abstractions
+public interface IItemUsedInQuery
+    IAsyncEnumerable`1 EnumerateItemsAsync(CancellationToken cancellationToken)
+    IItemUsedInQuery WaitForLoadingNewContent(Boolean enabled)
+
+// Kontent.Ai.Delivery.Abstractions
+public interface ILanguage
+    ILanguageSystemAttributes System { get; }
+
+// Kontent.Ai.Delivery.Abstractions
+public interface ILanguagesQuery
+    Task`1 ExecuteAsync(CancellationToken cancellationToken)
+    ILanguagesQuery Limit(Int32 limit)
+    ILanguagesQuery OrderBy(String elementOrAttributePath, OrderingMode orderingMode)
+    ILanguagesQuery Skip(Int32 skip)
+    ILanguagesQuery WaitForLoadingNewContent(Boolean enabled)
+
+// Kontent.Ai.Delivery.Abstractions
+public interface ILanguageSystemAttributes : ISystemBaseAttributes
+
+// Kontent.Ai.Delivery.Abstractions
+public interface IMultipleChoiceOption
+    String Codename { get; }
+    String Name { get; }
+
+// Kontent.Ai.Delivery.Abstractions
+public interface IPageable
+    IPagination Pagination { get; }
+
+// Kontent.Ai.Delivery.Abstractions
+public interface IPagination
+    Int32 Count { get; }
+    Int32 Limit { get; }
+    String NextPageUrl { get; }
+    Int32 Skip { get; }
+    Nullable`1 TotalCount { get; }
+
+// Kontent.Ai.Delivery.Abstractions
+public interface IPropertyMapper
+    Boolean IsMatch(PropertyInfo modelProperty, String fieldName, String contentType)
+
+// Kontent.Ai.Delivery.Abstractions
+public interface IRichTextBlock
+
+// Kontent.Ai.Delivery.Abstractions
+public interface IRichTextContent : IReadOnlyList`1, IReadOnlyCollection`1, IEnumerable`1, IEnumerable
+
+// Kontent.Ai.Delivery.Abstractions
+public interface IRichTextElementValue : IContentElementValue`1
+    IDictionary`2 Images { get; }
+    IDictionary`2 Links { get; }
+    List`1 ModularContent { get; }
+
+// Kontent.Ai.Delivery.Abstractions
+public interface ISystemAttributes : ISystemBaseAttributes
+    DateTime LastModified { get; }
+
+// Kontent.Ai.Delivery.Abstractions
+public interface ISystemBaseAttributes
+    String Codename { get; }
+    Guid Id { get; }
+    String Name { get; }
+
+// Kontent.Ai.Delivery.Abstractions
+public interface ITaxonomiesFilterBuilder
+    ITaxonomyFieldFilter`1 System(String propertyName)
+
+// Kontent.Ai.Delivery.Abstractions
+public interface ITaxonomiesQuery
+    Task`1 ExecuteAsync(CancellationToken cancellationToken)
+    ITaxonomiesQuery Limit(Int32 limit)
+    ITaxonomiesQuery Skip(Int32 skip)
+    ITaxonomiesQuery WaitForLoadingNewContent(Boolean enabled)
+    ITaxonomiesQuery Where(Func`2 build)
+
+// Kontent.Ai.Delivery.Abstractions
+public interface ITaxonomyFieldFilter`1
+    TBuilder IsEqualTo(String value)
+    TBuilder IsEqualTo(DateTime value)
+    TBuilder IsNotEqualTo(String value)
+    TBuilder IsNotEqualTo(DateTime value)
+
+// Kontent.Ai.Delivery.Abstractions
+public interface ITaxonomyGroup
+    ITaxonomyGroupSystemAttributes System { get; }
+    IReadOnlyList`1 Terms { get; }
+
+// Kontent.Ai.Delivery.Abstractions
+public interface ITaxonomyGroupSystemAttributes : ISystemAttributes, ISystemBaseAttributes
+
+// Kontent.Ai.Delivery.Abstractions
+public interface ITaxonomyQuery
+    Task`1 ExecuteAsync(CancellationToken cancellationToken)
+    ITaxonomyQuery WaitForLoadingNewContent(Boolean enabled)
+
+// Kontent.Ai.Delivery.Abstractions
+public interface ITaxonomyTerm
+    String Codename { get; }
+    String Name { get; }
+
+// Kontent.Ai.Delivery.Abstractions
+public interface ITaxonomyTermDetails
+    String Codename { get; }
+    String Name { get; }
+    IReadOnlyList`1 Terms { get; }
+
+// Kontent.Ai.Delivery.Abstractions
+public interface ITextNode : IRichTextBlock
+    String Text { get; }
+
+// Kontent.Ai.Delivery.Abstractions
+public interface ITypeElementQuery
+    Task`1 ExecuteAsync(CancellationToken cancellationToken)
+    ITypeElementQuery WaitForLoadingNewContent(Boolean enabled)
+
+// Kontent.Ai.Delivery.Abstractions
+public interface ITypeFieldFilter`1
+    TBuilder IsEqualTo(String value)
+    TBuilder IsEqualTo(DateTime value)
+    TBuilder IsGreaterThan(DateTime value)
+    TBuilder IsGreaterThanOrEqualTo(DateTime value)
+    TBuilder IsIn(String[] values)
+    TBuilder IsLessThan(DateTime value)
+    TBuilder IsLessThanOrEqualTo(DateTime value)
+    TBuilder IsNotEqualTo(String value)
+    TBuilder IsNotEqualTo(DateTime value)
+    TBuilder IsNotIn(String[] values)
+    TBuilder IsWithinRange(DateTime lower, DateTime upper)
+
+// Kontent.Ai.Delivery.Abstractions
+public interface ITypeProvider
+    String GetCodename(Type contentType)
+    Type GetType(String contentType)
+
+// Kontent.Ai.Delivery.Abstractions
+public interface ITypeQuery
+    Task`1 ExecuteAsync(CancellationToken cancellationToken)
+    ITypeQuery WaitForLoadingNewContent(Boolean enabled)
+    ITypeQuery WithElements(String[] elementCodenames)
+
+// Kontent.Ai.Delivery.Abstractions
+public interface ITypesFilterBuilder
+    ITypeFieldFilter`1 System(String propertyName)
+
+// Kontent.Ai.Delivery.Abstractions
+public interface ITypesQuery
+    Task`1 ExecuteAsync(CancellationToken cancellationToken)
+    ITypesQuery Limit(Int32 limit)
+    ITypesQuery Skip(Int32 skip)
+    ITypesQuery WaitForLoadingNewContent(Boolean enabled)
+    ITypesQuery Where(Func`2 build)
+    ITypesQuery WithElements(String[] elementCodenames)
+
+// Kontent.Ai.Delivery.Abstractions
+public interface IUsedInItem
+    IUsedInItemSystemAttributes System { get; }
+
+// Kontent.Ai.Delivery.Abstractions
+public interface IUsedInItemSystemAttributes : ISystemAttributes, ISystemBaseAttributes
+    String Collection { get; }
+    String Language { get; }
+    String Type { get; }
+    String Workflow { get; }
+    String WorkflowStep { get; }
+
+// Kontent.Ai.Delivery.Abstractions
+public enum LanguageFallbackMode : Enum
+
+// Kontent.Ai.Delivery.Abstractions
+public sealed class Options
+
+// Kontent.Ai.Delivery.Abstractions
+public enum OrderingMode : Enum
+
+// Kontent.Ai.Delivery.Abstractions
+public class RequiredIfAttribute : ValidationAttribute
+    String FormatErrorMessage(String name)
+

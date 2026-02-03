@@ -257,4 +257,4 @@ paket-files/
 *.sln.iml
 
 # Slopwatch (LLM code quality tool)
-.slopwatch/
+.slopwatch/.DS_Store

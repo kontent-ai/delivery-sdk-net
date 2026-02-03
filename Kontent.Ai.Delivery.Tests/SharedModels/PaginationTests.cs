@@ -1,5 +1,5 @@
+using System.Text.Json;
 using Kontent.Ai.Delivery.SharedModels;
-using Newtonsoft.Json;
 using Xunit;
 
 namespace Kontent.Ai.Delivery.Tests.SharedModels;
@@ -29,9 +29,9 @@ public class PaginationTests
         Assert.Equal(pagination.NextPageUrl, deserializedPagination.NextPageUrl);
     }
 
-    private Pagination SerializeThenDeserializeUsingJson(Pagination pagination)
+    private static Pagination SerializeThenDeserializeUsingJson(Pagination pagination)
     {
-        var json = JsonConvert.SerializeObject(pagination);
-        return JsonConvert.DeserializeObject<Pagination>(json)!;
+        var json = JsonSerializer.Serialize(pagination);
+        return JsonSerializer.Deserialize<Pagination>(json)!;
     }
 }
