@@ -1,0 +1,269 @@
+{
+  "version": 1,
+  "createdAt": "2026-02-03T03:11:40.512884+00:00",
+  "updatedAt": "2026-02-03T03:11:40.517317+00:00",
+  "description": "Initial baseline created by 'slopwatch init' on 2026-02-03 03:11:40 UTC",
+  "entries": [
+    {
+      "hash": "2a98105fbdbe2bde",
+      "ruleId": "SW002",
+      "filePath": "Kontent.Ai.Delivery.Abstractions/QueryBuilders/Filtering/IItemFieldFilter.cs",
+      "lineNumber": 1,
+      "codeSnippet": "#pragma warning disable CS1591 // Missing XML comment - filter methods are self-documenting",
+      "message": "#pragma warning disable for warnings CS1591 without matching restore in same scope",
+      "baselinedAt": "2026-02-03T03:11:40.516143+00:00"
+    },
+    {
+      "hash": "057ec0fd8ac5ea76",
+      "ruleId": "SW002",
+      "filePath": "Kontent.Ai.Delivery.Abstractions/QueryBuilders/Filtering/ITaxonomyFieldFilter.cs",
+      "lineNumber": 1,
+      "codeSnippet": "#pragma warning disable CS1591 // Missing XML comment - filter methods are self-documenting",
+      "message": "#pragma warning disable for warnings CS1591 without matching restore in same scope",
+      "baselinedAt": "2026-02-03T03:11:40.51622+00:00"
+    },
+    {
+      "hash": "bf38b8fb09d5cd62",
+      "ruleId": "SW002",
+      "filePath": "Kontent.Ai.Delivery.Abstractions/QueryBuilders/Filtering/ITypeFieldFilter.cs",
+      "lineNumber": 1,
+      "codeSnippet": "#pragma warning disable CS1591 // Missing XML comment - filter methods are self-documenting",
+      "message": "#pragma warning disable for warnings CS1591 without matching restore in same scope",
+      "baselinedAt": "2026-02-03T03:11:40.516255+00:00"
+    },
+    {
+      "hash": "68a8ad9b2ec1b7cd",
+      "ruleId": "SW005",
+      "filePath": "Kontent.Ai.Delivery.Abstractions.Tests/Kontent.Ai.Delivery.Abstractions.Tests.csproj",
+      "lineNumber": 6,
+      "codeSnippet": "<NoWarn>CS1591</NoWarn>",
+      "message": "Setting NoWarn to suppress warnings: CS1591",
+      "baselinedAt": "2026-02-03T03:11:40.516286+00:00"
+    },
+    {
+      "hash": "543b12e5e54ee2f0",
+      "ruleId": "SW005",
+      "filePath": "Kontent.Ai.Delivery.SourceGeneration.Tests/Kontent.Ai.Delivery.SourceGeneration.Tests.csproj",
+      "lineNumber": 9,
+      "codeSnippet": "<NoWarn>CS1591</NoWarn>",
+      "message": "Setting NoWarn to suppress warnings: CS1591",
+      "baselinedAt": "2026-02-03T03:11:40.516317+00:00"
+    },
+    {
+      "hash": "cbe001227fe22838",
+      "ruleId": "SW005",
+      "filePath": "Kontent.Ai.Delivery.Tests/Kontent.Ai.Delivery.Tests.csproj",
+      "lineNumber": 7,
+      "codeSnippet": "<NoWarn>CS1591</NoWarn>",
+      "message": "Setting NoWarn to suppress warnings: CS1591",
+      "baselinedAt": "2026-02-03T03:11:40.516351+00:00"
+    },
+    {
+      "hash": "9f46f630717f3631",
+      "ruleId": "SW004",
+      "filePath": "Kontent.Ai.Delivery.Tests/RichText/StronglyTypedEmbeddedContentTests.cs",
+      "lineNumber": 134,
+      "codeSnippet": "new HtmlResolverBuilder()\n            .WithContentResolver<Tweet>(async tweet =>\n            {\n                await Task.Delay(1); // Simulate async work\n                return $\"<div class=\\\"async-tweet\\\">{tweet.Elements.DisplayOptions?.FirstOrDefault()?.Name ?? \"Async tweet\"}</div>\";\n            })\n            .Build()",
+      "message": "Test uses Task.Delay(?) which may indicate a timing-dependent test",
+      "baselinedAt": "2026-02-03T03:11:40.516388+00:00"
+    },
+    {
+      "hash": "7a51504869fbdb84",
+      "ruleId": "SW004",
+      "filePath": "Kontent.Ai.Delivery.Tests/RichText/StronglyTypedEmbeddedContentTests.cs",
+      "lineNumber": 137,
+      "codeSnippet": "Task.Delay(1)",
+      "message": "Test uses Task.Delay(1) which may indicate a timing-dependent test",
+      "baselinedAt": "2026-02-03T03:11:40.516418+00:00"
+    },
+    {
+      "hash": "990dbea74d4a5ae0",
+      "ruleId": "SW004",
+      "filePath": "Kontent.Ai.Delivery.Tests/RichText/RichTextIntegrationTests.cs",
+      "lineNumber": 172,
+      "codeSnippet": "new HtmlResolverBuilder()\n            .WithContentResolver(\"tweet\", async (content) =>\n            {\n                // Simulate async database lookup\n                await Task.Delay(1);\n                var tweetData = $\"Tweet by {content.System.Codename}\";\n                return $\"<div class=\\\"tweet\\\" data-id=\\\"{content.System.Id}\\\">{tweetData}</div>\";\n            })\n            .WithContentResolver(\"hosted_video\", async (content) =>\n            {\n                await Task.Delay(1);\n                return $\"<div class=\\\"video\\\" data-codename=\\\"{content.System.Codename}\\\"><iframe src=\\\"video.mp4\\\"></iframe></div>\";\n            })\n            .Build()",
+      "message": "Test uses Task.Delay(?) which may indicate a timing-dependent test",
+      "baselinedAt": "2026-02-03T03:11:40.516456+00:00"
+    },
+    {
+      "hash": "9159d9f5ca6aec99",
+      "ruleId": "SW004",
+      "filePath": "Kontent.Ai.Delivery.Tests/RichText/RichTextIntegrationTests.cs",
+      "lineNumber": 172,
+      "codeSnippet": "new HtmlResolverBuilder()\n            .WithContentResolver(\"tweet\", async (content) =>\n            {\n                // Simulate async database lookup\n                await Task.Delay(1);\n                var tweetData = $\"Tweet by {content.System.Codename}\";\n                return $\"<div class=\\\"tweet\\\" data-id=\\\"{content.System.Id}\\\">{tweetData}</div>\";\n            })\n            .WithContentResolver(\"hosted_video\", async (content) =>\n            {\n                await Task.Delay(1);\n                return $\"<div class=\\\"video\\\" data-codename=\\\"{content.System.Codename}\\\"><iframe src=\\\"video.mp4\\\"></iframe></div>\";\n            })",
+      "message": "Test uses Task.Delay(\"hosted_video\") which may indicate a timing-dependent test",
+      "baselinedAt": "2026-02-03T03:11:40.516488+00:00"
+    },
+    {
+      "hash": "5ffd912f1d99307d",
+      "ruleId": "SW004",
+      "filePath": "Kontent.Ai.Delivery.Tests/RichText/RichTextIntegrationTests.cs",
+      "lineNumber": 176,
+      "codeSnippet": "Task.Delay(1)",
+      "message": "Test uses Task.Delay(1) which may indicate a timing-dependent test",
+      "baselinedAt": "2026-02-03T03:11:40.516517+00:00"
+    },
+    {
+      "hash": "c311660f0c16d30f",
+      "ruleId": "SW004",
+      "filePath": "Kontent.Ai.Delivery.Tests/Caching/CachingIntegrationTests.cs",
+      "lineNumber": 104,
+      "codeSnippet": "Task.Delay(200)",
+      "message": "Test uses Task.Delay(200) which may indicate a timing-dependent test",
+      "baselinedAt": "2026-02-03T03:11:40.516581+00:00"
+    },
+    {
+      "hash": "85f73dc504aeae32",
+      "ruleId": "SW003",
+      "filePath": "Kontent.Ai.Delivery.Tests/Caching/MemoryCacheManagerTests.cs",
+      "lineNumber": 596,
+      "codeSnippet": "catch (ObjectDisposedException)\n                {\n                    // Expected if cache manager is disposed during test\n                }",
+      "message": "Empty catch block swallows exceptions without handling",
+      "baselinedAt": "2026-02-03T03:11:40.516611+00:00"
+    },
+    {
+      "hash": "82cd6fe598143962",
+      "ruleId": "SW004",
+      "filePath": "Kontent.Ai.Delivery.Tests/Caching/MemoryCacheManagerTests.cs",
+      "lineNumber": 197,
+      "codeSnippet": "Task.Delay(200)",
+      "message": "Test uses Task.Delay(200) which may indicate a timing-dependent test",
+      "baselinedAt": "2026-02-03T03:11:40.516683+00:00"
+    },
+    {
+      "hash": "8de2310d16ed06c3",
+      "ruleId": "SW004",
+      "filePath": "Kontent.Ai.Delivery.Tests/Caching/MemoryCacheManagerTests.cs",
+      "lineNumber": 603,
+      "codeSnippet": "Enumerable.Range(0, 25)\n            .Select(_ => Task.Run(async () =>\n            {\n                try\n                {\n                    await Task.Delay(10);\n                    await _cacheManager.InvalidateAsync(default, dependency);\n                }\n                catch (ObjectDisposedException)\n                {\n                    // Expected if cache manager is disposed during test\n                }\n            }))\n            .ToList()",
+      "message": "Test uses Task.Delay(?) which may indicate a timing-dependent test",
+      "baselinedAt": "2026-02-03T03:11:40.516751+00:00"
+    },
+    {
+      "hash": "f38853187758a622",
+      "ruleId": "SW004",
+      "filePath": "Kontent.Ai.Delivery.Tests/Caching/MemoryCacheManagerTests.cs",
+      "lineNumber": 608,
+      "codeSnippet": "Task.Delay(10)",
+      "message": "Test uses Task.Delay(10) which may indicate a timing-dependent test",
+      "baselinedAt": "2026-02-03T03:11:40.516784+00:00"
+    },
+    {
+      "hash": "ffff6590d7fc0510",
+      "ruleId": "SW004",
+      "filePath": "Kontent.Ai.Delivery.Tests/Caching/MemoryCacheManagerTests.cs",
+      "lineNumber": 1046,
+      "codeSnippet": "Task.Delay(pollInterval)",
+      "message": "Test uses Task.Delay(pollInterval) which may indicate a timing-dependent test",
+      "baselinedAt": "2026-02-03T03:11:40.516815+00:00"
+    },
+    {
+      "hash": "251449d6c73afd13",
+      "ruleId": "SW005",
+      "filePath": "Kontent.Ai.Delivery.SourceGeneration/Kontent.Ai.Delivery.SourceGeneration.csproj",
+      "lineNumber": 16,
+      "codeSnippet": "<NoWarn>RS2008;CS1591</NoWarn>",
+      "message": "Setting NoWarn to suppress warnings: RS2008;CS1591",
+      "baselinedAt": "2026-02-03T03:11:40.516849+00:00"
+    },
+    {
+      "hash": "ff34fb7982f25ca9",
+      "ruleId": "SW005",
+      "filePath": "Kontent.Ai.Delivery.Benchmarks/Kontent.Ai.Delivery.Benchmarks.csproj",
+      "lineNumber": 9,
+      "codeSnippet": "<NoWarn>CS1591</NoWarn>",
+      "message": "Setting NoWarn to suppress warnings: CS1591",
+      "baselinedAt": "2026-02-03T03:11:40.516883+00:00"
+    },
+    {
+      "hash": "9018933d8b6b0ed3",
+      "ruleId": "SW005",
+      "filePath": "Kontent.Ai.Urls.Tests/Kontent.Ai.Urls.Tests.csproj",
+      "lineNumber": 6,
+      "codeSnippet": "<NoWarn>CS1591</NoWarn>",
+      "message": "Setting NoWarn to suppress warnings: CS1591",
+      "baselinedAt": "2026-02-03T03:11:40.516917+00:00"
+    },
+    {
+      "hash": "404f674daaba7d41",
+      "ruleId": "SW003",
+      "filePath": "Kontent.Ai.Delivery/ContentItems/TypeProvider.cs",
+      "lineNumber": 90,
+      "codeSnippet": "catch\n        {\n            // Ignore exceptions - assembly might not be loadable\n        }",
+      "message": "Empty catch block swallows exceptions without handling",
+      "baselinedAt": "2026-02-03T03:11:40.516951+00:00"
+    },
+    {
+      "hash": "6a351de182a31625",
+      "ruleId": "SW003",
+      "filePath": "Kontent.Ai.Delivery/ContentItems/TypeProvider.cs",
+      "lineNumber": 110,
+      "codeSnippet": "catch\n                {\n                    // Ignore - assembly might not be loadable\n                }",
+      "message": "Empty catch block swallows exceptions without handling",
+      "baselinedAt": "2026-02-03T03:11:40.516986+00:00"
+    },
+    {
+      "hash": "bab2dad4cf0a8d88",
+      "ruleId": "SW003",
+      "filePath": "Kontent.Ai.Delivery/Caching/MemoryCacheManager.cs",
+      "lineNumber": 263,
+      "codeSnippet": "catch (ObjectDisposedException)\n        {\n            // Best-effort; never throw from purge.\n        }",
+      "message": "Empty catch block swallows exceptions without handling",
+      "baselinedAt": "2026-02-03T03:11:40.517022+00:00"
+    },
+    {
+      "hash": "5dbc97e0504efee7",
+      "ruleId": "SW003",
+      "filePath": "Kontent.Ai.Delivery/Caching/MemoryCacheManager.cs",
+      "lineNumber": 273,
+      "codeSnippet": "catch\n            {\n                // Best-effort\n            }",
+      "message": "Empty catch block swallows exceptions without handling",
+      "baselinedAt": "2026-02-03T03:11:40.517054+00:00"
+    },
+    {
+      "hash": "75b421b00a1d8895",
+      "ruleId": "SW003",
+      "filePath": "Kontent.Ai.Delivery/Caching/MemoryCacheManager.cs",
+      "lineNumber": 370,
+      "codeSnippet": "catch (ObjectDisposedException)\n            {\n                // Entry already evicted/disposed; ignore\n            }",
+      "message": "Empty catch block swallows exceptions without handling",
+      "baselinedAt": "2026-02-03T03:11:40.517088+00:00"
+    },
+    {
+      "hash": "97597d5e78cbff96",
+      "ruleId": "SW003",
+      "filePath": "Kontent.Ai.Delivery/Caching/MemoryCacheManager.cs",
+      "lineNumber": 438,
+      "codeSnippet": "catch\n        {\n            // Best-effort cleanup; never throw from eviction callbacks\n        }",
+      "message": "Empty catch block swallows exceptions without handling",
+      "baselinedAt": "2026-02-03T03:11:40.517119+00:00"
+    },
+    {
+      "hash": "4a1a9a089b07e311",
+      "ruleId": "SW003",
+      "filePath": "Kontent.Ai.Delivery/Caching/MemoryCacheManager.cs",
+      "lineNumber": 503,
+      "codeSnippet": "catch { /* Best-effort */ }",
+      "message": "Empty catch block swallows exceptions without handling",
+      "baselinedAt": "2026-02-03T03:11:40.517156+00:00"
+    },
+    {
+      "hash": "2b3ea4395acb1c9c",
+      "ruleId": "SW003",
+      "filePath": "Kontent.Ai.Delivery/Caching/DistributedCacheManager.cs",
+      "lineNumber": 389,
+      "codeSnippet": "catch\n        {\n            // Continue with other invalidations even if this one fails\n        }",
+      "message": "Empty catch block swallows exceptions without handling",
+      "baselinedAt": "2026-02-03T03:11:40.517279+00:00"
+    },
+    {
+      "hash": "b3b0b017d06041ed",
+      "ruleId": "SW003",
+      "filePath": "Kontent.Ai.Delivery/Caching/DistributedCacheManager.cs",
+      "lineNumber": 438,
+      "codeSnippet": "catch\n        {\n            // Reverse index update failure should not break caching\n            // Worst case: invalidation might miss this entry\n        }",
+      "message": "Empty catch block swallows exceptions without handling",
+      "baselinedAt": "2026-02-03T03:11:40.517317+00:00"
+    }
+  ]
+}
