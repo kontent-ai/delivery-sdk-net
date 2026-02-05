@@ -1,3 +1,5 @@
+using System.Text.Json;
+
 namespace Kontent.Ai.Delivery.Abstractions;
 
 /// <summary>
@@ -11,4 +13,9 @@ internal interface IDeliveryItemResponse<out TModel>
     /// Gets the content item.
     /// </summary>
     IContentItem<TModel> Item { get; }
+
+    /// <summary>
+    /// Raw modular content used for resolving linked items/inline content.
+    /// </summary>
+    IReadOnlyDictionary<string, JsonElement> ModularContent { get; }
 }

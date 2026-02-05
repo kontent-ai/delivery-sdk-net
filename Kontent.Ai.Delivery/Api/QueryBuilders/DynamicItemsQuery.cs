@@ -99,7 +99,6 @@ internal sealed class DynamicItemsQuery(
 
     public async Task<IDeliveryResult<IDeliveryItemListingResponse>> ExecuteAsync(CancellationToken cancellationToken = default)
     {
-        // 1. API CALL
         var deliveryResult = await FetchFromApiAsync(cancellationToken).ConfigureAwait(false);
         if (!deliveryResult.IsSuccess)
         {
@@ -112,13 +111,11 @@ internal sealed class DynamicItemsQuery(
 
         var resp = deliveryResult.Value;
 
-        // 2. RUNTIME TYPE RESOLUTION FOR EACH ITEM
         var runtimeTypedItems = await _contentItemMapper.RuntimeTypeItemsAsync(
             resp.Items,
             resp.ModularContent,
             cancellationToken).ConfigureAwait(false);
 
-        // 3. BUILD RESULT WITH NEXT PAGE FETCHER
         var response = new DynamicDeliveryItemListingResponse
         {
             Items = runtimeTypedItems,
@@ -138,7 +135,7 @@ internal sealed class DynamicItemsQuery(
 
     private async Task<IDeliveryResult<DeliveryItemListingResponse<IDynamicElements>>> FetchFromApiAsync(CancellationToken cancellationToken)
     {
-        bool? wait = _waitForLoadingNewContentOverride ?? _getDefaultWaitForNewContent();
+        var wait = _waitForLoadingNewContentOverride ?? _getDefaultWaitForNewContent();
         var rawResponse = await _api.GetItemsInternalAsync<IDynamicElements>(
             _params,
             FilterQueryParams.ToQueryDictionary(_serializedFilters),

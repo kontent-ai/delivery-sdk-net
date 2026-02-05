@@ -18,7 +18,7 @@ public interface IContentLink
     /// <summary>
     /// Gets the identifier of the linked content item.
     /// </summary>
-    Guid Id { get; internal set; }
+    Guid Id { get; }
 
     /// <summary>
     /// Gets the URL slug of the linked content item, if available; otherwise, <c>null</c>.

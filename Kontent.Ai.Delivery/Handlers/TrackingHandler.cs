@@ -35,7 +35,7 @@ internal sealed class TrackingHandler : DelegatingHandler
         request.Headers.AddSourceTrackingHeader();
 
         // Log tracking headers added (at Trace level since this happens on every request)
-        if (_logger != null)
+        if (_logger is not null)
             LoggerMessages.HttpTrackingHeadersAdded(_logger, HttpRequestHeadersExtensions.GetSdkVersion());
 
         // Continue with the request pipeline

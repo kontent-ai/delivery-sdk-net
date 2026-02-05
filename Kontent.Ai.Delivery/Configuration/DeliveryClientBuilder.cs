@@ -246,29 +246,24 @@ public sealed class DeliveryClientBuilder
     {
         ArgumentNullException.ThrowIfNull(services);
 
-        // Optional logging: if caller provides a factory, wire up ILogger<T> support.
         if (_loggerFactory is not null)
         {
             services.AddSingleton(_loggerFactory);
             services.AddSingleton(typeof(ILogger<>), typeof(Logger<>));
         }
 
-        // Optional type provider override (must be registered before AddDeliveryClient so TryAdd doesn't overwrite it).
         if (_typeProvider is not null)
         {
             services.AddSingleton(_typeProvider);
         }
 
-        // If distributed caching is enabled, we need to register the provided IDistributedCache.
         if (_cacheType == CacheType.Distributed)
         {
             services.AddSingleton(_distributedCache!);
         }
 
-        // Register the SDK using the same DI registration path as normal applications.
         services.AddDeliveryClient(_deliveryOptions!);
 
-        // Register caching (if enabled). Empty string disables prefixing (see cache managers).
         switch (_cacheType)
         {
             case CacheType.Memory:

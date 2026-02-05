@@ -64,7 +64,7 @@ public class DeliveryOptionsValidatorTests
         var isValid = TryValidate(options, out var results);
 
         Assert.False(isValid);
-        Assert.Contains(results, r => r.ErrorMessage != null && r.ErrorMessage.Contains("Cannot use both Preview API and Secure Access simultaneously."));
+        Assert.Contains(results, r => r.ErrorMessage is not null && r.ErrorMessage.Contains("Cannot use both Preview API and Secure Access simultaneously."));
     }
 
     [Fact]
@@ -80,7 +80,7 @@ public class DeliveryOptionsValidatorTests
         var isValid = TryValidate(options, out var results);
 
         Assert.False(isValid);
-        Assert.Contains(results, r => r.ErrorMessage != null && r.ErrorMessage.Contains("PreviewApiKey is required"));
+        Assert.Contains(results, r => r.ErrorMessage is not null && r.ErrorMessage.Contains("PreviewApiKey is required"));
     }
 
     [Fact]
@@ -96,7 +96,7 @@ public class DeliveryOptionsValidatorTests
         var isValid = TryValidate(options, out var results);
 
         Assert.False(isValid);
-        Assert.Contains(results, r => r.ErrorMessage != null && r.ErrorMessage.Contains("SecureAccessApiKey is required"));
+        Assert.Contains(results, r => r.ErrorMessage is not null && r.ErrorMessage.Contains("SecureAccessApiKey is required"));
     }
 
     [Fact]
@@ -112,7 +112,7 @@ public class DeliveryOptionsValidatorTests
         var isValid = TryValidate(options, out var results);
 
         Assert.False(isValid);
-        Assert.Contains(results, r => r.ErrorMessage != null && r.ErrorMessage.Contains("The Preview API key must be a valid API key."));
+        Assert.Contains(results, r => r.ErrorMessage is not null && r.ErrorMessage.Contains("The Preview API key must be a valid API key."));
     }
 
     [Fact]
@@ -128,7 +128,7 @@ public class DeliveryOptionsValidatorTests
         var isValid = TryValidate(options, out var results);
 
         Assert.False(isValid);
-        Assert.Contains(results, r => r.ErrorMessage != null && r.ErrorMessage.Contains("The Secure Access API key must be a valid API key."));
+        Assert.Contains(results, r => r.ErrorMessage is not null && r.ErrorMessage.Contains("The Secure Access API key must be a valid API key."));
     }
 
     [Fact]

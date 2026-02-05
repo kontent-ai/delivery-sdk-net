@@ -40,7 +40,6 @@ internal sealed class RichTextElementDataConverter : JsonConverter<RichTextEleme
         using var doc = JsonDocument.ParseValue(ref reader);
         var root = doc.RootElement;
 
-        // Parse required string properties
         var type = GetStringProperty(root, "type");
         var name = GetStringProperty(root, "name");
         var value = GetStringProperty(root, "value");
@@ -50,13 +49,8 @@ internal sealed class RichTextElementDataConverter : JsonConverter<RichTextEleme
             ? codenameEl.GetString() ?? string.Empty
             : string.Empty;
 
-        // Parse images dictionary
         var images = DeserializeInlineImages(root);
-
-        // Parse links dictionary
         var links = DeserializeContentLinks(root);
-
-        // Parse modular_content array
         var modularContent = DeserializeModularContent(root);
 
         return new RichTextElementData

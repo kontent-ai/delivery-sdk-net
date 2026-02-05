@@ -31,11 +31,11 @@ internal sealed class PropertyMapper : IPropertyMapper
         if (_matchCache.TryGetValue(cacheKey, out var cachedResult))
             return cachedResult;
 
-        if (modelProperty.GetCustomAttribute<JsonIgnoreAttribute>() != null)
+        if (modelProperty.GetCustomAttribute<JsonIgnoreAttribute>() is not null)
             return _matchCache[cacheKey] = false;
 
         var jsonName = modelProperty.GetCustomAttribute<JsonPropertyNameAttribute>()?.Name;
-        var isMatch = jsonName != null && fieldName.Equals(jsonName, StringComparison.Ordinal);
+        var isMatch = jsonName is not null && fieldName.Equals(jsonName, StringComparison.Ordinal);
         return _matchCache[cacheKey] = isMatch;
     }
 }

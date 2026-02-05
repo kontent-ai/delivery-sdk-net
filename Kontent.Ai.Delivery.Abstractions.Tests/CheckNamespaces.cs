@@ -20,7 +20,7 @@ public class CheckNamespaces(ITestOutputHelper output)
         var typesToCheck = abstractionTypes
             .GetTypes()
             // Exclude compiler-generated artifacts and synthesized types
-            .Where(t => t.GetCustomAttribute(typeof(CompilerGeneratedAttribute), inherit: true) == null)
+            .Where(t => t.GetCustomAttribute(typeof(CompilerGeneratedAttribute), inherit: true) is null)
             .Where(t => !t.Name.StartsWith("<>"))
             // Only consider types that actually have a namespace
             .Where(t => t.Namespace is not null);

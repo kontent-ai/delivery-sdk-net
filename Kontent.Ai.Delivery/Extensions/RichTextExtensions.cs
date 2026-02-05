@@ -202,7 +202,7 @@ public static class RichTextExtensions
     /// {
     ///     var richText = await bodyElement.ParseRichTextAsync(result.ModularContent);
     ///
-    ///     if (richText != null)
+    ///     if (richText is not null)
     ///     {
     ///         // Now RichTextExtensions work!
     ///         var html = await richText.ToHtmlAsync();
@@ -245,7 +245,6 @@ public static class RichTextExtensions
             return null;
         }
 
-        // Build linked item resolver that deserializes from modularContent
         var getLinkedItem = CreateLinkedItemResolver(modularContent);
 
         // Parse the rich text using cached parser
@@ -264,10 +263,7 @@ public static class RichTextExtensions
             return _ => Task.FromResult<object?>(null);
         }
 
-        // Cache for resolved items to avoid re-deserializing the same item
         var resolvedItems = new Dictionary<string, IContentItem>(StringComparer.Ordinal);
-
-        // Use cached JSON options with ContentItemConverterFactory for proper deserialization
         var jsonOptions = ContentItemDeserializerOptions.Value;
 
         return codename =>
@@ -286,8 +282,6 @@ public static class RichTextExtensions
 
             try
             {
-                // Deserialize to ContentItem<IDynamicElements>
-                // ContentItem<T> implements IEmbeddedContent<T>, so this works directly
                 var contentItem = JsonSerializer.Deserialize<ContentItem<IDynamicElements>>(itemJson, jsonOptions);
 
                 if (contentItem is not null)

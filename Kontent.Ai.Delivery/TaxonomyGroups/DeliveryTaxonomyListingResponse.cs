@@ -34,9 +34,6 @@ internal sealed record DeliveryTaxonomyListingResponse : IDeliveryTaxonomyListin
     /// <inheritdoc/>
     public async Task<IDeliveryResult<IDeliveryTaxonomyListingResponse>?> FetchNextPageAsync(CancellationToken cancellationToken = default)
     {
-        if (!HasNextPage || NextPageFetcher == null)
-            return null;
-
-        return await NextPageFetcher(cancellationToken).ConfigureAwait(false);
+        return !HasNextPage || NextPageFetcher is null ? null : await NextPageFetcher(cancellationToken).ConfigureAwait(false);
     }
 }

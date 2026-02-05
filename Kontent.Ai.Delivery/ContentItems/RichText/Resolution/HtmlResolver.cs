@@ -87,7 +87,7 @@ internal sealed class HtmlResolver : IHtmlResolver
                 => ((BlockResolver<IInlineImage>)resolver)(image, _ => ValueTask.FromResult(string.Empty)),
 
             // Content item link resolution - type-specific takes precedence
-            IContentItemLink link when link.Metadata?.ContentTypeCodename != null
+            IContentItemLink link when link.Metadata?.ContentTypeCodename is not null
                 && _contentItemLinkResolvers.TryGetValue(link.Metadata.ContentTypeCodename, out var typeResolver)
                 => typeResolver(link, ResolveChildrenAsync),
 
@@ -146,13 +146,13 @@ internal sealed class HtmlResolver : IHtmlResolver
         // Step 2: Evaluate conditional resolvers in registration order (first match wins)
         var matchingResolver = _options.ConditionalHtmlNodeResolvers
             .FirstOrDefault(c => c.Predicate(node));
-        if (matchingResolver != null)
+        if (matchingResolver is not null)
         {
             return await matchingResolver.Resolver(node, ResolveChildrenAsync);
         }
 
         // Step 3: Use default HTML node resolver if configured
-        if (_options.DefaultHtmlNodeResolver != null)
+        if (_options.DefaultHtmlNodeResolver is not null)
         {
             return await _options.DefaultHtmlNodeResolver(node, ResolveChildrenAsync);
         }

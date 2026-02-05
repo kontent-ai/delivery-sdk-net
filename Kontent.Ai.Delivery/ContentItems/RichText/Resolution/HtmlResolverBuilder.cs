@@ -261,12 +261,12 @@ public sealed class HtmlResolverBuilder : IHtmlResolverBuilder
         ArgumentException.ThrowIfNullOrWhiteSpace(attributeName);
         ArgumentNullException.ThrowIfNull(resolver);
 
-        HtmlNodePredicate predicate = attributeValue == null
+        HtmlNodePredicate predicate = attributeValue is null
             ? node => node.Attributes.ContainsKey(attributeName)
             : node => node.Attributes.TryGetValue(attributeName, out var value)
                    && value?.Equals(attributeValue, StringComparison.OrdinalIgnoreCase) == true;
 
-        var description = attributeValue == null
+        var description = attributeValue is null
             ? $"Attribute={attributeName}"
             : $"Attribute={attributeName}[{attributeValue}]";
 

@@ -41,7 +41,6 @@ internal sealed class LanguagesQuery(IDeliveryApi api, Func<bool?> getDefaultWai
 
     public async Task<IDeliveryResult<IDeliveryLanguageListingResponse>> ExecuteAsync(CancellationToken cancellationToken = default)
     {
-        // API CALL
         var deliveryResult = await FetchFromApiAsync(cancellationToken).ConfigureAwait(false);
         if (!deliveryResult.IsSuccess)
         {
@@ -52,7 +51,6 @@ internal sealed class LanguagesQuery(IDeliveryApi api, Func<bool?> getDefaultWai
                 deliveryResult.ResponseHeaders);
         }
 
-        // BUILD RESULT WITH NEXT PAGE FETCHER
         var resp = deliveryResult.Value;
         var responseWithFetcher = resp with { NextPageFetcher = CreateNextPageFetcher(resp.Pagination) };
 
@@ -67,7 +65,7 @@ internal sealed class LanguagesQuery(IDeliveryApi api, Func<bool?> getDefaultWai
 
     private async Task<IDeliveryResult<DeliveryLanguageListingResponse>> FetchFromApiAsync(CancellationToken cancellationToken)
     {
-        bool? wait = _waitForLoadingNewContentOverride ?? _getDefaultWaitForNewContent();
+        var wait = _waitForLoadingNewContentOverride ?? _getDefaultWaitForNewContent();
         var response = await _api.GetLanguagesInternalAsync(_params, wait, cancellationToken).ConfigureAwait(false);
         return await response.ToDeliveryResultAsync().ConfigureAwait(false);
     }

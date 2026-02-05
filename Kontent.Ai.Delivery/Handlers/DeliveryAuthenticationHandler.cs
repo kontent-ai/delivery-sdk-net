@@ -93,7 +93,7 @@ internal sealed class DeliveryAuthenticationHandler : DelegatingHandler
             request.Headers.Authorization = new AuthenticationHeaderValue("Bearer", apiKey);
 
             // Log auth type (NEVER log the actual API key)
-            if (_logger != null)
+            if (_logger is not null)
             {
                 var authType = GetAuthType(opts);
                 LoggerMessages.HttpAuthSet(_logger, authType, opts.EnvironmentId ?? "unknown");
@@ -102,7 +102,7 @@ internal sealed class DeliveryAuthenticationHandler : DelegatingHandler
         else
         {
             request.Headers.Authorization = null;
-            if (_logger != null)
+            if (_logger is not null)
                 LoggerMessages.HttpAuthCleared(_logger);
         }
 
@@ -132,7 +132,7 @@ internal sealed class DeliveryAuthenticationHandler : DelegatingHandler
             request.RequestUri = ub.Uri;
 
             // Log endpoint rewriting if host changed
-            if (_logger != null && !originalHost.Equals(baseUri.Host, StringComparison.OrdinalIgnoreCase))
+            if (_logger is not null && !originalHost.Equals(baseUri.Host, StringComparison.OrdinalIgnoreCase))
                 LoggerMessages.HttpEndpointRewritten(_logger, originalHost, baseUri.Host);
         }
         // else: External absolute URI (CDN, webhooks, etc.) - leave untouched
@@ -141,7 +141,7 @@ internal sealed class DeliveryAuthenticationHandler : DelegatingHandler
         //    Only do this for Kontent.ai API URLs, not external URLs (CDN, webhooks, etc.)
         var env = opts.EnvironmentId?.Trim('/');
         if (!string.IsNullOrWhiteSpace(env) &&
-            request.RequestUri != null &&
+            request.RequestUri is not null &&
             ShouldRewriteUri(request.RequestUri, baseUri))
         {
             var uri = request.RequestUri;
@@ -159,7 +159,7 @@ internal sealed class DeliveryAuthenticationHandler : DelegatingHandler
                 request.RequestUri = ub.Uri;                               // keeps query/fragment/host intact
 
                 // Log environment ID injection
-                if (_logger != null)
+                if (_logger is not null)
                     LoggerMessages.HttpEnvironmentIdInjected(_logger, env);
             }
         }

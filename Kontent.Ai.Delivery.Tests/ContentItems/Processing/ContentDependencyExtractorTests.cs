@@ -18,7 +18,6 @@ public class ContentDependencyExtractorTests
     [Fact]
     public void ExtractFromRichTextElement_WithImages_TracksAssetDependencies()
     {
-        // Arrange
         var imageId1 = Guid.NewGuid();
         var imageId2 = Guid.NewGuid();
 
@@ -28,10 +27,8 @@ public class ContentDependencyExtractorTests
 
         var context = new DependencyTrackingContext();
 
-        // Act
         _extractor.ExtractFromRichTextElement(element, context);
 
-        // Assert
         var dependencies = context.Dependencies.ToList();
         Assert.Contains($"asset_{imageId1}", dependencies);
         Assert.Contains($"asset_{imageId2}", dependencies);
@@ -40,7 +37,6 @@ public class ContentDependencyExtractorTests
     [Fact]
     public void ExtractFromRichTextElement_WithLinks_TracksItemDependencies()
     {
-        // Arrange
         var linkId1 = Guid.NewGuid();
         var linkId2 = Guid.NewGuid();
 
@@ -50,10 +46,8 @@ public class ContentDependencyExtractorTests
 
         var context = new DependencyTrackingContext();
 
-        // Act
         _extractor.ExtractFromRichTextElement(element, context);
 
-        // Assert
         var dependencies = context.Dependencies.ToList();
         Assert.Contains("item_article_1", dependencies);
         Assert.Contains("item_article_2", dependencies);
@@ -62,16 +56,13 @@ public class ContentDependencyExtractorTests
     [Fact]
     public void ExtractFromRichTextElement_WithModularContent_TracksItemDependencies()
     {
-        // Arrange
         var element = new MockRichTextElement();
         element.ModularContent.AddRange(["hero_section", "testimonial", "cta_button"]);
 
         var context = new DependencyTrackingContext();
 
-        // Act
         _extractor.ExtractFromRichTextElement(element, context);
 
-        // Assert
         var dependencies = context.Dependencies.ToList();
         Assert.Contains("item_hero_section", dependencies);
         Assert.Contains("item_testimonial", dependencies);
@@ -81,7 +72,6 @@ public class ContentDependencyExtractorTests
     [Fact]
     public void ExtractFromRichTextElement_WithAllDependencyTypes_TracksAll()
     {
-        // Arrange
         var imageId = Guid.NewGuid();
         var linkId = Guid.NewGuid();
 
@@ -92,10 +82,8 @@ public class ContentDependencyExtractorTests
 
         var context = new DependencyTrackingContext();
 
-        // Act
         _extractor.ExtractFromRichTextElement(element, context);
 
-        // Assert
         var dependencies = context.Dependencies.ToList();
         Assert.Contains($"asset_{imageId}", dependencies);
         Assert.Contains("item_linked_article", dependencies);
@@ -106,27 +94,23 @@ public class ContentDependencyExtractorTests
     [Fact]
     public void ExtractFromRichTextElement_WithNullContext_DoesNotThrow()
     {
-        // Arrange
         var element = new MockRichTextElement();
         element.Images.Add(Guid.NewGuid(), new MockInlineImage());
 
-        // Act & Assert - should not throw
         _extractor.ExtractFromRichTextElement(element, null);
     }
 
     [Fact]
     public void ExtractFromRichTextElement_WithNullImages_DoesNotThrow()
     {
-        // Arrange
         var element = new MockRichTextElement
         {
-            Images = null!  // Test null handling
+            Images = null!
         };
         element.ModularContent.Add("item1");
 
         var context = new DependencyTrackingContext();
 
-        // Act & Assert - should not throw
         _extractor.ExtractFromRichTextElement(element, context);
 
         var dependencies = context.Dependencies.ToList();
@@ -137,16 +121,14 @@ public class ContentDependencyExtractorTests
     [Fact]
     public void ExtractFromRichTextElement_WithNullLinks_DoesNotThrow()
     {
-        // Arrange
         var imageId = Guid.NewGuid();
         var element = new MockRichTextElement();
         element.Images.Add(imageId, new MockInlineImage());
-        element.Links = null!;  // Test null handling
+        element.Links = null!;
         element.ModularContent.Add("item1");
 
         var context = new DependencyTrackingContext();
 
-        // Act & Assert - should not throw
         _extractor.ExtractFromRichTextElement(element, context);
 
         var dependencies = context.Dependencies.ToList();
@@ -158,18 +140,16 @@ public class ContentDependencyExtractorTests
     [Fact]
     public void ExtractFromRichTextElement_WithNullModularContent_DoesNotThrow()
     {
-        // Arrange
         var imageId = Guid.NewGuid();
         var linkId = Guid.NewGuid();
 
         var element = new MockRichTextElement();
         element.Images.Add(imageId, new MockInlineImage());
         element.Links.Add(linkId, new MockContentLink { Codename = "article" });
-        element.ModularContent = null!;  // Test null handling
+        element.ModularContent = null!;
 
         var context = new DependencyTrackingContext();
 
-        // Act & Assert - should not throw
         _extractor.ExtractFromRichTextElement(element, context);
 
         var dependencies = context.Dependencies.ToList();
@@ -181,15 +161,12 @@ public class ContentDependencyExtractorTests
     [Fact]
     public void ExtractFromRichTextElement_WithEmptyCollections_TracksNothing()
     {
-        // Arrange
-        var element = new MockRichTextElement();  // All collections are empty by default
+        var element = new MockRichTextElement();
 
         var context = new DependencyTrackingContext();
 
-        // Act
         _extractor.ExtractFromRichTextElement(element, context);
 
-        // Assert
         Assert.Empty(context.Dependencies);
     }
 
@@ -200,7 +177,6 @@ public class ContentDependencyExtractorTests
     [Fact]
     public void ExtractFromTaxonomyElement_WithValidTaxonomyGroup_TracksDependency()
     {
-        // Arrange
         var json = """
         {
             "taxonomy_group": "categories",
@@ -210,10 +186,8 @@ public class ContentDependencyExtractorTests
         var element = JsonDocument.Parse(json).RootElement;
         var context = new DependencyTrackingContext();
 
-        // Act
         _extractor.ExtractFromTaxonomyElement(element, context);
 
-        // Assert
         var dependencies = context.Dependencies.ToList();
         Assert.Contains("taxonomy_categories", dependencies);
         Assert.Single(dependencies);
@@ -222,7 +196,6 @@ public class ContentDependencyExtractorTests
     [Fact]
     public void ExtractFromTaxonomyElement_WithNullContext_DoesNotThrow()
     {
-        // Arrange
         var json = """
         {
             "taxonomy_group": "tags",
@@ -231,14 +204,12 @@ public class ContentDependencyExtractorTests
         """;
         var element = JsonDocument.Parse(json).RootElement;
 
-        // Act & Assert - should not throw
         _extractor.ExtractFromTaxonomyElement(element, null);
     }
 
     [Fact]
     public void ExtractFromTaxonomyElement_WithoutTaxonomyGroup_TracksNothing()
     {
-        // Arrange
         var json = """
         {
             "value": []
@@ -247,17 +218,14 @@ public class ContentDependencyExtractorTests
         var element = JsonDocument.Parse(json).RootElement;
         var context = new DependencyTrackingContext();
 
-        // Act
         _extractor.ExtractFromTaxonomyElement(element, context);
 
-        // Assert
         Assert.Empty(context.Dependencies);
     }
 
     [Fact]
     public void ExtractFromTaxonomyElement_WithNullTaxonomyGroup_TracksNothing()
     {
-        // Arrange
         var json = """
         {
             "taxonomy_group": null,
@@ -267,25 +235,20 @@ public class ContentDependencyExtractorTests
         var element = JsonDocument.Parse(json).RootElement;
         var context = new DependencyTrackingContext();
 
-        // Act
         _extractor.ExtractFromTaxonomyElement(element, context);
 
-        // Assert
         Assert.Empty(context.Dependencies);
     }
 
     [Fact]
     public void ExtractFromTaxonomyElement_WithEmptyObject_TracksNothing()
     {
-        // Arrange
         var json = "{}";
         var element = JsonDocument.Parse(json).RootElement;
         var context = new DependencyTrackingContext();
 
-        // Act
         _extractor.ExtractFromTaxonomyElement(element, context);
 
-        // Assert
         Assert.Empty(context.Dependencies);
     }
 
@@ -296,18 +259,15 @@ public class ContentDependencyExtractorTests
     [Fact]
     public void NullExtractor_Instance_IsSingleton()
     {
-        // Act
         var instance1 = NullContentDependencyExtractor.Instance;
         var instance2 = NullContentDependencyExtractor.Instance;
 
-        // Assert
         Assert.Same(instance1, instance2);
     }
 
     [Fact]
     public void NullExtractor_ExtractFromRichTextElement_DoesNothing()
     {
-        // Arrange
         var extractor = NullContentDependencyExtractor.Instance;
         var imageId = Guid.NewGuid();
 
@@ -318,17 +278,14 @@ public class ContentDependencyExtractorTests
 
         var context = new DependencyTrackingContext();
 
-        // Act
         extractor.ExtractFromRichTextElement(element, context);
 
-        // Assert
         Assert.Empty(context.Dependencies);
     }
 
     [Fact]
     public void NullExtractor_ExtractFromTaxonomyElement_DoesNothing()
     {
-        // Arrange
         var extractor = NullContentDependencyExtractor.Instance;
         var json = """
         {
@@ -339,29 +296,24 @@ public class ContentDependencyExtractorTests
         var element = JsonDocument.Parse(json).RootElement;
         var context = new DependencyTrackingContext();
 
-        // Act
         extractor.ExtractFromTaxonomyElement(element, context);
 
-        // Assert
         Assert.Empty(context.Dependencies);
     }
 
     [Fact]
     public void NullExtractor_ExtractFromRichTextElement_WithNullContext_DoesNotThrow()
     {
-        // Arrange
         var extractor = NullContentDependencyExtractor.Instance;
         var element = new MockRichTextElement();
         element.Images.Add(Guid.NewGuid(), new MockInlineImage());
 
-        // Act & Assert - should not throw
         extractor.ExtractFromRichTextElement(element, null);
     }
 
     [Fact]
     public void NullExtractor_ExtractFromTaxonomyElement_WithNullContext_DoesNotThrow()
     {
-        // Arrange
         var extractor = NullContentDependencyExtractor.Instance;
         var json = """
         {
@@ -371,7 +323,6 @@ public class ContentDependencyExtractorTests
         """;
         var element = JsonDocument.Parse(json).RootElement;
 
-        // Act & Assert - should not throw
         extractor.ExtractFromTaxonomyElement(element, null);
     }
 

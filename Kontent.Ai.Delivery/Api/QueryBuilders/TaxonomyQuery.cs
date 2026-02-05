@@ -25,12 +25,11 @@ internal sealed class TaxonomyQuery(
 
     public async Task<IDeliveryResult<ITaxonomyGroup>> ExecuteAsync(CancellationToken cancellationToken = default)
     {
-        if (_cacheManager != null)
+        if (_cacheManager is not null)
         {
             var cacheKey = CacheKeyBuilder.BuildTaxonomyKey(_codename);
             IDeliveryResult<ITaxonomyGroup>? apiResult = null;
 
-            // Use stampede-protected cache fetch
             var cacheResult = await QueryCacheHelper.GetOrFetchAsync(
                 _cacheManager,
                 cacheKey,
@@ -39,26 +38,20 @@ internal sealed class TaxonomyQuery(
                     apiResult = await FetchFromApiAsync(ct).ConfigureAwait(false);
                     if (!apiResult.IsSuccess)
                         return (null, Array.Empty<string>());
-                    // Metadata queries use empty dependencies (rely on TTL for invalidation)
                     return ((TaxonomyGroup)apiResult.Value, Array.Empty<string>());
                 },
                 logger: null,
                 cancellationToken).ConfigureAwait(false);
 
-            if (cacheResult.IsCacheHit)
-                return DeliveryResult.CacheHit<ITaxonomyGroup>(cacheResult.Value!);
-
-            // Not a cache hit - return the API result (success or failure)
-            return apiResult!;
+            return cacheResult.IsCacheHit ? DeliveryResult.CacheHit<ITaxonomyGroup>(cacheResult.Value!) : apiResult!;
         }
 
-        // No caching - direct fetch
         return await FetchFromApiAsync(cancellationToken).ConfigureAwait(false);
     }
 
     private async Task<IDeliveryResult<ITaxonomyGroup>> FetchFromApiAsync(CancellationToken cancellationToken)
     {
-        bool? wait = _waitForLoadingNewContentOverride ?? _getDefaultWaitForNewContent();
+        var wait = _waitForLoadingNewContentOverride ?? _getDefaultWaitForNewContent();
         var response = await _api.GetTaxonomyInternalAsync(_codename, wait, cancellationToken).ConfigureAwait(false);
         return await response.ToDeliveryResultAsync().ConfigureAwait(false);
     }

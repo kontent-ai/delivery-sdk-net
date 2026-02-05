@@ -23,7 +23,6 @@ public static partial class ServiceCollectionExtensions
     {
         var refitSettings = CreateRefitSettings(configureRefit);
 
-        // Register named HTTP client with unique name to avoid conflicts
         var httpClientName = $"Kontent.Ai.Delivery.HttpClient.{name}";
         var httpClientBuilder = services
             .AddHttpClient(httpClientName)
@@ -85,7 +84,7 @@ public static partial class ServiceCollectionExtensions
             if (!options.EnableResilience)
                 return;
 
-            if (configureResilience != null)
+            if (configureResilience is not null)
             {
                 configureResilience(builder);
             }
@@ -103,7 +102,6 @@ public static partial class ServiceCollectionExtensions
     /// <param name="optionsName">The name of the options for the authentication handler, or null for default options.</param>
     private static void AddMessageHandlers(IHttpClientBuilder httpClientBuilder, string? optionsName)
     {
-        // Tracking handler with optional logger
         httpClientBuilder.AddHttpMessageHandler(sp => new TrackingHandler(
             sp.GetService<ILogger<TrackingHandler>>()));
 
@@ -139,7 +137,6 @@ public static partial class ServiceCollectionExtensions
             DelayGenerator = GetRetryAfterDelay
         });
 
-        // Timeout policy
         builder.AddTimeout(TimeSpan.FromSeconds(30));
     }
 

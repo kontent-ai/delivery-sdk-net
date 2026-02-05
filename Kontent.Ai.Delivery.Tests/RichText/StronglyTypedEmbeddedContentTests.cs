@@ -157,11 +157,9 @@ public class StronglyTypedEmbeddedContentTests
         {
             [typeof(Tweet)] = content =>
             {
-                if (content is IEmbeddedContent<Tweet> tweet)
-                {
-                    return $"<div class=\"dict-tweet\">{tweet.Elements.DisplayOptions?.FirstOrDefault()?.Name ?? "Dict tweet"}</div>";
-                }
-                return string.Empty;
+                return content is IEmbeddedContent<Tweet> tweet
+                    ? $"<div class=\"dict-tweet\">{tweet.Elements.DisplayOptions?.FirstOrDefault()?.Name ?? "Dict tweet"}</div>"
+                    : string.Empty;
             }
         };
 

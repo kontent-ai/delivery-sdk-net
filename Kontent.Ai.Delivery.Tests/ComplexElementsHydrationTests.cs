@@ -259,7 +259,7 @@ public class ComplexElementsHydrationTests
         Assert.False(string.IsNullOrEmpty(asset.Url));
 
         // This fixture doesn't have renditions
-        Assert.True(asset.Renditions == null || !asset.Renditions.Any());
+        Assert.True(asset.Renditions is null || !asset.Renditions.Any());
     }
 
     [Fact]

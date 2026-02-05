@@ -145,6 +145,12 @@ internal static class LogEventIds
     /// <summary>Rich text parsing exceeded maximum recursion depth.</summary>
     public const int RichTextMaxDepthExceeded = 1411;
 
+    /// <summary>Property deserialization failed during element mapping.</summary>
+    public const int PropertyDeserializationFailed = 1412;
+
+    /// <summary>Element mapping skipped due to missing envelope property.</summary>
+    public const int ElementMappingSkipped = 1413;
+
     // ========== Service Registration (1500-1599) ==========
 
     /// <summary>Delivery client was registered.</summary>

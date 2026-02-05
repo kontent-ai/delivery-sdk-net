@@ -289,12 +289,9 @@ public class DefaultRetryPolicyTests
         protected override Task<HttpResponseMessage> SendAsync(HttpRequestMessage request, CancellationToken cancellationToken)
         {
             Attempts++;
-            if (_throwsOnFirstAttempt && Attempts == 1)
-            {
-                throw new HttpRequestException("Simulated network failure");
-            }
-
-            return base.SendAsync(request, cancellationToken);
+            return _throwsOnFirstAttempt && Attempts == 1
+                ? throw new HttpRequestException("Simulated network failure")
+                : base.SendAsync(request, cancellationToken);
         }
     }
 }

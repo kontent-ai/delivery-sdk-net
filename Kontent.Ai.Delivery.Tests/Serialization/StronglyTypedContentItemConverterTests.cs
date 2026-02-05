@@ -168,7 +168,7 @@ public class StronglyTypedContentItemConverterTests
         const int concurrentCalls = 100;
 
         // Act - perform many concurrent deserializations
-        for (int i = 0; i < concurrentCalls; i++)
+        for (var i = 0; i < concurrentCalls; i++)
         {
             tasks.Add(Task.Run(() =>
                 JsonSerializer.Deserialize<ContentItem<Article>>(SimpleArticleJson, options)));

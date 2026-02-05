@@ -50,6 +50,11 @@ public interface IDeliveryItemListingResponse<TModel> : IPageable
     IReadOnlyList<IContentItem<TModel>> Items { get; }
 
     /// <summary>
+    /// Raw modular content used for resolving linked items/inline content.
+    /// </summary>
+    IReadOnlyDictionary<string, JsonElement> ModularContent { get; }
+
+    /// <summary>
     /// Gets a value indicating whether there are more pages available.
     /// </summary>
     bool HasNextPage { get; }

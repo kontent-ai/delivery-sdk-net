@@ -41,12 +41,11 @@ internal sealed class TypeQuery(
         LogQueryStarting();
         var stopwatch = StartTimingIfEnabled();
 
-        if (_cacheManager != null)
+        if (_cacheManager is not null)
         {
             var cacheKey = CacheKeyBuilder.BuildTypeKey(_codename, _params);
             IDeliveryResult<IContentType>? apiResult = null;
 
-            // Use stampede-protected cache fetch
             var cacheResult = await QueryCacheHelper.GetOrFetchAsync(
                 _cacheManager,
                 cacheKey,
@@ -55,7 +54,6 @@ internal sealed class TypeQuery(
                     apiResult = await FetchFromApiAsync(ct).ConfigureAwait(false);
                     if (!apiResult.IsSuccess)
                         return (null, Array.Empty<string>());
-                    // Metadata queries use empty dependencies (rely on TTL for invalidation)
                     return ((ContentType)apiResult.Value, Array.Empty<string>());
                 },
                 _logger,
@@ -67,12 +65,10 @@ internal sealed class TypeQuery(
                 return DeliveryResult.CacheHit<IContentType>(cacheResult.Value!);
             }
 
-            // Not a cache hit - return the API result (success or failure)
             LogQueryCompleted(stopwatch, apiResult!.StatusCode, cacheHit: false);
             return apiResult!;
         }
 
-        // No caching - direct fetch
         var deliveryResult = await FetchFromApiAsync(cancellationToken).ConfigureAwait(false);
         LogQueryCompleted(stopwatch, deliveryResult.StatusCode, cacheHit: false);
         return deliveryResult;
@@ -80,14 +76,14 @@ internal sealed class TypeQuery(
 
     private async Task<IDeliveryResult<IContentType>> FetchFromApiAsync(CancellationToken cancellationToken)
     {
-        bool? wait = _waitForLoadingNewContentOverride ?? _getDefaultWaitForNewContent();
+        var wait = _waitForLoadingNewContentOverride ?? _getDefaultWaitForNewContent();
         var response = await _api.GetTypeInternalAsync(_codename, _params, wait, cancellationToken).ConfigureAwait(false);
         return await response.ToDeliveryResultAsync(_logger).ConfigureAwait(false);
     }
 
     private void LogQueryStarting()
     {
-        if (_logger != null)
+        if (_logger is not null)
             LoggerMessages.QueryStarting(_logger, "Type", _codename);
     }
 

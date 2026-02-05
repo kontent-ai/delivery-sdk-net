@@ -21,7 +21,6 @@ public class RichTextIntegrationTests
     [Fact]
     public async Task IntegrationTest_CoffeeProcessingTechniques_WithTypeSpecificPatterns_GeneratesCorrectUrls()
     {
-        // Arrange
         var client = await CreateDeliveryClientAsync("coffee_processing_techniques.json");
 
         var resolver = new HtmlResolverBuilder()
@@ -35,11 +34,9 @@ public class RichTextIntegrationTests
                 fallbackPattern: "/content/{id}"))
             .Build();
 
-        // Act
         var result = await client.GetItem<Article>("coffee_processing_techniques").ExecuteAsync();
         var html = await result.Value.Elements.BodyCopy.ToHtmlAsync(resolver);
 
-        // Assert
         // Verify coffee type links use the shop pattern
         Assert.Contains("href=\"/shop/products/kenya-gakuyuni-aa\"", html);
         Assert.Contains("href=\"/shop/products/brazil-natural-barra-grande\"", html);
@@ -52,14 +49,11 @@ public class RichTextIntegrationTests
     [Fact]
     public async Task IntegrationTest_GetContentItemLinks_ExtractsAllLinks()
     {
-        // Arrange
         var client = await CreateDeliveryClientAsync("coffee_processing_techniques.json");
 
-        // Act
         var result = await client.GetItem<Article>("coffee_processing_techniques").ExecuteAsync();
         var links = result.Value.Elements.BodyCopy.GetContentItemLinks().ToList();
 
-        // Assert
         Assert.Equal(2, links.Count);
 
         var kenyaLink = links.FirstOrDefault(l => l.Metadata?.Codename == "kenya_gakuyuni_aa");
@@ -76,16 +70,13 @@ public class RichTextIntegrationTests
     [Fact]
     public async Task IntegrationTest_OnRoasts_WithNoLinks_ReturnsHtmlWithoutAnchors()
     {
-        // Arrange
         var client = await CreateDeliveryClientAsync("on_roasts.json");
 
         var resolver = new HtmlResolverBuilder().Build();
 
-        // Act
         var result = await client.GetItem<Article>("on_roasts").ExecuteAsync();
         var html = await result.Value.Elements.BodyCopy.ToHtmlAsync(resolver);
 
-        // Assert
         Assert.True(result.IsSuccess);
         Assert.NotNull(html);
 
@@ -110,7 +101,6 @@ public class RichTextIntegrationTests
     [Fact]
     public async Task IntegrationTest_CoffeeBeveragesExplained_WithInlineContentItems()
     {
-        // Arrange
         var client = await CreateDeliveryClientAsync("coffee_beverages_explained.json");
 
         var resolver = new HtmlResolverBuilder()
@@ -120,11 +110,9 @@ public class RichTextIntegrationTests
                 "<div class=\"video-embed\">[Video content]</div>")
             .Build();
 
-        // Act
         var result = await client.GetItem<Article>("coffee_beverages_explained").ExecuteAsync();
         var html = await result.Value.Elements.BodyCopy.ToHtmlAsync(resolver);
 
-        // Assert
         Assert.True(result.IsSuccess);
         Assert.NotNull(html);
 
@@ -136,14 +124,11 @@ public class RichTextIntegrationTests
     [Fact]
     public async Task IntegrationTest_GetEmbeddedContent_ExtractsAllItems()
     {
-        // Arrange
         var client = await CreateDeliveryClientAsync("coffee_beverages_explained.json");
 
-        // Act
         var result = await client.GetItem<Article>("coffee_beverages_explained").ExecuteAsync();
         var embeddedContent = result.Value.Elements.BodyCopy.GetEmbeddedContent().ToList();
 
-        // Assert
         const int ExpectedEmbeddedItemCount = 2;
         Assert.Equal(ExpectedEmbeddedItemCount, embeddedContent.Count);
 
@@ -166,7 +151,6 @@ public class RichTextIntegrationTests
     [Fact]
     public async Task IntegrationTest_AsyncContentResolver_WithAsyncOperations()
     {
-        // Arrange
         var client = await CreateDeliveryClientAsync("coffee_beverages_explained.json");
 
         var resolver = new HtmlResolverBuilder()
@@ -184,11 +168,9 @@ public class RichTextIntegrationTests
             })
             .Build();
 
-        // Act
         var result = await client.GetItem<Article>("coffee_beverages_explained").ExecuteAsync();
         var html = await result.Value.Elements.BodyCopy.ToHtmlAsync(resolver);
 
-        // Assert
         Assert.True(result.IsSuccess);
         Assert.Contains("<div class=\"tweet\"", html);
         Assert.Contains("data-id=", html);
@@ -204,7 +186,6 @@ public class RichTextIntegrationTests
     [Fact]
     public async Task IntegrationTest_BulkContentResolvers_RegistersMultipleTypes()
     {
-        // Arrange
         var client = await CreateDeliveryClientAsync("coffee_beverages_explained.json");
 
         var contentResolvers = new Dictionary<string, Func<IEmbeddedContent, string>>
@@ -219,11 +200,9 @@ public class RichTextIntegrationTests
             .WithContentResolvers(contentResolvers)
             .Build();
 
-        // Act
         var result = await client.GetItem<Article>("coffee_beverages_explained").ExecuteAsync();
         var html = await result.Value.Elements.BodyCopy.ToHtmlAsync(resolver);
 
-        // Assert
         Assert.True(result.IsSuccess);
         Assert.Contains("<blockquote class=\"twitter-tweet\">", html);
         Assert.Contains("<video class=\"hosted\"", html);
@@ -233,7 +212,6 @@ public class RichTextIntegrationTests
     [Fact]
     public async Task IntegrationTest_BulkContentResolvers_OverridesPreviousRegistration()
     {
-        // Arrange
         var client = await CreateDeliveryClientAsync("coffee_beverages_explained.json");
 
         var resolver = new HtmlResolverBuilder()
@@ -243,11 +221,9 @@ public class RichTextIntegrationTests
             )
             .Build();
 
-        // Act
         var result = await client.GetItem<Article>("coffee_beverages_explained").ExecuteAsync();
         var html = await result.Value.Elements.BodyCopy.ToHtmlAsync(resolver);
 
-        // Assert
         Assert.True(result.IsSuccess);
         Assert.Contains("<div>SECOND</div>", html);
         Assert.DoesNotContain("<div>FIRST</div>", html);
@@ -256,7 +232,6 @@ public class RichTextIntegrationTests
     [Fact]
     public async Task IntegrationTest_BulkContentResolvers_ParamsTupleSyntax()
     {
-        // Arrange
         var client = await CreateDeliveryClientAsync("coffee_beverages_explained.json");
 
         // Use the cleaner params tuple syntax for registering multiple resolvers
@@ -267,11 +242,9 @@ public class RichTextIntegrationTests
             )
             .Build();
 
-        // Act
         var result = await client.GetItem<Article>("coffee_beverages_explained").ExecuteAsync();
         var html = await result.Value.Elements.BodyCopy.ToHtmlAsync(resolver);
 
-        // Assert
         Assert.True(result.IsSuccess);
         Assert.Contains("<div class=\"tweet-params\">", html);
         Assert.Contains("<div class=\"video-params\"", html);
@@ -284,7 +257,6 @@ public class RichTextIntegrationTests
     [Fact]
     public async Task IntegrationTest_CustomLinkResolver_WithMetadataAccess()
     {
-        // Arrange
         var client = await CreateDeliveryClientAsync("coffee_processing_techniques.json");
 
         var resolver = new HtmlResolverBuilder()
@@ -293,20 +265,15 @@ public class RichTextIntegrationTests
                 var innerHtml = await resolveChildren(link.Children);
 
                 // Use link metadata to create custom HTML
-                if (link.Metadata != null)
-                {
-                    return $"<a href=\"/{link.Metadata.UrlSlug}\" class=\"coffee-link\" data-type=\"{link.Metadata.ContentTypeCodename}\">{innerHtml}</a>";
-                }
-
-                return $"<a href=\"#\">{innerHtml}</a>";
+                return link.Metadata is not null
+                    ? $"<a href=\"/{link.Metadata.UrlSlug}\" class=\"coffee-link\" data-type=\"{link.Metadata.ContentTypeCodename}\">{innerHtml}</a>"
+                    : $"<a href=\"#\">{innerHtml}</a>";
             })
             .Build();
 
-        // Act
         var result = await client.GetItem<Article>("coffee_processing_techniques").ExecuteAsync();
         var html = await result.Value.Elements.BodyCopy.ToHtmlAsync(resolver);
 
-        // Assert
         Assert.Contains("class=\"coffee-link\"", html);
         Assert.Contains("data-type=\"coffee\"", html);
     }
@@ -314,7 +281,6 @@ public class RichTextIntegrationTests
     [Fact]
     public async Task IntegrationTest_CustomLinkResolver_WithNestedFormatting()
     {
-        // Arrange
         var client = await CreateDeliveryClientAsync("coffee_processing_techniques.json");
 
         var resolver = new HtmlResolverBuilder()
@@ -327,11 +293,9 @@ public class RichTextIntegrationTests
             })
             .Build();
 
-        // Act
         var result = await client.GetItem<Article>("coffee_processing_techniques").ExecuteAsync();
         var html = await result.Value.Elements.BodyCopy.ToHtmlAsync(resolver);
 
-        // Assert
         // Verify nested formatting is preserved in link text
         Assert.Contains("<a href=", html);
         Assert.Contains("class=\"custom-link\"", html);
@@ -340,7 +304,6 @@ public class RichTextIntegrationTests
     [Fact]
     public async Task IntegrationTest_ContentItemLinkResolver_TypeSpecific_SingleRegistration()
     {
-        // Arrange
         var client = await CreateDeliveryClientAsync("coffee_processing_techniques.json");
 
         var resolver = new HtmlResolverBuilder()
@@ -352,11 +315,9 @@ public class RichTextIntegrationTests
             })
             .Build();
 
-        // Act
         var result = await client.GetItem<Article>("coffee_processing_techniques").ExecuteAsync();
         var html = await result.Value.Elements.BodyCopy.ToHtmlAsync(resolver);
 
-        // Assert
         Assert.Contains("class=\"coffee-specific\"", html);
         Assert.Contains("href=\"/coffee/", html);
     }
@@ -364,7 +325,6 @@ public class RichTextIntegrationTests
     [Fact]
     public async Task IntegrationTest_ContentItemLinkResolver_TypeSpecific_BulkDictionary()
     {
-        // Arrange
         var client = await CreateDeliveryClientAsync("coffee_processing_techniques.json");
 
         var linkResolvers = new Dictionary<string, BlockResolver<IContentItemLink>>
@@ -385,11 +345,9 @@ public class RichTextIntegrationTests
             .WithContentItemLinkResolvers(linkResolvers)
             .Build();
 
-        // Act
         var result = await client.GetItem<Article>("coffee_processing_techniques").ExecuteAsync();
         var html = await result.Value.Elements.BodyCopy.ToHtmlAsync(resolver);
 
-        // Assert
         Assert.Contains("class=\"coffee-dict\"", html);
         Assert.Contains("href=\"/coffee/", html);
     }
@@ -397,7 +355,6 @@ public class RichTextIntegrationTests
     [Fact]
     public async Task IntegrationTest_ContentItemLinkResolver_TypeSpecific_BulkTuples()
     {
-        // Arrange
         var client = await CreateDeliveryClientAsync("coffee_processing_techniques.json");
 
         var resolver = new HtmlResolverBuilder()
@@ -417,11 +374,9 @@ public class RichTextIntegrationTests
             )
             .Build();
 
-        // Act
         var result = await client.GetItem<Article>("coffee_processing_techniques").ExecuteAsync();
         var html = await result.Value.Elements.BodyCopy.ToHtmlAsync(resolver);
 
-        // Assert
         Assert.Contains("class=\"coffee-tuple\"", html);
         Assert.Contains("href=\"/coffee/", html);
     }
@@ -433,7 +388,6 @@ public class RichTextIntegrationTests
     [Fact]
     public async Task IntegrationTest_EmptyRichText_ReturnsParagraphWithLineBreak()
     {
-        // Arrange
         var mockHttp = new MockHttpMessageHandler();
         var guid = Guid.NewGuid().ToString();
         var url = $"https://deliver.kontent.ai/{guid}/items/empty_article";
@@ -479,11 +433,9 @@ public class RichTextIntegrationTests
 
         var resolver = new HtmlResolverBuilder().Build();
 
-        // Act
         var result = await client.GetItem<Article>("empty_article").ExecuteAsync();
         var html = await result.Value.Elements.BodyCopy.ToHtmlAsync(resolver);
 
-        // Assert
         Assert.True(result.IsSuccess);
         Assert.Equal("<p><br></p>", html);
     }
@@ -491,14 +443,11 @@ public class RichTextIntegrationTests
     [Fact]
     public async Task IntegrationTest_RichTextMetadata_IsPopulatedCorrectly()
     {
-        // Arrange
         var client = await CreateDeliveryClientAsync("coffee_processing_techniques.json");
 
-        // Act
         var result = await client.GetItem<Article>("coffee_processing_techniques").ExecuteAsync();
         var richText = result.Value.Elements.BodyCopy;
 
-        // Assert
         // Rich text should have metadata about links
         var links = richText.GetContentItemLinks().ToList();
         Assert.Equal(2, links.Count);
@@ -520,16 +469,13 @@ public class RichTextIntegrationTests
     [Fact]
     public async Task IntegrationTest_ComplexHtmlStructure_ParsesCorrectly()
     {
-        // Arrange
         var client = await CreateDeliveryClientAsync("on_roasts.json");
 
         var resolver = new HtmlResolverBuilder().Build();
 
-        // Act
         var result = await client.GetItem<Article>("on_roasts").ExecuteAsync();
         var html = await result.Value.Elements.BodyCopy.ToHtmlAsync(resolver);
 
-        // Assert
         // Verify various HTML elements are preserved
         Assert.Contains("<p>", html);
         Assert.Contains("</p>", html);
@@ -548,17 +494,14 @@ public class RichTextIntegrationTests
     [Fact]
     public async Task IntegrationTest_AutomaticDefaultResolvers_RenderInlineItemsAsComments()
     {
-        // Arrange
         var client = await CreateDeliveryClientAsync("coffee_beverages_explained.json");
 
         // No explicit resolvers configured - defaults are automatic
         var resolver = new HtmlResolverBuilder().Build();
 
-        // Act
         var result = await client.GetItem<Article>("coffee_beverages_explained").ExecuteAsync();
         var html = await result.Value.Elements.BodyCopy.ToHtmlAsync(resolver);
 
-        // Assert
         Assert.True(result.IsSuccess);
         Assert.NotNull(html);
         Assert.NotEmpty(html);
@@ -571,17 +514,14 @@ public class RichTextIntegrationTests
     [Fact]
     public async Task IntegrationTest_AutomaticDefaultResolvers_RenderItemLinksAsComments()
     {
-        // Arrange
         var client = await CreateDeliveryClientAsync("on_roasts.json");
 
         // No explicit resolvers configured - defaults are automatic
         var resolver = new HtmlResolverBuilder().Build();
 
-        // Act
         var result = await client.GetItem<Article>("on_roasts").ExecuteAsync();
         var html = await result.Value.Elements.BodyCopy.ToHtmlAsync(resolver);
 
-        // Assert
         Assert.True(result.IsSuccess);
         Assert.NotNull(html);
         Assert.NotEmpty(html);
@@ -598,7 +538,6 @@ public class RichTextIntegrationTests
     [Fact]
     public async Task IntegrationTest_TextNodeResolver_NormalizesText()
     {
-        // Arrange
         var client = await CreateDeliveryClientAsync("on_roasts.json");
 
         // Create encoder that preserves Unicode (emojis, smart quotes) but encodes HTML-reserved chars
@@ -617,11 +556,9 @@ public class RichTextIntegrationTests
             })
             .Build();
 
-        // Act
         var result = await client.GetItem<Article>("on_roasts").ExecuteAsync();
         var html = await result.Value.Elements.BodyCopy.ToHtmlAsync(resolver);
 
-        // Assert
         Assert.True(result.IsSuccess);
         Assert.Contains("roast ☕", html); // Emoji should be preserved, not encoded
         Assert.Contains("There\u2019s", html); // Smart quote (U+2019) should be preserved
@@ -634,7 +571,6 @@ public class RichTextIntegrationTests
     [Fact]
     public async Task IntegrationTest_HtmlNodeResolver_ByTagName_CustomizesSpecificTag()
     {
-        // Arrange
         var client = await CreateDeliveryClientAsync("on_roasts.json");
 
         var resolver = new HtmlResolverBuilder()
@@ -645,11 +581,9 @@ public class RichTextIntegrationTests
             })
             .Build();
 
-        // Act
         var result = await client.GetItem<Article>("on_roasts").ExecuteAsync();
         var html = await result.Value.Elements.BodyCopy.ToHtmlAsync(resolver);
 
-        // Assert
         Assert.True(result.IsSuccess);
         Assert.Contains("<h2 class=\"section-header\">Light Roasts</h2>", html);
         Assert.Contains("<h2 class=\"section-header\">Medium roast</h2>", html);
@@ -660,7 +594,6 @@ public class RichTextIntegrationTests
     [Fact]
     public async Task IntegrationTest_HtmlNodeResolver_ByTagName_IsCaseInsensitive()
     {
-        // Arrange
         var client = await CreateDeliveryClientAsync("on_roasts.json");
 
         var resolver = new HtmlResolverBuilder()
@@ -671,11 +604,9 @@ public class RichTextIntegrationTests
             })
             .Build();
 
-        // Act
         var result = await client.GetItem<Article>("on_roasts").ExecuteAsync();
         var html = await result.Value.Elements.BodyCopy.ToHtmlAsync(resolver);
 
-        // Assert
         Assert.True(result.IsSuccess);
         Assert.Contains("<div class=\"uppercase-match\">", html);
         Assert.DoesNotContain("<h3>", html);
@@ -684,7 +615,6 @@ public class RichTextIntegrationTests
     [Fact]
     public async Task IntegrationTest_HtmlNodeResolver_ByTagName_CustomizeListItems()
     {
-        // Arrange
         var client = await CreateDeliveryClientAsync("on_roasts.json");
 
         var resolver = new HtmlResolverBuilder()
@@ -695,11 +625,9 @@ public class RichTextIntegrationTests
             })
             .Build();
 
-        // Act
         var result = await client.GetItem<Article>("on_roasts").ExecuteAsync();
         var html = await result.Value.Elements.BodyCopy.ToHtmlAsync(resolver);
 
-        // Assert
         Assert.True(result.IsSuccess);
         Assert.Contains("<li class=\"custom-bullet\"><span class=\"icon\">✓</span>", html);
         Assert.Contains("Caffeine level decreases", html);
@@ -712,7 +640,6 @@ public class RichTextIntegrationTests
     [Fact]
     public async Task IntegrationTest_HtmlNodeResolver_WithMultiplePredicates_FirstMatchWins()
     {
-        // Arrange
         var client = await CreateDeliveryClientAsync("on_roasts.json");
 
         var resolver = new HtmlResolverBuilder()
@@ -736,11 +663,9 @@ public class RichTextIntegrationTests
             )
             .Build();
 
-        // Act
         var result = await client.GetItem<Article>("on_roasts").ExecuteAsync();
         var html = await result.Value.Elements.BodyCopy.ToHtmlAsync(resolver);
 
-        // Assert
         Assert.True(result.IsSuccess);
         Assert.Contains("<h3 class=\"first-match\">", html);
         Assert.DoesNotContain("second-match", html);
@@ -753,7 +678,6 @@ public class RichTextIntegrationTests
     [Fact]
     public async Task IntegrationTest_HtmlElementResolver_AppliesWhenNoPredicateMatches()
     {
-        // Arrange
         var client = await CreateDeliveryClientAsync("on_roasts.json");
 
         var resolver = new HtmlResolverBuilder()
@@ -771,11 +695,9 @@ public class RichTextIntegrationTests
             })
             .Build();
 
-        // Act
         var result = await client.GetItem<Article>("on_roasts").ExecuteAsync();
         var html = await result.Value.Elements.BodyCopy.ToHtmlAsync(resolver);
 
-        // Assert
         Assert.True(result.IsSuccess);
         // h3 uses specific resolver
         Assert.Contains("<h3 class=\"heading\">", html);
@@ -794,7 +716,6 @@ public class RichTextIntegrationTests
     [Fact]
     public async Task IntegrationTest_MixedResolvers_AllTypesWorkTogether()
     {
-        // Arrange
         var client = await CreateDeliveryClientAsync("coffee_beverages_explained.json");
 
         var resolver = new HtmlResolverBuilder()
@@ -808,11 +729,9 @@ public class RichTextIntegrationTests
             })
             .Build();
 
-        // Act
         var result = await client.GetItem<Article>("coffee_beverages_explained").ExecuteAsync();
         var html = await result.Value.Elements.BodyCopy.ToHtmlAsync(resolver);
 
-        // Assert
         Assert.True(result.IsSuccess);
         // Each resolver type should work
         Assert.Contains("<div class=\"tweet\">", html);
@@ -826,19 +745,16 @@ public class RichTextIntegrationTests
     [Fact]
     public async Task IntegrationTest_LargeRichText_HandlesEfficiently()
     {
-        // Arrange
         var client = await CreateDeliveryClientAsync("coffee_processing_techniques.json");
 
         var resolver = new HtmlResolverBuilder().Build();
 
-        // Act
         var result = await client.GetItem<Article>("coffee_processing_techniques").ExecuteAsync();
 
         var startTime = DateTime.UtcNow;
         var html = await result.Value.Elements.BodyCopy.ToHtmlAsync(resolver);
         var duration = DateTime.UtcNow - startTime;
 
-        // Assert
         Assert.NotEmpty(html);
         Assert.True(duration.TotalMilliseconds < 1000, "Resolution should complete in under 1 second");
     }
@@ -850,7 +766,7 @@ public class RichTextIntegrationTests
     [Fact]
     public async Task IntegrationTest_HtmlEntities_AreProperlyEncoded()
     {
-        // Arrange - API returns HTML with entities already encoded
+        // API returns HTML with entities already encoded
         var mockHttp = new MockHttpMessageHandler();
         var guid = Guid.NewGuid().ToString();
         var url = $"https://deliver.kontent.ai/{guid}/items/html_entities_test";
@@ -895,11 +811,9 @@ public class RichTextIntegrationTests
 
         var resolver = new HtmlResolverBuilder().Build();
 
-        // Act
         var result = await client.GetItem<Article>("html_entities_test").ExecuteAsync();
         var html = await result.Value.Elements.BodyCopy.ToHtmlAsync(resolver);
 
-        // Assert
         Assert.True(result.IsSuccess);
 
         // Verify that entities from API are decoded by AngleSharp parser, then re-encoded for output
@@ -916,7 +830,6 @@ public class RichTextIntegrationTests
     [Fact]
     public async Task IntegrationTest_HtmlEntities_OutputVerification()
     {
-        // Arrange
         var mockHttp = new MockHttpMessageHandler();
         var guid = Guid.NewGuid().ToString();
         var url = $"https://deliver.kontent.ai/{guid}/items/output_test";
@@ -961,11 +874,9 @@ public class RichTextIntegrationTests
 
         var resolver = new HtmlResolverBuilder().Build();
 
-        // Act
         var result = await client.GetItem<Article>("output_test").ExecuteAsync();
         var html = await result.Value.Elements.BodyCopy.ToHtmlAsync(resolver);
 
-        // Assert
         Assert.True(result.IsSuccess);
 
         // The output should be: <p>API sends: &lt;tag&gt; and &amp;</p>
@@ -979,7 +890,6 @@ public class RichTextIntegrationTests
     [Fact]
     public async Task IntegrationTest_PlainText_WithoutSpecialChars_IsUnchanged()
     {
-        // Arrange
         var mockHttp = new MockHttpMessageHandler();
         var guid = Guid.NewGuid().ToString();
         var url = $"https://deliver.kontent.ai/{guid}/items/plain_text_test";
@@ -1024,11 +934,9 @@ public class RichTextIntegrationTests
 
         var resolver = new HtmlResolverBuilder().Build();
 
-        // Act
         var result = await client.GetItem<Article>("plain_text_test").ExecuteAsync();
         var html = await result.Value.Elements.BodyCopy.ToHtmlAsync(resolver);
 
-        // Assert
         Assert.True(result.IsSuccess);
         Assert.Equal("<p>This is plain text without any special characters.</p>", html);
     }
@@ -1040,18 +948,15 @@ public class RichTextIntegrationTests
     [Fact]
     public async Task IntegrationTest_MissingContentItemLinkResolver_RendersDiagnosticWithContext()
     {
-        // Arrange
         var client = await CreateDeliveryClientAsync("coffee_processing_techniques.json");
 
         // Build resolver WITHOUT content item link resolver
         // Note: No need to call WithDefaultResolvers() - defaults are automatic!
         var resolver = new HtmlResolverBuilder().Build();
 
-        // Act
         var result = await client.GetItem<Article>("coffee_processing_techniques").ExecuteAsync();
         var html = await result.Value.Elements.BodyCopy.ToHtmlAsync(resolver);
 
-        // Assert
         Assert.True(result.IsSuccess);
 
         // Verify diagnostic comment includes context (item ID and codename)

@@ -98,7 +98,7 @@ public class ServiceCollectionsExtensionsTests
     [Fact]
     public void AddDeliveryClient_Advanced_InvokesConfigureRefit()
     {
-        bool invoked = false;
+        var invoked = false;
         _serviceCollection.AddDeliveryClient(
             new DeliveryOptions { EnvironmentId = EnvironmentId },
             configureHttpClient: null,
@@ -113,7 +113,7 @@ public class ServiceCollectionsExtensionsTests
     [Fact]
     public void AddDeliveryClient_ResilienceEnabled_InvokesConfigureResilience()
     {
-        bool invoked = false;
+        var invoked = false;
         _serviceCollection.AddDeliveryClient(
             new DeliveryOptions { EnvironmentId = EnvironmentId, EnableResilience = true },
             configureHttpClient: null,
@@ -129,7 +129,7 @@ public class ServiceCollectionsExtensionsTests
     [Fact]
     public void AddDeliveryClient_ResilienceDisabled_DoesNotInvokeConfigureResilience()
     {
-        bool invoked = false;
+        var invoked = false;
         _serviceCollection.AddDeliveryClient(
             new DeliveryOptions { EnvironmentId = EnvironmentId, EnableResilience = false },
             configureHttpClient: null,
@@ -214,7 +214,6 @@ public class ServiceCollectionsExtensionsTests
     [Fact]
     public void AddDeliveryClient_WithConfigurationSection_AllServicesAreRegistered()
     {
-        // Arrange
         var jsonConfigurationPath = Path.Combine(
             Environment.CurrentDirectory,
             "Fixtures",
@@ -226,11 +225,9 @@ public class ServiceCollectionsExtensionsTests
 
         var section = fakeConfiguration.GetSection("DeliveryOptions");
 
-        // Act
         _serviceCollection.AddDeliveryClient(section);
         var provider = _serviceCollection.BuildServiceProvider();
 
-        // Assert
         AssertDefaultServiceCollection(provider, _expectedInterfacesWithImplementationTypes);
 
         // Verify options were correctly bound from configuration section
@@ -252,7 +249,6 @@ public class ServiceCollectionsExtensionsTests
     [Fact]
     public void AddDeliveryClient_MultipleNamedClients_AllRegisteredWithSeparateOptions()
     {
-        // Arrange
         const string envId1 = "11111111-1111-1111-1111-111111111111";
         const string envId2 = "22222222-2222-2222-2222-222222222222";
 
@@ -269,19 +265,15 @@ public class ServiceCollectionsExtensionsTests
             o.EnableResilience = false;
         });
 
-        // Act
         var provider = _serviceCollection.BuildServiceProvider();
 
-        // Verify factory is registered
         var factory = provider.GetRequiredService<IDeliveryClientFactory>();
         Assert.NotNull(factory);
 
-        // Verify each client has its own options
         var optionsMonitor = provider.GetRequiredService<IOptionsMonitor<DeliveryOptions>>();
         var prodOptions = optionsMonitor.Get("production");
         var previewOptions = optionsMonitor.Get("preview");
 
-        // Assert - Options should be separate and correctly configured
         Assert.Equal(envId1, prodOptions.EnvironmentId);
         Assert.Equal(envId2, previewOptions.EnvironmentId);
         Assert.False(prodOptions.UsePreviewApi);
@@ -292,7 +284,6 @@ public class ServiceCollectionsExtensionsTests
     [Fact]
     public void AddDeliveryClient_WithCustomBaseUrl_UsesCustomEndpoint()
     {
-        // Arrange
         const string customBase = "https://custom-delivery.example.com";
         _serviceCollection.AddDeliveryClient("custom", o =>
         {
@@ -301,19 +292,17 @@ public class ServiceCollectionsExtensionsTests
             o.EnableResilience = false;
         });
 
-        // Act
         var provider = _serviceCollection.BuildServiceProvider();
         var optionsMonitor = provider.GetRequiredService<IOptionsMonitor<DeliveryOptions>>();
         var options = optionsMonitor.Get("custom");
 
-        // Assert
         Assert.Equal(customBase, options.GetBaseUrl());
     }
 
     [Fact]
     public void AddDeliveryClient_RuntimeConfigurationChanges_ReflectedInOptions()
     {
-        // Arrange - Start with production API
+        // Start with production API
         var initialOptions = new DeliveryOptions
         {
             EnvironmentId = EnvironmentId,
@@ -329,11 +318,10 @@ public class ServiceCollectionsExtensionsTests
         var provider = _serviceCollection.BuildServiceProvider();
         var optionsMonitor = provider.GetRequiredService<IOptionsMonitor<DeliveryOptions>>();
 
-        // Act 1 - Verify initial state
         var options1 = optionsMonitor.Get("dynamic");
         Assert.False(options1.UsePreviewApi);
 
-        // Act 2 - Simulate runtime configuration change to preview API
+        // Simulate runtime configuration change to preview API
         _serviceCollection.Configure<DeliveryOptions>("dynamic", opts =>
         {
             opts.EnvironmentId = EnvironmentId;
@@ -346,7 +334,6 @@ public class ServiceCollectionsExtensionsTests
         var optionsMonitor2 = provider2.GetRequiredService<IOptionsMonitor<DeliveryOptions>>();
         var options2 = optionsMonitor2.Get("dynamic");
 
-        // Assert - Options reflect the runtime change
         Assert.True(options2.UsePreviewApi);
         Assert.Equal(PreviewApiKey, options2.PreviewApiKey);
     }
@@ -354,14 +341,12 @@ public class ServiceCollectionsExtensionsTests
     [Fact]
     public void AddDeliveryClient_DuplicateClientName_ThrowsInvalidOperationException()
     {
-        // Arrange
         _serviceCollection.AddDeliveryClient("duplicate", o =>
         {
             o.EnvironmentId = EnvironmentId;
             o.EnableResilience = false;
         });
 
-        // Act & Assert
         var exception = Assert.Throws<InvalidOperationException>(() =>
             _serviceCollection.AddDeliveryClient("duplicate", o => o.EnvironmentId = EnvironmentId));
 
@@ -373,7 +358,6 @@ public class ServiceCollectionsExtensionsTests
     [Fact]
     public void AddDeliveryClient_WithNameContainingSpaces_ThrowsArgumentException()
     {
-        // Act & Assert
         var exception = Assert.Throws<ArgumentException>(() =>
             _serviceCollection.AddDeliveryClient("name with spaces", o => o.EnvironmentId = EnvironmentId));
 
@@ -384,7 +368,6 @@ public class ServiceCollectionsExtensionsTests
     [Fact]
     public void AddDeliveryClient_WithNameWithLeadingWhitespace_ThrowsArgumentException()
     {
-        // Act & Assert
         var exception = Assert.Throws<ArgumentException>(() =>
             _serviceCollection.AddDeliveryClient(" leading-space", o => o.EnvironmentId = EnvironmentId));
 
@@ -394,16 +377,14 @@ public class ServiceCollectionsExtensionsTests
     [Fact]
     public void AddDeliveryClient_DefaultClient_AccessibleViaFactoryAndDirectInjection()
     {
-        // Arrange
         _serviceCollection.AddDeliveryClient(o => o.EnvironmentId = EnvironmentId);
 
-        // Act
         var provider = _serviceCollection.BuildServiceProvider();
         var clientDirect = provider.GetRequiredService<IDeliveryClient>();
         var factory = provider.GetRequiredService<IDeliveryClientFactory>();
         var clientFromFactory = factory.Get(Abstractions.Options.DefaultName);
 
-        // Assert - Should be the same singleton instance
+        // Should be the same singleton instance
         Assert.Same(clientDirect, clientFromFactory);
     }
 
@@ -414,7 +395,6 @@ public class ServiceCollectionsExtensionsTests
     [Fact]
     public void AddDeliveryMemoryCache_RegistersKeyedCacheManager()
     {
-        // Arrange
         _serviceCollection.AddDeliveryClient("production", o =>
         {
             o.EnvironmentId = EnvironmentId;
@@ -422,11 +402,9 @@ public class ServiceCollectionsExtensionsTests
         });
         _serviceCollection.AddDeliveryMemoryCache("production");
 
-        // Act
         var provider = _serviceCollection.BuildServiceProvider();
         var cacheManager = provider.GetKeyedService<IDeliveryCacheManager>("production");
 
-        // Assert
         Assert.NotNull(cacheManager);
         Assert.IsType<MemoryCacheManager>(cacheManager);
     }
@@ -434,7 +412,6 @@ public class ServiceCollectionsExtensionsTests
     [Fact]
     public void AddDeliveryDistributedCache_RegistersKeyedCacheManager()
     {
-        // Arrange
         _serviceCollection.AddDeliveryClient("production", o =>
         {
             o.EnvironmentId = EnvironmentId;
@@ -443,11 +420,9 @@ public class ServiceCollectionsExtensionsTests
         _serviceCollection.AddDistributedMemoryCache(); // Register IDistributedCache
         _serviceCollection.AddDeliveryDistributedCache("production");
 
-        // Act
         var provider = _serviceCollection.BuildServiceProvider();
         var cacheManager = provider.GetKeyedService<IDeliveryCacheManager>("production");
 
-        // Assert
         Assert.NotNull(cacheManager);
         Assert.IsType<DistributedCacheManager>(cacheManager);
     }
@@ -455,7 +430,6 @@ public class ServiceCollectionsExtensionsTests
     [Fact]
     public void AddDeliveryMemoryCache_MultipleClients_RegistersSeparateKeyedManagers()
     {
-        // Arrange
         const string envId1 = "11111111-1111-1111-1111-111111111111";
         const string envId2 = "22222222-2222-2222-2222-222222222222";
 
@@ -475,12 +449,11 @@ public class ServiceCollectionsExtensionsTests
         _serviceCollection.AddDeliveryMemoryCache("production", keyPrefix: "prod");
         _serviceCollection.AddDeliveryMemoryCache("preview", keyPrefix: "preview");
 
-        // Act
         var provider = _serviceCollection.BuildServiceProvider();
         var prodCacheManager = provider.GetKeyedService<IDeliveryCacheManager>("production");
         var previewCacheManager = provider.GetKeyedService<IDeliveryCacheManager>("preview");
 
-        // Assert - Both should be registered and be different instances
+        // Both should be registered and be different instances
         Assert.NotNull(prodCacheManager);
         Assert.NotNull(previewCacheManager);
         Assert.NotSame(prodCacheManager, previewCacheManager);
@@ -489,25 +462,23 @@ public class ServiceCollectionsExtensionsTests
     [Fact]
     public void AddDeliveryMemoryCache_ClientWithoutCacheRegistration_ReturnsNull()
     {
-        // Arrange - Register client but NOT cache
+        // Register client but NOT cache
         _serviceCollection.AddDeliveryClient("no-cache", o =>
         {
             o.EnvironmentId = EnvironmentId;
             o.EnableResilience = false;
         });
 
-        // Act
         var provider = _serviceCollection.BuildServiceProvider();
         var cacheManager = provider.GetKeyedService<IDeliveryCacheManager>("no-cache");
 
-        // Assert - No cache manager should be registered for this client
+        // No cache manager should be registered for this client
         Assert.Null(cacheManager);
     }
 
     [Fact]
     public void AddDeliveryMemoryCache_WithCustomExpiration_PassesExpirationToManager()
     {
-        // Arrange
         var expiration = TimeSpan.FromMinutes(30);
         _serviceCollection.AddDeliveryClient("production", o =>
         {
@@ -516,11 +487,9 @@ public class ServiceCollectionsExtensionsTests
         });
         _serviceCollection.AddDeliveryMemoryCache("production", defaultExpiration: expiration);
 
-        // Act
         var provider = _serviceCollection.BuildServiceProvider();
         var cacheManager = provider.GetKeyedService<IDeliveryCacheManager>("production");
 
-        // Assert
         Assert.NotNull(cacheManager);
         Assert.IsType<MemoryCacheManager>(cacheManager);
     }
@@ -528,7 +497,7 @@ public class ServiceCollectionsExtensionsTests
     [Fact]
     public void AddDeliveryMemoryCache_NullClientName_ThrowsArgumentNullException()
     {
-        // Act & Assert - use named parameter to ensure we call the string overload
+        // Use named parameter to ensure we call the string overload
         Assert.Throws<ArgumentNullException>(() =>
             _serviceCollection.AddDeliveryMemoryCache(clientName: null!));
     }
@@ -536,7 +505,6 @@ public class ServiceCollectionsExtensionsTests
     [Fact]
     public void AddDeliveryMemoryCache_EmptyClientName_ThrowsArgumentException()
     {
-        // Act & Assert
         Assert.Throws<ArgumentException>(() =>
             _serviceCollection.AddDeliveryMemoryCache(clientName: ""));
     }
@@ -544,7 +512,7 @@ public class ServiceCollectionsExtensionsTests
     [Fact]
     public void AddDeliveryDistributedCache_NullClientName_ThrowsArgumentNullException()
     {
-        // Act & Assert - use named parameter to ensure we call the string overload
+        // Use named parameter to ensure we call the string overload
         Assert.Throws<ArgumentNullException>(() =>
             _serviceCollection.AddDeliveryDistributedCache(clientName: null!));
     }
@@ -552,7 +520,7 @@ public class ServiceCollectionsExtensionsTests
     [Fact]
     public void AddDeliveryMemoryCache_RegistersContentDependencyExtractor_CacheFirst()
     {
-        // Arrange - Cache registered before client
+        // Cache registered before client
         _serviceCollection.AddDeliveryMemoryCache("production");
         _serviceCollection.AddDeliveryClient("production", o =>
         {
@@ -560,11 +528,10 @@ public class ServiceCollectionsExtensionsTests
             o.EnableResilience = false;
         });
 
-        // Act
         var provider = _serviceCollection.BuildServiceProvider();
         var extractor = provider.GetService<IContentDependencyExtractor>();
 
-        // Assert - Should register the real extractor (not null extractor)
+        // Should register the real extractor (not null extractor)
         Assert.NotNull(extractor);
         Assert.DoesNotContain("Null", extractor.GetType().Name);
     }
@@ -572,7 +539,7 @@ public class ServiceCollectionsExtensionsTests
     [Fact]
     public void AddDeliveryMemoryCache_RegistersContentDependencyExtractor_ClientFirst()
     {
-        // Arrange - Client registered before cache (order should not matter)
+        // Client registered before cache (order should not matter)
         _serviceCollection.AddDeliveryClient("production", o =>
         {
             o.EnvironmentId = EnvironmentId;
@@ -580,11 +547,10 @@ public class ServiceCollectionsExtensionsTests
         });
         _serviceCollection.AddDeliveryMemoryCache("production");
 
-        // Act
         var provider = _serviceCollection.BuildServiceProvider();
         var extractor = provider.GetService<IContentDependencyExtractor>();
 
-        // Assert - Should register the real extractor regardless of order
+        // Should register the real extractor regardless of order
         Assert.NotNull(extractor);
         Assert.DoesNotContain("Null", extractor.GetType().Name);
     }
@@ -592,7 +558,7 @@ public class ServiceCollectionsExtensionsTests
     [Fact]
     public void AddDeliveryDistributedCache_RegistersContentDependencyExtractor_CacheFirst()
     {
-        // Arrange - Cache registered before client
+        // Cache registered before client
         _serviceCollection.AddDistributedMemoryCache();
         _serviceCollection.AddDeliveryDistributedCache("production");
         _serviceCollection.AddDeliveryClient("production", o =>
@@ -601,11 +567,10 @@ public class ServiceCollectionsExtensionsTests
             o.EnableResilience = false;
         });
 
-        // Act
         var provider = _serviceCollection.BuildServiceProvider();
         var extractor = provider.GetService<IContentDependencyExtractor>();
 
-        // Assert - Should register the real extractor (not null extractor)
+        // Should register the real extractor (not null extractor)
         Assert.NotNull(extractor);
         Assert.DoesNotContain("Null", extractor.GetType().Name);
     }
@@ -613,7 +578,7 @@ public class ServiceCollectionsExtensionsTests
     [Fact]
     public void AddDeliveryDistributedCache_RegistersContentDependencyExtractor_ClientFirst()
     {
-        // Arrange - Client registered before cache (order should not matter)
+        // Client registered before cache (order should not matter)
         _serviceCollection.AddDistributedMemoryCache();
         _serviceCollection.AddDeliveryClient("production", o =>
         {
@@ -622,11 +587,10 @@ public class ServiceCollectionsExtensionsTests
         });
         _serviceCollection.AddDeliveryDistributedCache("production");
 
-        // Act
         var provider = _serviceCollection.BuildServiceProvider();
         var extractor = provider.GetService<IContentDependencyExtractor>();
 
-        // Assert - Should register the real extractor regardless of order
+        // Should register the real extractor regardless of order
         Assert.NotNull(extractor);
         Assert.DoesNotContain("Null", extractor.GetType().Name);
     }
@@ -638,7 +602,6 @@ public class ServiceCollectionsExtensionsTests
     [Fact]
     public void MultipleNamedClients_OneWithCache_OtherWithoutCache()
     {
-        // Arrange
         const string envId1 = "11111111-1111-1111-1111-111111111111";
         const string envId2 = "22222222-2222-2222-2222-222222222222";
 
@@ -658,12 +621,11 @@ public class ServiceCollectionsExtensionsTests
         // Only enable caching for production
         _serviceCollection.AddDeliveryMemoryCache("production", keyPrefix: "prod");
 
-        // Act
         var provider = _serviceCollection.BuildServiceProvider();
         var prodCacheManager = provider.GetKeyedService<IDeliveryCacheManager>("production");
         var previewCacheManager = provider.GetKeyedService<IDeliveryCacheManager>("preview");
 
-        // Assert - Only production has cache
+        // Only production has cache
         Assert.NotNull(prodCacheManager);
         Assert.Null(previewCacheManager);
     }
@@ -671,7 +633,7 @@ public class ServiceCollectionsExtensionsTests
     [Fact]
     public void AddDeliveryMemoryCache_SharedUnderlyingMemoryCache()
     {
-        // Arrange - Both clients use the same IMemoryCache but different key prefixes
+        // Both clients use the same IMemoryCache but different key prefixes
         _serviceCollection.AddDeliveryClient("client1", o =>
         {
             o.EnvironmentId = EnvironmentId;
@@ -686,7 +648,6 @@ public class ServiceCollectionsExtensionsTests
         _serviceCollection.AddDeliveryMemoryCache("client1", keyPrefix: "prefix1");
         _serviceCollection.AddDeliveryMemoryCache("client2", keyPrefix: "prefix2");
 
-        // Act
         var provider = _serviceCollection.BuildServiceProvider();
 
         // Both cache managers should resolve to separate keyed instances
@@ -696,7 +657,6 @@ public class ServiceCollectionsExtensionsTests
         // But they share the underlying IMemoryCache (singleton)
         var memoryCache = provider.GetService<IMemoryCache>();
 
-        // Assert
         Assert.NotNull(cache1);
         Assert.NotNull(cache2);
         Assert.NotSame(cache1, cache2);

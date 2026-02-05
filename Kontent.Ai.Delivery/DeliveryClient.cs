@@ -33,22 +33,16 @@ internal sealed class DeliveryClient(
 
     public IItemQuery<T> GetItem<T>(string codename)
     {
-        if (string.IsNullOrEmpty(codename))
-        {
-            throw new ArgumentException("Entered item codename is not valid.", nameof(codename));
-        }
-
-        return new ItemQuery<T>(_deliveryApi, codename, GetDefaultWaitForLoadingNewContent, _contentItemMapper, _cacheManager, _logger);
+        return string.IsNullOrEmpty(codename)
+            ? throw new ArgumentException("Entered item codename is not valid.", nameof(codename))
+            : (IItemQuery<T>)new ItemQuery<T>(_deliveryApi, codename, GetDefaultWaitForLoadingNewContent, _contentItemMapper, _cacheManager, _logger);
     }
 
     public IDynamicItemQuery GetItem(string codename)
     {
-        if (string.IsNullOrEmpty(codename))
-        {
-            throw new ArgumentException("Entered item codename is not valid.", nameof(codename));
-        }
-
-        return new DynamicItemQuery(_deliveryApi, codename, GetDefaultWaitForLoadingNewContent, _contentItemMapper);
+        return string.IsNullOrEmpty(codename)
+            ? throw new ArgumentException("Entered item codename is not valid.", nameof(codename))
+            : (IDynamicItemQuery)new DynamicItemQuery(_deliveryApi, codename, GetDefaultWaitForLoadingNewContent, _contentItemMapper);
     }
 
     public IItemsQuery<T> GetItems<T>()
@@ -73,12 +67,9 @@ internal sealed class DeliveryClient(
 
     public ITypeQuery GetType(string codename)
     {
-        if (string.IsNullOrEmpty(codename))
-        {
-            throw new ArgumentException("Entered type codename is not valid.", nameof(codename));
-        }
-
-        return new TypeQuery(_deliveryApi, codename, GetDefaultWaitForLoadingNewContent, _cacheManager, _logger);
+        return string.IsNullOrEmpty(codename)
+            ? throw new ArgumentException("Entered type codename is not valid.", nameof(codename))
+            : (ITypeQuery)new TypeQuery(_deliveryApi, codename, GetDefaultWaitForLoadingNewContent, _cacheManager, _logger);
     }
 
     public ITypesQuery GetTypes()
@@ -93,22 +84,16 @@ internal sealed class DeliveryClient(
             throw new ArgumentException("Entered content type codename is not valid.", nameof(contentTypeCodename));
         }
 
-        if (string.IsNullOrEmpty(contentElementCodename))
-        {
-            throw new ArgumentException("Entered content element codename is not valid.", nameof(contentElementCodename));
-        }
-
-        return new TypeElementQuery(_deliveryApi, contentTypeCodename, contentElementCodename, GetDefaultWaitForLoadingNewContent);
+        return string.IsNullOrEmpty(contentElementCodename)
+            ? throw new ArgumentException("Entered content element codename is not valid.", nameof(contentElementCodename))
+            : (ITypeElementQuery)new TypeElementQuery(_deliveryApi, contentTypeCodename, contentElementCodename, GetDefaultWaitForLoadingNewContent);
     }
 
     public ITaxonomyQuery GetTaxonomy(string codename)
     {
-        if (string.IsNullOrEmpty(codename))
-        {
-            throw new ArgumentException("Entered taxonomy codename is not valid.", nameof(codename));
-        }
-
-        return new TaxonomyQuery(_deliveryApi, codename, GetDefaultWaitForLoadingNewContent, _cacheManager);
+        return string.IsNullOrEmpty(codename)
+            ? throw new ArgumentException("Entered taxonomy codename is not valid.", nameof(codename))
+            : (ITaxonomyQuery)new TaxonomyQuery(_deliveryApi, codename, GetDefaultWaitForLoadingNewContent, _cacheManager);
     }
 
     public ITaxonomiesQuery GetTaxonomies()
@@ -123,22 +108,16 @@ internal sealed class DeliveryClient(
 
     public IItemUsedInQuery GetItemUsedIn(string codename)
     {
-        if (string.IsNullOrEmpty(codename))
-        {
-            throw new ArgumentException("Entered item codename is not valid.", nameof(codename));
-        }
-
-        return new ItemUsedInQuery(_deliveryApi, codename, GetDefaultWaitForLoadingNewContent);
+        return string.IsNullOrEmpty(codename)
+            ? throw new ArgumentException("Entered item codename is not valid.", nameof(codename))
+            : (IItemUsedInQuery)new ItemUsedInQuery(_deliveryApi, codename, GetDefaultWaitForLoadingNewContent);
     }
 
     public IAssetUsedInQuery GetAssetUsedIn(string codename)
     {
-        if (string.IsNullOrEmpty(codename))
-        {
-            throw new ArgumentException("Entered asset codename is not valid.", nameof(codename));
-        }
-
-        return new AssetUsedInQuery(_deliveryApi, codename, GetDefaultWaitForLoadingNewContent);
+        return string.IsNullOrEmpty(codename)
+            ? throw new ArgumentException("Entered asset codename is not valid.", nameof(codename))
+            : (IAssetUsedInQuery)new AssetUsedInQuery(_deliveryApi, codename, GetDefaultWaitForLoadingNewContent);
     }
 
     private bool? GetDefaultWaitForLoadingNewContent()

@@ -165,6 +165,7 @@ public interface IDeliveryItemListingResponse : IPageable
 public interface IDeliveryItemListingResponse`1 : IPageable
     Boolean HasNextPage { get; }
     IReadOnlyList`1 Items { get; }
+    IReadOnlyDictionary`2 ModularContent { get; }
     Task`1 FetchNextPageAsync(CancellationToken cancellationToken)
 
 // Kontent.Ai.Delivery.Abstractions
@@ -178,6 +179,7 @@ public interface IDeliveryItemsFeedResponse
 public interface IDeliveryItemsFeedResponse`1
     Boolean HasNextPage { get; }
     IReadOnlyList`1 Items { get; }
+    IReadOnlyDictionary`2 ModularContent { get; }
     Task`1 FetchNextPageAsync(CancellationToken cancellationToken)
 
 // Kontent.Ai.Delivery.Abstractions

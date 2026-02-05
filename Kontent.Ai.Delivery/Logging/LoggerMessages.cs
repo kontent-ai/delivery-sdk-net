@@ -274,6 +274,20 @@ internal static partial class LoggerMessages
         Message = "Rich text parsing exceeded maximum recursion depth ({MaxDepth}). Deeply nested content was truncated.")]
     public static partial void RichTextMaxDepthExceeded(ILogger logger, int maxDepth);
 
+    [LoggerMessage(
+        EventId = LogEventIds.PropertyDeserializationFailed,
+        Level = LogLevel.Debug,
+        Message = "Property '{ElementCodename}' deserialization failed for type '{TypeName}'")]
+    public static partial void PropertyDeserializationFailed(
+        ILogger logger, string elementCodename, string typeName, Exception exception);
+
+    [LoggerMessage(
+        EventId = LogEventIds.ElementMappingSkipped,
+        Level = LogLevel.Debug,
+        Message = "Element '{ElementCodename}' mapping skipped: envelope missing expected '{PropertyName}' property")]
+    public static partial void ElementMappingSkipped(
+        ILogger logger, string elementCodename, string propertyName);
+
     // ========== Pagination ==========
 
     [LoggerMessage(

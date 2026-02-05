@@ -54,7 +54,7 @@ public class PublicApiApprovalTests
     {
         var bases = new List<string>();
 
-        if (type.BaseType != null && type.BaseType != typeof(object) && type.BaseType != typeof(ValueType))
+        if (type.BaseType is not null && type.BaseType != typeof(object) && type.BaseType != typeof(ValueType))
             bases.Add(type.BaseType.Name);
 
         bases.AddRange(type.GetInterfaces()

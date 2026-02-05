@@ -55,6 +55,11 @@ public interface IDeliveryItemsFeedResponse<TModel>
     bool HasNextPage { get; }
 
     /// <summary>
+    /// Raw modular content used for resolving linked items/inline content.
+    /// </summary>
+    IReadOnlyDictionary<string, JsonElement> ModularContent { get; }
+
+    /// <summary>
     /// Fetches the next page of items if available.
     /// </summary>
     /// <param name="cancellationToken">Cancellation token.</param>
