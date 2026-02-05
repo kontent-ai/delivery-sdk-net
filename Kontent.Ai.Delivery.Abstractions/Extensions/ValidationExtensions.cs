@@ -36,18 +36,15 @@ public class RequiredIfAttribute(string propertyName, object? isValue) : Validat
         var property = validationContext.ObjectType.GetProperty(_propertyName) ?? throw new NotSupportedException($"Can't find {_propertyName} on searched type: {validationContext.ObjectType.Name}");
         var requiredIfTypeActualValue = property.GetValue(validationContext.ObjectInstance);
 
-        if (requiredIfTypeActualValue == null && _isValue != null)
+        if (requiredIfTypeActualValue is null && _isValue is not null)
         {
             return ValidationResult.Success;
         }
 
-        if (requiredIfTypeActualValue == null || requiredIfTypeActualValue.Equals(_isValue))
-        {
-            return value == null
+        return requiredIfTypeActualValue is null || requiredIfTypeActualValue.Equals(_isValue)
+            ? value is null
                 ? new ValidationResult(FormatErrorMessage(validationContext.DisplayName))
-                : ValidationResult.Success;
-        }
-
-        return ValidationResult.Success;
+                : ValidationResult.Success
+            : ValidationResult.Success;
     }
 }

@@ -18,7 +18,7 @@ internal sealed class ItemUsedInQuery(IDeliveryApi api, string codename, Func<bo
 
     public async IAsyncEnumerable<IUsedInItem> EnumerateItemsAsync([EnumeratorCancellation] CancellationToken cancellationToken = default)
     {
-        bool? wait = _waitForLoadingNewContentOverride ?? _getDefaultWaitForNewContent();
+        var wait = _waitForLoadingNewContentOverride ?? _getDefaultWaitForNewContent();
         string? token = null;
         while (true)
         {
@@ -52,7 +52,7 @@ internal sealed class AssetUsedInQuery(IDeliveryApi api, string codename, Func<b
 
     public async IAsyncEnumerable<IUsedInItem> EnumerateItemsAsync([EnumeratorCancellation] CancellationToken cancellationToken = default)
     {
-        bool? wait = _waitForLoadingNewContentOverride ?? _getDefaultWaitForNewContent();
+        var wait = _waitForLoadingNewContentOverride ?? _getDefaultWaitForNewContent();
         string? token = null;
         while (true)
         {

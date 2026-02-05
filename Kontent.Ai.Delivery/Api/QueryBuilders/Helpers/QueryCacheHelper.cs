@@ -79,6 +79,34 @@ internal static class QueryCacheHelper
             Environment.TickCount64 - Volatile.Read(ref _lastUsedTicks) > LockExpirationMs;
     }
 
+    private readonly struct KeyLockScope(KeyLock keyLock) : IDisposable
+    {
+        private readonly KeyLock _keyLock = keyLock;
+
+        public void Dispose()
+        {
+            _keyLock.Semaphore.Release();
+            _keyLock.DecrementInFlight();
+        }
+    }
+
+    private static async ValueTask<KeyLockScope> AcquireKeyLockAsync(KeyLock keyLock, CancellationToken cancellationToken, bool alreadyInFlight = false)
+    {
+        if (!alreadyInFlight)
+            keyLock.IncrementInFlight();
+
+        try
+        {
+            await keyLock.Semaphore.WaitAsync(cancellationToken).ConfigureAwait(false);
+            return new KeyLockScope(keyLock);
+        }
+        catch
+        {
+            keyLock.DecrementInFlight();
+            throw;
+        }
+    }
+
     /// <summary>
     /// Attempts to retrieve a cached value with logging. Returns null on cache miss or error.
     /// </summary>
@@ -99,21 +127,26 @@ internal static class QueryCacheHelper
             var cached = await cacheManager.GetAsync<T>(cacheKey, cancellationToken)
                 .ConfigureAwait(false);
 
-            if (cached != null)
+            if (cached is not null)
             {
-                if (logger != null)
+                if (logger is not null)
                     LoggerMessages.QueryCacheHit(logger, cacheKey);
+
                 return cached;
             }
 
-            if (logger != null)
+            if (logger is not null)
                 LoggerMessages.QueryCacheMiss(logger, cacheKey);
 
             return null;
         }
+        catch (OperationCanceledException)
+        {
+            throw;
+        }
         catch (Exception ex)
         {
-            if (logger != null)
+            if (logger is not null)
                 LoggerMessages.CacheGetFailed(logger, cacheKey, ex);
             return null;
         }
@@ -145,7 +178,7 @@ internal static class QueryCacheHelper
         }
         catch (Exception ex)
         {
-            if (logger != null)
+            if (logger is not null)
                 LoggerMessages.CacheSetFailed(logger, cacheKey, ex);
         }
     }
@@ -172,13 +205,13 @@ internal static class QueryCacheHelper
         // 1. Fast path: cache hit (no lock needed)
         var cached = await TryGetCachedAsync<T>(cacheManager, cacheKey, logger, cancellationToken)
             .ConfigureAwait(false);
-        if (cached != null)
+        if (cached is not null)
             return new CacheFetchResult<T>(cached, [], IsCacheHit: true);
 
         // 2. Acquire per-key lock to prevent stampede (scoped to this cache manager)
         var lockDict = _managerLocks.GetOrCreateValue(cacheManager);
         var keyLock = lockDict.Locks.GetOrAdd(cacheKey, _ => new KeyLock());
-        keyLock.IncrementInFlight(); // Track that we're using/waiting for this lock
+        keyLock.IncrementInFlight(); // Must be immediately after GetOrAdd, before cleanup can run
 
         // Periodically clean up expired locks (lazy cleanup to avoid background threads)
         if (lockDict.ShouldCleanup())
@@ -186,38 +219,25 @@ internal static class QueryCacheHelper
             CleanupExpiredLocks(lockDict.Locks);
         }
 
-        try
+        using var _ = await AcquireKeyLockAsync(keyLock, cancellationToken, alreadyInFlight: true).ConfigureAwait(false);
+
+        // 3. Double-check after acquiring lock (another thread may have populated cache)
+        cached = await TryGetCachedAsync<T>(cacheManager, cacheKey, logger, cancellationToken)
+            .ConfigureAwait(false);
+        if (cached is not null)
+            return new CacheFetchResult<T>(cached, [], IsCacheHit: true);
+
+        // 4. Only one caller executes fetch
+        var (value, dependencies) = await fetchFactory(cancellationToken).ConfigureAwait(false);
+
+        // 5. Cache the result if not null
+        if (value is not null)
         {
-            await keyLock.Semaphore.WaitAsync(cancellationToken).ConfigureAwait(false);
-            try
-            {
-                // 3. Double-check after acquiring lock (another thread may have populated cache)
-                cached = await TryGetCachedAsync<T>(cacheManager, cacheKey, logger, cancellationToken)
-                    .ConfigureAwait(false);
-                if (cached != null)
-                    return new CacheFetchResult<T>(cached, [], IsCacheHit: true);
-
-                // 4. Only one caller executes fetch
-                var (value, dependencies) = await fetchFactory(cancellationToken).ConfigureAwait(false);
-
-                // 5. Cache the result if not null
-                if (value != null)
-                {
-                    await TrySetCachedAsync(cacheManager, cacheKey, value, dependencies, logger, cancellationToken)
-                        .ConfigureAwait(false);
-                }
-
-                return new CacheFetchResult<T>(value, dependencies, IsCacheHit: false);
-            }
-            finally
-            {
-                keyLock.Semaphore.Release();
-            }
+            await TrySetCachedAsync(cacheManager, cacheKey, value, dependencies, logger, cancellationToken)
+                .ConfigureAwait(false);
         }
-        finally
-        {
-            keyLock.DecrementInFlight(); // We're done using this lock
-        }
+
+        return new CacheFetchResult<T>(value, dependencies, IsCacheHit: false);
     }
 
     /// <summary>
@@ -233,11 +253,8 @@ internal static class QueryCacheHelper
     {
         foreach (var kvp in locks)
         {
-            // Only remove if no threads are using/waiting and lock is expired
             if (kvp.Value.CanBeRemoved)
             {
-                // Try to remove - if another thread started using it, CanBeRemoved
-                // would have returned false, or the lock will be re-added on next use
                 locks.TryRemove(kvp.Key, out _);
             }
         }

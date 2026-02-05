@@ -27,10 +27,8 @@ public sealed class InputValidationTests
     [Fact]
     public void GetItem_EmptyCodename_ThrowsArgumentException()
     {
-        // Arrange
         var client = CreateClient();
 
-        // Act & Assert
         var exception = Assert.Throws<ArgumentException>(() => client.GetItem<IDynamicElements>(string.Empty));
         Assert.Equal("codename", exception.ParamName);
         Assert.Contains("not valid", exception.Message);
@@ -39,10 +37,8 @@ public sealed class InputValidationTests
     [Fact]
     public void GetItem_NullCodename_ThrowsArgumentException()
     {
-        // Arrange
         var client = CreateClient();
 
-        // Act & Assert
         var exception = Assert.Throws<ArgumentException>(() => client.GetItem<IDynamicElements>(null!));
         Assert.Equal("codename", exception.ParamName);
     }
@@ -50,10 +46,8 @@ public sealed class InputValidationTests
     [Fact]
     public void GetItemDynamic_EmptyCodename_ThrowsArgumentException()
     {
-        // Arrange
         var client = CreateClient();
 
-        // Act & Assert
         var exception = Assert.Throws<ArgumentException>(() => client.GetItem(string.Empty));
         Assert.Equal("codename", exception.ParamName);
         Assert.Contains("not valid", exception.Message);
@@ -62,10 +56,8 @@ public sealed class InputValidationTests
     [Fact]
     public void GetItemDynamic_NullCodename_ThrowsArgumentException()
     {
-        // Arrange
         var client = CreateClient();
 
-        // Act & Assert
         var exception = Assert.Throws<ArgumentException>(() => client.GetItem(null!));
         Assert.Equal("codename", exception.ParamName);
     }
@@ -77,10 +69,8 @@ public sealed class InputValidationTests
     [Fact]
     public void GetType_EmptyCodename_ThrowsArgumentException()
     {
-        // Arrange
         var client = CreateClient();
 
-        // Act & Assert
         var exception = Assert.Throws<ArgumentException>(() => client.GetType(string.Empty));
         Assert.Equal("codename", exception.ParamName);
         Assert.Contains("not valid", exception.Message);
@@ -89,10 +79,8 @@ public sealed class InputValidationTests
     [Fact]
     public void GetType_NullCodename_ThrowsArgumentException()
     {
-        // Arrange
         var client = CreateClient();
 
-        // Act & Assert
         var exception = Assert.Throws<ArgumentException>(() => client.GetType(null!));
         Assert.Equal("codename", exception.ParamName);
     }
@@ -104,10 +92,8 @@ public sealed class InputValidationTests
     [Fact]
     public void GetTaxonomy_EmptyCodename_ThrowsArgumentException()
     {
-        // Arrange
         var client = CreateClient();
 
-        // Act & Assert
         var exception = Assert.Throws<ArgumentException>(() => client.GetTaxonomy(string.Empty));
         Assert.Equal("codename", exception.ParamName);
         Assert.Contains("not valid", exception.Message);
@@ -116,10 +102,8 @@ public sealed class InputValidationTests
     [Fact]
     public void GetTaxonomy_NullCodename_ThrowsArgumentException()
     {
-        // Arrange
         var client = CreateClient();
 
-        // Act & Assert
         var exception = Assert.Throws<ArgumentException>(() => client.GetTaxonomy(null!));
         Assert.Equal("codename", exception.ParamName);
     }
@@ -131,10 +115,8 @@ public sealed class InputValidationTests
     [Fact]
     public void GetContentElement_EmptyContentTypeCodename_ThrowsArgumentException()
     {
-        // Arrange
         var client = CreateClient();
 
-        // Act & Assert
         var exception = Assert.Throws<ArgumentException>(() => client.GetContentElement(string.Empty, "title"));
         Assert.Equal("contentTypeCodename", exception.ParamName);
         Assert.Contains("not valid", exception.Message);
@@ -143,10 +125,8 @@ public sealed class InputValidationTests
     [Fact]
     public void GetContentElement_EmptyElementCodename_ThrowsArgumentException()
     {
-        // Arrange
         var client = CreateClient();
 
-        // Act & Assert
         var exception = Assert.Throws<ArgumentException>(() => client.GetContentElement("article", string.Empty));
         Assert.Equal("contentElementCodename", exception.ParamName);
         Assert.Contains("not valid", exception.Message);
@@ -155,10 +135,8 @@ public sealed class InputValidationTests
     [Fact]
     public void GetContentElement_NullContentTypeCodename_ThrowsArgumentException()
     {
-        // Arrange
         var client = CreateClient();
 
-        // Act & Assert
         var exception = Assert.Throws<ArgumentException>(() => client.GetContentElement(null!, "title"));
         Assert.Equal("contentTypeCodename", exception.ParamName);
     }
@@ -166,10 +144,8 @@ public sealed class InputValidationTests
     [Fact]
     public void GetContentElement_NullElementCodename_ThrowsArgumentException()
     {
-        // Arrange
         var client = CreateClient();
 
-        // Act & Assert
         var exception = Assert.Throws<ArgumentException>(() => client.GetContentElement("article", null!));
         Assert.Equal("contentElementCodename", exception.ParamName);
     }
@@ -181,10 +157,8 @@ public sealed class InputValidationTests
     [Fact]
     public void GetItemUsedIn_EmptyCodename_ThrowsArgumentException()
     {
-        // Arrange
         var client = CreateClient();
 
-        // Act & Assert
         var exception = Assert.Throws<ArgumentException>(() => client.GetItemUsedIn(string.Empty));
         Assert.Equal("codename", exception.ParamName);
         Assert.Contains("not valid", exception.Message);
@@ -193,10 +167,8 @@ public sealed class InputValidationTests
     [Fact]
     public void GetItemUsedIn_NullCodename_ThrowsArgumentException()
     {
-        // Arrange
         var client = CreateClient();
 
-        // Act & Assert
         var exception = Assert.Throws<ArgumentException>(() => client.GetItemUsedIn(null!));
         Assert.Equal("codename", exception.ParamName);
     }
@@ -208,10 +180,8 @@ public sealed class InputValidationTests
     [Fact]
     public void GetAssetUsedIn_EmptyCodename_ThrowsArgumentException()
     {
-        // Arrange
         var client = CreateClient();
 
-        // Act & Assert
         var exception = Assert.Throws<ArgumentException>(() => client.GetAssetUsedIn(string.Empty));
         Assert.Equal("codename", exception.ParamName);
         Assert.Contains("not valid", exception.Message);
@@ -220,10 +190,8 @@ public sealed class InputValidationTests
     [Fact]
     public void GetAssetUsedIn_NullCodename_ThrowsArgumentException()
     {
-        // Arrange
         var client = CreateClient();
 
-        // Act & Assert
         var exception = Assert.Throws<ArgumentException>(() => client.GetAssetUsedIn(null!));
         Assert.Equal("codename", exception.ParamName);
     }
@@ -235,10 +203,8 @@ public sealed class InputValidationTests
     [Fact]
     public void Filter_EmptyPropertyName_ThrowsArgumentException()
     {
-        // Arrange
         var client = CreateClient();
 
-        // Act & Assert
         var exception = Assert.Throws<ArgumentException>(() =>
             client.GetItems<IDynamicElements>()
                 .Where(f => f.Element(string.Empty).IsEqualTo("value")));
@@ -249,10 +215,8 @@ public sealed class InputValidationTests
     [Fact]
     public void Filter_PropertyNameWithSpaces_ThrowsArgumentException()
     {
-        // Arrange
         var client = CreateClient();
 
-        // Act & Assert
         var exception = Assert.Throws<ArgumentException>(() =>
             client.GetItems<IDynamicElements>()
                 .Where(f => f.Element("invalid name").IsEqualTo("value")));
@@ -263,11 +227,9 @@ public sealed class InputValidationTests
     [Fact]
     public void Filter_IsInWithEmptyArray_ThrowsArgumentException()
     {
-        // Arrange
         var client = CreateClient();
         var emptyArray = Array.Empty<string>();
 
-        // Act & Assert
         var exception = Assert.Throws<ArgumentException>(() =>
             client.GetItems<IDynamicElements>()
                 .Where(f => f.Element("field").IsIn(emptyArray)));
@@ -278,11 +240,9 @@ public sealed class InputValidationTests
     [Fact]
     public void Filter_ContainsAnyWithEmptyArray_ThrowsArgumentException()
     {
-        // Arrange
         var client = CreateClient();
         var emptyArray = Array.Empty<string>();
 
-        // Act & Assert
         var exception = Assert.Throws<ArgumentException>(() =>
             client.GetItems<IDynamicElements>()
                 .Where(f => f.Element("tags").ContainsAny(emptyArray)));
@@ -293,10 +253,8 @@ public sealed class InputValidationTests
     [Fact]
     public void Filter_RangeWithInvalidBounds_ThrowsArgumentException()
     {
-        // Arrange - Lower bound greater than upper bound
         var client = CreateClient();
 
-        // Act & Assert
         var exception = Assert.Throws<ArgumentException>(() =>
             client.GetItems<IDynamicElements>()
                 .Where(f => f.Element("price").IsWithinRange(100.0, 50.0)));
@@ -307,12 +265,10 @@ public sealed class InputValidationTests
     [Fact]
     public void Filter_DateRangeWithInvalidBounds_ThrowsArgumentException()
     {
-        // Arrange - Lower date after upper date
         var client = CreateClient();
         var laterDate = DateTime.UtcNow;
         var earlierDate = laterDate.AddDays(-10);
 
-        // Act & Assert
         var exception = Assert.Throws<ArgumentException>(() =>
             client.GetItems<IDynamicElements>()
                 .Where(f => f.Element("publish_date").IsWithinRange(laterDate, earlierDate)));

@@ -24,7 +24,6 @@ public class CachingIntegrationTests
     [Fact]
     public async Task MemoryCache_GetItem_CacheHitOnSecondCall()
     {
-        // Arrange
         var mock = new MockHttpMessageHandler();
         var itemCodename = "coffee_beverages_explained";
         var fixtureContent = await File.ReadAllTextAsync(
@@ -37,13 +36,9 @@ public class CachingIntegrationTests
 
         var client = CreateClientWithMemoryCache(mock);
 
-        // Act - First call (cache miss)
         var result1 = await client.GetItem<Article>(itemCodename).ExecuteAsync();
-
-        // Act - Second call (cache hit - should NOT call API)
         var result2 = await client.GetItem<Article>(itemCodename).ExecuteAsync();
 
-        // Assert
         Assert.True(result1.IsSuccess);
         Assert.True(result2.IsSuccess);
         Assert.NotNull(result1.Value);
@@ -65,7 +60,6 @@ public class CachingIntegrationTests
     [Fact]
     public async Task MemoryCache_GetItem_ExpiresAfterTtl_HitsApiAgain()
     {
-        // Arrange
         var mock = new MockHttpMessageHandler();
         var itemCodename = "coffee_beverages_explained";
         var fixtureContent = await File.ReadAllTextAsync(
@@ -89,13 +83,10 @@ public class CachingIntegrationTests
         mock.Expect($"{BaseUrl}/items/{itemCodename}")
             .Respond("application/json", fixtureContent);
 
-        // Act - First call (cache miss)
         var result1 = await client.GetItem<Article>(itemCodename).ExecuteAsync();
-
-        // Act - Second call (cache hit)
         var result2 = await client.GetItem<Article>(itemCodename).ExecuteAsync();
 
-        // Assert (so far) - only one API call should have been made
+        // Only one API call should have been made so far
         Assert.False(result1.IsCacheHit);
         Assert.True(result2.IsCacheHit);
         mock.VerifyNoOutstandingExpectation();
@@ -116,7 +107,6 @@ public class CachingIntegrationTests
     [Fact]
     public async Task MemoryCache_GetItems_CacheHitOnSecondCall()
     {
-        // Arrange
         var mock = new MockHttpMessageHandler();
         var fixtureContent = await File.ReadAllTextAsync(
             Path.Combine(Environment.CurrentDirectory,
@@ -127,17 +117,14 @@ public class CachingIntegrationTests
 
         var client = CreateClientWithMemoryCache(mock);
 
-        // Act - First call (cache miss)
         var result1 = await client.GetItems<Article>()
             .Where(f => f.System("type").IsEqualTo("article"))
             .ExecuteAsync();
 
-        // Act - Second call (cache hit)
         var result2 = await client.GetItems<Article>()
             .Where(f => f.System("type").IsEqualTo("article"))
             .ExecuteAsync();
 
-        // Assert
         Assert.True(result1.IsSuccess);
         Assert.True(result2.IsSuccess);
         Assert.NotEmpty(result1.Value.Items);
@@ -159,7 +146,6 @@ public class CachingIntegrationTests
     [Fact]
     public async Task MemoryCache_Invalidation_RefreshesCache()
     {
-        // Arrange
         var mock = new MockHttpMessageHandler();
         var itemCodename = "coffee_beverages_explained";
         var fixtureContent = await File.ReadAllTextAsync(
@@ -186,16 +172,12 @@ public class CachingIntegrationTests
         var client = serviceProvider.GetRequiredService<IDeliveryClient>();
         var cacheManager = serviceProvider.GetRequiredService<IDeliveryCacheManager>();
 
-        // Act - First call (cache miss)
         var result1 = await client.GetItem<Article>(itemCodename).ExecuteAsync();
 
-        // Invalidate using the item dependency
         await cacheManager.InvalidateAsync(default, $"item_{itemCodename}");
 
-        // Act - Second call after invalidation (should hit API again)
         var result2 = await client.GetItem<Article>(itemCodename).ExecuteAsync();
 
-        // Assert
         Assert.True(result1.IsSuccess);
         Assert.True(result2.IsSuccess);
         Assert.NotNull(result1.Value);
@@ -205,7 +187,6 @@ public class CachingIntegrationTests
     [Fact]
     public async Task MemoryCache_GetType_CacheHitOnSecondCall()
     {
-        // Arrange
         var mock = new MockHttpMessageHandler();
         var fixtureContent = await File.ReadAllTextAsync(
             Path.Combine(Environment.CurrentDirectory,
@@ -216,13 +197,9 @@ public class CachingIntegrationTests
 
         var client = CreateClientWithMemoryCache(mock);
 
-        // Act - First call (cache miss)
         var result1 = await client.GetType("article").ExecuteAsync();
-
-        // Act - Second call (cache hit)
         var result2 = await client.GetType("article").ExecuteAsync();
 
-        // Assert
         Assert.True(result1.IsSuccess);
         Assert.True(result2.IsSuccess);
         Assert.Equal("Article", result1.Value.System.Name);
@@ -243,7 +220,6 @@ public class CachingIntegrationTests
     [Fact]
     public async Task MemoryCache_GetTaxonomy_CacheHitOnSecondCall()
     {
-        // Arrange
         var mock = new MockHttpMessageHandler();
         var fixtureContent = await File.ReadAllTextAsync(
             Path.Combine(Environment.CurrentDirectory,
@@ -254,13 +230,9 @@ public class CachingIntegrationTests
 
         var client = CreateClientWithMemoryCache(mock);
 
-        // Act - First call (cache miss)
         var result1 = await client.GetTaxonomy("personas").ExecuteAsync();
-
-        // Act - Second call (cache hit)
         var result2 = await client.GetTaxonomy("personas").ExecuteAsync();
 
-        // Assert
         Assert.True(result1.IsSuccess);
         Assert.True(result2.IsSuccess);
         Assert.Equal("personas", result1.Value.System.Codename);
@@ -285,7 +257,6 @@ public class CachingIntegrationTests
     [Fact]
     public async Task DistributedCache_GetItem_CacheHitOnSecondCall()
     {
-        // Arrange
         var mock = new MockHttpMessageHandler();
         var itemCodename = "coffee_beverages_explained";
         var fixtureContent = await File.ReadAllTextAsync(
@@ -300,13 +271,9 @@ public class CachingIntegrationTests
 
         var client = CreateClientWithDistributedCache(mock);
 
-        // Act - First call (cache miss)
         var result1 = await client.GetItem<Article>(itemCodename).ExecuteAsync();
-
-        // Act - Second call (may or may not be cache hit depending on serialization)
         var result2 = await client.GetItem<Article>(itemCodename).ExecuteAsync();
 
-        // Assert
         Assert.True(result1.IsSuccess);
         Assert.True(result2.IsSuccess);
         Assert.NotNull(result1.Value);
@@ -320,7 +287,6 @@ public class CachingIntegrationTests
     [Fact]
     public async Task DistributedCache_GetItems_CacheHitOnSecondCall()
     {
-        // Arrange
         var mock = new MockHttpMessageHandler();
         var fixtureContent = await File.ReadAllTextAsync(
             Path.Combine(Environment.CurrentDirectory,
@@ -334,17 +300,14 @@ public class CachingIntegrationTests
 
         var client = CreateClientWithDistributedCache(mock);
 
-        // Act - First call (cache miss)
         var result1 = await client.GetItems<Article>()
             .Where(f => f.System("type").IsEqualTo("article"))
             .ExecuteAsync();
 
-        // Act - Second call (may or may not be cache hit depending on serialization)
         var result2 = await client.GetItems<Article>()
             .Where(f => f.System("type").IsEqualTo("article"))
             .ExecuteAsync();
 
-        // Assert
         Assert.True(result1.IsSuccess);
         Assert.True(result2.IsSuccess);
         Assert.NotEmpty(result1.Value.Items);
@@ -358,7 +321,6 @@ public class CachingIntegrationTests
     [Fact]
     public async Task DistributedCache_Invalidation_RefreshesCache()
     {
-        // Arrange
         var mock = new MockHttpMessageHandler();
         var itemCodename = "coffee_beverages_explained";
         var fixtureContent = await File.ReadAllTextAsync(
@@ -385,16 +347,12 @@ public class CachingIntegrationTests
         var client = serviceProvider.GetRequiredService<IDeliveryClient>();
         var cacheManager = serviceProvider.GetRequiredService<IDeliveryCacheManager>();
 
-        // Act - First call (cache miss)
         var result1 = await client.GetItem<Article>(itemCodename).ExecuteAsync();
 
-        // Invalidate using the item dependency
         await cacheManager.InvalidateAsync(default, $"item_{itemCodename}");
 
-        // Act - Second call after invalidation (should hit API again)
         var result2 = await client.GetItem<Article>(itemCodename).ExecuteAsync();
 
-        // Assert
         Assert.True(result1.IsSuccess);
         Assert.True(result2.IsSuccess);
         Assert.NotNull(result1.Value);
@@ -408,7 +366,6 @@ public class CachingIntegrationTests
     [Fact]
     public async Task MemoryCache_ItemWithModularContent_TracksAllDependencies()
     {
-        // Arrange
         var mock = new MockHttpMessageHandler();
         var itemCodename = "coffee_processing_techniques";
         var fixtureContent = await File.ReadAllTextAsync(
@@ -433,10 +390,8 @@ public class CachingIntegrationTests
         var serviceProvider = services.BuildServiceProvider();
         var client = serviceProvider.GetRequiredKeyedService<IDeliveryClient>("test");
 
-        // Act
         var result = await client.GetItem<Article>(itemCodename).ExecuteAsync();
 
-        // Assert
         Assert.True(result.IsSuccess);
         Assert.Single(mockCacheManager.CachedItems);
 
@@ -456,7 +411,6 @@ public class CachingIntegrationTests
     [Fact]
     public async Task MemoryCache_ItemWithRichText_TracksDependencies()
     {
-        // Arrange
         var mock = new MockHttpMessageHandler();
         var itemCodename = "coffee_processing_techniques";
         var fixtureContent = await File.ReadAllTextAsync(
@@ -481,10 +435,8 @@ public class CachingIntegrationTests
         var serviceProvider = services.BuildServiceProvider();
         var client = serviceProvider.GetRequiredKeyedService<IDeliveryClient>("test");
 
-        // Act
         var result = await client.GetItem<Article>(itemCodename).ExecuteAsync();
 
-        // Assert
         Assert.True(result.IsSuccess);
         Assert.NotEmpty(result.Value.Elements.BodyCopy);
 
@@ -499,7 +451,6 @@ public class CachingIntegrationTests
     [Fact]
     public async Task MemoryCache_DifferentQueriesWithSameDependency_InvalidatesBoth()
     {
-        // Arrange
         var mock = new MockHttpMessageHandler();
         var itemCodename = "coffee_beverages_explained";
 
@@ -533,7 +484,6 @@ public class CachingIntegrationTests
         var client = serviceProvider.GetRequiredService<IDeliveryClient>();
         var cacheManager = serviceProvider.GetRequiredService<IDeliveryCacheManager>();
 
-        // Act - Cache both queries
         var singleResult = await client.GetItem<Article>(itemCodename).ExecuteAsync();
         var listResult = await client.GetItems<Article>()
             .Where(f => f.System("type").IsEqualTo("article"))
@@ -548,7 +498,6 @@ public class CachingIntegrationTests
             .Where(f => f.System("type").IsEqualTo("article"))
             .ExecuteAsync();
 
-        // Assert
         Assert.True(singleResult.IsSuccess);
         Assert.True(listResult.IsSuccess);
         Assert.True(singleResult2.IsSuccess);
@@ -562,7 +511,6 @@ public class CachingIntegrationTests
     [Fact]
     public async Task CachingDisabled_AlwaysHitsApi()
     {
-        // Arrange
         var mock = new MockHttpMessageHandler();
         var itemCodename = "coffee_beverages_explained";
         var fixtureContent = await File.ReadAllTextAsync(
@@ -585,11 +533,9 @@ public class CachingIntegrationTests
 
         var client = services.BuildServiceProvider().GetRequiredService<IDeliveryClient>();
 
-        // Act - Two calls, both should hit API
         var result1 = await client.GetItem<Article>(itemCodename).ExecuteAsync();
         var result2 = await client.GetItem<Article>(itemCodename).ExecuteAsync();
 
-        // Assert
         Assert.True(result1.IsSuccess);
         Assert.True(result2.IsSuccess);
 
@@ -609,7 +555,6 @@ public class CachingIntegrationTests
     [Fact]
     public async Task NoCacheManagerRegistered_WorksWithoutError()
     {
-        // Arrange
         var mock = new MockHttpMessageHandler();
         var itemCodename = "coffee_beverages_explained";
         var fixtureContent = await File.ReadAllTextAsync(
@@ -631,10 +576,8 @@ public class CachingIntegrationTests
 
         var client = services.BuildServiceProvider().GetRequiredService<IDeliveryClient>();
 
-        // Act - Should work without throwing (caching silently disabled)
         var result = await client.GetItem<Article>(itemCodename).ExecuteAsync();
 
-        // Assert
         Assert.True(result.IsSuccess);
         Assert.NotNull(result.Value);
     }

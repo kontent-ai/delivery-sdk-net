@@ -27,7 +27,7 @@ internal static class HttpRequestHeadersExtensions
     internal static void AddSourceTrackingHeader(this HttpRequestHeaders headers)
     {
         var source = Source.Value;
-        if (source != null)
+        if (source is not null)
         {
             headers.Add(SourceTrackingHeaderName, source);
         }
@@ -76,11 +76,11 @@ internal static class HttpRequestHeadersExtensions
 
     internal static string? GetSource()
     {
-        Assembly? originatingAssembly = GetOriginatingAssembly();
-        if (originatingAssembly != null)
+        var originatingAssembly = GetOriginatingAssembly();
+        if (originatingAssembly is not null)
         {
             var attribute = originatingAssembly.GetCustomAttributes<DeliverySourceTrackingHeaderAttribute>().FirstOrDefault();
-            if (attribute != null)
+            if (attribute is not null)
             {
                 return GenerateSourceTrackingHeaderValue(originatingAssembly, attribute);
             }
@@ -100,7 +100,7 @@ internal static class HttpRequestHeadersExtensions
         else
         {
             packageName = attribute.PackageName;
-            string preRelease = attribute.PreReleaseLabel == null ? "" : $"-{attribute.PreReleaseLabel}";
+            var preRelease = attribute.PreReleaseLabel is null ? "" : $"-{attribute.PreReleaseLabel}";
             version = $"{attribute.MajorVersion}.{attribute.MinorVersion}.{attribute.PatchVersion}{preRelease}";
         }
         return $"{packageName};{version}";

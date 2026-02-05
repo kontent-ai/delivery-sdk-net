@@ -15,7 +15,6 @@ public class ParseRichTextAsyncTests
     [Fact]
     public async Task ParseRichTextAsync_SimpleHtml_ReturnsRichTextContent()
     {
-        // Arrange
         var json = """
             {
                 "type": "rich_text",
@@ -28,10 +27,8 @@ public class ParseRichTextAsyncTests
             """;
         var element = JsonDocument.Parse(json).RootElement;
 
-        // Act
         var result = await element.ParseRichTextAsync();
 
-        // Assert
         Assert.NotNull(result);
         var html = await result.ToHtmlAsync();
         Assert.Equal("<p>Hello world</p>", html);
@@ -40,7 +37,6 @@ public class ParseRichTextAsyncTests
     [Fact]
     public async Task ParseRichTextAsync_WithNestedTags_PreservesStructure()
     {
-        // Arrange
         var json = """
             {
                 "type": "rich_text",
@@ -53,10 +49,8 @@ public class ParseRichTextAsyncTests
             """;
         var element = JsonDocument.Parse(json).RootElement;
 
-        // Act
         var result = await element.ParseRichTextAsync();
 
-        // Assert
         Assert.NotNull(result);
         var html = await result.ToHtmlAsync();
         Assert.Contains("<strong>bold</strong>", html);
@@ -66,7 +60,6 @@ public class ParseRichTextAsyncTests
     [Fact]
     public async Task ParseRichTextAsync_WithListElements_ParsesCorrectly()
     {
-        // Arrange
         var json = """
             {
                 "type": "rich_text",
@@ -79,10 +72,8 @@ public class ParseRichTextAsyncTests
             """;
         var element = JsonDocument.Parse(json).RootElement;
 
-        // Act
         var result = await element.ParseRichTextAsync();
 
-        // Assert
         Assert.NotNull(result);
         var html = await result.ToHtmlAsync();
         Assert.Contains("<ul>", html);
@@ -97,7 +88,6 @@ public class ParseRichTextAsyncTests
     [Fact]
     public async Task ParseRichTextAsync_WithInlineImages_ParsesImageMetadata()
     {
-        // Arrange
         var json = """
             {
                 "type": "rich_text",
@@ -118,10 +108,8 @@ public class ParseRichTextAsyncTests
             """;
         var element = JsonDocument.Parse(json).RootElement;
 
-        // Act
         var result = await element.ParseRichTextAsync();
 
-        // Assert
         Assert.NotNull(result);
         var images = result.GetInlineImages().ToList();
         Assert.Single(images);
@@ -136,7 +124,6 @@ public class ParseRichTextAsyncTests
     [Fact]
     public async Task ParseRichTextAsync_WithMultipleImages_ParsesAllImages()
     {
-        // Arrange
         var json = """
             {
                 "type": "rich_text",
@@ -164,10 +151,8 @@ public class ParseRichTextAsyncTests
             """;
         var element = JsonDocument.Parse(json).RootElement;
 
-        // Act
         var result = await element.ParseRichTextAsync();
 
-        // Assert
         Assert.NotNull(result);
         var images = result.GetInlineImages().ToList();
         Assert.Equal(2, images.Count);
@@ -180,7 +165,6 @@ public class ParseRichTextAsyncTests
     [Fact]
     public async Task ParseRichTextAsync_WithContentLinks_ParsesLinkMetadata()
     {
-        // Arrange
         var json = """
             {
                 "type": "rich_text",
@@ -199,10 +183,8 @@ public class ParseRichTextAsyncTests
             """;
         var element = JsonDocument.Parse(json).RootElement;
 
-        // Act
         var result = await element.ParseRichTextAsync();
 
-        // Assert
         Assert.NotNull(result);
         var links = result.GetContentItemLinks().ToList();
         Assert.Single(links);
@@ -221,7 +203,6 @@ public class ParseRichTextAsyncTests
     [Fact]
     public async Task ParseRichTextAsync_WithModularContent_ResolvesEmbeddedItems()
     {
-        // Arrange
         var richTextJson = """
             {
                 "type": "rich_text",
@@ -265,10 +246,8 @@ public class ParseRichTextAsyncTests
             .EnumerateObject()
             .ToDictionary(p => p.Name, p => p.Value.Clone());
 
-        // Act
         var result = await richTextElement.ParseRichTextAsync(modularContent);
 
-        // Assert
         Assert.NotNull(result);
         var embedded = result.GetEmbeddedContent().ToList();
         Assert.Single(embedded);
@@ -281,7 +260,6 @@ public class ParseRichTextAsyncTests
     [Fact]
     public async Task ParseRichTextAsync_WithMultipleEmbeddedItems_ResolvesAll()
     {
-        // Arrange
         var richTextJson = """
             {
                 "type": "rich_text",
@@ -333,10 +311,8 @@ public class ParseRichTextAsyncTests
             .EnumerateObject()
             .ToDictionary(p => p.Name, p => p.Value.Clone());
 
-        // Act
         var result = await richTextElement.ParseRichTextAsync(modularContent);
 
-        // Assert
         Assert.NotNull(result);
         var embedded = result.GetEmbeddedContent().ToList();
         Assert.Equal(2, embedded.Count);
@@ -348,7 +324,6 @@ public class ParseRichTextAsyncTests
     [Fact]
     public async Task ParseRichTextAsync_EmbeddedContentHasDynamicElements()
     {
-        // Arrange
         var richTextJson = """
             {
                 "type": "rich_text",
@@ -396,10 +371,8 @@ public class ParseRichTextAsyncTests
             .EnumerateObject()
             .ToDictionary(p => p.Name, p => p.Value.Clone());
 
-        // Act
         var result = await richTextElement.ParseRichTextAsync(modularContent);
 
-        // Assert
         Assert.NotNull(result);
         var embedded = result.GetEmbeddedContent().ToList();
         Assert.Single(embedded);
@@ -424,21 +397,19 @@ public class ParseRichTextAsyncTests
     [Fact]
     public async Task ParseRichTextAsync_InvalidJsonKind_ReturnsNull()
     {
-        // Arrange - a string, not an object
+        // A string, not an object
         var json = "\"not an object\"";
         var element = JsonDocument.Parse(json).RootElement;
 
-        // Act
         var result = await element.ParseRichTextAsync();
 
-        // Assert
         Assert.Null(result);
     }
 
     [Fact]
     public async Task ParseRichTextAsync_NonRichTextType_ReturnsNull()
     {
-        // Arrange - a text element, not rich_text
+        // A text element, not rich_text
         var json = """
             {
                 "type": "text",
@@ -448,17 +419,14 @@ public class ParseRichTextAsyncTests
             """;
         var element = JsonDocument.Parse(json).RootElement;
 
-        // Act
         var result = await element.ParseRichTextAsync();
 
-        // Assert
         Assert.Null(result);
     }
 
     [Fact]
     public async Task ParseRichTextAsync_EmptyValue_ReturnsEmptyContent()
     {
-        // Arrange
         var json = """
             {
                 "type": "rich_text",
@@ -471,10 +439,8 @@ public class ParseRichTextAsyncTests
             """;
         var element = JsonDocument.Parse(json).RootElement;
 
-        // Act
         var result = await element.ParseRichTextAsync();
 
-        // Assert
         Assert.NotNull(result);
         Assert.Empty(result);
     }
@@ -482,7 +448,7 @@ public class ParseRichTextAsyncTests
     [Fact]
     public async Task ParseRichTextAsync_MissingModularContentItem_SkipsGracefully()
     {
-        // Arrange - modular_content references an item that's not in the dictionary
+        // modular_content references an item that's not in the dictionary
         var richTextJson = """
             {
                 "type": "rich_text",
@@ -498,10 +464,8 @@ public class ParseRichTextAsyncTests
         // Empty modular content - item is not available
         var modularContent = new Dictionary<string, JsonElement>();
 
-        // Act
         var result = await richTextElement.ParseRichTextAsync(modularContent);
 
-        // Assert
         Assert.NotNull(result);
         var embedded = result.GetEmbeddedContent().ToList();
         Assert.Empty(embedded); // Missing item is skipped
@@ -515,7 +479,6 @@ public class ParseRichTextAsyncTests
     [Fact]
     public async Task ParseRichTextAsync_NullModularContent_HandlesGracefully()
     {
-        // Arrange
         var json = """
             {
                 "type": "rich_text",
@@ -528,10 +491,9 @@ public class ParseRichTextAsyncTests
             """;
         var element = JsonDocument.Parse(json).RootElement;
 
-        // Act - pass null for modular content
+        // Pass null for modular content
         var result = await element.ParseRichTextAsync(modularContent: null);
 
-        // Assert
         Assert.NotNull(result);
         var embedded = result.GetEmbeddedContent().ToList();
         Assert.Empty(embedded); // Can't resolve without modular content
@@ -544,7 +506,6 @@ public class ParseRichTextAsyncTests
     [Fact]
     public async Task ParseRichTextAsync_ToHtmlAsync_WorksWithResolver()
     {
-        // Arrange
         var richTextJson = """
             {
                 "type": "rich_text",
@@ -587,7 +548,6 @@ public class ParseRichTextAsyncTests
             .EnumerateObject()
             .ToDictionary(p => p.Name, p => p.Value.Clone());
 
-        // Act
         var richText = await richTextElement.ParseRichTextAsync(modularContent);
 
         // Create a resolver that handles embedded content
@@ -597,7 +557,6 @@ public class ParseRichTextAsyncTests
 
         var html = await richText!.ToHtmlAsync(resolver);
 
-        // Assert
         Assert.Contains("<p>Tweet:</p>", html);
         Assert.Contains("<div class=\"tweet-embed\">[Tweet]</div>", html);
     }
@@ -614,7 +573,7 @@ public class ParseRichTextAsyncTests
     [Fact]
     public async Task ParseRichTextAsync_EndToEnd_DynamicModeWithResolversAccessingElementData()
     {
-        // Arrange - Simulating a dynamic API response with rich text containing multiple embedded items
+        // Simulating a dynamic API response with rich text containing multiple embedded items
         var richTextJson = """
             {
                 "type": "rich_text",
@@ -691,7 +650,6 @@ public class ParseRichTextAsyncTests
             .EnumerateObject()
             .ToDictionary(p => p.Name, p => p.Value.Clone());
 
-        // Act - Parse rich text with modular content
         var richText = await richTextElement.ParseRichTextAsync(modularContent);
         Assert.NotNull(richText);
 
@@ -750,7 +708,7 @@ public class ParseRichTextAsyncTests
 
         var html = await richText.ToHtmlAsync(resolver);
 
-        // Assert - Verify the resolved HTML contains correct data from elements
+        // Verify the resolved HTML contains correct data from elements
         Assert.Contains("<p>Check out this tweet:</p>", html);
         Assert.Contains("<p>And watch this video:</p>", html);
 
@@ -770,7 +728,6 @@ public class ParseRichTextAsyncTests
     [Fact]
     public async Task ParseRichTextAsync_DynamicMode_SystemMetadataAccessibleInResolvers()
     {
-        // Arrange
         var richTextJson = """
             {
                 "type": "rich_text",
@@ -808,7 +765,6 @@ public class ParseRichTextAsyncTests
             .EnumerateObject()
             .ToDictionary(p => p.Name, p => p.Value.Clone());
 
-        // Act
         var richText = await richTextDoc.RootElement.Clone().ParseRichTextAsync(modularContent);
 
         // Capture system info in resolver for verification
@@ -827,7 +783,7 @@ public class ParseRichTextAsyncTests
 
         var html = await richText!.ToHtmlAsync(resolver);
 
-        // Assert - Verify system metadata was accessible
+        // Verify system metadata was accessible
         Assert.NotNull(capturedSystem);
         Assert.Equal("12345678-1234-1234-1234-123456789012", capturedSystem.Id.ToString());
         Assert.Equal("my_component", capturedSystem.Codename);

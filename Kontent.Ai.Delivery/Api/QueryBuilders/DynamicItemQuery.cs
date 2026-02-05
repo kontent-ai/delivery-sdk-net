@@ -62,8 +62,7 @@ internal sealed class DynamicItemQuery(
 
     public async Task<IDeliveryResult<IContentItem>> ExecuteAsync(CancellationToken cancellationToken = default)
     {
-        // 1. FETCH AS DYNAMIC
-        bool? wait = _waitForLoadingNewContentOverride ?? _getDefaultWaitForNewContent();
+        var wait = _waitForLoadingNewContentOverride ?? _getDefaultWaitForNewContent();
         var rawResponse = await _api.GetItemInternalAsync<IDynamicElements>(
             _codename,
             _params,
@@ -84,7 +83,6 @@ internal sealed class DynamicItemQuery(
         var response = deliveryResult.Value;
         var dynamicItem = response.Item;
 
-        // 2. ATTEMPT RUNTIME TYPE RESOLUTION
         if (dynamicItem is IRawContentItem rawContentItem && rawContentItem.RawItemJson.HasValue)
         {
             var runtimeItem = await _contentItemMapper.TryRuntimeTypeItemAsync(
@@ -93,7 +91,7 @@ internal sealed class DynamicItemQuery(
                 dependencyContext: null,
                 cancellationToken).ConfigureAwait(false);
 
-            if (runtimeItem != null)
+            if (runtimeItem is not null)
             {
                 return DeliveryResult.Success(
                     runtimeItem,
@@ -105,7 +103,6 @@ internal sealed class DynamicItemQuery(
             }
         }
 
-        // 3. FALL BACK TO DYNAMIC (no type provider mapping)
         return DeliveryResult.Success<IContentItem>(
             dynamicItem,
             deliveryResult.RequestUrl ?? string.Empty,

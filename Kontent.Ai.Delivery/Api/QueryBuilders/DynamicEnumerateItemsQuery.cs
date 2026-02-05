@@ -67,7 +67,7 @@ internal sealed class DynamicEnumerateItemsQuery(
 
     public async Task<IDeliveryResult<IDeliveryItemsFeedResponse>> ExecuteAsync(CancellationToken cancellationToken = default)
     {
-        bool? wait = _waitForLoadingNewContentOverride ?? _getDefaultWaitForNewContent();
+        var wait = _waitForLoadingNewContentOverride ?? _getDefaultWaitForNewContent();
 
         var resp = await _api
             .GetItemsFeedInternalAsync<IDynamicElements>(
@@ -92,13 +92,11 @@ internal sealed class DynamicEnumerateItemsQuery(
         var content = deliveryResult.Value;
         var continuationToken = resp.Continuation();
 
-        // Runtime type resolution for each item
         var runtimeTypedItems = await _contentItemMapper.RuntimeTypeItemsAsync(
             content.Items,
             content.ModularContent,
             cancellationToken).ConfigureAwait(false);
 
-        // Build response with next page fetcher
         var responseWithFetcher = new DynamicDeliveryItemsFeedResponse
         {
             Items = runtimeTypedItems,
@@ -118,10 +116,9 @@ internal sealed class DynamicEnumerateItemsQuery(
 
     private Func<CancellationToken, Task<IDeliveryResult<IDeliveryItemsFeedResponse>>>? CreateNextPageFetcher(string? continuationToken)
     {
-        if (string.IsNullOrEmpty(continuationToken))
-            return null;
-
-        return async (ct) =>
+        return string.IsNullOrEmpty(continuationToken)
+            ? null
+            : (async (ct) =>
         {
             var nextQuery = new DynamicEnumerateItemsQuery(_api, _getDefaultWaitForNewContent, _contentItemMapper, _logger)
             {
@@ -133,19 +130,18 @@ internal sealed class DynamicEnumerateItemsQuery(
             nextQuery._serializedFilters.AddRange(_serializedFilters);
 
             return await nextQuery.ExecuteAsync(ct).ConfigureAwait(false);
-        };
+        });
     }
 
     public async IAsyncEnumerable<IContentItem> EnumerateItemsAsync([EnumeratorCancellation] CancellationToken cancellationToken = default)
     {
-        // Log pagination start
-        if (_logger != null)
+        if (_logger is not null)
             LoggerMessages.PaginationStarted(_logger, "ItemsFeed (dynamic)");
 
-        bool? wait = _waitForLoadingNewContentOverride ?? _getDefaultWaitForNewContent();
+        var wait = _waitForLoadingNewContentOverride ?? _getDefaultWaitForNewContent();
         string? token = null;
-        int pageCount = 0;
-        int totalItems = 0;
+        var pageCount = 0;
+        var totalItems = 0;
 
         while (true)
         {
@@ -160,7 +156,7 @@ internal sealed class DynamicEnumerateItemsQuery(
 
             if (!resp.IsSuccessStatusCode || resp.Content is null)
             {
-                if (_logger != null)
+                if (_logger is not null)
                     LoggerMessages.PaginationStoppedEarly(_logger, "ItemsFeed (dynamic)");
                 yield break;
             }
@@ -171,7 +167,6 @@ internal sealed class DynamicEnumerateItemsQuery(
             {
                 cancellationToken.ThrowIfCancellationRequested();
 
-                // Attempt runtime type resolution
                 if (dynamicItem is IRawContentItem rawContentItem && rawContentItem.RawItemJson.HasValue)
                 {
                     var runtimeItem = await _contentItemMapper.TryRuntimeTypeItemAsync(
@@ -180,7 +175,7 @@ internal sealed class DynamicEnumerateItemsQuery(
                         dependencyContext: null,
                         cancellationToken).ConfigureAwait(false);
 
-                    if (runtimeItem != null)
+                    if (runtimeItem is not null)
                     {
                         totalItems++;
                         yield return runtimeItem;
@@ -188,7 +183,6 @@ internal sealed class DynamicEnumerateItemsQuery(
                     }
                 }
 
-                // Fall back to dynamic
                 totalItems++;
                 yield return dynamicItem;
             }
@@ -196,7 +190,7 @@ internal sealed class DynamicEnumerateItemsQuery(
             token = resp.Continuation();
             if (string.IsNullOrEmpty(token))
             {
-                if (_logger != null)
+                if (_logger is not null)
                     LoggerMessages.PaginationCompleted(_logger, "ItemsFeed (dynamic)", pageCount, totalItems);
                 yield break;
             }

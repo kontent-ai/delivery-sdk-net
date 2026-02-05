@@ -29,7 +29,7 @@ internal sealed class DefaultItemTypingStrategy(ITypeProvider typeProvider, ILog
     {
         if (string.IsNullOrEmpty(contentTypeCodename))
         {
-            if (_logger != null)
+            if (_logger is not null)
                 LoggerMessages.ContentTypeFallbackToDynamic(_logger, contentTypeCodename ?? "(null)");
             return typeof(DynamicElements);
         }
@@ -37,7 +37,7 @@ internal sealed class DefaultItemTypingStrategy(ITypeProvider typeProvider, ILog
         return _cache.GetOrAdd(contentTypeCodename, codename =>
         {
             var modelType = _typeProvider.GetType(codename);
-            if (modelType == null && _logger != null)
+            if (modelType is null && _logger is not null)
             {
                 LoggerMessages.ContentTypeFallbackToDynamic(_logger, codename);
             }

@@ -41,10 +41,10 @@ internal sealed class TypeProvider : ITypeProvider
     {
         // 1. Check entry assembly first
         var entryAssembly = Assembly.GetEntryAssembly();
-        if (entryAssembly != null)
+        if (entryAssembly is not null)
         {
             var provider = TryCreateProviderFromAssembly(entryAssembly);
-            if (provider != null)
+            if (provider is not null)
                 return provider;
 
             // 2. Check referenced assemblies (bounded set)
@@ -52,24 +52,24 @@ internal sealed class TypeProvider : ITypeProvider
             foreach (var assembly in referencedAssemblies)
             {
                 provider = TryCreateProviderFromAssembly(assembly);
-                if (provider != null)
+                if (provider is not null)
                     return provider;
             }
         }
 
         // 3. Fallback: check calling assembly (for test scenarios where entry assembly may be test runner)
         var callingAssembly = Assembly.GetCallingAssembly();
-        if (callingAssembly != null && callingAssembly != entryAssembly)
+        if (callingAssembly is not null && callingAssembly != entryAssembly)
         {
             var provider = TryCreateProviderFromAssembly(callingAssembly);
-            if (provider != null)
+            if (provider is not null)
                 return provider;
 
             var referencedAssemblies = GetReferencedAssemblies(callingAssembly);
             foreach (var assembly in referencedAssemblies)
             {
                 provider = TryCreateProviderFromAssembly(assembly);
-                if (provider != null)
+                if (provider is not null)
                     return provider;
             }
         }
@@ -82,7 +82,7 @@ internal sealed class TypeProvider : ITypeProvider
         try
         {
             var providerType = assembly.GetType(GeneratedTypeProviderName);
-            if (providerType != null && typeof(ITypeProvider).IsAssignableFrom(providerType))
+            if (providerType is not null && typeof(ITypeProvider).IsAssignableFrom(providerType))
             {
                 return (ITypeProvider?)Activator.CreateInstance(providerType);
             }
@@ -99,7 +99,7 @@ internal sealed class TypeProvider : ITypeProvider
         return assembly.GetReferencedAssemblies()
             .DistinctBy(r => r.FullName)
             .Select(TryLoadAssembly)
-            .Where(a => a != null)!;
+            .Where(a => a is not null)!;
     }
 
     private static Assembly? TryLoadAssembly(AssemblyName reference)

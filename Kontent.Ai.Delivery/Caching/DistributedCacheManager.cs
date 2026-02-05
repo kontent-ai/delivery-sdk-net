@@ -67,7 +67,6 @@ internal sealed class DistributedCacheManager : IDeliveryCacheManager
     private const string CacheKeyPrefix = "cache:";
     private const string DependencyKeyPrefix = "dep:";
 
-    // Treat null/empty prefix as "no prefix". Empty string can be used by callers to explicitly disable prefixing.
     private string KeyPrefixSegment => string.IsNullOrEmpty(_keyPrefix) ? "" : $"{_keyPrefix}:";
 
     /// <summary>
@@ -127,23 +126,16 @@ internal sealed class DistributedCacheManager : IDeliveryCacheManager
         _defaultExpiration = defaultExpiration ?? TimeSpan.FromHours(1);
         _logger = logger;
 
-        if (jsonSerializerOptions != null)
-        {
-            // Use provided options (caller is responsible for proper configuration)
-            _jsonOptions = jsonSerializerOptions;
-        }
-        else
-        {
-            // Default options for simple types (not SDK response types)
-            _jsonOptions = new JsonSerializerOptions
+        _jsonOptions = jsonSerializerOptions is not null
+            ? jsonSerializerOptions
+            : new JsonSerializerOptions
             {
                 ReferenceHandler = System.Text.Json.Serialization.ReferenceHandler.Preserve,
                 WriteIndented = false,
                 PropertyNameCaseInsensitive = true,
                 DefaultIgnoreCondition = System.Text.Json.Serialization.JsonIgnoreCondition.WhenWritingNull,
-                MaxDepth = 64 // Handle deep object graphs (e.g., nested content items)
+                MaxDepth = 124
             };
-        }
     }
 
     /// <inheritdoc />
@@ -151,26 +143,18 @@ internal sealed class DistributedCacheManager : IDeliveryCacheManager
         where T : class
     {
         if (string.IsNullOrWhiteSpace(cacheKey))
-        {
-            // Return null for invalid keys rather than throwing
-            // This aligns with the interface contract for cache misses
             return null;
-        }
 
         try
         {
-            // Check cancellation before cache operation
             cancellationToken.ThrowIfCancellationRequested();
 
             var prefixedKey = GetCacheKey(cacheKey);
             var bytes = await _cache.GetAsync(prefixedKey, cancellationToken).ConfigureAwait(false);
 
-            if (bytes == null || bytes.Length == 0)
-            {
+            if (bytes is null || bytes.Length == 0)
                 return null;
-            }
 
-            // Deserialize from JSON
             var json = Encoding.UTF8.GetString(bytes);
             var value = JsonSerializer.Deserialize<T>(json, _jsonOptions);
 
@@ -178,19 +162,16 @@ internal sealed class DistributedCacheManager : IDeliveryCacheManager
         }
         catch (OperationCanceledException)
         {
-            // Re-throw cancellation exceptions
             throw;
         }
         catch (Exception ex)
         {
-            // Log the deserialization failure for diagnostics
-            if (_logger != null)
+            if (_logger is not null)
             {
                 LoggerMessages.CacheDeserializationFailed(_logger, cacheKey, typeof(T).Name, ex);
             }
 
             // Treat any other exception as a cache miss
-            // This ensures cache failures don't break the application
             return null;
         }
     }
@@ -203,7 +184,6 @@ internal sealed class DistributedCacheManager : IDeliveryCacheManager
         TimeSpan? expiration = null,
         CancellationToken cancellationToken = default) where T : class
     {
-        // Validate inputs according to interface contract
         ArgumentNullException.ThrowIfNull(cacheKey);
         if (string.IsNullOrWhiteSpace(cacheKey))
             throw new ArgumentException("Cache key cannot be empty or whitespace.", nameof(cacheKey));
@@ -212,11 +192,9 @@ internal sealed class DistributedCacheManager : IDeliveryCacheManager
 
         cancellationToken.ThrowIfCancellationRequested();
 
-        // Serialize and validate - let serialization exceptions propagate per interface contract
         var json = SerializeWithValidation(value);
         var bytes = Encoding.UTF8.GetBytes(json);
 
-        // Create cache entry options
         var cacheOptions = new DistributedCacheEntryOptions
         {
             AbsoluteExpirationRelativeToNow = expiration ?? _defaultExpiration
@@ -224,11 +202,9 @@ internal sealed class DistributedCacheManager : IDeliveryCacheManager
 
         var prefixedKey = GetCacheKey(cacheKey);
 
-        // Store in cache - let exceptions propagate per interface contract
         await _cache.SetAsync(prefixedKey, bytes, cacheOptions, cancellationToken)
             .ConfigureAwait(false);
 
-        // Update reverse index for each dependency (best effort - failures here are acceptable)
         var dependencyList = dependencies.Where(d => !string.IsNullOrWhiteSpace(d)).ToList();
 
         foreach (var dependency in dependencyList)
@@ -244,50 +220,41 @@ internal sealed class DistributedCacheManager : IDeliveryCacheManager
             }
             catch (Exception ex)
             {
-                // Reverse index update failure should not break caching
-                // Worst case: invalidation might miss this entry
-                if (_logger != null)
+                if (_logger is not null)
                     LoggerMessages.CacheSetFailed(_logger, $"dep:{dependency}", ex);
             }
         }
 
-        // Log successful cache set
-        if (_logger != null)
+        if (_logger is not null)
             LoggerMessages.CacheSetCompleted(_logger, cacheKey, dependencyList.Count);
     }
 
     /// <inheritdoc />
     public async Task InvalidateAsync(CancellationToken cancellationToken = default, params string[] dependencyKeys)
     {
-        if (dependencyKeys == null || dependencyKeys.Length == 0)
+        if (dependencyKeys is null || dependencyKeys.Length == 0)
         {
-            // No dependencies to invalidate - this is valid (idempotent)
             return;
         }
 
         var validKeys = dependencyKeys.Where(k => !string.IsNullOrWhiteSpace(k)).ToList();
 
-        // Log invalidation start
-        if (_logger != null && validKeys.Count > 0)
+        if (_logger is not null && validKeys.Count > 0)
             LoggerMessages.CacheInvalidateStarting(_logger, validKeys.Count);
 
         try
         {
-            // Process each dependency key
             var tasks = validKeys.Select(k => InvalidateDependencyAsync(k, cancellationToken));
 
             await Task.WhenAll(tasks).ConfigureAwait(false);
         }
         catch (OperationCanceledException)
         {
-            // Re-throw cancellation exceptions
             throw;
         }
         catch (Exception ex)
         {
-            // Invalidation failures should not break the application
-            // Worst case: stale entries remain until TTL expires
-            if (_logger != null)
+            if (_logger is not null)
                 LoggerMessages.CacheInvalidationFailed(_logger, ex);
         }
     }
@@ -307,18 +274,15 @@ internal sealed class DistributedCacheManager : IDeliveryCacheManager
         {
             var json = JsonSerializer.Serialize(value, _jsonOptions);
 
-            if (string.IsNullOrWhiteSpace(json))
-            {
-                throw new InvalidOperationException(
+            return string.IsNullOrWhiteSpace(json)
+                ? throw new InvalidOperationException(
                     $"Serialization of type {typeof(T).Name} produced null or empty JSON. " +
-                    $"The type may not be serializable for distributed caching.");
-            }
-
-            return json;
+                    $"The type may not be serializable for distributed caching.")
+                : json;
         }
         catch (NotSupportedException ex)
         {
-            if (_logger != null)
+            if (_logger is not null)
                 LoggerMessages.CacheSerializationFailed(_logger, "unknown", typeof(T).Name, ex);
 
             throw new InvalidOperationException(
@@ -329,12 +293,11 @@ internal sealed class DistributedCacheManager : IDeliveryCacheManager
         }
         catch (InvalidOperationException)
         {
-            // Re-throw our own exceptions
             throw;
         }
         catch (Exception ex)
         {
-            if (_logger != null)
+            if (_logger is not null)
                 LoggerMessages.CacheSerializationFailed(_logger, "unknown", typeof(T).Name, ex);
 
             throw new InvalidOperationException(
@@ -354,42 +317,35 @@ internal sealed class DistributedCacheManager : IDeliveryCacheManager
 
         try
         {
-            // Get the reverse index
             var indexBytes = await _cache.GetAsync(indexKey, cancellationToken).ConfigureAwait(false);
 
-            if (indexBytes == null || indexBytes.Length == 0)
+            if (indexBytes is null || indexBytes.Length == 0)
             {
                 return;
             }
 
-            // Deserialize the set of cache keys
             var indexJson = Encoding.UTF8.GetString(indexBytes);
             var cacheKeys = JsonSerializer.Deserialize<HashSet<string>>(indexJson, _jsonOptions);
 
-            if (cacheKeys == null || cacheKeys.Count == 0)
+            if (cacheKeys is null || cacheKeys.Count == 0)
             {
-                // Remove corrupted index
                 await _cache.RemoveAsync(indexKey, cancellationToken).ConfigureAwait(false);
                 return;
             }
 
-            // Remove all associated cache entries
             var removalTasks = cacheKeys.Select(key =>
                 _cache.RemoveAsync(GetCacheKey(key), cancellationToken));
 
             await Task.WhenAll(removalTasks).ConfigureAwait(false);
 
-            // Remove the dependency index itself
             await _cache.RemoveAsync(indexKey, cancellationToken).ConfigureAwait(false);
 
-            // Log invalidation completed
-            if (_logger != null)
+            if (_logger is not null)
                 LoggerMessages.CacheInvalidateCompleted(_logger, dependencyKey);
         }
         catch (Exception ex)
         {
-            // Continue with other invalidations even if this one fails
-            if (_logger != null)
+            if (_logger is not null)
                 LoggerMessages.CacheBestEffortFailed(_logger, $"invalidate:{dependencyKey}", ex);
         }
     }
@@ -412,11 +368,10 @@ internal sealed class DistributedCacheManager : IDeliveryCacheManager
 
         try
         {
-            // Read existing index
             var existingBytes = await _cache.GetAsync(indexKey, cancellationToken).ConfigureAwait(false);
             HashSet<string> cacheKeySet;
 
-            if (existingBytes != null && existingBytes.Length > 0)
+            if (existingBytes is not null && existingBytes.Length > 0)
             {
                 var existingJson = Encoding.UTF8.GetString(existingBytes);
                 cacheKeySet = JsonSerializer.Deserialize<HashSet<string>>(existingJson, _jsonOptions)
@@ -427,10 +382,8 @@ internal sealed class DistributedCacheManager : IDeliveryCacheManager
                 cacheKeySet = new HashSet<string>(StringComparer.OrdinalIgnoreCase);
             }
 
-            // Add new cache key
             cacheKeySet.Add(cacheKey);
 
-            // Serialize and write back
             var indexJson = JsonSerializer.Serialize(cacheKeySet, _jsonOptions);
             var indexBytes = Encoding.UTF8.GetBytes(indexJson);
 
@@ -439,9 +392,7 @@ internal sealed class DistributedCacheManager : IDeliveryCacheManager
         }
         catch (Exception ex)
         {
-            // Reverse index update failure should not break caching
-            // Worst case: invalidation might miss this entry
-            if (_logger != null)
+            if (_logger is not null)
                 LoggerMessages.CacheBestEffortFailed(_logger, $"index:{dependencyKey}", ex);
         }
     }

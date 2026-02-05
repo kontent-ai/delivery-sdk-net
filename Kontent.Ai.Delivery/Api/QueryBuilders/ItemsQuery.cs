@@ -105,18 +105,16 @@ internal sealed class ItemsQuery<TModel>(
 
     public async Task<IDeliveryResult<IDeliveryItemListingResponse<TModel>>> ExecuteAsync(CancellationToken cancellationToken = default)
     {
-        // Apply generic type filter before execution
         ApplyGenericTypeFilter();
 
         LogQueryStarting();
         var stopwatch = StartTimingIfEnabled();
 
-        if (_cacheManager != null)
+        if (_cacheManager is not null)
         {
             var cacheKey = CacheKeyBuilder.BuildItemsKey(_params, _serializedFilters);
             IDeliveryResult<DeliveryItemListingResponse<TModel>>? apiResult = null;
 
-            // Use stampede-protected cache fetch
             var cacheResult = await QueryCacheHelper.GetOrFetchAsync(
                 _cacheManager,
                 cacheKey,
@@ -125,8 +123,8 @@ internal sealed class ItemsQuery<TModel>(
                     apiResult = await FetchFromApiAsync(ct).ConfigureAwait(false);
                     if (!apiResult.IsSuccess)
                         return (null, Array.Empty<string>());
-                    // Post-process items (hydration, dependency tracking)
                     var (response, deps) = await ProcessItemsAsync(apiResult.Value, ct).ConfigureAwait(false);
+
                     return (response, deps);
                 },
                 _logger,
@@ -134,22 +132,20 @@ internal sealed class ItemsQuery<TModel>(
 
             if (cacheResult.IsCacheHit)
             {
-                // Reconstruct with NextPageFetcher (delegates can't be cached)
                 var cachedWithFetcher = cacheResult.Value! with { NextPageFetcher = CreateNextPageFetcher(cacheResult.Value!.Pagination) };
                 LogQueryCompleted(stopwatch, HttpStatusCode.OK, cacheHit: true);
                 return DeliveryResult.CacheHit<IDeliveryItemListingResponse<TModel>>(cachedWithFetcher);
             }
 
-            // Not a cache hit - check if API succeeded
             if (!apiResult!.IsSuccess)
             {
                 LogQueryFailed(apiResult);
                 return CreateFailureResult(apiResult);
             }
 
-            // Fresh fetch succeeded - build result with fetcher
             var responseWithFetcher = cacheResult.Value! with { NextPageFetcher = CreateNextPageFetcher(cacheResult.Value!.Pagination) };
             LogQueryCompleted(stopwatch, apiResult.StatusCode, cacheHit: false, apiResult.HasStaleContent);
+
             return DeliveryResult.Success<IDeliveryItemListingResponse<TModel>>(
                 responseWithFetcher,
                 apiResult.RequestUrl ?? string.Empty,
@@ -159,7 +155,6 @@ internal sealed class ItemsQuery<TModel>(
                 apiResult.ResponseHeaders);
         }
 
-        // No caching - direct fetch
         var deliveryResult = await FetchFromApiAsync(cancellationToken).ConfigureAwait(false);
         if (!deliveryResult.IsSuccess)
         {
@@ -181,24 +176,20 @@ internal sealed class ItemsQuery<TModel>(
 
     private void ApplyGenericTypeFilter()
     {
-        // Skip for dynamic models
         if (IsDynamicModel)
             return;
 
-        // Get the codename for the generic type
         var codename = _typeProvider.GetCodename(typeof(TModel));
 
         if (string.IsNullOrEmpty(codename))
         {
-            // Type provider doesn't know about this type - don't add filter
-            if (_logger != null)
+            if (_logger is not null)
             {
                 LoggerMessages.GenericQueryTypeCodenameNotFound(_logger, typeof(TModel).Name);
             }
             return;
         }
 
-        // Add the generic type filter
         _serializedFilters.Add(new KeyValuePair<string, string>(
             FilterPath.System("type") + FilterSuffix.Eq,
             FilterValueSerializer.Serialize(codename)));
@@ -206,7 +197,7 @@ internal sealed class ItemsQuery<TModel>(
 
     private async Task<IDeliveryResult<DeliveryItemListingResponse<TModel>>> FetchFromApiAsync(CancellationToken cancellationToken)
     {
-        bool? wait = _waitForLoadingNewContentOverride ?? _getDefaultWaitForNewContent();
+        var wait = _waitForLoadingNewContentOverride ?? _getDefaultWaitForNewContent();
         var rawResponse = await _api.GetItemsInternalAsync<TModel>(
             _params,
             FilterQueryParams.ToQueryDictionary(_serializedFilters),
@@ -219,24 +210,20 @@ internal sealed class ItemsQuery<TModel>(
         DeliveryItemListingResponse<TModel> resp, CancellationToken cancellationToken)
     {
         var items = resp.Items;
-        var dependencyContext = _cacheManager != null ? new DependencyTrackingContext() : null;
+        var dependencyContext = _cacheManager is not null ? new DependencyTrackingContext() : null;
 
-        // Track all items in the response
-        if (dependencyContext != null && items is { Count: > 0 })
+        if (dependencyContext is not null && items is { Count: > 0 })
         {
             foreach (var item in items)
                 dependencyContext.TrackItem(item.System.Codename);
         }
 
-        // Track modular content dependencies
-        if (dependencyContext != null && resp.ModularContent != null)
+        if (dependencyContext is not null && resp.ModularContent is not null)
         {
             foreach (var codename in resp.ModularContent.Keys)
                 dependencyContext.TrackItem(codename);
         }
 
-        // Hydrate each item (tracks additional dependencies: assets, taxonomies)
-        // Dynamic mode intentionally stays raw (no hydration)
         if (!IsDynamicModel)
         {
             foreach (var item in items)
@@ -288,7 +275,7 @@ internal sealed class ItemsQuery<TModel>(
 
     private void LogQueryStarting()
     {
-        if (_logger != null)
+        if (_logger is not null)
             LoggerMessages.QueryStarting(_logger, "Items", "list");
     }
 
@@ -297,9 +284,11 @@ internal sealed class ItemsQuery<TModel>(
 
     private void LogQueryFailed(IDeliveryResult<DeliveryItemListingResponse<TModel>> deliveryResult)
     {
-        if (_logger != null)
+        if (_logger is not null)
+        {
             LoggerMessages.QueryFailed(_logger, "Items", "list", deliveryResult.StatusCode,
                 deliveryResult.Error?.Message, exception: null);
+        }
     }
 
     private void LogQueryCompleted(Stopwatch? stopwatch, HttpStatusCode statusCode, bool cacheHit, bool hasStaleContent = false)

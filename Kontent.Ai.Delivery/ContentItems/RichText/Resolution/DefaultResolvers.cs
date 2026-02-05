@@ -72,12 +72,9 @@ public static class DefaultResolvers
                 "link", "meta", "param", "source", "track", "wbr"
             };
 
-            if (voidElements.Contains(block.TagName))
-            {
-                return $"<{block.TagName}{attributesStr}>";
-            }
-
-            return $"<{block.TagName}{attributesStr}>{children}</{block.TagName}>";
+            return voidElements.Contains(block.TagName)
+                ? $"<{block.TagName}{attributesStr}>"
+                : $"<{block.TagName}{attributesStr}>{children}</{block.TagName}>";
         };
     }
 

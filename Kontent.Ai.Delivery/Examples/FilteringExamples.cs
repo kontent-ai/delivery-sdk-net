@@ -270,7 +270,7 @@ internal class FilteringExamples(IDeliveryClient client)
 
         // Pagination with filters
         const int pageSize = 25;
-        for (int page = 0; page < 5; page++)
+        for (var page = 0; page < 5; page++)
         {
             var pagedResults = await _client.GetItems<Product>()
                 .Where(f => f

@@ -42,10 +42,9 @@ internal sealed class RichTextParser(
         if (contentElement is not IRichTextElementValue element)
             return null;
 
-        // Parse the HTML asynchronously
         var document = await parser.ParseDocumentAsync(element.Value, cancellationToken);
 
-        if (document.Body == null)
+        if (document.Body is null)
         {
             if (logger is not null)
             {
@@ -62,16 +61,16 @@ internal sealed class RichTextParser(
         {
             cancellationToken.ThrowIfCancellationRequested();
             var block = await ParseNodeAsync(childNode, element, getLinkedItem, currentDepth: 0, cancellationToken);
-            if (block != null)
+            if (block is not null)
                 blocks.Add(block);
         }
 
         var content = new RichTextContent
         {
-            Links = element.Links != null
+            Links = element.Links is not null
                 ? new Dictionary<Guid, IContentLink>(element.Links)
                 : null,
-            Images = element.Images != null
+            Images = element.Images is not null
                 ? new Dictionary<Guid, IInlineImage>(element.Images)
                 : null,
             ModularContentCodenames = element.ModularContent
@@ -161,16 +160,14 @@ internal sealed class RichTextParser(
         int currentDepth,
         CancellationToken cancellationToken)
     {
-        // Get metadata from Links dictionary
         var metadata = elementValue.Links?.TryGetValue(itemId, out var link) == true ? link : null;
 
-        // Parse children recursively
         List<IRichTextBlock> children = [];
         foreach (var childNode in anchorElement.ChildNodes)
         {
             cancellationToken.ThrowIfCancellationRequested();
             var childBlock = await ParseNodeAsync(childNode, elementValue, getLinkedItem, currentDepth + 1, cancellationToken);
-            if (childBlock != null)
+            if (childBlock is not null)
                 children.Add(childBlock);
         }
 
@@ -189,17 +186,15 @@ internal sealed class RichTextParser(
         int currentDepth,
         CancellationToken cancellationToken)
     {
-        // Parse all children recursively into tree structure
         List<IRichTextBlock> children = [];
         foreach (var childNode in element.ChildNodes)
         {
             cancellationToken.ThrowIfCancellationRequested();
             var childBlock = await ParseNodeAsync(childNode, elementValue, getLinkedItem, currentDepth + 1, cancellationToken);
-            if (childBlock != null)
+            if (childBlock is not null)
                 children.Add(childBlock);
         }
 
-        // Extract attributes
         var attributes = element.Attributes.ToDictionary(a => a.Name, a => a.Value);
 
         return new HtmlNode(element.TagName.ToLowerInvariant(), attributes, children);

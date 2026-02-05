@@ -17,7 +17,7 @@ internal sealed class TypeElementQuery(IDeliveryApi api, string contentTypeCoden
 
     public async Task<IDeliveryResult<IContentElement>> ExecuteAsync(CancellationToken cancellationToken = default)
     {
-        bool? wait = _waitForLoadingNewContentOverride ?? _getDefaultWaitForNewContent();
+        var wait = _waitForLoadingNewContentOverride ?? _getDefaultWaitForNewContent();
         var response = await _api.GetContentElementInternalAsync(_type, _element, wait, cancellationToken).ConfigureAwait(false);
         var deliveryResult = await response.ToDeliveryResultAsync().ConfigureAwait(false);
 

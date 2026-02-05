@@ -9,7 +9,6 @@ namespace Kontent.Ai.Delivery.Abstractions;
 /// <typeparam name="TBuilder">Parent builder type to return to for fluent chaining.</typeparam>
 public interface ITypeFieldFilter<out TBuilder>
 {
-    // Equality
     TBuilder IsEqualTo(string value);
     TBuilder IsEqualTo(DateTime value);
 

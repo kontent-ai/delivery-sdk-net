@@ -63,13 +63,12 @@ internal sealed class ItemQuery<TModel>(
         LogQueryStarting();
         var stopwatch = StartTimingIfEnabled();
 
-        if (_cacheManager != null)
+        if (_cacheManager is not null)
         {
             var cacheKey = CacheKeyBuilder.BuildItemKey(_codename, _params);
             IDeliveryResult<DeliveryItemResponse<TModel>>? apiResult = null;
             IContentItem<TModel>? processedItem = null;
 
-            // Use stampede-protected cache fetch
             var cacheResult = await QueryCacheHelper.GetOrFetchAsync(
                 _cacheManager,
                 cacheKey,
@@ -78,10 +77,9 @@ internal sealed class ItemQuery<TModel>(
                     apiResult = await FetchFromApiAsync(ct).ConfigureAwait(false);
                     if (!apiResult.IsSuccess)
                         return (null, Array.Empty<string>());
-                    // Post-process item (hydration, dependency tracking)
                     var (item, deps) = await ProcessItemAsync(apiResult.Value, ct).ConfigureAwait(false);
                     processedItem = item;
-                    // Only cache if it's the concrete type (not an interface)
+
                     return (item as ContentItem<TModel>, deps);
                 },
                 _logger,
@@ -93,14 +91,12 @@ internal sealed class ItemQuery<TModel>(
                 return DeliveryResult.CacheHit<IContentItem<TModel>>(cacheResult.Value!);
             }
 
-            // Not a cache hit - check if API succeeded
             if (!apiResult!.IsSuccess)
             {
                 LogQueryFailed(apiResult);
                 return CreateFailureResult(apiResult);
             }
 
-            // Fresh fetch succeeded - build result
             LogQueryCompleted(stopwatch, apiResult.StatusCode, cacheHit: false, apiResult.HasStaleContent);
             return DeliveryResult.Success(
                 processedItem!,
@@ -111,7 +107,6 @@ internal sealed class ItemQuery<TModel>(
                 apiResult.ResponseHeaders);
         }
 
-        // No caching - direct fetch
         var deliveryResult = await FetchFromApiAsync(cancellationToken).ConfigureAwait(false);
         if (!deliveryResult.IsSuccess)
         {
@@ -132,7 +127,7 @@ internal sealed class ItemQuery<TModel>(
 
     private async Task<IDeliveryResult<DeliveryItemResponse<TModel>>> FetchFromApiAsync(CancellationToken cancellationToken = default)
     {
-        bool? wait = _waitForLoadingNewContentOverride ?? _getDefaultWaitForNewContent();
+        var wait = _waitForLoadingNewContentOverride ?? _getDefaultWaitForNewContent();
         var rawResponse = await _api.GetItemInternalAsync<TModel>(_codename, _params, null, wait, cancellationToken)
             .ConfigureAwait(false);
         return await rawResponse.ToDeliveryResultAsync(_logger).ConfigureAwait(false);
@@ -142,17 +137,15 @@ internal sealed class ItemQuery<TModel>(
         DeliveryItemResponse<TModel> resp, CancellationToken cancellationToken)
     {
         var item = resp.Item;
-        var dependencyContext = _cacheManager != null ? new DependencyTrackingContext() : null;
+        var dependencyContext = _cacheManager is not null ? new DependencyTrackingContext() : null;
 
         dependencyContext?.TrackItem(item.System.Codename);
-        if (dependencyContext != null && resp.ModularContent != null)
+        if (dependencyContext is not null && resp.ModularContent is not null)
         {
             foreach (var itemCodename in resp.ModularContent.Keys)
                 dependencyContext.TrackItem(itemCodename);
         }
 
-        // Hydrate rich text, assets, taxonomy (tracks additional dependencies)
-        // Dynamic mode intentionally stays raw (no hydration)
         if (!IsDynamicModel)
         {
             await _contentItemMapper.CompleteItemAsync(item, resp.ModularContent, dependencyContext, cancellationToken)
@@ -172,7 +165,7 @@ internal sealed class ItemQuery<TModel>(
 
     private void LogQueryStarting()
     {
-        if (_logger != null)
+        if (_logger is not null)
             LoggerMessages.QueryStarting(_logger, "Item", _codename);
     }
 
@@ -181,9 +174,11 @@ internal sealed class ItemQuery<TModel>(
 
     private void LogQueryFailed(IDeliveryResult<DeliveryItemResponse<TModel>> deliveryResult)
     {
-        if (_logger != null)
+        if (_logger is not null)
+        {
             LoggerMessages.QueryFailed(_logger, "Item", _codename, deliveryResult.StatusCode,
                 deliveryResult.Error?.Message, exception: null);
+        }
     }
 
     private void LogQueryCompleted(Stopwatch? stopwatch, HttpStatusCode statusCode, bool cacheHit, bool hasStaleContent = false)

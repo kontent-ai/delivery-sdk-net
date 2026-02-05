@@ -89,7 +89,7 @@ internal static class RefitApiResponseExtensions
             catch (Exception parseEx)
             {
                 // Log the deserialization failure for diagnostics
-                if (logger != null)
+                if (logger is not null)
                 {
                     LoggerMessages.ApiErrorParsingFailed(logger, url, status, ex.Content?.Length ?? 0, parseEx);
                 }
@@ -131,12 +131,9 @@ internal static class RefitApiResponseExtensions
     /// <returns>The continuation token if present.</returns>
     private static string? ExtractContinuationToken<T>(IApiResponse<T> apiResponse)
     {
-        if (apiResponse.Headers?.TryGetValues(ContinuationHeaderName, out var continuationValues) == true)
-        {
-            return continuationValues.FirstOrDefault();
-        }
-
-        return null;
+        return apiResponse.Headers?.TryGetValues(ContinuationHeaderName, out var continuationValues) == true
+            ? continuationValues.FirstOrDefault()
+            : null;
     }
 
     /// <summary>
@@ -145,14 +142,9 @@ internal static class RefitApiResponseExtensions
     /// <param name="apiResponse">The API response.</param>
     /// <returns>True if content is stale.</returns>
     private static bool ExtractHasStaleContent<T>(IApiResponse<T> apiResponse)
-    {
-        if (apiResponse.Headers?.TryGetValues(StaleContentHeaderName, out var staleValues) == true)
-        {
-            return staleValues.FirstOrDefault()?.Equals("1", StringComparison.OrdinalIgnoreCase) == true;
-        }
-
-        return false;
-    }
+        => apiResponse.Headers?.TryGetValues(StaleContentHeaderName, out var staleValues) == true
+            ? staleValues.FirstOrDefault()?.Equals("1", StringComparison.OrdinalIgnoreCase) == true
+            : false;
 
     /// <summary>
     /// Extracts continuation token from response headers.

@@ -60,12 +60,11 @@ internal sealed class TypesQuery(
         LogQueryStarting();
         var stopwatch = StartTimingIfEnabled();
 
-        if (_cacheManager != null)
+        if (_cacheManager is not null)
         {
             var cacheKey = CacheKeyBuilder.BuildTypesKey(_params, _serializedFilters);
             IDeliveryResult<DeliveryTypeListingResponse>? apiResult = null;
 
-            // Use stampede-protected cache fetch
             var cacheResult = await QueryCacheHelper.GetOrFetchAsync(
                 _cacheManager,
                 cacheKey,
@@ -74,7 +73,6 @@ internal sealed class TypesQuery(
                     apiResult = await FetchFromApiAsync(ct).ConfigureAwait(false);
                     if (!apiResult.IsSuccess)
                         return (null, Array.Empty<string>());
-                    // Metadata queries use empty dependencies (rely on TTL for invalidation)
                     return (apiResult.Value, Array.Empty<string>());
                 },
                 _logger,
@@ -82,13 +80,11 @@ internal sealed class TypesQuery(
 
             if (cacheResult.IsCacheHit)
             {
-                // Reconstruct with NextPageFetcher (delegates can't be cached)
                 var cachedWithFetcher = cacheResult.Value! with { NextPageFetcher = CreateNextPageFetcher(cacheResult.Value!.Pagination) };
                 LogQueryCompleted(stopwatch, HttpStatusCode.OK, cacheHit: true);
                 return DeliveryResult.CacheHit<IDeliveryTypeListingResponse>(cachedWithFetcher);
             }
 
-            // Not a cache hit - check if API succeeded
             if (!apiResult!.IsSuccess)
             {
                 LogQueryCompleted(stopwatch, apiResult.StatusCode, cacheHit: false);
@@ -99,7 +95,6 @@ internal sealed class TypesQuery(
                     apiResult.ResponseHeaders);
             }
 
-            // Fresh fetch succeeded - build result with fetcher
             var responseWithFetcher = cacheResult.Value! with { NextPageFetcher = CreateNextPageFetcher(cacheResult.Value!.Pagination) };
             LogQueryCompleted(stopwatch, apiResult.StatusCode, cacheHit: false);
             return DeliveryResult.Success<IDeliveryTypeListingResponse>(
@@ -111,7 +106,6 @@ internal sealed class TypesQuery(
                 apiResult.ResponseHeaders);
         }
 
-        // No caching - direct fetch
         var deliveryResult = await FetchFromApiAsync(cancellationToken).ConfigureAwait(false);
         if (!deliveryResult.IsSuccess)
         {
@@ -137,7 +131,7 @@ internal sealed class TypesQuery(
 
     private async Task<IDeliveryResult<DeliveryTypeListingResponse>> FetchFromApiAsync(CancellationToken cancellationToken)
     {
-        bool? wait = _waitForLoadingNewContentOverride ?? _getDefaultWaitForNewContent();
+        var wait = _waitForLoadingNewContentOverride ?? _getDefaultWaitForNewContent();
         var response = await _api.GetTypesInternalAsync(
             _params,
             FilterQueryParams.ToQueryDictionary(_serializedFilters),
@@ -170,7 +164,7 @@ internal sealed class TypesQuery(
 
     private void LogQueryStarting()
     {
-        if (_logger != null)
+        if (_logger is not null)
             LoggerMessages.QueryStarting(_logger, "Types", "list");
     }
 

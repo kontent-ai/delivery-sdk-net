@@ -29,7 +29,6 @@ public sealed class ApiErrorTests
     [Fact]
     public async Task GetItem_NotFound_ReturnsErrorWithStatusCode404()
     {
-        // Arrange
         var mock = new MockHttpMessageHandler();
         var errorJson = BuildKontentErrorJson(
             message: "The requested content item 'non_existent_item' was not found.",
@@ -41,10 +40,8 @@ public sealed class ApiErrorTests
 
         var client = CreateClient(mock);
 
-        // Act
         var result = await client.GetItem<IDynamicElements>("non_existent_item").ExecuteAsync();
 
-        // Assert
         Assert.False(result.IsSuccess);
         Assert.Equal(HttpStatusCode.NotFound, result.StatusCode);
         Assert.NotNull(result.Error);
@@ -54,7 +51,6 @@ public sealed class ApiErrorTests
     [Fact]
     public async Task GetItem_Unauthorized_ReturnsErrorWithStatusCode401()
     {
-        // Arrange
         var mock = new MockHttpMessageHandler();
         var errorJson = BuildKontentErrorJson(
             message: "The provided API key is invalid or has been revoked.",
@@ -66,10 +62,8 @@ public sealed class ApiErrorTests
 
         var client = CreateClient(mock);
 
-        // Act
         var result = await client.GetItem<IDynamicElements>("some_item").ExecuteAsync();
 
-        // Assert
         Assert.False(result.IsSuccess);
         Assert.Equal(HttpStatusCode.Unauthorized, result.StatusCode);
         Assert.NotNull(result.Error);
@@ -78,7 +72,6 @@ public sealed class ApiErrorTests
     [Fact]
     public async Task GetItem_Forbidden_ReturnsErrorWithStatusCode403()
     {
-        // Arrange - Simulates secured API access without proper credentials
         var mock = new MockHttpMessageHandler();
         var errorJson = BuildKontentErrorJson(
             message: "Access to this environment requires secure access API key.",
@@ -90,10 +83,8 @@ public sealed class ApiErrorTests
 
         var client = CreateClient(mock);
 
-        // Act
         var result = await client.GetItem<IDynamicElements>("secure_item").ExecuteAsync();
 
-        // Assert
         Assert.False(result.IsSuccess);
         Assert.Equal(HttpStatusCode.Forbidden, result.StatusCode);
         Assert.NotNull(result.Error);
@@ -102,7 +93,6 @@ public sealed class ApiErrorTests
     [Fact]
     public async Task GetItems_BadRequest_ReturnsErrorWithStatusCode400()
     {
-        // Arrange - Simulates invalid query parameter
         var mock = new MockHttpMessageHandler();
         var errorJson = BuildKontentErrorJson(
             message: "The provided filter parameter is invalid.",
@@ -114,10 +104,8 @@ public sealed class ApiErrorTests
 
         var client = CreateClient(mock);
 
-        // Act
         var result = await client.GetItems<IDynamicElements>().ExecuteAsync();
 
-        // Assert
         Assert.False(result.IsSuccess);
         Assert.Equal(HttpStatusCode.BadRequest, result.StatusCode);
         Assert.NotNull(result.Error);
@@ -126,7 +114,6 @@ public sealed class ApiErrorTests
     [Fact]
     public async Task GetItems_RateLimited_ReturnsErrorWithStatusCode429()
     {
-        // Arrange - Simulates rate limiting
         var mock = new MockHttpMessageHandler();
         var errorJson = BuildKontentErrorJson(
             message: "Rate limit exceeded. Please retry after some time.",
@@ -138,10 +125,8 @@ public sealed class ApiErrorTests
 
         var client = CreateClient(mock);
 
-        // Act
         var result = await client.GetItems<IDynamicElements>().ExecuteAsync();
 
-        // Assert
         Assert.False(result.IsSuccess);
         Assert.Equal((HttpStatusCode)429, result.StatusCode);
         Assert.NotNull(result.Error);
@@ -155,7 +140,6 @@ public sealed class ApiErrorTests
     [Fact]
     public async Task ErrorResponse_ParsesStructuredKontentError()
     {
-        // Arrange - Full Kontent.ai error response with all fields
         var mock = new MockHttpMessageHandler();
         var errorJson = """
             {
@@ -171,10 +155,8 @@ public sealed class ApiErrorTests
 
         var client = CreateClient(mock);
 
-        // Act
         var result = await client.GetItem<IDynamicElements>("my_item").ExecuteAsync();
 
-        // Assert
         Assert.False(result.IsSuccess);
         Assert.NotNull(result.Error);
         Assert.Equal("The requested content item 'my_item' was not found.", result.Error.Message);
@@ -186,7 +168,6 @@ public sealed class ApiErrorTests
     [Fact]
     public async Task ErrorResponse_HandlesNonJsonError_CombinesRefitMessageWithRawBody()
     {
-        // Arrange - Plain text error (e.g., from proxy or CDN)
         var mock = new MockHttpMessageHandler();
         const string rawErrorMessage = "Bad Gateway - upstream server unavailable";
 
@@ -195,14 +176,11 @@ public sealed class ApiErrorTests
 
         var client = CreateClient(mock);
 
-        // Act
         var result = await client.GetItem<IDynamicElements>("some_item").ExecuteAsync();
 
-        // Assert
         Assert.False(result.IsSuccess);
         Assert.Equal(HttpStatusCode.BadGateway, result.StatusCode);
         Assert.NotNull(result.Error);
-        // Should contain both Refit's formatted message and the raw response
         Assert.Contains("Raw response:", result.Error.Message);
         Assert.Contains(rawErrorMessage, result.Error.Message);
     }
@@ -210,7 +188,6 @@ public sealed class ApiErrorTests
     [Fact]
     public async Task ErrorResponse_HandlesHtmlErrorPage_CombinesRefitMessageWithRawBody()
     {
-        // Arrange - HTML error page (e.g., from proxy, load balancer, or CDN)
         var mock = new MockHttpMessageHandler();
         const string htmlError = "<html><body><h1>502 Bad Gateway</h1><p>nginx</p></body></html>";
 
@@ -219,14 +196,11 @@ public sealed class ApiErrorTests
 
         var client = CreateClient(mock);
 
-        // Act
         var result = await client.GetItem<IDynamicElements>("some_item").ExecuteAsync();
 
-        // Assert
         Assert.False(result.IsSuccess);
         Assert.Equal(HttpStatusCode.BadGateway, result.StatusCode);
         Assert.NotNull(result.Error);
-        // Should contain Refit's message with HTTP context, plus the raw HTML
         Assert.Contains("Raw response:", result.Error.Message);
         Assert.Contains("502 Bad Gateway", result.Error.Message);
         Assert.Contains("nginx", result.Error.Message);
@@ -235,7 +209,6 @@ public sealed class ApiErrorTests
     [Fact]
     public async Task ErrorResponse_LongHtmlPage_TruncatesRawBody()
     {
-        // Arrange - Very long HTML error page
         var mock = new MockHttpMessageHandler();
         var longHtml = "<html><body>" + new string('x', 1000) + "</body></html>";
 
@@ -244,22 +217,17 @@ public sealed class ApiErrorTests
 
         var client = CreateClient(mock);
 
-        // Act
         var result = await client.GetItem<IDynamicElements>("some_item").ExecuteAsync();
 
-        // Assert
         Assert.False(result.IsSuccess);
         Assert.NotNull(result.Error);
-        // Long responses should be truncated to keep the message readable
         Assert.Contains("(truncated)", result.Error.Message);
-        // Message should not contain the full 1000+ characters
         Assert.True(result.Error.Message.Length < 700);
     }
 
     [Fact]
     public async Task ErrorResponse_WithoutMessageField_UsesDefaultMessage()
     {
-        // Arrange - JSON error without message field (only error_code)
         var mock = new MockHttpMessageHandler();
         var errorJson = """
             {
@@ -273,14 +241,11 @@ public sealed class ApiErrorTests
 
         var client = CreateClient(mock);
 
-        // Act
         var result = await client.GetItem<IDynamicElements>("some_item").ExecuteAsync();
 
-        // Assert
         Assert.False(result.IsSuccess);
         Assert.Equal(HttpStatusCode.NotFound, result.StatusCode);
         Assert.NotNull(result.Error);
-        // Should have a default message when message field is missing
         Assert.False(string.IsNullOrEmpty(result.Error.Message));
         Assert.Equal(100, result.Error.ErrorCode);
         Assert.Equal("req-no-message", result.Error.RequestId);
@@ -289,7 +254,6 @@ public sealed class ApiErrorTests
     [Fact]
     public async Task ErrorResponse_HandlesEmptyBody()
     {
-        // Arrange - Empty response body
         var mock = new MockHttpMessageHandler();
 
         mock.When($"{BaseUrl}/items/some_item")
@@ -297,10 +261,8 @@ public sealed class ApiErrorTests
 
         var client = CreateClient(mock);
 
-        // Act
         var result = await client.GetItem<IDynamicElements>("some_item").ExecuteAsync();
 
-        // Assert
         Assert.False(result.IsSuccess);
         Assert.Equal(HttpStatusCode.InternalServerError, result.StatusCode);
         Assert.NotNull(result.Error);
@@ -309,7 +271,6 @@ public sealed class ApiErrorTests
     [Fact]
     public async Task ErrorResponse_HandlesMalformedJson()
     {
-        // Arrange - Invalid JSON in error response
         var mock = new MockHttpMessageHandler();
 
         mock.When($"{BaseUrl}/items/some_item")
@@ -317,21 +278,17 @@ public sealed class ApiErrorTests
 
         var client = CreateClient(mock);
 
-        // Act
         var result = await client.GetItem<IDynamicElements>("some_item").ExecuteAsync();
 
-        // Assert
         Assert.False(result.IsSuccess);
         Assert.Equal(HttpStatusCode.InternalServerError, result.StatusCode);
         Assert.NotNull(result.Error);
-        // Should still have an error message even if JSON parsing failed
         Assert.False(string.IsNullOrEmpty(result.Error.Message));
     }
 
     [Fact]
     public async Task ErrorResponse_ExceptionProperty_ContainsUnderlyingException()
     {
-        // Arrange - Any error response should populate the Exception property
         var mock = new MockHttpMessageHandler();
         var errorJson = BuildKontentErrorJson(
             message: "Test error for exception property",
@@ -343,14 +300,11 @@ public sealed class ApiErrorTests
 
         var client = CreateClient(mock);
 
-        // Act
         var result = await client.GetItem<IDynamicElements>("some_item").ExecuteAsync();
 
-        // Assert
         Assert.False(result.IsSuccess);
         Assert.NotNull(result.Error);
         Assert.NotNull(result.Error.Exception);
-        // The exception should be accessible for debugging - it contains status code info
         Assert.Contains("404", result.Error.Exception.Message);
     }
 
@@ -361,7 +315,6 @@ public sealed class ApiErrorTests
     [Fact]
     public async Task GetType_NotFound_ReturnsError()
     {
-        // Arrange
         var mock = new MockHttpMessageHandler();
         var errorJson = BuildKontentErrorJson(
             message: "The requested content type 'non_existent_type' was not found.",
@@ -373,10 +326,8 @@ public sealed class ApiErrorTests
 
         var client = CreateClient(mock);
 
-        // Act
         var result = await client.GetType("non_existent_type").ExecuteAsync();
 
-        // Assert
         Assert.False(result.IsSuccess);
         Assert.Equal(HttpStatusCode.NotFound, result.StatusCode);
         Assert.NotNull(result.Error);
@@ -385,7 +336,6 @@ public sealed class ApiErrorTests
     [Fact]
     public async Task GetTaxonomy_NotFound_ReturnsError()
     {
-        // Arrange
         var mock = new MockHttpMessageHandler();
         var errorJson = BuildKontentErrorJson(
             message: "The requested taxonomy group 'non_existent_taxonomy' was not found.",
@@ -397,10 +347,8 @@ public sealed class ApiErrorTests
 
         var client = CreateClient(mock);
 
-        // Act
         var result = await client.GetTaxonomy("non_existent_taxonomy").ExecuteAsync();
 
-        // Assert
         Assert.False(result.IsSuccess);
         Assert.Equal(HttpStatusCode.NotFound, result.StatusCode);
         Assert.NotNull(result.Error);

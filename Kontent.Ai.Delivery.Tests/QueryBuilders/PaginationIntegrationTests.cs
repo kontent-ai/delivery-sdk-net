@@ -43,7 +43,7 @@ public sealed class PaginationIntegrationTests
             .WithQueryString("limit", "1")
             .Respond("application/json", BuildItemsListingJson(skip: 0, limit: 1, totalCount: 5, codenames: [allCodenames[0]], hasNextPage: true));
 
-        for (int i = 1; i < 5; i++)
+        for (var i = 1; i < 5; i++)
         {
             mockForPaged.Expect(itemsUrl)
                 .WithQueryString("skip", i.ToString())
@@ -78,11 +78,11 @@ public sealed class PaginationIntegrationTests
         // Assert: Both approaches produce identical results
         Assert.Equal(allItems.Count, pagedItems.Count);
         Assert.Equal(
-            allItems.Select(i => i.System.Codename).ToArray(),
-            pagedItems.Select(i => i.System.Codename).ToArray());
+            [..allItems.Select(i => i.System.Codename)],
+            [.. pagedItems.Select(i => i.System.Codename)]);
 
         // Verify elements were deserialized correctly
-        for (int i = 0; i < allItems.Count; i++)
+        for (var i = 0; i < allItems.Count; i++)
         {
             Assert.Equal(allItems[i].Elements.Title, pagedItems[i].Elements.Title);
         }
@@ -103,7 +103,7 @@ public sealed class PaginationIntegrationTests
             .WithQueryString("limit", "1")
             .Respond("application/json", BuildItemsListingJson(skip: 0, limit: 1, totalCount: 4, codenames: [allCodenames[0]], hasNextPage: true));
 
-        for (int i = 1; i < 4; i++)
+        for (var i = 1; i < 4; i++)
         {
             mockHttp.Expect(itemsUrl)
                 .WithQueryString("skip", i.ToString())
@@ -363,7 +363,7 @@ public sealed class PaginationIntegrationTests
             .Respond("application/json", BuildItemsListingJson(skip: 0, limit: pageSize, totalCount: totalItems, codenames: allCodenames[..pageSize], hasNextPage: true));
 
         // Subsequent pages
-        for (int page = 1; page < totalItems / pageSize; page++)
+        for (var page = 1; page < totalItems / pageSize; page++)
         {
             var skip = page * pageSize;
             var pageCodenames = allCodenames.Skip(skip).Take(pageSize).ToArray();
@@ -383,7 +383,7 @@ public sealed class PaginationIntegrationTests
         items.AddRange(firstPage.Value.Items);
 
         var currentPage = firstPage.Value;
-        int pageCount = 1;
+        var pageCount = 1;
 
         while (currentPage.HasNextPage)
         {
@@ -416,7 +416,7 @@ public sealed class PaginationIntegrationTests
         mockHttp.Expect(feedUrl).Respond(req => CreateFeedResponse(allCodenames[..itemsPerPage], "token_1"));
 
         // Subsequent pages
-        for (int page = 1; page < totalItems / itemsPerPage; page++)
+        for (var page = 1; page < totalItems / itemsPerPage; page++)
         {
             var pageCodenames = allCodenames.Skip(page * itemsPerPage).Take(itemsPerPage).ToArray();
             var token = page < (totalItems / itemsPerPage) - 1 ? $"token_{page + 1}" : null;
@@ -431,7 +431,7 @@ public sealed class PaginationIntegrationTests
         items.AddRange(firstPage.Value.Items);
 
         var currentPage = firstPage.Value;
-        int pageCount = 1;
+        var pageCount = 1;
 
         while (currentPage.HasNextPage)
         {
@@ -528,7 +528,7 @@ public sealed class PaginationIntegrationTests
             .WithQueryString("limit", "1")
             .Respond("application/json", BuildTypesListingJson(skip: 0, limit: 1, totalCount: 3, codenames: [allCodenames[0]], hasNextPage: true));
 
-        for (int i = 1; i < 3; i++)
+        for (var i = 1; i < 3; i++)
         {
             mockHttp.Expect(typesUrl)
                 .WithQueryString("skip", i.ToString())
@@ -575,7 +575,7 @@ public sealed class PaginationIntegrationTests
             .WithQueryString("limit", "1")
             .Respond("application/json", BuildTaxonomiesListingJson(skip: 0, limit: 1, totalCount: 3, codenames: [allCodenames[0]], hasNextPage: true));
 
-        for (int i = 1; i < 3; i++)
+        for (var i = 1; i < 3; i++)
         {
             mockHttp.Expect(taxonomiesUrl)
                 .WithQueryString("skip", i.ToString())
@@ -622,7 +622,7 @@ public sealed class PaginationIntegrationTests
             .WithQueryString("limit", "1")
             .Respond("application/json", BuildLanguagesListingJson(skip: 0, limit: 1, totalCount: 3, codenames: [allCodenames[0]], hasNextPage: true));
 
-        for (int i = 1; i < 3; i++)
+        for (var i = 1; i < 3; i++)
         {
             mockHttp.Expect(languagesUrl)
                 .WithQueryString("skip", i.ToString())

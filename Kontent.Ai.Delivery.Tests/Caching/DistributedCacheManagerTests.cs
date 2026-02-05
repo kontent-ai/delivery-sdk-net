@@ -26,56 +26,45 @@ public class DistributedCacheManagerTests
     [Fact]
     public async Task GetAsync_NonExistentKey_ReturnsNull()
     {
-        // Act
         var result = await _cacheManager.GetAsync<TestCacheValue>("non_existent_key");
 
-        // Assert
         Assert.Null(result);
     }
 
     [Fact]
     public async Task GetAsync_NullKey_ReturnsNull()
     {
-        // Act
         var result = await _cacheManager.GetAsync<TestCacheValue>(null!);
 
-        // Assert
         Assert.Null(result);
     }
 
     [Fact]
     public async Task GetAsync_EmptyKey_ReturnsNull()
     {
-        // Act
         var result = await _cacheManager.GetAsync<TestCacheValue>("");
 
-        // Assert
         Assert.Null(result);
     }
 
     [Fact]
     public async Task GetAsync_WhitespaceKey_ReturnsNull()
     {
-        // Act
         var result = await _cacheManager.GetAsync<TestCacheValue>("   ");
 
-        // Assert
         Assert.Null(result);
     }
 
     [Fact]
     public async Task SetAsync_ThenGetAsync_ReturnsValue()
     {
-        // Arrange
         var key = "test_key";
         var value = new TestCacheValue { Id = 1, Name = "Test" };
         var dependencies = new[] { "dep1" };
 
-        // Act
         await _cacheManager.SetAsync(key, value, dependencies);
         var result = await _cacheManager.GetAsync<TestCacheValue>(key);
 
-        // Assert
         Assert.NotNull(result);
         Assert.Equal(value.Id, result.Id);
         Assert.Equal(value.Name, result.Name);
@@ -84,11 +73,9 @@ public class DistributedCacheManagerTests
     [Fact]
     public async Task SetAsync_NullKey_ThrowsArgumentNullException()
     {
-        // Arrange
         var value = new TestCacheValue { Id = 1, Name = "Test" };
         var dependencies = Array.Empty<string>();
 
-        // Act & Assert
         await Assert.ThrowsAsync<ArgumentNullException>(() =>
             _cacheManager.SetAsync(null!, value, dependencies));
     }
@@ -96,11 +83,9 @@ public class DistributedCacheManagerTests
     [Fact]
     public async Task SetAsync_EmptyKey_ThrowsArgumentException()
     {
-        // Arrange
         var value = new TestCacheValue { Id = 1, Name = "Test" };
         var dependencies = Array.Empty<string>();
 
-        // Act & Assert
         await Assert.ThrowsAsync<ArgumentException>(() =>
             _cacheManager.SetAsync("", value, dependencies));
     }
@@ -108,11 +93,9 @@ public class DistributedCacheManagerTests
     [Fact]
     public async Task SetAsync_WhitespaceKey_ThrowsArgumentException()
     {
-        // Arrange
         var value = new TestCacheValue { Id = 1, Name = "Test" };
         var dependencies = Array.Empty<string>();
 
-        // Act & Assert
         await Assert.ThrowsAsync<ArgumentException>(() =>
             _cacheManager.SetAsync("   ", value, dependencies));
     }
@@ -120,10 +103,8 @@ public class DistributedCacheManagerTests
     [Fact]
     public async Task SetAsync_NullValue_ThrowsArgumentNullException()
     {
-        // Arrange
         var dependencies = Array.Empty<string>();
 
-        // Act & Assert
         await Assert.ThrowsAsync<ArgumentNullException>(() =>
             _cacheManager.SetAsync<TestCacheValue>("key", null!, dependencies));
     }
@@ -131,10 +112,8 @@ public class DistributedCacheManagerTests
     [Fact]
     public async Task SetAsync_NullDependencies_ThrowsArgumentNullException()
     {
-        // Arrange
         var value = new TestCacheValue { Id = 1, Name = "Test" };
 
-        // Act & Assert
         await Assert.ThrowsAsync<ArgumentNullException>(() =>
             _cacheManager.SetAsync("key", value, null!));
     }
@@ -142,34 +121,28 @@ public class DistributedCacheManagerTests
     [Fact]
     public async Task SetAsync_EmptyDependencies_DoesNotThrow()
     {
-        // Arrange
         var key = "test_key";
         var value = new TestCacheValue { Id = 1, Name = "Test" };
         var dependencies = Array.Empty<string>();
 
-        // Act
         await _cacheManager.SetAsync(key, value, dependencies);
         var result = await _cacheManager.GetAsync<TestCacheValue>(key);
 
-        // Assert
         Assert.NotNull(result);
     }
 
     [Fact]
     public async Task SetAsync_OverwritesExistingKey()
     {
-        // Arrange
         var key = "test_key";
         var value1 = new TestCacheValue { Id = 1, Name = "First" };
         var value2 = new TestCacheValue { Id = 2, Name = "Second" };
         var dependencies = Array.Empty<string>();
 
-        // Act
         await _cacheManager.SetAsync(key, value1, dependencies);
         await _cacheManager.SetAsync(key, value2, dependencies);
         var result = await _cacheManager.GetAsync<TestCacheValue>(key);
 
-        // Assert
         Assert.NotNull(result);
         Assert.Equal(value2.Id, result.Id);
         Assert.Equal(value2.Name, result.Name);
@@ -182,33 +155,27 @@ public class DistributedCacheManagerTests
     [Fact]
     public void Constructor_WithDefaultExpiration_AcceptsValue()
     {
-        // Arrange & Act
         var expiration = TimeSpan.FromMinutes(30);
         var manager = new DistributedCacheManager(_mockCache, defaultExpiration: expiration);
 
-        // Assert - no exception thrown, manager is created
         Assert.NotNull(manager);
     }
 
     [Fact]
     public void Constructor_WithNullExpiration_UsesDefaultOneHour()
     {
-        // Arrange & Act
         var manager = new DistributedCacheManager(_mockCache, defaultExpiration: null);
 
-        // Assert - no exception thrown, manager is created with default expiration
         Assert.NotNull(manager);
     }
 
     [Fact]
     public async Task SetAsync_WithCustomExpiration_DoesNotThrow()
     {
-        // Arrange
         var key = "test_key";
         var value = new TestCacheValue { Id = 1, Name = "Test" };
         var customExpiration = TimeSpan.FromMinutes(15);
 
-        // Act & Assert - should not throw
         await _cacheManager.SetAsync(key, value, [], customExpiration);
 
         var result = await _cacheManager.GetAsync<TestCacheValue>(key);
@@ -218,7 +185,6 @@ public class DistributedCacheManagerTests
     [Fact]
     public async Task SetAsync_ExpirationPassedToCacheEntry()
     {
-        // Arrange
         var trackingCache = new ExpirationTrackingMockCache();
         var manager = new DistributedCacheManager(trackingCache, defaultExpiration: TimeSpan.FromHours(2));
 
@@ -226,17 +192,14 @@ public class DistributedCacheManagerTests
         var value = new TestCacheValue { Id = 1, Name = "Test" };
         var customExpiration = TimeSpan.FromMinutes(30);
 
-        // Act
         await manager.SetAsync(key, value, [], customExpiration);
 
-        // Assert - verify custom expiration was passed
         Assert.True(trackingCache.LastExpirationOptions?.AbsoluteExpirationRelativeToNow == customExpiration);
     }
 
     [Fact]
     public async Task SetAsync_WithoutCustomExpiration_UsesDefaultExpiration()
     {
-        // Arrange
         var defaultExpiration = TimeSpan.FromHours(2);
         var trackingCache = new ExpirationTrackingMockCache();
         var manager = new DistributedCacheManager(trackingCache, defaultExpiration: defaultExpiration);
@@ -244,10 +207,8 @@ public class DistributedCacheManagerTests
         var key = "test_key";
         var value = new TestCacheValue { Id = 1, Name = "Test" };
 
-        // Act
-        await manager.SetAsync(key, value, []); // No custom expiration
+        await manager.SetAsync(key, value, []);
 
-        // Assert - verify default expiration was used
         Assert.True(trackingCache.LastExpirationOptions?.AbsoluteExpirationRelativeToNow == defaultExpiration);
     }
 
@@ -258,15 +219,12 @@ public class DistributedCacheManagerTests
     [Fact]
     public async Task SetAsync_SimpleObject_SerializesCorrectly()
     {
-        // Arrange
         var key = "test_key";
         var value = new TestCacheValue { Id = 42, Name = "Test Value" };
 
-        // Act
         await _cacheManager.SetAsync(key, value, []);
         var result = await _cacheManager.GetAsync<TestCacheValue>(key);
 
-        // Assert
         Assert.NotNull(result);
         Assert.Equal(value.Id, result.Id);
         Assert.Equal(value.Name, result.Name);
@@ -275,7 +233,6 @@ public class DistributedCacheManagerTests
     [Fact]
     public async Task SetAsync_ComplexObject_SerializesCorrectly()
     {
-        // Arrange
         var key = "complex_key";
         var value = new ComplexCacheValue
         {
@@ -289,11 +246,9 @@ public class DistributedCacheManagerTests
             Items = [1, 2, 3, 4, 5]
         };
 
-        // Act
         await _cacheManager.SetAsync(key, value, []);
         var result = await _cacheManager.GetAsync<ComplexCacheValue>(key);
 
-        // Assert
         Assert.NotNull(result);
         Assert.Equal(value.Id, result.Id);
         Assert.Equal(value.Name, result.Name);
@@ -306,15 +261,12 @@ public class DistributedCacheManagerTests
     [Fact]
     public async Task SetAsync_ObjectWithNullProperties_SerializesCorrectly()
     {
-        // Arrange
         var key = "null_props_key";
         var value = new TestCacheValue { Id = 1, Name = null };
 
-        // Act
         await _cacheManager.SetAsync(key, value, []);
         var result = await _cacheManager.GetAsync<TestCacheValue>(key);
 
-        // Assert
         Assert.NotNull(result);
         Assert.Equal(value.Id, result.Id);
         Assert.Null(result.Name);
@@ -323,34 +275,28 @@ public class DistributedCacheManagerTests
     [Fact]
     public async Task SetAsync_ObjectWithCircularReference_HandlesWithReferenceHandler()
     {
-        // Arrange
         var key = "circular_key";
         var value = new CircularReferenceValue { Id = 1, Name = "Parent" };
-        value.Self = value; // Circular reference
+        value.Self = value;
 
-        // Act
         await _cacheManager.SetAsync(key, value, []);
         var result = await _cacheManager.GetAsync<CircularReferenceValue>(key);
 
-        // Assert
         Assert.NotNull(result);
         Assert.Equal(value.Id, result.Id);
         Assert.Equal(value.Name, result.Name);
         Assert.NotNull(result.Self);
-        Assert.Same(result, result.Self); // Verify circular reference is preserved
+        Assert.Same(result, result.Self);
     }
 
     [Fact]
     public async Task GetAsync_CorruptedData_ReturnsNull()
     {
-        // Arrange
         var key = "corrupted_key";
         _mockCache.Set("cache:" + key, Encoding.UTF8.GetBytes("invalid json {{{"), new DistributedCacheEntryOptions());
 
-        // Act
         var result = await _cacheManager.GetAsync<TestCacheValue>(key);
 
-        // Assert
         Assert.Null(result);
     }
 
@@ -361,19 +307,15 @@ public class DistributedCacheManagerTests
     [Fact]
     public async Task SetAsync_WithDependencies_CreatesReverseIndex()
     {
-        // Arrange
         var key = "test_key";
         var value = new TestCacheValue { Id = 1, Name = "Test" };
         var dependencies = new[] { "dep1", "dep2" };
 
-        // Act
         await _cacheManager.SetAsync(key, value, dependencies);
 
-        // Verify reverse index entries were created
         var dep1Index = _mockCache.Get("dep:dep1");
         var dep2Index = _mockCache.Get("dep:dep2");
 
-        // Assert
         Assert.NotNull(dep1Index);
         Assert.NotNull(dep2Index);
     }
@@ -381,48 +323,39 @@ public class DistributedCacheManagerTests
     [Fact]
     public async Task SetAsync_WithNullDependency_IgnoresNull()
     {
-        // Arrange
         var key = "test_key";
         var value = new TestCacheValue { Id = 1, Name = "Test" };
         var dependencies = new[] { "dep1", null!, "dep2" };
 
-        // Act
         await _cacheManager.SetAsync(key, value, dependencies);
         var result = await _cacheManager.GetAsync<TestCacheValue>(key);
 
-        // Assert
         Assert.NotNull(result);
     }
 
     [Fact]
     public async Task SetAsync_WithEmptyDependency_IgnoresEmpty()
     {
-        // Arrange
         var key = "test_key";
         var value = new TestCacheValue { Id = 1, Name = "Test" };
         var dependencies = new[] { "dep1", "", "dep2" };
 
-        // Act
         await _cacheManager.SetAsync(key, value, dependencies);
         var result = await _cacheManager.GetAsync<TestCacheValue>(key);
 
-        // Assert
         Assert.NotNull(result);
     }
 
     [Fact]
     public async Task SetAsync_WithWhitespaceDependency_IgnoresWhitespace()
     {
-        // Arrange
         var key = "test_key";
         var value = new TestCacheValue { Id = 1, Name = "Test" };
         var dependencies = new[] { "dep1", "   ", "dep2" };
 
-        // Act
         await _cacheManager.SetAsync(key, value, dependencies);
         var result = await _cacheManager.GetAsync<TestCacheValue>(key);
 
-        // Assert
         Assert.NotNull(result);
     }
 
@@ -433,7 +366,6 @@ public class DistributedCacheManagerTests
     [Fact]
     public async Task InvalidateAsync_RemovesCacheEntry()
     {
-        // Arrange
         var key = "test_key";
         var value = new TestCacheValue { Id = 1, Name = "Test" };
         var dependency = "dep1";
@@ -441,39 +373,33 @@ public class DistributedCacheManagerTests
 
         await _cacheManager.SetAsync(key, value, dependencies);
 
-        // Act
         await _cacheManager.InvalidateAsync(default, dependency);
         var result = await _cacheManager.GetAsync<TestCacheValue>(key);
 
-        // Assert
         Assert.Null(result);
     }
 
     [Fact]
     public async Task InvalidateAsync_NonExistentDependency_DoesNotThrow()
     {
-        // Act & Assert
         await _cacheManager.InvalidateAsync(default, "non_existent_dep");
     }
 
     [Fact]
     public async Task InvalidateAsync_NullDependencies_DoesNotThrow()
     {
-        // Act & Assert
         await _cacheManager.InvalidateAsync(default, null!);
     }
 
     [Fact]
     public async Task InvalidateAsync_EmptyDependencies_DoesNotThrow()
     {
-        // Act & Assert
         await _cacheManager.InvalidateAsync(default, []);
     }
 
     [Fact]
     public async Task InvalidateAsync_MultipleDependencies_RemovesAllAffected()
     {
-        // Arrange
         var key1 = "key1";
         var key2 = "key2";
         var key3 = "key3";
@@ -483,23 +409,20 @@ public class DistributedCacheManagerTests
         await _cacheManager.SetAsync(key2, value, ["dep2"]);
         await _cacheManager.SetAsync(key3, value, ["dep3"]);
 
-        // Act
         await _cacheManager.InvalidateAsync(default, "dep1", "dep2");
 
         var result1 = await _cacheManager.GetAsync<TestCacheValue>(key1);
         var result2 = await _cacheManager.GetAsync<TestCacheValue>(key2);
         var result3 = await _cacheManager.GetAsync<TestCacheValue>(key3);
 
-        // Assert
         Assert.Null(result1);
         Assert.Null(result2);
-        Assert.NotNull(result3); // key3 should still exist
+        Assert.NotNull(result3);
     }
 
     [Fact]
     public async Task InvalidateAsync_SharedDependency_RemovesAllEntriesWithThatDependency()
     {
-        // Arrange
         var key1 = "key1";
         var key2 = "key2";
         var key3 = "key3";
@@ -510,57 +433,48 @@ public class DistributedCacheManagerTests
         await _cacheManager.SetAsync(key2, value, [sharedDependency]);
         await _cacheManager.SetAsync(key3, value, ["other_dep"]);
 
-        // Act
         await _cacheManager.InvalidateAsync(default, sharedDependency);
 
         var result1 = await _cacheManager.GetAsync<TestCacheValue>(key1);
         var result2 = await _cacheManager.GetAsync<TestCacheValue>(key2);
         var result3 = await _cacheManager.GetAsync<TestCacheValue>(key3);
 
-        // Assert
         Assert.Null(result1);
         Assert.Null(result2);
-        Assert.NotNull(result3); // key3 should still exist
+        Assert.NotNull(result3);
     }
 
     [Fact]
     public async Task InvalidateAsync_RemovesReverseIndex()
     {
-        // Arrange
         var key = "test_key";
         var value = new TestCacheValue { Id = 1, Name = "Test" };
         var dependency = "dep1";
 
         await _cacheManager.SetAsync(key, value, [dependency]);
 
-        // Act
         await _cacheManager.InvalidateAsync(default, dependency);
 
-        // Verify reverse index is removed
         var indexEntry = _mockCache.Get("dep:dep1");
 
-        // Assert
         Assert.Null(indexEntry);
     }
 
     [Fact]
     public async Task InvalidateAsync_IdempotentOperation_CanBeCalledMultipleTimes()
     {
-        // Arrange
         var key = "test_key";
         var value = new TestCacheValue { Id = 1, Name = "Test" };
         var dependency = "dep1";
 
         await _cacheManager.SetAsync(key, value, [dependency]);
 
-        // Act - invalidate multiple times
         await _cacheManager.InvalidateAsync(default, dependency);
         await _cacheManager.InvalidateAsync(default, dependency);
         await _cacheManager.InvalidateAsync(default, dependency);
 
         var result = await _cacheManager.GetAsync<TestCacheValue>(key);
 
-        // Assert
         Assert.Null(result);
     }
 
@@ -571,26 +485,22 @@ public class DistributedCacheManagerTests
     [Fact]
     public async Task ConcurrentGet_DoesNotThrow()
     {
-        // Arrange
         var key = "test_key";
         var value = new TestCacheValue { Id = 1, Name = "Test" };
         await _cacheManager.SetAsync(key, value, []);
 
-        // Act - concurrent reads
         var tasks = Enumerable.Range(0, 100)
             .Select(_ => _cacheManager.GetAsync<TestCacheValue>(key))
             .ToList();
 
         var results = await Task.WhenAll(tasks);
 
-        // Assert
         Assert.All(results, Assert.NotNull);
     }
 
     [Fact]
     public async Task ConcurrentSet_WithSameDependency_EventuallyConsistent()
     {
-        // Arrange
         var sharedDependency = "shared_dep";
         var tasks = Enumerable.Range(0, 50)
             .Select(i => _cacheManager.SetAsync(
@@ -599,37 +509,31 @@ public class DistributedCacheManagerTests
                 [sharedDependency]))
             .ToList();
 
-        // Act
         await Task.WhenAll(tasks);
 
         // Note: Due to race conditions in reverse index, not all entries may be tracked
         // This is acceptable as documented - eventual consistency
 
-        // Invalidate and verify
         await _cacheManager.InvalidateAsync(default, sharedDependency);
 
-        // At least some entries should be invalidated
         var verifyTasks = Enumerable.Range(0, 50)
             .Select(i => _cacheManager.GetAsync<TestCacheValue>($"key_{i}"))
             .ToList();
 
         var results = await Task.WhenAll(verifyTasks);
 
-        // Assert - most entries should be null (eventual consistency may allow some to survive)
-        var nullCount = results.Count(r => r == null);
+        var nullCount = results.Count(r => r is null);
         Assert.True(nullCount >= 25, $"Expected at least 25 entries to be invalidated, but only {nullCount} were invalidated");
     }
 
     [Fact]
     public async Task ConcurrentInvalidate_SameDependency_DoesNotThrow()
     {
-        // Arrange
         var dependency = "dep1";
         var key = "test_key";
         var value = new TestCacheValue { Id = 1, Name = "Test" };
         await _cacheManager.SetAsync(key, value, [dependency]);
 
-        // Act - concurrent invalidation
         var tasks = Enumerable.Range(0, 50)
             .Select(_ => _cacheManager.InvalidateAsync(default, dependency))
             .ToList();
@@ -638,7 +542,6 @@ public class DistributedCacheManagerTests
 
         var result = await _cacheManager.GetAsync<TestCacheValue>(key);
 
-        // Assert
         Assert.Null(result);
     }
 
@@ -649,11 +552,9 @@ public class DistributedCacheManagerTests
     [Fact]
     public async Task GetAsync_WithCancelledToken_ThrowsOperationCanceledException()
     {
-        // Arrange
         var cts = new CancellationTokenSource();
         cts.Cancel();
 
-        // Act & Assert
         await Assert.ThrowsAsync<OperationCanceledException>(() =>
             _cacheManager.GetAsync<TestCacheValue>("key", cts.Token));
     }
@@ -661,12 +562,10 @@ public class DistributedCacheManagerTests
     [Fact]
     public async Task SetAsync_WithCancelledToken_ThrowsOperationCanceledException()
     {
-        // Arrange
         var value = new TestCacheValue { Id = 1, Name = "Test" };
         var cts = new CancellationTokenSource();
         cts.Cancel();
 
-        // Act & Assert
         await Assert.ThrowsAsync<OperationCanceledException>(() =>
             _cacheManager.SetAsync("key", value, [], cancellationToken: cts.Token));
     }
@@ -678,35 +577,27 @@ public class DistributedCacheManagerTests
     [Fact]
     public async Task SetAsync_UsesCachePrefix()
     {
-        // Arrange
         var key = "test_key";
         var value = new TestCacheValue { Id = 1, Name = "Test" };
 
-        // Act
         await _cacheManager.SetAsync(key, value, []);
 
-        // Verify the cache uses "cache:" prefix
         var cacheEntry = _mockCache.Get("cache:" + key);
 
-        // Assert
         Assert.NotNull(cacheEntry);
     }
 
     [Fact]
     public async Task SetAsync_DependenciesUseDependencyPrefix()
     {
-        // Arrange
         var key = "test_key";
         var value = new TestCacheValue { Id = 1, Name = "Test" };
         var dependency = "dep1";
 
-        // Act
         await _cacheManager.SetAsync(key, value, [dependency]);
 
-        // Verify the dependency uses "dep:" prefix
         var depEntry = _mockCache.Get("dep:" + dependency);
 
-        // Assert
         Assert.NotNull(depEntry);
     }
 
@@ -717,55 +608,45 @@ public class DistributedCacheManagerTests
     [Fact]
     public async Task SetAsync_VeryLongKey_Succeeds()
     {
-        // Arrange
         var key = new string('a', 1000);
         var value = new TestCacheValue { Id = 1, Name = "Test" };
 
-        // Act
         await _cacheManager.SetAsync(key, value, []);
         var result = await _cacheManager.GetAsync<TestCacheValue>(key);
 
-        // Assert
         Assert.NotNull(result);
     }
 
     [Fact]
     public async Task SetAsync_VeryLongDependency_Succeeds()
     {
-        // Arrange
         var key = "test_key";
         var value = new TestCacheValue { Id = 1, Name = "Test" };
         var dependency = new string('b', 1000);
 
-        // Act
         await _cacheManager.SetAsync(key, value, [dependency]);
         await _cacheManager.InvalidateAsync(default, dependency);
         var result = await _cacheManager.GetAsync<TestCacheValue>(key);
 
-        // Assert
         Assert.Null(result);
     }
 
     [Fact]
     public async Task SetAsync_ManyDependencies_Succeeds()
     {
-        // Arrange
         var key = "test_key";
         var value = new TestCacheValue { Id = 1, Name = "Test" };
         var dependencies = Enumerable.Range(0, 100).Select(i => $"dep_{i}").ToArray();
 
-        // Act
         await _cacheManager.SetAsync(key, value, dependencies);
         var result = await _cacheManager.GetAsync<TestCacheValue>(key);
 
-        // Assert
         Assert.NotNull(result);
     }
 
     [Fact]
     public async Task InvalidateAsync_ManyDependencies_Succeeds()
     {
-        // Arrange
         var keys = Enumerable.Range(0, 50).Select(i => $"key_{i}").ToArray();
         var value = new TestCacheValue { Id = 1, Name = "Test" };
 
@@ -776,59 +657,49 @@ public class DistributedCacheManagerTests
 
         var dependenciesToInvalidate = keys.Select(k => $"dep_{k}").ToArray();
 
-        // Act
         await _cacheManager.InvalidateAsync(default, dependenciesToInvalidate);
 
-        // Verify all are invalidated
         var results = new List<TestCacheValue?>();
         foreach (var key in keys)
         {
             results.Add(await _cacheManager.GetAsync<TestCacheValue>(key));
         }
 
-        // Assert
         Assert.All(results, Assert.Null);
     }
 
     [Fact]
     public async Task GetAsync_TypeMismatch_ReturnsObjectWithDefaultValues()
     {
-        // Arrange
         var key = "test_key";
         var value = new TestCacheValue { Id = 1, Name = "Test" };
         await _cacheManager.SetAsync(key, value, []);
 
-        // Act - try to get as different type
         var result = await _cacheManager.GetAsync<OtherTestValue>(key);
 
-        // Assert
         // System.Text.Json is permissive and will deserialize to OtherTestValue with default values
         // This is expected behavior - the JSON contains {Id:1, Name:"Test"} but OtherTestValue only has Data property
         Assert.NotNull(result);
-        Assert.Null(result.Data); // Data property gets default value (null)
+        Assert.Null(result.Data);
     }
 
     [Fact]
     public async Task InvalidateAsync_CorruptedReverseIndex_HandlesGracefully()
     {
-        // Arrange
         var dependency = "dep1";
         _mockCache.Set("dep:" + dependency, Encoding.UTF8.GetBytes("invalid json"), new DistributedCacheEntryOptions());
 
-        // Act & Assert - should not throw
         await _cacheManager.InvalidateAsync(default, dependency);
     }
 
     [Fact]
     public async Task InvalidateAsync_EmptyReverseIndex_HandlesGracefully()
     {
-        // Arrange
         var dependency = "dep1";
         var emptySet = new HashSet<string>();
         var json = JsonSerializer.Serialize(emptySet);
         _mockCache.Set("dep:" + dependency, Encoding.UTF8.GetBytes(json), new DistributedCacheEntryOptions());
 
-        // Act & Assert - should not throw
         await _cacheManager.InvalidateAsync(default, dependency);
     }
 
@@ -839,7 +710,6 @@ public class DistributedCacheManagerTests
     [Fact]
     public async Task SetAsync_WithDifferentPrefixes_IsolatesCacheEntries()
     {
-        // Arrange - two managers sharing the same IDistributedCache with different prefixes
         var sharedCache = new MockDistributedCache();
         var manager1 = new DistributedCacheManager(sharedCache, keyPrefix: "client1");
         var manager2 = new DistributedCacheManager(sharedCache, keyPrefix: "client2");
@@ -848,14 +718,12 @@ public class DistributedCacheManagerTests
         var value1 = new TestCacheValue { Id = 1, Name = "Client1Value" };
         var value2 = new TestCacheValue { Id = 2, Name = "Client2Value" };
 
-        // Act - both managers set the same logical key
         await manager1.SetAsync(key, value1, []);
         await manager2.SetAsync(key, value2, []);
 
         var result1 = await manager1.GetAsync<TestCacheValue>(key);
         var result2 = await manager2.GetAsync<TestCacheValue>(key);
 
-        // Assert - each manager gets its own value
         Assert.NotNull(result1);
         Assert.NotNull(result2);
         Assert.Equal(1, result1.Id);
@@ -867,7 +735,6 @@ public class DistributedCacheManagerTests
     [Fact]
     public async Task InvalidateAsync_WithDifferentPrefixes_OnlyAffectsOwnEntries()
     {
-        // Arrange - two managers sharing the same IDistributedCache with different prefixes
         var sharedCache = new MockDistributedCache();
         var manager1 = new DistributedCacheManager(sharedCache, keyPrefix: "client1");
         var manager2 = new DistributedCacheManager(sharedCache, keyPrefix: "client2");
@@ -880,13 +747,11 @@ public class DistributedCacheManagerTests
         await manager1.SetAsync(key, value1, [dependency]);
         await manager2.SetAsync(key, value2, [dependency]);
 
-        // Act - invalidate only in manager1
         await manager1.InvalidateAsync(default, dependency);
 
         var result1 = await manager1.GetAsync<TestCacheValue>(key);
         var result2 = await manager2.GetAsync<TestCacheValue>(key);
 
-        // Assert - only manager1's entry is invalidated
         Assert.Null(result1);
         Assert.NotNull(result2);
         Assert.Equal(2, result2.Id);
@@ -895,7 +760,6 @@ public class DistributedCacheManagerTests
     [Fact]
     public async Task GetAsync_WithDifferentPrefixes_DoesNotCrossContaminate()
     {
-        // Arrange - two managers sharing the same IDistributedCache with different prefixes
         var sharedCache = new MockDistributedCache();
         var manager1 = new DistributedCacheManager(sharedCache, keyPrefix: "client1");
         var manager2 = new DistributedCacheManager(sharedCache, keyPrefix: "client2");
@@ -903,13 +767,11 @@ public class DistributedCacheManagerTests
         var key = "unique_key";
         var value = new TestCacheValue { Id = 1, Name = "OnlyInClient1" };
 
-        // Act - set only in manager1
         await manager1.SetAsync(key, value, []);
 
         var result1 = await manager1.GetAsync<TestCacheValue>(key);
         var result2 = await manager2.GetAsync<TestCacheValue>(key);
 
-        // Assert - manager2 should not see manager1's entry
         Assert.NotNull(result1);
         Assert.Null(result2);
     }
@@ -917,7 +779,6 @@ public class DistributedCacheManagerTests
     [Fact]
     public async Task SetAsync_WithNullPrefix_UsesUnprefixedKeys()
     {
-        // Arrange - manager without prefix
         var sharedCache = new MockDistributedCache();
         var managerNoPrefix = new DistributedCacheManager(sharedCache, keyPrefix: null);
         var managerWithPrefix = new DistributedCacheManager(sharedCache, keyPrefix: "prefixed");
@@ -926,14 +787,12 @@ public class DistributedCacheManagerTests
         var value1 = new TestCacheValue { Id = 1, Name = "NoPrefix" };
         var value2 = new TestCacheValue { Id = 2, Name = "WithPrefix" };
 
-        // Act
         await managerNoPrefix.SetAsync(key, value1, []);
         await managerWithPrefix.SetAsync(key, value2, []);
 
         var result1 = await managerNoPrefix.GetAsync<TestCacheValue>(key);
         var result2 = await managerWithPrefix.GetAsync<TestCacheValue>(key);
 
-        // Assert - both should have separate entries
         Assert.NotNull(result1);
         Assert.NotNull(result2);
         Assert.Equal(1, result1.Id);
@@ -943,7 +802,6 @@ public class DistributedCacheManagerTests
     [Fact]
     public async Task InvalidateAsync_WithSharedDependencyName_OnlyInvalidatesOwnPrefix()
     {
-        // Arrange - entries with same key/dep in different prefixes
         var sharedCache = new MockDistributedCache();
         var manager1 = new DistributedCacheManager(sharedCache, keyPrefix: "prod");
         var manager2 = new DistributedCacheManager(sharedCache, keyPrefix: "preview");
@@ -955,10 +813,8 @@ public class DistributedCacheManagerTests
         await manager2.SetAsync("item1", new TestCacheValue { Id = 10 }, [dependency]);
         await manager2.SetAsync("item2", new TestCacheValue { Id = 20 }, [dependency]);
 
-        // Act - invalidate dependency only in production manager
         await manager1.InvalidateAsync(default, dependency);
 
-        // Assert - only production entries are invalidated
         Assert.Null(await manager1.GetAsync<TestCacheValue>("item1"));
         Assert.Null(await manager1.GetAsync<TestCacheValue>("item2"));
         Assert.NotNull(await manager2.GetAsync<TestCacheValue>("item1"));
@@ -968,14 +824,12 @@ public class DistributedCacheManagerTests
     [Fact]
     public async Task ConcurrentOperations_WithDifferentPrefixes_MaintainsIsolation()
     {
-        // Arrange
         var sharedCache = new MockDistributedCache();
         var manager1 = new DistributedCacheManager(sharedCache, keyPrefix: "client1");
         var manager2 = new DistributedCacheManager(sharedCache, keyPrefix: "client2");
 
         var dependency = "shared_dep_name";
 
-        // Act - concurrent sets from both managers
         var tasks1 = Enumerable.Range(0, 25)
             .Select(i => manager1.SetAsync($"key_{i}", new TestCacheValue { Id = i }, [dependency]));
         var tasks2 = Enumerable.Range(0, 25)
@@ -983,10 +837,8 @@ public class DistributedCacheManagerTests
 
         await Task.WhenAll(tasks1.Concat(tasks2));
 
-        // Invalidate only manager1's entries
         await manager1.InvalidateAsync(default, dependency);
 
-        // Assert - manager1 entries invalidated, manager2 entries intact
         var verify1 = await Task.WhenAll(Enumerable.Range(0, 25)
             .Select(i => manager1.GetAsync<TestCacheValue>($"key_{i}")));
         var verify2 = await Task.WhenAll(Enumerable.Range(0, 25)
@@ -999,14 +851,11 @@ public class DistributedCacheManagerTests
     [Fact]
     public async Task Constructor_WithKeyPrefix_StoresPrefix()
     {
-        // Arrange & Act
         var cache = new MockDistributedCache();
         var manager = new DistributedCacheManager(cache, keyPrefix: "my-prefix");
 
-        // Assert - verify prefix is used by checking cache keys
         await manager.SetAsync("test", new TestCacheValue { Id = 1 }, []);
 
-        // The key should include the prefix: "my-prefix:cache:test"
         var keys = cache.GetAllKeys();
         Assert.Contains(keys, k => k.StartsWith("my-prefix:"));
     }

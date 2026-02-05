@@ -8,7 +8,6 @@ namespace Kontent.Ai.Delivery.Abstractions;
 /// <typeparam name="TBuilder">Parent builder type to return to for fluent chaining.</typeparam>
 public interface IItemFieldFilter<out TBuilder>
 {
-    // Equality
     TBuilder IsEqualTo(string value);
     TBuilder IsEqualTo(double value);
     TBuilder IsEqualTo(DateTime value);
@@ -19,7 +18,6 @@ public interface IItemFieldFilter<out TBuilder>
     TBuilder IsNotEqualTo(DateTime value);
     TBuilder IsNotEqualTo(bool value);
 
-    // Comparison
     TBuilder IsLessThan(double value);
     TBuilder IsLessThan(DateTime value);
     TBuilder IsLessThan(string value);
@@ -41,7 +39,6 @@ public interface IItemFieldFilter<out TBuilder>
     TBuilder IsWithinRange(DateTime lower, DateTime upper);
     TBuilder IsWithinRange(string lower, string upper);
 
-    // Collections
     TBuilder IsIn(params string[] values);
     TBuilder IsIn(params double[] values);
     TBuilder IsIn(params DateTime[] values);
@@ -50,12 +47,10 @@ public interface IItemFieldFilter<out TBuilder>
     TBuilder IsNotIn(params double[] values);
     TBuilder IsNotIn(params DateTime[] values);
 
-    // Text / array operators
     TBuilder Contains(string value);
     TBuilder ContainsAny(params string[] values);
     TBuilder ContainsAll(params string[] values);
 
-    // Empty checks
     TBuilder IsEmpty();
     TBuilder IsNotEmpty();
 }

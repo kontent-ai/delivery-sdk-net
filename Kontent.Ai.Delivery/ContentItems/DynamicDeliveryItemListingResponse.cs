@@ -20,7 +20,6 @@ internal sealed record DynamicDeliveryItemListingResponse : IDeliveryItemListing
     /// </summary>
     internal Func<CancellationToken, Task<IDeliveryResult<IDeliveryItemListingResponse>>>? NextPageFetcher { get; init; }
 
-    // Expose pagination to the interface
     IPagination IPageable.Pagination => Pagination;
 
     /// <inheritdoc />
@@ -29,9 +28,6 @@ internal sealed record DynamicDeliveryItemListingResponse : IDeliveryItemListing
     /// <inheritdoc />
     public async Task<IDeliveryResult<IDeliveryItemListingResponse>?> FetchNextPageAsync(CancellationToken cancellationToken = default)
     {
-        if (!HasNextPage || NextPageFetcher == null)
-            return null;
-
-        return await NextPageFetcher(cancellationToken).ConfigureAwait(false);
+        return !HasNextPage || NextPageFetcher is null ? null : await NextPageFetcher(cancellationToken).ConfigureAwait(false);
     }
 }
