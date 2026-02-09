@@ -78,7 +78,7 @@ public sealed class PaginationIntegrationTests
         // Assert: Both approaches produce identical results
         Assert.Equal(allItems.Count, pagedItems.Count);
         Assert.Equal(
-            [..allItems.Select(i => i.System.Codename)],
+            [.. allItems.Select(i => i.System.Codename)],
             [.. pagedItems.Select(i => i.System.Codename)]);
 
         // Verify elements were deserialized correctly

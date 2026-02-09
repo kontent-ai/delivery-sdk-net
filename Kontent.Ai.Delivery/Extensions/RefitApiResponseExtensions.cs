@@ -143,8 +143,7 @@ internal static class RefitApiResponseExtensions
     /// <returns>True if content is stale.</returns>
     private static bool ExtractHasStaleContent<T>(IApiResponse<T> apiResponse)
         => apiResponse.Headers?.TryGetValues(StaleContentHeaderName, out var staleValues) == true
-            ? staleValues.FirstOrDefault()?.Equals("1", StringComparison.OrdinalIgnoreCase) == true
-            : false;
+&& staleValues.FirstOrDefault()?.Equals("1", StringComparison.OrdinalIgnoreCase) == true;
 
     /// <summary>
     /// Extracts continuation token from response headers.
