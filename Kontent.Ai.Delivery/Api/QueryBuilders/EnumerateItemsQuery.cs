@@ -99,31 +99,90 @@ internal sealed class EnumerateItemsQuery<TModel>(
     {
         ApplyGenericTypeFilter();
 
-        var wait = _waitForLoadingNewContentOverride ?? _getDefaultWaitForNewContent();
+        var (deliveryResult, continuationToken) = await FetchFeedPageAsync(_continuationToken, cancellationToken).ConfigureAwait(false);
 
+        if (!deliveryResult.IsSuccess)
+        {
+            return CreateFailureResult(deliveryResult);
+        }
+
+        var response = await PreparePageAsync(deliveryResult.Value, continuationToken, cancellationToken).ConfigureAwait(false);
+        return WrapSuccess(response, deliveryResult);
+    }
+
+    private Func<CancellationToken, Task<IDeliveryResult<IDeliveryItemsFeedResponse<TModel>>>>? CreateNextPageFetcher(string? continuationToken)
+    {
+        if (string.IsNullOrEmpty(continuationToken))
+            return null;
+
+        return ct => CreateContinuationQuery(continuationToken).ExecuteAsync(ct);
+    }
+
+    public async IAsyncEnumerable<IContentItem<TModel>> EnumerateItemsAsync([EnumeratorCancellation] CancellationToken cancellationToken = default)
+    {
+        if (_logger is not null)
+            LoggerMessages.PaginationStarted(_logger, "ItemsFeed");
+
+        var pageResult = await ExecuteAsync(cancellationToken).ConfigureAwait(false);
+        var pageCount = 0;
+        var totalItems = 0;
+
+        while (pageResult is { IsSuccess: true })
+        {
+            pageCount++;
+
+            foreach (var item in pageResult.Value.Items)
+            {
+                cancellationToken.ThrowIfCancellationRequested();
+                totalItems++;
+                yield return item;
+            }
+
+            if (!pageResult.Value.HasNextPage)
+            {
+                if (_logger is not null)
+                    LoggerMessages.PaginationCompleted(_logger, "ItemsFeed", pageCount, totalItems);
+                yield break;
+            }
+
+            var nextPageResult = await pageResult.Value.FetchNextPageAsync(cancellationToken).ConfigureAwait(false);
+            if (nextPageResult is not { IsSuccess: true })
+            {
+                if (_logger is not null)
+                    LoggerMessages.PaginationStoppedEarly(_logger, "ItemsFeed");
+                yield break;
+            }
+
+            pageResult = nextPageResult;
+        }
+
+        if (_logger is not null)
+            LoggerMessages.PaginationStoppedEarly(_logger, "ItemsFeed");
+    }
+
+    private async Task<(IDeliveryResult<DeliveryItemsFeedResponse<TModel>> DeliveryResult, string? ContinuationToken)> FetchFeedPageAsync(
+        string? continuationToken,
+        CancellationToken cancellationToken)
+    {
+        var wait = _waitForLoadingNewContentOverride ?? _getDefaultWaitForNewContent();
         var resp = await _api
             .GetItemsFeedInternalAsync<TModel>(
                 _params,
                 FilterQueryParams.ToQueryDictionary(_serializedFilters),
-                _continuationToken,
+                continuationToken,
                 wait,
                 cancellationToken)
             .ConfigureAwait(false);
 
         var deliveryResult = await resp.ToDeliveryResultAsync(_logger).ConfigureAwait(false);
+        return (deliveryResult, resp.Continuation());
+    }
 
-        if (!deliveryResult.IsSuccess)
-        {
-            return DeliveryResult.Failure<IDeliveryItemsFeedResponse<TModel>>(
-                deliveryResult.RequestUrl ?? string.Empty,
-                deliveryResult.StatusCode,
-                deliveryResult.Error,
-                deliveryResult.ResponseHeaders);
-        }
-
-        var content = deliveryResult.Value;
-        var continuationToken = resp.Continuation();
-
+    private async Task<DeliveryItemsFeedResponse<TModel>> PreparePageAsync(
+        DeliveryItemsFeedResponse<TModel> content,
+        string? continuationToken,
+        CancellationToken cancellationToken)
+    {
         if (!IsDynamicModel)
         {
             foreach (var item in content.Items)
@@ -132,93 +191,43 @@ internal sealed class EnumerateItemsQuery<TModel>(
             }
         }
 
-        var responseWithFetcher = content with
+        return content with
         {
             ContinuationToken = continuationToken,
             NextPageFetcher = CreateNextPageFetcher(continuationToken)
         };
+    }
 
-        return DeliveryResult.Success<IDeliveryItemsFeedResponse<TModel>>(
-            responseWithFetcher,
+    private EnumerateItemsQuery<TModel> CreateContinuationQuery(string continuationToken)
+    {
+        var nextQuery = new EnumerateItemsQuery<TModel>(_api, _getDefaultWaitForNewContent, _contentItemMapper, _typeProvider, _logger)
+        {
+            _params = _params,
+            _waitForLoadingNewContentOverride = _waitForLoadingNewContentOverride,
+            _continuationToken = continuationToken,
+            _typeFilterApplied = _typeFilterApplied
+        };
+
+        nextQuery._serializedFilters.AddRange(_serializedFilters);
+        return nextQuery;
+    }
+
+    private static IDeliveryResult<IDeliveryItemsFeedResponse<TModel>> WrapSuccess(
+        DeliveryItemsFeedResponse<TModel> response,
+        IDeliveryResult<DeliveryItemsFeedResponse<TModel>> apiResult) =>
+        DeliveryResult.Success<IDeliveryItemsFeedResponse<TModel>>(
+            response,
+            apiResult.RequestUrl ?? string.Empty,
+            apiResult.StatusCode,
+            apiResult.HasStaleContent,
+            apiResult.ContinuationToken,
+            apiResult.ResponseHeaders);
+
+    private static IDeliveryResult<IDeliveryItemsFeedResponse<TModel>> CreateFailureResult(
+        IDeliveryResult<DeliveryItemsFeedResponse<TModel>> deliveryResult) =>
+        DeliveryResult.Failure<IDeliveryItemsFeedResponse<TModel>>(
             deliveryResult.RequestUrl ?? string.Empty,
             deliveryResult.StatusCode,
-            deliveryResult.HasStaleContent,
-            deliveryResult.ContinuationToken,
+            deliveryResult.Error,
             deliveryResult.ResponseHeaders);
-    }
-
-    private Func<CancellationToken, Task<IDeliveryResult<IDeliveryItemsFeedResponse<TModel>>>>? CreateNextPageFetcher(string? continuationToken)
-    {
-        return string.IsNullOrEmpty(continuationToken)
-            ? null
-            : (async (ct) =>
-        {
-            var nextQuery = new EnumerateItemsQuery<TModel>(_api, _getDefaultWaitForNewContent, _contentItemMapper, _typeProvider, _logger)
-            {
-                _params = _params,
-                _waitForLoadingNewContentOverride = _waitForLoadingNewContentOverride,
-                _continuationToken = continuationToken,
-                _typeFilterApplied = _typeFilterApplied
-            };
-
-            foreach (var filter in _serializedFilters)
-            {
-                nextQuery._serializedFilters.Add(filter);
-            }
-
-            return await nextQuery.ExecuteAsync(ct).ConfigureAwait(false);
-        });
-    }
-
-    public async IAsyncEnumerable<IContentItem<TModel>> EnumerateItemsAsync([EnumeratorCancellation] CancellationToken cancellationToken = default)
-    {
-        ApplyGenericTypeFilter();
-
-        if (_logger is not null)
-            LoggerMessages.PaginationStarted(_logger, "ItemsFeed");
-
-        var wait = _waitForLoadingNewContentOverride ?? _getDefaultWaitForNewContent();
-        string? token = null;
-        var pageCount = 0;
-        var totalItems = 0;
-
-        while (true)
-        {
-            var resp = await _api
-                .GetItemsFeedInternalAsync<TModel>(
-                    _params,
-                    FilterQueryParams.ToQueryDictionary(_serializedFilters),
-                    token,
-                    wait,
-                    cancellationToken)
-                .ConfigureAwait(false);
-
-            if (!resp.IsSuccessStatusCode || resp.Content is null)
-            {
-                if (_logger is not null)
-                    LoggerMessages.PaginationStoppedEarly(_logger, "ItemsFeed");
-                yield break;
-            }
-
-            pageCount++;
-
-            foreach (var item in resp.Content.Items)
-            {
-                if (!IsDynamicModel)
-                {
-                    await _contentItemMapper.CompleteItemAsync(item, resp.Content.ModularContent, null, cancellationToken).ConfigureAwait(false);
-                }
-                totalItems++;
-                yield return item;
-            }
-
-            token = resp.Continuation();
-            if (string.IsNullOrEmpty(token))
-            {
-                if (_logger is not null)
-                    LoggerMessages.PaginationCompleted(_logger, "ItemsFeed", pageCount, totalItems);
-                yield break;
-            }
-        }
-    }
 }

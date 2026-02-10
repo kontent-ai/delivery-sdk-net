@@ -69,7 +69,12 @@ internal sealed class DeliveryClient(
 
     public IEnumerateItemsQuery<T> GetItemsFeed<T>() => new EnumerateItemsQuery<T>(_deliveryApi, GetDefaultWaitForLoadingNewContent, _contentItemMapper, _typeProvider, _logger);
 
-    public IDynamicEnumerateItemsQuery GetItemsFeed() => new DynamicEnumerateItemsQuery(_deliveryApi, GetDefaultWaitForLoadingNewContent, _contentItemMapper, _logger);
+    public IDynamicEnumerateItemsQuery GetItemsFeed() => new DynamicEnumerateItemsQuery(
+        _deliveryApi,
+        GetDefaultWaitForLoadingNewContent,
+        _contentItemMapper,
+        _typeProvider,
+        _logger);
 
     public ITypeQuery GetType(string codename)
     {

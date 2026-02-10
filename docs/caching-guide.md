@@ -311,6 +311,12 @@ services.AddSingleton<IDeliveryCacheManager, CustomDistributedCacheManager>();
 
 ## How Caching Works
 
+### Cache Coverage
+
+SDK caching applies to cacheable query builders (for example, strongly-typed item/list queries and type/taxonomy queries).
+
+Dynamic item/list queries (`GetItem()` and `GetItems()` without a generic model type) are intentionally non-cacheable because their final item types are resolved at runtime. These queries always execute against the API and return `IsCacheHit == false`.
+
 ### Cache Keys
 
 Cache keys are automatically generated from query parameters using a deterministic, human-readable format.
