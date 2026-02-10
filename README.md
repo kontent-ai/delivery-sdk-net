@@ -195,6 +195,8 @@ The builder supports:
 - `.WithMemoryCache(TimeSpan?)` - Enable in-memory caching
 - `.WithDistributedCache(IDistributedCache, TimeSpan?)` - Enable distributed caching
 
+`IDeliveryOptionsBuilder.WithCustomEndpoint(...)` applies the same endpoint to both Production and Preview URLs. In most real deployments these endpoints differ, so if you need both modes with custom domains, register separate clients (for example named clients) and configure each with its corresponding endpoint.
+
 ### Retrieving Content
 
 #### Get a Single Item
@@ -1446,11 +1448,13 @@ services.AddDeliveryClient(options =>
     // Default image rendition preset
     options.DefaultRenditionPreset = "default";
 
-    // Custom endpoints (for proxy scenarios)
+    // Custom endpoints (for proxy scenarios, set independently)
     options.ProductionEndpoint = "https://deliver.kontent.ai";
     options.PreviewEndpoint = "https://preview-deliver.kontent.ai";
 });
 ```
+
+If you configure options with `IDeliveryOptionsBuilder`, `WithCustomEndpoint(...)` is a convenience method that sets both endpoints to the same URL. For distinct preview/production custom domains, configure separate clients and set endpoints per client.
 
 You can also configure HTTP client behavior:
 

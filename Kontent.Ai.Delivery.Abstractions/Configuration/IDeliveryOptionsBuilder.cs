@@ -38,13 +38,13 @@ public interface IDeliveryOptionsBuilder
     IDeliveryOptionsBuilder DisableRetryPolicy();
 
     /// <summary>
-    /// Use a custom endpoint for the Production or Preview API.
+    /// Use a custom endpoint for both the Production and Preview APIs.
     /// </summary>
     /// <param name="endpoint">A custom endpoint URL.</param>
     IDeliveryOptionsBuilder WithCustomEndpoint(string endpoint);
 
     /// <summary>
-    /// Use a custom endpoint for the Production or Preview API.
+    /// Use a custom endpoint for both the Production and Preview APIs.
     /// </summary>
     /// <param name="endpoint">A custom endpoint URI.</param>
     IDeliveryOptionsBuilder WithCustomEndpoint(Uri endpoint);

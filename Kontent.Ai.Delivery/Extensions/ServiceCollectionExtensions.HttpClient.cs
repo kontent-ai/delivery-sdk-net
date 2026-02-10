@@ -23,7 +23,7 @@ public static partial class ServiceCollectionExtensions
     {
         var refitSettings = CreateRefitSettings(configureRefit);
 
-        var httpClientName = $"Kontent.Ai.Delivery.HttpClient.{name}";
+        var httpClientName = GetHttpClientName(name);
         var httpClientBuilder = services
             .AddHttpClient(httpClientName)
             .ConfigureHttpClient((serviceProvider, httpClient) =>
@@ -66,20 +66,18 @@ public static partial class ServiceCollectionExtensions
     /// </summary>
     /// <param name="httpClientBuilder">The HTTP client builder.</param>
     /// <param name="resilienceHandlerName">The name of the resilience handler.</param>
-    /// <param name="optionsName">The name of the options to retrieve, or null for default options.</param>
+    /// <param name="clientName">The name of the named client options.</param>
     /// <param name="configureResilience">Optional custom resilience configuration.</param>
     private static void ConfigureResilienceHandler(
         IHttpClientBuilder httpClientBuilder,
         string resilienceHandlerName,
-        string? optionsName,
+        string clientName,
         Action<ResiliencePipelineBuilder<HttpResponseMessage>>? configureResilience)
     {
         httpClientBuilder.AddResilienceHandler(resilienceHandlerName, (builder, context) =>
         {
             var optionsMonitor = context.ServiceProvider.GetRequiredService<IOptionsMonitor<DeliveryOptions>>();
-            var options = optionsName is null
-                ? optionsMonitor.CurrentValue
-                : optionsMonitor.Get(optionsName);
+            var options = optionsMonitor.Get(clientName);
 
             if (!options.EnableResilience)
                 return;
@@ -99,27 +97,16 @@ public static partial class ServiceCollectionExtensions
     /// Adds tracking and authentication message handlers to an HTTP client.
     /// </summary>
     /// <param name="httpClientBuilder">The HTTP client builder.</param>
-    /// <param name="optionsName">The name of the options for the authentication handler, or null for default options.</param>
-    private static void AddMessageHandlers(IHttpClientBuilder httpClientBuilder, string? optionsName)
+    /// <param name="clientName">The name of the options for the authentication handler.</param>
+    private static void AddMessageHandlers(IHttpClientBuilder httpClientBuilder, string clientName)
     {
         httpClientBuilder.AddHttpMessageHandler(sp => new TrackingHandler(
             sp.GetService<ILogger<TrackingHandler>>()));
 
-        if (optionsName is null)
-        {
-            // Default options - use parameterless constructor with optional logger
-            httpClientBuilder.AddHttpMessageHandler(sp => new DeliveryAuthenticationHandler(
-                sp.GetRequiredService<IOptionsMonitor<DeliveryOptions>>(),
-                sp.GetService<ILogger<DeliveryAuthenticationHandler>>()));
-        }
-        else
-        {
-            // Named options - pass name to constructor with optional logger
-            httpClientBuilder.AddHttpMessageHandler(sp => new DeliveryAuthenticationHandler(
-                sp.GetRequiredService<IOptionsMonitor<DeliveryOptions>>(),
-                optionsName,
-                sp.GetService<ILogger<DeliveryAuthenticationHandler>>()));
-        }
+        httpClientBuilder.AddHttpMessageHandler(sp => new DeliveryAuthenticationHandler(
+            sp.GetRequiredService<IOptionsMonitor<DeliveryOptions>>(),
+            clientName,
+            sp.GetService<ILogger<DeliveryAuthenticationHandler>>()));
     }
 
     private static void ConfigureDefaultResilience(ResiliencePipelineBuilder<HttpResponseMessage> builder)
@@ -165,5 +152,4 @@ public static partial class ServiceCollectionExtensions
             System.Net.HttpStatusCode.ServiceUnavailable or
             System.Net.HttpStatusCode.GatewayTimeout;
 }
-
 

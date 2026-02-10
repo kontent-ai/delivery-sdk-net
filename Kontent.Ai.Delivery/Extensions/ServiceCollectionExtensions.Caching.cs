@@ -38,7 +38,7 @@ public static partial class ServiceCollectionExtensions
         TimeSpan? defaultExpiration = null)
     {
         return services.AddDeliveryMemoryCache(
-            Options.DefaultName,
+            DeliveryClientNames.Default,
             keyPrefix: string.Empty, // No prefix for default single-client scenario
             defaultExpiration);
     }
@@ -80,24 +80,20 @@ public static partial class ServiceCollectionExtensions
         TimeSpan? defaultExpiration = null)
     {
         ArgumentNullException.ThrowIfNull(services);
-        ArgumentException.ThrowIfNullOrWhiteSpace(clientName);
+        ValidateClientName(clientName);
 
         // Register IMemoryCache if not already registered (shared across all clients)
         services.AddMemoryCache();
+        var resolvedKeyPrefix = ResolveCacheKeyPrefix(clientName, keyPrefix);
 
-        // Register keyed cache manager for this client
-        services.AddKeyedSingleton<IDeliveryCacheManager>(clientName, (sp, _) =>
-            new MemoryCacheManager(
+        return RegisterCacheManager(
+            services,
+            clientName,
+            sp => new MemoryCacheManager(
                 sp.GetRequiredService<IMemoryCache>(),
-                keyPrefix ?? clientName,
+                resolvedKeyPrefix,
                 defaultExpiration,
                 sp.GetService<ILogger<MemoryCacheManager>>()));
-
-        // Enable dependency extraction for cache invalidation
-        // Replace ensures real extractor is used regardless of registration order
-        services.Replace(ServiceDescriptor.Singleton<IContentDependencyExtractor, ContentDependencyExtractor>());
-
-        return services;
     }
 
     /// <summary>
@@ -135,7 +131,7 @@ public static partial class ServiceCollectionExtensions
         TimeSpan? defaultExpiration = null)
     {
         return services.AddDeliveryDistributedCache(
-            Options.DefaultName,
+            DeliveryClientNames.Default,
             keyPrefix: string.Empty, // No prefix for default single-client scenario
             defaultExpiration);
     }
@@ -184,29 +180,36 @@ public static partial class ServiceCollectionExtensions
         TimeSpan? defaultExpiration = null)
     {
         ArgumentNullException.ThrowIfNull(services);
-        ArgumentException.ThrowIfNullOrWhiteSpace(clientName);
+        ValidateClientName(clientName);
+        var resolvedKeyPrefix = ResolveCacheKeyPrefix(clientName, keyPrefix);
 
-        // Register keyed cache manager for this client
-        // Use the SDK's JsonSerializerOptions with converters for proper content item serialization
-        services.AddKeyedSingleton<IDeliveryCacheManager>(clientName, (sp, _) =>
-        {
-            var jsonOptions = sp.GetService<JsonSerializerOptions>()
-                ?? RefitSettingsProvider.CreateDefaultJsonSerializerOptions();
+        return RegisterCacheManager(
+            services,
+            clientName,
+            sp =>
+            {
+                var jsonOptions = sp.GetService<JsonSerializerOptions>()
+                    ?? RefitSettingsProvider.CreateDefaultJsonSerializerOptions();
 
-            return new DistributedCacheManager(
-                sp.GetRequiredService<IDistributedCache>(),
-                keyPrefix ?? clientName,
-                defaultExpiration,
-                jsonOptions,
-                sp.GetService<ILogger<DistributedCacheManager>>());
-        });
+                return new DistributedCacheManager(
+                    sp.GetRequiredService<IDistributedCache>(),
+                    resolvedKeyPrefix,
+                    defaultExpiration,
+                    jsonOptions,
+                    sp.GetService<ILogger<DistributedCacheManager>>());
+            });
+    }
 
-        // Enable dependency extraction for cache invalidation
-        // Replace ensures real extractor is used regardless of registration order
+    private static IServiceCollection RegisterCacheManager(
+        IServiceCollection services,
+        string clientName,
+        Func<IServiceProvider, IDeliveryCacheManager> createCacheManager)
+    {
+        services.AddKeyedSingleton<IDeliveryCacheManager>(clientName, (sp, _) => createCacheManager(sp));
         services.Replace(ServiceDescriptor.Singleton<IContentDependencyExtractor, ContentDependencyExtractor>());
-
         return services;
     }
+
+    private static string ResolveCacheKeyPrefix(string clientName, string? keyPrefix)
+        => keyPrefix ?? clientName;
 }
-
-

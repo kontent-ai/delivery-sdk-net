@@ -46,17 +46,8 @@ public sealed class DeliveryClientBuilder
 {
     private DeliveryOptions? _deliveryOptions;
     private ITypeProvider? _typeProvider;
-    private IDistributedCache? _distributedCache;
-    private TimeSpan? _cacheExpiration;
-    private CacheType _cacheType = CacheType.None;
+    private Action<IServiceCollection>? _configureCache;
     private ILoggerFactory? _loggerFactory;
-
-    private enum CacheType
-    {
-        None,
-        Memory,
-        Distributed
-    }
 
     private DeliveryClientBuilder() { }
 
@@ -115,9 +106,10 @@ public sealed class DeliveryClientBuilder
     /// </remarks>
     public DeliveryClientBuilder WithMemoryCache(TimeSpan? defaultExpiration = null)
     {
-        _cacheType = CacheType.Memory;
-        _cacheExpiration = defaultExpiration;
-        _distributedCache = null;
+        _configureCache = services => services.AddDeliveryMemoryCache(
+            clientName: DeliveryClientNames.Default,
+            keyPrefix: string.Empty,
+            defaultExpiration: defaultExpiration);
         return this;
     }
 
@@ -146,9 +138,14 @@ public sealed class DeliveryClientBuilder
     {
         ArgumentNullException.ThrowIfNull(distributedCache);
 
-        _cacheType = CacheType.Distributed;
-        _cacheExpiration = defaultExpiration;
-        _distributedCache = distributedCache;
+        _configureCache = services =>
+        {
+            services.AddSingleton(distributedCache);
+            services.AddDeliveryDistributedCache(
+                clientName: DeliveryClientNames.Default,
+                keyPrefix: string.Empty,
+                defaultExpiration: defaultExpiration);
+        };
         return this;
     }
 
@@ -257,32 +254,7 @@ public sealed class DeliveryClientBuilder
             services.AddSingleton(_typeProvider);
         }
 
-        if (_cacheType == CacheType.Distributed)
-        {
-            services.AddSingleton(_distributedCache!);
-        }
-
         services.AddDeliveryClient(_deliveryOptions!);
-
-        switch (_cacheType)
-        {
-            case CacheType.Memory:
-                services.AddDeliveryMemoryCache(
-                    clientName: Options.DefaultName,
-                    keyPrefix: "",
-                    defaultExpiration: _cacheExpiration);
-                break;
-
-            case CacheType.Distributed:
-                services.AddDeliveryDistributedCache(
-                    clientName: Options.DefaultName,
-                    keyPrefix: "",
-                    defaultExpiration: _cacheExpiration);
-                break;
-
-            case CacheType.None:
-            default:
-                break;
-        }
+        _configureCache?.Invoke(services);
     }
 }

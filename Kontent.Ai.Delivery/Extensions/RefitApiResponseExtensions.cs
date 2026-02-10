@@ -152,5 +152,5 @@ internal static class RefitApiResponseExtensions
     /// <param name="response">The API response.</param>
     /// <returns>The continuation token if present.</returns>
     internal static string? Continuation<T>(this IApiResponse<T> response)
-        => response.Headers.TryGetValues(ContinuationHeaderName, out var vals) ? vals.FirstOrDefault() : null;
+        => response.Headers?.TryGetValues(ContinuationHeaderName, out var vals) == true ? vals.FirstOrDefault() : null;
 }

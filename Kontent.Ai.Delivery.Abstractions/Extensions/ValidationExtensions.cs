@@ -33,18 +33,32 @@ public class RequiredIfAttribute(string propertyName, object? isValue) : Validat
     protected override ValidationResult? IsValid(object? value, ValidationContext validationContext)
     {
         ArgumentNullException.ThrowIfNull(validationContext);
-        var property = validationContext.ObjectType.GetProperty(_propertyName) ?? throw new NotSupportedException($"Can't find {_propertyName} on searched type: {validationContext.ObjectType.Name}");
-        var requiredIfTypeActualValue = property.GetValue(validationContext.ObjectInstance);
 
-        if (requiredIfTypeActualValue is null && _isValue is not null)
+        var requiredIfTypeActualValue = GetComparedMemberValue(validationContext);
+        var isRequired = Equals(requiredIfTypeActualValue, _isValue);
+
+        if (!isRequired)
         {
             return ValidationResult.Success;
         }
 
-        return requiredIfTypeActualValue is null || requiredIfTypeActualValue.Equals(_isValue)
-            ? value is null
-                ? new ValidationResult(FormatErrorMessage(validationContext.DisplayName))
-                : ValidationResult.Success
+        return value is null
+            ? new ValidationResult(FormatErrorMessage(validationContext.DisplayName))
             : ValidationResult.Success;
+    }
+
+    private object? GetComparedMemberValue(ValidationContext validationContext)
+    {
+        var comparedProperty = validationContext.ObjectType.GetProperty(_propertyName);
+        if (comparedProperty is not null)
+        {
+            return comparedProperty.GetValue(validationContext.ObjectInstance);
+        }
+
+        var comparedField = validationContext.ObjectType.GetField(_propertyName);
+
+        return comparedField is not null
+            ? comparedField.GetValue(validationContext.ObjectInstance)
+            : throw new NotSupportedException($"Can't find {_propertyName} on searched type: {validationContext.ObjectType.Name}");
     }
 }

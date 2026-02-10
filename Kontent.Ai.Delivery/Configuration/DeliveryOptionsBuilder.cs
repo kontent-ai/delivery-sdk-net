@@ -77,7 +77,7 @@ public sealed class DeliveryOptionsBuilder : IDeliveryOptionsBuilder
     }
 
     /// <summary>
-    /// Use a custom endpoint for the Production or Preview API.
+    /// Use a custom endpoint for both the Production and Preview APIs.
     /// </summary>
     /// <param name="endpoint">A custom endpoint URL.</param>
     public IDeliveryOptionsBuilder WithCustomEndpoint(string endpoint)
@@ -87,7 +87,7 @@ public sealed class DeliveryOptionsBuilder : IDeliveryOptionsBuilder
     }
 
     /// <summary>
-    /// Use a custom endpoint for the Production or Preview API.
+    /// Use a custom endpoint for both the Production and Preview APIs.
     /// </summary>
     /// <param name="endpoint">A custom endpoint URI.</param>
     public IDeliveryOptionsBuilder WithCustomEndpoint(Uri endpoint)
@@ -117,14 +117,10 @@ public sealed class DeliveryOptionsBuilder : IDeliveryOptionsBuilder
 
     private void SetCustomEndpoint(string endpoint)
     {
-        if (_options.UsePreviewApi)
-        {
-            _options.PreviewEndpoint = endpoint;
-        }
-        else
-        {
-            _options.ProductionEndpoint = endpoint;
-        }
+        // Apply to both endpoints so behavior is deterministic regardless of call order
+        // (e.g. WithCustomEndpoint() called before/after UsePreviewApi()).
+        _options.PreviewEndpoint = endpoint;
+        _options.ProductionEndpoint = endpoint;
     }
 
     /// <summary>

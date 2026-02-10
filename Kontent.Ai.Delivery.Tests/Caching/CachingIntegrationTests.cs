@@ -73,7 +73,7 @@ public class CachingIntegrationTests
         };
 
         // Named client with keyed cache manager and short TTL
-        services.AddDeliveryClient("test", o => o.Configure(options),
+        services.AddDeliveryClient("test", o => DeliveryOptionsCopyHelper.Copy(options, o),
             configureHttpClient: b => b.ConfigurePrimaryHttpMessageHandler(() => mock));
         services.AddDeliveryMemoryCache("test", defaultExpiration: TimeSpan.FromMilliseconds(50));
 
@@ -440,7 +440,7 @@ public class CachingIntegrationTests
 
         // Use per-client caching with custom mock cache manager
         var mockCacheManager = new TestCacheManager();
-        services.AddDeliveryClient("test", o => o.Configure(options),
+        services.AddDeliveryClient("test", o => DeliveryOptionsCopyHelper.Copy(options, o),
             configureHttpClient: b => b.ConfigurePrimaryHttpMessageHandler(() => mock));
         services.AddKeyedSingleton<IDeliveryCacheManager>("test", mockCacheManager);
 
@@ -485,7 +485,7 @@ public class CachingIntegrationTests
 
         // Use per-client caching with custom mock cache manager
         var mockCacheManager = new TestCacheManager();
-        services.AddDeliveryClient("test", o => o.Configure(options),
+        services.AddDeliveryClient("test", o => DeliveryOptionsCopyHelper.Copy(options, o),
             configureHttpClient: b => b.ConfigurePrimaryHttpMessageHandler(() => mock));
         services.AddKeyedSingleton<IDeliveryCacheManager>("test", mockCacheManager);
 
@@ -652,7 +652,7 @@ public class CachingIntegrationTests
         };
 
         // Use per-client caching API
-        services.AddDeliveryClient("test", o => o.Configure(options),
+        services.AddDeliveryClient("test", o => DeliveryOptionsCopyHelper.Copy(options, o),
             configureHttpClient: b => b.ConfigurePrimaryHttpMessageHandler(() => mockHttp));
         services.AddDeliveryMemoryCache("test");
 
@@ -671,7 +671,7 @@ public class CachingIntegrationTests
         services.AddSingleton<IDistributedCache>(mockDistributedCache);
 
         // Use per-client caching API
-        services.AddDeliveryClient("test", o => o.Configure(options),
+        services.AddDeliveryClient("test", o => DeliveryOptionsCopyHelper.Copy(options, o),
             configureHttpClient: b => b.ConfigurePrimaryHttpMessageHandler(() => mockHttp));
         services.AddDeliveryDistributedCache("test");
 

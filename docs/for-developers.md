@@ -815,8 +815,7 @@ public static IServiceCollection AddDeliveryClient(
     Action<ResiliencePipelineBuilder<HttpResponseMessage>>? configureResilience = null)
 {
     // 1. Validate uniqueness
-    var registry = GetOrCreateRegistry(services);
-    if (!registry.TryRegister(name))
+    if (services.Any(d => d.ServiceType == typeof(IDeliveryClient) && Equals(d.ServiceKey, name)))
         throw new InvalidOperationException($"Client '{name}' already registered.");
 
     // 2. Register named options
@@ -837,17 +836,13 @@ public static IServiceCollection AddDeliveryClient(
         var clientName = (string)key;
         var optionsMonitor = sp.GetRequiredService<IOptionsMonitor<DeliveryOptions>>();
 
-        // Wrap monitor to return named options
-        var namedMonitor = new NamedOptionsMonitor<DeliveryOptions>(
-            optionsMonitor,
-            clientName);
-
         var api = sp.GetRequiredKeyedService<IDeliveryApi>(clientName);
         var contentItemMapper = sp.GetRequiredService<ContentItemMapper>();
+        var contentDeserializer = sp.GetRequiredService<IContentDeserializer>();
         var typeProvider = sp.GetRequiredService<ITypeProvider>();
         var cacheManager = sp.GetKeyedService<IDeliveryCacheManager>(clientName);
 
-        return new DeliveryClient(api, namedMonitor, contentItemMapper, typeProvider, cacheManager);
+        return new DeliveryClient(api, optionsMonitor, contentItemMapper, contentDeserializer, typeProvider, cacheManager, optionsName: clientName);
     });
 
     return services;
@@ -861,10 +856,6 @@ private static void RegisterDependencies(IServiceCollection services)
 {
     // JSON serialization options
     services.TryAddSingleton(RefitSettingsProvider.CreateDefaultJsonSerializerOptions());
-
-    // HTTP handlers
-    services.TryAddTransient<TrackingHandler>();
-    services.TryAddTransient<DeliveryAuthenticationHandler>();
 
     // Type system
     services.TryAddSingleton<ITypeProvider, TypeProvider>();
