@@ -189,7 +189,7 @@ internal sealed class ItemsQuery<TModel>(
                 var payload = CachedItemListingResponseRaw.From(response);
                 return (payload, response, deps);
             },
-            (payload, ct) => CachePayloadRehydrator.RehydrateListingAsync<TModel>(
+            (payload, ct) => CachePayloadHelper.RehydrateListingAsync<TModel>(
                 payload, _contentDeserializer, _contentItemMapper, IsDynamicModel, ct),
             _logger,
             cancellationToken).ConfigureAwait(false);

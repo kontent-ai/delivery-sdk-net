@@ -155,7 +155,7 @@ internal sealed class ItemQuery<TModel>(
                 var payload = CachedItemResponseRaw.From(item, apiResult.Value.ModularContent);
                 return (payload, item, deps);
             },
-            async (payload, ct) => (IContentItem<TModel>)await CachePayloadRehydrator.RehydrateItemAsync<TModel>(
+            async (payload, ct) => (IContentItem<TModel>)await CachePayloadHelper.RehydrateItemAsync<TModel>(
                 payload, _contentDeserializer, _contentItemMapper, IsDynamicModel, ct).ConfigureAwait(false),
             _logger,
             cancellationToken).ConfigureAwait(false);
