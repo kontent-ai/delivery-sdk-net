@@ -27,7 +27,7 @@ The SDK follows a **layered architecture** with clear separation of concerns:
 ┌─────────────────────────────────────────────┐
 │  Public API (IDeliveryClient, Builders)     │
 ├─────────────────────────────────────────────┤
-│  Query Builders (ItemQuery, ItemsQuery)     │
+│  Query Builders (typed + dynamic wrappers)  │
 ├─────────────────────────────────────────────┤
 │  HTTP Pipeline (Handlers, Refit)            │
 ├─────────────────────────────────────────────┤
@@ -38,6 +38,8 @@ The SDK follows a **layered architecture** with clear separation of concerns:
 │  Kontent.ai Delivery API                    │
 └─────────────────────────────────────────────┘
 ```
+
+Dynamic item/list builders (`DynamicItemQuery`, `DynamicItemsQuery`) are implemented as wrappers over `ItemQuery<IDynamicElements>` and `ItemsQuery<IDynamicElements>`, then adapt responses to non-generic runtime-typed outputs.
 
 **Core Principles:**
 - **DI-First**: All components designed for dependency injection
@@ -323,6 +325,8 @@ public interface IDeliveryCacheManager
 **Location**: `Kontent.Ai.Delivery.Abstractions/Caching/CacheStorageMode.cs` and `IDeliveryCacheManager.cs`
 
 Cache managers declare their storage strategy via the `StorageMode` property on `IDeliveryCacheManager`. Query builders use this to decide whether to cache raw JSON payloads (rehydrating on read) or fully hydrated objects.
+
+Dynamic item/list query wrappers intentionally construct their inner typed queries with `cacheManager: null`, so these runtime-typed queries bypass SDK caching by design.
 
 ```csharp
 public enum CacheStorageMode { HydratedObject = 0, RawJson = 1 }
@@ -1049,6 +1053,8 @@ internal sealed class StronglyTypedContentItemConverter<TModel> : JsonConverter<
 **Location**: `Kontent.Ai.Delivery/Api/QueryBuilders/ItemsQuery.cs`
 
 The complete flow from query to cached result:
+
+Dynamic item/list queries follow the same API execution and logging path by delegating to typed inner queries, then adapt the success payload to runtime-typed outputs. They intentionally skip caching.
 
 ```csharp
 public async Task<IDeliveryResult<IReadOnlyList<IContentItem<TModel>>>> ExecuteAsync(

@@ -41,14 +41,8 @@ public class DeliveryClientBenchmark
     }
 
     [Benchmark]
-    public async Task<IDeliveryResult<IContentItem<Article>>> GetItemAsync()
-    {
-        return await _client.GetItem<Article>("on_roasts").ExecuteAsync();
-    }
+    public async Task<IDeliveryResult<IContentItem<Article>>> GetItemAsync() => await _client.GetItem<Article>("on_roasts").ExecuteAsync();
 
     [Benchmark]
-    public async Task<IDeliveryResult<IDeliveryItemListingResponse<Article>>> GetItemsAsync()
-    {
-        return await _client.GetItems<Article>().Where(f => f.System("type").IsEqualTo("article")).ExecuteAsync();
-    }
+    public async Task<IDeliveryResult<IDeliveryItemListingResponse<Article>>> GetItemsAsync() => await _client.GetItems<Article>().Where(f => f.System("type").IsEqualTo("article")).ExecuteAsync();
 }

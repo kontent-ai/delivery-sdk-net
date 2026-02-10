@@ -338,10 +338,7 @@ public class DeliveryAuthenticationHandlerTests
     {
         protected override Task<HttpResponseMessage> SendAsync(
             HttpRequestMessage request,
-            CancellationToken cancellationToken)
-        {
-            return Task.FromResult(new HttpResponseMessage(System.Net.HttpStatusCode.OK));
-        }
+            CancellationToken cancellationToken) => Task.FromResult(new HttpResponseMessage(System.Net.HttpStatusCode.OK));
     }
 
     private class TestOptionsMonitor<TOptions>(TOptions currentValue) : IOptionsMonitor<TOptions>
@@ -356,15 +353,9 @@ public class DeliveryAuthenticationHandlerTests
 
         public IDisposable OnChange(Action<TOptions, string> listener) => new EmptyDisposable();
 
-        public void AddNamedOptions(string name, TOptions options)
-        {
-            _namedOptions[name] = options;
-        }
+        public void AddNamedOptions(string name, TOptions options) => _namedOptions[name] = options;
 
-        public void ChangeCurrentValue(TOptions newValue)
-        {
-            _currentValue = newValue;
-        }
+        public void ChangeCurrentValue(TOptions newValue) => _currentValue = newValue;
 
         private class EmptyDisposable : IDisposable
         {

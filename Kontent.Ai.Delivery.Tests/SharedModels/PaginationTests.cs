@@ -7,10 +7,7 @@ namespace Kontent.Ai.Delivery.Tests.SharedModels;
 public class PaginationTests
 {
     [Fact]
-    public void SerializePagination_AndThen_DeserializeToCheck_ValuesMatch_UsingStandardSerialization()
-    {
-        ExecuteTestsScenario(SerializeThenDeserializeUsingJson);
-    }
+    public void SerializePagination_AndThen_DeserializeToCheck_ValuesMatch_UsingStandardSerialization() => ExecuteTestsScenario(SerializeThenDeserializeUsingJson);
     private void ExecuteTestsScenario(Func<Pagination, Pagination> serializeThenDeserialize)
     {
         var pagination = new Pagination()

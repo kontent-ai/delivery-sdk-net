@@ -184,10 +184,7 @@ public sealed class ImageUrlBuilder(Uri assetUrl)
     /// </summary>
     /// <param name="backupFormat">Image format for non supporting browsers. </param>
     /// <returns>The same <see cref="ImageUrlBuilder" /> instance. </returns>
-    public ImageUrlBuilder WithAutomaticFormat(ImageFormat backupFormat)
-    {
-        return WithFormat(backupFormat).WithAutomaticFormat();
-    }
+    public ImageUrlBuilder WithAutomaticFormat(ImageFormat backupFormat) => WithFormat(backupFormat).WithAutomaticFormat();
 
     private static string FormatDouble(double number) => number.ToString("0.##########", CultureInfo.InvariantCulture);
 

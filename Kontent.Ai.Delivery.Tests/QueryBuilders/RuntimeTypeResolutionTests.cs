@@ -307,6 +307,42 @@ public class RuntimeTypeResolutionTests
         }
     }
 
+    [Fact]
+    public async Task GetItemsFeed_WithTypeProvider_FetchNextPage_PreservesRuntimeTyping()
+    {
+        // Arrange
+        var mockHttp = new MockHttpMessageHandler();
+        var feedUrl = $"{BaseUrl}/items-feed";
+
+        mockHttp.Expect(feedUrl)
+            .Respond(_ => BuildFeedPageResponse(["feed_article_1"], continuationToken: "token_1"));
+
+        mockHttp.Expect(feedUrl)
+            .WithHeaders("X-Continuation", "token_1")
+            .Respond(_ => BuildFeedPageResponse(["feed_article_2"], continuationToken: null));
+
+        var client = CreateClientWithTypeProvider(mockHttp);
+
+        // Act
+        var firstPageResult = await client.GetItemsFeed().ExecuteAsync();
+
+        // Assert first page
+        Assert.True(firstPageResult.IsSuccess);
+        Assert.Single(firstPageResult.Value.Items);
+        Assert.True(firstPageResult.Value.Items[0] is IContentItem<Article>);
+        Assert.True(firstPageResult.Value.HasNextPage);
+
+        var secondPageResult = await firstPageResult.Value.FetchNextPageAsync();
+
+        // Assert second page
+        Assert.NotNull(secondPageResult);
+        Assert.True(secondPageResult.IsSuccess);
+        Assert.Single(secondPageResult.Value.Items);
+        Assert.True(secondPageResult.Value.Items[0] is IContentItem<Article>);
+        Assert.False(secondPageResult.Value.HasNextPage);
+        mockHttp.VerifyNoOutstandingExpectation();
+    }
+
     #endregion
 
     #region Linked Items and Hydration Tests
@@ -489,5 +525,46 @@ public class RuntimeTypeResolutionTests
               "modular_content": {}
             }
             """;
+    }
+
+    private static HttpResponseMessage BuildFeedPageResponse(IReadOnlyList<string> codenames, string? continuationToken)
+    {
+        var itemsJson = string.Join(",", codenames.Select(codename => $$"""
+            {
+              "system": {
+                "id": "{{Guid.NewGuid()}}",
+                "name": "{{codename}}",
+                "codename": "{{codename}}",
+                "language": "en-US",
+                "type": "article",
+                "collection": "default",
+                "last_modified": "2024-01-01T00:00:00Z"
+              },
+              "elements": {
+                "title": {
+                  "type": "text",
+                  "name": "Title",
+                  "value": "Title {{codename}}"
+                }
+              }
+            }
+            """));
+
+        var json = $$"""
+            {
+              "items": [{{itemsJson}}],
+              "modular_content": {}
+            }
+            """;
+
+        var response = new HttpResponseMessage(HttpStatusCode.OK)
+        {
+            Content = new StringContent(json, System.Text.Encoding.UTF8, "application/json")
+        };
+
+        if (!string.IsNullOrEmpty(continuationToken))
+            response.Headers.Add("X-Continuation", continuationToken);
+
+        return response;
     }
 }

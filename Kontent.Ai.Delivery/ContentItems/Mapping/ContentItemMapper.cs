@@ -419,10 +419,7 @@ internal sealed class ContentItemMapper
         return items;
     }
 
-    private Func<string, Task<object?>> CreateLinkedItemResolver(MappingContext context)
-    {
-        return codename => ResolveLinkedItemAsync(codename, context);
-    }
+    private Func<string, Task<object?>> CreateLinkedItemResolver(MappingContext context) => codename => ResolveLinkedItemAsync(codename, context);
 
     /// <summary>
     /// Resolves a linked item by codename from modular content.

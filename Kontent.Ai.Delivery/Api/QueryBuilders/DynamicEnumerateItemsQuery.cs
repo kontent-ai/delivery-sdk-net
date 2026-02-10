@@ -1,5 +1,4 @@
 using System.Runtime.CompilerServices;
-using Kontent.Ai.Delivery.Api.Filtering;
 using Kontent.Ai.Delivery.ContentItems;
 using Kontent.Ai.Delivery.ContentItems.Mapping;
 using Kontent.Ai.Delivery.Logging;
@@ -12,73 +11,51 @@ internal sealed class DynamicEnumerateItemsQuery(
     IDeliveryApi api,
     Func<bool?> getDefaultWaitForNewContent,
     ContentItemMapper contentItemMapper,
+    ITypeProvider typeProvider,
     ILogger? logger = null) : IDynamicEnumerateItemsQuery
 {
-    private readonly IDeliveryApi _api = api;
-    private readonly Func<bool?> _getDefaultWaitForNewContent = getDefaultWaitForNewContent;
     private readonly ContentItemMapper _contentItemMapper = contentItemMapper;
     private readonly ILogger? _logger = logger;
-    private EnumItemsParams _params = new();
-    private bool? _waitForLoadingNewContentOverride;
-    private readonly List<KeyValuePair<string, string>> _serializedFilters = [];
-    private string? _continuationToken;
+    private readonly EnumerateItemsQuery<IDynamicElements> _inner = new(
+        api,
+        getDefaultWaitForNewContent,
+        contentItemMapper,
+        typeProvider,
+        logger);
 
     public IDynamicEnumerateItemsQuery WithLanguage(string languageCodename, LanguageFallbackMode languageFallbackMode = LanguageFallbackMode.Enabled)
     {
-        _params = _params with { Language = languageCodename };
-        if (languageFallbackMode == LanguageFallbackMode.Disabled)
-        {
-            _serializedFilters.Add(new KeyValuePair<string, string>(
-                FilterPath.System("language") + FilterSuffix.Eq,
-                FilterValueSerializer.Serialize(languageCodename)));
-        }
+        _inner.WithLanguage(languageCodename, languageFallbackMode);
         return this;
     }
 
     public IDynamicEnumerateItemsQuery WithElements(params string[] elementCodenames)
     {
-        _params = _params with { Elements = elementCodenames };
+        _inner.WithElements(elementCodenames);
         return this;
     }
 
     public IDynamicEnumerateItemsQuery OrderBy(string elementOrAttributePath, OrderingMode orderingMode = OrderingMode.Ascending)
     {
-        _params = _params with
-        {
-            OrderBy = orderingMode == OrderingMode.Ascending
-                ? $"{elementOrAttributePath}[asc]"
-                : $"{elementOrAttributePath}[desc]"
-        };
+        _inner.OrderBy(elementOrAttributePath, orderingMode);
         return this;
     }
 
     public IDynamicEnumerateItemsQuery WaitForLoadingNewContent(bool enabled = true)
     {
-        _waitForLoadingNewContentOverride = enabled;
+        _inner.WaitForLoadingNewContent(enabled);
         return this;
     }
 
     public IDynamicEnumerateItemsQuery Where(Func<IItemsFilterBuilder, IItemsFilterBuilder> build)
     {
-        ArgumentNullException.ThrowIfNull(build);
-        build(new ItemsFilterBuilder(_serializedFilters));
+        _inner.Where(build);
         return this;
     }
 
     public async Task<IDeliveryResult<IDeliveryItemsFeedResponse>> ExecuteAsync(CancellationToken cancellationToken = default)
     {
-        var wait = _waitForLoadingNewContentOverride ?? _getDefaultWaitForNewContent();
-
-        var resp = await _api
-            .GetItemsFeedInternalAsync<IDynamicElements>(
-                _params,
-                FilterQueryParams.ToQueryDictionary(_serializedFilters),
-                _continuationToken,
-                wait,
-                cancellationToken)
-            .ConfigureAwait(false);
-
-        var deliveryResult = await resp.ToDeliveryResultAsync(_logger).ConfigureAwait(false);
+        var deliveryResult = await _inner.ExecuteAsync(cancellationToken).ConfigureAwait(false);
 
         if (!deliveryResult.IsSuccess)
         {
@@ -89,24 +66,10 @@ internal sealed class DynamicEnumerateItemsQuery(
                 deliveryResult.ResponseHeaders);
         }
 
-        var content = deliveryResult.Value;
-        var continuationToken = resp.Continuation();
-
-        var runtimeTypedItems = await _contentItemMapper.RuntimeTypeItemsAsync(
-            content.Items,
-            content.ModularContent,
-            cancellationToken).ConfigureAwait(false);
-
-        var responseWithFetcher = new DynamicDeliveryItemsFeedResponse
-        {
-            Items = runtimeTypedItems,
-            ModularContent = content.ModularContent,
-            ContinuationToken = continuationToken,
-            NextPageFetcher = CreateNextPageFetcher(continuationToken)
-        };
+        var response = await ConvertResponseAsync(deliveryResult.Value, cancellationToken).ConfigureAwait(false);
 
         return DeliveryResult.Success<IDeliveryItemsFeedResponse>(
-            responseWithFetcher,
+            response,
             deliveryResult.RequestUrl ?? string.Empty,
             deliveryResult.StatusCode,
             deliveryResult.HasStaleContent,
@@ -114,23 +77,67 @@ internal sealed class DynamicEnumerateItemsQuery(
             deliveryResult.ResponseHeaders);
     }
 
-    private Func<CancellationToken, Task<IDeliveryResult<IDeliveryItemsFeedResponse>>>? CreateNextPageFetcher(string? continuationToken)
+    private async Task<DynamicDeliveryItemsFeedResponse> ConvertResponseAsync(
+        IDeliveryItemsFeedResponse<IDynamicElements> response,
+        CancellationToken cancellationToken)
     {
-        return string.IsNullOrEmpty(continuationToken)
-            ? null
-            : (async (ct) =>
+        var runtimeTypedItems = await _contentItemMapper.RuntimeTypeItemsAsync(
+            response.Items,
+            response.ModularContent,
+            cancellationToken).ConfigureAwait(false);
+
+        return new DynamicDeliveryItemsFeedResponse
         {
-            var nextQuery = new DynamicEnumerateItemsQuery(_api, _getDefaultWaitForNewContent, _contentItemMapper, _logger)
-            {
-                _params = _params,
-                _waitForLoadingNewContentOverride = _waitForLoadingNewContentOverride,
-                _continuationToken = continuationToken
-            };
+            Items = runtimeTypedItems,
+            ModularContent = response.ModularContent,
+            ContinuationToken = GetContinuationToken(response),
+            NextPageFetcher = CreateNextPageFetcher(response)
+        };
+    }
 
-            nextQuery._serializedFilters.AddRange(_serializedFilters);
+    private static string? GetContinuationToken(IDeliveryItemsFeedResponse<IDynamicElements> response)
+    {
+        return response switch
+        {
+            DeliveryItemsFeedResponse<IDynamicElements> concrete => concrete.ContinuationToken,
+            _ => response.HasNextPage ? "__next_page__" : null
+        };
+    }
 
-            return await nextQuery.ExecuteAsync(ct).ConfigureAwait(false);
-        });
+    private Func<CancellationToken, Task<IDeliveryResult<IDeliveryItemsFeedResponse>>>? CreateNextPageFetcher(
+        IDeliveryItemsFeedResponse<IDynamicElements> page)
+    {
+        if (!page.HasNextPage)
+            return null;
+
+        return ct => FetchNextPageAndConvertAsync(page, ct);
+    }
+
+    private async Task<IDeliveryResult<IDeliveryItemsFeedResponse>> FetchNextPageAndConvertAsync(
+        IDeliveryItemsFeedResponse<IDynamicElements> currentPage,
+        CancellationToken cancellationToken)
+    {
+        var nextPageResult = await currentPage.FetchNextPageAsync(cancellationToken).ConfigureAwait(false);
+        if (nextPageResult is null)
+            throw new InvalidOperationException("The current feed page indicated a next page, but fetching it returned null.");
+
+        if (!nextPageResult.IsSuccess)
+        {
+            return DeliveryResult.Failure<IDeliveryItemsFeedResponse>(
+                nextPageResult.RequestUrl ?? string.Empty,
+                nextPageResult.StatusCode,
+                nextPageResult.Error,
+                nextPageResult.ResponseHeaders);
+        }
+
+        var response = await ConvertResponseAsync(nextPageResult.Value, cancellationToken).ConfigureAwait(false);
+        return DeliveryResult.Success<IDeliveryItemsFeedResponse>(
+            response,
+            nextPageResult.RequestUrl ?? string.Empty,
+            nextPageResult.StatusCode,
+            nextPageResult.HasStaleContent,
+            nextPageResult.ContinuationToken,
+            nextPageResult.ResponseHeaders);
     }
 
     public async IAsyncEnumerable<IContentItem> EnumerateItemsAsync([EnumeratorCancellation] CancellationToken cancellationToken = default)
@@ -138,62 +145,40 @@ internal sealed class DynamicEnumerateItemsQuery(
         if (_logger is not null)
             LoggerMessages.PaginationStarted(_logger, "ItemsFeed (dynamic)");
 
-        var wait = _waitForLoadingNewContentOverride ?? _getDefaultWaitForNewContent();
-        string? token = null;
+        var pageResult = await ExecuteAsync(cancellationToken).ConfigureAwait(false);
         var pageCount = 0;
         var totalItems = 0;
 
-        while (true)
+        while (pageResult is { IsSuccess: true })
         {
-            var resp = await _api
-                .GetItemsFeedInternalAsync<IDynamicElements>(
-                    _params,
-                    FilterQueryParams.ToQueryDictionary(_serializedFilters),
-                    token,
-                    wait,
-                    cancellationToken)
-                .ConfigureAwait(false);
+            pageCount++;
 
-            if (!resp.IsSuccessStatusCode || resp.Content is null)
+            foreach (var item in pageResult.Value.Items)
+            {
+                cancellationToken.ThrowIfCancellationRequested();
+                totalItems++;
+                yield return item;
+            }
+
+            if (!pageResult.Value.HasNextPage)
+            {
+                if (_logger is not null)
+                    LoggerMessages.PaginationCompleted(_logger, "ItemsFeed (dynamic)", pageCount, totalItems);
+                yield break;
+            }
+
+            var nextPageResult = await pageResult.Value.FetchNextPageAsync(cancellationToken).ConfigureAwait(false);
+            if (nextPageResult is not { IsSuccess: true })
             {
                 if (_logger is not null)
                     LoggerMessages.PaginationStoppedEarly(_logger, "ItemsFeed (dynamic)");
                 yield break;
             }
 
-            pageCount++;
-
-            foreach (var dynamicItem in resp.Content.Items)
-            {
-                cancellationToken.ThrowIfCancellationRequested();
-
-                if (dynamicItem is IRawContentItem rawContentItem && rawContentItem.RawItemJson.HasValue)
-                {
-                    var runtimeItem = await _contentItemMapper.TryRuntimeTypeItemAsync(
-                        rawContentItem.RawItemJson.Value,
-                        resp.Content.ModularContent,
-                        dependencyContext: null,
-                        cancellationToken).ConfigureAwait(false);
-
-                    if (runtimeItem is not null)
-                    {
-                        totalItems++;
-                        yield return runtimeItem;
-                        continue;
-                    }
-                }
-
-                totalItems++;
-                yield return dynamicItem;
-            }
-
-            token = resp.Continuation();
-            if (string.IsNullOrEmpty(token))
-            {
-                if (_logger is not null)
-                    LoggerMessages.PaginationCompleted(_logger, "ItemsFeed (dynamic)", pageCount, totalItems);
-                yield break;
-            }
+            pageResult = nextPageResult;
         }
+
+        if (_logger is not null)
+            LoggerMessages.PaginationStoppedEarly(_logger, "ItemsFeed (dynamic)");
     }
 }

@@ -307,11 +307,9 @@ public class DistributedCacheManagerRealImplementationTests
     }
 
     [Fact]
-    public async Task InvalidateAsync_NonExistentDependency_WithRealImplementation_DoesNotThrow()
-    {
+    public async Task InvalidateAsync_NonExistentDependency_WithRealImplementation_DoesNotThrow() =>
         // Act & Assert
         await _cacheManager.InvalidateAsync(default, "non_existent_real_dep");
-    }
 
     #endregion
 

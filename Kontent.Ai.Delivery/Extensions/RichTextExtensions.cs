@@ -81,20 +81,14 @@ public static class RichTextExtensions
     /// </summary>
     /// <param name="richText">The rich text content to search.</param>
     /// <returns>An enumerable of all content item links.</returns>
-    public static IEnumerable<IContentItemLink> GetContentItemLinks(this IRichTextContent richText)
-    {
-        return richText.GetBlocks<IContentItemLink>();
-    }
+    public static IEnumerable<IContentItemLink> GetContentItemLinks(this IRichTextContent richText) => richText.GetBlocks<IContentItemLink>();
 
     /// <summary>
     /// Gets all embedded content (components and linked items) from the rich text content.
     /// </summary>
     /// <param name="richText">The rich text content to search.</param>
     /// <returns>An enumerable of all embedded content blocks.</returns>
-    public static IEnumerable<IEmbeddedContent> GetEmbeddedContent(this IRichTextContent richText)
-    {
-        return richText.GetBlocks<IEmbeddedContent>();
-    }
+    public static IEnumerable<IEmbeddedContent> GetEmbeddedContent(this IRichTextContent richText) => richText.GetBlocks<IEmbeddedContent>();
 
     /// <summary>
     /// Filters rich text blocks to return only strongly-typed embedded content of a specific model type.
@@ -173,10 +167,7 @@ public static class RichTextExtensions
     /// </summary>
     /// <param name="richText">The rich text content to search.</param>
     /// <returns>An enumerable of all inline images.</returns>
-    public static IEnumerable<IInlineImage> GetInlineImages(this IRichTextContent richText)
-    {
-        return richText.GetBlocks<IInlineImage>();
-    }
+    public static IEnumerable<IInlineImage> GetInlineImages(this IRichTextContent richText) => richText.GetBlocks<IInlineImage>();
 
     /// <summary>
     /// Parses a raw rich text element from JSON into structured <see cref="IRichTextContent"/>.

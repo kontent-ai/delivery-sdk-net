@@ -642,6 +642,9 @@ if (result.IsSuccess)
 
 When you don't have strongly-typed models or need to access content dynamically, use the typeless query methods (`GetItem()`, `GetItems()`, `GetItemsFeed()`). You may also use them for runtime type resolution, if your project uses generated models.
 
+> [!NOTE]
+> Dynamic item/list queries (`GetItem()` and `GetItems()`) are intentionally non-cacheable because their final result type is resolved at runtime. Even with SDK caching configured, these queries always fetch from the API and return `IsCacheHit == false`.
+
 #### Retrieve Content Without Type Parameters
 
 ```csharp
@@ -1135,7 +1138,9 @@ services.AddDeliveryClient(options =>
 services.AddDeliveryDistributedCache(defaultExpiration: TimeSpan.FromHours(2));
 ```
 
-Caching is transparent - once configured, all queries are automatically cached. Cache keys are built from query parameters, ensuring proper cache hits.
+Caching is transparent for cacheable query builders - once configured, cached query types are cached automatically and cache keys are built from query parameters for proper cache hits.
+
+`GetItem()` and `GetItems()` dynamic queries are intentionally excluded from SDK caching (runtime-typed results), so they always return `IsCacheHit == false`.
 
 **Cache payloads:** The in-memory cache stores hydrated objects for maximum performance. Distributed caches store raw JSON payloads (rehydrated on read) to avoid serialization issues with circular references.
 
