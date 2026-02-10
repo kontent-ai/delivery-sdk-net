@@ -235,7 +235,7 @@ services.AddDeliveryDistributedCache("production", defaultExpiration: TimeSpan.F
 
 ### Custom Cache Manager
 
-For advanced scenarios, implement a custom cache manager. Use `IDeliveryCacheManager` with the default `StorageMode` (`CacheStorageMode.Object`) for hydrated-object caching (memory), or override `StorageMode` to `CacheStorageMode.RawPayload` for raw JSON payload caching (distributed).
+For advanced scenarios, implement a custom cache manager. Use `IDeliveryCacheManager` with the default `StorageMode` (`CacheStorageMode.HydratedObject`) for hydrated-object caching (memory), or override `StorageMode` to `CacheStorageMode.RawJson` for raw JSON payload caching (distributed).
 
 #### Hydrated-object cache manager (memory style)
 
@@ -261,7 +261,7 @@ public class CustomMemoryCacheManager : IDeliveryCacheManager
 }
 ```
 
-#### Raw-payload cache manager (distributed style)
+#### Raw JSON cache manager (distributed style)
 
 ```csharp
 using System.Text.Json;
@@ -275,7 +275,7 @@ public class CustomDistributedCacheManager : IDeliveryCacheManager
     public CustomDistributedCacheManager(IDistributedCache cache) => _cache = cache;
 
     // Tell the SDK to cache raw JSON payloads instead of hydrated objects
-    public CacheStorageMode StorageMode => CacheStorageMode.RawPayload;
+    public CacheStorageMode StorageMode => CacheStorageMode.RawJson;
 
     public async Task<T?> GetAsync<T>(string cacheKey, CancellationToken cancellationToken = default) where T : class
     {

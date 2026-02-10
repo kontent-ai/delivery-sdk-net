@@ -144,6 +144,59 @@ public class CachingIntegrationTests
     }
 
     [Fact]
+    public async Task DynamicItemQuery_WithCacheConfigured_DoesNotReturnCacheHit()
+    {
+        var mock = new MockHttpMessageHandler();
+        var itemCodename = "coffee_beverages_explained";
+        var fixtureContent = await File.ReadAllTextAsync(
+            Path.Combine(Environment.CurrentDirectory,
+                $"Fixtures{Path.DirectorySeparatorChar}DeliveryClient{Path.DirectorySeparatorChar}{itemCodename}.json"));
+
+        // Dynamic query should call API on every invocation even when cache manager is configured.
+        mock.Expect($"{BaseUrl}/items/{itemCodename}")
+            .Respond("application/json", fixtureContent);
+        mock.Expect($"{BaseUrl}/items/{itemCodename}")
+            .Respond("application/json", fixtureContent);
+
+        var client = CreateClientWithMemoryCache(mock);
+
+        var result1 = await client.GetItem(itemCodename).ExecuteAsync();
+        var result2 = await client.GetItem(itemCodename).ExecuteAsync();
+
+        Assert.True(result1.IsSuccess);
+        Assert.True(result2.IsSuccess);
+        Assert.False(result1.IsCacheHit);
+        Assert.False(result2.IsCacheHit);
+        mock.VerifyNoOutstandingExpectation();
+    }
+
+    [Fact]
+    public async Task DynamicItemsQuery_WithCacheConfigured_DoesNotReturnCacheHit()
+    {
+        var mock = new MockHttpMessageHandler();
+        var fixtureContent = await File.ReadAllTextAsync(
+            Path.Combine(Environment.CurrentDirectory,
+                $"Fixtures{Path.DirectorySeparatorChar}DeliveryClient{Path.DirectorySeparatorChar}items.json"));
+
+        // Dynamic query should call API on every invocation even when cache manager is configured.
+        mock.Expect($"{BaseUrl}/items")
+            .Respond("application/json", fixtureContent);
+        mock.Expect($"{BaseUrl}/items")
+            .Respond("application/json", fixtureContent);
+
+        var client = CreateClientWithMemoryCache(mock);
+
+        var result1 = await client.GetItems().ExecuteAsync();
+        var result2 = await client.GetItems().ExecuteAsync();
+
+        Assert.True(result1.IsSuccess);
+        Assert.True(result2.IsSuccess);
+        Assert.False(result1.IsCacheHit);
+        Assert.False(result2.IsCacheHit);
+        mock.VerifyNoOutstandingExpectation();
+    }
+
+    [Fact]
     public async Task MemoryCache_Invalidation_RefreshesCache()
     {
         var mock = new MockHttpMessageHandler();

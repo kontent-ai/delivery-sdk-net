@@ -69,7 +69,7 @@ internal sealed class DistributedCacheManager : IDeliveryCacheManager
     private const string DependencyKeyPrefix = "dep:";
 
     /// <inheritdoc />
-    public CacheStorageMode StorageMode => CacheStorageMode.RawPayload;
+    public CacheStorageMode StorageMode => CacheStorageMode.RawJson;
 
     private string KeyPrefixSegment => string.IsNullOrEmpty(_keyPrefix) ? "" : $"{_keyPrefix}:";
 

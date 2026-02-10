@@ -325,11 +325,11 @@ public interface IDeliveryCacheManager
 Cache managers declare their storage strategy via the `StorageMode` property on `IDeliveryCacheManager`. Query builders use this to decide whether to cache raw JSON payloads (rehydrating on read) or fully hydrated objects.
 
 ```csharp
-public enum CacheStorageMode { Object = 0, RawPayload = 1 }
+public enum CacheStorageMode { HydratedObject = 0, RawJson = 1 }
 
 public interface IDeliveryCacheManager
 {
-    CacheStorageMode StorageMode => CacheStorageMode.Object;
+    CacheStorageMode StorageMode => CacheStorageMode.HydratedObject;
     // ... other members
 }
 ```

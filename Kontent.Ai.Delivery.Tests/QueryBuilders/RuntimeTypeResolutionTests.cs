@@ -208,6 +208,44 @@ public class RuntimeTypeResolutionTests
         });
     }
 
+    [Fact]
+    public async Task GetItems_WithTypeProvider_FetchNextPage_PreservesRuntimeTyping()
+    {
+        // Arrange
+        var mockHttp = new MockHttpMessageHandler();
+        var itemsUrl = $"{BaseUrl}/items";
+
+        mockHttp.Expect(itemsUrl)
+            .WithQueryString("limit", "1")
+            .Respond("application/json",
+                BuildPagedItemsListingJson(skip: 0, limit: 1, totalCount: 2, codename: "paged_article_1", hasNextPage: true));
+
+        mockHttp.Expect(itemsUrl)
+            .WithQueryString("skip", "1")
+            .WithQueryString("limit", "1")
+            .Respond("application/json",
+                BuildPagedItemsListingJson(skip: 1, limit: 1, totalCount: 2, codename: "paged_article_2", hasNextPage: false));
+
+        var client = CreateClientWithTypeProvider(mockHttp);
+
+        // Act
+        var firstPageResult = await client.GetItems().Limit(1).ExecuteAsync();
+        Assert.True(firstPageResult.IsSuccess);
+        Assert.Single(firstPageResult.Value.Items);
+        Assert.True(firstPageResult.Value.Items[0] is IContentItem<Article>);
+        Assert.True(firstPageResult.Value.HasNextPage);
+
+        var secondPageResult = await firstPageResult.Value.FetchNextPageAsync();
+
+        // Assert
+        Assert.NotNull(secondPageResult);
+        Assert.True(secondPageResult.IsSuccess);
+        Assert.Single(secondPageResult.Value.Items);
+        Assert.True(secondPageResult.Value.Items[0] is IContentItem<Article>);
+        Assert.False(secondPageResult.Value.HasNextPage);
+        mockHttp.VerifyNoOutstandingExpectation();
+    }
+
     #endregion
 
     #region GetItemsFeed - Enumeration Tests
@@ -411,5 +449,45 @@ public class RuntimeTypeResolutionTests
             Environment.CurrentDirectory,
             $"Fixtures{Path.DirectorySeparatorChar}DeliveryClient{Path.DirectorySeparatorChar}{filename}");
         return await File.ReadAllTextAsync(path);
+    }
+
+    private static string BuildPagedItemsListingJson(int skip, int limit, int totalCount, string codename, bool hasNextPage)
+    {
+        var nextPageUrl = hasNextPage
+            ? $"https://deliver.kontent.ai/items?skip={skip + limit}&limit={limit}"
+            : string.Empty;
+
+        return $$"""
+            {
+              "items": [
+                {
+                  "system": {
+                    "id": "{{Guid.NewGuid()}}",
+                    "name": "{{codename}}",
+                    "codename": "{{codename}}",
+                    "language": "en-US",
+                    "type": "article",
+                    "collection": "default",
+                    "last_modified": "2024-01-01T00:00:00Z"
+                  },
+                  "elements": {
+                    "title": {
+                      "type": "text",
+                      "name": "Title",
+                      "value": "Title {{codename}}"
+                    }
+                  }
+                }
+              ],
+              "pagination": {
+                "skip": {{skip}},
+                "limit": {{limit}},
+                "count": 1,
+                "total_count": {{totalCount}},
+                "next_page": "{{nextPageUrl}}"
+              },
+              "modular_content": {}
+            }
+            """;
     }
 }

@@ -31,12 +31,12 @@ public interface IDeliveryCacheManager
     /// </summary>
     /// <remarks>
     /// <para>
-    /// <see cref="CacheStorageMode.Object"/> (default) stores fully hydrated C# objects,
-    /// suitable for in-memory caches. <see cref="CacheStorageMode.RawPayload"/> stores raw JSON
+    /// <see cref="CacheStorageMode.HydratedObject"/> (default) stores fully hydrated C# objects,
+    /// suitable for in-memory caches. <see cref="CacheStorageMode.RawJson"/> stores raw JSON
     /// strings, suitable for distributed caches that require serialization.
     /// </para>
     /// </remarks>
-    CacheStorageMode StorageMode => CacheStorageMode.Object;
+    CacheStorageMode StorageMode => CacheStorageMode.HydratedObject;
 
     /// <summary>
     /// Attempts to retrieve a cached value by its key.

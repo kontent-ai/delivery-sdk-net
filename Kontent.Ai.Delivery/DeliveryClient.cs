@@ -45,7 +45,13 @@ internal sealed class DeliveryClient(
     {
         return string.IsNullOrEmpty(codename)
             ? throw new ArgumentException("Entered item codename is not valid.", nameof(codename))
-            : (IDynamicItemQuery)new DynamicItemQuery(_deliveryApi, codename, GetDefaultWaitForLoadingNewContent, _contentItemMapper);
+            : (IDynamicItemQuery)new DynamicItemQuery(
+                _deliveryApi,
+                codename,
+                GetDefaultWaitForLoadingNewContent,
+                _contentItemMapper,
+                _contentDeserializer,
+                _logger);
     }
 
     public IItemsQuery<T> GetItems<T>()
@@ -55,7 +61,13 @@ internal sealed class DeliveryClient(
 
     public IDynamicItemsQuery GetItems()
     {
-        return new DynamicItemsQuery(_deliveryApi, GetDefaultWaitForLoadingNewContent, _contentItemMapper);
+        return new DynamicItemsQuery(
+            _deliveryApi,
+            GetDefaultWaitForLoadingNewContent,
+            _contentItemMapper,
+            _contentDeserializer,
+            _typeProvider,
+            _logger);
     }
 
     public IEnumerateItemsQuery<T> GetItemsFeed<T>()

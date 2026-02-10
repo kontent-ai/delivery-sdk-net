@@ -57,7 +57,12 @@ internal sealed class TypeProvider : ITypeProvider
             }
         }
 
-        // 3. Fallback: check calling assembly (for test scenarios where entry assembly may be test runner)
+        // 3. Fallback: check calling assembly (for test scenarios where entry assembly may be test runner).
+        // Note: Assembly.GetCallingAssembly() inside a Lazy<T> callback resolves the call stack at
+        // Lazy evaluation time, which goes through the Lazy infrastructure rather than user code.
+        // In practice this still works because steps 1-2 (entry assembly + references) handle
+        // production scenarios, and step 3 is a fallback that happens to work in most xUnit setups.
+        // Users can always override by registering their own ITypeProvider in the DI container.
         var callingAssembly = Assembly.GetCallingAssembly();
         if (callingAssembly is not null && callingAssembly != entryAssembly)
         {

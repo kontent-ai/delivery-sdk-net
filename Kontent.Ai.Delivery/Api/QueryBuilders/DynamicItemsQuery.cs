@@ -1,7 +1,7 @@
-using Kontent.Ai.Delivery.Api.Filtering;
 using Kontent.Ai.Delivery.ContentItems;
 using Kontent.Ai.Delivery.ContentItems.Mapping;
 using Kontent.Ai.Delivery.SharedModels;
+using Microsoft.Extensions.Logging;
 
 namespace Kontent.Ai.Delivery.Api.QueryBuilders;
 
@@ -16,90 +16,84 @@ namespace Kontent.Ai.Delivery.Api.QueryBuilders;
 internal sealed class DynamicItemsQuery(
     IDeliveryApi api,
     Func<bool?> getDefaultWaitForNewContent,
-    ContentItemMapper contentItemMapper) : IDynamicItemsQuery
+    ContentItemMapper contentItemMapper,
+    IContentDeserializer contentDeserializer,
+    ITypeProvider typeProvider,
+    ILogger? logger = null) : IDynamicItemsQuery
 {
-    private readonly IDeliveryApi _api = api;
-    private readonly Func<bool?> _getDefaultWaitForNewContent = getDefaultWaitForNewContent;
     private readonly ContentItemMapper _contentItemMapper = contentItemMapper;
-    private readonly List<KeyValuePair<string, string>> _serializedFilters = [];
-    private ListItemsParams _params = new();
-    private bool? _waitForLoadingNewContentOverride;
+    private readonly ItemsQuery<IDynamicElements> _inner = new(
+        api,
+        getDefaultWaitForNewContent,
+        contentItemMapper,
+        contentDeserializer,
+        typeProvider,
+        cacheManager: null,
+        logger);
 
     public IDynamicItemsQuery WithLanguage(string languageCodename, LanguageFallbackMode languageFallbackMode = LanguageFallbackMode.Enabled)
     {
-        _params = _params with { Language = languageCodename };
-        if (languageFallbackMode == LanguageFallbackMode.Disabled)
-        {
-            _serializedFilters.Add(new KeyValuePair<string, string>(
-                FilterPath.System("language") + FilterSuffix.Eq,
-                FilterValueSerializer.Serialize(languageCodename)));
-        }
+        _inner.WithLanguage(languageCodename, languageFallbackMode);
         return this;
     }
 
     public IDynamicItemsQuery WithElements(params string[] elementCodenames)
     {
-        _params = _params with { Elements = elementCodenames };
+        _inner.WithElements(elementCodenames);
         return this;
     }
 
     public IDynamicItemsQuery WithoutElements(params string[] elementCodenames)
     {
-        _params = _params with { ExcludeElements = elementCodenames };
+        _inner.WithoutElements(elementCodenames);
         return this;
     }
 
     public IDynamicItemsQuery Depth(int depth)
     {
-        _params = _params with { Depth = depth };
+        _inner.Depth(depth);
         return this;
     }
 
     public IDynamicItemsQuery Skip(int skip)
     {
-        _params = _params with { Skip = skip };
+        _inner.Skip(skip);
         return this;
     }
 
     public IDynamicItemsQuery Limit(int limit)
     {
-        _params = _params with { Limit = limit };
+        _inner.Limit(limit);
         return this;
     }
 
     public IDynamicItemsQuery OrderBy(string elementOrAttributePath, OrderingMode orderingMode = OrderingMode.Ascending)
     {
-        _params = _params with
-        {
-            OrderBy = orderingMode == OrderingMode.Ascending
-                ? $"{elementOrAttributePath}[asc]"
-                : $"{elementOrAttributePath}[desc]"
-        };
+        _inner.OrderBy(elementOrAttributePath, orderingMode);
         return this;
     }
 
     public IDynamicItemsQuery WithTotalCount()
     {
-        _params = _params with { IncludeTotalCount = true };
+        _inner.WithTotalCount();
         return this;
     }
 
     public IDynamicItemsQuery WaitForLoadingNewContent(bool enabled = true)
     {
-        _waitForLoadingNewContentOverride = enabled;
+        _inner.WaitForLoadingNewContent(enabled);
         return this;
     }
 
     public IDynamicItemsQuery Where(Func<IItemsFilterBuilder, IItemsFilterBuilder> build)
     {
-        ArgumentNullException.ThrowIfNull(build);
-        build(new ItemsFilterBuilder(_serializedFilters));
+        _inner.Where(build);
         return this;
     }
 
     public async Task<IDeliveryResult<IDeliveryItemListingResponse>> ExecuteAsync(CancellationToken cancellationToken = default)
     {
-        var deliveryResult = await FetchFromApiAsync(cancellationToken).ConfigureAwait(false);
+        var deliveryResult = await _inner.ExecuteAsync(cancellationToken).ConfigureAwait(false);
         if (!deliveryResult.IsSuccess)
         {
             return DeliveryResult.Failure<IDeliveryItemListingResponse>(
@@ -109,20 +103,7 @@ internal sealed class DynamicItemsQuery(
                 deliveryResult.ResponseHeaders);
         }
 
-        var resp = deliveryResult.Value;
-
-        var runtimeTypedItems = await _contentItemMapper.RuntimeTypeItemsAsync(
-            resp.Items,
-            resp.ModularContent,
-            cancellationToken).ConfigureAwait(false);
-
-        var response = new DynamicDeliveryItemListingResponse
-        {
-            Items = runtimeTypedItems,
-            Pagination = resp.Pagination,
-            ModularContent = resp.ModularContent,
-            NextPageFetcher = CreateNextPageFetcher(resp.Pagination)
-        };
+        var response = await ConvertResponseAsync(deliveryResult.Value, cancellationToken).ConfigureAwait(false);
 
         return DeliveryResult.Success<IDeliveryItemListingResponse>(
             response,
@@ -133,44 +114,59 @@ internal sealed class DynamicItemsQuery(
             deliveryResult.ResponseHeaders);
     }
 
-    private async Task<IDeliveryResult<DeliveryItemListingResponse<IDynamicElements>>> FetchFromApiAsync(CancellationToken cancellationToken)
+    private async Task<DynamicDeliveryItemListingResponse> ConvertResponseAsync(
+        IDeliveryItemListingResponse<IDynamicElements> response,
+        CancellationToken cancellationToken)
     {
-        var wait = _waitForLoadingNewContentOverride ?? _getDefaultWaitForNewContent();
-        var rawResponse = await _api.GetItemsInternalAsync<IDynamicElements>(
-            _params,
-            FilterQueryParams.ToQueryDictionary(_serializedFilters),
-            wait,
+        var runtimeTypedItems = await _contentItemMapper.RuntimeTypeItemsAsync(
+            response.Items,
+            response.ModularContent,
             cancellationToken).ConfigureAwait(false);
-        return await rawResponse.ToDeliveryResultAsync().ConfigureAwait(false);
-    }
 
-    private Func<CancellationToken, Task<IDeliveryResult<IDeliveryItemListingResponse>>>? CreateNextPageFetcher(Pagination pagination)
-    {
-        if (string.IsNullOrEmpty(pagination.NextPageUrl))
-            return null;
-
-        var nextSkip = ExtractSkipFromUrl(pagination.NextPageUrl);
-
-        return async (ct) =>
+        return new DynamicDeliveryItemListingResponse
         {
-            var nextQuery = new DynamicItemsQuery(_api, _getDefaultWaitForNewContent, _contentItemMapper)
-            {
-                _params = _params with { Skip = nextSkip },
-                _waitForLoadingNewContentOverride = _waitForLoadingNewContentOverride
-            };
-
-            nextQuery._serializedFilters.AddRange(_serializedFilters);
-
-            return await nextQuery.ExecuteAsync(ct).ConfigureAwait(false);
+            Items = runtimeTypedItems,
+            Pagination = ToPagination(response.Pagination),
+            ModularContent = response.ModularContent,
+            NextPageFetcher = CreateNextPageFetcher(response)
         };
     }
 
-    private static int ExtractSkipFromUrl(string url)
-    {
-        if (!Uri.TryCreate(url, UriKind.Absolute, out var uri))
-            return 0;
+    private Func<CancellationToken, Task<IDeliveryResult<IDeliveryItemListingResponse>>>? CreateNextPageFetcher(
+        IDeliveryItemListingResponse<IDynamicElements> page) => !page.HasNextPage ? null : (ct => FetchNextPageAndConvertAsync(page, ct));
 
-        var query = System.Web.HttpUtility.ParseQueryString(uri.Query);
-        return int.TryParse(query["skip"], out var skip) ? skip : 0;
+    private async Task<IDeliveryResult<IDeliveryItemListingResponse>> FetchNextPageAndConvertAsync(
+        IDeliveryItemListingResponse<IDynamicElements> currentPage,
+        CancellationToken cancellationToken)
+    {
+        var nextPageResult = await currentPage.FetchNextPageAsync(cancellationToken).ConfigureAwait(false) ?? throw new InvalidOperationException("The current page indicated a next page, but fetching it returned null.");
+
+        if (!nextPageResult.IsSuccess)
+        {
+            return DeliveryResult.Failure<IDeliveryItemListingResponse>(
+                nextPageResult.RequestUrl ?? string.Empty,
+                nextPageResult.StatusCode,
+                nextPageResult.Error,
+                nextPageResult.ResponseHeaders);
+        }
+
+        var response = await ConvertResponseAsync(nextPageResult.Value, cancellationToken).ConfigureAwait(false);
+
+        return DeliveryResult.Success<IDeliveryItemListingResponse>(
+            response,
+            nextPageResult.RequestUrl ?? string.Empty,
+            nextPageResult.StatusCode,
+            nextPageResult.HasStaleContent,
+            nextPageResult.ContinuationToken,
+            nextPageResult.ResponseHeaders);
     }
+
+    private static Pagination ToPagination(IPagination pagination) => new()
+    {
+        Skip = pagination.Skip,
+        Limit = pagination.Limit,
+        Count = pagination.Count,
+        TotalCount = pagination.TotalCount,
+        NextPageUrl = pagination.NextPageUrl
+    };
 }

@@ -1139,7 +1139,7 @@ Caching is transparent - once configured, all queries are automatically cached. 
 
 **Cache payloads:** The in-memory cache stores hydrated objects for maximum performance. Distributed caches store raw JSON payloads (rehydrated on read) to avoid serialization issues with circular references.
 
-If you implement a custom cache manager that stores raw payloads (typical for distributed caches), override the `StorageMode` property to return `CacheStorageMode.RawPayload` so the SDK uses the raw JSON caching path.
+If you implement a custom cache manager that stores raw payloads (typical for distributed caches), override the `StorageMode` property to return `CacheStorageMode.RawJson` so the SDK uses the raw JSON caching path.
 
 #### Detecting Cache Hits
 

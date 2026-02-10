@@ -9,7 +9,7 @@ public enum CacheStorageMode
     /// Stores fully hydrated C# objects. Suitable for in-memory caches (e.g., <c>IMemoryCache</c>)
     /// where object references are preserved directly.
     /// </summary>
-    Object = 0,
+    HydratedObject = 0,
 
     /// <summary>
     /// Stores raw JSON strings extracted from the API response. Suitable for distributed caches
@@ -17,5 +17,5 @@ public enum CacheStorageMode
     /// complex object graphs (circular references, custom converters, non-serializable types).
     /// On cache hit, the raw JSON is rehydrated using the SDK's standard deserialization pipeline.
     /// </summary>
-    RawPayload = 1
+    RawJson = 1
 }

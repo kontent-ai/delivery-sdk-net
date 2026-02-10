@@ -1,5 +1,6 @@
 using System.Runtime.CompilerServices;
 using Kontent.Ai.Delivery.Api.Filtering;
+using Kontent.Ai.Delivery.ContentItems;
 using Kontent.Ai.Delivery.ContentItems.Mapping;
 using Kontent.Ai.Delivery.Logging;
 using Microsoft.Extensions.Logging;
@@ -24,9 +25,7 @@ internal sealed class EnumerateItemsQuery<TModel>(
     private readonly List<KeyValuePair<string, string>> _serializedFilters = [];
     private string? _continuationToken;
     private bool _typeFilterApplied;
-    private static bool IsDynamicModel =>
-        typeof(TModel) == typeof(IDynamicElements) ||
-        typeof(TModel) == typeof(ContentItems.DynamicElements);
+    private static bool IsDynamicModel => ModelTypeHelper.IsDynamic<TModel>();
 
     public IEnumerateItemsQuery<TModel> WithLanguage(string languageCodename, LanguageFallbackMode languageFallbackMode = LanguageFallbackMode.Enabled)
     {
