@@ -82,6 +82,20 @@ public sealed class PropertyMappingInfoTests
             Assert.Contains(mappings2, m2 => m2.ElementCodename == m1.ElementCodename));
     }
 
+    [Fact]
+    public void CreateMappings_AssignsExpectedMapKind()
+    {
+        var mappings = PropertyMappingInfo.CreateMappings(typeof(MapKindModel))
+            .ToDictionary(m => m.ElementCodename, m => m.MapKind);
+
+        Assert.Equal(ElementMappingKind.Simple, mappings["title"]);
+        Assert.Equal(ElementMappingKind.RichText, mappings["body_copy"]);
+        Assert.Equal(ElementMappingKind.Assets, mappings["teaser_image"]);
+        Assert.Equal(ElementMappingKind.Taxonomy, mappings["personas"]);
+        Assert.Equal(ElementMappingKind.DateTime, mappings["publish_date"]);
+        Assert.Equal(ElementMappingKind.LinkedItems, mappings["related_articles"]);
+    }
+
     private class TestModel
     {
         [JsonPropertyName("title")]
@@ -99,5 +113,26 @@ public sealed class PropertyMappingInfoTests
         [JsonIgnore]
         [JsonPropertyName("ignored")]
         public string? IgnoredProperty { get; set; }
+    }
+
+    private class MapKindModel
+    {
+        [JsonPropertyName("title")]
+        public string? Title { get; set; }
+
+        [JsonPropertyName("body_copy")]
+        public IRichTextContent? BodyCopy { get; set; }
+
+        [JsonPropertyName("teaser_image")]
+        public IEnumerable<IAsset>? TeaserImage { get; set; }
+
+        [JsonPropertyName("personas")]
+        public IEnumerable<ITaxonomyTerm>? Personas { get; set; }
+
+        [JsonPropertyName("publish_date")]
+        public IDateTimeContent? PublishDate { get; set; }
+
+        [JsonPropertyName("related_articles")]
+        public IEnumerable<IEmbeddedContent>? RelatedArticles { get; set; }
     }
 }
