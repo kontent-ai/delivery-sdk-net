@@ -219,7 +219,7 @@ internal static class QueryCacheHelper
     /// On cache hit, attempts to rehydrate the raw payload. If rehydration fails, falls through
     /// to fresh fetch and overwrites the stale cache entry.
     /// </summary>
-    /// <typeparam name="TCachePayload">The raw cache payload type (e.g., CachedItemResponseRaw).</typeparam>
+    /// <typeparam name="TCachePayload">The raw cache payload type (e.g., CachedRawItemsPayload).</typeparam>
     /// <typeparam name="TResult">The final result type returned to the caller.</typeparam>
     /// <param name="cacheManager">The cache manager to query.</param>
     /// <param name="cacheKey">The cache key to look up.</param>

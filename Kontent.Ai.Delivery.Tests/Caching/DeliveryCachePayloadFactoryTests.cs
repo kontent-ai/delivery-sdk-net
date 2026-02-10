@@ -8,12 +8,12 @@ using Xunit;
 namespace Kontent.Ai.Delivery.Tests.Caching;
 
 /// <summary>
-/// Unit tests for cache payload creation on <see cref="CachedItemResponseRaw"/> and <see cref="CachedItemListingResponseRaw"/>.
+/// Unit tests for cache payload creation on <see cref="CachedRawItemsPayload"/>.
 /// </summary>
 public class CachePayloadTests
 {
     [Fact]
-    public void CachedItemResponseRaw_From_WithValidItem_ExtractsRawJson()
+    public void CachedRawItemsPayload_FromItem_WithValidItem_ExtractsRawJson()
     {
         // Arrange
         var rawJson = """{"system":{"codename":"test-item","type":"article"},"elements":{"title":{"type":"text","value":"Test Title"}}}""";
@@ -26,18 +26,19 @@ public class CachePayloadTests
         };
 
         // Act
-        var payload = CachedItemResponseRaw.From(item, modularContent);
+        var payload = CachedRawItemsPayload.FromItem(item, modularContent);
 
         // Assert
         Assert.NotNull(payload);
-        Assert.NotEmpty(payload.ItemJson);
-        Assert.Contains("test-item", payload.ItemJson);
+        Assert.Single(payload.ItemsJson);
+        Assert.Contains("test-item", payload.ItemsJson[0]);
         Assert.Single(payload.ModularContentJson);
         Assert.True(payload.ModularContentJson.ContainsKey("linked-item"));
+        Assert.Null(payload.Pagination);
     }
 
     [Fact]
-    public void CachedItemResponseRaw_From_WithNullModularContent_ReturnsEmptyDictionary()
+    public void CachedRawItemsPayload_FromItem_WithNullModularContent_ReturnsEmptyDictionary()
     {
         // Arrange
         var rawJson = """{"system":{"codename":"test-item"},"elements":{}}""";
@@ -45,7 +46,7 @@ public class CachePayloadTests
         var item = CreateContentItem("test-item", doc.RootElement.Clone());
 
         // Act
-        var payload = CachedItemResponseRaw.From<Article>(item, null);
+        var payload = CachedRawItemsPayload.FromItem<Article>(item, null);
 
         // Assert
         Assert.NotNull(payload);
@@ -53,20 +54,20 @@ public class CachePayloadTests
     }
 
     [Fact]
-    public void CachedItemResponseRaw_From_WithoutRawJson_ThrowsInvalidOperationException()
+    public void CachedRawItemsPayload_FromItem_WithoutRawJson_ThrowsInvalidOperationException()
     {
         // Arrange
         var item = CreateContentItem("test-item", rawJson: null);
 
         // Act & Assert
         var exception = Assert.Throws<InvalidOperationException>(
-            () => CachedItemResponseRaw.From<Article>(item, null));
+            () => CachedRawItemsPayload.FromItem<Article>(item, null));
 
         Assert.Contains("test-item", exception.Message);
     }
 
     [Fact]
-    public void CachedItemListingResponseRaw_From_WithValidItems_ExtractsAllRawJson()
+    public void CachedRawItemsPayload_FromListing_WithValidItems_ExtractsAllRawJson()
     {
         // Arrange
         var rawJson1 = """{"system":{"codename":"item-1"},"elements":{}}""";
@@ -89,19 +90,20 @@ public class CachePayloadTests
         };
 
         // Act
-        var payload = CachedItemListingResponseRaw.From(response);
+        var payload = CachedRawItemsPayload.FromListing(response);
 
         // Assert
         Assert.NotNull(payload);
         Assert.Equal(2, payload.ItemsJson.Count);
         Assert.Contains("item-1", payload.ItemsJson[0]);
         Assert.Contains("item-2", payload.ItemsJson[1]);
-        Assert.Equal(0, payload.Pagination.Skip);
-        Assert.Equal(10, payload.Pagination.Limit);
+        var pagination = Assert.IsType<Pagination>(payload.Pagination);
+        Assert.Equal(0, pagination.Skip);
+        Assert.Equal(10, pagination.Limit);
     }
 
     [Fact]
-    public void CachedItemListingResponseRaw_From_WithModularContent_ExtractsModularContentJson()
+    public void CachedRawItemsPayload_FromListing_WithModularContent_ExtractsModularContentJson()
     {
         // Arrange
         var rawJson = """{"system":{"codename":"item-1"},"elements":{}}""";
@@ -124,7 +126,7 @@ public class CachePayloadTests
         };
 
         // Act
-        var payload = CachedItemListingResponseRaw.From(response);
+        var payload = CachedRawItemsPayload.FromListing(response);
 
         // Assert
         Assert.Single(payload.ModularContentJson);
@@ -133,7 +135,7 @@ public class CachePayloadTests
     }
 
     [Fact]
-    public void CachedItemListingResponseRaw_From_WithEmptyItems_ReturnsEmptyList()
+    public void CachedRawItemsPayload_FromListing_WithEmptyItems_ReturnsEmptyList()
     {
         // Arrange
         var response = new DeliveryItemListingResponse<Article>
@@ -144,7 +146,7 @@ public class CachePayloadTests
         };
 
         // Act
-        var payload = CachedItemListingResponseRaw.From(response);
+        var payload = CachedRawItemsPayload.FromListing(response);
 
         // Assert
         Assert.Empty(payload.ItemsJson);

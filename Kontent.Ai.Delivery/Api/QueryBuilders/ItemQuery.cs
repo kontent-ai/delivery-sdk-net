@@ -152,7 +152,7 @@ internal sealed class ItemQuery<TModel>(
                     return (null, null, Array.Empty<string>());
 
                 var (item, deps) = await ProcessItemAsync(apiResult.Value, ct).ConfigureAwait(false);
-                var payload = CachedItemResponseRaw.From(item, apiResult.Value.ModularContent);
+                var payload = CachedRawItemsPayload.FromItem(item, apiResult.Value.ModularContent);
                 return (payload, item, deps);
             },
             async (payload, ct) => (IContentItem<TModel>)await CachePayloadHelper.RehydrateItemAsync<TModel>(

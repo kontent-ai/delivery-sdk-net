@@ -67,13 +67,19 @@ internal static class CachePayloadHelper
     /// Rehydrates a single content item from a cached raw JSON payload.
     /// </summary>
     internal static async Task<ContentItem<TModel>> RehydrateItemAsync<TModel>(
-        CachedItemResponseRaw payload,
+        CachedRawItemsPayload payload,
         IContentDeserializer contentDeserializer,
         ContentItemMapper contentItemMapper,
         bool isDynamicModel,
         CancellationToken cancellationToken)
     {
-        using var itemDoc = JsonDocument.Parse(payload.ItemJson);
+        if (payload.ItemsJson.Count != 1)
+        {
+            throw new InvalidOperationException(
+                $"Expected exactly one cached item for item query rehydration, but found {payload.ItemsJson.Count}.");
+        }
+
+        using var itemDoc = JsonDocument.Parse(payload.ItemsJson[0]);
         var item = (ContentItem<TModel>)contentDeserializer.DeserializeContentItem(
             itemDoc.RootElement.Clone(), typeof(TModel));
 
@@ -91,12 +97,17 @@ internal static class CachePayloadHelper
     /// Rehydrates a listing response from a cached raw JSON payload.
     /// </summary>
     internal static async Task<DeliveryItemListingResponse<TModel>> RehydrateListingAsync<TModel>(
-        CachedItemListingResponseRaw payload,
+        CachedRawItemsPayload payload,
         IContentDeserializer contentDeserializer,
         ContentItemMapper contentItemMapper,
         bool isDynamicModel,
         CancellationToken cancellationToken)
     {
+        if (payload.Pagination is null)
+        {
+            throw new InvalidOperationException("Cached listing payload is missing pagination.");
+        }
+
         var modularContent = ParseModularContent(payload.ModularContentJson);
         var items = new List<ContentItem<TModel>>(payload.ItemsJson.Count);
 
