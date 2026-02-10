@@ -84,15 +84,16 @@ public static partial class ServiceCollectionExtensions
         IConfiguration configuration,
         string configurationSectionName = "DeliveryOptions")
     {
+        ArgumentNullException.ThrowIfNull(services);
         ArgumentNullException.ThrowIfNull(configuration);
 
         var section = string.IsNullOrWhiteSpace(configurationSectionName)
             ? configuration
             : configuration.GetSection(configurationSectionName);
 
-        return services.AddDeliveryClient(
+        return services.AddDeliveryClientFromConfiguration(
             DeliveryClientNames.Default,
-            section.Bind);
+            section);
     }
 
     /// <summary>
@@ -105,11 +106,12 @@ public static partial class ServiceCollectionExtensions
         this IServiceCollection services,
         IConfigurationSection configurationSection)
     {
+        ArgumentNullException.ThrowIfNull(services);
         ArgumentNullException.ThrowIfNull(configurationSection);
 
-        return services.AddDeliveryClient(
+        return services.AddDeliveryClientFromConfiguration(
             DeliveryClientNames.Default,
-            configurationSection.Bind);
+            configurationSection);
     }
 
     /// <summary>
@@ -208,6 +210,48 @@ public static partial class ServiceCollectionExtensions
                 .ValidateOnStart();
         }
 
+        return CompleteClientRegistration(services, name, configureHttpClient, configureResilience, configureRefit);
+    }
+
+    private static IServiceCollection AddDeliveryClientFromConfiguration(
+        this IServiceCollection services,
+        string name,
+        IConfiguration configuration,
+        Action<IHttpClientBuilder>? configureHttpClient = null,
+        Action<Polly.ResiliencePipelineBuilder<HttpResponseMessage>>? configureResilience = null,
+        Action<RefitSettings>? configureRefit = null)
+    {
+        ArgumentNullException.ThrowIfNull(services);
+        ValidateClientName(name);
+        ArgumentNullException.ThrowIfNull(configuration);
+
+        EnsureClientNameNotAlreadyRegistered(services, name);
+
+        // Configure named options from configuration with change-token support.
+        services.Configure<DeliveryOptions>(name, configuration);
+        services.AddOptions<DeliveryOptions>(name)
+            .ValidateDataAnnotations()
+            .ValidateOnStart();
+
+        // Also configure unnamed options for backward compatibility if this is the default name.
+        if (name == DeliveryClientNames.Default)
+        {
+            services.Configure<DeliveryOptions>(configuration);
+            services.AddOptions<DeliveryOptions>()
+                .ValidateDataAnnotations()
+                .ValidateOnStart();
+        }
+
+        return CompleteClientRegistration(services, name, configureHttpClient, configureResilience, configureRefit);
+    }
+
+    private static IServiceCollection CompleteClientRegistration(
+        IServiceCollection services,
+        string name,
+        Action<IHttpClientBuilder>? configureHttpClient = null,
+        Action<Polly.ResiliencePipelineBuilder<HttpResponseMessage>>? configureResilience = null,
+        Action<RefitSettings>? configureRefit = null)
+    {
         // Register dependencies (only once)
         RegisterDependencies(services);
 
