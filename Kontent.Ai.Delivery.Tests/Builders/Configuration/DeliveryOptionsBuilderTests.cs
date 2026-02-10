@@ -112,4 +112,20 @@ public class DeliveryOptionsBuilderTests
 
         Assert.Equal(renditionPreset, deliveryOptions.DefaultRenditionPreset);
     }
+
+    [Fact]
+    public void BuildWithCustomEndpoint_BeforeApiModeSwitch_AppliesDeterministically()
+    {
+        const string customEndpoint = "https://custom.kontent.ai";
+
+        var deliveryOptions = DeliveryOptionsBuilder
+            .CreateInstance()
+            .WithEnvironmentId(EnvironmentId)
+            .WithCustomEndpoint(customEndpoint)
+            .UsePreviewApi(PreviewApiKey)
+            .Build();
+
+        Assert.Equal(customEndpoint, deliveryOptions.ProductionEndpoint);
+        Assert.Equal(customEndpoint, deliveryOptions.PreviewEndpoint);
+    }
 }

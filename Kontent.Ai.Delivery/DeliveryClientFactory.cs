@@ -1,3 +1,4 @@
+using Kontent.Ai.Delivery.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 
 namespace Kontent.Ai.Delivery;
@@ -13,7 +14,7 @@ namespace Kontent.Ai.Delivery;
 public sealed class DeliveryClientFactory(IServiceProvider serviceProvider) : IDeliveryClientFactory
 {
     /// <inheritdoc />
-    public IDeliveryClient Get() => Get(Options.DefaultName);
+    public IDeliveryClient Get() => Get(DeliveryClientNames.Default);
 
     /// <inheritdoc />
     public IDeliveryClient Get(string name)

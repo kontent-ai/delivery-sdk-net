@@ -563,9 +563,6 @@ public interface IUsedInItemSystemAttributes : ISystemAttributes, ISystemBaseAtt
 public enum LanguageFallbackMode : Enum
 
 // Kontent.Ai.Delivery.Abstractions
-public sealed class Options
-
-// Kontent.Ai.Delivery.Abstractions
 public enum OrderingMode : Enum
 
 // Kontent.Ai.Delivery.Abstractions

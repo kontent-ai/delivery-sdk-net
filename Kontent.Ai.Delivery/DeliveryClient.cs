@@ -1,3 +1,4 @@
+using Kontent.Ai.Delivery.Configuration;
 using Kontent.Ai.Delivery.ContentItems.Mapping;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
@@ -11,6 +12,7 @@ internal sealed class DeliveryClient : IDeliveryClient
 {
     private readonly IDeliveryApi _deliveryApi;
     private readonly IOptionsMonitor<DeliveryOptions> _deliveryOptions;
+    private readonly string _optionsName;
     private readonly ContentItemMapper _contentItemMapper;
     private readonly IContentDeserializer _contentDeserializer;
     private readonly ITypeProvider _typeProvider;
@@ -28,6 +30,7 @@ internal sealed class DeliveryClient : IDeliveryClient
     /// <param name="typeProvider">The type provider for content type to CLR type mapping.</param>
     /// <param name="cacheManager">Optional cache manager for caching API responses (injected when EnableCaching is true).</param>
     /// <param name="logger">Optional logger for diagnostic output.</param>
+    /// <param name="optionsName">The named options instance used by this client.</param>
     public DeliveryClient(
         IDeliveryApi deliveryApi,
         IOptionsMonitor<DeliveryOptions> deliveryOptions,
@@ -35,10 +38,13 @@ internal sealed class DeliveryClient : IDeliveryClient
         IContentDeserializer contentDeserializer,
         ITypeProvider typeProvider,
         IDeliveryCacheManager? cacheManager = null,
-        ILogger<DeliveryClient>? logger = null)
+        ILogger<DeliveryClient>? logger = null,
+        string optionsName = DeliveryClientNames.Default)
     {
         _deliveryApi = deliveryApi ?? throw new ArgumentNullException(nameof(deliveryApi));
         _deliveryOptions = deliveryOptions ?? throw new ArgumentNullException(nameof(deliveryOptions));
+        ArgumentException.ThrowIfNullOrWhiteSpace(optionsName);
+        _optionsName = optionsName;
         _contentItemMapper = contentItemMapper ?? throw new ArgumentNullException(nameof(contentItemMapper));
         _contentDeserializer = contentDeserializer ?? throw new ArgumentNullException(nameof(contentDeserializer));
         _typeProvider = typeProvider ?? throw new ArgumentNullException(nameof(typeProvider));
@@ -125,7 +131,7 @@ internal sealed class DeliveryClient : IDeliveryClient
     }
 
     private bool? GetDefaultWaitForLoadingNewContent()
-        => _deliveryOptions.CurrentValue.WaitForLoadingNewContent ? true : null;
+        => _deliveryOptions.Get(_optionsName).WaitForLoadingNewContent ? true : null;
 
     private static void ValidateCodename(string? codename, string parameterName, string message)
     {

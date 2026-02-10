@@ -15,6 +15,8 @@ namespace Kontent.Ai.Delivery;
 /// </summary>
 public static partial class ServiceCollectionExtensions
 {
+    private const string HttpClientNamePrefix = "Kontent.Ai.Delivery.HttpClient.";
+
     /// <summary>
     /// Registers the Kontent.ai Delivery client with the specified options instance.
     /// </summary>
@@ -34,7 +36,7 @@ public static partial class ServiceCollectionExtensions
         ArgumentNullException.ThrowIfNull(deliveryOptions);
 
         return services.AddDeliveryClient(
-            Abstractions.Options.DefaultName,
+            DeliveryClientNames.Default,
             options => options.Configure(deliveryOptions),
             configureHttpClient,
             configureResilience,
@@ -63,7 +65,7 @@ public static partial class ServiceCollectionExtensions
         var options = buildDeliveryOptions(builder);
 
         return services.AddDeliveryClient(
-            Abstractions.Options.DefaultName,
+            DeliveryClientNames.Default,
             opts => opts.Configure(options),
             configureHttpClient,
             configureResilience,
@@ -89,7 +91,7 @@ public static partial class ServiceCollectionExtensions
             : configuration.GetSection(configurationSectionName);
 
         return services.AddDeliveryClient(
-            Abstractions.Options.DefaultName,
+            DeliveryClientNames.Default,
             section.Bind);
     }
 
@@ -106,7 +108,7 @@ public static partial class ServiceCollectionExtensions
         ArgumentNullException.ThrowIfNull(configurationSection);
 
         return services.AddDeliveryClient(
-            Abstractions.Options.DefaultName,
+            DeliveryClientNames.Default,
             configurationSection.Bind);
     }
 
@@ -123,7 +125,7 @@ public static partial class ServiceCollectionExtensions
         ArgumentNullException.ThrowIfNull(configureOptions);
 
         return services.AddDeliveryClient(
-            Abstractions.Options.DefaultName,
+            DeliveryClientNames.Default,
             configureOptions);
     }
 
@@ -142,7 +144,7 @@ public static partial class ServiceCollectionExtensions
         Action<Polly.ResiliencePipelineBuilder<HttpResponseMessage>>? configureResilience = null)
     {
         return services.AddDeliveryClient(
-            Abstractions.Options.DefaultName,
+            DeliveryClientNames.Default,
             configureOptions,
             configureHttpClient,
             configureResilience);
@@ -185,26 +187,11 @@ public static partial class ServiceCollectionExtensions
         Action<Polly.ResiliencePipelineBuilder<HttpResponseMessage>>? configureResilience = null,
         Action<RefitSettings>? configureRefit = null)
     {
-        ArgumentException.ThrowIfNullOrWhiteSpace(name);
+        ArgumentNullException.ThrowIfNull(services);
+        ValidateClientName(name);
         ArgumentNullException.ThrowIfNull(configureOptions);
 
-        // Validate name doesn't contain only whitespace
-        if (name.Trim() != name || name.Contains(' '))
-        {
-            throw new ArgumentException(
-                "Client name cannot contain leading/trailing whitespace, or contain spaces. Use underscores or hyphens instead.",
-                nameof(name));
-        }
-
-        // Validate name uniqueness
-        var registry = GetOrCreateRegistry(services);
-        if (!registry.TryRegister(name))
-        {
-            var httpClientName = $"Kontent.Ai.Delivery.HttpClient.{name}";
-            throw new InvalidOperationException(
-                $"A DeliveryClient with the name '{name}' has already been registered. " +
-                $"HTTP client name: '{httpClientName}'. Each client must have a unique name.");
-        }
+        EnsureClientNameNotAlreadyRegistered(services, name);
 
         // Register named options
         services.Configure(name, configureOptions);
@@ -213,7 +200,7 @@ public static partial class ServiceCollectionExtensions
             .ValidateOnStart();
 
         // Also configure unnamed options for backward compatibility if this is the default name
-        if (name == Abstractions.Options.DefaultName)
+        if (name == DeliveryClientNames.Default)
         {
             services.Configure(configureOptions);
             services.AddOptions<DeliveryOptions>()
@@ -234,13 +221,13 @@ public static partial class ServiceCollectionExtensions
         services.TryAddSingleton<IDeliveryClientFactory, DeliveryClientFactory>();
 
         // Register default client accessors if this is the default name (backward compatibility)
-        if (name == Abstractions.Options.DefaultName)
+        if (name == DeliveryClientNames.Default)
         {
             services.TryAddSingleton(sp =>
-                sp.GetRequiredKeyedService<IDeliveryApi>(Abstractions.Options.DefaultName));
+                sp.GetRequiredKeyedService<IDeliveryApi>(DeliveryClientNames.Default));
 
             services.TryAddSingleton(sp =>
-                sp.GetRequiredKeyedService<IDeliveryClient>(Abstractions.Options.DefaultName));
+                sp.GetRequiredKeyedService<IDeliveryClient>(DeliveryClientNames.Default));
         }
 
         return services;
@@ -253,7 +240,6 @@ public static partial class ServiceCollectionExtensions
     {
         var clientName = (string)key!;
         var optionsMonitor = sp.GetRequiredService<IOptionsMonitor<DeliveryOptions>>();
-        var namedMonitor = new NamedOptionsMonitor<DeliveryOptions>(optionsMonitor, clientName);
 
         var deliveryApi = sp.GetRequiredKeyedService<IDeliveryApi>(clientName);
         var contentItemMapper = sp.GetRequiredService<ContentItemMapper>();
@@ -268,11 +254,38 @@ public static partial class ServiceCollectionExtensions
 
         return new DeliveryClient(
             deliveryApi,
-            namedMonitor,
+            optionsMonitor,
             contentItemMapper,
             contentDeserializer,
             typeProvider,
             cacheManager,
-            logger);
+            logger,
+            clientName);
+    }
+
+    private static string GetHttpClientName(string name) => $"{HttpClientNamePrefix}{name}";
+
+    private static void ValidateClientName(string name)
+    {
+        ArgumentException.ThrowIfNullOrWhiteSpace(name);
+
+        if (name.Trim() != name || name.Contains(' '))
+        {
+            throw new ArgumentException(
+                "Client name cannot contain leading/trailing whitespace, or contain spaces. Use underscores or hyphens instead.",
+                nameof(name));
+        }
+    }
+
+    private static void EnsureClientNameNotAlreadyRegistered(IServiceCollection services, string name)
+    {
+        if (!services.Any(d => d.ServiceType == typeof(IDeliveryClient) && Equals(d.ServiceKey, name)))
+        {
+            return;
+        }
+
+        throw new InvalidOperationException(
+            $"A DeliveryClient with the name '{name}' has already been registered. " +
+            $"HTTP client name: '{GetHttpClientName(name)}'. Each client must have a unique name.");
     }
 }
