@@ -207,7 +207,7 @@ public class DistributedCacheManagerRealImplementationTests
     {
         // The SDK now caches raw JSON strings rather than complex objects with circular references.
         // This means circular references in arbitrary objects will throw exceptions (expected behavior).
-        // Content items use CachedItemResponseRaw which stores raw JSON strings, avoiding this issue.
+        // Content items use CachedRawItemsPayload which stores raw JSON strings, avoiding this issue.
         var key = "circular_real_key";
         var value = new CircularValue { Id = 1, Name = "Parent" };
         value.Self = value; // Circular reference

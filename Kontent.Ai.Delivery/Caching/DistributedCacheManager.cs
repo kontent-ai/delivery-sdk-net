@@ -19,8 +19,8 @@ namespace Kontent.Ai.Delivery.Caching;
 /// </list>
 /// </para>
 /// <para>
-/// The SDK caches raw JSON strings (via <see cref="CachedItemResponseRaw"/> and
-/// <see cref="CachedItemListingResponseRaw"/>) rather than hydrated C# objects.
+/// The SDK caches raw JSON strings (via <see cref="CachedRawItemsPayload"/>) rather than
+/// hydrated C# objects.
 /// This approach avoids serialization issues with complex object graphs (circular references,
 /// custom converters, etc.) and simplifies the serialization configuration.
 /// </para>

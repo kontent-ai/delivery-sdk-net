@@ -878,7 +878,7 @@ private static void RegisterDependencies(IServiceCollection services)
 
 `ContentItemMapper` is the orchestration entry point. `ElementValueMapper` contains element-type mapping logic (rich text/assets/taxonomy/date-time/linked items/simple values), while `LinkedItemResolver` owns modular-content graph resolution, memoization, and circular reference behavior.
 
-Rich text envelope JSON parsing is shared in `RichTextElementEnvelopeReader`, used by both mapper-side rich text hydration and `RichTextElementDataConverter` for dynamic rich text parsing.
+Rich text envelope JSON parsing is shared in `RichTextElementEnvelopeReader`, used by both mapper-side rich text hydration and dynamic `ParseRichTextAsync` parsing.
 
 ### HTTP Client Registration
 

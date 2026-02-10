@@ -1,10 +1,11 @@
+using System.Text.Json;
 using Kontent.Ai.Delivery.ContentItems;
 using Kontent.Ai.Delivery.SharedModels;
 
 namespace Kontent.Ai.Delivery.Caching;
 
 /// <summary>
-/// Cache payload for a content item listing response, storing raw JSON strings.
+/// Cache payload for item and listing responses, storing raw JSON strings.
 /// </summary>
 /// <remarks>
 /// <para>
@@ -21,10 +22,11 @@ namespace Kontent.Ai.Delivery.Caching;
 /// the existing deserialization and hydration pipeline (IContentDeserializer and ContentItemMapper).
 /// </para>
 /// </remarks>
-internal sealed record CachedItemListingResponseRaw
+internal sealed record CachedRawItemsPayload
 {
     /// <summary>
     /// Raw JSON of each content item from the API response.
+    /// Item queries store exactly one entry.
     /// </summary>
     public required IReadOnlyList<string> ItemsJson { get; init; }
 
@@ -34,15 +36,30 @@ internal sealed record CachedItemListingResponseRaw
     public required IReadOnlyDictionary<string, string> ModularContentJson { get; init; }
 
     /// <summary>
-    /// Pagination information from the response.
-    /// This is a simple POD type that serializes cleanly.
+    /// Pagination information from listing responses.
+    /// Null for single-item responses.
     /// </summary>
-    public required Pagination Pagination { get; init; }
+    public Pagination? Pagination { get; init; }
+
+    /// <summary>
+    /// Creates a cache payload by extracting raw JSON from a hydrated content item.
+    /// </summary>
+    internal static CachedRawItemsPayload FromItem<TModel>(
+        IContentItem<TModel> item,
+        IReadOnlyDictionary<string, JsonElement>? modularContent)
+    {
+        return new CachedRawItemsPayload
+        {
+            ItemsJson = [CachePayloadHelper.ExtractRawJson(item)],
+            ModularContentJson = CachePayloadHelper.ConvertModularContentToJson(modularContent),
+            Pagination = null
+        };
+    }
 
     /// <summary>
     /// Creates a cache payload by extracting raw JSON from a listing response.
     /// </summary>
-    internal static CachedItemListingResponseRaw From<TModel>(
+    internal static CachedRawItemsPayload FromListing<TModel>(
         DeliveryItemListingResponse<TModel> response)
     {
         var itemsJson = new List<string>(response.Items.Count);
@@ -52,7 +69,7 @@ internal sealed record CachedItemListingResponseRaw
             itemsJson.Add(CachePayloadHelper.ExtractRawJson(item));
         }
 
-        return new CachedItemListingResponseRaw
+        return new CachedRawItemsPayload
         {
             ItemsJson = itemsJson,
             ModularContentJson = CachePayloadHelper.ConvertModularContentToJson(response.ModularContent),

@@ -12,9 +12,9 @@ namespace Kontent.Ai.Delivery;
 /// </summary>
 public static class RichTextExtensions
 {
-    private static readonly JsonSerializerOptions RichTextElementDeserializerOptions = new()
+    private static readonly JsonSerializerOptions RichTextEnvelopeReadOptions = new()
     {
-        Converters = { new RichTextElementDataConverter() }
+        PropertyNameCaseInsensitive = true
     };
 
     // Cached parser and options for ParseRichTextAsync - safe to reuse as HtmlParser.ParseDocument returns new documents
@@ -221,17 +221,20 @@ public static class RichTextExtensions
             return null;
         }
 
-        RichTextElementData? elementData;
+        var codename = richTextElement.TryGetProperty("codename", out var codenameElement)
+            ? codenameElement.GetString() ?? string.Empty
+            : string.Empty;
+
+        RichTextElementData elementData;
         try
         {
-            elementData = JsonSerializer.Deserialize<RichTextElementData>(richTextElement, RichTextElementDeserializerOptions);
+            elementData = RichTextElementEnvelopeReader.Read(
+                richTextElement,
+                codename,
+                RichTextEnvelopeReadOptions,
+                preserveEmptyModularContentEntries: false);
         }
         catch (JsonException)
-        {
-            return null;
-        }
-
-        if (elementData is null)
         {
             return null;
         }
