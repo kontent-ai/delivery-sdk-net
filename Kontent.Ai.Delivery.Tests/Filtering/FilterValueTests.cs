@@ -70,4 +70,17 @@ public class FilterValueTests
         Assert.Equal("apple,zebra", FilterValueSerializer.SerializeRange("apple", "zebra"));
         Assert.Throws<ArgumentException>(() => FilterValueSerializer.SerializeRange("zebra", "apple"));
     }
+
+    [Fact]
+    public void FilterValueSerializer_DateRange_NormalizesUtcBeforeComparison()
+    {
+        var localLower = new DateTime(2024, 8, 14, 10, 30, 0, DateTimeKind.Local);
+        var utcUpper = localLower.ToUniversalTime();
+
+        var serialized = FilterValueSerializer.SerializeRange(localLower, utcUpper);
+
+        Assert.Equal(
+            $"{FilterValueSerializer.Serialize(localLower)},{FilterValueSerializer.Serialize(utcUpper)}",
+            serialized);
+    }
 }

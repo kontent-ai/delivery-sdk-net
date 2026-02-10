@@ -1720,7 +1720,7 @@ if (result.HasStaleContent)
 
 ### 10.5 Language Fallback Control
 
-Disable language fallbacks for specific queries:
+Disable language fallbacks for list/feed queries:
 
 ```csharp
 // Allow fallbacks (default behavior)
@@ -1733,6 +1733,8 @@ var result = await client.GetItems<Article>()
     .WithLanguage("es-ES", LanguageFallbackMode.Disabled)
     .ExecuteAsync();
 ```
+
+> Single-item queries (`GetItem<T>(...)` and dynamic `GetItem(...)`) do not support `LanguageFallbackMode.Disabled`. They always use `language=<lang>` and follow configured fallback behavior.
 
 ### 10.6 Reference Lookups (Used In)
 

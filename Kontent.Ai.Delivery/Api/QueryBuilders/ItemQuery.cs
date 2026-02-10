@@ -24,28 +24,20 @@ internal sealed class ItemQuery<TModel>(
     private readonly IDeliveryApi _api = api;
     private readonly string _codename = codename;
     private readonly Func<bool?> _getDefaultWaitForNewContent = getDefaultWaitForNewContent;
-    private readonly List<KeyValuePair<string, string>> _serializedFilters = [];
+    private readonly SerializedFilterCollection _serializedFilters = [];
     private SingleItemParams _params = new();
     private readonly ContentItemMapper _contentItemMapper = contentItemMapper;
     private readonly IContentDeserializer _contentDeserializer = contentDeserializer;
     private readonly IDeliveryCacheManager? _cacheManager = cacheManager;
     private readonly ILogger? _logger = logger;
     private bool? _waitForLoadingNewContentOverride;
-    private IReadOnlyDictionary<string, JsonElement>? _latestModularContent;
     private static bool IsDynamicModel => ModelTypeHelper.IsDynamic<TModel>();
-    internal IReadOnlyDictionary<string, JsonElement>? LatestModularContent => _latestModularContent;
+    internal IReadOnlyDictionary<string, JsonElement>? LatestModularContent { get; private set; }
 
     public IItemQuery<TModel> WithLanguage(string languageCodename)
     {
         _params = _params with { Language = languageCodename };
         return this;
-    }
-
-    internal void AddExactSystemLanguageFilter(string languageCodename)
-    {
-        _serializedFilters.Add(new KeyValuePair<string, string>(
-            FilterPath.System("language") + FilterSuffix.Eq,
-            FilterValueSerializer.Serialize(languageCodename)));
     }
 
     public IItemQuery<TModel> WithElements(params string[] elementCodenames)
@@ -74,7 +66,7 @@ internal sealed class ItemQuery<TModel>(
 
     public async Task<IDeliveryResult<IContentItem<TModel>>> ExecuteAsync(CancellationToken cancellationToken = default)
     {
-        _latestModularContent = null;
+        LatestModularContent = null;
         LogQueryStarting();
         var stopwatch = StartTimingIfEnabled();
 
@@ -202,7 +194,7 @@ internal sealed class ItemQuery<TModel>(
         var rawResponse = await _api.GetItemInternalAsync<TModel>(
                 _codename,
                 _params,
-                FilterQueryParams.ToQueryDictionary(_serializedFilters),
+                _serializedFilters.ToQueryDictionary(),
                 wait,
                 cancellationToken)
             .ConfigureAwait(false);
@@ -212,7 +204,7 @@ internal sealed class ItemQuery<TModel>(
     private async Task<(IContentItem<TModel> Item, IEnumerable<string> Dependencies)> ProcessItemAsync(
         DeliveryItemResponse<TModel> resp, CancellationToken cancellationToken)
     {
-        _latestModularContent = resp.ModularContent;
+        LatestModularContent = resp.ModularContent;
         var item = resp.Item;
         var dependencyContext = _cacheManager is not null ? new DependencyTrackingContext() : null;
 

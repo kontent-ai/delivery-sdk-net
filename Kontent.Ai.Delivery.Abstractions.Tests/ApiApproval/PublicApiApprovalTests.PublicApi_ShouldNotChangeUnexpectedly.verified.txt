@@ -249,7 +249,7 @@ public interface IDynamicItemQuery
     Task`1 ExecuteAsync(CancellationToken cancellationToken)
     IDynamicItemQuery WaitForLoadingNewContent(Boolean enabled)
     IDynamicItemQuery WithElements(String[] elementCodenames)
-    IDynamicItemQuery WithLanguage(String languageCodename, LanguageFallbackMode languageFallbackMode)
+    IDynamicItemQuery WithLanguage(String languageCodename)
     IDynamicItemQuery WithoutElements(String[] elementCodenames)
 
 // Kontent.Ai.Delivery.Abstractions

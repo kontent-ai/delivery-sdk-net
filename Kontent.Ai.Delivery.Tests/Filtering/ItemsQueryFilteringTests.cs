@@ -122,7 +122,7 @@ public class ItemsQueryFilteringTests
     }
 
     [Fact]
-    public async Task DynamicItemQuery_WithLanguageFallbackDisabled_AddsSystemLanguageFilter()
+    public async Task DynamicItemQuery_WithLanguage_UsesLanguageParameterOnly()
     {
         var env = Guid.NewGuid().ToString();
         var baseUrl = $"https://deliver.kontent.ai/{env}";
@@ -131,7 +131,6 @@ public class ItemsQueryFilteringTests
 
         mockHttp.Expect(itemUrl)
             .WithQueryString("language", "es-ES")
-            .WithQueryString("system.language[eq]", "es-ES")
             .Respond("application/json",
                 await File.ReadAllTextAsync(Path.Combine(Environment.CurrentDirectory,
                     $"Fixtures{Path.DirectorySeparatorChar}DeliveryClient{Path.DirectorySeparatorChar}coffee_beverages_explained.json")));
@@ -144,7 +143,7 @@ public class ItemsQueryFilteringTests
         var client = provider.GetRequiredService<IDeliveryClient>();
 
         var result = await client.GetItem("coffee_beverages_explained")
-            .WithLanguage("es-ES", LanguageFallbackMode.Disabled)
+            .WithLanguage("es-ES")
             .ExecuteAsync();
 
         Assert.True(result.IsSuccess);

@@ -6,7 +6,7 @@ This document provides a comprehensive overview of the Kontent.ai Delivery .NET 
 
 - [Architecture Overview](#architecture-overview)
 - [Refit API Layer](#refit-api-layer)
-- [Filter System with OneOf](#filter-system-with-oneof)
+- [Filtering (Fluent DSL)](#filtering-fluent-dsl)
 - [HTTP Pipeline & Delegating Handlers](#http-pipeline--delegating-handlers)
 - [Caching Architecture](#caching-architecture)
 - [Rich Text Resolution System](#rich-text-resolution-system)
@@ -90,9 +90,9 @@ public partial interface IDeliveryApi
    - Strongly typed models are plain POCOs (no interface required)
    - Dynamic access uses `IDynamicElements` for dictionary-based element access
 
-3. **Separate Filters Dictionary**: Filters passed as `Dictionary<string, string>` for maximum flexibility
+3. **Separate Filters Dictionary**: Filters passed as `Dictionary<string, string[]>` for maximum flexibility
    - Filters are dynamic (type-dependent operators)
-   - Enables complex filter composition
+   - Preserves repeated keys (duplicate filters) via multi-value arrays
    - Refit serializes as query parameters
 
 ### Refit Configuration
@@ -139,6 +139,13 @@ public static JsonSerializerOptions CreateDefaultJsonSerializerOptions()
 Filtering is expressed using a small DSL that **maps to** Delivery API filtering query parameters and operator suffixes.
 
 The public surface is intentionally more ergonomic (verbose, discoverable method names), while the underlying serialization stays faithful to the wire format (e.g. `system.type[eq]=article`). The SDK also enforces endpoint capabilities at compile time (items vs types vs taxonomies expose different operator sets).
+
+Internally, filtering is modularized into focused components:
+- path normalization (`FilterPath`)
+- operator/value serialization (`FilterSuffix`, `FilterValueSerializer`)
+- endpoint-specific fluent builders (`ItemsFilterBuilder`, `TypesFilterBuilder`, `TaxonomiesFilterBuilder`)
+- filter state and query conversion (`SerializedFilterCollection`)
+- shared automatic system filter helpers (`SystemFilterHelpers`)
 
 **Key ideas:**
 - `.System("<property>")` targets `system.<property>`
