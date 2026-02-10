@@ -115,7 +115,7 @@ internal sealed class ContentItemMapper
         var modelType = _typingStrategy.ResolveModelType(contentType);
 
         // Skip runtime typing if no mapping exists (falls back to DynamicElements)
-        if (modelType == typeof(DynamicElements) || modelType == typeof(IDynamicElements))
+        if (ModelTypeHelper.IsDynamic(modelType))
         {
             return null;
         }
@@ -487,7 +487,7 @@ internal sealed class ContentItemMapper
     private async Task HydrateContentItemIfNeededAsync(object contentItem, Type modelType, MappingContext context)
     {
         // Skip hydration for dynamic mode items (they keep raw JSON envelopes)
-        if (modelType == typeof(DynamicElements) || modelType == typeof(IDynamicElements))
+        if (ModelTypeHelper.IsDynamic(modelType))
             return;
 
         // Extract elements from the full item JSON

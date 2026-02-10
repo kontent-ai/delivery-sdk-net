@@ -1,6 +1,6 @@
-using Kontent.Ai.Delivery.Api.Filtering;
 using Kontent.Ai.Delivery.ContentItems;
 using Kontent.Ai.Delivery.ContentItems.Mapping;
+using Microsoft.Extensions.Logging;
 
 namespace Kontent.Ai.Delivery.Api.QueryBuilders;
 
@@ -14,80 +14,69 @@ internal sealed class DynamicItemQuery(
     IDeliveryApi api,
     string codename,
     Func<bool?> getDefaultWaitForNewContent,
-    ContentItemMapper contentItemMapper) : IDynamicItemQuery
+    ContentItemMapper contentItemMapper,
+    IContentDeserializer contentDeserializer,
+    ILogger? logger = null) : IDynamicItemQuery
 {
-    private readonly IDeliveryApi _api = api;
-    private readonly string _codename = codename;
-    private readonly Func<bool?> _getDefaultWaitForNewContent = getDefaultWaitForNewContent;
     private readonly ContentItemMapper _contentItemMapper = contentItemMapper;
-    private readonly List<KeyValuePair<string, string>> _serializedFilters = [];
-    private SingleItemParams _params = new();
-    private bool? _waitForLoadingNewContentOverride;
+    private readonly ItemQuery<IDynamicElements> _inner = new(
+        api,
+        codename,
+        getDefaultWaitForNewContent,
+        contentItemMapper,
+        contentDeserializer,
+        cacheManager: null,
+        logger);
 
     public IDynamicItemQuery WithLanguage(string languageCodename, LanguageFallbackMode languageFallbackMode = LanguageFallbackMode.Enabled)
     {
-        _params = _params with { Language = languageCodename };
+        _inner.WithLanguage(languageCodename);
         if (languageFallbackMode == LanguageFallbackMode.Disabled)
-        {
-            _serializedFilters.Add(new KeyValuePair<string, string>(
-                FilterPath.System("language") + FilterSuffix.Eq,
-                FilterValueSerializer.Serialize(languageCodename)));
-        }
+            _inner.AddExactSystemLanguageFilter(languageCodename);
+
         return this;
     }
 
     public IDynamicItemQuery WithElements(params string[] elementCodenames)
     {
-        _params = _params with { Elements = elementCodenames };
+        _inner.WithElements(elementCodenames);
         return this;
     }
 
     public IDynamicItemQuery WithoutElements(params string[] elementCodenames)
     {
-        _params = _params with { ExcludeElements = elementCodenames };
+        _inner.WithoutElements(elementCodenames);
         return this;
     }
 
     public IDynamicItemQuery Depth(int depth)
     {
-        _params = _params with { Depth = depth };
+        _inner.Depth(depth);
         return this;
     }
 
     public IDynamicItemQuery WaitForLoadingNewContent(bool enabled = true)
     {
-        _waitForLoadingNewContentOverride = enabled;
+        _inner.WaitForLoadingNewContent(enabled);
         return this;
     }
 
     public async Task<IDeliveryResult<IContentItem>> ExecuteAsync(CancellationToken cancellationToken = default)
     {
-        var wait = _waitForLoadingNewContentOverride ?? _getDefaultWaitForNewContent();
-        var rawResponse = await _api.GetItemInternalAsync<IDynamicElements>(
-            _codename,
-            _params,
-            FilterQueryParams.ToQueryDictionary(_serializedFilters),
-            wait,
-            cancellationToken).ConfigureAwait(false);
-        var deliveryResult = await rawResponse.ToDeliveryResultAsync().ConfigureAwait(false);
+        var deliveryResult = await _inner.ExecuteAsync(cancellationToken).ConfigureAwait(false);
 
         if (!deliveryResult.IsSuccess)
         {
-            return DeliveryResult.Failure<IContentItem>(
-                deliveryResult.RequestUrl ?? string.Empty,
-                deliveryResult.StatusCode,
-                deliveryResult.Error,
-                deliveryResult.ResponseHeaders);
+            return (IDeliveryResult<IContentItem>)deliveryResult;
         }
 
-        var response = deliveryResult.Value;
-        var dynamicItem = response.Item;
+        var dynamicItem = deliveryResult.Value;
 
         if (dynamicItem is IRawContentItem rawContentItem && rawContentItem.RawItemJson.HasValue)
         {
             var runtimeItem = await _contentItemMapper.TryRuntimeTypeItemAsync(
                 rawContentItem.RawItemJson.Value,
-                response.ModularContent,
+                _inner.LatestModularContent,
                 dependencyContext: null,
                 cancellationToken).ConfigureAwait(false);
 
@@ -103,12 +92,6 @@ internal sealed class DynamicItemQuery(
             }
         }
 
-        return DeliveryResult.Success<IContentItem>(
-            dynamicItem,
-            deliveryResult.RequestUrl ?? string.Empty,
-            deliveryResult.StatusCode,
-            deliveryResult.HasStaleContent,
-            deliveryResult.ContinuationToken,
-            deliveryResult.ResponseHeaders);
+        return (IDeliveryResult<IContentItem>)deliveryResult;
     }
 }

@@ -28,6 +28,5 @@ internal sealed class ContentItemConverterFactory : JsonConverterFactory
     /// Dynamic mode preserves full element structure for runtime inspection.
     /// </summary>
     private static bool IsDynamicMode(Type modelType)
-        => modelType == typeof(IDynamicElements)
-        || modelType == typeof(DynamicElements);
+        => ModelTypeHelper.IsDynamic(modelType);
 }

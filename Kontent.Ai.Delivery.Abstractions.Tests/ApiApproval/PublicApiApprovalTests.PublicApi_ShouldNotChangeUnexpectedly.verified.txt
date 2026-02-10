@@ -5,6 +5,9 @@ public sealed class BlockResolver`1 : MulticastDelegate
     ValueTask`1 Invoke(TBlock block, Func`2 resolveChildren)
 
 // Kontent.Ai.Delivery.Abstractions
+public enum CacheStorageMode : Enum
+
+// Kontent.Ai.Delivery.Abstractions
 public sealed class DeliveryOptions : IValidatableObject
     String DefaultRenditionPreset { get; set; }
     Boolean EnableResilience { get; set; }
@@ -120,6 +123,7 @@ public interface IDateTimeContent
 
 // Kontent.Ai.Delivery.Abstractions
 public interface IDeliveryCacheManager
+    CacheStorageMode StorageMode { get; }
     Task`1 GetAsync(String cacheKey, CancellationToken cancellationToken)
     Task InvalidateAsync(CancellationToken cancellationToken, String[] dependencyKeys)
     Task SetAsync(String cacheKey, T value, IEnumerable`1 dependencies, Nullable`1 expiration, CancellationToken cancellationToken)

@@ -120,4 +120,34 @@ public class ItemsQueryFilteringTests
         Assert.True(result.IsSuccess);
         mockHttp.VerifyNoOutstandingExpectation();
     }
+
+    [Fact]
+    public async Task DynamicItemQuery_WithLanguageFallbackDisabled_AddsSystemLanguageFilter()
+    {
+        var env = Guid.NewGuid().ToString();
+        var baseUrl = $"https://deliver.kontent.ai/{env}";
+        var itemUrl = $"{baseUrl}/items/coffee_beverages_explained";
+        var mockHttp = new MockHttpMessageHandler();
+
+        mockHttp.Expect(itemUrl)
+            .WithQueryString("language", "es-ES")
+            .WithQueryString("system.language[eq]", "es-ES")
+            .Respond("application/json",
+                await File.ReadAllTextAsync(Path.Combine(Environment.CurrentDirectory,
+                    $"Fixtures{Path.DirectorySeparatorChar}DeliveryClient{Path.DirectorySeparatorChar}coffee_beverages_explained.json")));
+
+        var services = new ServiceCollection();
+        services.AddDeliveryClient(new DeliveryOptions { EnvironmentId = env },
+            configureHttpClient: b => b.ConfigurePrimaryHttpMessageHandler(() => mockHttp));
+
+        var provider = services.BuildServiceProvider();
+        var client = provider.GetRequiredService<IDeliveryClient>();
+
+        var result = await client.GetItem("coffee_beverages_explained")
+            .WithLanguage("es-ES", LanguageFallbackMode.Disabled)
+            .ExecuteAsync();
+
+        Assert.True(result.IsSuccess);
+        mockHttp.VerifyNoOutstandingExpectation();
+    }
 }

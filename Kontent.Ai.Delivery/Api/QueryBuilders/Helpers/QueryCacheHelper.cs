@@ -241,6 +241,109 @@ internal static class QueryCacheHelper
     }
 
     /// <summary>
+    /// Gets a value from cache with rehydration support for distributed (raw payload) caching.
+    /// Uses check-lock-check pattern with stampede protection, same as <see cref="GetOrFetchAsync{T}"/>.
+    /// On cache hit, attempts to rehydrate the raw payload. If rehydration fails, falls through
+    /// to fresh fetch and overwrites the stale cache entry.
+    /// </summary>
+    /// <typeparam name="TCachePayload">The raw cache payload type (e.g., CachedItemResponseRaw).</typeparam>
+    /// <typeparam name="TResult">The final result type returned to the caller.</typeparam>
+    /// <param name="cacheManager">The cache manager to query.</param>
+    /// <param name="cacheKey">The cache key to look up.</param>
+    /// <param name="fetchFactory">
+    /// Factory to fetch from API. Returns the cache payload, the processed result, and dependency keys.
+    /// The payload may be null if the API call fails.
+    /// </param>
+    /// <param name="rehydrateFactory">Factory to rehydrate a cached payload into the final result.</param>
+    /// <param name="logger">Optional logger.</param>
+    /// <param name="cancellationToken">Cancellation token.</param>
+    /// <returns>A result containing the value, dependencies, and whether it was a cache hit.</returns>
+    public static async Task<CacheFetchResult<TResult>> GetOrFetchWithRehydrationAsync<TCachePayload, TResult>(
+        IDeliveryCacheManager cacheManager,
+        string cacheKey,
+        Func<CancellationToken, Task<(TCachePayload? Payload, TResult? ProcessedResult, IEnumerable<string> Dependencies)>> fetchFactory,
+        Func<TCachePayload, CancellationToken, Task<TResult>> rehydrateFactory,
+        ILogger? logger,
+        CancellationToken cancellationToken)
+        where TCachePayload : class
+        where TResult : class
+    {
+        // 1. Fast path: try cache, try rehydrate
+        var cached = await TryGetCachedAsync<TCachePayload>(cacheManager, cacheKey, logger, cancellationToken)
+            .ConfigureAwait(false);
+        if (cached is not null)
+        {
+            var rehydrated = await TryRehydrateAsync(cached, cacheKey, rehydrateFactory, logger, cancellationToken)
+                .ConfigureAwait(false);
+            if (rehydrated is not null)
+                return new CacheFetchResult<TResult>(rehydrated, [], IsCacheHit: true);
+        }
+
+        // 2. Acquire per-key lock to prevent stampede
+        var lockDict = _managerLocks.GetOrCreateValue(cacheManager);
+        var keyLock = lockDict.Locks.GetOrAdd(cacheKey, _ => new KeyLock());
+        keyLock.IncrementInFlight();
+
+        if (lockDict.ShouldCleanup())
+        {
+            CleanupExpiredLocks(lockDict.Locks);
+        }
+
+        using var _ = await AcquireKeyLockAsync(keyLock, cancellationToken, alreadyInFlight: true).ConfigureAwait(false);
+
+        // 3. Double-check after acquiring lock
+        cached = await TryGetCachedAsync<TCachePayload>(cacheManager, cacheKey, logger, cancellationToken)
+            .ConfigureAwait(false);
+        if (cached is not null)
+        {
+            var rehydrated = await TryRehydrateAsync(cached, cacheKey, rehydrateFactory, logger, cancellationToken)
+                .ConfigureAwait(false);
+            if (rehydrated is not null)
+                return new CacheFetchResult<TResult>(rehydrated, [], IsCacheHit: true);
+        }
+
+        // 4. Fetch fresh
+        var (payload, processedResult, deps) = await fetchFactory(cancellationToken).ConfigureAwait(false);
+
+        // 5. Cache the payload if not null
+        if (payload is not null)
+        {
+            await TrySetCachedAsync(cacheManager, cacheKey, payload, deps, logger, cancellationToken)
+                .ConfigureAwait(false);
+        }
+
+        return new CacheFetchResult<TResult>(processedResult, deps, IsCacheHit: false);
+    }
+
+    /// <summary>
+    /// Attempts to rehydrate a cached payload. Returns null if rehydration fails.
+    /// </summary>
+    private static async Task<TResult?> TryRehydrateAsync<TCachePayload, TResult>(
+        TCachePayload cached,
+        string cacheKey,
+        Func<TCachePayload, CancellationToken, Task<TResult>> rehydrateFactory,
+        ILogger? logger,
+        CancellationToken cancellationToken)
+        where TCachePayload : class
+        where TResult : class
+    {
+        try
+        {
+            return await rehydrateFactory(cached, cancellationToken).ConfigureAwait(false);
+        }
+        catch (OperationCanceledException)
+        {
+            throw;
+        }
+        catch (Exception ex)
+        {
+            if (logger is not null)
+                LoggerMessages.CacheDeserializationFailed(logger, cacheKey, typeof(TCachePayload).Name, ex);
+            return null;
+        }
+    }
+
+    /// <summary>
     /// Removes expired locks that are not in use from the specified dictionary.
     /// Called lazily during lock acquisition to avoid background threads.
     /// </summary>

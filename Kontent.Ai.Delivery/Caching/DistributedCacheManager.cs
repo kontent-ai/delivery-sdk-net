@@ -19,9 +19,10 @@ namespace Kontent.Ai.Delivery.Caching;
 /// </list>
 /// </para>
 /// <para>
-/// Serialization uses System.Text.Json with ReferenceHandler.Preserve to handle circular references.
-/// The JsonSerializerOptions are configured to handle deep object graphs and null values gracefully.
-/// Serialization failures throw InvalidOperationException with helpful error messages.
+/// The SDK caches raw JSON strings (via <see cref="CachedItemResponseRaw"/> and
+/// <see cref="CachedItemListingResponseRaw"/>) rather than hydrated C# objects.
+/// This approach avoids serialization issues with complex object graphs (circular references,
+/// custom converters, etc.) and simplifies the serialization configuration.
 /// </para>
 /// <para>
 /// The reverse index entries share the same expiration as their associated cache entries,
@@ -67,6 +68,9 @@ internal sealed class DistributedCacheManager : IDeliveryCacheManager
     private const string CacheKeyPrefix = "cache:";
     private const string DependencyKeyPrefix = "dep:";
 
+    /// <inheritdoc />
+    public CacheStorageMode StorageMode => CacheStorageMode.RawJson;
+
     private string KeyPrefixSegment => string.IsNullOrEmpty(_keyPrefix) ? "" : $"{_keyPrefix}:";
 
     /// <summary>
@@ -105,10 +109,8 @@ internal sealed class DistributedCacheManager : IDeliveryCacheManager
     /// Default expiration time for cache entries. If null, defaults to 1 hour.
     /// </param>
     /// <param name="jsonSerializerOptions">
-    /// Custom JSON serialization options. If null, default options with ReferenceHandler.Preserve are used.
-    /// When caching SDK response types (ContentItem, DeliveryResult), provide the options from
-    /// <see cref="Configuration.RefitSettingsProvider.CreateDefaultJsonSerializerOptions"/> to ensure
-    /// proper serialization of content items.
+    /// Custom JSON serialization options. If null, simple default options are used.
+    /// The SDK caches raw JSON strings, so complex reference handling is not needed.
     /// </param>
     /// <param name="logger">Optional logger for cache operations.</param>
     /// <exception cref="ArgumentNullException">
@@ -126,16 +128,13 @@ internal sealed class DistributedCacheManager : IDeliveryCacheManager
         _defaultExpiration = defaultExpiration ?? TimeSpan.FromHours(1);
         _logger = logger;
 
-        _jsonOptions = jsonSerializerOptions is not null
-            ? jsonSerializerOptions
-            : new JsonSerializerOptions
-            {
-                ReferenceHandler = System.Text.Json.Serialization.ReferenceHandler.Preserve,
-                WriteIndented = false,
-                PropertyNameCaseInsensitive = true,
-                DefaultIgnoreCondition = System.Text.Json.Serialization.JsonIgnoreCondition.WhenWritingNull,
-                MaxDepth = 124
-            };
+        // Simple serialization options - SDK caches raw JSON strings, not complex object graphs
+        _jsonOptions = jsonSerializerOptions ?? new JsonSerializerOptions
+        {
+            WriteIndented = false,
+            PropertyNameCaseInsensitive = true,
+            DefaultIgnoreCondition = System.Text.Json.Serialization.JsonIgnoreCondition.WhenWritingNull
+        };
     }
 
     /// <inheritdoc />

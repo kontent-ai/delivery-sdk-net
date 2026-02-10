@@ -318,6 +318,22 @@ public interface IDeliveryCacheManager
 }
 ```
 
+### Cache Storage Mode
+
+**Location**: `Kontent.Ai.Delivery.Abstractions/Caching/CacheStorageMode.cs` and `IDeliveryCacheManager.cs`
+
+Cache managers declare their storage strategy via the `StorageMode` property on `IDeliveryCacheManager`. Query builders use this to decide whether to cache raw JSON payloads (rehydrating on read) or fully hydrated objects.
+
+```csharp
+public enum CacheStorageMode { HydratedObject = 0, RawJson = 1 }
+
+public interface IDeliveryCacheManager
+{
+    CacheStorageMode StorageMode => CacheStorageMode.HydratedObject;
+    // ... other members
+}
+```
+
 ### Diagnostics and Logging
 
 The SDK is intentionally resilient: certain failures are treated as "best effort" and **do not break request execution**. To preserve debuggability, the SDK emits **Debug-level** logs for otherwise silent failures, including:

@@ -1137,6 +1137,10 @@ services.AddDeliveryDistributedCache(defaultExpiration: TimeSpan.FromHours(2));
 
 Caching is transparent - once configured, all queries are automatically cached. Cache keys are built from query parameters, ensuring proper cache hits.
 
+**Cache payloads:** The in-memory cache stores hydrated objects for maximum performance. Distributed caches store raw JSON payloads (rehydrated on read) to avoid serialization issues with circular references.
+
+If you implement a custom cache manager that stores raw payloads (typical for distributed caches), override the `StorageMode` property to return `CacheStorageMode.RawJson` so the SDK uses the raw JSON caching path.
+
 #### Detecting Cache Hits
 
 The SDK provides the `IsCacheHit` property on all delivery results to indicate when a response was served from the SDK's local cache:
