@@ -24,10 +24,11 @@ public static partial class ServiceCollectionExtensions
         services.TryAddTransient<DeliveryAuthenticationHandler>();
 
         // Core services
-        services.TryAddSingleton<IPropertyMapper, PropertyMapper>();
         services.TryAddSingleton<ITypeProvider, TypeProvider>();
         services.TryAddSingleton<IItemTypingStrategy, DefaultItemTypingStrategy>();
         services.TryAddSingleton<IContentDeserializer, ContentDeserializer>();
+        services.TryAddSingleton<ElementValueMapper>();
+        services.TryAddSingleton<LinkedItemResolver>();
         services.TryAddSingleton<ContentItemMapper>();
         services.TryAddSingleton<IHtmlParser, HtmlParser>();
 
@@ -57,5 +58,3 @@ public static partial class ServiceCollectionExtensions
         }
     }
 }
-
-

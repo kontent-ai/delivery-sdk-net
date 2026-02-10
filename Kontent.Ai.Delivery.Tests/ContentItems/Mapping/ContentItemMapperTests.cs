@@ -27,14 +27,18 @@ public sealed class ContentItemMapperTests
         var htmlParser = new HtmlParser();
         var dependencyExtractor = new ContentDependencyExtractor();
         var optionsMonitor = new StaticOptionsMonitor<DeliveryOptions>(new DeliveryOptions());
+        var elementValueMapper = new ElementValueMapper(
+            optionsMonitor,
+            dependencyExtractor,
+            _jsonOptions,
+            htmlParser);
+        var linkedItemResolver = new LinkedItemResolver(typingStrategy, deserializer);
 
         _mapper = new ContentItemMapper(
             typingStrategy,
             deserializer,
-            htmlParser,
-            optionsMonitor,
-            dependencyExtractor,
-            _jsonOptions);
+            elementValueMapper,
+            linkedItemResolver);
     }
 
     [Fact]

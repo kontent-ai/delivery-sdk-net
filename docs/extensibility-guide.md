@@ -11,9 +11,7 @@ This guide covers how to customize and extend the Kontent.ai Delivery SDK to fit
   - [Creating a Custom Type Provider](#creating-a-custom-type-provider)
   - [Registering Type Providers](#registering-type-providers)
   - [Auto-Discovery](#auto-discovery)
-- [Property Mapping](#property-mapping)
-  - [IPropertyMapper Interface](#ipropertymapper-interface)
-  - [Creating a Custom Property Mapper](#creating-a-custom-property-mapper)
+- [Property Mapping Conventions](#property-mapping-conventions)
 - [Rich Text Resolvers](#rich-text-resolvers)
 - [Best Practices](#best-practices)
 
@@ -22,8 +20,7 @@ This guide covers how to customize and extend the Kontent.ai Delivery SDK to fit
 The SDK provides several extension points for customizing behavior:
 
 1. **Type Providers** - Map content type codenames to CLR types
-2. **Property Mappers** - Customize how JSON properties map to model properties
-3. **Rich Text Resolvers** - Control how rich text elements are rendered to HTML
+2. **Rich Text Resolvers** - Control how rich text elements are rendered to HTML
 
 ## Type Providers
 
@@ -276,95 +273,30 @@ This enables:
 - **Embedded content** in rich text to use strongly-typed models
 - **Pattern matching** on `IEmbeddedContent<T>` to work correctly
 
-## Property Mapping
+## Property Mapping Conventions
 
-### IPropertyMapper Interface
+Property mapping customization via `IPropertyMapper` was removed during beta simplification.
 
-The `IPropertyMapper` interface customizes how element codenames map to model properties:
+Use model metadata to control mapping:
 
-```csharp
-public interface IPropertyMapper
-{
-    /// <summary>
-    /// Determines if a property matches a field name.
-    /// </summary>
-    /// <param name="modelProperty">The model property.</param>
-    /// <param name="fieldName">The JSON field name.</param>
-    /// <param name="contentType">The content type codename.</param>
-    /// <returns>True if the property matches the field.</returns>
-    bool IsMatch(PropertyInfo modelProperty, string fieldName, string contentType);
-}
-```
+1. Use `[JsonPropertyName("element_codename")]` for element-to-property mapping.
+2. Keep model properties writable for hydration.
+3. Use supported SDK element shapes (`IRichTextContent`, `IAsset`, `ITaxonomyTerm`, `IEmbeddedContent`, `IDateTimeContent`) for complex element hydration.
 
-### Default Property Mapping
-
-By default, the SDK uses these conventions:
-
-1. **Exact match**: Property name matches element codename exactly
-2. **Pascal case**: `url_slug` matches `UrlSlug` (underscores removed, pascal-cased)
-3. **JsonPropertyName**: Uses `[JsonPropertyName("element_codename")]` attribute
+Example:
 
 ```csharp
 public record Article
 {
-    // Matches "title" element
-    public string Title { get; init; }
+    [JsonPropertyName("title")]
+    public string? Title { get; set; }
 
-    // Matches "url_slug" element (convention: underscores → pascal case)
-    public string UrlSlug { get; init; }
-
-    // Explicit mapping using JsonPropertyName
     [JsonPropertyName("body_copy")]
-    public RichTextContent BodyCopy { get; init; }
+    public IRichTextContent? BodyCopy { get; set; }
 
-    // Matches "related_articles" via convention
-    public IEnumerable<IEmbeddedContent> RelatedArticles { get; init; }
+    [JsonPropertyName("related_articles")]
+    public IEnumerable<IEmbeddedContent>? RelatedArticles { get; set; }
 }
-```
-
-### Creating a Custom Property Mapper
-
-Create a custom mapper for special naming conventions:
-
-```csharp
-public class CustomPropertyMapper : IPropertyMapper
-{
-    public bool IsMatch(PropertyInfo modelProperty, string fieldName, string contentType)
-    {
-        // Check for JsonPropertyName attribute first
-        var jsonAttr = modelProperty.GetCustomAttribute<JsonPropertyNameAttribute>();
-        if (jsonAttr != null)
-        {
-            return string.Equals(jsonAttr.Name, fieldName, StringComparison.OrdinalIgnoreCase);
-        }
-
-        // Custom convention: prefix all elements with content type
-        // e.g., "article_title" maps to Article.Title
-        var expectedFieldName = $"{contentType}_{ToSnakeCase(modelProperty.Name)}";
-        if (string.Equals(expectedFieldName, fieldName, StringComparison.OrdinalIgnoreCase))
-        {
-            return true;
-        }
-
-        // Fall back to standard conventions
-        var normalizedPropertyName = ToSnakeCase(modelProperty.Name);
-        return string.Equals(normalizedPropertyName, fieldName, StringComparison.OrdinalIgnoreCase);
-    }
-
-    private static string ToSnakeCase(string input)
-    {
-        return string.Concat(
-            input.Select((c, i) =>
-                i > 0 && char.IsUpper(c) ? "_" + c : c.ToString())
-        ).ToLowerInvariant();
-    }
-}
-```
-
-### Registering Property Mappers
-
-```csharp
-services.AddSingleton<IPropertyMapper, CustomPropertyMapper>();
 ```
 
 ## Rich Text Resolvers
@@ -397,9 +329,9 @@ This approach provides:
 - **Automatic type filtering** - Generic queries automatically filter by content type
 - **Synchronization** - Type mappings are always in sync with your model definitions
 
-### 2. Keep Property Mappers Simple
+### 2. Use Explicit JsonPropertyName Mapping
 
-Custom property mappers can introduce subtle bugs. Prefer using `[JsonPropertyName]` attributes for explicit mappings:
+Prefer using `[JsonPropertyName]` attributes for explicit, stable element-to-property mapping:
 
 ```csharp
 public record Article

@@ -35,6 +35,11 @@ internal sealed class PropertyMappingInfo
     public required Action<object, object> Setter { get; init; }
 
     /// <summary>
+    /// Precomputed mapping strategy for this property.
+    /// </summary>
+    public required ElementMappingKind MapKind { get; init; }
+
+    /// <summary>
     /// Sets the property value on the target object using the compiled setter.
     /// </summary>
     public void SetValue(object target, object value) => Setter(target, value);
@@ -50,13 +55,19 @@ internal sealed class PropertyMappingInfo
             .Where(p => p.GetCustomAttribute<JsonIgnoreAttribute>() is null)
             .Select(p => new { Property = p, Codename = p.GetCustomAttribute<JsonPropertyNameAttribute>()?.Name })
             .Where(x => x.Codename is not null)
-            .Select(x => new PropertyMappingInfo
+            .Select(x =>
             {
-                ElementCodename = x.Codename!,
-                Property = x.Property,
-                PropertyType = x.Property.PropertyType,
-                EnumerableElementType = TryGetEnumerableElementType(x.Property.PropertyType),
-                Setter = BuildSetter(x.Property)
+                var propertyType = x.Property.PropertyType;
+                var enumerableElementType = TryGetEnumerableElementType(propertyType);
+                return new PropertyMappingInfo
+                {
+                    ElementCodename = x.Codename!,
+                    Property = x.Property,
+                    PropertyType = propertyType,
+                    EnumerableElementType = enumerableElementType,
+                    MapKind = DetermineMapKind(propertyType, enumerableElementType),
+                    Setter = BuildSetter(x.Property)
+                };
             })
             .ToArray();
     }
@@ -71,6 +82,40 @@ internal sealed class PropertyMappingInfo
             : type.GetInterfaces().FirstOrDefault(i => i.IsGenericType && i.GetGenericTypeDefinition() == typeof(IEnumerable<>));
 
         return enumerableInterface?.GetGenericArguments().FirstOrDefault();
+    }
+
+    private static ElementMappingKind DetermineMapKind(Type propertyType, Type? enumerableElementType)
+    {
+        if (typeof(IRichTextContent).IsAssignableFrom(propertyType))
+        {
+            return ElementMappingKind.RichText;
+        }
+
+        if (enumerableElementType is not null &&
+            (typeof(IAsset).IsAssignableFrom(enumerableElementType) ||
+             enumerableElementType == typeof(Asset)))
+        {
+            return ElementMappingKind.Assets;
+        }
+
+        if (enumerableElementType is not null &&
+            typeof(ITaxonomyTerm).IsAssignableFrom(enumerableElementType))
+        {
+            return ElementMappingKind.Taxonomy;
+        }
+
+        if (typeof(IDateTimeContent).IsAssignableFrom(propertyType))
+        {
+            return ElementMappingKind.DateTime;
+        }
+
+        if (enumerableElementType is not null &&
+            typeof(IEmbeddedContent).IsAssignableFrom(enumerableElementType))
+        {
+            return ElementMappingKind.LinkedItems;
+        }
+
+        return ElementMappingKind.Simple;
     }
 
     /// <summary>

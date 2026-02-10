@@ -860,12 +860,13 @@ private static void RegisterDependencies(IServiceCollection services)
     services.TryAddTransient<DeliveryAuthenticationHandler>();
 
     // Type system
-    services.TryAddSingleton<IPropertyMapper, PropertyMapper>();
     services.TryAddSingleton<ITypeProvider, TypeProvider>();
     services.TryAddSingleton<IItemTypingStrategy, DefaultItemTypingStrategy>();
     services.TryAddSingleton<IContentDeserializer, ContentDeserializer>();
 
     // Content mapping and HTML parsing
+    services.TryAddSingleton<ElementValueMapper>();
+    services.TryAddSingleton<LinkedItemResolver>();
     services.TryAddSingleton<ContentItemMapper>();
     services.TryAddSingleton<IHtmlParser, HtmlParser>();
 
@@ -874,6 +875,10 @@ private static void RegisterDependencies(IServiceCollection services)
         NullContentDependencyExtractor.Instance);
 }
 ```
+
+`ContentItemMapper` is the orchestration entry point. `ElementValueMapper` contains element-type mapping logic (rich text/assets/taxonomy/date-time/linked items/simple values), while `LinkedItemResolver` owns modular-content graph resolution, memoization, and circular reference behavior.
+
+Rich text envelope JSON parsing is shared in `RichTextElementEnvelopeReader`, used by both mapper-side rich text hydration and `RichTextElementDataConverter` for dynamic rich text parsing.
 
 ### HTTP Client Registration
 
@@ -1042,10 +1047,10 @@ internal sealed class StronglyTypedContentItemConverter<TModel> : JsonConverter<
 }
 ```
 
-**Key Architecture Decision**: The converters create minimal instances with `RawItemJson` preserved. All element mapping (simple and complex types) happens in `ContentItemMapper.CompleteItemAsync()` during post-processing. This separation allows:
+**Key Architecture Decision**: The converters create minimal instances with `RawItemJson` preserved. Element mapping happens during post-processing via the mapping pipeline (`ContentItemMapper` orchestrating `ElementValueMapper` and `LinkedItemResolver`). This separation allows:
 1. JSON deserializer stays simple and fast (sync)
 2. Post-processing can be async (for linked items resolution)
-3. Single place for element envelope understanding
+3. Shared element envelope parsing (`RichTextElementEnvelopeReader`) across mapper and rich text converter paths
 4. Easier testing and debugging
 
 ## Query Execution Pipeline
