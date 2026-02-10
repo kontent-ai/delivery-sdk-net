@@ -1,5 +1,7 @@
 using System.Text.Json;
+using Kontent.Ai.Delivery;
 using Kontent.Ai.Delivery.ContentItems.Elements;
+using Kontent.Ai.Delivery.ContentItems.RichText;
 using Xunit;
 
 namespace Kontent.Ai.Delivery.Tests.ContentItems.Mapping;
@@ -51,7 +53,7 @@ public sealed class RichTextElementEnvelopeReaderTests
     }
 
     [Fact]
-    public void RichTextElementDataConverter_UsesSharedEnvelopeReader_ParityWithMapperPath()
+    public async Task ParseRichTextAsync_UsesSharedEnvelopeReader_ParityForMetadata()
     {
         using var doc = JsonDocument.Parse(
             """
@@ -79,14 +81,8 @@ public sealed class RichTextElementEnvelopeReaderTests
               "modular_content": ["component_a", "", "linked_item"]
             }
             """);
-
-        var converterOptions = new JsonSerializerOptions
-        {
-            Converters = { new RichTextElementDataConverter() }
-        };
-
-        var converted = JsonSerializer.Deserialize<RichTextElementData>(doc.RootElement.GetRawText(), converterOptions);
-        Assert.NotNull(converted);
+        var parsed = await doc.RootElement.ParseRichTextAsync();
+        var parsedRichText = Assert.IsType<RichTextContent>(parsed);
 
         var shared = RichTextElementEnvelopeReader.Read(
             doc.RootElement,
@@ -94,12 +90,8 @@ public sealed class RichTextElementEnvelopeReaderTests
             serializerOptions: new JsonSerializerOptions { PropertyNameCaseInsensitive = true },
             preserveEmptyModularContentEntries: false);
 
-        Assert.Equal(shared.Type, converted!.Type);
-        Assert.Equal(shared.Name, converted.Name);
-        Assert.Equal(shared.Codename, converted.Codename);
-        Assert.Equal(shared.Value, converted.Value);
-        Assert.Equal(shared.Images.Count, converted.Images.Count);
-        Assert.Equal(shared.Links.Count, converted.Links.Count);
-        Assert.Equal(shared.ModularContent, converted.ModularContent);
+        Assert.Equal(shared.Images.Count, parsedRichText.Images?.Count ?? 0);
+        Assert.Equal(shared.Links.Count, parsedRichText.Links?.Count ?? 0);
+        Assert.Equal(shared.ModularContent, parsedRichText.ModularContentCodenames);
     }
 }

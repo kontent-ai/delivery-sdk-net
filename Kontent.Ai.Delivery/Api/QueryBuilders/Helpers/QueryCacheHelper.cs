@@ -201,44 +201,17 @@ internal static class QueryCacheHelper
         Func<CancellationToken, Task<(T? Value, IEnumerable<string> Dependencies)>> fetchFactory,
         ILogger? logger,
         CancellationToken cancellationToken) where T : class
-    {
-        // 1. Fast path: cache hit (no lock needed)
-        var cached = await TryGetCachedAsync<T>(cacheManager, cacheKey, logger, cancellationToken)
-            .ConfigureAwait(false);
-        if (cached is not null)
-            return new CacheFetchResult<T>(cached, [], IsCacheHit: true);
-
-        // 2. Acquire per-key lock to prevent stampede (scoped to this cache manager)
-        var lockDict = _managerLocks.GetOrCreateValue(cacheManager);
-        var keyLock = lockDict.Locks.GetOrAdd(cacheKey, _ => new KeyLock());
-        keyLock.IncrementInFlight(); // Must be immediately after GetOrAdd, before cleanup can run
-
-        // Periodically clean up expired locks (lazy cleanup to avoid background threads)
-        if (lockDict.ShouldCleanup())
-        {
-            CleanupExpiredLocks(lockDict.Locks);
-        }
-
-        using var _ = await AcquireKeyLockAsync(keyLock, cancellationToken, alreadyInFlight: true).ConfigureAwait(false);
-
-        // 3. Double-check after acquiring lock (another thread may have populated cache)
-        cached = await TryGetCachedAsync<T>(cacheManager, cacheKey, logger, cancellationToken)
-            .ConfigureAwait(false);
-        if (cached is not null)
-            return new CacheFetchResult<T>(cached, [], IsCacheHit: true);
-
-        // 4. Only one caller executes fetch
-        var (value, dependencies) = await fetchFactory(cancellationToken).ConfigureAwait(false);
-
-        // 5. Cache the result if not null
-        if (value is not null)
-        {
-            await TrySetCachedAsync(cacheManager, cacheKey, value, dependencies, logger, cancellationToken)
-                .ConfigureAwait(false);
-        }
-
-        return new CacheFetchResult<T>(value, dependencies, IsCacheHit: false);
-    }
+        => await GetOrFetchInternal(
+            cacheManager,
+            cacheKey,
+            static (cached, _, _) => Task.FromResult<T?>(cached),
+            async ct =>
+            {
+                var (value, dependencies) = await fetchFactory(ct).ConfigureAwait(false);
+                return (CachePayload: value, Result: value, Dependencies: dependencies);
+            },
+            logger,
+            cancellationToken).ConfigureAwait(false);
 
     /// <summary>
     /// Gets a value from cache with rehydration support for distributed (raw payload) caching.
@@ -267,61 +240,93 @@ internal static class QueryCacheHelper
         CancellationToken cancellationToken)
         where TCachePayload : class
         where TResult : class
+        => await GetOrFetchInternal(
+            cacheManager,
+            cacheKey,
+            (cached, key, ct) => TryMaterializeCachedAsync(cached, key, rehydrateFactory, logger, ct),
+            fetchFactory,
+            logger,
+            cancellationToken).ConfigureAwait(false);
+
+    /// <summary>
+    /// Shared cache retrieval and stampede-protected fetch pipeline.
+    /// Materializes cache hits from payload type to result type.
+    /// </summary>
+    private static async Task<CacheFetchResult<TResult>> GetOrFetchInternal<TCachePayload, TResult>(
+        IDeliveryCacheManager cacheManager,
+        string cacheKey,
+        Func<TCachePayload, string, CancellationToken, Task<TResult?>> materializeCachedAsync,
+        Func<CancellationToken, Task<(TCachePayload? CachePayload, TResult? Result, IEnumerable<string> Dependencies)>> fetchFactory,
+        ILogger? logger,
+        CancellationToken cancellationToken)
+        where TCachePayload : class
+        where TResult : class
     {
-        // 1. Fast path: try cache, try rehydrate
+        // 1. Fast path: try cache and materialize.
         var cached = await TryGetCachedAsync<TCachePayload>(cacheManager, cacheKey, logger, cancellationToken)
             .ConfigureAwait(false);
         if (cached is not null)
         {
-            var rehydrated = await TryRehydrateAsync(cached, cacheKey, rehydrateFactory, logger, cancellationToken)
-                .ConfigureAwait(false);
-            if (rehydrated is not null)
-                return new CacheFetchResult<TResult>(rehydrated, [], IsCacheHit: true);
+            var materialized = await materializeCachedAsync(cached, cacheKey, cancellationToken).ConfigureAwait(false);
+            if (materialized is not null)
+            {
+                return new CacheFetchResult<TResult>(materialized, [], IsCacheHit: true);
+            }
         }
 
-        // 2. Acquire per-key lock to prevent stampede
+        // 2. Acquire per-key lock to prevent stampede.
+        using var _ = await AcquireManagerKeyLockAsync(cacheManager, cacheKey, cancellationToken).ConfigureAwait(false);
+
+        // 3. Double-check after acquiring lock.
+        cached = await TryGetCachedAsync<TCachePayload>(cacheManager, cacheKey, logger, cancellationToken)
+            .ConfigureAwait(false);
+        if (cached is not null)
+        {
+            var materialized = await materializeCachedAsync(cached, cacheKey, cancellationToken).ConfigureAwait(false);
+            if (materialized is not null)
+            {
+                return new CacheFetchResult<TResult>(materialized, [], IsCacheHit: true);
+            }
+        }
+
+        // 4. Fetch fresh.
+        var (cachePayload, result, dependencies) = await fetchFactory(cancellationToken).ConfigureAwait(false);
+
+        // 5. Cache payload if available.
+        if (cachePayload is not null)
+        {
+            await TrySetCachedAsync(cacheManager, cacheKey, cachePayload, dependencies, logger, cancellationToken)
+                .ConfigureAwait(false);
+        }
+
+        return new CacheFetchResult<TResult>(result, dependencies, IsCacheHit: false);
+    }
+
+    private static async ValueTask<KeyLockScope> AcquireManagerKeyLockAsync(
+        IDeliveryCacheManager cacheManager,
+        string cacheKey,
+        CancellationToken cancellationToken)
+    {
         var lockDict = _managerLocks.GetOrCreateValue(cacheManager);
         var keyLock = lockDict.Locks.GetOrAdd(cacheKey, _ => new KeyLock());
-        keyLock.IncrementInFlight();
+        keyLock.IncrementInFlight(); // Must be immediately after GetOrAdd, before cleanup can run.
 
+        // Periodically clean up expired locks (lazy cleanup to avoid background threads).
         if (lockDict.ShouldCleanup())
         {
             CleanupExpiredLocks(lockDict.Locks);
         }
 
-        using var _ = await AcquireKeyLockAsync(keyLock, cancellationToken, alreadyInFlight: true).ConfigureAwait(false);
-
-        // 3. Double-check after acquiring lock
-        cached = await TryGetCachedAsync<TCachePayload>(cacheManager, cacheKey, logger, cancellationToken)
-            .ConfigureAwait(false);
-        if (cached is not null)
-        {
-            var rehydrated = await TryRehydrateAsync(cached, cacheKey, rehydrateFactory, logger, cancellationToken)
-                .ConfigureAwait(false);
-            if (rehydrated is not null)
-                return new CacheFetchResult<TResult>(rehydrated, [], IsCacheHit: true);
-        }
-
-        // 4. Fetch fresh
-        var (payload, processedResult, deps) = await fetchFactory(cancellationToken).ConfigureAwait(false);
-
-        // 5. Cache the payload if not null
-        if (payload is not null)
-        {
-            await TrySetCachedAsync(cacheManager, cacheKey, payload, deps, logger, cancellationToken)
-                .ConfigureAwait(false);
-        }
-
-        return new CacheFetchResult<TResult>(processedResult, deps, IsCacheHit: false);
+        return await AcquireKeyLockAsync(keyLock, cancellationToken, alreadyInFlight: true).ConfigureAwait(false);
     }
 
     /// <summary>
-    /// Attempts to rehydrate a cached payload. Returns null if rehydration fails.
+    /// Attempts to materialize a cached payload. Returns null if materialization fails.
     /// </summary>
-    private static async Task<TResult?> TryRehydrateAsync<TCachePayload, TResult>(
+    private static async Task<TResult?> TryMaterializeCachedAsync<TCachePayload, TResult>(
         TCachePayload cached,
         string cacheKey,
-        Func<TCachePayload, CancellationToken, Task<TResult>> rehydrateFactory,
+        Func<TCachePayload, CancellationToken, Task<TResult>> materializeFactory,
         ILogger? logger,
         CancellationToken cancellationToken)
         where TCachePayload : class
@@ -329,7 +334,7 @@ internal static class QueryCacheHelper
     {
         try
         {
-            return await rehydrateFactory(cached, cancellationToken).ConfigureAwait(false);
+            return await materializeFactory(cached, cancellationToken).ConfigureAwait(false);
         }
         catch (OperationCanceledException)
         {
