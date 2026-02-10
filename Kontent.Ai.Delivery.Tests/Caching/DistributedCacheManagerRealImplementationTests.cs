@@ -203,23 +203,17 @@ public class DistributedCacheManagerRealImplementationTests
     }
 
     [Fact]
-    public async Task SetAsync_ObjectWithCircularReference_WithRealImplementation_HandlesWithReferenceHandler()
+    public async Task SetAsync_ObjectWithCircularReference_WithRealImplementation_ThrowsInvalidOperationException()
     {
-        // Arrange
+        // The SDK now caches raw JSON strings rather than complex objects with circular references.
+        // This means circular references in arbitrary objects will throw exceptions (expected behavior).
+        // Content items use CachedItemResponseRaw which stores raw JSON strings, avoiding this issue.
         var key = "circular_real_key";
         var value = new CircularValue { Id = 1, Name = "Parent" };
         value.Self = value; // Circular reference
 
-        // Act
-        await _cacheManager.SetAsync(key, value, []);
-        var result = await _cacheManager.GetAsync<CircularValue>(key);
-
-        // Assert
-        Assert.NotNull(result);
-        Assert.Equal(value.Id, result.Id);
-        Assert.Equal(value.Name, result.Name);
-        Assert.NotNull(result.Self);
-        Assert.Same(result, result.Self); // Verify circular reference is preserved
+        await Assert.ThrowsAsync<InvalidOperationException>(
+            () => _cacheManager.SetAsync(key, value, []));
     }
 
     #endregion

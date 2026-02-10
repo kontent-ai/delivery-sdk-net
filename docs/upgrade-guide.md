@@ -526,6 +526,9 @@ services.AddDeliveryClient(options =>
 services.AddDeliveryDistributedCache(defaultExpiration: TimeSpan.FromHours(2));
 ```
 
+> [!NOTE]
+> Distributed caching stores raw JSON payloads to avoid serialization issues with hydrated object graphs. If you implement a custom distributed cache manager, override `StorageMode` to return `CacheStorageMode.RawPayload` so the SDK uses the raw JSON caching path.
+
 ### 3.4 Named Client Caching
 
 **Legacy:**

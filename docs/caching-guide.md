@@ -80,6 +80,8 @@ Kontent.ai enforces rate limits on API requests:
 - Scalable to large datasets
 - Can be managed independently
 
+**Note:** The SDK stores raw JSON payloads in distributed caches and rehydrates on read. This avoids circular reference serialization issues and keeps payloads portable across instances.
+
 **Cons:**
 - Network latency (still faster than API calls)
 - Requires external infrastructure (Redis, SQL Server, etc.)
@@ -233,73 +235,78 @@ services.AddDeliveryDistributedCache("production", defaultExpiration: TimeSpan.F
 
 ### Custom Cache Manager
 
-For advanced scenarios, implement a custom cache manager:
+For advanced scenarios, implement a custom cache manager. Use `IDeliveryCacheManager` with the default `StorageMode` (`CacheStorageMode.Object`) for hydrated-object caching (memory), or override `StorageMode` to `CacheStorageMode.RawPayload` for raw JSON payload caching (distributed).
+
+#### Hydrated-object cache manager (memory style)
 
 ```csharp
 using Kontent.Ai.Delivery.Abstractions;
 
-public class CustomCacheManager : IDeliveryCacheManager
+public class CustomMemoryCacheManager : IDeliveryCacheManager
+{
+    // Implementation omitted - store hydrated objects directly (no serialization).
+    public Task<T?> GetAsync<T>(string cacheKey, CancellationToken cancellationToken = default) where T : class
+        => throw new NotImplementedException();
+
+    public Task SetAsync<T>(
+        string cacheKey,
+        T value,
+        IEnumerable<string> dependencies,
+        TimeSpan? expiration = null,
+        CancellationToken cancellationToken = default) where T : class
+        => throw new NotImplementedException();
+
+    public Task InvalidateAsync(CancellationToken cancellationToken = default, params string[] dependencyKeys)
+        => throw new NotImplementedException();
+}
+```
+
+#### Raw-payload cache manager (distributed style)
+
+```csharp
+using System.Text.Json;
+using Kontent.Ai.Delivery.Abstractions;
+using Microsoft.Extensions.Caching.Distributed;
+
+public class CustomDistributedCacheManager : IDeliveryCacheManager
 {
     private readonly IDistributedCache _cache;
-    private readonly ILogger<CustomCacheManager> _logger;
 
-    public CustomCacheManager(IDistributedCache cache, ILogger<CustomCacheManager> logger)
+    public CustomDistributedCacheManager(IDistributedCache cache) => _cache = cache;
+
+    // Tell the SDK to cache raw JSON payloads instead of hydrated objects
+    public CacheStorageMode StorageMode => CacheStorageMode.RawPayload;
+
+    public async Task<T?> GetAsync<T>(string cacheKey, CancellationToken cancellationToken = default) where T : class
     {
-        _cache = cache;
-        _logger = logger;
+        var json = await _cache.GetStringAsync(cacheKey, cancellationToken);
+        return json is null ? null : JsonSerializer.Deserialize<T>(json);
     }
 
-    public async ValueTask<T?> TryGetAsync<T>(string key, CancellationToken cancellationToken = default)
-    {
-        try
-        {
-            var cached = await _cache.GetStringAsync(key, cancellationToken);
-            if (cached == null) return default;
-
-            return JsonSerializer.Deserialize<T>(cached);
-        }
-        catch (Exception ex)
-        {
-            _logger.LogError(ex, "Cache retrieval failed for key: {Key}", key);
-            return default;
-        }
-    }
-
-    public async ValueTask SetAsync<T>(
-        string key,
+    public async Task SetAsync<T>(
+        string cacheKey,
         T value,
-        TimeSpan expiration,
-        CancellationToken cancellationToken = default)
+        IEnumerable<string> dependencies,
+        TimeSpan? expiration = null,
+        CancellationToken cancellationToken = default) where T : class
     {
-        try
+        var options = new DistributedCacheEntryOptions
         {
-            var options = new DistributedCacheEntryOptions
-            {
-                AbsoluteExpirationRelativeToNow = expiration
-            };
+            AbsoluteExpirationRelativeToNow = expiration ?? TimeSpan.FromHours(1)
+        };
 
-            var serialized = JsonSerializer.Serialize(value);
-            await _cache.SetStringAsync(key, serialized, options, cancellationToken);
-        }
-        catch (Exception ex)
-        {
-            _logger.LogError(ex, "Cache set failed for key: {Key}", key);
-        }
+        var json = JsonSerializer.Serialize(value);
+        await _cache.SetStringAsync(cacheKey, json, options, cancellationToken);
+
+        // Implement dependency index + invalidation for production use
     }
 
-    public async ValueTask InvalidateAsync(
-        CancellationToken cancellationToken = default,
-        params string[] dependencies)
-    {
-        foreach (var dependency in dependencies)
-        {
-            await _cache.RemoveAsync(dependency, cancellationToken);
-        }
-    }
+    public Task InvalidateAsync(CancellationToken cancellationToken = default, params string[] dependencyKeys)
+        => Task.CompletedTask;
 }
 
 // Registration
-services.AddSingleton<IDeliveryCacheManager, CustomCacheManager>();
+services.AddSingleton<IDeliveryCacheManager, CustomDistributedCacheManager>();
 ```
 
 ## How Caching Works
@@ -440,7 +447,12 @@ services.AddDeliveryMemoryCache("production", defaultExpiration: TimeSpan.FromHo
 For custom cache managers, you can implement sliding expiration:
 
 ```csharp
-public async ValueTask SetAsync<T>(string key, T value, TimeSpan expiration, ...)
+public async Task SetAsync<T>(
+    string key,
+    T value,
+    IEnumerable<string> dependencies,
+    TimeSpan? expiration = null,
+    CancellationToken cancellationToken = default) where T : class
 {
     var options = new DistributedCacheEntryOptions
     {
@@ -850,10 +862,10 @@ public class MonitoredCacheManager : IDeliveryCacheManager
     private readonly ILogger _logger;
     private readonly IMetrics _metrics;
 
-    public async ValueTask<T?> TryGetAsync<T>(string key, ...)
+    public async Task<T?> GetAsync<T>(string key, ...)
     {
         var stopwatch = Stopwatch.StartNew();
-        var result = await _inner.TryGetAsync<T>(key, cancellationToken);
+        var result = await _inner.GetAsync<T>(key, cancellationToken);
         stopwatch.Stop();
 
         var hit = result != null;
@@ -874,11 +886,11 @@ public class MonitoredCacheManager : IDeliveryCacheManager
 ### 4. Handle Cache Failures Gracefully
 
 ```csharp
-public async ValueTask<T?> TryGetAsync<T>(string key, ...)
+    public async Task<T?> GetAsync<T>(string key, ...)
 {
     try
     {
-        return await _cache.GetAsync<T>(key, cancellationToken);
+            return await _cache.GetAsync<T>(key, cancellationToken);
     }
     catch (RedisConnectionException ex)
     {
@@ -926,7 +938,7 @@ public class StaleWhileRevalidateCache : IDeliveryCacheManager
 {
     private readonly TimeSpan _staleThreshold = TimeSpan.FromMinutes(5);
 
-    public async ValueTask<T?> TryGetAsync<T>(string key, ...)
+    public async Task<T?> GetAsync<T>(string key, ...)
     {
         var cached = await GetCachedValueWithTimestamp<T>(key);
 
@@ -1000,9 +1012,9 @@ public class LoggingCacheManager : IDeliveryCacheManager
     private readonly IDeliveryCacheManager _inner;
     private readonly ILogger _logger;
 
-    public async ValueTask<T?> TryGetAsync<T>(string key, ...)
+    public async Task<T?> GetAsync<T>(string key, ...)
     {
-        var result = await _inner.TryGetAsync<T>(key, cancellationToken);
+        var result = await _inner.GetAsync<T>(key, cancellationToken);
 
         _logger.LogInformation(
             "Cache {Result} for key: {Key}",
@@ -1012,9 +1024,9 @@ public class LoggingCacheManager : IDeliveryCacheManager
         return result;
     }
 
-    public async ValueTask SetAsync<T>(string key, T value, ...)
+    public async Task SetAsync<T>(string key, T value, IEnumerable<string> dependencies, TimeSpan? expiration = null, ...)
     {
-        await _inner.SetAsync(key, value, expiration, cancellationToken);
+        await _inner.SetAsync(key, value, dependencies, expiration, cancellationToken);
 
         _logger.LogInformation(
             "Cache SET: {Key}, Expiration: {Expiration}",

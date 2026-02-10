@@ -1,3 +1,4 @@
+using Kontent.Ai.Delivery.Caching;
 using Kontent.Ai.Delivery.Configuration;
 using Kontent.Ai.Delivery.ContentItems.Mapping;
 using Microsoft.Extensions.Configuration;
@@ -256,6 +257,7 @@ public static partial class ServiceCollectionExtensions
 
         var deliveryApi = sp.GetRequiredKeyedService<IDeliveryApi>(clientName);
         var contentItemMapper = sp.GetRequiredService<ContentItemMapper>();
+        var contentDeserializer = sp.GetRequiredService<IContentDeserializer>();
         var typeProvider = sp.GetRequiredService<ITypeProvider>();
 
         // Resolve keyed cache manager for this client (registered via AddDeliveryMemoryCache/AddDeliveryDistributedCache)
@@ -268,6 +270,7 @@ public static partial class ServiceCollectionExtensions
             deliveryApi,
             namedMonitor,
             contentItemMapper,
+            contentDeserializer,
             typeProvider,
             cacheManager,
             logger);

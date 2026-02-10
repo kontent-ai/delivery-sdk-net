@@ -15,6 +15,7 @@ internal sealed class ItemsQuery<TModel>(
     IDeliveryApi api,
     Func<bool?> getDefaultWaitForNewContent,
     ContentItemMapper contentItemMapper,
+    IContentDeserializer contentDeserializer,
     ITypeProvider typeProvider,
     IDeliveryCacheManager? cacheManager,
     ILogger? logger = null) : IItemsQuery<TModel>
@@ -22,6 +23,7 @@ internal sealed class ItemsQuery<TModel>(
     private readonly IDeliveryApi _api = api;
     private readonly Func<bool?> _getDefaultWaitForNewContent = getDefaultWaitForNewContent;
     private readonly ContentItemMapper _contentItemMapper = contentItemMapper;
+    private readonly IContentDeserializer _contentDeserializer = contentDeserializer;
     private readonly ITypeProvider _typeProvider = typeProvider;
     private readonly IDeliveryCacheManager? _cacheManager = cacheManager;
     private readonly ILogger? _logger = logger;
@@ -110,8 +112,61 @@ internal sealed class ItemsQuery<TModel>(
         LogQueryStarting();
         var stopwatch = StartTimingIfEnabled();
 
+        if (_cacheManager is { StorageMode: CacheStorageMode.RawPayload })
+        {
+            // Distributed cache: cache raw JSON strings to avoid serialization issues
+            var cacheKey = CacheKeyBuilder.BuildItemsKey(_params, _serializedFilters);
+            IDeliveryResult<DeliveryItemListingResponse<TModel>>? apiResult = null;
+
+            var (processedResponse, isCacheHit) = await QueryCacheHelper.GetOrFetchWithRehydrationAsync<CachedItemListingResponseRaw, DeliveryItemListingResponse<TModel>>(
+                _cacheManager,
+                cacheKey,
+                async ct =>
+                {
+                    apiResult = await FetchFromApiAsync(ct).ConfigureAwait(false);
+                    if (!apiResult.IsSuccess)
+                        return (null, null, Array.Empty<string>());
+
+                    var (response, deps) = await ProcessItemsAsync(apiResult.Value, ct).ConfigureAwait(false);
+                    var payload = CachedItemListingResponseRaw.From(response);
+                    return (payload, response, deps);
+                },
+                (payload, ct) => CachePayloadRehydrator.RehydrateListingAsync<TModel>(
+                    payload, _contentDeserializer, _contentItemMapper, IsDynamicModel, ct),
+                _logger,
+                cancellationToken).ConfigureAwait(false);
+
+            if (isCacheHit && processedResponse is not null)
+            {
+                var cachedWithFetcher = processedResponse with { NextPageFetcher = CreateNextPageFetcher(processedResponse.Pagination) };
+                LogQueryCompleted(stopwatch, HttpStatusCode.OK, cacheHit: true);
+                return DeliveryResult.CacheHit<IDeliveryItemListingResponse<TModel>>(cachedWithFetcher);
+            }
+
+            if (apiResult is null || !apiResult.IsSuccess)
+            {
+                if (apiResult is not null)
+                    LogQueryFailed(apiResult);
+                return apiResult is not null
+                    ? CreateFailureResult(apiResult)
+                    : throw new InvalidOperationException("API result was not captured during fetch.");
+            }
+
+            var responseWithFetcher = processedResponse! with { NextPageFetcher = CreateNextPageFetcher(processedResponse!.Pagination) };
+            LogQueryCompleted(stopwatch, apiResult.StatusCode, cacheHit: false, apiResult.HasStaleContent);
+
+            return DeliveryResult.Success<IDeliveryItemListingResponse<TModel>>(
+                responseWithFetcher,
+                apiResult.RequestUrl ?? string.Empty,
+                apiResult.StatusCode,
+                apiResult.HasStaleContent,
+                apiResult.ContinuationToken,
+                apiResult.ResponseHeaders);
+        }
+
         if (_cacheManager is not null)
         {
+            // Memory cache: store hydrated objects directly (no serialization needed)
             var cacheKey = CacheKeyBuilder.BuildItemsKey(_params, _serializedFilters);
             IDeliveryResult<DeliveryItemListingResponse<TModel>>? apiResult = null;
 
@@ -123,8 +178,8 @@ internal sealed class ItemsQuery<TModel>(
                     apiResult = await FetchFromApiAsync(ct).ConfigureAwait(false);
                     if (!apiResult.IsSuccess)
                         return (null, Array.Empty<string>());
-                    var (response, deps) = await ProcessItemsAsync(apiResult.Value, ct).ConfigureAwait(false);
 
+                    var (response, deps) = await ProcessItemsAsync(apiResult.Value, ct).ConfigureAwait(false);
                     return (response, deps);
                 },
                 _logger,
@@ -143,11 +198,11 @@ internal sealed class ItemsQuery<TModel>(
                 return CreateFailureResult(apiResult);
             }
 
-            var responseWithFetcher = cacheResult.Value! with { NextPageFetcher = CreateNextPageFetcher(cacheResult.Value!.Pagination) };
+            var memCachedWithFetcher = cacheResult.Value! with { NextPageFetcher = CreateNextPageFetcher(cacheResult.Value!.Pagination) };
             LogQueryCompleted(stopwatch, apiResult.StatusCode, cacheHit: false, apiResult.HasStaleContent);
 
             return DeliveryResult.Success<IDeliveryItemListingResponse<TModel>>(
-                responseWithFetcher,
+                memCachedWithFetcher,
                 apiResult.RequestUrl ?? string.Empty,
                 apiResult.StatusCode,
                 apiResult.HasStaleContent,
@@ -253,7 +308,7 @@ internal sealed class ItemsQuery<TModel>(
 
         return async (ct) =>
         {
-            var nextQuery = new ItemsQuery<TModel>(_api, _getDefaultWaitForNewContent, _contentItemMapper, _typeProvider, _cacheManager, _logger)
+            var nextQuery = new ItemsQuery<TModel>(_api, _getDefaultWaitForNewContent, _contentItemMapper, _contentDeserializer, _typeProvider, _cacheManager, _logger)
             {
                 _params = _params with { Skip = nextSkip },
                 _waitForLoadingNewContentOverride = _waitForLoadingNewContentOverride
@@ -301,5 +356,6 @@ internal sealed class ItemsQuery<TModel>(
         LoggerMessages.QueryCompleted(_logger, "Items", "list",
             stopwatch?.ElapsedMilliseconds ?? 0, statusCode, cacheHit);
     }
+
 }
 

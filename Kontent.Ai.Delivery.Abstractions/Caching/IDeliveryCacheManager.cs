@@ -27,6 +27,18 @@ namespace Kontent.Ai.Delivery.Abstractions;
 public interface IDeliveryCacheManager
 {
     /// <summary>
+    /// Gets the storage mode used by this cache manager.
+    /// </summary>
+    /// <remarks>
+    /// <para>
+    /// <see cref="CacheStorageMode.Object"/> (default) stores fully hydrated C# objects,
+    /// suitable for in-memory caches. <see cref="CacheStorageMode.RawPayload"/> stores raw JSON
+    /// strings, suitable for distributed caches that require serialization.
+    /// </para>
+    /// </remarks>
+    CacheStorageMode StorageMode => CacheStorageMode.Object;
+
+    /// <summary>
     /// Attempts to retrieve a cached value by its key.
     /// </summary>
     /// <typeparam name="T">The type of the cached value.</typeparam>
