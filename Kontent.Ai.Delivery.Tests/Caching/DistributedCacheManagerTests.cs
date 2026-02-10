@@ -377,22 +377,13 @@ public class DistributedCacheManagerTests
     }
 
     [Fact]
-    public async Task InvalidateAsync_NonExistentDependency_DoesNotThrow()
-    {
-        await _cacheManager.InvalidateAsync(default, "non_existent_dep");
-    }
+    public async Task InvalidateAsync_NonExistentDependency_DoesNotThrow() => await _cacheManager.InvalidateAsync(default, "non_existent_dep");
 
     [Fact]
-    public async Task InvalidateAsync_NullDependencies_DoesNotThrow()
-    {
-        await _cacheManager.InvalidateAsync(default, null!);
-    }
+    public async Task InvalidateAsync_NullDependencies_DoesNotThrow() => await _cacheManager.InvalidateAsync(default, null!);
 
     [Fact]
-    public async Task InvalidateAsync_EmptyDependencies_DoesNotThrow()
-    {
-        await _cacheManager.InvalidateAsync(default, []);
-    }
+    public async Task InvalidateAsync_EmptyDependencies_DoesNotThrow() => await _cacheManager.InvalidateAsync(default, []);
 
     [Fact]
     public async Task InvalidateAsync_MultipleDependencies_RemovesAllAffected()

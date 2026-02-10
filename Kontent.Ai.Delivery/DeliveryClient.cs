@@ -54,10 +54,7 @@ internal sealed class DeliveryClient(
                 _logger);
     }
 
-    public IItemsQuery<T> GetItems<T>()
-    {
-        return new ItemsQuery<T>(_deliveryApi, GetDefaultWaitForLoadingNewContent, _contentItemMapper, _contentDeserializer, _typeProvider, _cacheManager, _logger);
-    }
+    public IItemsQuery<T> GetItems<T>() => new ItemsQuery<T>(_deliveryApi, GetDefaultWaitForLoadingNewContent, _contentItemMapper, _contentDeserializer, _typeProvider, _cacheManager, _logger);
 
     public IDynamicItemsQuery GetItems()
     {
@@ -70,15 +67,9 @@ internal sealed class DeliveryClient(
             _logger);
     }
 
-    public IEnumerateItemsQuery<T> GetItemsFeed<T>()
-    {
-        return new EnumerateItemsQuery<T>(_deliveryApi, GetDefaultWaitForLoadingNewContent, _contentItemMapper, _typeProvider, _logger);
-    }
+    public IEnumerateItemsQuery<T> GetItemsFeed<T>() => new EnumerateItemsQuery<T>(_deliveryApi, GetDefaultWaitForLoadingNewContent, _contentItemMapper, _typeProvider, _logger);
 
-    public IDynamicEnumerateItemsQuery GetItemsFeed()
-    {
-        return new DynamicEnumerateItemsQuery(_deliveryApi, GetDefaultWaitForLoadingNewContent, _contentItemMapper, _logger);
-    }
+    public IDynamicEnumerateItemsQuery GetItemsFeed() => new DynamicEnumerateItemsQuery(_deliveryApi, GetDefaultWaitForLoadingNewContent, _contentItemMapper, _logger);
 
     public ITypeQuery GetType(string codename)
     {
@@ -87,10 +78,7 @@ internal sealed class DeliveryClient(
             : (ITypeQuery)new TypeQuery(_deliveryApi, codename, GetDefaultWaitForLoadingNewContent, _cacheManager, _logger);
     }
 
-    public ITypesQuery GetTypes()
-    {
-        return new TypesQuery(_deliveryApi, GetDefaultWaitForLoadingNewContent, _cacheManager, _logger);
-    }
+    public ITypesQuery GetTypes() => new TypesQuery(_deliveryApi, GetDefaultWaitForLoadingNewContent, _cacheManager, _logger);
 
     public ITypeElementQuery GetContentElement(string contentTypeCodename, string contentElementCodename)
     {
@@ -111,15 +99,9 @@ internal sealed class DeliveryClient(
             : (ITaxonomyQuery)new TaxonomyQuery(_deliveryApi, codename, GetDefaultWaitForLoadingNewContent, _cacheManager);
     }
 
-    public ITaxonomiesQuery GetTaxonomies()
-    {
-        return new TaxonomiesQuery(_deliveryApi, GetDefaultWaitForLoadingNewContent, _cacheManager);
-    }
+    public ITaxonomiesQuery GetTaxonomies() => new TaxonomiesQuery(_deliveryApi, GetDefaultWaitForLoadingNewContent, _cacheManager);
 
-    public ILanguagesQuery GetLanguages()
-    {
-        return new LanguagesQuery(_deliveryApi, GetDefaultWaitForLoadingNewContent);
-    }
+    public ILanguagesQuery GetLanguages() => new LanguagesQuery(_deliveryApi, GetDefaultWaitForLoadingNewContent);
 
     public IItemUsedInQuery GetItemUsedIn(string codename)
     {

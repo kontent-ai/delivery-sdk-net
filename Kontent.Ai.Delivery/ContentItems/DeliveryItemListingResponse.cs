@@ -32,8 +32,5 @@ internal sealed record DeliveryItemListingResponse<TModel> : IDeliveryItemListin
     public bool HasNextPage => !string.IsNullOrEmpty(Pagination.NextPageUrl);
 
     /// <inheritdoc />
-    public async Task<IDeliveryResult<IDeliveryItemListingResponse<TModel>>?> FetchNextPageAsync(CancellationToken cancellationToken = default)
-    {
-        return !HasNextPage || NextPageFetcher is null ? null : await NextPageFetcher(cancellationToken).ConfigureAwait(false);
-    }
+    public async Task<IDeliveryResult<IDeliveryItemListingResponse<TModel>>?> FetchNextPageAsync(CancellationToken cancellationToken = default) => !HasNextPage || NextPageFetcher is null ? null : await NextPageFetcher(cancellationToken).ConfigureAwait(false);
 }

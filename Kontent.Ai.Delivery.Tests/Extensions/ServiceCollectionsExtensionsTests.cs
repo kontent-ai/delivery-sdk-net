@@ -45,16 +45,10 @@ public class ServiceCollectionsExtensionsTests
     }
 
     [Fact]
-    public void AddDeliveryClientWithNullDeliveryOptions_ThrowsArgumentNullException()
-    {
-        Assert.Throws<ArgumentNullException>(() => _serviceCollection.AddDeliveryClient(deliveryOptions: null!));
-    }
+    public void AddDeliveryClientWithNullDeliveryOptions_ThrowsArgumentNullException() => Assert.Throws<ArgumentNullException>(() => _serviceCollection.AddDeliveryClient(deliveryOptions: null!));
 
     [Fact]
-    public void AddDeliveryClientWithNullBuildDeliveryOptions_ThrowsArgumentNullException()
-    {
-        Assert.Throws<ArgumentNullException>(() => _serviceCollection.AddDeliveryClient(configureOptions: null!));
-    }
+    public void AddDeliveryClientWithNullBuildDeliveryOptions_ThrowsArgumentNullException() => Assert.Throws<ArgumentNullException>(() => _serviceCollection.AddDeliveryClient(configureOptions: null!));
 
     [Fact]
     public void AddDeliveryClientWithOptions_AllServicesAreRegistered()

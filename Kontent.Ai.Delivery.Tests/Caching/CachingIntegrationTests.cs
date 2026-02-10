@@ -703,10 +703,7 @@ public class CachingIntegrationTests
             return Task.CompletedTask;
         }
 
-        public Task InvalidateAsync(CancellationToken cancellationToken = default, params string[] dependencyKeys)
-        {
-            return Task.CompletedTask;
-        }
+        public Task InvalidateAsync(CancellationToken cancellationToken = default, params string[] dependencyKeys) => Task.CompletedTask;
 
         public class CachedItem
         {

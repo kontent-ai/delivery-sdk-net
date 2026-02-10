@@ -43,10 +43,7 @@ internal static class ReadmeExamples
     }
 
     // Registration from Configuration (only demonstrates signature; not runnable here)
-    public static void RegistrationFromConfiguration(IServiceCollection services, Microsoft.Extensions.Configuration.IConfiguration configuration)
-    {
-        services.AddDeliveryClient(configuration, "DeliveryOptions");
-    }
+    public static void RegistrationFromConfiguration(IServiceCollection services, Microsoft.Extensions.Configuration.IConfiguration configuration) => services.AddDeliveryClient(configuration, "DeliveryOptions");
 
     // Using the Builder Pattern
     public static void UsingBuilderPattern(IServiceCollection services)

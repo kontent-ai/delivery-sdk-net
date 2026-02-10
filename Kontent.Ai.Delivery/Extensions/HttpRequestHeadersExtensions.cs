@@ -15,10 +15,7 @@ internal static class HttpRequestHeadersExtensions
     private static readonly Lazy<string?> Source = new(GetSource);
     public const string WaitForLoadingNewContentHeaderName = "X-KC-Wait-For-Loading-New-Content";
 
-    internal static void AddSdkTrackingHeader(this HttpRequestHeaders headers)
-    {
-        headers.Add(SdkTrackingHeaderName, Sdk.Value);
-    }
+    internal static void AddSdkTrackingHeader(this HttpRequestHeaders headers) => headers.Add(SdkTrackingHeaderName, Sdk.Value);
 
     /// <summary>
     /// Adds a tracking header according to https://kontent-ai.github.io/articles/Guidelines-for-Kontent.ai-related-tools.html#analytics

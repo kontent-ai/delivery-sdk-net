@@ -118,10 +118,7 @@ public class DynamicQueryLoggingTests
         return await File.ReadAllTextAsync(path);
     }
 
-    private static void AssertLog(IEnumerable<LogEntry> entries, int eventId, string messageFragment)
-    {
-        Assert.Contains(entries, e => e.EventId == eventId && e.Message.Contains(messageFragment, StringComparison.Ordinal));
-    }
+    private static void AssertLog(IEnumerable<LogEntry> entries, int eventId, string messageFragment) => Assert.Contains(entries, e => e.EventId == eventId && e.Message.Contains(messageFragment, StringComparison.Ordinal));
 
     private sealed record LogEntry(int EventId, LogLevel Level, string Message, string CategoryName);
 
