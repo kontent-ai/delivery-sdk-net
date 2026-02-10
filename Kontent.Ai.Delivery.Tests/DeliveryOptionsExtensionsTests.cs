@@ -7,6 +7,26 @@ namespace Kontent.Ai.Delivery.Tests;
 public class DeliveryOptionsExtensionsTests
 {
     [Fact]
+    public void GetBaseUrl_NullOptions_ThrowsArgumentNullException()
+    {
+        DeliveryOptions? options = null;
+
+        var ex = Assert.Throws<ArgumentNullException>(() => options!.GetBaseUrl());
+
+        Assert.Equal("options", ex.ParamName);
+    }
+
+    [Fact]
+    public void GetApiKey_NullOptions_ThrowsArgumentNullException()
+    {
+        DeliveryOptions? options = null;
+
+        var ex = Assert.Throws<ArgumentNullException>(() => options!.GetApiKey());
+
+        Assert.Equal("options", ex.ParamName);
+    }
+
+    [Fact]
     public void GetBaseUrl_Production_ReturnsProductionEndpoint()
     {
         var options = new DeliveryOptions

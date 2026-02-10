@@ -37,7 +37,7 @@ public static partial class ServiceCollectionExtensions
 
         return services.AddDeliveryClient(
             DeliveryClientNames.Default,
-            options => options.Configure(deliveryOptions),
+            options => DeliveryOptionsCopyHelper.Copy(source: deliveryOptions, destination: options),
             configureHttpClient,
             configureResilience,
             configureRefit);
@@ -66,7 +66,7 @@ public static partial class ServiceCollectionExtensions
 
         return services.AddDeliveryClient(
             DeliveryClientNames.Default,
-            opts => opts.Configure(options),
+            opts => DeliveryOptionsCopyHelper.Copy(source: options, destination: opts),
             configureHttpClient,
             configureResilience,
             configureRefit);

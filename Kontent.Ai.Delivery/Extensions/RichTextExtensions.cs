@@ -111,7 +111,7 @@ public static class RichTextExtensions
     {
         ArgumentNullException.ThrowIfNull(richText);
 
-        return richText.OfType<IEmbeddedContent<TModel>>();
+        return richText.GetBlocks<IEmbeddedContent<TModel>>();
     }
 
     /// <summary>
@@ -158,7 +158,7 @@ public static class RichTextExtensions
         ArgumentNullException.ThrowIfNull(richText);
 
         return richText
-            .OfType<IEmbeddedContent<TModel>>()
+            .GetBlocks<IEmbeddedContent<TModel>>()
             .Select(e => e.Elements);
     }
 
