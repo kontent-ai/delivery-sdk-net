@@ -117,7 +117,9 @@ var result = await client.GetItems()
 Kontent.ai language fallbacks are controlled by how you combine the Delivery API `language` parameter with filtering on `system.language`.
 
 - **Default behavior (fallbacks allowed)**: `.WithLanguage("es-ES")` requests the Spanish variant, and the API may fall back to the default language for items that are not translated.
-- **Fallbacks disabled (only translated items)**: `.WithLanguage("es-ES", LanguageFallbackMode.Disabled)` automatically adds `system.language[eq]=es-ES` to the query, so only items actually translated into `es-ES` are returned.
+- **Fallbacks disabled (only translated items, list/feed queries)**: `.WithLanguage("es-ES", LanguageFallbackMode.Disabled)` automatically adds `system.language[eq]=es-ES` to the query, so only items actually translated into `es-ES` are returned.
+
+> Single-item queries (`GetItem<T>(...)` and dynamic `GetItem(...)`) do not support fallback disabling. They use only `language=<lang>` and rely on Kontent.ai fallback configuration.
 
 Manual equivalent:
 
@@ -155,5 +157,4 @@ var result = await query.ExecuteAsync();
 - **Unexpected no-results**: remember filters are ANDed; temporarily comment out filters to isolate the restrictive one.
 - **Special characters**: string values are URL-encoded automatically (e.g. `&` becomes `%26`).
 - **Date filtering**: the SDK serializes all `DateTime` filter values to UTC (`Z`). `Local` values are converted to UTC; `Unspecified` values are treated as UTC (no offset conversion). Prefer `DateTime.UtcNow`/UTC values, or use `DateTimeOffset` and convert to UTC explicitly before filtering. The Delivery API compares date-time strings; be explicit about bounds (see Delivery docs: [Filtering parameters](https://kontent.ai/learn/docs/apis/delivery-api/filtering-parameters)).
-
 

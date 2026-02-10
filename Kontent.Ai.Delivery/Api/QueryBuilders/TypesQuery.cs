@@ -17,7 +17,7 @@ internal sealed class TypesQuery(
     ILogger? logger = null) : ITypesQuery
 {
     private readonly IDeliveryApi _api = api;
-    private readonly List<KeyValuePair<string, string>> _serializedFilters = [];
+    private readonly SerializedFilterCollection _serializedFilters = [];
     private ListTypesParams _params = new();
     private bool? _waitForLoadingNewContentOverride;
     private readonly Func<bool?> _getDefaultWaitForNewContent = getDefaultWaitForNewContent;
@@ -134,7 +134,7 @@ internal sealed class TypesQuery(
         var wait = _waitForLoadingNewContentOverride ?? _getDefaultWaitForNewContent();
         var response = await _api.GetTypesInternalAsync(
             _params,
-            FilterQueryParams.ToQueryDictionary(_serializedFilters),
+            _serializedFilters.ToQueryDictionary(),
             wait,
             cancellationToken).ConfigureAwait(false);
         return await response.ToDeliveryResultAsync(_logger).ConfigureAwait(false);
@@ -155,8 +155,7 @@ internal sealed class TypesQuery(
                 _waitForLoadingNewContentOverride = _waitForLoadingNewContentOverride
             };
 
-            foreach (var filter in _serializedFilters)
-                nextQuery._serializedFilters.Add(filter);
+            nextQuery._serializedFilters.CopyFrom(_serializedFilters);
 
             return await nextQuery.ExecuteAsync(ct).ConfigureAwait(false);
         };

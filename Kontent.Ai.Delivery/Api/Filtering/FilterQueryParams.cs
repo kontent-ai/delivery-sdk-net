@@ -12,14 +12,9 @@ internal static class FilterQueryParams
     /// 
     /// This is to ensure duplicate filters are serialized as separate query parameters.
     /// </summary>
-    internal static Dictionary<string, string[]>? ToQueryDictionary(IReadOnlyList<KeyValuePair<string, string>> filters)
-        => filters.Count == 0
-            ? null
-            : filters
-                .GroupBy(kvp => kvp.Key, StringComparer.OrdinalIgnoreCase)
-                .ToDictionary(
-                    g => g.Key,
-                    g => g.Select(x => x.Value).ToArray(),
-                    StringComparer.OrdinalIgnoreCase);
-}
+    internal static Dictionary<string, string[]>? ToQueryDictionary(IReadOnlyList<KeyValuePair<string, string>> filters) =>
+        SerializedFilterCollection.ToQueryDictionary(filters);
 
+    internal static Dictionary<string, string[]>? ToQueryDictionary(SerializedFilterCollection filters) =>
+        filters.ToQueryDictionary();
+}

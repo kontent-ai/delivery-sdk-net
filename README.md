@@ -1076,7 +1076,7 @@ Language fallbacks are configured in your Kontent.ai project. The SDK respects t
 
 By default, `.WithLanguage("<lang>")` requests a language variant while still allowing fallbacks configured in Kontent.ai (this is equivalent to using the Delivery API `language=<lang>` parameter without also filtering by `system.language`).
 
-To **disable language fallbacks** for a specific query (return only items that are actually translated into the requested language), use:
+To **disable language fallbacks** for list/feed queries (return only items that are actually translated into the requested language), use:
 
 ```csharp
 var result = await client.GetItems<Article>()
@@ -1086,7 +1086,9 @@ var result = await client.GetItems<Article>()
 
 When `LanguageFallbackMode.Disabled` is used, the SDK automatically adds the equivalent of `system.language[eq]=<lang>` to the request (so the query uses both `language=<lang>` and `system.language=<lang>` as described in Kontent.ai docs).
 
-You can still achieve the same behavior manually by combining `.WithLanguage` and filtering on `system.language`, setting both to the desired language codename. See [Ignoring language fallbacks](https://kontent.ai/learn/develop/hello-world/get-localized-content/typescript#a-ignoring-language-fallbacks) in Kontent.ai documentation for more details.
+> `GetItem(...)` single-item queries (typed and dynamic) do not support disabling language fallbacks. They only use `language=<lang>` and follow fallback behavior configured in Kontent.ai.
+
+For list/feed queries, you can still achieve the same behavior manually by combining `.WithLanguage` and filtering on `system.language`, setting both to the desired language codename. See [Ignoring language fallbacks](https://kontent.ai/learn/develop/hello-world/get-localized-content/typescript#a-ignoring-language-fallbacks) in Kontent.ai documentation for more details.
 
 #### Get Available Languages
 

@@ -22,7 +22,7 @@ internal sealed class EnumerateItemsQuery<TModel>(
     private readonly ILogger? _logger = logger;
     private EnumItemsParams _params = new();
     private bool? _waitForLoadingNewContentOverride;
-    private readonly List<KeyValuePair<string, string>> _serializedFilters = [];
+    private readonly SerializedFilterCollection _serializedFilters = [];
     private string? _continuationToken;
     private bool _typeFilterApplied;
     private static bool IsDynamicModel => ModelTypeHelper.IsDynamic<TModel>();
@@ -32,9 +32,7 @@ internal sealed class EnumerateItemsQuery<TModel>(
         _params = _params with { Language = languageCodename };
         if (languageFallbackMode == LanguageFallbackMode.Disabled)
         {
-            _serializedFilters.Add(new KeyValuePair<string, string>(
-                FilterPath.System("language") + FilterSuffix.Eq,
-                FilterValueSerializer.Serialize(languageCodename)));
+            SystemFilterHelpers.AddSystemLanguageFilter(_serializedFilters, languageCodename);
         }
         return this;
     }
@@ -76,23 +74,7 @@ internal sealed class EnumerateItemsQuery<TModel>(
             return;
         _typeFilterApplied = true;
 
-        if (IsDynamicModel)
-            return;
-
-        var codename = _typeProvider.GetCodename(typeof(TModel));
-
-        if (string.IsNullOrEmpty(codename))
-        {
-            if (_logger is not null)
-            {
-                LoggerMessages.GenericQueryTypeCodenameNotFound(_logger, typeof(TModel).Name);
-            }
-            return;
-        }
-
-        _serializedFilters.Add(new KeyValuePair<string, string>(
-            FilterPath.System("type") + FilterSuffix.Eq,
-            FilterValueSerializer.Serialize(codename)));
+        SystemFilterHelpers.AddGenericTypeFilter<TModel>(_serializedFilters, _typeProvider, _logger);
     }
 
     public async Task<IDeliveryResult<IDeliveryItemsFeedResponse<TModel>>> ExecuteAsync(CancellationToken cancellationToken = default)
@@ -168,7 +150,7 @@ internal sealed class EnumerateItemsQuery<TModel>(
         var resp = await _api
             .GetItemsFeedInternalAsync<TModel>(
                 _params,
-                FilterQueryParams.ToQueryDictionary(_serializedFilters),
+                _serializedFilters.ToQueryDictionary(),
                 continuationToken,
                 wait,
                 cancellationToken)
@@ -208,7 +190,7 @@ internal sealed class EnumerateItemsQuery<TModel>(
             _typeFilterApplied = _typeFilterApplied
         };
 
-        nextQuery._serializedFilters.AddRange(_serializedFilters);
+        nextQuery._serializedFilters.CopyFrom(_serializedFilters);
         return nextQuery;
     }
 

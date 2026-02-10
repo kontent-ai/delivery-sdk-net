@@ -107,7 +107,7 @@ public sealed class ContentTypeGenerator : IIncrementalGenerator
             // Track for duplicate detection
             if (!codenameToTypes.TryGetValue(info.Codename!, out var typeList))
             {
-                typeList = new List<ContentTypeInfo>();
+                typeList = [];
                 codenameToTypes[info.Codename!] = typeList;
             }
             typeList.Add(info);

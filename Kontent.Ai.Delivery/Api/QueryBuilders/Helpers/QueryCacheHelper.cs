@@ -22,7 +22,7 @@ internal static class QueryCacheHelper
     /// ConditionalWeakTable ensures locks are scoped per cache manager instance (avoiding cross-client collisions)
     /// and automatically cleaned up when the cache manager is garbage collected.
     /// </summary>
-    private static readonly ConditionalWeakTable<IDeliveryCacheManager, LockDictionary> _managerLocks = new();
+    private static readonly ConditionalWeakTable<IDeliveryCacheManager, LockDictionary> _managerLocks = [];
 
     /// <summary>
     /// Wrapper around ConcurrentDictionary with cleanup tracking.

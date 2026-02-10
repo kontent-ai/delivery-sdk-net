@@ -27,7 +27,7 @@ internal sealed class ItemsQuery<TModel>(
     private readonly ITypeProvider _typeProvider = typeProvider;
     private readonly IDeliveryCacheManager? _cacheManager = cacheManager;
     private readonly ILogger? _logger = logger;
-    private readonly List<KeyValuePair<string, string>> _serializedFilters = [];
+    private readonly SerializedFilterCollection _serializedFilters = [];
     private ListItemsParams _params = new();
     private bool? _waitForLoadingNewContentOverride;
     private static bool IsDynamicModel => ModelTypeHelper.IsDynamic<TModel>();
@@ -37,9 +37,7 @@ internal sealed class ItemsQuery<TModel>(
         _params = _params with { Language = languageCodename };
         if (languageFallbackMode == LanguageFallbackMode.Disabled)
         {
-            _serializedFilters.Add(new KeyValuePair<string, string>(
-                FilterPath.System("language") + FilterSuffix.Eq,
-                FilterValueSerializer.Serialize(languageCodename)));
+            SystemFilterHelpers.AddSystemLanguageFilter(_serializedFilters, languageCodename);
         }
         return this;
     }
@@ -234,33 +232,14 @@ internal sealed class ItemsQuery<TModel>(
             apiResult.ContinuationToken,
             apiResult.ResponseHeaders);
 
-    private void ApplyGenericTypeFilter()
-    {
-        if (IsDynamicModel)
-            return;
-
-        var codename = _typeProvider.GetCodename(typeof(TModel));
-
-        if (string.IsNullOrEmpty(codename))
-        {
-            if (_logger is not null)
-            {
-                LoggerMessages.GenericQueryTypeCodenameNotFound(_logger, typeof(TModel).Name);
-            }
-            return;
-        }
-
-        _serializedFilters.Add(new KeyValuePair<string, string>(
-            FilterPath.System("type") + FilterSuffix.Eq,
-            FilterValueSerializer.Serialize(codename)));
-    }
+    private void ApplyGenericTypeFilter() => SystemFilterHelpers.AddGenericTypeFilter<TModel>(_serializedFilters, _typeProvider, _logger);
 
     private async Task<IDeliveryResult<DeliveryItemListingResponse<TModel>>> FetchFromApiAsync(CancellationToken cancellationToken)
     {
         var wait = _waitForLoadingNewContentOverride ?? _getDefaultWaitForNewContent();
         var rawResponse = await _api.GetItemsInternalAsync<TModel>(
             _params,
-            FilterQueryParams.ToQueryDictionary(_serializedFilters),
+            _serializedFilters.ToQueryDictionary(),
             wait,
             cancellationToken).ConfigureAwait(false);
         return await rawResponse.ToDeliveryResultAsync(_logger).ConfigureAwait(false);
@@ -319,7 +298,7 @@ internal sealed class ItemsQuery<TModel>(
                 _waitForLoadingNewContentOverride = _waitForLoadingNewContentOverride
             };
 
-            nextQuery._serializedFilters.AddRange(_serializedFilters);
+            nextQuery._serializedFilters.CopyFrom(_serializedFilters);
 
             return await nextQuery.ExecuteAsync(ct).ConfigureAwait(false);
         };

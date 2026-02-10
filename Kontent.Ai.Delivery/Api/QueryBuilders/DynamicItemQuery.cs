@@ -28,12 +28,9 @@ internal sealed class DynamicItemQuery(
         cacheManager: null,
         logger);
 
-    public IDynamicItemQuery WithLanguage(string languageCodename, LanguageFallbackMode languageFallbackMode = LanguageFallbackMode.Enabled)
+    public IDynamicItemQuery WithLanguage(string languageCodename)
     {
         _inner.WithLanguage(languageCodename);
-        if (languageFallbackMode == LanguageFallbackMode.Disabled)
-            _inner.AddExactSystemLanguageFilter(languageCodename);
-
         return this;
     }
 
