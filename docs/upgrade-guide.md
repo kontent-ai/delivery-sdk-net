@@ -45,6 +45,7 @@ This guide provides comprehensive instructions for migrating from the legacy Kon
 | Response Types | Breaking | Direct response → Result pattern with `IsSuccess`/`Value`/`Error` |
 | Model Structure | Breaking | Flat properties → `IContentItem<T>` wrapper |
 | DI Registration | Moderate | New overloads, keyed services support |
+| Content Freshness | Breaking | Global `DeliveryOptions.WaitForLoadingNewContent` removed; use per-query `WaitForLoadingNewContent(true)` |
 
 ## Quick Migration Checklist
 

@@ -317,7 +317,7 @@ SDK caching applies to cacheable query builders (for example, strongly-typed ite
 
 Dynamic item/list queries (`GetItem()` and `GetItems()` without a generic model type) are intentionally non-cacheable because their final item types are resolved at runtime. These queries always execute against the API and return `IsCacheHit == false`.
 
-When `WaitForLoadingNewContent` is effectively enabled for a request (global option or per-query override), the SDK bypasses local caching for that request path (no cache lookup and no cache store).
+When `WaitForLoadingNewContent(true)` is enabled for a query, the SDK bypasses local caching for that request path (no cache lookup and no cache store).
 
 ### Cache Keys
 

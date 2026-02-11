@@ -75,7 +75,7 @@ public interface IDynamicItemsQuery
     IDynamicItemsQuery WithTotalCount();
 
     /// <summary>
-    /// Overrides the global option for waiting on the newest content for this specific request.
+    /// Configures waiting for the newest content for this specific request.
     /// </summary>
     /// <param name="enabled">Whether to wait for loading new content.</param>
     /// <returns>The query builder for method chaining.</returns>

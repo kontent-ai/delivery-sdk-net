@@ -15,7 +15,6 @@ namespace Kontent.Ai.Delivery.Api.QueryBuilders;
 internal sealed class ItemQuery<TModel>(
     IDeliveryApi api,
     string codename,
-    Func<bool?> getDefaultWaitForNewContent,
     ContentItemMapper contentItemMapper,
     IContentDeserializer contentDeserializer,
     IDeliveryCacheManager? cacheManager,
@@ -23,14 +22,13 @@ internal sealed class ItemQuery<TModel>(
 {
     private readonly IDeliveryApi _api = api;
     private readonly string _codename = codename;
-    private readonly Func<bool?> _getDefaultWaitForNewContent = getDefaultWaitForNewContent;
     private readonly SerializedFilterCollection _serializedFilters = [];
     private SingleItemParams _params = new();
     private readonly ContentItemMapper _contentItemMapper = contentItemMapper;
     private readonly IContentDeserializer _contentDeserializer = contentDeserializer;
     private readonly IDeliveryCacheManager? _cacheManager = cacheManager;
     private readonly ILogger? _logger = logger;
-    private bool? _waitForLoadingNewContentOverride;
+    private bool _waitForLoadingNewContent;
     private static bool IsDynamicModel => ModelTypeHelper.IsDynamic<TModel>();
     internal IReadOnlyDictionary<string, JsonElement>? LatestModularContent { get; private set; }
 
@@ -60,7 +58,7 @@ internal sealed class ItemQuery<TModel>(
 
     public IItemQuery<TModel> WaitForLoadingNewContent(bool enabled = true)
     {
-        _waitForLoadingNewContentOverride = enabled;
+        _waitForLoadingNewContent = enabled;
         return this;
     }
 
@@ -69,20 +67,14 @@ internal sealed class ItemQuery<TModel>(
         LatestModularContent = null;
         LogQueryStarting();
         var stopwatch = StartTimingIfEnabled();
-        var defaultWaitForNewContent = _getDefaultWaitForNewContent();
-        var waitForLoadingNewContent = WaitForLoadingNewContentHelper.ResolveHeaderValue(
-            _waitForLoadingNewContentOverride,
-            defaultWaitForNewContent);
-        var shouldBypassCache = WaitForLoadingNewContentHelper.ShouldBypassCache(
-            _waitForLoadingNewContentOverride,
-            defaultWaitForNewContent);
+        bool? waitForLoadingNewContent = _waitForLoadingNewContent ? true : null;
+        var shouldBypassCache = _waitForLoadingNewContent;
 
         return _cacheManager is not null && !shouldBypassCache
             ? await ExecuteWithCacheAsync(
                 _cacheManager,
                 stopwatch,
                 waitForLoadingNewContent,
-                WaitForLoadingNewContentHelper.ResolveCacheMode(_waitForLoadingNewContentOverride, defaultWaitForNewContent),
                 cancellationToken).ConfigureAwait(false)
             : await ExecuteWithoutCacheAsync(stopwatch, waitForLoadingNewContent, cancellationToken).ConfigureAwait(false);
     }
@@ -91,10 +83,9 @@ internal sealed class ItemQuery<TModel>(
         IDeliveryCacheManager cacheManager,
         Stopwatch? stopwatch,
         bool? waitForLoadingNewContent,
-        string waitCacheMode,
         CancellationToken cancellationToken)
     {
-        var cacheKey = CacheKeyBuilder.BuildItemKey(_codename, _params, waitCacheMode);
+        var cacheKey = CacheKeyBuilder.BuildItemKey(_codename, _params);
         var (cacheResult, apiResult) = await FetchWithCacheAsync(
             cacheManager,
             cacheKey,

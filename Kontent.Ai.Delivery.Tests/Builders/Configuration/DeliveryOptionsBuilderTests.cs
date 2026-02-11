@@ -24,19 +24,6 @@ public class DeliveryOptionsBuilderTests
     }
 
     [Fact]
-    public void ModernBuilder_WithWaitForLoadingNewContent_SetsOptions()
-    {
-        var deliveryOptions = DeliveryOptionsBuilder
-            .CreateInstance()
-            .WithEnvironmentId(EnvironmentId)
-            .UseProductionApi()
-            .WaitForLoadingNewContent()
-            .Build();
-
-        Assert.True(deliveryOptions.WaitForLoadingNewContent);
-    }
-
-    [Fact]
     public void BuildWithCustomEndpointForPreviewApi()
     {
         const string customEndpoint = "http://www.customPreviewEndpoint.com";

@@ -6,7 +6,6 @@ using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.DependencyInjection.Extensions;
 using Microsoft.Extensions.Http.Resilience;
 using Microsoft.Extensions.Logging;
-using Microsoft.Extensions.Options;
 
 namespace Kontent.Ai.Delivery;
 
@@ -164,7 +163,7 @@ public static partial class ServiceCollectionExtensions
     /// </list>
     /// </para>
     /// <para>
-    /// The client supports reactive configuration updates via <see cref="IOptionsMonitor{TOptions}"/>.
+    /// The client supports reactive configuration updates via <see cref="Microsoft.Extensions.Options.IOptionsMonitor{TOptions}"/>.
     /// Changes to API keys and other options will be picked up automatically at runtime.
     /// </para>
     /// <para>
@@ -283,7 +282,6 @@ public static partial class ServiceCollectionExtensions
     private static IDeliveryClient CreateDeliveryClient(IServiceProvider sp, object? key)
     {
         var clientName = (string)key!;
-        var optionsMonitor = sp.GetRequiredService<IOptionsMonitor<DeliveryOptions>>();
 
         var deliveryApi = sp.GetRequiredKeyedService<IDeliveryApi>(clientName);
         var contentItemMapper = sp.GetRequiredService<ContentItemMapper>();
@@ -298,13 +296,11 @@ public static partial class ServiceCollectionExtensions
 
         return new DeliveryClient(
             deliveryApi,
-            optionsMonitor,
             contentItemMapper,
             contentDeserializer,
             typeProvider,
             cacheManager,
-            logger,
-            clientName);
+            logger);
     }
 
     private static string GetHttpClientName(string name) => $"{HttpClientNamePrefix}{name}";

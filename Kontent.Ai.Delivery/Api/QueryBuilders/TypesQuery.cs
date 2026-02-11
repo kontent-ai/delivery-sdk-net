@@ -12,15 +12,13 @@ namespace Kontent.Ai.Delivery.Api.QueryBuilders;
 /// <inheritdoc cref="ITypesQuery"/>
 internal sealed class TypesQuery(
     IDeliveryApi api,
-    Func<bool?> getDefaultWaitForNewContent,
     IDeliveryCacheManager? cacheManager,
     ILogger? logger = null) : ITypesQuery
 {
     private readonly IDeliveryApi _api = api;
     private readonly SerializedFilterCollection _serializedFilters = [];
     private ListTypesParams _params = new();
-    private bool? _waitForLoadingNewContentOverride;
-    private readonly Func<bool?> _getDefaultWaitForNewContent = getDefaultWaitForNewContent;
+    private bool _waitForLoadingNewContent;
     private readonly IDeliveryCacheManager? _cacheManager = cacheManager;
     private readonly ILogger? _logger = logger;
 
@@ -51,7 +49,7 @@ internal sealed class TypesQuery(
 
     public ITypesQuery WaitForLoadingNewContent(bool enabled = true)
     {
-        _waitForLoadingNewContentOverride = enabled;
+        _waitForLoadingNewContent = enabled;
         return this;
     }
 
@@ -59,20 +57,14 @@ internal sealed class TypesQuery(
     {
         LogQueryStarting();
         var stopwatch = StartTimingIfEnabled();
-        var defaultWaitForNewContent = _getDefaultWaitForNewContent();
-        var waitForLoadingNewContent = WaitForLoadingNewContentHelper.ResolveHeaderValue(
-            _waitForLoadingNewContentOverride,
-            defaultWaitForNewContent);
-        var shouldBypassCache = WaitForLoadingNewContentHelper.ShouldBypassCache(
-            _waitForLoadingNewContentOverride,
-            defaultWaitForNewContent);
+        bool? waitForLoadingNewContent = _waitForLoadingNewContent ? true : null;
+        var shouldBypassCache = _waitForLoadingNewContent;
 
         return _cacheManager is not null && !shouldBypassCache
             ? await ExecuteWithCacheAsync(
                 _cacheManager,
                 stopwatch,
                 waitForLoadingNewContent,
-                WaitForLoadingNewContentHelper.ResolveCacheMode(_waitForLoadingNewContentOverride, defaultWaitForNewContent),
                 cancellationToken).ConfigureAwait(false)
             : await ExecuteWithoutCacheAsync(stopwatch, waitForLoadingNewContent, cancellationToken).ConfigureAwait(false);
     }
@@ -81,10 +73,9 @@ internal sealed class TypesQuery(
         IDeliveryCacheManager cacheManager,
         Stopwatch? stopwatch,
         bool? waitForLoadingNewContent,
-        string waitCacheMode,
         CancellationToken cancellationToken)
     {
-        var cacheKey = CacheKeyBuilder.BuildTypesKey(_params, _serializedFilters, waitCacheMode);
+        var cacheKey = CacheKeyBuilder.BuildTypesKey(_params, _serializedFilters);
         var (cacheResult, apiResult) = await FetchWithCacheAsync(
             cacheManager,
             cacheKey,
@@ -191,10 +182,10 @@ internal sealed class TypesQuery(
 
     private TypesQuery CreateNextPageQuery(int nextSkip)
     {
-        var nextQuery = new TypesQuery(_api, _getDefaultWaitForNewContent, _cacheManager, _logger)
+        var nextQuery = new TypesQuery(_api, _cacheManager, _logger)
         {
             _params = _params with { Skip = nextSkip },
-            _waitForLoadingNewContentOverride = _waitForLoadingNewContentOverride
+            _waitForLoadingNewContent = this._waitForLoadingNewContent
         };
 
         nextQuery._serializedFilters.CopyFrom(_serializedFilters);

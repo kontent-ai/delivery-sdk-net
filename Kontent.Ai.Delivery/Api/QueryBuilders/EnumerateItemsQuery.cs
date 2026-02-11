@@ -1,6 +1,5 @@
 using System.Runtime.CompilerServices;
 using Kontent.Ai.Delivery.Api.Filtering;
-using Kontent.Ai.Delivery.Api.QueryBuilders.Helpers;
 using Kontent.Ai.Delivery.ContentItems;
 using Kontent.Ai.Delivery.ContentItems.Mapping;
 using Kontent.Ai.Delivery.Logging;
@@ -11,18 +10,16 @@ namespace Kontent.Ai.Delivery.Api.QueryBuilders;
 /// <inheritdoc cref="IEnumerateItemsQuery{TModel}"/>
 internal sealed class EnumerateItemsQuery<TModel>(
     IDeliveryApi api,
-    Func<bool?> getDefaultWaitForNewContent,
     ContentItemMapper contentItemMapper,
     ITypeProvider typeProvider,
     ILogger? logger = null) : IEnumerateItemsQuery<TModel>
 {
     private readonly IDeliveryApi _api = api;
-    private readonly Func<bool?> _getDefaultWaitForNewContent = getDefaultWaitForNewContent;
     private readonly ContentItemMapper _contentItemMapper = contentItemMapper;
     private readonly ITypeProvider _typeProvider = typeProvider;
     private readonly ILogger? _logger = logger;
     private EnumItemsParams _params = new();
-    private bool? _waitForLoadingNewContentOverride;
+    private bool _waitForLoadingNewContent;
     private readonly SerializedFilterCollection _serializedFilters = [];
     private string? _continuationToken;
     private bool _typeFilterApplied;
@@ -57,7 +54,7 @@ internal sealed class EnumerateItemsQuery<TModel>(
 
     public IEnumerateItemsQuery<TModel> WaitForLoadingNewContent(bool enabled = true)
     {
-        _waitForLoadingNewContentOverride = enabled;
+        _waitForLoadingNewContent = enabled;
         return this;
     }
 
@@ -82,9 +79,7 @@ internal sealed class EnumerateItemsQuery<TModel>(
     {
         ApplyGenericTypeFilter();
 
-        var waitForLoadingNewContent = WaitForLoadingNewContentHelper.ResolveHeaderValue(
-            _waitForLoadingNewContentOverride,
-            _getDefaultWaitForNewContent());
+        bool? waitForLoadingNewContent = _waitForLoadingNewContent ? true : null;
         var (deliveryResult, continuationToken) = await FetchFeedPageAsync(
             _continuationToken,
             waitForLoadingNewContent,
@@ -189,10 +184,10 @@ internal sealed class EnumerateItemsQuery<TModel>(
 
     private EnumerateItemsQuery<TModel> CreateContinuationQuery(string continuationToken)
     {
-        var nextQuery = new EnumerateItemsQuery<TModel>(_api, _getDefaultWaitForNewContent, _contentItemMapper, _typeProvider, _logger)
+        var nextQuery = new EnumerateItemsQuery<TModel>(_api, _contentItemMapper, _typeProvider, _logger)
         {
             _params = _params,
-            _waitForLoadingNewContentOverride = _waitForLoadingNewContentOverride,
+            _waitForLoadingNewContent = this._waitForLoadingNewContent,
             _continuationToken = continuationToken,
             _typeFilterApplied = _typeFilterApplied
         };

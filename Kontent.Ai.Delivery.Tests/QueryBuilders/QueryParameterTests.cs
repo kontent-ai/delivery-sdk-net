@@ -218,30 +218,6 @@ public sealed class QueryParameterTests
     }
 
     [Fact]
-    public async Task GetItem_WaitForLoadingNewContentFromOptions_AddsHeader()
-    {
-        // Arrange - WaitForLoadingNewContent set via DeliveryOptions
-        var mock = new MockHttpMessageHandler();
-        var itemJson = BuildMinimalItemJson("test_item");
-
-        mock.When($"{BaseUrl}/items/test_item")
-            .With(req => req.Headers.Contains("X-KC-Wait-For-Loading-New-Content"))
-            .Respond("application/json", itemJson);
-
-        var client = CreateClient(mock, new DeliveryOptions
-        {
-            EnvironmentId = _env,
-            WaitForLoadingNewContent = true
-        });
-
-        // Act
-        var result = await client.GetItem<IDynamicElements>("test_item").ExecuteAsync();
-
-        // Assert
-        Assert.True(result.IsSuccess, $"Request failed: {result.Error?.Message}");
-    }
-
-    [Fact]
     public async Task GetItem_WithoutWaitForLoadingNewContent_DoesNotAddHeader()
     {
         // Arrange - Default behavior without the header
@@ -262,9 +238,9 @@ public sealed class QueryParameterTests
     }
 
     [Fact]
-    public async Task GetItem_WaitForLoadingNewContentFalse_OverridesGlobalWaitAndOmitsHeader()
+    public async Task GetItem_WaitForLoadingNewContentFalse_OmitsHeader()
     {
-        // Arrange - global wait enabled, query explicitly disables it
+        // Arrange
         var mock = new MockHttpMessageHandler();
         var itemJson = BuildMinimalItemJson("test_item");
 
@@ -272,11 +248,7 @@ public sealed class QueryParameterTests
             .With(req => !req.Headers.Contains("X-KC-Wait-For-Loading-New-Content"))
             .Respond("application/json", itemJson);
 
-        var client = CreateClient(mock, new DeliveryOptions
-        {
-            EnvironmentId = _env,
-            WaitForLoadingNewContent = true
-        });
+        var client = CreateClient(mock);
 
         // Act
         var result = await client.GetItem<IDynamicElements>("test_item")

@@ -1,19 +1,17 @@
-using Kontent.Ai.Delivery.Api.QueryBuilders.Helpers;
 
 namespace Kontent.Ai.Delivery.Api.QueryBuilders;
 
 /// <inheritdoc cref="ITypeElementQuery"/>
-internal sealed class TypeElementQuery(IDeliveryApi api, string contentTypeCodename, string elementCodename, Func<bool?> getDefaultWaitForNewContent) : ITypeElementQuery
+internal sealed class TypeElementQuery(IDeliveryApi api, string contentTypeCodename, string elementCodename) : ITypeElementQuery
 {
     private readonly IDeliveryApi _api = api;
     private readonly string _type = contentTypeCodename;
     private readonly string _element = elementCodename;
-    private bool? _waitForLoadingNewContentOverride;
-    private readonly Func<bool?> _getDefaultWaitForNewContent = getDefaultWaitForNewContent;
+    private bool _waitForLoadingNewContent;
 
     public ITypeElementQuery WaitForLoadingNewContent(bool enabled = true)
     {
-        _waitForLoadingNewContentOverride = enabled;
+        _waitForLoadingNewContent = enabled;
         return this;
     }
 
@@ -22,9 +20,7 @@ internal sealed class TypeElementQuery(IDeliveryApi api, string contentTypeCoden
 
     private async Task<IDeliveryResult<IContentElement>> FetchFromApiAsync(CancellationToken cancellationToken)
     {
-        var waitForLoadingNewContent = WaitForLoadingNewContentHelper.ResolveHeaderValue(
-            _waitForLoadingNewContentOverride,
-            _getDefaultWaitForNewContent());
+        bool? waitForLoadingNewContent = _waitForLoadingNewContent ? true : null;
         var response = await _api.GetContentElementInternalAsync(_type, _element, waitForLoadingNewContent, cancellationToken).ConfigureAwait(false);
         return await response.ToDeliveryResultAsync().ConfigureAwait(false);
     }

@@ -2,8 +2,8 @@ using System.Net;
 using System.Text;
 using Kontent.Ai.Delivery;
 using Kontent.Ai.Delivery.Abstractions;
-using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.DependencyInjection;
+using Microsoft.Extensions.Logging;
 using RichardSzalay.MockHttp;
 using Xunit;
 
@@ -99,7 +99,33 @@ public sealed class UsedInQueriesTests
     }
 
     [Fact]
-    public async Task UsedInQueries_GlobalWaitEnabled_QueryWaitFalse_OmitsHeader()
+    public async Task UsedInQueries_QueryWaitEnabled_AddsHeader()
+    {
+        var env = Guid.NewGuid().ToString();
+        var usedInUrl = $"https://deliver.kontent.ai/{env}/items/coffee_beverages_explained/used-in";
+        var mockHttp = new MockHttpMessageHandler();
+
+        mockHttp.Expect(usedInUrl)
+            .With(req => req.Headers.Contains("X-KC-Wait-For-Loading-New-Content"))
+            .Respond(_ => CreateUsedInResponse(["parent_1"], continuationToken: null));
+
+        var client = BuildClient(env, mockHttp, new DeliveryOptions { EnvironmentId = env });
+        var items = new List<IUsedInItem>();
+
+        await foreach (var item in client.GetItemUsedIn("coffee_beverages_explained")
+                           .WaitForLoadingNewContent()
+                           .EnumerateItemsAsync())
+        {
+            items.Add(item);
+        }
+
+        Assert.Single(items);
+        Assert.Equal("parent_1", items[0].System.Codename);
+        mockHttp.VerifyNoOutstandingExpectation();
+    }
+
+    [Fact]
+    public async Task UsedInQueries_QueryWaitFalse_OmitsHeader()
     {
         var env = Guid.NewGuid().ToString();
         var usedInUrl = $"https://deliver.kontent.ai/{env}/items/coffee_beverages_explained/used-in";
@@ -109,11 +135,7 @@ public sealed class UsedInQueriesTests
             .With(req => !req.Headers.Contains("X-KC-Wait-For-Loading-New-Content"))
             .Respond(_ => CreateUsedInResponse(["parent_1"], continuationToken: null));
 
-        var client = BuildClient(env, mockHttp, new DeliveryOptions
-        {
-            EnvironmentId = env,
-            WaitForLoadingNewContent = true
-        });
+        var client = BuildClient(env, mockHttp, new DeliveryOptions { EnvironmentId = env });
 
         var items = new List<IUsedInItem>();
         await foreach (var item in client.GetItemUsedIn("coffee_beverages_explained")
@@ -229,10 +251,7 @@ public sealed class UsedInQueriesTests
             EventId eventId,
             TState state,
             Exception? exception,
-            Func<TState, Exception?, string> formatter)
-        {
-            entries.Add(new LogEntry(eventId.Id, formatter(state, exception)));
-        }
+            Func<TState, Exception?, string> formatter) => entries.Add(new LogEntry(eventId.Id, formatter(state, exception)));
     }
 
     private sealed class NoopDisposable : IDisposable

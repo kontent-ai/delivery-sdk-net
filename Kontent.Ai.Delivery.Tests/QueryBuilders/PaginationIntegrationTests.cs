@@ -222,11 +222,7 @@ public sealed class PaginationIntegrationTests
             .With(req => !req.Headers.Contains("X-KC-Wait-For-Loading-New-Content"))
             .Respond("application/json", BuildItemsListingJson(skip: 1, limit: 1, totalCount: 2, codenames: ["a2"], hasNextPage: false));
 
-        var client = BuildClient(env, mockHttp, new DeliveryOptions
-        {
-            EnvironmentId = env,
-            WaitForLoadingNewContent = true
-        });
+        var client = BuildClient(env, mockHttp);
 
         var firstPage = await client.GetItems<TestArticle>()
             .Limit(1)

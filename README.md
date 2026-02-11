@@ -1169,7 +1169,7 @@ Caching is transparent for cacheable query builders - once configured, cached qu
 `GetItem()` and `GetItems()` dynamic queries are intentionally excluded from SDK caching (runtime-typed results), so they always return `IsCacheHit == false`.
 
 > [!IMPORTANT]
-> When `WaitForLoadingNewContent` is effectively enabled for a request (globally or via query override), the SDK bypasses its local cache for that request path (no cache read and no cache write).
+> When `WaitForLoadingNewContent(true)` is enabled on a query, the SDK bypasses its local cache for that request path (no cache read and no cache write).
 
 **Cache payloads:** The in-memory cache stores hydrated objects for maximum performance. Distributed caches store raw JSON payloads (rehydrated on read) to avoid serialization issues with circular references.
 
@@ -1466,10 +1466,6 @@ services.AddDeliveryClient(options =>
 
     // Retry and resilience settings
     options.EnableResilience = true;
-
-    // Content freshness
-    // Note: requests with effective wait=true bypass SDK cache reads/writes.
-    options.WaitForLoadingNewContent = false;
 
     // Default image rendition preset
     options.DefaultRenditionPreset = "default";

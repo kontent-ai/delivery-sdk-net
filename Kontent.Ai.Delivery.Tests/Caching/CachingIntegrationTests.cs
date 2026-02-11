@@ -105,7 +105,7 @@ public class CachingIntegrationTests
     }
 
     [Fact]
-    public async Task MemoryCache_GetItem_GlobalWaitEnabled_BypassesCache()
+    public async Task MemoryCache_GetItem_QueryWaitEnabled_BypassesCache()
     {
         var mock = new MockHttpMessageHandler();
         var itemCodename = "coffee_beverages_explained";
@@ -120,14 +120,10 @@ public class CachingIntegrationTests
             .With(req => req.Headers.Contains("X-KC-Wait-For-Loading-New-Content"))
             .Respond("application/json", fixtureContent);
 
-        var client = CreateClientWithMemoryCache(mock, new DeliveryOptions
-        {
-            EnvironmentId = _guid.ToString(),
-            WaitForLoadingNewContent = true
-        });
+        var client = CreateClientWithMemoryCache(mock);
 
-        var result1 = await client.GetItem<Article>(itemCodename).ExecuteAsync();
-        var result2 = await client.GetItem<Article>(itemCodename).ExecuteAsync();
+        var result1 = await client.GetItem<Article>(itemCodename).WaitForLoadingNewContent().ExecuteAsync();
+        var result2 = await client.GetItem<Article>(itemCodename).WaitForLoadingNewContent().ExecuteAsync();
 
         Assert.True(result1.IsSuccess);
         Assert.True(result2.IsSuccess);
@@ -137,7 +133,7 @@ public class CachingIntegrationTests
     }
 
     [Fact]
-    public async Task MemoryCache_GetItem_GlobalWaitEnabled_QueryWaitFalse_UsesCache()
+    public async Task MemoryCache_GetItem_QueryWaitFalse_UsesCache()
     {
         var mock = new MockHttpMessageHandler();
         var itemCodename = "coffee_beverages_explained";
@@ -149,11 +145,7 @@ public class CachingIntegrationTests
             .With(req => !req.Headers.Contains("X-KC-Wait-For-Loading-New-Content"))
             .Respond("application/json", fixtureContent);
 
-        var client = CreateClientWithMemoryCache(mock, new DeliveryOptions
-        {
-            EnvironmentId = _guid.ToString(),
-            WaitForLoadingNewContent = true
-        });
+        var client = CreateClientWithMemoryCache(mock);
 
         var result1 = await client.GetItem<Article>(itemCodename)
             .WaitForLoadingNewContent(false)

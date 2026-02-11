@@ -9,7 +9,6 @@ namespace Kontent.Ai.Delivery.Api.QueryBuilders;
 /// <inheritdoc cref="IDynamicEnumerateItemsQuery"/>
 internal sealed class DynamicEnumerateItemsQuery(
     IDeliveryApi api,
-    Func<bool?> getDefaultWaitForNewContent,
     ContentItemMapper contentItemMapper,
     ITypeProvider typeProvider,
     ILogger? logger = null) : IDynamicEnumerateItemsQuery
@@ -18,7 +17,6 @@ internal sealed class DynamicEnumerateItemsQuery(
     private readonly ILogger? _logger = logger;
     private readonly EnumerateItemsQuery<IDynamicElements> _inner = new(
         api,
-        getDefaultWaitForNewContent,
         contentItemMapper,
         typeProvider,
         logger);

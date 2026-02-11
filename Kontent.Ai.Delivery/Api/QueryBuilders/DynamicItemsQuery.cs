@@ -15,7 +15,6 @@ namespace Kontent.Ai.Delivery.Api.QueryBuilders;
 /// </remarks>
 internal sealed class DynamicItemsQuery(
     IDeliveryApi api,
-    Func<bool?> getDefaultWaitForNewContent,
     ContentItemMapper contentItemMapper,
     IContentDeserializer contentDeserializer,
     ITypeProvider typeProvider,
@@ -24,7 +23,6 @@ internal sealed class DynamicItemsQuery(
     private readonly ContentItemMapper _contentItemMapper = contentItemMapper;
     private readonly ItemsQuery<IDynamicElements> _inner = new(
         api,
-        getDefaultWaitForNewContent,
         contentItemMapper,
         contentDeserializer,
         typeProvider,

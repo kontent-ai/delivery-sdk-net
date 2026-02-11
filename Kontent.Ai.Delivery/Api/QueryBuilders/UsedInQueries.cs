@@ -1,5 +1,4 @@
 using System.Runtime.CompilerServices;
-using Kontent.Ai.Delivery.Api.QueryBuilders.Helpers;
 using Kontent.Ai.Delivery.Logging;
 using Kontent.Ai.Delivery.UsedIn;
 using Microsoft.Extensions.Logging;
@@ -10,13 +9,11 @@ namespace Kontent.Ai.Delivery.Api.QueryBuilders;
 internal sealed class ItemUsedInQuery(
     IDeliveryApi api,
     string codename,
-    Func<bool?> getDefaultWaitForNewContent,
     ILogger? logger = null) : IItemUsedInQuery, IUsedInQueryStatusProvider
 {
     private readonly UsedInQueryCore _core = new(
         "ItemUsedIn",
         codename,
-        getDefaultWaitForNewContent,
         api.GetItemUsedInInternalAsync,
         logger);
 
@@ -37,13 +34,11 @@ internal sealed class ItemUsedInQuery(
 internal sealed class AssetUsedInQuery(
     IDeliveryApi api,
     string codename,
-    Func<bool?> getDefaultWaitForNewContent,
     ILogger? logger = null) : IAssetUsedInQuery, IUsedInQueryStatusProvider
 {
     private readonly UsedInQueryCore _core = new(
         "AssetUsedIn",
         codename,
-        getDefaultWaitForNewContent,
         api.GetAssetUsedInInternalAsync,
         logger);
 
@@ -68,21 +63,16 @@ internal interface IUsedInQueryStatusProvider
 internal sealed class UsedInQueryCore(
     string queryType,
     string codename,
-    Func<bool?> getDefaultWaitForNewContent,
     Func<string, bool?, string?, CancellationToken, Task<IApiResponse<DeliveryUsedInResponse>>> fetchPage,
     ILogger? logger)
 {
     private readonly string _queryType = queryType;
     private readonly string _codename = codename;
-    private readonly Func<bool?> _getDefaultWaitForNewContent = getDefaultWaitForNewContent;
     private readonly Func<string, bool?, string?, CancellationToken, Task<IApiResponse<DeliveryUsedInResponse>>> _fetchPage = fetchPage;
     private readonly ILogger? _logger = logger;
-    private bool? _waitForLoadingNewContentOverride;
+    private bool _waitForLoadingNewContent;
 
-    public void WaitForLoadingNewContent(bool enabled = true)
-    {
-        _waitForLoadingNewContentOverride = enabled;
-    }
+    public void WaitForLoadingNewContent(bool enabled = true) => _waitForLoadingNewContent = enabled;
 
     public async IAsyncEnumerable<IUsedInItem> EnumerateItemsAsync([EnumeratorCancellation] CancellationToken cancellationToken = default)
     {
@@ -103,9 +93,7 @@ internal sealed class UsedInQueryCore(
     public async IAsyncEnumerable<IDeliveryResult<IReadOnlyList<IUsedInItem>>> EnumerateItemsWithStatusAsync(
         [EnumeratorCancellation] CancellationToken cancellationToken = default)
     {
-        var waitForLoadingNewContent = WaitForLoadingNewContentHelper.ResolveHeaderValue(
-            _waitForLoadingNewContentOverride,
-            _getDefaultWaitForNewContent());
+        bool? waitForLoadingNewContent = _waitForLoadingNewContent ? true : null;
         string? token = null;
 
         while (true)

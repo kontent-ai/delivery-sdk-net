@@ -122,10 +122,7 @@ public sealed class ElementValueMapperTests
             EventId eventId,
             TState state,
             Exception? exception,
-            Func<TState, Exception?, string> formatter)
-        {
-            _entries.Add(new LogEntry(eventId.Id, formatter(state, exception)));
-        }
+            Func<TState, Exception?, string> formatter) => _entries.Add(new LogEntry(eventId.Id, formatter(state, exception)));
     }
 
     private sealed class NoopDisposable : IDisposable
