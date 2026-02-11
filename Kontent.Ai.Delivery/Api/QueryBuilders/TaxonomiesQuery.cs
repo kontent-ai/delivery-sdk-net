@@ -45,68 +45,63 @@ internal sealed class TaxonomiesQuery(
 
     public async Task<IDeliveryResult<IDeliveryTaxonomyListingResponse>> ExecuteAsync(CancellationToken cancellationToken = default)
     {
-        if (_cacheManager is not null)
+        return _cacheManager is not null
+            ? await ExecuteWithCacheAsync(_cacheManager, cancellationToken).ConfigureAwait(false)
+            : await ExecuteWithoutCacheAsync(cancellationToken).ConfigureAwait(false);
+    }
+
+    private async Task<IDeliveryResult<IDeliveryTaxonomyListingResponse>> ExecuteWithCacheAsync(
+        IDeliveryCacheManager cacheManager,
+        CancellationToken cancellationToken)
+    {
+        var cacheKey = CacheKeyBuilder.BuildTaxonomiesKey(_params, _serializedFilters);
+        var (cacheResult, apiResult) = await FetchWithCacheAsync(cacheManager, cacheKey, cancellationToken).ConfigureAwait(false);
+
+        if (cacheResult.IsCacheHit)
         {
-            var cacheKey = CacheKeyBuilder.BuildTaxonomiesKey(_params, _serializedFilters);
-            IDeliveryResult<DeliveryTaxonomyListingResponse>? apiResult = null;
-
-            var cacheResult = await QueryCacheHelper.GetOrFetchAsync(
-                _cacheManager,
-                cacheKey,
-                async ct =>
-                {
-                    apiResult = await FetchFromApiAsync(ct).ConfigureAwait(false);
-                    if (!apiResult.IsSuccess)
-                        return (null, Array.Empty<string>());
-                    return (apiResult.Value, Array.Empty<string>());
-                },
-                logger: null,
-                cancellationToken).ConfigureAwait(false);
-
-            if (cacheResult.IsCacheHit)
-            {
-                var cachedWithFetcher = cacheResult.Value! with { NextPageFetcher = CreateNextPageFetcher(cacheResult.Value!.Pagination) };
-                return DeliveryResult.CacheHit<IDeliveryTaxonomyListingResponse>(cachedWithFetcher);
-            }
-
-            if (!apiResult!.IsSuccess)
-            {
-                return DeliveryResult.Failure<IDeliveryTaxonomyListingResponse>(
-                    apiResult.RequestUrl ?? string.Empty,
-                    apiResult.StatusCode,
-                    apiResult.Error,
-                    apiResult.ResponseHeaders);
-            }
-
-            var responseWithFetcher = cacheResult.Value! with { NextPageFetcher = CreateNextPageFetcher(cacheResult.Value!.Pagination) };
-            return DeliveryResult.Success<IDeliveryTaxonomyListingResponse>(
-                responseWithFetcher,
-                apiResult.RequestUrl ?? string.Empty,
-                apiResult.StatusCode,
-                apiResult.HasStaleContent,
-                apiResult.ContinuationToken,
-                apiResult.ResponseHeaders);
+            return DeliveryResult.CacheHit<IDeliveryTaxonomyListingResponse>(
+                WithNextPageFetcher(cacheResult.Value!));
         }
 
+        if (apiResult is not { IsSuccess: true })
+        {
+            if (apiResult is not null)
+                return CreateFailureResult(apiResult);
+
+            throw new InvalidOperationException("API result was not captured during fetch.");
+        }
+
+        return WrapSuccess(WithNextPageFetcher(cacheResult.Value!), apiResult);
+    }
+
+    private async Task<IDeliveryResult<IDeliveryTaxonomyListingResponse>> ExecuteWithoutCacheAsync(CancellationToken cancellationToken)
+    {
         var deliveryResult = await FetchFromApiAsync(cancellationToken).ConfigureAwait(false);
-        if (!deliveryResult.IsSuccess)
-        {
-            return DeliveryResult.Failure<IDeliveryTaxonomyListingResponse>(
-                deliveryResult.RequestUrl ?? string.Empty,
-                deliveryResult.StatusCode,
-                deliveryResult.Error,
-                deliveryResult.ResponseHeaders);
-        }
+        return deliveryResult.IsSuccess
+            ? WrapSuccess(WithNextPageFetcher(deliveryResult.Value), deliveryResult)
+            : CreateFailureResult(deliveryResult);
+    }
 
-        var resp = deliveryResult.Value;
-        var respWithFetcher = resp with { NextPageFetcher = CreateNextPageFetcher(resp.Pagination) };
-        return DeliveryResult.Success<IDeliveryTaxonomyListingResponse>(
-            respWithFetcher,
-            deliveryResult.RequestUrl ?? string.Empty,
-            deliveryResult.StatusCode,
-            deliveryResult.HasStaleContent,
-            deliveryResult.ContinuationToken,
-            deliveryResult.ResponseHeaders);
+    private async Task<(CacheFetchResult<DeliveryTaxonomyListingResponse> CacheResult, IDeliveryResult<DeliveryTaxonomyListingResponse>? ApiResult)>
+        FetchWithCacheAsync(IDeliveryCacheManager cacheManager, string cacheKey, CancellationToken cancellationToken)
+    {
+        IDeliveryResult<DeliveryTaxonomyListingResponse>? apiResult = null;
+
+        var cacheResult = await QueryCacheHelper.GetOrFetchAsync(
+            cacheManager,
+            cacheKey,
+            async ct =>
+            {
+                apiResult = await FetchFromApiAsync(ct).ConfigureAwait(false);
+                if (!apiResult.IsSuccess)
+                    return (null, Array.Empty<string>());
+
+                return (apiResult.Value, Array.Empty<string>());
+            },
+            logger: null,
+            cancellationToken).ConfigureAwait(false);
+
+        return (cacheResult, apiResult);
     }
 
     private async Task<IDeliveryResult<DeliveryTaxonomyListingResponse>> FetchFromApiAsync(CancellationToken cancellationToken)
@@ -120,24 +115,37 @@ internal sealed class TaxonomiesQuery(
         return await response.ToDeliveryResultAsync().ConfigureAwait(false);
     }
 
+    private static IDeliveryResult<IDeliveryTaxonomyListingResponse> WrapSuccess(
+        DeliveryTaxonomyListingResponse response,
+        IDeliveryResult<DeliveryTaxonomyListingResponse> apiResult)
+        => DeliveryResult.SuccessFrom<IDeliveryTaxonomyListingResponse, DeliveryTaxonomyListingResponse>(response, apiResult);
+
+    private static IDeliveryResult<IDeliveryTaxonomyListingResponse> CreateFailureResult(
+        IDeliveryResult<DeliveryTaxonomyListingResponse> deliveryResult)
+        => DeliveryResult.FailureFrom<IDeliveryTaxonomyListingResponse, DeliveryTaxonomyListingResponse>(deliveryResult);
+
+    private DeliveryTaxonomyListingResponse WithNextPageFetcher(DeliveryTaxonomyListingResponse response)
+        => response with { NextPageFetcher = CreateNextPageFetcher(response.Pagination) };
+
     private Func<CancellationToken, Task<IDeliveryResult<IDeliveryTaxonomyListingResponse>>>? CreateNextPageFetcher(IPagination pagination)
     {
         if (string.IsNullOrEmpty(pagination.NextPageUrl))
             return null;
 
-        var nextSkip = pagination.Skip + pagination.Count;
+        var nextSkip = OffsetPaginationHelper.GetNextSkip(pagination);
 
-        return async (ct) =>
+        return ct => CreateNextPageQuery(nextSkip).ExecuteAsync(ct);
+    }
+
+    private TaxonomiesQuery CreateNextPageQuery(int nextSkip)
+    {
+        var nextQuery = new TaxonomiesQuery(_api, _getDefaultWaitForNewContent, _cacheManager)
         {
-            var nextQuery = new TaxonomiesQuery(_api, _getDefaultWaitForNewContent, _cacheManager)
-            {
-                _params = _params with { Skip = nextSkip },
-                _waitForLoadingNewContentOverride = _waitForLoadingNewContentOverride
-            };
-
-            nextQuery._serializedFilters.CopyFrom(_serializedFilters);
-
-            return await nextQuery.ExecuteAsync(ct).ConfigureAwait(false);
+            _params = _params with { Skip = nextSkip },
+            _waitForLoadingNewContentOverride = _waitForLoadingNewContentOverride
         };
+
+        nextQuery._serializedFilters.CopyFrom(_serializedFilters);
+        return nextQuery;
     }
 }

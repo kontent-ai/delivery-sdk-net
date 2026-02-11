@@ -197,19 +197,9 @@ internal sealed class EnumerateItemsQuery<TModel>(
     private static IDeliveryResult<IDeliveryItemsFeedResponse<TModel>> WrapSuccess(
         DeliveryItemsFeedResponse<TModel> response,
         IDeliveryResult<DeliveryItemsFeedResponse<TModel>> apiResult) =>
-        DeliveryResult.Success<IDeliveryItemsFeedResponse<TModel>>(
-            response,
-            apiResult.RequestUrl ?? string.Empty,
-            apiResult.StatusCode,
-            apiResult.HasStaleContent,
-            apiResult.ContinuationToken,
-            apiResult.ResponseHeaders);
+        DeliveryResult.SuccessFrom<IDeliveryItemsFeedResponse<TModel>, DeliveryItemsFeedResponse<TModel>>(response, apiResult);
 
     private static IDeliveryResult<IDeliveryItemsFeedResponse<TModel>> CreateFailureResult(
         IDeliveryResult<DeliveryItemsFeedResponse<TModel>> deliveryResult) =>
-        DeliveryResult.Failure<IDeliveryItemsFeedResponse<TModel>>(
-            deliveryResult.RequestUrl ?? string.Empty,
-            deliveryResult.StatusCode,
-            deliveryResult.Error,
-            deliveryResult.ResponseHeaders);
+        DeliveryResult.FailureFrom<IDeliveryItemsFeedResponse<TModel>, DeliveryItemsFeedResponse<TModel>>(deliveryResult);
 }

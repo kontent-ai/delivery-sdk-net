@@ -180,13 +180,7 @@ internal sealed class ItemQuery<TModel>(
 
     private static IDeliveryResult<IContentItem<TModel>> WrapSuccess(
         IContentItem<TModel> item, IDeliveryResult<DeliveryItemResponse<TModel>> apiResult) =>
-        DeliveryResult.Success(
-            item,
-            apiResult.RequestUrl ?? string.Empty,
-            apiResult.StatusCode,
-            apiResult.HasStaleContent,
-            apiResult.ContinuationToken,
-            apiResult.ResponseHeaders);
+        DeliveryResult.SuccessFrom(item, apiResult);
 
     private async Task<IDeliveryResult<DeliveryItemResponse<TModel>>> FetchFromApiAsync(CancellationToken cancellationToken = default)
     {
@@ -226,11 +220,7 @@ internal sealed class ItemQuery<TModel>(
 
     private static IDeliveryResult<IContentItem<TModel>> CreateFailureResult(
         IDeliveryResult<DeliveryItemResponse<TModel>> deliveryResult) =>
-        DeliveryResult.Failure<IContentItem<TModel>>(
-            deliveryResult.RequestUrl ?? string.Empty,
-            deliveryResult.StatusCode,
-            deliveryResult.Error,
-            deliveryResult.ResponseHeaders);
+        DeliveryResult.FailureFrom<IContentItem<TModel>, DeliveryItemResponse<TModel>>(deliveryResult);
 
     private void LogQueryStarting()
     {

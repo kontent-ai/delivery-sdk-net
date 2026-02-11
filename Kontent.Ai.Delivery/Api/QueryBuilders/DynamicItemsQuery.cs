@@ -96,22 +96,12 @@ internal sealed class DynamicItemsQuery(
         var deliveryResult = await _inner.ExecuteAsync(cancellationToken).ConfigureAwait(false);
         if (!deliveryResult.IsSuccess)
         {
-            return DeliveryResult.Failure<IDeliveryItemListingResponse>(
-                deliveryResult.RequestUrl ?? string.Empty,
-                deliveryResult.StatusCode,
-                deliveryResult.Error,
-                deliveryResult.ResponseHeaders);
+            return DeliveryResult.FailureFrom<IDeliveryItemListingResponse, IDeliveryItemListingResponse<IDynamicElements>>(deliveryResult);
         }
 
         var response = await ConvertResponseAsync(deliveryResult.Value, cancellationToken).ConfigureAwait(false);
 
-        return DeliveryResult.Success<IDeliveryItemListingResponse>(
-            response,
-            deliveryResult.RequestUrl ?? string.Empty,
-            deliveryResult.StatusCode,
-            deliveryResult.HasStaleContent,
-            deliveryResult.ContinuationToken,
-            deliveryResult.ResponseHeaders);
+        return DeliveryResult.SuccessFrom<IDeliveryItemListingResponse, IDeliveryItemListingResponse<IDynamicElements>>(response, deliveryResult);
     }
 
     private async Task<DynamicDeliveryItemListingResponse> ConvertResponseAsync(
@@ -143,22 +133,12 @@ internal sealed class DynamicItemsQuery(
 
         if (!nextPageResult.IsSuccess)
         {
-            return DeliveryResult.Failure<IDeliveryItemListingResponse>(
-                nextPageResult.RequestUrl ?? string.Empty,
-                nextPageResult.StatusCode,
-                nextPageResult.Error,
-                nextPageResult.ResponseHeaders);
+            return DeliveryResult.FailureFrom<IDeliveryItemListingResponse, IDeliveryItemListingResponse<IDynamicElements>>(nextPageResult);
         }
 
         var response = await ConvertResponseAsync(nextPageResult.Value, cancellationToken).ConfigureAwait(false);
 
-        return DeliveryResult.Success<IDeliveryItemListingResponse>(
-            response,
-            nextPageResult.RequestUrl ?? string.Empty,
-            nextPageResult.StatusCode,
-            nextPageResult.HasStaleContent,
-            nextPageResult.ContinuationToken,
-            nextPageResult.ResponseHeaders);
+        return DeliveryResult.SuccessFrom<IDeliveryItemListingResponse, IDeliveryItemListingResponse<IDynamicElements>>(response, nextPageResult);
     }
 
     private static Pagination ToPagination(IPagination pagination) => new()

@@ -558,6 +558,45 @@ public sealed class PaginationIntegrationTests
         mockHttp.VerifyNoOutstandingExpectation();
     }
 
+    [Fact]
+    public async Task TypesQuery_FetchNextPage_PreservesFiltersAndWaitOverride()
+    {
+        var env = Guid.NewGuid().ToString();
+        var typesUrl = $"https://deliver.kontent.ai/{env}/types";
+        var mockHttp = new MockHttpMessageHandler();
+
+        mockHttp.Expect(typesUrl)
+            .WithQueryString("limit", "1")
+            .WithQueryString("system.codename[eq]", "article")
+            .With(req => req.Headers.Contains("X-KC-Wait-For-Loading-New-Content"))
+            .Respond("application/json", BuildTypesListingJson(skip: 0, limit: 1, totalCount: 2, codenames: ["article"], hasNextPage: true));
+
+        mockHttp.Expect(typesUrl)
+            .WithQueryString("skip", "1")
+            .WithQueryString("limit", "1")
+            .WithQueryString("system.codename[eq]", "article")
+            .With(req => req.Headers.Contains("X-KC-Wait-For-Loading-New-Content"))
+            .Respond("application/json", BuildTypesListingJson(skip: 1, limit: 1, totalCount: 2, codenames: ["article"], hasNextPage: false));
+
+        var client = BuildClient(env, mockHttp);
+
+        var firstPage = await client.GetTypes()
+            .Limit(1)
+            .Where(f => f.System("codename").IsEqualTo("article"))
+            .WaitForLoadingNewContent()
+            .ExecuteAsync();
+
+        Assert.True(firstPage.IsSuccess);
+        Assert.True(firstPage.Value.HasNextPage);
+
+        var secondPage = await firstPage.Value.FetchNextPageAsync();
+        Assert.NotNull(secondPage);
+        Assert.True(secondPage.IsSuccess);
+        Assert.False(secondPage.Value.HasNextPage);
+
+        mockHttp.VerifyNoOutstandingExpectation();
+    }
+
     #endregion
 
     #region Taxonomies Pagination Tests
@@ -605,6 +644,45 @@ public sealed class PaginationIntegrationTests
         mockHttp.VerifyNoOutstandingExpectation();
     }
 
+    [Fact]
+    public async Task TaxonomiesQuery_FetchNextPage_PreservesFiltersAndWaitOverride()
+    {
+        var env = Guid.NewGuid().ToString();
+        var taxonomiesUrl = $"https://deliver.kontent.ai/{env}/taxonomies";
+        var mockHttp = new MockHttpMessageHandler();
+
+        mockHttp.Expect(taxonomiesUrl)
+            .WithQueryString("limit", "1")
+            .WithQueryString("system.codename[eq]", "personas")
+            .With(req => req.Headers.Contains("X-KC-Wait-For-Loading-New-Content"))
+            .Respond("application/json", BuildTaxonomiesListingJson(skip: 0, limit: 1, totalCount: 2, codenames: ["personas"], hasNextPage: true));
+
+        mockHttp.Expect(taxonomiesUrl)
+            .WithQueryString("skip", "1")
+            .WithQueryString("limit", "1")
+            .WithQueryString("system.codename[eq]", "personas")
+            .With(req => req.Headers.Contains("X-KC-Wait-For-Loading-New-Content"))
+            .Respond("application/json", BuildTaxonomiesListingJson(skip: 1, limit: 1, totalCount: 2, codenames: ["personas"], hasNextPage: false));
+
+        var client = BuildClient(env, mockHttp);
+
+        var firstPage = await client.GetTaxonomies()
+            .Limit(1)
+            .Where(f => f.System("codename").IsEqualTo("personas"))
+            .WaitForLoadingNewContent()
+            .ExecuteAsync();
+
+        Assert.True(firstPage.IsSuccess);
+        Assert.True(firstPage.Value.HasNextPage);
+
+        var secondPage = await firstPage.Value.FetchNextPageAsync();
+        Assert.NotNull(secondPage);
+        Assert.True(secondPage.IsSuccess);
+        Assert.False(secondPage.Value.HasNextPage);
+
+        mockHttp.VerifyNoOutstandingExpectation();
+    }
+
     #endregion
 
     #region Languages Pagination Tests
@@ -649,6 +727,42 @@ public sealed class PaginationIntegrationTests
 
         Assert.Equal(3, languages.Count);
         Assert.Equal(allCodenames, languages.Select(l => l.System.Codename).ToArray());
+        mockHttp.VerifyNoOutstandingExpectation();
+    }
+
+    [Fact]
+    public async Task LanguagesQuery_FetchNextPage_PreservesWaitOverrideAndPagination()
+    {
+        var env = Guid.NewGuid().ToString();
+        var languagesUrl = $"https://deliver.kontent.ai/{env}/languages";
+        var mockHttp = new MockHttpMessageHandler();
+
+        mockHttp.Expect(languagesUrl)
+            .WithQueryString("limit", "1")
+            .With(req => req.Headers.Contains("X-KC-Wait-For-Loading-New-Content"))
+            .Respond("application/json", BuildLanguagesListingJson(skip: 0, limit: 1, totalCount: 2, codenames: ["en-US"], hasNextPage: true));
+
+        mockHttp.Expect(languagesUrl)
+            .WithQueryString("skip", "1")
+            .WithQueryString("limit", "1")
+            .With(req => req.Headers.Contains("X-KC-Wait-For-Loading-New-Content"))
+            .Respond("application/json", BuildLanguagesListingJson(skip: 1, limit: 1, totalCount: 2, codenames: ["es-ES"], hasNextPage: false));
+
+        var client = BuildClient(env, mockHttp);
+
+        var firstPage = await client.GetLanguages()
+            .Limit(1)
+            .WaitForLoadingNewContent()
+            .ExecuteAsync();
+
+        Assert.True(firstPage.IsSuccess);
+        Assert.True(firstPage.Value.HasNextPage);
+
+        var secondPage = await firstPage.Value.FetchNextPageAsync();
+        Assert.NotNull(secondPage);
+        Assert.True(secondPage.IsSuccess);
+        Assert.False(secondPage.Value.HasNextPage);
+
         mockHttp.VerifyNoOutstandingExpectation();
     }
 

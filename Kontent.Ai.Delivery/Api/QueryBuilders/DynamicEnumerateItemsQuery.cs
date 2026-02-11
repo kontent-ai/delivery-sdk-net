@@ -59,22 +59,12 @@ internal sealed class DynamicEnumerateItemsQuery(
 
         if (!deliveryResult.IsSuccess)
         {
-            return DeliveryResult.Failure<IDeliveryItemsFeedResponse>(
-                deliveryResult.RequestUrl ?? string.Empty,
-                deliveryResult.StatusCode,
-                deliveryResult.Error,
-                deliveryResult.ResponseHeaders);
+            return DeliveryResult.FailureFrom<IDeliveryItemsFeedResponse, IDeliveryItemsFeedResponse<IDynamicElements>>(deliveryResult);
         }
 
         var response = await ConvertResponseAsync(deliveryResult.Value, cancellationToken).ConfigureAwait(false);
 
-        return DeliveryResult.Success<IDeliveryItemsFeedResponse>(
-            response,
-            deliveryResult.RequestUrl ?? string.Empty,
-            deliveryResult.StatusCode,
-            deliveryResult.HasStaleContent,
-            deliveryResult.ContinuationToken,
-            deliveryResult.ResponseHeaders);
+        return DeliveryResult.SuccessFrom<IDeliveryItemsFeedResponse, IDeliveryItemsFeedResponse<IDynamicElements>>(response, deliveryResult);
     }
 
     private async Task<DynamicDeliveryItemsFeedResponse> ConvertResponseAsync(
@@ -123,21 +113,11 @@ internal sealed class DynamicEnumerateItemsQuery(
 
         if (!nextPageResult.IsSuccess)
         {
-            return DeliveryResult.Failure<IDeliveryItemsFeedResponse>(
-                nextPageResult.RequestUrl ?? string.Empty,
-                nextPageResult.StatusCode,
-                nextPageResult.Error,
-                nextPageResult.ResponseHeaders);
+            return DeliveryResult.FailureFrom<IDeliveryItemsFeedResponse, IDeliveryItemsFeedResponse<IDynamicElements>>(nextPageResult);
         }
 
         var response = await ConvertResponseAsync(nextPageResult.Value, cancellationToken).ConfigureAwait(false);
-        return DeliveryResult.Success<IDeliveryItemsFeedResponse>(
-            response,
-            nextPageResult.RequestUrl ?? string.Empty,
-            nextPageResult.StatusCode,
-            nextPageResult.HasStaleContent,
-            nextPageResult.ContinuationToken,
-            nextPageResult.ResponseHeaders);
+        return DeliveryResult.SuccessFrom<IDeliveryItemsFeedResponse, IDeliveryItemsFeedResponse<IDynamicElements>>(response, nextPageResult);
     }
 
     public async IAsyncEnumerable<IContentItem> EnumerateItemsAsync([EnumeratorCancellation] CancellationToken cancellationToken = default)

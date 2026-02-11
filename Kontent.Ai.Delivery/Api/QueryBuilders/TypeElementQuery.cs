@@ -16,11 +16,12 @@ internal sealed class TypeElementQuery(IDeliveryApi api, string contentTypeCoden
     }
 
     public async Task<IDeliveryResult<IContentElement>> ExecuteAsync(CancellationToken cancellationToken = default)
+        => await FetchFromApiAsync(cancellationToken).ConfigureAwait(false);
+
+    private async Task<IDeliveryResult<IContentElement>> FetchFromApiAsync(CancellationToken cancellationToken)
     {
         var wait = _waitForLoadingNewContentOverride ?? _getDefaultWaitForNewContent();
         var response = await _api.GetContentElementInternalAsync(_type, _element, wait, cancellationToken).ConfigureAwait(false);
-        var deliveryResult = await response.ToDeliveryResultAsync().ConfigureAwait(false);
-
-        return deliveryResult;
+        return await response.ToDeliveryResultAsync().ConfigureAwait(false);
     }
 }
