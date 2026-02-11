@@ -19,7 +19,7 @@ internal static class DiagnosticDescriptors
         category: Category,
         defaultSeverity: DiagnosticSeverity.Error,
         isEnabledByDefault: true,
-        description: "Each content type codename must be unique across all types decorated with [ContentType].");
+        description: "Each content type codename must be unique across all types decorated with [ContentTypeCodename].");
 
     /// <summary>
     /// KDSG002: Invalid codename - null, empty, or whitespace.
@@ -38,10 +38,10 @@ internal static class DiagnosticDescriptors
     /// </summary>
     public static readonly DiagnosticDescriptor UnsupportedTargetType = new(
         id: "KDSG003",
-        title: "Unsupported target type for [ContentType]",
-        messageFormat: "[ContentType] cannot be applied to interface or abstract class '{0}'",
+        title: "Unsupported target type for [ContentTypeCodename]",
+        messageFormat: "[ContentTypeCodename] cannot be applied to interface or abstract class '{0}'",
         category: Category,
         defaultSeverity: DiagnosticSeverity.Error,
         isEnabledByDefault: true,
-        description: "[ContentType] can only be applied to concrete classes or structs.");
+        description: "[ContentTypeCodename] can only be applied to concrete classes or structs.");
 }

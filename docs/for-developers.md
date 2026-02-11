@@ -931,6 +931,12 @@ private static void RegisterNamedHttpClient(
 
 **Purpose**: Map content type codenames to CLR types
 
+With source generation enabled, type mapping is established at build time:
+
+- `Kontent.Ai.Delivery.SourceGeneration` emits `ContentTypeCodenameAttribute` into the consuming compilation.
+- The same build generates `Kontent.Ai.Delivery.Generated.GeneratedTypeProvider` from attributed model types.
+- At runtime, the SDK's default `TypeProvider` auto-discovers the generated provider (entry assembly and referenced assemblies), then falls back to dynamic typing when no mapping is available.
+
 ```csharp
 public interface ITypeProvider
 {
@@ -938,28 +944,38 @@ public interface ITypeProvider
     string? GetCodename(Type contentType);
 }
 
-// Default implementation (returns null → falls back to dynamic)
-internal class TypeProvider : ITypeProvider
+// Default runtime implementation (discovers generated provider if present)
+internal sealed class TypeProvider : ITypeProvider
 {
-    public Type? GetType(string contentType) => null;
-    public string? GetCodename(Type contentType) => null;
+    private static readonly ITypeProvider? _generated = DiscoverGeneratedProvider();
+
+    public Type? GetType(string contentType) => _generated?.GetType(contentType);
+    public string? GetCodename(Type contentType) => _generated?.GetCodename(contentType);
+
+    private static ITypeProvider? DiscoverGeneratedProvider() => null; // Simplified for docs.
 }
 
-// Generated implementation (from Kontent.ai model generator)
-public class GeneratedTypeProvider : ITypeProvider
+// Build-time generated implementation (by source generator)
+public sealed class GeneratedTypeProvider : ITypeProvider
 {
-    private readonly Dictionary<string, Type> _typeMap = new()
+    private static readonly Dictionary<string, Type> _codenameToType = new(StringComparer.OrdinalIgnoreCase)
     {
-        ["article"] = typeof(Article),
-        ["product"] = typeof(Product),
-        ["homepage"] = typeof(HomePage)
+        { "article", typeof(Article) },
+        { "product", typeof(Product) },
+        { "homepage", typeof(HomePage) }
+    };
+    private static readonly Dictionary<Type, string> _typeToCodename = new()
+    {
+        { typeof(Article), "article" },
+        { typeof(Product), "product" },
+        { typeof(HomePage), "homepage" }
     };
 
     public Type? GetType(string contentType)
-        => _typeMap.TryGetValue(contentType, out var type) ? type : null;
+        => _codenameToType.TryGetValue(contentType, out var type) ? type : null;
 
     public string? GetCodename(Type contentType)
-        => _typeMap.FirstOrDefault(kvp => kvp.Value == contentType).Key;
+        => _typeToCodename.TryGetValue(contentType, out var codename) ? codename : null;
 }
 ```
 
