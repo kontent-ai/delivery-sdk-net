@@ -50,6 +50,20 @@ public class DeliveryOptionsValidatorTests
     }
 
     [Fact]
+    public void ValidateOptions_WithUppercaseEnvironmentId_Passes()
+    {
+        var options = new DeliveryOptions
+        {
+            EnvironmentId = _guid.ToString().ToUpperInvariant()
+        };
+
+        var isValid = TryValidate(options, out var results);
+
+        Assert.True(isValid);
+        Assert.Empty(results);
+    }
+
+    [Fact]
     public void ValidateOptions_UseOfPreviewAndSecureAccessSimultaneously_Fails()
     {
         var options = new DeliveryOptions
@@ -83,6 +97,24 @@ public class DeliveryOptionsValidatorTests
         Assert.Contains(results, r => r.ErrorMessage is not null && r.ErrorMessage.Contains("PreviewApiKey is required"));
     }
 
+    [Theory]
+    [InlineData("")]
+    [InlineData("   ")]
+    public void ValidateOptions_PreviewEnabledWithEmptyOrWhitespaceKey_Fails(string previewKey)
+    {
+        var options = new DeliveryOptions
+        {
+            EnvironmentId = _guid.ToString(),
+            UsePreviewApi = true,
+            PreviewApiKey = previewKey
+        };
+
+        var isValid = TryValidate(options, out var results);
+
+        Assert.False(isValid);
+        Assert.Contains(results, r => r.ErrorMessage is not null && r.ErrorMessage.Contains("PreviewApiKey is required"));
+    }
+
     [Fact]
     public void ValidateOptions_SecureAccessEnabledWithoutKey_Fails()
     {
@@ -91,6 +123,24 @@ public class DeliveryOptionsValidatorTests
             EnvironmentId = _guid.ToString(),
             UseSecureAccess = true,
             SecureAccessApiKey = null
+        };
+
+        var isValid = TryValidate(options, out var results);
+
+        Assert.False(isValid);
+        Assert.Contains(results, r => r.ErrorMessage is not null && r.ErrorMessage.Contains("SecureAccessApiKey is required"));
+    }
+
+    [Theory]
+    [InlineData("")]
+    [InlineData("   ")]
+    public void ValidateOptions_SecureAccessEnabledWithEmptyOrWhitespaceKey_Fails(string secureKey)
+    {
+        var options = new DeliveryOptions
+        {
+            EnvironmentId = _guid.ToString(),
+            UseSecureAccess = true,
+            SecureAccessApiKey = secureKey
         };
 
         var isValid = TryValidate(options, out var results);
@@ -139,6 +189,11 @@ public class DeliveryOptionsValidatorTests
             EnvironmentId = _guid.ToString(),
             ProductionEndpoint = "invalid"
         };
+
+        var isValid = TryValidate(options, out var results);
+
+        Assert.False(isValid);
+        Assert.Contains(results, r => r.MemberNames.Contains(nameof(DeliveryOptions.ProductionEndpoint)));
     }
 
     [Fact]
@@ -149,5 +204,10 @@ public class DeliveryOptionsValidatorTests
             EnvironmentId = _guid.ToString(),
             PreviewEndpoint = "invalid"
         };
+
+        var isValid = TryValidate(options, out var results);
+
+        Assert.False(isValid);
+        Assert.Contains(results, r => r.MemberNames.Contains(nameof(DeliveryOptions.PreviewEndpoint)));
     }
 }

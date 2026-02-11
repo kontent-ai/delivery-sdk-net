@@ -204,6 +204,83 @@ public sealed class PaginationIntegrationTests
         mockHttp.VerifyNoOutstandingExpectation();
     }
 
+    [Fact]
+    public async Task ItemListing_FetchNextPage_WaitOverrideFalse_OmitsHeaderAcrossPages()
+    {
+        var env = Guid.NewGuid().ToString();
+        var itemsUrl = $"https://deliver.kontent.ai/{env}/items";
+        var mockHttp = new MockHttpMessageHandler();
+
+        mockHttp.Expect(itemsUrl)
+            .WithQueryString("limit", "1")
+            .With(req => !req.Headers.Contains("X-KC-Wait-For-Loading-New-Content"))
+            .Respond("application/json", BuildItemsListingJson(skip: 0, limit: 1, totalCount: 2, codenames: ["a1"], hasNextPage: true));
+
+        mockHttp.Expect(itemsUrl)
+            .WithQueryString("skip", "1")
+            .WithQueryString("limit", "1")
+            .With(req => !req.Headers.Contains("X-KC-Wait-For-Loading-New-Content"))
+            .Respond("application/json", BuildItemsListingJson(skip: 1, limit: 1, totalCount: 2, codenames: ["a2"], hasNextPage: false));
+
+        var client = BuildClient(env, mockHttp, new DeliveryOptions
+        {
+            EnvironmentId = env,
+            WaitForLoadingNewContent = true
+        });
+
+        var firstPage = await client.GetItems<TestArticle>()
+            .Limit(1)
+            .WaitForLoadingNewContent(false)
+            .ExecuteAsync();
+
+        Assert.True(firstPage.IsSuccess);
+        Assert.True(firstPage.Value.HasNextPage);
+
+        var secondPage = await firstPage.Value.FetchNextPageAsync();
+        Assert.NotNull(secondPage);
+        Assert.True(secondPage.IsSuccess);
+        Assert.False(secondPage.Value.HasNextPage);
+
+        mockHttp.VerifyNoOutstandingExpectation();
+    }
+
+    [Fact]
+    public async Task ItemListing_FetchNextPage_UsesPaginationOffset_WhenNextPageUrlIsMalformed()
+    {
+        var env = Guid.NewGuid().ToString();
+        var itemsUrl = $"https://deliver.kontent.ai/{env}/items";
+        var mockHttp = new MockHttpMessageHandler();
+
+        mockHttp.Expect(itemsUrl)
+            .WithQueryString("limit", "1")
+            .Respond("application/json",
+                BuildItemsListingJson(
+                    skip: 0,
+                    limit: 1,
+                    totalCount: 2,
+                    codenames: ["a1"],
+                    hasNextPage: true)
+                    .Replace("https://deliver.kontent.ai/items?skip=1&limit=1", "this-is-not-a-valid-url"));
+
+        mockHttp.Expect(itemsUrl)
+            .WithQueryString("skip", "1")
+            .WithQueryString("limit", "1")
+            .Respond("application/json", BuildItemsListingJson(skip: 1, limit: 1, totalCount: 2, codenames: ["a2"], hasNextPage: false));
+
+        var client = BuildClient(env, mockHttp);
+
+        var firstPage = await client.GetItems<TestArticle>().Limit(1).ExecuteAsync();
+        Assert.True(firstPage.IsSuccess);
+        Assert.True(firstPage.Value.HasNextPage);
+
+        var secondPage = await firstPage.Value.FetchNextPageAsync();
+        Assert.NotNull(secondPage);
+        Assert.True(secondPage.IsSuccess);
+        Assert.False(secondPage.Value.HasNextPage);
+
+        mockHttp.VerifyNoOutstandingExpectation();
+    }
+
     #endregion
 
     #region ItemsFeed (GetItemsFeed) Tests
@@ -770,11 +847,15 @@ public sealed class PaginationIntegrationTests
 
     #region Helpers
 
-    private static IDeliveryClient BuildClient(string env, MockHttpMessageHandler mockHttp)
+    private static IDeliveryClient BuildClient(
+        string env,
+        MockHttpMessageHandler mockHttp,
+        DeliveryOptions? options = null)
     {
         var services = new ServiceCollection();
+        options ??= new DeliveryOptions { EnvironmentId = env };
         services.AddDeliveryClient(
-            new DeliveryOptions { EnvironmentId = env },
+            options,
             configureHttpClient: b => b.ConfigurePrimaryHttpMessageHandler(() => mockHttp));
 
         return services.BuildServiceProvider().GetRequiredService<IDeliveryClient>();

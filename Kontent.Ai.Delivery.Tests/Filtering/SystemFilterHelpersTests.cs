@@ -32,6 +32,19 @@ public class SystemFilterHelpersTests
         Assert.Empty(filters);
     }
 
+    [Fact]
+    public void SystemFilterHelpers_AddGenericTypeFilter_DoesNotDuplicateExistingAutoFilter()
+    {
+        var filters = new SerializedFilterCollection
+        {
+            new KeyValuePair<string, string>("system.type[eq]", "article")
+        };
+
+        SystemFilterHelpers.AddGenericTypeFilter<TestModel>(filters, new StubTypeProvider(codename: "article"), logger: null);
+
+        Assert.Single(filters, f => f.Key == "system.type[eq]" && f.Value == "article");
+    }
+
     private sealed class TestModel;
 
     private sealed class StubTypeProvider(string? codename) : ITypeProvider

@@ -30,6 +30,7 @@ internal sealed class ItemsQuery<TModel>(
     private readonly SerializedFilterCollection _serializedFilters = [];
     private ListItemsParams _params = new();
     private bool? _waitForLoadingNewContentOverride;
+    private bool _typeFilterApplied;
     private static bool IsDynamicModel => ModelTypeHelper.IsDynamic<TModel>();
 
     public IItemsQuery<TModel> WithLanguage(string languageCodename, LanguageFallbackMode languageFallbackMode = LanguageFallbackMode.Enabled)
@@ -108,19 +109,37 @@ internal sealed class ItemsQuery<TModel>(
 
         LogQueryStarting();
         var stopwatch = StartTimingIfEnabled();
+        var defaultWaitForNewContent = _getDefaultWaitForNewContent();
+        var waitForLoadingNewContent = WaitForLoadingNewContentHelper.ResolveHeaderValue(
+            _waitForLoadingNewContentOverride,
+            defaultWaitForNewContent);
+        var shouldBypassCache = WaitForLoadingNewContentHelper.ShouldBypassCache(
+            _waitForLoadingNewContentOverride,
+            defaultWaitForNewContent);
 
-        return _cacheManager is not null
-            ? await ExecuteWithCacheAsync(_cacheManager, stopwatch, cancellationToken).ConfigureAwait(false)
-            : await ExecuteWithoutCacheAsync(stopwatch, cancellationToken).ConfigureAwait(false);
+        return _cacheManager is not null && !shouldBypassCache
+            ? await ExecuteWithCacheAsync(
+                _cacheManager,
+                stopwatch,
+                waitForLoadingNewContent,
+                WaitForLoadingNewContentHelper.ResolveCacheMode(_waitForLoadingNewContentOverride, defaultWaitForNewContent),
+                cancellationToken).ConfigureAwait(false)
+            : await ExecuteWithoutCacheAsync(stopwatch, waitForLoadingNewContent, cancellationToken).ConfigureAwait(false);
     }
 
     private async Task<IDeliveryResult<IDeliveryItemListingResponse<TModel>>> ExecuteWithCacheAsync(
         IDeliveryCacheManager cacheManager,
         Stopwatch? stopwatch,
+        bool? waitForLoadingNewContent,
+        string waitCacheMode,
         CancellationToken cancellationToken)
     {
-        var cacheKey = CacheKeyBuilder.BuildItemsKey(_params, _serializedFilters);
-        var (cacheResult, apiResult) = await FetchWithCacheAsync(cacheManager, cacheKey, cancellationToken).ConfigureAwait(false);
+        var cacheKey = CacheKeyBuilder.BuildItemsKey(_params, _serializedFilters, waitCacheMode);
+        var (cacheResult, apiResult) = await FetchWithCacheAsync(
+            cacheManager,
+            cacheKey,
+            waitForLoadingNewContent,
+            cancellationToken).ConfigureAwait(false);
 
         if (cacheResult.IsCacheHit)
         {
@@ -146,9 +165,10 @@ internal sealed class ItemsQuery<TModel>(
 
     private async Task<IDeliveryResult<IDeliveryItemListingResponse<TModel>>> ExecuteWithoutCacheAsync(
         Stopwatch? stopwatch,
+        bool? waitForLoadingNewContent,
         CancellationToken cancellationToken)
     {
-        var deliveryResult = await FetchFromApiAsync(cancellationToken).ConfigureAwait(false);
+        var deliveryResult = await FetchFromApiAsync(waitForLoadingNewContent, cancellationToken).ConfigureAwait(false);
         if (!deliveryResult.IsSuccess)
         {
             LogQueryFailed(deliveryResult);
@@ -161,15 +181,23 @@ internal sealed class ItemsQuery<TModel>(
     }
 
     private async Task<(CacheFetchResult<DeliveryItemListingResponse<TModel>> CacheResult, IDeliveryResult<DeliveryItemListingResponse<TModel>>? ApiResult)>
-        FetchWithCacheAsync(IDeliveryCacheManager cacheManager, string cacheKey, CancellationToken cancellationToken)
+        FetchWithCacheAsync(
+            IDeliveryCacheManager cacheManager,
+            string cacheKey,
+            bool? waitForLoadingNewContent,
+            CancellationToken cancellationToken)
     {
         return cacheManager.StorageMode == CacheStorageMode.RawJson
-            ? await FetchWithRawJsonCacheAsync(cacheManager, cacheKey, cancellationToken).ConfigureAwait(false)
-            : await FetchWithHydratedObjectCacheAsync(cacheManager, cacheKey, cancellationToken).ConfigureAwait(false);
+            ? await FetchWithRawJsonCacheAsync(cacheManager, cacheKey, waitForLoadingNewContent, cancellationToken).ConfigureAwait(false)
+            : await FetchWithHydratedObjectCacheAsync(cacheManager, cacheKey, waitForLoadingNewContent, cancellationToken).ConfigureAwait(false);
     }
 
     private async Task<(CacheFetchResult<DeliveryItemListingResponse<TModel>> CacheResult, IDeliveryResult<DeliveryItemListingResponse<TModel>>? ApiResult)>
-        FetchWithRawJsonCacheAsync(IDeliveryCacheManager cacheManager, string cacheKey, CancellationToken cancellationToken)
+        FetchWithRawJsonCacheAsync(
+            IDeliveryCacheManager cacheManager,
+            string cacheKey,
+            bool? waitForLoadingNewContent,
+            CancellationToken cancellationToken)
     {
         IDeliveryResult<DeliveryItemListingResponse<TModel>>? apiResult = null;
 
@@ -179,7 +207,7 @@ internal sealed class ItemsQuery<TModel>(
             cacheKey,
             async ct =>
             {
-                apiResult = await FetchFromApiAsync(ct).ConfigureAwait(false);
+                apiResult = await FetchFromApiAsync(waitForLoadingNewContent, ct).ConfigureAwait(false);
                 if (!apiResult.IsSuccess)
                     return (null, null, Array.Empty<string>());
 
@@ -196,7 +224,11 @@ internal sealed class ItemsQuery<TModel>(
     }
 
     private async Task<(CacheFetchResult<DeliveryItemListingResponse<TModel>> CacheResult, IDeliveryResult<DeliveryItemListingResponse<TModel>>? ApiResult)>
-        FetchWithHydratedObjectCacheAsync(IDeliveryCacheManager cacheManager, string cacheKey, CancellationToken cancellationToken)
+        FetchWithHydratedObjectCacheAsync(
+            IDeliveryCacheManager cacheManager,
+            string cacheKey,
+            bool? waitForLoadingNewContent,
+            CancellationToken cancellationToken)
     {
         IDeliveryResult<DeliveryItemListingResponse<TModel>>? apiResult = null;
 
@@ -206,7 +238,7 @@ internal sealed class ItemsQuery<TModel>(
             cacheKey,
             async ct =>
             {
-                apiResult = await FetchFromApiAsync(ct).ConfigureAwait(false);
+                apiResult = await FetchFromApiAsync(waitForLoadingNewContent, ct).ConfigureAwait(false);
                 if (!apiResult.IsSuccess)
                     return (null, Array.Empty<string>());
 
@@ -226,15 +258,23 @@ internal sealed class ItemsQuery<TModel>(
         DeliveryItemListingResponse<TModel> response, IDeliveryResult<DeliveryItemListingResponse<TModel>> apiResult) =>
         DeliveryResult.SuccessFrom<IDeliveryItemListingResponse<TModel>, DeliveryItemListingResponse<TModel>>(response, apiResult);
 
-    private void ApplyGenericTypeFilter() => SystemFilterHelpers.AddGenericTypeFilter<TModel>(_serializedFilters, _typeProvider, _logger);
-
-    private async Task<IDeliveryResult<DeliveryItemListingResponse<TModel>>> FetchFromApiAsync(CancellationToken cancellationToken)
+    private void ApplyGenericTypeFilter()
     {
-        var wait = _waitForLoadingNewContentOverride ?? _getDefaultWaitForNewContent();
+        if (_typeFilterApplied)
+            return;
+        _typeFilterApplied = true;
+
+        SystemFilterHelpers.AddGenericTypeFilter<TModel>(_serializedFilters, _typeProvider, _logger);
+    }
+
+    private async Task<IDeliveryResult<DeliveryItemListingResponse<TModel>>> FetchFromApiAsync(
+        bool? waitForLoadingNewContent,
+        CancellationToken cancellationToken)
+    {
         var rawResponse = await _api.GetItemsInternalAsync<TModel>(
             _params,
             _serializedFilters.ToQueryDictionary(),
-            wait,
+            waitForLoadingNewContent,
             cancellationToken).ConfigureAwait(false);
         return await rawResponse.ToDeliveryResultAsync(_logger).ConfigureAwait(false);
     }
@@ -278,29 +318,21 @@ internal sealed class ItemsQuery<TModel>(
         if (string.IsNullOrEmpty(pagination.NextPageUrl))
             return null;
 
-        var nextSkip = ExtractSkipFromUrl(pagination.NextPageUrl);
+        var nextSkip = OffsetPaginationHelper.GetNextSkip(pagination);
 
         return async (ct) =>
         {
             var nextQuery = new ItemsQuery<TModel>(_api, _getDefaultWaitForNewContent, _contentItemMapper, _contentDeserializer, _typeProvider, _cacheManager, _logger)
             {
                 _params = _params with { Skip = nextSkip },
-                _waitForLoadingNewContentOverride = _waitForLoadingNewContentOverride
+                _waitForLoadingNewContentOverride = _waitForLoadingNewContentOverride,
+                _typeFilterApplied = _typeFilterApplied
             };
 
             nextQuery._serializedFilters.CopyFrom(_serializedFilters);
 
             return await nextQuery.ExecuteAsync(ct).ConfigureAwait(false);
         };
-    }
-
-    private static int ExtractSkipFromUrl(string url)
-    {
-        if (!Uri.TryCreate(url, UriKind.Absolute, out var uri))
-            return 0;
-
-        var query = System.Web.HttpUtility.ParseQueryString(uri.Query);
-        return int.TryParse(query["skip"], out var skip) ? skip : 0;
     }
 
     private void LogQueryStarting()

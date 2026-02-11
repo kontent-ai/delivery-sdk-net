@@ -1,15 +1,24 @@
 using System.Runtime.CompilerServices;
+using Kontent.Ai.Delivery.Api.QueryBuilders.Helpers;
+using Kontent.Ai.Delivery.Logging;
 using Kontent.Ai.Delivery.UsedIn;
+using Microsoft.Extensions.Logging;
 
 namespace Kontent.Ai.Delivery.Api.QueryBuilders;
 
 /// <inheritdoc cref="IItemUsedInQuery"/>
-internal sealed class ItemUsedInQuery(IDeliveryApi api, string codename, Func<bool?> getDefaultWaitForNewContent) : IItemUsedInQuery
+internal sealed class ItemUsedInQuery(
+    IDeliveryApi api,
+    string codename,
+    Func<bool?> getDefaultWaitForNewContent,
+    ILogger? logger = null) : IItemUsedInQuery, IUsedInQueryStatusProvider
 {
     private readonly UsedInQueryCore _core = new(
+        "ItemUsedIn",
         codename,
         getDefaultWaitForNewContent,
-        api.GetItemUsedInInternalAsync);
+        api.GetItemUsedInInternalAsync,
+        logger);
 
     public IItemUsedInQuery WaitForLoadingNewContent(bool enabled = true)
     {
@@ -19,15 +28,24 @@ internal sealed class ItemUsedInQuery(IDeliveryApi api, string codename, Func<bo
 
     public IAsyncEnumerable<IUsedInItem> EnumerateItemsAsync(CancellationToken cancellationToken = default)
         => _core.EnumerateItemsAsync(cancellationToken);
+
+    public IAsyncEnumerable<IDeliveryResult<IReadOnlyList<IUsedInItem>>> EnumerateItemsWithStatusAsync(CancellationToken cancellationToken = default)
+        => _core.EnumerateItemsWithStatusAsync(cancellationToken);
 }
 
 /// <inheritdoc cref="IAssetUsedInQuery"/>
-internal sealed class AssetUsedInQuery(IDeliveryApi api, string codename, Func<bool?> getDefaultWaitForNewContent) : IAssetUsedInQuery
+internal sealed class AssetUsedInQuery(
+    IDeliveryApi api,
+    string codename,
+    Func<bool?> getDefaultWaitForNewContent,
+    ILogger? logger = null) : IAssetUsedInQuery, IUsedInQueryStatusProvider
 {
     private readonly UsedInQueryCore _core = new(
+        "AssetUsedIn",
         codename,
         getDefaultWaitForNewContent,
-        api.GetAssetUsedInInternalAsync);
+        api.GetAssetUsedInInternalAsync,
+        logger);
 
     public IAssetUsedInQuery WaitForLoadingNewContent(bool enabled = true)
     {
@@ -37,16 +55,28 @@ internal sealed class AssetUsedInQuery(IDeliveryApi api, string codename, Func<b
 
     public IAsyncEnumerable<IUsedInItem> EnumerateItemsAsync(CancellationToken cancellationToken = default)
         => _core.EnumerateItemsAsync(cancellationToken);
+
+    public IAsyncEnumerable<IDeliveryResult<IReadOnlyList<IUsedInItem>>> EnumerateItemsWithStatusAsync(CancellationToken cancellationToken = default)
+        => _core.EnumerateItemsWithStatusAsync(cancellationToken);
+}
+
+internal interface IUsedInQueryStatusProvider
+{
+    IAsyncEnumerable<IDeliveryResult<IReadOnlyList<IUsedInItem>>> EnumerateItemsWithStatusAsync(CancellationToken cancellationToken = default);
 }
 
 internal sealed class UsedInQueryCore(
+    string queryType,
     string codename,
     Func<bool?> getDefaultWaitForNewContent,
-    Func<string, bool?, string?, CancellationToken, Task<IApiResponse<DeliveryUsedInResponse>>> fetchPage)
+    Func<string, bool?, string?, CancellationToken, Task<IApiResponse<DeliveryUsedInResponse>>> fetchPage,
+    ILogger? logger)
 {
+    private readonly string _queryType = queryType;
     private readonly string _codename = codename;
     private readonly Func<bool?> _getDefaultWaitForNewContent = getDefaultWaitForNewContent;
     private readonly Func<string, bool?, string?, CancellationToken, Task<IApiResponse<DeliveryUsedInResponse>>> _fetchPage = fetchPage;
+    private readonly ILogger? _logger = logger;
     private bool? _waitForLoadingNewContentOverride;
 
     public void WaitForLoadingNewContent(bool enabled = true)
@@ -56,21 +86,56 @@ internal sealed class UsedInQueryCore(
 
     public async IAsyncEnumerable<IUsedInItem> EnumerateItemsAsync([EnumeratorCancellation] CancellationToken cancellationToken = default)
     {
-        var wait = _waitForLoadingNewContentOverride ?? _getDefaultWaitForNewContent();
+        await foreach (var pageResult in EnumerateItemsWithStatusAsync(cancellationToken).ConfigureAwait(false))
+        {
+            if (!pageResult.IsSuccess)
+            {
+                yield break;
+            }
+
+            foreach (var parent in pageResult.Value)
+            {
+                yield return parent;
+            }
+        }
+    }
+
+    public async IAsyncEnumerable<IDeliveryResult<IReadOnlyList<IUsedInItem>>> EnumerateItemsWithStatusAsync(
+        [EnumeratorCancellation] CancellationToken cancellationToken = default)
+    {
+        var waitForLoadingNewContent = WaitForLoadingNewContentHelper.ResolveHeaderValue(
+            _waitForLoadingNewContentOverride,
+            _getDefaultWaitForNewContent());
         string? token = null;
 
         while (true)
         {
-            var resp = await _fetchPage(_codename, wait, token, cancellationToken).ConfigureAwait(false);
-            if (!resp.IsSuccessStatusCode || resp.Content is null)
+            var response = await _fetchPage(
+                _codename,
+                waitForLoadingNewContent,
+                token,
+                cancellationToken).ConfigureAwait(false);
+
+            var deliveryResult = await response.ToDeliveryResultAsync(_logger).ConfigureAwait(false);
+            if (!deliveryResult.IsSuccess)
+            {
+                if (_logger is not null)
+                {
+                    LoggerMessages.PaginationStoppedEarly(_logger, _queryType);
+                }
+
+                yield return DeliveryResult.FailureFrom<IReadOnlyList<IUsedInItem>, DeliveryUsedInResponse>(deliveryResult);
                 yield break;
+            }
 
-            foreach (var parent in resp.Content.Items)
-                yield return parent;
+            IReadOnlyList<IUsedInItem> items = deliveryResult.Value.Items;
+            yield return DeliveryResult.SuccessFrom(items, deliveryResult);
 
-            token = resp.Continuation();
+            token = deliveryResult.ContinuationToken;
             if (string.IsNullOrEmpty(token))
+            {
                 yield break;
+            }
         }
     }
 }

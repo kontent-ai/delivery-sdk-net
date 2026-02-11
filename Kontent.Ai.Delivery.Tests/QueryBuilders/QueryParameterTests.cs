@@ -1,4 +1,5 @@
 using Kontent.Ai.Delivery.Abstractions;
+using Kontent.Ai.Delivery.Tests.Models.ContentTypes;
 using Microsoft.Extensions.DependencyInjection;
 using RichardSzalay.MockHttp;
 using Xunit;
@@ -14,9 +15,17 @@ public sealed class QueryParameterTests
     private readonly string _env = Guid.NewGuid().ToString();
     private string BaseUrl => $"https://deliver.kontent.ai/{_env}";
 
-    private IDeliveryClient CreateClient(MockHttpMessageHandler mockHttp, DeliveryOptions? options = null)
+    private IDeliveryClient CreateClient(
+        MockHttpMessageHandler mockHttp,
+        DeliveryOptions? options = null,
+        ITypeProvider? typeProvider = null)
     {
         var services = new ServiceCollection();
+        if (typeProvider is not null)
+        {
+            services.AddSingleton(typeProvider);
+        }
+
         var opts = options ?? new DeliveryOptions { EnvironmentId = _env };
         services.AddDeliveryClient(opts, configureHttpClient: b => b.ConfigurePrimaryHttpMessageHandler(() => mockHttp));
         return services.BuildServiceProvider().GetRequiredService<IDeliveryClient>();
@@ -252,6 +261,56 @@ public sealed class QueryParameterTests
         Assert.True(result.IsSuccess, $"Request failed: {result.Error?.Message}");
     }
 
+    [Fact]
+    public async Task GetItem_WaitForLoadingNewContentFalse_OverridesGlobalWaitAndOmitsHeader()
+    {
+        // Arrange - global wait enabled, query explicitly disables it
+        var mock = new MockHttpMessageHandler();
+        var itemJson = BuildMinimalItemJson("test_item");
+
+        mock.When($"{BaseUrl}/items/test_item")
+            .With(req => !req.Headers.Contains("X-KC-Wait-For-Loading-New-Content"))
+            .Respond("application/json", itemJson);
+
+        var client = CreateClient(mock, new DeliveryOptions
+        {
+            EnvironmentId = _env,
+            WaitForLoadingNewContent = true
+        });
+
+        // Act
+        var result = await client.GetItem<IDynamicElements>("test_item")
+            .WaitForLoadingNewContent(false)
+            .ExecuteAsync();
+
+        // Assert
+        Assert.True(result.IsSuccess, $"Request failed: {result.Error?.Message}");
+    }
+
+    [Fact]
+    public async Task GetItems_GenericExecuteTwice_DoesNotDuplicateAutoTypeFilter()
+    {
+        // Arrange - repeated execution on the same query should keep a stable system.type filter
+        var mock = new MockHttpMessageHandler();
+        var itemsJson = BuildMinimalItemsListingJson(["item_1"]);
+        const string typeFilterKey = "system.type%5Beq%5D";
+
+        mock.When($"{BaseUrl}/items")
+            .With(req => CountOccurrences(req.RequestUri!.Query, typeFilterKey) == 1)
+            .Respond("application/json", itemsJson);
+
+        var client = CreateClient(mock, typeProvider: new StaticTypeProvider());
+        var query = client.GetItems<Article>();
+
+        // Act
+        var firstResult = await query.ExecuteAsync();
+        var secondResult = await query.ExecuteAsync();
+
+        // Assert
+        Assert.True(firstResult.IsSuccess, $"Request failed: {firstResult.Error?.Message}");
+        Assert.True(secondResult.IsSuccess, $"Request failed: {secondResult.Error?.Message}");
+    }
+
     #endregion
 
     #region Combined Parameters Tests
@@ -367,6 +426,35 @@ public sealed class QueryParameterTests
                 "modular_content": {}
             }
             """;
+    }
+
+    private static int CountOccurrences(string input, string value)
+    {
+        if (string.IsNullOrEmpty(input) || string.IsNullOrEmpty(value))
+        {
+            return 0;
+        }
+
+        var count = 0;
+        var index = 0;
+        while ((index = input.IndexOf(value, index, StringComparison.Ordinal)) >= 0)
+        {
+            count++;
+            index += value.Length;
+        }
+
+        return count;
+    }
+
+    private sealed class StaticTypeProvider : ITypeProvider
+    {
+        public Type? GetType(string contentType)
+            => string.Equals(contentType, "article", StringComparison.OrdinalIgnoreCase)
+                ? typeof(Article)
+                : null;
+
+        public string? GetCodename(Type contentType)
+            => contentType == typeof(Article) ? "article" : null;
     }
 
     #endregion

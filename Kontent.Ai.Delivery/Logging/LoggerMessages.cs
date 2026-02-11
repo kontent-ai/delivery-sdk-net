@@ -167,39 +167,6 @@ internal static partial class LoggerMessages
         Message = "SDK tracking headers added (SDK: {SdkVersion})")]
     public static partial void HttpTrackingHeadersAdded(ILogger logger, string sdkVersion);
 
-    // ========== Resilience ==========
-
-    [LoggerMessage(
-        EventId = LogEventIds.ResilienceRetryAttempt,
-        Level = LogLevel.Warning,
-        Message = "Retry attempt {AttemptNumber}/{MaxAttempts} for {RequestUri} after {StatusCode} (delay: {DelayMs}ms)")]
-    public static partial void ResilienceRetryAttempt(
-        ILogger logger,
-        int attemptNumber,
-        int maxAttempts,
-        string requestUri,
-        HttpStatusCode statusCode,
-        long delayMs);
-
-    [LoggerMessage(
-        EventId = LogEventIds.ResilienceRetryExhausted,
-        Level = LogLevel.Error,
-        Message = "All {MaxAttempts} retry attempts exhausted for {RequestUri} (final status: {StatusCode})")]
-    public static partial void ResilienceRetryExhausted(
-        ILogger logger,
-        int maxAttempts,
-        string requestUri,
-        HttpStatusCode statusCode);
-
-    [LoggerMessage(
-        EventId = LogEventIds.ResilienceTimeout,
-        Level = LogLevel.Warning,
-        Message = "Request timed out after {TimeoutSeconds}s for {RequestUri}")]
-    public static partial void ResilienceTimeout(
-        ILogger logger,
-        double timeoutSeconds,
-        string requestUri);
-
     // ========== Content Mapping ==========
 
     [LoggerMessage(
@@ -314,17 +281,4 @@ internal static partial class LoggerMessages
         Message = "Items pagination progress: page {PageNumber}, {ItemsSoFar} items fetched")]
     public static partial void ItemsPaginationProgress(ILogger logger, int pageNumber, int itemsSoFar);
 
-    // ========== Service Registration ==========
-
-    [LoggerMessage(
-        EventId = LogEventIds.ClientRegistered,
-        Level = LogLevel.Information,
-        Message = "Delivery client '{ClientName}' registered for environment '{EnvironmentId}'")]
-    public static partial void ClientRegistered(ILogger logger, string clientName, string environmentId);
-
-    [LoggerMessage(
-        EventId = LogEventIds.CacheManagerRegistered,
-        Level = LogLevel.Information,
-        Message = "Cache manager '{CacheType}' registered for client '{ClientName}' (KeyPrefix: {KeyPrefix})")]
-    public static partial void CacheManagerRegistered(ILogger logger, string cacheType, string clientName, string? keyPrefix);
 }

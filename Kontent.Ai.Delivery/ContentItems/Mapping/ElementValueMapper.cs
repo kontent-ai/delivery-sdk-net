@@ -57,6 +57,10 @@ internal sealed class ElementValueMapper(
     {
         if (!envelope.TryGetProperty("value", out var valueElement))
         {
+            if (_logger is not null)
+            {
+                LoggerMessages.ElementMappingSkipped(_logger, prop.ElementCodename, "value");
+            }
             return null;
         }
 
@@ -69,14 +73,29 @@ internal sealed class ElementValueMapper(
         {
             return JsonSerializer.Deserialize(valueElement, prop.PropertyType, _jsonOptions);
         }
-        catch (JsonException)
+        catch (JsonException ex)
         {
-            // Compatible behavior: skip on failure.
+            if (_logger is not null)
+            {
+                LoggerMessages.PropertyDeserializationFailed(
+                    _logger,
+                    prop.ElementCodename,
+                    prop.PropertyType.Name,
+                    ex);
+            }
             return null;
         }
-        catch (NotSupportedException)
+        catch (NotSupportedException ex)
         {
             // JsonSerializer throws NotSupportedException for unsupported type patterns.
+            if (_logger is not null)
+            {
+                LoggerMessages.PropertyDeserializationFailed(
+                    _logger,
+                    prop.ElementCodename,
+                    prop.PropertyType.Name,
+                    ex);
+            }
             return null;
         }
     }

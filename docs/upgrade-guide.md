@@ -1,6 +1,3 @@
-> [!WARNING]  
-> This is primarily an AI generated guide and may contain incorrect suggestions. Better guide will be available along with production release.
-
 # Upgrade Guide: Migrating to Kontent.ai Delivery SDK 19.0
 
 This guide provides comprehensive instructions for migrating from the legacy Kontent.ai Delivery SDK (18.x) to the new 19.0 SDK. The new SDK features a modernized API with fluent query builders, integrated caching, Polly-based resilience, and improved type safety.
@@ -26,7 +23,7 @@ This guide provides comprehensive instructions for migrating from the legacy Kon
 ### Version Requirements
 
 - **.NET 8.0+** is required (upgraded from .NET 6.0 support)
-- **Model Generator 10.0.0-beta** is required for strongly-typed models
+- **Model Generator 10.0.0** is required for strongly-typed models
 
 ### Package Changes
 
@@ -55,7 +52,7 @@ Use this checklist to ensure you've addressed all required changes:
 
 - [ ] Update NuGet packages to 19.0.0+
 - [ ] Remove `Kontent.Ai.Delivery.Caching` package reference (now integrated)
-- [ ] Regenerate models with model generator 10.0.0-beta
+- [ ] Regenerate models with model generator 10.0.0
 - [ ] Refactor all `GetItemAsync<T>()` calls to `GetItem<T>().ExecuteAsync()`
 - [ ] Refactor all `GetItemsAsync<T>()` calls to `GetItems<T>().ExecuteAsync()`
 - [ ] Migrate all filtering from parameter classes to fluent `Where()` syntax
@@ -1232,9 +1229,9 @@ The SDK uses a different model structure with `IContentItem<T>` wrappers.
 KontentModelGenerator --environmentid <id> --outputdir Models
 ```
 
-**New (model generator 10.0.0-beta required):**
+**New (model generator 10.0.0 required):**
 ```bash
-dotnet tool install -g Kontent.Ai.ModelGenerator --version 10.0.0-beta
+dotnet tool install -g Kontent.Ai.ModelGenerator --version 10.0.0
 KontentModelGenerator --environmentid <id> --outputdir Models
 ```
 
@@ -1754,6 +1751,25 @@ await foreach (var usage in client.GetAssetUsedIn("hero_image").EnumerateItemsAs
 }
 ```
 
+`EnumerateItemsAsync()` stops when a subsequent page request fails and returns the items already received.
+If you need explicit page-level failure handling, use `EnumerateItemsWithStatusAsync()`:
+
+```csharp
+await foreach (var page in client.GetAssetUsedIn("hero_image").EnumerateItemsWithStatusAsync())
+{
+    if (!page.IsSuccess)
+    {
+        Console.WriteLine($"Lookup failed with {(int)page.StatusCode}: {page.Error?.Message}");
+        break;
+    }
+
+    foreach (var usage in page.Value)
+    {
+        Console.WriteLine($"Asset used in: {usage.System.Name}");
+    }
+}
+```
+
 ### 10.7 Element Projection
 
 Reduce response size by selecting specific elements:
@@ -1850,9 +1866,9 @@ public class MyController([FromKeyedServices("clientName")] IDeliveryClient clie
 
 **Problem:** Models from old generator don't work with new SDK.
 
-**Solution:** Regenerate models with model generator 10.0.0-beta:
+**Solution:** Regenerate models with model generator 10.0.0:
 ```bash
-dotnet tool update -g Kontent.Ai.ModelGenerator --version 10.0.0-beta
+dotnet tool update -g Kontent.Ai.ModelGenerator --version 10.0.0
 KontentModelGenerator --environmentid <id> --outputdir Models --force
 ```
 
@@ -1860,7 +1876,7 @@ KontentModelGenerator --environmentid <id> --outputdir Models --force
 
 **Q: Can I use old models with the new SDK?**
 
-A: No. The new SDK requires models generated with Kontent.Ai.ModelGenerator 10.0.0-beta. The model structure has changed significantly (e.g., `System` property location, linked items typing).
+A: No. The new SDK requires models generated with Kontent.Ai.ModelGenerator 10.0.0. The model structure has changed significantly (e.g., `System` property location, linked items typing).
 
 **Q: How do I migrate custom retry policies?**
 

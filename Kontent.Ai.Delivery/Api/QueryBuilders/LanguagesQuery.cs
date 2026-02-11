@@ -53,8 +53,10 @@ internal sealed class LanguagesQuery(IDeliveryApi api, Func<bool?> getDefaultWai
 
     private async Task<IDeliveryResult<DeliveryLanguageListingResponse>> FetchFromApiAsync(CancellationToken cancellationToken)
     {
-        var wait = _waitForLoadingNewContentOverride ?? _getDefaultWaitForNewContent();
-        var response = await _api.GetLanguagesInternalAsync(_params, wait, cancellationToken).ConfigureAwait(false);
+        var waitForLoadingNewContent = WaitForLoadingNewContentHelper.ResolveHeaderValue(
+            _waitForLoadingNewContentOverride,
+            _getDefaultWaitForNewContent());
+        var response = await _api.GetLanguagesInternalAsync(_params, waitForLoadingNewContent, cancellationToken).ConfigureAwait(false);
         return await response.ToDeliveryResultAsync().ConfigureAwait(false);
     }
 

@@ -42,10 +42,18 @@ public class RequiredIfAttribute(string propertyName, object? isValue) : Validat
             return ValidationResult.Success;
         }
 
-        return value is null
+        return IsMissingValue(value)
             ? new ValidationResult(FormatErrorMessage(validationContext.DisplayName))
             : ValidationResult.Success;
     }
+
+    private static bool IsMissingValue(object? value) =>
+        value switch
+        {
+            null => true,
+            string str => string.IsNullOrWhiteSpace(str),
+            _ => false
+        };
 
     private object? GetComparedMemberValue(ValidationContext validationContext)
     {

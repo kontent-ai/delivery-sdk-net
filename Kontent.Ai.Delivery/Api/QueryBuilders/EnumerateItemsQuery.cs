@@ -1,5 +1,6 @@
 using System.Runtime.CompilerServices;
 using Kontent.Ai.Delivery.Api.Filtering;
+using Kontent.Ai.Delivery.Api.QueryBuilders.Helpers;
 using Kontent.Ai.Delivery.ContentItems;
 using Kontent.Ai.Delivery.ContentItems.Mapping;
 using Kontent.Ai.Delivery.Logging;
@@ -81,7 +82,13 @@ internal sealed class EnumerateItemsQuery<TModel>(
     {
         ApplyGenericTypeFilter();
 
-        var (deliveryResult, continuationToken) = await FetchFeedPageAsync(_continuationToken, cancellationToken).ConfigureAwait(false);
+        var waitForLoadingNewContent = WaitForLoadingNewContentHelper.ResolveHeaderValue(
+            _waitForLoadingNewContentOverride,
+            _getDefaultWaitForNewContent());
+        var (deliveryResult, continuationToken) = await FetchFeedPageAsync(
+            _continuationToken,
+            waitForLoadingNewContent,
+            cancellationToken).ConfigureAwait(false);
 
         if (!deliveryResult.IsSuccess)
         {
@@ -144,15 +151,15 @@ internal sealed class EnumerateItemsQuery<TModel>(
 
     private async Task<(IDeliveryResult<DeliveryItemsFeedResponse<TModel>> DeliveryResult, string? ContinuationToken)> FetchFeedPageAsync(
         string? continuationToken,
+        bool? waitForLoadingNewContent,
         CancellationToken cancellationToken)
     {
-        var wait = _waitForLoadingNewContentOverride ?? _getDefaultWaitForNewContent();
         var resp = await _api
             .GetItemsFeedInternalAsync<TModel>(
                 _params,
                 _serializedFilters.ToQueryDictionary(),
                 continuationToken,
-                wait,
+                waitForLoadingNewContent,
                 cancellationToken)
             .ConfigureAwait(false);
 

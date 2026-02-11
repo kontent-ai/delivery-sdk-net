@@ -36,8 +36,9 @@ internal static class CacheKeyBuilder
     /// </summary>
     /// <param name="codename">The item codename.</param>
     /// <param name="parameters">The query parameters.</param>
+    /// <param name="waitMode">Effective wait-for-loading-new-content mode used for cache segmentation.</param>
     /// <returns>Cache key in format: <c>item:{codename}:lang={language}:depth={depth}:elements={sorted}</c></returns>
-    public static string BuildItemKey(string codename, SingleItemParams parameters)
+    public static string BuildItemKey(string codename, SingleItemParams parameters, string? waitMode = null)
     {
         var builder = new StringBuilder(128);
         builder.Append("item").Append(Separator);
@@ -46,6 +47,7 @@ internal static class CacheKeyBuilder
         AppendLanguage(builder, parameters.Language);
         AppendDepth(builder, parameters.Depth);
         AppendElementProjection(builder, parameters.Elements, parameters.ExcludeElements);
+        AppendWaitMode(builder, waitMode);
 
         return TrimTrailingSeparator(builder);
     }
@@ -55,8 +57,9 @@ internal static class CacheKeyBuilder
     /// </summary>
     /// <param name="parameters">The query parameters.</param>
     /// <param name="filters">The filter dictionary from fluent API.</param>
+    /// <param name="waitMode">Effective wait-for-loading-new-content mode used for cache segmentation.</param>
     /// <returns>Cache key in format: <c>items:lang={language}:depth={depth}:skip={skip}:limit={limit}:filters={hash}</c></returns>
-    public static string BuildItemsKey(ListItemsParams parameters, IReadOnlyList<KeyValuePair<string, string>> filters)
+    public static string BuildItemsKey(ListItemsParams parameters, IReadOnlyList<KeyValuePair<string, string>> filters, string? waitMode = null)
     {
         var builder = new StringBuilder(256);
         builder.Append("items").Append(Separator);
@@ -68,6 +71,7 @@ internal static class CacheKeyBuilder
         AppendIncludeTotalCount(builder, parameters.IncludeTotalCount);
         AppendElementProjection(builder, parameters.Elements, parameters.ExcludeElements);
         AppendFilters(builder, filters);
+        AppendWaitMode(builder, waitMode);
 
         return TrimTrailingSeparator(builder);
     }
@@ -77,8 +81,9 @@ internal static class CacheKeyBuilder
     /// </summary>
     /// <param name="parameters">The query parameters.</param>
     /// <param name="filters">The filter dictionary from fluent API.</param>
+    /// <param name="waitMode">Effective wait-for-loading-new-content mode used for cache segmentation.</param>
     /// <returns>Cache key in format: <c>types:skip={skip}:limit={limit}:elements={sorted}:filters={hash}</c></returns>
-    public static string BuildTypesKey(ListTypesParams parameters, IReadOnlyList<KeyValuePair<string, string>> filters)
+    public static string BuildTypesKey(ListTypesParams parameters, IReadOnlyList<KeyValuePair<string, string>> filters, string? waitMode = null)
     {
         var builder = new StringBuilder(128);
         builder.Append("types").Append(Separator);
@@ -86,6 +91,7 @@ internal static class CacheKeyBuilder
         AppendPagination(builder, parameters.Skip, parameters.Limit);
         AppendElementProjection(builder, parameters.Elements, excludeElements: null);
         AppendFilters(builder, filters);
+        AppendWaitMode(builder, waitMode);
 
         return TrimTrailingSeparator(builder);
     }
@@ -95,14 +101,16 @@ internal static class CacheKeyBuilder
     /// </summary>
     /// <param name="codename">The type codename.</param>
     /// <param name="parameters">The query parameters.</param>
+    /// <param name="waitMode">Effective wait-for-loading-new-content mode used for cache segmentation.</param>
     /// <returns>Cache key in format: <c>type:{codename}:elements={sorted}</c></returns>
-    public static string BuildTypeKey(string codename, SingleTypeParams parameters)
+    public static string BuildTypeKey(string codename, SingleTypeParams parameters, string? waitMode = null)
     {
         var builder = new StringBuilder(128);
         builder.Append("type").Append(Separator);
         builder.Append(codename).Append(Separator);
 
         AppendElementProjection(builder, parameters.Elements, excludeElements: null);
+        AppendWaitMode(builder, waitMode);
 
         return TrimTrailingSeparator(builder);
     }
@@ -112,14 +120,16 @@ internal static class CacheKeyBuilder
     /// </summary>
     /// <param name="parameters">The query parameters.</param>
     /// <param name="filters">The filter dictionary from fluent API.</param>
+    /// <param name="waitMode">Effective wait-for-loading-new-content mode used for cache segmentation.</param>
     /// <returns>Cache key in format: <c>taxonomies:skip={skip}:limit={limit}:filters={hash}</c></returns>
-    public static string BuildTaxonomiesKey(ListTaxonomyGroupsParams parameters, IReadOnlyList<KeyValuePair<string, string>> filters)
+    public static string BuildTaxonomiesKey(ListTaxonomyGroupsParams parameters, IReadOnlyList<KeyValuePair<string, string>> filters, string? waitMode = null)
     {
         var builder = new StringBuilder(128);
         builder.Append("taxonomies").Append(Separator);
 
         AppendPagination(builder, parameters.Skip, parameters.Limit);
         AppendFilters(builder, filters);
+        AppendWaitMode(builder, waitMode);
 
         return TrimTrailingSeparator(builder);
     }
@@ -128,8 +138,15 @@ internal static class CacheKeyBuilder
     /// Builds cache key for single taxonomy query.
     /// </summary>
     /// <param name="codename">The taxonomy group codename.</param>
+    /// <param name="waitMode">Effective wait-for-loading-new-content mode used for cache segmentation.</param>
     /// <returns>Cache key in format: <c>taxonomy:{codename}</c></returns>
-    public static string BuildTaxonomyKey(string codename) => $"taxonomy{Separator}{codename}";
+    public static string BuildTaxonomyKey(string codename, string? waitMode = null)
+    {
+        var builder = new StringBuilder(128);
+        builder.Append("taxonomy").Append(Separator).Append(codename).Append(Separator);
+        AppendWaitMode(builder, waitMode);
+        return TrimTrailingSeparator(builder);
+    }
 
     private static void AppendLanguage(StringBuilder builder, string? language)
     {
@@ -211,6 +228,14 @@ internal static class CacheKeyBuilder
         var hash = ComputeStableHash(filterString);
 
         builder.Append("filters=").Append(hash).Append(Separator);
+    }
+
+    private static void AppendWaitMode(StringBuilder builder, string? waitMode)
+    {
+        if (string.IsNullOrEmpty(waitMode))
+            return;
+
+        builder.Append("wait=").Append(waitMode).Append(Separator);
     }
 
     private static string ComputeStableHash(string input)

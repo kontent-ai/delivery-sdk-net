@@ -11,7 +11,6 @@ public sealed class DeliveryOptions : IValidatableObject
     /// Gets or sets the environment ID.
     /// </summary>
     [Required]
-    [RegularExpression(@"^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$", ErrorMessage = "The environment ID must be a valid GUID.")]
     public string EnvironmentId { get; set; } = Guid.Empty.ToString();
 
     /// <summary>
@@ -68,6 +67,7 @@ public sealed class DeliveryOptions : IValidatableObject
     /// Gets or sets a value indicating whether the SDK should wait for the newest published content to be fully loaded
     /// before returning a response. When enabled, requests include the
     /// <c>X-KC-Wait-For-Loading-New-Content</c> header. This option can be overridden per query.
+    /// Requests with effective wait enabled bypass SDK local caching (no cache read/write for that request path).
     /// Default is <c>false</c>.
     /// </summary>
     public bool WaitForLoadingNewContent { get; set; } = false;
@@ -93,7 +93,18 @@ public sealed class DeliveryOptions : IValidatableObject
                 [nameof(UsePreviewApi), nameof(UseSecureAccess)]);
         }
 
-        if (Guid.TryParse(EnvironmentId, out var environmentGuid) && environmentGuid == Guid.Empty)
+        if (string.IsNullOrWhiteSpace(EnvironmentId))
+        {
+            yield break;
+        }
+
+        if (!Guid.TryParse(EnvironmentId, out var environmentGuid))
+        {
+            yield return new ValidationResult(
+                "The environment ID must be a valid GUID.",
+                [nameof(EnvironmentId)]);
+        }
+        else if (environmentGuid == Guid.Empty)
         {
             yield return new ValidationResult(
                 "EnvironmentId cannot be an empty GUID.",

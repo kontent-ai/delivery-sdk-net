@@ -1,3 +1,5 @@
+using Kontent.Ai.Delivery.Api.QueryBuilders.Helpers;
+
 namespace Kontent.Ai.Delivery.Api.QueryBuilders;
 
 /// <inheritdoc cref="ITypeElementQuery"/>
@@ -20,8 +22,10 @@ internal sealed class TypeElementQuery(IDeliveryApi api, string contentTypeCoden
 
     private async Task<IDeliveryResult<IContentElement>> FetchFromApiAsync(CancellationToken cancellationToken)
     {
-        var wait = _waitForLoadingNewContentOverride ?? _getDefaultWaitForNewContent();
-        var response = await _api.GetContentElementInternalAsync(_type, _element, wait, cancellationToken).ConfigureAwait(false);
+        var waitForLoadingNewContent = WaitForLoadingNewContentHelper.ResolveHeaderValue(
+            _waitForLoadingNewContentOverride,
+            _getDefaultWaitForNewContent());
+        var response = await _api.GetContentElementInternalAsync(_type, _element, waitForLoadingNewContent, cancellationToken).ConfigureAwait(false);
         return await response.ToDeliveryResultAsync().ConfigureAwait(false);
     }
 }

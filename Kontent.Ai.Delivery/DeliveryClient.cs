@@ -121,13 +121,13 @@ internal sealed class DeliveryClient : IDeliveryClient
     public IItemUsedInQuery GetItemUsedIn(string codename)
     {
         ValidateCodename(codename, nameof(codename), "Entered item codename is not valid.");
-        return new ItemUsedInQuery(_deliveryApi, codename, _getDefaultWaitForLoadingNewContent);
+        return new ItemUsedInQuery(_deliveryApi, codename, _getDefaultWaitForLoadingNewContent, _logger);
     }
 
     public IAssetUsedInQuery GetAssetUsedIn(string codename)
     {
         ValidateCodename(codename, nameof(codename), "Entered asset codename is not valid.");
-        return new AssetUsedInQuery(_deliveryApi, codename, _getDefaultWaitForLoadingNewContent);
+        return new AssetUsedInQuery(_deliveryApi, codename, _getDefaultWaitForLoadingNewContent, _logger);
     }
 
     private bool? GetDefaultWaitForLoadingNewContent()

@@ -1,4 +1,5 @@
 using Kontent.Ai.Delivery.Abstractions;
+using Kontent.Ai.Delivery.ContentItems.RichText;
 using Kontent.Ai.Delivery.ContentItems.RichText.Resolution;
 using Kontent.Ai.Delivery.Generated;
 using Kontent.Ai.Delivery.Tests.Models.ContentTypes;
@@ -968,6 +969,36 @@ public class RichTextIntegrationTests
         Assert.Contains("</p>", html);
     }
 
+    [Fact]
+    public async Task IntegrationTest_MissingResolverConfiguredToThrow_ThrowsInvalidOperationException()
+    {
+        var client = await CreateDeliveryClientAsync("coffee_processing_techniques.json");
+        var resolver = new HtmlResolverBuilder()
+            .ThrowOnMissingResolver()
+            .Build();
+
+        var result = await client.GetItem<Article>("coffee_processing_techniques").ExecuteAsync();
+
+        await Assert.ThrowsAsync<InvalidOperationException>(
+            async () => await result.Value.Elements.BodyCopy.ToHtmlAsync(resolver));
+    }
+
+    [Fact]
+    public async Task IntegrationTest_TypeBasedResolver_DispatchesForNonContentItemNamedEmbeddedBlock()
+    {
+        var richText = new RichTextContent();
+        richText.AddRange([new EmbeddedArticleBlock("Typed title")]);
+
+        var resolver = new HtmlResolverBuilder()
+            .WithContentResolver<Article>(content =>
+                $"<article>{content.Elements.Title}</article>")
+            .Build();
+
+        var html = await richText.ToHtmlAsync(resolver);
+
+        Assert.Equal("<article>Typed title</article>", html);
+    }
+
     #endregion
 
     #region Helper Methods
@@ -997,4 +1028,31 @@ public class RichTextIntegrationTests
     }
 
     #endregion
+
+    private sealed class EmbeddedArticleBlock(string title) : IEmbeddedContent<Article>
+    {
+        public IContentItemSystemAttributes System { get; } = new TestSystemAttributes();
+
+        public Article Elements { get; } = new()
+        {
+            Title = title
+        };
+
+        object? IContentItem.Elements => Elements;
+    }
+
+    private sealed class TestSystemAttributes : IContentItemSystemAttributes
+    {
+        public string Codename => "embedded_article";
+        public Guid Id => Guid.Parse("11111111-1111-1111-1111-111111111111");
+        public string Name => "Embedded article";
+        public DateTime LastModified => new(2025, 1, 1, 0, 0, 0, DateTimeKind.Utc);
+        public string Language => "en-US";
+        public string Type => "article";
+        [Obsolete("Sitemap locations are deprecated in Kontent.ai responses.")]
+        public IReadOnlyList<string>? SitemapLocation => null;
+        public string Collection => "default";
+        public string? Workflow => "default";
+        public string? WorkflowStep => "published";
+    }
 }

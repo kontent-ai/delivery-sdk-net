@@ -59,19 +59,37 @@ internal sealed class TypesQuery(
     {
         LogQueryStarting();
         var stopwatch = StartTimingIfEnabled();
+        var defaultWaitForNewContent = _getDefaultWaitForNewContent();
+        var waitForLoadingNewContent = WaitForLoadingNewContentHelper.ResolveHeaderValue(
+            _waitForLoadingNewContentOverride,
+            defaultWaitForNewContent);
+        var shouldBypassCache = WaitForLoadingNewContentHelper.ShouldBypassCache(
+            _waitForLoadingNewContentOverride,
+            defaultWaitForNewContent);
 
-        return _cacheManager is not null
-            ? await ExecuteWithCacheAsync(_cacheManager, stopwatch, cancellationToken).ConfigureAwait(false)
-            : await ExecuteWithoutCacheAsync(stopwatch, cancellationToken).ConfigureAwait(false);
+        return _cacheManager is not null && !shouldBypassCache
+            ? await ExecuteWithCacheAsync(
+                _cacheManager,
+                stopwatch,
+                waitForLoadingNewContent,
+                WaitForLoadingNewContentHelper.ResolveCacheMode(_waitForLoadingNewContentOverride, defaultWaitForNewContent),
+                cancellationToken).ConfigureAwait(false)
+            : await ExecuteWithoutCacheAsync(stopwatch, waitForLoadingNewContent, cancellationToken).ConfigureAwait(false);
     }
 
     private async Task<IDeliveryResult<IDeliveryTypeListingResponse>> ExecuteWithCacheAsync(
         IDeliveryCacheManager cacheManager,
         Stopwatch? stopwatch,
+        bool? waitForLoadingNewContent,
+        string waitCacheMode,
         CancellationToken cancellationToken)
     {
-        var cacheKey = CacheKeyBuilder.BuildTypesKey(_params, _serializedFilters);
-        var (cacheResult, apiResult) = await FetchWithCacheAsync(cacheManager, cacheKey, cancellationToken).ConfigureAwait(false);
+        var cacheKey = CacheKeyBuilder.BuildTypesKey(_params, _serializedFilters, waitCacheMode);
+        var (cacheResult, apiResult) = await FetchWithCacheAsync(
+            cacheManager,
+            cacheKey,
+            waitForLoadingNewContent,
+            cancellationToken).ConfigureAwait(false);
 
         if (cacheResult.IsCacheHit)
         {
@@ -97,9 +115,10 @@ internal sealed class TypesQuery(
 
     private async Task<IDeliveryResult<IDeliveryTypeListingResponse>> ExecuteWithoutCacheAsync(
         Stopwatch? stopwatch,
+        bool? waitForLoadingNewContent,
         CancellationToken cancellationToken)
     {
-        var deliveryResult = await FetchFromApiAsync(cancellationToken).ConfigureAwait(false);
+        var deliveryResult = await FetchFromApiAsync(waitForLoadingNewContent, cancellationToken).ConfigureAwait(false);
         if (!deliveryResult.IsSuccess)
         {
             LogQueryCompleted(stopwatch, deliveryResult.StatusCode, cacheHit: false);
@@ -111,7 +130,11 @@ internal sealed class TypesQuery(
     }
 
     private async Task<(CacheFetchResult<DeliveryTypeListingResponse> CacheResult, IDeliveryResult<DeliveryTypeListingResponse>? ApiResult)>
-        FetchWithCacheAsync(IDeliveryCacheManager cacheManager, string cacheKey, CancellationToken cancellationToken)
+        FetchWithCacheAsync(
+            IDeliveryCacheManager cacheManager,
+            string cacheKey,
+            bool? waitForLoadingNewContent,
+            CancellationToken cancellationToken)
     {
         IDeliveryResult<DeliveryTypeListingResponse>? apiResult = null;
 
@@ -120,7 +143,7 @@ internal sealed class TypesQuery(
             cacheKey,
             async ct =>
             {
-                apiResult = await FetchFromApiAsync(ct).ConfigureAwait(false);
+                apiResult = await FetchFromApiAsync(waitForLoadingNewContent, ct).ConfigureAwait(false);
                 if (!apiResult.IsSuccess)
                     return (null, Array.Empty<string>());
 
@@ -132,13 +155,14 @@ internal sealed class TypesQuery(
         return (cacheResult, apiResult);
     }
 
-    private async Task<IDeliveryResult<DeliveryTypeListingResponse>> FetchFromApiAsync(CancellationToken cancellationToken)
+    private async Task<IDeliveryResult<DeliveryTypeListingResponse>> FetchFromApiAsync(
+        bool? waitForLoadingNewContent,
+        CancellationToken cancellationToken)
     {
-        var wait = _waitForLoadingNewContentOverride ?? _getDefaultWaitForNewContent();
         var response = await _api.GetTypesInternalAsync(
             _params,
             _serializedFilters.ToQueryDictionary(),
-            wait,
+            waitForLoadingNewContent,
             cancellationToken).ConfigureAwait(false);
         return await response.ToDeliveryResultAsync(_logger).ConfigureAwait(false);
     }
