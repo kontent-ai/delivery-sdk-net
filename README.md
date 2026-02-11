@@ -122,6 +122,10 @@ services.AddDeliveryClient(builder =>
 
 When you use the `[ContentTypeCodename]` attribute on your model classes (see [Generate Models](#generate-models)), the SDK's source generator automatically creates a `GeneratedTypeProvider`. The SDK auto-discovers this provider at runtime - no manual registration needed.
 
+> [!NOTE]
+> `Kontent.Ai.Delivery.SourceGeneration` emits `ContentTypeCodenameAttribute` and generates `GeneratedTypeProvider` during compilation.
+> If your models are generated into a separate project, reference `Kontent.Ai.Delivery.SourceGeneration` in that models project.
+
 ```csharp
 // Just register the delivery client - type provider is auto-discovered
 services.AddDeliveryClient(options =>
@@ -605,12 +609,16 @@ The [Kontent.ai Model Generator](https://github.com/kontent-ai/model-generator-n
 - **Compile-time validation** - Duplicate codenames and invalid configurations are caught during build
 - **Auto-discovered type provider** - No manual DI registration needed
 - **Automatic type filtering** - Generic queries like `GetItems<Article>()` automatically add `system.type=article` filter
+- **Build-time generation** - The source generator emits `ContentTypeCodenameAttribute` and generates `GeneratedTypeProvider` during build
 
 Add the source generation package to enable these features:
 
 ```xml
 <PackageReference Include="Kontent.Ai.Delivery.SourceGeneration" Version="19.0.0" />
 ```
+
+> [!IMPORTANT]
+> Add `Kontent.Ai.Delivery.SourceGeneration` to the project that compiles your generated model classes.
 
 Generated models include the attribute automatically:
 
@@ -634,7 +642,7 @@ public record Product
 }
 ```
 
-The source generator produces a `GeneratedTypeProvider` at compile time with bi-directional lookup (codename ↔ Type). The SDK auto-discovers this provider at runtime.
+The source generator emits `ContentTypeCodenameAttribute` and produces a `GeneratedTypeProvider` at compile time with bi-directional lookup (codename ↔ Type). The SDK auto-discovers this provider at runtime.
 
 > [!NOTE]
 > Source generation runs per project/compilation. For the default auto-discovery path, use a single models project containing your attributed models.
