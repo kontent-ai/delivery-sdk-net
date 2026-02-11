@@ -176,6 +176,10 @@ internal static class QueryCacheHelper
                 expiration: null, cancellationToken: cancellationToken)
                 .ConfigureAwait(false);
         }
+        catch (OperationCanceledException) when (cancellationToken.IsCancellationRequested)
+        {
+            throw;
+        }
         catch (Exception ex)
         {
             if (logger is not null)
@@ -263,43 +267,44 @@ internal static class QueryCacheHelper
         where TResult : class
     {
         // 1. Fast path: try cache and materialize.
-        var cached = await TryGetCachedAsync<TCachePayload>(cacheManager, cacheKey, logger, cancellationToken)
-            .ConfigureAwait(false);
-        if (cached is not null)
+        var cachedResult = await TryGetAndMaterializeCachedAsync(
+            cacheManager,
+            cacheKey,
+            materializeCachedAsync,
+            logger,
+            cancellationToken).ConfigureAwait(false);
+        if (cachedResult is not null)
         {
-            var materialized = await materializeCachedAsync(cached, cacheKey, cancellationToken).ConfigureAwait(false);
-            if (materialized is not null)
-            {
-                return new CacheFetchResult<TResult>(materialized, [], IsCacheHit: true);
-            }
+            return new CacheFetchResult<TResult>(cachedResult, [], IsCacheHit: true);
         }
 
         // 2. Acquire per-key lock to prevent stampede.
         using var _ = await AcquireManagerKeyLockAsync(cacheManager, cacheKey, cancellationToken).ConfigureAwait(false);
 
         // 3. Double-check after acquiring lock.
-        cached = await TryGetCachedAsync<TCachePayload>(cacheManager, cacheKey, logger, cancellationToken)
-            .ConfigureAwait(false);
-        if (cached is not null)
+        cachedResult = await TryGetAndMaterializeCachedAsync(
+            cacheManager,
+            cacheKey,
+            materializeCachedAsync,
+            logger,
+            cancellationToken).ConfigureAwait(false);
+        if (cachedResult is not null)
         {
-            var materialized = await materializeCachedAsync(cached, cacheKey, cancellationToken).ConfigureAwait(false);
-            if (materialized is not null)
-            {
-                return new CacheFetchResult<TResult>(materialized, [], IsCacheHit: true);
-            }
+            return new CacheFetchResult<TResult>(cachedResult, [], IsCacheHit: true);
         }
 
         // 4. Fetch fresh.
         var (cachePayload, result, dependencies) = await fetchFactory(cancellationToken).ConfigureAwait(false);
+        var materializedDependencies = MaterializeDependencies(dependencies);
 
         // 5. Cache payload if available.
         if (cachePayload is not null)
         {
-            await TrySetCachedAsync(cacheManager, cacheKey, cachePayload, dependencies, logger, cancellationToken)
+            await TrySetCachedAsync(cacheManager, cacheKey, cachePayload, materializedDependencies, logger, cancellationToken)
                 .ConfigureAwait(false);
         }
 
-        return new CacheFetchResult<TResult>(result, dependencies, IsCacheHit: false);
+        return new CacheFetchResult<TResult>(result, materializedDependencies, IsCacheHit: false);
     }
 
     private static async ValueTask<KeyLockScope> AcquireManagerKeyLockAsync(
@@ -347,6 +352,31 @@ internal static class QueryCacheHelper
             return null;
         }
     }
+
+    private static async Task<TResult?> TryGetAndMaterializeCachedAsync<TCachePayload, TResult>(
+        IDeliveryCacheManager cacheManager,
+        string cacheKey,
+        Func<TCachePayload, string, CancellationToken, Task<TResult?>> materializeCachedAsync,
+        ILogger? logger,
+        CancellationToken cancellationToken)
+        where TCachePayload : class
+        where TResult : class
+    {
+        var cached = await TryGetCachedAsync<TCachePayload>(cacheManager, cacheKey, logger, cancellationToken)
+            .ConfigureAwait(false);
+
+        return cached is null
+            ? null
+            : await materializeCachedAsync(cached, cacheKey, cancellationToken).ConfigureAwait(false);
+    }
+
+    private static string[] MaterializeDependencies(IEnumerable<string>? dependencies) =>
+        dependencies switch
+        {
+            null => [],
+            string[] array => array,
+            _ => [.. dependencies]
+        };
 
     /// <summary>
     /// Removes expired locks that are not in use from the specified dictionary.

@@ -17,20 +17,15 @@ namespace Kontent.Ai.Delivery.Attributes;
 /// }
 /// </code>
 /// </example>
+/// <remarks>
+/// Initializes a new instance of the <see cref="ContentTypeCodenameAttribute"/> class.
+/// </remarks>
+/// <param name="codename">The content type codename as defined in Kontent.ai.</param>
 [AttributeUsage(AttributeTargets.Class | AttributeTargets.Struct, AllowMultiple = false, Inherited = false)]
-public sealed class ContentTypeCodenameAttribute : Attribute
+public sealed class ContentTypeCodenameAttribute(string codename) : Attribute
 {
     /// <summary>
     /// Gets the content type codename as defined in Kontent.ai.
     /// </summary>
-    public string Codename { get; }
-
-    /// <summary>
-    /// Initializes a new instance of the <see cref="ContentTypeCodenameAttribute"/> class.
-    /// </summary>
-    /// <param name="codename">The content type codename as defined in Kontent.ai.</param>
-    public ContentTypeCodenameAttribute(string codename)
-    {
-        Codename = codename;
-    }
+    public string Codename { get; } = codename;
 }

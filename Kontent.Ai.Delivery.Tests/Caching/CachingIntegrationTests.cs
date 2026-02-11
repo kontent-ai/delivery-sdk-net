@@ -1,3 +1,4 @@
+using System.Net;
 using Kontent.Ai.Delivery.Abstractions;
 using Kontent.Ai.Delivery.Caching;
 using Kontent.Ai.Delivery.Extensions;
@@ -360,6 +361,31 @@ public class CachingIntegrationTests
         mock.VerifyNoOutstandingExpectation();
     }
 
+    [Fact]
+    public async Task MemoryCache_GetItem_ConcurrentMisses_AreCoalescedToSingleApiCall()
+    {
+        var itemCodename = "coffee_beverages_explained";
+        var fixtureContent = await File.ReadAllTextAsync(
+            Path.Combine(Environment.CurrentDirectory,
+                $"Fixtures{Path.DirectorySeparatorChar}DeliveryClient{Path.DirectorySeparatorChar}{itemCodename}.json"));
+
+        var handler = new DelayedJsonResponseHandler(fixtureContent, TimeSpan.FromMilliseconds(100));
+        var client = CreateClientWithMemoryCache(handler);
+
+        var results = await Task.WhenAll(
+            Enumerable.Range(0, 12)
+                .Select(_ => client.GetItem<Article>(itemCodename).ExecuteAsync()));
+
+        Assert.All(results, result =>
+        {
+            Assert.True(result.IsSuccess);
+            Assert.NotNull(result.Value);
+        });
+
+        Assert.Equal(1, handler.RequestCount);
+        Assert.Single(results, r => !r.IsCacheHit);
+    }
+
     #endregion
 
     #region Distributed Cache Integration Tests
@@ -471,6 +497,31 @@ public class CachingIntegrationTests
         Assert.True(result2.IsSuccess);
         Assert.NotNull(result1.Value);
         Assert.NotNull(result2.Value);
+    }
+
+    [Fact]
+    public async Task DistributedCache_GetItem_ConcurrentMisses_AreCoalescedToSingleApiCall()
+    {
+        var itemCodename = "coffee_beverages_explained";
+        var fixtureContent = await File.ReadAllTextAsync(
+            Path.Combine(Environment.CurrentDirectory,
+                $"Fixtures{Path.DirectorySeparatorChar}DeliveryClient{Path.DirectorySeparatorChar}{itemCodename}.json"));
+
+        var handler = new DelayedJsonResponseHandler(fixtureContent, TimeSpan.FromMilliseconds(100));
+        var client = CreateClientWithDistributedCache(handler);
+
+        var results = await Task.WhenAll(
+            Enumerable.Range(0, 12)
+                .Select(_ => client.GetItem<Article>(itemCodename).ExecuteAsync()));
+
+        Assert.All(results, result =>
+        {
+            Assert.True(result.IsSuccess);
+            Assert.NotNull(result.Value);
+        });
+
+        Assert.Equal(1, handler.RequestCount);
+        Assert.Single(results, r => !r.IsCacheHit);
     }
 
     #endregion
@@ -700,7 +751,7 @@ public class CachingIntegrationTests
 
     #region Helper Methods
 
-    private IDeliveryClient CreateClientWithMemoryCache(MockHttpMessageHandler mockHttp, DeliveryOptions? options = null)
+    private IDeliveryClient CreateClientWithMemoryCache(HttpMessageHandler httpHandler, DeliveryOptions? options = null)
     {
         var services = new ServiceCollection();
         options ??= new DeliveryOptions
@@ -710,13 +761,13 @@ public class CachingIntegrationTests
 
         // Use per-client caching API
         services.AddDeliveryClient("test", o => DeliveryOptionsCopyHelper.Copy(options, o),
-            configureHttpClient: b => b.ConfigurePrimaryHttpMessageHandler(() => mockHttp));
+            configureHttpClient: b => b.ConfigurePrimaryHttpMessageHandler(() => httpHandler));
         services.AddDeliveryMemoryCache("test");
 
         return services.BuildServiceProvider().GetRequiredKeyedService<IDeliveryClient>("test");
     }
 
-    private IDeliveryClient CreateClientWithDistributedCache(MockHttpMessageHandler mockHttp)
+    private IDeliveryClient CreateClientWithDistributedCache(HttpMessageHandler httpHandler)
     {
         var services = new ServiceCollection();
         var options = new DeliveryOptions
@@ -729,7 +780,7 @@ public class CachingIntegrationTests
 
         // Use per-client caching API
         services.AddDeliveryClient("test", o => DeliveryOptionsCopyHelper.Copy(options, o),
-            configureHttpClient: b => b.ConfigurePrimaryHttpMessageHandler(() => mockHttp));
+            configureHttpClient: b => b.ConfigurePrimaryHttpMessageHandler(() => httpHandler));
         services.AddDeliveryDistributedCache("test");
 
         return services.BuildServiceProvider().GetRequiredKeyedService<IDeliveryClient>("test");
@@ -794,6 +845,30 @@ public class CachingIntegrationTests
         {
             Remove(key);
             return Task.CompletedTask;
+        }
+    }
+
+    private sealed class DelayedJsonResponseHandler(string jsonResponse, TimeSpan delay) : HttpMessageHandler
+    {
+        private readonly string _jsonResponse = jsonResponse;
+        private readonly TimeSpan _delay = delay;
+        private int _requestCount;
+
+        public int RequestCount => Volatile.Read(ref _requestCount);
+
+        protected override async Task<HttpResponseMessage> SendAsync(HttpRequestMessage request, CancellationToken cancellationToken)
+        {
+            Interlocked.Increment(ref _requestCount);
+
+            if (_delay > TimeSpan.Zero)
+            {
+                await Task.Delay(_delay, cancellationToken).ConfigureAwait(false);
+            }
+
+            return new HttpResponseMessage(HttpStatusCode.OK)
+            {
+                Content = new StringContent(_jsonResponse)
+            };
         }
     }
 
