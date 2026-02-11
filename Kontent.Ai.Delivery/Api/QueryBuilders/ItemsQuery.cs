@@ -224,13 +224,7 @@ internal sealed class ItemsQuery<TModel>(
 
     private static IDeliveryResult<IDeliveryItemListingResponse<TModel>> WrapSuccess(
         DeliveryItemListingResponse<TModel> response, IDeliveryResult<DeliveryItemListingResponse<TModel>> apiResult) =>
-        DeliveryResult.Success<IDeliveryItemListingResponse<TModel>>(
-            response,
-            apiResult.RequestUrl ?? string.Empty,
-            apiResult.StatusCode,
-            apiResult.HasStaleContent,
-            apiResult.ContinuationToken,
-            apiResult.ResponseHeaders);
+        DeliveryResult.SuccessFrom<IDeliveryItemListingResponse<TModel>, DeliveryItemListingResponse<TModel>>(response, apiResult);
 
     private void ApplyGenericTypeFilter() => SystemFilterHelpers.AddGenericTypeFilter<TModel>(_serializedFilters, _typeProvider, _logger);
 
@@ -277,11 +271,7 @@ internal sealed class ItemsQuery<TModel>(
 
     private static IDeliveryResult<IDeliveryItemListingResponse<TModel>> CreateFailureResult(
         IDeliveryResult<DeliveryItemListingResponse<TModel>> deliveryResult) =>
-        DeliveryResult.Failure<IDeliveryItemListingResponse<TModel>>(
-            deliveryResult.RequestUrl ?? string.Empty,
-            deliveryResult.StatusCode,
-            deliveryResult.Error,
-            deliveryResult.ResponseHeaders);
+        DeliveryResult.FailureFrom<IDeliveryItemListingResponse<TModel>, DeliveryItemListingResponse<TModel>>(deliveryResult);
 
     private Func<CancellationToken, Task<IDeliveryResult<IDeliveryItemListingResponse<TModel>>>>? CreateNextPageFetcher(IPagination pagination)
     {

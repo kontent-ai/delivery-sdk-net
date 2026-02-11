@@ -60,73 +60,76 @@ internal sealed class TypesQuery(
         LogQueryStarting();
         var stopwatch = StartTimingIfEnabled();
 
-        if (_cacheManager is not null)
+        return _cacheManager is not null
+            ? await ExecuteWithCacheAsync(_cacheManager, stopwatch, cancellationToken).ConfigureAwait(false)
+            : await ExecuteWithoutCacheAsync(stopwatch, cancellationToken).ConfigureAwait(false);
+    }
+
+    private async Task<IDeliveryResult<IDeliveryTypeListingResponse>> ExecuteWithCacheAsync(
+        IDeliveryCacheManager cacheManager,
+        Stopwatch? stopwatch,
+        CancellationToken cancellationToken)
+    {
+        var cacheKey = CacheKeyBuilder.BuildTypesKey(_params, _serializedFilters);
+        var (cacheResult, apiResult) = await FetchWithCacheAsync(cacheManager, cacheKey, cancellationToken).ConfigureAwait(false);
+
+        if (cacheResult.IsCacheHit)
         {
-            var cacheKey = CacheKeyBuilder.BuildTypesKey(_params, _serializedFilters);
-            IDeliveryResult<DeliveryTypeListingResponse>? apiResult = null;
-
-            var cacheResult = await QueryCacheHelper.GetOrFetchAsync(
-                _cacheManager,
-                cacheKey,
-                async ct =>
-                {
-                    apiResult = await FetchFromApiAsync(ct).ConfigureAwait(false);
-                    if (!apiResult.IsSuccess)
-                        return (null, Array.Empty<string>());
-                    return (apiResult.Value, Array.Empty<string>());
-                },
-                _logger,
-                cancellationToken).ConfigureAwait(false);
-
-            if (cacheResult.IsCacheHit)
-            {
-                var cachedWithFetcher = cacheResult.Value! with { NextPageFetcher = CreateNextPageFetcher(cacheResult.Value!.Pagination) };
-                LogQueryCompleted(stopwatch, HttpStatusCode.OK, cacheHit: true);
-                return DeliveryResult.CacheHit<IDeliveryTypeListingResponse>(cachedWithFetcher);
-            }
-
-            if (!apiResult!.IsSuccess)
-            {
-                LogQueryCompleted(stopwatch, apiResult.StatusCode, cacheHit: false);
-                return DeliveryResult.Failure<IDeliveryTypeListingResponse>(
-                    apiResult.RequestUrl ?? string.Empty,
-                    apiResult.StatusCode,
-                    apiResult.Error,
-                    apiResult.ResponseHeaders);
-            }
-
-            var responseWithFetcher = cacheResult.Value! with { NextPageFetcher = CreateNextPageFetcher(cacheResult.Value!.Pagination) };
-            LogQueryCompleted(stopwatch, apiResult.StatusCode, cacheHit: false);
-            return DeliveryResult.Success<IDeliveryTypeListingResponse>(
-                responseWithFetcher,
-                apiResult.RequestUrl ?? string.Empty,
-                apiResult.StatusCode,
-                apiResult.HasStaleContent,
-                apiResult.ContinuationToken,
-                apiResult.ResponseHeaders);
+            LogQueryCompleted(stopwatch, HttpStatusCode.OK, cacheHit: true);
+            return DeliveryResult.CacheHit<IDeliveryTypeListingResponse>(
+                WithNextPageFetcher(cacheResult.Value!));
         }
 
+        if (apiResult is not { IsSuccess: true })
+        {
+            if (apiResult is not null)
+            {
+                LogQueryCompleted(stopwatch, apiResult.StatusCode, cacheHit: false);
+                return CreateFailureResult(apiResult);
+            }
+
+            throw new InvalidOperationException("API result was not captured during fetch.");
+        }
+
+        LogQueryCompleted(stopwatch, apiResult.StatusCode, cacheHit: false);
+        return WrapSuccess(WithNextPageFetcher(cacheResult.Value!), apiResult);
+    }
+
+    private async Task<IDeliveryResult<IDeliveryTypeListingResponse>> ExecuteWithoutCacheAsync(
+        Stopwatch? stopwatch,
+        CancellationToken cancellationToken)
+    {
         var deliveryResult = await FetchFromApiAsync(cancellationToken).ConfigureAwait(false);
         if (!deliveryResult.IsSuccess)
         {
             LogQueryCompleted(stopwatch, deliveryResult.StatusCode, cacheHit: false);
-            return DeliveryResult.Failure<IDeliveryTypeListingResponse>(
-                deliveryResult.RequestUrl ?? string.Empty,
-                deliveryResult.StatusCode,
-                deliveryResult.Error,
-                deliveryResult.ResponseHeaders);
+            return CreateFailureResult(deliveryResult);
         }
 
-        var resp = deliveryResult.Value;
-        var respWithFetcher = resp with { NextPageFetcher = CreateNextPageFetcher(resp.Pagination) };
         LogQueryCompleted(stopwatch, deliveryResult.StatusCode, cacheHit: false);
-        return DeliveryResult.Success<IDeliveryTypeListingResponse>(
-            respWithFetcher,
-            deliveryResult.RequestUrl ?? string.Empty,
-            deliveryResult.StatusCode,
-            deliveryResult.HasStaleContent,
-            deliveryResult.ContinuationToken,
-            deliveryResult.ResponseHeaders);
+        return WrapSuccess(WithNextPageFetcher(deliveryResult.Value), deliveryResult);
+    }
+
+    private async Task<(CacheFetchResult<DeliveryTypeListingResponse> CacheResult, IDeliveryResult<DeliveryTypeListingResponse>? ApiResult)>
+        FetchWithCacheAsync(IDeliveryCacheManager cacheManager, string cacheKey, CancellationToken cancellationToken)
+    {
+        IDeliveryResult<DeliveryTypeListingResponse>? apiResult = null;
+
+        var cacheResult = await QueryCacheHelper.GetOrFetchAsync(
+            cacheManager,
+            cacheKey,
+            async ct =>
+            {
+                apiResult = await FetchFromApiAsync(ct).ConfigureAwait(false);
+                if (!apiResult.IsSuccess)
+                    return (null, Array.Empty<string>());
+
+                return (apiResult.Value, Array.Empty<string>());
+            },
+            _logger,
+            cancellationToken).ConfigureAwait(false);
+
+        return (cacheResult, apiResult);
     }
 
     private async Task<IDeliveryResult<DeliveryTypeListingResponse>> FetchFromApiAsync(CancellationToken cancellationToken)
@@ -140,25 +143,38 @@ internal sealed class TypesQuery(
         return await response.ToDeliveryResultAsync(_logger).ConfigureAwait(false);
     }
 
+    private static IDeliveryResult<IDeliveryTypeListingResponse> WrapSuccess(
+        DeliveryTypeListingResponse response,
+        IDeliveryResult<DeliveryTypeListingResponse> apiResult)
+        => DeliveryResult.SuccessFrom<IDeliveryTypeListingResponse, DeliveryTypeListingResponse>(response, apiResult);
+
+    private static IDeliveryResult<IDeliveryTypeListingResponse> CreateFailureResult(
+        IDeliveryResult<DeliveryTypeListingResponse> deliveryResult)
+        => DeliveryResult.FailureFrom<IDeliveryTypeListingResponse, DeliveryTypeListingResponse>(deliveryResult);
+
+    private DeliveryTypeListingResponse WithNextPageFetcher(DeliveryTypeListingResponse response)
+        => response with { NextPageFetcher = CreateNextPageFetcher(response.Pagination) };
+
     private Func<CancellationToken, Task<IDeliveryResult<IDeliveryTypeListingResponse>>>? CreateNextPageFetcher(IPagination pagination)
     {
         if (string.IsNullOrEmpty(pagination.NextPageUrl))
             return null;
 
-        var nextSkip = pagination.Skip + pagination.Count;
+        var nextSkip = OffsetPaginationHelper.GetNextSkip(pagination);
 
-        return async (ct) =>
+        return ct => CreateNextPageQuery(nextSkip).ExecuteAsync(ct);
+    }
+
+    private TypesQuery CreateNextPageQuery(int nextSkip)
+    {
+        var nextQuery = new TypesQuery(_api, _getDefaultWaitForNewContent, _cacheManager, _logger)
         {
-            var nextQuery = new TypesQuery(_api, _getDefaultWaitForNewContent, _cacheManager, _logger)
-            {
-                _params = _params with { Skip = nextSkip },
-                _waitForLoadingNewContentOverride = _waitForLoadingNewContentOverride
-            };
-
-            nextQuery._serializedFilters.CopyFrom(_serializedFilters);
-
-            return await nextQuery.ExecuteAsync(ct).ConfigureAwait(false);
+            _params = _params with { Skip = nextSkip },
+            _waitForLoadingNewContentOverride = _waitForLoadingNewContentOverride
         };
+
+        nextQuery._serializedFilters.CopyFrom(_serializedFilters);
+        return nextQuery;
     }
 
     private void LogQueryStarting()

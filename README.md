@@ -405,6 +405,8 @@ if (result.IsSuccess)
 
 Find which content items reference a specific item or asset. This is useful for impact analysis before making changes.
 
+`EnumerateItemsAsync()` follows continuation tokens automatically. If a subsequent page request fails, enumeration stops gracefully and returns items already received (no exception is thrown by default).
+
 #### Find Items Using a Content Item
 
 ```csharp

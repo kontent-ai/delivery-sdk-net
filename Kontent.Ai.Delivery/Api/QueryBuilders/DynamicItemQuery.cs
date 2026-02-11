@@ -79,16 +79,10 @@ internal sealed class DynamicItemQuery(
 
             if (runtimeItem is not null)
             {
-                return DeliveryResult.Success(
-                    runtimeItem,
-                    deliveryResult.RequestUrl ?? string.Empty,
-                    deliveryResult.StatusCode,
-                    deliveryResult.HasStaleContent,
-                    deliveryResult.ContinuationToken,
-                    deliveryResult.ResponseHeaders);
+                return DeliveryResult.SuccessFrom(runtimeItem, deliveryResult);
             }
         }
 
-        return (IDeliveryResult<IContentItem>)deliveryResult;
+        return deliveryResult;
     }
 }

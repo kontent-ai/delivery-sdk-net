@@ -1,3 +1,4 @@
+using Kontent.Ai.Delivery.Api.QueryBuilders.Helpers;
 using Kontent.Ai.Delivery.Languages;
 
 namespace Kontent.Ai.Delivery.Api.QueryBuilders;
@@ -40,27 +41,14 @@ internal sealed class LanguagesQuery(IDeliveryApi api, Func<bool?> getDefaultWai
     }
 
     public async Task<IDeliveryResult<IDeliveryLanguageListingResponse>> ExecuteAsync(CancellationToken cancellationToken = default)
+        => await ExecuteWithoutCacheAsync(cancellationToken).ConfigureAwait(false);
+
+    private async Task<IDeliveryResult<IDeliveryLanguageListingResponse>> ExecuteWithoutCacheAsync(CancellationToken cancellationToken)
     {
         var deliveryResult = await FetchFromApiAsync(cancellationToken).ConfigureAwait(false);
-        if (!deliveryResult.IsSuccess)
-        {
-            return DeliveryResult.Failure<IDeliveryLanguageListingResponse>(
-                deliveryResult.RequestUrl ?? string.Empty,
-                deliveryResult.StatusCode,
-                deliveryResult.Error,
-                deliveryResult.ResponseHeaders);
-        }
-
-        var resp = deliveryResult.Value;
-        var responseWithFetcher = resp with { NextPageFetcher = CreateNextPageFetcher(resp.Pagination) };
-
-        return DeliveryResult.Success<IDeliveryLanguageListingResponse>(
-            responseWithFetcher,
-            deliveryResult.RequestUrl ?? string.Empty,
-            deliveryResult.StatusCode,
-            deliveryResult.HasStaleContent,
-            deliveryResult.ContinuationToken,
-            deliveryResult.ResponseHeaders);
+        return deliveryResult.IsSuccess
+            ? WrapSuccess(WithNextPageFetcher(deliveryResult.Value), deliveryResult)
+            : CreateFailureResult(deliveryResult);
     }
 
     private async Task<IDeliveryResult<DeliveryLanguageListingResponse>> FetchFromApiAsync(CancellationToken cancellationToken)
@@ -70,22 +58,32 @@ internal sealed class LanguagesQuery(IDeliveryApi api, Func<bool?> getDefaultWai
         return await response.ToDeliveryResultAsync().ConfigureAwait(false);
     }
 
+    private static IDeliveryResult<IDeliveryLanguageListingResponse> WrapSuccess(
+        DeliveryLanguageListingResponse response,
+        IDeliveryResult<DeliveryLanguageListingResponse> apiResult)
+        => DeliveryResult.SuccessFrom<IDeliveryLanguageListingResponse, DeliveryLanguageListingResponse>(response, apiResult);
+
+    private static IDeliveryResult<IDeliveryLanguageListingResponse> CreateFailureResult(
+        IDeliveryResult<DeliveryLanguageListingResponse> deliveryResult)
+        => DeliveryResult.FailureFrom<IDeliveryLanguageListingResponse, DeliveryLanguageListingResponse>(deliveryResult);
+
+    private DeliveryLanguageListingResponse WithNextPageFetcher(DeliveryLanguageListingResponse response)
+        => response with { NextPageFetcher = CreateNextPageFetcher(response.Pagination) };
+
     private Func<CancellationToken, Task<IDeliveryResult<IDeliveryLanguageListingResponse>>>? CreateNextPageFetcher(IPagination pagination)
     {
         if (string.IsNullOrEmpty(pagination.NextPageUrl))
             return null;
 
-        var nextSkip = pagination.Skip + pagination.Count;
+        var nextSkip = OffsetPaginationHelper.GetNextSkip(pagination);
 
-        return async (ct) =>
-        {
-            var nextQuery = new LanguagesQuery(_api, _getDefaultWaitForNewContent)
-            {
-                _params = _params with { Skip = nextSkip },
-                _waitForLoadingNewContentOverride = _waitForLoadingNewContentOverride
-            };
-
-            return await nextQuery.ExecuteAsync(ct).ConfigureAwait(false);
-        };
+        return ct => CreateNextPageQuery(nextSkip).ExecuteAsync(ct);
     }
+
+    private LanguagesQuery CreateNextPageQuery(int nextSkip)
+        => new(_api, _getDefaultWaitForNewContent)
+        {
+            _params = _params with { Skip = nextSkip },
+            _waitForLoadingNewContentOverride = _waitForLoadingNewContentOverride
+        };
 }

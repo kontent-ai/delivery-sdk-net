@@ -130,6 +130,27 @@ internal static class DeliveryResult
     => new DeliveryResult<T>(value, requestUrl, statusCode, hasStaleContent, continuationToken, responseHeaders);
 
     /// <summary>
+    /// Creates a successful result by projecting metadata from another delivery result.
+    /// </summary>
+    /// <typeparam name="TOut">The output result type.</typeparam>
+    /// <typeparam name="TIn">The source result type.</typeparam>
+    /// <param name="value">The output result value.</param>
+    /// <param name="source">The source result to copy metadata from.</param>
+    /// <returns>A successful result preserving source metadata.</returns>
+    public static IDeliveryResult<TOut> SuccessFrom<TOut, TIn>(TOut value, IDeliveryResult<TIn> source)
+    {
+        ArgumentNullException.ThrowIfNull(source);
+
+        return Success(
+            value,
+            source.RequestUrl ?? string.Empty,
+            source.StatusCode,
+            source.HasStaleContent,
+            source.ContinuationToken,
+            source.ResponseHeaders);
+    }
+
+    /// <summary>
     /// Creates a successful result from SDK cache.
     /// </summary>
     /// <typeparam name="T">The type of the result value.</typeparam>
@@ -153,4 +174,22 @@ internal static class DeliveryResult
         IError? error,
         HttpResponseHeaders? responseHeaders = null)
     => new DeliveryResult<T>(requestUrl, statusCode, error, responseHeaders);
+
+    /// <summary>
+    /// Creates a failed result by projecting failure metadata from another delivery result.
+    /// </summary>
+    /// <typeparam name="TOut">The output result type.</typeparam>
+    /// <typeparam name="TIn">The source result type.</typeparam>
+    /// <param name="source">The source result to copy metadata from.</param>
+    /// <returns>A failed result preserving source metadata.</returns>
+    public static IDeliveryResult<TOut> FailureFrom<TOut, TIn>(IDeliveryResult<TIn> source)
+    {
+        ArgumentNullException.ThrowIfNull(source);
+
+        return Failure<TOut>(
+            source.RequestUrl ?? string.Empty,
+            source.StatusCode,
+            source.Error,
+            source.ResponseHeaders);
+    }
 }

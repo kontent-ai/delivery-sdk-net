@@ -23,7 +23,7 @@ public static class RichTextExtensions
         LazyThreadSafetyMode.ExecutionAndPublication);
 
     private static readonly Lazy<JsonSerializerOptions> ContentItemDeserializerOptions = new(
-        () => RefitSettingsProvider.CreateDefaultJsonSerializerOptions(),
+        RefitSettingsProvider.CreateDefaultJsonSerializerOptions,
         LazyThreadSafetyMode.ExecutionAndPublication);
 
     /// <summary>

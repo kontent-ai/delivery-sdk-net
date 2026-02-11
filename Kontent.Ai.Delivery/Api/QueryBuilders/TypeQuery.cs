@@ -41,37 +41,63 @@ internal sealed class TypeQuery(
         LogQueryStarting();
         var stopwatch = StartTimingIfEnabled();
 
-        if (_cacheManager is not null)
+        return _cacheManager is not null
+            ? await ExecuteWithCacheAsync(_cacheManager, stopwatch, cancellationToken).ConfigureAwait(false)
+            : await ExecuteWithoutCacheAsync(stopwatch, cancellationToken).ConfigureAwait(false);
+    }
+
+    private async Task<IDeliveryResult<IContentType>> ExecuteWithCacheAsync(
+        IDeliveryCacheManager cacheManager,
+        Stopwatch? stopwatch,
+        CancellationToken cancellationToken)
+    {
+        var cacheKey = CacheKeyBuilder.BuildTypeKey(_codename, _params);
+        var (cacheResult, apiResult) = await FetchWithCacheAsync(cacheManager, cacheKey, cancellationToken).ConfigureAwait(false);
+
+        if (cacheResult.IsCacheHit)
         {
-            var cacheKey = CacheKeyBuilder.BuildTypeKey(_codename, _params);
-            IDeliveryResult<IContentType>? apiResult = null;
-
-            var cacheResult = await QueryCacheHelper.GetOrFetchAsync(
-                _cacheManager,
-                cacheKey,
-                async ct =>
-                {
-                    apiResult = await FetchFromApiAsync(ct).ConfigureAwait(false);
-                    if (!apiResult.IsSuccess)
-                        return (null, Array.Empty<string>());
-                    return ((ContentType)apiResult.Value, Array.Empty<string>());
-                },
-                _logger,
-                cancellationToken).ConfigureAwait(false);
-
-            if (cacheResult.IsCacheHit)
-            {
-                LogQueryCompleted(stopwatch, HttpStatusCode.OK, cacheHit: true);
-                return DeliveryResult.CacheHit<IContentType>(cacheResult.Value!);
-            }
-
-            LogQueryCompleted(stopwatch, apiResult!.StatusCode, cacheHit: false);
-            return apiResult!;
+            LogQueryCompleted(stopwatch, HttpStatusCode.OK, cacheHit: true);
+            return DeliveryResult.CacheHit<IContentType>(cacheResult.Value!);
         }
 
+        if (apiResult is null)
+            throw new InvalidOperationException("API result was not captured during fetch.");
+
+        LogQueryCompleted(stopwatch, apiResult.StatusCode, cacheHit: false);
+        return apiResult;
+    }
+
+    private async Task<IDeliveryResult<IContentType>> ExecuteWithoutCacheAsync(
+        Stopwatch? stopwatch,
+        CancellationToken cancellationToken)
+    {
         var deliveryResult = await FetchFromApiAsync(cancellationToken).ConfigureAwait(false);
         LogQueryCompleted(stopwatch, deliveryResult.StatusCode, cacheHit: false);
         return deliveryResult;
+    }
+
+    private async Task<(CacheFetchResult<ContentType> CacheResult, IDeliveryResult<IContentType>? ApiResult)> FetchWithCacheAsync(
+        IDeliveryCacheManager cacheManager,
+        string cacheKey,
+        CancellationToken cancellationToken)
+    {
+        IDeliveryResult<IContentType>? apiResult = null;
+
+        var cacheResult = await QueryCacheHelper.GetOrFetchAsync(
+            cacheManager,
+            cacheKey,
+            async ct =>
+            {
+                apiResult = await FetchFromApiAsync(ct).ConfigureAwait(false);
+                if (!apiResult.IsSuccess)
+                    return (null, Array.Empty<string>());
+
+                return ((ContentType)apiResult.Value, Array.Empty<string>());
+            },
+            _logger,
+            cancellationToken).ConfigureAwait(false);
+
+        return (cacheResult, apiResult);
     }
 
     private async Task<IDeliveryResult<IContentType>> FetchFromApiAsync(CancellationToken cancellationToken)

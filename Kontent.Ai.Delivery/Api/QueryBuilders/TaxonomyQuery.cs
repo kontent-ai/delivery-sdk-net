@@ -25,28 +25,52 @@ internal sealed class TaxonomyQuery(
 
     public async Task<IDeliveryResult<ITaxonomyGroup>> ExecuteAsync(CancellationToken cancellationToken = default)
     {
-        if (_cacheManager is not null)
-        {
-            var cacheKey = CacheKeyBuilder.BuildTaxonomyKey(_codename);
-            IDeliveryResult<ITaxonomyGroup>? apiResult = null;
+        return _cacheManager is not null
+            ? await ExecuteWithCacheAsync(_cacheManager, cancellationToken).ConfigureAwait(false)
+            : await ExecuteWithoutCacheAsync(cancellationToken).ConfigureAwait(false);
+    }
 
-            var cacheResult = await QueryCacheHelper.GetOrFetchAsync(
-                _cacheManager,
-                cacheKey,
-                async ct =>
-                {
-                    apiResult = await FetchFromApiAsync(ct).ConfigureAwait(false);
-                    if (!apiResult.IsSuccess)
-                        return (null, Array.Empty<string>());
-                    return ((TaxonomyGroup)apiResult.Value, Array.Empty<string>());
-                },
-                logger: null,
-                cancellationToken).ConfigureAwait(false);
+    private async Task<IDeliveryResult<ITaxonomyGroup>> ExecuteWithCacheAsync(
+        IDeliveryCacheManager cacheManager,
+        CancellationToken cancellationToken)
+    {
+        var cacheKey = CacheKeyBuilder.BuildTaxonomyKey(_codename);
+        var (cacheResult, apiResult) = await FetchWithCacheAsync(cacheManager, cacheKey, cancellationToken).ConfigureAwait(false);
 
-            return cacheResult.IsCacheHit ? DeliveryResult.CacheHit<ITaxonomyGroup>(cacheResult.Value!) : apiResult!;
-        }
+        if (cacheResult.IsCacheHit)
+            return DeliveryResult.CacheHit<ITaxonomyGroup>(cacheResult.Value!);
 
-        return await FetchFromApiAsync(cancellationToken).ConfigureAwait(false);
+        if (apiResult is null)
+            throw new InvalidOperationException("API result was not captured during fetch.");
+
+        return apiResult;
+    }
+
+    private Task<IDeliveryResult<ITaxonomyGroup>> ExecuteWithoutCacheAsync(CancellationToken cancellationToken)
+        => FetchFromApiAsync(cancellationToken);
+
+    private async Task<(CacheFetchResult<TaxonomyGroup> CacheResult, IDeliveryResult<ITaxonomyGroup>? ApiResult)> FetchWithCacheAsync(
+        IDeliveryCacheManager cacheManager,
+        string cacheKey,
+        CancellationToken cancellationToken)
+    {
+        IDeliveryResult<ITaxonomyGroup>? apiResult = null;
+
+        var cacheResult = await QueryCacheHelper.GetOrFetchAsync(
+            cacheManager,
+            cacheKey,
+            async ct =>
+            {
+                apiResult = await FetchFromApiAsync(ct).ConfigureAwait(false);
+                if (!apiResult.IsSuccess)
+                    return (null, Array.Empty<string>());
+
+                return ((TaxonomyGroup)apiResult.Value, Array.Empty<string>());
+            },
+            logger: null,
+            cancellationToken).ConfigureAwait(false);
+
+        return (cacheResult, apiResult);
     }
 
     private async Task<IDeliveryResult<ITaxonomyGroup>> FetchFromApiAsync(CancellationToken cancellationToken)
