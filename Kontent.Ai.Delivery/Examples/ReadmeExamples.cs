@@ -576,7 +576,6 @@ internal static class ReadmeExamples
             options.UseSecureAccess = false;
             options.SecureAccessApiKey = "your-secure-api-key";
             options.EnableResilience = true;
-            options.WaitForLoadingNewContent = false;
             options.DefaultRenditionPreset = "default";
             options.ProductionEndpoint = "https://deliver.kontent.ai";
             options.PreviewEndpoint = "https://preview-deliver.kontent.ai";

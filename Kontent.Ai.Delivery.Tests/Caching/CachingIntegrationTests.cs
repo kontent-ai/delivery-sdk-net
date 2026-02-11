@@ -105,6 +105,63 @@ public class CachingIntegrationTests
     }
 
     [Fact]
+    public async Task MemoryCache_GetItem_QueryWaitEnabled_BypassesCache()
+    {
+        var mock = new MockHttpMessageHandler();
+        var itemCodename = "coffee_beverages_explained";
+        var fixtureContent = await File.ReadAllTextAsync(
+            Path.Combine(Environment.CurrentDirectory,
+                $"Fixtures{Path.DirectorySeparatorChar}DeliveryClient{Path.DirectorySeparatorChar}{itemCodename}.json"));
+
+        mock.Expect($"{BaseUrl}/items/{itemCodename}")
+            .With(req => req.Headers.Contains("X-KC-Wait-For-Loading-New-Content"))
+            .Respond("application/json", fixtureContent);
+        mock.Expect($"{BaseUrl}/items/{itemCodename}")
+            .With(req => req.Headers.Contains("X-KC-Wait-For-Loading-New-Content"))
+            .Respond("application/json", fixtureContent);
+
+        var client = CreateClientWithMemoryCache(mock);
+
+        var result1 = await client.GetItem<Article>(itemCodename).WaitForLoadingNewContent().ExecuteAsync();
+        var result2 = await client.GetItem<Article>(itemCodename).WaitForLoadingNewContent().ExecuteAsync();
+
+        Assert.True(result1.IsSuccess);
+        Assert.True(result2.IsSuccess);
+        Assert.False(result1.IsCacheHit);
+        Assert.False(result2.IsCacheHit);
+        mock.VerifyNoOutstandingExpectation();
+    }
+
+    [Fact]
+    public async Task MemoryCache_GetItem_QueryWaitFalse_UsesCache()
+    {
+        var mock = new MockHttpMessageHandler();
+        var itemCodename = "coffee_beverages_explained";
+        var fixtureContent = await File.ReadAllTextAsync(
+            Path.Combine(Environment.CurrentDirectory,
+                $"Fixtures{Path.DirectorySeparatorChar}DeliveryClient{Path.DirectorySeparatorChar}{itemCodename}.json"));
+
+        mock.Expect($"{BaseUrl}/items/{itemCodename}")
+            .With(req => !req.Headers.Contains("X-KC-Wait-For-Loading-New-Content"))
+            .Respond("application/json", fixtureContent);
+
+        var client = CreateClientWithMemoryCache(mock);
+
+        var result1 = await client.GetItem<Article>(itemCodename)
+            .WaitForLoadingNewContent(false)
+            .ExecuteAsync();
+        var result2 = await client.GetItem<Article>(itemCodename)
+            .WaitForLoadingNewContent(false)
+            .ExecuteAsync();
+
+        Assert.True(result1.IsSuccess);
+        Assert.True(result2.IsSuccess);
+        Assert.False(result1.IsCacheHit);
+        Assert.True(result2.IsCacheHit);
+        mock.VerifyNoOutstandingExpectation();
+    }
+
+    [Fact]
     public async Task MemoryCache_GetItems_CacheHitOnSecondCall()
     {
         var mock = new MockHttpMessageHandler();
@@ -643,10 +700,10 @@ public class CachingIntegrationTests
 
     #region Helper Methods
 
-    private IDeliveryClient CreateClientWithMemoryCache(MockHttpMessageHandler mockHttp)
+    private IDeliveryClient CreateClientWithMemoryCache(MockHttpMessageHandler mockHttp, DeliveryOptions? options = null)
     {
         var services = new ServiceCollection();
-        var options = new DeliveryOptions
+        options ??= new DeliveryOptions
         {
             EnvironmentId = _guid.ToString()
         };

@@ -27,7 +27,7 @@ public interface ITaxonomiesQuery
     ITaxonomiesQuery Where(Func<ITaxonomiesFilterBuilder, ITaxonomiesFilterBuilder> build);
 
     /// <summary>
-    /// Overrides the global option for waiting on the newest content for this specific request.
+    /// Configures waiting for the newest content for this specific request.
     /// </summary>
     /// <param name="enabled">Whether to wait for loading new content.</param>
     ITaxonomiesQuery WaitForLoadingNewContent(bool enabled = true);

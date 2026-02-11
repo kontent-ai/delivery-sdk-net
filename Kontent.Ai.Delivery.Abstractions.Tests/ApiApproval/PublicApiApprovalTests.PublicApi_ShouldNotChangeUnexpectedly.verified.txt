@@ -19,7 +19,6 @@ public sealed class DeliveryOptions : IValidatableObject
     String SecureAccessApiKey { get; set; }
     Boolean UsePreviewApi { get; set; }
     Boolean UseSecureAccess { get; set; }
-    Boolean WaitForLoadingNewContent { get; set; }
     IEnumerable`1 Validate(ValidationContext validationContext)
 
 // Kontent.Ai.Delivery.Abstractions
@@ -199,7 +198,6 @@ public interface IDeliveryOptionsBuilder
     IDeliveryOptionsBuilder UsePreviewApi(String previewApiKey)
     IDeliveryOptionsBuilder UseProductionApi()
     IDeliveryOptionsBuilder UseProductionApi(String secureAccessApiKey)
-    IDeliveryOptionsBuilder WaitForLoadingNewContent()
     IDeliveryOptionsBuilder WithCustomEndpoint(String endpoint)
     IDeliveryOptionsBuilder WithCustomEndpoint(Uri endpoint)
     IDeliveryOptionsBuilder WithDefaultRenditionPreset(String presetCodename)

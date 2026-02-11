@@ -129,7 +129,12 @@ internal static class CacheKeyBuilder
     /// </summary>
     /// <param name="codename">The taxonomy group codename.</param>
     /// <returns>Cache key in format: <c>taxonomy:{codename}</c></returns>
-    public static string BuildTaxonomyKey(string codename) => $"taxonomy{Separator}{codename}";
+    public static string BuildTaxonomyKey(string codename)
+    {
+        var builder = new StringBuilder(128);
+        builder.Append("taxonomy").Append(Separator).Append(codename).Append(Separator);
+        return TrimTrailingSeparator(builder);
+    }
 
     private static void AppendLanguage(StringBuilder builder, string? language)
     {

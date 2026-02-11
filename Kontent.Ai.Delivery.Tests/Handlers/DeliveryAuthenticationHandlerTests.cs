@@ -349,7 +349,17 @@ public class DeliveryAuthenticationHandlerTests
 
         public TOptions CurrentValue => _currentValue;
 
-        public TOptions Get(string? name) => string.IsNullOrEmpty(name) ? _currentValue : _namedOptions.TryGetValue(name, out var options) ? options : _currentValue;
+        public TOptions Get(string? name)
+        {
+            if (string.IsNullOrEmpty(name))
+            {
+                return _currentValue;
+            }
+
+            return _namedOptions.TryGetValue(name, out var options)
+                ? options
+                : _currentValue;
+        }
 
         public IDisposable OnChange(Action<TOptions, string> listener) => new EmptyDisposable();
 

@@ -10,18 +10,16 @@ namespace Kontent.Ai.Delivery.Api.QueryBuilders;
 /// <inheritdoc cref="IEnumerateItemsQuery{TModel}"/>
 internal sealed class EnumerateItemsQuery<TModel>(
     IDeliveryApi api,
-    Func<bool?> getDefaultWaitForNewContent,
     ContentItemMapper contentItemMapper,
     ITypeProvider typeProvider,
     ILogger? logger = null) : IEnumerateItemsQuery<TModel>
 {
     private readonly IDeliveryApi _api = api;
-    private readonly Func<bool?> _getDefaultWaitForNewContent = getDefaultWaitForNewContent;
     private readonly ContentItemMapper _contentItemMapper = contentItemMapper;
     private readonly ITypeProvider _typeProvider = typeProvider;
     private readonly ILogger? _logger = logger;
     private EnumItemsParams _params = new();
-    private bool? _waitForLoadingNewContentOverride;
+    private bool _waitForLoadingNewContent;
     private readonly SerializedFilterCollection _serializedFilters = [];
     private string? _continuationToken;
     private bool _typeFilterApplied;
@@ -56,7 +54,7 @@ internal sealed class EnumerateItemsQuery<TModel>(
 
     public IEnumerateItemsQuery<TModel> WaitForLoadingNewContent(bool enabled = true)
     {
-        _waitForLoadingNewContentOverride = enabled;
+        _waitForLoadingNewContent = enabled;
         return this;
     }
 
@@ -81,7 +79,11 @@ internal sealed class EnumerateItemsQuery<TModel>(
     {
         ApplyGenericTypeFilter();
 
-        var (deliveryResult, continuationToken) = await FetchFeedPageAsync(_continuationToken, cancellationToken).ConfigureAwait(false);
+        bool? waitForLoadingNewContent = _waitForLoadingNewContent ? true : null;
+        var (deliveryResult, continuationToken) = await FetchFeedPageAsync(
+            _continuationToken,
+            waitForLoadingNewContent,
+            cancellationToken).ConfigureAwait(false);
 
         if (!deliveryResult.IsSuccess)
         {
@@ -144,15 +146,15 @@ internal sealed class EnumerateItemsQuery<TModel>(
 
     private async Task<(IDeliveryResult<DeliveryItemsFeedResponse<TModel>> DeliveryResult, string? ContinuationToken)> FetchFeedPageAsync(
         string? continuationToken,
+        bool? waitForLoadingNewContent,
         CancellationToken cancellationToken)
     {
-        var wait = _waitForLoadingNewContentOverride ?? _getDefaultWaitForNewContent();
         var resp = await _api
             .GetItemsFeedInternalAsync<TModel>(
                 _params,
                 _serializedFilters.ToQueryDictionary(),
                 continuationToken,
-                wait,
+                waitForLoadingNewContent,
                 cancellationToken)
             .ConfigureAwait(false);
 
@@ -182,10 +184,10 @@ internal sealed class EnumerateItemsQuery<TModel>(
 
     private EnumerateItemsQuery<TModel> CreateContinuationQuery(string continuationToken)
     {
-        var nextQuery = new EnumerateItemsQuery<TModel>(_api, _getDefaultWaitForNewContent, _contentItemMapper, _typeProvider, _logger)
+        var nextQuery = new EnumerateItemsQuery<TModel>(_api, _contentItemMapper, _typeProvider, _logger)
         {
             _params = _params,
-            _waitForLoadingNewContentOverride = _waitForLoadingNewContentOverride,
+            _waitForLoadingNewContent = this._waitForLoadingNewContent,
             _continuationToken = continuationToken,
             _typeFilterApplied = _typeFilterApplied
         };

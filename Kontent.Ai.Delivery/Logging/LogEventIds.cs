@@ -23,9 +23,6 @@ internal static class LogEventIds
     /// <summary>Cache miss - proceeding with API call.</summary>
     public const int QueryCacheMiss = 1011;
 
-    /// <summary>Dependency tracked during post-processing.</summary>
-    public const int QueryDependencyTracked = 1030;
-
     /// <summary>Response contains stale content.</summary>
     public const int QueryStaleContent = 1040;
 
@@ -96,17 +93,6 @@ internal static class LogEventIds
     /// <summary>SDK tracking headers were added to request.</summary>
     public const int HttpTrackingHeadersAdded = 1220;
 
-    // ========== Resilience (1300-1399) ==========
-
-    /// <summary>Retry attempt after transient failure.</summary>
-    public const int ResilienceRetryAttempt = 1300;
-
-    /// <summary>All retry attempts exhausted.</summary>
-    public const int ResilienceRetryExhausted = 1301;
-
-    /// <summary>Request timed out.</summary>
-    public const int ResilienceTimeout = 1310;
-
     // ========== Content Mapping (1400-1499) ==========
 
     /// <summary>Linked item not found in modular_content (possibly due to depth limit).</summary>
@@ -151,11 +137,4 @@ internal static class LogEventIds
     /// <summary>Element mapping skipped due to missing envelope property.</summary>
     public const int ElementMappingSkipped = 1413;
 
-    // ========== Service Registration (1500-1599) ==========
-
-    /// <summary>Delivery client was registered.</summary>
-    public const int ClientRegistered = 1500;
-
-    /// <summary>Cache manager was registered.</summary>
-    public const int CacheManagerRegistered = 1510;
 }

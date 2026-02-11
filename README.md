@@ -10,9 +10,6 @@
 
 The official .NET SDK for the [Kontent.ai Delivery API](https://kontent.ai/learn/docs/apis/openapi/delivery-api/), enabling you to retrieve content from your Kontent.ai projects with a modern, type-safe, and highly extensible client library.
 
-> [!IMPORTANT]
-> The modernized delivery SDK is currently in beta. While the core functionality is stable and production-ready, some features are still being polished. All the documentation and implementation is subject to change prior to production release. Feedback is welcome in the corresponding [pull request](https://github.com/kontent-ai/delivery-sdk-net/pull/407).
-
 ## Table of Contents
 
 - [Installation](#-installation)
@@ -264,6 +261,21 @@ if (firstPage.IsSuccess)
         else break;
     }
 }
+
+// Option 3: Status-aware page enumeration (exposes intermediate page failures)
+await foreach (var page in client.GetItemsFeed().EnumerateItemsWithStatusAsync())
+{
+    if (!page.IsSuccess)
+    {
+        Console.WriteLine($"Feed page failed with {(int)page.StatusCode}: {page.Error?.Message}");
+        break;
+    }
+
+    foreach (var item in page.Value.Items)
+    {
+        Console.WriteLine($"Item: {item.System.Name}");
+    }
+}
 ```
 
 For standard skip/limit pagination with `GetItems()`, use `FetchNextPageAsync()` to iterate through pages:
@@ -406,6 +418,24 @@ if (result.IsSuccess)
 Find which content items reference a specific item or asset. This is useful for impact analysis before making changes.
 
 `EnumerateItemsAsync()` follows continuation tokens automatically. If a subsequent page request fails, enumeration stops gracefully and returns items already received (no exception is thrown by default).
+
+Use status-aware enumeration when you need explicit page failure handling:
+
+```csharp
+await foreach (var page in client.GetItemUsedIn("john_doe").EnumerateItemsWithStatusAsync())
+{
+    if (!page.IsSuccess)
+    {
+        Console.WriteLine($"Used-in lookup failed with {(int)page.StatusCode}: {page.Error?.Message}");
+        break;
+    }
+
+    foreach (var usage in page.Value)
+    {
+        Console.WriteLine($"Referenced by: {usage.System.Name}");
+    }
+}
+```
 
 #### Find Items Using a Content Item
 
@@ -558,11 +588,6 @@ The SDK supports strongly-typed models for compile-time safety and IntelliSense 
 
 #### Generate Models
 
-> [!WARNING]
-> Model generator with updated delivery model capabilities is currently out as [10.0.0-beta-2](https://www.nuget.org/packages/Kontent.Ai.ModelGenerator/10.0.0-beta-2). Make sure to use it with the delivery SDK beta as the older model format is not supported anymore.
->
-> Please note that the beta version has been trimmed down significantly and only supports default delivery models. Further functionality will be added along with management SDK updates.
-
 Use the [Kontent.ai Model Generator](https://github.com/kontent-ai/model-generator-net) to generate C# classes from your content types:
 
 ```bash
@@ -581,7 +606,7 @@ The [Kontent.ai Model Generator](https://github.com/kontent-ai/model-generator-n
 Add the source generation package to enable these features:
 
 ```xml
-<PackageReference Include="Kontent.Ai.Delivery.SourceGeneration" Version="19.0.0-beta-6" />
+<PackageReference Include="Kontent.Ai.Delivery.SourceGeneration" Version="19.0.0" />
 ```
 
 Generated models include the attribute automatically:
@@ -962,6 +987,16 @@ var resolver = new HtmlResolverBuilder()
     .Build();
 ```
 
+Enable strict behavior when missing resolvers should fail fast:
+
+```csharp
+var resolver = new HtmlResolverBuilder()
+    .ThrowOnMissingResolver()
+    .WithContentResolver<Tweet>(tweet =>
+        $"<blockquote>{tweet.Elements.TweetText}</blockquote>")
+    .Build();
+```
+
 **Batch Registration with Tuples:**
 
 ```csharp
@@ -1147,6 +1182,9 @@ services.AddDeliveryDistributedCache(defaultExpiration: TimeSpan.FromHours(2));
 Caching is transparent for cacheable query builders - once configured, cached query types are cached automatically and cache keys are built from query parameters for proper cache hits.
 
 `GetItem()` and `GetItems()` dynamic queries are intentionally excluded from SDK caching (runtime-typed results), so they always return `IsCacheHit == false`.
+
+> [!IMPORTANT]
+> When `WaitForLoadingNewContent(true)` is enabled on a query, the SDK bypasses its local cache for that request path (no cache read and no cache write).
 
 **Cache payloads:** The in-memory cache stores hydrated objects for maximum performance. Distributed caches store raw JSON payloads (rehydrated on read) to avoid serialization issues with circular references.
 
@@ -1443,9 +1481,6 @@ services.AddDeliveryClient(options =>
 
     // Retry and resilience settings
     options.EnableResilience = true;
-
-    // Content freshness
-    options.WaitForLoadingNewContent = false;
 
     // Default image rendition preset
     options.DefaultRenditionPreset = "default";

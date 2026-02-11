@@ -97,7 +97,7 @@ The SDK provides a Roslyn source generator that creates an `ITypeProvider` imple
 Add the source generation package:
 
 ```xml
-<PackageReference Include="Kontent.Ai.Delivery.SourceGeneration" Version="19.0.0-beta-6" />
+<PackageReference Include="Kontent.Ai.Delivery.SourceGeneration" Version="19.0.0" />
 ```
 
 This package includes both the `ContentTypeCodenameAttribute` and the Roslyn source generator.
@@ -154,7 +154,7 @@ public sealed class GeneratedTypeProvider : ITypeProvider
         { typeof(Product), "product" },
     };
 
-    public Type? GetModelType(string contentType)
+    public Type? GetType(string contentType)
         => _codenameToType.TryGetValue(contentType, out var type) ? type : null;
 
     public string? GetCodename(Type contentType)
@@ -275,7 +275,7 @@ This enables:
 
 ## Property Mapping Conventions
 
-Property mapping customization via `IPropertyMapper` was removed during beta simplification.
+Property mapping customization via `IPropertyMapper` was removed during the API simplification.
 
 Use model metadata to control mapping:
 

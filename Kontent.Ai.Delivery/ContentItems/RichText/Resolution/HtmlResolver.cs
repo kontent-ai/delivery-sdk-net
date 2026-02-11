@@ -110,16 +110,10 @@ internal sealed class HtmlResolver : IHtmlResolver
     private ValueTask<string> ResolveEmbeddedContentAsync(IEmbeddedContent content)
     {
         // Priority 1: Type-based resolver (for strongly-typed embedded content)
-        var contentType = content.GetType();
-        if (contentType.IsGenericType &&
-            contentType.GetGenericTypeDefinition().Name.StartsWith("ContentItem"))
+        if (TryGetEmbeddedContentModelType(content, out var modelType) &&
+            _typeBasedContentResolvers.TryGetValue(modelType, out var typeResolver))
         {
-            // Extract model type from ContentItem<T>
-            var modelType = contentType.GetGenericArguments()[0];
-            if (_typeBasedContentResolvers.TryGetValue(modelType, out var typeResolver))
-            {
-                return typeResolver(content);
-            }
+            return typeResolver(content);
         }
 
         // Priority 2: Codename-based resolver (existing fallback)
@@ -133,6 +127,22 @@ internal sealed class HtmlResolver : IHtmlResolver
             ? throw new InvalidOperationException($"No resolver registered for embedded content type: {content.System.Type}")
             : ValueTask.FromResult(string.Format(MissingEmbeddedContentResolver,
                 content.System.Type, content.System.Id, content.System.Codename));
+    }
+
+    private static bool TryGetEmbeddedContentModelType(IEmbeddedContent content, out Type modelType)
+    {
+        foreach (var implementedInterface in content.GetType().GetInterfaces())
+        {
+            if (implementedInterface.IsGenericType &&
+                implementedInterface.GetGenericTypeDefinition() == typeof(IEmbeddedContent<>))
+            {
+                modelType = implementedInterface.GetGenericArguments()[0];
+                return true;
+            }
+        }
+
+        modelType = null!;
+        return false;
     }
 
     private async ValueTask<string> ResolveHtmlNodeAsync(IHtmlNode node)

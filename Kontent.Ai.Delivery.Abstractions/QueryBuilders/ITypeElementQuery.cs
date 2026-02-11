@@ -6,7 +6,7 @@ namespace Kontent.Ai.Delivery.Abstractions;
 public interface ITypeElementQuery
 {
     /// <summary>
-    /// Overrides the global option for waiting on the newest content for this specific request.
+    /// Configures waiting for the newest content for this specific request.
     /// </summary>
     /// <param name="enabled">Whether to wait for loading new content.</param>
     ITypeElementQuery WaitForLoadingNewContent(bool enabled = true);

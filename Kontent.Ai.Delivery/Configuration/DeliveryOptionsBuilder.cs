@@ -106,15 +106,6 @@ public sealed class DeliveryOptionsBuilder : IDeliveryOptionsBuilder
         return this;
     }
 
-    /// <summary>
-    /// Enable waiting for loading new content globally via DeliveryOptions.
-    /// </summary>
-    public IDeliveryOptionsBuilder WaitForLoadingNewContent()
-    {
-        _options.WaitForLoadingNewContent = true;
-        return this;
-    }
-
     private void SetCustomEndpoint(string endpoint)
     {
         // Apply to both endpoints so behavior is deterministic regardless of call order
@@ -137,7 +128,6 @@ public sealed class DeliveryOptionsBuilder : IDeliveryOptionsBuilder
         UseSecureAccess = _options.UseSecureAccess,
         SecureAccessApiKey = _options.SecureAccessApiKey,
         IncludeTotalCount = _options.IncludeTotalCount,
-        WaitForLoadingNewContent = _options.WaitForLoadingNewContent,
         DefaultRenditionPreset = _options.DefaultRenditionPreset
     };
 }

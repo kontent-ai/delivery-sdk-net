@@ -43,7 +43,7 @@ public sealed class HtmlResolverBuilder : IHtmlResolverBuilder
     private readonly Dictionary<string, Func<IEmbeddedContent, ValueTask<string>>> _embeddedContentResolvers = new(StringComparer.OrdinalIgnoreCase);
     private readonly Dictionary<Type, Func<IEmbeddedContent, ValueTask<string>>> _typeBasedContentResolvers = [];
     private readonly Dictionary<string, BlockResolver<IContentItemLink>> _contentItemLinkResolvers = new(StringComparer.OrdinalIgnoreCase);
-    private readonly HtmlResolverOptions _options = new();
+    private bool _throwOnMissingResolver;
 
     /// <inheritdoc />
     public IHtmlResolverBuilder WithContentItemLinkResolver(BlockResolver<IContentItemLink> resolver)
@@ -281,6 +281,17 @@ public sealed class HtmlResolverBuilder : IHtmlResolverBuilder
         return this;
     }
 
+    /// <summary>
+    /// Configures whether the resolver throws when no resolver is registered for embedded content or content item links.
+    /// </summary>
+    /// <param name="enabled">When true, missing resolvers throw <see cref="InvalidOperationException"/>. Default is true for this method.</param>
+    /// <returns>This builder for method chaining.</returns>
+    public HtmlResolverBuilder ThrowOnMissingResolver(bool enabled = true)
+    {
+        _throwOnMissingResolver = enabled;
+        return this;
+    }
+
     /// <inheritdoc />
     public IHtmlResolver Build()
     {
@@ -320,7 +331,7 @@ public sealed class HtmlResolverBuilder : IHtmlResolverBuilder
         {
             ConditionalHtmlNodeResolvers = [.. _conditionalHtmlNodeResolvers],
             DefaultHtmlNodeResolver = defaultHtmlNodeResolver,
-            ThrowOnMissingResolver = _options.ThrowOnMissingResolver,
+            ThrowOnMissingResolver = _throwOnMissingResolver,
             EmbeddedContentResolvers = _embeddedContentResolvers.Count > 0 ? _embeddedContentResolvers : null,
             TypeBasedContentResolvers = _typeBasedContentResolvers.Count > 0 ? _typeBasedContentResolvers : null,
             ContentItemLinkResolvers = _contentItemLinkResolvers.Count > 0 ? _contentItemLinkResolvers : null

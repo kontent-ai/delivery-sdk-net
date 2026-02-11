@@ -834,7 +834,6 @@ public static IServiceCollection AddDeliveryClient(
     services.AddKeyedSingleton<IDeliveryClient>(name, (sp, key) =>
     {
         var clientName = (string)key;
-        var optionsMonitor = sp.GetRequiredService<IOptionsMonitor<DeliveryOptions>>();
 
         var api = sp.GetRequiredKeyedService<IDeliveryApi>(clientName);
         var contentItemMapper = sp.GetRequiredService<ContentItemMapper>();
@@ -842,7 +841,7 @@ public static IServiceCollection AddDeliveryClient(
         var typeProvider = sp.GetRequiredService<ITypeProvider>();
         var cacheManager = sp.GetKeyedService<IDeliveryCacheManager>(clientName);
 
-        return new DeliveryClient(api, optionsMonitor, contentItemMapper, contentDeserializer, typeProvider, cacheManager, optionsName: clientName);
+        return new DeliveryClient(api, contentItemMapper, contentDeserializer, typeProvider, cacheManager);
     });
 
     return services;

@@ -38,8 +38,22 @@ internal static class SystemFilterHelpers
             return;
         }
 
-        filters.Add(new KeyValuePair<string, string>(
-            FilterPath.System("type") + FilterSuffix.Eq,
-            FilterValueSerializer.Serialize(codename)));
+        var typeFilterKeyPrefix = FilterPath.System("type") + "[";
+        var hasTypeFilter = filters.Any(kvp =>
+            kvp.Key.StartsWith(typeFilterKeyPrefix, StringComparison.OrdinalIgnoreCase));
+        if (hasTypeFilter && logger is not null)
+        {
+            LoggerMessages.GenericQueryTypeFilterConflict(logger, typeof(TModel).Name, codename);
+        }
+
+        var typeFilterKey = FilterPath.System("type") + FilterSuffix.Eq;
+        var typeFilterValue = FilterValueSerializer.Serialize(codename);
+        var hasSameAutoFilter = filters.Any(kvp =>
+            kvp.Key.Equals(typeFilterKey, StringComparison.OrdinalIgnoreCase) &&
+            kvp.Value.Equals(typeFilterValue, StringComparison.Ordinal));
+        if (hasSameAutoFilter)
+            return;
+
+        filters.Add(new KeyValuePair<string, string>(typeFilterKey, typeFilterValue));
     }
 }

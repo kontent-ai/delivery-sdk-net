@@ -8,14 +8,12 @@ namespace Kontent.Ai.Delivery.Api.QueryBuilders;
 /// <inheritdoc cref="ITaxonomiesQuery"/>
 internal sealed class TaxonomiesQuery(
     IDeliveryApi api,
-    Func<bool?> getDefaultWaitForNewContent,
     IDeliveryCacheManager? cacheManager) : ITaxonomiesQuery
 {
     private readonly IDeliveryApi _api = api;
     private readonly SerializedFilterCollection _serializedFilters = [];
     private ListTaxonomyGroupsParams _params = new();
-    private bool? _waitForLoadingNewContentOverride;
-    private readonly Func<bool?> _getDefaultWaitForNewContent = getDefaultWaitForNewContent;
+    private bool _waitForLoadingNewContent;
     private readonly IDeliveryCacheManager? _cacheManager = cacheManager;
 
     public ITaxonomiesQuery Skip(int skip)
@@ -39,23 +37,34 @@ internal sealed class TaxonomiesQuery(
 
     public ITaxonomiesQuery WaitForLoadingNewContent(bool enabled = true)
     {
-        _waitForLoadingNewContentOverride = enabled;
+        _waitForLoadingNewContent = enabled;
         return this;
     }
 
     public async Task<IDeliveryResult<IDeliveryTaxonomyListingResponse>> ExecuteAsync(CancellationToken cancellationToken = default)
     {
-        return _cacheManager is not null
-            ? await ExecuteWithCacheAsync(_cacheManager, cancellationToken).ConfigureAwait(false)
-            : await ExecuteWithoutCacheAsync(cancellationToken).ConfigureAwait(false);
+        bool? waitForLoadingNewContent = _waitForLoadingNewContent ? true : null;
+        var shouldBypassCache = _waitForLoadingNewContent;
+
+        return _cacheManager is not null && !shouldBypassCache
+            ? await ExecuteWithCacheAsync(
+                _cacheManager,
+                waitForLoadingNewContent,
+                cancellationToken).ConfigureAwait(false)
+            : await ExecuteWithoutCacheAsync(waitForLoadingNewContent, cancellationToken).ConfigureAwait(false);
     }
 
     private async Task<IDeliveryResult<IDeliveryTaxonomyListingResponse>> ExecuteWithCacheAsync(
         IDeliveryCacheManager cacheManager,
+        bool? waitForLoadingNewContent,
         CancellationToken cancellationToken)
     {
         var cacheKey = CacheKeyBuilder.BuildTaxonomiesKey(_params, _serializedFilters);
-        var (cacheResult, apiResult) = await FetchWithCacheAsync(cacheManager, cacheKey, cancellationToken).ConfigureAwait(false);
+        var (cacheResult, apiResult) = await FetchWithCacheAsync(
+            cacheManager,
+            cacheKey,
+            waitForLoadingNewContent,
+            cancellationToken).ConfigureAwait(false);
 
         if (cacheResult.IsCacheHit)
         {
@@ -74,16 +83,22 @@ internal sealed class TaxonomiesQuery(
         return WrapSuccess(WithNextPageFetcher(cacheResult.Value!), apiResult);
     }
 
-    private async Task<IDeliveryResult<IDeliveryTaxonomyListingResponse>> ExecuteWithoutCacheAsync(CancellationToken cancellationToken)
+    private async Task<IDeliveryResult<IDeliveryTaxonomyListingResponse>> ExecuteWithoutCacheAsync(
+        bool? waitForLoadingNewContent,
+        CancellationToken cancellationToken)
     {
-        var deliveryResult = await FetchFromApiAsync(cancellationToken).ConfigureAwait(false);
+        var deliveryResult = await FetchFromApiAsync(waitForLoadingNewContent, cancellationToken).ConfigureAwait(false);
         return deliveryResult.IsSuccess
             ? WrapSuccess(WithNextPageFetcher(deliveryResult.Value), deliveryResult)
             : CreateFailureResult(deliveryResult);
     }
 
     private async Task<(CacheFetchResult<DeliveryTaxonomyListingResponse> CacheResult, IDeliveryResult<DeliveryTaxonomyListingResponse>? ApiResult)>
-        FetchWithCacheAsync(IDeliveryCacheManager cacheManager, string cacheKey, CancellationToken cancellationToken)
+        FetchWithCacheAsync(
+            IDeliveryCacheManager cacheManager,
+            string cacheKey,
+            bool? waitForLoadingNewContent,
+            CancellationToken cancellationToken)
     {
         IDeliveryResult<DeliveryTaxonomyListingResponse>? apiResult = null;
 
@@ -92,7 +107,7 @@ internal sealed class TaxonomiesQuery(
             cacheKey,
             async ct =>
             {
-                apiResult = await FetchFromApiAsync(ct).ConfigureAwait(false);
+                apiResult = await FetchFromApiAsync(waitForLoadingNewContent, ct).ConfigureAwait(false);
                 if (!apiResult.IsSuccess)
                     return (null, Array.Empty<string>());
 
@@ -104,13 +119,14 @@ internal sealed class TaxonomiesQuery(
         return (cacheResult, apiResult);
     }
 
-    private async Task<IDeliveryResult<DeliveryTaxonomyListingResponse>> FetchFromApiAsync(CancellationToken cancellationToken)
+    private async Task<IDeliveryResult<DeliveryTaxonomyListingResponse>> FetchFromApiAsync(
+        bool? waitForLoadingNewContent,
+        CancellationToken cancellationToken)
     {
-        var wait = _waitForLoadingNewContentOverride ?? _getDefaultWaitForNewContent();
         var response = await _api.GetTaxonomiesInternalAsync(
             _params,
             _serializedFilters.ToQueryDictionary(),
-            wait,
+            waitForLoadingNewContent,
             cancellationToken).ConfigureAwait(false);
         return await response.ToDeliveryResultAsync().ConfigureAwait(false);
     }
@@ -139,10 +155,10 @@ internal sealed class TaxonomiesQuery(
 
     private TaxonomiesQuery CreateNextPageQuery(int nextSkip)
     {
-        var nextQuery = new TaxonomiesQuery(_api, _getDefaultWaitForNewContent, _cacheManager)
+        var nextQuery = new TaxonomiesQuery(_api, _cacheManager)
         {
             _params = _params with { Skip = nextSkip },
-            _waitForLoadingNewContentOverride = _waitForLoadingNewContentOverride
+            _waitForLoadingNewContent = this._waitForLoadingNewContent
         };
 
         nextQuery._serializedFilters.CopyFrom(_serializedFilters);

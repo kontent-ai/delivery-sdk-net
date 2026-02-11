@@ -11,7 +11,6 @@ public sealed class DeliveryOptions : IValidatableObject
     /// Gets or sets the environment ID.
     /// </summary>
     [Required]
-    [RegularExpression(@"^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$", ErrorMessage = "The environment ID must be a valid GUID.")]
     public string EnvironmentId { get; set; } = Guid.Empty.ToString();
 
     /// <summary>
@@ -65,14 +64,6 @@ public sealed class DeliveryOptions : IValidatableObject
     public bool IncludeTotalCount { get; set; }
 
     /// <summary>
-    /// Gets or sets a value indicating whether the SDK should wait for the newest published content to be fully loaded
-    /// before returning a response. When enabled, requests include the
-    /// <c>X-KC-Wait-For-Loading-New-Content</c> header. This option can be overridden per query.
-    /// Default is <c>false</c>.
-    /// </summary>
-    public bool WaitForLoadingNewContent { get; set; } = false;
-
-    /// <summary>
     /// Gets or sets a value of codename for the rendition preset to be applied by default to the base asset URL path.
     /// If no value is specified, asset URLs will always point to non-customized variant of the image.
     /// </summary>
@@ -93,7 +84,18 @@ public sealed class DeliveryOptions : IValidatableObject
                 [nameof(UsePreviewApi), nameof(UseSecureAccess)]);
         }
 
-        if (Guid.TryParse(EnvironmentId, out var environmentGuid) && environmentGuid == Guid.Empty)
+        if (string.IsNullOrWhiteSpace(EnvironmentId))
+        {
+            yield break;
+        }
+
+        if (!Guid.TryParse(EnvironmentId, out var environmentGuid))
+        {
+            yield return new ValidationResult(
+                "The environment ID must be a valid GUID.",
+                [nameof(EnvironmentId)]);
+        }
+        else if (environmentGuid == Guid.Empty)
         {
             yield return new ValidationResult(
                 "EnvironmentId cannot be an empty GUID.",

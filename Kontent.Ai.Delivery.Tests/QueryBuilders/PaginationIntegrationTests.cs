@@ -1,5 +1,6 @@
 using System.Net;
 using System.Text.Json.Serialization;
+using Kontent.Ai.Delivery;
 using Kontent.Ai.Delivery.Abstractions;
 using Microsoft.Extensions.DependencyInjection;
 using RichardSzalay.MockHttp;
@@ -193,6 +194,79 @@ public sealed class PaginationIntegrationTests
             .Where(f => f.System("type").IsEqualTo("article"))
             .ExecuteAsync();
 
+        Assert.True(firstPage.IsSuccess);
+        Assert.True(firstPage.Value.HasNextPage);
+
+        var secondPage = await firstPage.Value.FetchNextPageAsync();
+        Assert.NotNull(secondPage);
+        Assert.True(secondPage.IsSuccess);
+        Assert.False(secondPage.Value.HasNextPage);
+
+        mockHttp.VerifyNoOutstandingExpectation();
+    }
+
+    [Fact]
+    public async Task ItemListing_FetchNextPage_WaitOverrideFalse_OmitsHeaderAcrossPages()
+    {
+        var env = Guid.NewGuid().ToString();
+        var itemsUrl = $"https://deliver.kontent.ai/{env}/items";
+        var mockHttp = new MockHttpMessageHandler();
+
+        mockHttp.Expect(itemsUrl)
+            .WithQueryString("limit", "1")
+            .With(req => !req.Headers.Contains("X-KC-Wait-For-Loading-New-Content"))
+            .Respond("application/json", BuildItemsListingJson(skip: 0, limit: 1, totalCount: 2, codenames: ["a1"], hasNextPage: true));
+
+        mockHttp.Expect(itemsUrl)
+            .WithQueryString("skip", "1")
+            .WithQueryString("limit", "1")
+            .With(req => !req.Headers.Contains("X-KC-Wait-For-Loading-New-Content"))
+            .Respond("application/json", BuildItemsListingJson(skip: 1, limit: 1, totalCount: 2, codenames: ["a2"], hasNextPage: false));
+
+        var client = BuildClient(env, mockHttp);
+
+        var firstPage = await client.GetItems<TestArticle>()
+            .Limit(1)
+            .WaitForLoadingNewContent(false)
+            .ExecuteAsync();
+
+        Assert.True(firstPage.IsSuccess);
+        Assert.True(firstPage.Value.HasNextPage);
+
+        var secondPage = await firstPage.Value.FetchNextPageAsync();
+        Assert.NotNull(secondPage);
+        Assert.True(secondPage.IsSuccess);
+        Assert.False(secondPage.Value.HasNextPage);
+
+        mockHttp.VerifyNoOutstandingExpectation();
+    }
+
+    [Fact]
+    public async Task ItemListing_FetchNextPage_UsesPaginationOffset_WhenNextPageUrlIsMalformed()
+    {
+        var env = Guid.NewGuid().ToString();
+        var itemsUrl = $"https://deliver.kontent.ai/{env}/items";
+        var mockHttp = new MockHttpMessageHandler();
+
+        mockHttp.Expect(itemsUrl)
+            .WithQueryString("limit", "1")
+            .Respond("application/json",
+                BuildItemsListingJson(
+                    skip: 0,
+                    limit: 1,
+                    totalCount: 2,
+                    codenames: ["a1"],
+                    hasNextPage: true)
+                    .Replace("https://deliver.kontent.ai/items?skip=1&limit=1", "this-is-not-a-valid-url"));
+
+        mockHttp.Expect(itemsUrl)
+            .WithQueryString("skip", "1")
+            .WithQueryString("limit", "1")
+            .Respond("application/json", BuildItemsListingJson(skip: 1, limit: 1, totalCount: 2, codenames: ["a2"], hasNextPage: false));
+
+        var client = BuildClient(env, mockHttp);
+
+        var firstPage = await client.GetItems<TestArticle>().Limit(1).ExecuteAsync();
         Assert.True(firstPage.IsSuccess);
         Assert.True(firstPage.Value.HasNextPage);
 
@@ -511,6 +585,66 @@ public sealed class PaginationIntegrationTests
         Assert.Equal(HttpStatusCode.ServiceUnavailable, secondPage.StatusCode);
     }
 
+    [Fact]
+    public async Task ItemsFeed_EnumerateItemsWithStatusAsync_ErrorOnSecondPage_YieldsFailurePage()
+    {
+        var env = Guid.NewGuid().ToString();
+        var feedUrl = $"https://deliver.kontent.ai/{env}/items-feed";
+        var mockHttp = new MockHttpMessageHandler();
+
+        mockHttp.When(feedUrl)
+            .With(req => !req.Headers.Contains("X-Continuation"))
+            .Respond(req => CreateFeedResponse(["a"], "token"));
+
+        mockHttp.When(feedUrl)
+            .With(req => req.Headers.Contains("X-Continuation"))
+            .Respond(HttpStatusCode.ServiceUnavailable);
+
+        var client = BuildClient(env, mockHttp);
+        var pages = new List<IDeliveryResult<IDeliveryItemsFeedResponse<TestArticle>>>();
+
+        await foreach (var page in client.GetItemsFeed<TestArticle>().EnumerateItemsWithStatusAsync())
+        {
+            pages.Add(page);
+        }
+
+        Assert.Equal(2, pages.Count);
+        Assert.True(pages[0].IsSuccess);
+        Assert.Single(pages[0].Value.Items);
+        Assert.False(pages[1].IsSuccess);
+        Assert.Equal(HttpStatusCode.ServiceUnavailable, pages[1].StatusCode);
+    }
+
+    [Fact]
+    public async Task DynamicItemsFeed_EnumerateItemsWithStatusAsync_ErrorOnSecondPage_YieldsFailurePage()
+    {
+        var env = Guid.NewGuid().ToString();
+        var feedUrl = $"https://deliver.kontent.ai/{env}/items-feed";
+        var mockHttp = new MockHttpMessageHandler();
+
+        mockHttp.When(feedUrl)
+            .With(req => !req.Headers.Contains("X-Continuation"))
+            .Respond(req => CreateFeedResponse(["d1"], "token"));
+
+        mockHttp.When(feedUrl)
+            .With(req => req.Headers.Contains("X-Continuation"))
+            .Respond(HttpStatusCode.ServiceUnavailable);
+
+        var client = BuildClient(env, mockHttp);
+        var pages = new List<IDeliveryResult<IDeliveryItemsFeedResponse>>();
+
+        await foreach (var page in client.GetItemsFeed().EnumerateItemsWithStatusAsync())
+        {
+            pages.Add(page);
+        }
+
+        Assert.Equal(2, pages.Count);
+        Assert.True(pages[0].IsSuccess);
+        Assert.Single(pages[0].Value.Items);
+        Assert.False(pages[1].IsSuccess);
+        Assert.Equal(HttpStatusCode.ServiceUnavailable, pages[1].StatusCode);
+    }
+
     #endregion
 
     #region Types Pagination Tests
@@ -770,11 +904,15 @@ public sealed class PaginationIntegrationTests
 
     #region Helpers
 
-    private static IDeliveryClient BuildClient(string env, MockHttpMessageHandler mockHttp)
+    private static IDeliveryClient BuildClient(
+        string env,
+        MockHttpMessageHandler mockHttp,
+        DeliveryOptions? options = null)
     {
         var services = new ServiceCollection();
+        options ??= new DeliveryOptions { EnvironmentId = env };
         services.AddDeliveryClient(
-            new DeliveryOptions { EnvironmentId = env },
+            options,
             configureHttpClient: b => b.ConfigurePrimaryHttpMessageHandler(() => mockHttp));
 
         return services.BuildServiceProvider().GetRequiredService<IDeliveryClient>();

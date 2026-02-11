@@ -4,12 +4,11 @@ using Kontent.Ai.Delivery.Languages;
 namespace Kontent.Ai.Delivery.Api.QueryBuilders;
 
 /// <inheritdoc cref="ILanguagesQuery"/>
-internal sealed class LanguagesQuery(IDeliveryApi api, Func<bool?> getDefaultWaitForNewContent) : ILanguagesQuery
+internal sealed class LanguagesQuery(IDeliveryApi api) : ILanguagesQuery
 {
     private readonly IDeliveryApi _api = api;
-    private readonly Func<bool?> _getDefaultWaitForNewContent = getDefaultWaitForNewContent;
     private LanguagesParams _params = new();
-    private bool? _waitForLoadingNewContentOverride;
+    private bool _waitForLoadingNewContent;
 
     public ILanguagesQuery OrderBy(string elementOrAttributePath, OrderingMode orderingMode = OrderingMode.Ascending)
     {
@@ -36,7 +35,7 @@ internal sealed class LanguagesQuery(IDeliveryApi api, Func<bool?> getDefaultWai
 
     public ILanguagesQuery WaitForLoadingNewContent(bool enabled = true)
     {
-        _waitForLoadingNewContentOverride = enabled;
+        _waitForLoadingNewContent = enabled;
         return this;
     }
 
@@ -53,8 +52,8 @@ internal sealed class LanguagesQuery(IDeliveryApi api, Func<bool?> getDefaultWai
 
     private async Task<IDeliveryResult<DeliveryLanguageListingResponse>> FetchFromApiAsync(CancellationToken cancellationToken)
     {
-        var wait = _waitForLoadingNewContentOverride ?? _getDefaultWaitForNewContent();
-        var response = await _api.GetLanguagesInternalAsync(_params, wait, cancellationToken).ConfigureAwait(false);
+        bool? waitForLoadingNewContent = _waitForLoadingNewContent ? true : null;
+        var response = await _api.GetLanguagesInternalAsync(_params, waitForLoadingNewContent, cancellationToken).ConfigureAwait(false);
         return await response.ToDeliveryResultAsync().ConfigureAwait(false);
     }
 
@@ -81,9 +80,9 @@ internal sealed class LanguagesQuery(IDeliveryApi api, Func<bool?> getDefaultWai
     }
 
     private LanguagesQuery CreateNextPageQuery(int nextSkip)
-        => new(_api, _getDefaultWaitForNewContent)
+        => new(_api)
         {
             _params = _params with { Skip = nextSkip },
-            _waitForLoadingNewContentOverride = _waitForLoadingNewContentOverride
+            _waitForLoadingNewContent = this._waitForLoadingNewContent
         };
 }
