@@ -247,9 +247,6 @@ public class ContentTypeGeneratorTests
             .Cast<MetadataReference>()
             .ToList();
 
-        // Add reference to the Attributes assembly
-        references.Add(MetadataReference.CreateFromFile(typeof(Attributes.ContentTypeCodenameAttribute).Assembly.Location));
-
         // Add reference to Abstractions assembly for ITypeProvider
         references.Add(MetadataReference.CreateFromFile(typeof(Abstractions.ITypeProvider).Assembly.Location));
 
@@ -265,7 +262,10 @@ public class ContentTypeGeneratorTests
         driver = driver.RunGeneratorsAndUpdateCompilation(compilation, out _, out var diagnostics);
 
         var runResult = driver.GetRunResult();
-        var generatedSource = runResult.GeneratedTrees.FirstOrDefault()?.GetText().ToString() ?? string.Empty;
+        var generatedSource = runResult.GeneratedTrees
+            .Select(tree => tree.GetText().ToString())
+            .FirstOrDefault(text => text.Contains("class GeneratedTypeProvider", StringComparison.Ordinal))
+            ?? string.Empty;
 
         return (diagnostics, generatedSource);
     }

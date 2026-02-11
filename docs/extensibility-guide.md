@@ -102,6 +102,9 @@ Add the source generation package:
 
 This package includes both the `ContentTypeCodenameAttribute` and the Roslyn source generator.
 
+For predictable auto-discovery, keep attributed models in a single models project that references the source-generation package.
+If models are intentionally split across multiple projects/compilations, use explicit `ITypeProvider` registration.
+
 #### Usage
 
 The [Kontent.ai Model Generator](https://github.com/kontent-ai/model-generator-net) automatically includes the `[ContentTypeCodename]` attribute on generated model classes:
@@ -251,6 +254,9 @@ The SDK's default `TypeProvider` automatically discovers source-generated provid
 3. **Calling assembly fallback** - For test scenarios, checks the calling assembly
 
 This bounded search is deterministic and avoids scanning the entire AppDomain. If multiple providers are found, the entry assembly's provider takes precedence.
+
+In practice, the recommended setup is one models project producing one generated provider.
+If your solution produces multiple generated providers, use explicit `ITypeProvider` registration for deterministic behavior.
 
 ```csharp
 // The auto-discovery happens transparently when you use the SDK

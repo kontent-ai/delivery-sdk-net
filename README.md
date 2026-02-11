@@ -132,6 +132,9 @@ services.AddDeliveryClient(options =>
 
 The auto-discovery searches the entry assembly and its references for the generated provider.
 
+For predictable auto-discovery, keep your attributed models in a single models project that references `Kontent.Ai.Delivery.SourceGeneration`.
+If your models are intentionally split across multiple projects/compilations, register an explicit `ITypeProvider` before `AddDeliveryClient()` (for example one produced by the Kontent.ai model generator tool).
+
 #### Registering a Custom Type Provider
 
 If you need to override the auto-discovered provider or use a custom implementation, register your type provider **before** calling `AddDeliveryClient()`:
@@ -632,6 +635,10 @@ public record Product
 ```
 
 The source generator produces a `GeneratedTypeProvider` at compile time with bi-directional lookup (codename ↔ Type). The SDK auto-discovers this provider at runtime.
+
+> [!NOTE]
+> Source generation runs per project/compilation. For the default auto-discovery path, use a single models project containing your attributed models.
+> If you split models across multiple projects, prefer explicit `ITypeProvider` registration.
 
 **Compile-time diagnostics:**
 - `KDSG001`: Duplicate codename (error)
