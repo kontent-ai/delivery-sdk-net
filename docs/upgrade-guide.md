@@ -1771,6 +1771,24 @@ await foreach (var page in client.GetAssetUsedIn("hero_image").EnumerateItemsWit
 }
 ```
 
+The same status-aware helper is available for feed queries:
+
+```csharp
+await foreach (var page in client.GetItemsFeed<Article>().EnumerateItemsWithStatusAsync())
+{
+    if (!page.IsSuccess)
+    {
+        Console.WriteLine($"Feed failed with {(int)page.StatusCode}: {page.Error?.Message}");
+        break;
+    }
+
+    foreach (var item in page.Value.Items)
+    {
+        ProcessItem(item);
+    }
+}
+```
+
 ### 10.7 Element Projection
 
 Reduce response size by selecting specific elements:

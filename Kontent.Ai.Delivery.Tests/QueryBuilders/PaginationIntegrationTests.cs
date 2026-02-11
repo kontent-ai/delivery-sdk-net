@@ -1,5 +1,6 @@
 using System.Net;
 using System.Text.Json.Serialization;
+using Kontent.Ai.Delivery;
 using Kontent.Ai.Delivery.Abstractions;
 using Microsoft.Extensions.DependencyInjection;
 using RichardSzalay.MockHttp;
@@ -582,6 +583,66 @@ public sealed class PaginationIntegrationTests
         Assert.NotNull(secondPage);
         Assert.False(secondPage.IsSuccess);
         Assert.Equal(HttpStatusCode.ServiceUnavailable, secondPage.StatusCode);
+    }
+
+    [Fact]
+    public async Task ItemsFeed_EnumerateItemsWithStatusAsync_ErrorOnSecondPage_YieldsFailurePage()
+    {
+        var env = Guid.NewGuid().ToString();
+        var feedUrl = $"https://deliver.kontent.ai/{env}/items-feed";
+        var mockHttp = new MockHttpMessageHandler();
+
+        mockHttp.When(feedUrl)
+            .With(req => !req.Headers.Contains("X-Continuation"))
+            .Respond(req => CreateFeedResponse(["a"], "token"));
+
+        mockHttp.When(feedUrl)
+            .With(req => req.Headers.Contains("X-Continuation"))
+            .Respond(HttpStatusCode.ServiceUnavailable);
+
+        var client = BuildClient(env, mockHttp);
+        var pages = new List<IDeliveryResult<IDeliveryItemsFeedResponse<TestArticle>>>();
+
+        await foreach (var page in client.GetItemsFeed<TestArticle>().EnumerateItemsWithStatusAsync())
+        {
+            pages.Add(page);
+        }
+
+        Assert.Equal(2, pages.Count);
+        Assert.True(pages[0].IsSuccess);
+        Assert.Single(pages[0].Value.Items);
+        Assert.False(pages[1].IsSuccess);
+        Assert.Equal(HttpStatusCode.ServiceUnavailable, pages[1].StatusCode);
+    }
+
+    [Fact]
+    public async Task DynamicItemsFeed_EnumerateItemsWithStatusAsync_ErrorOnSecondPage_YieldsFailurePage()
+    {
+        var env = Guid.NewGuid().ToString();
+        var feedUrl = $"https://deliver.kontent.ai/{env}/items-feed";
+        var mockHttp = new MockHttpMessageHandler();
+
+        mockHttp.When(feedUrl)
+            .With(req => !req.Headers.Contains("X-Continuation"))
+            .Respond(req => CreateFeedResponse(["d1"], "token"));
+
+        mockHttp.When(feedUrl)
+            .With(req => req.Headers.Contains("X-Continuation"))
+            .Respond(HttpStatusCode.ServiceUnavailable);
+
+        var client = BuildClient(env, mockHttp);
+        var pages = new List<IDeliveryResult<IDeliveryItemsFeedResponse>>();
+
+        await foreach (var page in client.GetItemsFeed().EnumerateItemsWithStatusAsync())
+        {
+            pages.Add(page);
+        }
+
+        Assert.Equal(2, pages.Count);
+        Assert.True(pages[0].IsSuccess);
+        Assert.Single(pages[0].Value.Items);
+        Assert.False(pages[1].IsSuccess);
+        Assert.Equal(HttpStatusCode.ServiceUnavailable, pages[1].StatusCode);
     }
 
     #endregion

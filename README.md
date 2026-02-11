@@ -261,6 +261,21 @@ if (firstPage.IsSuccess)
         else break;
     }
 }
+
+// Option 3: Status-aware page enumeration (exposes intermediate page failures)
+await foreach (var page in client.GetItemsFeed().EnumerateItemsWithStatusAsync())
+{
+    if (!page.IsSuccess)
+    {
+        Console.WriteLine($"Feed page failed with {(int)page.StatusCode}: {page.Error?.Message}");
+        break;
+    }
+
+    foreach (var item in page.Value.Items)
+    {
+        Console.WriteLine($"Item: {item.System.Name}");
+    }
+}
 ```
 
 For standard skip/limit pagination with `GetItems()`, use `FetchNextPageAsync()` to iterate through pages:
