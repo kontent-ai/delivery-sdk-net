@@ -9,9 +9,5 @@
   <ItemGroup>
     <PackageReference Include="Microsoft.Extensions.Primitives" />
   </ItemGroup>
-
-  <ItemGroup>
-    <ProjectReference Include="..\Kontent.Ai.Delivery.Abstractions\Kontent.Ai.Delivery.Abstractions.csproj" />
-  </ItemGroup>
-
+  
 </Project>
