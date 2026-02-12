@@ -21,6 +21,7 @@ namespace Kontent.Ai.Delivery.Abstractions;
 /// <item><description>Content items: <c>item_{codename}</c> (e.g., "item_hero")</description></item>
 /// <item><description>Assets: <c>asset_{guid}</c> (e.g., "asset_a5e1c4b2-...")</description></item>
 /// <item><description>Taxonomies: <c>taxonomy_{group}</c> (e.g., "taxonomy_categories")</description></item>
+/// <item><description>Item-list scope: <see cref="DeliveryCacheDependencies.ItemsListScope"/> (synthetic dependency for broad item-list invalidation)</description></item>
 /// </list>
 /// </para>
 /// </remarks>

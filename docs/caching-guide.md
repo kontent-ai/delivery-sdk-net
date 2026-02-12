@@ -439,6 +439,11 @@ var result = await client.GetItem<Article>("my-article")
 
 This enables targeted cache invalidation when specific content changes.
 
+Cached `GetItems<T>()` queries also include a synthetic scope dependency:
+- `DeliveryCacheDependencies.ItemsListScope` (`scope_items_list`)
+
+Use this key when an item event may change which cached lists an item belongs to (for example, new item publish or metadata update). Invalidating the scope key clears all cached typed item-list queries in the current cache namespace.
+
 ### Expiration Strategies
 
 #### Absolute Expiration
@@ -478,6 +483,8 @@ public async Task SetAsync<T>(
 Invalidate specific content:
 
 ```csharp
+using Kontent.Ai.Delivery.Abstractions;
+
 var cacheManager = serviceProvider.GetRequiredService<IDeliveryCacheManager>();
 
 // Invalidate a specific item
@@ -491,6 +498,9 @@ await cacheManager.InvalidateAsync(default,
 
 // Invalidate by dependency
 await cacheManager.InvalidateAsync(default, $"item_{articleCodename}");
+
+// Invalidate all cached typed item-list queries
+await cacheManager.InvalidateAsync(default, DeliveryCacheDependencies.ItemsListScope);
 ```
 
 ### Purge All (Memory Cache)
@@ -575,6 +585,9 @@ public class WebhookController : ControllerBase
                 dependencies.Add($"taxonomy_{item.Codename}");
             }
         }
+
+        // Item events can affect membership in filtered item-list queries.
+        dependencies.Add(DeliveryCacheDependencies.ItemsListScope);
 
         // Invalidate all affected cache entries
         await _cacheManager.InvalidateAsync(default, dependencies.ToArray());

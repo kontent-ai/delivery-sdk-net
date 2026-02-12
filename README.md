@@ -1237,6 +1237,23 @@ if (result.IsSuccess)
 > [!NOTE]
 > `IsCacheHit` indicates SDK-level caching only. For CDN-level cache information (Fastly), inspect the `ResponseHeaders` property for headers like `X-Cache`.
 
+#### Webhook Invalidation Pattern for Item Lists
+
+Typed item-list queries (`GetItems<T>()`) include the synthetic dependency key `DeliveryCacheDependencies.ItemsListScope` (`scope_items_list`).
+
+When processing item webhooks, invalidate both item-specific keys and the list scope key:
+
+```csharp
+using Kontent.Ai.Delivery.Abstractions;
+
+var dependencyKeys = webhookPayload.Data.Items
+    .Select(i => $"item_{i.Codename}")
+    .Append(DeliveryCacheDependencies.ItemsListScope)
+    .ToArray();
+
+await cacheManager.InvalidateAsync(default, dependencyKeys);
+```
+
 #### Purging the SDK Memory Cache
 
 If you're using the SDK's in-memory cache (`AddDeliveryMemoryCache`), you can invalidate **all** cached entries at once using the optional `IDeliveryCachePurger` capability:

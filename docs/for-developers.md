@@ -421,6 +421,10 @@ When InvalidateAsync(["item_homepage"]) is called:
   4. Clean up reverse index entries
 ```
 
+`GetItems<T>()` query results additionally store `DeliveryCacheDependencies.ItemsListScope` (`scope_items_list`) as a synthetic dependency. This is a deliberate tradeoff to handle list-membership changes caused by item events (for example, new item publish matching a cached filter) without requiring a full cache purge.
+
+The first iteration scopes this synthetic dependency to typed item-list queries only. Single-item, type, and taxonomy queries remain dependency-driven by concrete entities.
+
 **Thread Safety Strategy:**
 - `ConcurrentDictionary` for lock-free primary operations
 - `SemaphoreSlim` per dependency key prevents race conditions during updates
@@ -1145,10 +1149,13 @@ public async Task<IDeliveryResult<IReadOnlyList<IContentItem<TModel>>>> ExecuteA
     // ========== 6. CACHE RESULT ==========
     if (_cacheManager != null && dependencyContext != null && cacheKey != null)
     {
+        var dependencies = dependencyContext.Dependencies
+            .Append(DeliveryCacheDependencies.ItemsListScope);
+
         await _cacheManager.SetAsync(
             cacheKey,
             result,
-            dependencyContext.Dependencies,  // All tracked dependencies
+            dependencies,  // Entity dependencies + list scope dependency
             expiration: null,
             cancellationToken);
     }

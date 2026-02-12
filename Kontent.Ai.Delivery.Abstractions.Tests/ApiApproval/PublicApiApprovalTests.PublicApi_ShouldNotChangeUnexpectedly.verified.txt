@@ -8,6 +8,9 @@ public sealed class BlockResolver`1 : MulticastDelegate
 public enum CacheStorageMode : Enum
 
 // Kontent.Ai.Delivery.Abstractions
+public sealed class DeliveryCacheDependencies
+
+// Kontent.Ai.Delivery.Abstractions
 public sealed class DeliveryOptions : IValidatableObject
     String DefaultRenditionPreset { get; set; }
     Boolean EnableResilience { get; set; }

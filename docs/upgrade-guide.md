@@ -573,14 +573,19 @@ cacheManager.InvalidateEntry(CacheHelpers.GetItemsDependencyKey());
 
 **New:**
 ```csharp
+using Kontent.Ai.Delivery.Abstractions;
+
 var cacheManager = serviceProvider.GetRequiredService<IDeliveryCacheManager>();
 
 // Invalidate by dependency keys (items, assets, taxonomies)
 await cacheManager.InvalidateAsync(default, "item_article_codename", "item_related_article");
 
 // Webhook-based invalidation example
-var itemCodenames = webhookPayload.Data.Items.Select(i => $"item_{i.Codename}");
-await cacheManager.InvalidateAsync(default, itemCodenames.ToArray());
+var dependencyKeys = webhookPayload.Data.Items
+    .Select(i => $"item_{i.Codename}")
+    .Append(DeliveryCacheDependencies.ItemsListScope)
+    .ToArray();
+await cacheManager.InvalidateAsync(default, dependencyKeys);
 ```
 
 **Dependency Key Format:**
@@ -589,6 +594,7 @@ await cacheManager.InvalidateAsync(default, itemCodenames.ToArray());
 | Content Item | `item_{codename}` | `item_homepage` |
 | Asset | `asset_{id}` | `asset_a5e1c4b2-1234-...` |
 | Taxonomy | `taxonomy_{group}` | `taxonomy_categories` |
+| Item list scope | `scope_items_list` (`DeliveryCacheDependencies.ItemsListScope`) | `scope_items_list` |
 
 ### 3.7 Cache Purge (Memory Cache Only)
 
@@ -1903,7 +1909,7 @@ A: Implement your retry logic using Polly's `HttpRetryStrategyOptions` in the `c
 
 **Q: What happened to `IDeliveryCacheManager.InvalidateEntry()`?**
 
-A: Use `IDeliveryCacheManager.InvalidateAsync()` with dependency keys instead. The key format is `item_{codename}` for items, `asset_{id}` for assets, and `taxonomy_{group}` for taxonomies.
+A: Use `IDeliveryCacheManager.InvalidateAsync()` with dependency keys instead. The key format is `item_{codename}` for items, `asset_{id}` for assets, `taxonomy_{group}` for taxonomies, and `DeliveryCacheDependencies.ItemsListScope` (`scope_items_list`) for broad typed item-list invalidation.
 
 **Q: Why is my rich text empty after migration?**
 
