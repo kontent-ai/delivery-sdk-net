@@ -586,6 +586,10 @@ var dependencyKeys = webhookPayload.Data.Items
     .Append(DeliveryCacheDependencies.ItemsListScope)
     .ToArray();
 await cacheManager.InvalidateAsync(default, dependencyKeys);
+
+// Type and taxonomy events
+await cacheManager.InvalidateAsync(default, $"type_{typeCodename}", DeliveryCacheDependencies.TypesListScope);
+await cacheManager.InvalidateAsync(default, $"taxonomy_{taxonomyCodename}", DeliveryCacheDependencies.TaxonomiesListScope);
 ```
 
 **Dependency Key Format:**
@@ -593,8 +597,11 @@ await cacheManager.InvalidateAsync(default, dependencyKeys);
 |------------|------------|---------|
 | Content Item | `item_{codename}` | `item_homepage` |
 | Asset | `asset_{id}` | `asset_a5e1c4b2-1234-...` |
+| Content Type | `type_{codename}` | `type_article` |
 | Taxonomy | `taxonomy_{group}` | `taxonomy_categories` |
 | Item list scope | `scope_items_list` (`DeliveryCacheDependencies.ItemsListScope`) | `scope_items_list` |
+| Type list scope | `scope_types_list` (`DeliveryCacheDependencies.TypesListScope`) | `scope_types_list` |
+| Taxonomy list scope | `scope_taxonomies_list` (`DeliveryCacheDependencies.TaxonomiesListScope`) | `scope_taxonomies_list` |
 
 ### 3.7 Cache Purge (Memory Cache Only)
 
@@ -1909,7 +1916,7 @@ A: Implement your retry logic using Polly's `HttpRetryStrategyOptions` in the `c
 
 **Q: What happened to `IDeliveryCacheManager.InvalidateEntry()`?**
 
-A: Use `IDeliveryCacheManager.InvalidateAsync()` with dependency keys instead. The key format is `item_{codename}` for items, `asset_{id}` for assets, `taxonomy_{group}` for taxonomies, and `DeliveryCacheDependencies.ItemsListScope` (`scope_items_list`) for broad typed item-list invalidation.
+A: Use `IDeliveryCacheManager.InvalidateAsync()` with dependency keys instead. The key format is `item_{codename}` for items, `asset_{id}` for assets, `type_{codename}` for content types, and `taxonomy_{group}` for taxonomies. For broad listing invalidation, use `DeliveryCacheDependencies.ItemsListScope` (`scope_items_list`), `DeliveryCacheDependencies.TypesListScope` (`scope_types_list`), and `DeliveryCacheDependencies.TaxonomiesListScope` (`scope_taxonomies_list`).
 
 **Q: Why is my rich text empty after migration?**
 

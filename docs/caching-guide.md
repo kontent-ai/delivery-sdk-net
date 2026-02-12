@@ -444,6 +444,12 @@ Cached `GetItems<T>()` queries also include a synthetic scope dependency:
 
 Use this key when an item event may change which cached lists an item belongs to (for example, new item publish or metadata update). Invalidating the scope key clears all cached typed item-list queries in the current cache namespace.
 
+Cached `GetTypes()` and `GetTaxonomies()` queries use the same pattern:
+- `DeliveryCacheDependencies.TypesListScope` (`scope_types_list`) for type listings
+- `DeliveryCacheDependencies.TaxonomiesListScope` (`scope_taxonomies_list`) for taxonomy listings
+
+Single type queries use direct keys in the format `type_{codename}` (for example, `type_article`).
+
 ### Expiration Strategies
 
 #### Absolute Expiration
@@ -499,8 +505,15 @@ await cacheManager.InvalidateAsync(default,
 // Invalidate by dependency
 await cacheManager.InvalidateAsync(default, $"item_{articleCodename}");
 
+// Invalidate a specific type query dependency
+await cacheManager.InvalidateAsync(default, "type_article");
+
 // Invalidate all cached typed item-list queries
 await cacheManager.InvalidateAsync(default, DeliveryCacheDependencies.ItemsListScope);
+
+// Invalidate all cached type/taxonomy listing queries
+await cacheManager.InvalidateAsync(default, DeliveryCacheDependencies.TypesListScope);
+await cacheManager.InvalidateAsync(default, DeliveryCacheDependencies.TaxonomiesListScope);
 ```
 
 ### Purge All (Memory Cache)
@@ -576,18 +589,27 @@ public class WebhookController : ControllerBase
 
         foreach (var item in notification.Data.Items)
         {
-            // Add item dependency
-            dependencies.Add($"item_{item.Codename}");
+            // Content item changes affect item queries and item listings.
+            if (item.Type == "content_item")
+            {
+                dependencies.Add($"item_{item.Codename}");
+                dependencies.Add(DeliveryCacheDependencies.ItemsListScope);
+            }
 
-            // If this was a taxonomy change, invalidate taxonomy cache
+            // Taxonomy changes affect taxonomy queries and taxonomy listings.
             if (item.Type == "taxonomy")
             {
                 dependencies.Add($"taxonomy_{item.Codename}");
+                dependencies.Add(DeliveryCacheDependencies.TaxonomiesListScope);
+            }
+
+            // Content type changes affect type queries and type listings.
+            if (item.Type == "content_type")
+            {
+                dependencies.Add($"type_{item.Codename}");
+                dependencies.Add(DeliveryCacheDependencies.TypesListScope);
             }
         }
-
-        // Item events can affect membership in filtered item-list queries.
-        dependencies.Add(DeliveryCacheDependencies.ItemsListScope);
 
         // Invalidate all affected cache entries
         await _cacheManager.InvalidateAsync(default, dependencies.ToArray());

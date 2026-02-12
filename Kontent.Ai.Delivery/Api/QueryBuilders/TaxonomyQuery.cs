@@ -10,6 +10,7 @@ internal sealed class TaxonomyQuery(
     string codename,
     IDeliveryCacheManager? cacheManager) : ITaxonomyQuery
 {
+    private const string TaxonomyDependencyPrefix = "taxonomy_";
     private readonly IDeliveryApi _api = api;
     private readonly string _codename = codename;
     private bool _waitForLoadingNewContent;
@@ -77,7 +78,12 @@ internal sealed class TaxonomyQuery(
                 if (!apiResult.IsSuccess)
                     return (null, Array.Empty<string>());
 
-                return ((TaxonomyGroup)apiResult.Value, Array.Empty<string>());
+                var taxonomyCodename = apiResult.Value.System.Codename;
+                var dependencies = string.IsNullOrWhiteSpace(taxonomyCodename)
+                    ? Array.Empty<string>()
+                    : [$"{TaxonomyDependencyPrefix}{taxonomyCodename}"];
+
+                return ((TaxonomyGroup)apiResult.Value, dependencies);
             },
             logger: null,
             cancellationToken).ConfigureAwait(false);

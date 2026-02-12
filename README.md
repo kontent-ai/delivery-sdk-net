@@ -1237,21 +1237,37 @@ if (result.IsSuccess)
 > [!NOTE]
 > `IsCacheHit` indicates SDK-level caching only. For CDN-level cache information (Fastly), inspect the `ResponseHeaders` property for headers like `X-Cache`.
 
-#### Webhook Invalidation Pattern for Item Lists
+#### Webhook Invalidation Pattern for Lists
 
-Typed item-list queries (`GetItems<T>()`) include the synthetic dependency key `DeliveryCacheDependencies.ItemsListScope` (`scope_items_list`).
+Typed listing queries include synthetic scope dependencies:
+- `GetItems<T>()` → `DeliveryCacheDependencies.ItemsListScope`
+- `GetTypes()` → `DeliveryCacheDependencies.TypesListScope`
+- `GetTaxonomies()` → `DeliveryCacheDependencies.TaxonomiesListScope`
 
-When processing item webhooks, invalidate both item-specific keys and the list scope key:
+When processing webhooks, invalidate both entity-specific keys and the relevant list scope key:
 
 ```csharp
 using Kontent.Ai.Delivery.Abstractions;
 
-var dependencyKeys = webhookPayload.Data.Items
+// Item events
+var itemDependencyKeys = webhookPayload.Data.Items
     .Select(i => $"item_{i.Codename}")
     .Append(DeliveryCacheDependencies.ItemsListScope)
     .ToArray();
 
-await cacheManager.InvalidateAsync(default, dependencyKeys);
+await cacheManager.InvalidateAsync(default, itemDependencyKeys);
+
+// Type events
+await cacheManager.InvalidateAsync(
+    default,
+    $"type_{typeCodename}",
+    DeliveryCacheDependencies.TypesListScope);
+
+// Taxonomy events
+await cacheManager.InvalidateAsync(
+    default,
+    $"taxonomy_{taxonomyCodename}",
+    DeliveryCacheDependencies.TaxonomiesListScope);
 ```
 
 #### Purging the SDK Memory Cache

@@ -15,6 +15,7 @@ internal sealed class TypesQuery(
     IDeliveryCacheManager? cacheManager,
     ILogger? logger = null) : ITypesQuery
 {
+    private const string TypeDependencyPrefix = "type_";
     private readonly IDeliveryApi _api = api;
     private readonly SerializedFilterCollection _serializedFilters = [];
     private ListTypesParams _params = new();
@@ -138,7 +139,7 @@ internal sealed class TypesQuery(
                 if (!apiResult.IsSuccess)
                     return (null, Array.Empty<string>());
 
-                return (apiResult.Value, Array.Empty<string>());
+                return (apiResult.Value, BuildDependencies(apiResult.Value.Types));
             },
             _logger,
             cancellationToken).ConfigureAwait(false);
@@ -156,6 +157,24 @@ internal sealed class TypesQuery(
             waitForLoadingNewContent,
             cancellationToken).ConfigureAwait(false);
         return await response.ToDeliveryResultAsync(_logger).ConfigureAwait(false);
+    }
+
+    private static string[] BuildDependencies(IReadOnlyList<ContentType> types)
+    {
+        var dependencies = new HashSet<string>(StringComparer.OrdinalIgnoreCase)
+        {
+            DeliveryCacheDependencies.TypesListScope
+        };
+
+        foreach (var type in types)
+        {
+            if (string.IsNullOrWhiteSpace(type.System.Codename))
+                continue;
+
+            dependencies.Add($"{TypeDependencyPrefix}{type.System.Codename}");
+        }
+
+        return [.. dependencies];
     }
 
     private static IDeliveryResult<IDeliveryTypeListingResponse> WrapSuccess(

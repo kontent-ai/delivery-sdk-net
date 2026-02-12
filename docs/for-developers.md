@@ -423,7 +423,9 @@ When InvalidateAsync(["item_homepage"]) is called:
 
 `GetItems<T>()` query results additionally store `DeliveryCacheDependencies.ItemsListScope` (`scope_items_list`) as a synthetic dependency. This is a deliberate tradeoff to handle list-membership changes caused by item events (for example, new item publish matching a cached filter) without requiring a full cache purge.
 
-The first iteration scopes this synthetic dependency to typed item-list queries only. Single-item, type, and taxonomy queries remain dependency-driven by concrete entities.
+`GetTypes()` and `GetTaxonomies()` follow the same pattern using `DeliveryCacheDependencies.TypesListScope` and `DeliveryCacheDependencies.TaxonomiesListScope`.
+
+These list scopes complement per-entity dependencies (`type_{codename}`, `taxonomy_{codename}`): per-entity keys keep invalidation targeted for known entities, while scope keys handle list-membership changes caused by newly introduced entities.
 
 **Thread Safety Strategy:**
 - `ConcurrentDictionary` for lock-free primary operations
