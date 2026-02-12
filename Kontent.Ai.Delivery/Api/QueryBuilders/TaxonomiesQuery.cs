@@ -111,7 +111,7 @@ internal sealed class TaxonomiesQuery(
                 if (!apiResult.IsSuccess)
                     return (null, Array.Empty<string>());
 
-                return (apiResult.Value, Array.Empty<string>());
+                return (apiResult.Value, BuildDependencies(apiResult.Value.Taxonomies));
             },
             logger: null,
             cancellationToken).ConfigureAwait(false);
@@ -129,6 +129,25 @@ internal sealed class TaxonomiesQuery(
             waitForLoadingNewContent,
             cancellationToken).ConfigureAwait(false);
         return await response.ToDeliveryResultAsync().ConfigureAwait(false);
+    }
+
+    private static string[] BuildDependencies(IReadOnlyList<TaxonomyGroup> taxonomies)
+    {
+        var dependencies = new HashSet<string>(StringComparer.OrdinalIgnoreCase)
+        {
+            DeliveryCacheDependencies.TaxonomiesListScope
+        };
+
+        foreach (var taxonomy in taxonomies)
+        {
+            var dependency = CacheDependencyKeyBuilder.BuildTaxonomyDependencyKey(taxonomy.System.Codename);
+            if (dependency is null)
+                continue;
+
+            dependencies.Add(dependency);
+        }
+
+        return [.. dependencies];
     }
 
     private static IDeliveryResult<IDeliveryTaxonomyListingResponse> WrapSuccess(

@@ -1237,6 +1237,39 @@ if (result.IsSuccess)
 > [!NOTE]
 > `IsCacheHit` indicates SDK-level caching only. For CDN-level cache information (Fastly), inspect the `ResponseHeaders` property for headers like `X-Cache`.
 
+#### Webhook Invalidation Pattern for Lists
+
+Typed listing queries include synthetic scope dependencies:
+- `GetItems<T>()` → `DeliveryCacheDependencies.ItemsListScope`
+- `GetTypes()` → `DeliveryCacheDependencies.TypesListScope`
+- `GetTaxonomies()` → `DeliveryCacheDependencies.TaxonomiesListScope`
+
+When processing webhooks, invalidate both entity-specific keys and the relevant list scope key:
+
+```csharp
+using Kontent.Ai.Delivery.Abstractions;
+
+// Item events
+var itemDependencyKeys = webhookPayload.Data.Items
+    .Select(i => $"item_{i.Codename}")
+    .Append(DeliveryCacheDependencies.ItemsListScope)
+    .ToArray();
+
+await cacheManager.InvalidateAsync(default, itemDependencyKeys);
+
+// Type events
+await cacheManager.InvalidateAsync(
+    default,
+    $"type_{typeCodename}",
+    DeliveryCacheDependencies.TypesListScope);
+
+// Taxonomy events
+await cacheManager.InvalidateAsync(
+    default,
+    $"taxonomy_{taxonomyCodename}",
+    DeliveryCacheDependencies.TaxonomiesListScope);
+```
+
 #### Purging the SDK Memory Cache
 
 If you're using the SDK's in-memory cache (`AddDeliveryMemoryCache`), you can invalidate **all** cached entries at once using the optional `IDeliveryCachePurger` capability:

@@ -77,7 +77,10 @@ internal sealed class TaxonomyQuery(
                 if (!apiResult.IsSuccess)
                     return (null, Array.Empty<string>());
 
-                return ((TaxonomyGroup)apiResult.Value, Array.Empty<string>());
+                var dependency = CacheDependencyKeyBuilder.BuildTaxonomyDependencyKey(apiResult.Value.System.Codename);
+                var dependencies = dependency is null ? Array.Empty<string>() : [dependency];
+
+                return ((TaxonomyGroup)apiResult.Value, dependencies);
             },
             logger: null,
             cancellationToken).ConfigureAwait(false);

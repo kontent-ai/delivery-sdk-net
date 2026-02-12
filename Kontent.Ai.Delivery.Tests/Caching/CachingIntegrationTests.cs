@@ -273,15 +273,13 @@ public class CachingIntegrationTests
             EnvironmentId = _guid.ToString()
         };
 
-        services.AddMemoryCache();
-        services.AddSingleton<IDeliveryCacheManager>(sp =>
-            new MemoryCacheManager(sp.GetRequiredService<IMemoryCache>()));
-        services.AddDeliveryClient(options, configureHttpClient: b =>
-            b.ConfigurePrimaryHttpMessageHandler(() => mock));
+        services.AddDeliveryClient("test", o => DeliveryOptionsCopyHelper.Copy(options, o),
+            configureHttpClient: b => b.ConfigurePrimaryHttpMessageHandler(() => mock));
+        services.AddDeliveryMemoryCache("test");
 
         var serviceProvider = services.BuildServiceProvider();
-        var client = serviceProvider.GetRequiredService<IDeliveryClient>();
-        var cacheManager = serviceProvider.GetRequiredService<IDeliveryCacheManager>();
+        var client = serviceProvider.GetRequiredKeyedService<IDeliveryClient>("test");
+        var cacheManager = serviceProvider.GetRequiredKeyedService<IDeliveryCacheManager>("test");
 
         var result1 = await client.GetItem<Article>(itemCodename).ExecuteAsync();
 
@@ -293,6 +291,149 @@ public class CachingIntegrationTests
         Assert.True(result2.IsSuccess);
         Assert.NotNull(result1.Value);
         Assert.NotNull(result2.Value);
+    }
+
+    [Fact]
+    public async Task MemoryCache_ItemsListScopeInvalidation_RefreshesAllCachedItemLists()
+    {
+        var mock = new MockHttpMessageHandler();
+        var fixtureContent = await File.ReadAllTextAsync(
+            Path.Combine(Environment.CurrentDirectory,
+                $"Fixtures{Path.DirectorySeparatorChar}DeliveryClient{Path.DirectorySeparatorChar}articles.json"));
+
+        mock.Expect($"{BaseUrl}/items*")
+            .Respond("application/json", fixtureContent);
+        mock.Expect($"{BaseUrl}/items*")
+            .Respond("application/json", fixtureContent);
+        mock.Expect($"{BaseUrl}/items*")
+            .Respond("application/json", fixtureContent);
+        mock.Expect($"{BaseUrl}/items*")
+            .Respond("application/json", fixtureContent);
+
+        var services = new ServiceCollection();
+        var options = new DeliveryOptions
+        {
+            EnvironmentId = _guid.ToString()
+        };
+
+        services.AddDeliveryClient("test", o => DeliveryOptionsCopyHelper.Copy(options, o),
+            configureHttpClient: b => b.ConfigurePrimaryHttpMessageHandler(() => mock));
+        services.AddDeliveryMemoryCache("test");
+
+        var serviceProvider = services.BuildServiceProvider();
+        var client = serviceProvider.GetRequiredKeyedService<IDeliveryClient>("test");
+        var cacheManager = serviceProvider.GetRequiredKeyedService<IDeliveryCacheManager>("test");
+
+        var listResultA1 = await client.GetItems<Article>()
+            .Where(f => f.System("type").IsEqualTo("article"))
+            .ExecuteAsync();
+        var listResultA2 = await client.GetItems<Article>()
+            .Where(f => f.System("type").IsEqualTo("article"))
+            .ExecuteAsync();
+        var listResultB1 = await client.GetItems<Article>()
+            .Where(f => f.System("type").IsEqualTo("article"))
+            .WithElements("title")
+            .ExecuteAsync();
+        var listResultB2 = await client.GetItems<Article>()
+            .Where(f => f.System("type").IsEqualTo("article"))
+            .WithElements("title")
+            .ExecuteAsync();
+
+        Assert.True(listResultA1.IsSuccess);
+        Assert.True(listResultA2.IsSuccess);
+        Assert.True(listResultB1.IsSuccess);
+        Assert.True(listResultB2.IsSuccess);
+
+        Assert.False(listResultA1.IsCacheHit);
+        Assert.True(listResultA2.IsCacheHit);
+        Assert.False(listResultB1.IsCacheHit);
+        Assert.True(listResultB2.IsCacheHit);
+
+        await cacheManager.InvalidateAsync(default, DeliveryCacheDependencies.ItemsListScope);
+
+        var listResultA3 = await client.GetItems<Article>()
+            .Where(f => f.System("type").IsEqualTo("article"))
+            .ExecuteAsync();
+        var listResultB3 = await client.GetItems<Article>()
+            .Where(f => f.System("type").IsEqualTo("article"))
+            .WithElements("title")
+            .ExecuteAsync();
+
+        Assert.True(listResultA3.IsSuccess);
+        Assert.True(listResultB3.IsSuccess);
+
+        Assert.False(listResultA3.IsCacheHit);
+        Assert.False(listResultB3.IsCacheHit);
+
+        mock.VerifyNoOutstandingExpectation();
+    }
+
+    [Fact]
+    public async Task MemoryCache_InvalidatingItemsListScope_DoesNotInvalidateSingleItemQueries()
+    {
+        var mock = new MockHttpMessageHandler();
+        var itemCodename = "coffee_beverages_explained";
+
+        var itemFixture = await File.ReadAllTextAsync(
+            Path.Combine(Environment.CurrentDirectory,
+                $"Fixtures{Path.DirectorySeparatorChar}DeliveryClient{Path.DirectorySeparatorChar}{itemCodename}.json"));
+
+        var itemsFixture = await File.ReadAllTextAsync(
+            Path.Combine(Environment.CurrentDirectory,
+                $"Fixtures{Path.DirectorySeparatorChar}DeliveryClient{Path.DirectorySeparatorChar}articles.json"));
+
+        mock.Expect($"{BaseUrl}/items/{itemCodename}")
+            .Respond("application/json", itemFixture);
+        mock.Expect($"{BaseUrl}/items?system.type%5Beq%5D=article")
+            .Respond("application/json", itemsFixture);
+        mock.Expect($"{BaseUrl}/items?system.type%5Beq%5D=article")
+            .Respond("application/json", itemsFixture);
+
+        var services = new ServiceCollection();
+        var options = new DeliveryOptions
+        {
+            EnvironmentId = _guid.ToString()
+        };
+
+        services.AddDeliveryClient("test", o => DeliveryOptionsCopyHelper.Copy(options, o),
+            configureHttpClient: b => b.ConfigurePrimaryHttpMessageHandler(() => mock));
+        services.AddDeliveryMemoryCache("test");
+
+        var serviceProvider = services.BuildServiceProvider();
+        var client = serviceProvider.GetRequiredKeyedService<IDeliveryClient>("test");
+        var cacheManager = serviceProvider.GetRequiredKeyedService<IDeliveryCacheManager>("test");
+
+        var itemResult1 = await client.GetItem<Article>(itemCodename).ExecuteAsync();
+        var listResult1 = await client.GetItems<Article>()
+            .Where(f => f.System("type").IsEqualTo("article"))
+            .ExecuteAsync();
+        var itemResult2 = await client.GetItem<Article>(itemCodename).ExecuteAsync();
+        var listResult2 = await client.GetItems<Article>()
+            .Where(f => f.System("type").IsEqualTo("article"))
+            .ExecuteAsync();
+
+        await cacheManager.InvalidateAsync(default, DeliveryCacheDependencies.ItemsListScope);
+
+        var itemResult3 = await client.GetItem<Article>(itemCodename).ExecuteAsync();
+        var listResult3 = await client.GetItems<Article>()
+            .Where(f => f.System("type").IsEqualTo("article"))
+            .ExecuteAsync();
+
+        Assert.True(itemResult1.IsSuccess);
+        Assert.True(itemResult2.IsSuccess);
+        Assert.True(itemResult3.IsSuccess);
+        Assert.True(listResult1.IsSuccess);
+        Assert.True(listResult2.IsSuccess);
+        Assert.True(listResult3.IsSuccess);
+
+        Assert.False(itemResult1.IsCacheHit);
+        Assert.True(itemResult2.IsCacheHit);
+        Assert.False(listResult1.IsCacheHit);
+        Assert.True(listResult2.IsCacheHit);
+        Assert.True(itemResult3.IsCacheHit);
+        Assert.False(listResult3.IsCacheHit);
+
+        mock.VerifyNoOutstandingExpectation();
     }
 
     [Fact]
@@ -358,6 +499,364 @@ public class CachingIntegrationTests
         Assert.Null(result2.ResponseHeaders);    // Cache hit has no headers
 
         // Verify only one API call was made
+        mock.VerifyNoOutstandingExpectation();
+    }
+
+    [Fact]
+    public async Task MemoryCache_TypesListScopeInvalidation_RefreshesAllCachedTypeLists()
+    {
+        var mock = new MockHttpMessageHandler();
+        var fixtureContent = await File.ReadAllTextAsync(
+            Path.Combine(Environment.CurrentDirectory,
+                $"Fixtures{Path.DirectorySeparatorChar}DeliveryClient{Path.DirectorySeparatorChar}types_accessory.json"));
+
+        mock.Expect($"{BaseUrl}/types*")
+            .Respond("application/json", fixtureContent);
+        mock.Expect($"{BaseUrl}/types*")
+            .Respond("application/json", fixtureContent);
+        mock.Expect($"{BaseUrl}/types*")
+            .Respond("application/json", fixtureContent);
+        mock.Expect($"{BaseUrl}/types*")
+            .Respond("application/json", fixtureContent);
+
+        var services = new ServiceCollection();
+        var options = new DeliveryOptions
+        {
+            EnvironmentId = _guid.ToString()
+        };
+
+        services.AddDeliveryClient("test", o => DeliveryOptionsCopyHelper.Copy(options, o),
+            configureHttpClient: b => b.ConfigurePrimaryHttpMessageHandler(() => mock));
+        services.AddDeliveryMemoryCache("test");
+
+        var serviceProvider = services.BuildServiceProvider();
+        var client = serviceProvider.GetRequiredKeyedService<IDeliveryClient>("test");
+        var cacheManager = serviceProvider.GetRequiredKeyedService<IDeliveryCacheManager>("test");
+
+        var listResultA1 = await client.GetTypes().Skip(1).ExecuteAsync();
+        var listResultA2 = await client.GetTypes().Skip(1).ExecuteAsync();
+        var listResultB1 = await client.GetTypes().Skip(1).WithElements("title").ExecuteAsync();
+        var listResultB2 = await client.GetTypes().Skip(1).WithElements("title").ExecuteAsync();
+
+        Assert.True(listResultA1.IsSuccess);
+        Assert.True(listResultA2.IsSuccess);
+        Assert.True(listResultB1.IsSuccess);
+        Assert.True(listResultB2.IsSuccess);
+
+        Assert.False(listResultA1.IsCacheHit);
+        Assert.True(listResultA2.IsCacheHit);
+        Assert.False(listResultB1.IsCacheHit);
+        Assert.True(listResultB2.IsCacheHit);
+
+        await cacheManager.InvalidateAsync(default, DeliveryCacheDependencies.TypesListScope);
+
+        var listResultA3 = await client.GetTypes().Skip(1).ExecuteAsync();
+        var listResultB3 = await client.GetTypes().Skip(1).WithElements("title").ExecuteAsync();
+
+        Assert.True(listResultA3.IsSuccess);
+        Assert.True(listResultB3.IsSuccess);
+        Assert.False(listResultA3.IsCacheHit);
+        Assert.False(listResultB3.IsCacheHit);
+
+        mock.VerifyNoOutstandingExpectation();
+    }
+
+    [Fact]
+    public async Task MemoryCache_TaxonomiesListScopeInvalidation_RefreshesAllCachedTaxonomyLists()
+    {
+        var mock = new MockHttpMessageHandler();
+        var fixtureContent = await File.ReadAllTextAsync(
+            Path.Combine(Environment.CurrentDirectory,
+                $"Fixtures{Path.DirectorySeparatorChar}DeliveryClient{Path.DirectorySeparatorChar}taxonomies_multiple.json"));
+
+        mock.Expect($"{BaseUrl}/taxonomies*")
+            .Respond("application/json", fixtureContent);
+        mock.Expect($"{BaseUrl}/taxonomies*")
+            .Respond("application/json", fixtureContent);
+        mock.Expect($"{BaseUrl}/taxonomies*")
+            .Respond("application/json", fixtureContent);
+        mock.Expect($"{BaseUrl}/taxonomies*")
+            .Respond("application/json", fixtureContent);
+
+        var services = new ServiceCollection();
+        var options = new DeliveryOptions
+        {
+            EnvironmentId = _guid.ToString()
+        };
+
+        services.AddDeliveryClient("test", o => DeliveryOptionsCopyHelper.Copy(options, o),
+            configureHttpClient: b => b.ConfigurePrimaryHttpMessageHandler(() => mock));
+        services.AddDeliveryMemoryCache("test");
+
+        var serviceProvider = services.BuildServiceProvider();
+        var client = serviceProvider.GetRequiredKeyedService<IDeliveryClient>("test");
+        var cacheManager = serviceProvider.GetRequiredKeyedService<IDeliveryCacheManager>("test");
+
+        var listResultA1 = await client.GetTaxonomies().Skip(1).ExecuteAsync();
+        var listResultA2 = await client.GetTaxonomies().Skip(1).ExecuteAsync();
+        var listResultB1 = await client.GetTaxonomies().Skip(1).Limit(2).ExecuteAsync();
+        var listResultB2 = await client.GetTaxonomies().Skip(1).Limit(2).ExecuteAsync();
+
+        Assert.True(listResultA1.IsSuccess);
+        Assert.True(listResultA2.IsSuccess);
+        Assert.True(listResultB1.IsSuccess);
+        Assert.True(listResultB2.IsSuccess);
+
+        Assert.False(listResultA1.IsCacheHit);
+        Assert.True(listResultA2.IsCacheHit);
+        Assert.False(listResultB1.IsCacheHit);
+        Assert.True(listResultB2.IsCacheHit);
+
+        await cacheManager.InvalidateAsync(default, DeliveryCacheDependencies.TaxonomiesListScope);
+
+        var listResultA3 = await client.GetTaxonomies().Skip(1).ExecuteAsync();
+        var listResultB3 = await client.GetTaxonomies().Skip(1).Limit(2).ExecuteAsync();
+
+        Assert.True(listResultA3.IsSuccess);
+        Assert.True(listResultB3.IsSuccess);
+        Assert.False(listResultA3.IsCacheHit);
+        Assert.False(listResultB3.IsCacheHit);
+
+        mock.VerifyNoOutstandingExpectation();
+    }
+
+    [Fact]
+    public async Task MemoryCache_InvalidatingTypesListScope_DoesNotInvalidateSingleTypeQueries()
+    {
+        var mock = new MockHttpMessageHandler();
+        var typeFixture = await File.ReadAllTextAsync(
+            Path.Combine(Environment.CurrentDirectory,
+                $"Fixtures{Path.DirectorySeparatorChar}DeliveryClient{Path.DirectorySeparatorChar}article.json"));
+        var typesFixture = await File.ReadAllTextAsync(
+            Path.Combine(Environment.CurrentDirectory,
+                $"Fixtures{Path.DirectorySeparatorChar}DeliveryClient{Path.DirectorySeparatorChar}types_accessory.json"));
+
+        mock.Expect($"{BaseUrl}/types/article")
+            .Respond("application/json", typeFixture);
+        mock.Expect($"{BaseUrl}/types?skip=1")
+            .Respond("application/json", typesFixture);
+        mock.Expect($"{BaseUrl}/types?skip=1")
+            .Respond("application/json", typesFixture);
+
+        var services = new ServiceCollection();
+        var options = new DeliveryOptions
+        {
+            EnvironmentId = _guid.ToString()
+        };
+
+        services.AddDeliveryClient("test", o => DeliveryOptionsCopyHelper.Copy(options, o),
+            configureHttpClient: b => b.ConfigurePrimaryHttpMessageHandler(() => mock));
+        services.AddDeliveryMemoryCache("test");
+
+        var serviceProvider = services.BuildServiceProvider();
+        var client = serviceProvider.GetRequiredKeyedService<IDeliveryClient>("test");
+        var cacheManager = serviceProvider.GetRequiredKeyedService<IDeliveryCacheManager>("test");
+
+        var typeResult1 = await client.GetType("article").ExecuteAsync();
+        var typesResult1 = await client.GetTypes().Skip(1).ExecuteAsync();
+        var typeResult2 = await client.GetType("article").ExecuteAsync();
+        var typesResult2 = await client.GetTypes().Skip(1).ExecuteAsync();
+
+        await cacheManager.InvalidateAsync(default, DeliveryCacheDependencies.TypesListScope);
+
+        var typeResult3 = await client.GetType("article").ExecuteAsync();
+        var typesResult3 = await client.GetTypes().Skip(1).ExecuteAsync();
+
+        Assert.True(typeResult1.IsSuccess);
+        Assert.True(typeResult2.IsSuccess);
+        Assert.True(typeResult3.IsSuccess);
+        Assert.True(typesResult1.IsSuccess);
+        Assert.True(typesResult2.IsSuccess);
+        Assert.True(typesResult3.IsSuccess);
+
+        Assert.False(typeResult1.IsCacheHit);
+        Assert.True(typeResult2.IsCacheHit);
+        Assert.True(typeResult3.IsCacheHit);
+        Assert.False(typesResult1.IsCacheHit);
+        Assert.True(typesResult2.IsCacheHit);
+        Assert.False(typesResult3.IsCacheHit);
+
+        mock.VerifyNoOutstandingExpectation();
+    }
+
+    [Fact]
+    public async Task MemoryCache_InvalidatingTaxonomiesListScope_DoesNotInvalidateSingleTaxonomyQueries()
+    {
+        var mock = new MockHttpMessageHandler();
+        var taxonomyFixture = await File.ReadAllTextAsync(
+            Path.Combine(Environment.CurrentDirectory,
+                $"Fixtures{Path.DirectorySeparatorChar}DeliveryClient{Path.DirectorySeparatorChar}taxonomies_personas.json"));
+        var taxonomiesFixture = await File.ReadAllTextAsync(
+            Path.Combine(Environment.CurrentDirectory,
+                $"Fixtures{Path.DirectorySeparatorChar}DeliveryClient{Path.DirectorySeparatorChar}taxonomies_multiple.json"));
+
+        mock.Expect($"{BaseUrl}/taxonomies/personas")
+            .Respond("application/json", taxonomyFixture);
+        mock.Expect($"{BaseUrl}/taxonomies?skip=1")
+            .Respond("application/json", taxonomiesFixture);
+        mock.Expect($"{BaseUrl}/taxonomies?skip=1")
+            .Respond("application/json", taxonomiesFixture);
+
+        var services = new ServiceCollection();
+        var options = new DeliveryOptions
+        {
+            EnvironmentId = _guid.ToString()
+        };
+
+        services.AddDeliveryClient("test", o => DeliveryOptionsCopyHelper.Copy(options, o),
+            configureHttpClient: b => b.ConfigurePrimaryHttpMessageHandler(() => mock));
+        services.AddDeliveryMemoryCache("test");
+
+        var serviceProvider = services.BuildServiceProvider();
+        var client = serviceProvider.GetRequiredKeyedService<IDeliveryClient>("test");
+        var cacheManager = serviceProvider.GetRequiredKeyedService<IDeliveryCacheManager>("test");
+
+        var taxonomyResult1 = await client.GetTaxonomy("personas").ExecuteAsync();
+        var taxonomiesResult1 = await client.GetTaxonomies().Skip(1).ExecuteAsync();
+        var taxonomyResult2 = await client.GetTaxonomy("personas").ExecuteAsync();
+        var taxonomiesResult2 = await client.GetTaxonomies().Skip(1).ExecuteAsync();
+
+        await cacheManager.InvalidateAsync(default, DeliveryCacheDependencies.TaxonomiesListScope);
+
+        var taxonomyResult3 = await client.GetTaxonomy("personas").ExecuteAsync();
+        var taxonomiesResult3 = await client.GetTaxonomies().Skip(1).ExecuteAsync();
+
+        Assert.True(taxonomyResult1.IsSuccess);
+        Assert.True(taxonomyResult2.IsSuccess);
+        Assert.True(taxonomyResult3.IsSuccess);
+        Assert.True(taxonomiesResult1.IsSuccess);
+        Assert.True(taxonomiesResult2.IsSuccess);
+        Assert.True(taxonomiesResult3.IsSuccess);
+
+        Assert.False(taxonomyResult1.IsCacheHit);
+        Assert.True(taxonomyResult2.IsCacheHit);
+        Assert.True(taxonomyResult3.IsCacheHit);
+        Assert.False(taxonomiesResult1.IsCacheHit);
+        Assert.True(taxonomiesResult2.IsCacheHit);
+        Assert.False(taxonomiesResult3.IsCacheHit);
+
+        mock.VerifyNoOutstandingExpectation();
+    }
+
+    [Fact]
+    public async Task MemoryCache_InvalidatingTypeDependency_RefreshesSingleTypeAndTypeLists()
+    {
+        var mock = new MockHttpMessageHandler();
+        var typeFixture = await File.ReadAllTextAsync(
+            Path.Combine(Environment.CurrentDirectory,
+                $"Fixtures{Path.DirectorySeparatorChar}DeliveryClient{Path.DirectorySeparatorChar}article.json"));
+        var typesFixture = await File.ReadAllTextAsync(
+            Path.Combine(Environment.CurrentDirectory,
+                $"Fixtures{Path.DirectorySeparatorChar}DeliveryClient{Path.DirectorySeparatorChar}types_accessory.json"));
+
+        mock.Expect($"{BaseUrl}/types/article")
+            .Respond("application/json", typeFixture);
+        mock.Expect($"{BaseUrl}/types?skip=1")
+            .Respond("application/json", typesFixture);
+        mock.Expect($"{BaseUrl}/types/article")
+            .Respond("application/json", typeFixture);
+        mock.Expect($"{BaseUrl}/types?skip=1")
+            .Respond("application/json", typesFixture);
+
+        var services = new ServiceCollection();
+        var options = new DeliveryOptions
+        {
+            EnvironmentId = _guid.ToString()
+        };
+
+        services.AddDeliveryClient("test", o => DeliveryOptionsCopyHelper.Copy(options, o),
+            configureHttpClient: b => b.ConfigurePrimaryHttpMessageHandler(() => mock));
+        services.AddDeliveryMemoryCache("test");
+
+        var serviceProvider = services.BuildServiceProvider();
+        var client = serviceProvider.GetRequiredKeyedService<IDeliveryClient>("test");
+        var cacheManager = serviceProvider.GetRequiredKeyedService<IDeliveryCacheManager>("test");
+
+        var typeResult1 = await client.GetType("article").ExecuteAsync();
+        var typesResult1 = await client.GetTypes().Skip(1).ExecuteAsync();
+        var typeResult2 = await client.GetType("article").ExecuteAsync();
+        var typesResult2 = await client.GetTypes().Skip(1).ExecuteAsync();
+
+        await cacheManager.InvalidateAsync(default, "type_article");
+
+        var typeResult3 = await client.GetType("article").ExecuteAsync();
+        var typesResult3 = await client.GetTypes().Skip(1).ExecuteAsync();
+
+        Assert.True(typeResult1.IsSuccess);
+        Assert.True(typeResult2.IsSuccess);
+        Assert.True(typeResult3.IsSuccess);
+        Assert.True(typesResult1.IsSuccess);
+        Assert.True(typesResult2.IsSuccess);
+        Assert.True(typesResult3.IsSuccess);
+
+        Assert.False(typeResult1.IsCacheHit);
+        Assert.True(typeResult2.IsCacheHit);
+        Assert.False(typeResult3.IsCacheHit);
+        Assert.False(typesResult1.IsCacheHit);
+        Assert.True(typesResult2.IsCacheHit);
+        Assert.False(typesResult3.IsCacheHit);
+
+        mock.VerifyNoOutstandingExpectation();
+    }
+
+    [Fact]
+    public async Task MemoryCache_InvalidatingTaxonomyDependency_RefreshesSingleTaxonomyAndTaxonomyLists()
+    {
+        var mock = new MockHttpMessageHandler();
+        var taxonomyFixture = await File.ReadAllTextAsync(
+            Path.Combine(Environment.CurrentDirectory,
+                $"Fixtures{Path.DirectorySeparatorChar}DeliveryClient{Path.DirectorySeparatorChar}taxonomies_personas.json"));
+        var taxonomiesFixture = await File.ReadAllTextAsync(
+            Path.Combine(Environment.CurrentDirectory,
+                $"Fixtures{Path.DirectorySeparatorChar}DeliveryClient{Path.DirectorySeparatorChar}taxonomies_multiple.json"));
+
+        mock.Expect($"{BaseUrl}/taxonomies/personas")
+            .Respond("application/json", taxonomyFixture);
+        mock.Expect($"{BaseUrl}/taxonomies?skip=1")
+            .Respond("application/json", taxonomiesFixture);
+        mock.Expect($"{BaseUrl}/taxonomies/personas")
+            .Respond("application/json", taxonomyFixture);
+        mock.Expect($"{BaseUrl}/taxonomies?skip=1")
+            .Respond("application/json", taxonomiesFixture);
+
+        var services = new ServiceCollection();
+        var options = new DeliveryOptions
+        {
+            EnvironmentId = _guid.ToString()
+        };
+
+        services.AddDeliveryClient("test", o => DeliveryOptionsCopyHelper.Copy(options, o),
+            configureHttpClient: b => b.ConfigurePrimaryHttpMessageHandler(() => mock));
+        services.AddDeliveryMemoryCache("test");
+
+        var serviceProvider = services.BuildServiceProvider();
+        var client = serviceProvider.GetRequiredKeyedService<IDeliveryClient>("test");
+        var cacheManager = serviceProvider.GetRequiredKeyedService<IDeliveryCacheManager>("test");
+
+        var taxonomyResult1 = await client.GetTaxonomy("personas").ExecuteAsync();
+        var taxonomiesResult1 = await client.GetTaxonomies().Skip(1).ExecuteAsync();
+        var taxonomyResult2 = await client.GetTaxonomy("personas").ExecuteAsync();
+        var taxonomiesResult2 = await client.GetTaxonomies().Skip(1).ExecuteAsync();
+
+        await cacheManager.InvalidateAsync(default, "taxonomy_personas");
+
+        var taxonomyResult3 = await client.GetTaxonomy("personas").ExecuteAsync();
+        var taxonomiesResult3 = await client.GetTaxonomies().Skip(1).ExecuteAsync();
+
+        Assert.True(taxonomyResult1.IsSuccess);
+        Assert.True(taxonomyResult2.IsSuccess);
+        Assert.True(taxonomyResult3.IsSuccess);
+        Assert.True(taxonomiesResult1.IsSuccess);
+        Assert.True(taxonomiesResult2.IsSuccess);
+        Assert.True(taxonomiesResult3.IsSuccess);
+
+        Assert.False(taxonomyResult1.IsCacheHit);
+        Assert.True(taxonomyResult2.IsCacheHit);
+        Assert.False(taxonomyResult3.IsCacheHit);
+        Assert.False(taxonomiesResult1.IsCacheHit);
+        Assert.True(taxonomiesResult2.IsCacheHit);
+        Assert.False(taxonomiesResult3.IsCacheHit);
+
         mock.VerifyNoOutstandingExpectation();
     }
 
@@ -478,14 +977,13 @@ public class CachingIntegrationTests
 
         var mockDistributedCache = new MockDistributedCache();
         services.AddSingleton<IDistributedCache>(mockDistributedCache);
-        services.AddSingleton<IDeliveryCacheManager>(sp =>
-            new DistributedCacheManager(sp.GetRequiredService<IDistributedCache>()));
-        services.AddDeliveryClient(options, configureHttpClient: b =>
-            b.ConfigurePrimaryHttpMessageHandler(() => mock));
+        services.AddDeliveryClient("test", o => DeliveryOptionsCopyHelper.Copy(options, o),
+            configureHttpClient: b => b.ConfigurePrimaryHttpMessageHandler(() => mock));
+        services.AddDeliveryDistributedCache("test");
 
         var serviceProvider = services.BuildServiceProvider();
-        var client = serviceProvider.GetRequiredService<IDeliveryClient>();
-        var cacheManager = serviceProvider.GetRequiredService<IDeliveryCacheManager>();
+        var client = serviceProvider.GetRequiredKeyedService<IDeliveryClient>("test");
+        var cacheManager = serviceProvider.GetRequiredKeyedService<IDeliveryCacheManager>("test");
 
         var result1 = await client.GetItem<Article>(itemCodename).ExecuteAsync();
 
@@ -497,6 +995,195 @@ public class CachingIntegrationTests
         Assert.True(result2.IsSuccess);
         Assert.NotNull(result1.Value);
         Assert.NotNull(result2.Value);
+    }
+
+    [Fact]
+    public async Task DistributedCache_ItemsListScopeInvalidation_RefreshesAllCachedItemLists()
+    {
+        var mock = new MockHttpMessageHandler();
+        var fixtureContent = await File.ReadAllTextAsync(
+            Path.Combine(Environment.CurrentDirectory,
+                $"Fixtures{Path.DirectorySeparatorChar}DeliveryClient{Path.DirectorySeparatorChar}articles.json"));
+
+        mock.Expect($"{BaseUrl}/items*")
+            .Respond("application/json", fixtureContent);
+        mock.Expect($"{BaseUrl}/items*")
+            .Respond("application/json", fixtureContent);
+        mock.Expect($"{BaseUrl}/items*")
+            .Respond("application/json", fixtureContent);
+        mock.Expect($"{BaseUrl}/items*")
+            .Respond("application/json", fixtureContent);
+
+        var services = new ServiceCollection();
+        var options = new DeliveryOptions
+        {
+            EnvironmentId = _guid.ToString()
+        };
+
+        var mockDistributedCache = new MockDistributedCache();
+        services.AddSingleton<IDistributedCache>(mockDistributedCache);
+        services.AddDeliveryClient("test", o => DeliveryOptionsCopyHelper.Copy(options, o),
+            configureHttpClient: b => b.ConfigurePrimaryHttpMessageHandler(() => mock));
+        services.AddDeliveryDistributedCache("test");
+
+        var serviceProvider = services.BuildServiceProvider();
+        var client = serviceProvider.GetRequiredKeyedService<IDeliveryClient>("test");
+        var cacheManager = serviceProvider.GetRequiredKeyedService<IDeliveryCacheManager>("test");
+
+        var listResultA1 = await client.GetItems<Article>()
+            .Where(f => f.System("type").IsEqualTo("article"))
+            .ExecuteAsync();
+        var listResultA2 = await client.GetItems<Article>()
+            .Where(f => f.System("type").IsEqualTo("article"))
+            .ExecuteAsync();
+        var listResultB1 = await client.GetItems<Article>()
+            .Where(f => f.System("type").IsEqualTo("article"))
+            .WithElements("title")
+            .ExecuteAsync();
+        var listResultB2 = await client.GetItems<Article>()
+            .Where(f => f.System("type").IsEqualTo("article"))
+            .WithElements("title")
+            .ExecuteAsync();
+
+        Assert.True(listResultA1.IsSuccess);
+        Assert.True(listResultA2.IsSuccess);
+        Assert.True(listResultB1.IsSuccess);
+        Assert.True(listResultB2.IsSuccess);
+
+        Assert.False(listResultA1.IsCacheHit);
+        Assert.True(listResultA2.IsCacheHit);
+        Assert.False(listResultB1.IsCacheHit);
+        Assert.True(listResultB2.IsCacheHit);
+
+        await cacheManager.InvalidateAsync(default, DeliveryCacheDependencies.ItemsListScope);
+
+        var listResultA3 = await client.GetItems<Article>()
+            .Where(f => f.System("type").IsEqualTo("article"))
+            .ExecuteAsync();
+        var listResultB3 = await client.GetItems<Article>()
+            .Where(f => f.System("type").IsEqualTo("article"))
+            .WithElements("title")
+            .ExecuteAsync();
+
+        Assert.True(listResultA3.IsSuccess);
+        Assert.True(listResultB3.IsSuccess);
+
+        Assert.False(listResultA3.IsCacheHit);
+        Assert.False(listResultB3.IsCacheHit);
+
+        mock.VerifyNoOutstandingExpectation();
+    }
+
+    [Fact]
+    public async Task DistributedCache_TypesListScopeInvalidation_RefreshesAllCachedTypeLists()
+    {
+        var mock = new MockHttpMessageHandler();
+        var fixtureContent = await File.ReadAllTextAsync(
+            Path.Combine(Environment.CurrentDirectory,
+                $"Fixtures{Path.DirectorySeparatorChar}DeliveryClient{Path.DirectorySeparatorChar}types_accessory.json"));
+
+        mock.When($"{BaseUrl}/types*")
+            .Respond("application/json", fixtureContent);
+
+        var services = new ServiceCollection();
+        var options = new DeliveryOptions
+        {
+            EnvironmentId = _guid.ToString()
+        };
+
+        var mockDistributedCache = new MockDistributedCache();
+        services.AddSingleton<IDistributedCache>(mockDistributedCache);
+        services.AddDeliveryClient("test", o => DeliveryOptionsCopyHelper.Copy(options, o),
+            configureHttpClient: b => b.ConfigurePrimaryHttpMessageHandler(() => mock));
+        services.AddDeliveryDistributedCache("test");
+
+        var serviceProvider = services.BuildServiceProvider();
+        var client = serviceProvider.GetRequiredKeyedService<IDeliveryClient>("test");
+        var cacheManager = serviceProvider.GetRequiredKeyedService<IDeliveryCacheManager>("test");
+
+        var listResultA1 = await client.GetTypes().Skip(1).ExecuteAsync();
+        var listResultA2 = await client.GetTypes().Skip(1).ExecuteAsync();
+        var listResultB1 = await client.GetTypes().Skip(1).WithElements("title").ExecuteAsync();
+        var listResultB2 = await client.GetTypes().Skip(1).WithElements("title").ExecuteAsync();
+
+        Assert.True(listResultA1.IsSuccess);
+        Assert.True(listResultA2.IsSuccess);
+        Assert.True(listResultB1.IsSuccess);
+        Assert.True(listResultB2.IsSuccess);
+
+        Assert.False(listResultA1.IsCacheHit);
+        Assert.False(listResultB1.IsCacheHit);
+
+        await cacheManager.InvalidateAsync(default, DeliveryCacheDependencies.TypesListScope);
+
+        var listResultA3 = await client.GetTypes().Skip(1).ExecuteAsync();
+        var listResultB3 = await client.GetTypes().Skip(1).WithElements("title").ExecuteAsync();
+
+        Assert.True(listResultA3.IsSuccess);
+        Assert.True(listResultB3.IsSuccess);
+        Assert.False(listResultA3.IsCacheHit);
+        Assert.False(listResultB3.IsCacheHit);
+    }
+
+    [Fact]
+    public async Task DistributedCache_TaxonomiesListScopeInvalidation_RefreshesAllCachedTaxonomyLists()
+    {
+        var mock = new MockHttpMessageHandler();
+        var fixtureContent = await File.ReadAllTextAsync(
+            Path.Combine(Environment.CurrentDirectory,
+                $"Fixtures{Path.DirectorySeparatorChar}DeliveryClient{Path.DirectorySeparatorChar}taxonomies_multiple.json"));
+
+        mock.Expect($"{BaseUrl}/taxonomies*")
+            .Respond("application/json", fixtureContent);
+        mock.Expect($"{BaseUrl}/taxonomies*")
+            .Respond("application/json", fixtureContent);
+        mock.Expect($"{BaseUrl}/taxonomies*")
+            .Respond("application/json", fixtureContent);
+        mock.Expect($"{BaseUrl}/taxonomies*")
+            .Respond("application/json", fixtureContent);
+
+        var services = new ServiceCollection();
+        var options = new DeliveryOptions
+        {
+            EnvironmentId = _guid.ToString()
+        };
+
+        var mockDistributedCache = new MockDistributedCache();
+        services.AddSingleton<IDistributedCache>(mockDistributedCache);
+        services.AddDeliveryClient("test", o => DeliveryOptionsCopyHelper.Copy(options, o),
+            configureHttpClient: b => b.ConfigurePrimaryHttpMessageHandler(() => mock));
+        services.AddDeliveryDistributedCache("test");
+
+        var serviceProvider = services.BuildServiceProvider();
+        var client = serviceProvider.GetRequiredKeyedService<IDeliveryClient>("test");
+        var cacheManager = serviceProvider.GetRequiredKeyedService<IDeliveryCacheManager>("test");
+
+        var listResultA1 = await client.GetTaxonomies().Skip(1).ExecuteAsync();
+        var listResultA2 = await client.GetTaxonomies().Skip(1).ExecuteAsync();
+        var listResultB1 = await client.GetTaxonomies().Skip(1).Limit(2).ExecuteAsync();
+        var listResultB2 = await client.GetTaxonomies().Skip(1).Limit(2).ExecuteAsync();
+
+        Assert.True(listResultA1.IsSuccess);
+        Assert.True(listResultA2.IsSuccess);
+        Assert.True(listResultB1.IsSuccess);
+        Assert.True(listResultB2.IsSuccess);
+
+        Assert.False(listResultA1.IsCacheHit);
+        Assert.True(listResultA2.IsCacheHit);
+        Assert.False(listResultB1.IsCacheHit);
+        Assert.True(listResultB2.IsCacheHit);
+
+        await cacheManager.InvalidateAsync(default, DeliveryCacheDependencies.TaxonomiesListScope);
+
+        var listResultA3 = await client.GetTaxonomies().Skip(1).ExecuteAsync();
+        var listResultB3 = await client.GetTaxonomies().Skip(1).Limit(2).ExecuteAsync();
+
+        Assert.True(listResultA3.IsSuccess);
+        Assert.True(listResultB3.IsSuccess);
+        Assert.False(listResultA3.IsCacheHit);
+        Assert.False(listResultB3.IsCacheHit);
+
+        mock.VerifyNoOutstandingExpectation();
     }
 
     [Fact]
@@ -611,6 +1298,176 @@ public class CachingIntegrationTests
 
         // Should track dependencies from rich text links
         Assert.NotEmpty(dependencies);
+    }
+
+    [Fact]
+    public async Task MemoryCache_GetItems_TracksItemsListScopeDependency()
+    {
+        var mock = new MockHttpMessageHandler();
+        var fixtureContent = await File.ReadAllTextAsync(
+            Path.Combine(Environment.CurrentDirectory,
+                $"Fixtures{Path.DirectorySeparatorChar}DeliveryClient{Path.DirectorySeparatorChar}articles.json"));
+
+        mock.When($"{BaseUrl}/items?system.type%5Beq%5D=article")
+            .Respond("application/json", fixtureContent);
+
+        var services = new ServiceCollection();
+        var options = new DeliveryOptions
+        {
+            EnvironmentId = _guid.ToString()
+        };
+
+        var mockCacheManager = new TestCacheManager();
+        services.AddDeliveryClient("test", o => DeliveryOptionsCopyHelper.Copy(options, o),
+            configureHttpClient: b => b.ConfigurePrimaryHttpMessageHandler(() => mock));
+        services.AddKeyedSingleton<IDeliveryCacheManager>("test", mockCacheManager);
+
+        var serviceProvider = services.BuildServiceProvider();
+        var client = serviceProvider.GetRequiredKeyedService<IDeliveryClient>("test");
+
+        var result = await client.GetItems<Article>()
+            .Where(f => f.System("type").IsEqualTo("article"))
+            .ExecuteAsync();
+
+        Assert.True(result.IsSuccess);
+
+        var cachedEntry = Assert.Single(mockCacheManager.CachedItems);
+        Assert.Contains(DeliveryCacheDependencies.ItemsListScope, cachedEntry.Dependencies);
+        Assert.Contains(cachedEntry.Dependencies, dependency => dependency.StartsWith("item_", StringComparison.Ordinal));
+    }
+
+    [Fact]
+    public async Task MemoryCache_GetType_TracksTypeDependency()
+    {
+        var mock = new MockHttpMessageHandler();
+        var fixtureContent = await File.ReadAllTextAsync(
+            Path.Combine(Environment.CurrentDirectory,
+                $"Fixtures{Path.DirectorySeparatorChar}DeliveryClient{Path.DirectorySeparatorChar}article.json"));
+
+        mock.When($"{BaseUrl}/types/article")
+            .Respond("application/json", fixtureContent);
+
+        var services = new ServiceCollection();
+        var options = new DeliveryOptions
+        {
+            EnvironmentId = _guid.ToString()
+        };
+
+        var mockCacheManager = new TestCacheManager();
+        services.AddDeliveryClient("test", o => DeliveryOptionsCopyHelper.Copy(options, o),
+            configureHttpClient: b => b.ConfigurePrimaryHttpMessageHandler(() => mock));
+        services.AddKeyedSingleton<IDeliveryCacheManager>("test", mockCacheManager);
+
+        var serviceProvider = services.BuildServiceProvider();
+        var client = serviceProvider.GetRequiredKeyedService<IDeliveryClient>("test");
+
+        var result = await client.GetType("article").ExecuteAsync();
+
+        Assert.True(result.IsSuccess);
+
+        var cachedEntry = Assert.Single(mockCacheManager.CachedItems);
+        Assert.Contains("type_article", cachedEntry.Dependencies);
+    }
+
+    [Fact]
+    public async Task MemoryCache_GetTypes_TracksTypesListScopeAndTypeDependencies()
+    {
+        var mock = new MockHttpMessageHandler();
+        var fixtureContent = await File.ReadAllTextAsync(
+            Path.Combine(Environment.CurrentDirectory,
+                $"Fixtures{Path.DirectorySeparatorChar}DeliveryClient{Path.DirectorySeparatorChar}types_accessory.json"));
+
+        mock.When($"{BaseUrl}/types?skip=1")
+            .Respond("application/json", fixtureContent);
+
+        var services = new ServiceCollection();
+        var options = new DeliveryOptions
+        {
+            EnvironmentId = _guid.ToString()
+        };
+
+        var mockCacheManager = new TestCacheManager();
+        services.AddDeliveryClient("test", o => DeliveryOptionsCopyHelper.Copy(options, o),
+            configureHttpClient: b => b.ConfigurePrimaryHttpMessageHandler(() => mock));
+        services.AddKeyedSingleton<IDeliveryCacheManager>("test", mockCacheManager);
+
+        var serviceProvider = services.BuildServiceProvider();
+        var client = serviceProvider.GetRequiredKeyedService<IDeliveryClient>("test");
+
+        var result = await client.GetTypes().Skip(1).ExecuteAsync();
+
+        Assert.True(result.IsSuccess);
+
+        var cachedEntry = Assert.Single(mockCacheManager.CachedItems);
+        Assert.Contains(DeliveryCacheDependencies.TypesListScope, cachedEntry.Dependencies);
+        Assert.Contains(cachedEntry.Dependencies, dependency => dependency.StartsWith("type_", StringComparison.Ordinal));
+    }
+
+    [Fact]
+    public async Task MemoryCache_GetTaxonomy_TracksTaxonomyDependency()
+    {
+        var mock = new MockHttpMessageHandler();
+        var fixtureContent = await File.ReadAllTextAsync(
+            Path.Combine(Environment.CurrentDirectory,
+                $"Fixtures{Path.DirectorySeparatorChar}DeliveryClient{Path.DirectorySeparatorChar}taxonomies_personas.json"));
+
+        mock.When($"{BaseUrl}/taxonomies/personas")
+            .Respond("application/json", fixtureContent);
+
+        var services = new ServiceCollection();
+        var options = new DeliveryOptions
+        {
+            EnvironmentId = _guid.ToString()
+        };
+
+        var mockCacheManager = new TestCacheManager();
+        services.AddDeliveryClient("test", o => DeliveryOptionsCopyHelper.Copy(options, o),
+            configureHttpClient: b => b.ConfigurePrimaryHttpMessageHandler(() => mock));
+        services.AddKeyedSingleton<IDeliveryCacheManager>("test", mockCacheManager);
+
+        var serviceProvider = services.BuildServiceProvider();
+        var client = serviceProvider.GetRequiredKeyedService<IDeliveryClient>("test");
+
+        var result = await client.GetTaxonomy("personas").ExecuteAsync();
+
+        Assert.True(result.IsSuccess);
+
+        var cachedEntry = Assert.Single(mockCacheManager.CachedItems);
+        Assert.Contains("taxonomy_personas", cachedEntry.Dependencies);
+    }
+
+    [Fact]
+    public async Task MemoryCache_GetTaxonomies_TracksTaxonomiesListScopeAndTaxonomyDependencies()
+    {
+        var mock = new MockHttpMessageHandler();
+        var fixtureContent = await File.ReadAllTextAsync(
+            Path.Combine(Environment.CurrentDirectory,
+                $"Fixtures{Path.DirectorySeparatorChar}DeliveryClient{Path.DirectorySeparatorChar}taxonomies_multiple.json"));
+
+        mock.When($"{BaseUrl}/taxonomies?skip=1")
+            .Respond("application/json", fixtureContent);
+
+        var services = new ServiceCollection();
+        var options = new DeliveryOptions
+        {
+            EnvironmentId = _guid.ToString()
+        };
+
+        var mockCacheManager = new TestCacheManager();
+        services.AddDeliveryClient("test", o => DeliveryOptionsCopyHelper.Copy(options, o),
+            configureHttpClient: b => b.ConfigurePrimaryHttpMessageHandler(() => mock));
+        services.AddKeyedSingleton<IDeliveryCacheManager>("test", mockCacheManager);
+
+        var serviceProvider = services.BuildServiceProvider();
+        var client = serviceProvider.GetRequiredKeyedService<IDeliveryClient>("test");
+
+        var result = await client.GetTaxonomies().Skip(1).ExecuteAsync();
+
+        Assert.True(result.IsSuccess);
+
+        var cachedEntry = Assert.Single(mockCacheManager.CachedItems);
+        Assert.Contains(DeliveryCacheDependencies.TaxonomiesListScope, cachedEntry.Dependencies);
+        Assert.Contains(cachedEntry.Dependencies, dependency => dependency.StartsWith("taxonomy_", StringComparison.Ordinal));
     }
 
     [Fact]

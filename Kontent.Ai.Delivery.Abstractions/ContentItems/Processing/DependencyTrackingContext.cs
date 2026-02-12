@@ -28,21 +28,6 @@ namespace Kontent.Ai.Delivery.Abstractions;
 /// </remarks>
 internal sealed class DependencyTrackingContext
 {
-    /// <summary>
-    /// Prefix for content item dependency keys.
-    /// </summary>
-    public const string ItemPrefix = "item_";
-
-    /// <summary>
-    /// Prefix for asset dependency keys.
-    /// </summary>
-    public const string AssetPrefix = "asset_";
-
-    /// <summary>
-    /// Prefix for taxonomy group dependency keys.
-    /// </summary>
-    public const string TaxonomyPrefix = "taxonomy_";
-
     private readonly HashSet<string> _dependencies = new(StringComparer.OrdinalIgnoreCase);
     private readonly object _lock = new();
 
@@ -103,9 +88,15 @@ internal sealed class DependencyTrackingContext
             return;
         }
 
+        var dependencyKey = CacheDependencyKeyBuilder.BuildItemDependencyKey(codename);
+        if (dependencyKey is null)
+        {
+            return;
+        }
+
         lock (_lock)
         {
-            _dependencies.Add($"{ItemPrefix}{codename}");
+            _dependencies.Add(dependencyKey);
         }
     }
 
@@ -146,9 +137,11 @@ internal sealed class DependencyTrackingContext
     /// </remarks>
     public void TrackAsset(Guid assetId)
     {
+        var dependencyKey = CacheDependencyKeyBuilder.BuildAssetDependencyKey(assetId);
+
         lock (_lock)
         {
-            _dependencies.Add($"{AssetPrefix}{assetId}");
+            _dependencies.Add(dependencyKey);
         }
     }
 
@@ -173,14 +166,15 @@ internal sealed class DependencyTrackingContext
     /// </remarks>
     public void TrackTaxonomy(string? taxonomyGroup)
     {
-        if (string.IsNullOrWhiteSpace(taxonomyGroup))
+        var dependencyKey = CacheDependencyKeyBuilder.BuildTaxonomyDependencyKey(taxonomyGroup);
+        if (dependencyKey is null)
         {
             return;
         }
 
         lock (_lock)
         {
-            _dependencies.Add($"{TaxonomyPrefix}{taxonomyGroup}");
+            _dependencies.Add(dependencyKey);
         }
     }
 }

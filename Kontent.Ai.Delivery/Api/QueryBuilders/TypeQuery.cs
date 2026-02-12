@@ -103,7 +103,10 @@ internal sealed class TypeQuery(
                 if (!apiResult.IsSuccess)
                     return (null, Array.Empty<string>());
 
-                return ((ContentType)apiResult.Value, Array.Empty<string>());
+                var dependency = CacheDependencyKeyBuilder.BuildTypeDependencyKey(apiResult.Value.System.Codename);
+                var dependencies = dependency is null ? Array.Empty<string>() : [dependency];
+
+                return ((ContentType)apiResult.Value, dependencies);
             },
             _logger,
             cancellationToken).ConfigureAwait(false);

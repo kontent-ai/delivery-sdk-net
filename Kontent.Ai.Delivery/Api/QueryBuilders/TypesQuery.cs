@@ -138,7 +138,7 @@ internal sealed class TypesQuery(
                 if (!apiResult.IsSuccess)
                     return (null, Array.Empty<string>());
 
-                return (apiResult.Value, Array.Empty<string>());
+                return (apiResult.Value, BuildDependencies(apiResult.Value.Types));
             },
             _logger,
             cancellationToken).ConfigureAwait(false);
@@ -156,6 +156,25 @@ internal sealed class TypesQuery(
             waitForLoadingNewContent,
             cancellationToken).ConfigureAwait(false);
         return await response.ToDeliveryResultAsync(_logger).ConfigureAwait(false);
+    }
+
+    private static string[] BuildDependencies(IReadOnlyList<ContentType> types)
+    {
+        var dependencies = new HashSet<string>(StringComparer.OrdinalIgnoreCase)
+        {
+            DeliveryCacheDependencies.TypesListScope
+        };
+
+        foreach (var type in types)
+        {
+            var dependency = CacheDependencyKeyBuilder.BuildTypeDependencyKey(type.System.Codename);
+            if (dependency is null)
+                continue;
+
+            dependencies.Add(dependency);
+        }
+
+        return [.. dependencies];
     }
 
     private static IDeliveryResult<IDeliveryTypeListingResponse> WrapSuccess(

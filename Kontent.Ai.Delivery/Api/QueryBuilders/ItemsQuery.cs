@@ -297,7 +297,9 @@ internal sealed class ItemsQuery<TModel>(
             }
         }
 
-        return (resp, dependencyContext?.Dependencies ?? []);
+        return dependencyContext is null
+            ? (resp, [])
+            : (resp, [.. dependencyContext.Dependencies, DeliveryCacheDependencies.ItemsListScope]);
     }
 
     private static IDeliveryResult<IDeliveryItemListingResponse<TModel>> CreateFailureResult(
