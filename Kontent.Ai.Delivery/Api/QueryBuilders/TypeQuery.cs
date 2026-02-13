@@ -15,7 +15,6 @@ internal sealed class TypeQuery(
     IDeliveryCacheManager? cacheManager,
     ILogger? logger = null) : ITypeQuery
 {
-    private const string TypeDependencyPrefix = "type_";
     private readonly IDeliveryApi _api = api;
     private readonly string _codename = codename;
     private SingleTypeParams _params = new();
@@ -104,10 +103,8 @@ internal sealed class TypeQuery(
                 if (!apiResult.IsSuccess)
                     return (null, Array.Empty<string>());
 
-                var typeCodename = apiResult.Value.System.Codename;
-                var dependencies = string.IsNullOrWhiteSpace(typeCodename)
-                    ? Array.Empty<string>()
-                    : [$"{TypeDependencyPrefix}{typeCodename}"];
+                var dependency = CacheDependencyKeyBuilder.BuildTypeDependencyKey(apiResult.Value.System.Codename);
+                var dependencies = dependency is null ? Array.Empty<string>() : [dependency];
 
                 return ((ContentType)apiResult.Value, dependencies);
             },

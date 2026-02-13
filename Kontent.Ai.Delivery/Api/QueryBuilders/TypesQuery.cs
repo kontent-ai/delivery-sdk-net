@@ -15,7 +15,6 @@ internal sealed class TypesQuery(
     IDeliveryCacheManager? cacheManager,
     ILogger? logger = null) : ITypesQuery
 {
-    private const string TypeDependencyPrefix = "type_";
     private readonly IDeliveryApi _api = api;
     private readonly SerializedFilterCollection _serializedFilters = [];
     private ListTypesParams _params = new();
@@ -168,10 +167,11 @@ internal sealed class TypesQuery(
 
         foreach (var type in types)
         {
-            if (string.IsNullOrWhiteSpace(type.System.Codename))
+            var dependency = CacheDependencyKeyBuilder.BuildTypeDependencyKey(type.System.Codename);
+            if (dependency is null)
                 continue;
 
-            dependencies.Add($"{TypeDependencyPrefix}{type.System.Codename}");
+            dependencies.Add(dependency);
         }
 
         return [.. dependencies];
