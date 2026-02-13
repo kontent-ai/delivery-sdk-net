@@ -463,6 +463,66 @@ public class ServiceCollectionsExtensionsTests
     }
 
     [Fact]
+    public void AddDeliveryCacheManager_DefaultOverload_RegistersKeyedCacheManagerForDefaultClient()
+    {
+        _serviceCollection.AddDeliveryClient(o =>
+        {
+            o.EnvironmentId = EnvironmentId;
+            o.EnableResilience = false;
+        });
+        _serviceCollection.AddDeliveryCacheManager(_ => new TestCustomCacheManager());
+
+        var provider = _serviceCollection.BuildServiceProvider();
+        var cacheManager = provider.GetKeyedService<IDeliveryCacheManager>("Default");
+
+        Assert.NotNull(cacheManager);
+        Assert.IsType<TestCustomCacheManager>(cacheManager);
+    }
+
+    [Fact]
+    public void AddDeliveryCacheManager_NamedOverload_RegistersOnlyForSpecifiedClient()
+    {
+        _serviceCollection.AddDeliveryClient("production", o =>
+        {
+            o.EnvironmentId = EnvironmentId;
+            o.EnableResilience = false;
+        });
+        _serviceCollection.AddDeliveryClient("preview", o =>
+        {
+            o.EnvironmentId = EnvironmentId;
+            o.UsePreviewApi = true;
+            o.PreviewApiKey = PreviewApiKey;
+            o.EnableResilience = false;
+        });
+        _serviceCollection.AddDeliveryCacheManager("production", _ => new TestCustomCacheManager());
+
+        var provider = _serviceCollection.BuildServiceProvider();
+        var prodCacheManager = provider.GetKeyedService<IDeliveryCacheManager>("production");
+        var previewCacheManager = provider.GetKeyedService<IDeliveryCacheManager>("preview");
+
+        Assert.NotNull(prodCacheManager);
+        Assert.IsType<TestCustomCacheManager>(prodCacheManager);
+        Assert.Null(previewCacheManager);
+    }
+
+    [Fact]
+    public void AddDeliveryCacheManager_RegistersContentDependencyExtractor()
+    {
+        _serviceCollection.AddDeliveryClient("production", o =>
+        {
+            o.EnvironmentId = EnvironmentId;
+            o.EnableResilience = false;
+        });
+        _serviceCollection.AddDeliveryCacheManager("production", _ => new TestCustomCacheManager());
+
+        var provider = _serviceCollection.BuildServiceProvider();
+        var extractor = provider.GetService<IContentDependencyExtractor>();
+
+        Assert.NotNull(extractor);
+        Assert.DoesNotContain("Null", extractor.GetType().Name);
+    }
+
+    [Fact]
     public void AddDeliveryMemoryCache_MultipleClients_RegistersSeparateKeyedManagers()
     {
         const string envId1 = "11111111-1111-1111-1111-111111111111";
@@ -699,4 +759,21 @@ public class ServiceCollectionsExtensionsTests
     }
 
     #endregion
+
+    private sealed class TestCustomCacheManager : IDeliveryCacheManager
+    {
+        public Task<T?> GetAsync<T>(string cacheKey, CancellationToken cancellationToken = default) where T : class
+            => Task.FromResult<T?>(null);
+
+        public Task SetAsync<T>(
+            string cacheKey,
+            T value,
+            IEnumerable<string> dependencies,
+            TimeSpan? expiration = null,
+            CancellationToken cancellationToken = default) where T : class
+            => Task.CompletedTask;
+
+        public Task InvalidateAsync(CancellationToken cancellationToken = default, params string[] dependencyKeys)
+            => Task.CompletedTask;
+    }
 }

@@ -562,6 +562,8 @@ services.AddDeliveryMemoryCache("production", defaultExpiration: TimeSpan.FromHo
 
 **Legacy:**
 ```csharp
+using Microsoft.Extensions.DependencyInjection;
+
 var cacheManager = serviceProvider.GetRequiredService<IDeliveryCacheManager>();
 
 // Invalidate by item codename
@@ -574,8 +576,9 @@ cacheManager.InvalidateEntry(CacheHelpers.GetItemsDependencyKey());
 **New:**
 ```csharp
 using Kontent.Ai.Delivery.Abstractions;
+using Microsoft.Extensions.DependencyInjection;
 
-var cacheManager = serviceProvider.GetRequiredService<IDeliveryCacheManager>();
+var cacheManager = serviceProvider.GetRequiredKeyedService<IDeliveryCacheManager>("production");
 
 // Invalidate by dependency keys (items, assets, taxonomies)
 await cacheManager.InvalidateAsync(default, "item_article_codename", "item_related_article");
@@ -590,6 +593,20 @@ await cacheManager.InvalidateAsync(default, dependencyKeys);
 // Type and taxonomy events
 await cacheManager.InvalidateAsync(default, $"type_{typeCodename}", DeliveryCacheDependencies.TypesListScope);
 await cacheManager.InvalidateAsync(default, $"taxonomy_{taxonomyCodename}", DeliveryCacheDependencies.TaxonomiesListScope);
+```
+
+**Custom cache manager migration (keyed):**
+```csharp
+// Legacy (unkeyed, no longer used by SDK client resolution)
+services.AddSingleton<IDeliveryCacheManager, CustomDistributedCacheManager>();
+
+// New (keyed per client)
+services.AddDeliveryClient("production", options =>
+{
+    options.EnvironmentId = "production-environment-id";
+});
+services.AddDeliveryCacheManager("production",
+    sp => new CustomDistributedCacheManager(sp.GetRequiredService<IDistributedCache>()));
 ```
 
 **Dependency Key Format:**
@@ -612,7 +629,7 @@ await cacheManager.InvalidateAsync(default, $"taxonomy_{taxonomyCodename}", Deli
 
 **New:**
 ```csharp
-var cacheManager = serviceProvider.GetRequiredService<IDeliveryCacheManager>();
+var cacheManager = serviceProvider.GetRequiredKeyedService<IDeliveryCacheManager>("production");
 
 if (cacheManager is IDeliveryCachePurger purger)
 {

@@ -846,6 +846,13 @@ public static IServiceCollection AddDeliveryClient(
         var contentDeserializer = sp.GetRequiredService<IContentDeserializer>();
         var typeProvider = sp.GetRequiredService<ITypeProvider>();
         var cacheManager = sp.GetKeyedService<IDeliveryCacheManager>(clientName);
+        if (cacheManager is not null)
+        {
+            cacheManager = new PreviewAwareCacheManager(
+                cacheManager,
+                sp.GetRequiredService<IOptionsMonitor<DeliveryOptions>>(),
+                clientName);
+        }
 
         return new DeliveryClient(api, contentItemMapper, contentDeserializer, typeProvider, cacheManager);
     });
@@ -853,6 +860,9 @@ public static IServiceCollection AddDeliveryClient(
     return services;
 }
 ```
+
+Cache manager resolution is keyed-only. Unkeyed `IDeliveryCacheManager` registrations are ignored by `DeliveryClient` creation.  
+For custom cache implementations, use `AddDeliveryCacheManager(clientName, factory)` to register per client.
 
 ### Core Dependencies Registration
 

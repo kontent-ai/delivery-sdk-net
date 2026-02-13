@@ -34,14 +34,11 @@ internal static class CachePayloadHelper
                 $"Content item '{item.System.Codename}' does not have raw JSON available. " +
                 "Ensure the item was deserialized through the SDK's standard pipeline.");
 
-        if (!rawItem.RawItemJson.HasValue)
-        {
-            throw new InvalidOperationException(
+        return !rawItem.RawItemJson.HasValue
+            ? throw new InvalidOperationException(
                 $"Content item '{item.System.Codename}' has null RawItemJson. " +
-                "This may indicate the item was created manually rather than deserialized from API response.");
-        }
-
-        return rawItem.RawItemJson.Value.GetRawText();
+                "This may indicate the item was created manually rather than deserialized from API response.")
+            : rawItem.RawItemJson.Value.GetRawText();
     }
 
     /// <summary>

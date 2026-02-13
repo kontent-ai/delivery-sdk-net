@@ -189,10 +189,7 @@ internal sealed class ItemQuery<TModel>(
             async ct =>
             {
                 apiResult = await FetchFromApiAsync(waitForLoadingNewContent, ct).ConfigureAwait(false);
-                if (!apiResult.IsSuccess)
-                    return (null, Array.Empty<string>());
-
-                return await ProcessItemAsync(apiResult.Value, ct).ConfigureAwait(false);
+                return !apiResult.IsSuccess ? ((IContentItem<TModel>? Value, IEnumerable<string> Dependencies))(null, Array.Empty<string>()) : ((IContentItem<TModel>? Value, IEnumerable<string> Dependencies))await ProcessItemAsync(apiResult.Value, ct).ConfigureAwait(false);
             },
             _logger,
             cancellationToken).ConfigureAwait(false);

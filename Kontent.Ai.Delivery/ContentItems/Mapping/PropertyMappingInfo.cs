@@ -109,13 +109,10 @@ internal sealed class PropertyMappingInfo
             return ElementMappingKind.DateTime;
         }
 
-        if (enumerableElementType is not null &&
-            typeof(IEmbeddedContent).IsAssignableFrom(enumerableElementType))
-        {
-            return ElementMappingKind.LinkedItems;
-        }
-
-        return ElementMappingKind.Simple;
+        return enumerableElementType is not null &&
+            typeof(IEmbeddedContent).IsAssignableFrom(enumerableElementType)
+            ? ElementMappingKind.LinkedItems
+            : ElementMappingKind.Simple;
     }
 
     /// <summary>

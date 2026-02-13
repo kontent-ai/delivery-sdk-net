@@ -93,21 +93,13 @@ internal sealed class DynamicEnumerateItemsQuery(
     }
 
     private Func<CancellationToken, Task<IDeliveryResult<IDeliveryItemsFeedResponse>>>? CreateNextPageFetcher(
-        IDeliveryItemsFeedResponse<IDynamicElements> page)
-    {
-        if (!page.HasNextPage)
-            return null;
-
-        return ct => FetchNextPageAndConvertAsync(page, ct);
-    }
+        IDeliveryItemsFeedResponse<IDynamicElements> page) => !page.HasNextPage ? null : (ct => FetchNextPageAndConvertAsync(page, ct));
 
     private async Task<IDeliveryResult<IDeliveryItemsFeedResponse>> FetchNextPageAndConvertAsync(
         IDeliveryItemsFeedResponse<IDynamicElements> currentPage,
         CancellationToken cancellationToken)
     {
-        var nextPageResult = await currentPage.FetchNextPageAsync(cancellationToken).ConfigureAwait(false);
-        if (nextPageResult is null)
-            throw new InvalidOperationException("The current feed page indicated a next page, but fetching it returned null.");
+        var nextPageResult = await currentPage.FetchNextPageAsync(cancellationToken).ConfigureAwait(false) ?? throw new InvalidOperationException("The current feed page indicated a next page, but fetching it returned null.");
 
         if (!nextPageResult.IsSuccess)
         {

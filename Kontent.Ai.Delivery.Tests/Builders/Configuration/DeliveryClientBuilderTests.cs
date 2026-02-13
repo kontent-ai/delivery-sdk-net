@@ -1,3 +1,4 @@
+using System.Reflection;
 using Kontent.Ai.Delivery.Abstractions;
 using Kontent.Ai.Delivery.Configuration;
 using Microsoft.Extensions.Caching.Distributed;
@@ -116,6 +117,46 @@ public class DeliveryClientBuilderTests
         // Assert
         Assert.NotNull(container);
         Assert.NotNull(container.Client);
+    }
+
+    [Fact]
+    public async Task Build_WithPreviewApiAndMemoryCache_CacheManagerBypassesReadsAndWrites()
+    {
+        using var container = DeliveryClientBuilder
+            .WithOptions(builder => builder
+                .WithEnvironmentId(EnvironmentId)
+                .UsePreviewApi(TestPreviewApiKey)
+                .Build())
+            .WithMemoryCache(TimeSpan.FromMinutes(30))
+            .Build();
+
+        var cacheManager = GetCacheManager(container.Client);
+        Assert.NotNull(cacheManager);
+
+        await cacheManager.SetAsync("preview-test", "value", ["item_preview"]);
+        var cached = await cacheManager.GetAsync<string>("preview-test");
+
+        Assert.Null(cached);
+    }
+
+    [Fact]
+    public async Task Build_WithProductionApiAndMemoryCache_CacheManagerStoresAndReads()
+    {
+        using var container = DeliveryClientBuilder
+            .WithOptions(builder => builder
+                .WithEnvironmentId(EnvironmentId)
+                .UseProductionApi()
+                .Build())
+            .WithMemoryCache(TimeSpan.FromMinutes(30))
+            .Build();
+
+        var cacheManager = GetCacheManager(container.Client);
+        Assert.NotNull(cacheManager);
+
+        await cacheManager.SetAsync("production-test", "value", ["item_production"]);
+        var cached = await cacheManager.GetAsync<string>("production-test");
+
+        Assert.Equal("value", cached);
     }
 
     [Fact]
@@ -320,6 +361,12 @@ public class DeliveryClientBuilderTests
     {
         public Type? GetType(string contentType) => null;
         public string? GetCodename(Type contentType) => null;
+    }
+
+    private static IDeliveryCacheManager? GetCacheManager(IDeliveryClient client)
+    {
+        var cacheManagerField = client.GetType().GetField("_cacheManager", BindingFlags.Instance | BindingFlags.NonPublic);
+        return cacheManagerField?.GetValue(client) as IDeliveryCacheManager;
     }
 
     // Simple test implementation of IDistributedCache

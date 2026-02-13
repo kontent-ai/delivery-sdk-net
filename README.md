@@ -1205,6 +1205,14 @@ Caching is transparent for cacheable query builders - once configured, cached qu
 
 If you implement a custom cache manager that stores raw payloads (typical for distributed caches), override the `StorageMode` property to return `CacheStorageMode.RawJson` so the SDK uses the raw JSON caching path.
 
+Register custom cache managers per client using keyed registration:
+
+```csharp
+services.AddDeliveryClient("production", options => { ... });
+services.AddDeliveryCacheManager("production", sp => new CustomDistributedCacheManager(
+    sp.GetRequiredService<IDistributedCache>()));
+```
+
 #### Detecting Cache Hits
 
 The SDK provides the `IsCacheHit` property on all delivery results to indicate when a response was served from the SDK's local cache:
@@ -1276,8 +1284,10 @@ If you're using the SDK's in-memory cache (`AddDeliveryMemoryCache`), you can in
 
 ```csharp
 using Kontent.Ai.Delivery.Abstractions;
+using Microsoft.Extensions.DependencyInjection;
 
-var cacheManager = serviceProvider.GetRequiredService<IDeliveryCacheManager>();
+// Resolve cache manager for the client name used during registration.
+var cacheManager = serviceProvider.GetRequiredKeyedService<IDeliveryCacheManager>("production");
 if (cacheManager is IDeliveryCachePurger purger)
 {
     await purger.PurgeAsync();
@@ -1303,6 +1313,8 @@ services.AddDeliveryClient(options =>
     options.PreviewApiKey = "your-preview-api-key";
 });
 ```
+
+When `UsePreviewApi` is enabled, the SDK always bypasses local cache reads/writes for that client, even if a cache manager is registered. This keeps preview responses fresh by default.
 
 #### Dynamic Switching (Production vs Preview)
 

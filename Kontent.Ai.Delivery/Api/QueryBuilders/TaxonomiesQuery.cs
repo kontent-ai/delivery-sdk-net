@@ -72,13 +72,11 @@ internal sealed class TaxonomiesQuery(
                 WithNextPageFetcher(cacheResult.Value!));
         }
 
-        if (apiResult is not { IsSuccess: true })
-        {
-            if (apiResult is not null)
-                return CreateFailureResult(apiResult);
-
+        if (apiResult is null)
             throw new InvalidOperationException("API result was not captured during fetch.");
-        }
+
+        if (!apiResult.IsSuccess)
+            return CreateFailureResult(apiResult);
 
         return WrapSuccess(WithNextPageFetcher(cacheResult.Value!), apiResult);
     }

@@ -94,13 +94,7 @@ internal sealed class EnumerateItemsQuery<TModel>(
         return WrapSuccess(response, deliveryResult);
     }
 
-    private Func<CancellationToken, Task<IDeliveryResult<IDeliveryItemsFeedResponse<TModel>>>>? CreateNextPageFetcher(string? continuationToken)
-    {
-        if (string.IsNullOrEmpty(continuationToken))
-            return null;
-
-        return ct => CreateContinuationQuery(continuationToken).ExecuteAsync(ct);
-    }
+    private Func<CancellationToken, Task<IDeliveryResult<IDeliveryItemsFeedResponse<TModel>>>>? CreateNextPageFetcher(string? continuationToken) => string.IsNullOrEmpty(continuationToken) ? null : (ct => CreateContinuationQuery(continuationToken).ExecuteAsync(ct));
 
     public async IAsyncEnumerable<IContentItem<TModel>> EnumerateItemsAsync([EnumeratorCancellation] CancellationToken cancellationToken = default)
     {

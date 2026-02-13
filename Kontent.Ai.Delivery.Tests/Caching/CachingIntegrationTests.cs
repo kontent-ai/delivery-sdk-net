@@ -19,6 +19,7 @@ public class CachingIntegrationTests
 {
     private readonly Guid _guid = Guid.NewGuid();
     private string BaseUrl => $"https://deliver.kontent.ai/{_guid}";
+    private string PreviewBaseUrl => $"https://preview-deliver.kontent.ai/{_guid}";
 
     #region Memory Cache Integration Tests
 
@@ -159,6 +160,93 @@ public class CachingIntegrationTests
         Assert.True(result2.IsSuccess);
         Assert.False(result1.IsCacheHit);
         Assert.True(result2.IsCacheHit);
+        mock.VerifyNoOutstandingExpectation();
+    }
+
+    [Fact]
+    public async Task MemoryCache_PreviewClient_BypassesCacheEvenWhenRegistered()
+    {
+        var mock = new MockHttpMessageHandler();
+        var itemCodename = "coffee_beverages_explained";
+        var fixtureContent = await File.ReadAllTextAsync(
+            Path.Combine(Environment.CurrentDirectory,
+                $"Fixtures{Path.DirectorySeparatorChar}DeliveryClient{Path.DirectorySeparatorChar}{itemCodename}.json"));
+
+        mock.Expect($"{PreviewBaseUrl}/items/{itemCodename}")
+            .Respond("application/json", fixtureContent);
+        mock.Expect($"{PreviewBaseUrl}/items/{itemCodename}")
+            .Respond("application/json", fixtureContent);
+
+        var client = CreateClientWithMemoryCache(
+            mock,
+            new DeliveryOptions
+            {
+                EnvironmentId = _guid.ToString(),
+                UsePreviewApi = true,
+                PreviewApiKey = "preview.api.key"
+            });
+
+        var result1 = await client.GetItem<Article>(itemCodename).ExecuteAsync();
+        var result2 = await client.GetItem<Article>(itemCodename).ExecuteAsync();
+
+        Assert.True(result1.IsSuccess);
+        Assert.True(result2.IsSuccess);
+        Assert.False(result1.IsCacheHit);
+        Assert.False(result2.IsCacheHit);
+        mock.VerifyNoOutstandingExpectation();
+    }
+
+    [Fact]
+    public async Task MemoryCache_ProductionAndPreviewClients_ProductionCachesPreviewBypasses()
+    {
+        var mock = new MockHttpMessageHandler();
+        var itemCodename = "coffee_beverages_explained";
+        var fixtureContent = await File.ReadAllTextAsync(
+            Path.Combine(Environment.CurrentDirectory,
+                $"Fixtures{Path.DirectorySeparatorChar}DeliveryClient{Path.DirectorySeparatorChar}{itemCodename}.json"));
+
+        // Production should cache (single API call for two requests).
+        mock.Expect($"{BaseUrl}/items/{itemCodename}")
+            .Respond("application/json", fixtureContent);
+
+        // Preview should always bypass cache (two API calls for two requests).
+        mock.Expect($"{PreviewBaseUrl}/items/{itemCodename}")
+            .Respond("application/json", fixtureContent);
+        mock.Expect($"{PreviewBaseUrl}/items/{itemCodename}")
+            .Respond("application/json", fixtureContent);
+
+        var services = new ServiceCollection();
+        services.AddDeliveryClient("production", o =>
+        {
+            o.EnvironmentId = _guid.ToString();
+        }, configureHttpClient: b => b.ConfigurePrimaryHttpMessageHandler(() => mock));
+        services.AddDeliveryClient("preview", o =>
+        {
+            o.EnvironmentId = _guid.ToString();
+            o.UsePreviewApi = true;
+            o.PreviewApiKey = "preview.api.key";
+        }, configureHttpClient: b => b.ConfigurePrimaryHttpMessageHandler(() => mock));
+
+        services.AddDeliveryMemoryCache("production");
+        services.AddDeliveryMemoryCache("preview");
+
+        var serviceProvider = services.BuildServiceProvider();
+        var productionClient = serviceProvider.GetRequiredKeyedService<IDeliveryClient>("production");
+        var previewClient = serviceProvider.GetRequiredKeyedService<IDeliveryClient>("preview");
+
+        var productionResult1 = await productionClient.GetItem<Article>(itemCodename).ExecuteAsync();
+        var productionResult2 = await productionClient.GetItem<Article>(itemCodename).ExecuteAsync();
+        var previewResult1 = await previewClient.GetItem<Article>(itemCodename).ExecuteAsync();
+        var previewResult2 = await previewClient.GetItem<Article>(itemCodename).ExecuteAsync();
+
+        Assert.True(productionResult1.IsSuccess);
+        Assert.True(productionResult2.IsSuccess);
+        Assert.True(previewResult1.IsSuccess);
+        Assert.True(previewResult2.IsSuccess);
+        Assert.False(productionResult1.IsCacheHit);
+        Assert.True(productionResult2.IsCacheHit);
+        Assert.False(previewResult1.IsCacheHit);
+        Assert.False(previewResult2.IsCacheHit);
         mock.VerifyNoOutstandingExpectation();
     }
 
@@ -1471,7 +1559,7 @@ public class CachingIntegrationTests
     }
 
     [Fact]
-    public async Task MemoryCache_DifferentQueriesWithSameDependency_InvalidatesBoth()
+    public async Task UnkeyedCacheManagerRegistration_IsIgnoredByClientCachingPath()
     {
         var mock = new MockHttpMessageHandler();
         var itemCodename = "coffee_beverages_explained";
@@ -1506,24 +1594,25 @@ public class CachingIntegrationTests
         var client = serviceProvider.GetRequiredService<IDeliveryClient>();
         var cacheManager = serviceProvider.GetRequiredService<IDeliveryCacheManager>();
 
-        var singleResult = await client.GetItem<Article>(itemCodename).ExecuteAsync();
-        var listResult = await client.GetItems<Article>()
+        Assert.NotNull(cacheManager); // Registered unkeyed manager is still available in DI.
+
+        var singleResult1 = await client.GetItem<Article>(itemCodename).ExecuteAsync();
+        var singleResult2 = await client.GetItem<Article>(itemCodename).ExecuteAsync();
+        var listResult1 = await client.GetItems<Article>()
             .Where(f => f.System("type").IsEqualTo("article"))
             .ExecuteAsync();
-
-        // Invalidate the shared dependency (the item itself)
-        await cacheManager.InvalidateAsync(default, $"item_{itemCodename}");
-
-        // Both queries should now hit the API again
-        var singleResult2 = await client.GetItem<Article>(itemCodename).ExecuteAsync();
         var listResult2 = await client.GetItems<Article>()
             .Where(f => f.System("type").IsEqualTo("article"))
             .ExecuteAsync();
 
-        Assert.True(singleResult.IsSuccess);
-        Assert.True(listResult.IsSuccess);
+        Assert.True(singleResult1.IsSuccess);
         Assert.True(singleResult2.IsSuccess);
+        Assert.True(listResult1.IsSuccess);
         Assert.True(listResult2.IsSuccess);
+        Assert.False(singleResult1.IsCacheHit);
+        Assert.False(singleResult2.IsCacheHit);
+        Assert.False(listResult1.IsCacheHit);
+        Assert.False(listResult2.IsCacheHit);
     }
 
     #endregion

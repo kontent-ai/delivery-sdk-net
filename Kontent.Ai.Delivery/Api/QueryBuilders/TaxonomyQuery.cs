@@ -49,10 +49,7 @@ internal sealed class TaxonomyQuery(
         if (cacheResult.IsCacheHit)
             return DeliveryResult.CacheHit<ITaxonomyGroup>(cacheResult.Value!);
 
-        if (apiResult is null)
-            throw new InvalidOperationException("API result was not captured during fetch.");
-
-        return apiResult;
+        return apiResult is null ? throw new InvalidOperationException("API result was not captured during fetch.") : apiResult;
     }
 
     private Task<IDeliveryResult<ITaxonomyGroup>> ExecuteWithoutCacheAsync(

@@ -13,6 +13,35 @@ namespace Kontent.Ai.Delivery;
 public static partial class ServiceCollectionExtensions
 {
     /// <summary>
+    /// Registers a custom cache manager for the default Delivery client.
+    /// </summary>
+    /// <param name="services">The service collection.</param>
+    /// <param name="createCacheManager">Factory for creating the cache manager instance.</param>
+    /// <returns>The service collection for chaining.</returns>
+    public static IServiceCollection AddDeliveryCacheManager(
+        this IServiceCollection services,
+        Func<IServiceProvider, IDeliveryCacheManager> createCacheManager) => services.AddDeliveryCacheManager(DeliveryClientNames.Default, createCacheManager);
+
+    /// <summary>
+    /// Registers a custom cache manager for a specific named Delivery client.
+    /// </summary>
+    /// <param name="services">The service collection.</param>
+    /// <param name="clientName">The name of the Delivery client to enable caching for.</param>
+    /// <param name="createCacheManager">Factory for creating the cache manager instance.</param>
+    /// <returns>The service collection for chaining.</returns>
+    public static IServiceCollection AddDeliveryCacheManager(
+        this IServiceCollection services,
+        string clientName,
+        Func<IServiceProvider, IDeliveryCacheManager> createCacheManager)
+    {
+        ArgumentNullException.ThrowIfNull(services);
+        ValidateClientName(clientName);
+        ArgumentNullException.ThrowIfNull(createCacheManager);
+
+        return RegisterCacheManager(services, clientName, createCacheManager);
+    }
+
+    /// <summary>
     /// Registers a memory cache manager for the default Delivery client.
     /// </summary>
     /// <param name="services">The service collection.</param>
