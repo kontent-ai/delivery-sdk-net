@@ -6,6 +6,7 @@ This guide provides comprehensive instructions for migrating from the legacy Kon
 
 - [Overview](#overview)
 - [Quick Migration Checklist](#quick-migration-checklist)
+- [RC1 Readiness Checklist (beta-6)](#rc1-readiness-checklist-beta-6)
 - [1. Migrating Query Methods](#1-migrating-query-methods)
 - [2. Migrating Filtering](#2-migrating-filtering)
 - [3. Migrating Caching](#3-migrating-caching)
@@ -63,6 +64,19 @@ Use this checklist to ensure you've addressed all required changes:
 - [ ] Update response handling to use result pattern (`IsSuccess`, `Value`, `Error`)
 - [ ] Update content access from `response.Item.Title` to `result.Value.Elements.Title`
 - [ ] Migrate custom retry policies from `IRetryPolicy` to Polly configuration
+
+---
+
+## RC1 Readiness Checklist (beta-6)
+
+Use this focused checklist when validating beta-6 integrations before moving to RC1:
+
+- [ ] Ensure model projects reference `Kontent.Ai.Delivery.SourceGeneration`
+- [ ] Regenerate models so `[ContentTypeCodename]` attributes are present
+- [ ] If you implemented custom `ITypeProvider`, rename `TryGetModelType` to `GetType`
+- [ ] Use `IDeliveryClientFactory.Get()` (or `"Default"` keyed resolution) for default client access
+- [ ] Verify webhook invalidation includes both detail keys and list scope keys (`scope_items_list`, `scope_types_list`, `scope_taxonomies_list`)
+- [ ] Validate cache behavior in your target backend (memory and/or Redis)
 
 ---
 

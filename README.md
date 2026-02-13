@@ -564,7 +564,7 @@ var result = await client.GetItems()
 var result = await client.GetItems()
     .WithTotalCount()
     .Limit(10)
-    .ExecuteResponseAsync();
+    .ExecuteAsync();
 
 if (result.IsSuccess)
 {
@@ -622,11 +622,12 @@ The [Kontent.ai Model Generator](https://github.com/kontent-ai/model-generator-n
 Add the source generation package to enable these features:
 
 ```xml
-<PackageReference Include="Kontent.Ai.Delivery.SourceGeneration" Version="19.0.0" />
+<PackageReference Include="Kontent.Ai.Delivery.SourceGeneration" Version="19.0.0-rc1" />
 ```
 
 > [!IMPORTANT]
 > Add `Kontent.Ai.Delivery.SourceGeneration` to the project that compiles your generated model classes.
+> Keep the package version aligned with your `Kontent.Ai.Delivery` package version.
 
 Generated models include the attribute automatically:
 
@@ -1206,6 +1207,8 @@ Caching is transparent for cacheable query builders - once configured, cached qu
 
 `GetItem()` and `GetItems()` dynamic queries are intentionally excluded from SDK caching (runtime-typed results), so they always return `IsCacheHit == false`.
 
+`SecureAccessApiKey` and `PreviewApiKey` are intentionally not part of query cache key identity. Secure access only gates access to published content, and preview clients (`UsePreviewApi = true`) bypass SDK cache reads/writes entirely.
+
 > [!IMPORTANT]
 > When `WaitForLoadingNewContent(true)` is enabled on a query, the SDK bypasses its local cache for that request path (no cache read and no cache write).
 
@@ -1316,7 +1319,18 @@ if (cacheManager is IDeliveryCachePurger purger)
 > [!IMPORTANT]
 > Runtime option changes on an already-cached client do not invalidate existing cache entries. If you change `EnvironmentId` or `DefaultRenditionPreset`, purge the client cache (or recreate the client) before relying on the new setting.
 
-For advanced caching strategies including cache invalidation, webhook integration, and multi-tenant scenarios, see the [Caching Guide](docs/caching-guide.md).
+For advanced caching strategies including cache invalidation, webhook integration, and multi-tenant scenarios, see the [Caching Guide](docs/caching-guide.md), especially:
+- [Invalidation Matrix (RC-ready)](docs/caching-guide.md#invalidation-matrix-rc-ready)
+- [Optional Redis Validation Suite](docs/caching-guide.md#optional-redis-validation-suite)
+
+Optional Redis validation run:
+
+```bash
+KONTENT_SDK_RUN_REDIS_TESTS=true \
+KONTENT_SDK_REDIS_CONNECTION=localhost:6379 \
+dotnet test Kontent.Ai.Delivery.Tests/Kontent.Ai.Delivery.Tests.csproj \
+  --filter "FullyQualifiedName~RedisCacheIntegrationTests"
+```
 
 ### Preview API
 

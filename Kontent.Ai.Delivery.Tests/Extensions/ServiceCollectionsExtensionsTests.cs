@@ -31,10 +31,10 @@ public class ServiceCollectionsExtensionsTests
 
     public static IEnumerable<object[]> DeliveryOptionsConfigurationParameters =>
        [
-            new[] {"as_root"},
-            ["under_default_key", "DeliveryOptions"],
-            ["under_custom_key", "CustomNameForDeliveryOptions"],
-            ["nested_under_default_key", "Options:DeliveryOptions"]
+            new[] { "as_root" },
+           ["under_default_key", "DeliveryOptions"],
+           ["under_custom_key", "CustomNameForDeliveryOptions"],
+           ["nested_under_default_key", "Options:DeliveryOptions"]
        ];
 
 
@@ -365,10 +365,7 @@ public class ServiceCollectionsExtensionsTests
         configurationRoot["DeliveryOptions:UsePreviewApi"] = "true";
         configurationRoot.Reload();
 
-        var completedTask = await Task.WhenAny(optionsChanged.Task, Task.Delay(TimeSpan.FromSeconds(3)));
-        Assert.Same(optionsChanged.Task, completedTask);
-
-        var changed = await optionsChanged.Task;
+        var changed = await optionsChanged.Task.WaitAsync(TimeSpan.FromSeconds(3));
         Assert.True(changed.UsePreviewApi);
         Assert.Equal(PreviewApiKey, changed.PreviewApiKey);
     }

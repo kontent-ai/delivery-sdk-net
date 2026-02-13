@@ -23,6 +23,12 @@ internal static class LogEventIds
     /// <summary>Cache miss - proceeding with API call.</summary>
     public const int QueryCacheMiss = 1011;
 
+    /// <summary>Cache store attempt for query result.</summary>
+    public const int QueryCacheStore = 1012;
+
+    /// <summary>Cache store skipped because no cacheable payload was produced.</summary>
+    public const int QueryCacheStoreSkipped = 1013;
+
     /// <summary>Response contains stale content.</summary>
     public const int QueryStaleContent = 1040;
 

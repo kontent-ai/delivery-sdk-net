@@ -95,26 +95,22 @@ internal sealed class ItemQuery<TModel>(
             waitForLoadingNewContent,
             cancellationToken).ConfigureAwait(false);
 
-        if (cacheResult.IsCacheHit)
+        if (QueryExecutionResultHelper.TryGetCacheHitValue(cacheResult, out var cachedItem))
         {
             LogQueryCompleted(stopwatch, HttpStatusCode.OK, cacheHit: true);
-            return DeliveryResult.CacheHit(cacheResult.Value!);
+            return DeliveryResult.CacheHit(cachedItem);
         }
 
-        if (apiResult is not { IsSuccess: true })
+        apiResult = QueryExecutionResultHelper.EnsureApiResult(apiResult, "Item", _codename);
+        if (!apiResult.IsSuccess)
         {
-            if (apiResult is not null)
-            {
-                LogQueryFailed(apiResult);
-                LogQueryCompleted(stopwatch, apiResult.StatusCode, cacheHit: false, apiResult.HasStaleContent);
-                return CreateFailureResult(apiResult);
-            }
-
-            throw new InvalidOperationException("API result was not captured during fetch.");
+            LogQueryFailed(apiResult);
+            LogQueryCompleted(stopwatch, apiResult.StatusCode, cacheHit: false, apiResult.HasStaleContent);
+            return CreateFailureResult(apiResult);
         }
 
         LogQueryCompleted(stopwatch, apiResult.StatusCode, cacheHit: false, apiResult.HasStaleContent);
-        return WrapSuccess(cacheResult.Value!, apiResult);
+        return WrapSuccess(cacheResult.Value ?? apiResult.Value.Item, apiResult);
     }
 
     private async Task<IDeliveryResult<IContentItem<TModel>>> ExecuteWithoutCacheAsync(

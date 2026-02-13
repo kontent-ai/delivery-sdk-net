@@ -77,15 +77,14 @@ internal sealed class TaxonomiesQuery(
             waitForLoadingNewContent,
             cancellationToken).ConfigureAwait(false);
 
-        if (cacheResult.IsCacheHit)
+        if (QueryExecutionResultHelper.TryGetCacheHitValue(cacheResult, out var cachedListing))
         {
             LogQueryCompleted(stopwatch, HttpStatusCode.OK, cacheHit: true);
             return DeliveryResult.CacheHit<IDeliveryTaxonomyListingResponse>(
-                WithNextPageFetcher(cacheResult.Value!));
+                WithNextPageFetcher(cachedListing));
         }
 
-        if (apiResult is null)
-            throw new InvalidOperationException("API result was not captured during fetch.");
+        apiResult = QueryExecutionResultHelper.EnsureApiResult(apiResult, "Taxonomies", "list");
 
         if (!apiResult.IsSuccess)
         {
@@ -95,7 +94,8 @@ internal sealed class TaxonomiesQuery(
         }
 
         LogQueryCompleted(stopwatch, apiResult.StatusCode, cacheHit: false, apiResult.HasStaleContent);
-        return WrapSuccess(WithNextPageFetcher(cacheResult.Value!), apiResult);
+        var response = cacheResult.Value ?? apiResult.Value;
+        return WrapSuccess(WithNextPageFetcher(response), apiResult);
     }
 
     private async Task<IDeliveryResult<IDeliveryTaxonomyListingResponse>> ExecuteWithoutCacheAsync(
@@ -191,20 +191,35 @@ internal sealed class TaxonomiesQuery(
             return null;
 
         var nextSkip = OffsetPaginationHelper.GetNextSkip(pagination);
+        var parametersSnapshot = _params;
+        var waitForLoadingSnapshot = _waitForLoadingNewContent;
+        var cacheExpirationSnapshot = CacheExpiration;
+        var serializedFiltersSnapshot = _serializedFilters.Clone();
 
-        return ct => CreateNextPageQuery(nextSkip).ExecuteAsync(ct);
+        return ct => CreateNextPageQuery(
+                nextSkip,
+                parametersSnapshot,
+                waitForLoadingSnapshot,
+                cacheExpirationSnapshot,
+                serializedFiltersSnapshot)
+            .ExecuteAsync(ct);
     }
 
-    private TaxonomiesQuery CreateNextPageQuery(int nextSkip)
+    private TaxonomiesQuery CreateNextPageQuery(
+        int nextSkip,
+        ListTaxonomyGroupsParams parametersSnapshot,
+        bool waitForLoadingSnapshot,
+        TimeSpan? cacheExpirationSnapshot,
+        SerializedFilterCollection serializedFiltersSnapshot)
     {
         var nextQuery = new TaxonomiesQuery(_api, _cacheManager, _logger)
         {
-            _params = _params with { Skip = nextSkip },
-            _waitForLoadingNewContent = this._waitForLoadingNewContent,
-            CacheExpiration = this.CacheExpiration
+            _params = parametersSnapshot with { Skip = nextSkip },
+            _waitForLoadingNewContent = waitForLoadingSnapshot,
+            CacheExpiration = cacheExpirationSnapshot
         };
 
-        nextQuery._serializedFilters.CopyFrom(_serializedFilters);
+        nextQuery._serializedFilters.CopyFrom(serializedFiltersSnapshot);
         return nextQuery;
     }
 

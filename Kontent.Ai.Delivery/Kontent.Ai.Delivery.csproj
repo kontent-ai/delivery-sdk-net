@@ -2,6 +2,7 @@
 
   <PropertyGroup>
     <TargetFramework>net8.0</TargetFramework>
+    <Nullable>enable</Nullable>
     <Company>Kontent s.r.o.</Company>
     <Description>Kontent.ai Delivery SDK</Description>
     <PackageTags>kontent-ai;mvc;aspnet;aspnetmvc</PackageTags>

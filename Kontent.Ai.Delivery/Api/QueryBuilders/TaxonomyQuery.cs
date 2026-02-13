@@ -57,14 +57,13 @@ internal sealed class TaxonomyQuery(
             waitForLoadingNewContent,
             cancellationToken).ConfigureAwait(false);
 
-        if (cacheResult.IsCacheHit)
+        if (QueryExecutionResultHelper.TryGetCacheHitValue(cacheResult, out var cachedTaxonomy))
         {
             LogQueryCompleted(stopwatch, HttpStatusCode.OK, cacheHit: true);
-            return DeliveryResult.CacheHit<ITaxonomyGroup>(cacheResult.Value!);
+            return DeliveryResult.CacheHit<ITaxonomyGroup>(cachedTaxonomy);
         }
 
-        if (apiResult is null)
-            throw new InvalidOperationException("API result was not captured during fetch.");
+        apiResult = QueryExecutionResultHelper.EnsureApiResult(apiResult, "Taxonomy", _codename);
 
         if (!apiResult.IsSuccess)
             LogQueryFailed(apiResult);

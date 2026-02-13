@@ -119,8 +119,9 @@ public static partial class ServiceCollectionExtensions
             BackoffType = DelayBackoffType.Exponential,
             UseJitter = true,
             ShouldHandle = args => ValueTask.FromResult(
-                args.Outcome.Result?.IsSuccessStatusCode == false &&
-                IsRetryableStatusCode(args.Outcome.Result?.StatusCode)),
+                IsTransientException(args.Outcome.Exception, args.Context.CancellationToken) ||
+                (args.Outcome.Result?.IsSuccessStatusCode == false &&
+                 IsRetryableStatusCode(args.Outcome.Result?.StatusCode))),
             DelayGenerator = GetRetryAfterDelay
         });
 
@@ -151,5 +152,22 @@ public static partial class ServiceCollectionExtensions
             System.Net.HttpStatusCode.BadGateway or
             System.Net.HttpStatusCode.ServiceUnavailable or
             System.Net.HttpStatusCode.GatewayTimeout;
-}
 
+    private static bool IsTransientException(Exception? exception, CancellationToken requestCancellationToken)
+    {
+        if (exception is null)
+            return false;
+
+        if (exception is OperationCanceledException)
+        {
+            // Respect caller cancellations - these should never be retried.
+            if (requestCancellationToken.IsCancellationRequested)
+                return false;
+
+            // HttpClient timeouts commonly surface as TaskCanceledException.
+            return exception is TaskCanceledException || exception.InnerException is TimeoutException;
+        }
+
+        return exception is System.Net.Http.HttpRequestException or TimeoutException;
+    }
+}

@@ -56,6 +56,22 @@ internal static partial class LoggerMessages
     public static partial void QueryCacheMiss(ILogger logger, string cacheKey);
 
     [LoggerMessage(
+        EventId = LogEventIds.QueryCacheStore,
+        Level = LogLevel.Debug,
+        Message = "Caching query result for key '{CacheKey}' (Expiration: {Expiration}, Dependencies: {DependencyCount})")]
+    public static partial void QueryCacheStore(
+        ILogger logger,
+        string cacheKey,
+        string expiration,
+        int dependencyCount);
+
+    [LoggerMessage(
+        EventId = LogEventIds.QueryCacheStoreSkipped,
+        Level = LogLevel.Debug,
+        Message = "Skipping cache store for key '{CacheKey}' because no cache payload was produced")]
+    public static partial void QueryCacheStoreSkipped(ILogger logger, string cacheKey);
+
+    [LoggerMessage(
         EventId = LogEventIds.QueryStaleContent,
         Level = LogLevel.Warning,
         Message = "Response contains stale content for '{Identifier}' (X-Stale-Content header present)")]

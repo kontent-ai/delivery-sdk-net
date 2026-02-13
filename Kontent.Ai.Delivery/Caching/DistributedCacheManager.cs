@@ -29,49 +29,41 @@ namespace Kontent.Ai.Delivery.Caching;
 /// preventing orphaned index entries while maintaining consistency.
 /// </para>
 /// <para>
-/// <b>Thread Safety and Eventual Consistency:</b><br/>
-/// The reverse index uses a read-modify-write pattern without distributed locking.
-/// This creates a race condition where concurrent updates to the same dependency key may result
-/// in lost index entries (eventual consistency).
+/// <b>IMPORTANT: Race Conditions &amp; Eventual Consistency</b>
+/// <br/>
+/// This implementation relies on a "read-modify-write" pattern for maintaining the dependency reverse index,
+/// without using distributed locking (e.g., RedLock).
 /// </para>
 /// <para>
-/// <b>Race Condition Example:</b><br/>
-/// If two cache entries with the same dependency are stored concurrently:<br/>
-/// 1. Thread 1 reads index: ["key1"]<br/>
-/// 2. Thread 2 reads index: ["key1"] (same)<br/>
-/// 3. Thread 1 writes: ["key1", "key2"]<br/>
-/// 4. Thread 2 writes: ["key1", "key3"] (overwrites, losing "key2")<br/>
-/// Result: key2's dependency association is lost.
+/// <b>Risk:</b> During high concurrency, two processes updating the same dependency key simultaneously
+/// may overwrite each other's updates. This results in "lost updates" to the reverse index.
 /// </para>
 /// <para>
-/// <b>Why This Is Acceptable:</b>
+/// <b>Consequence:</b> A cache entry might become "orphaned" from its dependency. If that dependency is later invalidated
+/// (e.g., via webhook), the orphaned entry will <b>NOT</b> be invalidated and will remain stale until its
+/// natural expiration (TTL) is reached.
+/// </para>
+/// <para>
+/// <b>Mitigation:</b>
 /// <list type="bullet">
-/// <item><description>Worst case: Some cache entries survive invalidation and expire naturally via TTL</description></item>
-/// <item><description>Application correctness doesn't depend on perfect invalidation (only freshness)</description></item>
-/// <item><description>The probability decreases as cache expiration times are typically much longer than write bursts</description></item>
-/// <item><description>Simplicity and provider neutrality outweigh the small risk of stale data</description></item>
+/// <item><description>Keep cache TTLs reasonable (e.g., &lt; 1 hour) to bound the maximum staleness.</description></item>
+/// <item><description>If strict consistency is required, implement a custom <see cref="IDeliveryCacheManager"/> with atomic operations or distributed locks.</description></item>
 /// </list>
-/// </para>
-/// <para>
-/// For strict consistency requirements, consider implementing distributed locking (e.g., RedLock for Redis)
-/// or using a cache provider that supports atomic SET operations.
 /// </para>
 /// </remarks>
 internal sealed class DistributedCacheManager : IDeliveryCacheManager
 {
     private readonly IDistributedCache _cache;
-    private readonly string? _keyPrefix;
     private readonly TimeSpan _defaultExpiration;
     private readonly JsonSerializerOptions _jsonOptions;
     private readonly ILogger<DistributedCacheManager>? _logger;
 
     private const string CacheKeyPrefix = "cache:";
     private const string DependencyKeyPrefix = "dep:";
+    private readonly string _keyPrefixSegment;
 
     /// <inheritdoc />
     public CacheStorageMode StorageMode => CacheStorageMode.RawJson;
-
-    private string KeyPrefixSegment => string.IsNullOrEmpty(_keyPrefix) ? "" : $"{_keyPrefix}:";
 
     /// <summary>
     /// Initializes a new instance of the <see cref="DistributedCacheManager"/> class.
@@ -124,7 +116,7 @@ internal sealed class DistributedCacheManager : IDeliveryCacheManager
         ILogger<DistributedCacheManager>? logger = null)
     {
         _cache = cache ?? throw new ArgumentNullException(nameof(cache));
-        _keyPrefix = keyPrefix;
+        _keyPrefixSegment = string.IsNullOrEmpty(keyPrefix) ? "" : $"{keyPrefix}:";
         _defaultExpiration = defaultExpiration ?? TimeSpan.FromHours(1);
         _logger = logger;
 
@@ -405,8 +397,8 @@ internal sealed class DistributedCacheManager : IDeliveryCacheManager
     }
 
     private string GetCacheKey(string cacheKey) =>
-        $"{KeyPrefixSegment}{CacheKeyPrefix}{cacheKey}";
+        $"{_keyPrefixSegment}{CacheKeyPrefix}{cacheKey}";
 
     private string GetDependencyKey(string dependencyKey) =>
-        $"{KeyPrefixSegment}{DependencyKeyPrefix}{dependencyKey}";
+        $"{_keyPrefixSegment}{DependencyKeyPrefix}{dependencyKey}";
 }
