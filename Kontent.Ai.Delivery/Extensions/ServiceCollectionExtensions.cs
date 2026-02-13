@@ -6,6 +6,7 @@ using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.DependencyInjection.Extensions;
 using Microsoft.Extensions.Http.Resilience;
 using Microsoft.Extensions.Logging;
+using Microsoft.Extensions.Options;
 
 namespace Kontent.Ai.Delivery;
 
@@ -288,8 +289,15 @@ public static partial class ServiceCollectionExtensions
         var contentDeserializer = sp.GetRequiredService<IContentDeserializer>();
         var typeProvider = sp.GetRequiredService<ITypeProvider>();
 
-        // Resolve keyed cache manager for this client (registered via AddDeliveryMemoryCache/AddDeliveryDistributedCache)
+        // Resolve keyed cache manager for this client (registered via AddDeliveryMemoryCache/AddDeliveryDistributedCache/AddDeliveryCacheManager)
         var cacheManager = sp.GetKeyedService<IDeliveryCacheManager>(clientName);
+        if (cacheManager is not null)
+        {
+            cacheManager = new PreviewAwareCacheManager(
+                cacheManager,
+                sp.GetRequiredService<IOptionsMonitor<DeliveryOptions>>(),
+                clientName);
+        }
 
         // Resolve logger (optional - will be null if no logging is configured)
         var logger = sp.GetService<ILogger<DeliveryClient>>();

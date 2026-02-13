@@ -558,6 +558,16 @@ public class DistributedCacheManagerTests
             _cacheManager.SetAsync("key", value, [], cancellationToken: cts.Token));
     }
 
+    [Fact]
+    public async Task InvalidateAsync_WithCancelledToken_ThrowsOperationCanceledException()
+    {
+        var cts = new CancellationTokenSource();
+        cts.Cancel();
+
+        await Assert.ThrowsAsync<OperationCanceledException>(() =>
+            _cacheManager.InvalidateAsync(cts.Token, "dep1"));
+    }
+
     #endregion
 
     #region Cache Key Prefix Tests

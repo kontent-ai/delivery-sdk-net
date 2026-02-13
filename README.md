@@ -1201,9 +1201,25 @@ Caching is transparent for cacheable query builders - once configured, cached qu
 > [!IMPORTANT]
 > When `WaitForLoadingNewContent(true)` is enabled on a query, the SDK bypasses its local cache for that request path (no cache read and no cache write).
 
+Override cache TTL per query when needed:
+
+```csharp
+var result = await client.GetItem<Article>("my-article")
+    .WithCacheExpiration(TimeSpan.FromMinutes(5))
+    .ExecuteAsync();
+```
+
 **Cache payloads:** The in-memory cache stores hydrated objects for maximum performance. Distributed caches store raw JSON payloads (rehydrated on read) to avoid serialization issues with circular references.
 
 If you implement a custom cache manager that stores raw payloads (typical for distributed caches), override the `StorageMode` property to return `CacheStorageMode.RawJson` so the SDK uses the raw JSON caching path.
+
+Register custom cache managers per client using keyed registration:
+
+```csharp
+services.AddDeliveryClient("production", options => { ... });
+services.AddDeliveryCacheManager("production", sp => new CustomDistributedCacheManager(
+    sp.GetRequiredService<IDistributedCache>()));
+```
 
 #### Detecting Cache Hits
 
@@ -1276,8 +1292,10 @@ If you're using the SDK's in-memory cache (`AddDeliveryMemoryCache`), you can in
 
 ```csharp
 using Kontent.Ai.Delivery.Abstractions;
+using Microsoft.Extensions.DependencyInjection;
 
-var cacheManager = serviceProvider.GetRequiredService<IDeliveryCacheManager>();
+// Resolve cache manager for the client name used during registration.
+var cacheManager = serviceProvider.GetRequiredKeyedService<IDeliveryCacheManager>("production");
 if (cacheManager is IDeliveryCachePurger purger)
 {
     await purger.PurgeAsync();
@@ -1303,6 +1321,8 @@ services.AddDeliveryClient(options =>
     options.PreviewApiKey = "your-preview-api-key";
 });
 ```
+
+When `UsePreviewApi` is enabled, the SDK always bypasses local cache reads/writes for that client, even if a cache manager is registered. This keeps preview responses fresh by default.
 
 #### Dynamic Switching (Production vs Preview)
 

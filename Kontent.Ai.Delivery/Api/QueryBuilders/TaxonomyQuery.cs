@@ -8,12 +8,14 @@ namespace Kontent.Ai.Delivery.Api.QueryBuilders;
 internal sealed class TaxonomyQuery(
     IDeliveryApi api,
     string codename,
-    IDeliveryCacheManager? cacheManager) : ITaxonomyQuery
+    IDeliveryCacheManager? cacheManager) : ITaxonomyQuery, ICacheExpirationConfigurable
 {
     private readonly IDeliveryApi _api = api;
     private readonly string _codename = codename;
     private bool _waitForLoadingNewContent;
     private readonly IDeliveryCacheManager? _cacheManager = cacheManager;
+    private TimeSpan? _cacheExpiration;
+    TimeSpan? ICacheExpirationConfigurable.CacheExpiration { get => _cacheExpiration; set => _cacheExpiration = value; }
 
     public ITaxonomyQuery WaitForLoadingNewContent(bool enabled = true)
     {
@@ -49,10 +51,7 @@ internal sealed class TaxonomyQuery(
         if (cacheResult.IsCacheHit)
             return DeliveryResult.CacheHit<ITaxonomyGroup>(cacheResult.Value!);
 
-        if (apiResult is null)
-            throw new InvalidOperationException("API result was not captured during fetch.");
-
-        return apiResult;
+        return apiResult is null ? throw new InvalidOperationException("API result was not captured during fetch.") : apiResult;
     }
 
     private Task<IDeliveryResult<ITaxonomyGroup>> ExecuteWithoutCacheAsync(
@@ -82,6 +81,7 @@ internal sealed class TaxonomyQuery(
 
                 return ((TaxonomyGroup)apiResult.Value, dependencies);
             },
+            _cacheExpiration,
             logger: null,
             cancellationToken).ConfigureAwait(false);
 

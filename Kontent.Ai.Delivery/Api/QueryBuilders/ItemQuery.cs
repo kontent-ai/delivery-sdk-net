@@ -18,7 +18,7 @@ internal sealed class ItemQuery<TModel>(
     ContentItemMapper contentItemMapper,
     IContentDeserializer contentDeserializer,
     IDeliveryCacheManager? cacheManager,
-    ILogger? logger = null) : IItemQuery<TModel>
+    ILogger? logger = null) : IItemQuery<TModel>, ICacheExpirationConfigurable
 {
     private readonly IDeliveryApi _api = api;
     private readonly string _codename = codename;
@@ -29,8 +29,10 @@ internal sealed class ItemQuery<TModel>(
     private readonly IDeliveryCacheManager? _cacheManager = cacheManager;
     private readonly ILogger? _logger = logger;
     private bool _waitForLoadingNewContent;
+    private TimeSpan? _cacheExpiration;
     private static bool IsDynamicModel => ModelTypeHelper.IsDynamic<TModel>();
     internal IReadOnlyDictionary<string, JsonElement>? LatestModularContent { get; private set; }
+    TimeSpan? ICacheExpirationConfigurable.CacheExpiration { get => _cacheExpiration; set => _cacheExpiration = value; }
 
     public IItemQuery<TModel> WithLanguage(string languageCodename)
     {
@@ -85,7 +87,7 @@ internal sealed class ItemQuery<TModel>(
         bool? waitForLoadingNewContent,
         CancellationToken cancellationToken)
     {
-        var cacheKey = CacheKeyBuilder.BuildItemKey(_codename, _params);
+        var cacheKey = BuildCacheKey(cacheManager.StorageMode);
         var (cacheResult, apiResult) = await FetchWithCacheAsync(
             cacheManager,
             cacheKey,
@@ -167,6 +169,7 @@ internal sealed class ItemQuery<TModel>(
             },
             async (payload, ct) => (IContentItem<TModel>)await CachePayloadHelper.RehydrateItemAsync<TModel>(
                 payload, _contentDeserializer, _contentItemMapper, IsDynamicModel, ct).ConfigureAwait(false),
+            _cacheExpiration,
             _logger,
             cancellationToken).ConfigureAwait(false);
 
@@ -189,11 +192,9 @@ internal sealed class ItemQuery<TModel>(
             async ct =>
             {
                 apiResult = await FetchFromApiAsync(waitForLoadingNewContent, ct).ConfigureAwait(false);
-                if (!apiResult.IsSuccess)
-                    return (null, Array.Empty<string>());
-
-                return await ProcessItemAsync(apiResult.Value, ct).ConfigureAwait(false);
+                return !apiResult.IsSuccess ? ((IContentItem<TModel>? Value, IEnumerable<string> Dependencies))(null, Array.Empty<string>()) : ((IContentItem<TModel>? Value, IEnumerable<string> Dependencies))await ProcessItemAsync(apiResult.Value, ct).ConfigureAwait(false);
             },
+            _cacheExpiration,
             _logger,
             cancellationToken).ConfigureAwait(false);
 
@@ -244,6 +245,12 @@ internal sealed class ItemQuery<TModel>(
     private static IDeliveryResult<IContentItem<TModel>> CreateFailureResult(
         IDeliveryResult<DeliveryItemResponse<TModel>> deliveryResult) =>
         DeliveryResult.FailureFrom<IContentItem<TModel>, DeliveryItemResponse<TModel>>(deliveryResult);
+
+    private string BuildCacheKey(CacheStorageMode storageMode)
+    {
+        var modelType = storageMode == CacheStorageMode.RawJson ? null : typeof(TModel);
+        return CacheKeyBuilder.BuildItemKey(_codename, _params, modelType);
+    }
 
     private void LogQueryStarting()
     {

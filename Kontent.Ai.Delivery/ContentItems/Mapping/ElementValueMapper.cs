@@ -242,12 +242,9 @@ internal sealed class ElementValueMapper(
 
     private static Dictionary<string, IAssetRendition> ParseRenditions(JsonElement assetElement)
     {
-        if (!assetElement.TryGetProperty("renditions", out var rendsEl) || rendsEl.ValueKind != JsonValueKind.Object)
-        {
-            return new Dictionary<string, IAssetRendition>(StringComparer.Ordinal);
-        }
-
-        return rendsEl.EnumerateObject()
+        return !assetElement.TryGetProperty("renditions", out var rendsEl) || rendsEl.ValueKind != JsonValueKind.Object
+            ? new Dictionary<string, IAssetRendition>(StringComparer.Ordinal)
+            : rendsEl.EnumerateObject()
             .ToDictionary(
                 prop => prop.Name,
                 prop => (IAssetRendition)new AssetRendition

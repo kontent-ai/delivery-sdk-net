@@ -8,13 +8,15 @@ namespace Kontent.Ai.Delivery.Api.QueryBuilders;
 /// <inheritdoc cref="ITaxonomiesQuery"/>
 internal sealed class TaxonomiesQuery(
     IDeliveryApi api,
-    IDeliveryCacheManager? cacheManager) : ITaxonomiesQuery
+    IDeliveryCacheManager? cacheManager) : ITaxonomiesQuery, ICacheExpirationConfigurable
 {
     private readonly IDeliveryApi _api = api;
     private readonly SerializedFilterCollection _serializedFilters = [];
     private ListTaxonomyGroupsParams _params = new();
     private bool _waitForLoadingNewContent;
     private readonly IDeliveryCacheManager? _cacheManager = cacheManager;
+    private TimeSpan? _cacheExpiration;
+    TimeSpan? ICacheExpirationConfigurable.CacheExpiration { get => _cacheExpiration; set => _cacheExpiration = value; }
 
     public ITaxonomiesQuery Skip(int skip)
     {
@@ -72,13 +74,11 @@ internal sealed class TaxonomiesQuery(
                 WithNextPageFetcher(cacheResult.Value!));
         }
 
-        if (apiResult is not { IsSuccess: true })
-        {
-            if (apiResult is not null)
-                return CreateFailureResult(apiResult);
-
+        if (apiResult is null)
             throw new InvalidOperationException("API result was not captured during fetch.");
-        }
+
+        if (!apiResult.IsSuccess)
+            return CreateFailureResult(apiResult);
 
         return WrapSuccess(WithNextPageFetcher(cacheResult.Value!), apiResult);
     }
@@ -113,6 +113,7 @@ internal sealed class TaxonomiesQuery(
 
                 return (apiResult.Value, BuildDependencies(apiResult.Value.Taxonomies));
             },
+            _cacheExpiration,
             logger: null,
             cancellationToken).ConfigureAwait(false);
 
@@ -177,7 +178,8 @@ internal sealed class TaxonomiesQuery(
         var nextQuery = new TaxonomiesQuery(_api, _cacheManager)
         {
             _params = _params with { Skip = nextSkip },
-            _waitForLoadingNewContent = this._waitForLoadingNewContent
+            _waitForLoadingNewContent = this._waitForLoadingNewContent,
+            _cacheExpiration = _cacheExpiration
         };
 
         nextQuery._serializedFilters.CopyFrom(_serializedFilters);

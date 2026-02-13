@@ -17,7 +17,7 @@ internal sealed class ItemsQuery<TModel>(
     IContentDeserializer contentDeserializer,
     ITypeProvider typeProvider,
     IDeliveryCacheManager? cacheManager,
-    ILogger? logger = null) : IItemsQuery<TModel>
+    ILogger? logger = null) : IItemsQuery<TModel>, ICacheExpirationConfigurable
 {
     private readonly IDeliveryApi _api = api;
     private readonly ContentItemMapper _contentItemMapper = contentItemMapper;
@@ -29,7 +29,9 @@ internal sealed class ItemsQuery<TModel>(
     private ListItemsParams _params = new();
     private bool _waitForLoadingNewContent;
     private bool _typeFilterApplied;
+    private TimeSpan? _cacheExpiration;
     private static bool IsDynamicModel => ModelTypeHelper.IsDynamic<TModel>();
+    TimeSpan? ICacheExpirationConfigurable.CacheExpiration { get => _cacheExpiration; set => _cacheExpiration = value; }
 
     public IItemsQuery<TModel> WithLanguage(string languageCodename, LanguageFallbackMode languageFallbackMode = LanguageFallbackMode.Enabled)
     {
@@ -125,7 +127,7 @@ internal sealed class ItemsQuery<TModel>(
         bool? waitForLoadingNewContent,
         CancellationToken cancellationToken)
     {
-        var cacheKey = CacheKeyBuilder.BuildItemsKey(_params, _serializedFilters);
+        var cacheKey = BuildCacheKey(cacheManager.StorageMode);
         var (cacheResult, apiResult) = await FetchWithCacheAsync(
             cacheManager,
             cacheKey,
@@ -208,6 +210,7 @@ internal sealed class ItemsQuery<TModel>(
             },
             (payload, ct) => CachePayloadHelper.RehydrateListingAsync<TModel>(
                 payload, _contentDeserializer, _contentItemMapper, IsDynamicModel, ct),
+            _cacheExpiration,
             _logger,
             cancellationToken).ConfigureAwait(false);
 
@@ -236,6 +239,7 @@ internal sealed class ItemsQuery<TModel>(
                 var (response, deps) = await ProcessItemsAsync(apiResult.Value, ct).ConfigureAwait(false);
                 return (response, deps);
             },
+            _cacheExpiration,
             _logger,
             cancellationToken).ConfigureAwait(false);
 
@@ -319,13 +323,20 @@ internal sealed class ItemsQuery<TModel>(
             {
                 _params = _params with { Skip = nextSkip },
                 _waitForLoadingNewContent = this._waitForLoadingNewContent,
-                _typeFilterApplied = _typeFilterApplied
+                _typeFilterApplied = _typeFilterApplied,
+                _cacheExpiration = _cacheExpiration
             };
 
             nextQuery._serializedFilters.CopyFrom(_serializedFilters);
 
             return await nextQuery.ExecuteAsync(ct).ConfigureAwait(false);
         };
+    }
+
+    private string BuildCacheKey(CacheStorageMode storageMode)
+    {
+        var modelType = storageMode == CacheStorageMode.RawJson ? null : typeof(TModel);
+        return CacheKeyBuilder.BuildItemsKey(_params, _serializedFilters, modelType);
     }
 
     private void LogQueryStarting()

@@ -160,6 +160,7 @@ internal static class QueryCacheHelper
     /// <param name="cacheKey">The cache key to store under.</param>
     /// <param name="value">The value to cache.</param>
     /// <param name="dependencies">Dependency keys for cache invalidation.</param>
+    /// <param name="expiration">Optional absolute cache expiration for this entry.</param>
     /// <param name="logger">Optional logger for error logging.</param>
     /// <param name="cancellationToken">Cancellation token.</param>
     public static async Task TrySetCachedAsync<T>(
@@ -167,13 +168,14 @@ internal static class QueryCacheHelper
         string cacheKey,
         T value,
         IEnumerable<string> dependencies,
+        TimeSpan? expiration,
         ILogger? logger,
         CancellationToken cancellationToken) where T : class
     {
         try
         {
             await cacheManager.SetAsync(cacheKey, value, dependencies,
-                expiration: null, cancellationToken: cancellationToken)
+                expiration, cancellationToken: cancellationToken)
                 .ConfigureAwait(false);
         }
         catch (OperationCanceledException) when (cancellationToken.IsCancellationRequested)
@@ -196,6 +198,7 @@ internal static class QueryCacheHelper
     /// <param name="cacheManager">The cache manager to query.</param>
     /// <param name="cacheKey">The cache key to look up.</param>
     /// <param name="fetchFactory">Factory to fetch the value and its dependencies if not cached.</param>
+    /// <param name="expiration">Optional absolute cache expiration for this entry.</param>
     /// <param name="logger">Optional logger for cache hit/miss/error logging.</param>
     /// <param name="cancellationToken">Cancellation token.</param>
     /// <returns>A result containing the value, dependencies, and whether it was a cache hit.</returns>
@@ -203,6 +206,7 @@ internal static class QueryCacheHelper
         IDeliveryCacheManager cacheManager,
         string cacheKey,
         Func<CancellationToken, Task<(T? Value, IEnumerable<string> Dependencies)>> fetchFactory,
+        TimeSpan? expiration,
         ILogger? logger,
         CancellationToken cancellationToken) where T : class
         => await GetOrFetchInternal(
@@ -214,6 +218,7 @@ internal static class QueryCacheHelper
                 var (value, dependencies) = await fetchFactory(ct).ConfigureAwait(false);
                 return (CachePayload: value, Result: value, Dependencies: dependencies);
             },
+            expiration,
             logger,
             cancellationToken).ConfigureAwait(false);
 
@@ -232,6 +237,7 @@ internal static class QueryCacheHelper
     /// The payload may be null if the API call fails.
     /// </param>
     /// <param name="rehydrateFactory">Factory to rehydrate a cached payload into the final result.</param>
+    /// <param name="expiration">Optional absolute cache expiration for this entry.</param>
     /// <param name="logger">Optional logger.</param>
     /// <param name="cancellationToken">Cancellation token.</param>
     /// <returns>A result containing the value, dependencies, and whether it was a cache hit.</returns>
@@ -240,6 +246,7 @@ internal static class QueryCacheHelper
         string cacheKey,
         Func<CancellationToken, Task<(TCachePayload? Payload, TResult? ProcessedResult, IEnumerable<string> Dependencies)>> fetchFactory,
         Func<TCachePayload, CancellationToken, Task<TResult>> rehydrateFactory,
+        TimeSpan? expiration,
         ILogger? logger,
         CancellationToken cancellationToken)
         where TCachePayload : class
@@ -249,6 +256,7 @@ internal static class QueryCacheHelper
             cacheKey,
             (cached, key, ct) => TryMaterializeCachedAsync(cached, key, rehydrateFactory, logger, ct),
             fetchFactory,
+            expiration,
             logger,
             cancellationToken).ConfigureAwait(false);
 
@@ -261,6 +269,7 @@ internal static class QueryCacheHelper
         string cacheKey,
         Func<TCachePayload, string, CancellationToken, Task<TResult?>> materializeCachedAsync,
         Func<CancellationToken, Task<(TCachePayload? CachePayload, TResult? Result, IEnumerable<string> Dependencies)>> fetchFactory,
+        TimeSpan? expiration,
         ILogger? logger,
         CancellationToken cancellationToken)
         where TCachePayload : class
@@ -300,7 +309,7 @@ internal static class QueryCacheHelper
         // 5. Cache payload if available.
         if (cachePayload is not null)
         {
-            await TrySetCachedAsync(cacheManager, cacheKey, cachePayload, materializedDependencies, logger, cancellationToken)
+            await TrySetCachedAsync(cacheManager, cacheKey, cachePayload, materializedDependencies, expiration, logger, cancellationToken)
                 .ConfigureAwait(false);
         }
 

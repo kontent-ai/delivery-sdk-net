@@ -342,6 +342,10 @@ internal sealed class DistributedCacheManager : IDeliveryCacheManager
             if (_logger is not null)
                 LoggerMessages.CacheInvalidateCompleted(_logger, dependencyKey);
         }
+        catch (OperationCanceledException)
+        {
+            throw;
+        }
         catch (Exception ex)
         {
             if (_logger is not null)
@@ -388,6 +392,10 @@ internal sealed class DistributedCacheManager : IDeliveryCacheManager
 
             await _cache.SetAsync(indexKey, indexBytes, cacheOptions, cancellationToken)
                 .ConfigureAwait(false);
+        }
+        catch (OperationCanceledException)
+        {
+            throw;
         }
         catch (Exception ex)
         {

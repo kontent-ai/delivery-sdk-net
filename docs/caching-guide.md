@@ -16,6 +16,7 @@ Caching is essential for production applications using the Kontent.ai Delivery A
   - [Cache Keys](#cache-keys)
   - [Dependency Tracking](#dependency-tracking)
   - [Expiration Strategies](#expiration-strategies)
+    - [Per-query Expiration Override](#per-query-expiration-override)
 - [Cache Invalidation](#cache-invalidation)
   - [Manual Invalidation](#manual-invalidation)
   - [Webhook-Based Invalidation](#webhook-based-invalidation)
@@ -306,7 +307,12 @@ public class CustomDistributedCacheManager : IDeliveryCacheManager
 }
 
 // Registration
-services.AddSingleton<IDeliveryCacheManager, CustomDistributedCacheManager>();
+services.AddDeliveryClient("production", options =>
+{
+    options.EnvironmentId = "your-environment-id";
+});
+services.AddDeliveryCacheManager("production",
+    sp => new CustomDistributedCacheManager(sp.GetRequiredService<IDistributedCache>()));
 ```
 
 ## How Caching Works
@@ -318,6 +324,8 @@ SDK caching applies to cacheable query builders (for example, strongly-typed ite
 Dynamic item/list queries (`GetItem()` and `GetItems()` without a generic model type) are intentionally non-cacheable because their final item types are resolved at runtime. These queries always execute against the API and return `IsCacheHit == false`.
 
 When `WaitForLoadingNewContent(true)` is enabled for a query, the SDK bypasses local caching for that request path (no cache lookup and no cache store).
+
+When a client is configured with `UsePreviewApi = true`, the SDK always bypasses local cache reads/writes for that client, even if a cache manager is registered.
 
 ### Cache Keys
 
@@ -482,6 +490,28 @@ public async Task SetAsync<T>(
 }
 ```
 
+#### Per-query Expiration Override
+
+You can override TTL for a specific cacheable query without changing the cache manager default:
+
+```csharp
+var itemResult = await client.GetItem<Article>("my-article")
+    .WithCacheExpiration(TimeSpan.FromMinutes(5))
+    .ExecuteAsync();
+
+var listResult = await client.GetItems<Article>()
+    .WithCacheExpiration(TimeSpan.FromMinutes(2))
+    .ExecuteAsync();
+```
+
+Supported cacheable query builders:
+- `GetItem<T>()`
+- `GetItems<T>()`
+- `GetType()`
+- `GetTypes()`
+- `GetTaxonomy()`
+- `GetTaxonomies()`
+
 ## Cache Invalidation
 
 ### Manual Invalidation
@@ -490,8 +520,9 @@ Invalidate specific content:
 
 ```csharp
 using Kontent.Ai.Delivery.Abstractions;
+using Microsoft.Extensions.DependencyInjection;
 
-var cacheManager = serviceProvider.GetRequiredService<IDeliveryCacheManager>();
+var cacheManager = serviceProvider.GetRequiredKeyedService<IDeliveryCacheManager>("production");
 
 // Invalidate a specific item
 await cacheManager.InvalidateAsync(default, "item_homepage");
@@ -529,7 +560,7 @@ The SDK exposes an **optional** capability interface `IDeliveryCachePurger` that
 using Kontent.Ai.Delivery.Abstractions;
 using Microsoft.Extensions.DependencyInjection;
 
-var cacheManager = serviceProvider.GetRequiredService<IDeliveryCacheManager>();
+var cacheManager = serviceProvider.GetRequiredKeyedService<IDeliveryCacheManager>("production");
 
 if (cacheManager is IDeliveryCachePurger purger)
 {
@@ -551,14 +582,14 @@ using Microsoft.AspNetCore.Mvc;
 [Route("api/webhooks")]
 public class WebhookController : ControllerBase
 {
-    private readonly IDeliveryCacheManager _cacheManager;
+    private readonly IServiceProvider _serviceProvider;
     private readonly ILogger<WebhookController> _logger;
 
     public WebhookController(
-        IDeliveryCacheManager cacheManager,
+        IServiceProvider serviceProvider,
         ILogger<WebhookController> logger)
     {
-        _cacheManager = cacheManager;
+        _serviceProvider = serviceProvider;
         _logger = logger;
     }
 
@@ -585,6 +616,7 @@ public class WebhookController : ControllerBase
 
     private async Task ProcessWebhookAsync(WebhookNotification notification)
     {
+        var cacheManager = _serviceProvider.GetRequiredKeyedService<IDeliveryCacheManager>("production");
         var dependencies = new List<string>();
 
         foreach (var item in notification.Data.Items)
@@ -612,7 +644,7 @@ public class WebhookController : ControllerBase
         }
 
         // Invalidate all affected cache entries
-        await _cacheManager.InvalidateAsync(default, dependencies.ToArray());
+        await cacheManager.InvalidateAsync(default, dependencies.ToArray());
 
         _logger.LogInformation(
             "Invalidated {Count} cache entries from webhook",
@@ -708,17 +740,19 @@ For content that changes on a schedule:
 ```csharp
 public class CacheInvalidationService : BackgroundService
 {
-    private readonly IDeliveryCacheManager _cacheManager;
+    private readonly IServiceProvider _serviceProvider;
     private readonly ILogger<CacheInvalidationService> _logger;
 
     protected override async Task ExecuteAsync(CancellationToken stoppingToken)
     {
+        var cacheManager = _serviceProvider.GetRequiredKeyedService<IDeliveryCacheManager>("production");
+
         while (!stoppingToken.IsCancellationRequested)
         {
             try
             {
                 // Invalidate news cache every 5 minutes
-                await _cacheManager.InvalidateAsync(stoppingToken, "items_news");
+                await cacheManager.InvalidateAsync(stoppingToken, "items_news");
 
                 // Wait 5 minutes
                 await Task.Delay(TimeSpan.FromMinutes(5), stoppingToken);
@@ -741,7 +775,7 @@ The SDK supports per-client cache configuration using keyed services, allowing d
 
 ### Enabling Caching for Named Clients
 
-Use `AddDeliveryMemoryCache` or `AddDeliveryDistributedCache` to enable caching for specific named clients:
+Use `AddDeliveryMemoryCache`, `AddDeliveryDistributedCache`, or `AddDeliveryCacheManager` to enable caching for specific named clients:
 
 ```csharp
 // Register named clients
@@ -848,7 +882,7 @@ public class TenantCacheService
 
 ### Selective Caching (Production vs Preview)
 
-A common pattern is to cache production content but not preview content:
+A common pattern is to cache production content while preview stays fresh. Preview clients automatically bypass cache reads/writes:
 
 ```csharp
 // Production: cached for performance
@@ -867,7 +901,7 @@ services.AddDeliveryClient("preview", options =>
     options.UsePreviewApi = true;
     options.PreviewApiKey = "your-preview-api-key";
 });
-// No AddDeliveryMemoryCache for "preview" = no caching
+services.AddDeliveryMemoryCache("preview"); // Optional: preview still bypasses cache reads/writes
 ```
 
 ## Best Practices
@@ -1089,10 +1123,10 @@ public class LoggingCacheManager : IDeliveryCacheManager
 
 1. **Verify cache is registered**:
 ```csharp
-var cacheManager = serviceProvider.GetService<IDeliveryCacheManager>();
+var cacheManager = serviceProvider.GetKeyedService<IDeliveryCacheManager>("production");
 if (cacheManager == null)
 {
-    // Cache not registered!
+    // Cache not registered for "production"
 }
 ```
 
