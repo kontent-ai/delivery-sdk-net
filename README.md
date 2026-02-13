@@ -1201,6 +1201,14 @@ Caching is transparent for cacheable query builders - once configured, cached qu
 > [!IMPORTANT]
 > When `WaitForLoadingNewContent(true)` is enabled on a query, the SDK bypasses its local cache for that request path (no cache read and no cache write).
 
+Override cache TTL per query when needed:
+
+```csharp
+var result = await client.GetItem<Article>("my-article")
+    .WithCacheExpiration(TimeSpan.FromMinutes(5))
+    .ExecuteAsync();
+```
+
 **Cache payloads:** The in-memory cache stores hydrated objects for maximum performance. Distributed caches store raw JSON payloads (rehydrated on read) to avoid serialization issues with circular references.
 
 If you implement a custom cache manager that stores raw payloads (typical for distributed caches), override the `StorageMode` property to return `CacheStorageMode.RawJson` so the SDK uses the raw JSON caching path.

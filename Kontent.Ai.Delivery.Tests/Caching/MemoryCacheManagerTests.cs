@@ -403,6 +403,22 @@ public class MemoryCacheManagerTests : IDisposable
         Assert.Null(result);
     }
 
+    [Fact]
+    public async Task InvalidateAsync_WithCaseVariantKeys_RemovesAllMatchingEntries()
+    {
+        var dependency = "dep1";
+        await _cacheManager.SetAsync("Key", new TestCacheValue { Id = 1, Name = "Upper" }, [dependency]);
+        await _cacheManager.SetAsync("key", new TestCacheValue { Id = 2, Name = "Lower" }, [dependency]);
+
+        Assert.NotNull(await _cacheManager.GetAsync<TestCacheValue>("Key"));
+        Assert.NotNull(await _cacheManager.GetAsync<TestCacheValue>("key"));
+
+        await _cacheManager.InvalidateAsync(default, dependency);
+
+        Assert.Null(await _cacheManager.GetAsync<TestCacheValue>("Key"));
+        Assert.Null(await _cacheManager.GetAsync<TestCacheValue>("key"));
+    }
+
     #endregion
 
     #region Concurrency Tests

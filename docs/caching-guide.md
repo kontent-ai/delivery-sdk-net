@@ -16,6 +16,7 @@ Caching is essential for production applications using the Kontent.ai Delivery A
   - [Cache Keys](#cache-keys)
   - [Dependency Tracking](#dependency-tracking)
   - [Expiration Strategies](#expiration-strategies)
+    - [Per-query Expiration Override](#per-query-expiration-override)
 - [Cache Invalidation](#cache-invalidation)
   - [Manual Invalidation](#manual-invalidation)
   - [Webhook-Based Invalidation](#webhook-based-invalidation)
@@ -488,6 +489,28 @@ public async Task SetAsync<T>(
     await _cache.SetAsync(key, serialized, options, cancellationToken);
 }
 ```
+
+#### Per-query Expiration Override
+
+You can override TTL for a specific cacheable query without changing the cache manager default:
+
+```csharp
+var itemResult = await client.GetItem<Article>("my-article")
+    .WithCacheExpiration(TimeSpan.FromMinutes(5))
+    .ExecuteAsync();
+
+var listResult = await client.GetItems<Article>()
+    .WithCacheExpiration(TimeSpan.FromMinutes(2))
+    .ExecuteAsync();
+```
+
+Supported cacheable query builders:
+- `GetItem<T>()`
+- `GetItems<T>()`
+- `GetType()`
+- `GetTypes()`
+- `GetTaxonomy()`
+- `GetTaxonomies()`
 
 ## Cache Invalidation
 

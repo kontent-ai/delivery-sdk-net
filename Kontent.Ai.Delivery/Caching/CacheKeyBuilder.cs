@@ -36,13 +36,17 @@ internal static class CacheKeyBuilder
     /// </summary>
     /// <param name="codename">The item codename.</param>
     /// <param name="parameters">The query parameters.</param>
+    /// <param name="modelType">
+    /// Optional model type discriminator used to isolate hydrated-object caches for different generic model types.
+    /// </param>
     /// <returns>Cache key in format: <c>item:{codename}:lang={language}:depth={depth}:elements={sorted}</c></returns>
-    public static string BuildItemKey(string codename, SingleItemParams parameters)
+    public static string BuildItemKey(string codename, SingleItemParams parameters, Type? modelType = null)
     {
         var builder = new StringBuilder(128);
         builder.Append("item").Append(Separator);
         builder.Append(codename).Append(Separator);
 
+        AppendModelDiscriminator(builder, modelType);
         AppendLanguage(builder, parameters.Language);
         AppendDepth(builder, parameters.Depth);
         AppendElementProjection(builder, parameters.Elements, parameters.ExcludeElements);
@@ -55,12 +59,19 @@ internal static class CacheKeyBuilder
     /// </summary>
     /// <param name="parameters">The query parameters.</param>
     /// <param name="filters">The filter dictionary from fluent API.</param>
+    /// <param name="modelType">
+    /// Optional model type discriminator used to isolate hydrated-object caches for different generic model types.
+    /// </param>
     /// <returns>Cache key in format: <c>items:lang={language}:depth={depth}:skip={skip}:limit={limit}:filters={hash}</c></returns>
-    public static string BuildItemsKey(ListItemsParams parameters, IReadOnlyList<KeyValuePair<string, string>> filters)
+    public static string BuildItemsKey(
+        ListItemsParams parameters,
+        IReadOnlyList<KeyValuePair<string, string>> filters,
+        Type? modelType = null)
     {
         var builder = new StringBuilder(256);
         builder.Append("items").Append(Separator);
 
+        AppendModelDiscriminator(builder, modelType);
         AppendLanguage(builder, parameters.Language);
         AppendDepth(builder, parameters.Depth);
         AppendPagination(builder, parameters.Skip, parameters.Limit);
@@ -216,6 +227,18 @@ internal static class CacheKeyBuilder
         var hash = ComputeStableHash(filterString);
 
         builder.Append("filters=").Append(hash).Append(Separator);
+    }
+
+    private static void AppendModelDiscriminator(StringBuilder builder, Type? modelType)
+    {
+        if (modelType is null)
+            return;
+
+        var identifier = modelType.FullName ?? modelType.Name;
+        if (string.IsNullOrWhiteSpace(identifier))
+            return;
+
+        builder.Append("model=").Append(ComputeStableHash(identifier)).Append(Separator);
     }
 
     private static string ComputeStableHash(string input)

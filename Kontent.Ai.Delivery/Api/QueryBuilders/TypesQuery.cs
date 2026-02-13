@@ -13,7 +13,7 @@ namespace Kontent.Ai.Delivery.Api.QueryBuilders;
 internal sealed class TypesQuery(
     IDeliveryApi api,
     IDeliveryCacheManager? cacheManager,
-    ILogger? logger = null) : ITypesQuery
+    ILogger? logger = null) : ITypesQuery, ICacheExpirationConfigurable
 {
     private readonly IDeliveryApi _api = api;
     private readonly SerializedFilterCollection _serializedFilters = [];
@@ -21,6 +21,8 @@ internal sealed class TypesQuery(
     private bool _waitForLoadingNewContent;
     private readonly IDeliveryCacheManager? _cacheManager = cacheManager;
     private readonly ILogger? _logger = logger;
+    private TimeSpan? _cacheExpiration;
+    TimeSpan? ICacheExpirationConfigurable.CacheExpiration { get => _cacheExpiration; set => _cacheExpiration = value; }
 
     public ITypesQuery WithElements(params string[] elementCodenames)
     {
@@ -140,6 +142,7 @@ internal sealed class TypesQuery(
 
                 return (apiResult.Value, BuildDependencies(apiResult.Value.Types));
             },
+            _cacheExpiration,
             _logger,
             cancellationToken).ConfigureAwait(false);
 
@@ -204,7 +207,8 @@ internal sealed class TypesQuery(
         var nextQuery = new TypesQuery(_api, _cacheManager, _logger)
         {
             _params = _params with { Skip = nextSkip },
-            _waitForLoadingNewContent = this._waitForLoadingNewContent
+            _waitForLoadingNewContent = this._waitForLoadingNewContent,
+            _cacheExpiration = _cacheExpiration
         };
 
         nextQuery._serializedFilters.CopyFrom(_serializedFilters);

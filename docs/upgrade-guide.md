@@ -680,6 +680,24 @@ using var container = DeliveryClientBuilder
 var client = container.Client;
 ```
 
+### 3.10 Per-query Cache Expiration
+
+You can override cache expiration for a specific cacheable query:
+
+```csharp
+var result = await client.GetItem<Article>("homepage")
+    .WithCacheExpiration(TimeSpan.FromMinutes(5))
+    .ExecuteAsync();
+```
+
+This applies to:
+- `GetItem<T>()`
+- `GetItems<T>()`
+- `GetType()`
+- `GetTypes()`
+- `GetTaxonomy()`
+- `GetTaxonomies()`
+
 ---
 
 ## 4. Migrating Retry Policies

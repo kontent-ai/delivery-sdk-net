@@ -59,7 +59,7 @@ internal sealed class MemoryCacheManager(
     private readonly ConcurrentDictionary<string, HashSet<string>> _reverseIndex = new(StringComparer.OrdinalIgnoreCase);
     private const int LockStripeCount = 64;
     private readonly SemaphoreSlim[] _reverseIndexLocks = CreateLockStripes(LockStripeCount);
-    private readonly ConcurrentDictionary<string, CacheEntryMetadata> _entries = new(StringComparer.OrdinalIgnoreCase);
+    private readonly ConcurrentDictionary<string, CacheEntryMetadata> _entries = new(StringComparer.Ordinal);
 
     private sealed record CacheEntryMetadata(CancellationTokenSource Cts, string[] Dependencies);
     private bool _disposed;
@@ -283,7 +283,7 @@ internal sealed class MemoryCacheManager(
         {
             var keys = _reverseIndex.GetOrAdd(
                 dependencyKey,
-                _ => new HashSet<string>(StringComparer.OrdinalIgnoreCase));
+                _ => new HashSet<string>(StringComparer.Ordinal));
 
             lock (keys)
             {

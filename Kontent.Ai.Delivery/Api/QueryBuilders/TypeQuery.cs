@@ -13,7 +13,7 @@ internal sealed class TypeQuery(
     IDeliveryApi api,
     string codename,
     IDeliveryCacheManager? cacheManager,
-    ILogger? logger = null) : ITypeQuery
+    ILogger? logger = null) : ITypeQuery, ICacheExpirationConfigurable
 {
     private readonly IDeliveryApi _api = api;
     private readonly string _codename = codename;
@@ -21,6 +21,8 @@ internal sealed class TypeQuery(
     private bool _waitForLoadingNewContent;
     private readonly IDeliveryCacheManager? _cacheManager = cacheManager;
     private readonly ILogger? _logger = logger;
+    private TimeSpan? _cacheExpiration;
+    TimeSpan? ICacheExpirationConfigurable.CacheExpiration { get => _cacheExpiration; set => _cacheExpiration = value; }
 
     public ITypeQuery WithElements(params string[] elementCodenames)
     {
@@ -108,6 +110,7 @@ internal sealed class TypeQuery(
 
                 return ((ContentType)apiResult.Value, dependencies);
             },
+            _cacheExpiration,
             _logger,
             cancellationToken).ConfigureAwait(false);
 
