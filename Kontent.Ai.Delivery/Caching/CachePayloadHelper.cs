@@ -1,6 +1,8 @@
 using System.Text.Json;
 using Kontent.Ai.Delivery.ContentItems;
 using Kontent.Ai.Delivery.ContentItems.Mapping;
+using Kontent.Ai.Delivery.Logging;
+using Microsoft.Extensions.Logging;
 
 namespace Kontent.Ai.Delivery.Caching;
 
@@ -45,7 +47,8 @@ internal static class CachePayloadHelper
     /// Parses modular content from cached raw JSON strings back into <see cref="JsonElement"/> values.
     /// </summary>
     internal static IReadOnlyDictionary<string, JsonElement> ParseModularContent(
-        IReadOnlyDictionary<string, string> modularContentJson)
+        IReadOnlyDictionary<string, string> modularContentJson,
+        ILogger? logger = null)
     {
         if (modularContentJson.Count == 0)
             return new Dictionary<string, JsonElement>();
@@ -53,8 +56,20 @@ internal static class CachePayloadHelper
         var result = new Dictionary<string, JsonElement>(modularContentJson.Count, StringComparer.Ordinal);
         foreach (var (codename, json) in modularContentJson)
         {
-            using var doc = JsonDocument.Parse(json);
-            result[codename] = doc.RootElement.Clone();
+            try
+            {
+                using var doc = JsonDocument.Parse(json);
+                result[codename] = doc.RootElement.Clone();
+            }
+            catch (JsonException ex)
+            {
+                if (logger is not null)
+                    LoggerMessages.CacheModularContentParseFailed(logger, codename, ex);
+
+                throw new InvalidOperationException(
+                    $"Failed to parse modular content JSON for '{codename}' in cached payload.",
+                    ex);
+            }
         }
 
         return result;
@@ -68,6 +83,8 @@ internal static class CachePayloadHelper
         IContentDeserializer contentDeserializer,
         ContentItemMapper contentItemMapper,
         bool isDynamicModel,
+        string? defaultRenditionPreset,
+        ILogger? logger,
         CancellationToken cancellationToken)
     {
         if (payload.ItemsJson.Count != 1)
@@ -82,8 +99,13 @@ internal static class CachePayloadHelper
 
         if (!isDynamicModel)
         {
-            var modularContent = ParseModularContent(payload.ModularContentJson);
-            await contentItemMapper.CompleteItemAsync(item, modularContent, dependencyContext: null, cancellationToken)
+            var modularContent = ParseModularContent(payload.ModularContentJson, logger);
+            await contentItemMapper.CompleteItemAsync(
+                    item,
+                    modularContent,
+                    dependencyContext: null,
+                    defaultRenditionPreset,
+                    cancellationToken)
                 .ConfigureAwait(false);
         }
 
@@ -98,6 +120,8 @@ internal static class CachePayloadHelper
         IContentDeserializer contentDeserializer,
         ContentItemMapper contentItemMapper,
         bool isDynamicModel,
+        string? defaultRenditionPreset,
+        ILogger? logger,
         CancellationToken cancellationToken)
     {
         if (payload.Pagination is null)
@@ -105,7 +129,7 @@ internal static class CachePayloadHelper
             throw new InvalidOperationException("Cached listing payload is missing pagination.");
         }
 
-        var modularContent = ParseModularContent(payload.ModularContentJson);
+        var modularContent = ParseModularContent(payload.ModularContentJson, logger);
         var items = new List<ContentItem<TModel>>(payload.ItemsJson.Count);
 
         foreach (var itemJson in payload.ItemsJson)
@@ -116,7 +140,12 @@ internal static class CachePayloadHelper
 
             if (!isDynamicModel)
             {
-                await contentItemMapper.CompleteItemAsync(item, modularContent, dependencyContext: null, cancellationToken)
+                await contentItemMapper.CompleteItemAsync(
+                        item,
+                        modularContent,
+                        dependencyContext: null,
+                        defaultRenditionPreset,
+                        cancellationToken)
                     .ConfigureAwait(false);
             }
 

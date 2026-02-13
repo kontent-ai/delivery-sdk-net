@@ -7,7 +7,6 @@ using Kontent.Ai.Delivery.ContentItems.Mapping;
 using Kontent.Ai.Delivery.ContentItems.Processing;
 using Kontent.Ai.Delivery.Logging;
 using Microsoft.Extensions.Logging;
-using Microsoft.Extensions.Options;
 using Xunit;
 
 namespace Kontent.Ai.Delivery.Tests.ContentItems.Mapping;
@@ -81,9 +80,7 @@ public sealed class ElementValueMapperTests
     private static ElementValueMapper CreateMapper(ILogger<ElementValueMapper>? logger = null)
     {
         var jsonOptions = RefitSettingsProvider.CreateDefaultJsonSerializerOptions();
-        var optionsMonitor = new StaticOptionsMonitor<DeliveryOptions>(new DeliveryOptions());
         return new ElementValueMapper(
-            optionsMonitor,
             NullContentDependencyExtractor.Instance,
             jsonOptions,
             new HtmlParser(),
@@ -94,15 +91,6 @@ public sealed class ElementValueMapperTests
     {
         [JsonPropertyName("count")]
         public int Count { get; set; }
-    }
-
-    private sealed class StaticOptionsMonitor<T>(T currentValue) : IOptionsMonitor<T>
-    {
-        public T CurrentValue { get; } = currentValue;
-
-        public T Get(string? name) => CurrentValue;
-
-        public IDisposable? OnChange(Action<T, string?> listener) => null;
     }
 
     private sealed record LogEntry(int EventId, string Message);

@@ -37,7 +37,7 @@ public static partial class ServiceCollectionExtensions
 
         return services.AddDeliveryClient(
             DeliveryClientNames.Default,
-            options => DeliveryOptionsCopyHelper.Copy(source: deliveryOptions, destination: options),
+            options => DeliveryOptionsCopyHelper.Copy(deliveryOptions, options),
             configureHttpClient,
             configureResilience,
             configureRefit);
@@ -66,7 +66,7 @@ public static partial class ServiceCollectionExtensions
 
         return services.AddDeliveryClient(
             DeliveryClientNames.Default,
-            opts => DeliveryOptionsCopyHelper.Copy(source: options, destination: opts),
+            opts => DeliveryOptionsCopyHelper.Copy(options, opts),
             configureHttpClient,
             configureResilience,
             configureRefit);
@@ -288,16 +288,10 @@ public static partial class ServiceCollectionExtensions
         var contentItemMapper = sp.GetRequiredService<ContentItemMapper>();
         var contentDeserializer = sp.GetRequiredService<IContentDeserializer>();
         var typeProvider = sp.GetRequiredService<ITypeProvider>();
+        var optionsMonitor = sp.GetRequiredService<IOptionsMonitor<DeliveryOptions>>();
 
         // Resolve keyed cache manager for this client (registered via AddDeliveryMemoryCache/AddDeliveryDistributedCache/AddDeliveryCacheManager)
         var cacheManager = sp.GetKeyedService<IDeliveryCacheManager>(clientName);
-        if (cacheManager is not null)
-        {
-            cacheManager = new PreviewAwareCacheManager(
-                cacheManager,
-                sp.GetRequiredService<IOptionsMonitor<DeliveryOptions>>(),
-                clientName);
-        }
 
         // Resolve logger (optional - will be null if no logging is configured)
         var logger = sp.GetService<ILogger<DeliveryClient>>();
@@ -308,7 +302,9 @@ public static partial class ServiceCollectionExtensions
             contentDeserializer,
             typeProvider,
             cacheManager,
-            logger);
+            logger,
+            optionsMonitor,
+            clientName);
     }
 
     private static string GetHttpClientName(string name) => $"{HttpClientNamePrefix}{name}";

@@ -15,6 +15,11 @@ internal sealed class MappingContext
     public IReadOnlyDictionary<string, JsonElement>? ModularContent { get; init; }
 
     /// <summary>
+    /// Default asset rendition preset to apply when mapping asset URLs.
+    /// </summary>
+    public string? DefaultRenditionPreset { get; init; }
+
+    /// <summary>
     /// Dependency tracking for cache invalidation.
     /// </summary>
     public DependencyTrackingContext? DependencyContext { get; init; }

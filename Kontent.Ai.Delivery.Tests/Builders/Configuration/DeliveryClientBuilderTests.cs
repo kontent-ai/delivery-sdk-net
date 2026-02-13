@@ -120,7 +120,7 @@ public class DeliveryClientBuilderTests
     }
 
     [Fact]
-    public async Task Build_WithPreviewApiAndMemoryCache_CacheManagerBypassesReadsAndWrites()
+    public async Task Build_WithPreviewApiAndMemoryCache_CacheManagerStoresAndReads()
     {
         using var container = DeliveryClientBuilder
             .WithOptions(builder => builder
@@ -136,7 +136,7 @@ public class DeliveryClientBuilderTests
         await cacheManager.SetAsync("preview-test", "value", ["item_preview"]);
         var cached = await cacheManager.GetAsync<string>("preview-test");
 
-        Assert.Null(cached);
+        Assert.Equal("value", cached);
     }
 
     [Fact]

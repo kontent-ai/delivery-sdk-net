@@ -21,8 +21,7 @@ internal sealed class TypesQuery(
     private bool _waitForLoadingNewContent;
     private readonly IDeliveryCacheManager? _cacheManager = cacheManager;
     private readonly ILogger? _logger = logger;
-    private TimeSpan? _cacheExpiration;
-    TimeSpan? ICacheExpirationConfigurable.CacheExpiration { get => _cacheExpiration; set => _cacheExpiration = value; }
+    public TimeSpan? CacheExpiration { get; set; }
 
     public ITypesQuery WithElements(params string[] elementCodenames)
     {
@@ -91,18 +90,17 @@ internal sealed class TypesQuery(
                 WithNextPageFetcher(cacheResult.Value!));
         }
 
-        if (apiResult is not { IsSuccess: true })
-        {
-            if (apiResult is not null)
-            {
-                LogQueryCompleted(stopwatch, apiResult.StatusCode, cacheHit: false);
-                return CreateFailureResult(apiResult);
-            }
-
+        if (apiResult is null)
             throw new InvalidOperationException("API result was not captured during fetch.");
+
+        if (!apiResult.IsSuccess)
+        {
+            LogQueryFailed(apiResult);
+            LogQueryCompleted(stopwatch, apiResult.StatusCode, cacheHit: false, apiResult.HasStaleContent);
+            return CreateFailureResult(apiResult);
         }
 
-        LogQueryCompleted(stopwatch, apiResult.StatusCode, cacheHit: false);
+        LogQueryCompleted(stopwatch, apiResult.StatusCode, cacheHit: false, apiResult.HasStaleContent);
         return WrapSuccess(WithNextPageFetcher(cacheResult.Value!), apiResult);
     }
 
@@ -114,11 +112,12 @@ internal sealed class TypesQuery(
         var deliveryResult = await FetchFromApiAsync(waitForLoadingNewContent, cancellationToken).ConfigureAwait(false);
         if (!deliveryResult.IsSuccess)
         {
-            LogQueryCompleted(stopwatch, deliveryResult.StatusCode, cacheHit: false);
+            LogQueryFailed(deliveryResult);
+            LogQueryCompleted(stopwatch, deliveryResult.StatusCode, cacheHit: false, deliveryResult.HasStaleContent);
             return CreateFailureResult(deliveryResult);
         }
 
-        LogQueryCompleted(stopwatch, deliveryResult.StatusCode, cacheHit: false);
+        LogQueryCompleted(stopwatch, deliveryResult.StatusCode, cacheHit: false, deliveryResult.HasStaleContent);
         return WrapSuccess(WithNextPageFetcher(deliveryResult.Value), deliveryResult);
     }
 
@@ -142,7 +141,7 @@ internal sealed class TypesQuery(
 
                 return (apiResult.Value, BuildDependencies(apiResult.Value.Types));
             },
-            _cacheExpiration,
+            CacheExpiration,
             _logger,
             cancellationToken).ConfigureAwait(false);
 
@@ -208,7 +207,7 @@ internal sealed class TypesQuery(
         {
             _params = _params with { Skip = nextSkip },
             _waitForLoadingNewContent = this._waitForLoadingNewContent,
-            _cacheExpiration = _cacheExpiration
+            CacheExpiration = this.CacheExpiration
         };
 
         nextQuery._serializedFilters.CopyFrom(_serializedFilters);
@@ -224,11 +223,22 @@ internal sealed class TypesQuery(
     private Stopwatch? StartTimingIfEnabled() =>
         _logger?.IsEnabled(LogLevel.Information) == true ? Stopwatch.StartNew() : null;
 
-    private void LogQueryCompleted(Stopwatch? stopwatch, HttpStatusCode statusCode, bool cacheHit)
+    private void LogQueryFailed(IDeliveryResult<DeliveryTypeListingResponse> deliveryResult)
+    {
+        if (_logger is not null)
+        {
+            LoggerMessages.QueryFailed(_logger, "Types", "list", deliveryResult.StatusCode,
+                deliveryResult.Error?.Message, exception: null);
+        }
+    }
+
+    private void LogQueryCompleted(Stopwatch? stopwatch, HttpStatusCode statusCode, bool cacheHit, bool hasStaleContent = false)
     {
         if (_logger is null)
             return;
         stopwatch?.Stop();
+        if (hasStaleContent)
+            LoggerMessages.QueryStaleContent(_logger, "list");
         LoggerMessages.QueryCompleted(_logger, "Types", "list",
             stopwatch?.ElapsedMilliseconds ?? 0, statusCode, cacheHit);
     }

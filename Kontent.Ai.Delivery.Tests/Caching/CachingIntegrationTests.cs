@@ -1,11 +1,15 @@
 using System.Net;
+using System.Text;
+using System.Text.Json;
 using Kontent.Ai.Delivery.Abstractions;
+using Kontent.Ai.Delivery.Api.QueryParams.Items;
 using Kontent.Ai.Delivery.Caching;
 using Kontent.Ai.Delivery.Extensions;
 using Kontent.Ai.Delivery.Tests.Models.ContentTypes;
 using Microsoft.Extensions.Caching.Distributed;
 using Microsoft.Extensions.Caching.Memory;
 using Microsoft.Extensions.DependencyInjection;
+using Microsoft.Extensions.Options;
 using RichardSzalay.MockHttp;
 using Xunit;
 
@@ -295,6 +299,119 @@ public class CachingIntegrationTests
         Assert.True(productionResult2.IsCacheHit);
         Assert.False(previewResult1.IsCacheHit);
         Assert.False(previewResult2.IsCacheHit);
+        mock.VerifyNoOutstandingExpectation();
+    }
+
+    [Fact]
+    public async Task MemoryCache_RuntimeEnvironmentIdChange_UsesExistingCacheUntilPurged()
+    {
+        var initialEnvironmentId = _guid.ToString();
+        var updatedEnvironmentId = Guid.NewGuid().ToString();
+        var itemCodename = "coffee_beverages_explained";
+        var clientName = "test";
+
+        var fixtureContent = await File.ReadAllTextAsync(
+            Path.Combine(Environment.CurrentDirectory,
+                $"Fixtures{Path.DirectorySeparatorChar}DeliveryClient{Path.DirectorySeparatorChar}{itemCodename}.json"));
+
+        var mock = new MockHttpMessageHandler();
+        mock.Expect($"https://deliver.kontent.ai/{initialEnvironmentId}/items/{itemCodename}")
+            .Respond("application/json", fixtureContent);
+        mock.Expect($"https://deliver.kontent.ai/{updatedEnvironmentId}/items/{itemCodename}")
+            .Respond("application/json", fixtureContent);
+
+        var mutableOptions = new DeliveryOptions
+        {
+            EnvironmentId = initialEnvironmentId
+        };
+
+        var services = new ServiceCollection();
+        services.AddDeliveryClient(clientName, o => DeliveryOptionsCopyHelper.Copy(mutableOptions, o),
+            configureHttpClient: b => b.ConfigurePrimaryHttpMessageHandler(() => mock));
+        services.AddDeliveryMemoryCache(clientName);
+
+        var serviceProvider = services.BuildServiceProvider();
+        var client = serviceProvider.GetRequiredKeyedService<IDeliveryClient>(clientName);
+        var optionsCache = serviceProvider.GetRequiredService<IOptionsMonitorCache<DeliveryOptions>>();
+        var cacheManager = serviceProvider.GetRequiredKeyedService<IDeliveryCacheManager>(clientName);
+
+        var result1 = await client.GetItem<Article>(itemCodename).ExecuteAsync();
+
+        mutableOptions.EnvironmentId = updatedEnvironmentId;
+        optionsCache.TryRemove(clientName);
+
+        var result2 = await client.GetItem<Article>(itemCodename).ExecuteAsync();
+
+        var purger = Assert.IsAssignableFrom<IDeliveryCachePurger>(cacheManager);
+        await purger.PurgeAsync();
+
+        var result3 = await client.GetItem<Article>(itemCodename).ExecuteAsync();
+
+        Assert.True(result1.IsSuccess);
+        Assert.True(result2.IsSuccess);
+        Assert.True(result3.IsSuccess);
+        Assert.False(result1.IsCacheHit);
+        Assert.True(result2.IsCacheHit);
+        Assert.False(result3.IsCacheHit);
+        mock.VerifyNoOutstandingExpectation();
+    }
+
+    [Fact]
+    public async Task MemoryCache_RuntimeDefaultRenditionPresetChange_UsesExistingCacheUntilPurged()
+    {
+        var itemCodename = "coffee_beverages_explained";
+        var clientName = "test";
+
+        var fixtureContent = await File.ReadAllTextAsync(
+            Path.Combine(Environment.CurrentDirectory,
+                $"Fixtures{Path.DirectorySeparatorChar}DeliveryClient{Path.DirectorySeparatorChar}{itemCodename}.json"));
+
+        var mock = new MockHttpMessageHandler();
+        mock.Expect($"{BaseUrl}/items/{itemCodename}")
+            .Respond("application/json", fixtureContent);
+        mock.Expect($"{BaseUrl}/items/{itemCodename}")
+            .Respond("application/json", fixtureContent);
+
+        var mutableOptions = new DeliveryOptions
+        {
+            EnvironmentId = _guid.ToString(),
+            DefaultRenditionPreset = "default"
+        };
+
+        var services = new ServiceCollection();
+        services.AddDeliveryClient(clientName, o => DeliveryOptionsCopyHelper.Copy(mutableOptions, o),
+            configureHttpClient: b => b.ConfigurePrimaryHttpMessageHandler(() => mock));
+        services.AddDeliveryMemoryCache(clientName);
+
+        var serviceProvider = services.BuildServiceProvider();
+        var client = serviceProvider.GetRequiredKeyedService<IDeliveryClient>(clientName);
+        var optionsCache = serviceProvider.GetRequiredService<IOptionsMonitorCache<DeliveryOptions>>();
+        var cacheManager = serviceProvider.GetRequiredKeyedService<IDeliveryCacheManager>(clientName);
+
+        var result1 = await client.GetItem<Article>(itemCodename).ExecuteAsync();
+        Assert.True(result1.IsSuccess);
+        var firstUrl = Assert.Single(result1.Value.Elements.TeaserImage!).Url;
+
+        mutableOptions.DefaultRenditionPreset = null;
+        optionsCache.TryRemove(clientName);
+
+        var result2 = await client.GetItem<Article>(itemCodename).ExecuteAsync();
+        Assert.True(result2.IsSuccess);
+        var secondUrl = Assert.Single(result2.Value.Elements.TeaserImage!).Url;
+
+        var purger = Assert.IsAssignableFrom<IDeliveryCachePurger>(cacheManager);
+        await purger.PurgeAsync();
+
+        var result3 = await client.GetItem<Article>(itemCodename).ExecuteAsync();
+        Assert.True(result3.IsSuccess);
+        var thirdUrl = Assert.Single(result3.Value.Elements.TeaserImage!).Url;
+
+        Assert.False(result1.IsCacheHit);
+        Assert.True(result2.IsCacheHit);
+        Assert.False(result3.IsCacheHit);
+        Assert.Contains("w=200&h=150&fit=clip&rect=7,23,300,200", firstUrl, StringComparison.Ordinal);
+        Assert.Equal(firstUrl, secondUrl);
+        Assert.DoesNotContain("?", thirdUrl, StringComparison.Ordinal);
         mock.VerifyNoOutstandingExpectation();
     }
 
@@ -1124,6 +1241,45 @@ public class CachingIntegrationTests
     }
 
     [Fact]
+    public async Task DistributedCache_CorruptedModularContentPayload_FallsBackToApiAndRecaches()
+    {
+        var mock = new MockHttpMessageHandler();
+        var itemCodename = "coffee_beverages_explained";
+        var fixtureContent = await File.ReadAllTextAsync(
+            Path.Combine(Environment.CurrentDirectory,
+                $"Fixtures{Path.DirectorySeparatorChar}DeliveryClient{Path.DirectorySeparatorChar}{itemCodename}.json"));
+
+        mock.Expect($"{BaseUrl}/items/{itemCodename}")
+            .Respond("application/json", fixtureContent);
+
+        var services = new ServiceCollection();
+        var options = new DeliveryOptions
+        {
+            EnvironmentId = _guid.ToString()
+        };
+
+        var mockDistributedCache = new MockDistributedCache();
+        SeedCorruptedDistributedItemPayload(mockDistributedCache, "test", itemCodename, fixtureContent);
+
+        services.AddSingleton<IDistributedCache>(mockDistributedCache);
+        services.AddDeliveryClient("test", o => DeliveryOptionsCopyHelper.Copy(options, o),
+            configureHttpClient: b => b.ConfigurePrimaryHttpMessageHandler(() => mock));
+        services.AddDeliveryDistributedCache("test");
+
+        var serviceProvider = services.BuildServiceProvider();
+        var client = serviceProvider.GetRequiredKeyedService<IDeliveryClient>("test");
+
+        var result1 = await client.GetItem<Article>(itemCodename).ExecuteAsync();
+        var result2 = await client.GetItem<Article>(itemCodename).ExecuteAsync();
+
+        Assert.True(result1.IsSuccess);
+        Assert.True(result2.IsSuccess);
+        Assert.False(result1.IsCacheHit);
+        Assert.True(result2.IsCacheHit);
+        mock.VerifyNoOutstandingExpectation();
+    }
+
+    [Fact]
     public async Task DistributedCache_Invalidation_RefreshesCache()
     {
         var mock = new MockHttpMessageHandler();
@@ -1808,6 +1964,34 @@ public class CachingIntegrationTests
         services.AddDeliveryDistributedCache("test");
 
         return services.BuildServiceProvider().GetRequiredKeyedService<IDeliveryClient>("test");
+    }
+
+    private static void SeedCorruptedDistributedItemPayload(
+        MockDistributedCache distributedCache,
+        string clientName,
+        string itemCodename,
+        string singleItemResponseJson)
+    {
+        using var responseDoc = JsonDocument.Parse(singleItemResponseJson);
+        var itemJson = responseDoc.RootElement.GetProperty("item").GetRawText();
+
+        var payload = new CachedRawItemsPayload
+        {
+            ItemsJson = [itemJson],
+            ModularContentJson = new Dictionary<string, string>(StringComparer.Ordinal)
+            {
+                ["broken-linked-item"] = "{ this is not valid json }"
+            }
+        };
+
+        var sdkCacheKey = CacheKeyBuilder.BuildItemKey(itemCodename, new SingleItemParams(), modelType: null);
+        var distributedCacheKey = $"{clientName}:cache:{sdkCacheKey}";
+        var serializedPayload = JsonSerializer.Serialize(payload);
+
+        distributedCache.Set(
+            distributedCacheKey,
+            Encoding.UTF8.GetBytes(serializedPayload),
+            new DistributedCacheEntryOptions { AbsoluteExpirationRelativeToNow = TimeSpan.FromMinutes(5) });
     }
 
     #endregion

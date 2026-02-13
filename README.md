@@ -164,33 +164,41 @@ For console applications, scripts, or scenarios where DI is not available, use `
 using Kontent.Ai.Delivery.Configuration;
 
 // Simple usage with Production API
-using var container = DeliveryClientBuilder
+using var productionContainer = DeliveryClientBuilder
     .WithOptions(builder => builder
         .WithEnvironmentId("your-environment-id")
         .UseProductionApi()
         .Build())
     .Build();
 
-var client = container.Client;
+var productionClient = productionContainer.Client;
 
-// With Preview API and caching (type provider is auto-discovered from source generation)
-using var container = DeliveryClientBuilder
+// With Preview API (preview mode bypasses local cache reads/writes)
+using var previewContainer = DeliveryClientBuilder
     .WithOptions(builder => builder
         .WithEnvironmentId("your-environment-id")
         .UsePreviewApi("your-preview-api-key")
+        .Build())
+    .Build();
+
+// With Production API and in-memory caching
+using var cachedContainer = DeliveryClientBuilder
+    .WithOptions(builder => builder
+        .WithEnvironmentId("your-environment-id")
+        .UseProductionApi()
         .Build())
     .WithMemoryCache(TimeSpan.FromMinutes(30))
     .Build();
 
 // Or explicitly provide a type provider if needed
-using var container = DeliveryClientBuilder
+using var typedContainer = DeliveryClientBuilder
     .WithOptions(builder => builder
         .WithEnvironmentId("your-environment-id")
         .Build())
     .WithTypeProvider(new GeneratedTypeProvider())
     .Build();
 
-var client = container.Client;
+var typedClient = typedContainer.Client;
 ```
 
 The builder supports:
@@ -1305,6 +1313,9 @@ if (cacheManager is IDeliveryCachePurger purger)
 > [!NOTE]
 > Purge-all is not supported for generic distributed caches (`IDistributedCache`). Use provider-specific tools or key-prefix rotation.
 
+> [!IMPORTANT]
+> Runtime option changes on an already-cached client do not invalidate existing cache entries. If you change `EnvironmentId` or `DefaultRenditionPreset`, purge the client cache (or recreate the client) before relying on the new setting.
+
 For advanced caching strategies including cache invalidation, webhook integration, and multi-tenant scenarios, see the [Caching Guide](docs/caching-guide.md).
 
 ### Preview API
@@ -1396,6 +1407,10 @@ services.AddDeliveryClient(options =>
 ```
 
 When set, all asset URLs returned by the SDK will automatically include the specified rendition preset's transformations.
+
+For named clients, `DefaultRenditionPreset` is resolved per client configuration. This means production/preview (or any named clients) can use different default presets independently.
+
+When query caching is enabled, changing `DefaultRenditionPreset` on an existing client does not invalidate already-cached entries. Purge cache (or recreate the client) if you need the new default rendition to apply immediately.
 
 ### Image Transformation
 
@@ -1612,7 +1627,7 @@ var result = await client.GetItem("article")
 
 ### Caching Considerations
 
-- **Cache keys** must be unique per query, language variant, and environment
+- **Cache identity** should be isolated per client/environment via named clients and key prefixes. Within a cache namespace, keys are based on query shape (for example query params, language, filters)
 - **Memory cache** can lead to memory pressure with large content - monitor your application's memory usage
 - **Distributed cache** is recommended for production scenarios with multiple application instances
 - Always implement **cache invalidation** strategies, ideally using webhooks
@@ -1737,12 +1752,7 @@ For more advanced scenarios and in-depth guides, explore the following documenta
 
 ## Contributing
 
-Contributions are welcome! Please see our [Contributing Guide](CONTRIBUTING.md) for details on how to:
-
-- Report bugs and request features
-- Submit pull requests
-- Follow our coding standards
-- Run tests locally
+Contributions are welcome. Use [GitHub Issues](https://github.com/kontent-ai/delivery-sdk-net/issues) for bug reports and feature requests, and open pull requests in this repository for code contributions.
 
 ## License
 

@@ -15,15 +15,18 @@ internal sealed class DynamicItemQuery(
     string codename,
     ContentItemMapper contentItemMapper,
     IContentDeserializer contentDeserializer,
+    string? defaultRenditionPreset = null,
     ILogger? logger = null) : IDynamicItemQuery
 {
     private readonly ContentItemMapper _contentItemMapper = contentItemMapper;
+    private readonly string? _defaultRenditionPreset = defaultRenditionPreset;
     private readonly ItemQuery<IDynamicElements> _inner = new(
         api,
         codename,
         contentItemMapper,
         contentDeserializer,
         cacheManager: null,
+        defaultRenditionPreset,
         logger);
 
     public IDynamicItemQuery WithLanguage(string languageCodename)
@@ -73,6 +76,7 @@ internal sealed class DynamicItemQuery(
                 rawContentItem.RawItemJson.Value,
                 _inner.LatestModularContent,
                 dependencyContext: null,
+                _defaultRenditionPreset,
                 cancellationToken).ConfigureAwait(false);
 
             if (runtimeItem is not null)

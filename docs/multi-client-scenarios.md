@@ -536,6 +536,8 @@ services.AddDeliveryClient("preview", options =>
 services.AddDeliveryMemoryCache("preview", defaultExpiration: TimeSpan.FromMinutes(5));
 ```
 
+`UsePreviewApi = true` clients always bypass SDK cache reads/writes. Registering a cache manager for preview is optional and does not change that behavior.
+
 ### Preview Mode Service
 
 ```csharp
@@ -850,7 +852,7 @@ services.AddDeliveryClient("brand-a", options =>
 
 **Problem**: Cached content from one client appears for another.
 
-**Solution**: Ensure cache keys include client identifier. The SDK handles this automatically by including the environment ID in cache keys.
+**Solution**: Ensure each client uses its own cache namespace. The SDK does this with per-client key prefixes for named clients (or custom `keyPrefix` values when configured). If you change `EnvironmentId` on an already-cached client at runtime, purge cache or recreate the client.
 
 ---
 

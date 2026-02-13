@@ -2,6 +2,7 @@ using System.Net;
 using Kontent.Ai.Delivery.Abstractions;
 using Kontent.Ai.Delivery.Tests.Models.ContentTypes;
 using Microsoft.Extensions.DependencyInjection;
+using Microsoft.Extensions.Options;
 using RichardSzalay.MockHttp;
 using Xunit;
 
@@ -232,6 +233,17 @@ public class DeliveryClientTests
         var result = await client.GetItems<IDynamicElements>().ExecuteAsync();
         Assert.True(result.IsSuccess);
     }
+
+    [Fact]
+    public void InvalidOptions_AreSurfaced_WhenCreatingClient()
+    {
+        var mock = new MockHttpMessageHandler();
+        Assert.Throws<OptionsValidationException>(() => CreateClient(mock, new DeliveryOptions
+        {
+            EnvironmentId = "not-a-guid"
+        }));
+    }
+
     [Fact]
     public async Task GetItems_Filter_ComposesQuery()
     {
@@ -284,5 +296,59 @@ public class DeliveryClientTests
 
         Assert.True(result.IsSuccess);
         mock.VerifyNoOutstandingExpectation();
+    }
+
+    [Fact]
+    public async Task NamedClients_UseOwnDefaultRenditionPreset()
+    {
+        var mock = new MockHttpMessageHandler();
+        var responseJson = await File.ReadAllTextAsync(
+            Path.Combine(
+                Environment.CurrentDirectory,
+                $"Fixtures{Path.DirectorySeparatorChar}DeliveryClient{Path.DirectorySeparatorChar}coffee_beverages_explained.json"));
+
+        mock.When($"{BaseUrl}/items/coffee_beverages_explained")
+            .Respond("application/json", responseJson);
+
+        var services = new ServiceCollection();
+        services.AddDeliveryClient(
+            "with-preset",
+            options =>
+            {
+                options.EnvironmentId = _guid.ToString();
+                options.DefaultRenditionPreset = "default";
+            },
+            configureHttpClient: b => b.ConfigurePrimaryHttpMessageHandler(() => mock));
+
+        services.AddDeliveryClient(
+            "without-preset",
+            options =>
+            {
+                options.EnvironmentId = _guid.ToString();
+            },
+            configureHttpClient: b => b.ConfigurePrimaryHttpMessageHandler(() => mock));
+
+        using var provider = services.BuildServiceProvider();
+        var withPresetClient = provider.GetRequiredKeyedService<IDeliveryClient>("with-preset");
+        var withoutPresetClient = provider.GetRequiredKeyedService<IDeliveryClient>("without-preset");
+
+        var withPresetResult = await withPresetClient.GetItem<Article>("coffee_beverages_explained").ExecuteAsync();
+        var withoutPresetResult = await withoutPresetClient.GetItem<Article>("coffee_beverages_explained").ExecuteAsync();
+
+        Assert.True(withPresetResult.IsSuccess);
+        Assert.True(withoutPresetResult.IsSuccess);
+
+        var withPresetAssets = withPresetResult.Value.Elements.TeaserImage;
+        var withoutPresetAssets = withoutPresetResult.Value.Elements.TeaserImage;
+        Assert.NotNull(withPresetAssets);
+        Assert.NotNull(withoutPresetAssets);
+        Assert.NotEmpty(withPresetAssets!);
+        Assert.NotEmpty(withoutPresetAssets!);
+
+        var withPresetUrl = withPresetAssets.First().Url;
+        var withoutPresetUrl = withoutPresetAssets.First().Url;
+
+        Assert.Contains("w=200&h=150&fit=clip&rect=7,23,300,200", withPresetUrl, StringComparison.Ordinal);
+        Assert.DoesNotContain("?", withoutPresetUrl, StringComparison.Ordinal);
     }
 }

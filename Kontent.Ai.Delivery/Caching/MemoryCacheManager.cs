@@ -341,7 +341,7 @@ internal sealed class MemoryCacheManager(
         {
             if (key is string keyString && state is CacheEntryMetadata evictedMetadata)
                 HandleCacheEntryEviction(keyString, evictedMetadata, reason);
-        }, state: entryMetadata);
+        }, entryMetadata);
 
         entryOptions.AddExpirationToken(new CancellationChangeToken(entryCts.Token));
 

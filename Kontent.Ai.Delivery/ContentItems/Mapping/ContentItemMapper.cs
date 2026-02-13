@@ -36,11 +36,13 @@ internal sealed class ContentItemMapper
     /// <param name="item">The partially deserialized content item.</param>
     /// <param name="modularContent">Dictionary of linked items from API response.</param>
     /// <param name="dependencyContext">Optional context for cache dependency tracking.</param>
+    /// <param name="defaultRenditionPreset">Optional default asset rendition preset codename used when mapping asset URLs.</param>
     /// <param name="cancellationToken">Cancellation token.</param>
     public Task CompleteItemAsync<TModel>(
         IContentItem<TModel> item,
         IReadOnlyDictionary<string, JsonElement>? modularContent,
         DependencyTrackingContext? dependencyContext = null,
+        string? defaultRenditionPreset = null,
         CancellationToken cancellationToken = default)
     {
         cancellationToken.ThrowIfCancellationRequested();
@@ -62,6 +64,7 @@ internal sealed class ContentItemMapper
         {
             ModularContent = modularContent,
             DependencyContext = dependencyContext,
+            DefaultRenditionPreset = defaultRenditionPreset,
             CancellationToken = cancellationToken
         };
 
@@ -80,6 +83,7 @@ internal sealed class ContentItemMapper
     /// <param name="rawItemJson">The full JSON of the content item.</param>
     /// <param name="modularContent">Dictionary of linked items from API response.</param>
     /// <param name="dependencyContext">Optional context for cache dependency tracking.</param>
+    /// <param name="defaultRenditionPreset">Optional default asset rendition preset codename used when mapping asset URLs.</param>
     /// <param name="cancellationToken">Cancellation token.</param>
     /// <returns>
     /// The runtime-typed item, or null if no type mapping exists (caller should keep dynamic version).
@@ -88,6 +92,7 @@ internal sealed class ContentItemMapper
         JsonElement rawItemJson,
         IReadOnlyDictionary<string, JsonElement>? modularContent,
         DependencyTrackingContext? dependencyContext = null,
+        string? defaultRenditionPreset = null,
         CancellationToken cancellationToken = default)
     {
         cancellationToken.ThrowIfCancellationRequested();
@@ -109,6 +114,7 @@ internal sealed class ContentItemMapper
         {
             ModularContent = modularContent,
             DependencyContext = dependencyContext,
+            DefaultRenditionPreset = defaultRenditionPreset,
             CancellationToken = cancellationToken
         };
 
@@ -124,12 +130,14 @@ internal sealed class ContentItemMapper
     /// </summary>
     /// <param name="dynamicItems">Collection of dynamic content items.</param>
     /// <param name="modularContent">Dictionary of linked items from API response.</param>
+    /// <param name="defaultRenditionPreset">Optional default asset rendition preset codename used when mapping asset URLs.</param>
     /// <param name="cancellationToken">Cancellation token.</param>
     /// <returns>Collection of items with runtime typing applied where possible.</returns>
     internal async Task<IReadOnlyList<IContentItem>> RuntimeTypeItemsAsync(
         IReadOnlyList<IContentItem<IDynamicElements>> dynamicItems,
         IReadOnlyDictionary<string, JsonElement>? modularContent,
-        CancellationToken cancellationToken)
+        string? defaultRenditionPreset = null,
+        CancellationToken cancellationToken = default)
     {
         var result = new List<IContentItem>(dynamicItems.Count);
 
@@ -143,6 +151,7 @@ internal sealed class ContentItemMapper
                     rawContentItem.RawItemJson.Value,
                     modularContent,
                     dependencyContext: null,
+                    defaultRenditionPreset,
                     cancellationToken).ConfigureAwait(false);
 
                 if (runtimeItem != null)

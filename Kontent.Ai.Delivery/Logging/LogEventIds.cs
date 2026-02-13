@@ -70,6 +70,9 @@ internal static class LogEventIds
     /// <summary>Cache invalidation operation failed.</summary>
     public const int CacheInvalidationFailed = 1143;
 
+    /// <summary>Failed to parse modular content from cached JSON payload.</summary>
+    public const int CacheModularContentParseFailed = 1144;
+
     /// <summary>Partial items cached due to type mismatch.</summary>
     public const int CachePartialItemsWarning = 1150;
 
