@@ -7,15 +7,6 @@
     <NoWarn>CS1591</NoWarn>
   </PropertyGroup>
 
-  <ItemGroup>
-    <None Remove="Fixtures\home.json" />
-  </ItemGroup>
-
-  <ItemGroup>
-    <Content Include="Fixtures\home.json">
-      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
-    </Content>
-  </ItemGroup>
 
   <ItemGroup>
     <PackageReference Include="FluentAssertions" />
@@ -47,112 +38,7 @@
   </ItemGroup>
 
   <ItemGroup>
-    <None Update="Fixtures\DeliveryClient\languages.json">
-      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
-    </None>
-    <None Update="Fixtures\DeliveryClient\articles_feed_2.json">
-      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
-    </None>
-    <None Update="Fixtures\DeliveryClient\articles_feed_1.json">
-      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
-    </None>
-    <None Update="Fixtures\DeliveryClient\articles_feed.json">
-      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
-    </None>
-    <None Update="Fixtures\DeliveryClient\complete_content_item_system_type_feed.json">
-      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
-    </None>
-    <None Update="Fixtures\DeliveryClient\no_elements.json">
-      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
-    </None>
-    <None Update="Fixtures\DeliveryClient\rich_text_complex_tables.json">
-      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
-    </None>
-    <None Update="Fixtures\DeliveryClient\sync_v2.json">
-      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
-    </None>
-    <None Update="Fixtures\DeliveryClient\sync_v2_init.json">
-      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
-    </None>
-    <None Update="Fixtures\DeliveryClient\used_in_batch_2.json">
-      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
-    </None>
-    <None Update="Fixtures\DeliveryClient\used_in_batch_1.json">
-      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
-    </None>
-    <None Update="Fixtures\DeliveryClient\used_in.json">
-      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
-    </None>
-    <None Update="Fixtures\ServiceCollectionsExtensions\deliveryOptions_as_root.json">
-      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
-    </None>
-    <None Update="Fixtures\ServiceCollectionsExtensions\deliveryOptions_nested_under_default_key.json">
-      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
-    </None>
-    <None Update="Fixtures\ServiceCollectionsExtensions\deliveryOptions_under_custom_key.json">
-      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
-    </None>
-    <None Update="Fixtures\ServiceCollectionsExtensions\deliveryOptions_under_default_key.json">
-      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
-    </None>
-    <None Update="Fixtures\ContentLinkResolver\coffee_beverages_explained.json">
-      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
-    </None>
-    <None Update="Fixtures\ContentLinkResolver\coffee_processing_techniques.json">
-      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
-    </None>
-    <None Update="Fixtures\ContentLinkResolver\on_roasts.json">
-      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
-    </None>
-    <None Update="Fixtures\DeliveryClient\allendale.json">
-      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
-    </None>
-    <None Update="Fixtures\DeliveryClient\article.json">
-      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
-    </None>
-    <None Update="Fixtures\DeliveryClient\articles.json">
-      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
-    </None>
-    <None Update="Fixtures\DeliveryClient\brazil_natural_barra_grande.json">
-      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
-    </None>
-    <None Update="Fixtures\DeliveryClient\coffee.json">
-      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
-    </None>
-    <None Update="Fixtures\DeliveryClient\coffee_beverages_explained.json">
-      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
-    </None>
-    <None Update="Fixtures\DeliveryClient\complete_content_item.json">
-      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
-    </None>
-    <None Update="Fixtures\DeliveryClient\complete_content_item_system_type.json">
-      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
-    </None>
-    <None Update="Fixtures\DeliveryClient\items.json">
-      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
-    </None>
-    <None Update="Fixtures\DeliveryClient\onroast_recursive_inline_linked_items.json">
-      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
-    </None>
-    <None Update="Fixtures\DeliveryClient\onroast_recursive_linked_items.json">
-      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
-    </None>
-    <None Update="Fixtures\DeliveryClient\on_roasts.json">
-      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
-    </None>
-    <None Update="Fixtures\DeliveryClient\taxonomies_personas.json">
-      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
-    </None>
-    <None Update="Fixtures\DeliveryClient\taxonomies_multiple.json">
-      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
-    </None>
-    <None Update="Fixtures\DeliveryClient\types_accessory.json">
-      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
-    </None>
-    <None Update="Fixtures\DeliveryClient\sync.json">
-      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
-    </None>
-    <None Update="Fixtures\DeliveryClient\sync_init.json">
+    <None Update="Fixtures\**\*.json">
       <CopyToOutputDirectory>Always</CopyToOutputDirectory>
     </None>
   </ItemGroup>

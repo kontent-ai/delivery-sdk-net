@@ -97,7 +97,8 @@ public class ContentDependencyExtractorTests
         var element = new MockRichTextElement();
         element.Images.Add(Guid.NewGuid(), new MockInlineImage());
 
-        _extractor.ExtractFromRichTextElement(element, null);
+        var exception = Record.Exception(() => _extractor.ExtractFromRichTextElement(element, null));
+        Assert.Null(exception);
     }
 
     [Fact]
@@ -204,7 +205,8 @@ public class ContentDependencyExtractorTests
         """;
         var element = JsonDocument.Parse(json).RootElement;
 
-        _extractor.ExtractFromTaxonomyElement(element, null);
+        var exception = Record.Exception(() => _extractor.ExtractFromTaxonomyElement(element, null));
+        Assert.Null(exception);
     }
 
     [Fact]
@@ -308,7 +310,8 @@ public class ContentDependencyExtractorTests
         var element = new MockRichTextElement();
         element.Images.Add(Guid.NewGuid(), new MockInlineImage());
 
-        extractor.ExtractFromRichTextElement(element, null);
+        var exception = Record.Exception(() => extractor.ExtractFromRichTextElement(element, null));
+        Assert.Null(exception);
     }
 
     [Fact]
@@ -323,7 +326,8 @@ public class ContentDependencyExtractorTests
         """;
         var element = JsonDocument.Parse(json).RootElement;
 
-        extractor.ExtractFromTaxonomyElement(element, null);
+        var exception = Record.Exception(() => extractor.ExtractFromTaxonomyElement(element, null));
+        Assert.Null(exception);
     }
 
     #endregion

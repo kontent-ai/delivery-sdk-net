@@ -622,11 +622,12 @@ The [Kontent.ai Model Generator](https://github.com/kontent-ai/model-generator-n
 Add the source generation package to enable these features:
 
 ```xml
-<PackageReference Include="Kontent.Ai.Delivery.SourceGeneration" Version="19.0.0" />
+<PackageReference Include="Kontent.Ai.Delivery.SourceGeneration" Version="19.0.0-rc1" />
 ```
 
 > [!IMPORTANT]
 > Add `Kontent.Ai.Delivery.SourceGeneration` to the project that compiles your generated model classes.
+> Keep the package version aligned with your `Kontent.Ai.Delivery` package version.
 
 Generated models include the attribute automatically:
 
@@ -1205,6 +1206,8 @@ services.AddDeliveryDistributedCache(defaultExpiration: TimeSpan.FromHours(2));
 Caching is transparent for cacheable query builders - once configured, cached query types are cached automatically and cache keys are built from query parameters for proper cache hits.
 
 `GetItem()` and `GetItems()` dynamic queries are intentionally excluded from SDK caching (runtime-typed results), so they always return `IsCacheHit == false`.
+
+`SecureAccessApiKey` and `PreviewApiKey` are intentionally not part of query cache key identity. Secure access only gates access to published content, and preview clients (`UsePreviewApi = true`) bypass SDK cache reads/writes entirely.
 
 > [!IMPORTANT]
 > When `WaitForLoadingNewContent(true)` is enabled on a query, the SDK bypasses its local cache for that request path (no cache read and no cache write).

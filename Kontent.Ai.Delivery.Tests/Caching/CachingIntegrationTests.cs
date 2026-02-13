@@ -32,9 +32,7 @@ public class CachingIntegrationTests
     {
         var mock = new MockHttpMessageHandler();
         var itemCodename = "coffee_beverages_explained";
-        var fixtureContent = await File.ReadAllTextAsync(
-            Path.Combine(Environment.CurrentDirectory,
-                $"Fixtures{Path.DirectorySeparatorChar}DeliveryClient{Path.DirectorySeparatorChar}{itemCodename}.json"));
+        var fixtureContent = await ReadFixtureAsync($"DeliveryClient{Path.DirectorySeparatorChar}{itemCodename}.json");
 
         // First call should hit the API
         mock.Expect($"{BaseUrl}/items/{itemCodename}")
@@ -68,22 +66,18 @@ public class CachingIntegrationTests
     {
         var mock = new MockHttpMessageHandler();
         var itemCodename = "coffee_beverages_explained";
-        var fixtureContent = await File.ReadAllTextAsync(
-            Path.Combine(Environment.CurrentDirectory,
-                $"Fixtures{Path.DirectorySeparatorChar}DeliveryClient{Path.DirectorySeparatorChar}{itemCodename}.json"));
+        var fixtureContent = await ReadFixtureAsync($"DeliveryClient{Path.DirectorySeparatorChar}{itemCodename}.json");
 
-        var services = new ServiceCollection();
         var options = new DeliveryOptions
         {
             EnvironmentId = _guid.ToString()
         };
 
-        // Named client with keyed cache manager and short TTL
-        services.AddDeliveryClient("test", o => DeliveryOptionsCopyHelper.Copy(options, o),
-            configureHttpClient: b => b.ConfigurePrimaryHttpMessageHandler(() => mock));
-        services.AddDeliveryMemoryCache("test", defaultExpiration: TimeSpan.FromMilliseconds(50));
-
-        var client = services.BuildServiceProvider().GetRequiredKeyedService<IDeliveryClient>("test");
+        var serviceProvider = BuildNamedMemoryCacheServiceProvider(
+            mock,
+            options,
+            defaultExpiration: TimeSpan.FromMilliseconds(50));
+        var client = serviceProvider.GetRequiredKeyedService<IDeliveryClient>("test");
 
         // First call should hit API
         mock.Expect($"{BaseUrl}/items/{itemCodename}")
@@ -115,21 +109,18 @@ public class CachingIntegrationTests
     {
         var mock = new MockHttpMessageHandler();
         var itemCodename = "coffee_beverages_explained";
-        var fixtureContent = await File.ReadAllTextAsync(
-            Path.Combine(Environment.CurrentDirectory,
-                $"Fixtures{Path.DirectorySeparatorChar}DeliveryClient{Path.DirectorySeparatorChar}{itemCodename}.json"));
+        var fixtureContent = await ReadFixtureAsync($"DeliveryClient{Path.DirectorySeparatorChar}{itemCodename}.json");
 
-        var services = new ServiceCollection();
         var options = new DeliveryOptions
         {
             EnvironmentId = _guid.ToString()
         };
 
-        services.AddDeliveryClient("test", o => DeliveryOptionsCopyHelper.Copy(options, o),
-            configureHttpClient: b => b.ConfigurePrimaryHttpMessageHandler(() => mock));
-        services.AddDeliveryMemoryCache("test", defaultExpiration: TimeSpan.FromMinutes(10));
-
-        var client = services.BuildServiceProvider().GetRequiredKeyedService<IDeliveryClient>("test");
+        var serviceProvider = BuildNamedMemoryCacheServiceProvider(
+            mock,
+            options,
+            defaultExpiration: TimeSpan.FromMinutes(10));
+        var client = serviceProvider.GetRequiredKeyedService<IDeliveryClient>("test");
 
         mock.Expect($"{BaseUrl}/items/{itemCodename}")
             .Respond("application/json", fixtureContent);
@@ -163,9 +154,7 @@ public class CachingIntegrationTests
     {
         var mock = new MockHttpMessageHandler();
         var itemCodename = "coffee_beverages_explained";
-        var fixtureContent = await File.ReadAllTextAsync(
-            Path.Combine(Environment.CurrentDirectory,
-                $"Fixtures{Path.DirectorySeparatorChar}DeliveryClient{Path.DirectorySeparatorChar}{itemCodename}.json"));
+        var fixtureContent = await ReadFixtureAsync($"DeliveryClient{Path.DirectorySeparatorChar}{itemCodename}.json");
 
         mock.Expect($"{BaseUrl}/items/{itemCodename}")
             .With(req => req.Headers.Contains("X-KC-Wait-For-Loading-New-Content"))
@@ -191,9 +180,7 @@ public class CachingIntegrationTests
     {
         var mock = new MockHttpMessageHandler();
         var itemCodename = "coffee_beverages_explained";
-        var fixtureContent = await File.ReadAllTextAsync(
-            Path.Combine(Environment.CurrentDirectory,
-                $"Fixtures{Path.DirectorySeparatorChar}DeliveryClient{Path.DirectorySeparatorChar}{itemCodename}.json"));
+        var fixtureContent = await ReadFixtureAsync($"DeliveryClient{Path.DirectorySeparatorChar}{itemCodename}.json");
 
         mock.Expect($"{BaseUrl}/items/{itemCodename}")
             .With(req => !req.Headers.Contains("X-KC-Wait-For-Loading-New-Content"))
@@ -220,9 +207,7 @@ public class CachingIntegrationTests
     {
         var mock = new MockHttpMessageHandler();
         var itemCodename = "coffee_beverages_explained";
-        var fixtureContent = await File.ReadAllTextAsync(
-            Path.Combine(Environment.CurrentDirectory,
-                $"Fixtures{Path.DirectorySeparatorChar}DeliveryClient{Path.DirectorySeparatorChar}{itemCodename}.json"));
+        var fixtureContent = await ReadFixtureAsync($"DeliveryClient{Path.DirectorySeparatorChar}{itemCodename}.json");
 
         mock.Expect($"{PreviewBaseUrl}/items/{itemCodename}")
             .Respond("application/json", fixtureContent);
@@ -253,9 +238,7 @@ public class CachingIntegrationTests
     {
         var mock = new MockHttpMessageHandler();
         var itemCodename = "coffee_beverages_explained";
-        var fixtureContent = await File.ReadAllTextAsync(
-            Path.Combine(Environment.CurrentDirectory,
-                $"Fixtures{Path.DirectorySeparatorChar}DeliveryClient{Path.DirectorySeparatorChar}{itemCodename}.json"));
+        var fixtureContent = await ReadFixtureAsync($"DeliveryClient{Path.DirectorySeparatorChar}{itemCodename}.json");
 
         // Production should cache (single API call for two requests).
         mock.Expect($"{BaseUrl}/items/{itemCodename}")
@@ -310,9 +293,7 @@ public class CachingIntegrationTests
         var itemCodename = "coffee_beverages_explained";
         var clientName = "test";
 
-        var fixtureContent = await File.ReadAllTextAsync(
-            Path.Combine(Environment.CurrentDirectory,
-                $"Fixtures{Path.DirectorySeparatorChar}DeliveryClient{Path.DirectorySeparatorChar}{itemCodename}.json"));
+        var fixtureContent = await ReadFixtureAsync($"DeliveryClient{Path.DirectorySeparatorChar}{itemCodename}.json");
 
         var mock = new MockHttpMessageHandler();
         mock.Expect($"https://deliver.kontent.ai/{initialEnvironmentId}/items/{itemCodename}")
@@ -325,12 +306,7 @@ public class CachingIntegrationTests
             EnvironmentId = initialEnvironmentId
         };
 
-        var services = new ServiceCollection();
-        services.AddDeliveryClient(clientName, o => DeliveryOptionsCopyHelper.Copy(mutableOptions, o),
-            configureHttpClient: b => b.ConfigurePrimaryHttpMessageHandler(() => mock));
-        services.AddDeliveryMemoryCache(clientName);
-
-        var serviceProvider = services.BuildServiceProvider();
+        var serviceProvider = BuildNamedMemoryCacheServiceProvider(mock, mutableOptions, clientName);
         var client = serviceProvider.GetRequiredKeyedService<IDeliveryClient>(clientName);
         var optionsCache = serviceProvider.GetRequiredService<IOptionsMonitorCache<DeliveryOptions>>();
         var cacheManager = serviceProvider.GetRequiredKeyedService<IDeliveryCacheManager>(clientName);
@@ -362,9 +338,7 @@ public class CachingIntegrationTests
         var itemCodename = "coffee_beverages_explained";
         var clientName = "test";
 
-        var fixtureContent = await File.ReadAllTextAsync(
-            Path.Combine(Environment.CurrentDirectory,
-                $"Fixtures{Path.DirectorySeparatorChar}DeliveryClient{Path.DirectorySeparatorChar}{itemCodename}.json"));
+        var fixtureContent = await ReadFixtureAsync($"DeliveryClient{Path.DirectorySeparatorChar}{itemCodename}.json");
 
         var mock = new MockHttpMessageHandler();
         mock.Expect($"{BaseUrl}/items/{itemCodename}")
@@ -378,12 +352,7 @@ public class CachingIntegrationTests
             DefaultRenditionPreset = "default"
         };
 
-        var services = new ServiceCollection();
-        services.AddDeliveryClient(clientName, o => DeliveryOptionsCopyHelper.Copy(mutableOptions, o),
-            configureHttpClient: b => b.ConfigurePrimaryHttpMessageHandler(() => mock));
-        services.AddDeliveryMemoryCache(clientName);
-
-        var serviceProvider = services.BuildServiceProvider();
+        var serviceProvider = BuildNamedMemoryCacheServiceProvider(mock, mutableOptions, clientName);
         var client = serviceProvider.GetRequiredKeyedService<IDeliveryClient>(clientName);
         var optionsCache = serviceProvider.GetRequiredService<IOptionsMonitorCache<DeliveryOptions>>();
         var cacheManager = serviceProvider.GetRequiredKeyedService<IDeliveryCacheManager>(clientName);
@@ -419,9 +388,7 @@ public class CachingIntegrationTests
     public async Task MemoryCache_GetItems_CacheHitOnSecondCall()
     {
         var mock = new MockHttpMessageHandler();
-        var fixtureContent = await File.ReadAllTextAsync(
-            Path.Combine(Environment.CurrentDirectory,
-                $"Fixtures{Path.DirectorySeparatorChar}DeliveryClient{Path.DirectorySeparatorChar}articles.json"));
+        var fixtureContent = await ReadFixtureAsync($"DeliveryClient{Path.DirectorySeparatorChar}articles.json");
 
         mock.Expect($"{BaseUrl}/items?system.type%5Beq%5D=article")
             .Respond("application/json", fixtureContent);
@@ -459,9 +426,7 @@ public class CachingIntegrationTests
     {
         var mock = new MockHttpMessageHandler();
         var itemCodename = "coffee_beverages_explained";
-        var fixtureContent = await File.ReadAllTextAsync(
-            Path.Combine(Environment.CurrentDirectory,
-                $"Fixtures{Path.DirectorySeparatorChar}DeliveryClient{Path.DirectorySeparatorChar}{itemCodename}.json"));
+        var fixtureContent = await ReadFixtureAsync($"DeliveryClient{Path.DirectorySeparatorChar}{itemCodename}.json");
 
         mock.Expect($"{BaseUrl}/items/{itemCodename}")
             .Respond("application/json", fixtureContent);
@@ -489,9 +454,7 @@ public class CachingIntegrationTests
     {
         var mock = new MockHttpMessageHandler();
         var itemCodename = "coffee_beverages_explained";
-        var fixtureContent = await File.ReadAllTextAsync(
-            Path.Combine(Environment.CurrentDirectory,
-                $"Fixtures{Path.DirectorySeparatorChar}DeliveryClient{Path.DirectorySeparatorChar}{itemCodename}.json"));
+        var fixtureContent = await ReadFixtureAsync($"DeliveryClient{Path.DirectorySeparatorChar}{itemCodename}.json");
 
         // Dynamic query should call API on every invocation even when cache manager is configured.
         mock.Expect($"{BaseUrl}/items/{itemCodename}")
@@ -515,9 +478,7 @@ public class CachingIntegrationTests
     public async Task DynamicItemsQuery_WithCacheConfigured_DoesNotReturnCacheHit()
     {
         var mock = new MockHttpMessageHandler();
-        var fixtureContent = await File.ReadAllTextAsync(
-            Path.Combine(Environment.CurrentDirectory,
-                $"Fixtures{Path.DirectorySeparatorChar}DeliveryClient{Path.DirectorySeparatorChar}items.json"));
+        var fixtureContent = await ReadFixtureAsync($"DeliveryClient{Path.DirectorySeparatorChar}items.json");
 
         // Dynamic query should call API on every invocation even when cache manager is configured.
         mock.Expect($"{BaseUrl}/items")
@@ -542,9 +503,7 @@ public class CachingIntegrationTests
     {
         var mock = new MockHttpMessageHandler();
         var itemCodename = "coffee_beverages_explained";
-        var fixtureContent = await File.ReadAllTextAsync(
-            Path.Combine(Environment.CurrentDirectory,
-                $"Fixtures{Path.DirectorySeparatorChar}DeliveryClient{Path.DirectorySeparatorChar}{itemCodename}.json"));
+        var fixtureContent = await ReadFixtureAsync($"DeliveryClient{Path.DirectorySeparatorChar}{itemCodename}.json");
 
         // Both calls should hit the API (first for initial, second after invalidation)
         mock.When($"{BaseUrl}/items/{itemCodename}")
@@ -580,9 +539,7 @@ public class CachingIntegrationTests
     public async Task MemoryCache_ItemsListScopeInvalidation_RefreshesAllCachedItemLists()
     {
         var mock = new MockHttpMessageHandler();
-        var fixtureContent = await File.ReadAllTextAsync(
-            Path.Combine(Environment.CurrentDirectory,
-                $"Fixtures{Path.DirectorySeparatorChar}DeliveryClient{Path.DirectorySeparatorChar}articles.json"));
+        var fixtureContent = await ReadFixtureAsync($"DeliveryClient{Path.DirectorySeparatorChar}articles.json");
 
         mock.Expect($"{BaseUrl}/items*")
             .Respond("application/json", fixtureContent);
@@ -657,13 +614,9 @@ public class CachingIntegrationTests
         var mock = new MockHttpMessageHandler();
         var itemCodename = "coffee_beverages_explained";
 
-        var itemFixture = await File.ReadAllTextAsync(
-            Path.Combine(Environment.CurrentDirectory,
-                $"Fixtures{Path.DirectorySeparatorChar}DeliveryClient{Path.DirectorySeparatorChar}{itemCodename}.json"));
+        var itemFixture = await ReadFixtureAsync($"DeliveryClient{Path.DirectorySeparatorChar}{itemCodename}.json");
 
-        var itemsFixture = await File.ReadAllTextAsync(
-            Path.Combine(Environment.CurrentDirectory,
-                $"Fixtures{Path.DirectorySeparatorChar}DeliveryClient{Path.DirectorySeparatorChar}articles.json"));
+        var itemsFixture = await ReadFixtureAsync($"DeliveryClient{Path.DirectorySeparatorChar}articles.json");
 
         mock.Expect($"{BaseUrl}/items/{itemCodename}")
             .Respond("application/json", itemFixture);
@@ -723,9 +676,7 @@ public class CachingIntegrationTests
     public async Task MemoryCache_GetType_CacheHitOnSecondCall()
     {
         var mock = new MockHttpMessageHandler();
-        var fixtureContent = await File.ReadAllTextAsync(
-            Path.Combine(Environment.CurrentDirectory,
-                $"Fixtures{Path.DirectorySeparatorChar}DeliveryClient{Path.DirectorySeparatorChar}article.json"));
+        var fixtureContent = await ReadFixtureAsync($"DeliveryClient{Path.DirectorySeparatorChar}article.json");
 
         mock.Expect($"{BaseUrl}/types/article")
             .Respond("application/json", fixtureContent);
@@ -756,9 +707,7 @@ public class CachingIntegrationTests
     public async Task MemoryCache_GetTaxonomy_CacheHitOnSecondCall()
     {
         var mock = new MockHttpMessageHandler();
-        var fixtureContent = await File.ReadAllTextAsync(
-            Path.Combine(Environment.CurrentDirectory,
-                $"Fixtures{Path.DirectorySeparatorChar}DeliveryClient{Path.DirectorySeparatorChar}taxonomies_personas.json"));
+        var fixtureContent = await ReadFixtureAsync($"DeliveryClient{Path.DirectorySeparatorChar}taxonomies_personas.json");
 
         mock.Expect($"{BaseUrl}/taxonomies/personas")
             .Respond("application/json", fixtureContent);
@@ -789,9 +738,7 @@ public class CachingIntegrationTests
     public async Task MemoryCache_TypesListScopeInvalidation_RefreshesAllCachedTypeLists()
     {
         var mock = new MockHttpMessageHandler();
-        var fixtureContent = await File.ReadAllTextAsync(
-            Path.Combine(Environment.CurrentDirectory,
-                $"Fixtures{Path.DirectorySeparatorChar}DeliveryClient{Path.DirectorySeparatorChar}types_accessory.json"));
+        var fixtureContent = await ReadFixtureAsync($"DeliveryClient{Path.DirectorySeparatorChar}types_accessory.json");
 
         mock.Expect($"{BaseUrl}/types*")
             .Respond("application/json", fixtureContent);
@@ -848,9 +795,7 @@ public class CachingIntegrationTests
     public async Task MemoryCache_TaxonomiesListScopeInvalidation_RefreshesAllCachedTaxonomyLists()
     {
         var mock = new MockHttpMessageHandler();
-        var fixtureContent = await File.ReadAllTextAsync(
-            Path.Combine(Environment.CurrentDirectory,
-                $"Fixtures{Path.DirectorySeparatorChar}DeliveryClient{Path.DirectorySeparatorChar}taxonomies_multiple.json"));
+        var fixtureContent = await ReadFixtureAsync($"DeliveryClient{Path.DirectorySeparatorChar}taxonomies_multiple.json");
 
         mock.Expect($"{BaseUrl}/taxonomies*")
             .Respond("application/json", fixtureContent);
@@ -907,12 +852,8 @@ public class CachingIntegrationTests
     public async Task MemoryCache_InvalidatingTypesListScope_DoesNotInvalidateSingleTypeQueries()
     {
         var mock = new MockHttpMessageHandler();
-        var typeFixture = await File.ReadAllTextAsync(
-            Path.Combine(Environment.CurrentDirectory,
-                $"Fixtures{Path.DirectorySeparatorChar}DeliveryClient{Path.DirectorySeparatorChar}article.json"));
-        var typesFixture = await File.ReadAllTextAsync(
-            Path.Combine(Environment.CurrentDirectory,
-                $"Fixtures{Path.DirectorySeparatorChar}DeliveryClient{Path.DirectorySeparatorChar}types_accessory.json"));
+        var typeFixture = await ReadFixtureAsync($"DeliveryClient{Path.DirectorySeparatorChar}article.json");
+        var typesFixture = await ReadFixtureAsync($"DeliveryClient{Path.DirectorySeparatorChar}types_accessory.json");
 
         mock.Expect($"{BaseUrl}/types/article")
             .Respond("application/json", typeFixture);
@@ -966,12 +907,8 @@ public class CachingIntegrationTests
     public async Task MemoryCache_InvalidatingTaxonomiesListScope_DoesNotInvalidateSingleTaxonomyQueries()
     {
         var mock = new MockHttpMessageHandler();
-        var taxonomyFixture = await File.ReadAllTextAsync(
-            Path.Combine(Environment.CurrentDirectory,
-                $"Fixtures{Path.DirectorySeparatorChar}DeliveryClient{Path.DirectorySeparatorChar}taxonomies_personas.json"));
-        var taxonomiesFixture = await File.ReadAllTextAsync(
-            Path.Combine(Environment.CurrentDirectory,
-                $"Fixtures{Path.DirectorySeparatorChar}DeliveryClient{Path.DirectorySeparatorChar}taxonomies_multiple.json"));
+        var taxonomyFixture = await ReadFixtureAsync($"DeliveryClient{Path.DirectorySeparatorChar}taxonomies_personas.json");
+        var taxonomiesFixture = await ReadFixtureAsync($"DeliveryClient{Path.DirectorySeparatorChar}taxonomies_multiple.json");
 
         mock.Expect($"{BaseUrl}/taxonomies/personas")
             .Respond("application/json", taxonomyFixture);
@@ -1025,12 +962,8 @@ public class CachingIntegrationTests
     public async Task MemoryCache_InvalidatingTypeDependency_RefreshesSingleTypeAndTypeLists()
     {
         var mock = new MockHttpMessageHandler();
-        var typeFixture = await File.ReadAllTextAsync(
-            Path.Combine(Environment.CurrentDirectory,
-                $"Fixtures{Path.DirectorySeparatorChar}DeliveryClient{Path.DirectorySeparatorChar}article.json"));
-        var typesFixture = await File.ReadAllTextAsync(
-            Path.Combine(Environment.CurrentDirectory,
-                $"Fixtures{Path.DirectorySeparatorChar}DeliveryClient{Path.DirectorySeparatorChar}types_accessory.json"));
+        var typeFixture = await ReadFixtureAsync($"DeliveryClient{Path.DirectorySeparatorChar}article.json");
+        var typesFixture = await ReadFixtureAsync($"DeliveryClient{Path.DirectorySeparatorChar}types_accessory.json");
 
         mock.Expect($"{BaseUrl}/types/article")
             .Respond("application/json", typeFixture);
@@ -1086,12 +1019,8 @@ public class CachingIntegrationTests
     public async Task MemoryCache_InvalidatingTaxonomyDependency_RefreshesSingleTaxonomyAndTaxonomyLists()
     {
         var mock = new MockHttpMessageHandler();
-        var taxonomyFixture = await File.ReadAllTextAsync(
-            Path.Combine(Environment.CurrentDirectory,
-                $"Fixtures{Path.DirectorySeparatorChar}DeliveryClient{Path.DirectorySeparatorChar}taxonomies_personas.json"));
-        var taxonomiesFixture = await File.ReadAllTextAsync(
-            Path.Combine(Environment.CurrentDirectory,
-                $"Fixtures{Path.DirectorySeparatorChar}DeliveryClient{Path.DirectorySeparatorChar}taxonomies_multiple.json"));
+        var taxonomyFixture = await ReadFixtureAsync($"DeliveryClient{Path.DirectorySeparatorChar}taxonomies_personas.json");
+        var taxonomiesFixture = await ReadFixtureAsync($"DeliveryClient{Path.DirectorySeparatorChar}taxonomies_multiple.json");
 
         mock.Expect($"{BaseUrl}/taxonomies/personas")
             .Respond("application/json", taxonomyFixture);
@@ -1147,9 +1076,7 @@ public class CachingIntegrationTests
     public async Task MemoryCache_GetItem_ConcurrentMisses_AreCoalescedToSingleApiCall()
     {
         var itemCodename = "coffee_beverages_explained";
-        var fixtureContent = await File.ReadAllTextAsync(
-            Path.Combine(Environment.CurrentDirectory,
-                $"Fixtures{Path.DirectorySeparatorChar}DeliveryClient{Path.DirectorySeparatorChar}{itemCodename}.json"));
+        var fixtureContent = await ReadFixtureAsync($"DeliveryClient{Path.DirectorySeparatorChar}{itemCodename}.json");
 
         var handler = new DelayedJsonResponseHandler(fixtureContent, TimeSpan.FromMilliseconds(100));
         var client = CreateClientWithMemoryCache(handler);
@@ -1177,9 +1104,7 @@ public class CachingIntegrationTests
     {
         var mock = new MockHttpMessageHandler();
         var itemCodename = "coffee_beverages_explained";
-        var fixtureContent = await File.ReadAllTextAsync(
-            Path.Combine(Environment.CurrentDirectory,
-                $"Fixtures{Path.DirectorySeparatorChar}DeliveryClient{Path.DirectorySeparatorChar}{itemCodename}.json"));
+        var fixtureContent = await ReadFixtureAsync($"DeliveryClient{Path.DirectorySeparatorChar}{itemCodename}.json");
 
         // Raw JSON caching is now reliable - use Expect() to verify only one API call
         mock.Expect($"{BaseUrl}/items/{itemCodename}")
@@ -1208,9 +1133,7 @@ public class CachingIntegrationTests
     public async Task DistributedCache_GetItems_CacheHitOnSecondCall()
     {
         var mock = new MockHttpMessageHandler();
-        var fixtureContent = await File.ReadAllTextAsync(
-            Path.Combine(Environment.CurrentDirectory,
-                $"Fixtures{Path.DirectorySeparatorChar}DeliveryClient{Path.DirectorySeparatorChar}articles.json"));
+        var fixtureContent = await ReadFixtureAsync($"DeliveryClient{Path.DirectorySeparatorChar}articles.json");
 
         // Raw JSON caching is now reliable - use Expect() to verify only one API call
         mock.Expect($"{BaseUrl}/items?system.type%5Beq%5D=article")
@@ -1245,14 +1168,11 @@ public class CachingIntegrationTests
     {
         var mock = new MockHttpMessageHandler();
         var itemCodename = "coffee_beverages_explained";
-        var fixtureContent = await File.ReadAllTextAsync(
-            Path.Combine(Environment.CurrentDirectory,
-                $"Fixtures{Path.DirectorySeparatorChar}DeliveryClient{Path.DirectorySeparatorChar}{itemCodename}.json"));
+        var fixtureContent = await ReadFixtureAsync($"DeliveryClient{Path.DirectorySeparatorChar}{itemCodename}.json");
 
         mock.Expect($"{BaseUrl}/items/{itemCodename}")
             .Respond("application/json", fixtureContent);
 
-        var services = new ServiceCollection();
         var options = new DeliveryOptions
         {
             EnvironmentId = _guid.ToString()
@@ -1260,13 +1180,7 @@ public class CachingIntegrationTests
 
         var mockDistributedCache = new MockDistributedCache();
         SeedCorruptedDistributedItemPayload(mockDistributedCache, "test", itemCodename, fixtureContent);
-
-        services.AddSingleton<IDistributedCache>(mockDistributedCache);
-        services.AddDeliveryClient("test", o => DeliveryOptionsCopyHelper.Copy(options, o),
-            configureHttpClient: b => b.ConfigurePrimaryHttpMessageHandler(() => mock));
-        services.AddDeliveryDistributedCache("test");
-
-        var serviceProvider = services.BuildServiceProvider();
+        var serviceProvider = BuildNamedDistributedCacheServiceProvider(mock, options, mockDistributedCache);
         var client = serviceProvider.GetRequiredKeyedService<IDeliveryClient>("test");
 
         var result1 = await client.GetItem<Article>(itemCodename).ExecuteAsync();
@@ -1284,9 +1198,7 @@ public class CachingIntegrationTests
     {
         var mock = new MockHttpMessageHandler();
         var itemCodename = "coffee_beverages_explained";
-        var fixtureContent = await File.ReadAllTextAsync(
-            Path.Combine(Environment.CurrentDirectory,
-                $"Fixtures{Path.DirectorySeparatorChar}DeliveryClient{Path.DirectorySeparatorChar}{itemCodename}.json"));
+        var fixtureContent = await ReadFixtureAsync($"DeliveryClient{Path.DirectorySeparatorChar}{itemCodename}.json");
 
         mock.When($"{BaseUrl}/items/{itemCodename}")
             .Respond("application/json", fixtureContent);
@@ -1323,9 +1235,7 @@ public class CachingIntegrationTests
     public async Task DistributedCache_ItemsListScopeInvalidation_RefreshesAllCachedItemLists()
     {
         var mock = new MockHttpMessageHandler();
-        var fixtureContent = await File.ReadAllTextAsync(
-            Path.Combine(Environment.CurrentDirectory,
-                $"Fixtures{Path.DirectorySeparatorChar}DeliveryClient{Path.DirectorySeparatorChar}articles.json"));
+        var fixtureContent = await ReadFixtureAsync($"DeliveryClient{Path.DirectorySeparatorChar}articles.json");
 
         mock.Expect($"{BaseUrl}/items*")
             .Respond("application/json", fixtureContent);
@@ -1400,9 +1310,7 @@ public class CachingIntegrationTests
     public async Task DistributedCache_TypesListScopeInvalidation_RefreshesAllCachedTypeLists()
     {
         var mock = new MockHttpMessageHandler();
-        var fixtureContent = await File.ReadAllTextAsync(
-            Path.Combine(Environment.CurrentDirectory,
-                $"Fixtures{Path.DirectorySeparatorChar}DeliveryClient{Path.DirectorySeparatorChar}types_accessory.json"));
+        var fixtureContent = await ReadFixtureAsync($"DeliveryClient{Path.DirectorySeparatorChar}types_accessory.json");
 
         mock.When($"{BaseUrl}/types*")
             .Respond("application/json", fixtureContent);
@@ -1451,9 +1359,7 @@ public class CachingIntegrationTests
     public async Task DistributedCache_TaxonomiesListScopeInvalidation_RefreshesAllCachedTaxonomyLists()
     {
         var mock = new MockHttpMessageHandler();
-        var fixtureContent = await File.ReadAllTextAsync(
-            Path.Combine(Environment.CurrentDirectory,
-                $"Fixtures{Path.DirectorySeparatorChar}DeliveryClient{Path.DirectorySeparatorChar}taxonomies_multiple.json"));
+        var fixtureContent = await ReadFixtureAsync($"DeliveryClient{Path.DirectorySeparatorChar}taxonomies_multiple.json");
 
         mock.Expect($"{BaseUrl}/taxonomies*")
             .Respond("application/json", fixtureContent);
@@ -1512,9 +1418,7 @@ public class CachingIntegrationTests
     public async Task DistributedCache_GetItem_ConcurrentMisses_AreCoalescedToSingleApiCall()
     {
         var itemCodename = "coffee_beverages_explained";
-        var fixtureContent = await File.ReadAllTextAsync(
-            Path.Combine(Environment.CurrentDirectory,
-                $"Fixtures{Path.DirectorySeparatorChar}DeliveryClient{Path.DirectorySeparatorChar}{itemCodename}.json"));
+        var fixtureContent = await ReadFixtureAsync($"DeliveryClient{Path.DirectorySeparatorChar}{itemCodename}.json");
 
         var handler = new DelayedJsonResponseHandler(fixtureContent, TimeSpan.FromMilliseconds(100));
         var client = CreateClientWithDistributedCache(handler);
@@ -1542,9 +1446,7 @@ public class CachingIntegrationTests
     {
         var mock = new MockHttpMessageHandler();
         var itemCodename = "coffee_processing_techniques";
-        var fixtureContent = await File.ReadAllTextAsync(
-            Path.Combine(Environment.CurrentDirectory,
-                $"Fixtures{Path.DirectorySeparatorChar}ContentLinkResolver{Path.DirectorySeparatorChar}{itemCodename}.json"));
+        var fixtureContent = await ReadFixtureAsync($"ContentLinkResolver{Path.DirectorySeparatorChar}{itemCodename}.json");
 
         mock.When($"{BaseUrl}/items/{itemCodename}")
             .Respond("application/json", fixtureContent);
@@ -1587,9 +1489,7 @@ public class CachingIntegrationTests
     {
         var mock = new MockHttpMessageHandler();
         var itemCodename = "coffee_processing_techniques";
-        var fixtureContent = await File.ReadAllTextAsync(
-            Path.Combine(Environment.CurrentDirectory,
-                $"Fixtures{Path.DirectorySeparatorChar}ContentLinkResolver{Path.DirectorySeparatorChar}{itemCodename}.json"));
+        var fixtureContent = await ReadFixtureAsync($"ContentLinkResolver{Path.DirectorySeparatorChar}{itemCodename}.json");
 
         mock.When($"{BaseUrl}/items/{itemCodename}")
             .Respond("application/json", fixtureContent);
@@ -1626,9 +1526,7 @@ public class CachingIntegrationTests
     public async Task MemoryCache_GetItems_TracksItemsListScopeDependency()
     {
         var mock = new MockHttpMessageHandler();
-        var fixtureContent = await File.ReadAllTextAsync(
-            Path.Combine(Environment.CurrentDirectory,
-                $"Fixtures{Path.DirectorySeparatorChar}DeliveryClient{Path.DirectorySeparatorChar}articles.json"));
+        var fixtureContent = await ReadFixtureAsync($"DeliveryClient{Path.DirectorySeparatorChar}articles.json");
 
         mock.When($"{BaseUrl}/items?system.type%5Beq%5D=article")
             .Respond("application/json", fixtureContent);
@@ -1662,9 +1560,7 @@ public class CachingIntegrationTests
     public async Task MemoryCache_GetType_TracksTypeDependency()
     {
         var mock = new MockHttpMessageHandler();
-        var fixtureContent = await File.ReadAllTextAsync(
-            Path.Combine(Environment.CurrentDirectory,
-                $"Fixtures{Path.DirectorySeparatorChar}DeliveryClient{Path.DirectorySeparatorChar}article.json"));
+        var fixtureContent = await ReadFixtureAsync($"DeliveryClient{Path.DirectorySeparatorChar}article.json");
 
         mock.When($"{BaseUrl}/types/article")
             .Respond("application/json", fixtureContent);
@@ -1695,9 +1591,7 @@ public class CachingIntegrationTests
     public async Task MemoryCache_GetTypes_TracksTypesListScopeAndTypeDependencies()
     {
         var mock = new MockHttpMessageHandler();
-        var fixtureContent = await File.ReadAllTextAsync(
-            Path.Combine(Environment.CurrentDirectory,
-                $"Fixtures{Path.DirectorySeparatorChar}DeliveryClient{Path.DirectorySeparatorChar}types_accessory.json"));
+        var fixtureContent = await ReadFixtureAsync($"DeliveryClient{Path.DirectorySeparatorChar}types_accessory.json");
 
         mock.When($"{BaseUrl}/types?skip=1")
             .Respond("application/json", fixtureContent);
@@ -1729,9 +1623,7 @@ public class CachingIntegrationTests
     public async Task MemoryCache_GetTaxonomy_TracksTaxonomyDependency()
     {
         var mock = new MockHttpMessageHandler();
-        var fixtureContent = await File.ReadAllTextAsync(
-            Path.Combine(Environment.CurrentDirectory,
-                $"Fixtures{Path.DirectorySeparatorChar}DeliveryClient{Path.DirectorySeparatorChar}taxonomies_personas.json"));
+        var fixtureContent = await ReadFixtureAsync($"DeliveryClient{Path.DirectorySeparatorChar}taxonomies_personas.json");
 
         mock.When($"{BaseUrl}/taxonomies/personas")
             .Respond("application/json", fixtureContent);
@@ -1762,9 +1654,7 @@ public class CachingIntegrationTests
     public async Task MemoryCache_GetTaxonomies_TracksTaxonomiesListScopeAndTaxonomyDependencies()
     {
         var mock = new MockHttpMessageHandler();
-        var fixtureContent = await File.ReadAllTextAsync(
-            Path.Combine(Environment.CurrentDirectory,
-                $"Fixtures{Path.DirectorySeparatorChar}DeliveryClient{Path.DirectorySeparatorChar}taxonomies_multiple.json"));
+        var fixtureContent = await ReadFixtureAsync($"DeliveryClient{Path.DirectorySeparatorChar}taxonomies_multiple.json");
 
         mock.When($"{BaseUrl}/taxonomies?skip=1")
             .Respond("application/json", fixtureContent);
@@ -1798,13 +1688,9 @@ public class CachingIntegrationTests
         var mock = new MockHttpMessageHandler();
         var itemCodename = "coffee_beverages_explained";
 
-        var itemFixture = await File.ReadAllTextAsync(
-            Path.Combine(Environment.CurrentDirectory,
-                $"Fixtures{Path.DirectorySeparatorChar}DeliveryClient{Path.DirectorySeparatorChar}{itemCodename}.json"));
+        var itemFixture = await ReadFixtureAsync($"DeliveryClient{Path.DirectorySeparatorChar}{itemCodename}.json");
 
-        var itemsFixture = await File.ReadAllTextAsync(
-            Path.Combine(Environment.CurrentDirectory,
-                $"Fixtures{Path.DirectorySeparatorChar}DeliveryClient{Path.DirectorySeparatorChar}articles.json"));
+        var itemsFixture = await ReadFixtureAsync($"DeliveryClient{Path.DirectorySeparatorChar}articles.json");
 
         mock.When($"{BaseUrl}/items/{itemCodename}")
             .Respond("application/json", itemFixture);
@@ -1858,9 +1744,7 @@ public class CachingIntegrationTests
     {
         var mock = new MockHttpMessageHandler();
         var itemCodename = "coffee_beverages_explained";
-        var fixtureContent = await File.ReadAllTextAsync(
-            Path.Combine(Environment.CurrentDirectory,
-                $"Fixtures{Path.DirectorySeparatorChar}DeliveryClient{Path.DirectorySeparatorChar}{itemCodename}.json"));
+        var fixtureContent = await ReadFixtureAsync($"DeliveryClient{Path.DirectorySeparatorChar}{itemCodename}.json");
 
         // Both calls should hit the API
         mock.When($"{BaseUrl}/items/{itemCodename}")
@@ -1902,9 +1786,7 @@ public class CachingIntegrationTests
     {
         var mock = new MockHttpMessageHandler();
         var itemCodename = "coffee_beverages_explained";
-        var fixtureContent = await File.ReadAllTextAsync(
-            Path.Combine(Environment.CurrentDirectory,
-                $"Fixtures{Path.DirectorySeparatorChar}DeliveryClient{Path.DirectorySeparatorChar}{itemCodename}.json"));
+        var fixtureContent = await ReadFixtureAsync($"DeliveryClient{Path.DirectorySeparatorChar}{itemCodename}.json");
 
         mock.When($"{BaseUrl}/items/{itemCodename}")
             .Respond("application/json", fixtureContent);
@@ -1931,39 +1813,65 @@ public class CachingIntegrationTests
 
     #region Helper Methods
 
+    private static Task<string> ReadFixtureAsync(string fixtureRelativePath) =>
+        File.ReadAllTextAsync(Path.Combine(Environment.CurrentDirectory, "Fixtures", fixtureRelativePath));
+
     private IDeliveryClient CreateClientWithMemoryCache(HttpMessageHandler httpHandler, DeliveryOptions? options = null)
     {
-        var services = new ServiceCollection();
         options ??= new DeliveryOptions
         {
             EnvironmentId = _guid.ToString()
         };
 
-        // Use per-client caching API
-        services.AddDeliveryClient("test", o => DeliveryOptionsCopyHelper.Copy(options, o),
-            configureHttpClient: b => b.ConfigurePrimaryHttpMessageHandler(() => httpHandler));
-        services.AddDeliveryMemoryCache("test");
-
-        return services.BuildServiceProvider().GetRequiredKeyedService<IDeliveryClient>("test");
+        var provider = BuildNamedMemoryCacheServiceProvider(httpHandler, options);
+        return provider.GetRequiredKeyedService<IDeliveryClient>("test");
     }
 
     private IDeliveryClient CreateClientWithDistributedCache(HttpMessageHandler httpHandler)
     {
-        var services = new ServiceCollection();
         var options = new DeliveryOptions
         {
             EnvironmentId = _guid.ToString()
         };
 
-        var mockDistributedCache = new MockDistributedCache();
-        services.AddSingleton<IDistributedCache>(mockDistributedCache);
+        var provider = BuildNamedDistributedCacheServiceProvider(httpHandler, options, new MockDistributedCache());
+        return provider.GetRequiredKeyedService<IDeliveryClient>("test");
+    }
 
-        // Use per-client caching API
-        services.AddDeliveryClient("test", o => DeliveryOptionsCopyHelper.Copy(options, o),
+    private static void AddNamedDeliveryClient(
+        IServiceCollection services,
+        string clientName,
+        DeliveryOptions options,
+        HttpMessageHandler httpHandler)
+    {
+        services.AddDeliveryClient(clientName, o => DeliveryOptionsCopyHelper.Copy(options, o),
             configureHttpClient: b => b.ConfigurePrimaryHttpMessageHandler(() => httpHandler));
-        services.AddDeliveryDistributedCache("test");
+    }
 
-        return services.BuildServiceProvider().GetRequiredKeyedService<IDeliveryClient>("test");
+    private static ServiceProvider BuildNamedMemoryCacheServiceProvider(
+        HttpMessageHandler httpHandler,
+        DeliveryOptions options,
+        string clientName = "test",
+        TimeSpan? defaultExpiration = null)
+    {
+        var services = new ServiceCollection();
+        AddNamedDeliveryClient(services, clientName, options, httpHandler);
+        services.AddDeliveryMemoryCache(clientName, defaultExpiration: defaultExpiration);
+        return services.BuildServiceProvider();
+    }
+
+    private static ServiceProvider BuildNamedDistributedCacheServiceProvider(
+        HttpMessageHandler httpHandler,
+        DeliveryOptions options,
+        IDistributedCache distributedCache,
+        string clientName = "test",
+        TimeSpan? defaultExpiration = null)
+    {
+        var services = new ServiceCollection();
+        services.AddSingleton(distributedCache);
+        AddNamedDeliveryClient(services, clientName, options, httpHandler);
+        services.AddDeliveryDistributedCache(clientName, defaultExpiration: defaultExpiration);
+        return services.BuildServiceProvider();
     }
 
     private static void SeedCorruptedDistributedItemPayload(

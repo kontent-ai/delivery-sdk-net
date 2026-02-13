@@ -39,26 +39,13 @@ public class MemoryCacheManagerTests : IDisposable
         Assert.Null(result);
     }
 
-    [Fact]
-    public async Task GetAsync_NullKey_ReturnsNull()
+    [Theory]
+    [InlineData(null)]
+    [InlineData("")]
+    [InlineData("   ")]
+    public async Task GetAsync_InvalidKey_ReturnsNull(string? cacheKey)
     {
-        var result = await _cacheManager.GetAsync<TestCacheValue>(null!);
-
-        Assert.Null(result);
-    }
-
-    [Fact]
-    public async Task GetAsync_EmptyKey_ReturnsNull()
-    {
-        var result = await _cacheManager.GetAsync<TestCacheValue>("");
-
-        Assert.Null(result);
-    }
-
-    [Fact]
-    public async Task GetAsync_WhitespaceKey_ReturnsNull()
-    {
-        var result = await _cacheManager.GetAsync<TestCacheValue>("   ");
+        var result = await _cacheManager.GetAsync<TestCacheValue>(cacheKey!);
 
         Assert.Null(result);
     }
@@ -88,24 +75,16 @@ public class MemoryCacheManagerTests : IDisposable
             _cacheManager.SetAsync(null!, value, dependencies));
     }
 
-    [Fact]
-    public async Task SetAsync_EmptyKey_ThrowsArgumentException()
+    [Theory]
+    [InlineData("")]
+    [InlineData("   ")]
+    public async Task SetAsync_InvalidKey_ThrowsArgumentException(string cacheKey)
     {
         var value = new TestCacheValue { Id = 1, Name = "Test" };
         var dependencies = Array.Empty<string>();
 
         await Assert.ThrowsAsync<ArgumentException>(() =>
-            _cacheManager.SetAsync("", value, dependencies));
-    }
-
-    [Fact]
-    public async Task SetAsync_WhitespaceKey_ThrowsArgumentException()
-    {
-        var value = new TestCacheValue { Id = 1, Name = "Test" };
-        var dependencies = Array.Empty<string>();
-
-        await Assert.ThrowsAsync<ArgumentException>(() =>
-            _cacheManager.SetAsync("   ", value, dependencies));
+            _cacheManager.SetAsync(cacheKey, value, dependencies));
     }
 
     [Fact]
@@ -270,38 +249,15 @@ public class MemoryCacheManagerTests : IDisposable
         Assert.NotNull(result);
     }
 
-    [Fact]
-    public async Task SetAsync_WithNullDependency_IgnoresNull()
+    [Theory]
+    [InlineData(null)]
+    [InlineData("")]
+    [InlineData("   ")]
+    public async Task SetAsync_WithIgnoredDependencyValue_IgnoresInvalidDependency(string? ignoredDependency)
     {
         var key = "test_key";
         var value = new TestCacheValue { Id = 1, Name = "Test" };
-        var dependencies = new[] { "dep1", null!, "dep2" };
-
-        await _cacheManager.SetAsync(key, value, dependencies);
-        var result = await _cacheManager.GetAsync<TestCacheValue>(key);
-
-        Assert.NotNull(result);
-    }
-
-    [Fact]
-    public async Task SetAsync_WithEmptyDependency_IgnoresEmpty()
-    {
-        var key = "test_key";
-        var value = new TestCacheValue { Id = 1, Name = "Test" };
-        var dependencies = new[] { "dep1", "", "dep2" };
-
-        await _cacheManager.SetAsync(key, value, dependencies);
-        var result = await _cacheManager.GetAsync<TestCacheValue>(key);
-
-        Assert.NotNull(result);
-    }
-
-    [Fact]
-    public async Task SetAsync_WithWhitespaceDependency_IgnoresWhitespace()
-    {
-        var key = "test_key";
-        var value = new TestCacheValue { Id = 1, Name = "Test" };
-        var dependencies = new[] { "dep1", "   ", "dep2" };
+        var dependencies = new[] { "dep1", ignoredDependency!, "dep2" };
 
         await _cacheManager.SetAsync(key, value, dependencies);
         var result = await _cacheManager.GetAsync<TestCacheValue>(key);
@@ -330,13 +286,31 @@ public class MemoryCacheManagerTests : IDisposable
     }
 
     [Fact]
-    public async Task InvalidateAsync_NonExistentDependency_DoesNotThrow() => await _cacheManager.InvalidateAsync(default, "non_existent_dep");
+    public async Task InvalidateAsync_NonExistentDependency_DoesNotThrowAndPreservesExistingEntries()
+    {
+        await _cacheManager.SetAsync("existing_key", new TestCacheValue { Id = 10, Name = "Existing" }, ["existing_dep"]);
+
+        var exception = await Record.ExceptionAsync(() => _cacheManager.InvalidateAsync(default, "non_existent_dep"));
+        var existingResult = await _cacheManager.GetAsync<TestCacheValue>("existing_key");
+
+        Assert.Null(exception);
+        Assert.NotNull(existingResult);
+        Assert.Equal(10, existingResult.Id);
+    }
 
     [Fact]
-    public async Task InvalidateAsync_NullDependencies_DoesNotThrow() => await _cacheManager.InvalidateAsync(default, null!);
+    public async Task InvalidateAsync_NullDependencies_DoesNotThrow()
+    {
+        var exception = await Record.ExceptionAsync(() => _cacheManager.InvalidateAsync(default, null!));
+        Assert.Null(exception);
+    }
 
     [Fact]
-    public async Task InvalidateAsync_EmptyDependencies_DoesNotThrow() => await _cacheManager.InvalidateAsync(default, []);
+    public async Task InvalidateAsync_EmptyDependencies_DoesNotThrow()
+    {
+        var exception = await Record.ExceptionAsync(() => _cacheManager.InvalidateAsync(default, []));
+        Assert.Null(exception);
+    }
 
     [Fact]
     public async Task InvalidateAsync_MultipleDependencies_RemovesAllAffected()
@@ -499,41 +473,23 @@ public class MemoryCacheManagerTests : IDisposable
     public async Task ConcurrentSetAndInvalidate_DoesNotThrow()
     {
         var dependency = "dep1";
-        var cts = new CancellationTokenSource();
-
         var setTasks = Enumerable.Range(0, 25)
-            .Select(i => Task.Run(async () =>
-            {
-                try
-                {
-                    await _cacheManager.SetAsync(
-                        $"key_{i}",
-                        new TestCacheValue { Id = i, Name = $"Test_{i}" },
-                        [dependency]);
-                }
-                catch (ObjectDisposedException)
-                {
-                    // Expected if cache manager is disposed during test
-                }
-            }))
+            .Select(i => _cacheManager.SetAsync(
+                $"key_{i}",
+                new TestCacheValue { Id = i, Name = $"Test_{i}" },
+                [dependency]))
             .ToList();
 
         var invalidateTasks = Enumerable.Range(0, 25)
-            .Select(_ => Task.Run(async () =>
+            .Select(async _ =>
             {
-                try
-                {
-                    await Task.Delay(10);
-                    await _cacheManager.InvalidateAsync(default, dependency);
-                }
-                catch (ObjectDisposedException)
-                {
-                    // Expected if cache manager is disposed during test
-                }
-            }))
+                await Task.Delay(10);
+                await _cacheManager.InvalidateAsync(default, dependency);
+            })
             .ToList();
 
-        await Task.WhenAll(setTasks.Concat(invalidateTasks));
+        var exception = await Record.ExceptionAsync(async () => await Task.WhenAll(setTasks.Concat(invalidateTasks)));
+        Assert.Null(exception);
     }
 
     [Fact]
@@ -606,9 +562,14 @@ public class MemoryCacheManagerTests : IDisposable
         var cache = new MemoryCache(new MemoryCacheOptions());
         var manager = new MemoryCacheManager(cache);
 
-        manager.Dispose();
-        manager.Dispose();
-        manager.Dispose();
+        var exception = Record.Exception(() =>
+        {
+            manager.Dispose();
+            manager.Dispose();
+            manager.Dispose();
+        });
+
+        Assert.Null(exception);
     }
 
     [Fact]

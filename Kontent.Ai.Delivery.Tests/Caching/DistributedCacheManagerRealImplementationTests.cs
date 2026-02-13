@@ -307,9 +307,22 @@ public class DistributedCacheManagerRealImplementationTests
     }
 
     [Fact]
-    public async Task InvalidateAsync_NonExistentDependency_WithRealImplementation_DoesNotThrow() =>
-        // Act & Assert
-        await _cacheManager.InvalidateAsync(default, "non_existent_real_dep");
+    public async Task InvalidateAsync_NonExistentDependency_WithRealImplementation_DoesNotThrowAndPreservesExistingEntries()
+    {
+        await _cacheManager.SetAsync(
+            "existing_real_key",
+            new TestValue { Id = 77, Name = "Existing" },
+            ["existing_real_dep"]);
+
+        var exception = await Record.ExceptionAsync(() =>
+            _cacheManager.InvalidateAsync(default, "non_existent_real_dep"));
+
+        var existingResult = await _cacheManager.GetAsync<TestValue>("existing_real_key");
+
+        Assert.Null(exception);
+        Assert.NotNull(existingResult);
+        Assert.Equal(77, existingResult.Id);
+    }
 
     #endregion
 
