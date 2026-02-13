@@ -18,15 +18,18 @@ internal sealed class DynamicItemsQuery(
     ContentItemMapper contentItemMapper,
     IContentDeserializer contentDeserializer,
     ITypeProvider typeProvider,
+    string? defaultRenditionPreset = null,
     ILogger? logger = null) : IDynamicItemsQuery
 {
     private readonly ContentItemMapper _contentItemMapper = contentItemMapper;
+    private readonly string? _defaultRenditionPreset = defaultRenditionPreset;
     private readonly ItemsQuery<IDynamicElements> _inner = new(
         api,
         contentItemMapper,
         contentDeserializer,
         typeProvider,
         cacheManager: null,
+        defaultRenditionPreset,
         logger);
 
     public IDynamicItemsQuery WithLanguage(string languageCodename, LanguageFallbackMode languageFallbackMode = LanguageFallbackMode.Enabled)
@@ -109,6 +112,7 @@ internal sealed class DynamicItemsQuery(
         var runtimeTypedItems = await _contentItemMapper.RuntimeTypeItemsAsync(
             response.Items,
             response.ModularContent,
+            _defaultRenditionPreset,
             cancellationToken).ConfigureAwait(false);
 
         return new DynamicDeliveryItemListingResponse

@@ -25,12 +25,12 @@ internal static class RefitApiResponseExtensions
         if (apiResponse.IsSuccessful && apiResponse.Content is not null)
         {
             return Task.FromResult(DeliveryResult.Success(
-                value: apiResponse.Content,
-                requestUrl: apiResponse.RequestMessage?.RequestUri?.ToString() ?? string.Empty,
-                statusCode: apiResponse.StatusCode,
-                hasStaleContent: ExtractHasStaleContent(apiResponse),
-                continuationToken: ExtractContinuationToken(apiResponse),
-                responseHeaders: apiResponse.Headers
+                apiResponse.Content,
+                apiResponse.RequestMessage?.RequestUri?.ToString() ?? string.Empty,
+                apiResponse.StatusCode,
+                ExtractHasStaleContent(apiResponse),
+                ExtractContinuationToken(apiResponse),
+                apiResponse.Headers
             ));
         }
 

@@ -21,8 +21,7 @@ internal sealed class TypeQuery(
     private bool _waitForLoadingNewContent;
     private readonly IDeliveryCacheManager? _cacheManager = cacheManager;
     private readonly ILogger? _logger = logger;
-    private TimeSpan? _cacheExpiration;
-    TimeSpan? ICacheExpirationConfigurable.CacheExpiration { get => _cacheExpiration; set => _cacheExpiration = value; }
+    public TimeSpan? CacheExpiration { get; set; }
 
     public ITypeQuery WithElements(params string[] elementCodenames)
     {
@@ -74,7 +73,10 @@ internal sealed class TypeQuery(
         if (apiResult is null)
             throw new InvalidOperationException("API result was not captured during fetch.");
 
-        LogQueryCompleted(stopwatch, apiResult.StatusCode, cacheHit: false);
+        if (!apiResult.IsSuccess)
+            LogQueryFailed(apiResult);
+
+        LogQueryCompleted(stopwatch, apiResult.StatusCode, cacheHit: false, apiResult.HasStaleContent);
         return apiResult;
     }
 
@@ -84,7 +86,10 @@ internal sealed class TypeQuery(
         CancellationToken cancellationToken)
     {
         var deliveryResult = await FetchFromApiAsync(waitForLoadingNewContent, cancellationToken).ConfigureAwait(false);
-        LogQueryCompleted(stopwatch, deliveryResult.StatusCode, cacheHit: false);
+        if (!deliveryResult.IsSuccess)
+            LogQueryFailed(deliveryResult);
+
+        LogQueryCompleted(stopwatch, deliveryResult.StatusCode, cacheHit: false, deliveryResult.HasStaleContent);
         return deliveryResult;
     }
 
@@ -110,7 +115,7 @@ internal sealed class TypeQuery(
 
                 return ((ContentType)apiResult.Value, dependencies);
             },
-            _cacheExpiration,
+            CacheExpiration,
             _logger,
             cancellationToken).ConfigureAwait(false);
 
@@ -134,11 +139,22 @@ internal sealed class TypeQuery(
     private Stopwatch? StartTimingIfEnabled() =>
         _logger?.IsEnabled(LogLevel.Information) == true ? Stopwatch.StartNew() : null;
 
-    private void LogQueryCompleted(Stopwatch? stopwatch, HttpStatusCode statusCode, bool cacheHit)
+    private void LogQueryFailed(IDeliveryResult<IContentType> deliveryResult)
+    {
+        if (_logger is not null)
+        {
+            LoggerMessages.QueryFailed(_logger, "Type", _codename, deliveryResult.StatusCode,
+                deliveryResult.Error?.Message, exception: null);
+        }
+    }
+
+    private void LogQueryCompleted(Stopwatch? stopwatch, HttpStatusCode statusCode, bool cacheHit, bool hasStaleContent = false)
     {
         if (_logger is null)
             return;
         stopwatch?.Stop();
+        if (hasStaleContent)
+            LoggerMessages.QueryStaleContent(_logger, _codename);
         LoggerMessages.QueryCompleted(_logger, "Type", _codename,
             stopwatch?.ElapsedMilliseconds ?? 0, statusCode, cacheHit);
     }

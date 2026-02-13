@@ -68,7 +68,7 @@ public static partial class ServiceCollectionExtensions
     {
         return services.AddDeliveryMemoryCache(
             DeliveryClientNames.Default,
-            keyPrefix: string.Empty, // No prefix for default single-client scenario
+            string.Empty, // No prefix for default single-client scenario
             defaultExpiration);
     }
 
@@ -161,7 +161,7 @@ public static partial class ServiceCollectionExtensions
     {
         return services.AddDeliveryDistributedCache(
             DeliveryClientNames.Default,
-            keyPrefix: string.Empty, // No prefix for default single-client scenario
+            string.Empty, // No prefix for default single-client scenario
             defaultExpiration);
     }
 

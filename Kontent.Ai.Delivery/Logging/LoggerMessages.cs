@@ -100,6 +100,12 @@ internal static partial class LoggerMessages
     public static partial void CacheInvalidationFailed(ILogger logger, Exception exception);
 
     [LoggerMessage(
+        EventId = LogEventIds.CacheModularContentParseFailed,
+        Level = LogLevel.Warning,
+        Message = "Failed to parse modular content JSON for codename '{Codename}', skipping corrupted cache entry")]
+    public static partial void CacheModularContentParseFailed(ILogger logger, string codename, Exception exception);
+
+    [LoggerMessage(
         EventId = LogEventIds.CacheEntryEvicted,
         Level = LogLevel.Debug,
         Message = "Cache entry evicted: '{CacheKey}' (Reason: {EvictionReason})")]

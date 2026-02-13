@@ -846,15 +846,17 @@ public static IServiceCollection AddDeliveryClient(
         var contentDeserializer = sp.GetRequiredService<IContentDeserializer>();
         var typeProvider = sp.GetRequiredService<ITypeProvider>();
         var cacheManager = sp.GetKeyedService<IDeliveryCacheManager>(clientName);
-        if (cacheManager is not null)
-        {
-            cacheManager = new PreviewAwareCacheManager(
-                cacheManager,
-                sp.GetRequiredService<IOptionsMonitor<DeliveryOptions>>(),
-                clientName);
-        }
+        var optionsMonitor = sp.GetRequiredService<IOptionsMonitor<DeliveryOptions>>();
 
-        return new DeliveryClient(api, contentItemMapper, contentDeserializer, typeProvider, cacheManager);
+        return new DeliveryClient(
+            api,
+            contentItemMapper,
+            contentDeserializer,
+            typeProvider,
+            cacheManager,
+            logger: null,
+            optionsMonitor,
+            clientName);
     });
 
     return services;
@@ -863,6 +865,7 @@ public static IServiceCollection AddDeliveryClient(
 
 Cache manager resolution is keyed-only. Unkeyed `IDeliveryCacheManager` registrations are ignored by `DeliveryClient` creation.  
 For custom cache implementations, use `AddDeliveryCacheManager(clientName, factory)` to register per client.
+Preview cache bypass is enforced by `DeliveryClient` itself (`UsePreviewApi = true` => no cache read/write for that client), not by a cache-manager decorator.
 
 ### Core Dependencies Registration
 

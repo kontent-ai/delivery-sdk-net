@@ -11,14 +11,17 @@ internal sealed class DynamicEnumerateItemsQuery(
     IDeliveryApi api,
     ContentItemMapper contentItemMapper,
     ITypeProvider typeProvider,
+    string? defaultRenditionPreset = null,
     ILogger? logger = null) : IDynamicEnumerateItemsQuery
 {
     private readonly ContentItemMapper _contentItemMapper = contentItemMapper;
+    private readonly string? _defaultRenditionPreset = defaultRenditionPreset;
     private readonly ILogger? _logger = logger;
     private readonly EnumerateItemsQuery<IDynamicElements> _inner = new(
         api,
         contentItemMapper,
         typeProvider,
+        defaultRenditionPreset,
         logger);
 
     public IDynamicEnumerateItemsQuery WithLanguage(string languageCodename, LanguageFallbackMode languageFallbackMode = LanguageFallbackMode.Enabled)
@@ -60,35 +63,28 @@ internal sealed class DynamicEnumerateItemsQuery(
             return DeliveryResult.FailureFrom<IDeliveryItemsFeedResponse, IDeliveryItemsFeedResponse<IDynamicElements>>(deliveryResult);
         }
 
-        var response = await ConvertResponseAsync(deliveryResult.Value, cancellationToken).ConfigureAwait(false);
+        var response = await ConvertResponseAsync(deliveryResult.Value, deliveryResult.ContinuationToken, cancellationToken).ConfigureAwait(false);
 
         return DeliveryResult.SuccessFrom<IDeliveryItemsFeedResponse, IDeliveryItemsFeedResponse<IDynamicElements>>(response, deliveryResult);
     }
 
     private async Task<DynamicDeliveryItemsFeedResponse> ConvertResponseAsync(
         IDeliveryItemsFeedResponse<IDynamicElements> response,
+        string? continuationToken,
         CancellationToken cancellationToken)
     {
         var runtimeTypedItems = await _contentItemMapper.RuntimeTypeItemsAsync(
             response.Items,
             response.ModularContent,
+            _defaultRenditionPreset,
             cancellationToken).ConfigureAwait(false);
 
         return new DynamicDeliveryItemsFeedResponse
         {
             Items = runtimeTypedItems,
             ModularContent = response.ModularContent,
-            ContinuationToken = GetContinuationToken(response),
+            ContinuationToken = continuationToken,
             NextPageFetcher = CreateNextPageFetcher(response)
-        };
-    }
-
-    private static string? GetContinuationToken(IDeliveryItemsFeedResponse<IDynamicElements> response)
-    {
-        return response switch
-        {
-            DeliveryItemsFeedResponse<IDynamicElements> concrete => concrete.ContinuationToken,
-            _ => response.HasNextPage ? "__next_page__" : null
         };
     }
 
@@ -106,7 +102,7 @@ internal sealed class DynamicEnumerateItemsQuery(
             return DeliveryResult.FailureFrom<IDeliveryItemsFeedResponse, IDeliveryItemsFeedResponse<IDynamicElements>>(nextPageResult);
         }
 
-        var response = await ConvertResponseAsync(nextPageResult.Value, cancellationToken).ConfigureAwait(false);
+        var response = await ConvertResponseAsync(nextPageResult.Value, nextPageResult.ContinuationToken, cancellationToken).ConfigureAwait(false);
         return DeliveryResult.SuccessFrom<IDeliveryItemsFeedResponse, IDeliveryItemsFeedResponse<IDynamicElements>>(response, nextPageResult);
     }
 

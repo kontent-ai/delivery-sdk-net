@@ -12,11 +12,13 @@ internal sealed class EnumerateItemsQuery<TModel>(
     IDeliveryApi api,
     ContentItemMapper contentItemMapper,
     ITypeProvider typeProvider,
+    string? defaultRenditionPreset = null,
     ILogger? logger = null) : IEnumerateItemsQuery<TModel>
 {
     private readonly IDeliveryApi _api = api;
     private readonly ContentItemMapper _contentItemMapper = contentItemMapper;
     private readonly ITypeProvider _typeProvider = typeProvider;
+    private readonly string? _defaultRenditionPreset = defaultRenditionPreset;
     private readonly ILogger? _logger = logger;
     private EnumItemsParams _params = new();
     private bool _waitForLoadingNewContent;
@@ -165,7 +167,13 @@ internal sealed class EnumerateItemsQuery<TModel>(
         {
             foreach (var item in content.Items)
             {
-                await _contentItemMapper.CompleteItemAsync(item, content.ModularContent, null, cancellationToken).ConfigureAwait(false);
+                await _contentItemMapper.CompleteItemAsync(
+                        item,
+                        content.ModularContent,
+                        dependencyContext: null,
+                        _defaultRenditionPreset,
+                        cancellationToken)
+                    .ConfigureAwait(false);
             }
         }
 
@@ -178,7 +186,12 @@ internal sealed class EnumerateItemsQuery<TModel>(
 
     private EnumerateItemsQuery<TModel> CreateContinuationQuery(string continuationToken)
     {
-        var nextQuery = new EnumerateItemsQuery<TModel>(_api, _contentItemMapper, _typeProvider, _logger)
+        var nextQuery = new EnumerateItemsQuery<TModel>(
+            _api,
+            _contentItemMapper,
+            _typeProvider,
+            _defaultRenditionPreset,
+            _logger)
         {
             _params = _params,
             _waitForLoadingNewContent = this._waitForLoadingNewContent,

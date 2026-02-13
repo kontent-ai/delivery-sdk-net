@@ -428,6 +428,8 @@ services.AddDeliveryMemoryCache("production", keyPrefix: "");
 
 This prevents cache collisions when multiple clients share the same underlying cache.
 
+`EnvironmentId` and `DefaultRenditionPreset` are not part of query cache keys. Use separate named clients (or distinct key prefixes) per environment/configuration. If you change either option at runtime on an existing cached client, purge cache (or recreate the client) to avoid serving older entries.
+
 ### Dependency Tracking
 
 The SDK automatically tracks content dependencies:
@@ -1142,6 +1144,16 @@ if (cacheManager == null)
 1. **Implement webhook invalidation**
 2. **Reduce cache expiration time**
 3. **Manually invalidate** after content updates
+
+### Runtime Option Changes with Existing Cache
+
+**Problem**: You changed `EnvironmentId` or `DefaultRenditionPreset` at runtime, but cached responses still reflect the previous setting.
+
+**Solutions**:
+
+1. **Purge the client cache** after changing runtime options
+2. **Recreate the client** if purging is not practical
+3. **Prefer separate named clients + key prefixes** for production/preview/tenant/environment splits
 
 ### Memory Pressure
 

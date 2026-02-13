@@ -4,18 +4,15 @@ using Kontent.Ai.Delivery.ContentItems.Elements;
 using Kontent.Ai.Delivery.ContentItems.Processing;
 using Kontent.Ai.Delivery.Logging;
 using Microsoft.Extensions.Logging;
-using Microsoft.Extensions.Options;
 
 namespace Kontent.Ai.Delivery.ContentItems.Mapping;
 
 internal sealed class ElementValueMapper(
-    IOptionsMonitor<DeliveryOptions> deliveryOptions,
     IContentDependencyExtractor dependencyExtractor,
     JsonSerializerOptions jsonOptions,
     IHtmlParser htmlParser,
     ILogger<ElementValueMapper>? logger = null)
 {
-    private readonly IOptionsMonitor<DeliveryOptions> _deliveryOptions = deliveryOptions ?? throw new ArgumentNullException(nameof(deliveryOptions));
     private readonly IContentDependencyExtractor _dependencyExtractor = dependencyExtractor ?? throw new ArgumentNullException(nameof(dependencyExtractor));
     private readonly JsonSerializerOptions _jsonOptions = jsonOptions ?? throw new ArgumentNullException(nameof(jsonOptions));
     private readonly RichTextParser _richTextParser = new RichTextParser(
@@ -40,7 +37,7 @@ internal sealed class ElementValueMapper(
                 return await MapRichTextAsync(prop.ElementCodename, envelope, getLinkedItem, context.DependencyContext)
                     .ConfigureAwait(false);
             case ElementMappingKind.Assets:
-                return MapAssets(envelope, context.DependencyContext);
+                return MapAssets(envelope, context.DefaultRenditionPreset, context.DependencyContext);
             case ElementMappingKind.Taxonomy:
                 return MapTaxonomy(envelope, context.DependencyContext);
             case ElementMappingKind.DateTime:
@@ -119,14 +116,13 @@ internal sealed class ElementValueMapper(
         return await _richTextParser.ConvertAsync(richTextData, getLinkedItem, dependencyContext).ConfigureAwait(false);
     }
 
-    private List<Asset>? MapAssets(JsonElement envelope, DependencyTrackingContext? dependencyContext)
+    private List<Asset>? MapAssets(JsonElement envelope, string? defaultRenditionPreset, DependencyTrackingContext? dependencyContext)
     {
         if (!TryGetArrayValue(envelope, out var arrayValue))
         {
             return null;
         }
 
-        var defaultPreset = _deliveryOptions.CurrentValue.DefaultRenditionPreset;
         List<Asset> assets = [];
 
         foreach (var assetEl in arrayValue.EnumerateArray())
@@ -137,7 +133,7 @@ internal sealed class ElementValueMapper(
             }
 
             TrackAssetDependencyFromUrl(assetEl, dependencyContext);
-            assets.Add(CreateAsset(assetEl, defaultPreset));
+            assets.Add(CreateAsset(assetEl, defaultRenditionPreset));
         }
 
         return assets;

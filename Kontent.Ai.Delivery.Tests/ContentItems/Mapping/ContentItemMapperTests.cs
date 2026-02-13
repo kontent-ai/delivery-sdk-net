@@ -7,7 +7,6 @@ using Kontent.Ai.Delivery.ContentItems.Mapping;
 using Kontent.Ai.Delivery.ContentItems.Processing;
 using Kontent.Ai.Delivery.Generated;
 using Kontent.Ai.Delivery.Tests.Models.ContentTypes;
-using Microsoft.Extensions.Options;
 using Xunit;
 
 namespace Kontent.Ai.Delivery.Tests.ContentItems.Mapping;
@@ -26,9 +25,7 @@ public sealed class ContentItemMapperTests
         var deserializer = new ContentDeserializer(_jsonOptions);
         var htmlParser = new HtmlParser();
         var dependencyExtractor = new ContentDependencyExtractor();
-        var optionsMonitor = new StaticOptionsMonitor<DeliveryOptions>(new DeliveryOptions());
         var elementValueMapper = new ElementValueMapper(
-            optionsMonitor,
             dependencyExtractor,
             _jsonOptions,
             htmlParser);
@@ -413,12 +410,4 @@ public sealed class ContentItemMapperTests
         return rawItemJson.GetProperty("elements");
     }
 
-    private sealed class StaticOptionsMonitor<T>(T currentValue) : IOptionsMonitor<T>
-    {
-        public T CurrentValue { get; } = currentValue;
-
-        public T Get(string? name) => CurrentValue;
-
-        public IDisposable? OnChange(Action<T, string?> listener) => null;
-    }
 }

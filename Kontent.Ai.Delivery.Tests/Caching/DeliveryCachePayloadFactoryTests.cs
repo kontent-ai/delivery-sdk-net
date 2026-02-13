@@ -152,6 +152,21 @@ public class CachePayloadTests
         Assert.Empty(payload.ItemsJson);
     }
 
+    [Fact]
+    public void ParseModularContent_WithCorruptedEntries_ThrowsInvalidOperationException()
+    {
+        var modularContentJson = new Dictionary<string, string>
+        {
+            ["valid"] = """{"system":{"codename":"valid-item"}}""",
+            ["malformed"] = "{ this is not valid json }",
+            ["empty"] = string.Empty
+        };
+
+        var exception = Assert.Throws<InvalidOperationException>(
+            () => CachePayloadHelper.ParseModularContent(modularContentJson));
+        Assert.Contains("malformed", exception.Message, StringComparison.Ordinal);
+    }
+
     private static ContentItem<Article> CreateContentItem(string codename, JsonElement? rawJson)
     {
         return new ContentItem<Article>

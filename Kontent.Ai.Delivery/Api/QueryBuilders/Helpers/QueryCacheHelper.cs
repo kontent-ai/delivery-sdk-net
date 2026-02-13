@@ -90,7 +90,10 @@ internal static class QueryCacheHelper
         }
     }
 
-    private static async ValueTask<KeyLockScope> AcquireKeyLockAsync(KeyLock keyLock, CancellationToken cancellationToken, bool alreadyInFlight = false)
+    private static async ValueTask<KeyLockScope> AcquireKeyLockAsync(
+        KeyLock keyLock,
+        bool alreadyInFlight = false,
+        CancellationToken cancellationToken = default)
     {
         if (!alreadyInFlight)
             keyLock.IncrementInFlight();
@@ -175,7 +178,7 @@ internal static class QueryCacheHelper
         try
         {
             await cacheManager.SetAsync(cacheKey, value, dependencies,
-                expiration, cancellationToken: cancellationToken)
+                expiration, cancellationToken)
                 .ConfigureAwait(false);
         }
         catch (OperationCanceledException) when (cancellationToken.IsCancellationRequested)
@@ -331,7 +334,10 @@ internal static class QueryCacheHelper
             CleanupExpiredLocks(lockDict.Locks);
         }
 
-        return await AcquireKeyLockAsync(keyLock, cancellationToken, alreadyInFlight: true).ConfigureAwait(false);
+        return await AcquireKeyLockAsync(
+            keyLock,
+            alreadyInFlight: true,
+            cancellationToken).ConfigureAwait(false);
     }
 
     /// <summary>

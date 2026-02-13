@@ -18,6 +18,7 @@ internal sealed class ItemQuery<TModel>(
     ContentItemMapper contentItemMapper,
     IContentDeserializer contentDeserializer,
     IDeliveryCacheManager? cacheManager,
+    string? defaultRenditionPreset = null,
     ILogger? logger = null) : IItemQuery<TModel>, ICacheExpirationConfigurable
 {
     private readonly IDeliveryApi _api = api;
@@ -27,12 +28,12 @@ internal sealed class ItemQuery<TModel>(
     private readonly ContentItemMapper _contentItemMapper = contentItemMapper;
     private readonly IContentDeserializer _contentDeserializer = contentDeserializer;
     private readonly IDeliveryCacheManager? _cacheManager = cacheManager;
+    private readonly string? _defaultRenditionPreset = defaultRenditionPreset;
     private readonly ILogger? _logger = logger;
     private bool _waitForLoadingNewContent;
-    private TimeSpan? _cacheExpiration;
+    public TimeSpan? CacheExpiration { get; set; }
     private static bool IsDynamicModel => ModelTypeHelper.IsDynamic<TModel>();
     internal IReadOnlyDictionary<string, JsonElement>? LatestModularContent { get; private set; }
-    TimeSpan? ICacheExpirationConfigurable.CacheExpiration { get => _cacheExpiration; set => _cacheExpiration = value; }
 
     public IItemQuery<TModel> WithLanguage(string languageCodename)
     {
@@ -105,6 +106,7 @@ internal sealed class ItemQuery<TModel>(
             if (apiResult is not null)
             {
                 LogQueryFailed(apiResult);
+                LogQueryCompleted(stopwatch, apiResult.StatusCode, cacheHit: false, apiResult.HasStaleContent);
                 return CreateFailureResult(apiResult);
             }
 
@@ -124,6 +126,7 @@ internal sealed class ItemQuery<TModel>(
         if (!deliveryResult.IsSuccess)
         {
             LogQueryFailed(deliveryResult);
+            LogQueryCompleted(stopwatch, deliveryResult.StatusCode, cacheHit: false, deliveryResult.HasStaleContent);
             return CreateFailureResult(deliveryResult);
         }
 
@@ -168,8 +171,14 @@ internal sealed class ItemQuery<TModel>(
                 return (payload, item, deps);
             },
             async (payload, ct) => (IContentItem<TModel>)await CachePayloadHelper.RehydrateItemAsync<TModel>(
-                payload, _contentDeserializer, _contentItemMapper, IsDynamicModel, ct).ConfigureAwait(false),
-            _cacheExpiration,
+                payload,
+                _contentDeserializer,
+                _contentItemMapper,
+                IsDynamicModel,
+                _defaultRenditionPreset,
+                _logger,
+                ct).ConfigureAwait(false),
+            CacheExpiration,
             _logger,
             cancellationToken).ConfigureAwait(false);
 
@@ -194,7 +203,7 @@ internal sealed class ItemQuery<TModel>(
                 apiResult = await FetchFromApiAsync(waitForLoadingNewContent, ct).ConfigureAwait(false);
                 return !apiResult.IsSuccess ? ((IContentItem<TModel>? Value, IEnumerable<string> Dependencies))(null, Array.Empty<string>()) : ((IContentItem<TModel>? Value, IEnumerable<string> Dependencies))await ProcessItemAsync(apiResult.Value, ct).ConfigureAwait(false);
             },
-            _cacheExpiration,
+            CacheExpiration,
             _logger,
             cancellationToken).ConfigureAwait(false);
 
@@ -235,7 +244,12 @@ internal sealed class ItemQuery<TModel>(
 
         if (!IsDynamicModel)
         {
-            await _contentItemMapper.CompleteItemAsync(item, resp.ModularContent, dependencyContext, cancellationToken)
+            await _contentItemMapper.CompleteItemAsync(
+                    item,
+                    resp.ModularContent,
+                    dependencyContext,
+                    _defaultRenditionPreset,
+                    cancellationToken)
                 .ConfigureAwait(false);
         }
 

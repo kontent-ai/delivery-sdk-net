@@ -17,6 +17,7 @@ internal sealed class ItemsQuery<TModel>(
     IContentDeserializer contentDeserializer,
     ITypeProvider typeProvider,
     IDeliveryCacheManager? cacheManager,
+    string? defaultRenditionPreset = null,
     ILogger? logger = null) : IItemsQuery<TModel>, ICacheExpirationConfigurable
 {
     private readonly IDeliveryApi _api = api;
@@ -24,14 +25,14 @@ internal sealed class ItemsQuery<TModel>(
     private readonly IContentDeserializer _contentDeserializer = contentDeserializer;
     private readonly ITypeProvider _typeProvider = typeProvider;
     private readonly IDeliveryCacheManager? _cacheManager = cacheManager;
+    private readonly string? _defaultRenditionPreset = defaultRenditionPreset;
     private readonly ILogger? _logger = logger;
     private readonly SerializedFilterCollection _serializedFilters = [];
     private ListItemsParams _params = new();
     private bool _waitForLoadingNewContent;
     private bool _typeFilterApplied;
-    private TimeSpan? _cacheExpiration;
+    public TimeSpan? CacheExpiration { get; set; }
     private static bool IsDynamicModel => ModelTypeHelper.IsDynamic<TModel>();
-    TimeSpan? ICacheExpirationConfigurable.CacheExpiration { get => _cacheExpiration; set => _cacheExpiration = value; }
 
     public IItemsQuery<TModel> WithLanguage(string languageCodename, LanguageFallbackMode languageFallbackMode = LanguageFallbackMode.Enabled)
     {
@@ -146,6 +147,7 @@ internal sealed class ItemsQuery<TModel>(
             if (apiResult is not null)
             {
                 LogQueryFailed(apiResult);
+                LogQueryCompleted(stopwatch, apiResult.StatusCode, cacheHit: false, apiResult.HasStaleContent);
                 return CreateFailureResult(apiResult);
             }
 
@@ -165,6 +167,7 @@ internal sealed class ItemsQuery<TModel>(
         if (!deliveryResult.IsSuccess)
         {
             LogQueryFailed(deliveryResult);
+            LogQueryCompleted(stopwatch, deliveryResult.StatusCode, cacheHit: false, deliveryResult.HasStaleContent);
             return CreateFailureResult(deliveryResult);
         }
 
@@ -209,8 +212,14 @@ internal sealed class ItemsQuery<TModel>(
                 return (payload, response, deps);
             },
             (payload, ct) => CachePayloadHelper.RehydrateListingAsync<TModel>(
-                payload, _contentDeserializer, _contentItemMapper, IsDynamicModel, ct),
-            _cacheExpiration,
+                payload,
+                _contentDeserializer,
+                _contentItemMapper,
+                IsDynamicModel,
+                _defaultRenditionPreset,
+                _logger,
+                ct),
+            CacheExpiration,
             _logger,
             cancellationToken).ConfigureAwait(false);
 
@@ -239,7 +248,7 @@ internal sealed class ItemsQuery<TModel>(
                 var (response, deps) = await ProcessItemsAsync(apiResult.Value, ct).ConfigureAwait(false);
                 return (response, deps);
             },
-            _cacheExpiration,
+            CacheExpiration,
             _logger,
             cancellationToken).ConfigureAwait(false);
 
@@ -296,7 +305,12 @@ internal sealed class ItemsQuery<TModel>(
         {
             foreach (var item in items)
             {
-                await _contentItemMapper.CompleteItemAsync(item, resp.ModularContent, dependencyContext, cancellationToken)
+                await _contentItemMapper.CompleteItemAsync(
+                        item,
+                        resp.ModularContent,
+                        dependencyContext,
+                        _defaultRenditionPreset,
+                        cancellationToken)
                     .ConfigureAwait(false);
             }
         }
@@ -319,12 +333,12 @@ internal sealed class ItemsQuery<TModel>(
 
         return async (ct) =>
         {
-            var nextQuery = new ItemsQuery<TModel>(_api, _contentItemMapper, _contentDeserializer, _typeProvider, _cacheManager, _logger)
+            var nextQuery = new ItemsQuery<TModel>(_api, _contentItemMapper, _contentDeserializer, _typeProvider, _cacheManager, _defaultRenditionPreset, _logger)
             {
                 _params = _params with { Skip = nextSkip },
-                _waitForLoadingNewContent = this._waitForLoadingNewContent,
+                _waitForLoadingNewContent = _waitForLoadingNewContent,
                 _typeFilterApplied = _typeFilterApplied,
-                _cacheExpiration = _cacheExpiration
+                CacheExpiration = this.CacheExpiration
             };
 
             nextQuery._serializedFilters.CopyFrom(_serializedFilters);

@@ -1,22 +1,27 @@
+using System.Diagnostics;
+using System.Net;
 using Kontent.Ai.Delivery.Api.Filtering;
 using Kontent.Ai.Delivery.Api.QueryBuilders.Helpers;
 using Kontent.Ai.Delivery.Caching;
+using Kontent.Ai.Delivery.Logging;
 using Kontent.Ai.Delivery.TaxonomyGroups;
+using Microsoft.Extensions.Logging;
 
 namespace Kontent.Ai.Delivery.Api.QueryBuilders;
 
 /// <inheritdoc cref="ITaxonomiesQuery"/>
 internal sealed class TaxonomiesQuery(
     IDeliveryApi api,
-    IDeliveryCacheManager? cacheManager) : ITaxonomiesQuery, ICacheExpirationConfigurable
+    IDeliveryCacheManager? cacheManager,
+    ILogger? logger = null) : ITaxonomiesQuery, ICacheExpirationConfigurable
 {
     private readonly IDeliveryApi _api = api;
     private readonly SerializedFilterCollection _serializedFilters = [];
     private ListTaxonomyGroupsParams _params = new();
     private bool _waitForLoadingNewContent;
     private readonly IDeliveryCacheManager? _cacheManager = cacheManager;
-    private TimeSpan? _cacheExpiration;
-    TimeSpan? ICacheExpirationConfigurable.CacheExpiration { get => _cacheExpiration; set => _cacheExpiration = value; }
+    private readonly ILogger? _logger = logger;
+    public TimeSpan? CacheExpiration { get; set; }
 
     public ITaxonomiesQuery Skip(int skip)
     {
@@ -45,19 +50,23 @@ internal sealed class TaxonomiesQuery(
 
     public async Task<IDeliveryResult<IDeliveryTaxonomyListingResponse>> ExecuteAsync(CancellationToken cancellationToken = default)
     {
+        LogQueryStarting();
+        var stopwatch = StartTimingIfEnabled();
         bool? waitForLoadingNewContent = _waitForLoadingNewContent ? true : null;
         var shouldBypassCache = _waitForLoadingNewContent;
 
         return _cacheManager is not null && !shouldBypassCache
             ? await ExecuteWithCacheAsync(
                 _cacheManager,
+                stopwatch,
                 waitForLoadingNewContent,
                 cancellationToken).ConfigureAwait(false)
-            : await ExecuteWithoutCacheAsync(waitForLoadingNewContent, cancellationToken).ConfigureAwait(false);
+            : await ExecuteWithoutCacheAsync(stopwatch, waitForLoadingNewContent, cancellationToken).ConfigureAwait(false);
     }
 
     private async Task<IDeliveryResult<IDeliveryTaxonomyListingResponse>> ExecuteWithCacheAsync(
         IDeliveryCacheManager cacheManager,
+        Stopwatch? stopwatch,
         bool? waitForLoadingNewContent,
         CancellationToken cancellationToken)
     {
@@ -70,6 +79,7 @@ internal sealed class TaxonomiesQuery(
 
         if (cacheResult.IsCacheHit)
         {
+            LogQueryCompleted(stopwatch, HttpStatusCode.OK, cacheHit: true);
             return DeliveryResult.CacheHit<IDeliveryTaxonomyListingResponse>(
                 WithNextPageFetcher(cacheResult.Value!));
         }
@@ -78,19 +88,31 @@ internal sealed class TaxonomiesQuery(
             throw new InvalidOperationException("API result was not captured during fetch.");
 
         if (!apiResult.IsSuccess)
+        {
+            LogQueryFailed(apiResult);
+            LogQueryCompleted(stopwatch, apiResult.StatusCode, cacheHit: false, apiResult.HasStaleContent);
             return CreateFailureResult(apiResult);
+        }
 
+        LogQueryCompleted(stopwatch, apiResult.StatusCode, cacheHit: false, apiResult.HasStaleContent);
         return WrapSuccess(WithNextPageFetcher(cacheResult.Value!), apiResult);
     }
 
     private async Task<IDeliveryResult<IDeliveryTaxonomyListingResponse>> ExecuteWithoutCacheAsync(
+        Stopwatch? stopwatch,
         bool? waitForLoadingNewContent,
         CancellationToken cancellationToken)
     {
         var deliveryResult = await FetchFromApiAsync(waitForLoadingNewContent, cancellationToken).ConfigureAwait(false);
-        return deliveryResult.IsSuccess
-            ? WrapSuccess(WithNextPageFetcher(deliveryResult.Value), deliveryResult)
-            : CreateFailureResult(deliveryResult);
+        if (!deliveryResult.IsSuccess)
+        {
+            LogQueryFailed(deliveryResult);
+            LogQueryCompleted(stopwatch, deliveryResult.StatusCode, cacheHit: false, deliveryResult.HasStaleContent);
+            return CreateFailureResult(deliveryResult);
+        }
+
+        LogQueryCompleted(stopwatch, deliveryResult.StatusCode, cacheHit: false, deliveryResult.HasStaleContent);
+        return WrapSuccess(WithNextPageFetcher(deliveryResult.Value), deliveryResult);
     }
 
     private async Task<(CacheFetchResult<DeliveryTaxonomyListingResponse> CacheResult, IDeliveryResult<DeliveryTaxonomyListingResponse>? ApiResult)>
@@ -113,8 +135,8 @@ internal sealed class TaxonomiesQuery(
 
                 return (apiResult.Value, BuildDependencies(apiResult.Value.Taxonomies));
             },
-            _cacheExpiration,
-            logger: null,
+            CacheExpiration,
+            _logger,
             cancellationToken).ConfigureAwait(false);
 
         return (cacheResult, apiResult);
@@ -129,7 +151,7 @@ internal sealed class TaxonomiesQuery(
             _serializedFilters.ToQueryDictionary(),
             waitForLoadingNewContent,
             cancellationToken).ConfigureAwait(false);
-        return await response.ToDeliveryResultAsync().ConfigureAwait(false);
+        return await response.ToDeliveryResultAsync(_logger).ConfigureAwait(false);
     }
 
     private static string[] BuildDependencies(IReadOnlyList<TaxonomyGroup> taxonomies)
@@ -175,14 +197,43 @@ internal sealed class TaxonomiesQuery(
 
     private TaxonomiesQuery CreateNextPageQuery(int nextSkip)
     {
-        var nextQuery = new TaxonomiesQuery(_api, _cacheManager)
+        var nextQuery = new TaxonomiesQuery(_api, _cacheManager, _logger)
         {
             _params = _params with { Skip = nextSkip },
             _waitForLoadingNewContent = this._waitForLoadingNewContent,
-            _cacheExpiration = _cacheExpiration
+            CacheExpiration = this.CacheExpiration
         };
 
         nextQuery._serializedFilters.CopyFrom(_serializedFilters);
         return nextQuery;
+    }
+
+    private void LogQueryStarting()
+    {
+        if (_logger is not null)
+            LoggerMessages.QueryStarting(_logger, "Taxonomies", "list");
+    }
+
+    private Stopwatch? StartTimingIfEnabled() =>
+        _logger?.IsEnabled(LogLevel.Information) == true ? Stopwatch.StartNew() : null;
+
+    private void LogQueryFailed(IDeliveryResult<DeliveryTaxonomyListingResponse> deliveryResult)
+    {
+        if (_logger is not null)
+        {
+            LoggerMessages.QueryFailed(_logger, "Taxonomies", "list", deliveryResult.StatusCode,
+                deliveryResult.Error?.Message, exception: null);
+        }
+    }
+
+    private void LogQueryCompleted(Stopwatch? stopwatch, HttpStatusCode statusCode, bool cacheHit, bool hasStaleContent = false)
+    {
+        if (_logger is null)
+            return;
+        stopwatch?.Stop();
+        if (hasStaleContent)
+            LoggerMessages.QueryStaleContent(_logger, "list");
+        LoggerMessages.QueryCompleted(_logger, "Taxonomies", "list",
+            stopwatch?.ElapsedMilliseconds ?? 0, statusCode, cacheHit);
     }
 }

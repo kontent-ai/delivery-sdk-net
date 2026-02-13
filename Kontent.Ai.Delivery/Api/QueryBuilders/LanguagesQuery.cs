@@ -1,12 +1,19 @@
+using System.Diagnostics;
+using System.Net;
 using Kontent.Ai.Delivery.Api.QueryBuilders.Helpers;
 using Kontent.Ai.Delivery.Languages;
+using Kontent.Ai.Delivery.Logging;
+using Microsoft.Extensions.Logging;
 
 namespace Kontent.Ai.Delivery.Api.QueryBuilders;
 
 /// <inheritdoc cref="ILanguagesQuery"/>
-internal sealed class LanguagesQuery(IDeliveryApi api) : ILanguagesQuery
+internal sealed class LanguagesQuery(
+    IDeliveryApi api,
+    ILogger? logger = null) : ILanguagesQuery
 {
     private readonly IDeliveryApi _api = api;
+    private readonly ILogger? _logger = logger;
     private LanguagesParams _params = new();
     private bool _waitForLoadingNewContent;
 
@@ -40,21 +47,33 @@ internal sealed class LanguagesQuery(IDeliveryApi api) : ILanguagesQuery
     }
 
     public async Task<IDeliveryResult<IDeliveryLanguageListingResponse>> ExecuteAsync(CancellationToken cancellationToken = default)
-        => await ExecuteWithoutCacheAsync(cancellationToken).ConfigureAwait(false);
+    {
+        LogQueryStarting();
+        var stopwatch = StartTimingIfEnabled();
+        return await ExecuteWithoutCacheAsync(stopwatch, cancellationToken).ConfigureAwait(false);
+    }
 
-    private async Task<IDeliveryResult<IDeliveryLanguageListingResponse>> ExecuteWithoutCacheAsync(CancellationToken cancellationToken)
+    private async Task<IDeliveryResult<IDeliveryLanguageListingResponse>> ExecuteWithoutCacheAsync(
+        Stopwatch? stopwatch,
+        CancellationToken cancellationToken)
     {
         var deliveryResult = await FetchFromApiAsync(cancellationToken).ConfigureAwait(false);
-        return deliveryResult.IsSuccess
-            ? WrapSuccess(WithNextPageFetcher(deliveryResult.Value), deliveryResult)
-            : CreateFailureResult(deliveryResult);
+        if (!deliveryResult.IsSuccess)
+        {
+            LogQueryFailed(deliveryResult);
+            LogQueryCompleted(stopwatch, deliveryResult.StatusCode, cacheHit: false, deliveryResult.HasStaleContent);
+            return CreateFailureResult(deliveryResult);
+        }
+
+        LogQueryCompleted(stopwatch, deliveryResult.StatusCode, cacheHit: false, deliveryResult.HasStaleContent);
+        return WrapSuccess(WithNextPageFetcher(deliveryResult.Value), deliveryResult);
     }
 
     private async Task<IDeliveryResult<DeliveryLanguageListingResponse>> FetchFromApiAsync(CancellationToken cancellationToken)
     {
         bool? waitForLoadingNewContent = _waitForLoadingNewContent ? true : null;
         var response = await _api.GetLanguagesInternalAsync(_params, waitForLoadingNewContent, cancellationToken).ConfigureAwait(false);
-        return await response.ToDeliveryResultAsync().ConfigureAwait(false);
+        return await response.ToDeliveryResultAsync(_logger).ConfigureAwait(false);
     }
 
     private static IDeliveryResult<IDeliveryLanguageListingResponse> WrapSuccess(
@@ -80,9 +99,38 @@ internal sealed class LanguagesQuery(IDeliveryApi api) : ILanguagesQuery
     }
 
     private LanguagesQuery CreateNextPageQuery(int nextSkip)
-        => new(_api)
+        => new(_api, _logger)
         {
             _params = _params with { Skip = nextSkip },
             _waitForLoadingNewContent = this._waitForLoadingNewContent
         };
+
+    private void LogQueryStarting()
+    {
+        if (_logger is not null)
+            LoggerMessages.QueryStarting(_logger, "Languages", "list");
+    }
+
+    private Stopwatch? StartTimingIfEnabled() =>
+        _logger?.IsEnabled(LogLevel.Information) == true ? Stopwatch.StartNew() : null;
+
+    private void LogQueryFailed(IDeliveryResult<DeliveryLanguageListingResponse> deliveryResult)
+    {
+        if (_logger is not null)
+        {
+            LoggerMessages.QueryFailed(_logger, "Languages", "list", deliveryResult.StatusCode,
+                deliveryResult.Error?.Message, exception: null);
+        }
+    }
+
+    private void LogQueryCompleted(Stopwatch? stopwatch, HttpStatusCode statusCode, bool cacheHit, bool hasStaleContent = false)
+    {
+        if (_logger is null)
+            return;
+        stopwatch?.Stop();
+        if (hasStaleContent)
+            LoggerMessages.QueryStaleContent(_logger, "list");
+        LoggerMessages.QueryCompleted(_logger, "Languages", "list",
+            stopwatch?.ElapsedMilliseconds ?? 0, statusCode, cacheHit);
+    }
 }
