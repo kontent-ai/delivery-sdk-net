@@ -22,6 +22,33 @@ jobs:
         global-json-file: global.json
     - name: Restore dependencies
       run: dotnet restore
+    - name: Vulnerability audit
+      if: runner.os == 'Linux'
+      shell: bash
+      run: |
+        set -euo pipefail
+
+        report_dir="./artifacts/security"
+        mkdir -p "$report_dir"
+        report_path="$report_dir/vulnerabilities.json"
+
+        dotnet list Kontent.Ai.Delivery.sln package --vulnerable --include-transitive --format json > "$report_path"
+
+        vulnerability_count="$(grep -o '"severity"' "$report_path" | wc -l | tr -d ' ')"
+        echo "Detected vulnerable packages: ${vulnerability_count}"
+
+        if [ "${vulnerability_count}" -gt 0 ]; then
+          echo "Vulnerabilities detected."
+          cat "$report_path"
+          exit 1
+        fi
+    - name: Upload vulnerability audit report
+      if: runner.os == 'Linux' && always()
+      uses: actions/upload-artifact@v4
+      with:
+        name: vulnerability-audit-report-${{ matrix.os }}
+        path: ./artifacts/security/vulnerabilities.json
+        if-no-files-found: warn
     - name: Lint Release Docs
       if: runner.os == 'Linux'
       run: ./scripts/lint-release-docs.sh
@@ -41,6 +68,87 @@ jobs:
       with:
         token: ${{ secrets.CODECOV_TOKEN }}
         fail_ci_if_error: true
+
+  pack-validation:
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+    env:
+      PACKAGE_VERSION: 0.0.0-ci.${{ github.run_number }}
+      PACK_OUTPUT: ./artifacts/pack-validation
+    steps:
+    - uses: actions/checkout@v4
+    - name: Setup .NET
+      uses: actions/setup-dotnet@v4
+      with:
+        global-json-file: global.json
+    - name: Restore dependencies
+      run: dotnet restore
+    - name: Build
+      run: dotnet build --configuration Release --no-restore /p:ContinuousIntegrationBuild=true
+    - name: Pack release artifacts
+      shell: bash
+      run: |
+        set -euo pipefail
+        mkdir -p "$PACK_OUTPUT"
+
+        timeout --preserve-status 15m dotnet pack Kontent.Ai.Delivery.sln \
+          --no-build \
+          --configuration Release \
+          --include-symbols \
+          --output "$PACK_OUTPUT" \
+          /p:ContinuousIntegrationBuild=true \
+          /p:PackageVersion="$PACKAGE_VERSION" \
+          /bl:"$PACK_OUTPUT/pack-validation.binlog"
+    - name: Validate package artifacts
+      shell: bash
+      run: |
+        set -euo pipefail
+
+        expected_nupkgs=(
+          "Kontent.Ai.Delivery.${PACKAGE_VERSION}.nupkg"
+          "Kontent.Ai.Delivery.Abstractions.${PACKAGE_VERSION}.nupkg"
+          "Kontent.Ai.Urls.${PACKAGE_VERSION}.nupkg"
+          "Kontent.Ai.Delivery.SourceGeneration.${PACKAGE_VERSION}.nupkg"
+        )
+
+        # Source generator package embeds PDBs and does not require a snupkg.
+        expected_snupkgs=(
+          "Kontent.Ai.Delivery.${PACKAGE_VERSION}.snupkg"
+          "Kontent.Ai.Delivery.Abstractions.${PACKAGE_VERSION}.snupkg"
+          "Kontent.Ai.Urls.${PACKAGE_VERSION}.snupkg"
+        )
+
+        missing=0
+
+        for package in "${expected_nupkgs[@]}"; do
+          if [ ! -f "${PACK_OUTPUT}/${package}" ]; then
+            echo "Missing expected package: ${package}"
+            missing=1
+          fi
+        done
+
+        for package in "${expected_snupkgs[@]}"; do
+          if [ ! -f "${PACK_OUTPUT}/${package}" ]; then
+            echo "Missing expected symbol package: ${package}"
+            missing=1
+          fi
+        done
+
+        if [ "${missing}" -ne 0 ]; then
+          echo "Pack validation failed. Available artifacts:"
+          ls -la "$PACK_OUTPUT"
+          exit 1
+        fi
+    - name: Upload pack validation artifacts
+      if: always()
+      uses: actions/upload-artifact@v4
+      with:
+        name: pack-validation-artifacts
+        path: |
+          ./artifacts/pack-validation/*.nupkg
+          ./artifacts/pack-validation/*.snupkg
+          ./artifacts/pack-validation/pack-validation.binlog
+        if-no-files-found: warn
 
   redis-validation:
     runs-on: ubuntu-latest

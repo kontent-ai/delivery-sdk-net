@@ -1,0 +1,144 @@
+﻿// Kontent.Ai.Delivery
+public sealed class DeliveryClientFactory : IDeliveryClientFactory
+    IDeliveryClient Get()
+    IDeliveryClient Get(String name)
+
+// Kontent.Ai.Delivery
+public class DeliverySourceTrackingHeaderAttribute : Attribute
+    Boolean LoadFromAssembly { get; }
+    Int32 MajorVersion { get; }
+    Int32 MinorVersion { get; }
+    String PackageName { get; }
+    Int32 PatchVersion { get; }
+    String PreReleaseLabel { get; }
+
+// Kontent.Ai.Delivery
+public sealed class QueryCacheExtensions
+
+// Kontent.Ai.Delivery
+public sealed class QueryEnumerationExtensions
+
+// Kontent.Ai.Delivery
+public sealed class RichTextExtensions
+
+// Kontent.Ai.Delivery
+public sealed class ServiceCollectionExtensions
+
+// Kontent.Ai.Delivery.Configuration
+public sealed class DeliveryClientBuilder
+    IDeliveryClientContainer Build()
+    DeliveryClientBuilder WithDistributedCache(IDistributedCache distributedCache, Nullable`1 defaultExpiration)
+    DeliveryClientBuilder WithLoggerFactory(ILoggerFactory loggerFactory)
+    DeliveryClientBuilder WithMemoryCache(Nullable`1 defaultExpiration)
+    DeliveryClientBuilder WithTypeProvider(ITypeProvider typeProvider)
+
+// Kontent.Ai.Delivery.Configuration
+public sealed class DeliveryOptionsBuilder : IDeliveryOptionsBuilder
+    DeliveryOptions Build()
+    IDeliveryOptionsBuilder DisableRetryPolicy()
+    IDeliveryOptionsBuilder UsePreviewApi(String previewApiKey)
+    IDeliveryOptionsBuilder UseProductionApi()
+    IDeliveryOptionsBuilder UseProductionApi(String secureAccessApiKey)
+    IDeliveryOptionsBuilder WithCustomEndpoint(String endpoint)
+    IDeliveryOptionsBuilder WithCustomEndpoint(Uri endpoint)
+    IDeliveryOptionsBuilder WithDefaultRenditionPreset(String presetCodename)
+    IDeliveryOptionsBuilder WithEnvironmentId(String environmentId)
+    IDeliveryOptionsBuilder WithEnvironmentId(Guid environmentId)
+
+// Kontent.Ai.Delivery.Configuration
+public sealed class RefitSettingsProvider
+
+// Kontent.Ai.Delivery.ContentItems
+public sealed class Asset : IAsset, IEquatable`1
+    String Description { get; set; init; }
+    Int32 Height { get; set; init; }
+    String Name { get; set; init; }
+    IReadOnlyDictionary`2 Renditions { get; set; init; }
+    Int32 Size { get; set; init; }
+    String Type { get; set; init; }
+    String Url { get; set; init; }
+    Int32 Width { get; set; init; }
+    Asset <Clone>$()
+    Boolean Equals(Object obj)
+    Boolean Equals(Asset other)
+    Int32 GetHashCode()
+    String ToString()
+
+// Kontent.Ai.Delivery.ContentItems
+public sealed class AssetRendition : IAssetRendition, IEquatable`1
+    Int32 Height { get; set; init; }
+    String PresetId { get; set; init; }
+    String Query { get; set; init; }
+    String RenditionId { get; set; init; }
+    Int32 Width { get; set; init; }
+    AssetRendition <Clone>$()
+    Boolean Equals(Object obj)
+    Boolean Equals(AssetRendition other)
+    Int32 GetHashCode()
+    String ToString()
+
+// Kontent.Ai.Delivery.ContentItems
+public sealed class DynamicElements : ReadOnlyDictionary`2, IDynamicElements
+
+// Kontent.Ai.Delivery.ContentItems.RichText
+public sealed class RichTextContent : IRichTextContent, IReadOnlyList`1, IReadOnlyCollection`1, IEnumerable`1, IEnumerable
+    Int32 Count { get; }
+    IRichTextBlock Item { get; }
+    IEnumerator`1 GetEnumerator()
+
+// Kontent.Ai.Delivery.ContentItems.RichText.Resolution
+public sealed class DefaultResolvers
+
+// Kontent.Ai.Delivery.ContentItems.RichText.Resolution
+public sealed class HtmlResolverBuilder : IHtmlResolverBuilder
+    IHtmlResolver Build()
+    HtmlResolverBuilder ThrowOnMissingResolver(Boolean enabled)
+    IHtmlResolverBuilder WithContentItemLinkResolver(BlockResolver`1 resolver)
+    IHtmlResolverBuilder WithContentItemLinkResolver(String contentTypeCodename, BlockResolver`1 resolver)
+    IHtmlResolverBuilder WithContentItemLinkResolvers(IReadOnlyDictionary`2 resolvers)
+    IHtmlResolverBuilder WithContentItemLinkResolvers(ValueTuple`2[] resolvers)
+    IHtmlResolverBuilder WithContentResolver(String contentTypeCodename, Func`2 resolver)
+    IHtmlResolverBuilder WithContentResolver(String contentTypeCodename, Func`2 resolver)
+    IHtmlResolverBuilder WithContentResolver(Func`2 resolver)
+    IHtmlResolverBuilder WithContentResolver(Func`2 resolver)
+    IHtmlResolverBuilder WithContentResolvers(IReadOnlyDictionary`2 resolvers)
+    IHtmlResolverBuilder WithContentResolvers(ValueTuple`2[] resolvers)
+    IHtmlResolverBuilder WithContentResolvers(IReadOnlyDictionary`2 resolvers)
+    IHtmlResolverBuilder WithContentResolvers(ValueTuple`2[] resolvers)
+    IHtmlResolverBuilder WithHtmlElementResolver(BlockResolver`1 resolver)
+    IHtmlResolverBuilder WithHtmlNodeResolver(HtmlNodePredicate predicate, BlockResolver`1 resolver, String description)
+    IHtmlResolverBuilder WithHtmlNodeResolver(String tagName, BlockResolver`1 resolver)
+    IHtmlResolverBuilder WithHtmlNodeResolverForAttribute(String attributeName, String attributeValue, BlockResolver`1 resolver)
+    IHtmlResolverBuilder WithInlineImageResolver(BlockResolver`1 resolver)
+    IHtmlResolverBuilder WithTextNodeResolver(BlockResolver`1 resolver)
+
+// Kontent.Ai.Delivery.SharedModels
+public sealed class DateTimeContent : IDateTimeContent, IEquatable`1
+    String DisplayTimezone { get; set; init; }
+    Nullable`1 Value { get; set; init; }
+    DateTimeContent <Clone>$()
+    Boolean Equals(Object obj)
+    Boolean Equals(DateTimeContent other)
+    Int32 GetHashCode()
+    String ToString()
+
+// Kontent.Ai.Delivery.SharedModels
+public sealed class MultipleChoiceOption : IMultipleChoiceOption, IEquatable`1
+    String Codename { get; set; init; }
+    String Name { get; set; init; }
+    MultipleChoiceOption <Clone>$()
+    Boolean Equals(Object obj)
+    Boolean Equals(MultipleChoiceOption other)
+    Int32 GetHashCode()
+    String ToString()
+
+// Kontent.Ai.Delivery.SharedModels
+public sealed class TaxonomyTerm : ITaxonomyTerm, IEquatable`1
+    String Codename { get; set; init; }
+    String Name { get; set; init; }
+    TaxonomyTerm <Clone>$()
+    Boolean Equals(Object obj)
+    Boolean Equals(TaxonomyTerm other)
+    Int32 GetHashCode()
+    String ToString()
+

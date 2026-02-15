@@ -1,0 +1,26 @@
+﻿// Kontent.Ai.Urls.ImageTransformation
+public enum ImageCompression : Enum
+
+// Kontent.Ai.Urls.ImageTransformation
+public enum ImageFitMode : Enum
+
+// Kontent.Ai.Urls.ImageTransformation
+public enum ImageFormat : Enum
+
+// Kontent.Ai.Urls.ImageTransformation
+public sealed class ImageUrlBuilder
+    Uri Url { get; }
+    ImageUrlBuilder WithAutomaticFormat()
+    ImageUrlBuilder WithAutomaticFormat(ImageFormat backupFormat)
+    ImageUrlBuilder WithCompression(ImageCompression compression)
+    ImageUrlBuilder WithDpr(Double dpr)
+    ImageUrlBuilder WithFitMode(String fitMode)
+    ImageUrlBuilder WithFitMode(ImageFitMode fitMode)
+    ImageUrlBuilder WithFocalPointCrop(Double x, Double y, Double z)
+    ImageUrlBuilder WithFormat(String format)
+    ImageUrlBuilder WithFormat(ImageFormat format)
+    ImageUrlBuilder WithHeight(Double height)
+    ImageUrlBuilder WithQuality(Double quality)
+    ImageUrlBuilder WithRectangleCrop(Double x, Double y, Double width, Double height)
+    ImageUrlBuilder WithWidth(Double width)
+
