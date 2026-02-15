@@ -13,7 +13,7 @@ namespace Kontent.Ai.Delivery.Configuration;
 internal sealed class DeliveryClientContainer : IDeliveryClientContainer
 {
     private readonly ServiceProvider _serviceProvider;
-    private volatile bool _disposed;
+    private int _disposeState;
 
     /// <summary>
     /// Initializes a new instance of the <see cref="DeliveryClientContainer"/> class.
@@ -32,20 +32,18 @@ internal sealed class DeliveryClientContainer : IDeliveryClientContainer
     /// <inheritdoc/>
     public void Dispose()
     {
-        if (_disposed)
+        if (Interlocked.Exchange(ref _disposeState, 1) != 0)
             return;
 
         _serviceProvider.Dispose();
-        _disposed = true;
     }
 
     /// <inheritdoc/>
     public async ValueTask DisposeAsync()
     {
-        if (_disposed)
+        if (Interlocked.Exchange(ref _disposeState, 1) != 0)
             return;
 
         await _serviceProvider.DisposeAsync().ConfigureAwait(false);
-        _disposed = true;
     }
 }

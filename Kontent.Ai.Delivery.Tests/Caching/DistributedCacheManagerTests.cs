@@ -1,6 +1,8 @@
 using System.Text;
 using System.Text.Json;
 using Kontent.Ai.Delivery.Caching;
+using Kontent.Ai.Delivery.Configuration;
+using Kontent.Ai.Delivery.ContentTypes;
 using Microsoft.Extensions.Caching.Distributed;
 using Xunit;
 
@@ -170,10 +172,16 @@ public class DistributedCacheManagerTests
         var key = "test_key";
         var value = new TestCacheValue { Id = 1, Name = "Test" };
         var customExpiration = TimeSpan.FromMinutes(30);
+        var before = DateTimeOffset.UtcNow;
 
         await manager.SetAsync(key, value, [], customExpiration);
+        var after = DateTimeOffset.UtcNow;
 
-        Assert.True(trackingCache.LastExpirationOptions?.AbsoluteExpirationRelativeToNow == customExpiration);
+        Assert.NotNull(trackingCache.LastExpirationOptions?.AbsoluteExpiration);
+        Assert.InRange(
+            trackingCache.LastExpirationOptions!.AbsoluteExpiration!.Value,
+            before.Add(customExpiration),
+            after.Add(customExpiration));
     }
 
     [Fact]
@@ -185,10 +193,16 @@ public class DistributedCacheManagerTests
 
         var key = "test_key";
         var value = new TestCacheValue { Id = 1, Name = "Test" };
+        var before = DateTimeOffset.UtcNow;
 
         await manager.SetAsync(key, value, []);
+        var after = DateTimeOffset.UtcNow;
 
-        Assert.True(trackingCache.LastExpirationOptions?.AbsoluteExpirationRelativeToNow == defaultExpiration);
+        Assert.NotNull(trackingCache.LastExpirationOptions?.AbsoluteExpiration);
+        Assert.InRange(
+            trackingCache.LastExpirationOptions!.AbsoluteExpiration!.Value,
+            before.Add(defaultExpiration),
+            after.Add(defaultExpiration));
     }
 
     #endregion
@@ -266,6 +280,27 @@ public class DistributedCacheManagerTests
     }
 
     [Fact]
+    public async Task SetAsync_ContentTypeFromApiDeserializer_CanRoundTripFromCache()
+    {
+        var fixturePath = Path.Combine(
+            Environment.CurrentDirectory,
+            "Fixtures",
+            "DeliveryClient",
+            "article.json");
+        var fixtureJson = await File.ReadAllTextAsync(fixturePath);
+        var apiJsonOptions = RefitSettingsProvider.CreateDefaultJsonSerializerOptions();
+        var contentType = JsonSerializer.Deserialize<ContentType>(fixtureJson, apiJsonOptions);
+
+        Assert.NotNull(contentType);
+
+        await _cacheManager.SetAsync("content-type-key", contentType, []);
+        var cached = await _cacheManager.GetAsync<ContentType>("content-type-key");
+
+        Assert.NotNull(cached);
+        Assert.Equal(contentType.System.Codename, cached.System.Codename);
+    }
+
+    [Fact]
     public async Task GetAsync_CorruptedData_ReturnsNull()
     {
         var key = "corrupted_key";
@@ -294,6 +329,49 @@ public class DistributedCacheManagerTests
 
         Assert.NotNull(dep1Index);
         Assert.NotNull(dep2Index);
+    }
+
+    [Fact]
+    public async Task SetAsync_SameDependencyWithShorterTtl_DoesNotShrinkDependencyIndexExpiration()
+    {
+        var trackingCache = new ExpirationTrackingMockCache();
+        var manager = new DistributedCacheManager(trackingCache, defaultExpiration: TimeSpan.FromMinutes(5));
+        var dependency = "dep_shared";
+
+        await manager.SetAsync(
+            "long_ttl_key",
+            new TestCacheValue { Id = 1, Name = "Long" },
+            [dependency],
+            expiration: TimeSpan.FromMinutes(30));
+
+        var firstExpiration = trackingCache.GetLastExpirationOptions($"dep:{dependency}")?.AbsoluteExpiration;
+
+        await manager.SetAsync(
+            "short_ttl_key",
+            new TestCacheValue { Id = 2, Name = "Short" },
+            [dependency],
+            expiration: TimeSpan.FromMinutes(1));
+
+        var secondExpiration = trackingCache.GetLastExpirationOptions($"dep:{dependency}")?.AbsoluteExpiration;
+
+        Assert.NotNull(firstExpiration);
+        Assert.NotNull(secondExpiration);
+        Assert.True(secondExpiration >= firstExpiration);
+    }
+
+    [Fact]
+    public async Task SetAsync_WhenDependencyEnumerationThrows_DoesNotStoreCacheEntry()
+    {
+        var cache = new MockDistributedCache();
+        var manager = new DistributedCacheManager(cache, defaultExpiration: TimeSpan.FromMinutes(5));
+        var key = "key_with_throwing_deps";
+        var value = new TestCacheValue { Id = 1, Name = "Test" };
+
+        await Assert.ThrowsAsync<InvalidOperationException>(() =>
+            manager.SetAsync(key, value, ThrowingDependencies()));
+
+        Assert.Null(cache.Get("cache:" + key));
+        Assert.Null(cache.Get("dep:dep1"));
     }
 
     [Theory]
@@ -946,6 +1024,7 @@ public class DistributedCacheManagerTests
     private class ExpirationTrackingMockCache : IDistributedCache
     {
         private readonly Dictionary<string, byte[]> _cache = [];
+        private readonly Dictionary<string, DistributedCacheEntryOptions> _optionsByKey = [];
         private readonly object _lock = new();
 
         public DistributedCacheEntryOptions? LastExpirationOptions { get; private set; }
@@ -970,6 +1049,7 @@ public class DistributedCacheManagerTests
             {
                 _cache[key] = value;
                 LastExpirationOptions = options;
+                _optionsByKey[key] = CloneOptions(options);
             }
         }
 
@@ -978,6 +1058,16 @@ public class DistributedCacheManagerTests
             token.ThrowIfCancellationRequested();
             Set(key, value, options);
             return Task.CompletedTask;
+        }
+
+        public DistributedCacheEntryOptions? GetLastExpirationOptions(string key)
+        {
+            lock (_lock)
+            {
+                return _optionsByKey.TryGetValue(key, out var options)
+                    ? options
+                    : null;
+            }
         }
 
         public void Refresh(string key) { }
@@ -1002,6 +1092,20 @@ public class DistributedCacheManagerTests
             Remove(key);
             return Task.CompletedTask;
         }
+
+        private static DistributedCacheEntryOptions CloneOptions(DistributedCacheEntryOptions options) =>
+            new()
+            {
+                AbsoluteExpiration = options.AbsoluteExpiration,
+                AbsoluteExpirationRelativeToNow = options.AbsoluteExpirationRelativeToNow,
+                SlidingExpiration = options.SlidingExpiration
+            };
+    }
+
+    private static IEnumerable<string> ThrowingDependencies()
+    {
+        yield return "dep1";
+        throw new InvalidOperationException("Dependency enumeration failed.");
     }
 
     #endregion
