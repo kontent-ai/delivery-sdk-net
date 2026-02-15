@@ -94,15 +94,17 @@ internal sealed class LanguagesQuery(
             return null;
 
         var nextSkip = OffsetPaginationHelper.GetNextSkip(pagination);
+        var parametersSnapshot = _params;
+        var waitForLoadingSnapshot = _waitForLoadingNewContent;
 
-        return ct => CreateNextPageQuery(nextSkip).ExecuteAsync(ct);
+        return ct => CreateNextPageQuery(nextSkip, parametersSnapshot, waitForLoadingSnapshot).ExecuteAsync(ct);
     }
 
-    private LanguagesQuery CreateNextPageQuery(int nextSkip)
+    private LanguagesQuery CreateNextPageQuery(int nextSkip, LanguagesParams parametersSnapshot, bool waitForLoadingSnapshot)
         => new(_api, _logger)
         {
-            _params = _params with { Skip = nextSkip },
-            _waitForLoadingNewContent = this._waitForLoadingNewContent
+            _params = parametersSnapshot with { Skip = nextSkip },
+            _waitForLoadingNewContent = waitForLoadingSnapshot
         };
 
     private void LogQueryStarting()

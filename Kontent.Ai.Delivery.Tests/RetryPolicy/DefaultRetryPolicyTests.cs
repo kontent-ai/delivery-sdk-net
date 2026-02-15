@@ -260,10 +260,50 @@ public class DefaultRetryPolicyTests
         Assert.Equal(2, behavior.Attempts);
     }
 
+    [Fact]
+    public async Task HttpClient_DefaultResilience_RetriesOnHttpRequestException()
+    {
+        var env = Guid.NewGuid();
+        var mockHttp = new MockHttpMessageHandler();
+
+        var baseUrl = $"https://deliver.kontent.ai/{env}";
+        var itemsUrl = $"{baseUrl}/items";
+        var itemsJson = await File.ReadAllTextAsync(Path.Combine(Environment.CurrentDirectory, $"Fixtures{Path.DirectorySeparatorChar}DeliveryClient{Path.DirectorySeparatorChar}items.json"));
+        mockHttp.When(itemsUrl).Respond("application/json", itemsJson);
+
+        var behavior = new TestBehaviorHandler(throwsOnFirstAttempt: true);
+        var client = BuildClientWithDefaultResilience(env, mockHttp, behavior);
+
+        var result = await client.GetItems<IDynamicElements>().ExecuteAsync();
+
+        Assert.True(result.IsSuccess);
+        Assert.Equal(2, behavior.Attempts);
+    }
+
+    [Fact]
+    public async Task HttpClient_DefaultResilience_UserCancellation_DoesNotRetry()
+    {
+        var env = Guid.NewGuid();
+        var mockHttp = new MockHttpMessageHandler();
+
+        var baseUrl = $"https://deliver.kontent.ai/{env}";
+        var itemsUrl = $"{baseUrl}/items";
+        var itemsJson = await File.ReadAllTextAsync(Path.Combine(Environment.CurrentDirectory, $"Fixtures{Path.DirectorySeparatorChar}DeliveryClient{Path.DirectorySeparatorChar}items.json"));
+        mockHttp.When(itemsUrl).Respond("application/json", itemsJson);
+
+        using var cancellationTokenSource = new CancellationTokenSource();
+        var behavior = new UserCancellationBehaviorHandler(cancellationTokenSource);
+        var client = BuildClientWithDefaultResilience(env, mockHttp, behavior);
+
+        await Assert.ThrowsAnyAsync<OperationCanceledException>(() =>
+            client.GetItems<IDynamicElements>().ExecuteAsync(cancellationTokenSource.Token));
+        Assert.Equal(1, behavior.Attempts);
+    }
+
     private static DeliveryClient BuildClientWithDefaultResilience(
         Guid environmentId,
         MockHttpMessageHandler primary,
-        TestBehaviorHandler behaviorHandler)
+        DelegatingHandler behaviorHandler)
     {
         var services = new ServiceCollection();
         services.AddDeliveryClient(
@@ -292,6 +332,19 @@ public class DefaultRetryPolicyTests
             return _throwsOnFirstAttempt && Attempts == 1
                 ? throw new HttpRequestException("Simulated network failure")
                 : base.SendAsync(request, cancellationToken);
+        }
+    }
+
+    private sealed class UserCancellationBehaviorHandler(CancellationTokenSource cancellationTokenSource) : DelegatingHandler
+    {
+        private readonly CancellationTokenSource _cancellationTokenSource = cancellationTokenSource;
+        public int Attempts { get; private set; }
+
+        protected override Task<HttpResponseMessage> SendAsync(HttpRequestMessage request, CancellationToken cancellationToken)
+        {
+            Attempts++;
+            _cancellationTokenSource.Cancel();
+            throw new OperationCanceledException(cancellationToken);
         }
     }
 }

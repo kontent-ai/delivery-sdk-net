@@ -85,29 +85,22 @@ internal sealed class DeliveryAuthenticationHandler : DelegatingHandler
         ArgumentNullException.ThrowIfNull(request);
 
         var opts = _name is null ? _monitor.CurrentValue : _monitor.Get(_name);
+        var baseUri = new Uri(opts.GetBaseUrl().TrimEnd('/'), UriKind.Absolute);
+        var isTrustedDeliveryRequest = request.RequestUri is null ||
+                                       !request.RequestUri.IsAbsoluteUri ||
+                                       ShouldRewriteUri(request.RequestUri, baseUri);
 
-        // 1) Auth (Bearer key) - always assign to ensure stale headers are cleared
-        var apiKey = opts.GetApiKey();
-        if (!string.IsNullOrWhiteSpace(apiKey))
+        if (!isTrustedDeliveryRequest)
         {
-            request.Headers.Authorization = new AuthenticationHeaderValue("Bearer", apiKey);
-
-            // Log auth type (NEVER log the actual API key)
-            if (_logger is not null)
-            {
-                var authType = GetAuthType(opts);
-                LoggerMessages.HttpAuthSet(_logger, authType, opts.EnvironmentId ?? "unknown");
-            }
-        }
-        else
-        {
+            // Never propagate SDK auth headers to external targets.
             request.Headers.Authorization = null;
             if (_logger is not null)
                 LoggerMessages.HttpAuthCleared(_logger);
+
+            return base.SendAsync(request, cancellationToken);
         }
 
-        // 2) Base endpoint rewrite (runtime switchable prod/preview)
-        var baseUri = new Uri(opts.GetBaseUrl().TrimEnd('/'), UriKind.Absolute);
+        // 1) Base endpoint rewrite (runtime switchable prod/preview)
 
         if (request.RequestUri is null)
         {
@@ -135,14 +128,30 @@ internal sealed class DeliveryAuthenticationHandler : DelegatingHandler
             if (_logger is not null && !originalHost.Equals(baseUri.Host, StringComparison.OrdinalIgnoreCase))
                 LoggerMessages.HttpEndpointRewritten(_logger, originalHost, baseUri.Host);
         }
-        // else: External absolute URI (CDN, webhooks, etc.) - leave untouched
 
-        // 3) Inject "/{environmentId}" as first path segment if missing
-        //    Only do this for Kontent.ai API URLs, not external URLs (CDN, webhooks, etc.)
+        // 2) Auth (Bearer key) - assign after target classification to avoid leaking SDK keys.
+        var apiKey = opts.GetApiKey();
+        if (!string.IsNullOrWhiteSpace(apiKey))
+        {
+            request.Headers.Authorization = new AuthenticationHeaderValue("Bearer", apiKey);
+
+            // Log auth type (NEVER log the actual API key)
+            if (_logger is not null)
+            {
+                var authType = GetAuthType(opts);
+                LoggerMessages.HttpAuthSet(_logger, authType, opts.EnvironmentId ?? "unknown");
+            }
+        }
+        else
+        {
+            request.Headers.Authorization = null;
+            if (_logger is not null)
+                LoggerMessages.HttpAuthCleared(_logger);
+        }
+
+        // 3) Inject "/{environmentId}" as first path segment if missing.
         var env = opts.EnvironmentId?.Trim('/');
-        if (!string.IsNullOrWhiteSpace(env) &&
-            request.RequestUri is not null &&
-            ShouldRewriteUri(request.RequestUri, baseUri))
+        if (!string.IsNullOrWhiteSpace(env) && request.RequestUri is not null)
         {
             var uri = request.RequestUri;
             var path = uri.AbsolutePath;                 // always starts with "/"

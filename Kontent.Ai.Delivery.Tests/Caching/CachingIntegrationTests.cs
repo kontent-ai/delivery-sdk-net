@@ -19,7 +19,7 @@ namespace Kontent.Ai.Delivery.Tests.Caching;
 /// Integration tests for end-to-end caching scenarios with DeliveryClient.
 /// Tests the complete flow: API call → caching → cache hit → invalidation.
 /// </summary>
-public class CachingIntegrationTests
+public partial class CachingIntegrationTests
 {
     private readonly Guid _guid = Guid.NewGuid();
     private string BaseUrl => $"https://deliver.kontent.ai/{_guid}";
@@ -1095,6 +1095,102 @@ public class CachingIntegrationTests
         Assert.Single(results, r => !r.IsCacheHit);
     }
 
+    [Fact]
+    public async Task MemoryCache_GetItems_ConcurrentMisses_AreCoalescedToSingleApiCall()
+    {
+        var fixtureContent = await ReadFixtureAsync($"DeliveryClient{Path.DirectorySeparatorChar}articles.json");
+
+        var handler = new DelayedJsonResponseHandler(fixtureContent, TimeSpan.FromMilliseconds(100));
+        var client = CreateClientWithMemoryCache(handler);
+
+        var results = await Task.WhenAll(
+            Enumerable.Range(0, 12)
+                .Select(_ => client.GetItems<Article>()
+                    .Where(f => f.System("type").IsEqualTo("article"))
+                    .ExecuteAsync()));
+
+        Assert.All(results, result => Assert.True(result.IsSuccess));
+        Assert.Equal(1, handler.RequestCount);
+        Assert.Single(results, r => !r.IsCacheHit);
+    }
+
+    [Fact]
+    public async Task MemoryCache_GetTypes_ConcurrentMisses_AreCoalescedToSingleApiCall()
+    {
+        var fixtureContent = await ReadFixtureAsync($"DeliveryClient{Path.DirectorySeparatorChar}types_accessory.json");
+
+        var handler = new DelayedJsonResponseHandler(fixtureContent, TimeSpan.FromMilliseconds(100));
+        var client = CreateClientWithMemoryCache(handler);
+
+        var results = await Task.WhenAll(
+            Enumerable.Range(0, 12)
+                .Select(_ => client.GetTypes().Skip(1).ExecuteAsync()));
+
+        Assert.All(results, result => Assert.True(result.IsSuccess));
+        Assert.Equal(1, handler.RequestCount);
+        Assert.Single(results, r => !r.IsCacheHit);
+    }
+
+    [Fact]
+    public async Task MemoryCache_GetTaxonomies_ConcurrentMisses_AreCoalescedToSingleApiCall()
+    {
+        var fixtureContent = await ReadFixtureAsync($"DeliveryClient{Path.DirectorySeparatorChar}taxonomies_multiple.json");
+
+        var handler = new DelayedJsonResponseHandler(fixtureContent, TimeSpan.FromMilliseconds(100));
+        var client = CreateClientWithMemoryCache(handler);
+
+        var results = await Task.WhenAll(
+            Enumerable.Range(0, 12)
+                .Select(_ => client.GetTaxonomies().Skip(1).ExecuteAsync()));
+
+        Assert.All(results, result => Assert.True(result.IsSuccess));
+        Assert.Equal(1, handler.RequestCount);
+        Assert.Single(results, r => !r.IsCacheHit);
+    }
+
+    [Fact]
+    public async Task MemoryCache_ConcurrentItemsMiss_WithScopeInvalidationRace_CompletesAndSupportsRefresh()
+    {
+        var fixtureContent = await ReadFixtureAsync($"DeliveryClient{Path.DirectorySeparatorChar}articles.json");
+        var handler = new DelayedJsonResponseHandler(fixtureContent, TimeSpan.FromMilliseconds(100));
+        var options = new DeliveryOptions
+        {
+            EnvironmentId = _guid.ToString()
+        };
+
+        var serviceProvider = BuildNamedMemoryCacheServiceProvider(handler, options, defaultExpiration: TimeSpan.FromMinutes(5));
+        var client = serviceProvider.GetRequiredKeyedService<IDeliveryClient>("test");
+        var cacheManager = serviceProvider.GetRequiredKeyedService<IDeliveryCacheManager>("test");
+
+        var queryTask = Task.WhenAll(
+            Enumerable.Range(0, 12)
+                .Select(_ => client.GetItems<Article>()
+                    .Where(f => f.System("type").IsEqualTo("article"))
+                    .ExecuteAsync()));
+
+        var invalidateTask = Task.Run(async () =>
+        {
+            await handler.WaitForFirstRequestAsync();
+            await cacheManager.InvalidateAsync(default, DeliveryCacheDependencies.ItemsListScope);
+        });
+
+        var allWork = Task.WhenAll(queryTask, invalidateTask);
+        await allWork.WaitAsync(TimeSpan.FromSeconds(5));
+
+        var queryResults = await queryTask;
+        Assert.All(queryResults, result => Assert.True(result.IsSuccess));
+
+        // Deterministic final invalidation to verify refresh path remains healthy after the race.
+        await cacheManager.InvalidateAsync(default, DeliveryCacheDependencies.ItemsListScope);
+
+        var refreshed = await client.GetItems<Article>()
+            .Where(f => f.System("type").IsEqualTo("article"))
+            .ExecuteAsync();
+
+        Assert.True(refreshed.IsSuccess);
+        Assert.False(refreshed.IsCacheHit);
+    }
+
     #endregion
 
     #region Distributed Cache Integration Tests
@@ -1435,6 +1531,63 @@ public class CachingIntegrationTests
 
         Assert.Equal(1, handler.RequestCount);
         Assert.Single(results, r => !r.IsCacheHit);
+    }
+
+    [Fact]
+    public async Task DistributedCache_GetItems_ConcurrentMisses_AreCoalescedToSingleApiCall()
+    {
+        var fixtureContent = await ReadFixtureAsync($"DeliveryClient{Path.DirectorySeparatorChar}articles.json");
+
+        var handler = new DelayedJsonResponseHandler(fixtureContent, TimeSpan.FromMilliseconds(100));
+        var client = CreateClientWithDistributedCache(handler);
+
+        var results = await Task.WhenAll(
+            Enumerable.Range(0, 12)
+                .Select(_ => client.GetItems<Article>()
+                    .Where(f => f.System("type").IsEqualTo("article"))
+                    .ExecuteAsync()));
+
+        Assert.All(results, result => Assert.True(result.IsSuccess));
+        Assert.Equal(1, handler.RequestCount);
+        Assert.Single(results, r => !r.IsCacheHit);
+    }
+
+    [Fact]
+    public async Task DistributedCache_ConcurrentTypesMiss_WithScopeInvalidationRace_CompletesAndSupportsRefresh()
+    {
+        var fixtureContent = await ReadFixtureAsync($"DeliveryClient{Path.DirectorySeparatorChar}types_accessory.json");
+        var handler = new DelayedJsonResponseHandler(fixtureContent, TimeSpan.FromMilliseconds(100));
+        var options = new DeliveryOptions
+        {
+            EnvironmentId = _guid.ToString()
+        };
+
+        var serviceProvider = BuildNamedDistributedCacheServiceProvider(handler, options, new MockDistributedCache(), defaultExpiration: TimeSpan.FromMinutes(5));
+        var client = serviceProvider.GetRequiredKeyedService<IDeliveryClient>("test");
+        var cacheManager = serviceProvider.GetRequiredKeyedService<IDeliveryCacheManager>("test");
+
+        var queryTask = Task.WhenAll(
+            Enumerable.Range(0, 12)
+                .Select(_ => client.GetTypes().Skip(1).ExecuteAsync()));
+
+        var invalidateTask = Task.Run(async () =>
+        {
+            await handler.WaitForFirstRequestAsync();
+            await cacheManager.InvalidateAsync(default, DeliveryCacheDependencies.TypesListScope);
+        });
+
+        var allWork = Task.WhenAll(queryTask, invalidateTask);
+        await allWork.WaitAsync(TimeSpan.FromSeconds(5));
+
+        var queryResults = await queryTask;
+        Assert.All(queryResults, result => Assert.True(result.IsSuccess));
+
+        // Deterministic final invalidation to verify refresh path remains healthy after the race.
+        await cacheManager.InvalidateAsync(default, DeliveryCacheDependencies.TypesListScope);
+
+        var refreshed = await client.GetTypes().Skip(1).ExecuteAsync();
+        Assert.True(refreshed.IsSuccess);
+        Assert.False(refreshed.IsCacheHit);
     }
 
     #endregion
@@ -1900,92 +2053,6 @@ public class CachingIntegrationTests
             distributedCacheKey,
             Encoding.UTF8.GetBytes(serializedPayload),
             new DistributedCacheEntryOptions { AbsoluteExpirationRelativeToNow = TimeSpan.FromMinutes(5) });
-    }
-
-    #endregion
-
-    #region Test Helper Classes
-
-    private class TestCacheManager : IDeliveryCacheManager
-    {
-        public List<CachedItem> CachedItems { get; } = [];
-
-        public Task<T?> GetAsync<T>(string cacheKey, CancellationToken cancellationToken = default) where T : class
-        {
-            var item = CachedItems.FirstOrDefault(i => i.Key == cacheKey);
-            return Task.FromResult(item?.Value as T);
-        }
-
-        public Task SetAsync<T>(string cacheKey, T value, IEnumerable<string> dependencies, TimeSpan? expiration = null, CancellationToken cancellationToken = default) where T : class
-        {
-            CachedItems.Add(new CachedItem
-            {
-                Key = cacheKey,
-                Value = value,
-                Dependencies = [.. dependencies]
-            });
-            return Task.CompletedTask;
-        }
-
-        public Task InvalidateAsync(CancellationToken cancellationToken = default, params string[] dependencyKeys) => Task.CompletedTask;
-
-        public class CachedItem
-        {
-            public string Key { get; set; } = "";
-            public object? Value { get; set; }
-            public List<string> Dependencies { get; set; } = [];
-        }
-    }
-
-    private class MockDistributedCache : IDistributedCache
-    {
-        private readonly System.Collections.Concurrent.ConcurrentDictionary<string, byte[]> _cache = new();
-
-        public byte[]? Get(string key) => _cache.TryGetValue(key, out var value) ? value : null;
-        public Task<byte[]?> GetAsync(string key, CancellationToken token = default) =>
-            Task.FromResult(Get(key));
-
-        public void Set(string key, byte[] value, DistributedCacheEntryOptions options) =>
-            _cache[key] = value;
-        public Task SetAsync(string key, byte[] value, DistributedCacheEntryOptions options, CancellationToken token = default)
-        {
-            Set(key, value, options);
-            return Task.CompletedTask;
-        }
-
-        public void Refresh(string key) { }
-        public Task RefreshAsync(string key, CancellationToken token = default) => Task.CompletedTask;
-
-        public void Remove(string key) => _cache.TryRemove(key, out _);
-        public Task RemoveAsync(string key, CancellationToken token = default)
-        {
-            Remove(key);
-            return Task.CompletedTask;
-        }
-    }
-
-    private sealed class DelayedJsonResponseHandler(string jsonResponse, TimeSpan delay) : HttpMessageHandler
-    {
-        private readonly string _jsonResponse = jsonResponse;
-        private readonly TimeSpan _delay = delay;
-        private int _requestCount;
-
-        public int RequestCount => Volatile.Read(ref _requestCount);
-
-        protected override async Task<HttpResponseMessage> SendAsync(HttpRequestMessage request, CancellationToken cancellationToken)
-        {
-            Interlocked.Increment(ref _requestCount);
-
-            if (_delay > TimeSpan.Zero)
-            {
-                await Task.Delay(_delay, cancellationToken).ConfigureAwait(false);
-            }
-
-            return new HttpResponseMessage(HttpStatusCode.OK)
-            {
-                Content = new StringContent(_jsonResponse)
-            };
-        }
     }
 
     #endregion

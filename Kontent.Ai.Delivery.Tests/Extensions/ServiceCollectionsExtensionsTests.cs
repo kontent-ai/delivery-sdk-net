@@ -365,10 +365,7 @@ public class ServiceCollectionsExtensionsTests
         configurationRoot["DeliveryOptions:UsePreviewApi"] = "true";
         configurationRoot.Reload();
 
-        var completedTask = await Task.WhenAny(optionsChanged.Task, Task.Delay(TimeSpan.FromSeconds(3)));
-        Assert.Same(optionsChanged.Task, completedTask);
-
-        var changed = await optionsChanged.Task;
+        var changed = await optionsChanged.Task.WaitAsync(TimeSpan.FromSeconds(3));
         Assert.True(changed.UsePreviewApi);
         Assert.Equal(PreviewApiKey, changed.PreviewApiKey);
     }

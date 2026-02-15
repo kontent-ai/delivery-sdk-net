@@ -278,6 +278,43 @@ public sealed class PaginationIntegrationTests
         mockHttp.VerifyNoOutstandingExpectation();
     }
 
+    [Fact]
+    public async Task ItemListing_FetchNextPage_UsesSnapshotFromFirstExecution_WhenSourceQueryMutates()
+    {
+        var env = Guid.NewGuid().ToString();
+        var itemsUrl = $"https://deliver.kontent.ai/{env}/items";
+        var mockHttp = new MockHttpMessageHandler();
+
+        mockHttp.Expect(itemsUrl)
+            .WithQueryString("limit", "1")
+            .With(req => !req.Headers.Contains("X-KC-Wait-For-Loading-New-Content"))
+            .Respond("application/json", BuildItemsListingJson(skip: 0, limit: 1, totalCount: 2, codenames: ["a1"], hasNextPage: true));
+
+        mockHttp.Expect(itemsUrl)
+            .WithQueryString("skip", "1")
+            .WithQueryString("limit", "1")
+            .With(req => !req.Headers.Contains("X-KC-Wait-For-Loading-New-Content"))
+            .Respond("application/json", BuildItemsListingJson(skip: 1, limit: 1, totalCount: 2, codenames: ["a2"], hasNextPage: false));
+
+        var client = BuildClient(env, mockHttp);
+
+        var query = client.GetItems<TestArticle>()
+            .Limit(1)
+            .WaitForLoadingNewContent(false);
+
+        var firstPage = await query.ExecuteAsync();
+        Assert.True(firstPage.IsSuccess);
+
+        // Mutate original query after first execution. Next-page fetch should ignore these changes.
+        query.Limit(5).WaitForLoadingNewContent();
+
+        var secondPage = await firstPage.Value.FetchNextPageAsync();
+        Assert.NotNull(secondPage);
+        Assert.True(secondPage.IsSuccess);
+
+        mockHttp.VerifyNoOutstandingExpectation();
+    }
+
     #endregion
 
     #region ItemsFeed (GetItemsFeed) Tests
@@ -731,6 +768,43 @@ public sealed class PaginationIntegrationTests
         mockHttp.VerifyNoOutstandingExpectation();
     }
 
+    [Fact]
+    public async Task TypesQuery_FetchNextPage_UsesSnapshotFromFirstExecution_WhenSourceQueryMutates()
+    {
+        var env = Guid.NewGuid().ToString();
+        var typesUrl = $"https://deliver.kontent.ai/{env}/types";
+        var mockHttp = new MockHttpMessageHandler();
+
+        mockHttp.Expect(typesUrl)
+            .WithQueryString("limit", "1")
+            .With(req => !req.Headers.Contains("X-KC-Wait-For-Loading-New-Content"))
+            .Respond("application/json", BuildTypesListingJson(skip: 0, limit: 1, totalCount: 2, codenames: ["article"], hasNextPage: true));
+
+        mockHttp.Expect(typesUrl)
+            .WithQueryString("skip", "1")
+            .WithQueryString("limit", "1")
+            .With(req => !req.Headers.Contains("X-KC-Wait-For-Loading-New-Content"))
+            .Respond("application/json", BuildTypesListingJson(skip: 1, limit: 1, totalCount: 2, codenames: ["author"], hasNextPage: false));
+
+        var client = BuildClient(env, mockHttp);
+
+        var query = client.GetTypes()
+            .Limit(1)
+            .WaitForLoadingNewContent(false);
+
+        var firstPage = await query.ExecuteAsync();
+        Assert.True(firstPage.IsSuccess);
+
+        // Mutate original query after first execution. Next-page fetch should ignore these changes.
+        query.Limit(5).WaitForLoadingNewContent();
+
+        var secondPage = await firstPage.Value.FetchNextPageAsync();
+        Assert.NotNull(secondPage);
+        Assert.True(secondPage.IsSuccess);
+
+        mockHttp.VerifyNoOutstandingExpectation();
+    }
+
     #endregion
 
     #region Taxonomies Pagination Tests
@@ -817,6 +891,43 @@ public sealed class PaginationIntegrationTests
         mockHttp.VerifyNoOutstandingExpectation();
     }
 
+    [Fact]
+    public async Task TaxonomiesQuery_FetchNextPage_UsesSnapshotFromFirstExecution_WhenSourceQueryMutates()
+    {
+        var env = Guid.NewGuid().ToString();
+        var taxonomiesUrl = $"https://deliver.kontent.ai/{env}/taxonomies";
+        var mockHttp = new MockHttpMessageHandler();
+
+        mockHttp.Expect(taxonomiesUrl)
+            .WithQueryString("limit", "1")
+            .With(req => !req.Headers.Contains("X-KC-Wait-For-Loading-New-Content"))
+            .Respond("application/json", BuildTaxonomiesListingJson(skip: 0, limit: 1, totalCount: 2, codenames: ["personas"], hasNextPage: true));
+
+        mockHttp.Expect(taxonomiesUrl)
+            .WithQueryString("skip", "1")
+            .WithQueryString("limit", "1")
+            .With(req => !req.Headers.Contains("X-KC-Wait-For-Loading-New-Content"))
+            .Respond("application/json", BuildTaxonomiesListingJson(skip: 1, limit: 1, totalCount: 2, codenames: ["categories"], hasNextPage: false));
+
+        var client = BuildClient(env, mockHttp);
+
+        var query = client.GetTaxonomies()
+            .Limit(1)
+            .WaitForLoadingNewContent(false);
+
+        var firstPage = await query.ExecuteAsync();
+        Assert.True(firstPage.IsSuccess);
+
+        // Mutate original query after first execution. Next-page fetch should ignore these changes.
+        query.Limit(5).WaitForLoadingNewContent();
+
+        var secondPage = await firstPage.Value.FetchNextPageAsync();
+        Assert.NotNull(secondPage);
+        Assert.True(secondPage.IsSuccess);
+
+        mockHttp.VerifyNoOutstandingExpectation();
+    }
+
     #endregion
 
     #region Languages Pagination Tests
@@ -896,6 +1007,43 @@ public sealed class PaginationIntegrationTests
         Assert.NotNull(secondPage);
         Assert.True(secondPage.IsSuccess);
         Assert.False(secondPage.Value.HasNextPage);
+
+        mockHttp.VerifyNoOutstandingExpectation();
+    }
+
+    [Fact]
+    public async Task LanguagesQuery_FetchNextPage_UsesSnapshotFromFirstExecution_WhenSourceQueryMutates()
+    {
+        var env = Guid.NewGuid().ToString();
+        var languagesUrl = $"https://deliver.kontent.ai/{env}/languages";
+        var mockHttp = new MockHttpMessageHandler();
+
+        mockHttp.Expect(languagesUrl)
+            .WithQueryString("limit", "1")
+            .With(req => !req.Headers.Contains("X-KC-Wait-For-Loading-New-Content"))
+            .Respond("application/json", BuildLanguagesListingJson(skip: 0, limit: 1, totalCount: 2, codenames: ["en-US"], hasNextPage: true));
+
+        mockHttp.Expect(languagesUrl)
+            .WithQueryString("skip", "1")
+            .WithQueryString("limit", "1")
+            .With(req => !req.Headers.Contains("X-KC-Wait-For-Loading-New-Content"))
+            .Respond("application/json", BuildLanguagesListingJson(skip: 1, limit: 1, totalCount: 2, codenames: ["es-ES"], hasNextPage: false));
+
+        var client = BuildClient(env, mockHttp);
+
+        var query = client.GetLanguages()
+            .Limit(1)
+            .WaitForLoadingNewContent(false);
+
+        var firstPage = await query.ExecuteAsync();
+        Assert.True(firstPage.IsSuccess);
+
+        // Mutate original query after first execution. Next-page fetch should ignore these changes.
+        query.Limit(5).WaitForLoadingNewContent();
+
+        var secondPage = await firstPage.Value.FetchNextPageAsync();
+        Assert.NotNull(secondPage);
+        Assert.True(secondPage.IsSuccess);
 
         mockHttp.VerifyNoOutstandingExpectation();
     }

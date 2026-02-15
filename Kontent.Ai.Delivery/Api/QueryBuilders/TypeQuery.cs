@@ -64,14 +64,13 @@ internal sealed class TypeQuery(
             waitForLoadingNewContent,
             cancellationToken).ConfigureAwait(false);
 
-        if (cacheResult.IsCacheHit)
+        if (QueryExecutionResultHelper.TryGetCacheHitValue(cacheResult, out var cachedType))
         {
             LogQueryCompleted(stopwatch, HttpStatusCode.OK, cacheHit: true);
-            return DeliveryResult.CacheHit<IContentType>(cacheResult.Value!);
+            return DeliveryResult.CacheHit<IContentType>(cachedType);
         }
 
-        if (apiResult is null)
-            throw new InvalidOperationException("API result was not captured during fetch.");
+        apiResult = QueryExecutionResultHelper.EnsureApiResult(apiResult, "Type", _codename);
 
         if (!apiResult.IsSuccess)
             LogQueryFailed(apiResult);

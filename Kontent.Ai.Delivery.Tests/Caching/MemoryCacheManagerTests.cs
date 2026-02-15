@@ -144,9 +144,13 @@ public class MemoryCacheManagerTests : IDisposable
         var expiration = TimeSpan.FromMilliseconds(100);
 
         await _cacheManager.SetAsync(key, value, dependencies, expiration);
-        await Task.Delay(200);
+        var expired = await WaitUntilAsync(
+            async () => await _cacheManager.GetAsync<TestCacheValue>(key) is null,
+            timeout: TimeSpan.FromSeconds(2),
+            pollInterval: TimeSpan.FromMilliseconds(20));
         var result = await _cacheManager.GetAsync<TestCacheValue>(key);
 
+        Assert.True(expired);
         Assert.Null(result);
     }
 
@@ -198,10 +202,17 @@ public class MemoryCacheManagerTests : IDisposable
             "_reverseIndex");
         Assert.True(reverseIndex.ContainsKey(dependency));
 
-        await Task.Delay(200);
-        cache.Compact(1.0);
+        var expired = await WaitUntilAsync(
+            async () =>
+            {
+                cache.Compact(1.0);
+                return await manager.GetAsync<TestCacheValue>(key) is null;
+            },
+            timeout: TimeSpan.FromSeconds(2),
+            pollInterval: TimeSpan.FromMilliseconds(20));
         var result = await manager.GetAsync<TestCacheValue>(key);
 
+        Assert.True(expired);
         Assert.Null(result);
         var entries = GetPrivateField<object>(manager, "_entries");
 
@@ -483,7 +494,7 @@ public class MemoryCacheManagerTests : IDisposable
         var invalidateTasks = Enumerable.Range(0, 25)
             .Select(async _ =>
             {
-                await Task.Delay(10);
+                await Task.Yield();
                 await _cacheManager.InvalidateAsync(default, dependency);
             })
             .ToList();
@@ -509,6 +520,54 @@ public class MemoryCacheManagerTests : IDisposable
         var result = await _cacheManager.GetAsync<TestCacheValue>(key);
 
         Assert.Null(result);
+    }
+
+    [Fact]
+    public async Task ReverseIndex_ConcurrentCleanupAndSet_PreservesDependencyInvalidation()
+    {
+        using var cache = new MemoryCache(new MemoryCacheOptions
+        {
+            ExpirationScanFrequency = TimeSpan.FromMilliseconds(10)
+        });
+        using var manager = new MemoryCacheManager(cache);
+
+        const string dependency = "dep_race";
+        const string expiringKey = "expiring_key";
+        const string stableKey = "stable_key";
+
+        await manager.SetAsync(
+            expiringKey,
+            new TestCacheValue { Id = 1, Name = "Expiring" },
+            [dependency],
+            expiration: TimeSpan.FromMilliseconds(40));
+
+        var churnTask = Task.Run(async () =>
+        {
+            for (var i = 0; i < 50; i++)
+            {
+                await manager.SetAsync(
+                    stableKey,
+                    new TestCacheValue { Id = i, Name = $"Stable_{i}" },
+                    [dependency],
+                    expiration: TimeSpan.FromMinutes(1));
+                await Task.Yield();
+            }
+        });
+
+        var expired = await WaitUntilAsync(
+            async () =>
+            {
+                cache.Compact(1.0);
+                return await manager.GetAsync<TestCacheValue>(expiringKey) is null;
+            },
+            timeout: TimeSpan.FromSeconds(2),
+            pollInterval: TimeSpan.FromMilliseconds(20));
+
+        await churnTask;
+        Assert.True(expired);
+
+        await manager.InvalidateAsync(default, dependency);
+        Assert.Null(await manager.GetAsync<TestCacheValue>(stableKey));
     }
 
     #endregion
@@ -866,14 +925,36 @@ public class MemoryCacheManagerTests : IDisposable
             return true;
 
         var sw = Stopwatch.StartNew();
+        using var timer = new PeriodicTimer(pollInterval);
         while (sw.Elapsed < timeout)
         {
-            await Task.Delay(pollInterval);
             if (condition())
                 return true;
+
+            if (!await timer.WaitForNextTickAsync().ConfigureAwait(false))
+                break;
         }
 
         return condition();
+    }
+
+    private static async Task<bool> WaitUntilAsync(Func<Task<bool>> condition, TimeSpan timeout, TimeSpan pollInterval)
+    {
+        if (await condition().ConfigureAwait(false))
+            return true;
+
+        var sw = Stopwatch.StartNew();
+        using var timer = new PeriodicTimer(pollInterval);
+        while (sw.Elapsed < timeout)
+        {
+            if (await condition().ConfigureAwait(false))
+                return true;
+
+            if (!await timer.WaitForNextTickAsync().ConfigureAwait(false))
+                break;
+        }
+
+        return await condition().ConfigureAwait(false);
     }
 
     private static bool ConcurrentDictionaryContainsKey(object dictionary, string key)

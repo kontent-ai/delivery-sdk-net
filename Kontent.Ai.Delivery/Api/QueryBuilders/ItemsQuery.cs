@@ -135,27 +135,24 @@ internal sealed class ItemsQuery<TModel>(
             waitForLoadingNewContent,
             cancellationToken).ConfigureAwait(false);
 
-        if (cacheResult.IsCacheHit)
+        if (QueryExecutionResultHelper.TryGetCacheHitValue(cacheResult, out var cachedListing))
         {
             LogQueryCompleted(stopwatch, HttpStatusCode.OK, cacheHit: true);
             return DeliveryResult.CacheHit<IDeliveryItemListingResponse<TModel>>(
-                WithNextPageFetcher(cacheResult.Value!));
+                WithNextPageFetcher(cachedListing));
         }
 
-        if (apiResult is not { IsSuccess: true })
+        apiResult = QueryExecutionResultHelper.EnsureApiResult(apiResult, "Items", "list");
+        if (!apiResult.IsSuccess)
         {
-            if (apiResult is not null)
-            {
-                LogQueryFailed(apiResult);
-                LogQueryCompleted(stopwatch, apiResult.StatusCode, cacheHit: false, apiResult.HasStaleContent);
-                return CreateFailureResult(apiResult);
-            }
-
-            throw new InvalidOperationException("API result was not captured during fetch.");
+            LogQueryFailed(apiResult);
+            LogQueryCompleted(stopwatch, apiResult.StatusCode, cacheHit: false, apiResult.HasStaleContent);
+            return CreateFailureResult(apiResult);
         }
 
         LogQueryCompleted(stopwatch, apiResult.StatusCode, cacheHit: false, apiResult.HasStaleContent);
-        return WrapSuccess(WithNextPageFetcher(cacheResult.Value!), apiResult);
+        var response = cacheResult.Value ?? apiResult.Value;
+        return WrapSuccess(WithNextPageFetcher(response), apiResult);
     }
 
     private async Task<IDeliveryResult<IDeliveryItemListingResponse<TModel>>> ExecuteWithoutCacheAsync(
@@ -330,18 +327,23 @@ internal sealed class ItemsQuery<TModel>(
             return null;
 
         var nextSkip = OffsetPaginationHelper.GetNextSkip(pagination);
+        var parametersSnapshot = _params;
+        var waitForLoadingSnapshot = _waitForLoadingNewContent;
+        var typeFilterAppliedSnapshot = _typeFilterApplied;
+        var cacheExpirationSnapshot = CacheExpiration;
+        var serializedFiltersSnapshot = _serializedFilters.Clone();
 
         return async (ct) =>
         {
             var nextQuery = new ItemsQuery<TModel>(_api, _contentItemMapper, _contentDeserializer, _typeProvider, _cacheManager, _defaultRenditionPreset, _logger)
             {
-                _params = _params with { Skip = nextSkip },
-                _waitForLoadingNewContent = _waitForLoadingNewContent,
-                _typeFilterApplied = _typeFilterApplied,
-                CacheExpiration = this.CacheExpiration
+                _params = parametersSnapshot with { Skip = nextSkip },
+                _waitForLoadingNewContent = waitForLoadingSnapshot,
+                _typeFilterApplied = typeFilterAppliedSnapshot,
+                CacheExpiration = cacheExpirationSnapshot
             };
 
-            nextQuery._serializedFilters.CopyFrom(_serializedFilters);
+            nextQuery._serializedFilters.CopyFrom(serializedFiltersSnapshot);
 
             return await nextQuery.ExecuteAsync(ct).ConfigureAwait(false);
         };

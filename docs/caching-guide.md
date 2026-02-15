@@ -18,6 +18,7 @@ Caching is essential for production applications using the Kontent.ai Delivery A
   - [Expiration Strategies](#expiration-strategies)
     - [Per-query Expiration Override](#per-query-expiration-override)
 - [Cache Invalidation](#cache-invalidation)
+  - [Invalidation Matrix (RC-ready)](#invalidation-matrix-rc-ready)
   - [Manual Invalidation](#manual-invalidation)
   - [Webhook-Based Invalidation](#webhook-based-invalidation)
   - [Timed Invalidation](#timed-invalidation)
@@ -31,6 +32,7 @@ Caching is essential for production applications using the Kontent.ai Delivery A
   - [Selective Caching (Production vs Preview)](#selective-caching-production-vs-preview)
 - [Best Practices](#best-practices)
 - [Monitoring and Diagnostics](#monitoring-and-diagnostics)
+  - [Optional Redis Validation Suite](#optional-redis-validation-suite)
 - [Troubleshooting](#troubleshooting)
 
 ## Why Caching Matters
@@ -82,6 +84,11 @@ Kontent.ai enforces rate limits on API requests:
 - Can be managed independently
 
 **Note:** The SDK stores raw JSON payloads in distributed caches and rehydrates on read. This avoids circular reference serialization issues and keeps payloads portable across instances.
+
+Distributed invalidation follows an eventual consistency model:
+- dependency indexes are updated with a read-modify-write pattern
+- concurrent writes can temporarily leave some entries reachable until TTL expires
+- webhook invalidation should be treated as near-immediate, not globally atomic, across all instances
 
 **Cons:**
 - Network latency (still faster than API calls)
@@ -515,6 +522,21 @@ Supported cacheable query builders:
 - `GetTaxonomies()`
 
 ## Cache Invalidation
+
+### Invalidation Matrix (RC-ready)
+
+Use this matrix when mapping webhook events to SDK dependency invalidation keys:
+
+| Endpoint family | Detail dependency key | Listing scope dependency key |
+|---|---|---|
+| Items | `item_{codename}` | `DeliveryCacheDependencies.ItemsListScope` (`scope_items_list`) |
+| Types | `type_{codename}` | `DeliveryCacheDependencies.TypesListScope` (`scope_types_list`) |
+| Taxonomies | `taxonomy_{codename}` | `DeliveryCacheDependencies.TaxonomiesListScope` (`scope_taxonomies_list`) |
+
+Recommended webhook pattern:
+- item event: invalidate `item_{codename}` + `scope_items_list`
+- type event: invalidate `type_{codename}` + `scope_types_list`
+- taxonomy event: invalidate `taxonomy_{codename}` + `scope_taxonomies_list`
 
 ### Manual Invalidation
 
@@ -1048,6 +1070,24 @@ Implementation details:
 - Lock entries are cleaned up automatically to avoid unbounded growth in long-running applications
 
 ## Monitoring and Diagnostics
+
+### Optional Redis Validation Suite
+
+The SDK test project includes an opt-in Redis integration suite (`RedisCacheIntegrationTests`) that validates:
+- item/type/taxonomy detail invalidation
+- item/type/taxonomy listing scope invalidation
+- cross-instance invalidation visibility using two service providers against the same Redis backend
+
+Run it locally:
+
+```bash
+KONTENT_SDK_RUN_REDIS_TESTS=true \
+KONTENT_SDK_REDIS_CONNECTION=localhost:6379 \
+dotnet test Kontent.Ai.Delivery.Tests/Kontent.Ai.Delivery.Tests.csproj \
+  --filter "FullyQualifiedName~RedisCacheIntegrationTests"
+```
+
+By default, the suite is skipped unless `KONTENT_SDK_RUN_REDIS_TESTS=true` is set.
 
 ### Cache Hit Rate
 

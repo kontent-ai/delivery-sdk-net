@@ -1319,7 +1319,18 @@ if (cacheManager is IDeliveryCachePurger purger)
 > [!IMPORTANT]
 > Runtime option changes on an already-cached client do not invalidate existing cache entries. If you change `EnvironmentId` or `DefaultRenditionPreset`, purge the client cache (or recreate the client) before relying on the new setting.
 
-For advanced caching strategies including cache invalidation, webhook integration, and multi-tenant scenarios, see the [Caching Guide](docs/caching-guide.md).
+For advanced caching strategies including cache invalidation, webhook integration, and multi-tenant scenarios, see the [Caching Guide](docs/caching-guide.md), especially:
+- [Invalidation Matrix (RC-ready)](docs/caching-guide.md#invalidation-matrix-rc-ready)
+- [Optional Redis Validation Suite](docs/caching-guide.md#optional-redis-validation-suite)
+
+Optional Redis validation run:
+
+```bash
+KONTENT_SDK_RUN_REDIS_TESTS=true \
+KONTENT_SDK_REDIS_CONNECTION=localhost:6379 \
+dotnet test Kontent.Ai.Delivery.Tests/Kontent.Ai.Delivery.Tests.csproj \
+  --filter "FullyQualifiedName~RedisCacheIntegrationTests"
+```
 
 ### Preview API
 

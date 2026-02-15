@@ -275,6 +275,27 @@ public class DeliveryAuthenticationHandlerTests
     }
 
     [Fact]
+    public async Task SendAsync_WithExternalUrl_DoesNotAttachSdkAuthorizationHeader()
+    {
+        var options = new DeliveryOptions
+        {
+            EnvironmentId = TestEnvironmentId,
+            UsePreviewApi = true,
+            PreviewApiKey = TestPreviewApiKey
+        };
+
+        var handler = CreateHandler(options);
+        var request = new HttpRequestMessage(HttpMethod.Get, "https://external-service.com/webhook/callback");
+        request.Headers.Authorization = new System.Net.Http.Headers.AuthenticationHeaderValue("Bearer", "stale-sdk-key");
+
+        await InvokeSendAsync(handler, request);
+
+        Assert.NotNull(request.RequestUri);
+        Assert.Equal("external-service.com", request.RequestUri.Host);
+        Assert.Null(request.Headers.Authorization);
+    }
+
+    [Fact]
     public async Task SendAsync_WithRelativeUri_InjectsEnvironmentId()
     {
         var options = new DeliveryOptions

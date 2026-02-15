@@ -115,7 +115,7 @@ internal static class HttpRequestHeadersExtensions
         var callerAssemblies = new StackTrace().GetFrames()
                     .Select(x => x.GetMethod()?.ReflectedType?.Assembly).Distinct().OfType<Assembly>()
                     .Where(x => x.GetReferencedAssemblies().Any(y => y.FullName == executingAssembly.FullName));
-        var originatingAssembly = callerAssemblies.Any() ? callerAssemblies.Last() : null;
+        var originatingAssembly = callerAssemblies.LastOrDefault();
         return originatingAssembly;
     }
 }

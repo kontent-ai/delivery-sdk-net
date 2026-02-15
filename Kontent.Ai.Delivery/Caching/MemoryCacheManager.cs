@@ -396,6 +396,7 @@ internal sealed class MemoryCacheManager(
         {
             if (_reverseIndex.TryGetValue(dependencyKey, out var keys))
             {
+                var shouldAttemptDependencyRemoval = false;
                 lock (keys)
                 {
                     if (_entries.TryGetValue(cacheKey, out var current) &&
@@ -406,13 +407,51 @@ internal sealed class MemoryCacheManager(
                     }
 
                     keys.Remove(cacheKey);
+                    shouldAttemptDependencyRemoval = keys.Count == 0;
+                }
 
-                    if (keys.Count == 0)
-                    {
-                        _reverseIndex.TryRemove(dependencyKey, out _);
-                    }
+                if (shouldAttemptDependencyRemoval)
+                    TryRemoveEmptyDependencyIndexEntry(dependencyKey, keys);
+            }
+        }
+    }
+
+    /// <summary>
+    /// Safely removes an empty reverse-index entry while preserving lock ordering with writers.
+    /// </summary>
+    /// <remarks>
+    /// We only remove when the stripe lock is available immediately to avoid blocking eviction callbacks.
+    /// If contended, cleanup is deferred to a future eviction/invalidation pass.
+    /// </remarks>
+    private void TryRemoveEmptyDependencyIndexEntry(string dependencyKey, HashSet<string> keys)
+    {
+        var lockObj = GetLockStripe(dependencyKey);
+        if (!lockObj.Wait(0))
+            return;
+
+        try
+        {
+            if (!_reverseIndex.TryGetValue(dependencyKey, out var currentKeys) ||
+                !ReferenceEquals(currentKeys, keys))
+            {
+                return;
+            }
+
+            lock (keys)
+            {
+                if (keys.Count != 0)
+                    return;
+
+                if (_reverseIndex.TryGetValue(dependencyKey, out currentKeys) &&
+                    ReferenceEquals(currentKeys, keys))
+                {
+                    _reverseIndex.TryRemove(dependencyKey, out _);
                 }
             }
+        }
+        finally
+        {
+            lockObj.Release();
         }
     }
 

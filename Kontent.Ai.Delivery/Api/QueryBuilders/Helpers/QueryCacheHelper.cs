@@ -310,11 +310,27 @@ internal static class QueryCacheHelper
         var materializedDependencies = MaterializeDependencies(dependencies);
 
         // 5. Cache payload if available.
-        if (cachePayload is not null)
+        if (cachePayload is null)
         {
-            await TrySetCachedAsync(cacheManager, cacheKey, cachePayload, materializedDependencies, expiration, logger, cancellationToken)
-                .ConfigureAwait(false);
+            if (logger is not null)
+            {
+                LoggerMessages.QueryCacheStoreSkipped(logger, cacheKey);
+            }
+
+            return new CacheFetchResult<TResult>(result, materializedDependencies, IsCacheHit: false);
         }
+
+        if (logger is not null)
+        {
+            LoggerMessages.QueryCacheStore(
+                logger,
+                cacheKey,
+                FormatExpiration(expiration),
+                materializedDependencies.Length);
+        }
+
+        await TrySetCachedAsync(cacheManager, cacheKey, cachePayload, materializedDependencies, expiration, logger, cancellationToken)
+            .ConfigureAwait(false);
 
         return new CacheFetchResult<TResult>(result, materializedDependencies, IsCacheHit: false);
     }
@@ -392,6 +408,11 @@ internal static class QueryCacheHelper
             string[] array => array,
             _ => [.. dependencies]
         };
+
+    private static string FormatExpiration(TimeSpan? expiration) =>
+        expiration is { } ttl
+            ? ttl.ToString("c", System.Globalization.CultureInfo.InvariantCulture)
+            : "manager-default";
 
     /// <summary>
     /// Removes expired locks that are not in use from the specified dictionary.
