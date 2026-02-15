@@ -86,7 +86,7 @@ internal static class RefitApiResponseExtensions
                     error = new Error { Message = ex.Message, ErrorCode = (int)status, Exception = ex };
                 }
             }
-            catch (Exception parseEx)
+            catch (Exception parseEx) when (!IsFatalException(parseEx))
             {
                 // Log the deserialization failure for diagnostics
                 if (logger is not null)
@@ -122,7 +122,14 @@ internal static class RefitApiResponseExtensions
         }
     }
 
-
+    private static bool IsFatalException(Exception exception) =>
+        exception is OutOfMemoryException
+            or StackOverflowException
+            or AccessViolationException
+            or AppDomainUnloadedException
+            or BadImageFormatException
+            or CannotUnloadAppDomainException
+            or InvalidProgramException;
 
     /// <summary>
     /// Extracts continuation token from response headers.

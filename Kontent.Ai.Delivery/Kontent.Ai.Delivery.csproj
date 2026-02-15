@@ -30,13 +30,7 @@
 
   <ItemGroup>
     <AssemblyAttribute Include="System.Runtime.CompilerServices.InternalsVisibleTo">
-      <_Parameter1>Kontent.Ai.Delivery.Extensions.DependencyInjection.Tests</_Parameter1>
-    </AssemblyAttribute>
-    <AssemblyAttribute Include="System.Runtime.CompilerServices.InternalsVisibleTo">
       <_Parameter1>Kontent.Ai.Delivery.Tests</_Parameter1>
-    </AssemblyAttribute>
-    <AssemblyAttribute Include="System.Runtime.CompilerServices.InternalsVisibleTo">
-      <_Parameter1>Kontent.Ai.Delivery.Caching.Tests</_Parameter1>
     </AssemblyAttribute>
   </ItemGroup>
 
