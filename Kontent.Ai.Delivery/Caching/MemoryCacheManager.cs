@@ -435,9 +435,10 @@ internal sealed class MemoryCacheManager(
         {
             supersededMetadata.Cts.Dispose();
         }
-        catch
+        catch (Exception ex)
         {
-            // Best-effort cleanup; eviction callback may also race to dispose.
+            if (_logger is not null)
+                LoggerMessages.CacheBestEffortFailed(_logger, "CleanupSupersededMetadata", ex);
         }
     }
 
