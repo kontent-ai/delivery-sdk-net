@@ -17,7 +17,7 @@ jobs:
     - name: Setup .NET Core
       uses: actions/setup-dotnet@v4
       with:
-        dotnet-version: 8.0.x
+        global-json-file: global.json
     - name: Install CycloneDX
       run: dotnet tool install --global CycloneDX
     - name: Create SBOM
@@ -25,9 +25,9 @@ jobs:
     - name: Upload SBOM
       uses: DependencyTrack/gh-upload-sbom@v3
       with:
-        serverHostname: ${{ secrets.DEPENDENCYTRACK_SERVER_URL }}
-        apiKey: ${{ secrets.DEPENDENCYTRACK_APIKEY }}
-        projectName: 'Delivery SDK .NET'
-        projectVersion: 'master'
-        bomFilename: "./cyclone/bom.xml"
-        autoCreate: true
+        serverhostname: ${{ secrets.DEPENDENCYTRACK_SERVER_URL }}
+        apikey: ${{ secrets.DEPENDENCYTRACK_APIKEY }}
+        projectname: 'Delivery SDK .NET'
+        projectversion: 'master'
+        bomfilename: "./cyclone/bom.xml"
+        autocreate: true
