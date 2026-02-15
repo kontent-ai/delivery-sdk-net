@@ -564,7 +564,7 @@ var result = await client.GetItems()
 var result = await client.GetItems()
     .WithTotalCount()
     .Limit(10)
-    .ExecuteResponseAsync();
+    .ExecuteAsync();
 
 if (result.IsSuccess)
 {

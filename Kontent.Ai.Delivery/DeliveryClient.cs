@@ -1,3 +1,4 @@
+using System.Runtime.CompilerServices;
 using Kontent.Ai.Delivery.Configuration;
 using Kontent.Ai.Delivery.ContentItems.Mapping;
 using Microsoft.Extensions.Logging;
@@ -52,7 +53,7 @@ internal sealed class DeliveryClient : IDeliveryClient
 
     public IItemQuery<T> GetItem<T>(string codename)
     {
-        ValidateCodename(codename, nameof(codename), "Entered item codename is not valid.");
+        EnsureCodenameValid(codename);
         return new ItemQuery<T>(
             _deliveryApi,
             codename,
@@ -65,7 +66,7 @@ internal sealed class DeliveryClient : IDeliveryClient
 
     public IDynamicItemQuery GetItem(string codename)
     {
-        ValidateCodename(codename, nameof(codename), "Entered item codename is not valid.");
+        EnsureCodenameValid(codename);
         return new DynamicItemQuery(
             _deliveryApi,
             codename,
@@ -111,7 +112,7 @@ internal sealed class DeliveryClient : IDeliveryClient
 
     public ITypeQuery GetType(string codename)
     {
-        ValidateCodename(codename, nameof(codename), "Entered type codename is not valid.");
+        EnsureCodenameValid(codename);
         return new TypeQuery(_deliveryApi, codename, GetEffectiveCacheManager(), _logger);
     }
 
@@ -119,14 +120,14 @@ internal sealed class DeliveryClient : IDeliveryClient
 
     public ITypeElementQuery GetContentElement(string contentTypeCodename, string contentElementCodename)
     {
-        ValidateCodename(contentTypeCodename, nameof(contentTypeCodename), "Entered content type codename is not valid.");
-        ValidateCodename(contentElementCodename, nameof(contentElementCodename), "Entered content element codename is not valid.");
+        EnsureCodenameValid(contentTypeCodename);
+        EnsureCodenameValid(contentElementCodename);
         return new TypeElementQuery(_deliveryApi, contentTypeCodename, contentElementCodename, _logger);
     }
 
     public ITaxonomyQuery GetTaxonomy(string codename)
     {
-        ValidateCodename(codename, nameof(codename), "Entered taxonomy codename is not valid.");
+        EnsureCodenameValid(codename);
         return new TaxonomyQuery(_deliveryApi, codename, GetEffectiveCacheManager(), _logger);
     }
 
@@ -136,21 +137,21 @@ internal sealed class DeliveryClient : IDeliveryClient
 
     public IItemUsedInQuery GetItemUsedIn(string codename)
     {
-        ValidateCodename(codename, nameof(codename), "Entered item codename is not valid.");
+        EnsureCodenameValid(codename);
         return new ItemUsedInQuery(_deliveryApi, codename, _logger);
     }
 
     public IAssetUsedInQuery GetAssetUsedIn(string codename)
     {
-        ValidateCodename(codename, nameof(codename), "Entered asset codename is not valid.");
+        EnsureCodenameValid(codename);
         return new AssetUsedInQuery(_deliveryApi, codename, _logger);
     }
 
-    private static void ValidateCodename(string? codename, string parameterName, string message)
+    private static void EnsureCodenameValid(string? codename, [CallerArgumentExpression(nameof(codename))] string? parameterName = null)
     {
         if (string.IsNullOrWhiteSpace(codename))
         {
-            throw new ArgumentException(message, parameterName);
+            throw new ArgumentException($"Entered {parameterName} is not valid.", parameterName);
         }
     }
 

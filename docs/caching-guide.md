@@ -1067,7 +1067,8 @@ The SDK mitigates this for cached query execution by **coalescing concurrent cac
 
 Implementation details:
 - Coalescing is **scoped per `IDeliveryCacheManager` instance** (so different named clients / cache managers do not block each other)
-- Lock entries are cleaned up automatically to avoid unbounded growth in long-running applications
+- Coalescing uses an in-flight task registry per cache key (owner/waiter model), not per-key semaphores
+- In-flight entries are removed immediately when the owner fetch completes (success or failure), so cleanup is completion-based
 
 ## Monitoring and Diagnostics
 

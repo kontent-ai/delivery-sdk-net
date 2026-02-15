@@ -53,7 +53,6 @@ internal sealed class MemoryCacheManager(
     ILogger<MemoryCacheManager>? logger = null) : IDeliveryCacheManager, IDeliveryCachePurger, IDisposable
 {
     private readonly IMemoryCache _cache = memoryCache ?? throw new ArgumentNullException(nameof(memoryCache));
-    private readonly string? _keyPrefix = keyPrefix;
     private readonly TimeSpan _defaultExpiration = defaultExpiration ?? TimeSpan.FromHours(1);
     private readonly ILogger<MemoryCacheManager>? _logger = logger;
     private readonly ConcurrentDictionary<string, HashSet<string>> _reverseIndex = new(StringComparer.OrdinalIgnoreCase);
@@ -63,12 +62,18 @@ internal sealed class MemoryCacheManager(
 
     private sealed record CacheEntryMetadata(CancellationTokenSource Cts, string[] Dependencies);
     private bool _disposed;
+    private int _setCounter;
+
+    /// <summary>
+    /// Cleanup runs every N SetAsync calls to remove orphaned empty reverse-index entries.
+    /// </summary>
+    private const int ReverseIndexCleanupInterval = 50;
 
     // Global purge token: all cache entries link to this token so PurgeAsync can invalidate everything efficiently.
     private readonly object _purgeLock = new();
     private CancellationTokenSource _purgeCts = new();
-    private string KeyPrefixSegment => string.IsNullOrEmpty(_keyPrefix) ? "" : $"{_keyPrefix}:";
-    private string PrefixKey(string key) => $"{KeyPrefixSegment}{key}";
+    private readonly string _keyPrefixSegment = string.IsNullOrEmpty(keyPrefix) ? "" : $"{keyPrefix}:";
+    private string PrefixKey(string key) => $"{_keyPrefixSegment}{key}";
 
     private static SemaphoreSlim[] CreateLockStripes(int count)
     {
@@ -166,6 +171,13 @@ internal sealed class MemoryCacheManager(
         _entries.AddOrUpdate(prefixedCacheKey, entryMetadata, (_, _) => entryMetadata);
 
         _cache.Set(prefixedCacheKey, value, entryOptions);
+
+        // Periodically sweep orphaned empty reverse-index entries that eviction callbacks
+        // couldn't clean up due to lock contention (Wait(0) returned false).
+        if (Interlocked.Increment(ref _setCounter) % ReverseIndexCleanupInterval == 0)
+        {
+            CleanupEmptyReverseIndexEntries();
+        }
 
         if (_logger is not null)
             LoggerMessages.CacheSetCompleted(_logger, cacheKey, dependencyList.Count);
@@ -452,6 +464,31 @@ internal sealed class MemoryCacheManager(
         finally
         {
             lockObj.Release();
+        }
+    }
+
+    /// <summary>
+    /// Sweeps orphaned empty reverse-index entries that eviction callbacks couldn't remove
+    /// due to stripe lock contention (non-blocking Wait(0) returned false).
+    /// Called lazily from SetAsync every <see cref="ReverseIndexCleanupInterval"/> calls.
+    /// </summary>
+    private void CleanupEmptyReverseIndexEntries()
+    {
+        foreach (var kvp in _reverseIndex)
+        {
+            var dependencyKey = kvp.Key;
+            var keys = kvp.Value;
+
+            bool isEmpty;
+            lock (keys)
+            {
+                isEmpty = keys.Count == 0;
+            }
+
+            if (isEmpty)
+            {
+                TryRemoveEmptyDependencyIndexEntry(dependencyKey, keys);
+            }
         }
     }
 

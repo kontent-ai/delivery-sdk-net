@@ -9,7 +9,10 @@ on:
 jobs:
   build:
 
-    runs-on: ubuntu-latest
+    runs-on: ${{ matrix.os }}
+    strategy:
+      matrix:
+        os: [ubuntu-latest, windows-latest]
 
     steps:
     - uses: actions/checkout@v4
@@ -20,16 +23,20 @@ jobs:
     - name: Restore dependencies
       run: dotnet restore
     - name: Lint Release Docs
+      if: runner.os == 'Linux'
       run: ./scripts/lint-release-docs.sh
     - name: Build
       run: dotnet build --no-restore /p:ContinuousIntegrationBuild=true
     - name: Test
       run: dotnet test --no-build --verbosity normal /p:CollectCoverage=true /p:CoverletOutputFormat=opencover /p:Threshold=70 /p:ThresholdType=line /p:ThresholdStat=total
     - name: Restore local tools
+      if: runner.os == 'Linux'
       run: dotnet tool restore
     - name: Run Slopwatch
+      if: runner.os == 'Linux'
       run: dotnet slopwatch analyze -d . --fail-on warning
     - name: Codecov
+      if: runner.os == 'Linux'
       uses: codecov/codecov-action@v5
       with:
         fail_ci_if_error: true

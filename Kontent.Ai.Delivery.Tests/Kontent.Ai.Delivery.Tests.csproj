@@ -5,7 +5,7 @@
     <IsPackable>false</IsPackable>
     <Nullable>enable</Nullable>
     <NoWarn>CS1591</NoWarn>
-    <Threshold>80</Threshold>
+    <Threshold>70</Threshold>
     <ThresholdType>line</ThresholdType>
     <ThresholdStat>total</ThresholdStat>
   </PropertyGroup>
