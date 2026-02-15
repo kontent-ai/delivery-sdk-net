@@ -15,7 +15,7 @@ namespace Kontent.Ai.Delivery.Caching;
 /// This implementation uses a reverse index pattern to enable efficient cache invalidation:
 /// <list type="bullet">
 /// <item><description>Cache entries are stored with prefix "cache:"</description></item>
-/// <item><description>Reverse index entries map "dep:{dependencyKey}" to HashSet of cache keys</description></item>
+/// <item><description>Reverse index entries map "dep:{dependencyKey}" to a payload containing cache keys and max expiration metadata</description></item>
 /// </list>
 /// </para>
 /// <para>
@@ -25,8 +25,8 @@ namespace Kontent.Ai.Delivery.Caching;
 /// custom converters, etc.) and simplifies the serialization configuration.
 /// </para>
 /// <para>
-/// The reverse index entries share the same expiration as their associated cache entries,
-/// preventing orphaned index entries while maintaining consistency.
+/// Reverse index entries track the maximum known expiration across associated cache entries.
+/// This prevents index TTL shrink when shorter-lived entries are added later for the same dependency.
 /// </para>
 /// <para>
 /// <b>IMPORTANT: Race Conditions &amp; Eventual Consistency</b>
@@ -53,10 +53,23 @@ namespace Kontent.Ai.Delivery.Caching;
 /// </remarks>
 internal sealed class DistributedCacheManager : IDeliveryCacheManager
 {
+    private sealed class DependencyIndexPayload
+    {
+        public HashSet<string> CacheKeys { get; init; } = new(StringComparer.OrdinalIgnoreCase);
+        public DateTimeOffset MaxAbsoluteExpirationUtc { get; init; }
+    }
+
     private readonly IDistributedCache _cache;
     private readonly TimeSpan _defaultExpiration;
     private readonly JsonSerializerOptions _jsonOptions;
     private readonly ILogger<DistributedCacheManager>? _logger;
+
+    private static readonly JsonSerializerOptions DefaultJsonSerializerOptions = new()
+    {
+        WriteIndented = false,
+        PropertyNameCaseInsensitive = true,
+        DefaultIgnoreCondition = System.Text.Json.Serialization.JsonIgnoreCondition.WhenWritingNull
+    };
 
     private const string CacheKeyPrefix = "cache:";
     private const string DependencyKeyPrefix = "dep:";
@@ -121,12 +134,7 @@ internal sealed class DistributedCacheManager : IDeliveryCacheManager
         _logger = logger;
 
         // Simple serialization options - SDK caches raw JSON strings, not complex object graphs
-        _jsonOptions = jsonSerializerOptions ?? new JsonSerializerOptions
-        {
-            WriteIndented = false,
-            PropertyNameCaseInsensitive = true,
-            DefaultIgnoreCondition = System.Text.Json.Serialization.JsonIgnoreCondition.WhenWritingNull
-        };
+        _jsonOptions = jsonSerializerOptions ?? DefaultJsonSerializerOptions;
     }
 
     /// <inheritdoc />
@@ -185,18 +193,18 @@ internal sealed class DistributedCacheManager : IDeliveryCacheManager
 
         var json = SerializeWithValidation(value);
         var bytes = Encoding.UTF8.GetBytes(json);
+        var dependencyList = dependencies.Where(d => !string.IsNullOrWhiteSpace(d)).ToList();
+        var entryAbsoluteExpiration = DateTimeOffset.UtcNow.Add(expiration ?? _defaultExpiration);
 
         var cacheOptions = new DistributedCacheEntryOptions
         {
-            AbsoluteExpirationRelativeToNow = expiration ?? _defaultExpiration
+            AbsoluteExpiration = entryAbsoluteExpiration
         };
 
         var prefixedKey = GetCacheKey(cacheKey);
 
         await _cache.SetAsync(prefixedKey, bytes, cacheOptions, cancellationToken)
             .ConfigureAwait(false);
-
-        var dependencyList = dependencies.Where(d => !string.IsNullOrWhiteSpace(d)).ToList();
 
         foreach (var dependency in dependencyList)
         {
@@ -205,7 +213,7 @@ internal sealed class DistributedCacheManager : IDeliveryCacheManager
                 await AddCacheKeyToDependencyIndexAsync(
                     dependency,
                     cacheKey,
-                    cacheOptions,
+                    entryAbsoluteExpiration,
                     cancellationToken)
                     .ConfigureAwait(false);
             }
@@ -316,7 +324,7 @@ internal sealed class DistributedCacheManager : IDeliveryCacheManager
             }
 
             var indexJson = Encoding.UTF8.GetString(indexBytes);
-            var cacheKeys = JsonSerializer.Deserialize<HashSet<string>>(indexJson, _jsonOptions);
+            var cacheKeys = DeserializeDependencyIndexKeys(indexJson);
 
             if (cacheKeys is null || cacheKeys.Count == 0)
             {
@@ -356,7 +364,7 @@ internal sealed class DistributedCacheManager : IDeliveryCacheManager
     private async Task AddCacheKeyToDependencyIndexAsync(
         string dependencyKey,
         string cacheKey,
-        DistributedCacheEntryOptions cacheOptions,
+        DateTimeOffset entryAbsoluteExpiration,
         CancellationToken cancellationToken)
     {
         var indexKey = GetDependencyKey(dependencyKey);
@@ -364,25 +372,44 @@ internal sealed class DistributedCacheManager : IDeliveryCacheManager
         try
         {
             var existingBytes = await _cache.GetAsync(indexKey, cancellationToken).ConfigureAwait(false);
-            HashSet<string> cacheKeySet;
+            var cacheKeySet = new HashSet<string>(StringComparer.OrdinalIgnoreCase);
+            var maxAbsoluteExpiration = entryAbsoluteExpiration;
 
             if (existingBytes is not null && existingBytes.Length > 0)
             {
                 var existingJson = Encoding.UTF8.GetString(existingBytes);
-                cacheKeySet = JsonSerializer.Deserialize<HashSet<string>>(existingJson, _jsonOptions)
-                    ?? new HashSet<string>(StringComparer.OrdinalIgnoreCase);
-            }
-            else
-            {
-                cacheKeySet = new HashSet<string>(StringComparer.OrdinalIgnoreCase);
+                if (TryDeserializeDependencyIndexPayload(existingJson, _jsonOptions, out var existingPayload))
+                {
+                    cacheKeySet = new HashSet<string>(existingPayload.CacheKeys, StringComparer.OrdinalIgnoreCase);
+                    if (existingPayload.MaxAbsoluteExpirationUtc > maxAbsoluteExpiration)
+                    {
+                        maxAbsoluteExpiration = existingPayload.MaxAbsoluteExpirationUtc;
+                    }
+                }
+                else
+                {
+                    // Backward compatibility: existing payload can be a plain HashSet<string>.
+                    cacheKeySet = JsonSerializer.Deserialize<HashSet<string>>(existingJson, _jsonOptions)
+                        ?? new HashSet<string>(StringComparer.OrdinalIgnoreCase);
+                }
             }
 
             cacheKeySet.Add(cacheKey);
 
-            var indexJson = JsonSerializer.Serialize(cacheKeySet, _jsonOptions);
-            var indexBytes = Encoding.UTF8.GetBytes(indexJson);
+            var indexPayload = new DependencyIndexPayload
+            {
+                CacheKeys = cacheKeySet,
+                MaxAbsoluteExpirationUtc = maxAbsoluteExpiration
+            };
 
-            await _cache.SetAsync(indexKey, indexBytes, cacheOptions, cancellationToken)
+            var indexJson = JsonSerializer.Serialize(indexPayload, _jsonOptions);
+            var indexBytes = Encoding.UTF8.GetBytes(indexJson);
+            var indexOptions = new DistributedCacheEntryOptions
+            {
+                AbsoluteExpiration = maxAbsoluteExpiration
+            };
+
+            await _cache.SetAsync(indexKey, indexBytes, indexOptions, cancellationToken)
                 .ConfigureAwait(false);
         }
         catch (OperationCanceledException)
@@ -393,6 +420,48 @@ internal sealed class DistributedCacheManager : IDeliveryCacheManager
         {
             if (_logger is not null)
                 LoggerMessages.CacheBestEffortFailed(_logger, $"index:{dependencyKey}", ex);
+        }
+    }
+
+    private HashSet<string>? DeserializeDependencyIndexKeys(string indexJson)
+    {
+        if (TryDeserializeDependencyIndexPayload(indexJson, _jsonOptions, out var payload))
+        {
+            return new HashSet<string>(payload.CacheKeys, StringComparer.OrdinalIgnoreCase);
+        }
+
+        var legacy = JsonSerializer.Deserialize<HashSet<string>>(indexJson, _jsonOptions);
+        return legacy is null
+            ? null
+            : new HashSet<string>(legacy, StringComparer.OrdinalIgnoreCase);
+    }
+
+    private static bool TryDeserializeDependencyIndexPayload(
+        string indexJson,
+        JsonSerializerOptions jsonOptions,
+        out DependencyIndexPayload payload)
+    {
+        try
+        {
+            var parsed = JsonSerializer.Deserialize<DependencyIndexPayload>(indexJson, jsonOptions);
+            if (parsed?.CacheKeys is null)
+            {
+                payload = null!;
+                return false;
+            }
+
+            payload = parsed;
+            return true;
+        }
+        catch (JsonException)
+        {
+            payload = null!;
+            return false;
+        }
+        catch (NotSupportedException)
+        {
+            payload = null!;
+            return false;
         }
     }
 

@@ -1,4 +1,3 @@
-using System.Text.Json;
 using Kontent.Ai.Delivery.Caching;
 using Kontent.Ai.Delivery.Configuration;
 using Kontent.Ai.Delivery.ContentItems.Processing;
@@ -215,18 +214,11 @@ public static partial class ServiceCollectionExtensions
         return RegisterCacheManager(
             services,
             clientName,
-            sp =>
-            {
-                var jsonOptions = sp.GetService<JsonSerializerOptions>()
-                    ?? RefitSettingsProvider.CreateDefaultJsonSerializerOptions();
-
-                return new DistributedCacheManager(
-                    sp.GetRequiredService<IDistributedCache>(),
-                    resolvedKeyPrefix,
-                    defaultExpiration,
-                    jsonOptions,
-                    sp.GetService<ILogger<DistributedCacheManager>>());
-            });
+            sp => new DistributedCacheManager(
+                sp.GetRequiredService<IDistributedCache>(),
+                resolvedKeyPrefix,
+                defaultExpiration,
+                sp.GetService<ILogger<DistributedCacheManager>>()));
     }
 
     private static IServiceCollection RegisterCacheManager(

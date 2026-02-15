@@ -1452,6 +1452,65 @@ public partial class CachingIntegrationTests
     }
 
     [Fact]
+    public async Task DistributedCache_InvalidatingTypeDependency_RefreshesSingleTypeAndTypeLists()
+    {
+        var mock = new MockHttpMessageHandler();
+        var typeFixture = await ReadFixtureAsync($"DeliveryClient{Path.DirectorySeparatorChar}article.json");
+        var typesFixture = await ReadFixtureAsync($"DeliveryClient{Path.DirectorySeparatorChar}types_accessory.json");
+
+        mock.Expect($"{BaseUrl}/types/article")
+            .Respond("application/json", typeFixture);
+        mock.Expect($"{BaseUrl}/types?skip=1")
+            .Respond("application/json", typesFixture);
+        mock.Expect($"{BaseUrl}/types/article")
+            .Respond("application/json", typeFixture);
+        mock.Expect($"{BaseUrl}/types?skip=1")
+            .Respond("application/json", typesFixture);
+
+        var services = new ServiceCollection();
+        var options = new DeliveryOptions
+        {
+            EnvironmentId = _guid.ToString()
+        };
+
+        var mockDistributedCache = new MockDistributedCache();
+        services.AddSingleton<IDistributedCache>(mockDistributedCache);
+        services.AddDeliveryClient("test", o => DeliveryOptionsCopyHelper.Copy(options, o),
+            configureHttpClient: b => b.ConfigurePrimaryHttpMessageHandler(() => mock));
+        services.AddDeliveryDistributedCache("test");
+
+        var serviceProvider = services.BuildServiceProvider();
+        var client = serviceProvider.GetRequiredKeyedService<IDeliveryClient>("test");
+        var cacheManager = serviceProvider.GetRequiredKeyedService<IDeliveryCacheManager>("test");
+
+        var typeResult1 = await client.GetType("article").ExecuteAsync();
+        var typesResult1 = await client.GetTypes().Skip(1).ExecuteAsync();
+        var typeResult2 = await client.GetType("article").ExecuteAsync();
+        var typesResult2 = await client.GetTypes().Skip(1).ExecuteAsync();
+
+        await cacheManager.InvalidateAsync(default, "type_article");
+
+        var typeResult3 = await client.GetType("article").ExecuteAsync();
+        var typesResult3 = await client.GetTypes().Skip(1).ExecuteAsync();
+
+        Assert.True(typeResult1.IsSuccess);
+        Assert.True(typeResult2.IsSuccess);
+        Assert.True(typeResult3.IsSuccess);
+        Assert.True(typesResult1.IsSuccess);
+        Assert.True(typesResult2.IsSuccess);
+        Assert.True(typesResult3.IsSuccess);
+
+        Assert.False(typeResult1.IsCacheHit);
+        Assert.True(typeResult2.IsCacheHit);
+        Assert.False(typeResult3.IsCacheHit);
+        Assert.False(typesResult1.IsCacheHit);
+        Assert.True(typesResult2.IsCacheHit);
+        Assert.False(typesResult3.IsCacheHit);
+
+        mock.VerifyNoOutstandingExpectation();
+    }
+
+    [Fact]
     public async Task DistributedCache_TaxonomiesListScopeInvalidation_RefreshesAllCachedTaxonomyLists()
     {
         var mock = new MockHttpMessageHandler();

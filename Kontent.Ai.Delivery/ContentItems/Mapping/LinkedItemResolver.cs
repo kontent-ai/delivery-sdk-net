@@ -1,4 +1,3 @@
-using System.Text.Json;
 using Kontent.Ai.Delivery.Logging;
 using Microsoft.Extensions.Logging;
 
@@ -49,7 +48,7 @@ internal sealed class LinkedItemResolver(
         }
 
         // New item: deserialize and store before hydration.
-        var contentType = ExtractContentType(linkedItem);
+        var contentType = ContentItemJsonHelper.ExtractContentType(linkedItem);
         var modelType = _typingStrategy.ResolveModelType(contentType);
         var contentItem = _deserializer.DeserializeContentItem(linkedItem, modelType);
 
@@ -67,8 +66,4 @@ internal sealed class LinkedItemResolver(
         }
     }
 
-    private static string ExtractContentType(JsonElement itemElement) =>
-        itemElement.TryGetProperty("system", out var system) && system.TryGetProperty("type", out var type)
-            ? type.GetString() ?? string.Empty
-            : string.Empty;
 }

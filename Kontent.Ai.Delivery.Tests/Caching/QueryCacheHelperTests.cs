@@ -12,23 +12,41 @@ public class QueryCacheHelperTests
     {
         var cacheManager = new TestCacheManager();
         var fetchCount = 0;
+        var fetchStarted = new TaskCompletionSource(TaskCreationOptions.RunContinuationsAsynchronously);
+        var releaseFetch = new TaskCompletionSource(TaskCreationOptions.RunContinuationsAsynchronously);
 
         async Task<(TestValue? Value, IEnumerable<string> Dependencies)> Fetch(CancellationToken ct)
         {
             Interlocked.Increment(ref fetchCount);
-            await Task.Delay(100, ct).ConfigureAwait(false);
+            fetchStarted.TrySetResult();
+            await releaseFetch.Task.WaitAsync(ct).ConfigureAwait(false);
             return (new TestValue("value"), []);
         }
 
-        var results = await Task.WhenAll(
-            Enumerable.Range(0, 12)
-                .Select(_ => QueryCacheHelper.GetOrFetchAsync(
-                    cacheManager,
-                    "same-key",
-                    Fetch,
-                    expiration: null,
-                    logger: null,
-                    cancellationToken: CancellationToken.None)));
+        var ownerTask = QueryCacheHelper.GetOrFetchAsync(
+            cacheManager,
+            "same-key",
+            Fetch,
+            expiration: null,
+            logger: null,
+            cancellationToken: CancellationToken.None);
+
+        await fetchStarted.Task.WaitAsync(TimeSpan.FromSeconds(5));
+
+        var waiterTasks = Enumerable.Range(0, 11)
+            .Select(_ => QueryCacheHelper.GetOrFetchAsync(
+                cacheManager,
+                "same-key",
+                Fetch,
+                expiration: null,
+                logger: null,
+                cancellationToken: CancellationToken.None))
+            .ToArray();
+
+        releaseFetch.TrySetResult();
+
+        var allTasks = new[] { ownerTask }.Concat(waiterTasks).ToArray();
+        var results = await Task.WhenAll(allTasks);
 
         Assert.Equal(1, fetchCount);
         Assert.Single(results, r => !r.IsCacheHit);
@@ -45,6 +63,7 @@ public class QueryCacheHelperTests
         var managerAFetchCount = 0;
         var managerBFetchCount = 0;
         var bothOwnersStarted = new TaskCompletionSource(TaskCreationOptions.RunContinuationsAsynchronously);
+        var releaseOwners = new TaskCompletionSource(TaskCreationOptions.RunContinuationsAsynchronously);
 
         async Task WaitForBothOwnersAsync(CancellationToken ct)
         {
@@ -54,7 +73,7 @@ public class QueryCacheHelperTests
             }
 
             await bothOwnersStarted.Task.WaitAsync(ct).ConfigureAwait(false);
-            await Task.Delay(50, ct).ConfigureAwait(false);
+            await releaseOwners.Task.WaitAsync(ct).ConfigureAwait(false);
         }
 
         async Task<(TestValue? Value, IEnumerable<string> Dependencies)> FetchA(CancellationToken ct)
@@ -78,6 +97,9 @@ public class QueryCacheHelperTests
             QueryCacheHelper.GetOrFetchAsync(managerB, "shared-key", FetchB, null, null, CancellationToken.None),
             QueryCacheHelper.GetOrFetchAsync(managerB, "shared-key", FetchB, null, null, CancellationToken.None)
         };
+
+        await bothOwnersStarted.Task.WaitAsync(TimeSpan.FromSeconds(5));
+        releaseOwners.TrySetResult();
 
         var results = await Task.WhenAll(tasks).WaitAsync(TimeSpan.FromSeconds(5));
 
@@ -152,15 +174,28 @@ public class QueryCacheHelperTests
     {
         var cacheManager = new TestCacheManager();
         var fetchCount = 0;
+        var fetchStarted = new TaskCompletionSource(TaskCreationOptions.RunContinuationsAsynchronously);
+        var releaseFailure = new TaskCompletionSource(TaskCreationOptions.RunContinuationsAsynchronously);
 
         async Task<(TestValue? Value, IEnumerable<string> Dependencies)> Fetch(CancellationToken ct)
         {
             Interlocked.Increment(ref fetchCount);
-            await Task.Delay(100, ct).ConfigureAwait(false);
+            fetchStarted.TrySetResult();
+            await releaseFailure.Task.WaitAsync(ct).ConfigureAwait(false);
             throw new InvalidOperationException("boom");
         }
 
-        var tasks = Enumerable.Range(0, 6)
+        var ownerTask = QueryCacheHelper.GetOrFetchAsync(
+            cacheManager,
+            "owner-throws",
+            Fetch,
+            expiration: null,
+            logger: null,
+            cancellationToken: CancellationToken.None);
+
+        await fetchStarted.Task.WaitAsync(TimeSpan.FromSeconds(5));
+
+        var waiterTasks = Enumerable.Range(0, 5)
             .Select(_ => QueryCacheHelper.GetOrFetchAsync(
                 cacheManager,
                 "owner-throws",
@@ -170,6 +205,9 @@ public class QueryCacheHelperTests
                 cancellationToken: CancellationToken.None))
             .ToArray();
 
+        releaseFailure.TrySetResult();
+
+        var tasks = new[] { ownerTask }.Concat(waiterTasks).ToArray();
         var ex = await Assert.ThrowsAsync<InvalidOperationException>(() => Task.WhenAll(tasks));
 
         Assert.Equal("boom", ex.Message);
@@ -182,35 +220,43 @@ public class QueryCacheHelperTests
     {
         var cacheManager = new TestCacheManager();
         var fetchCount = 0;
+        var firstFetchStarted = new TaskCompletionSource(TaskCreationOptions.RunContinuationsAsynchronously);
+        var allowFirstFetchToComplete = new TaskCompletionSource(TaskCreationOptions.RunContinuationsAsynchronously);
 
         async Task<(TestPayload? Payload, TestValue? ProcessedResult, IEnumerable<string> Dependencies)> Fetch(CancellationToken ct)
         {
             var call = Interlocked.Increment(ref fetchCount);
-            await Task.Delay(50, ct).ConfigureAwait(false);
+            if (call == 1)
+            {
+                firstFetchStarted.TrySetResult();
+                await allowFirstFetchToComplete.Task.WaitAsync(ct).ConfigureAwait(false);
+            }
             return (null, new TestValue($"result-{call}"), []);
         }
 
-        var tasks = new[]
-        {
-            QueryCacheHelper.GetOrFetchWithRehydrationAsync<TestPayload, TestValue>(
-                cacheManager,
-                "null-payload",
-                Fetch,
-                (payload, _) => Task.FromResult(new TestValue(payload.Value)),
-                expiration: null,
-                logger: null,
-                cancellationToken: CancellationToken.None),
-            QueryCacheHelper.GetOrFetchWithRehydrationAsync<TestPayload, TestValue>(
-                cacheManager,
-                "null-payload",
-                Fetch,
-                (payload, _) => Task.FromResult(new TestValue(payload.Value)),
-                expiration: null,
-                logger: null,
-                cancellationToken: CancellationToken.None)
-        };
+        var firstTask = QueryCacheHelper.GetOrFetchWithRehydrationAsync<TestPayload, TestValue>(
+            cacheManager,
+            "null-payload",
+            Fetch,
+            (payload, _) => Task.FromResult(new TestValue(payload.Value)),
+            expiration: null,
+            logger: null,
+            cancellationToken: CancellationToken.None);
 
-        var results = await Task.WhenAll(tasks);
+        await firstFetchStarted.Task.WaitAsync(TimeSpan.FromSeconds(5));
+
+        var secondTask = QueryCacheHelper.GetOrFetchWithRehydrationAsync<TestPayload, TestValue>(
+            cacheManager,
+            "null-payload",
+            Fetch,
+            (payload, _) => Task.FromResult(new TestValue(payload.Value)),
+            expiration: null,
+            logger: null,
+            cancellationToken: CancellationToken.None);
+
+        allowFirstFetchToComplete.TrySetResult();
+
+        var results = await Task.WhenAll(firstTask, secondTask);
 
         Assert.Equal(2, fetchCount);
         Assert.All(results, result => Assert.False(result.IsCacheHit));

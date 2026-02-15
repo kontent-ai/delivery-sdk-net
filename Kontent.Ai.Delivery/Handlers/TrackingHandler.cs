@@ -26,7 +26,7 @@ internal sealed class TrackingHandler : DelegatingHandler
     /// <param name="request">The HTTP request message.</param>
     /// <param name="cancellationToken">The cancellation token.</param>
     /// <returns>The HTTP response message.</returns>
-    protected override async Task<HttpResponseMessage> SendAsync(
+    protected override Task<HttpResponseMessage> SendAsync(
         HttpRequestMessage request,
         CancellationToken cancellationToken)
     {
@@ -39,6 +39,6 @@ internal sealed class TrackingHandler : DelegatingHandler
             LoggerMessages.HttpTrackingHeadersAdded(_logger, HttpRequestHeadersExtensions.GetSdkVersion());
 
         // Continue with the request pipeline
-        return await base.SendAsync(request, cancellationToken).ConfigureAwait(false);
+        return base.SendAsync(request, cancellationToken);
     }
 }

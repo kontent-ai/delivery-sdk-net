@@ -280,8 +280,10 @@ internal sealed class ElementValueMapper(
         element.TryGetProperty(propertyName, out var prop) && prop.TryGetInt32(out var value) ? value : 0;
 
     private static DateTime? GetDateTimeProperty(JsonElement element, string propertyName) =>
-        element.TryGetProperty(propertyName, out var prop) && prop.ValueKind == JsonValueKind.String
-            ? prop.GetDateTime()
+        element.TryGetProperty(propertyName, out var prop) &&
+        prop.ValueKind == JsonValueKind.String &&
+        prop.TryGetDateTime(out var value)
+            ? value
             : null;
 
     private void TrackAssetDependencyFromUrl(JsonElement assetElement, DependencyTrackingContext? dependencyContext)
