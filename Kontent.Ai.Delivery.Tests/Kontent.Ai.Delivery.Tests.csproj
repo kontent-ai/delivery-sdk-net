@@ -44,7 +44,7 @@
 
   <ItemGroup>
     <None Update="Fixtures\**\*.json">
-      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </None>
   </ItemGroup>
 

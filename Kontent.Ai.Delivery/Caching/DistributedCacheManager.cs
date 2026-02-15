@@ -64,6 +64,13 @@ internal sealed class DistributedCacheManager : IDeliveryCacheManager
     private readonly JsonSerializerOptions _jsonOptions;
     private readonly ILogger<DistributedCacheManager>? _logger;
 
+    private static readonly JsonSerializerOptions DefaultJsonSerializerOptions = new()
+    {
+        WriteIndented = false,
+        PropertyNameCaseInsensitive = true,
+        DefaultIgnoreCondition = System.Text.Json.Serialization.JsonIgnoreCondition.WhenWritingNull
+    };
+
     private const string CacheKeyPrefix = "cache:";
     private const string DependencyKeyPrefix = "dep:";
     private readonly string _keyPrefixSegment;
@@ -127,12 +134,7 @@ internal sealed class DistributedCacheManager : IDeliveryCacheManager
         _logger = logger;
 
         // Simple serialization options - SDK caches raw JSON strings, not complex object graphs
-        _jsonOptions = jsonSerializerOptions ?? new JsonSerializerOptions
-        {
-            WriteIndented = false,
-            PropertyNameCaseInsensitive = true,
-            DefaultIgnoreCondition = System.Text.Json.Serialization.JsonIgnoreCondition.WhenWritingNull
-        };
+        _jsonOptions = jsonSerializerOptions ?? DefaultJsonSerializerOptions;
     }
 
     /// <inheritdoc />

@@ -61,7 +61,7 @@ internal sealed class MemoryCacheManager(
     private readonly ConcurrentDictionary<string, CacheEntryMetadata> _entries = new(StringComparer.Ordinal);
 
     private sealed record CacheEntryMetadata(CancellationTokenSource Cts, string[] Dependencies);
-    private bool _disposed;
+    private int _disposeState;
     private int _setCounter;
 
     /// <summary>
@@ -112,13 +112,23 @@ internal sealed class MemoryCacheManager(
 
             var prefixedKey = PrefixKey(cacheKey);
 
-            if (_cache.TryGetValue(prefixedKey, out var cached) && cached is T typedValue)
-                return Task.FromResult<T?>(typedValue);
+            if (_cache.TryGetValue(prefixedKey, out var cached))
+            {
+                if (cached is T typedValue)
+                    return Task.FromResult<T?>(typedValue);
 
-            // Best-effort cleanup: if the entry has expired but hasn't been scavenged yet,
-            // removing it here triggers eviction callbacks which also clean up reverse indexes
-            // and reverse index entries.
-            _cache.Remove(prefixedKey);
+                // Type mismatch indicates stale/corrupted entry for this key. Remove it to trigger cleanup.
+                _cache.Remove(prefixedKey);
+                return Task.FromResult<T?>(null);
+            }
+
+            // Best-effort cleanup: if we still track metadata for this key, the cache entry may
+            // have expired but not yet been scavenged. Remove to trigger eviction callbacks and
+            // reverse-index cleanup. Avoid Remove for keys we never tracked.
+            if (_entries.ContainsKey(prefixedKey))
+            {
+                _cache.Remove(prefixedKey);
+            }
 
             return Task.FromResult<T?>(null);
         }
@@ -168,9 +178,18 @@ internal sealed class MemoryCacheManager(
             await UpdateReverseIndexAsync(prefixedDependency, prefixedCacheKey, cancellationToken).ConfigureAwait(false);
         }
 
-        _entries.AddOrUpdate(prefixedCacheKey, entryMetadata, (_, _) => entryMetadata);
+        CacheEntryMetadata? supersededMetadata = null;
+        _entries.AddOrUpdate(
+            prefixedCacheKey,
+            entryMetadata,
+            (_, existing) =>
+            {
+                supersededMetadata = existing;
+                return entryMetadata;
+            });
 
         _cache.Set(prefixedCacheKey, value, entryOptions);
+        CleanupSupersededMetadata(prefixedCacheKey, entryMetadata, supersededMetadata);
 
         // Periodically sweep orphaned empty reverse-index entries that eviction callbacks
         // couldn't clean up due to lock contention (Wait(0) returned false).
@@ -396,6 +415,33 @@ internal sealed class MemoryCacheManager(
     }
 
     /// <summary>
+    /// Eagerly disposes superseded metadata after an overwrite to avoid relying on eviction callback timing.
+    /// </summary>
+    private void CleanupSupersededMetadata(
+        string cacheKey,
+        CacheEntryMetadata currentMetadata,
+        CacheEntryMetadata? supersededMetadata)
+    {
+        if (supersededMetadata is null ||
+            ReferenceEquals(supersededMetadata.Cts, currentMetadata.Cts))
+        {
+            return;
+        }
+
+        // Remove stale dependency edges for the overwritten entry immediately.
+        CleanupReverseIndexForKey(cacheKey, supersededMetadata);
+
+        try
+        {
+            supersededMetadata.Cts.Dispose();
+        }
+        catch
+        {
+            // Best-effort cleanup; eviction callback may also race to dispose.
+        }
+    }
+
+    /// <summary>
     /// Removes a cache key from all reverse index entries.
     /// </summary>
     /// <remarks>
@@ -492,15 +538,14 @@ internal sealed class MemoryCacheManager(
         }
     }
 
-    private void ThrowIfDisposed() => ObjectDisposedException.ThrowIf(_disposed, nameof(MemoryCacheManager));
+    private void ThrowIfDisposed() =>
+        ObjectDisposedException.ThrowIf(Volatile.Read(ref _disposeState) != 0, nameof(MemoryCacheManager));
 
     /// <inheritdoc />
     public void Dispose()
     {
-        if (_disposed)
+        if (Interlocked.Exchange(ref _disposeState, 1) != 0)
             return;
-
-        _disposed = true;
 
         try
         { _purgeCts.Cancel(); }

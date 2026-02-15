@@ -13,7 +13,7 @@ public class CheckNamespaces(ITestOutputHelper output)
     /// See Kontent.Ai.Delivery.Abstractions Readme for more information.
     /// </summary>
     [Fact]
-    public void AllNamespacecAreCorrect()
+    public void AllNamespacesAreCorrect()
     {
         var abstractionTypes = Assembly.LoadFrom("Kontent.Ai.Delivery.Abstractions.dll");
 

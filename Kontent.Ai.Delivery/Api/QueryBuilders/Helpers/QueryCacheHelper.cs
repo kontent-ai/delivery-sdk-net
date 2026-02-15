@@ -26,24 +26,29 @@ internal static class QueryCacheHelper
         where TCachePayload : class
         where TResult : class
     {
-        public static readonly ConditionalWeakTable<IDeliveryCacheManager, InFlightDictionary<TResult>> Managers = [];
+        public static readonly ConditionalWeakTable<IDeliveryCacheManager, InFlightDictionary<TCachePayload, TResult>> Managers = [];
 
-        public static InFlightDictionary<TResult> GetForManager(IDeliveryCacheManager cacheManager)
-        {
-            _ = typeof(TCachePayload);
-            return Managers.GetOrCreateValue(cacheManager);
-        }
+        public static InFlightDictionary<TCachePayload, TResult> GetForManager(IDeliveryCacheManager cacheManager) =>
+            Managers.GetOrCreateValue(cacheManager);
     }
 
-    private sealed class InFlightDictionary<TResult> where TResult : class
+    private sealed class InFlightDictionary<TCachePayload, TResult>
+        where TCachePayload : class
+        where TResult : class
     {
-        public ConcurrentDictionary<string, InFlightRequest<TResult>> Requests { get; } = new(StringComparer.Ordinal);
+        public ConcurrentDictionary<InFlightKey<TCachePayload>, InFlightRequest<TResult>> Requests { get; } = new();
     }
 
     private sealed class InFlightRequest<TResult> where TResult : class
     {
         public TaskCompletionSource<CacheFetchResult<TResult>> Completion { get; } =
             new(TaskCreationOptions.RunContinuationsAsynchronously);
+    }
+
+    private readonly record struct InFlightKey<TCachePayload>(string CacheKey) where TCachePayload : class
+    {
+        public override int GetHashCode() =>
+            HashCode.Combine(typeof(TCachePayload), StringComparer.Ordinal.GetHashCode(CacheKey));
     }
 
     /// <summary>
@@ -218,6 +223,7 @@ internal static class QueryCacheHelper
         var requests = InFlightRegistry<TCachePayload, TResult>
             .GetForManager(cacheManager)
             .Requests;
+        var inFlightKey = new InFlightKey<TCachePayload>(cacheKey);
 
         while (true)
         {
@@ -237,11 +243,12 @@ internal static class QueryCacheHelper
             var candidateRequest = new InFlightRequest<TResult>();
 
             // 2. Become the owner if no in-flight request exists for this key.
-            if (requests.TryAdd(cacheKey, candidateRequest))
+            if (requests.TryAdd(inFlightKey, candidateRequest))
             {
                 _ = ExecuteOwnerFetchAsync(
                     candidateRequest,
                     requests,
+                    inFlightKey,
                     cacheManager,
                     cacheKey,
                     materializeCachedAsync,
@@ -255,7 +262,7 @@ internal static class QueryCacheHelper
             }
 
             // 3. Wait for current owner to complete, then loop and re-check cache.
-            if (requests.TryGetValue(cacheKey, out var inFlightRequest))
+            if (requests.TryGetValue(inFlightKey, out var inFlightRequest))
             {
                 await inFlightRequest.Completion.Task
                     .WaitAsync(cancellationToken)
@@ -266,7 +273,8 @@ internal static class QueryCacheHelper
 
     private static async Task ExecuteOwnerFetchAsync<TCachePayload, TResult>(
         InFlightRequest<TResult> inFlightRequest,
-        ConcurrentDictionary<string, InFlightRequest<TResult>> requests,
+        ConcurrentDictionary<InFlightKey<TCachePayload>, InFlightRequest<TResult>> requests,
+        InFlightKey<TCachePayload> inFlightKey,
         IDeliveryCacheManager cacheManager,
         string cacheKey,
         Func<TCachePayload, string, CancellationToken, Task<TResult?>> materializeCachedAsync,
@@ -294,7 +302,7 @@ internal static class QueryCacheHelper
         }
         finally
         {
-            requests.TryRemove(new KeyValuePair<string, InFlightRequest<TResult>>(cacheKey, inFlightRequest));
+            requests.TryRemove(new KeyValuePair<InFlightKey<TCachePayload>, InFlightRequest<TResult>>(inFlightKey, inFlightRequest));
         }
     }
 

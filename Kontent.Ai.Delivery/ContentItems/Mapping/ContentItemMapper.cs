@@ -97,7 +97,7 @@ internal sealed class ContentItemMapper
     {
         cancellationToken.ThrowIfCancellationRequested();
 
-        var contentType = ExtractContentType(rawItemJson);
+        var contentType = ContentItemJsonHelper.ExtractContentType(rawItemJson);
         var modelType = _typingStrategy.ResolveModelType(contentType);
 
         // Skip runtime typing if no mapping exists (falls back to DynamicElements).
@@ -234,8 +234,4 @@ internal sealed class ContentItemMapper
         }
     }
 
-    private static string ExtractContentType(JsonElement itemElement) =>
-        itemElement.TryGetProperty("system", out var system) && system.TryGetProperty("type", out var type)
-            ? type.GetString() ?? string.Empty
-            : string.Empty;
 }
