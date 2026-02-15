@@ -21,6 +21,7 @@
     <PackageReference Include="NodaTime" />
     <PackageReference Include="RichardSzalay.MockHttp" />
     <PackageReference Include="StackExchange.Redis" />
+    <PackageReference Include="Verify.Xunit" />
     <PackageReference Include="xunit" />
     <PackageReference Include="xunit.runner.visualstudio">
       <PrivateAssets>all</PrivateAssets>

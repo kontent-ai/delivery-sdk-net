@@ -4,9 +4,13 @@ on:
   push:
     branches:
       - master
+      - vnext
+      - vNext
   pull_request:
     branches:
       - master
+      - vnext
+      - vNext
   schedule:
     - cron: '0 7 * * 1'
 
