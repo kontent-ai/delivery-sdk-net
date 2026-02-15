@@ -2,9 +2,9 @@
 <CoverageSession>
   <Summary numSequencePoints="69" visitedSequencePoints="69" numBranchPoints="16" visitedBranchPoints="13" sequenceCoverage="100" branchCoverage="81.25" maxCyclomaticComplexity="29" minCyclomaticComplexity="29" visitedClasses="1" numClasses="1" visitedMethods="19" numMethods="19" />
   <Modules>
-    <Module hash="3174742A-00B8-4B8A-A8E6-30E57DA9F446">
+    <Module hash="63C6DF94-2E56-4B75-BE68-74FA5B0457FA">
       <ModulePath>Kontent.Ai.Urls.dll</ModulePath>
-      <ModuleTime>2026-02-15T01:47:07</ModuleTime>
+      <ModuleTime>2026-02-15T08:27:15</ModuleTime>
       <ModuleName>Kontent.Ai.Urls</ModuleName>
       <Files>
         <File uid="1" fullPath="/Users/danielpokorny/Repos/delivery-sdk-net/Kontent.Ai.Urls/ImageTransformation/ImageUrlBuilder.cs" />
