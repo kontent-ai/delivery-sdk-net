@@ -51,7 +51,31 @@ namespace Kontent.Ai.Delivery.Caching;
 /// </list>
 /// </para>
 /// </remarks>
-internal sealed class DistributedCacheManager : IDeliveryCacheManager
+/// <remarks>
+/// Initializes a new instance of the <see cref="DistributedCacheManager"/> class with custom JSON serialization options.
+/// </remarks>
+/// <param name="cache">The distributed cache implementation (Redis, SQL Server, etc.).</param>
+/// <param name="keyPrefix">
+/// Optional prefix for all cache keys. Used to isolate cache entries when multiple clients share the same distributed cache.
+/// For example, "production" or "preview:myproject".
+/// </param>
+/// <param name="defaultExpiration">
+/// Default expiration time for cache entries. If null, defaults to 1 hour.
+/// </param>
+/// <param name="jsonSerializerOptions">
+/// Custom JSON serialization options. If null, simple default options are used.
+/// The SDK caches raw JSON strings, so complex reference handling is not needed.
+/// </param>
+/// <param name="logger">Optional logger for cache operations.</param>
+/// <exception cref="ArgumentNullException">
+/// Thrown when <paramref name="cache"/> is null.
+/// </exception>
+internal sealed class DistributedCacheManager(
+    IDistributedCache cache,
+    string? keyPrefix,
+    TimeSpan? defaultExpiration,
+    JsonSerializerOptions? jsonSerializerOptions,
+    ILogger<DistributedCacheManager>? logger = null) : IDeliveryCacheManager
 {
     private sealed class DependencyIndexPayload
     {
@@ -59,10 +83,8 @@ internal sealed class DistributedCacheManager : IDeliveryCacheManager
         public DateTimeOffset MaxAbsoluteExpirationUtc { get; init; }
     }
 
-    private readonly IDistributedCache _cache;
-    private readonly TimeSpan _defaultExpiration;
-    private readonly JsonSerializerOptions _jsonOptions;
-    private readonly ILogger<DistributedCacheManager>? _logger;
+    private readonly TimeSpan _defaultExpiration = defaultExpiration ?? TimeSpan.FromHours(1);
+    private readonly JsonSerializerOptions _jsonOptions = jsonSerializerOptions ?? DefaultJsonSerializerOptions;
 
     private static readonly JsonSerializerOptions DefaultJsonSerializerOptions = new()
     {
@@ -73,7 +95,7 @@ internal sealed class DistributedCacheManager : IDeliveryCacheManager
 
     private const string CacheKeyPrefix = "cache:";
     private const string DependencyKeyPrefix = "dep:";
-    private readonly string _keyPrefixSegment;
+    private readonly string _keyPrefixSegment = string.IsNullOrEmpty(keyPrefix) ? "" : $"{keyPrefix}:";
 
     /// <inheritdoc />
     public CacheStorageMode StorageMode => CacheStorageMode.RawJson;
@@ -102,41 +124,6 @@ internal sealed class DistributedCacheManager : IDeliveryCacheManager
     {
     }
 
-    /// <summary>
-    /// Initializes a new instance of the <see cref="DistributedCacheManager"/> class with custom JSON serialization options.
-    /// </summary>
-    /// <param name="cache">The distributed cache implementation (Redis, SQL Server, etc.).</param>
-    /// <param name="keyPrefix">
-    /// Optional prefix for all cache keys. Used to isolate cache entries when multiple clients share the same distributed cache.
-    /// For example, "production" or "preview:myproject".
-    /// </param>
-    /// <param name="defaultExpiration">
-    /// Default expiration time for cache entries. If null, defaults to 1 hour.
-    /// </param>
-    /// <param name="jsonSerializerOptions">
-    /// Custom JSON serialization options. If null, simple default options are used.
-    /// The SDK caches raw JSON strings, so complex reference handling is not needed.
-    /// </param>
-    /// <param name="logger">Optional logger for cache operations.</param>
-    /// <exception cref="ArgumentNullException">
-    /// Thrown when <paramref name="cache"/> is null.
-    /// </exception>
-    public DistributedCacheManager(
-        IDistributedCache cache,
-        string? keyPrefix,
-        TimeSpan? defaultExpiration,
-        JsonSerializerOptions? jsonSerializerOptions,
-        ILogger<DistributedCacheManager>? logger = null)
-    {
-        _cache = cache ?? throw new ArgumentNullException(nameof(cache));
-        _keyPrefixSegment = string.IsNullOrEmpty(keyPrefix) ? "" : $"{keyPrefix}:";
-        _defaultExpiration = defaultExpiration ?? TimeSpan.FromHours(1);
-        _logger = logger;
-
-        // Simple serialization options - SDK caches raw JSON strings, not complex object graphs
-        _jsonOptions = jsonSerializerOptions ?? DefaultJsonSerializerOptions;
-    }
-
     /// <inheritdoc />
     public async Task<T?> GetAsync<T>(string cacheKey, CancellationToken cancellationToken = default)
         where T : class
@@ -149,7 +136,7 @@ internal sealed class DistributedCacheManager : IDeliveryCacheManager
             cancellationToken.ThrowIfCancellationRequested();
 
             var prefixedKey = GetCacheKey(cacheKey);
-            var bytes = await _cache.GetAsync(prefixedKey, cancellationToken).ConfigureAwait(false);
+            var bytes = await cache.GetAsync(prefixedKey, cancellationToken).ConfigureAwait(false);
 
             if (bytes is null || bytes.Length == 0)
                 return null;
@@ -165,9 +152,9 @@ internal sealed class DistributedCacheManager : IDeliveryCacheManager
         }
         catch (Exception ex)
         {
-            if (_logger is not null)
+            if (logger is not null)
             {
-                LoggerMessages.CacheDeserializationFailed(_logger, cacheKey, typeof(T).Name, ex);
+                LoggerMessages.CacheDeserializationFailed(logger, cacheKey, typeof(T).Name, ex);
             }
 
             // Treat any other exception as a cache miss
@@ -203,7 +190,7 @@ internal sealed class DistributedCacheManager : IDeliveryCacheManager
 
         var prefixedKey = GetCacheKey(cacheKey);
 
-        await _cache.SetAsync(prefixedKey, bytes, cacheOptions, cancellationToken)
+        await cache.SetAsync(prefixedKey, bytes, cacheOptions, cancellationToken)
             .ConfigureAwait(false);
 
         foreach (var dependency in dependencyList)
@@ -219,13 +206,13 @@ internal sealed class DistributedCacheManager : IDeliveryCacheManager
             }
             catch (Exception ex)
             {
-                if (_logger is not null)
-                    LoggerMessages.CacheSetFailed(_logger, $"dep:{dependency}", ex);
+                if (logger is not null)
+                    LoggerMessages.CacheSetFailed(logger, $"dep:{dependency}", ex);
             }
         }
 
-        if (_logger is not null)
-            LoggerMessages.CacheSetCompleted(_logger, cacheKey, dependencyList.Count);
+        if (logger is not null)
+            LoggerMessages.CacheSetCompleted(logger, cacheKey, dependencyList.Count);
     }
 
     /// <inheritdoc />
@@ -238,8 +225,8 @@ internal sealed class DistributedCacheManager : IDeliveryCacheManager
 
         var validKeys = dependencyKeys.Where(k => !string.IsNullOrWhiteSpace(k)).ToList();
 
-        if (_logger is not null && validKeys.Count > 0)
-            LoggerMessages.CacheInvalidateStarting(_logger, validKeys.Count);
+        if (logger is not null && validKeys.Count > 0)
+            LoggerMessages.CacheInvalidateStarting(logger, validKeys.Count);
 
         try
         {
@@ -253,8 +240,8 @@ internal sealed class DistributedCacheManager : IDeliveryCacheManager
         }
         catch (Exception ex)
         {
-            if (_logger is not null)
-                LoggerMessages.CacheInvalidationFailed(_logger, ex);
+            if (logger is not null)
+                LoggerMessages.CacheInvalidationFailed(logger, ex);
         }
     }
 
@@ -281,8 +268,8 @@ internal sealed class DistributedCacheManager : IDeliveryCacheManager
         }
         catch (NotSupportedException ex)
         {
-            if (_logger is not null)
-                LoggerMessages.CacheSerializationFailed(_logger, "unknown", typeof(T).Name, ex);
+            if (logger is not null)
+                LoggerMessages.CacheSerializationFailed(logger, "unknown", typeof(T).Name, ex);
 
             throw new InvalidOperationException(
                 $"Type {typeof(T).Name} cannot be serialized for distributed caching. " +
@@ -296,8 +283,8 @@ internal sealed class DistributedCacheManager : IDeliveryCacheManager
         }
         catch (Exception ex)
         {
-            if (_logger is not null)
-                LoggerMessages.CacheSerializationFailed(_logger, "unknown", typeof(T).Name, ex);
+            if (logger is not null)
+                LoggerMessages.CacheSerializationFailed(logger, "unknown", typeof(T).Name, ex);
 
             throw new InvalidOperationException(
                 $"Failed to serialize type {typeof(T).Name} for distributed caching. " +
@@ -316,7 +303,7 @@ internal sealed class DistributedCacheManager : IDeliveryCacheManager
 
         try
         {
-            var indexBytes = await _cache.GetAsync(indexKey, cancellationToken).ConfigureAwait(false);
+            var indexBytes = await cache.GetAsync(indexKey, cancellationToken).ConfigureAwait(false);
 
             if (indexBytes is null || indexBytes.Length == 0)
             {
@@ -328,19 +315,19 @@ internal sealed class DistributedCacheManager : IDeliveryCacheManager
 
             if (cacheKeys is null || cacheKeys.Count == 0)
             {
-                await _cache.RemoveAsync(indexKey, cancellationToken).ConfigureAwait(false);
+                await cache.RemoveAsync(indexKey, cancellationToken).ConfigureAwait(false);
                 return;
             }
 
             var removalTasks = cacheKeys.Select(key =>
-                _cache.RemoveAsync(GetCacheKey(key), cancellationToken));
+                cache.RemoveAsync(GetCacheKey(key), cancellationToken));
 
             await Task.WhenAll(removalTasks).ConfigureAwait(false);
 
-            await _cache.RemoveAsync(indexKey, cancellationToken).ConfigureAwait(false);
+            await cache.RemoveAsync(indexKey, cancellationToken).ConfigureAwait(false);
 
-            if (_logger is not null)
-                LoggerMessages.CacheInvalidateCompleted(_logger, dependencyKey);
+            if (logger is not null)
+                LoggerMessages.CacheInvalidateCompleted(logger, dependencyKey);
         }
         catch (OperationCanceledException)
         {
@@ -348,8 +335,8 @@ internal sealed class DistributedCacheManager : IDeliveryCacheManager
         }
         catch (Exception ex)
         {
-            if (_logger is not null)
-                LoggerMessages.CacheBestEffortFailed(_logger, $"invalidate:{dependencyKey}", ex);
+            if (logger is not null)
+                LoggerMessages.CacheBestEffortFailed(logger, $"invalidate:{dependencyKey}", ex);
         }
     }
 
@@ -371,7 +358,7 @@ internal sealed class DistributedCacheManager : IDeliveryCacheManager
 
         try
         {
-            var existingBytes = await _cache.GetAsync(indexKey, cancellationToken).ConfigureAwait(false);
+            var existingBytes = await cache.GetAsync(indexKey, cancellationToken).ConfigureAwait(false);
             var cacheKeySet = new HashSet<string>(StringComparer.OrdinalIgnoreCase);
             var maxAbsoluteExpiration = entryAbsoluteExpiration;
 
@@ -385,12 +372,6 @@ internal sealed class DistributedCacheManager : IDeliveryCacheManager
                     {
                         maxAbsoluteExpiration = existingPayload.MaxAbsoluteExpirationUtc;
                     }
-                }
-                else
-                {
-                    // Backward compatibility: existing payload can be a plain HashSet<string>.
-                    cacheKeySet = JsonSerializer.Deserialize<HashSet<string>>(existingJson, _jsonOptions)
-                        ?? new HashSet<string>(StringComparer.OrdinalIgnoreCase);
                 }
             }
 
@@ -409,7 +390,7 @@ internal sealed class DistributedCacheManager : IDeliveryCacheManager
                 AbsoluteExpiration = maxAbsoluteExpiration
             };
 
-            await _cache.SetAsync(indexKey, indexBytes, indexOptions, cancellationToken)
+            await cache.SetAsync(indexKey, indexBytes, indexOptions, cancellationToken)
                 .ConfigureAwait(false);
         }
         catch (OperationCanceledException)
@@ -418,23 +399,15 @@ internal sealed class DistributedCacheManager : IDeliveryCacheManager
         }
         catch (Exception ex)
         {
-            if (_logger is not null)
-                LoggerMessages.CacheBestEffortFailed(_logger, $"index:{dependencyKey}", ex);
+            if (logger is not null)
+                LoggerMessages.CacheBestEffortFailed(logger, $"index:{dependencyKey}", ex);
         }
     }
 
     private HashSet<string>? DeserializeDependencyIndexKeys(string indexJson)
-    {
-        if (TryDeserializeDependencyIndexPayload(indexJson, _jsonOptions, out var payload))
-        {
-            return new HashSet<string>(payload.CacheKeys, StringComparer.OrdinalIgnoreCase);
-        }
-
-        var legacy = JsonSerializer.Deserialize<HashSet<string>>(indexJson, _jsonOptions);
-        return legacy is null
-            ? null
-            : new HashSet<string>(legacy, StringComparer.OrdinalIgnoreCase);
-    }
+        => TryDeserializeDependencyIndexPayload(indexJson, _jsonOptions, out var payload)
+            ? new HashSet<string>(payload.CacheKeys, StringComparer.OrdinalIgnoreCase)
+            : null;
 
     private static bool TryDeserializeDependencyIndexPayload(
         string indexJson,

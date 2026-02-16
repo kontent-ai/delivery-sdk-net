@@ -38,10 +38,7 @@ public class ServiceCollectionsExtensionsTests
        ];
 
 
-    public ServiceCollectionsExtensionsTests()
-    {
-        _serviceCollection = new ServiceCollection();
-    }
+    public ServiceCollectionsExtensionsTests() => _serviceCollection = new ServiceCollection();
 
     [Fact]
     public void AddDeliveryClientWithNullDeliveryOptions_ThrowsArgumentNullException() => Assert.Throws<ArgumentNullException>(() => _serviceCollection.AddDeliveryClient(deliveryOptions: null!));

@@ -58,12 +58,6 @@ public sealed class DeliveryOptions : IValidatableObject
     public string? SecureAccessApiKey { get; set; }
 
     /// <summary>
-    /// Gets or sets a value that determines if the client includes the total number of items matching the search criteria in response.
-    /// This behavior can also be enabled for individual requests with the IncludeTotalCountParameter.
-    /// </summary>
-    public bool IncludeTotalCount { get; set; }
-
-    /// <summary>
     /// Gets or sets a value of codename for the rendition preset to be applied by default to the base asset URL path.
     /// If no value is specified, asset URLs will always point to non-customized variant of the image.
     /// </summary>

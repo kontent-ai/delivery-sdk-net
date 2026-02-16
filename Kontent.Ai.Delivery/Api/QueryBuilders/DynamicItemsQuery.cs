@@ -21,8 +21,6 @@ internal sealed class DynamicItemsQuery(
     string? defaultRenditionPreset = null,
     ILogger? logger = null) : IDynamicItemsQuery
 {
-    private readonly ContentItemMapper _contentItemMapper = contentItemMapper;
-    private readonly string? _defaultRenditionPreset = defaultRenditionPreset;
     private readonly ItemsQuery<IDynamicElements> _inner = new(
         api,
         contentItemMapper,
@@ -109,10 +107,10 @@ internal sealed class DynamicItemsQuery(
         IDeliveryItemListingResponse<IDynamicElements> response,
         CancellationToken cancellationToken)
     {
-        var runtimeTypedItems = await _contentItemMapper.RuntimeTypeItemsAsync(
+        var runtimeTypedItems = await contentItemMapper.RuntimeTypeItemsAsync(
             response.Items,
             response.ModularContent,
-            _defaultRenditionPreset,
+            defaultRenditionPreset,
             cancellationToken).ConfigureAwait(false);
 
         return new DynamicDeliveryItemListingResponse

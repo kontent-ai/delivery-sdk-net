@@ -7,18 +7,12 @@ namespace Kontent.Ai.Delivery.Handlers;
 /// DelegatingHandler that injects SDK and source tracking headers on every request.
 /// This handler automatically adds X-KC-SDKID and X-KC-SOURCE headers according to Kontent.ai guidelines.
 /// </summary>
-internal sealed class TrackingHandler : DelegatingHandler
+/// <remarks>
+/// Initializes a new instance of the TrackingHandler.
+/// </remarks>
+/// <param name="logger">Optional logger instance.</param>
+internal sealed class TrackingHandler(ILogger<TrackingHandler>? logger = null) : DelegatingHandler
 {
-    private readonly ILogger<TrackingHandler>? _logger;
-
-    /// <summary>
-    /// Initializes a new instance of the TrackingHandler.
-    /// </summary>
-    /// <param name="logger">Optional logger instance.</param>
-    public TrackingHandler(ILogger<TrackingHandler>? logger = null)
-    {
-        _logger = logger;
-    }
 
     /// <summary>
     /// Sends an HTTP request with tracking headers added.
@@ -35,8 +29,8 @@ internal sealed class TrackingHandler : DelegatingHandler
         request.Headers.AddSourceTrackingHeader();
 
         // Log tracking headers added (at Trace level since this happens on every request)
-        if (_logger is not null)
-            LoggerMessages.HttpTrackingHeadersAdded(_logger, HttpRequestHeadersExtensions.GetSdkVersion());
+        if (logger is not null)
+            LoggerMessages.HttpTrackingHeadersAdded(logger, HttpRequestHeadersExtensions.GetSdkVersion());
 
         // Continue with the request pipeline
         return base.SendAsync(request, cancellationToken);

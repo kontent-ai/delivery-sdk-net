@@ -12,10 +12,6 @@ internal sealed class TypeElementQuery(
     string elementCodename,
     ILogger? logger = null) : ITypeElementQuery
 {
-    private readonly IDeliveryApi _api = api;
-    private readonly string _type = contentTypeCodename;
-    private readonly string _element = elementCodename;
-    private readonly ILogger? _logger = logger;
     private bool _waitForLoadingNewContent;
 
     public ITypeElementQuery WaitForLoadingNewContent(bool enabled = true)
@@ -39,36 +35,36 @@ internal sealed class TypeElementQuery(
     private async Task<IDeliveryResult<IContentElement>> FetchFromApiAsync(CancellationToken cancellationToken)
     {
         bool? waitForLoadingNewContent = _waitForLoadingNewContent ? true : null;
-        var response = await _api.GetContentElementInternalAsync(_type, _element, waitForLoadingNewContent, cancellationToken).ConfigureAwait(false);
-        return await response.ToDeliveryResultAsync(_logger).ConfigureAwait(false);
+        var response = await api.GetContentElementInternalAsync(contentTypeCodename, elementCodename, waitForLoadingNewContent, cancellationToken).ConfigureAwait(false);
+        return await response.ToDeliveryResultAsync(logger).ConfigureAwait(false);
     }
 
     private void LogQueryStarting()
     {
-        if (_logger is not null)
-            LoggerMessages.QueryStarting(_logger, "TypeElement", $"{_type}/{_element}");
+        if (logger is not null)
+            LoggerMessages.QueryStarting(logger, "TypeElement", $"{contentTypeCodename}/{elementCodename}");
     }
 
     private Stopwatch? StartTimingIfEnabled() =>
-        _logger?.IsEnabled(LogLevel.Information) == true ? Stopwatch.StartNew() : null;
+        logger?.IsEnabled(LogLevel.Information) == true ? Stopwatch.StartNew() : null;
 
     private void LogQueryFailed(IDeliveryResult<IContentElement> deliveryResult)
     {
-        if (_logger is not null)
+        if (logger is not null)
         {
-            LoggerMessages.QueryFailed(_logger, "TypeElement", $"{_type}/{_element}", deliveryResult.StatusCode,
+            LoggerMessages.QueryFailed(logger, "TypeElement", $"{contentTypeCodename}/{elementCodename}", deliveryResult.StatusCode,
                 deliveryResult.Error?.Message, exception: null);
         }
     }
 
     private void LogQueryCompleted(Stopwatch? stopwatch, HttpStatusCode statusCode, bool cacheHit, bool hasStaleContent = false)
     {
-        if (_logger is null)
+        if (logger is null)
             return;
         stopwatch?.Stop();
         if (hasStaleContent)
-            LoggerMessages.QueryStaleContent(_logger, $"{_type}/{_element}");
-        LoggerMessages.QueryCompleted(_logger, "TypeElement", $"{_type}/{_element}",
+            LoggerMessages.QueryStaleContent(logger, $"{contentTypeCodename}/{elementCodename}");
+        LoggerMessages.QueryCompleted(logger, "TypeElement", $"{contentTypeCodename}/{elementCodename}",
             stopwatch?.ElapsedMilliseconds ?? 0, statusCode, cacheHit);
     }
 }

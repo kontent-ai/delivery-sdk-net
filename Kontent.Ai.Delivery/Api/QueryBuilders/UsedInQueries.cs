@@ -66,10 +66,6 @@ internal sealed class UsedInQueryCore(
     Func<string, bool?, string?, CancellationToken, Task<IApiResponse<DeliveryUsedInResponse>>> fetchPage,
     ILogger? logger)
 {
-    private readonly string _queryType = queryType;
-    private readonly string _codename = codename;
-    private readonly Func<string, bool?, string?, CancellationToken, Task<IApiResponse<DeliveryUsedInResponse>>> _fetchPage = fetchPage;
-    private readonly ILogger? _logger = logger;
     private bool _waitForLoadingNewContent;
 
     public void WaitForLoadingNewContent(bool enabled = true) => _waitForLoadingNewContent = enabled;
@@ -98,18 +94,18 @@ internal sealed class UsedInQueryCore(
 
         while (true)
         {
-            var response = await _fetchPage(
-                _codename,
+            var response = await fetchPage(
+                codename,
                 waitForLoadingNewContent,
                 token,
                 cancellationToken).ConfigureAwait(false);
 
-            var deliveryResult = await response.ToDeliveryResultAsync(_logger).ConfigureAwait(false);
+            var deliveryResult = await response.ToDeliveryResultAsync(logger).ConfigureAwait(false);
             if (!deliveryResult.IsSuccess)
             {
-                if (_logger is not null)
+                if (logger is not null)
                 {
-                    LoggerMessages.PaginationStoppedEarly(_logger, _queryType);
+                    LoggerMessages.PaginationStoppedEarly(logger, queryType);
                 }
 
                 yield return DeliveryResult.FailureFrom<IReadOnlyList<IUsedInItem>, DeliveryUsedInResponse>(deliveryResult);

@@ -8,10 +8,6 @@ internal sealed class LinkedItemResolver(
     IContentDeserializer deserializer,
     ILogger<LinkedItemResolver>? logger = null)
 {
-    private readonly IItemTypingStrategy _typingStrategy = typingStrategy ?? throw new ArgumentNullException(nameof(typingStrategy));
-    private readonly IContentDeserializer _deserializer = deserializer ?? throw new ArgumentNullException(nameof(deserializer));
-    private readonly ILogger<LinkedItemResolver>? _logger = logger;
-
     public async Task<object?> ResolveAsync(
         string codename,
         MappingContext context,
@@ -24,9 +20,9 @@ internal sealed class LinkedItemResolver(
         if (context.ModularContent is null ||
             !context.ModularContent.TryGetValue(codename, out var linkedItem))
         {
-            if (_logger is not null)
+            if (logger is not null)
             {
-                LoggerMessages.LinkedItemNotFound(_logger, codename);
+                LoggerMessages.LinkedItemNotFound(logger, codename);
             }
             return null;
         }
@@ -40,17 +36,17 @@ internal sealed class LinkedItemResolver(
         // Cycle detected: return the same instance being hydrated.
         if (context.ItemsBeingHydrated.TryGetValue(codename, out var inProgress))
         {
-            if (_logger is not null)
+            if (logger is not null)
             {
-                LoggerMessages.CircularReferenceDetected(_logger, codename);
+                LoggerMessages.CircularReferenceDetected(logger, codename);
             }
             return inProgress;
         }
 
         // New item: deserialize and store before hydration.
         var contentType = ContentItemJsonHelper.ExtractContentType(linkedItem);
-        var modelType = _typingStrategy.ResolveModelType(contentType);
-        var contentItem = _deserializer.DeserializeContentItem(linkedItem, modelType);
+        var modelType = typingStrategy.ResolveModelType(contentType);
+        var contentItem = deserializer.DeserializeContentItem(linkedItem, modelType);
 
         context.ItemsBeingHydrated[codename] = contentItem;
 

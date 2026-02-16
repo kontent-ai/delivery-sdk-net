@@ -7,26 +7,13 @@ namespace Kontent.Ai.Delivery.ContentItems.Mapping;
 /// Centralized content item mapper for converting JSON element envelopes to strongly-typed model properties.
 /// Handles post-deserialization hydration of complex element types (rich text, assets, taxonomy, linked items).
 /// </summary>
-internal sealed class ContentItemMapper
+internal sealed class ContentItemMapper(
+    IItemTypingStrategy typingStrategy,
+    IContentDeserializer deserializer,
+    ElementValueMapper elementValueMapper,
+    LinkedItemResolver linkedItemResolver)
 {
-    private readonly IItemTypingStrategy _typingStrategy;
-    private readonly IContentDeserializer _deserializer;
-    private readonly ElementValueMapper _elementValueMapper;
-    private readonly LinkedItemResolver _linkedItemResolver;
-
     private static readonly ConcurrentDictionary<Type, PropertyMappingInfo[]> _propertyCache = new();
-
-    public ContentItemMapper(
-        IItemTypingStrategy typingStrategy,
-        IContentDeserializer deserializer,
-        ElementValueMapper elementValueMapper,
-        LinkedItemResolver linkedItemResolver)
-    {
-        _typingStrategy = typingStrategy ?? throw new ArgumentNullException(nameof(typingStrategy));
-        _deserializer = deserializer ?? throw new ArgumentNullException(nameof(deserializer));
-        _elementValueMapper = elementValueMapper ?? throw new ArgumentNullException(nameof(elementValueMapper));
-        _linkedItemResolver = linkedItemResolver ?? throw new ArgumentNullException(nameof(linkedItemResolver));
-    }
 
     /// <summary>
     /// Completes element hydration on a deserialized content item.
@@ -98,7 +85,7 @@ internal sealed class ContentItemMapper
         cancellationToken.ThrowIfCancellationRequested();
 
         var contentType = ContentItemJsonHelper.ExtractContentType(rawItemJson);
-        var modelType = _typingStrategy.ResolveModelType(contentType);
+        var modelType = typingStrategy.ResolveModelType(contentType);
 
         // Skip runtime typing if no mapping exists (falls back to DynamicElements).
         if (ModelTypeHelper.IsDynamic(modelType))
@@ -107,7 +94,7 @@ internal sealed class ContentItemMapper
         }
 
         // Deserialize to the runtime type.
-        var contentItem = _deserializer.DeserializeContentItem(rawItemJson, modelType);
+        var contentItem = deserializer.DeserializeContentItem(rawItemJson, modelType);
 
         // Hydrate complex elements.
         var context = new MappingContext
@@ -198,7 +185,7 @@ internal sealed class ContentItemMapper
                 continue;
             }
 
-            var value = await _elementValueMapper.MapElementAsync(prop, envelope, getLinkedItem, context).ConfigureAwait(false);
+            var value = await elementValueMapper.MapElementAsync(prop, envelope, getLinkedItem, context).ConfigureAwait(false);
             if (value is not null)
             {
                 prop.SetValue(elements, value);
@@ -207,7 +194,7 @@ internal sealed class ContentItemMapper
     }
 
     private Func<string, Task<object?>> CreateLinkedItemResolver(MappingContext context) =>
-        codename => _linkedItemResolver.ResolveAsync(codename, context, HydrateContentItemIfNeededAsync);
+        codename => linkedItemResolver.ResolveAsync(codename, context, HydrateContentItemIfNeededAsync);
 
     /// <summary>
     /// Hydrates a content item's complex elements if it's not in dynamic mode.
