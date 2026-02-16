@@ -127,7 +127,6 @@ public sealed class DeliveryOptionsBuilder : IDeliveryOptionsBuilder
         UsePreviewApi = _options.UsePreviewApi,
         UseSecureAccess = _options.UseSecureAccess,
         SecureAccessApiKey = _options.SecureAccessApiKey,
-        IncludeTotalCount = _options.IncludeTotalCount,
         DefaultRenditionPreset = _options.DefaultRenditionPreset
     };
 }

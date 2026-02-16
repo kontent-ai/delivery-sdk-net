@@ -12,8 +12,6 @@ internal sealed class LanguagesQuery(
     IDeliveryApi api,
     ILogger? logger = null) : ILanguagesQuery
 {
-    private readonly IDeliveryApi _api = api;
-    private readonly ILogger? _logger = logger;
     private LanguagesParams _params = new();
     private bool _waitForLoadingNewContent;
 
@@ -72,8 +70,8 @@ internal sealed class LanguagesQuery(
     private async Task<IDeliveryResult<DeliveryLanguageListingResponse>> FetchFromApiAsync(CancellationToken cancellationToken)
     {
         bool? waitForLoadingNewContent = _waitForLoadingNewContent ? true : null;
-        var response = await _api.GetLanguagesInternalAsync(_params, waitForLoadingNewContent, cancellationToken).ConfigureAwait(false);
-        return await response.ToDeliveryResultAsync(_logger).ConfigureAwait(false);
+        var response = await api.GetLanguagesInternalAsync(_params, waitForLoadingNewContent, cancellationToken).ConfigureAwait(false);
+        return await response.ToDeliveryResultAsync(logger).ConfigureAwait(false);
     }
 
     private static IDeliveryResult<IDeliveryLanguageListingResponse> WrapSuccess(
@@ -101,7 +99,7 @@ internal sealed class LanguagesQuery(
     }
 
     private LanguagesQuery CreateNextPageQuery(int nextSkip, LanguagesParams parametersSnapshot, bool waitForLoadingSnapshot)
-        => new(_api, _logger)
+        => new(api, logger)
         {
             _params = parametersSnapshot with { Skip = nextSkip },
             _waitForLoadingNewContent = waitForLoadingSnapshot
@@ -109,30 +107,30 @@ internal sealed class LanguagesQuery(
 
     private void LogQueryStarting()
     {
-        if (_logger is not null)
-            LoggerMessages.QueryStarting(_logger, "Languages", "list");
+        if (logger is not null)
+            LoggerMessages.QueryStarting(logger, "Languages", "list");
     }
 
     private Stopwatch? StartTimingIfEnabled() =>
-        _logger?.IsEnabled(LogLevel.Information) == true ? Stopwatch.StartNew() : null;
+        logger?.IsEnabled(LogLevel.Information) == true ? Stopwatch.StartNew() : null;
 
     private void LogQueryFailed(IDeliveryResult<DeliveryLanguageListingResponse> deliveryResult)
     {
-        if (_logger is not null)
+        if (logger is not null)
         {
-            LoggerMessages.QueryFailed(_logger, "Languages", "list", deliveryResult.StatusCode,
+            LoggerMessages.QueryFailed(logger, "Languages", "list", deliveryResult.StatusCode,
                 deliveryResult.Error?.Message, exception: null);
         }
     }
 
     private void LogQueryCompleted(Stopwatch? stopwatch, HttpStatusCode statusCode, bool cacheHit, bool hasStaleContent = false)
     {
-        if (_logger is null)
+        if (logger is null)
             return;
         stopwatch?.Stop();
         if (hasStaleContent)
-            LoggerMessages.QueryStaleContent(_logger, "list");
-        LoggerMessages.QueryCompleted(_logger, "Languages", "list",
+            LoggerMessages.QueryStaleContent(logger, "list");
+        LoggerMessages.QueryCompleted(logger, "Languages", "list",
             stopwatch?.ElapsedMilliseconds ?? 0, statusCode, cacheHit);
     }
 }

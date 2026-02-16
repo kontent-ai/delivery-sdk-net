@@ -13,7 +13,6 @@ namespace Kontent.Ai.Delivery.ContentItems;
 /// <param name="options">The JSON serializer options to use.</param>
 internal sealed class ContentDeserializer(JsonSerializerOptions options) : IContentDeserializer
 {
-    private readonly JsonSerializerOptions _options = options ?? throw new ArgumentNullException(nameof(options));
 
     // Cache constructed ContentItem<T> types to avoid MakeGenericType overhead on repeated calls
     private static readonly ConcurrentDictionary<Type, Type> _contentItemTypes = new();
@@ -36,7 +35,7 @@ internal sealed class ContentDeserializer(JsonSerializerOptions options) : ICont
         var contentItemType = _contentItemTypes.GetOrAdd(modelType,
             static t => typeof(ContentItem<>).MakeGenericType(t));
 
-        return JsonSerializer.Deserialize(json, contentItemType, _options)
+        return JsonSerializer.Deserialize(json, contentItemType, options)
             ?? throw new JsonException($"Deserialization returned null for {contentItemType.Name}");
     }
 
@@ -54,7 +53,7 @@ internal sealed class ContentDeserializer(JsonSerializerOptions options) : ICont
         var contentItemType = _contentItemTypes.GetOrAdd(modelType,
             static t => typeof(ContentItem<>).MakeGenericType(t));
 
-        return JsonSerializer.Deserialize(jsonElement, contentItemType, _options)
+        return JsonSerializer.Deserialize(jsonElement, contentItemType, options)
             ?? throw new JsonException($"Deserialization returned null for {contentItemType.Name}");
     }
 }

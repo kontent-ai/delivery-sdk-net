@@ -9,142 +9,123 @@ namespace Kontent.Ai.Delivery;
 /// <summary>
 /// Executes requests against the Kontent.ai Delivery API using query builders.
 /// </summary>
-internal sealed class DeliveryClient : IDeliveryClient
+/// <remarks>
+/// Initializes a new instance of the <see cref="DeliveryClient"/> class for retrieving content of the specified environment.
+/// </remarks>
+/// <param name="deliveryApi">The Refit-generated API client.</param>
+/// <param name="contentItemMapper">The content item mapper for element hydration.</param>
+/// <param name="contentDeserializer">The content deserializer for JSON to object conversion.</param>
+/// <param name="typeProvider">The type provider for content type to CLR type mapping.</param>
+/// <param name="cacheManager">Optional cache manager for caching API responses (injected when EnableCaching is true).</param>
+/// <param name="logger">Optional logger for diagnostic output.</param>
+/// <param name="optionsMonitor">Options monitor used to determine runtime preview/production mode.</param>
+/// <param name="clientName">Client name used for resolving named options from <paramref name="optionsMonitor"/>.</param>
+internal sealed class DeliveryClient(
+    IDeliveryApi deliveryApi,
+    ContentItemMapper contentItemMapper,
+    IContentDeserializer contentDeserializer,
+    ITypeProvider typeProvider,
+    IDeliveryCacheManager? cacheManager = null,
+    ILogger<DeliveryClient>? logger = null,
+    IOptionsMonitor<DeliveryOptions>? optionsMonitor = null,
+    string? clientName = null) : IDeliveryClient
 {
-    private readonly IDeliveryApi _deliveryApi;
-    private readonly ContentItemMapper _contentItemMapper;
-    private readonly IContentDeserializer _contentDeserializer;
-    private readonly ITypeProvider _typeProvider;
-    private readonly IDeliveryCacheManager? _cacheManager;
-    private readonly ILogger<DeliveryClient>? _logger;
-    private readonly IOptionsMonitor<DeliveryOptions>? _optionsMonitor;
-    private readonly string _clientName;
-
-    /// <summary>
-    /// Initializes a new instance of the <see cref="DeliveryClient"/> class for retrieving content of the specified environment.
-    /// </summary>
-    /// <param name="deliveryApi">The Refit-generated API client.</param>
-    /// <param name="contentItemMapper">The content item mapper for element hydration.</param>
-    /// <param name="contentDeserializer">The content deserializer for JSON to object conversion.</param>
-    /// <param name="typeProvider">The type provider for content type to CLR type mapping.</param>
-    /// <param name="cacheManager">Optional cache manager for caching API responses (injected when EnableCaching is true).</param>
-    /// <param name="logger">Optional logger for diagnostic output.</param>
-    /// <param name="optionsMonitor">Options monitor used to determine runtime preview/production mode.</param>
-    /// <param name="clientName">Client name used for resolving named options from <paramref name="optionsMonitor"/>.</param>
-    public DeliveryClient(
-        IDeliveryApi deliveryApi,
-        ContentItemMapper contentItemMapper,
-        IContentDeserializer contentDeserializer,
-        ITypeProvider typeProvider,
-        IDeliveryCacheManager? cacheManager = null,
-        ILogger<DeliveryClient>? logger = null,
-        IOptionsMonitor<DeliveryOptions>? optionsMonitor = null,
-        string? clientName = null)
-    {
-        _deliveryApi = deliveryApi ?? throw new ArgumentNullException(nameof(deliveryApi));
-        _contentItemMapper = contentItemMapper ?? throw new ArgumentNullException(nameof(contentItemMapper));
-        _contentDeserializer = contentDeserializer ?? throw new ArgumentNullException(nameof(contentDeserializer));
-        _typeProvider = typeProvider ?? throw new ArgumentNullException(nameof(typeProvider));
-        _cacheManager = cacheManager;
-        _logger = logger;
-        _optionsMonitor = optionsMonitor;
-        _clientName = string.IsNullOrWhiteSpace(clientName) ? DeliveryClientNames.Default : clientName;
-    }
+    private readonly string _clientName = string.IsNullOrWhiteSpace(clientName) ? DeliveryClientNames.Default : clientName;
 
     public IItemQuery<T> GetItem<T>(string codename)
     {
         EnsureCodenameValid(codename);
         return new ItemQuery<T>(
-            _deliveryApi,
+            deliveryApi,
             codename,
-            _contentItemMapper,
-            _contentDeserializer,
+            contentItemMapper,
+            contentDeserializer,
             GetEffectiveCacheManager(),
             GetDefaultRenditionPreset(),
-            _logger);
+            logger);
     }
 
     public IDynamicItemQuery GetItem(string codename)
     {
         EnsureCodenameValid(codename);
         return new DynamicItemQuery(
-            _deliveryApi,
+            deliveryApi,
             codename,
-            _contentItemMapper,
-            _contentDeserializer,
+            contentItemMapper,
+            contentDeserializer,
             GetDefaultRenditionPreset(),
-            _logger);
+            logger);
     }
 
     public IItemsQuery<T> GetItems<T>() => new ItemsQuery<T>(
-        _deliveryApi,
-        _contentItemMapper,
-        _contentDeserializer,
-        _typeProvider,
+        deliveryApi,
+        contentItemMapper,
+        contentDeserializer,
+        typeProvider,
         GetEffectiveCacheManager(),
         GetDefaultRenditionPreset(),
-        _logger);
+        logger);
 
     public IDynamicItemsQuery GetItems()
     {
         return new DynamicItemsQuery(
-            _deliveryApi,
-            _contentItemMapper,
-            _contentDeserializer,
-            _typeProvider,
+            deliveryApi,
+            contentItemMapper,
+            contentDeserializer,
+            typeProvider,
             GetDefaultRenditionPreset(),
-            _logger);
+            logger);
     }
 
     public IEnumerateItemsQuery<T> GetItemsFeed<T>() => new EnumerateItemsQuery<T>(
-        _deliveryApi,
-        _contentItemMapper,
-        _typeProvider,
+        deliveryApi,
+        contentItemMapper,
+        typeProvider,
         GetDefaultRenditionPreset(),
-        _logger);
+        logger);
 
     public IDynamicEnumerateItemsQuery GetItemsFeed() => new DynamicEnumerateItemsQuery(
-        _deliveryApi,
-        _contentItemMapper,
-        _typeProvider,
+        deliveryApi,
+        contentItemMapper,
+        typeProvider,
         GetDefaultRenditionPreset(),
-        _logger);
+        logger);
 
     public ITypeQuery GetType(string codename)
     {
         EnsureCodenameValid(codename);
-        return new TypeQuery(_deliveryApi, codename, GetEffectiveCacheManager(), _logger);
+        return new TypeQuery(deliveryApi, codename, GetEffectiveCacheManager(), logger);
     }
 
-    public ITypesQuery GetTypes() => new TypesQuery(_deliveryApi, GetEffectiveCacheManager(), _logger);
+    public ITypesQuery GetTypes() => new TypesQuery(deliveryApi, GetEffectiveCacheManager(), logger);
 
     public ITypeElementQuery GetContentElement(string contentTypeCodename, string contentElementCodename)
     {
         EnsureCodenameValid(contentTypeCodename);
         EnsureCodenameValid(contentElementCodename);
-        return new TypeElementQuery(_deliveryApi, contentTypeCodename, contentElementCodename, _logger);
+        return new TypeElementQuery(deliveryApi, contentTypeCodename, contentElementCodename, logger);
     }
 
     public ITaxonomyQuery GetTaxonomy(string codename)
     {
         EnsureCodenameValid(codename);
-        return new TaxonomyQuery(_deliveryApi, codename, GetEffectiveCacheManager(), _logger);
+        return new TaxonomyQuery(deliveryApi, codename, GetEffectiveCacheManager(), logger);
     }
 
-    public ITaxonomiesQuery GetTaxonomies() => new TaxonomiesQuery(_deliveryApi, GetEffectiveCacheManager(), _logger);
+    public ITaxonomiesQuery GetTaxonomies() => new TaxonomiesQuery(deliveryApi, GetEffectiveCacheManager(), logger);
 
-    public ILanguagesQuery GetLanguages() => new LanguagesQuery(_deliveryApi, _logger);
+    public ILanguagesQuery GetLanguages() => new LanguagesQuery(deliveryApi, logger);
 
     public IItemUsedInQuery GetItemUsedIn(string codename)
     {
         EnsureCodenameValid(codename);
-        return new ItemUsedInQuery(_deliveryApi, codename, _logger);
+        return new ItemUsedInQuery(deliveryApi, codename, logger);
     }
 
     public IAssetUsedInQuery GetAssetUsedIn(string codename)
     {
         EnsureCodenameValid(codename);
-        return new AssetUsedInQuery(_deliveryApi, codename, _logger);
+        return new AssetUsedInQuery(deliveryApi, codename, logger);
     }
 
     private static void EnsureCodenameValid(string? codename, [CallerArgumentExpression(nameof(codename))] string? parameterName = null)
@@ -156,11 +137,11 @@ internal sealed class DeliveryClient : IDeliveryClient
     }
 
     private IDeliveryCacheManager? GetEffectiveCacheManager()
-        => IsPreviewApiEnabled() ? null : _cacheManager;
+        => IsPreviewApiEnabled() ? null : cacheManager;
 
     private string? GetDefaultRenditionPreset()
-        => _optionsMonitor?.Get(_clientName).DefaultRenditionPreset;
+        => optionsMonitor?.Get(_clientName).DefaultRenditionPreset;
 
     private bool IsPreviewApiEnabled()
-        => _optionsMonitor?.Get(_clientName).UsePreviewApi ?? false;
+        => optionsMonitor?.Get(_clientName).UsePreviewApi ?? false;
 }

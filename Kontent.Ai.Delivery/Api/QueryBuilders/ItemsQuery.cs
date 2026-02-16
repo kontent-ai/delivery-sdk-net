@@ -20,13 +20,6 @@ internal sealed class ItemsQuery<TModel>(
     string? defaultRenditionPreset = null,
     ILogger? logger = null) : IItemsQuery<TModel>, ICacheExpirationConfigurable
 {
-    private readonly IDeliveryApi _api = api;
-    private readonly ContentItemMapper _contentItemMapper = contentItemMapper;
-    private readonly IContentDeserializer _contentDeserializer = contentDeserializer;
-    private readonly ITypeProvider _typeProvider = typeProvider;
-    private readonly IDeliveryCacheManager? _cacheManager = cacheManager;
-    private readonly string? _defaultRenditionPreset = defaultRenditionPreset;
-    private readonly ILogger? _logger = logger;
     private readonly SerializedFilterCollection _serializedFilters = [];
     private ListItemsParams _params = new();
     private bool _waitForLoadingNewContent;
@@ -113,9 +106,9 @@ internal sealed class ItemsQuery<TModel>(
         bool? waitForLoadingNewContent = _waitForLoadingNewContent ? true : null;
         var shouldBypassCache = _waitForLoadingNewContent;
 
-        return _cacheManager is not null && !shouldBypassCache
+        return cacheManager is not null && !shouldBypassCache
             ? await ExecuteWithCacheAsync(
-                _cacheManager,
+                cacheManager,
                 stopwatch,
                 waitForLoadingNewContent,
                 cancellationToken).ConfigureAwait(false)
@@ -210,14 +203,14 @@ internal sealed class ItemsQuery<TModel>(
             },
             (payload, ct) => CachePayloadHelper.RehydrateListingAsync<TModel>(
                 payload,
-                _contentDeserializer,
-                _contentItemMapper,
+                contentDeserializer,
+                contentItemMapper,
                 IsDynamicModel,
-                _defaultRenditionPreset,
-                _logger,
+                defaultRenditionPreset,
+                logger,
                 ct),
             CacheExpiration,
-            _logger,
+            logger,
             cancellationToken).ConfigureAwait(false);
 
         return (cacheResult, apiResult);
@@ -246,7 +239,7 @@ internal sealed class ItemsQuery<TModel>(
                 return (response, deps);
             },
             CacheExpiration,
-            _logger,
+            logger,
             cancellationToken).ConfigureAwait(false);
 
         return (cacheResult, apiResult);
@@ -265,26 +258,26 @@ internal sealed class ItemsQuery<TModel>(
             return;
         _typeFilterApplied = true;
 
-        SystemFilterHelpers.AddGenericTypeFilter<TModel>(_serializedFilters, _typeProvider, _logger);
+        SystemFilterHelpers.AddGenericTypeFilter<TModel>(_serializedFilters, typeProvider, logger);
     }
 
     private async Task<IDeliveryResult<DeliveryItemListingResponse<TModel>>> FetchFromApiAsync(
         bool? waitForLoadingNewContent,
         CancellationToken cancellationToken)
     {
-        var rawResponse = await _api.GetItemsInternalAsync<TModel>(
+        var rawResponse = await api.GetItemsInternalAsync<TModel>(
             _params,
             _serializedFilters.ToQueryDictionary(),
             waitForLoadingNewContent,
             cancellationToken).ConfigureAwait(false);
-        return await rawResponse.ToDeliveryResultAsync(_logger).ConfigureAwait(false);
+        return await rawResponse.ToDeliveryResultAsync(logger).ConfigureAwait(false);
     }
 
     private async Task<(DeliveryItemListingResponse<TModel> Response, IEnumerable<string> Dependencies)> ProcessItemsAsync(
         DeliveryItemListingResponse<TModel> resp, CancellationToken cancellationToken)
     {
         var items = resp.Items;
-        var dependencyContext = _cacheManager is not null ? new DependencyTrackingContext() : null;
+        var dependencyContext = cacheManager is not null ? new DependencyTrackingContext() : null;
 
         if (dependencyContext is not null && items is { Count: > 0 })
         {
@@ -302,11 +295,11 @@ internal sealed class ItemsQuery<TModel>(
         {
             foreach (var item in items)
             {
-                await _contentItemMapper.CompleteItemAsync(
+                await contentItemMapper.CompleteItemAsync(
                         item,
                         resp.ModularContent,
                         dependencyContext,
-                        _defaultRenditionPreset,
+                        defaultRenditionPreset,
                         cancellationToken)
                     .ConfigureAwait(false);
             }
@@ -335,7 +328,7 @@ internal sealed class ItemsQuery<TModel>(
 
         return async (ct) =>
         {
-            var nextQuery = new ItemsQuery<TModel>(_api, _contentItemMapper, _contentDeserializer, _typeProvider, _cacheManager, _defaultRenditionPreset, _logger)
+            var nextQuery = new ItemsQuery<TModel>(api, contentItemMapper, contentDeserializer, typeProvider, cacheManager, defaultRenditionPreset, logger)
             {
                 _params = parametersSnapshot with { Skip = nextSkip },
                 _waitForLoadingNewContent = waitForLoadingSnapshot,
@@ -357,30 +350,30 @@ internal sealed class ItemsQuery<TModel>(
 
     private void LogQueryStarting()
     {
-        if (_logger is not null)
-            LoggerMessages.QueryStarting(_logger, "Items", "list");
+        if (logger is not null)
+            LoggerMessages.QueryStarting(logger, "Items", "list");
     }
 
     private Stopwatch? StartTimingIfEnabled() =>
-        _logger?.IsEnabled(LogLevel.Information) == true ? Stopwatch.StartNew() : null;
+        logger?.IsEnabled(LogLevel.Information) == true ? Stopwatch.StartNew() : null;
 
     private void LogQueryFailed(IDeliveryResult<DeliveryItemListingResponse<TModel>> deliveryResult)
     {
-        if (_logger is not null)
+        if (logger is not null)
         {
-            LoggerMessages.QueryFailed(_logger, "Items", "list", deliveryResult.StatusCode,
+            LoggerMessages.QueryFailed(logger, "Items", "list", deliveryResult.StatusCode,
                 deliveryResult.Error?.Message, exception: null);
         }
     }
 
     private void LogQueryCompleted(Stopwatch? stopwatch, HttpStatusCode statusCode, bool cacheHit, bool hasStaleContent = false)
     {
-        if (_logger is null)
+        if (logger is null)
             return;
         stopwatch?.Stop();
         if (hasStaleContent)
-            LoggerMessages.QueryStaleContent(_logger, "list");
-        LoggerMessages.QueryCompleted(_logger, "Items", "list",
+            LoggerMessages.QueryStaleContent(logger, "list");
+        LoggerMessages.QueryCompleted(logger, "Items", "list",
             stopwatch?.ElapsedMilliseconds ?? 0, statusCode, cacheHit);
     }
 

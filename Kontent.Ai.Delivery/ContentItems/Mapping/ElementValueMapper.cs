@@ -13,13 +13,10 @@ internal sealed class ElementValueMapper(
     IHtmlParser htmlParser,
     ILogger<ElementValueMapper>? logger = null)
 {
-    private readonly IContentDependencyExtractor _dependencyExtractor = dependencyExtractor ?? throw new ArgumentNullException(nameof(dependencyExtractor));
-    private readonly JsonSerializerOptions _jsonOptions = jsonOptions ?? throw new ArgumentNullException(nameof(jsonOptions));
     private readonly RichTextParser _richTextParser = new RichTextParser(
             htmlParser ?? throw new ArgumentNullException(nameof(htmlParser)),
             dependencyExtractor,
             logger);
-    private readonly ILogger<ElementValueMapper>? _logger = logger;
 
     public async Task<object?> MapElementAsync(
         PropertyMappingInfo prop,
@@ -54,9 +51,9 @@ internal sealed class ElementValueMapper(
     {
         if (!envelope.TryGetProperty("value", out var valueElement))
         {
-            if (_logger is not null)
+            if (logger is not null)
             {
-                LoggerMessages.ElementMappingSkipped(_logger, prop.ElementCodename, "value");
+                LoggerMessages.ElementMappingSkipped(logger, prop.ElementCodename, "value");
             }
             return null;
         }
@@ -68,14 +65,14 @@ internal sealed class ElementValueMapper(
 
         try
         {
-            return JsonSerializer.Deserialize(valueElement, prop.PropertyType, _jsonOptions);
+            return JsonSerializer.Deserialize(valueElement, prop.PropertyType, jsonOptions);
         }
         catch (JsonException ex)
         {
-            if (_logger is not null)
+            if (logger is not null)
             {
                 LoggerMessages.PropertyDeserializationFailed(
-                    _logger,
+                    logger,
                     prop.ElementCodename,
                     prop.PropertyType.Name,
                     ex);
@@ -85,10 +82,10 @@ internal sealed class ElementValueMapper(
         catch (NotSupportedException ex)
         {
             // JsonSerializer throws NotSupportedException for unsupported type patterns.
-            if (_logger is not null)
+            if (logger is not null)
             {
                 LoggerMessages.PropertyDeserializationFailed(
-                    _logger,
+                    logger,
                     prop.ElementCodename,
                     prop.PropertyType.Name,
                     ex);
@@ -141,7 +138,7 @@ internal sealed class ElementValueMapper(
 
     private IReadOnlyList<TaxonomyTerm>? MapTaxonomy(JsonElement envelope, DependencyTrackingContext? dependencyContext)
     {
-        _dependencyExtractor.ExtractFromTaxonomyElement(envelope, dependencyContext);
+        dependencyExtractor.ExtractFromTaxonomyElement(envelope, dependencyContext);
 
         return !TryGetArrayValue(envelope, out var arrayValue)
             ? null
@@ -301,9 +298,9 @@ internal sealed class ElementValueMapper(
 
         if (!Uri.TryCreate(url, UriKind.Absolute, out var uri))
         {
-            if (_logger is not null)
+            if (logger is not null)
             {
-                LoggerMessages.AssetUrlParsingFailed(_logger, url);
+                LoggerMessages.AssetUrlParsingFailed(logger, url);
             }
             return;
         }
@@ -311,9 +308,9 @@ internal sealed class ElementValueMapper(
         // Expected: "/", "{environmentId}/", "{assetId}/", "{filename}".
         if (uri.Segments.Length < 3)
         {
-            if (_logger is not null)
+            if (logger is not null)
             {
-                LoggerMessages.AssetUrlParsingFailed(_logger, url);
+                LoggerMessages.AssetUrlParsingFailed(logger, url);
             }
             return;
         }
@@ -323,9 +320,9 @@ internal sealed class ElementValueMapper(
         {
             dependencyContext.TrackAsset(assetId);
         }
-        else if (_logger is not null)
+        else if (logger is not null)
         {
-            LoggerMessages.AssetUrlParsingFailed(_logger, url);
+            LoggerMessages.AssetUrlParsingFailed(logger, url);
         }
     }
 }

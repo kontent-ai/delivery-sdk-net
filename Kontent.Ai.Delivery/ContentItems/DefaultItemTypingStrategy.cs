@@ -15,8 +15,6 @@ namespace Kontent.Ai.Delivery.ContentItems;
 /// <param name="logger">Optional logger for diagnostic output.</param>
 internal sealed class DefaultItemTypingStrategy(ITypeProvider typeProvider, ILogger<DefaultItemTypingStrategy>? logger = null) : IItemTypingStrategy
 {
-    private readonly ITypeProvider _typeProvider = typeProvider ?? throw new ArgumentNullException(nameof(typeProvider));
-    private readonly ILogger<DefaultItemTypingStrategy>? _logger = logger;
     private readonly ConcurrentDictionary<string, Type> _cache = new();
 
     /// <summary>
@@ -29,17 +27,17 @@ internal sealed class DefaultItemTypingStrategy(ITypeProvider typeProvider, ILog
     {
         if (string.IsNullOrEmpty(contentTypeCodename))
         {
-            if (_logger is not null)
-                LoggerMessages.ContentTypeFallbackToDynamic(_logger, contentTypeCodename ?? "(null)");
+            if (logger is not null)
+                LoggerMessages.ContentTypeFallbackToDynamic(logger, contentTypeCodename ?? "(null)");
             return typeof(DynamicElements);
         }
 
         return _cache.GetOrAdd(contentTypeCodename, codename =>
         {
-            var modelType = _typeProvider.GetType(codename);
-            if (modelType is null && _logger is not null)
+            var modelType = typeProvider.GetType(codename);
+            if (modelType is null && logger is not null)
             {
-                LoggerMessages.ContentTypeFallbackToDynamic(_logger, codename);
+                LoggerMessages.ContentTypeFallbackToDynamic(logger, codename);
             }
             return modelType ?? typeof(DynamicElements);
         });

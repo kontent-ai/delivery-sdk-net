@@ -227,6 +227,14 @@ public static partial class ServiceCollectionExtensions
         Func<IServiceProvider, IDeliveryCacheManager> createCacheManager)
     {
         services.AddKeyedSingleton<IDeliveryCacheManager>(clientName, (sp, _) => createCacheManager(sp));
+        services.AddKeyedSingleton<IDeliveryCachePurger>(clientName, (sp, _) =>
+        {
+            var cacheManager = sp.GetRequiredKeyedService<IDeliveryCacheManager>(clientName);
+            return cacheManager as IDeliveryCachePurger
+                ?? throw new InvalidOperationException(
+                    $"The cache manager registered for client '{clientName}' ({cacheManager.GetType().Name}) " +
+                    $"does not implement {nameof(IDeliveryCachePurger)}.");
+        });
         services.Replace(ServiceDescriptor.Singleton<IContentDependencyExtractor, ContentDependencyExtractor>());
         return services;
     }

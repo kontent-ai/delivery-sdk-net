@@ -18,8 +18,6 @@ internal sealed class DynamicItemQuery(
     string? defaultRenditionPreset = null,
     ILogger? logger = null) : IDynamicItemQuery
 {
-    private readonly ContentItemMapper _contentItemMapper = contentItemMapper;
-    private readonly string? _defaultRenditionPreset = defaultRenditionPreset;
     private readonly ItemQuery<IDynamicElements> _inner = new(
         api,
         codename,
@@ -72,11 +70,11 @@ internal sealed class DynamicItemQuery(
 
         if (dynamicItem is IRawContentItem rawContentItem && rawContentItem.RawItemJson.HasValue)
         {
-            var runtimeItem = await _contentItemMapper.TryRuntimeTypeItemAsync(
+            var runtimeItem = await contentItemMapper.TryRuntimeTypeItemAsync(
                 rawContentItem.RawItemJson.Value,
                 _inner.LatestModularContent,
                 dependencyContext: null,
-                _defaultRenditionPreset,
+                defaultRenditionPreset,
                 cancellationToken).ConfigureAwait(false);
 
             if (runtimeItem is not null)

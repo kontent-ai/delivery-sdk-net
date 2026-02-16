@@ -14,9 +14,6 @@ internal sealed class DynamicEnumerateItemsQuery(
     string? defaultRenditionPreset = null,
     ILogger? logger = null) : IDynamicEnumerateItemsQuery
 {
-    private readonly ContentItemMapper _contentItemMapper = contentItemMapper;
-    private readonly string? _defaultRenditionPreset = defaultRenditionPreset;
-    private readonly ILogger? _logger = logger;
     private readonly EnumerateItemsQuery<IDynamicElements> _inner = new(
         api,
         contentItemMapper,
@@ -73,10 +70,10 @@ internal sealed class DynamicEnumerateItemsQuery(
         string? continuationToken,
         CancellationToken cancellationToken)
     {
-        var runtimeTypedItems = await _contentItemMapper.RuntimeTypeItemsAsync(
+        var runtimeTypedItems = await contentItemMapper.RuntimeTypeItemsAsync(
             response.Items,
             response.ModularContent,
-            _defaultRenditionPreset,
+            defaultRenditionPreset,
             cancellationToken).ConfigureAwait(false);
 
         return new DynamicDeliveryItemsFeedResponse
@@ -108,8 +105,8 @@ internal sealed class DynamicEnumerateItemsQuery(
 
     public async IAsyncEnumerable<IContentItem> EnumerateItemsAsync([EnumeratorCancellation] CancellationToken cancellationToken = default)
     {
-        if (_logger is not null)
-            LoggerMessages.PaginationStarted(_logger, "ItemsFeed (dynamic)");
+        if (logger is not null)
+            LoggerMessages.PaginationStarted(logger, "ItemsFeed (dynamic)");
 
         var pageResult = await ExecuteAsync(cancellationToken).ConfigureAwait(false);
         var pageCount = 0;
@@ -128,23 +125,23 @@ internal sealed class DynamicEnumerateItemsQuery(
 
             if (!pageResult.Value.HasNextPage)
             {
-                if (_logger is not null)
-                    LoggerMessages.PaginationCompleted(_logger, "ItemsFeed (dynamic)", pageCount, totalItems);
+                if (logger is not null)
+                    LoggerMessages.PaginationCompleted(logger, "ItemsFeed (dynamic)", pageCount, totalItems);
                 yield break;
             }
 
             var nextPageResult = await pageResult.Value.FetchNextPageAsync(cancellationToken).ConfigureAwait(false);
             if (nextPageResult is not { IsSuccess: true })
             {
-                if (_logger is not null)
-                    LoggerMessages.PaginationStoppedEarly(_logger, "ItemsFeed (dynamic)");
+                if (logger is not null)
+                    LoggerMessages.PaginationStoppedEarly(logger, "ItemsFeed (dynamic)");
                 yield break;
             }
 
             pageResult = nextPageResult;
         }
 
-        if (_logger is not null)
-            LoggerMessages.PaginationStoppedEarly(_logger, "ItemsFeed (dynamic)");
+        if (logger is not null)
+            LoggerMessages.PaginationStoppedEarly(logger, "ItemsFeed (dynamic)");
     }
 }

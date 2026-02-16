@@ -15,7 +15,6 @@ public sealed class DeliveryOptions : IValidatableObject
     String DefaultRenditionPreset { get; set; }
     Boolean EnableResilience { get; set; }
     String EnvironmentId { get; set; }
-    Boolean IncludeTotalCount { get; set; }
     String PreviewApiKey { get; set; }
     String PreviewEndpoint { get; set; }
     String ProductionEndpoint { get; set; }

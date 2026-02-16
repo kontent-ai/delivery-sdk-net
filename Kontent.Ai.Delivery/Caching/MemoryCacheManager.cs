@@ -52,9 +52,7 @@ internal sealed class MemoryCacheManager(
     TimeSpan? defaultExpiration = null,
     ILogger<MemoryCacheManager>? logger = null) : IDeliveryCacheManager, IDeliveryCachePurger, IDisposable
 {
-    private readonly IMemoryCache _cache = memoryCache ?? throw new ArgumentNullException(nameof(memoryCache));
     private readonly TimeSpan _defaultExpiration = defaultExpiration ?? TimeSpan.FromHours(1);
-    private readonly ILogger<MemoryCacheManager>? _logger = logger;
     private readonly ConcurrentDictionary<string, HashSet<string>> _reverseIndex = new(StringComparer.OrdinalIgnoreCase);
     private const int LockStripeCount = 64;
     private readonly SemaphoreSlim[] _reverseIndexLocks = CreateLockStripes(LockStripeCount);
@@ -112,13 +110,13 @@ internal sealed class MemoryCacheManager(
 
             var prefixedKey = PrefixKey(cacheKey);
 
-            if (_cache.TryGetValue(prefixedKey, out var cached))
+            if (memoryCache.TryGetValue(prefixedKey, out var cached))
             {
                 if (cached is T typedValue)
                     return Task.FromResult<T?>(typedValue);
 
                 // Type mismatch indicates stale/corrupted entry for this key. Remove it to trigger cleanup.
-                _cache.Remove(prefixedKey);
+                memoryCache.Remove(prefixedKey);
                 return Task.FromResult<T?>(null);
             }
 
@@ -127,7 +125,7 @@ internal sealed class MemoryCacheManager(
             // reverse-index cleanup. Avoid Remove for keys we never tracked.
             if (_entries.ContainsKey(prefixedKey))
             {
-                _cache.Remove(prefixedKey);
+                memoryCache.Remove(prefixedKey);
             }
 
             return Task.FromResult<T?>(null);
@@ -188,7 +186,7 @@ internal sealed class MemoryCacheManager(
                 return entryMetadata;
             });
 
-        _cache.Set(prefixedCacheKey, value, entryOptions);
+        memoryCache.Set(prefixedCacheKey, value, entryOptions);
         CleanupSupersededMetadata(prefixedCacheKey, entryMetadata, supersededMetadata);
 
         // Periodically sweep orphaned empty reverse-index entries that eviction callbacks
@@ -198,8 +196,8 @@ internal sealed class MemoryCacheManager(
             CleanupEmptyReverseIndexEntries();
         }
 
-        if (_logger is not null)
-            LoggerMessages.CacheSetCompleted(_logger, cacheKey, dependencyList.Count);
+        if (logger is not null)
+            LoggerMessages.CacheSetCompleted(logger, cacheKey, dependencyList.Count);
     }
 
     /// <inheritdoc />
@@ -214,8 +212,8 @@ internal sealed class MemoryCacheManager(
 
         var validKeys = dependencyKeys.Where(k => !string.IsNullOrWhiteSpace(k)).ToList();
 
-        if (_logger is not null && validKeys.Count > 0)
-            LoggerMessages.CacheInvalidateStarting(_logger, validKeys.Count);
+        if (logger is not null && validKeys.Count > 0)
+            LoggerMessages.CacheInvalidateStarting(logger, validKeys.Count);
 
         var tasks = new List<Task>();
 
@@ -290,8 +288,8 @@ internal sealed class MemoryCacheManager(
                 TryCancelAffectedEntries(affectedKeysSnapshot, dependencyKey);
             }
 
-            if (_logger is not null)
-                LoggerMessages.CacheInvalidateCompleted(_logger, originalKey);
+            if (logger is not null)
+                LoggerMessages.CacheInvalidateCompleted(logger, originalKey);
         }
         finally
         {
@@ -393,8 +391,8 @@ internal sealed class MemoryCacheManager(
     /// </remarks>
     private void HandleCacheEntryEviction(string keyString, CacheEntryMetadata evictedMetadata, EvictionReason reason)
     {
-        if (_logger is not null)
-            LoggerMessages.CacheEntryEvicted(_logger, keyString, reason.ToString());
+        if (logger is not null)
+            LoggerMessages.CacheEntryEvicted(logger, keyString, reason.ToString());
 
         CleanupReverseIndexForKey(keyString, evictedMetadata);
 
@@ -437,8 +435,8 @@ internal sealed class MemoryCacheManager(
         }
         catch (Exception ex)
         {
-            if (_logger is not null)
-                LoggerMessages.CacheBestEffortFailed(_logger, "CleanupSupersededMetadata", ex);
+            if (logger is not null)
+                LoggerMessages.CacheBestEffortFailed(logger, "CleanupSupersededMetadata", ex);
         }
     }
 

@@ -365,7 +365,9 @@ public class DeliveryClientBuilderTests
 
     private static IDeliveryCacheManager? GetCacheManager(IDeliveryClient client)
     {
-        var cacheManagerField = client.GetType().GetField("_cacheManager", BindingFlags.Instance | BindingFlags.NonPublic);
+        var cacheManagerField = client.GetType()
+            .GetFields(BindingFlags.Instance | BindingFlags.NonPublic)
+            .FirstOrDefault(f => typeof(IDeliveryCacheManager).IsAssignableFrom(f.FieldType));
         return cacheManagerField?.GetValue(client) as IDeliveryCacheManager;
     }
 

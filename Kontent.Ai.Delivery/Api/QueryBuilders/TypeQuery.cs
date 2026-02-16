@@ -15,12 +15,8 @@ internal sealed class TypeQuery(
     IDeliveryCacheManager? cacheManager,
     ILogger? logger = null) : ITypeQuery, ICacheExpirationConfigurable
 {
-    private readonly IDeliveryApi _api = api;
-    private readonly string _codename = codename;
     private SingleTypeParams _params = new();
     private bool _waitForLoadingNewContent;
-    private readonly IDeliveryCacheManager? _cacheManager = cacheManager;
-    private readonly ILogger? _logger = logger;
     public TimeSpan? CacheExpiration { get; set; }
 
     public ITypeQuery WithElements(params string[] elementCodenames)
@@ -42,9 +38,9 @@ internal sealed class TypeQuery(
         bool? waitForLoadingNewContent = _waitForLoadingNewContent ? true : null;
         var shouldBypassCache = _waitForLoadingNewContent;
 
-        return _cacheManager is not null && !shouldBypassCache
+        return cacheManager is not null && !shouldBypassCache
             ? await ExecuteWithCacheAsync(
-                _cacheManager,
+                cacheManager,
                 stopwatch,
                 waitForLoadingNewContent,
                 cancellationToken).ConfigureAwait(false)
@@ -57,7 +53,7 @@ internal sealed class TypeQuery(
         bool? waitForLoadingNewContent,
         CancellationToken cancellationToken)
     {
-        var cacheKey = CacheKeyBuilder.BuildTypeKey(_codename, _params);
+        var cacheKey = CacheKeyBuilder.BuildTypeKey(codename, _params);
         var (cacheResult, apiResult) = await FetchWithCacheAsync(
             cacheManager,
             cacheKey,
@@ -70,7 +66,7 @@ internal sealed class TypeQuery(
             return DeliveryResult.CacheHit<IContentType>(cachedType);
         }
 
-        apiResult = QueryExecutionResultHelper.EnsureApiResult(apiResult, "Type", _codename);
+        apiResult = QueryExecutionResultHelper.EnsureApiResult(apiResult, "Type", codename);
 
         if (!apiResult.IsSuccess)
             LogQueryFailed(apiResult);
@@ -115,7 +111,7 @@ internal sealed class TypeQuery(
                 return ((ContentType)apiResult.Value, dependencies);
             },
             CacheExpiration,
-            _logger,
+            logger,
             cancellationToken).ConfigureAwait(false);
 
         return (cacheResult, apiResult);
@@ -125,36 +121,36 @@ internal sealed class TypeQuery(
         bool? waitForLoadingNewContent,
         CancellationToken cancellationToken)
     {
-        var response = await _api.GetTypeInternalAsync(_codename, _params, waitForLoadingNewContent, cancellationToken).ConfigureAwait(false);
-        return await response.ToDeliveryResultAsync(_logger).ConfigureAwait(false);
+        var response = await api.GetTypeInternalAsync(codename, _params, waitForLoadingNewContent, cancellationToken).ConfigureAwait(false);
+        return await response.ToDeliveryResultAsync(logger).ConfigureAwait(false);
     }
 
     private void LogQueryStarting()
     {
-        if (_logger is not null)
-            LoggerMessages.QueryStarting(_logger, "Type", _codename);
+        if (logger is not null)
+            LoggerMessages.QueryStarting(logger, "Type", codename);
     }
 
     private Stopwatch? StartTimingIfEnabled() =>
-        _logger?.IsEnabled(LogLevel.Information) == true ? Stopwatch.StartNew() : null;
+        logger?.IsEnabled(LogLevel.Information) == true ? Stopwatch.StartNew() : null;
 
     private void LogQueryFailed(IDeliveryResult<IContentType> deliveryResult)
     {
-        if (_logger is not null)
+        if (logger is not null)
         {
-            LoggerMessages.QueryFailed(_logger, "Type", _codename, deliveryResult.StatusCode,
+            LoggerMessages.QueryFailed(logger, "Type", codename, deliveryResult.StatusCode,
                 deliveryResult.Error?.Message, exception: null);
         }
     }
 
     private void LogQueryCompleted(Stopwatch? stopwatch, HttpStatusCode statusCode, bool cacheHit, bool hasStaleContent = false)
     {
-        if (_logger is null)
+        if (logger is null)
             return;
         stopwatch?.Stop();
         if (hasStaleContent)
-            LoggerMessages.QueryStaleContent(_logger, _codename);
-        LoggerMessages.QueryCompleted(_logger, "Type", _codename,
+            LoggerMessages.QueryStaleContent(logger, codename);
+        LoggerMessages.QueryCompleted(logger, "Type", codename,
             stopwatch?.ElapsedMilliseconds ?? 0, statusCode, cacheHit);
     }
 }

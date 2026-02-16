@@ -15,11 +15,6 @@ internal sealed class EnumerateItemsQuery<TModel>(
     string? defaultRenditionPreset = null,
     ILogger? logger = null) : IEnumerateItemsQuery<TModel>
 {
-    private readonly IDeliveryApi _api = api;
-    private readonly ContentItemMapper _contentItemMapper = contentItemMapper;
-    private readonly ITypeProvider _typeProvider = typeProvider;
-    private readonly string? _defaultRenditionPreset = defaultRenditionPreset;
-    private readonly ILogger? _logger = logger;
     private EnumItemsParams _params = new();
     private bool _waitForLoadingNewContent;
     private readonly SerializedFilterCollection _serializedFilters = [];
@@ -74,7 +69,7 @@ internal sealed class EnumerateItemsQuery<TModel>(
             return;
         _typeFilterApplied = true;
 
-        SystemFilterHelpers.AddGenericTypeFilter<TModel>(_serializedFilters, _typeProvider, _logger);
+        SystemFilterHelpers.AddGenericTypeFilter<TModel>(_serializedFilters, typeProvider, logger);
     }
 
     public async Task<IDeliveryResult<IDeliveryItemsFeedResponse<TModel>>> ExecuteAsync(CancellationToken cancellationToken = default)
@@ -100,8 +95,8 @@ internal sealed class EnumerateItemsQuery<TModel>(
 
     public async IAsyncEnumerable<IContentItem<TModel>> EnumerateItemsAsync([EnumeratorCancellation] CancellationToken cancellationToken = default)
     {
-        if (_logger is not null)
-            LoggerMessages.PaginationStarted(_logger, "ItemsFeed");
+        if (logger is not null)
+            LoggerMessages.PaginationStarted(logger, "ItemsFeed");
 
         var pageResult = await ExecuteAsync(cancellationToken).ConfigureAwait(false);
         var pageCount = 0;
@@ -120,24 +115,24 @@ internal sealed class EnumerateItemsQuery<TModel>(
 
             if (!pageResult.Value.HasNextPage)
             {
-                if (_logger is not null)
-                    LoggerMessages.PaginationCompleted(_logger, "ItemsFeed", pageCount, totalItems);
+                if (logger is not null)
+                    LoggerMessages.PaginationCompleted(logger, "ItemsFeed", pageCount, totalItems);
                 yield break;
             }
 
             var nextPageResult = await pageResult.Value.FetchNextPageAsync(cancellationToken).ConfigureAwait(false);
             if (nextPageResult is not { IsSuccess: true })
             {
-                if (_logger is not null)
-                    LoggerMessages.PaginationStoppedEarly(_logger, "ItemsFeed");
+                if (logger is not null)
+                    LoggerMessages.PaginationStoppedEarly(logger, "ItemsFeed");
                 yield break;
             }
 
             pageResult = nextPageResult;
         }
 
-        if (_logger is not null)
-            LoggerMessages.PaginationStoppedEarly(_logger, "ItemsFeed");
+        if (logger is not null)
+            LoggerMessages.PaginationStoppedEarly(logger, "ItemsFeed");
     }
 
     private async Task<(IDeliveryResult<DeliveryItemsFeedResponse<TModel>> DeliveryResult, string? ContinuationToken)> FetchFeedPageAsync(
@@ -145,7 +140,7 @@ internal sealed class EnumerateItemsQuery<TModel>(
         bool? waitForLoadingNewContent,
         CancellationToken cancellationToken)
     {
-        var resp = await _api
+        var resp = await api
             .GetItemsFeedInternalAsync<TModel>(
                 _params,
                 _serializedFilters.ToQueryDictionary(),
@@ -154,7 +149,7 @@ internal sealed class EnumerateItemsQuery<TModel>(
                 cancellationToken)
             .ConfigureAwait(false);
 
-        var deliveryResult = await resp.ToDeliveryResultAsync(_logger).ConfigureAwait(false);
+        var deliveryResult = await resp.ToDeliveryResultAsync(logger).ConfigureAwait(false);
         return (deliveryResult, resp.Continuation());
     }
 
@@ -167,11 +162,11 @@ internal sealed class EnumerateItemsQuery<TModel>(
         {
             foreach (var item in content.Items)
             {
-                await _contentItemMapper.CompleteItemAsync(
+                await contentItemMapper.CompleteItemAsync(
                         item,
                         content.ModularContent,
                         dependencyContext: null,
-                        _defaultRenditionPreset,
+                        defaultRenditionPreset,
                         cancellationToken)
                     .ConfigureAwait(false);
             }
@@ -187,11 +182,11 @@ internal sealed class EnumerateItemsQuery<TModel>(
     private EnumerateItemsQuery<TModel> CreateContinuationQuery(string continuationToken)
     {
         var nextQuery = new EnumerateItemsQuery<TModel>(
-            _api,
-            _contentItemMapper,
-            _typeProvider,
-            _defaultRenditionPreset,
-            _logger)
+            api,
+            contentItemMapper,
+            typeProvider,
+            defaultRenditionPreset,
+            logger)
         {
             _params = _params,
             _waitForLoadingNewContent = this._waitForLoadingNewContent,

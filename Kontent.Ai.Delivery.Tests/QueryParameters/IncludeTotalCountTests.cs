@@ -15,8 +15,7 @@ public class IncludeTotalCountTests
     private readonly MockHttpMessageHandler _mockHttp = new();
     private DeliveryOptions Options => new()
     {
-        EnvironmentId = _environmentId.ToString(),
-        IncludeTotalCount = true
+        EnvironmentId = _environmentId.ToString()
     };
 
     private IDeliveryClient CreateClient()
