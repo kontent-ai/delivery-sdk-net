@@ -21,6 +21,9 @@
     <AssemblyAttribute Include="System.Runtime.CompilerServices.InternalsVisibleTo">
       <_Parameter1>Kontent.Ai.Delivery</_Parameter1>
     </AssemblyAttribute>
+    <AssemblyAttribute Include="System.Runtime.CompilerServices.InternalsVisibleTo">
+      <_Parameter1>Kontent.Ai.Delivery.Caching</_Parameter1>
+    </AssemblyAttribute>
   </ItemGroup>
 
 </Project>

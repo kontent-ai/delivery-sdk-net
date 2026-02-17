@@ -9,7 +9,10 @@ using Microsoft.Extensions.Logging;
 
 namespace Kontent.Ai.Delivery;
 
-public static partial class ServiceCollectionExtensions
+/// <summary>
+/// Extension methods for registering Kontent.ai Delivery SDK caching services.
+/// </summary>
+public static class ServiceCollectionExtensions
 {
     /// <summary>
     /// Registers a custom cache manager for the default Delivery client.
@@ -413,6 +416,18 @@ public static partial class ServiceCollectionExtensions
         });
         services.Replace(ServiceDescriptor.Singleton<IContentDependencyExtractor, ContentDependencyExtractor>());
         return services;
+    }
+
+    private static void ValidateClientName(string name)
+    {
+        ArgumentException.ThrowIfNullOrWhiteSpace(name);
+
+        if (name.Trim() != name || name.Contains(' '))
+        {
+            throw new ArgumentException(
+                "Client name cannot contain leading/trailing whitespace, or contain spaces. Use underscores or hyphens instead.",
+                nameof(name));
+        }
     }
 
     private static string ResolveCacheKeyPrefix(string clientName, string? keyPrefix)

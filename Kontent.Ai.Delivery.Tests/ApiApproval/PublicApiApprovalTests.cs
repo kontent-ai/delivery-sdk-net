@@ -9,7 +9,7 @@ public class PublicApiApprovalTests
     [Fact]
     public Task PublicApi_ShouldNotChangeUnexpectedly()
     {
-        var assembly = typeof(ServiceCollectionExtensions).Assembly;
+        var assembly = typeof(Kontent.Ai.Delivery.Configuration.DeliveryClientBuilder).Assembly;
         var publicApi = GetPublicApiSurface(assembly);
         return Verify(publicApi);
     }
