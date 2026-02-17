@@ -152,6 +152,9 @@ await foreach (var article in query.EnumerateItemsAsync())
 
 ## Caching Strategies
 
+> [!NOTE]
+> Caching requires the `Kontent.Ai.Delivery.Caching` package. See the [Caching Guide](caching-guide.md) for full details.
+
 ### Cache-First Approach
 
 Always configure caching in production:

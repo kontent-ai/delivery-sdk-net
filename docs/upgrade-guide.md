@@ -31,7 +31,7 @@ This guide provides comprehensive instructions for migrating from the legacy Kon
 | Legacy | New |
 |--------|-----|
 | `Kontent.Ai.Delivery` | `Kontent.Ai.Delivery` (same package, new version) |
-| `Kontent.Ai.Delivery.Caching` | Merged into `Kontent.Ai.Delivery` |
+| `Kontent.Ai.Delivery.Caching` | `Kontent.Ai.Delivery.Caching` (new FusionCache-backed implementation, different API) |
 | `Kontent.Ai.Delivery.Abstractions` | `Kontent.Ai.Delivery.Abstractions` (updated interfaces) |
 
 ### Summary of Breaking Changes
@@ -40,7 +40,7 @@ This guide provides comprehensive instructions for migrating from the legacy Kon
 |------|-------------|-------------|
 | Query Methods | Breaking | `GetItemAsync<T>()` → `GetItem<T>().ExecuteAsync()` builder pattern |
 | Filtering | Breaking | Parameter classes → Fluent `Where()` syntax |
-| Caching | Breaking | Separate package → Integrated opt-in methods |
+| Caching | Breaking | Separate package → New FusionCache-backed implementation in `Kontent.Ai.Delivery.Caching` |
 | Retry Policies | Breaking | `IRetryPolicy` → Polly-based `configureResilience` |
 | Rich Text | Breaking | `IContentLinkUrlResolver` → `HtmlResolverBuilder` |
 | Response Types | Breaking | Direct response → Result pattern with `IsSuccess`/`Value`/`Error` |
@@ -53,7 +53,7 @@ This guide provides comprehensive instructions for migrating from the legacy Kon
 Use this checklist to ensure you've addressed all required changes:
 
 - [ ] Update NuGet packages to 19.0.0+
-- [ ] Remove `Kontent.Ai.Delivery.Caching` package reference (now integrated)
+- [ ] Update `Kontent.Ai.Delivery.Caching` package reference to 19.0.0+ (new FusionCache-backed implementation)
 - [ ] Regenerate models with model generator 10.0.0
 - [ ] Refactor all `GetItemAsync<T>()` calls to `GetItem<T>().ExecuteAsync()`
 - [ ] Refactor all `GetItemsAsync<T>()` calls to `GetItems<T>().ExecuteAsync()`
@@ -468,7 +468,7 @@ The new filter builder accepts typed values directly:
 
 ## 3. Migrating Caching
 
-Caching has been integrated into the main SDK package and simplified.
+Caching remains a standalone package (`Kontent.Ai.Delivery.Caching`) but the implementation has been rewritten on top of [FusionCache](https://github.com/ZiggyCreatures/FusionCache) with a simplified API.
 
 ### 3.1 Package Changes
 
@@ -480,8 +480,8 @@ Caching has been integrated into the main SDK package and simplified.
 
 **New:**
 ```xml
-<!-- Caching is now included in the main package -->
 <PackageReference Include="Kontent.Ai.Delivery" Version="19.0.0" />
+<PackageReference Include="Kontent.Ai.Delivery.Caching" Version="19.0.0" />
 ```
 
 ### 3.2 Memory Cache Registration
@@ -539,7 +539,7 @@ services.AddDeliveryDistributedCache(defaultExpiration: TimeSpan.FromHours(2));
 ```
 
 > [!NOTE]
-> Built-in cache registrations are FusionCache-backed internally. Distributed caching stores raw JSON payloads to avoid serialization issues with hydrated object graphs. If you implement a custom distributed cache manager, override `StorageMode` to return `CacheStorageMode.RawJson` so the SDK uses the raw JSON caching path.
+> Built-in cache registrations (in the `Kontent.Ai.Delivery.Caching` package) are FusionCache-backed internally. Distributed caching stores raw JSON payloads to avoid serialization issues with hydrated object graphs. If you implement a custom distributed cache manager, override `StorageMode` to return `CacheStorageMode.RawJson` so the SDK uses the raw JSON caching path.
 
 ### 3.4 Named Client Caching
 
@@ -1664,7 +1664,7 @@ var client = container.Client;
 
 | Removed Package | Replacement |
 |----------------|-------------|
-| `Kontent.Ai.Delivery.Caching` | Merged into main `Kontent.Ai.Delivery` package |
+| `Kontent.Ai.Delivery.Caching` (18.x) | `Kontent.Ai.Delivery.Caching` (19.x) — new FusionCache-backed implementation with different API |
 | `Kontent.Ai.Delivery.Rx` | Use `IAsyncEnumerable<T>` with `await foreach` instead |
 
 **Reactive Extensions Migration:**
@@ -1924,14 +1924,14 @@ var html = await richText.ToHtmlAsync(resolver);
 
 #### "AddDeliveryClientCache does not exist"
 
-**Problem:** Caching package has been merged into main SDK.
+**Problem:** The legacy caching API has been replaced.
 
-**Solution:** Remove the caching package reference and use new methods:
+**Solution:** Update your `Kontent.Ai.Delivery.Caching` package to 19.0.0+ and use the new registration methods:
 ```csharp
 // Before
 services.AddDeliveryClientCache(new DeliveryCacheOptions { CacheType = CacheTypeEnum.Memory });
 
-// After
+// After (requires Kontent.Ai.Delivery.Caching 19.0.0+)
 services.AddDeliveryMemoryCache(defaultExpiration: TimeSpan.FromHours(1));
 ```
 
