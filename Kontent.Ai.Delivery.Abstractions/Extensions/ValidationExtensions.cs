@@ -70,3 +70,45 @@ public class RequiredIfAttribute(string propertyName, object? isValue) : Validat
             : throw new NotSupportedException($"Can't find {_propertyName} on searched type: {validationContext.ObjectType.Name}");
     }
 }
+
+[AttributeUsage(AttributeTargets.Property | AttributeTargets.Field, AllowMultiple = false)]
+internal sealed class PositiveTimeSpanAttribute : ValidationAttribute
+{
+    protected override ValidationResult? IsValid(object? value, ValidationContext validationContext)
+    {
+        if (value is null)
+        {
+            return ValidationResult.Success;
+        }
+
+        if (value is not TimeSpan timeSpan)
+        {
+            return new ValidationResult($"{validationContext.DisplayName} must be a TimeSpan value.");
+        }
+
+        return timeSpan > TimeSpan.Zero
+            ? ValidationResult.Success
+            : new ValidationResult(ErrorMessage ?? $"{validationContext.DisplayName} must be greater than TimeSpan.Zero.");
+    }
+}
+
+[AttributeUsage(AttributeTargets.Property | AttributeTargets.Field, AllowMultiple = false)]
+internal sealed class NonNegativeTimeSpanAttribute : ValidationAttribute
+{
+    protected override ValidationResult? IsValid(object? value, ValidationContext validationContext)
+    {
+        if (value is null)
+        {
+            return ValidationResult.Success;
+        }
+
+        if (value is not TimeSpan timeSpan)
+        {
+            return new ValidationResult($"{validationContext.DisplayName} must be a TimeSpan value.");
+        }
+
+        return timeSpan >= TimeSpan.Zero
+            ? ValidationResult.Success
+            : new ValidationResult(ErrorMessage ?? $"{validationContext.DisplayName} cannot be negative.");
+    }
+}
