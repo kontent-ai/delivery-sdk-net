@@ -167,6 +167,21 @@ public class MemoryCacheManagerTests : IDisposable
     }
 
     [Fact]
+    public async Task PurgeAsync_WithAllowFailSafe_ExpiresEntriesAndDoesNotAffectNewEntries()
+    {
+        await _cacheManager.SetAsync("k1", new TestCacheValue { Id = 1, Name = "One" }, dependencies: ["dep1"]);
+        await _cacheManager.SetAsync("k2", new TestCacheValue { Id = 2, Name = "Two" }, dependencies: ["dep2"]);
+
+        await ((IDeliveryCachePurger)_cacheManager).PurgeAsync(allowFailSafe: true);
+
+        Assert.Null(await _cacheManager.GetAsync<TestCacheValue>("k1"));
+        Assert.Null(await _cacheManager.GetAsync<TestCacheValue>("k2"));
+
+        await _cacheManager.SetAsync("k3", new TestCacheValue { Id = 3, Name = "Three" }, dependencies: ["dep3"]);
+        Assert.NotNull(await _cacheManager.GetAsync<TestCacheValue>("k3"));
+    }
+
+    [Fact]
     public async Task PurgeAsync_DoesNotAffectEntriesCreatedAfterPurge()
     {
         await _cacheManager.SetAsync("old", new TestCacheValue { Id = 1, Name = "Old" }, dependencies: ["dep"]);

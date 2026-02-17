@@ -19,7 +19,6 @@ internal sealed class FusionCacheManager : IDeliveryCacheManager, IDeliveryCache
     private readonly TimeSpan _defaultExpiration;
     private readonly Func<string, string> _cacheKeyFormatter;
     private readonly Func<string, string> _dependencyTagFormatter;
-    private readonly string _purgeTag;
     private readonly ILogger? _logger;
     private readonly FusionCacheEntryOptions _baseWriteOptions;
     private readonly FusionCacheEntryOptions _baseReadOptions;
@@ -33,7 +32,6 @@ internal sealed class FusionCacheManager : IDeliveryCacheManager, IDeliveryCache
         TimeSpan defaultExpiration,
         Func<string, string> cacheKeyFormatter,
         Func<string, string> dependencyTagFormatter,
-        string purgeTag,
         ILogger? logger,
         FusionCacheEntryOptions baseReadOptions,
         FusionCacheEntryOptions baseWriteOptions,
@@ -45,7 +43,6 @@ internal sealed class FusionCacheManager : IDeliveryCacheManager, IDeliveryCache
         _defaultExpiration = defaultExpiration;
         _cacheKeyFormatter = cacheKeyFormatter;
         _dependencyTagFormatter = dependencyTagFormatter;
-        _purgeTag = purgeTag;
         _logger = logger;
         _baseReadOptions = baseReadOptions;
         _baseWriteOptions = baseWriteOptions;
@@ -89,7 +86,6 @@ internal sealed class FusionCacheManager : IDeliveryCacheManager, IDeliveryCache
             effectiveExpiration,
             cacheKey => $"{prefixSegment}{cacheKey}",
             dependency => $"{prefixSegment}{dependency}",
-            purgeTag: $"{prefixSegment}__purge_all",
             logger,
             baseReadOptions: new FusionCacheEntryOptions
             {
@@ -173,7 +169,6 @@ internal sealed class FusionCacheManager : IDeliveryCacheManager, IDeliveryCache
             effectiveExpiration,
             cacheKey => $"{prefixSegment}cache:{cacheKey}",
             dependency => $"{prefixSegment}dep:{dependency}",
-            purgeTag: $"{prefixSegment}dep:__purge_all",
             logger,
             baseReadOptions: new FusionCacheEntryOptions
             {
@@ -279,9 +274,7 @@ internal sealed class FusionCacheManager : IDeliveryCacheManager, IDeliveryCache
             .Distinct(StringComparer.OrdinalIgnoreCase)
             .ToArray();
 
-        var tags = dependencyTags.Length == 0
-            ? new[] { _purgeTag }
-            : dependencyTags.Concat(new[] { _purgeTag }).ToArray();
+        var tags = dependencyTags;
 
         var writeOptions = _baseWriteOptions.Duplicate(
             expiration ?? _defaultExpiration);
@@ -355,13 +348,13 @@ internal sealed class FusionCacheManager : IDeliveryCacheManager, IDeliveryCache
         }
     }
 
-    public async Task PurgeAsync(CancellationToken cancellationToken = default)
+    public async Task PurgeAsync(bool allowFailSafe = false, CancellationToken cancellationToken = default)
     {
         ThrowIfDisposed();
         cancellationToken.ThrowIfCancellationRequested();
 
-        await _cache.RemoveByTagAsync(
-                _purgeTag,
+        await _cache.ClearAsync(
+                allowFailSafe,
                 _baseInvalidateOptions,
                 cancellationToken)
             .ConfigureAwait(false);

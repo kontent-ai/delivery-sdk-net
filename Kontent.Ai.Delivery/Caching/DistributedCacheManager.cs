@@ -63,8 +63,8 @@ internal sealed class DistributedCacheManager(
         => _inner.InvalidateAsync(cancellationToken, dependencyKeys);
 
     /// <inheritdoc />
-    public Task PurgeAsync(CancellationToken cancellationToken = default)
-        => _inner.PurgeAsync(cancellationToken);
+    public Task PurgeAsync(bool allowFailSafe = false, CancellationToken cancellationToken = default)
+        => _inner.PurgeAsync(allowFailSafe, cancellationToken);
 
     /// <inheritdoc />
     public void Dispose() => _inner.Dispose();

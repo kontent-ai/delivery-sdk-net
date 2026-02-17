@@ -587,7 +587,11 @@ var cacheManager = serviceProvider.GetRequiredKeyedService<IDeliveryCacheManager
 
 if (cacheManager is IDeliveryCachePurger purger)
 {
+    // Permanently remove all entries (default behavior)
     await purger.PurgeAsync();
+
+    // Or: mark entries as logically expired, preserving fail-safe fallback data
+    await purger.PurgeAsync(allowFailSafe: true);
 }
 ```
 

@@ -1311,7 +1311,10 @@ using Microsoft.Extensions.DependencyInjection;
 var cacheManager = serviceProvider.GetRequiredKeyedService<IDeliveryCacheManager>("production");
 if (cacheManager is IDeliveryCachePurger purger)
 {
-    await purger.PurgeAsync();
+    await purger.PurgeAsync(); // permanently removes all entries
+
+    // Or: expire entries but keep fail-safe fallback data
+    await purger.PurgeAsync(allowFailSafe: true);
 }
 ```
 

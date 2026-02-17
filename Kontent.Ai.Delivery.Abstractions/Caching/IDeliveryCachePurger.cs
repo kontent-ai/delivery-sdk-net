@@ -19,7 +19,11 @@ public interface IDeliveryCachePurger
     /// <summary>
     /// Purges (invalidates) all cache entries managed by this cache manager.
     /// </summary>
+    /// <param name="allowFailSafe">
+    /// When <c>false</c> (default), entries are permanently removed.
+    /// When <c>true</c>, entries are marked as logically expired but remain available as fail-safe fallbacks.
+    /// </param>
     /// <param name="cancellationToken">Cancellation token.</param>
-    Task PurgeAsync(CancellationToken cancellationToken = default);
+    Task PurgeAsync(bool allowFailSafe = false, CancellationToken cancellationToken = default);
 }
 
