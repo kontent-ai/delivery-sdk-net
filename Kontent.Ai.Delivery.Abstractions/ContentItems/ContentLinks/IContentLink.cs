@@ -21,7 +21,8 @@ public interface IContentLink
     Guid Id { get; }
 
     /// <summary>
-    /// Gets the URL slug of the linked content item, if available; otherwise, <c>null</c>.
+    /// Gets the URL slug of the linked content item.
+    /// Empty string if the linked content item has no URL slug.
     /// </summary>
     string UrlSlug { get; }
 }

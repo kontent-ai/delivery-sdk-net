@@ -8,7 +8,7 @@ public interface IInlineImage : IRichTextBlock
     /// <summary>
     /// Unique image identifier.
     /// </summary>
-    public Guid ImageId { get; }
+    Guid ImageId { get; }
     /// <summary>
     /// Gets the description of the asset.
     /// </summary>
@@ -20,12 +20,12 @@ public interface IInlineImage : IRichTextBlock
     string Url { get; }
 
     /// <summary>
-    /// Gets the width of the image.
+    /// Gets the height of the image.
     /// </summary>
     int Height { get; }
 
     /// <summary>
-    /// Gets the height of the image.
+    /// Gets the width of the image.
     /// </summary>
     int Width { get; }
 }

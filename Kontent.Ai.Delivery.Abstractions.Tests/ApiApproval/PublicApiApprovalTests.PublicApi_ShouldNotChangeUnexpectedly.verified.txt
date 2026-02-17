@@ -463,9 +463,9 @@ public interface IRichTextContent : IReadOnlyList`1, IReadOnlyCollection`1, IEnu
 
 // Kontent.Ai.Delivery.Abstractions
 public interface IRichTextElementValue : IContentElementValue`1
-    IDictionary`2 Images { get; }
-    IDictionary`2 Links { get; }
-    List`1 ModularContent { get; }
+    IReadOnlyDictionary`2 Images { get; }
+    IReadOnlyDictionary`2 Links { get; }
+    IReadOnlyList`1 ModularContent { get; }
 
 // Kontent.Ai.Delivery.Abstractions
 public interface ISystemAttributes : ISystemBaseAttributes
@@ -586,6 +586,6 @@ public enum LanguageFallbackMode : Enum
 public enum OrderingMode : Enum
 
 // Kontent.Ai.Delivery.Abstractions
-public class RequiredIfAttribute : ValidationAttribute
+public sealed class RequiredIfAttribute : ValidationAttribute
     String FormatErrorMessage(String name)
 

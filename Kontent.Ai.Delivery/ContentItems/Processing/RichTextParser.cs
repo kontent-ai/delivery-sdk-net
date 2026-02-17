@@ -67,12 +67,8 @@ internal sealed class RichTextParser(
 
         var content = new RichTextContent
         {
-            Links = element.Links is not null
-                ? new Dictionary<Guid, IContentLink>(element.Links)
-                : null,
-            Images = element.Images is not null
-                ? new Dictionary<Guid, IInlineImage>(element.Images)
-                : null,
+            Links = element.Links,
+            Images = element.Images,
             ModularContentCodenames = element.ModularContent
         };
         content.AddRange(blocks);

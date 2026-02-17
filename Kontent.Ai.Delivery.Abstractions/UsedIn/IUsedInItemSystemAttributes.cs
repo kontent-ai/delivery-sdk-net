@@ -18,15 +18,15 @@ public interface IUsedInItemSystemAttributes : ISystemAttributes
     /// <summary>
     /// Gets the codename of the content collection to which the content item belongs.
     /// </summary>
-    public string Collection { get; }
+    string Collection { get; }
 
     /// <summary>
     /// Gets the codename of the workflow which the content item is assigned to.
     /// </summary>
-    public string Workflow { get; }
+    string Workflow { get; }
 
     /// <summary>
     /// Gets the codename of the workflow step which the content item is assigned to.
     /// </summary>
-    public string WorkflowStep { get; }
+    string WorkflowStep { get; }
 }

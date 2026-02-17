@@ -8,7 +8,7 @@ namespace Kontent.Ai.Delivery.Abstractions;
 /// <param name="propertyName">The name of the property that is used to check if the current property is required.</param>
 /// <param name="isValue">The value of the property that is used to check if the current property is required.</param>
 [AttributeUsage(AttributeTargets.Property | AttributeTargets.Field, AllowMultiple = true)]
-public class RequiredIfAttribute(string propertyName, object? isValue) : ValidationAttribute
+public sealed class RequiredIfAttribute(string propertyName, object? isValue) : ValidationAttribute
 {
     private readonly string _propertyName = propertyName ?? throw new ArgumentNullException(nameof(propertyName));
     private readonly object? _isValue = isValue;
@@ -68,5 +68,47 @@ public class RequiredIfAttribute(string propertyName, object? isValue) : Validat
         return comparedField is not null
             ? comparedField.GetValue(validationContext.ObjectInstance)
             : throw new NotSupportedException($"Can't find {_propertyName} on searched type: {validationContext.ObjectType.Name}");
+    }
+}
+
+[AttributeUsage(AttributeTargets.Property | AttributeTargets.Field, AllowMultiple = false)]
+internal sealed class PositiveTimeSpanAttribute : ValidationAttribute
+{
+    protected override ValidationResult? IsValid(object? value, ValidationContext validationContext)
+    {
+        if (value is null)
+        {
+            return ValidationResult.Success;
+        }
+
+        if (value is not TimeSpan timeSpan)
+        {
+            return new ValidationResult($"{validationContext.DisplayName} must be a TimeSpan value.");
+        }
+
+        return timeSpan > TimeSpan.Zero
+            ? ValidationResult.Success
+            : new ValidationResult(ErrorMessage ?? $"{validationContext.DisplayName} must be greater than TimeSpan.Zero.");
+    }
+}
+
+[AttributeUsage(AttributeTargets.Property | AttributeTargets.Field, AllowMultiple = false)]
+internal sealed class NonNegativeTimeSpanAttribute : ValidationAttribute
+{
+    protected override ValidationResult? IsValid(object? value, ValidationContext validationContext)
+    {
+        if (value is null)
+        {
+            return ValidationResult.Success;
+        }
+
+        if (value is not TimeSpan timeSpan)
+        {
+            return new ValidationResult($"{validationContext.DisplayName} must be a TimeSpan value.");
+        }
+
+        return timeSpan >= TimeSpan.Zero
+            ? ValidationResult.Success
+            : new ValidationResult(ErrorMessage ?? $"{validationContext.DisplayName} cannot be negative.");
     }
 }

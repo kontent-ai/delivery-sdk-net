@@ -27,13 +27,7 @@ public static class DeliveryClientBuilderExtensions
     /// Cannot be combined with distributed cache. Calling both will use the last one configured.
     /// </para>
     /// </remarks>
-    public static DeliveryClientBuilder WithMemoryCache(this DeliveryClientBuilder builder, TimeSpan? defaultExpiration = null)
-    {
-        return builder.ConfigureServices(services => services.AddDeliveryMemoryCache(
-            clientName: DeliveryClientNames.Default,
-            keyPrefix: string.Empty,
-            defaultExpiration: defaultExpiration));
-    }
+    public static DeliveryClientBuilder WithMemoryCache(this DeliveryClientBuilder builder, TimeSpan? defaultExpiration = null) => builder.ConfigureServices(services => services.AddDeliveryMemoryCache(defaultExpiration));
 
     /// <summary>
     /// Enables in-memory caching for API responses with advanced configuration.
@@ -62,9 +56,7 @@ public static class DeliveryClientBuilderExtensions
     {
         ArgumentNullException.ThrowIfNull(configureCacheOptions);
 
-        return builder.ConfigureServices(services => services.AddDeliveryMemoryCache(
-            DeliveryClientNames.Default,
-            configureCacheOptions));
+        return builder.ConfigureServices(services => services.AddDeliveryMemoryCache(configureCacheOptions));
     }
 
     /// <summary>
@@ -96,10 +88,7 @@ public static class DeliveryClientBuilderExtensions
         return builder.ConfigureServices(services =>
         {
             services.AddSingleton(distributedCache);
-            services.AddDeliveryDistributedCache(
-                clientName: DeliveryClientNames.Default,
-                keyPrefix: string.Empty,
-                defaultExpiration: defaultExpiration);
+            services.AddDeliveryDistributedCache(defaultExpiration);
         });
     }
 
@@ -137,9 +126,7 @@ public static class DeliveryClientBuilderExtensions
         return builder.ConfigureServices(services =>
         {
             services.AddSingleton(distributedCache);
-            services.AddDeliveryDistributedCache(
-                DeliveryClientNames.Default,
-                configureCacheOptions);
+            services.AddDeliveryDistributedCache(configureCacheOptions);
         });
     }
 }

@@ -1,4 +1,5 @@
 using System.Collections.ObjectModel;
+using System.ComponentModel.DataAnnotations;
 using AngleSharp.Html.Parser;
 using Kontent.Ai.Delivery.Abstractions;
 using Kontent.Ai.Delivery.Api;
@@ -517,6 +518,99 @@ public class ServiceCollectionsExtensionsTests
     }
 
     [Fact]
+    public void AddDeliveryCacheManager_CustomManager_DoesNotRequirePurger()
+    {
+        _serviceCollection.AddDeliveryClient("production", o =>
+        {
+            o.EnvironmentId = EnvironmentId;
+            o.EnableResilience = false;
+        });
+        _serviceCollection.AddDeliveryCacheManager("production", _ => new TestCustomCacheManager());
+
+        var provider = _serviceCollection.BuildServiceProvider();
+        var cacheManager = provider.GetRequiredKeyedService<IDeliveryCacheManager>("production");
+        var purger = cacheManager as IDeliveryCachePurger;
+
+        Assert.NotNull(cacheManager);
+        Assert.Null(purger);
+    }
+
+    [Fact]
+    public void AddDeliveryMemoryCache_ResolvedManager_ImplementsPurger()
+    {
+        _serviceCollection.AddDeliveryClient("production", o =>
+        {
+            o.EnvironmentId = EnvironmentId;
+            o.EnableResilience = false;
+        });
+        _serviceCollection.AddDeliveryMemoryCache("production");
+
+        var provider = _serviceCollection.BuildServiceProvider();
+        var cacheManager = provider.GetRequiredKeyedService<IDeliveryCacheManager>("production");
+
+        Assert.IsAssignableFrom<IDeliveryCachePurger>(cacheManager);
+    }
+
+    [Fact]
+    public void AddDeliveryDistributedCache_ResolvedManager_ImplementsPurger()
+    {
+        _serviceCollection.AddDeliveryClient("production", o =>
+        {
+            o.EnvironmentId = EnvironmentId;
+            o.EnableResilience = false;
+        });
+        _serviceCollection.AddDistributedMemoryCache();
+        _serviceCollection.AddDeliveryDistributedCache("production");
+
+        var provider = _serviceCollection.BuildServiceProvider();
+        var cacheManager = provider.GetRequiredKeyedService<IDeliveryCacheManager>("production");
+
+        Assert.IsAssignableFrom<IDeliveryCachePurger>(cacheManager);
+    }
+
+    [Fact]
+    public async Task AddDeliveryMemoryCache_DefaultClient_AdvancedOverload_UsesUnprefixedNamespace()
+    {
+        _serviceCollection.AddDeliveryClient(o =>
+        {
+            o.EnvironmentId = EnvironmentId;
+            o.EnableResilience = false;
+        });
+        _serviceCollection.AddDeliveryMemoryCache(opts =>
+        {
+            opts.DefaultExpiration = TimeSpan.FromMinutes(5);
+        });
+
+        var provider = _serviceCollection.BuildServiceProvider();
+        var manager = provider.GetRequiredKeyedService<IDeliveryCacheManager>("Default");
+        var sharedMemoryCache = provider.GetRequiredService<IMemoryCache>();
+        using var unprefixedManager = new MemoryCacheManager(
+            sharedMemoryCache,
+            new DeliveryCacheOptions
+            {
+                KeyPrefix = string.Empty,
+                DefaultExpiration = TimeSpan.FromMinutes(5)
+            });
+
+        await manager.GetOrSetAsync(
+            "prefix-check",
+            _ => Task.FromResult<CacheEntry<string>?>(
+                new CacheEntry<string>("cached-value", Array.Empty<string>())));
+
+        var factoryCalled = false;
+        var cached = await unprefixedManager.GetOrSetAsync<string>(
+            "prefix-check",
+            _ =>
+            {
+                factoryCalled = true;
+                return Task.FromResult<CacheEntry<string>?>(null);
+            });
+
+        Assert.False(factoryCalled);
+        Assert.Equal("cached-value", cached);
+    }
+
+    [Fact]
     public void AddDeliveryMemoryCache_MultipleClients_RegistersSeparateKeyedManagers()
     {
         const string envId1 = "11111111-1111-1111-1111-111111111111";
@@ -596,6 +690,29 @@ public class ServiceCollectionsExtensionsTests
     {
         Assert.Throws<ArgumentException>(() =>
             _serviceCollection.AddDeliveryMemoryCache(clientName: ""));
+    }
+
+    [Fact]
+    public void AddDeliveryMemoryCache_InvalidDefaultExpiration_ThrowsValidationException()
+    {
+        Assert.Throws<ValidationException>(() =>
+            _serviceCollection.AddDeliveryMemoryCache("production", defaultExpiration: TimeSpan.Zero));
+    }
+
+    [Fact]
+    public void AddDeliveryMemoryCache_InvalidEagerRefreshThreshold_ThrowsValidationException()
+    {
+        Assert.Throws<ValidationException>(() =>
+            _serviceCollection.AddDeliveryMemoryCache("production", opts => opts.EagerRefreshThreshold = 1.5f));
+    }
+
+    [Fact]
+    public void AddDeliveryDistributedCache_NegativeJitter_ThrowsValidationException()
+    {
+        _serviceCollection.AddDistributedMemoryCache();
+
+        Assert.Throws<ValidationException>(() =>
+            _serviceCollection.AddDeliveryDistributedCache("production", opts => opts.JitterMaxDuration = TimeSpan.FromMilliseconds(-1)));
     }
 
     [Fact]

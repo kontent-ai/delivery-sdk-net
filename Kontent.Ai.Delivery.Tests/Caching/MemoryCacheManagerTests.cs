@@ -803,16 +803,30 @@ public class MemoryCacheManagerTests : IDisposable
         var value = new TestCacheValue { Id = 42, Name = "Stale" };
         await PopulateCache(manager, "failsafe_key", value, ["dep1"]);
 
-        // Wait for the normal TTL to expire, but fail-safe should still serve the stale entry.
-        await Task.Delay(TimeSpan.FromMilliseconds(300));
+        // Poll until the TTL expires (factory is called) and verify fail-safe returns the stale value.
+        TestCacheValue? failSafeResult = null;
+        var expired = await WaitUntilAsync(
+            async () =>
+            {
+                var factoryCalled = false;
+                var r = await manager.GetOrSetAsync<TestCacheValue>("failsafe_key", _ =>
+                {
+                    factoryCalled = true;
+                    throw new InvalidOperationException("Simulated API failure");
+                });
+                if (factoryCalled)
+                {
+                    failSafeResult = r;
+                }
+                return factoryCalled;
+            },
+            timeout: TimeSpan.FromSeconds(2),
+            pollInterval: TimeSpan.FromMilliseconds(20));
 
-        // When the factory throws after TTL expires, fail-safe returns the stale value.
-        var result = await manager.GetOrSetAsync<TestCacheValue>("failsafe_key", _ =>
-            throw new InvalidOperationException("Simulated API failure"));
-
-        Assert.NotNull(result);
-        Assert.Equal(42, result.Id);
-        Assert.Equal("Stale", result.Name);
+        Assert.True(expired, "Cache entry did not expire within timeout");
+        Assert.NotNull(failSafeResult);
+        Assert.Equal(42, failSafeResult.Id);
+        Assert.Equal("Stale", failSafeResult.Name);
     }
 
     [Fact]

@@ -1,3 +1,4 @@
+using System.ComponentModel.DataAnnotations;
 using Kontent.Ai.Delivery.Caching;
 using Kontent.Ai.Delivery.Configuration;
 using Kontent.Ai.Delivery.ContentItems.Processing;
@@ -70,8 +71,13 @@ public static class ServiceCollectionExtensions
     {
         return services.AddDeliveryMemoryCache(
             DeliveryClientNames.Default,
-            string.Empty, // No prefix for default single-client scenario
-            defaultExpiration);
+            options =>
+            {
+                if (defaultExpiration.HasValue)
+                {
+                    options.DefaultExpiration = defaultExpiration.Value;
+                }
+            });
     }
 
     /// <summary>
@@ -112,7 +118,8 @@ public static class ServiceCollectionExtensions
     /// <param name="services">The service collection.</param>
     /// <param name="clientName">The name of the Delivery client to enable caching for.</param>
     /// <param name="keyPrefix">
-    /// Optional prefix for cache keys. If null, defaults to the client name.
+    /// Optional prefix for cache keys. If null, defaults to the client name
+    /// (or empty string for the default client).
     /// Used to isolate cache entries when multiple clients share the same <see cref="IMemoryCache"/>.
     /// Set to empty string (<c>""</c>) to disable prefixing.
     /// </param>
@@ -142,14 +149,16 @@ public static class ServiceCollectionExtensions
         string? keyPrefix = null,
         TimeSpan? defaultExpiration = null)
     {
-        var resolvedKeyPrefix = ResolveCacheKeyPrefix(clientName, keyPrefix);
-        var cacheOptions = new DeliveryCacheOptions { KeyPrefix = resolvedKeyPrefix };
-        if (defaultExpiration.HasValue)
-        {
-            cacheOptions.DefaultExpiration = defaultExpiration.Value;
-        }
-
-        return AddDeliveryMemoryCacheCore(services, clientName, cacheOptions);
+        return services.AddDeliveryMemoryCache(
+            clientName,
+            options =>
+            {
+                options.KeyPrefix = keyPrefix;
+                if (defaultExpiration.HasValue)
+                {
+                    options.DefaultExpiration = defaultExpiration.Value;
+                }
+            });
     }
 
     /// <summary>
@@ -162,7 +171,8 @@ public static class ServiceCollectionExtensions
     /// <remarks>
     /// <para>
     /// Use this overload to enable advanced features like fail-safe and jitter.
-    /// If <see cref="DeliveryCacheOptions.KeyPrefix"/> is not set, it defaults to the client name.
+    /// If <see cref="DeliveryCacheOptions.KeyPrefix"/> is not set, it defaults to the client name
+    /// (or empty string for the default client).
     /// </para>
     /// <para>
     /// Example usage:
@@ -181,11 +191,11 @@ public static class ServiceCollectionExtensions
         string clientName,
         Action<DeliveryCacheOptions> configureCacheOptions)
     {
+        ArgumentNullException.ThrowIfNull(services);
+        ValidateClientName(clientName);
         ArgumentNullException.ThrowIfNull(configureCacheOptions);
 
-        var cacheOptions = new DeliveryCacheOptions();
-        configureCacheOptions(cacheOptions);
-        cacheOptions.KeyPrefix ??= clientName;
+        var cacheOptions = CreateCacheOptions(clientName, configureCacheOptions);
 
         return AddDeliveryMemoryCacheCore(services, clientName, cacheOptions);
     }
@@ -226,8 +236,13 @@ public static class ServiceCollectionExtensions
     {
         return services.AddDeliveryDistributedCache(
             DeliveryClientNames.Default,
-            string.Empty, // No prefix for default single-client scenario
-            defaultExpiration);
+            options =>
+            {
+                if (defaultExpiration.HasValue)
+                {
+                    options.DefaultExpiration = defaultExpiration.Value;
+                }
+            });
     }
 
     /// <summary>
@@ -272,7 +287,8 @@ public static class ServiceCollectionExtensions
     /// <param name="services">The service collection.</param>
     /// <param name="clientName">The name of the Delivery client to enable caching for.</param>
     /// <param name="keyPrefix">
-    /// Optional prefix for cache keys. If null, defaults to the client name.
+    /// Optional prefix for cache keys. If null, defaults to the client name
+    /// (or empty string for the default client).
     /// Used to isolate cache entries when multiple clients share the same <see cref="IDistributedCache"/>.
     /// Set to empty string (<c>""</c>) to disable prefixing.
     /// </param>
@@ -309,14 +325,16 @@ public static class ServiceCollectionExtensions
         string? keyPrefix = null,
         TimeSpan? defaultExpiration = null)
     {
-        var resolvedKeyPrefix = ResolveCacheKeyPrefix(clientName, keyPrefix);
-        var cacheOptions = new DeliveryCacheOptions { KeyPrefix = resolvedKeyPrefix };
-        if (defaultExpiration.HasValue)
-        {
-            cacheOptions.DefaultExpiration = defaultExpiration.Value;
-        }
-
-        return AddDeliveryDistributedCacheCore(services, clientName, cacheOptions);
+        return services.AddDeliveryDistributedCache(
+            clientName,
+            options =>
+            {
+                options.KeyPrefix = keyPrefix;
+                if (defaultExpiration.HasValue)
+                {
+                    options.DefaultExpiration = defaultExpiration.Value;
+                }
+            });
     }
 
     /// <summary>
@@ -329,7 +347,8 @@ public static class ServiceCollectionExtensions
     /// <remarks>
     /// <para>
     /// Use this overload to enable advanced features like fail-safe and jitter.
-    /// If <see cref="DeliveryCacheOptions.KeyPrefix"/> is not set, it defaults to the client name.
+    /// If <see cref="DeliveryCacheOptions.KeyPrefix"/> is not set, it defaults to the client name
+    /// (or empty string for the default client).
     /// </para>
     /// <para>
     /// <b>Prerequisites:</b> You must register an <see cref="IDistributedCache"/> implementation before calling this method.
@@ -356,9 +375,7 @@ public static class ServiceCollectionExtensions
         ValidateClientName(clientName);
         ArgumentNullException.ThrowIfNull(configureCacheOptions);
 
-        var cacheOptions = new DeliveryCacheOptions();
-        configureCacheOptions(cacheOptions);
-        cacheOptions.KeyPrefix ??= clientName;
+        var cacheOptions = CreateCacheOptions(clientName, configureCacheOptions);
 
         return AddDeliveryDistributedCacheCore(services, clientName, cacheOptions);
     }
@@ -406,14 +423,6 @@ public static class ServiceCollectionExtensions
         Func<IServiceProvider, IDeliveryCacheManager> createCacheManager)
     {
         services.AddKeyedSingleton<IDeliveryCacheManager>(clientName, (sp, _) => createCacheManager(sp));
-        services.AddKeyedSingleton<IDeliveryCachePurger>(clientName, (sp, _) =>
-        {
-            var cacheManager = sp.GetRequiredKeyedService<IDeliveryCacheManager>(clientName);
-            return cacheManager as IDeliveryCachePurger
-                ?? throw new InvalidOperationException(
-                    $"The cache manager registered for client '{clientName}' ({cacheManager.GetType().Name}) " +
-                    $"does not implement {nameof(IDeliveryCachePurger)}.");
-        });
         services.Replace(ServiceDescriptor.Singleton<IContentDependencyExtractor, ContentDependencyExtractor>());
         return services;
     }
@@ -430,6 +439,33 @@ public static class ServiceCollectionExtensions
         }
     }
 
+    private static DeliveryCacheOptions CreateCacheOptions(
+        string clientName,
+        Action<DeliveryCacheOptions> configureCacheOptions)
+    {
+        var cacheOptions = new DeliveryCacheOptions();
+        configureCacheOptions(cacheOptions);
+        cacheOptions.KeyPrefix = ResolveCacheKeyPrefix(clientName, cacheOptions.KeyPrefix);
+
+        return ValidateCacheOptions(cacheOptions);
+    }
+
+    private static DeliveryCacheOptions ValidateCacheOptions(DeliveryCacheOptions cacheOptions)
+    {
+        ArgumentNullException.ThrowIfNull(cacheOptions);
+        Validator.ValidateObject(cacheOptions, new ValidationContext(cacheOptions), validateAllProperties: true);
+
+        return cacheOptions;
+    }
+
     private static string ResolveCacheKeyPrefix(string clientName, string? keyPrefix)
-        => keyPrefix ?? clientName;
+    {
+        if (keyPrefix is not null)
+        {
+            return keyPrefix;
+        }
+
+        return clientName == DeliveryClientNames.Default ? string.Empty : clientName;
+    }
+
 }

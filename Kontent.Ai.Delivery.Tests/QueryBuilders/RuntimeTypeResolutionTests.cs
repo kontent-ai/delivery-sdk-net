@@ -348,6 +348,178 @@ public class RuntimeTypeResolutionTests
     #region Linked Items and Hydration Tests
 
     [Fact]
+    public async Task GetItems_WithTypeProvider_LinkedItemsAreStronglyTyped()
+    {
+        // Arrange - items.json has article_1 with related_articles: ["article_2"]
+        // and article_2 in modular_content
+        var mockHttp = new MockHttpMessageHandler();
+        mockHttp.When($"{BaseUrl}/items")
+            .Respond("application/json", await LoadFixtureAsync("items.json"));
+
+        var client = CreateClientWithTypeProvider(mockHttp);
+
+        // Act - dynamic GetItems()
+        var result = await client.GetItems().ExecuteAsync();
+
+        // Assert
+        Assert.True(result.IsSuccess);
+
+        // Find article_1 which has related_articles -> article_2
+        var article1 = result.Value.Items
+            .Where(i => i.System.Codename == "article_1")
+            .Cast<IContentItem<Article>>()
+            .Single();
+
+        Assert.NotNull(article1.Elements.RelatedArticles);
+        var relatedArticles = article1.Elements.RelatedArticles!.ToList();
+        Assert.Single(relatedArticles);
+
+        // The linked item should be strongly typed, not DynamicElements
+        var linkedArticle = relatedArticles[0];
+        Assert.IsType<IEmbeddedContent<Article>>(linkedArticle, exactMatch: false);
+        Assert.Equal("article_2", linkedArticle.System.Codename);
+        Assert.Equal("article", linkedArticle.System.Type);
+
+        // The linked item's elements should be hydrated
+        var typedLinkedArticle = (IEmbeddedContent<Article>)linkedArticle;
+        Assert.Equal("Title of article 2", typedLinkedArticle.Elements.Title);
+    }
+
+    [Fact]
+    public async Task GetItems_StronglyTyped_LinkedItemsAreStronglyTyped()
+    {
+        // Arrange - same fixture but using strongly-typed GetItems<Article>()
+        var mockHttp = new MockHttpMessageHandler();
+        mockHttp.When($"{BaseUrl}/items")
+            .Respond("application/json", await LoadFixtureAsync("items.json"));
+
+        var client = CreateClientWithTypeProvider(mockHttp);
+
+        // Act - strongly-typed listing
+        var result = await client.GetItems<Article>().ExecuteAsync();
+
+        // Assert
+        Assert.True(result.IsSuccess);
+
+        var article1 = result.Value.Items
+            .Single(i => i.System.Codename == "article_1");
+
+        Assert.NotNull(article1.Elements.RelatedArticles);
+        var relatedArticles = article1.Elements.RelatedArticles!.ToList();
+        Assert.Single(relatedArticles);
+
+        // The linked item should be strongly typed via the type provider
+        var linkedArticle = relatedArticles[0];
+        Assert.IsType<IEmbeddedContent<Article>>(linkedArticle, exactMatch: false);
+        Assert.Equal("article_2", linkedArticle.System.Codename);
+
+        var typedLinkedArticle = (IEmbeddedContent<Article>)linkedArticle;
+        Assert.Equal("Title of article 2", typedLinkedArticle.Elements.Title);
+    }
+
+    [Fact]
+    public async Task GetItems_WithoutTypeProvider_LinkedItemsFallBackToDynamic()
+    {
+        // Arrange - without type provider, linked items should be DynamicElements
+        var mockHttp = new MockHttpMessageHandler();
+        mockHttp.When($"{BaseUrl}/items")
+            .Respond("application/json", await LoadFixtureAsync("items.json"));
+
+        var client = CreateClientWithoutTypeProvider(mockHttp);
+
+        // Act
+        var result = await client.GetItems().ExecuteAsync();
+
+        // Assert
+        Assert.True(result.IsSuccess);
+
+        // All items should be dynamic since there's no type provider
+        var article1 = result.Value.Items
+            .Single(i => i.System.Codename == "article_1");
+
+        Assert.IsAssignableFrom<IContentItem<IDynamicElements>>(article1);
+    }
+
+    [Fact]
+    public async Task GetItem_WithTypeProvider_LinkedItemsAreStronglyTyped()
+    {
+        // Arrange - single item dynamic query, verify linked items are also typed
+        var mockHttp = new MockHttpMessageHandler();
+        mockHttp.When($"{BaseUrl}/items/on_roasts")
+            .Respond("application/json", await LoadFixtureAsync("on_roasts.json"));
+
+        var client = CreateClientWithTypeProvider(mockHttp);
+
+        // Act - dynamic single item
+        var result = await client.GetItem("on_roasts").ExecuteAsync();
+
+        // Assert
+        Assert.True(result.IsSuccess);
+        Assert.True(result.Value is IContentItem<Article>,
+            $"Expected IContentItem<Article> but got {result.Value.GetType().Name}");
+
+        var article = (IContentItem<Article>)result.Value;
+        Assert.NotNull(article.Elements.RelatedArticles);
+
+        var relatedArticles = article.Elements.RelatedArticles!.ToList();
+        Assert.Equal(2, relatedArticles.Count);
+
+        // Each linked item should be strongly typed, not DynamicElements
+        foreach (var linkedItem in relatedArticles)
+        {
+            Assert.IsType<IEmbeddedContent<Article>>(linkedItem, exactMatch: false);
+            Assert.Equal("article", linkedItem.System.Type);
+        }
+
+        // Verify specific linked items are fully hydrated
+        var processingTechniques = relatedArticles
+            .OfType<IEmbeddedContent<Article>>()
+            .Single(a => a.System.Codename == "coffee_processing_techniques");
+        Assert.Equal("Coffee processing techniques", processingTechniques.Elements.Title);
+
+        var arabicaBourbon = relatedArticles
+            .OfType<IEmbeddedContent<Article>>()
+            .Single(a => a.System.Codename == "origins_of_arabica_bourbon");
+        Assert.Equal("Origins of Arabica Bourbon", arabicaBourbon.Elements.Title);
+    }
+
+    [Fact]
+    public async Task GetItemsFeed_WithTypeProvider_LinkedItemsAreStronglyTyped()
+    {
+        // Arrange - build a feed response with linked items
+        var mockHttp = new MockHttpMessageHandler();
+        mockHttp.When($"{BaseUrl}/items-feed")
+            .Respond("application/json", BuildFeedResponseWithLinkedItems());
+
+        var client = CreateClientWithTypeProvider(mockHttp);
+
+        // Act
+        var items = new List<IContentItem>();
+        await foreach (var item in client.GetItemsFeed().EnumerateItemsAsync())
+        {
+            items.Add(item);
+        }
+
+        // Assert
+        Assert.Single(items);
+        Assert.True(items[0] is IContentItem<Article>);
+
+        var article = (IContentItem<Article>)items[0];
+        Assert.NotNull(article.Elements.RelatedArticles);
+
+        var relatedArticles = article.Elements.RelatedArticles!.ToList();
+        Assert.Single(relatedArticles);
+
+        // Linked item should be strongly typed
+        var linkedItem = relatedArticles[0];
+        Assert.IsType<IEmbeddedContent<Article>>(linkedItem, exactMatch: false);
+        Assert.Equal("linked_article", linkedItem.System.Codename);
+
+        var typedLinked = (IEmbeddedContent<Article>)linkedItem;
+        Assert.Equal("Linked Article Title", typedLinked.Elements.Title);
+    }
+
+    [Fact]
     public async Task GetItem_WithTypeProvider_HydratesComplexElements()
     {
         // Arrange
@@ -566,5 +738,63 @@ public class RuntimeTypeResolutionTests
             response.Headers.Add("X-Continuation", continuationToken);
 
         return response;
+    }
+
+    private static string BuildFeedResponseWithLinkedItems()
+    {
+        return $$"""
+            {
+              "items": [
+                {
+                  "system": {
+                    "id": "{{Guid.NewGuid()}}",
+                    "name": "Parent Article",
+                    "codename": "parent_article",
+                    "language": "en-US",
+                    "type": "article",
+                    "collection": "default",
+                    "last_modified": "2024-01-01T00:00:00Z"
+                  },
+                  "elements": {
+                    "title": {
+                      "type": "text",
+                      "name": "Title",
+                      "value": "Parent Article Title"
+                    },
+                    "related_articles": {
+                      "type": "modular_content",
+                      "name": "Related articles",
+                      "value": ["linked_article"]
+                    }
+                  }
+                }
+              ],
+              "modular_content": {
+                "linked_article": {
+                  "system": {
+                    "id": "{{Guid.NewGuid()}}",
+                    "name": "Linked Article",
+                    "codename": "linked_article",
+                    "language": "en-US",
+                    "type": "article",
+                    "collection": "default",
+                    "last_modified": "2024-01-01T00:00:00Z"
+                  },
+                  "elements": {
+                    "title": {
+                      "type": "text",
+                      "name": "Title",
+                      "value": "Linked Article Title"
+                    },
+                    "related_articles": {
+                      "type": "modular_content",
+                      "name": "Related articles",
+                      "value": []
+                    }
+                  }
+                }
+              }
+            }
+            """;
     }
 }

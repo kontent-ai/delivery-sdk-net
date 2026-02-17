@@ -9,15 +9,15 @@ public interface IRichTextElementValue : IContentElementValue<string>
     /// <summary>
     /// The images inserted into the rich text element. Each object in the collection contains the inserted image's metadata.
     /// </summary>
-    IDictionary<Guid, IInlineImage> Images { get; }
+    IReadOnlyDictionary<Guid, IInlineImage> Images { get; }
 
     /// <summary>
     /// The hyperlinks in the text that point to content items. Each object in the collection contains the linked item's metadata.
     /// </summary>
-    IDictionary<Guid, IContentLink> Links { get; }
+    IReadOnlyDictionary<Guid, IContentLink> Links { get; }
 
     /// <summary>
     /// A collection of components and content items inserted into the text. Each string in the array is a codename of content item or component.
     /// </summary>
-    List<string> ModularContent { get; }
+    IReadOnlyList<string> ModularContent { get; }
 }

@@ -277,8 +277,8 @@ public class CustomMemoryCacheManager : IDeliveryCacheManager
         var entry = await factory(cancellationToken);
         if (entry is null) return default;
 
-        _cache.TryAdd(cacheKey, entry.Value.Value);
-        return entry.Value.Value;
+        _cache.TryAdd(cacheKey, entry.Value);
+        return entry.Value;
     }
 
     public Task InvalidateAsync(CancellationToken cancellationToken = default, params string[] dependencyKeys)
@@ -323,11 +323,11 @@ public class CustomDistributedCacheManager : IDeliveryCacheManager
             AbsoluteExpirationRelativeToNow = expiration ?? TimeSpan.FromHours(1)
         };
 
-        var serialized = JsonSerializer.Serialize(entry.Value.Value);
+        var serialized = JsonSerializer.Serialize(entry.Value);
         await _cache.SetStringAsync(cacheKey, serialized, options, cancellationToken);
 
         // Implement dependency index + invalidation for production use
-        return entry.Value.Value;
+        return entry.Value;
     }
 
     public Task InvalidateAsync(CancellationToken cancellationToken = default, params string[] dependencyKeys)

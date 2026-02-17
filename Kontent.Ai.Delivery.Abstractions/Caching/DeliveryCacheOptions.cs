@@ -1,3 +1,5 @@
+using System.ComponentModel.DataAnnotations;
+
 namespace Kontent.Ai.Delivery.Abstractions;
 
 /// <summary>
@@ -23,6 +25,7 @@ public sealed class DeliveryCacheOptions
     /// Individual queries can override this value.
     /// </summary>
     /// <value>Defaults to 1 hour.</value>
+    [PositiveTimeSpan(ErrorMessage = "Cache default expiration must be greater than TimeSpan.Zero.")]
     public TimeSpan DefaultExpiration { get; set; } = TimeSpan.FromHours(1);
 
     /// <summary>
@@ -46,6 +49,7 @@ public sealed class DeliveryCacheOptions
     /// </summary>
     /// <value>Defaults to 1 day.</value>
     /// <remarks>Only applies when <see cref="IsFailSafeEnabled"/> is <see langword="true"/>.</remarks>
+    [PositiveTimeSpan(ErrorMessage = "Fail-safe max duration must be greater than TimeSpan.Zero.")]
     public TimeSpan FailSafeMaxDuration { get; set; } = TimeSpan.FromDays(1);
 
     /// <summary>
@@ -54,6 +58,7 @@ public sealed class DeliveryCacheOptions
     /// </summary>
     /// <value>Defaults to 30 seconds.</value>
     /// <remarks>Only applies when <see cref="IsFailSafeEnabled"/> is <see langword="true"/>.</remarks>
+    [NonNegativeTimeSpan(ErrorMessage = "Fail-safe throttle duration cannot be negative.")]
     public TimeSpan FailSafeThrottleDuration { get; set; } = TimeSpan.FromSeconds(30);
 
     /// <summary>
@@ -61,6 +66,7 @@ public sealed class DeliveryCacheOptions
     /// to spread out synchronized expirations and prevent the "thundering herd" problem.
     /// </summary>
     /// <value>Defaults to <see cref="TimeSpan.Zero"/> (no jitter).</value>
+    [NonNegativeTimeSpan(ErrorMessage = "Jitter max duration cannot be negative.")]
     public TimeSpan JitterMaxDuration { get; set; } = TimeSpan.Zero;
 
     /// <summary>
@@ -72,5 +78,6 @@ public sealed class DeliveryCacheOptions
     /// A value between 0.0 and 1.0. Defaults to 0.0 (disabled).
     /// For example, 0.8 means the entry will be refreshed after 80% of its TTL has elapsed.
     /// </value>
+    [Range(0d, 1d, ErrorMessage = "Eager refresh threshold must be between 0.0 and 1.0.")]
     public float EagerRefreshThreshold { get; set; }
 }
