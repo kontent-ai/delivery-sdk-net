@@ -122,18 +122,6 @@ internal static partial class LoggerMessages
     public static partial void CacheModularContentParseFailed(ILogger logger, string codename, Exception exception);
 
     [LoggerMessage(
-        EventId = LogEventIds.CacheEntryEvicted,
-        Level = LogLevel.Debug,
-        Message = "Cache entry evicted: '{CacheKey}' (Reason: {EvictionReason})")]
-    public static partial void CacheEntryEvicted(ILogger logger, string cacheKey, string evictionReason);
-
-    [LoggerMessage(
-        EventId = LogEventIds.CacheSerializationFailed,
-        Level = LogLevel.Warning,
-        Message = "Failed to serialize value for cache key '{CacheKey}' (Type: {TypeName})")]
-    public static partial void CacheSerializationFailed(ILogger logger, string cacheKey, string typeName, Exception exception);
-
-    [LoggerMessage(
         EventId = LogEventIds.CacheDeserializationFailed,
         Level = LogLevel.Debug,
         Message = "Failed to deserialize cached value for key '{CacheKey}' (Type: {TypeName})")]
@@ -150,12 +138,6 @@ internal static partial class LoggerMessages
         Level = LogLevel.Warning,
         Message = "Partial cache: Only {CachedCount} of {TotalCount} items could be cached. Some items may not be the expected concrete type.")]
     public static partial void CachePartialItemsWarning(ILogger logger, int cachedCount, int totalCount);
-
-    [LoggerMessage(
-        EventId = LogEventIds.CacheBestEffortFailed,
-        Level = LogLevel.Trace,
-        Message = "Best-effort cache operation failed for '{Operation}' (non-critical, cache behavior not affected)")]
-    public static partial void CacheBestEffortFailed(ILogger logger, string operation, Exception exception);
 
     // ========== HTTP Handlers ==========
 

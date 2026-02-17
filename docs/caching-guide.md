@@ -85,10 +85,7 @@ Kontent.ai enforces rate limits on API requests:
 
 **Note:** The SDK stores raw JSON payloads in distributed caches and rehydrates on read. This avoids circular reference serialization issues and keeps payloads portable across instances.
 
-Distributed invalidation follows an eventual consistency model:
-- dependency indexes are updated with a read-modify-write pattern
-- concurrent writes can temporarily leave some entries reachable until TTL expires
-- webhook invalidation should be treated as near-immediate, not globally atomic, across all instances
+Built-in distributed invalidation uses dependency tags through FusionCache. If a FusionCache backplane is configured, invalidations are propagated to other nodes to keep local caches coherent.
 
 **Cons:**
 - Network latency (still faster than API calls)
@@ -102,6 +99,8 @@ Distributed invalidation follows an eventual consistency model:
 - Cloud deployments
 
 ## Configuration
+
+The SDK's built-in cache registrations (`AddDeliveryMemoryCache` / `AddDeliveryDistributedCache`) are FusionCache-backed, while keeping the same public `IDeliveryCacheManager` usage.
 
 ### Memory Cache Setup
 
@@ -571,14 +570,14 @@ await cacheManager.InvalidateAsync(default, DeliveryCacheDependencies.TypesListS
 await cacheManager.InvalidateAsync(default, DeliveryCacheDependencies.TaxonomiesListScope);
 ```
 
-### Purge All (Memory Cache)
+### Purge All (SDK Cache)
 
 Sometimes you need to invalidate **everything at once** (e.g., after a deployment, emergency rollback, or a major content model change).
 
-The SDK exposes an **optional** capability interface `IDeliveryCachePurger` that is implemented by the in-memory cache manager (`MemoryCacheManager`).
+The SDK exposes an **optional** capability interface `IDeliveryCachePurger` that is implemented by built-in cache managers.
 
 > [!NOTE]
-> Purge-all is not supported for generic distributed caches (`IDistributedCache`) because they don't provide key enumeration. For distributed caches, use provider-specific purge tooling or key-prefix rotation.
+> If you're using a custom cache manager that does not implement `IDeliveryCachePurger`, use provider-specific purge tooling or key-prefix rotation.
 
 ```csharp
 using Kontent.Ai.Delivery.Abstractions;

@@ -1,6 +1,4 @@
-using System.Collections.Concurrent;
 using System.Diagnostics;
-using System.Reflection;
 using Kontent.Ai.Delivery.Abstractions;
 using Kontent.Ai.Delivery.Caching;
 using Microsoft.Extensions.Caching.Memory;
@@ -181,9 +179,8 @@ public class MemoryCacheManagerTests : IDisposable
     }
 
     [Fact]
-    public async Task ReverseIndex_IsCleanedUp_WhenLastDependentEntryExpires()
+    public async Task ExpiredDependencyEntry_DoesNotBreakFutureInvalidation()
     {
-        // Make expirations deterministic in tests (default is ~1 minute)
         using var cache = new MemoryCache(new MemoryCacheOptions
         {
             ExpirationScanFrequency = TimeSpan.FromMilliseconds(10)
@@ -191,16 +188,12 @@ public class MemoryCacheManagerTests : IDisposable
         using var manager = new MemoryCacheManager(cache);
 
         var key = "test_key";
+        var nextKey = "next_key";
         var value = new TestCacheValue { Id = 1, Name = "Test" };
         var dependency = "dep1";
         var expiration = TimeSpan.FromMilliseconds(50);
 
         await manager.SetAsync(key, value, [dependency], expiration);
-
-        var reverseIndex = GetPrivateField<ConcurrentDictionary<string, HashSet<string>>>(
-            manager,
-            "_reverseIndex");
-        Assert.True(reverseIndex.ContainsKey(dependency));
 
         var expired = await WaitUntilAsync(
             async () =>
@@ -210,24 +203,17 @@ public class MemoryCacheManagerTests : IDisposable
             },
             timeout: TimeSpan.FromSeconds(2),
             pollInterval: TimeSpan.FromMilliseconds(20));
-        var result = await manager.GetAsync<TestCacheValue>(key);
 
         Assert.True(expired);
-        Assert.Null(result);
-        var entries = GetPrivateField<object>(manager, "_entries");
+        Assert.Null(await manager.GetAsync<TestCacheValue>(key));
 
-        // Post-eviction callbacks are not guaranteed to have run synchronously at this point
-        var cleanedUp = await WaitUntilAsync(
-            () => !ConcurrentDictionaryContainsKey(entries, key) && !reverseIndex.ContainsKey(dependency),
-            timeout: TimeSpan.FromSeconds(2),
-            pollInterval: TimeSpan.FromMilliseconds(10));
+        // Behavior contract: once the expired edge is gone, a new edge for the same dependency
+        // must still be tracked and invalidated correctly.
+        await manager.SetAsync(nextKey, new TestCacheValue { Id = 2, Name = "Next" }, [dependency]);
+        Assert.NotNull(await manager.GetAsync<TestCacheValue>(nextKey));
 
-        Assert.True(
-            cleanedUp,
-            $"Expected cleanup for key '{key}' and dependency '{dependency}', but cleanup did not complete in time. " +
-            $"Entries: [{string.Join(", ", GetConcurrentDictionaryKeys(entries))}], ReverseIndexKeys: [{string.Join(", ", reverseIndex.Keys)}]");
-        Assert.DoesNotContain(key, GetConcurrentDictionaryKeys(entries));
-        Assert.False(reverseIndex.ContainsKey(dependency));
+        await manager.InvalidateAsync(default, dependency);
+        Assert.Null(await manager.GetAsync<TestCacheValue>(nextKey));
     }
 
     #endregion
@@ -912,32 +898,6 @@ public class MemoryCacheManagerTests : IDisposable
 
     #endregion
 
-    private static TField GetPrivateField<TField>(object instance, string fieldName)
-    {
-        var field = instance.GetType().GetField(fieldName, BindingFlags.Instance | BindingFlags.NonPublic);
-        Assert.NotNull(field);
-        return (TField)field!.GetValue(instance)!;
-    }
-
-    private static async Task<bool> WaitUntilAsync(Func<bool> condition, TimeSpan timeout, TimeSpan pollInterval)
-    {
-        if (condition())
-            return true;
-
-        var sw = Stopwatch.StartNew();
-        using var timer = new PeriodicTimer(pollInterval);
-        while (sw.Elapsed < timeout)
-        {
-            if (condition())
-                return true;
-
-            if (!await timer.WaitForNextTickAsync().ConfigureAwait(false))
-                break;
-        }
-
-        return condition();
-    }
-
     private static async Task<bool> WaitUntilAsync(Func<Task<bool>> condition, TimeSpan timeout, TimeSpan pollInterval)
     {
         if (await condition().ConfigureAwait(false))
@@ -955,22 +915,6 @@ public class MemoryCacheManagerTests : IDisposable
         }
 
         return await condition().ConfigureAwait(false);
-    }
-
-    private static bool ConcurrentDictionaryContainsKey(object dictionary, string key)
-    {
-        var method = dictionary.GetType().GetMethod("ContainsKey", [typeof(string)]);
-        Assert.NotNull(method);
-        return (bool)method!.Invoke(dictionary, [key])!;
-    }
-
-    private static IEnumerable<string> GetConcurrentDictionaryKeys(object dictionary)
-    {
-        var keysProp = dictionary.GetType().GetProperty("Keys");
-        Assert.NotNull(keysProp);
-        var keys = keysProp!.GetValue(dictionary);
-        Assert.NotNull(keys);
-        return ((System.Collections.IEnumerable)keys!).Cast<object>().Select(k => k?.ToString() ?? "");
     }
 
     #region Test Helper Classes

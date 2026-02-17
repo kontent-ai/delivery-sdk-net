@@ -539,7 +539,7 @@ services.AddDeliveryDistributedCache(defaultExpiration: TimeSpan.FromHours(2));
 ```
 
 > [!NOTE]
-> Distributed caching stores raw JSON payloads to avoid serialization issues with hydrated object graphs. If you implement a custom distributed cache manager, override `StorageMode` to return `CacheStorageMode.RawJson` so the SDK uses the raw JSON caching path.
+> Built-in cache registrations are FusionCache-backed internally. Distributed caching stores raw JSON payloads to avoid serialization issues with hydrated object graphs. If you implement a custom distributed cache manager, override `StorageMode` to return `CacheStorageMode.RawJson` so the SDK uses the raw JSON caching path.
 
 ### 3.4 Named Client Caching
 
@@ -634,7 +634,7 @@ services.AddDeliveryCacheManager("production",
 | Type list scope | `scope_types_list` (`DeliveryCacheDependencies.TypesListScope`) | `scope_types_list` |
 | Taxonomy list scope | `scope_taxonomies_list` (`DeliveryCacheDependencies.TaxonomiesListScope`) | `scope_taxonomies_list` |
 
-### 3.7 Cache Purge (Memory Cache Only)
+### 3.7 Cache Purge (Built-in Cache Managers)
 
 **Legacy:**
 ```csharp
@@ -650,6 +650,9 @@ if (cacheManager is IDeliveryCachePurger purger)
     await purger.PurgeAsync();
 }
 ```
+
+> [!NOTE]
+> Custom cache managers may choose not to implement `IDeliveryCachePurger`. In that case, use provider-specific purge mechanisms.
 
 ### 3.8 Detecting Cache Hits
 

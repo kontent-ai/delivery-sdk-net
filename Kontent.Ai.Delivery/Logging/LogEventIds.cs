@@ -61,12 +61,6 @@ internal static class LogEventIds
     /// <summary>Cache invalidation completed.</summary>
     public const int CacheInvalidateCompleted = 1121;
 
-    /// <summary>Cache entry was evicted.</summary>
-    public const int CacheEntryEvicted = 1130;
-
-    /// <summary>Serialization failed during cache operation.</summary>
-    public const int CacheSerializationFailed = 1140;
-
     /// <summary>Deserialization failed during cache operation.</summary>
     public const int CacheDeserializationFailed = 1141;
 
@@ -81,9 +75,6 @@ internal static class LogEventIds
 
     /// <summary>Partial items cached due to type mismatch.</summary>
     public const int CachePartialItemsWarning = 1150;
-
-    /// <summary>Best-effort cache operation failed (non-critical).</summary>
-    public const int CacheBestEffortFailed = 1160;
 
     // ========== HTTP Handlers (1200-1299) ==========
 

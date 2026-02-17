@@ -1222,6 +1222,8 @@ var result = await client.GetItem<Article>("my-article")
 
 **Cache payloads:** The in-memory cache stores hydrated objects for maximum performance. Distributed caches store raw JSON payloads (rehydrated on read) to avoid serialization issues with circular references.
 
+The built-in cache registrations (`AddDeliveryMemoryCache` / `AddDeliveryDistributedCache`) use a FusionCache-backed implementation internally. Public registration APIs and `IDeliveryCacheManager` contracts remain unchanged.
+
 If you implement a custom cache manager that stores raw payloads (typical for distributed caches), override the `StorageMode` property to return `CacheStorageMode.RawJson` so the SDK uses the raw JSON caching path.
 
 Register custom cache managers per client using keyed registration:
@@ -1297,9 +1299,9 @@ await cacheManager.InvalidateAsync(
     DeliveryCacheDependencies.TaxonomiesListScope);
 ```
 
-#### Purging the SDK Memory Cache
+#### Purging the SDK Cache
 
-If you're using the SDK's in-memory cache (`AddDeliveryMemoryCache`), you can invalidate **all** cached entries at once using the optional `IDeliveryCachePurger` capability:
+Built-in cache managers support invalidating **all** cached entries at once via the optional `IDeliveryCachePurger` capability:
 
 ```csharp
 using Kontent.Ai.Delivery.Abstractions;
@@ -1314,7 +1316,7 @@ if (cacheManager is IDeliveryCachePurger purger)
 ```
 
 > [!NOTE]
-> Purge-all is not supported for generic distributed caches (`IDistributedCache`). Use provider-specific tools or key-prefix rotation.
+> If you're using a custom cache manager that does not implement `IDeliveryCachePurger`, use provider-specific tooling or key-prefix rotation.
 
 > [!IMPORTANT]
 > Runtime option changes on an already-cached client do not invalidate existing cache entries. If you change `EnvironmentId` or `DefaultRenditionPreset`, purge the client cache (or recreate the client) before relying on the new setting.

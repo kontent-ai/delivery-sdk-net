@@ -1,3 +1,4 @@
+using System.Diagnostics;
 using System.Text;
 using System.Text.Json;
 using Kontent.Ai.Delivery.Caching;
@@ -166,43 +167,39 @@ public class DistributedCacheManagerTests
     [Fact]
     public async Task SetAsync_ExpirationPassedToCacheEntry()
     {
-        var trackingCache = new ExpirationTrackingMockCache();
-        var manager = new DistributedCacheManager(trackingCache, defaultExpiration: TimeSpan.FromHours(2));
+        var manager = new DistributedCacheManager(_mockCache, defaultExpiration: TimeSpan.FromHours(2));
 
         var key = "test_key";
         var value = new TestCacheValue { Id = 1, Name = "Test" };
-        var customExpiration = TimeSpan.FromMinutes(30);
-        var before = DateTimeOffset.UtcNow;
+        var customExpiration = TimeSpan.FromMilliseconds(80);
 
         await manager.SetAsync(key, value, [], customExpiration);
-        var after = DateTimeOffset.UtcNow;
 
-        Assert.NotNull(trackingCache.LastExpirationOptions?.AbsoluteExpiration);
-        Assert.InRange(
-            trackingCache.LastExpirationOptions!.AbsoluteExpiration!.Value,
-            before.Add(customExpiration),
-            after.Add(customExpiration));
+        var expired = await WaitUntilAsync(
+            async () => await manager.GetAsync<TestCacheValue>(key) is null,
+            timeout: TimeSpan.FromSeconds(2),
+            pollInterval: TimeSpan.FromMilliseconds(20));
+
+        Assert.True(expired);
     }
 
     [Fact]
     public async Task SetAsync_WithoutCustomExpiration_UsesDefaultExpiration()
     {
-        var defaultExpiration = TimeSpan.FromHours(2);
-        var trackingCache = new ExpirationTrackingMockCache();
-        var manager = new DistributedCacheManager(trackingCache, defaultExpiration: defaultExpiration);
+        var defaultExpiration = TimeSpan.FromMilliseconds(80);
+        var manager = new DistributedCacheManager(_mockCache, defaultExpiration: defaultExpiration);
 
         var key = "test_key";
         var value = new TestCacheValue { Id = 1, Name = "Test" };
-        var before = DateTimeOffset.UtcNow;
 
         await manager.SetAsync(key, value, []);
-        var after = DateTimeOffset.UtcNow;
 
-        Assert.NotNull(trackingCache.LastExpirationOptions?.AbsoluteExpiration);
-        Assert.InRange(
-            trackingCache.LastExpirationOptions!.AbsoluteExpiration!.Value,
-            before.Add(defaultExpiration),
-            after.Add(defaultExpiration));
+        var expired = await WaitUntilAsync(
+            async () => await manager.GetAsync<TestCacheValue>(key) is null,
+            timeout: TimeSpan.FromSeconds(2),
+            pollInterval: TimeSpan.FromMilliseconds(20));
+
+        Assert.True(expired);
     }
 
     #endregion
@@ -266,17 +263,14 @@ public class DistributedCacheManagerTests
     }
 
     [Fact]
-    public async Task SetAsync_ObjectWithCircularReference_ThrowsInvalidOperationException()
+    public async Task SetAsync_ObjectWithCircularReference_DoesNotThrow()
     {
-        // The SDK now caches raw JSON strings rather than complex objects with circular references.
-        // This means circular references in arbitrary objects will throw exceptions (expected behavior).
-        // Content items use CachedRawItemsPayload which stores raw JSON strings, avoiding this issue.
         var key = "circular_key";
         var value = new CircularReferenceValue { Id = 1, Name = "Parent" };
         value.Self = value;
 
-        await Assert.ThrowsAsync<InvalidOperationException>(
-            () => _cacheManager.SetAsync(key, value, []));
+        var exception = await Record.ExceptionAsync(() => _cacheManager.SetAsync(key, value, []));
+        Assert.Null(exception);
     }
 
     [Fact]
@@ -316,26 +310,21 @@ public class DistributedCacheManagerTests
     #region Dependency Tracking Tests
 
     [Fact]
-    public async Task SetAsync_WithDependencies_CreatesReverseIndex()
+    public async Task SetAsync_WithDependencies_InvalidateRemovesEntry()
     {
         var key = "test_key";
         var value = new TestCacheValue { Id = 1, Name = "Test" };
         var dependencies = new[] { "dep1", "dep2" };
 
         await _cacheManager.SetAsync(key, value, dependencies);
-
-        var dep1Index = _mockCache.Get("dep:dep1");
-        var dep2Index = _mockCache.Get("dep:dep2");
-
-        Assert.NotNull(dep1Index);
-        Assert.NotNull(dep2Index);
+        await _cacheManager.InvalidateAsync(default, "dep1");
+        Assert.Null(await _cacheManager.GetAsync<TestCacheValue>(key));
     }
 
     [Fact]
-    public async Task SetAsync_SameDependencyWithShorterTtl_DoesNotShrinkDependencyIndexExpiration()
+    public async Task SetAsync_SameDependencyWithShorterTtl_StillInvalidatesAllEntries()
     {
-        var trackingCache = new ExpirationTrackingMockCache();
-        var manager = new DistributedCacheManager(trackingCache, defaultExpiration: TimeSpan.FromMinutes(5));
+        var manager = new DistributedCacheManager(_mockCache, defaultExpiration: TimeSpan.FromMinutes(5));
         var dependency = "dep_shared";
 
         await manager.SetAsync(
@@ -344,19 +333,15 @@ public class DistributedCacheManagerTests
             [dependency],
             expiration: TimeSpan.FromMinutes(30));
 
-        var firstExpiration = trackingCache.GetLastExpirationOptions($"dep:{dependency}")?.AbsoluteExpiration;
-
         await manager.SetAsync(
             "short_ttl_key",
             new TestCacheValue { Id = 2, Name = "Short" },
             [dependency],
             expiration: TimeSpan.FromMinutes(1));
 
-        var secondExpiration = trackingCache.GetLastExpirationOptions($"dep:{dependency}")?.AbsoluteExpiration;
-
-        Assert.NotNull(firstExpiration);
-        Assert.NotNull(secondExpiration);
-        Assert.True(secondExpiration >= firstExpiration);
+        await manager.InvalidateAsync(default, dependency);
+        Assert.Null(await manager.GetAsync<TestCacheValue>("long_ttl_key"));
+        Assert.Null(await manager.GetAsync<TestCacheValue>("short_ttl_key"));
     }
 
     [Fact]
@@ -551,8 +536,8 @@ public class DistributedCacheManagerTests
 
         await Task.WhenAll(tasks);
 
-        // Note: Due to race conditions in reverse index, not all entries may be tracked
-        // This is acceptable as documented - eventual consistency
+        // FusionCache tags provide deterministic invalidation — all entries sharing
+        // the tag are removed atomically, with no race condition window.
 
         await _cacheManager.InvalidateAsync(default, sharedDependency);
 
@@ -562,8 +547,7 @@ public class DistributedCacheManagerTests
 
         var results = await Task.WhenAll(verifyTasks);
 
-        var nullCount = results.Count(r => r is null);
-        Assert.True(nullCount >= 25, $"Expected at least 25 entries to be invalidated, but only {nullCount} were invalidated");
+        Assert.All(results, Assert.Null);
     }
 
     [Fact]
@@ -625,30 +609,28 @@ public class DistributedCacheManagerTests
     #region Cache Key Prefix Tests
 
     [Fact]
-    public async Task SetAsync_UsesCachePrefix()
+    public async Task SetAsync_WithPrefixedManager_DoesNotLeakToDefaultNamespace()
     {
         var key = "test_key";
         var value = new TestCacheValue { Id = 1, Name = "Test" };
+        var prefixedManager = new DistributedCacheManager(_mockCache, keyPrefix: "prefixed");
 
-        await _cacheManager.SetAsync(key, value, []);
+        await prefixedManager.SetAsync(key, value, []);
 
-        var cacheEntry = _mockCache.Get("cache:" + key);
-
-        Assert.NotNull(cacheEntry);
+        Assert.NotNull(await prefixedManager.GetAsync<TestCacheValue>(key));
+        Assert.Null(await _cacheManager.GetAsync<TestCacheValue>(key));
     }
 
     [Fact]
-    public async Task SetAsync_DependenciesUseDependencyPrefix()
+    public async Task SetAsync_DependenciesSupportInvalidate()
     {
         var key = "test_key";
         var value = new TestCacheValue { Id = 1, Name = "Test" };
         var dependency = "dep1";
 
         await _cacheManager.SetAsync(key, value, [dependency]);
-
-        var depEntry = _mockCache.Get("dep:" + dependency);
-
-        Assert.NotNull(depEntry);
+        await _cacheManager.InvalidateAsync(default, dependency);
+        Assert.Null(await _cacheManager.GetAsync<TestCacheValue>(key));
     }
 
     #endregion
@@ -719,7 +701,7 @@ public class DistributedCacheManagerTests
     }
 
     [Fact]
-    public async Task GetAsync_TypeMismatch_ReturnsObjectWithDefaultValues()
+    public async Task GetAsync_TypeMismatch_ReturnsNull()
     {
         var key = "test_key";
         var value = new TestCacheValue { Id = 1, Name = "Test" };
@@ -727,10 +709,7 @@ public class DistributedCacheManagerTests
 
         var result = await _cacheManager.GetAsync<OtherTestValue>(key);
 
-        // System.Text.Json is permissive and will deserialize to OtherTestValue with default values
-        // This is expected behavior - the JSON contains {Id:1, Name:"Test"} but OtherTestValue only has Data property
-        Assert.NotNull(result);
-        Assert.Null(result.Data);
+        Assert.Null(result);
     }
 
     [Fact]
@@ -899,18 +878,37 @@ public class DistributedCacheManagerTests
     }
 
     [Fact]
-    public async Task Constructor_WithKeyPrefix_StoresPrefix()
+    public async Task Constructor_WithKeyPrefix_IsolatesEntries()
     {
         var cache = new MockDistributedCache();
         var manager = new DistributedCacheManager(cache, keyPrefix: "my-prefix");
+        var defaultManager = new DistributedCacheManager(cache);
 
         await manager.SetAsync("test", new TestCacheValue { Id = 1 }, []);
-
-        var keys = cache.GetAllKeys();
-        Assert.Contains(keys, k => k.StartsWith("my-prefix:"));
+        Assert.NotNull(await manager.GetAsync<TestCacheValue>("test"));
+        Assert.Null(await defaultManager.GetAsync<TestCacheValue>("test"));
     }
 
     #endregion
+
+    private static async Task<bool> WaitUntilAsync(Func<Task<bool>> condition, TimeSpan timeout, TimeSpan pollInterval)
+    {
+        if (await condition().ConfigureAwait(false))
+            return true;
+
+        var sw = Stopwatch.StartNew();
+        using var timer = new PeriodicTimer(pollInterval);
+        while (sw.Elapsed < timeout)
+        {
+            if (await condition().ConfigureAwait(false))
+                return true;
+
+            if (!await timer.WaitForNextTickAsync().ConfigureAwait(false))
+                break;
+        }
+
+        return await condition().ConfigureAwait(false);
+    }
 
     #region Test Helper Classes
 
@@ -922,7 +920,6 @@ public class DistributedCacheManagerTests
 
     private class OtherTestValue
     {
-        public string? Data { get; }
     }
 
     private class ComplexCacheValue
@@ -1009,97 +1006,6 @@ public class DistributedCacheManagerTests
             return Task.CompletedTask;
         }
 
-        public IEnumerable<string> GetAllKeys()
-        {
-            lock (_lock)
-            {
-                return _cache.Keys.ToList();
-            }
-        }
-    }
-
-    /// <summary>
-    /// Mock that tracks the expiration options passed to SetAsync.
-    /// </summary>
-    private class ExpirationTrackingMockCache : IDistributedCache
-    {
-        private readonly Dictionary<string, byte[]> _cache = [];
-        private readonly Dictionary<string, DistributedCacheEntryOptions> _optionsByKey = [];
-        private readonly object _lock = new();
-
-        public DistributedCacheEntryOptions? LastExpirationOptions { get; private set; }
-
-        public byte[]? Get(string key)
-        {
-            lock (_lock)
-            {
-                return _cache.TryGetValue(key, out var value) ? value : null;
-            }
-        }
-
-        public Task<byte[]?> GetAsync(string key, CancellationToken token = default)
-        {
-            token.ThrowIfCancellationRequested();
-            return Task.FromResult(Get(key));
-        }
-
-        public void Set(string key, byte[] value, DistributedCacheEntryOptions options)
-        {
-            lock (_lock)
-            {
-                _cache[key] = value;
-                LastExpirationOptions = options;
-                _optionsByKey[key] = CloneOptions(options);
-            }
-        }
-
-        public Task SetAsync(string key, byte[] value, DistributedCacheEntryOptions options, CancellationToken token = default)
-        {
-            token.ThrowIfCancellationRequested();
-            Set(key, value, options);
-            return Task.CompletedTask;
-        }
-
-        public DistributedCacheEntryOptions? GetLastExpirationOptions(string key)
-        {
-            lock (_lock)
-            {
-                return _optionsByKey.TryGetValue(key, out var options)
-                    ? options
-                    : null;
-            }
-        }
-
-        public void Refresh(string key) { }
-
-        public Task RefreshAsync(string key, CancellationToken token = default)
-        {
-            token.ThrowIfCancellationRequested();
-            return Task.CompletedTask;
-        }
-
-        public void Remove(string key)
-        {
-            lock (_lock)
-            {
-                _cache.Remove(key);
-            }
-        }
-
-        public Task RemoveAsync(string key, CancellationToken token = default)
-        {
-            token.ThrowIfCancellationRequested();
-            Remove(key);
-            return Task.CompletedTask;
-        }
-
-        private static DistributedCacheEntryOptions CloneOptions(DistributedCacheEntryOptions options) =>
-            new()
-            {
-                AbsoluteExpiration = options.AbsoluteExpiration,
-                AbsoluteExpirationRelativeToNow = options.AbsoluteExpirationRelativeToNow,
-                SlidingExpiration = options.SlidingExpiration
-            };
     }
 
     private static IEnumerable<string> ThrowingDependencies()
