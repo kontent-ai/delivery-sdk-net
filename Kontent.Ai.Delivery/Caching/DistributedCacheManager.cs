@@ -9,36 +9,16 @@ namespace Kontent.Ai.Delivery.Caching;
 /// </summary>
 internal sealed class DistributedCacheManager(
     IDistributedCache cache,
-    string? keyPrefix,
-    TimeSpan? defaultExpiration,
-    JsonSerializerOptions? jsonSerializerOptions,
+    DeliveryCacheOptions cacheOptions,
+    JsonSerializerOptions? jsonSerializerOptions = null,
     ILogger<DistributedCacheManager>? logger = null)
     : IDeliveryCacheManager, IDeliveryCachePurger, IDisposable
 {
     private readonly FusionCacheManager _inner = FusionCacheManager.CreateDistributed(
         cache,
-        keyPrefix,
-        defaultExpiration,
+        cacheOptions,
         jsonSerializerOptions,
         logger);
-
-    /// <summary>
-    /// Initializes a new instance of the <see cref="DistributedCacheManager"/> class.
-    /// </summary>
-    /// <param name="cache">The distributed cache implementation (Redis, SQL Server, etc.).</param>
-    /// <param name="keyPrefix">
-    /// Optional prefix for all cache keys. Used to isolate cache entries when multiple clients share the same distributed cache.
-    /// </param>
-    /// <param name="defaultExpiration">Default expiration for cache entries. If null, defaults to 1 hour.</param>
-    /// <param name="logger">Optional logger for cache operations.</param>
-    public DistributedCacheManager(
-        IDistributedCache cache,
-        string? keyPrefix = null,
-        TimeSpan? defaultExpiration = null,
-        ILogger<DistributedCacheManager>? logger = null)
-        : this(cache, keyPrefix, defaultExpiration, jsonSerializerOptions: null, logger)
-    {
-    }
 
     /// <inheritdoc />
     public CacheStorageMode StorageMode => _inner.StorageMode;

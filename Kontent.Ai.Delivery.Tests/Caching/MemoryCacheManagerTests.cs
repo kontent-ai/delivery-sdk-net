@@ -18,7 +18,7 @@ public class MemoryCacheManagerTests : IDisposable
     public MemoryCacheManagerTests()
     {
         _memoryCache = new MemoryCache(new MemoryCacheOptions());
-        _cacheManager = new MemoryCacheManager(_memoryCache, defaultExpiration: TimeSpan.FromMinutes(5));
+        _cacheManager = new MemoryCacheManager(_memoryCache, new DeliveryCacheOptions { DefaultExpiration = TimeSpan.FromMinutes(5) });
     }
 
     public void Dispose()
@@ -200,7 +200,7 @@ public class MemoryCacheManagerTests : IDisposable
         {
             ExpirationScanFrequency = TimeSpan.FromMilliseconds(10)
         });
-        using var manager = new MemoryCacheManager(cache);
+        using var manager = new MemoryCacheManager(cache, new DeliveryCacheOptions());
 
         var key = "test_key";
         var nextKey = "next_key";
@@ -530,7 +530,7 @@ public class MemoryCacheManagerTests : IDisposable
         {
             ExpirationScanFrequency = TimeSpan.FromMilliseconds(10)
         });
-        using var manager = new MemoryCacheManager(cache);
+        using var manager = new MemoryCacheManager(cache, new DeliveryCacheOptions());
 
         const string dependency = "dep_race";
         const string expiringKey = "expiring_key";
@@ -604,7 +604,7 @@ public class MemoryCacheManagerTests : IDisposable
     public async Task Dispose_DisposesResources()
     {
         var cache = new MemoryCache(new MemoryCacheOptions());
-        var manager = new MemoryCacheManager(cache);
+        var manager = new MemoryCacheManager(cache, new DeliveryCacheOptions());
 
         var key = "test_key";
         var value = new TestCacheValue { Id = 1, Name = "Test" };
@@ -620,7 +620,7 @@ public class MemoryCacheManagerTests : IDisposable
     public void Dispose_CalledMultipleTimes_DoesNotThrow()
     {
         var cache = new MemoryCache(new MemoryCacheOptions());
-        var manager = new MemoryCacheManager(cache);
+        var manager = new MemoryCacheManager(cache, new DeliveryCacheOptions());
 
         var exception = Record.Exception(() =>
         {
@@ -636,7 +636,7 @@ public class MemoryCacheManagerTests : IDisposable
     public async Task Dispose_WithPendingOperations_CleansUpCorrectly()
     {
         var cache = new MemoryCache(new MemoryCacheOptions());
-        var manager = new MemoryCacheManager(cache);
+        var manager = new MemoryCacheManager(cache, new DeliveryCacheOptions());
 
         var key = "test_key";
         var value = new TestCacheValue { Id = 1, Name = "Test" };
@@ -762,8 +762,8 @@ public class MemoryCacheManagerTests : IDisposable
     public async Task SetAsync_WithDifferentPrefixes_IsolatesCacheEntries()
     {
         var sharedCache = new MemoryCache(new MemoryCacheOptions());
-        using var manager1 = new MemoryCacheManager(sharedCache, keyPrefix: "client1");
-        using var manager2 = new MemoryCacheManager(sharedCache, keyPrefix: "client2");
+        using var manager1 = new MemoryCacheManager(sharedCache, new DeliveryCacheOptions { KeyPrefix = "client1" });
+        using var manager2 = new MemoryCacheManager(sharedCache, new DeliveryCacheOptions { KeyPrefix = "client2" });
 
         var key = "same_key";
         var value1 = new TestCacheValue { Id = 1, Name = "Client1Value" };
@@ -789,8 +789,8 @@ public class MemoryCacheManagerTests : IDisposable
     public async Task InvalidateAsync_WithDifferentPrefixes_OnlyAffectsOwnEntries()
     {
         var sharedCache = new MemoryCache(new MemoryCacheOptions());
-        using var manager1 = new MemoryCacheManager(sharedCache, keyPrefix: "client1");
-        using var manager2 = new MemoryCacheManager(sharedCache, keyPrefix: "client2");
+        using var manager1 = new MemoryCacheManager(sharedCache, new DeliveryCacheOptions { KeyPrefix = "client1" });
+        using var manager2 = new MemoryCacheManager(sharedCache, new DeliveryCacheOptions { KeyPrefix = "client2" });
 
         var key = "same_key";
         var dependency = "same_dep";
@@ -816,8 +816,8 @@ public class MemoryCacheManagerTests : IDisposable
     public async Task GetAsync_WithDifferentPrefixes_DoesNotCrossContaminate()
     {
         var sharedCache = new MemoryCache(new MemoryCacheOptions());
-        using var manager1 = new MemoryCacheManager(sharedCache, keyPrefix: "client1");
-        using var manager2 = new MemoryCacheManager(sharedCache, keyPrefix: "client2");
+        using var manager1 = new MemoryCacheManager(sharedCache, new DeliveryCacheOptions { KeyPrefix = "client1" });
+        using var manager2 = new MemoryCacheManager(sharedCache, new DeliveryCacheOptions { KeyPrefix = "client2" });
 
         var key = "unique_key";
         var value = new TestCacheValue { Id = 1, Name = "OnlyInClient1" };
@@ -837,8 +837,8 @@ public class MemoryCacheManagerTests : IDisposable
     public async Task SetAsync_WithNullPrefix_UsesUnprefixedKeys()
     {
         var sharedCache = new MemoryCache(new MemoryCacheOptions());
-        using var managerNoPrefix = new MemoryCacheManager(sharedCache, keyPrefix: null);
-        using var managerWithPrefix = new MemoryCacheManager(sharedCache, keyPrefix: "prefixed");
+        using var managerNoPrefix = new MemoryCacheManager(sharedCache, new DeliveryCacheOptions { KeyPrefix = null });
+        using var managerWithPrefix = new MemoryCacheManager(sharedCache, new DeliveryCacheOptions { KeyPrefix = "prefixed" });
 
         var key = "test_key";
         var value1 = new TestCacheValue { Id = 1, Name = "NoPrefix" };
@@ -862,8 +862,8 @@ public class MemoryCacheManagerTests : IDisposable
     public async Task InvalidateAsync_WithSharedDependencyName_OnlyInvalidatesOwnPrefix()
     {
         var sharedCache = new MemoryCache(new MemoryCacheOptions());
-        using var manager1 = new MemoryCacheManager(sharedCache, keyPrefix: "prod");
-        using var manager2 = new MemoryCacheManager(sharedCache, keyPrefix: "preview");
+        using var manager1 = new MemoryCacheManager(sharedCache, new DeliveryCacheOptions { KeyPrefix = "prod" });
+        using var manager2 = new MemoryCacheManager(sharedCache, new DeliveryCacheOptions { KeyPrefix = "preview" });
 
         var dependency = "content_type_article";
 
@@ -886,8 +886,8 @@ public class MemoryCacheManagerTests : IDisposable
     public async Task ConcurrentOperations_WithDifferentPrefixes_MaintainsIsolation()
     {
         var sharedCache = new MemoryCache(new MemoryCacheOptions());
-        using var manager1 = new MemoryCacheManager(sharedCache, keyPrefix: "client1");
-        using var manager2 = new MemoryCacheManager(sharedCache, keyPrefix: "client2");
+        using var manager1 = new MemoryCacheManager(sharedCache, new DeliveryCacheOptions { KeyPrefix = "client1" });
+        using var manager2 = new MemoryCacheManager(sharedCache, new DeliveryCacheOptions { KeyPrefix = "client2" });
 
         var dependency = "shared_dep_name";
 
@@ -909,6 +909,77 @@ public class MemoryCacheManagerTests : IDisposable
         Assert.All(verify2, Assert.NotNull);
 
         sharedCache.Dispose();
+    }
+
+    #endregion
+
+    #region Fail-Safe Tests
+
+    [Fact]
+    public async Task FailSafe_Enabled_ServesStaleEntryAfterExpiration()
+    {
+        using var cache = new MemoryCache(new MemoryCacheOptions());
+        using var manager = new MemoryCacheManager(cache, new DeliveryCacheOptions
+        {
+            DefaultExpiration = TimeSpan.FromMilliseconds(100),
+            IsFailSafeEnabled = true,
+            FailSafeMaxDuration = TimeSpan.FromMinutes(5),
+            FailSafeThrottleDuration = TimeSpan.FromSeconds(1)
+        });
+
+        var key = "failsafe_key";
+        var value = new TestCacheValue { Id = 42, Name = "Stale" };
+
+        await manager.SetAsync(key, value, ["dep1"]);
+
+        // Wait for the normal TTL to expire, but fail-safe should still serve the stale entry.
+        await Task.Delay(TimeSpan.FromMilliseconds(300));
+
+        var result = await manager.GetAsync<TestCacheValue>(key);
+
+        Assert.NotNull(result);
+        Assert.Equal(42, result.Id);
+    }
+
+    [Fact]
+    public async Task FailSafe_Disabled_ReturnsNullAfterExpiration()
+    {
+        using var cache = new MemoryCache(new MemoryCacheOptions());
+        using var manager = new MemoryCacheManager(cache, new DeliveryCacheOptions
+        {
+            DefaultExpiration = TimeSpan.FromMilliseconds(100),
+            IsFailSafeEnabled = false
+        });
+
+        var key = "no_failsafe_key";
+        var value = new TestCacheValue { Id = 42, Name = "Ephemeral" };
+
+        await manager.SetAsync(key, value, ["dep1"]);
+
+        var expired = await WaitUntilAsync(
+            async () => await manager.GetAsync<TestCacheValue>(key) is null,
+            timeout: TimeSpan.FromSeconds(2),
+            pollInterval: TimeSpan.FromMilliseconds(20));
+
+        Assert.True(expired);
+        Assert.Null(await manager.GetAsync<TestCacheValue>(key));
+    }
+
+    #endregion
+
+    #region Jitter Tests
+
+    [Fact]
+    public void Jitter_DoesNotThrow()
+    {
+        using var cache = new MemoryCache(new MemoryCacheOptions());
+        var exception = Record.Exception(() => new MemoryCacheManager(cache, new DeliveryCacheOptions
+        {
+            DefaultExpiration = TimeSpan.FromMinutes(5),
+            JitterMaxDuration = TimeSpan.FromSeconds(30)
+        }));
+
+        Assert.Null(exception);
     }
 
     #endregion

@@ -1918,7 +1918,7 @@ public partial class CachingIntegrationTests
 
         services.AddMemoryCache();
         services.AddSingleton<IDeliveryCacheManager>(sp =>
-            new MemoryCacheManager(sp.GetRequiredService<IMemoryCache>()));
+            new MemoryCacheManager(sp.GetRequiredService<IMemoryCache>(), new DeliveryCacheOptions()));
         services.AddDeliveryClient(options, configureHttpClient: b =>
             b.ConfigurePrimaryHttpMessageHandler(() => mock));
 

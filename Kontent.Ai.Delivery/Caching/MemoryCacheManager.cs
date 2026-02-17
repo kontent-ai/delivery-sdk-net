@@ -8,15 +8,13 @@ namespace Kontent.Ai.Delivery.Caching;
 /// </summary>
 internal sealed class MemoryCacheManager(
     IMemoryCache memoryCache,
-    string? keyPrefix = null,
-    TimeSpan? defaultExpiration = null,
+    DeliveryCacheOptions cacheOptions,
     ILogger<MemoryCacheManager>? logger = null)
     : IDeliveryCacheManager, IDeliveryCachePurger, IDisposable
 {
     private readonly FusionCacheManager _inner = FusionCacheManager.CreateMemory(
         memoryCache,
-        keyPrefix,
-        defaultExpiration,
+        cacheOptions,
         logger);
 
     /// <inheritdoc />

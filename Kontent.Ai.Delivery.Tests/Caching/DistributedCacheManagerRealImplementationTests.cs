@@ -1,3 +1,4 @@
+using Kontent.Ai.Delivery.Abstractions;
 using Kontent.Ai.Delivery.Caching;
 using Microsoft.Extensions.Caching.Distributed;
 using Microsoft.Extensions.DependencyInjection;
@@ -23,7 +24,7 @@ public class DistributedCacheManagerRealImplementationTests
         var serviceProvider = services.BuildServiceProvider();
 
         _distributedCache = serviceProvider.GetRequiredService<IDistributedCache>();
-        _cacheManager = new DistributedCacheManager(_distributedCache, defaultExpiration: TimeSpan.FromMinutes(5));
+        _cacheManager = new DistributedCacheManager(_distributedCache, new DeliveryCacheOptions { DefaultExpiration = TimeSpan.FromMinutes(5) });
     }
 
     #region Basic Operations

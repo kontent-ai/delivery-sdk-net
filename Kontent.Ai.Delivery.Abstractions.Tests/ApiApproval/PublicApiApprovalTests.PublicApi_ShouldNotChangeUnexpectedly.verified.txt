@@ -11,6 +11,15 @@ public enum CacheStorageMode : Enum
 public sealed class DeliveryCacheDependencies
 
 // Kontent.Ai.Delivery.Abstractions
+public sealed class DeliveryCacheOptions
+    TimeSpan DefaultExpiration { get; set; }
+    TimeSpan FailSafeMaxDuration { get; set; }
+    TimeSpan FailSafeThrottleDuration { get; set; }
+    Boolean IsFailSafeEnabled { get; set; }
+    TimeSpan JitterMaxDuration { get; set; }
+    String KeyPrefix { get; set; }
+
+// Kontent.Ai.Delivery.Abstractions
 public sealed class DeliveryOptions : IValidatableObject
     String DefaultRenditionPreset { get; set; }
     Boolean EnableResilience { get; set; }

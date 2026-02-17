@@ -28,8 +28,10 @@ public sealed class ServiceCollectionExtensions
 public sealed class DeliveryClientBuilder
     IDeliveryClientContainer Build()
     DeliveryClientBuilder WithDistributedCache(IDistributedCache distributedCache, Nullable`1 defaultExpiration)
+    DeliveryClientBuilder WithDistributedCache(IDistributedCache distributedCache, Action`1 configureCacheOptions)
     DeliveryClientBuilder WithLoggerFactory(ILoggerFactory loggerFactory)
     DeliveryClientBuilder WithMemoryCache(Nullable`1 defaultExpiration)
+    DeliveryClientBuilder WithMemoryCache(Action`1 configureCacheOptions)
     DeliveryClientBuilder WithTypeProvider(ITypeProvider typeProvider)
 
 // Kontent.Ai.Delivery.Configuration

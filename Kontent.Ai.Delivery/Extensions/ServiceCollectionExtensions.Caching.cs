@@ -72,6 +72,38 @@ public static partial class ServiceCollectionExtensions
     }
 
     /// <summary>
+    /// Registers a memory cache manager for the default Delivery client with advanced configuration.
+    /// </summary>
+    /// <param name="services">The service collection.</param>
+    /// <param name="configureCacheOptions">A delegate to configure the <see cref="DeliveryCacheOptions"/>.</param>
+    /// <returns>The service collection for chaining.</returns>
+    /// <remarks>
+    /// <para>
+    /// Use this overload to enable advanced features like fail-safe and jitter.
+    /// </para>
+    /// <para>
+    /// Example usage:
+    /// <code>
+    /// services.AddDeliveryClient(o => o.EnvironmentId = envId);
+    /// services.AddDeliveryMemoryCache(opts =>
+    /// {
+    ///     opts.DefaultExpiration = TimeSpan.FromHours(2);
+    ///     opts.IsFailSafeEnabled = true;
+    ///     opts.JitterMaxDuration = TimeSpan.FromSeconds(30);
+    /// });
+    /// </code>
+    /// </para>
+    /// </remarks>
+    public static IServiceCollection AddDeliveryMemoryCache(
+        this IServiceCollection services,
+        Action<DeliveryCacheOptions> configureCacheOptions)
+    {
+        return services.AddDeliveryMemoryCache(
+            DeliveryClientNames.Default,
+            configureCacheOptions);
+    }
+
+    /// <summary>
     /// Registers a memory cache manager for a specific named Delivery client.
     /// </summary>
     /// <param name="services">The service collection.</param>
@@ -107,21 +139,52 @@ public static partial class ServiceCollectionExtensions
         string? keyPrefix = null,
         TimeSpan? defaultExpiration = null)
     {
-        ArgumentNullException.ThrowIfNull(services);
-        ValidateClientName(clientName);
-
-        // Register IMemoryCache if not already registered (shared across all clients)
-        services.AddMemoryCache();
         var resolvedKeyPrefix = ResolveCacheKeyPrefix(clientName, keyPrefix);
+        var cacheOptions = new DeliveryCacheOptions { KeyPrefix = resolvedKeyPrefix };
+        if (defaultExpiration.HasValue)
+        {
+            cacheOptions.DefaultExpiration = defaultExpiration.Value;
+        }
 
-        return RegisterCacheManager(
-            services,
-            clientName,
-            sp => new MemoryCacheManager(
-                sp.GetRequiredService<IMemoryCache>(),
-                resolvedKeyPrefix,
-                defaultExpiration,
-                sp.GetService<ILogger<MemoryCacheManager>>()));
+        return AddDeliveryMemoryCacheCore(services, clientName, cacheOptions);
+    }
+
+    /// <summary>
+    /// Registers a memory cache manager for a specific named Delivery client with advanced configuration.
+    /// </summary>
+    /// <param name="services">The service collection.</param>
+    /// <param name="clientName">The name of the Delivery client to enable caching for.</param>
+    /// <param name="configureCacheOptions">A delegate to configure the <see cref="DeliveryCacheOptions"/>.</param>
+    /// <returns>The service collection for chaining.</returns>
+    /// <remarks>
+    /// <para>
+    /// Use this overload to enable advanced features like fail-safe and jitter.
+    /// If <see cref="DeliveryCacheOptions.KeyPrefix"/> is not set, it defaults to the client name.
+    /// </para>
+    /// <para>
+    /// Example usage:
+    /// <code>
+    /// services.AddDeliveryClient("production", o => o.EnvironmentId = prodEnvId);
+    /// services.AddDeliveryMemoryCache("production", opts =>
+    /// {
+    ///     opts.DefaultExpiration = TimeSpan.FromHours(2);
+    ///     opts.IsFailSafeEnabled = true;
+    /// });
+    /// </code>
+    /// </para>
+    /// </remarks>
+    public static IServiceCollection AddDeliveryMemoryCache(
+        this IServiceCollection services,
+        string clientName,
+        Action<DeliveryCacheOptions> configureCacheOptions)
+    {
+        ArgumentNullException.ThrowIfNull(configureCacheOptions);
+
+        var cacheOptions = new DeliveryCacheOptions();
+        configureCacheOptions(cacheOptions);
+        cacheOptions.KeyPrefix ??= clientName;
+
+        return AddDeliveryMemoryCacheCore(services, clientName, cacheOptions);
     }
 
     /// <summary>
@@ -162,6 +225,42 @@ public static partial class ServiceCollectionExtensions
             DeliveryClientNames.Default,
             string.Empty, // No prefix for default single-client scenario
             defaultExpiration);
+    }
+
+    /// <summary>
+    /// Registers a distributed cache manager for the default Delivery client with advanced configuration.
+    /// </summary>
+    /// <param name="services">The service collection.</param>
+    /// <param name="configureCacheOptions">A delegate to configure the <see cref="DeliveryCacheOptions"/>.</param>
+    /// <returns>The service collection for chaining.</returns>
+    /// <remarks>
+    /// <para>
+    /// Use this overload to enable advanced features like fail-safe and jitter.
+    /// </para>
+    /// <para>
+    /// <b>Prerequisites:</b> You must register an <see cref="IDistributedCache"/> implementation before calling this method.
+    /// </para>
+    /// <para>
+    /// Example usage:
+    /// <code>
+    /// services.AddStackExchangeRedisCache(options => options.Configuration = "localhost");
+    /// services.AddDeliveryClient(o => o.EnvironmentId = envId);
+    /// services.AddDeliveryDistributedCache(opts =>
+    /// {
+    ///     opts.DefaultExpiration = TimeSpan.FromHours(2);
+    ///     opts.IsFailSafeEnabled = true;
+    ///     opts.JitterMaxDuration = TimeSpan.FromSeconds(30);
+    /// });
+    /// </code>
+    /// </para>
+    /// </remarks>
+    public static IServiceCollection AddDeliveryDistributedCache(
+        this IServiceCollection services,
+        Action<DeliveryCacheOptions> configureCacheOptions)
+    {
+        return services.AddDeliveryDistributedCache(
+            DeliveryClientNames.Default,
+            configureCacheOptions);
     }
 
     /// <summary>
@@ -207,18 +306,95 @@ public static partial class ServiceCollectionExtensions
         string? keyPrefix = null,
         TimeSpan? defaultExpiration = null)
     {
+        var resolvedKeyPrefix = ResolveCacheKeyPrefix(clientName, keyPrefix);
+        var cacheOptions = new DeliveryCacheOptions { KeyPrefix = resolvedKeyPrefix };
+        if (defaultExpiration.HasValue)
+        {
+            cacheOptions.DefaultExpiration = defaultExpiration.Value;
+        }
+
+        return AddDeliveryDistributedCacheCore(services, clientName, cacheOptions);
+    }
+
+    /// <summary>
+    /// Registers a distributed cache manager for a specific named Delivery client with advanced configuration.
+    /// </summary>
+    /// <param name="services">The service collection.</param>
+    /// <param name="clientName">The name of the Delivery client to enable caching for.</param>
+    /// <param name="configureCacheOptions">A delegate to configure the <see cref="DeliveryCacheOptions"/>.</param>
+    /// <returns>The service collection for chaining.</returns>
+    /// <remarks>
+    /// <para>
+    /// Use this overload to enable advanced features like fail-safe and jitter.
+    /// If <see cref="DeliveryCacheOptions.KeyPrefix"/> is not set, it defaults to the client name.
+    /// </para>
+    /// <para>
+    /// <b>Prerequisites:</b> You must register an <see cref="IDistributedCache"/> implementation before calling this method.
+    /// </para>
+    /// <para>
+    /// Example usage:
+    /// <code>
+    /// services.AddStackExchangeRedisCache(options => options.Configuration = "localhost");
+    /// services.AddDeliveryClient("production", o => o.EnvironmentId = prodEnvId);
+    /// services.AddDeliveryDistributedCache("production", opts =>
+    /// {
+    ///     opts.DefaultExpiration = TimeSpan.FromHours(2);
+    ///     opts.IsFailSafeEnabled = true;
+    /// });
+    /// </code>
+    /// </para>
+    /// </remarks>
+    public static IServiceCollection AddDeliveryDistributedCache(
+        this IServiceCollection services,
+        string clientName,
+        Action<DeliveryCacheOptions> configureCacheOptions)
+    {
         ArgumentNullException.ThrowIfNull(services);
         ValidateClientName(clientName);
-        var resolvedKeyPrefix = ResolveCacheKeyPrefix(clientName, keyPrefix);
+        ArgumentNullException.ThrowIfNull(configureCacheOptions);
+
+        var cacheOptions = new DeliveryCacheOptions();
+        configureCacheOptions(cacheOptions);
+        cacheOptions.KeyPrefix ??= clientName;
+
+        return AddDeliveryDistributedCacheCore(services, clientName, cacheOptions);
+    }
+
+    private static IServiceCollection AddDeliveryMemoryCacheCore(
+        IServiceCollection services,
+        string clientName,
+        DeliveryCacheOptions cacheOptions)
+    {
+        ArgumentNullException.ThrowIfNull(services);
+        ValidateClientName(clientName);
+
+        // Register IMemoryCache if not already registered (shared across all clients)
+        services.AddMemoryCache();
+
+        return RegisterCacheManager(
+            services,
+            clientName,
+            sp => new MemoryCacheManager(
+                sp.GetRequiredService<IMemoryCache>(),
+                cacheOptions,
+                sp.GetService<ILogger<MemoryCacheManager>>()));
+    }
+
+    private static IServiceCollection AddDeliveryDistributedCacheCore(
+        IServiceCollection services,
+        string clientName,
+        DeliveryCacheOptions cacheOptions)
+    {
+        ArgumentNullException.ThrowIfNull(services);
+        ValidateClientName(clientName);
 
         return RegisterCacheManager(
             services,
             clientName,
             sp => new DistributedCacheManager(
                 sp.GetRequiredService<IDistributedCache>(),
-                resolvedKeyPrefix,
-                defaultExpiration,
-                sp.GetService<ILogger<DistributedCacheManager>>()));
+                cacheOptions,
+                logger: sp.GetService<ILogger<DistributedCacheManager>>()));
     }
 
     private static IServiceCollection RegisterCacheManager(

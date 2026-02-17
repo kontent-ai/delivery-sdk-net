@@ -101,7 +101,7 @@ public sealed class DeliveryClientBuilder
     /// For scenarios requiring shared cache instances across multiple clients, use DI registration instead.
     /// </para>
     /// <para>
-    /// Cannot be combined with <see cref="WithDistributedCache"/>. Calling both will use the last one configured.
+    /// Cannot be combined with distributed cache. Calling both will use the last one configured.
     /// </para>
     /// </remarks>
     public DeliveryClientBuilder WithMemoryCache(TimeSpan? defaultExpiration = null)
@@ -110,6 +110,38 @@ public sealed class DeliveryClientBuilder
             clientName: DeliveryClientNames.Default,
             keyPrefix: string.Empty,
             defaultExpiration: defaultExpiration);
+        return this;
+    }
+
+    /// <summary>
+    /// Enables in-memory caching for API responses with advanced configuration.
+    /// </summary>
+    /// <param name="configureCacheOptions">A delegate to configure the <see cref="DeliveryCacheOptions"/>.</param>
+    /// <returns>The builder instance for method chaining.</returns>
+    /// <exception cref="ArgumentNullException">Thrown when <paramref name="configureCacheOptions"/> is null.</exception>
+    /// <remarks>
+    /// <para>
+    /// Use this overload to enable advanced features like fail-safe and jitter:
+    /// <code>
+    /// .WithMemoryCache(opts =>
+    /// {
+    ///     opts.DefaultExpiration = TimeSpan.FromMinutes(30);
+    ///     opts.IsFailSafeEnabled = true;
+    ///     opts.JitterMaxDuration = TimeSpan.FromSeconds(30);
+    /// })
+    /// </code>
+    /// </para>
+    /// <para>
+    /// Cannot be combined with distributed cache. Calling both will use the last one configured.
+    /// </para>
+    /// </remarks>
+    public DeliveryClientBuilder WithMemoryCache(Action<DeliveryCacheOptions> configureCacheOptions)
+    {
+        ArgumentNullException.ThrowIfNull(configureCacheOptions);
+
+        _configureCache = services => services.AddDeliveryMemoryCache(
+            DeliveryClientNames.Default,
+            configureCacheOptions);
         return this;
     }
 
@@ -127,11 +159,11 @@ public sealed class DeliveryClientBuilder
     /// <exception cref="ArgumentNullException">Thrown when <paramref name="distributedCache"/> is null.</exception>
     /// <remarks>
     /// <para>
-    /// Unlike <see cref="WithMemoryCache"/>, this method requires you to provide the distributed cache instance.
+    /// Unlike the memory cache overloads, this method requires you to provide the distributed cache instance.
     /// This is because distributed cache implementations (Redis, SQL Server, etc.) require external configuration.
     /// </para>
     /// <para>
-    /// Cannot be combined with <see cref="WithMemoryCache"/>. Calling both will use the last one configured.
+    /// Cannot be combined with memory cache. Calling both will use the last one configured.
     /// </para>
     /// </remarks>
     public DeliveryClientBuilder WithDistributedCache(IDistributedCache distributedCache, TimeSpan? defaultExpiration = null)
@@ -145,6 +177,46 @@ public sealed class DeliveryClientBuilder
                 clientName: DeliveryClientNames.Default,
                 keyPrefix: string.Empty,
                 defaultExpiration: defaultExpiration);
+        };
+        return this;
+    }
+
+    /// <summary>
+    /// Enables distributed caching for API responses with advanced configuration.
+    /// </summary>
+    /// <param name="distributedCache">
+    /// The distributed cache instance (e.g., Redis, SQL Server, NCache).
+    /// </param>
+    /// <param name="configureCacheOptions">A delegate to configure the <see cref="DeliveryCacheOptions"/>.</param>
+    /// <returns>The builder instance for method chaining.</returns>
+    /// <exception cref="ArgumentNullException">Thrown when <paramref name="distributedCache"/> or <paramref name="configureCacheOptions"/> is null.</exception>
+    /// <remarks>
+    /// <para>
+    /// Use this overload to enable advanced features like fail-safe and jitter:
+    /// <code>
+    /// .WithDistributedCache(redisCache, opts =>
+    /// {
+    ///     opts.DefaultExpiration = TimeSpan.FromMinutes(30);
+    ///     opts.IsFailSafeEnabled = true;
+    ///     opts.JitterMaxDuration = TimeSpan.FromSeconds(30);
+    /// })
+    /// </code>
+    /// </para>
+    /// <para>
+    /// Cannot be combined with memory cache. Calling both will use the last one configured.
+    /// </para>
+    /// </remarks>
+    public DeliveryClientBuilder WithDistributedCache(IDistributedCache distributedCache, Action<DeliveryCacheOptions> configureCacheOptions)
+    {
+        ArgumentNullException.ThrowIfNull(distributedCache);
+        ArgumentNullException.ThrowIfNull(configureCacheOptions);
+
+        _configureCache = services =>
+        {
+            services.AddSingleton(distributedCache);
+            services.AddDeliveryDistributedCache(
+                DeliveryClientNames.Default,
+                configureCacheOptions);
         };
         return this;
     }

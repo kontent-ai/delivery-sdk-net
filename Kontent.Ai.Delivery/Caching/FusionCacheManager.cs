@@ -52,13 +52,14 @@ internal sealed class FusionCacheManager : IDeliveryCacheManager, IDeliveryCache
 
     public static FusionCacheManager CreateMemory(
         IMemoryCache memoryCache,
-        string? keyPrefix = null,
-        TimeSpan? defaultExpiration = null,
+        DeliveryCacheOptions cacheOptions,
         ILogger? logger = null)
     {
         ArgumentNullException.ThrowIfNull(memoryCache);
+        ArgumentNullException.ThrowIfNull(cacheOptions);
 
-        var effectiveExpiration = defaultExpiration ?? TimeSpan.FromHours(1);
+        var effectiveExpiration = cacheOptions.DefaultExpiration;
+        var keyPrefix = cacheOptions.KeyPrefix;
         var prefixSegment = string.IsNullOrEmpty(keyPrefix) ? "" : $"{keyPrefix}:";
 
         var fusion = new FusionCache(
@@ -69,7 +70,10 @@ internal sealed class FusionCacheManager : IDeliveryCacheManager, IDeliveryCache
                 DefaultEntryOptions = new FusionCacheEntryOptions
                 {
                     Duration = effectiveExpiration,
-                    IsFailSafeEnabled = false,
+                    IsFailSafeEnabled = cacheOptions.IsFailSafeEnabled,
+                    FailSafeMaxDuration = cacheOptions.FailSafeMaxDuration,
+                    FailSafeThrottleDuration = cacheOptions.FailSafeThrottleDuration,
+                    JitterMaxDuration = cacheOptions.JitterMaxDuration,
                     AllowBackgroundDistributedCacheOperations = false,
                     AllowBackgroundBackplaneOperations = false,
                     ReThrowDistributedCacheExceptions = false,
@@ -89,6 +93,10 @@ internal sealed class FusionCacheManager : IDeliveryCacheManager, IDeliveryCache
             logger,
             baseReadOptions: new FusionCacheEntryOptions
             {
+                IsFailSafeEnabled = cacheOptions.IsFailSafeEnabled,
+                FailSafeMaxDuration = cacheOptions.FailSafeMaxDuration,
+                FailSafeThrottleDuration = cacheOptions.FailSafeThrottleDuration,
+                AllowStaleOnReadOnly = cacheOptions.IsFailSafeEnabled,
                 SkipMemoryCacheRead = false,
                 SkipMemoryCacheWrite = true,
                 SkipDistributedCacheRead = true,
@@ -102,7 +110,10 @@ internal sealed class FusionCacheManager : IDeliveryCacheManager, IDeliveryCache
             baseWriteOptions: new FusionCacheEntryOptions
             {
                 Duration = effectiveExpiration,
-                IsFailSafeEnabled = false,
+                IsFailSafeEnabled = cacheOptions.IsFailSafeEnabled,
+                FailSafeMaxDuration = cacheOptions.FailSafeMaxDuration,
+                FailSafeThrottleDuration = cacheOptions.FailSafeThrottleDuration,
+                JitterMaxDuration = cacheOptions.JitterMaxDuration,
                 SkipMemoryCacheRead = true,
                 SkipMemoryCacheWrite = false,
                 SkipDistributedCacheRead = true,
@@ -115,6 +126,7 @@ internal sealed class FusionCacheManager : IDeliveryCacheManager, IDeliveryCache
             },
             baseInvalidateOptions: new FusionCacheEntryOptions
             {
+                IsFailSafeEnabled = false,
                 SkipMemoryCacheRead = false,
                 SkipMemoryCacheWrite = false,
                 SkipDistributedCacheRead = true,
@@ -130,14 +142,15 @@ internal sealed class FusionCacheManager : IDeliveryCacheManager, IDeliveryCache
 
     public static FusionCacheManager CreateDistributed(
         IDistributedCache distributedCache,
-        string? keyPrefix = null,
-        TimeSpan? defaultExpiration = null,
+        DeliveryCacheOptions cacheOptions,
         JsonSerializerOptions? serializerOptions = null,
         ILogger? logger = null)
     {
         ArgumentNullException.ThrowIfNull(distributedCache);
+        ArgumentNullException.ThrowIfNull(cacheOptions);
 
-        var effectiveExpiration = defaultExpiration ?? TimeSpan.FromHours(1);
+        var effectiveExpiration = cacheOptions.DefaultExpiration;
+        var keyPrefix = cacheOptions.KeyPrefix;
         var prefixSegment = string.IsNullOrEmpty(keyPrefix) ? "" : $"{keyPrefix}:";
         var fusion = new FusionCache(
             Options.Create(new FusionCacheOptions
@@ -147,7 +160,10 @@ internal sealed class FusionCacheManager : IDeliveryCacheManager, IDeliveryCache
                 DefaultEntryOptions = new FusionCacheEntryOptions
                 {
                     Duration = effectiveExpiration,
-                    IsFailSafeEnabled = false,
+                    IsFailSafeEnabled = cacheOptions.IsFailSafeEnabled,
+                    FailSafeMaxDuration = cacheOptions.FailSafeMaxDuration,
+                    FailSafeThrottleDuration = cacheOptions.FailSafeThrottleDuration,
+                    JitterMaxDuration = cacheOptions.JitterMaxDuration,
                     AllowBackgroundDistributedCacheOperations = false,
                     AllowBackgroundBackplaneOperations = false,
                     ReThrowDistributedCacheExceptions = false,
@@ -172,6 +188,10 @@ internal sealed class FusionCacheManager : IDeliveryCacheManager, IDeliveryCache
             logger,
             baseReadOptions: new FusionCacheEntryOptions
             {
+                IsFailSafeEnabled = cacheOptions.IsFailSafeEnabled,
+                FailSafeMaxDuration = cacheOptions.FailSafeMaxDuration,
+                FailSafeThrottleDuration = cacheOptions.FailSafeThrottleDuration,
+                AllowStaleOnReadOnly = cacheOptions.IsFailSafeEnabled,
                 SkipMemoryCacheRead = false,
                 SkipMemoryCacheWrite = false,
                 SkipDistributedCacheRead = false,
@@ -185,7 +205,10 @@ internal sealed class FusionCacheManager : IDeliveryCacheManager, IDeliveryCache
             baseWriteOptions: new FusionCacheEntryOptions
             {
                 Duration = effectiveExpiration,
-                IsFailSafeEnabled = false,
+                IsFailSafeEnabled = cacheOptions.IsFailSafeEnabled,
+                FailSafeMaxDuration = cacheOptions.FailSafeMaxDuration,
+                FailSafeThrottleDuration = cacheOptions.FailSafeThrottleDuration,
+                JitterMaxDuration = cacheOptions.JitterMaxDuration,
                 SkipMemoryCacheRead = false,
                 SkipMemoryCacheWrite = false,
                 SkipDistributedCacheRead = true,
@@ -198,6 +221,7 @@ internal sealed class FusionCacheManager : IDeliveryCacheManager, IDeliveryCache
             },
             baseInvalidateOptions: new FusionCacheEntryOptions
             {
+                IsFailSafeEnabled = false,
                 SkipMemoryCacheRead = false,
                 SkipMemoryCacheWrite = false,
                 SkipDistributedCacheRead = false,
