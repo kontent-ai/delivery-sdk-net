@@ -24,19 +24,13 @@ internal sealed class DistributedCacheManager(
     public CacheStorageMode StorageMode => _inner.StorageMode;
 
     /// <inheritdoc />
-    public Task<T?> GetAsync<T>(string cacheKey, CancellationToken cancellationToken = default)
-        where T : class
-        => _inner.GetAsync<T>(cacheKey, cancellationToken);
-
-    /// <inheritdoc />
-    public Task SetAsync<T>(
+    public Task<T?> GetOrSetAsync<T>(
         string cacheKey,
-        T value,
-        IEnumerable<string> dependencies,
+        Func<CancellationToken, Task<CacheEntry<T>?>> factory,
         TimeSpan? expiration = null,
         CancellationToken cancellationToken = default)
         where T : class
-        => _inner.SetAsync(cacheKey, value, dependencies, expiration, cancellationToken);
+        => _inner.GetOrSetAsync(cacheKey, factory, expiration, cancellationToken);
 
     /// <inheritdoc />
     public Task InvalidateAsync(CancellationToken cancellationToken = default, params string[] dependencyKeys)

@@ -30,167 +30,193 @@ public class MemoryCacheManagerTests : IDisposable
     #region Basic Operations Tests
 
     [Fact]
-    public async Task GetAsync_NonExistentKey_ReturnsNull()
+    public async Task GetOrSetAsync_CacheMiss_CallsFactory()
     {
-        var result = await _cacheManager.GetAsync<TestCacheValue>("non_existent_key");
+        var factoryCalled = false;
+        var value = new TestCacheValue { Id = 1, Name = "Test" };
+
+        var result = await _cacheManager.GetOrSetAsync("test_key", _ =>
+        {
+            factoryCalled = true;
+            return Task.FromResult<CacheEntry<TestCacheValue>?>(
+                new CacheEntry<TestCacheValue>(value, ["dep1"]));
+        });
+
+        Assert.True(factoryCalled);
+        Assert.NotNull(result);
+        Assert.Equal(1, result.Id);
+        Assert.Equal("Test", result.Name);
+    }
+
+    [Fact]
+    public async Task GetOrSetAsync_CacheHit_DoesNotCallFactory()
+    {
+        var value = new TestCacheValue { Id = 1, Name = "Test" };
+
+        // First call populates cache
+        await _cacheManager.GetOrSetAsync("test_key", _ =>
+            Task.FromResult<CacheEntry<TestCacheValue>?>(
+                new CacheEntry<TestCacheValue>(value, ["dep1"])));
+
+        // Second call should be a cache hit
+        var factoryCalled = false;
+        var result = await _cacheManager.GetOrSetAsync("test_key", _ =>
+        {
+            factoryCalled = true;
+            return Task.FromResult<CacheEntry<TestCacheValue>?>(null);
+        });
+
+        Assert.False(factoryCalled);
+        Assert.NotNull(result);
+        Assert.Equal(1, result.Id);
+    }
+
+    [Fact]
+    public async Task GetOrSetAsync_FactoryReturnsNull_ReturnsNull()
+    {
+        var result = await _cacheManager.GetOrSetAsync<TestCacheValue>("test_key", _ =>
+            Task.FromResult<CacheEntry<TestCacheValue>?>(null));
 
         Assert.Null(result);
+    }
+
+    [Fact]
+    public async Task GetOrSetAsync_FactoryReturnsNull_DoesNotCache()
+    {
+        // First call: factory returns null
+        await _cacheManager.GetOrSetAsync<TestCacheValue>("test_key", _ =>
+            Task.FromResult<CacheEntry<TestCacheValue>?>(null));
+
+        // Second call: factory should be called again
+        var factoryCalled = false;
+        var value = new TestCacheValue { Id = 1, Name = "Test" };
+        var result = await _cacheManager.GetOrSetAsync("test_key", _ =>
+        {
+            factoryCalled = true;
+            return Task.FromResult<CacheEntry<TestCacheValue>?>(
+                new CacheEntry<TestCacheValue>(value, []));
+        });
+
+        Assert.True(factoryCalled);
+        Assert.NotNull(result);
     }
 
     [Theory]
     [InlineData(null)]
     [InlineData("")]
     [InlineData("   ")]
-    public async Task GetAsync_InvalidKey_ReturnsNull(string? cacheKey)
+    public async Task GetOrSetAsync_InvalidKey_StillCallsFactory(string? cacheKey)
     {
-        var result = await _cacheManager.GetAsync<TestCacheValue>(cacheKey!);
-
-        Assert.Null(result);
-    }
-
-    [Fact]
-    public async Task SetAsync_ThenGetAsync_ReturnsValue()
-    {
-        var key = "test_key";
+        var factoryCalled = false;
         var value = new TestCacheValue { Id = 1, Name = "Test" };
-        var dependencies = new[] { "dep1" };
 
-        await _cacheManager.SetAsync(key, value, dependencies);
-        var result = await _cacheManager.GetAsync<TestCacheValue>(key);
+        var result = await _cacheManager.GetOrSetAsync(cacheKey!, _ =>
+        {
+            factoryCalled = true;
+            return Task.FromResult<CacheEntry<TestCacheValue>?>(
+                new CacheEntry<TestCacheValue>(value, []));
+        });
 
+        Assert.True(factoryCalled);
         Assert.NotNull(result);
-        Assert.Equal(value.Id, result.Id);
-        Assert.Equal(value.Name, result.Name);
     }
 
     [Fact]
-    public async Task SetAsync_NullKey_ThrowsArgumentNullException()
-    {
-        var value = new TestCacheValue { Id = 1, Name = "Test" };
-        var dependencies = Array.Empty<string>();
-
-        await Assert.ThrowsAsync<ArgumentNullException>(() =>
-            _cacheManager.SetAsync(null!, value, dependencies));
-    }
-
-    [Theory]
-    [InlineData("")]
-    [InlineData("   ")]
-    public async Task SetAsync_InvalidKey_ThrowsArgumentException(string cacheKey)
-    {
-        var value = new TestCacheValue { Id = 1, Name = "Test" };
-        var dependencies = Array.Empty<string>();
-
-        await Assert.ThrowsAsync<ArgumentException>(() =>
-            _cacheManager.SetAsync(cacheKey, value, dependencies));
-    }
-
-    [Fact]
-    public async Task SetAsync_NullValue_ThrowsArgumentNullException()
-    {
-        var dependencies = Array.Empty<string>();
-
-        await Assert.ThrowsAsync<ArgumentNullException>(() =>
-            _cacheManager.SetAsync<TestCacheValue>("key", null!, dependencies));
-    }
-
-    [Fact]
-    public async Task SetAsync_NullDependencies_ThrowsArgumentNullException()
+    public async Task GetOrSetAsync_EmptyDependencies_DoesNotThrow()
     {
         var value = new TestCacheValue { Id = 1, Name = "Test" };
 
-        await Assert.ThrowsAsync<ArgumentNullException>(() =>
-            _cacheManager.SetAsync("key", value, null!));
-    }
-
-    [Fact]
-    public async Task SetAsync_EmptyDependencies_DoesNotThrow()
-    {
-        var key = "test_key";
-        var value = new TestCacheValue { Id = 1, Name = "Test" };
-        var dependencies = Array.Empty<string>();
-
-        await _cacheManager.SetAsync(key, value, dependencies);
-        var result = await _cacheManager.GetAsync<TestCacheValue>(key);
+        var result = await _cacheManager.GetOrSetAsync("test_key", _ =>
+            Task.FromResult<CacheEntry<TestCacheValue>?>(
+                new CacheEntry<TestCacheValue>(value, Array.Empty<string>())));
 
         Assert.NotNull(result);
     }
 
     [Fact]
-    public async Task SetAsync_OverwritesExistingKey()
+    public async Task GetOrSetAsync_SecondCallOverwritesWithNewFactory()
     {
-        var key = "test_key";
         var value1 = new TestCacheValue { Id = 1, Name = "First" };
         var value2 = new TestCacheValue { Id = 2, Name = "Second" };
-        var dependencies = Array.Empty<string>();
 
-        await _cacheManager.SetAsync(key, value1, dependencies);
-        await _cacheManager.SetAsync(key, value2, dependencies);
-        var result = await _cacheManager.GetAsync<TestCacheValue>(key);
+        await _cacheManager.GetOrSetAsync("test_key", _ =>
+            Task.FromResult<CacheEntry<TestCacheValue>?>(
+                new CacheEntry<TestCacheValue>(value1, [])));
+
+        // Second call is a cache hit, returns the cached first value
+        var result = await _cacheManager.GetOrSetAsync("test_key", _ =>
+            Task.FromResult<CacheEntry<TestCacheValue>?>(
+                new CacheEntry<TestCacheValue>(value2, [])));
 
         Assert.NotNull(result);
-        Assert.Equal(value2.Id, result.Id);
-        Assert.Equal(value2.Name, result.Name);
+        Assert.Equal(value1.Id, result.Id);
     }
 
     [Fact]
-    public async Task SetAsync_WithCustomExpiration_ExpiresAfterTimeout()
+    public async Task GetOrSetAsync_WithCustomExpiration_ExpiresAfterTimeout()
     {
-        var key = "test_key";
         var value = new TestCacheValue { Id = 1, Name = "Test" };
-        var dependencies = Array.Empty<string>();
         var expiration = TimeSpan.FromMilliseconds(100);
 
-        await _cacheManager.SetAsync(key, value, dependencies, expiration);
+        await _cacheManager.GetOrSetAsync("test_key", _ =>
+            Task.FromResult<CacheEntry<TestCacheValue>?>(
+                new CacheEntry<TestCacheValue>(value, [])),
+            expiration);
+
         var expired = await WaitUntilAsync(
-            async () => await _cacheManager.GetAsync<TestCacheValue>(key) is null,
+            async () =>
+            {
+                var factoryCalled = false;
+                await _cacheManager.GetOrSetAsync("test_key", _ =>
+                {
+                    factoryCalled = true;
+                    return Task.FromResult<CacheEntry<TestCacheValue>?>(null);
+                });
+                return factoryCalled;
+            },
             timeout: TimeSpan.FromSeconds(2),
             pollInterval: TimeSpan.FromMilliseconds(20));
-        var result = await _cacheManager.GetAsync<TestCacheValue>(key);
 
         Assert.True(expired);
-        Assert.Null(result);
     }
 
     [Fact]
     public async Task PurgeAsync_RemovesAllExistingEntries()
     {
-        var key1 = "k1";
-        var key2 = "k2";
-        await _cacheManager.SetAsync(key1, new TestCacheValue { Id = 1, Name = "One" }, dependencies: ["dep1"]);
-        await _cacheManager.SetAsync(key2, new TestCacheValue { Id = 2, Name = "Two" }, dependencies: ["dep2"]);
+        await PopulateCache("k1", new TestCacheValue { Id = 1, Name = "One" }, ["dep1"]);
+        await PopulateCache("k2", new TestCacheValue { Id = 2, Name = "Two" }, ["dep2"]);
 
         await ((IDeliveryCachePurger)_cacheManager).PurgeAsync();
 
-        Assert.Null(await _cacheManager.GetAsync<TestCacheValue>(key1));
-        Assert.Null(await _cacheManager.GetAsync<TestCacheValue>(key2));
+        Assert.True(await IsFactoryCalledAsync("k1"));
+        Assert.True(await IsFactoryCalledAsync("k2"));
     }
 
     [Fact]
     public async Task PurgeAsync_WithAllowFailSafe_ExpiresEntriesAndDoesNotAffectNewEntries()
     {
-        await _cacheManager.SetAsync("k1", new TestCacheValue { Id = 1, Name = "One" }, dependencies: ["dep1"]);
-        await _cacheManager.SetAsync("k2", new TestCacheValue { Id = 2, Name = "Two" }, dependencies: ["dep2"]);
+        await PopulateCache("k1", new TestCacheValue { Id = 1, Name = "One" }, ["dep1"]);
+        await PopulateCache("k2", new TestCacheValue { Id = 2, Name = "Two" }, ["dep2"]);
 
         await ((IDeliveryCachePurger)_cacheManager).PurgeAsync(allowFailSafe: true);
 
-        Assert.Null(await _cacheManager.GetAsync<TestCacheValue>("k1"));
-        Assert.Null(await _cacheManager.GetAsync<TestCacheValue>("k2"));
+        Assert.True(await IsFactoryCalledAsync("k1"));
+        Assert.True(await IsFactoryCalledAsync("k2"));
 
-        await _cacheManager.SetAsync("k3", new TestCacheValue { Id = 3, Name = "Three" }, dependencies: ["dep3"]);
-        Assert.NotNull(await _cacheManager.GetAsync<TestCacheValue>("k3"));
+        await PopulateCache("k3", new TestCacheValue { Id = 3, Name = "Three" }, ["dep3"]);
+        Assert.False(await IsFactoryCalledAsync("k3"));
     }
 
     [Fact]
     public async Task PurgeAsync_DoesNotAffectEntriesCreatedAfterPurge()
     {
-        await _cacheManager.SetAsync("old", new TestCacheValue { Id = 1, Name = "Old" }, dependencies: ["dep"]);
+        await PopulateCache("old", new TestCacheValue { Id = 1, Name = "Old" }, ["dep"]);
 
         await ((IDeliveryCachePurger)_cacheManager).PurgeAsync();
-        await _cacheManager.SetAsync("new", new TestCacheValue { Id = 2, Name = "New" }, dependencies: ["dep"]);
+        await PopulateCache("new", new TestCacheValue { Id = 2, Name = "New" }, ["dep"]);
 
-        Assert.Null(await _cacheManager.GetAsync<TestCacheValue>("old"));
-        Assert.NotNull(await _cacheManager.GetAsync<TestCacheValue>("new"));
+        Assert.True(await IsFactoryCalledAsync("old"));
+        Assert.False(await IsFactoryCalledAsync("new"));
     }
 
     [Fact]
@@ -202,33 +228,27 @@ public class MemoryCacheManagerTests : IDisposable
         });
         using var manager = new MemoryCacheManager(cache, new DeliveryCacheOptions());
 
-        var key = "test_key";
-        var nextKey = "next_key";
-        var value = new TestCacheValue { Id = 1, Name = "Test" };
         var dependency = "dep1";
         var expiration = TimeSpan.FromMilliseconds(50);
 
-        await manager.SetAsync(key, value, [dependency], expiration);
+        await PopulateCache(manager, "test_key", new TestCacheValue { Id = 1, Name = "Test" }, [dependency], expiration);
 
         var expired = await WaitUntilAsync(
             async () =>
             {
                 cache.Compact(1.0);
-                return await manager.GetAsync<TestCacheValue>(key) is null;
+                return await IsFactoryCalledAsync(manager, "test_key");
             },
             timeout: TimeSpan.FromSeconds(2),
             pollInterval: TimeSpan.FromMilliseconds(20));
 
         Assert.True(expired);
-        Assert.Null(await manager.GetAsync<TestCacheValue>(key));
 
-        // Behavior contract: once the expired edge is gone, a new edge for the same dependency
-        // must still be tracked and invalidated correctly.
-        await manager.SetAsync(nextKey, new TestCacheValue { Id = 2, Name = "Next" }, [dependency]);
-        Assert.NotNull(await manager.GetAsync<TestCacheValue>(nextKey));
+        await PopulateCache(manager, "next_key", new TestCacheValue { Id = 2, Name = "Next" }, [dependency]);
+        Assert.False(await IsFactoryCalledAsync(manager, "next_key"));
 
         await manager.InvalidateAsync(default, dependency);
-        Assert.Null(await manager.GetAsync<TestCacheValue>(nextKey));
+        Assert.True(await IsFactoryCalledAsync(manager, "next_key"));
     }
 
     #endregion
@@ -236,45 +256,36 @@ public class MemoryCacheManagerTests : IDisposable
     #region Dependency Tracking Tests
 
     [Fact]
-    public async Task SetAsync_WithDependencies_TracksCorrectly()
+    public async Task GetOrSetAsync_WithDependencies_TracksCorrectly()
     {
-        var key = "test_key";
         var value = new TestCacheValue { Id = 1, Name = "Test" };
-        var dependencies = new[] { "dep1", "dep2", "dep3" };
 
-        await _cacheManager.SetAsync(key, value, dependencies);
-        var result = await _cacheManager.GetAsync<TestCacheValue>(key);
+        await PopulateCache("test_key", value, ["dep1", "dep2", "dep3"]);
 
-        Assert.NotNull(result);
+        Assert.False(await IsFactoryCalledAsync("test_key"));
     }
 
     [Fact]
-    public async Task SetAsync_WithDuplicateDependencies_HandlesCorrectly()
+    public async Task GetOrSetAsync_WithDuplicateDependencies_HandlesCorrectly()
     {
-        var key = "test_key";
         var value = new TestCacheValue { Id = 1, Name = "Test" };
-        var dependencies = new[] { "dep1", "dep1", "dep2", "dep2" };
 
-        await _cacheManager.SetAsync(key, value, dependencies);
-        var result = await _cacheManager.GetAsync<TestCacheValue>(key);
+        await PopulateCache("test_key", value, ["dep1", "dep1", "dep2", "dep2"]);
 
-        Assert.NotNull(result);
+        Assert.False(await IsFactoryCalledAsync("test_key"));
     }
 
     [Theory]
     [InlineData(null)]
     [InlineData("")]
     [InlineData("   ")]
-    public async Task SetAsync_WithIgnoredDependencyValue_IgnoresInvalidDependency(string? ignoredDependency)
+    public async Task GetOrSetAsync_WithIgnoredDependencyValue_IgnoresInvalidDependency(string? ignoredDependency)
     {
-        var key = "test_key";
         var value = new TestCacheValue { Id = 1, Name = "Test" };
-        var dependencies = new[] { "dep1", ignoredDependency!, "dep2" };
 
-        await _cacheManager.SetAsync(key, value, dependencies);
-        var result = await _cacheManager.GetAsync<TestCacheValue>(key);
+        await PopulateCache("test_key", value, ["dep1", ignoredDependency!, "dep2"]);
 
-        Assert.NotNull(result);
+        Assert.False(await IsFactoryCalledAsync("test_key"));
     }
 
     #endregion
@@ -284,30 +295,23 @@ public class MemoryCacheManagerTests : IDisposable
     [Fact]
     public async Task InvalidateAsync_RemovesCacheEntry()
     {
-        var key = "test_key";
-        var value = new TestCacheValue { Id = 1, Name = "Test" };
         var dependency = "dep1";
-        var dependencies = new[] { dependency };
-
-        await _cacheManager.SetAsync(key, value, dependencies);
+        await PopulateCache("test_key", new TestCacheValue { Id = 1, Name = "Test" }, [dependency]);
 
         await _cacheManager.InvalidateAsync(default, dependency);
-        var result = await _cacheManager.GetAsync<TestCacheValue>(key);
 
-        Assert.Null(result);
+        Assert.True(await IsFactoryCalledAsync("test_key"));
     }
 
     [Fact]
     public async Task InvalidateAsync_NonExistentDependency_DoesNotThrowAndPreservesExistingEntries()
     {
-        await _cacheManager.SetAsync("existing_key", new TestCacheValue { Id = 10, Name = "Existing" }, ["existing_dep"]);
+        await PopulateCache("existing_key", new TestCacheValue { Id = 10, Name = "Existing" }, ["existing_dep"]);
 
         var exception = await Record.ExceptionAsync(() => _cacheManager.InvalidateAsync(default, "non_existent_dep"));
-        var existingResult = await _cacheManager.GetAsync<TestCacheValue>("existing_key");
 
         Assert.Null(exception);
-        Assert.NotNull(existingResult);
-        Assert.Equal(10, existingResult.Id);
+        Assert.False(await IsFactoryCalledAsync("existing_key"));
     }
 
     [Fact]
@@ -327,82 +331,62 @@ public class MemoryCacheManagerTests : IDisposable
     [Fact]
     public async Task InvalidateAsync_MultipleDependencies_RemovesAllAffected()
     {
-        var key1 = "key1";
-        var key2 = "key2";
-        var key3 = "key3";
         var value = new TestCacheValue { Id = 1, Name = "Test" };
-
-        await _cacheManager.SetAsync(key1, value, ["dep1"]);
-        await _cacheManager.SetAsync(key2, value, ["dep2"]);
-        await _cacheManager.SetAsync(key3, value, ["dep3"]);
+        await PopulateCache("key1", value, ["dep1"]);
+        await PopulateCache("key2", value, ["dep2"]);
+        await PopulateCache("key3", value, ["dep3"]);
 
         await _cacheManager.InvalidateAsync(default, "dep1", "dep2");
 
-        var result1 = await _cacheManager.GetAsync<TestCacheValue>(key1);
-        var result2 = await _cacheManager.GetAsync<TestCacheValue>(key2);
-        var result3 = await _cacheManager.GetAsync<TestCacheValue>(key3);
-
-        Assert.Null(result1);
-        Assert.Null(result2);
-        Assert.NotNull(result3);
+        Assert.True(await IsFactoryCalledAsync("key1"));
+        Assert.True(await IsFactoryCalledAsync("key2"));
+        Assert.False(await IsFactoryCalledAsync("key3"));
     }
 
     [Fact]
     public async Task InvalidateAsync_SharedDependency_RemovesAllEntriesWithThatDependency()
     {
-        var key1 = "key1";
-        var key2 = "key2";
-        var key3 = "key3";
         var value = new TestCacheValue { Id = 1, Name = "Test" };
         var sharedDependency = "shared_dep";
 
-        await _cacheManager.SetAsync(key1, value, [sharedDependency]);
-        await _cacheManager.SetAsync(key2, value, [sharedDependency]);
-        await _cacheManager.SetAsync(key3, value, ["other_dep"]);
+        await PopulateCache("key1", value, [sharedDependency]);
+        await PopulateCache("key2", value, [sharedDependency]);
+        await PopulateCache("key3", value, ["other_dep"]);
 
         await _cacheManager.InvalidateAsync(default, sharedDependency);
 
-        var result1 = await _cacheManager.GetAsync<TestCacheValue>(key1);
-        var result2 = await _cacheManager.GetAsync<TestCacheValue>(key2);
-        var result3 = await _cacheManager.GetAsync<TestCacheValue>(key3);
-
-        Assert.Null(result1);
-        Assert.Null(result2);
-        Assert.NotNull(result3);
+        Assert.True(await IsFactoryCalledAsync("key1"));
+        Assert.True(await IsFactoryCalledAsync("key2"));
+        Assert.False(await IsFactoryCalledAsync("key3"));
     }
 
     [Fact]
     public async Task InvalidateAsync_IdempotentOperation_CanBeCalledMultipleTimes()
     {
-        var key = "test_key";
-        var value = new TestCacheValue { Id = 1, Name = "Test" };
         var dependency = "dep1";
-
-        await _cacheManager.SetAsync(key, value, [dependency]);
+        await PopulateCache("test_key", new TestCacheValue { Id = 1, Name = "Test" }, [dependency]);
 
         await _cacheManager.InvalidateAsync(default, dependency);
         await _cacheManager.InvalidateAsync(default, dependency);
         await _cacheManager.InvalidateAsync(default, dependency);
 
-        var result = await _cacheManager.GetAsync<TestCacheValue>(key);
-
-        Assert.Null(result);
+        Assert.True(await IsFactoryCalledAsync("test_key"));
     }
 
     [Fact]
     public async Task InvalidateAsync_WithCaseVariantKeys_RemovesAllMatchingEntries()
     {
         var dependency = "dep1";
-        await _cacheManager.SetAsync("Key", new TestCacheValue { Id = 1, Name = "Upper" }, [dependency]);
-        await _cacheManager.SetAsync("key", new TestCacheValue { Id = 2, Name = "Lower" }, [dependency]);
+        await PopulateCache("Key", new TestCacheValue { Id = 1, Name = "Upper" }, [dependency]);
+        await PopulateCache("key", new TestCacheValue { Id = 2, Name = "Lower" }, [dependency]);
 
-        Assert.NotNull(await _cacheManager.GetAsync<TestCacheValue>("Key"));
-        Assert.NotNull(await _cacheManager.GetAsync<TestCacheValue>("key"));
+        Assert.False(await IsFactoryCalledAsync("Key"));
+        Assert.False(await IsFactoryCalledAsync("key"));
 
         await _cacheManager.InvalidateAsync(default, dependency);
 
-        Assert.Null(await _cacheManager.GetAsync<TestCacheValue>("Key"));
-        Assert.Null(await _cacheManager.GetAsync<TestCacheValue>("key"));
+        Assert.True(await IsFactoryCalledAsync("Key"));
+        Assert.True(await IsFactoryCalledAsync("key"));
     }
 
     #endregion
@@ -410,14 +394,15 @@ public class MemoryCacheManagerTests : IDisposable
     #region Concurrency Tests
 
     [Fact]
-    public async Task ConcurrentGet_DoesNotThrow()
+    public async Task ConcurrentGetOrSet_DoesNotThrow()
     {
-        var key = "test_key";
         var value = new TestCacheValue { Id = 1, Name = "Test" };
-        await _cacheManager.SetAsync(key, value, []);
+        await PopulateCache("test_key", value, []);
 
         var tasks = Enumerable.Range(0, 100)
-            .Select(_ => _cacheManager.GetAsync<TestCacheValue>(key))
+            .Select(_ => _cacheManager.GetOrSetAsync("test_key", _ =>
+                Task.FromResult<CacheEntry<TestCacheValue>?>(
+                    new CacheEntry<TestCacheValue>(value, []))))
             .ToList();
 
         var results = await Task.WhenAll(tasks);
@@ -426,14 +411,11 @@ public class MemoryCacheManagerTests : IDisposable
     }
 
     [Fact]
-    public async Task ConcurrentSet_WithSameDependency_DoesNotCorruptState()
+    public async Task ConcurrentGetOrSet_WithSameDependency_DoesNotCorruptState()
     {
         var sharedDependency = "shared_dep";
         var tasks = Enumerable.Range(0, 50)
-            .Select(i => _cacheManager.SetAsync(
-                $"key_{i}",
-                new TestCacheValue { Id = i, Name = $"Test_{i}" },
-                [sharedDependency]))
+            .Select(i => PopulateCache($"key_{i}", new TestCacheValue { Id = i, Name = $"Test_{i}" }, [sharedDependency]))
             .ToList();
 
         await Task.WhenAll(tasks);
@@ -441,55 +423,20 @@ public class MemoryCacheManagerTests : IDisposable
         await _cacheManager.InvalidateAsync(default, sharedDependency);
 
         var verifyTasks = Enumerable.Range(0, 50)
-            .Select(i => _cacheManager.GetAsync<TestCacheValue>($"key_{i}"))
+            .Select(i => IsFactoryCalledAsync($"key_{i}"))
             .ToList();
 
         var results = await Task.WhenAll(verifyTasks);
 
-        Assert.All(results, Assert.Null);
+        Assert.All(results, r => Assert.True(r));
     }
 
     [Fact]
-    public async Task SetAsync_OverwriteSameKey_InvalidationCancelsCurrentEntry()
-    {
-        var key = "test_key";
-        var dependency = "dep1";
-
-        await _cacheManager.SetAsync(key, new TestCacheValue { Id = 1, Name = "First" }, [dependency]);
-        await _cacheManager.SetAsync(key, new TestCacheValue { Id = 2, Name = "Second" }, [dependency]);
-
-        await _cacheManager.InvalidateAsync(default, dependency);
-        var result = await _cacheManager.GetAsync<TestCacheValue>(key);
-
-        Assert.Null(result);
-    }
-
-    [Fact]
-    public async Task SetAsync_OverwriteSameKey_ChangingDependencies_DoesNotInvalidateOnOldDependency()
-    {
-        var key = "test_key";
-        await _cacheManager.SetAsync(key, new TestCacheValue { Id = 1, Name = "Old" }, ["dep_old"]);
-        await _cacheManager.SetAsync(key, new TestCacheValue { Id = 2, Name = "New" }, ["dep_new"]);
-
-        await _cacheManager.InvalidateAsync(default, "dep_old");
-        var result = await _cacheManager.GetAsync<TestCacheValue>(key);
-
-        Assert.NotNull(result);
-        Assert.Equal(2, result.Id);
-
-        await _cacheManager.InvalidateAsync(default, "dep_new");
-        Assert.Null(await _cacheManager.GetAsync<TestCacheValue>(key));
-    }
-
-    [Fact]
-    public async Task ConcurrentSetAndInvalidate_DoesNotThrow()
+    public async Task ConcurrentGetOrSetAndInvalidate_DoesNotThrow()
     {
         var dependency = "dep1";
         var setTasks = Enumerable.Range(0, 25)
-            .Select(i => _cacheManager.SetAsync(
-                $"key_{i}",
-                new TestCacheValue { Id = i, Name = $"Test_{i}" },
-                [dependency]))
+            .Select(i => PopulateCache($"key_{i}", new TestCacheValue { Id = i, Name = $"Test_{i}" }, [dependency]))
             .ToList();
 
         var invalidateTasks = Enumerable.Range(0, 25)
@@ -500,7 +447,7 @@ public class MemoryCacheManagerTests : IDisposable
             })
             .ToList();
 
-        var exception = await Record.ExceptionAsync(async () => await Task.WhenAll(setTasks.Concat(invalidateTasks)));
+        var exception = await Record.ExceptionAsync(async () => await Task.WhenAll(setTasks.Concat<Task>(invalidateTasks)));
         Assert.Null(exception);
     }
 
@@ -508,9 +455,7 @@ public class MemoryCacheManagerTests : IDisposable
     public async Task ConcurrentInvalidate_SameDependency_DoesNotThrow()
     {
         var dependency = "dep1";
-        var key = "test_key";
-        var value = new TestCacheValue { Id = 1, Name = "Test" };
-        await _cacheManager.SetAsync(key, value, [dependency]);
+        await PopulateCache("test_key", new TestCacheValue { Id = 1, Name = "Test" }, [dependency]);
 
         var tasks = Enumerable.Range(0, 50)
             .Select(_ => _cacheManager.InvalidateAsync(default, dependency))
@@ -518,9 +463,7 @@ public class MemoryCacheManagerTests : IDisposable
 
         await Task.WhenAll(tasks);
 
-        var result = await _cacheManager.GetAsync<TestCacheValue>(key);
-
-        Assert.Null(result);
+        Assert.True(await IsFactoryCalledAsync("test_key"));
     }
 
     [Fact]
@@ -536,21 +479,13 @@ public class MemoryCacheManagerTests : IDisposable
         const string expiringKey = "expiring_key";
         const string stableKey = "stable_key";
 
-        await manager.SetAsync(
-            expiringKey,
-            new TestCacheValue { Id = 1, Name = "Expiring" },
-            [dependency],
-            expiration: TimeSpan.FromMilliseconds(40));
+        await PopulateCache(manager, expiringKey, new TestCacheValue { Id = 1, Name = "Expiring" }, [dependency], TimeSpan.FromMilliseconds(40));
 
         var churnTask = Task.Run(async () =>
         {
             for (var i = 0; i < 50; i++)
             {
-                await manager.SetAsync(
-                    stableKey,
-                    new TestCacheValue { Id = i, Name = $"Stable_{i}" },
-                    [dependency],
-                    expiration: TimeSpan.FromMinutes(1));
+                await PopulateCache(manager, stableKey, new TestCacheValue { Id = i, Name = $"Stable_{i}" }, [dependency], TimeSpan.FromMinutes(1));
                 await Task.Yield();
             }
         });
@@ -559,7 +494,7 @@ public class MemoryCacheManagerTests : IDisposable
             async () =>
             {
                 cache.Compact(1.0);
-                return await manager.GetAsync<TestCacheValue>(expiringKey) is null;
+                return await IsFactoryCalledAsync(manager, expiringKey);
             },
             timeout: TimeSpan.FromSeconds(2),
             pollInterval: TimeSpan.FromMilliseconds(20));
@@ -568,32 +503,7 @@ public class MemoryCacheManagerTests : IDisposable
         Assert.True(expired);
 
         await manager.InvalidateAsync(default, dependency);
-        Assert.Null(await manager.GetAsync<TestCacheValue>(stableKey));
-    }
-
-    #endregion
-
-    #region Cancellation Tests
-
-    [Fact]
-    public async Task GetAsync_WithCancelledToken_ThrowsOperationCanceledException()
-    {
-        var cts = new CancellationTokenSource();
-        cts.Cancel();
-
-        await Assert.ThrowsAsync<OperationCanceledException>(() =>
-            _cacheManager.GetAsync<TestCacheValue>("key", cts.Token));
-    }
-
-    [Fact]
-    public async Task SetAsync_WithCancelledToken_ThrowsOperationCanceledException()
-    {
-        var value = new TestCacheValue { Id = 1, Name = "Test" };
-        var cts = new CancellationTokenSource();
-        cts.Cancel();
-
-        await Assert.ThrowsAsync<OperationCanceledException>(() =>
-            _cacheManager.SetAsync("key", value, [], cancellationToken: cts.Token));
+        Assert.True(await IsFactoryCalledAsync(manager, stableKey));
     }
 
     #endregion
@@ -606,14 +516,13 @@ public class MemoryCacheManagerTests : IDisposable
         var cache = new MemoryCache(new MemoryCacheOptions());
         var manager = new MemoryCacheManager(cache, new DeliveryCacheOptions());
 
-        var key = "test_key";
-        var value = new TestCacheValue { Id = 1, Name = "Test" };
-        await manager.SetAsync(key, value, ["dep1"]);
+        await PopulateCache(manager, "test_key", new TestCacheValue { Id = 1, Name = "Test" }, ["dep1"]);
 
         manager.Dispose();
 
         await Assert.ThrowsAsync<ObjectDisposedException>(() =>
-            manager.GetAsync<TestCacheValue>(key));
+            manager.GetOrSetAsync("test_key", _ =>
+                Task.FromResult<CacheEntry<TestCacheValue>?>(null)));
     }
 
     [Fact]
@@ -638,9 +547,7 @@ public class MemoryCacheManagerTests : IDisposable
         var cache = new MemoryCache(new MemoryCacheOptions());
         var manager = new MemoryCacheManager(cache, new DeliveryCacheOptions());
 
-        var key = "test_key";
-        var value = new TestCacheValue { Id = 1, Name = "Test" };
-        await manager.SetAsync(key, value, ["dep1", "dep2", "dep3"]);
+        await PopulateCache(manager, "test_key", new TestCacheValue { Id = 1, Name = "Test" }, ["dep1", "dep2", "dep3"]);
 
         manager.Dispose();
 
@@ -652,42 +559,30 @@ public class MemoryCacheManagerTests : IDisposable
     #region Edge Cases
 
     [Fact]
-    public async Task SetAsync_VeryLongKey_Succeeds()
+    public async Task GetOrSetAsync_VeryLongKey_Succeeds()
     {
         var key = new string('a', 1000);
         var value = new TestCacheValue { Id = 1, Name = "Test" };
 
-        await _cacheManager.SetAsync(key, value, []);
-        var result = await _cacheManager.GetAsync<TestCacheValue>(key);
-
-        Assert.NotNull(result);
+        await PopulateCache(key, value, []);
+        Assert.False(await IsFactoryCalledAsync(key));
     }
 
     [Fact]
-    public async Task SetAsync_VeryLongDependency_Succeeds()
+    public async Task GetOrSetAsync_VeryLongDependency_Succeeds()
     {
-        var key = "test_key";
-        var value = new TestCacheValue { Id = 1, Name = "Test" };
         var dependency = new string('b', 1000);
-
-        await _cacheManager.SetAsync(key, value, [dependency]);
+        await PopulateCache("test_key", new TestCacheValue { Id = 1, Name = "Test" }, [dependency]);
         await _cacheManager.InvalidateAsync(default, dependency);
-        var result = await _cacheManager.GetAsync<TestCacheValue>(key);
-
-        Assert.Null(result);
+        Assert.True(await IsFactoryCalledAsync("test_key"));
     }
 
     [Fact]
-    public async Task SetAsync_ManyDependencies_Succeeds()
+    public async Task GetOrSetAsync_ManyDependencies_Succeeds()
     {
-        var key = "test_key";
-        var value = new TestCacheValue { Id = 1, Name = "Test" };
         var dependencies = Enumerable.Range(0, 100).Select(i => $"dep_{i}").ToArray();
-
-        await _cacheManager.SetAsync(key, value, dependencies);
-        var result = await _cacheManager.GetAsync<TestCacheValue>(key);
-
-        Assert.NotNull(result);
+        await PopulateCache("test_key", new TestCacheValue { Id = 1, Name = "Test" }, dependencies);
+        Assert.False(await IsFactoryCalledAsync("test_key"));
     }
 
     [Fact]
@@ -698,38 +593,21 @@ public class MemoryCacheManagerTests : IDisposable
 
         foreach (var key in keys)
         {
-            await _cacheManager.SetAsync(key, value, [$"dep_{key}"]);
+            await PopulateCache(key, value, [$"dep_{key}"]);
         }
 
         var dependenciesToInvalidate = keys.Select(k => $"dep_{k}").ToArray();
-
         await _cacheManager.InvalidateAsync(default, dependenciesToInvalidate);
 
-        var results = new List<TestCacheValue?>();
         foreach (var key in keys)
         {
-            results.Add(await _cacheManager.GetAsync<TestCacheValue>(key));
+            Assert.True(await IsFactoryCalledAsync(key));
         }
-
-        Assert.All(results, Assert.Null);
     }
 
     [Fact]
-    public async Task GetAsync_TypeMismatch_ReturnsNull()
+    public async Task GetOrSetAsync_ComplexObject_WithNestedProperties_Succeeds()
     {
-        var key = "test_key";
-        var value = new TestCacheValue { Id = 1, Name = "Test" };
-        await _cacheManager.SetAsync(key, value, []);
-
-        var result = await _cacheManager.GetAsync<OtherTestValue>(key);
-
-        Assert.Null(result);
-    }
-
-    [Fact]
-    public async Task SetAsync_ComplexObject_WithNestedProperties_Succeeds()
-    {
-        var key = "complex_key";
         var value = new ComplexCacheValue
         {
             Id = 1,
@@ -742,9 +620,18 @@ public class MemoryCacheManagerTests : IDisposable
             Items = [1, 2, 3, 4, 5]
         };
 
-        await _cacheManager.SetAsync(key, value, []);
-        var result = await _cacheManager.GetAsync<ComplexCacheValue>(key);
+        await _cacheManager.GetOrSetAsync("complex_key", _ =>
+            Task.FromResult<CacheEntry<ComplexCacheValue>?>(
+                new CacheEntry<ComplexCacheValue>(value, [])));
 
+        var factoryCalled = false;
+        var result = await _cacheManager.GetOrSetAsync("complex_key", _ =>
+        {
+            factoryCalled = true;
+            return Task.FromResult<CacheEntry<ComplexCacheValue>?>(null);
+        });
+
+        Assert.False(factoryCalled);
         Assert.NotNull(result);
         Assert.Equal(value.Id, result.Id);
         Assert.Equal(value.Name, result.Name);
@@ -759,7 +646,7 @@ public class MemoryCacheManagerTests : IDisposable
     #region Key Prefix Isolation Tests
 
     [Fact]
-    public async Task SetAsync_WithDifferentPrefixes_IsolatesCacheEntries()
+    public async Task GetOrSetAsync_WithDifferentPrefixes_IsolatesCacheEntries()
     {
         var sharedCache = new MemoryCache(new MemoryCacheOptions());
         using var manager1 = new MemoryCacheManager(sharedCache, new DeliveryCacheOptions { KeyPrefix = "client1" });
@@ -769,11 +656,11 @@ public class MemoryCacheManagerTests : IDisposable
         var value1 = new TestCacheValue { Id = 1, Name = "Client1Value" };
         var value2 = new TestCacheValue { Id = 2, Name = "Client2Value" };
 
-        await manager1.SetAsync(key, value1, []);
-        await manager2.SetAsync(key, value2, []);
+        await PopulateCache(manager1, key, value1, []);
+        await PopulateCache(manager2, key, value2, []);
 
-        var result1 = await manager1.GetAsync<TestCacheValue>(key);
-        var result2 = await manager2.GetAsync<TestCacheValue>(key);
+        var result1 = await GetCachedValue<TestCacheValue>(manager1, key);
+        var result2 = await GetCachedValue<TestCacheValue>(manager2, key);
 
         Assert.NotNull(result1);
         Assert.NotNull(result2);
@@ -794,61 +681,47 @@ public class MemoryCacheManagerTests : IDisposable
 
         var key = "same_key";
         var dependency = "same_dep";
-        var value1 = new TestCacheValue { Id = 1, Name = "Client1Value" };
-        var value2 = new TestCacheValue { Id = 2, Name = "Client2Value" };
 
-        await manager1.SetAsync(key, value1, [dependency]);
-        await manager2.SetAsync(key, value2, [dependency]);
+        await PopulateCache(manager1, key, new TestCacheValue { Id = 1, Name = "Client1Value" }, [dependency]);
+        await PopulateCache(manager2, key, new TestCacheValue { Id = 2, Name = "Client2Value" }, [dependency]);
 
         await manager1.InvalidateAsync(default, dependency);
 
-        var result1 = await manager1.GetAsync<TestCacheValue>(key);
-        var result2 = await manager2.GetAsync<TestCacheValue>(key);
-
-        Assert.Null(result1);
-        Assert.NotNull(result2);
-        Assert.Equal(2, result2.Id);
+        Assert.True(await IsFactoryCalledAsync(manager1, key));
+        Assert.False(await IsFactoryCalledAsync(manager2, key));
 
         sharedCache.Dispose();
     }
 
     [Fact]
-    public async Task GetAsync_WithDifferentPrefixes_DoesNotCrossContaminate()
+    public async Task GetOrSetAsync_WithDifferentPrefixes_DoesNotCrossContaminate()
     {
         var sharedCache = new MemoryCache(new MemoryCacheOptions());
         using var manager1 = new MemoryCacheManager(sharedCache, new DeliveryCacheOptions { KeyPrefix = "client1" });
         using var manager2 = new MemoryCacheManager(sharedCache, new DeliveryCacheOptions { KeyPrefix = "client2" });
 
         var key = "unique_key";
-        var value = new TestCacheValue { Id = 1, Name = "OnlyInClient1" };
+        await PopulateCache(manager1, key, new TestCacheValue { Id = 1, Name = "OnlyInClient1" }, []);
 
-        await manager1.SetAsync(key, value, []);
-
-        var result1 = await manager1.GetAsync<TestCacheValue>(key);
-        var result2 = await manager2.GetAsync<TestCacheValue>(key);
-
-        Assert.NotNull(result1);
-        Assert.Null(result2);
+        Assert.False(await IsFactoryCalledAsync(manager1, key));
+        Assert.True(await IsFactoryCalledAsync(manager2, key));
 
         sharedCache.Dispose();
     }
 
     [Fact]
-    public async Task SetAsync_WithNullPrefix_UsesUnprefixedKeys()
+    public async Task GetOrSetAsync_WithNullPrefix_UsesUnprefixedKeys()
     {
         var sharedCache = new MemoryCache(new MemoryCacheOptions());
         using var managerNoPrefix = new MemoryCacheManager(sharedCache, new DeliveryCacheOptions { KeyPrefix = null });
         using var managerWithPrefix = new MemoryCacheManager(sharedCache, new DeliveryCacheOptions { KeyPrefix = "prefixed" });
 
         var key = "test_key";
-        var value1 = new TestCacheValue { Id = 1, Name = "NoPrefix" };
-        var value2 = new TestCacheValue { Id = 2, Name = "WithPrefix" };
+        await PopulateCache(managerNoPrefix, key, new TestCacheValue { Id = 1, Name = "NoPrefix" }, []);
+        await PopulateCache(managerWithPrefix, key, new TestCacheValue { Id = 2, Name = "WithPrefix" }, []);
 
-        await managerNoPrefix.SetAsync(key, value1, []);
-        await managerWithPrefix.SetAsync(key, value2, []);
-
-        var result1 = await managerNoPrefix.GetAsync<TestCacheValue>(key);
-        var result2 = await managerWithPrefix.GetAsync<TestCacheValue>(key);
+        var result1 = await GetCachedValue<TestCacheValue>(managerNoPrefix, key);
+        var result2 = await GetCachedValue<TestCacheValue>(managerWithPrefix, key);
 
         Assert.NotNull(result1);
         Assert.NotNull(result2);
@@ -867,17 +740,17 @@ public class MemoryCacheManagerTests : IDisposable
 
         var dependency = "content_type_article";
 
-        await manager1.SetAsync("item1", new TestCacheValue { Id = 1 }, [dependency]);
-        await manager1.SetAsync("item2", new TestCacheValue { Id = 2 }, [dependency]);
-        await manager2.SetAsync("item1", new TestCacheValue { Id = 10 }, [dependency]);
-        await manager2.SetAsync("item2", new TestCacheValue { Id = 20 }, [dependency]);
+        await PopulateCache(manager1, "item1", new TestCacheValue { Id = 1 }, [dependency]);
+        await PopulateCache(manager1, "item2", new TestCacheValue { Id = 2 }, [dependency]);
+        await PopulateCache(manager2, "item1", new TestCacheValue { Id = 10 }, [dependency]);
+        await PopulateCache(manager2, "item2", new TestCacheValue { Id = 20 }, [dependency]);
 
         await manager1.InvalidateAsync(default, dependency);
 
-        Assert.Null(await manager1.GetAsync<TestCacheValue>("item1"));
-        Assert.Null(await manager1.GetAsync<TestCacheValue>("item2"));
-        Assert.NotNull(await manager2.GetAsync<TestCacheValue>("item1"));
-        Assert.NotNull(await manager2.GetAsync<TestCacheValue>("item2"));
+        Assert.True(await IsFactoryCalledAsync(manager1, "item1"));
+        Assert.True(await IsFactoryCalledAsync(manager1, "item2"));
+        Assert.False(await IsFactoryCalledAsync(manager2, "item1"));
+        Assert.False(await IsFactoryCalledAsync(manager2, "item2"));
 
         sharedCache.Dispose();
     }
@@ -892,21 +765,21 @@ public class MemoryCacheManagerTests : IDisposable
         var dependency = "shared_dep_name";
 
         var tasks1 = Enumerable.Range(0, 25)
-            .Select(i => manager1.SetAsync($"key_{i}", new TestCacheValue { Id = i }, [dependency]));
+            .Select(i => PopulateCache(manager1, $"key_{i}", new TestCacheValue { Id = i }, [dependency]));
         var tasks2 = Enumerable.Range(0, 25)
-            .Select(i => manager2.SetAsync($"key_{i}", new TestCacheValue { Id = i + 100 }, [dependency]));
+            .Select(i => PopulateCache(manager2, $"key_{i}", new TestCacheValue { Id = i + 100 }, [dependency]));
 
         await Task.WhenAll(tasks1.Concat(tasks2));
 
         await manager1.InvalidateAsync(default, dependency);
 
         var verify1 = await Task.WhenAll(Enumerable.Range(0, 25)
-            .Select(i => manager1.GetAsync<TestCacheValue>($"key_{i}")));
+            .Select(i => IsFactoryCalledAsync(manager1, $"key_{i}")));
         var verify2 = await Task.WhenAll(Enumerable.Range(0, 25)
-            .Select(i => manager2.GetAsync<TestCacheValue>($"key_{i}")));
+            .Select(i => IsFactoryCalledAsync(manager2, $"key_{i}")));
 
-        Assert.All(verify1, Assert.Null);
-        Assert.All(verify2, Assert.NotNull);
+        Assert.All(verify1, r => Assert.True(r));
+        Assert.All(verify2, r => Assert.False(r));
 
         sharedCache.Dispose();
     }
@@ -927,18 +800,19 @@ public class MemoryCacheManagerTests : IDisposable
             FailSafeThrottleDuration = TimeSpan.FromSeconds(1)
         });
 
-        var key = "failsafe_key";
         var value = new TestCacheValue { Id = 42, Name = "Stale" };
-
-        await manager.SetAsync(key, value, ["dep1"]);
+        await PopulateCache(manager, "failsafe_key", value, ["dep1"]);
 
         // Wait for the normal TTL to expire, but fail-safe should still serve the stale entry.
         await Task.Delay(TimeSpan.FromMilliseconds(300));
 
-        var result = await manager.GetAsync<TestCacheValue>(key);
+        // When the factory throws after TTL expires, fail-safe returns the stale value.
+        var result = await manager.GetOrSetAsync<TestCacheValue>("failsafe_key", _ =>
+            throw new InvalidOperationException("Simulated API failure"));
 
         Assert.NotNull(result);
         Assert.Equal(42, result.Id);
+        Assert.Equal("Stale", result.Name);
     }
 
     [Fact]
@@ -951,18 +825,15 @@ public class MemoryCacheManagerTests : IDisposable
             IsFailSafeEnabled = false
         });
 
-        var key = "no_failsafe_key";
         var value = new TestCacheValue { Id = 42, Name = "Ephemeral" };
-
-        await manager.SetAsync(key, value, ["dep1"]);
+        await PopulateCache(manager, "no_failsafe_key", value, ["dep1"]);
 
         var expired = await WaitUntilAsync(
-            async () => await manager.GetAsync<TestCacheValue>(key) is null,
+            async () => await IsFactoryCalledAsync(manager, "no_failsafe_key"),
             timeout: TimeSpan.FromSeconds(2),
             pollInterval: TimeSpan.FromMilliseconds(20));
 
         Assert.True(expired);
-        Assert.Null(await manager.GetAsync<TestCacheValue>(key));
     }
 
     #endregion
@@ -984,6 +855,36 @@ public class MemoryCacheManagerTests : IDisposable
 
     #endregion
 
+    #region Test Helpers
+
+    private Task PopulateCache(string key, TestCacheValue value, string[] dependencies, TimeSpan? expiration = null)
+        => PopulateCache(_cacheManager, key, value, dependencies, expiration);
+
+    private static Task PopulateCache(IDeliveryCacheManager manager, string key, TestCacheValue value, string[] dependencies, TimeSpan? expiration = null)
+        => manager.GetOrSetAsync(key, _ =>
+            Task.FromResult<CacheEntry<TestCacheValue>?>(
+                new CacheEntry<TestCacheValue>(value, dependencies)),
+            expiration);
+
+    private Task<bool> IsFactoryCalledAsync(string key) => IsFactoryCalledAsync(_cacheManager, key);
+
+    private static async Task<bool> IsFactoryCalledAsync(IDeliveryCacheManager manager, string key)
+    {
+        var factoryCalled = false;
+        await manager.GetOrSetAsync<TestCacheValue>(key, _ =>
+        {
+            factoryCalled = true;
+            return Task.FromResult<CacheEntry<TestCacheValue>?>(null);
+        });
+        return factoryCalled;
+    }
+
+    private static async Task<T?> GetCachedValue<T>(IDeliveryCacheManager manager, string key) where T : class
+    {
+        return await manager.GetOrSetAsync<T>(key, _ =>
+            Task.FromResult<CacheEntry<T>?>(null));
+    }
+
     private static async Task<bool> WaitUntilAsync(Func<Task<bool>> condition, TimeSpan timeout, TimeSpan pollInterval)
     {
         if (await condition().ConfigureAwait(false))
@@ -1003,16 +904,14 @@ public class MemoryCacheManagerTests : IDisposable
         return await condition().ConfigureAwait(false);
     }
 
+    #endregion
+
     #region Test Helper Classes
 
     private class TestCacheValue
     {
         public int Id { get; set; }
         public string? Name { get; set; }
-    }
-
-    private class OtherTestValue
-    {
     }
 
     private class ComplexCacheValue

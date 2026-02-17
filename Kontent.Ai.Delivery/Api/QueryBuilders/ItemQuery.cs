@@ -82,16 +82,17 @@ internal sealed class ItemQuery<TModel>(
         CancellationToken cancellationToken)
     {
         var cacheKey = BuildCacheKey(cacheManager.StorageMode);
-        var (cacheResult, apiResult) = await FetchWithCacheAsync(
-            cacheManager,
-            cacheKey,
-            waitForLoadingNewContent,
-            cancellationToken).ConfigureAwait(false);
+        IDeliveryResult<DeliveryItemResponse<TModel>>? apiResult = null;
 
-        if (QueryExecutionResultHelper.TryGetCacheHitValue(cacheResult, out var cachedItem))
+        var cached = cacheManager.StorageMode == CacheStorageMode.RawJson
+            ? await ExecuteWithRawJsonCacheAsync(cacheManager, cacheKey, waitForLoadingNewContent, r => apiResult = r, cancellationToken).ConfigureAwait(false)
+            : await ExecuteWithHydratedCacheAsync(cacheManager, cacheKey, waitForLoadingNewContent, r => apiResult = r, cancellationToken).ConfigureAwait(false);
+
+        // Cache hit: apiResult is null because factory was never called
+        if (apiResult is null && cached is not null)
         {
             LogQueryCompleted(stopwatch, HttpStatusCode.OK, cacheHit: true);
-            return DeliveryResult.CacheHit(cachedItem);
+            return DeliveryResult.CacheHit(cached);
         }
 
         apiResult = QueryExecutionResultHelper.EnsureApiResult(apiResult, "Item", codename);
@@ -103,7 +104,66 @@ internal sealed class ItemQuery<TModel>(
         }
 
         LogQueryCompleted(stopwatch, apiResult.StatusCode, cacheHit: false, apiResult.HasStaleContent);
-        return WrapSuccess(cacheResult.Value ?? apiResult.Value.Item, apiResult);
+        return WrapSuccess(cached ?? apiResult.Value.Item, apiResult);
+    }
+
+    private async Task<IContentItem<TModel>?> ExecuteWithRawJsonCacheAsync(
+        IDeliveryCacheManager cacheManager,
+        string cacheKey,
+        bool? waitForLoadingNewContent,
+        Action<IDeliveryResult<DeliveryItemResponse<TModel>>> captureApiResult,
+        CancellationToken cancellationToken)
+    {
+        var payload = await cacheManager.GetOrSetAsync(
+            cacheKey,
+            async ct =>
+            {
+                var result = await FetchFromApiAsync(waitForLoadingNewContent, ct).ConfigureAwait(false);
+                captureApiResult(result);
+                if (!result.IsSuccess)
+                    return null;
+
+                var (item, deps) = await ProcessItemAsync(result.Value, ct).ConfigureAwait(false);
+                var rawPayload = CachedRawItemsPayload.FromItem(item, result.Value.ModularContent);
+                return new CacheEntry<CachedRawItemsPayload>(rawPayload, deps);
+            },
+            CacheExpiration,
+            cancellationToken).ConfigureAwait(false);
+
+        if (payload is null)
+            return null;
+
+        return await CachePayloadHelper.RehydrateItemAsync<TModel>(
+            payload,
+            contentDeserializer,
+            contentItemMapper,
+            IsDynamicModel,
+            defaultRenditionPreset,
+            logger,
+            cancellationToken).ConfigureAwait(false);
+    }
+
+    private async Task<IContentItem<TModel>?> ExecuteWithHydratedCacheAsync(
+        IDeliveryCacheManager cacheManager,
+        string cacheKey,
+        bool? waitForLoadingNewContent,
+        Action<IDeliveryResult<DeliveryItemResponse<TModel>>> captureApiResult,
+        CancellationToken cancellationToken)
+    {
+        return await cacheManager.GetOrSetAsync(
+            cacheKey,
+            async ct =>
+            {
+                var result = await FetchFromApiAsync(waitForLoadingNewContent, ct).ConfigureAwait(false);
+                captureApiResult(result);
+                if (!result.IsSuccess)
+                    return null;
+
+                var (item, deps) = await ProcessItemAsync(result.Value, ct).ConfigureAwait(false);
+                return new CacheEntry<IContentItem<TModel>>(item, deps);
+            },
+            CacheExpiration,
+            cancellationToken).ConfigureAwait(false);
     }
 
     private async Task<IDeliveryResult<IContentItem<TModel>>> ExecuteWithoutCacheAsync(
@@ -122,81 +182,6 @@ internal sealed class ItemQuery<TModel>(
         var (item, _) = await ProcessItemAsync(deliveryResult.Value, cancellationToken).ConfigureAwait(false);
         LogQueryCompleted(stopwatch, deliveryResult.StatusCode, cacheHit: false, deliveryResult.HasStaleContent);
         return WrapSuccess(item, deliveryResult);
-    }
-
-    private async Task<(CacheFetchResult<IContentItem<TModel>> CacheResult, IDeliveryResult<DeliveryItemResponse<TModel>>? ApiResult)>
-        FetchWithCacheAsync(
-            IDeliveryCacheManager cacheManager,
-            string cacheKey,
-            bool? waitForLoadingNewContent,
-            CancellationToken cancellationToken)
-    {
-        return cacheManager.StorageMode == CacheStorageMode.RawJson
-            ? await FetchWithRawJsonCacheAsync(cacheManager, cacheKey, waitForLoadingNewContent, cancellationToken).ConfigureAwait(false)
-            : await FetchWithHydratedObjectCacheAsync(cacheManager, cacheKey, waitForLoadingNewContent, cancellationToken).ConfigureAwait(false);
-    }
-
-    private async Task<(CacheFetchResult<IContentItem<TModel>> CacheResult, IDeliveryResult<DeliveryItemResponse<TModel>>? ApiResult)>
-        FetchWithRawJsonCacheAsync(
-            IDeliveryCacheManager cacheManager,
-            string cacheKey,
-            bool? waitForLoadingNewContent,
-            CancellationToken cancellationToken)
-    {
-        IDeliveryResult<DeliveryItemResponse<TModel>>? apiResult = null;
-
-        // Distributed cache: cache raw JSON strings to avoid serialization issues
-        var cacheResult = await QueryCacheHelper.GetOrFetchWithRehydrationAsync(
-            cacheManager,
-            cacheKey,
-            async ct =>
-            {
-                apiResult = await FetchFromApiAsync(waitForLoadingNewContent, ct).ConfigureAwait(false);
-                if (!apiResult.IsSuccess)
-                    return (null, null, Array.Empty<string>());
-
-                var (item, deps) = await ProcessItemAsync(apiResult.Value, ct).ConfigureAwait(false);
-                var payload = CachedRawItemsPayload.FromItem(item, apiResult.Value.ModularContent);
-                return (payload, item, deps);
-            },
-            async (payload, ct) => (IContentItem<TModel>)await CachePayloadHelper.RehydrateItemAsync<TModel>(
-                payload,
-                contentDeserializer,
-                contentItemMapper,
-                IsDynamicModel,
-                defaultRenditionPreset,
-                logger,
-                ct).ConfigureAwait(false),
-            CacheExpiration,
-            logger,
-            cancellationToken).ConfigureAwait(false);
-
-        return (cacheResult, apiResult);
-    }
-
-    private async Task<(CacheFetchResult<IContentItem<TModel>> CacheResult, IDeliveryResult<DeliveryItemResponse<TModel>>? ApiResult)>
-        FetchWithHydratedObjectCacheAsync(
-            IDeliveryCacheManager cacheManager,
-            string cacheKey,
-            bool? waitForLoadingNewContent,
-            CancellationToken cancellationToken)
-    {
-        IDeliveryResult<DeliveryItemResponse<TModel>>? apiResult = null;
-
-        // Memory cache: store hydrated objects directly (no serialization needed)
-        var cacheResult = await QueryCacheHelper.GetOrFetchAsync(
-            cacheManager,
-            cacheKey,
-            async ct =>
-            {
-                apiResult = await FetchFromApiAsync(waitForLoadingNewContent, ct).ConfigureAwait(false);
-                return !apiResult.IsSuccess ? ((IContentItem<TModel>? Value, IEnumerable<string> Dependencies))(null, Array.Empty<string>()) : ((IContentItem<TModel>? Value, IEnumerable<string> Dependencies))await ProcessItemAsync(apiResult.Value, ct).ConfigureAwait(false);
-            },
-            CacheExpiration,
-            logger,
-            cancellationToken).ConfigureAwait(false);
-
-        return (cacheResult, apiResult);
     }
 
     private static IDeliveryResult<IContentItem<TModel>> WrapSuccess(

@@ -122,17 +122,18 @@ internal sealed class ItemsQuery<TModel>(
         CancellationToken cancellationToken)
     {
         var cacheKey = BuildCacheKey(cacheManager.StorageMode);
-        var (cacheResult, apiResult) = await FetchWithCacheAsync(
-            cacheManager,
-            cacheKey,
-            waitForLoadingNewContent,
-            cancellationToken).ConfigureAwait(false);
+        IDeliveryResult<DeliveryItemListingResponse<TModel>>? apiResult = null;
 
-        if (QueryExecutionResultHelper.TryGetCacheHitValue(cacheResult, out var cachedListing))
+        var cached = cacheManager.StorageMode == CacheStorageMode.RawJson
+            ? await ExecuteWithRawJsonCacheAsync(cacheManager, cacheKey, waitForLoadingNewContent, r => apiResult = r, cancellationToken).ConfigureAwait(false)
+            : await ExecuteWithHydratedCacheAsync(cacheManager, cacheKey, waitForLoadingNewContent, r => apiResult = r, cancellationToken).ConfigureAwait(false);
+
+        // Cache hit: apiResult is null because factory was never called
+        if (apiResult is null && cached is not null)
         {
             LogQueryCompleted(stopwatch, HttpStatusCode.OK, cacheHit: true);
             return DeliveryResult.CacheHit<IDeliveryItemListingResponse<TModel>>(
-                WithNextPageFetcher(cachedListing));
+                WithNextPageFetcher(cached));
         }
 
         apiResult = QueryExecutionResultHelper.EnsureApiResult(apiResult, "Items", "list");
@@ -144,8 +145,67 @@ internal sealed class ItemsQuery<TModel>(
         }
 
         LogQueryCompleted(stopwatch, apiResult.StatusCode, cacheHit: false, apiResult.HasStaleContent);
-        var response = cacheResult.Value ?? apiResult.Value;
+        var response = cached ?? apiResult.Value;
         return WrapSuccess(WithNextPageFetcher(response), apiResult);
+    }
+
+    private async Task<DeliveryItemListingResponse<TModel>?> ExecuteWithRawJsonCacheAsync(
+        IDeliveryCacheManager cacheManager,
+        string cacheKey,
+        bool? waitForLoadingNewContent,
+        Action<IDeliveryResult<DeliveryItemListingResponse<TModel>>> captureApiResult,
+        CancellationToken cancellationToken)
+    {
+        var payload = await cacheManager.GetOrSetAsync(
+            cacheKey,
+            async ct =>
+            {
+                var result = await FetchFromApiAsync(waitForLoadingNewContent, ct).ConfigureAwait(false);
+                captureApiResult(result);
+                if (!result.IsSuccess)
+                    return null;
+
+                var (response, deps) = await ProcessItemsAsync(result.Value, ct).ConfigureAwait(false);
+                var rawPayload = CachedRawItemsPayload.FromListing(response);
+                return new CacheEntry<CachedRawItemsPayload>(rawPayload, deps);
+            },
+            CacheExpiration,
+            cancellationToken).ConfigureAwait(false);
+
+        if (payload is null)
+            return null;
+
+        return await CachePayloadHelper.RehydrateListingAsync<TModel>(
+            payload,
+            contentDeserializer,
+            contentItemMapper,
+            IsDynamicModel,
+            defaultRenditionPreset,
+            logger,
+            cancellationToken).ConfigureAwait(false);
+    }
+
+    private async Task<DeliveryItemListingResponse<TModel>?> ExecuteWithHydratedCacheAsync(
+        IDeliveryCacheManager cacheManager,
+        string cacheKey,
+        bool? waitForLoadingNewContent,
+        Action<IDeliveryResult<DeliveryItemListingResponse<TModel>>> captureApiResult,
+        CancellationToken cancellationToken)
+    {
+        return await cacheManager.GetOrSetAsync(
+            cacheKey,
+            async ct =>
+            {
+                var result = await FetchFromApiAsync(waitForLoadingNewContent, ct).ConfigureAwait(false);
+                captureApiResult(result);
+                if (!result.IsSuccess)
+                    return null;
+
+                var (response, deps) = await ProcessItemsAsync(result.Value, ct).ConfigureAwait(false);
+                return new CacheEntry<DeliveryItemListingResponse<TModel>>(response, deps);
+            },
+            CacheExpiration,
+            cancellationToken).ConfigureAwait(false);
     }
 
     private async Task<IDeliveryResult<IDeliveryItemListingResponse<TModel>>> ExecuteWithoutCacheAsync(
@@ -164,85 +224,6 @@ internal sealed class ItemsQuery<TModel>(
         var (resp, _) = await ProcessItemsAsync(deliveryResult.Value, cancellationToken).ConfigureAwait(false);
         LogQueryCompleted(stopwatch, deliveryResult.StatusCode, cacheHit: false, deliveryResult.HasStaleContent);
         return WrapSuccess(WithNextPageFetcher(resp), deliveryResult);
-    }
-
-    private async Task<(CacheFetchResult<DeliveryItemListingResponse<TModel>> CacheResult, IDeliveryResult<DeliveryItemListingResponse<TModel>>? ApiResult)>
-        FetchWithCacheAsync(
-            IDeliveryCacheManager cacheManager,
-            string cacheKey,
-            bool? waitForLoadingNewContent,
-            CancellationToken cancellationToken)
-    {
-        return cacheManager.StorageMode == CacheStorageMode.RawJson
-            ? await FetchWithRawJsonCacheAsync(cacheManager, cacheKey, waitForLoadingNewContent, cancellationToken).ConfigureAwait(false)
-            : await FetchWithHydratedObjectCacheAsync(cacheManager, cacheKey, waitForLoadingNewContent, cancellationToken).ConfigureAwait(false);
-    }
-
-    private async Task<(CacheFetchResult<DeliveryItemListingResponse<TModel>> CacheResult, IDeliveryResult<DeliveryItemListingResponse<TModel>>? ApiResult)>
-        FetchWithRawJsonCacheAsync(
-            IDeliveryCacheManager cacheManager,
-            string cacheKey,
-            bool? waitForLoadingNewContent,
-            CancellationToken cancellationToken)
-    {
-        IDeliveryResult<DeliveryItemListingResponse<TModel>>? apiResult = null;
-
-        // Distributed cache: cache raw JSON strings to avoid serialization issues
-        var cacheResult = await QueryCacheHelper.GetOrFetchWithRehydrationAsync(
-            cacheManager,
-            cacheKey,
-            async ct =>
-            {
-                apiResult = await FetchFromApiAsync(waitForLoadingNewContent, ct).ConfigureAwait(false);
-                if (!apiResult.IsSuccess)
-                    return (null, null, Array.Empty<string>());
-
-                var (response, deps) = await ProcessItemsAsync(apiResult.Value, ct).ConfigureAwait(false);
-                var payload = CachedRawItemsPayload.FromListing(response);
-                return (payload, response, deps);
-            },
-            (payload, ct) => CachePayloadHelper.RehydrateListingAsync<TModel>(
-                payload,
-                contentDeserializer,
-                contentItemMapper,
-                IsDynamicModel,
-                defaultRenditionPreset,
-                logger,
-                ct),
-            CacheExpiration,
-            logger,
-            cancellationToken).ConfigureAwait(false);
-
-        return (cacheResult, apiResult);
-    }
-
-    private async Task<(CacheFetchResult<DeliveryItemListingResponse<TModel>> CacheResult, IDeliveryResult<DeliveryItemListingResponse<TModel>>? ApiResult)>
-        FetchWithHydratedObjectCacheAsync(
-            IDeliveryCacheManager cacheManager,
-            string cacheKey,
-            bool? waitForLoadingNewContent,
-            CancellationToken cancellationToken)
-    {
-        IDeliveryResult<DeliveryItemListingResponse<TModel>>? apiResult = null;
-
-        // Memory cache: store hydrated objects directly (no serialization needed)
-        var cacheResult = await QueryCacheHelper.GetOrFetchAsync(
-            cacheManager,
-            cacheKey,
-            async ct =>
-            {
-                apiResult = await FetchFromApiAsync(waitForLoadingNewContent, ct).ConfigureAwait(false);
-                if (!apiResult.IsSuccess)
-                    return (null, Array.Empty<string>());
-
-                var (response, deps) = await ProcessItemsAsync(apiResult.Value, ct).ConfigureAwait(false);
-                return (response, deps);
-            },
-            CacheExpiration,
-            logger,
-            cancellationToken).ConfigureAwait(false);
-
-        return (cacheResult, apiResult);
     }
 
     private DeliveryItemListingResponse<TModel> WithNextPageFetcher(DeliveryItemListingResponse<TModel> resp)

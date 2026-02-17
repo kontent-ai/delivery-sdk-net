@@ -47,16 +47,29 @@ internal sealed class TaxonomyQuery(
         CancellationToken cancellationToken)
     {
         var cacheKey = CacheKeyBuilder.BuildTaxonomyKey(codename);
-        var (cacheResult, apiResult) = await FetchWithCacheAsync(
-            cacheManager,
+        IDeliveryResult<ITaxonomyGroup>? apiResult = null;
+
+        var cached = await cacheManager.GetOrSetAsync(
             cacheKey,
-            waitForLoadingNewContent,
+            async ct =>
+            {
+                apiResult = await FetchFromApiAsync(waitForLoadingNewContent, ct).ConfigureAwait(false);
+                if (!apiResult.IsSuccess)
+                    return null;
+
+                var dependency = CacheDependencyKeyBuilder.BuildTaxonomyDependencyKey(apiResult.Value.System.Codename);
+                var dependencies = dependency is null ? Array.Empty<string>() : new[] { dependency };
+
+                return new CacheEntry<TaxonomyGroup>((TaxonomyGroup)apiResult.Value, dependencies);
+            },
+            CacheExpiration,
             cancellationToken).ConfigureAwait(false);
 
-        if (QueryExecutionResultHelper.TryGetCacheHitValue(cacheResult, out var cachedTaxonomy))
+        // Cache hit: apiResult is null because factory was never called
+        if (apiResult is null && cached is not null)
         {
             LogQueryCompleted(stopwatch, HttpStatusCode.OK, cacheHit: true);
-            return DeliveryResult.CacheHit<ITaxonomyGroup>(cachedTaxonomy);
+            return DeliveryResult.CacheHit<ITaxonomyGroup>(cached);
         }
 
         apiResult = QueryExecutionResultHelper.EnsureApiResult(apiResult, "Taxonomy", codename);
@@ -79,35 +92,6 @@ internal sealed class TaxonomyQuery(
 
         LogQueryCompleted(stopwatch, deliveryResult.StatusCode, cacheHit: false, deliveryResult.HasStaleContent);
         return deliveryResult;
-    }
-
-    private async Task<(CacheFetchResult<TaxonomyGroup> CacheResult, IDeliveryResult<ITaxonomyGroup>? ApiResult)> FetchWithCacheAsync(
-        IDeliveryCacheManager cacheManager,
-        string cacheKey,
-        bool? waitForLoadingNewContent,
-        CancellationToken cancellationToken)
-    {
-        IDeliveryResult<ITaxonomyGroup>? apiResult = null;
-
-        var cacheResult = await QueryCacheHelper.GetOrFetchAsync(
-            cacheManager,
-            cacheKey,
-            async ct =>
-            {
-                apiResult = await FetchFromApiAsync(waitForLoadingNewContent, ct).ConfigureAwait(false);
-                if (!apiResult.IsSuccess)
-                    return (null, Array.Empty<string>());
-
-                var dependency = CacheDependencyKeyBuilder.BuildTaxonomyDependencyKey(apiResult.Value.System.Codename);
-                var dependencies = dependency is null ? Array.Empty<string>() : [dependency];
-
-                return ((TaxonomyGroup)apiResult.Value, dependencies);
-            },
-            CacheExpiration,
-            logger,
-            cancellationToken).ConfigureAwait(false);
-
-        return (cacheResult, apiResult);
     }
 
     private async Task<IDeliveryResult<ITaxonomyGroup>> FetchFromApiAsync(

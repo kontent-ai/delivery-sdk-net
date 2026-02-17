@@ -133,9 +133,15 @@ public class DeliveryClientBuilderTests
         var cacheManager = GetCacheManager(container.Client);
         Assert.NotNull(cacheManager);
 
-        await cacheManager.SetAsync("preview-test", "value", ["item_preview"]);
-        var cached = await cacheManager.GetAsync<string>("preview-test");
+        var factoryCalled = false;
+        var cached = await cacheManager.GetOrSetAsync("preview-test", _ =>
+        {
+            factoryCalled = true;
+            return Task.FromResult<CacheEntry<string>?>(
+                new CacheEntry<string>("value", ["item_preview"]));
+        });
 
+        Assert.True(factoryCalled);
         Assert.Equal("value", cached);
     }
 
@@ -153,9 +159,15 @@ public class DeliveryClientBuilderTests
         var cacheManager = GetCacheManager(container.Client);
         Assert.NotNull(cacheManager);
 
-        await cacheManager.SetAsync("production-test", "value", ["item_production"]);
-        var cached = await cacheManager.GetAsync<string>("production-test");
+        var factoryCalled = false;
+        var cached = await cacheManager.GetOrSetAsync("production-test", _ =>
+        {
+            factoryCalled = true;
+            return Task.FromResult<CacheEntry<string>?>(
+                new CacheEntry<string>("value", ["item_production"]));
+        });
 
+        Assert.True(factoryCalled);
         Assert.Equal("value", cached);
     }
 

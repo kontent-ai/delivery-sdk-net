@@ -44,58 +44,12 @@ internal static partial class LoggerMessages
         Exception? exception);
 
     [LoggerMessage(
-        EventId = LogEventIds.QueryCacheHit,
-        Level = LogLevel.Debug,
-        Message = "Cache hit for key '{CacheKey}'")]
-    public static partial void QueryCacheHit(ILogger logger, string cacheKey);
-
-    [LoggerMessage(
-        EventId = LogEventIds.QueryCacheMiss,
-        Level = LogLevel.Debug,
-        Message = "Cache miss for key '{CacheKey}', executing API call")]
-    public static partial void QueryCacheMiss(ILogger logger, string cacheKey);
-
-    [LoggerMessage(
-        EventId = LogEventIds.QueryCacheStore,
-        Level = LogLevel.Debug,
-        Message = "Caching query result for key '{CacheKey}' (Expiration: {Expiration}, Dependencies: {DependencyCount})")]
-    public static partial void QueryCacheStore(
-        ILogger logger,
-        string cacheKey,
-        string expiration,
-        int dependencyCount);
-
-    [LoggerMessage(
-        EventId = LogEventIds.QueryCacheStoreSkipped,
-        Level = LogLevel.Debug,
-        Message = "Skipping cache store for key '{CacheKey}' because no cache payload was produced")]
-    public static partial void QueryCacheStoreSkipped(ILogger logger, string cacheKey);
-
-    [LoggerMessage(
         EventId = LogEventIds.QueryStaleContent,
         Level = LogLevel.Warning,
         Message = "Response contains stale content for '{Identifier}' (X-Stale-Content header present)")]
     public static partial void QueryStaleContent(ILogger logger, string identifier);
 
     // ========== Cache Operations ==========
-
-    [LoggerMessage(
-        EventId = LogEventIds.CacheGetFailed,
-        Level = LogLevel.Warning,
-        Message = "Cache read failed for key '{CacheKey}', proceeding with API call")]
-    public static partial void CacheGetFailed(ILogger logger, string cacheKey, Exception exception);
-
-    [LoggerMessage(
-        EventId = LogEventIds.CacheSetCompleted,
-        Level = LogLevel.Debug,
-        Message = "Cached response for key '{CacheKey}' with {DependencyCount} dependencies")]
-    public static partial void CacheSetCompleted(ILogger logger, string cacheKey, int dependencyCount);
-
-    [LoggerMessage(
-        EventId = LogEventIds.CacheSetFailed,
-        Level = LogLevel.Warning,
-        Message = "Cache write failed for key '{CacheKey}', response still returned to caller")]
-    public static partial void CacheSetFailed(ILogger logger, string cacheKey, Exception exception);
 
     [LoggerMessage(
         EventId = LogEventIds.CacheInvalidateStarting,

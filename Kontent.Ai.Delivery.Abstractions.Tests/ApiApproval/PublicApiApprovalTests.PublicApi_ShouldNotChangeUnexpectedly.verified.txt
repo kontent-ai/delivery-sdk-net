@@ -5,6 +5,17 @@ public sealed class BlockResolver`1 : MulticastDelegate
     ValueTask`1 Invoke(TBlock block, Func`2 resolveChildren)
 
 // Kontent.Ai.Delivery.Abstractions
+public sealed class CacheEntry`1 : IEquatable`1
+    IEnumerable`1 Dependencies { get; set; init; }
+    T Value { get; set; init; }
+    CacheEntry`1 <Clone>$()
+    Void Deconstruct(T& Value, IEnumerable`1& Dependencies)
+    Boolean Equals(Object obj)
+    Boolean Equals(CacheEntry`1 other)
+    Int32 GetHashCode()
+    String ToString()
+
+// Kontent.Ai.Delivery.Abstractions
 public enum CacheStorageMode : Enum
 
 // Kontent.Ai.Delivery.Abstractions
@@ -13,6 +24,7 @@ public sealed class DeliveryCacheDependencies
 // Kontent.Ai.Delivery.Abstractions
 public sealed class DeliveryCacheOptions
     TimeSpan DefaultExpiration { get; set; }
+    Single EagerRefreshThreshold { get; set; }
     TimeSpan FailSafeMaxDuration { get; set; }
     TimeSpan FailSafeThrottleDuration { get; set; }
     Boolean IsFailSafeEnabled { get; set; }
@@ -134,9 +146,8 @@ public interface IDateTimeContent
 // Kontent.Ai.Delivery.Abstractions
 public interface IDeliveryCacheManager
     CacheStorageMode StorageMode { get; }
-    Task`1 GetAsync(String cacheKey, CancellationToken cancellationToken)
+    Task`1 GetOrSetAsync(String cacheKey, Func`2 factory, Nullable`1 expiration, CancellationToken cancellationToken)
     Task InvalidateAsync(CancellationToken cancellationToken, String[] dependencyKeys)
-    Task SetAsync(String cacheKey, T value, IEnumerable`1 dependencies, Nullable`1 expiration, CancellationToken cancellationToken)
 
 // Kontent.Ai.Delivery.Abstractions
 public interface IDeliveryCachePurger

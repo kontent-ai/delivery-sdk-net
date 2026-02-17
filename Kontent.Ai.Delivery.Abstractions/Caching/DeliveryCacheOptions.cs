@@ -62,4 +62,15 @@ public sealed class DeliveryCacheOptions
     /// </summary>
     /// <value>Defaults to <see cref="TimeSpan.Zero"/> (no jitter).</value>
     public TimeSpan JitterMaxDuration { get; set; } = TimeSpan.Zero;
+
+    /// <summary>
+    /// Gets or sets the eager refresh threshold as a fraction of the entry's TTL.
+    /// When set to a value greater than 0, the cache will proactively refresh entries
+    /// in the background before they expire.
+    /// </summary>
+    /// <value>
+    /// A value between 0.0 and 1.0. Defaults to 0.0 (disabled).
+    /// For example, 0.8 means the entry will be refreshed after 80% of its TTL has elapsed.
+    /// </value>
+    public float EagerRefreshThreshold { get; set; }
 }

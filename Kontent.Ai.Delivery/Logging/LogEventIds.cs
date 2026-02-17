@@ -17,18 +17,6 @@ internal static class LogEventIds
     /// <summary>Query execution failed.</summary>
     public const int QueryFailed = 1002;
 
-    /// <summary>Cache hit - result returned from cache.</summary>
-    public const int QueryCacheHit = 1010;
-
-    /// <summary>Cache miss - proceeding with API call.</summary>
-    public const int QueryCacheMiss = 1011;
-
-    /// <summary>Cache store attempt for query result.</summary>
-    public const int QueryCacheStore = 1012;
-
-    /// <summary>Cache store skipped because no cacheable payload was produced.</summary>
-    public const int QueryCacheStoreSkipped = 1013;
-
     /// <summary>Response contains stale content.</summary>
     public const int QueryStaleContent = 1040;
 
@@ -45,15 +33,6 @@ internal static class LogEventIds
     public const int ItemsPaginationProgress = 1053;
 
     // ========== Cache Operations (1100-1199) ==========
-
-    /// <summary>Cache read operation failed.</summary>
-    public const int CacheGetFailed = 1100;
-
-    /// <summary>Cache write operation completed.</summary>
-    public const int CacheSetCompleted = 1110;
-
-    /// <summary>Cache write operation failed.</summary>
-    public const int CacheSetFailed = 1111;
 
     /// <summary>Cache invalidation started.</summary>
     public const int CacheInvalidateStarting = 1120;

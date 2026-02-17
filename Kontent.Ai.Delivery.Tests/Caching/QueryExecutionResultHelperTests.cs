@@ -8,17 +8,6 @@ namespace Kontent.Ai.Delivery.Tests.Caching;
 public class QueryExecutionResultHelperTests
 {
     [Fact]
-    public void TryGetCacheHitValue_WhenHitHasNullValue_ReturnsFalse()
-    {
-        var result = new CacheFetchResult<string>(null, [], IsCacheHit: true);
-
-        var isUsableHit = QueryExecutionResultHelper.TryGetCacheHitValue(result, out var cachedValue);
-
-        Assert.False(isUsableHit);
-        Assert.Null(cachedValue);
-    }
-
-    [Fact]
     public void CreateMissingApiResultFailure_ReturnsInternalServerErrorFailure()
     {
         var result = QueryExecutionResultHelper.CreateMissingApiResultFailure<string>("Items", "list");

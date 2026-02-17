@@ -13,7 +13,6 @@ namespace Kontent.Ai.Delivery.Tests.Caching;
 /// </summary>
 public class DistributedCacheManagerRealImplementationTests
 {
-    private readonly IDistributedCache _distributedCache;
     private readonly DistributedCacheManager _cacheManager;
 
     public DistributedCacheManagerRealImplementationTests()
@@ -23,57 +22,52 @@ public class DistributedCacheManagerRealImplementationTests
         services.AddDistributedMemoryCache();
         var serviceProvider = services.BuildServiceProvider();
 
-        _distributedCache = serviceProvider.GetRequiredService<IDistributedCache>();
-        _cacheManager = new DistributedCacheManager(_distributedCache, new DeliveryCacheOptions { DefaultExpiration = TimeSpan.FromMinutes(5) });
+        var distributedCache = serviceProvider.GetRequiredService<IDistributedCache>();
+        _cacheManager = new DistributedCacheManager(distributedCache, new DeliveryCacheOptions { DefaultExpiration = TimeSpan.FromMinutes(5) });
     }
 
     #region Basic Operations
 
     [Fact]
-    public async Task SetAsync_ThenGetAsync_WithRealImplementation_ReturnsValue()
+    public async Task GetOrSetAsync_CacheMissAndHit_WithRealImplementation()
     {
-        // Arrange
         var key = "real_test_key";
         var value = new TestValue { Id = 42, Name = "Integration Test" };
-        var dependencies = new[] { "dep1" };
 
-        // Act
-        await _cacheManager.SetAsync(key, value, dependencies);
-        var result = await _cacheManager.GetAsync<TestValue>(key);
+        // First call: cache miss, factory is called
+        var factoryCalled = false;
+        var result = await _cacheManager.GetOrSetAsync(key, _ =>
+        {
+            factoryCalled = true;
+            return Task.FromResult<CacheEntry<TestValue>?>(
+                new CacheEntry<TestValue>(value, ["dep1"]));
+        });
 
-        // Assert
+        Assert.True(factoryCalled);
         Assert.NotNull(result);
         Assert.Equal(value.Id, result.Id);
         Assert.Equal(value.Name, result.Name);
+
+        // Second call: cache hit, factory is NOT called
+        factoryCalled = false;
+        var cached = await _cacheManager.GetOrSetAsync(key, _ =>
+        {
+            factoryCalled = true;
+            return Task.FromResult<CacheEntry<TestValue>?>(null);
+        });
+
+        Assert.False(factoryCalled);
+        Assert.NotNull(cached);
+        Assert.Equal(value.Id, cached.Id);
     }
 
     [Fact]
-    public async Task GetAsync_NonExistentKey_WithRealImplementation_ReturnsNull()
+    public async Task GetOrSetAsync_FactoryReturnsNull_WithRealImplementation()
     {
-        // Act
-        var result = await _cacheManager.GetAsync<TestValue>("non_existent_key_real");
+        var result = await _cacheManager.GetOrSetAsync<TestValue>("non_existent_key_real", _ =>
+            Task.FromResult<CacheEntry<TestValue>?>(null));
 
-        // Assert
         Assert.Null(result);
-    }
-
-    [Fact]
-    public async Task SetAsync_OverwritesExistingKey_WithRealImplementation()
-    {
-        // Arrange
-        var key = "overwrite_key_real";
-        var value1 = new TestValue { Id = 1, Name = "First" };
-        var value2 = new TestValue { Id = 2, Name = "Second" };
-
-        // Act
-        await _cacheManager.SetAsync(key, value1, []);
-        await _cacheManager.SetAsync(key, value2, []);
-        var result = await _cacheManager.GetAsync<TestValue>(key);
-
-        // Assert
-        Assert.NotNull(result);
-        Assert.Equal(value2.Id, result.Id);
-        Assert.Equal(value2.Name, result.Name);
     }
 
     #endregion
@@ -83,72 +77,45 @@ public class DistributedCacheManagerRealImplementationTests
     [Fact]
     public async Task InvalidateAsync_WithRealImplementation_RemovesCacheEntry()
     {
-        // Arrange
-        var key = "invalidate_test_key";
-        var value = new TestValue { Id = 100, Name = "To Be Invalidated" };
         var dependency = "invalidate_dep";
+        await PopulateCache("invalidate_test_key", new TestValue { Id = 100, Name = "To Be Invalidated" }, [dependency]);
 
-        await _cacheManager.SetAsync(key, value, [dependency]);
-
-        // Act
         await _cacheManager.InvalidateAsync(default, dependency);
-        var result = await _cacheManager.GetAsync<TestValue>(key);
 
-        // Assert
-        Assert.Null(result);
+        Assert.True(await IsFactoryCalledAsync("invalidate_test_key"));
     }
 
     [Fact]
     public async Task InvalidateAsync_SharedDependency_WithRealImplementation_RemovesAllEntries()
     {
-        // Arrange
-        var key1 = "shared_key1";
-        var key2 = "shared_key2";
-        var key3 = "other_key";
         var value = new TestValue { Id = 1, Name = "Test" };
         var sharedDependency = "shared_real_dep";
 
-        await _cacheManager.SetAsync(key1, value, [sharedDependency]);
-        await _cacheManager.SetAsync(key2, value, [sharedDependency]);
-        await _cacheManager.SetAsync(key3, value, ["other_dep_real"]);
+        await PopulateCache("shared_key1", value, [sharedDependency]);
+        await PopulateCache("shared_key2", value, [sharedDependency]);
+        await PopulateCache("other_key", value, ["other_dep_real"]);
 
-        // Act
         await _cacheManager.InvalidateAsync(default, sharedDependency);
 
-        var result1 = await _cacheManager.GetAsync<TestValue>(key1);
-        var result2 = await _cacheManager.GetAsync<TestValue>(key2);
-        var result3 = await _cacheManager.GetAsync<TestValue>(key3);
-
-        // Assert
-        Assert.Null(result1);
-        Assert.Null(result2);
-        Assert.NotNull(result3); // key3 should still exist
+        Assert.True(await IsFactoryCalledAsync("shared_key1"));
+        Assert.True(await IsFactoryCalledAsync("shared_key2"));
+        Assert.False(await IsFactoryCalledAsync("other_key"));
     }
 
     [Fact]
     public async Task InvalidateAsync_MultipleDependencies_WithRealImplementation_RemovesCorrectEntries()
     {
-        // Arrange
-        var key1 = "multi_key1";
-        var key2 = "multi_key2";
-        var key3 = "multi_key3";
         var value = new TestValue { Id = 1, Name = "Test" };
 
-        await _cacheManager.SetAsync(key1, value, ["multi_dep1"]);
-        await _cacheManager.SetAsync(key2, value, ["multi_dep2"]);
-        await _cacheManager.SetAsync(key3, value, ["multi_dep3"]);
+        await PopulateCache("multi_key1", value, ["multi_dep1"]);
+        await PopulateCache("multi_key2", value, ["multi_dep2"]);
+        await PopulateCache("multi_key3", value, ["multi_dep3"]);
 
-        // Act
         await _cacheManager.InvalidateAsync(default, "multi_dep1", "multi_dep2");
 
-        var result1 = await _cacheManager.GetAsync<TestValue>(key1);
-        var result2 = await _cacheManager.GetAsync<TestValue>(key2);
-        var result3 = await _cacheManager.GetAsync<TestValue>(key3);
-
-        // Assert
-        Assert.Null(result1);
-        Assert.Null(result2);
-        Assert.NotNull(result3); // key3 should still exist
+        Assert.True(await IsFactoryCalledAsync("multi_key1"));
+        Assert.True(await IsFactoryCalledAsync("multi_key2"));
+        Assert.False(await IsFactoryCalledAsync("multi_key3"));
     }
 
     #endregion
@@ -156,10 +123,8 @@ public class DistributedCacheManagerRealImplementationTests
     #region Complex Object Serialization
 
     [Fact]
-    public async Task SetAsync_ComplexObject_WithRealImplementation_SerializesCorrectly()
+    public async Task GetOrSetAsync_ComplexObject_WithRealImplementation_SerializesCorrectly()
     {
-        // Arrange
-        var key = "complex_real_key";
         var value = new ComplexValue
         {
             Id = 1,
@@ -172,11 +137,18 @@ public class DistributedCacheManagerRealImplementationTests
             Items = [10, 20, 30]
         };
 
-        // Act
-        await _cacheManager.SetAsync(key, value, []);
-        var result = await _cacheManager.GetAsync<ComplexValue>(key);
+        await _cacheManager.GetOrSetAsync("complex_real_key", _ =>
+            Task.FromResult<CacheEntry<ComplexValue>?>(
+                new CacheEntry<ComplexValue>(value, [])));
 
-        // Assert
+        var factoryCalled = false;
+        var result = await _cacheManager.GetOrSetAsync("complex_real_key", _ =>
+        {
+            factoryCalled = true;
+            return Task.FromResult<CacheEntry<ComplexValue>?>(null);
+        });
+
+        Assert.False(factoryCalled);
         Assert.NotNull(result);
         Assert.Equal(value.Id, result.Id);
         Assert.Equal(value.Name, result.Name);
@@ -187,32 +159,37 @@ public class DistributedCacheManagerRealImplementationTests
     }
 
     [Fact]
-    public async Task SetAsync_ObjectWithNullProperties_WithRealImplementation_HandlesCorrectly()
+    public async Task GetOrSetAsync_ObjectWithNullProperties_WithRealImplementation_HandlesCorrectly()
     {
-        // Arrange
-        var key = "null_props_real_key";
         var value = new TestValue { Id = 99, Name = null };
 
-        // Act
-        await _cacheManager.SetAsync(key, value, []);
-        var result = await _cacheManager.GetAsync<TestValue>(key);
+        await PopulateCache("null_props_real_key", value, []);
 
-        // Assert
+        var factoryCalled = false;
+        var result = await _cacheManager.GetOrSetAsync("null_props_real_key", _ =>
+        {
+            factoryCalled = true;
+            return Task.FromResult<CacheEntry<TestValue>?>(null);
+        });
+
+        Assert.False(factoryCalled);
         Assert.NotNull(result);
         Assert.Equal(value.Id, result.Id);
         Assert.Null(result.Name);
     }
 
     [Fact]
-    public async Task SetAsync_ObjectWithCircularReference_WithRealImplementation_DoesNotThrow()
+    public async Task GetOrSetAsync_ObjectWithCircularReference_WithRealImplementation_ThrowsSerializationException()
     {
-        var key = "circular_real_key";
         var value = new CircularValue { Id = 1, Name = "Parent" };
         value.Self = value; // Circular reference
 
+        // Distributed cache requires serialization, so circular references cause an error.
         var exception = await Record.ExceptionAsync(() =>
-            _cacheManager.SetAsync(key, value, []));
-        Assert.Null(exception);
+            _cacheManager.GetOrSetAsync("circular_real_key", _ =>
+                Task.FromResult<CacheEntry<CircularValue>?>(
+                    new CacheEntry<CircularValue>(value, []))));
+        Assert.NotNull(exception);
     }
 
     #endregion
@@ -220,49 +197,43 @@ public class DistributedCacheManagerRealImplementationTests
     #region Concurrent Operations
 
     [Fact]
-    public async Task ConcurrentSet_WithRealImplementation_HandlesGracefully()
+    public async Task ConcurrentGetOrSet_WithRealImplementation_HandlesGracefully()
     {
-        // Arrange
         var tasks = Enumerable.Range(0, 20)
-            .Select(i => _cacheManager.SetAsync(
+            .Select(i => PopulateCache(
                 $"concurrent_real_key_{i}",
                 new TestValue { Id = i, Name = $"Test_{i}" },
                 [$"concurrent_real_dep_{i}"]))
             .ToArray();
 
-        // Act
         await Task.WhenAll(tasks);
 
-        // Assert - verify all entries were stored
         var verifyTasks = Enumerable.Range(0, 20)
-            .Select(i => _cacheManager.GetAsync<TestValue>($"concurrent_real_key_{i}"))
+            .Select(i => IsFactoryCalledAsync($"concurrent_real_key_{i}"))
             .ToArray();
 
         var results = await Task.WhenAll(verifyTasks);
-        Assert.All(results, Assert.NotNull);
+        Assert.All(results, r => Assert.False(r));
     }
 
     [Fact]
-    public async Task ConcurrentGet_WithRealImplementation_ReturnsConsistentResults()
+    public async Task ConcurrentGetOrSet_SameKey_WithRealImplementation_ReturnsConsistentResults()
     {
-        // Arrange
-        var key = "concurrent_get_real_key";
         var value = new TestValue { Id = 42, Name = "Concurrent Test" };
-        await _cacheManager.SetAsync(key, value, []);
+        await PopulateCache("concurrent_get_real_key", value, []);
 
-        // Act - concurrent reads
         var tasks = Enumerable.Range(0, 50)
-            .Select(_ => _cacheManager.GetAsync<TestValue>(key))
+            .Select(_ => _cacheManager.GetOrSetAsync("concurrent_get_real_key", _ =>
+                Task.FromResult<CacheEntry<TestValue>?>(
+                    new CacheEntry<TestValue>(new TestValue { Id = 99 }, []))))
             .ToArray();
 
         var results = await Task.WhenAll(tasks);
 
-        // Assert
         Assert.All(results, r =>
         {
             Assert.NotNull(r);
             Assert.Equal(value.Id, r.Id);
-            Assert.Equal(value.Name, r.Name);
         });
     }
 
@@ -271,56 +242,59 @@ public class DistributedCacheManagerRealImplementationTests
     #region Edge Cases
 
     [Fact]
-    public async Task SetAsync_VeryLongKey_WithRealImplementation_Succeeds()
+    public async Task GetOrSetAsync_VeryLongKey_WithRealImplementation_Succeeds()
     {
-        // Arrange
         var key = new string('x', 500);
         var value = new TestValue { Id = 1, Name = "Long Key Test" };
 
-        // Act
-        await _cacheManager.SetAsync(key, value, []);
-        var result = await _cacheManager.GetAsync<TestValue>(key);
-
-        // Assert
-        Assert.NotNull(result);
-        Assert.Equal(value.Id, result.Id);
+        await PopulateCache(key, value, []);
+        Assert.False(await IsFactoryCalledAsync(key));
     }
 
     [Fact]
-    public async Task SetAsync_ManyDependencies_WithRealImplementation_TracksAllDependencies()
+    public async Task GetOrSetAsync_ManyDependencies_WithRealImplementation_TracksAllDependencies()
     {
-        // Arrange
-        var key = "many_deps_real_key";
         var value = new TestValue { Id = 1, Name = "Test" };
         var dependencies = Enumerable.Range(0, 50).Select(i => $"real_dep_{i}").ToArray();
 
-        // Act
-        await _cacheManager.SetAsync(key, value, dependencies);
+        await _cacheManager.GetOrSetAsync("many_deps_real_key", _ =>
+            Task.FromResult<CacheEntry<TestValue>?>(
+                new CacheEntry<TestValue>(value, dependencies)));
 
-        // Invalidate one dependency
         await _cacheManager.InvalidateAsync(default, "real_dep_25");
-        var result = await _cacheManager.GetAsync<TestValue>(key);
-
-        // Assert - entry should be invalidated
-        Assert.Null(result);
+        Assert.True(await IsFactoryCalledAsync("many_deps_real_key"));
     }
 
     [Fact]
     public async Task InvalidateAsync_NonExistentDependency_WithRealImplementation_DoesNotThrowAndPreservesExistingEntries()
     {
-        await _cacheManager.SetAsync(
-            "existing_real_key",
-            new TestValue { Id = 77, Name = "Existing" },
-            ["existing_real_dep"]);
+        await PopulateCache("existing_real_key", new TestValue { Id = 77, Name = "Existing" }, ["existing_real_dep"]);
 
         var exception = await Record.ExceptionAsync(() =>
             _cacheManager.InvalidateAsync(default, "non_existent_real_dep"));
 
-        var existingResult = await _cacheManager.GetAsync<TestValue>("existing_real_key");
-
         Assert.Null(exception);
-        Assert.NotNull(existingResult);
-        Assert.Equal(77, existingResult.Id);
+        Assert.False(await IsFactoryCalledAsync("existing_real_key"));
+    }
+
+    #endregion
+
+    #region Test Helpers
+
+    private Task PopulateCache(string key, TestValue value, string[] dependencies)
+        => _cacheManager.GetOrSetAsync(key, _ =>
+            Task.FromResult<CacheEntry<TestValue>?>(
+                new CacheEntry<TestValue>(value, dependencies)));
+
+    private async Task<bool> IsFactoryCalledAsync(string key)
+    {
+        var factoryCalled = false;
+        await _cacheManager.GetOrSetAsync<TestValue>(key, _ =>
+        {
+            factoryCalled = true;
+            return Task.FromResult<CacheEntry<TestValue>?>(null);
+        });
+        return factoryCalled;
     }
 
     #endregion

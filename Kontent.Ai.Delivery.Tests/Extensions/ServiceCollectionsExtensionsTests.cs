@@ -756,16 +756,15 @@ public class ServiceCollectionsExtensionsTests
 
     private sealed class TestCustomCacheManager : IDeliveryCacheManager
     {
-        public Task<T?> GetAsync<T>(string cacheKey, CancellationToken cancellationToken = default) where T : class
-            => Task.FromResult<T?>(null);
-
-        public Task SetAsync<T>(
+        public async Task<T?> GetOrSetAsync<T>(
             string cacheKey,
-            T value,
-            IEnumerable<string> dependencies,
+            Func<CancellationToken, Task<CacheEntry<T>?>> factory,
             TimeSpan? expiration = null,
             CancellationToken cancellationToken = default) where T : class
-            => Task.CompletedTask;
+        {
+            var entry = await factory(cancellationToken);
+            return entry?.Value;
+        }
 
         public Task InvalidateAsync(CancellationToken cancellationToken = default, params string[] dependencyKeys)
             => Task.CompletedTask;
