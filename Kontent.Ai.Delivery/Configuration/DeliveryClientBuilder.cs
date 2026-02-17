@@ -1,4 +1,3 @@
-using Microsoft.Extensions.Caching.Distributed;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
 
@@ -46,7 +45,7 @@ public sealed class DeliveryClientBuilder
 {
     private DeliveryOptions? _deliveryOptions;
     private ITypeProvider? _typeProvider;
-    private Action<IServiceCollection>? _configureCache;
+    private Action<IServiceCollection>? _configureAdditionalServices;
     private ILoggerFactory? _loggerFactory;
 
     private DeliveryClientBuilder() { }
@@ -88,64 +87,28 @@ public sealed class DeliveryClientBuilder
     }
 
     /// <summary>
-    /// Enables in-memory caching for API responses.
+    /// Configures additional services on the internal <see cref="IServiceCollection"/> used to build the client.
     /// </summary>
-    /// <param name="defaultExpiration">
-    /// Default cache entry expiration time. If null, defaults to 1 hour.
-    /// Individual queries can override this using query parameters.
-    /// </param>
+    /// <param name="configure">A delegate to configure additional services (e.g., caching, custom resolvers).</param>
     /// <returns>The builder instance for method chaining.</returns>
+    /// <exception cref="ArgumentNullException">Thrown when <paramref name="configure"/> is null.</exception>
     /// <remarks>
     /// <para>
-    /// The builder creates and manages an <see cref="Microsoft.Extensions.Caching.Memory.IMemoryCache"/> instance internally.
-    /// For scenarios requiring shared cache instances across multiple clients, use DI registration instead.
+    /// This is a general-purpose extensibility point. Multiple calls are cumulative — each delegate
+    /// is invoked in the order it was registered.
     /// </para>
     /// <para>
-    /// Cannot be combined with <see cref="WithDistributedCache"/>. Calling both will use the last one configured.
+    /// The <c>Kontent.Ai.Delivery.Caching</c> package provides <c>WithMemoryCache()</c> and
+    /// <c>WithDistributedCache()</c> extension methods that use this API internally.
     /// </para>
     /// </remarks>
-    public DeliveryClientBuilder WithMemoryCache(TimeSpan? defaultExpiration = null)
+    public DeliveryClientBuilder ConfigureServices(Action<IServiceCollection> configure)
     {
-        _configureCache = services => services.AddDeliveryMemoryCache(
-            clientName: DeliveryClientNames.Default,
-            keyPrefix: string.Empty,
-            defaultExpiration: defaultExpiration);
-        return this;
-    }
-
-    /// <summary>
-    /// Enables distributed caching for API responses using a provided <see cref="IDistributedCache"/> instance.
-    /// </summary>
-    /// <param name="distributedCache">
-    /// The distributed cache instance (e.g., Redis, SQL Server, NCache).
-    /// </param>
-    /// <param name="defaultExpiration">
-    /// Default cache entry expiration time. If null, defaults to 1 hour.
-    /// Individual queries can override this using query parameters.
-    /// </param>
-    /// <returns>The builder instance for method chaining.</returns>
-    /// <exception cref="ArgumentNullException">Thrown when <paramref name="distributedCache"/> is null.</exception>
-    /// <remarks>
-    /// <para>
-    /// Unlike <see cref="WithMemoryCache"/>, this method requires you to provide the distributed cache instance.
-    /// This is because distributed cache implementations (Redis, SQL Server, etc.) require external configuration.
-    /// </para>
-    /// <para>
-    /// Cannot be combined with <see cref="WithMemoryCache"/>. Calling both will use the last one configured.
-    /// </para>
-    /// </remarks>
-    public DeliveryClientBuilder WithDistributedCache(IDistributedCache distributedCache, TimeSpan? defaultExpiration = null)
-    {
-        ArgumentNullException.ThrowIfNull(distributedCache);
-
-        _configureCache = services =>
-        {
-            services.AddSingleton(distributedCache);
-            services.AddDeliveryDistributedCache(
-                clientName: DeliveryClientNames.Default,
-                keyPrefix: string.Empty,
-                defaultExpiration: defaultExpiration);
-        };
+        ArgumentNullException.ThrowIfNull(configure);
+        var previous = _configureAdditionalServices;
+        _configureAdditionalServices = previous is null
+            ? configure
+            : services => { previous(services); configure(services); };
         return this;
     }
 
@@ -227,7 +190,7 @@ public sealed class DeliveryClientBuilder
         }
 
         var services = new ServiceCollection();
-        ConfigureServices(services);
+        BuildServices(services);
 
         // Validate options and build dependencies (options validation happens during provider build due to ValidateOnStart)
         var serviceProvider = services.BuildServiceProvider(
@@ -239,7 +202,7 @@ public sealed class DeliveryClientBuilder
         return new DeliveryClientContainer(serviceProvider, client);
     }
 
-    private void ConfigureServices(IServiceCollection services)
+    private void BuildServices(IServiceCollection services)
     {
         ArgumentNullException.ThrowIfNull(services);
 
@@ -255,6 +218,6 @@ public sealed class DeliveryClientBuilder
         }
 
         services.AddDeliveryClient(_deliveryOptions!);
-        _configureCache?.Invoke(services);
+        _configureAdditionalServices?.Invoke(services);
     }
 }

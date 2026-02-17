@@ -68,17 +68,27 @@ internal sealed class TaxonomiesQuery(
         CancellationToken cancellationToken)
     {
         var cacheKey = CacheKeyBuilder.BuildTaxonomiesKey(_params, _serializedFilters);
-        var (cacheResult, apiResult) = await FetchWithCacheAsync(
-            cacheManager,
+        IDeliveryResult<DeliveryTaxonomyListingResponse>? apiResult = null;
+
+        var cached = await cacheManager.GetOrSetAsync(
             cacheKey,
-            waitForLoadingNewContent,
+            async ct =>
+            {
+                apiResult = await FetchFromApiAsync(waitForLoadingNewContent, ct).ConfigureAwait(false);
+                if (!apiResult.IsSuccess)
+                    return null;
+
+                return new CacheEntry<DeliveryTaxonomyListingResponse>(apiResult.Value, BuildDependencies(apiResult.Value.Taxonomies));
+            },
+            CacheExpiration,
             cancellationToken).ConfigureAwait(false);
 
-        if (QueryExecutionResultHelper.TryGetCacheHitValue(cacheResult, out var cachedListing))
+        // Cache hit: apiResult is null because factory was never called
+        if (apiResult is null && cached is not null)
         {
             LogQueryCompleted(stopwatch, HttpStatusCode.OK, cacheHit: true);
             return DeliveryResult.CacheHit<IDeliveryTaxonomyListingResponse>(
-                WithNextPageFetcher(cachedListing));
+                WithNextPageFetcher(cached));
         }
 
         apiResult = QueryExecutionResultHelper.EnsureApiResult(apiResult, "Taxonomies", "list");
@@ -91,7 +101,7 @@ internal sealed class TaxonomiesQuery(
         }
 
         LogQueryCompleted(stopwatch, apiResult.StatusCode, cacheHit: false, apiResult.HasStaleContent);
-        var response = cacheResult.Value ?? apiResult.Value;
+        var response = cached ?? apiResult.Value;
         return WrapSuccess(WithNextPageFetcher(response), apiResult);
     }
 
@@ -110,33 +120,6 @@ internal sealed class TaxonomiesQuery(
 
         LogQueryCompleted(stopwatch, deliveryResult.StatusCode, cacheHit: false, deliveryResult.HasStaleContent);
         return WrapSuccess(WithNextPageFetcher(deliveryResult.Value), deliveryResult);
-    }
-
-    private async Task<(CacheFetchResult<DeliveryTaxonomyListingResponse> CacheResult, IDeliveryResult<DeliveryTaxonomyListingResponse>? ApiResult)>
-        FetchWithCacheAsync(
-            IDeliveryCacheManager cacheManager,
-            string cacheKey,
-            bool? waitForLoadingNewContent,
-            CancellationToken cancellationToken)
-    {
-        IDeliveryResult<DeliveryTaxonomyListingResponse>? apiResult = null;
-
-        var cacheResult = await QueryCacheHelper.GetOrFetchAsync(
-            cacheManager,
-            cacheKey,
-            async ct =>
-            {
-                apiResult = await FetchFromApiAsync(waitForLoadingNewContent, ct).ConfigureAwait(false);
-                if (!apiResult.IsSuccess)
-                    return (null, Array.Empty<string>());
-
-                return (apiResult.Value, BuildDependencies(apiResult.Value.Taxonomies));
-            },
-            CacheExpiration,
-            logger,
-            cancellationToken).ConfigureAwait(false);
-
-        return (cacheResult, apiResult);
     }
 
     private async Task<IDeliveryResult<DeliveryTaxonomyListingResponse>> FetchFromApiAsync(

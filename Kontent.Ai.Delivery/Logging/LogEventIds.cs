@@ -17,18 +17,6 @@ internal static class LogEventIds
     /// <summary>Query execution failed.</summary>
     public const int QueryFailed = 1002;
 
-    /// <summary>Cache hit - result returned from cache.</summary>
-    public const int QueryCacheHit = 1010;
-
-    /// <summary>Cache miss - proceeding with API call.</summary>
-    public const int QueryCacheMiss = 1011;
-
-    /// <summary>Cache store attempt for query result.</summary>
-    public const int QueryCacheStore = 1012;
-
-    /// <summary>Cache store skipped because no cacheable payload was produced.</summary>
-    public const int QueryCacheStoreSkipped = 1013;
-
     /// <summary>Response contains stale content.</summary>
     public const int QueryStaleContent = 1040;
 
@@ -46,26 +34,11 @@ internal static class LogEventIds
 
     // ========== Cache Operations (1100-1199) ==========
 
-    /// <summary>Cache read operation failed.</summary>
-    public const int CacheGetFailed = 1100;
-
-    /// <summary>Cache write operation completed.</summary>
-    public const int CacheSetCompleted = 1110;
-
-    /// <summary>Cache write operation failed.</summary>
-    public const int CacheSetFailed = 1111;
-
     /// <summary>Cache invalidation started.</summary>
     public const int CacheInvalidateStarting = 1120;
 
     /// <summary>Cache invalidation completed.</summary>
     public const int CacheInvalidateCompleted = 1121;
-
-    /// <summary>Cache entry was evicted.</summary>
-    public const int CacheEntryEvicted = 1130;
-
-    /// <summary>Serialization failed during cache operation.</summary>
-    public const int CacheSerializationFailed = 1140;
 
     /// <summary>Deserialization failed during cache operation.</summary>
     public const int CacheDeserializationFailed = 1141;
@@ -81,9 +54,6 @@ internal static class LogEventIds
 
     /// <summary>Partial items cached due to type mismatch.</summary>
     public const int CachePartialItemsWarning = 1150;
-
-    /// <summary>Best-effort cache operation failed (non-critical).</summary>
-    public const int CacheBestEffortFailed = 1160;
 
     // ========== HTTP Handlers (1200-1299) ==========
 

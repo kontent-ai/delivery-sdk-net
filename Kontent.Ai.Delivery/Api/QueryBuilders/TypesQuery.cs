@@ -74,17 +74,27 @@ internal sealed class TypesQuery(
         CancellationToken cancellationToken)
     {
         var cacheKey = CacheKeyBuilder.BuildTypesKey(_params, _serializedFilters);
-        var (cacheResult, apiResult) = await FetchWithCacheAsync(
-            cacheManager,
+        IDeliveryResult<DeliveryTypeListingResponse>? apiResult = null;
+
+        var cached = await cacheManager.GetOrSetAsync(
             cacheKey,
-            waitForLoadingNewContent,
+            async ct =>
+            {
+                apiResult = await FetchFromApiAsync(waitForLoadingNewContent, ct).ConfigureAwait(false);
+                if (!apiResult.IsSuccess)
+                    return null;
+
+                return new CacheEntry<DeliveryTypeListingResponse>(apiResult.Value, BuildDependencies(apiResult.Value.Types));
+            },
+            CacheExpiration,
             cancellationToken).ConfigureAwait(false);
 
-        if (QueryExecutionResultHelper.TryGetCacheHitValue(cacheResult, out var cachedListing))
+        // Cache hit: apiResult is null because factory was never called
+        if (apiResult is null && cached is not null)
         {
             LogQueryCompleted(stopwatch, HttpStatusCode.OK, cacheHit: true);
             return DeliveryResult.CacheHit<IDeliveryTypeListingResponse>(
-                WithNextPageFetcher(cachedListing));
+                WithNextPageFetcher(cached));
         }
 
         apiResult = QueryExecutionResultHelper.EnsureApiResult(apiResult, "Types", "list");
@@ -97,7 +107,7 @@ internal sealed class TypesQuery(
         }
 
         LogQueryCompleted(stopwatch, apiResult.StatusCode, cacheHit: false, apiResult.HasStaleContent);
-        var response = cacheResult.Value ?? apiResult.Value;
+        var response = cached ?? apiResult.Value;
         return WrapSuccess(WithNextPageFetcher(response), apiResult);
     }
 
@@ -116,33 +126,6 @@ internal sealed class TypesQuery(
 
         LogQueryCompleted(stopwatch, deliveryResult.StatusCode, cacheHit: false, deliveryResult.HasStaleContent);
         return WrapSuccess(WithNextPageFetcher(deliveryResult.Value), deliveryResult);
-    }
-
-    private async Task<(CacheFetchResult<DeliveryTypeListingResponse> CacheResult, IDeliveryResult<DeliveryTypeListingResponse>? ApiResult)>
-        FetchWithCacheAsync(
-            IDeliveryCacheManager cacheManager,
-            string cacheKey,
-            bool? waitForLoadingNewContent,
-            CancellationToken cancellationToken)
-    {
-        IDeliveryResult<DeliveryTypeListingResponse>? apiResult = null;
-
-        var cacheResult = await QueryCacheHelper.GetOrFetchAsync(
-            cacheManager,
-            cacheKey,
-            async ct =>
-            {
-                apiResult = await FetchFromApiAsync(waitForLoadingNewContent, ct).ConfigureAwait(false);
-                if (!apiResult.IsSuccess)
-                    return (null, Array.Empty<string>());
-
-                return (apiResult.Value, BuildDependencies(apiResult.Value.Types));
-            },
-            CacheExpiration,
-            logger,
-            cancellationToken).ConfigureAwait(false);
-
-        return (cacheResult, apiResult);
     }
 
     private async Task<IDeliveryResult<DeliveryTypeListingResponse>> FetchFromApiAsync(

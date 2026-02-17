@@ -85,10 +85,10 @@ Kontent.ai enforces rate limits on API requests:
 
 **Note:** The SDK stores raw JSON payloads in distributed caches and rehydrates on read. This avoids circular reference serialization issues and keeps payloads portable across instances.
 
-Distributed invalidation follows an eventual consistency model:
-- dependency indexes are updated with a read-modify-write pattern
-- concurrent writes can temporarily leave some entries reachable until TTL expires
-- webhook invalidation should be treated as near-immediate, not globally atomic, across all instances
+Built-in distributed invalidation uses dependency tags through [FusionCache](https://github.com/ZiggyCreatures/FusionCache). If a FusionCache backplane is configured, invalidations are propagated to other nodes to keep local caches coherent.
+
+> [!NOTE]
+> **FusionCache hybrid mode limitation:** When using distributed caching, FusionCache operates in hybrid (L1+L2) mode but [currently stores the same serialized format in both layers](https://github.com/ZiggyCreatures/FusionCache/issues/321). This means the L1 memory layer also holds raw JSON rather than hydrated objects, so every cache hit goes through rehydration. For most workloads the rehydration cost is negligible. If your scenario demands maximum read throughput, use `AddDeliveryMemoryCache` (pure L1, hydrated objects, no rehydration overhead).
 
 **Cons:**
 - Network latency (still faster than API calls)
@@ -102,6 +102,14 @@ Distributed invalidation follows an eventual consistency model:
 - Cloud deployments
 
 ## Configuration
+
+Caching is provided by the standalone `Kontent.Ai.Delivery.Caching` package:
+
+```bash
+dotnet add package Kontent.Ai.Delivery.Caching
+```
+
+This package provides `AddDeliveryMemoryCache`, `AddDeliveryDistributedCache`, `AddDeliveryCacheManager` DI extension methods and `DeliveryClientBuilder.WithMemoryCache()` / `.WithDistributedCache()` extension methods. All are [FusionCache](https://github.com/ZiggyCreatures/FusionCache)-backed while keeping the same public `IDeliveryCacheManager` contract.
 
 ### Memory Cache Setup
 
@@ -243,29 +251,41 @@ services.AddDeliveryDistributedCache("production", defaultExpiration: TimeSpan.F
 
 ### Custom Cache Manager
 
-For advanced scenarios, implement a custom cache manager. Use `IDeliveryCacheManager` with the default `StorageMode` (`CacheStorageMode.HydratedObject`) for hydrated-object caching (memory), or override `StorageMode` to `CacheStorageMode.RawJson` for raw JSON payload caching (distributed).
+For advanced scenarios, implement a custom cache manager. The `IDeliveryCacheManager` interface uses a factory-based `GetOrSetAsync` pattern — the factory is invoked on cache miss and returns a `CacheEntry<T>?` (null signals "don't cache").
+
+Use the default `StorageMode` (`CacheStorageMode.HydratedObject`) for hydrated-object caching (memory), or override `StorageMode` to `CacheStorageMode.RawJson` for raw JSON payload caching (distributed).
 
 #### Hydrated-object cache manager (memory style)
 
 ```csharp
+using System.Collections.Concurrent;
 using Kontent.Ai.Delivery.Abstractions;
 
 public class CustomMemoryCacheManager : IDeliveryCacheManager
 {
-    // Implementation omitted - store hydrated objects directly (no serialization).
-    public Task<T?> GetAsync<T>(string cacheKey, CancellationToken cancellationToken = default) where T : class
-        => throw new NotImplementedException();
+    private readonly ConcurrentDictionary<string, object> _cache = new();
 
-    public Task SetAsync<T>(
+    public async Task<T?> GetOrSetAsync<T>(
         string cacheKey,
-        T value,
-        IEnumerable<string> dependencies,
+        Func<CancellationToken, Task<CacheEntry<T>?>> factory,
         TimeSpan? expiration = null,
         CancellationToken cancellationToken = default) where T : class
-        => throw new NotImplementedException();
+    {
+        if (_cache.TryGetValue(cacheKey, out var cached))
+            return (T)cached;
+
+        var entry = await factory(cancellationToken);
+        if (entry is null) return default;
+
+        _cache.TryAdd(cacheKey, entry.Value.Value);
+        return entry.Value.Value;
+    }
 
     public Task InvalidateAsync(CancellationToken cancellationToken = default, params string[] dependencyKeys)
-        => throw new NotImplementedException();
+    {
+        // Implement dependency tracking + invalidation for production use
+        return Task.CompletedTask;
+    }
 }
 ```
 
@@ -285,28 +305,29 @@ public class CustomDistributedCacheManager : IDeliveryCacheManager
     // Tell the SDK to cache raw JSON payloads instead of hydrated objects
     public CacheStorageMode StorageMode => CacheStorageMode.RawJson;
 
-    public async Task<T?> GetAsync<T>(string cacheKey, CancellationToken cancellationToken = default) where T : class
-    {
-        var json = await _cache.GetStringAsync(cacheKey, cancellationToken);
-        return json is null ? null : JsonSerializer.Deserialize<T>(json);
-    }
-
-    public async Task SetAsync<T>(
+    public async Task<T?> GetOrSetAsync<T>(
         string cacheKey,
-        T value,
-        IEnumerable<string> dependencies,
+        Func<CancellationToken, Task<CacheEntry<T>?>> factory,
         TimeSpan? expiration = null,
         CancellationToken cancellationToken = default) where T : class
     {
+        var json = await _cache.GetStringAsync(cacheKey, cancellationToken);
+        if (json is not null)
+            return JsonSerializer.Deserialize<T>(json);
+
+        var entry = await factory(cancellationToken);
+        if (entry is null) return default;
+
         var options = new DistributedCacheEntryOptions
         {
             AbsoluteExpirationRelativeToNow = expiration ?? TimeSpan.FromHours(1)
         };
 
-        var json = JsonSerializer.Serialize(value);
-        await _cache.SetStringAsync(cacheKey, json, options, cancellationToken);
+        var serialized = JsonSerializer.Serialize(entry.Value.Value);
+        await _cache.SetStringAsync(cacheKey, serialized, options, cancellationToken);
 
         // Implement dependency index + invalidation for production use
+        return entry.Value.Value;
     }
 
     public Task InvalidateAsync(CancellationToken cancellationToken = default, params string[] dependencyKeys)
@@ -571,14 +592,14 @@ await cacheManager.InvalidateAsync(default, DeliveryCacheDependencies.TypesListS
 await cacheManager.InvalidateAsync(default, DeliveryCacheDependencies.TaxonomiesListScope);
 ```
 
-### Purge All (Memory Cache)
+### Purge All (SDK Cache)
 
 Sometimes you need to invalidate **everything at once** (e.g., after a deployment, emergency rollback, or a major content model change).
 
-The SDK exposes an **optional** capability interface `IDeliveryCachePurger` that is implemented by the in-memory cache manager (`MemoryCacheManager`).
+The SDK exposes an **optional** capability interface `IDeliveryCachePurger` that is implemented by built-in cache managers.
 
 > [!NOTE]
-> Purge-all is not supported for generic distributed caches (`IDistributedCache`) because they don't provide key enumeration. For distributed caches, use provider-specific purge tooling or key-prefix rotation.
+> If you're using a custom cache manager that does not implement `IDeliveryCachePurger`, use provider-specific purge tooling or key-prefix rotation.
 
 ```csharp
 using Kontent.Ai.Delivery.Abstractions;
@@ -588,7 +609,11 @@ var cacheManager = serviceProvider.GetRequiredKeyedService<IDeliveryCacheManager
 
 if (cacheManager is IDeliveryCachePurger purger)
 {
+    // Permanently remove all entries (default behavior)
     await purger.PurgeAsync();
+
+    // Or: mark entries as logically expired, preserving fail-safe fallback data
+    await purger.PurgeAsync(allowFailSafe: true);
 }
 ```
 
@@ -963,40 +988,46 @@ public class MonitoredCacheManager : IDeliveryCacheManager
     private readonly ILogger _logger;
     private readonly IMetrics _metrics;
 
-    public async Task<T?> GetAsync<T>(string key, ...)
+    public async Task<T?> GetOrSetAsync<T>(
+        string cacheKey,
+        Func<CancellationToken, Task<CacheEntry<T>?>> factory,
+        TimeSpan? expiration = null,
+        CancellationToken cancellationToken = default) where T : class
     {
         var stopwatch = Stopwatch.StartNew();
-        var result = await _inner.GetAsync<T>(key, cancellationToken);
+        var result = await _inner.GetOrSetAsync(cacheKey, factory, expiration, cancellationToken);
         stopwatch.Stop();
 
-        var hit = result != null;
-        _metrics.RecordCacheAccess(hit, stopwatch.ElapsedMilliseconds);
-
-        if (hit)
-            _logger.LogDebug("Cache hit: {Key} in {Ms}ms", key, stopwatch.ElapsedMilliseconds);
-        else
-            _logger.LogDebug("Cache miss: {Key}", key);
+        _metrics.RecordCacheAccess(result != null, stopwatch.ElapsedMilliseconds);
+        _logger.LogDebug("Cache {Result} for key: {Key} in {Ms}ms",
+            result != null ? "HIT/SET" : "MISS", cacheKey, stopwatch.ElapsedMilliseconds);
 
         return result;
     }
 
-    // ... implement other methods
+    // ... implement InvalidateAsync delegation
 }
 ```
 
 ### 4. Handle Cache Failures Gracefully
 
 ```csharp
-    public async Task<T?> GetAsync<T>(string key, ...)
+public async Task<T?> GetOrSetAsync<T>(
+    string cacheKey,
+    Func<CancellationToken, Task<CacheEntry<T>?>> factory,
+    TimeSpan? expiration = null,
+    CancellationToken cancellationToken = default) where T : class
 {
     try
     {
-            return await _cache.GetAsync<T>(key, cancellationToken);
+        return await _inner.GetOrSetAsync(cacheKey, factory, expiration, cancellationToken);
     }
     catch (RedisConnectionException ex)
     {
         _logger.LogWarning(ex, "Redis connection failed, bypassing cache");
-        return default;  // Gracefully degrade to direct API calls
+        // Fall back to calling the factory directly (no caching)
+        var entry = await factory(cancellationToken);
+        return entry?.Value;
     }
 }
 ```
@@ -1032,30 +1063,19 @@ public class CacheWarmupService : IHostedService
 services.AddHostedService<CacheWarmupService>();
 ```
 
-### 6. Use Stale-While-Revalidate Pattern
+### 6. Use Eager Refresh (Stale-While-Revalidate)
+
+The built-in FusionCache-backed cache managers support eager refresh via `DeliveryCacheOptions.EagerRefreshThreshold`. When set, FusionCache proactively refreshes entries in the background before they expire:
 
 ```csharp
-public class StaleWhileRevalidateCache : IDeliveryCacheManager
+services.AddDeliveryMemoryCache("production", opts =>
 {
-    private readonly TimeSpan _staleThreshold = TimeSpan.FromMinutes(5);
-
-    public async Task<T?> GetAsync<T>(string key, ...)
-    {
-        var cached = await GetCachedValueWithTimestamp<T>(key);
-
-        if (cached == null)
-            return default;
-
-        // If stale, trigger background refresh
-        if (DateTime.UtcNow - cached.Timestamp > _staleThreshold)
-        {
-            _ = Task.Run(() => RefreshInBackground<T>(key));
-        }
-
-        return cached.Value;
-    }
-}
+    opts.DefaultExpiration = TimeSpan.FromMinutes(30);
+    opts.EagerRefreshThreshold = 0.8f; // Refresh at 80% of TTL (24 min)
+});
 ```
+
+This returns the cached value immediately while refreshing in the background — no custom implementation needed.
 
 ### 7. Prevent Cache Stampede (Request Coalescing)
 
@@ -1132,27 +1152,28 @@ public class LoggingCacheManager : IDeliveryCacheManager
     private readonly IDeliveryCacheManager _inner;
     private readonly ILogger _logger;
 
-    public async Task<T?> GetAsync<T>(string key, ...)
+    public async Task<T?> GetOrSetAsync<T>(
+        string cacheKey,
+        Func<CancellationToken, Task<CacheEntry<T>?>> factory,
+        TimeSpan? expiration = null,
+        CancellationToken cancellationToken = default) where T : class
     {
-        var result = await _inner.GetAsync<T>(key, cancellationToken);
+        // Wrap the factory to detect cache misses
+        var wasMiss = false;
+        var result = await _inner.GetOrSetAsync(cacheKey, async ct =>
+        {
+            wasMiss = true;
+            return await factory(ct);
+        }, expiration, cancellationToken);
 
-        _logger.LogInformation(
-            "Cache {Result} for key: {Key}",
-            result != null ? "HIT" : "MISS",
-            key);
+        _logger.LogInformation("Cache {Result} for key: {Key}",
+            wasMiss ? "MISS+SET" : "HIT", cacheKey);
 
         return result;
     }
 
-    public async Task SetAsync<T>(string key, T value, IEnumerable<string> dependencies, TimeSpan? expiration = null, ...)
-    {
-        await _inner.SetAsync(key, value, dependencies, expiration, cancellationToken);
-
-        _logger.LogInformation(
-            "Cache SET: {Key}, Expiration: {Expiration}",
-            key,
-            expiration);
-    }
+    public Task InvalidateAsync(CancellationToken cancellationToken = default, params string[] dependencyKeys)
+        => _inner.InvalidateAsync(cancellationToken, dependencyKeys);
 }
 ```
 

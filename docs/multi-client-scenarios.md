@@ -102,7 +102,7 @@ services.AddDeliveryClient("brand-b", options =>
     options.EnvironmentId = "brand-b-environment-id";
 });
 
-// Register third client with caching
+// Register third client with caching (requires Kontent.Ai.Delivery.Caching package)
 services.AddDeliveryClient("brand-c", options =>
 {
     options.EnvironmentId = "brand-c-environment-id";
