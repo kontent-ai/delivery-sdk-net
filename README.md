@@ -50,6 +50,18 @@ Or via the Package Manager Console:
 Install-Package Kontent.Ai.Delivery
 ```
 
+**Optional packages:**
+
+| Package | Purpose |
+|---------|---------|
+| `Kontent.Ai.Delivery.Caching` | FusionCache-backed memory and distributed caching |
+| `Kontent.Ai.Delivery.SourceGeneration` | Compile-time type provider via source generation |
+
+```bash
+dotnet add package Kontent.Ai.Delivery.Caching
+dotnet add package Kontent.Ai.Delivery.SourceGeneration
+```
+
 ## Quick Start
 
 Here's a minimal example to get you started:
@@ -181,7 +193,7 @@ using var previewContainer = DeliveryClientBuilder
         .Build())
     .Build();
 
-// With Production API and in-memory caching
+// With Production API and in-memory caching (requires Kontent.Ai.Delivery.Caching package)
 using var cachedContainer = DeliveryClientBuilder
     .WithOptions(builder => builder
         .WithEnvironmentId("your-environment-id")
@@ -204,8 +216,9 @@ var typedClient = typedContainer.Client;
 The builder supports:
 - `.WithOptions(Func<IDeliveryOptionsBuilder, DeliveryOptions>)` - Configure delivery options (environment ID, API mode, etc.)
 - `.WithTypeProvider(ITypeProvider)` - Custom type provider for strongly-typed models
-- `.WithMemoryCache(TimeSpan?)` - Enable in-memory caching
-- `.WithDistributedCache(IDistributedCache, TimeSpan?)` - Enable distributed caching
+- `.ConfigureServices(Action<IServiceCollection>)` - General-purpose extensibility point for registering additional services
+- `.WithMemoryCache(TimeSpan?)` - Enable in-memory caching (requires `Kontent.Ai.Delivery.Caching`)
+- `.WithDistributedCache(IDistributedCache, TimeSpan?)` - Enable distributed caching (requires `Kontent.Ai.Delivery.Caching`)
 
 `IDeliveryOptionsBuilder.WithCustomEndpoint(...)` applies the same endpoint to both Production and Preview URLs. In most real deployments these endpoints differ, so if you need both modes with custom domains, register separate clients (for example named clients) and configure each with its corresponding endpoint.
 
@@ -1169,7 +1182,11 @@ if (result.IsSuccess)
 
 ### Caching
 
-The SDK supports both in-memory and distributed caching for improved performance.
+The SDK supports both in-memory and distributed caching for improved performance. Caching is provided by the standalone `Kontent.Ai.Delivery.Caching` package:
+
+```bash
+dotnet add package Kontent.Ai.Delivery.Caching
+```
 
 #### Memory Cache
 
@@ -1222,7 +1239,10 @@ var result = await client.GetItem<Article>("my-article")
 
 **Cache payloads:** The in-memory cache stores hydrated objects for maximum performance. Distributed caches store raw JSON payloads (rehydrated on read) to avoid serialization issues with circular references.
 
-The built-in cache registrations (`AddDeliveryMemoryCache` / `AddDeliveryDistributedCache`) use a FusionCache-backed implementation internally. Public registration APIs and `IDeliveryCacheManager` contracts remain unchanged.
+The built-in cache registrations (`AddDeliveryMemoryCache` / `AddDeliveryDistributedCache`) in the `Kontent.Ai.Delivery.Caching` package use [FusionCache](https://github.com/ZiggyCreatures/FusionCache) internally. Public registration APIs and `IDeliveryCacheManager` contracts remain unchanged.
+
+> [!NOTE]
+> **FusionCache hybrid mode limitation:** When using distributed caching (`AddDeliveryDistributedCache`), FusionCache operates in hybrid (L1+L2) mode, but [currently stores the same serialized format in both layers](https://github.com/ZiggyCreatures/FusionCache/issues/321). This means the L1 memory layer also holds raw JSON rather than hydrated objects, so every cache hit goes through rehydration. For most workloads the rehydration cost is negligible. If your scenario demands maximum read throughput, consider using `AddDeliveryMemoryCache` (pure L1, hydrated objects, no rehydration overhead).
 
 If you implement a custom cache manager that stores raw payloads (typical for distributed caches), override the `StorageMode` property to return `CacheStorageMode.RawJson` so the SDK uses the raw JSON caching path.
 

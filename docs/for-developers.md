@@ -312,13 +312,11 @@ public sealed class DeliveryAuthenticationHandler : DelegatingHandler
 ```csharp
 public interface IDeliveryCacheManager
 {
-    Task<T?> GetAsync<T>(string cacheKey, CancellationToken cancellationToken = default)
-        where T : class;
+    CacheStorageMode StorageMode => CacheStorageMode.HydratedObject;
 
-    Task SetAsync<T>(
+    Task<T?> GetOrSetAsync<T>(
         string cacheKey,
-        T value,
-        IEnumerable<string> dependencies,  // Content items/assets/taxonomies this entry depends on
+        Func<CancellationToken, Task<CacheEntry<T>?>> factory,  // Invoked on cache miss
         TimeSpan? expiration = null,
         CancellationToken cancellationToken = default)
         where T : class;
@@ -326,6 +324,8 @@ public interface IDeliveryCacheManager
     Task InvalidateAsync(CancellationToken cancellationToken, params string[] dependencyKeys);
 }
 ```
+
+The factory-based `GetOrSetAsync` pattern enables FusionCache-native stampede protection (concurrent cache misses for the same key coalesce into a single factory invocation). The factory returns `CacheEntry<T>?` which bundles the value with its dependency tags; returning `null` signals "don't cache" (e.g., API failure).
 
 ### Cache Storage Mode
 
@@ -381,44 +381,26 @@ services.AddDeliveryClient(options =>
 var provider = services.BuildServiceProvider();
 ```
 
-### Memory Cache Implementation
+### Cache Manager Implementations
 
-**Location**: `Kontent.Ai.Delivery/Caching/MemoryCacheManager.cs`
+**Package**: `Kontent.Ai.Delivery.Caching`
 
-Uses **dual-index architecture** for dependency-based invalidation:
+Both built-in cache managers are thin wrappers over a shared `FusionCacheManager` engine:
 
-```csharp
-public sealed class MemoryCacheManager : IDeliveryCacheManager
-{
-    private readonly IMemoryCache _cache;
-
-    // Reverse index: dependency → set of cache keys that depend on it
-    private readonly ConcurrentDictionary<string, HashSet<string>> _reverseIndex = new();
-
-    // Per-entry cancellation tokens for immediate eviction
-    private readonly ConcurrentDictionary<string, CancellationTokenSource> _cancellationTokens = new();
-
-    // Prevents race conditions when updating same dependency
-    private readonly ConcurrentDictionary<string, SemaphoreSlim> _dependencyLocks = new();
-}
-```
+- **`MemoryCacheManager`** — creates a FusionCache instance with L1 only (hydrated objects, `CacheStorageMode.HydratedObject`)
+- **`DistributedCacheManager`** — creates a FusionCache instance with L1+L2 (raw JSON via `FusionCacheSystemTextJsonSerializer`, `CacheStorageMode.RawJson`)
 
 **Invalidation Model:**
 
+FusionCache tag-based invalidation replaces the former reverse-index approach. Each cache entry is tagged with its dependency keys (content items, assets, taxonomies, list scopes). Calling `InvalidateAsync` expires all entries sharing any of the specified tags — this is deterministic with no race conditions.
+
 ```
 Cache Entry: "items:type=article:lang=en"
-  Dependencies: ["item_homepage", "item_featured_article", "taxonomy_categories"]
-
-Reverse Index:
-  "item_homepage"          → {"items:type=article:lang=en", ...}
-  "item_featured_article"  → {"items:type=article:lang=en", ...}
-  "taxonomy_categories"    → {"items:type=article:lang=en", ...}
+  Tags: ["item_homepage", "item_featured_article", "taxonomy_categories", "scope_items_list"]
 
 When InvalidateAsync(["item_homepage"]) is called:
-  1. Lookup reverse index["item_homepage"] → get all affected cache keys
-  2. Cancel their CancellationTokens
-  3. IMemoryCache automatically evicts them (via PostEvictionCallback)
-  4. Clean up reverse index entries
+  1. FusionCache expires all entries tagged with "item_homepage"
+  2. If a backplane is configured, invalidation propagates to other nodes
 ```
 
 `GetItems<T>()` query results additionally store `DeliveryCacheDependencies.ItemsListScope` (`scope_items_list`) as a synthetic dependency. This is a deliberate tradeoff to handle list-membership changes caused by item events (for example, new item publish matching a cached filter) without requiring a full cache purge.
@@ -427,14 +409,9 @@ When InvalidateAsync(["item_homepage"]) is called:
 
 These list scopes complement per-entity dependencies (`type_{codename}`, `taxonomy_{codename}`): per-entity keys keep invalidation targeted for known entities, while scope keys handle list-membership changes caused by newly introduced entities.
 
-**Thread Safety Strategy:**
-- `ConcurrentDictionary` for lock-free primary operations
-- `SemaphoreSlim` per dependency key prevents race conditions during updates
-- Post-eviction callbacks clean up reverse index synchronously
-
 ### Cache Key Generation
 
-**Location**: `Kontent.Ai.Delivery/Caching/CacheKeyBuilder.cs`
+**Location**: `Kontent.Ai.Delivery/Caching/CacheKeyBuilder.cs` (stays in the core package — no FusionCache dependency)
 
 Generates **deterministic, human-readable, order-independent** cache keys:
 
@@ -863,8 +840,8 @@ public static IServiceCollection AddDeliveryClient(
 }
 ```
 
-Cache manager resolution is keyed-only. Unkeyed `IDeliveryCacheManager` registrations are ignored by `DeliveryClient` creation.  
-For custom cache implementations, use `AddDeliveryCacheManager(clientName, factory)` to register per client.
+Cache manager resolution is keyed-only. Unkeyed `IDeliveryCacheManager` registrations are ignored by `DeliveryClient` creation.
+For built-in caching, use `AddDeliveryMemoryCache` / `AddDeliveryDistributedCache` from the `Kontent.Ai.Delivery.Caching` package. For custom cache implementations, use `AddDeliveryCacheManager(clientName, factory)` to register per client.
 Preview cache bypass is enforced by `DeliveryClient` itself (`UsePreviewApi = true` => no cache read/write for that client), not by a cache-manager decorator.
 
 ### Core Dependencies Registration
