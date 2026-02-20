@@ -77,6 +77,7 @@ jobs:
         expected_nupkgs=(
           "Kontent.Ai.Delivery.${PACKAGE_VERSION}.nupkg"
           "Kontent.Ai.Delivery.Abstractions.${PACKAGE_VERSION}.nupkg"
+          "Kontent.Ai.Delivery.Caching.${PACKAGE_VERSION}.nupkg"
           "Kontent.Ai.Urls.${PACKAGE_VERSION}.nupkg"
           "Kontent.Ai.Delivery.SourceGeneration.${PACKAGE_VERSION}.nupkg"
         )
@@ -85,6 +86,7 @@ jobs:
         expected_snupkgs=(
           "Kontent.Ai.Delivery.${PACKAGE_VERSION}.snupkg"
           "Kontent.Ai.Delivery.Abstractions.${PACKAGE_VERSION}.snupkg"
+          "Kontent.Ai.Delivery.Caching.${PACKAGE_VERSION}.snupkg"
           "Kontent.Ai.Urls.${PACKAGE_VERSION}.snupkg"
         )
 
