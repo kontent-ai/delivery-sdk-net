@@ -22,8 +22,8 @@ public class ContentDependencyExtractorTests
         var imageId2 = Guid.NewGuid();
 
         var element = new MockRichTextElement();
-        element.Images.Add(imageId1, new MockInlineImage());
-        element.Images.Add(imageId2, new MockInlineImage());
+        element.ImagesBacking.Add(imageId1, new MockInlineImage());
+        element.ImagesBacking.Add(imageId2, new MockInlineImage());
 
         var context = new DependencyTrackingContext();
 
@@ -41,8 +41,8 @@ public class ContentDependencyExtractorTests
         var linkId2 = Guid.NewGuid();
 
         var element = new MockRichTextElement();
-        element.Links.Add(linkId1, new MockContentLink { Codename = "article_1" });
-        element.Links.Add(linkId2, new MockContentLink { Codename = "article_2" });
+        element.LinksBacking.Add(linkId1, new MockContentLink { Codename = "article_1" });
+        element.LinksBacking.Add(linkId2, new MockContentLink { Codename = "article_2" });
 
         var context = new DependencyTrackingContext();
 
@@ -57,7 +57,7 @@ public class ContentDependencyExtractorTests
     public void ExtractFromRichTextElement_WithModularContent_TracksItemDependencies()
     {
         var element = new MockRichTextElement();
-        element.ModularContent.AddRange(["hero_section", "testimonial", "cta_button"]);
+        element.ModularContentBacking.AddRange(["hero_section", "testimonial", "cta_button"]);
 
         var context = new DependencyTrackingContext();
 
@@ -76,9 +76,9 @@ public class ContentDependencyExtractorTests
         var linkId = Guid.NewGuid();
 
         var element = new MockRichTextElement();
-        element.Images.Add(imageId, new MockInlineImage());
-        element.Links.Add(linkId, new MockContentLink { Codename = "linked_article" });
-        element.ModularContent.Add("inline_component");
+        element.ImagesBacking.Add(imageId, new MockInlineImage());
+        element.LinksBacking.Add(linkId, new MockContentLink { Codename = "linked_article" });
+        element.ModularContentBacking.Add("inline_component");
 
         var context = new DependencyTrackingContext();
 
@@ -95,7 +95,7 @@ public class ContentDependencyExtractorTests
     public void ExtractFromRichTextElement_WithNullContext_DoesNotThrow()
     {
         var element = new MockRichTextElement();
-        element.Images.Add(Guid.NewGuid(), new MockInlineImage());
+        element.ImagesBacking.Add(Guid.NewGuid(), new MockInlineImage());
 
         var exception = Record.Exception(() => _extractor.ExtractFromRichTextElement(element, null));
         Assert.Null(exception);
@@ -108,7 +108,7 @@ public class ContentDependencyExtractorTests
         {
             Images = null!
         };
-        element.ModularContent.Add("item1");
+        element.ModularContentBacking.Add("item1");
 
         var context = new DependencyTrackingContext();
 
@@ -124,9 +124,9 @@ public class ContentDependencyExtractorTests
     {
         var imageId = Guid.NewGuid();
         var element = new MockRichTextElement();
-        element.Images.Add(imageId, new MockInlineImage());
+        element.ImagesBacking.Add(imageId, new MockInlineImage());
         element.Links = null!;
-        element.ModularContent.Add("item1");
+        element.ModularContentBacking.Add("item1");
 
         var context = new DependencyTrackingContext();
 
@@ -145,8 +145,8 @@ public class ContentDependencyExtractorTests
         var linkId = Guid.NewGuid();
 
         var element = new MockRichTextElement();
-        element.Images.Add(imageId, new MockInlineImage());
-        element.Links.Add(linkId, new MockContentLink { Codename = "article" });
+        element.ImagesBacking.Add(imageId, new MockInlineImage());
+        element.LinksBacking.Add(linkId, new MockContentLink { Codename = "article" });
         element.ModularContent = null!;
 
         var context = new DependencyTrackingContext();
@@ -274,9 +274,9 @@ public class ContentDependencyExtractorTests
         var imageId = Guid.NewGuid();
 
         var element = new MockRichTextElement();
-        element.Images.Add(imageId, new MockInlineImage());
-        element.Links.Add(Guid.NewGuid(), new MockContentLink { Codename = "article" });
-        element.ModularContent.Add("component");
+        element.ImagesBacking.Add(imageId, new MockInlineImage());
+        element.LinksBacking.Add(Guid.NewGuid(), new MockContentLink { Codename = "article" });
+        element.ModularContentBacking.Add("component");
 
         var context = new DependencyTrackingContext();
 
@@ -308,7 +308,7 @@ public class ContentDependencyExtractorTests
     {
         var extractor = NullContentDependencyExtractor.Instance;
         var element = new MockRichTextElement();
-        element.Images.Add(Guid.NewGuid(), new MockInlineImage());
+        element.ImagesBacking.Add(Guid.NewGuid(), new MockInlineImage());
 
         var exception = Record.Exception(() => extractor.ExtractFromRichTextElement(element, null));
         Assert.Null(exception);
@@ -340,9 +340,12 @@ public class ContentDependencyExtractorTests
         public string Codename { get; set; } = "mock_element";
         public string Name { get; set; } = "Mock Element";
         public string Type { get; set; } = "rich_text";
-        public IDictionary<Guid, IInlineImage> Images { get; set; } = new Dictionary<Guid, IInlineImage>();
-        public IDictionary<Guid, IContentLink> Links { get; set; } = new Dictionary<Guid, IContentLink>();
-        public List<string> ModularContent { get; set; } = [];
+        public Dictionary<Guid, IInlineImage> ImagesBacking { get; set; } = new();
+        public Dictionary<Guid, IContentLink> LinksBacking { get; set; } = new();
+        public List<string> ModularContentBacking { get; set; } = [];
+        public IReadOnlyDictionary<Guid, IInlineImage> Images { get => ImagesBacking; set => ImagesBacking = (Dictionary<Guid, IInlineImage>)value!; }
+        public IReadOnlyDictionary<Guid, IContentLink> Links { get => LinksBacking; set => LinksBacking = (Dictionary<Guid, IContentLink>)value!; }
+        public IReadOnlyList<string> ModularContent { get => ModularContentBacking; set => ModularContentBacking = (List<string>)value!; }
     }
 
     private class MockInlineImage : IInlineImage

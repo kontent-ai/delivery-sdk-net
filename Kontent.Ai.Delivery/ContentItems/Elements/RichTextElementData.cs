@@ -19,11 +19,11 @@ internal sealed record RichTextElementData : IRichTextElementValue
     public required string Value { get; init; }
 
     /// <inheritdoc />
-    public IDictionary<Guid, IInlineImage> Images { get; init; } = new Dictionary<Guid, IInlineImage>();
+    public IReadOnlyDictionary<Guid, IInlineImage> Images { get; init; } = new Dictionary<Guid, IInlineImage>();
 
     /// <inheritdoc />
-    public IDictionary<Guid, IContentLink> Links { get; init; } = new Dictionary<Guid, IContentLink>();
+    public IReadOnlyDictionary<Guid, IContentLink> Links { get; init; } = new Dictionary<Guid, IContentLink>();
 
     /// <inheritdoc />
-    public List<string> ModularContent { get; init; } = [];
+    public IReadOnlyList<string> ModularContent { get; init; } = [];
 }

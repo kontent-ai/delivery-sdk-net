@@ -32,18 +32,11 @@ internal sealed class DependencyTrackingContext
     private readonly object _lock = new();
 
     /// <summary>
-    /// Gets the collected set of dependency keys.
+    /// Gets a snapshot of the collected dependency keys.
     /// </summary>
     /// <remarks>
-    /// <para>
-    /// Returns an enumerable over the current dependencies using deferred execution.
-    /// The enumeration is thread-safe (protected by a lock), but the collection may change
-    /// between enumerations if dependencies are added concurrently.
-    /// </para>
-    /// <para>
-    /// To get a stable snapshot, enumerate into a collection:
-    /// <code>var snapshot = context.Dependencies.ToList();</code>
-    /// </para>
+    /// Returns a point-in-time snapshot of the current dependencies.
+    /// The snapshot is safe to enumerate without holding any locks.
     /// </remarks>
     public IEnumerable<string> Dependencies
     {
@@ -51,11 +44,7 @@ internal sealed class DependencyTrackingContext
         {
             lock (_lock)
             {
-                // Use deferred execution to avoid allocation on every access
-                foreach (var dependency in _dependencies)
-                {
-                    yield return dependency;
-                }
+                return [.. _dependencies];
             }
         }
     }

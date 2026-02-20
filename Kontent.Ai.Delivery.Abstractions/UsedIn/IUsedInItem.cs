@@ -8,5 +8,5 @@ public interface IUsedInItem
     /// <summary>
     /// Represents system attributes of a parent content item.
     /// </summary>
-    public IUsedInItemSystemAttributes System { get; }
+    IUsedInItemSystemAttributes System { get; }
 }

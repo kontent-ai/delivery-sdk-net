@@ -4,6 +4,7 @@
     <TargetFramework>net8.0</TargetFramework>
     <Description>Kontent.ai URL Generation Logic</Description>
     <PackageTags>kontent-ai;mvc;aspnet;aspnetmvc</PackageTags>
+    <Nullable>enable</Nullable>
   </PropertyGroup>
 
   <ItemGroup>
