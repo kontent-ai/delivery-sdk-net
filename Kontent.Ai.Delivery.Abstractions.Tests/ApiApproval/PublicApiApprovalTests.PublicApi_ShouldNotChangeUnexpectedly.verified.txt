@@ -316,8 +316,7 @@ public interface IHtmlNode : IBlockWithChildren, IRichTextBlock
     String TagName { get; }
 
 // Kontent.Ai.Delivery.Abstractions
-public interface IHtmlResolver
-    ValueTask`1 ResolveAsync(IRichTextContent richText, CancellationToken cancellationToken)
+public interface IHtmlResolver : IRichTextResolver`1
 
 // Kontent.Ai.Delivery.Abstractions
 public interface IHtmlResolverBuilder
@@ -466,6 +465,10 @@ public interface IRichTextElementValue : IContentElementValue`1
     IReadOnlyDictionary`2 Images { get; }
     IReadOnlyDictionary`2 Links { get; }
     IReadOnlyList`1 ModularContent { get; }
+
+// Kontent.Ai.Delivery.Abstractions
+public interface IRichTextResolver`1
+    ValueTask`1 ResolveAsync(IRichTextContent richText, CancellationToken cancellationToken)
 
 // Kontent.Ai.Delivery.Abstractions
 public interface ISystemAttributes : ISystemBaseAttributes

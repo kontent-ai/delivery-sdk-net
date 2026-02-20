@@ -22,13 +22,5 @@ public delegate bool HtmlNodePredicate(IHtmlNode node);
 /// <summary>
 /// Resolves structured rich text content into HTML strings.
 /// </summary>
-public interface IHtmlResolver
-{
-    /// <summary>
-    /// Resolves rich text content into an HTML string.
-    /// </summary>
-    /// <param name="richText">The structured rich text content to resolve.</param>
-    /// <param name="cancellationToken">A token to cancel the operation.</param>
-    /// <returns>The HTML representation of the rich text content.</returns>
-    ValueTask<string> ResolveAsync(IRichTextContent richText, CancellationToken cancellationToken = default);
-}
+public interface IHtmlResolver : IRichTextResolver<string>;
+
