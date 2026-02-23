@@ -693,7 +693,9 @@ var cachedClient = new DeliveryClientCache(
 **New:**
 ```csharp
 using var container = DeliveryClientBuilder
-    .WithEnvironmentId("your-environment-id")
+    .WithOptions(builder => builder
+        .WithEnvironmentId("your-environment-id")
+        .Build())
     .WithMemoryCache(TimeSpan.FromHours(2))
     .Build();
 
