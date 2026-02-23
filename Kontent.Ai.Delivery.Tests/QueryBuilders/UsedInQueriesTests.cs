@@ -184,6 +184,132 @@ public sealed class UsedInQueriesTests
                      entry.Message.Contains("AssetUsedIn", StringComparison.Ordinal));
     }
 
+    [Fact]
+    public async Task ItemUsedIn_Where_SendsFilterInQueryString()
+    {
+        var env = Guid.NewGuid().ToString();
+        var usedInUrl = $"https://deliver.kontent.ai/{env}/items/my_item/used-in";
+        var mockHttp = new MockHttpMessageHandler();
+
+        mockHttp.Expect(usedInUrl)
+            .WithQueryString("system.type[eq]", "article")
+            .Respond(_ => CreateUsedInResponse(["parent_1"], continuationToken: null));
+
+        var client = BuildClient(env, mockHttp, new DeliveryOptions
+        {
+            EnvironmentId = env,
+            EnableResilience = false
+        });
+
+        var items = new List<IUsedInItem>();
+        await foreach (var item in client.GetItemUsedIn("my_item")
+                           .Where(f => f.System("type").IsEqualTo("article"))
+                           .EnumerateItemsAsync())
+        {
+            items.Add(item);
+        }
+
+        Assert.Single(items);
+        Assert.Equal("parent_1", items[0].System.Codename);
+        mockHttp.VerifyNoOutstandingExpectation();
+    }
+
+    [Fact]
+    public async Task AssetUsedIn_Where_SendsFilterInQueryString()
+    {
+        var env = Guid.NewGuid().ToString();
+        var usedInUrl = $"https://deliver.kontent.ai/{env}/assets/my_asset/used-in";
+        var mockHttp = new MockHttpMessageHandler();
+
+        mockHttp.Expect(usedInUrl)
+            .WithQueryString("system.type[eq]", "article")
+            .Respond(_ => CreateUsedInResponse(["parent_1"], continuationToken: null));
+
+        var client = BuildClient(env, mockHttp, new DeliveryOptions
+        {
+            EnvironmentId = env,
+            EnableResilience = false
+        });
+
+        var items = new List<IUsedInItem>();
+        await foreach (var item in client.GetAssetUsedIn("my_asset")
+                           .Where(f => f.System("type").IsEqualTo("article"))
+                           .EnumerateItemsAsync())
+        {
+            items.Add(item);
+        }
+
+        Assert.Single(items);
+        Assert.Equal("parent_1", items[0].System.Codename);
+        mockHttp.VerifyNoOutstandingExpectation();
+    }
+
+    [Fact]
+    public async Task ItemUsedIn_MultipleWhereConditions_AllFiltersApplied()
+    {
+        var env = Guid.NewGuid().ToString();
+        var usedInUrl = $"https://deliver.kontent.ai/{env}/items/my_item/used-in";
+        var mockHttp = new MockHttpMessageHandler();
+
+        mockHttp.Expect(usedInUrl)
+            .WithQueryString("system.type[eq]", "article")
+            .WithQueryString("system.language[eq]", "en-US")
+            .Respond(_ => CreateUsedInResponse(["parent_1"], continuationToken: null));
+
+        var client = BuildClient(env, mockHttp, new DeliveryOptions
+        {
+            EnvironmentId = env,
+            EnableResilience = false
+        });
+
+        var items = new List<IUsedInItem>();
+        await foreach (var item in client.GetItemUsedIn("my_item")
+                           .Where(f => f
+                               .System("type").IsEqualTo("article")
+                               .System("language").IsEqualTo("en-US"))
+                           .EnumerateItemsAsync())
+        {
+            items.Add(item);
+        }
+
+        Assert.Single(items);
+        mockHttp.VerifyNoOutstandingExpectation();
+    }
+
+    [Fact]
+    public async Task ItemUsedIn_WhereWithPagination_FiltersAppliedToAllPages()
+    {
+        var env = Guid.NewGuid().ToString();
+        var usedInUrl = $"https://deliver.kontent.ai/{env}/items/my_item/used-in";
+        var mockHttp = new MockHttpMessageHandler();
+
+        mockHttp.Expect(usedInUrl)
+            .WithQueryString("system.type[eq]", "article")
+            .Respond(_ => CreateUsedInResponse(["parent_1"], continuationToken: "token_1"));
+
+        mockHttp.Expect(usedInUrl)
+            .WithHeaders("X-Continuation", "token_1")
+            .WithQueryString("system.type[eq]", "article")
+            .Respond(_ => CreateUsedInResponse(["parent_2"], continuationToken: null));
+
+        var client = BuildClient(env, mockHttp, new DeliveryOptions
+        {
+            EnvironmentId = env,
+            EnableResilience = false
+        });
+
+        var items = new List<IUsedInItem>();
+        await foreach (var item in client.GetItemUsedIn("my_item")
+                           .Where(f => f.System("type").IsEqualTo("article"))
+                           .EnumerateItemsAsync())
+        {
+            items.Add(item);
+        }
+
+        Assert.Equal(["parent_1", "parent_2"], items.Select(x => x.System.Codename).ToArray());
+        mockHttp.VerifyNoOutstandingExpectation();
+    }
+
     private static IDeliveryClient BuildClient(
         string env,
         MockHttpMessageHandler mockHttp,

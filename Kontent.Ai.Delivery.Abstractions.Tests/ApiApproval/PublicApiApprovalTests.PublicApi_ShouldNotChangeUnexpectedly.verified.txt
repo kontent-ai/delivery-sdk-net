@@ -76,6 +76,7 @@ public interface IAssetRendition
 public interface IAssetUsedInQuery
     IAsyncEnumerable`1 EnumerateItemsAsync(CancellationToken cancellationToken)
     IAssetUsedInQuery WaitForLoadingNewContent(Boolean enabled)
+    IAssetUsedInQuery Where(Func`2 build)
 
 // Kontent.Ai.Delivery.Abstractions
 public interface IBlockWithChildren : IRichTextBlock
@@ -421,6 +422,7 @@ public interface IItemTypingStrategy
 public interface IItemUsedInQuery
     IAsyncEnumerable`1 EnumerateItemsAsync(CancellationToken cancellationToken)
     IItemUsedInQuery WaitForLoadingNewContent(Boolean enabled)
+    IItemUsedInQuery Where(Func`2 build)
 
 // Kontent.Ai.Delivery.Abstractions
 public interface ILanguage
