@@ -104,14 +104,19 @@ public sealed class QueryParameterTests
     #region Elements Projection Tests
 
     [Fact]
-    public async Task GetItem_WithElements_AddsElementsQueryParameter()
+    public async Task GetItem_WithElements_SerializesAsSingleCommaSeparatedParameter()
     {
         // Arrange
         var mock = new MockHttpMessageHandler();
         var itemJson = BuildMinimalItemJson("test_item");
+        string? capturedQuery = null;
 
         mock.When($"{BaseUrl}/items/test_item")
-            .With(req => req.RequestUri!.Query.Contains("elements="))
+            .With(req =>
+            {
+                capturedQuery = req.RequestUri!.Query;
+                return true;
+            })
             .Respond("application/json", itemJson);
 
         var client = CreateClient(mock);
@@ -123,17 +128,26 @@ public sealed class QueryParameterTests
 
         // Assert
         Assert.True(result.IsSuccess, $"Request failed: {result.Error?.Message}");
+        Assert.NotNull(capturedQuery);
+        // Must be a single comma-delimited value, not repeated elements= keys.
+        Assert.Contains("elements=title%2Csummary", capturedQuery);
+        Assert.Equal(1, CountOccurrences(capturedQuery, "elements="));
     }
 
     [Fact]
-    public async Task GetItem_WithoutElements_AddsExcludeElementsParameter()
+    public async Task GetItem_WithoutElements_SerializesAsSingleCommaSeparatedParameter()
     {
         // Arrange
         var mock = new MockHttpMessageHandler();
         var itemJson = BuildMinimalItemJson("test_item");
+        string? capturedQuery = null;
 
         mock.When($"{BaseUrl}/items/test_item")
-            .With(req => req.RequestUri!.Query.Contains("excludeElements="))
+            .With(req =>
+            {
+                capturedQuery = req.RequestUri!.Query;
+                return true;
+            })
             .Respond("application/json", itemJson);
 
         var client = CreateClient(mock);
@@ -145,17 +159,55 @@ public sealed class QueryParameterTests
 
         // Assert
         Assert.True(result.IsSuccess, $"Request failed: {result.Error?.Message}");
+        Assert.NotNull(capturedQuery);
+        Assert.Contains("excludeElements=body_copy%2Cmetadata", capturedQuery);
+        Assert.Equal(1, CountOccurrences(capturedQuery, "excludeElements="));
     }
 
     [Fact]
-    public async Task GetItems_WithElements_AddsElementsQueryParameter()
+    public async Task GetItems_WithElements_SerializesAsSingleCommaSeparatedParameter()
     {
         // Arrange
         var mock = new MockHttpMessageHandler();
         var itemsJson = BuildMinimalItemsListingJson(["item_1"]);
+        string? capturedQuery = null;
 
         mock.When($"{BaseUrl}/items")
-            .With(req => req.RequestUri!.Query.Contains("elements="))
+            .With(req =>
+            {
+                capturedQuery = req.RequestUri!.Query;
+                return true;
+            })
+            .Respond("application/json", itemsJson);
+
+        var client = CreateClient(mock);
+
+        // Act
+        var result = await client.GetItems<IDynamicElements>()
+            .WithElements("title", "summary", "body")
+            .ExecuteAsync();
+
+        // Assert
+        Assert.True(result.IsSuccess, $"Request failed: {result.Error?.Message}");
+        Assert.NotNull(capturedQuery);
+        Assert.Contains("elements=title%2Csummary%2Cbody", capturedQuery);
+        Assert.Equal(1, CountOccurrences(capturedQuery, "elements="));
+    }
+
+    [Fact]
+    public async Task GetItems_WithSingleElement_SerializesWithoutComma()
+    {
+        // Arrange
+        var mock = new MockHttpMessageHandler();
+        var itemsJson = BuildMinimalItemsListingJson(["item_1"]);
+        string? capturedQuery = null;
+
+        mock.When($"{BaseUrl}/items")
+            .With(req =>
+            {
+                capturedQuery = req.RequestUri!.Query;
+                return true;
+            })
             .Respond("application/json", itemsJson);
 
         var client = CreateClient(mock);
@@ -167,6 +219,9 @@ public sealed class QueryParameterTests
 
         // Assert
         Assert.True(result.IsSuccess, $"Request failed: {result.Error?.Message}");
+        Assert.NotNull(capturedQuery);
+        Assert.Contains("elements=title", capturedQuery);
+        Assert.DoesNotContain("%2C", capturedQuery); // no comma for single element
     }
 
     #endregion
@@ -260,6 +315,24 @@ public sealed class QueryParameterTests
     }
 
     [Fact]
+    public async Task GetContentElement_WaitForLoadingNewContent_AddsHeader()
+    {
+        var mock = new MockHttpMessageHandler();
+
+        mock.When($"{BaseUrl}/types/article/elements/title")
+            .With(req => req.Headers.Contains("X-KC-Wait-For-Loading-New-Content"))
+            .Respond("application/json", "{\"type\":\"text\",\"name\":\"Title\",\"codename\":\"title\"}");
+
+        var client = CreateClient(mock);
+
+        var result = await client.GetContentElement("article", "title")
+            .WaitForLoadingNewContent()
+            .ExecuteAsync();
+
+        Assert.True(result.IsSuccess, $"Request failed: {result.Error?.Message}");
+    }
+
+    [Fact]
     public async Task GetItems_GenericExecuteTwice_DoesNotDuplicateAutoTypeFilter()
     {
         // Arrange - repeated execution on the same query should keep a stable system.type filter
@@ -293,13 +366,14 @@ public sealed class QueryParameterTests
         // Arrange
         var mock = new MockHttpMessageHandler();
         var itemsJson = BuildMinimalItemsListingJson(["item_1", "item_2"]);
+        string? capturedQuery = null;
 
         mock.When($"{BaseUrl}/items")
             .With(req =>
-                req.RequestUri!.Query.Contains("depth=2") &&
-                req.RequestUri.Query.Contains("elements=") &&
-                req.RequestUri.Query.Contains("limit=10") &&
-                req.Headers.Contains("X-KC-Wait-For-Loading-New-Content"))
+            {
+                capturedQuery = req.RequestUri!.Query;
+                return req.Headers.Contains("X-KC-Wait-For-Loading-New-Content");
+            })
             .Respond("application/json", itemsJson);
 
         var client = CreateClient(mock);
@@ -315,6 +389,11 @@ public sealed class QueryParameterTests
 
         // Assert
         Assert.True(result.IsSuccess, $"Request failed: {result.Error?.Message}");
+        Assert.NotNull(capturedQuery);
+        Assert.Contains("depth=2", capturedQuery);
+        Assert.Contains("elements=title%2Csummary", capturedQuery);
+        Assert.Contains("limit=10", capturedQuery);
+        Assert.Equal(1, CountOccurrences(capturedQuery, "elements="));
     }
 
     [Fact]
@@ -323,12 +402,14 @@ public sealed class QueryParameterTests
         // Arrange
         var mock = new MockHttpMessageHandler();
         var itemJson = BuildMinimalItemJson("test_item");
+        string? capturedQuery = null;
 
         mock.When($"{BaseUrl}/items/test_item")
             .With(req =>
-                req.RequestUri!.Query.Contains("language=es-ES") &&
-                req.RequestUri.Query.Contains("depth=1") &&
-                req.RequestUri.Query.Contains("elements="))
+            {
+                capturedQuery = req.RequestUri!.Query;
+                return true;
+            })
             .Respond("application/json", itemJson);
 
         var client = CreateClient(mock);
@@ -342,6 +423,61 @@ public sealed class QueryParameterTests
 
         // Assert
         Assert.True(result.IsSuccess, $"Request failed: {result.Error?.Message}");
+        Assert.NotNull(capturedQuery);
+        Assert.Contains("language=es-ES", capturedQuery);
+        Assert.Contains("depth=1", capturedQuery);
+        Assert.Contains("elements=title", capturedQuery);
+        Assert.Equal(1, CountOccurrences(capturedQuery, "elements="));
+    }
+
+    [Fact]
+    public async Task GetLanguages_OrderByDescending_SerializesOrderParameter()
+    {
+        var mock = new MockHttpMessageHandler();
+        string? capturedQuery = null;
+
+        mock.When($"{BaseUrl}/languages")
+            .With(req =>
+            {
+                capturedQuery = req.RequestUri!.Query;
+                return true;
+            })
+            .Respond("application/json", BuildMinimalLanguagesListingJson(["en-US"]));
+
+        var client = CreateClient(mock);
+
+        var result = await client.GetLanguages()
+            .OrderBy("system.name", OrderingMode.Descending)
+            .ExecuteAsync();
+
+        Assert.True(result.IsSuccess, $"Request failed: {result.Error?.Message}");
+        Assert.NotNull(capturedQuery);
+        Assert.Contains("order=system.name%5Bdesc%5D", capturedQuery);
+    }
+
+    [Fact]
+    public async Task GetLanguages_OrderByAscending_SerializesOrderParameter()
+    {
+        var mock = new MockHttpMessageHandler();
+        string? capturedQuery = null;
+
+        mock.When($"{BaseUrl}/languages")
+            .With(req =>
+            {
+                capturedQuery = req.RequestUri!.Query;
+                return true;
+            })
+            .Respond("application/json", BuildMinimalLanguagesListingJson(["en-US"]));
+
+        var client = CreateClient(mock);
+
+        var result = await client.GetLanguages()
+            .OrderBy("system.name", OrderingMode.Ascending)
+            .ExecuteAsync();
+
+        Assert.True(result.IsSuccess, $"Request failed: {result.Error?.Message}");
+        Assert.NotNull(capturedQuery);
+        Assert.Contains("order=system.name%5Basc%5D", capturedQuery);
     }
 
     #endregion
@@ -396,6 +532,31 @@ public sealed class QueryParameterTests
                     "next_page": ""
                 },
                 "modular_content": {}
+            }
+            """;
+    }
+
+    private static string BuildMinimalLanguagesListingJson(IReadOnlyList<string> codenames)
+    {
+        var languagesJson = string.Join(",", codenames.Select(codename => $$"""
+            {
+                "system": {
+                    "id": "{{Guid.NewGuid()}}",
+                    "name": "{{codename}}",
+                    "codename": "{{codename}}"
+                }
+            }
+            """));
+
+        return $$"""
+            {
+                "languages": [{{languagesJson}}],
+                "pagination": {
+                    "skip": 0,
+                    "limit": 100,
+                    "count": {{codenames.Count}},
+                    "next_page": ""
+                }
             }
             """;
     }

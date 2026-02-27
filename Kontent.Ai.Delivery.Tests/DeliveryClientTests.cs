@@ -263,6 +263,100 @@ public class DeliveryClientTests
     }
 
     [Fact]
+    public async Task XCacheHitHeader_SetsResponseSourceToCdn()
+    {
+        var mock = new MockHttpMessageHandler();
+        var headers = new[] { new KeyValuePair<string, string>("X-Cache", "HIT") };
+        mock.When($"{BaseUrl}/items/coffee_beverages_explained")
+            .Respond(headers, "application/json", await File.ReadAllTextAsync(Path.Combine(Environment.CurrentDirectory, $"Fixtures{Path.DirectorySeparatorChar}DeliveryClient{Path.DirectorySeparatorChar}coffee_beverages_explained.json")));
+
+        var client = CreateClient(mock);
+        var result = await client.GetItem<IDynamicElements>("coffee_beverages_explained").ExecuteAsync();
+
+        Assert.True(result.IsSuccess);
+        Assert.Equal(ResponseSource.Cdn, result.ResponseSource);
+        Assert.False(result.IsCacheHit);
+    }
+
+    [Fact]
+    public async Task XCacheShieldedHeader_MissHit_SetsResponseSourceToCdn()
+    {
+        var mock = new MockHttpMessageHandler();
+        var headers = new[] { new KeyValuePair<string, string>("X-Cache", "MISS, HIT") };
+        mock.When($"{BaseUrl}/items/coffee_beverages_explained")
+            .Respond(headers, "application/json", await File.ReadAllTextAsync(Path.Combine(Environment.CurrentDirectory, $"Fixtures{Path.DirectorySeparatorChar}DeliveryClient{Path.DirectorySeparatorChar}coffee_beverages_explained.json")));
+
+        var client = CreateClient(mock);
+        var result = await client.GetItem<IDynamicElements>("coffee_beverages_explained").ExecuteAsync();
+
+        Assert.True(result.IsSuccess);
+        Assert.Equal(ResponseSource.Cdn, result.ResponseSource);
+    }
+
+    [Fact]
+    public async Task XCacheMultiValueHeader_WithHitToken_SetsResponseSourceToCdn()
+    {
+        var mock = new MockHttpMessageHandler();
+        var headers = new[]
+        {
+            new KeyValuePair<string, string>("X-Cache", "MISS"),
+            new KeyValuePair<string, string>("X-Cache", "BYPASS, HIT")
+        };
+        mock.When($"{BaseUrl}/items/coffee_beverages_explained")
+            .Respond(headers, "application/json", await File.ReadAllTextAsync(Path.Combine(Environment.CurrentDirectory, $"Fixtures{Path.DirectorySeparatorChar}DeliveryClient{Path.DirectorySeparatorChar}coffee_beverages_explained.json")));
+
+        var client = CreateClient(mock);
+        var result = await client.GetItem<IDynamicElements>("coffee_beverages_explained").ExecuteAsync();
+
+        Assert.True(result.IsSuccess);
+        Assert.Equal(ResponseSource.Cdn, result.ResponseSource);
+    }
+
+    [Fact]
+    public async Task XCacheMissHeader_SetsResponseSourceToOrigin()
+    {
+        var mock = new MockHttpMessageHandler();
+        var headers = new[] { new KeyValuePair<string, string>("X-Cache", "MISS") };
+        mock.When($"{BaseUrl}/items/coffee_beverages_explained")
+            .Respond(headers, "application/json", await File.ReadAllTextAsync(Path.Combine(Environment.CurrentDirectory, $"Fixtures{Path.DirectorySeparatorChar}DeliveryClient{Path.DirectorySeparatorChar}coffee_beverages_explained.json")));
+
+        var client = CreateClient(mock);
+        var result = await client.GetItem<IDynamicElements>("coffee_beverages_explained").ExecuteAsync();
+
+        Assert.True(result.IsSuccess);
+        Assert.Equal(ResponseSource.Origin, result.ResponseSource);
+    }
+
+    [Fact]
+    public async Task XCacheOnlyMissTokens_SetsResponseSourceToOrigin()
+    {
+        var mock = new MockHttpMessageHandler();
+        var headers = new[] { new KeyValuePair<string, string>("X-Cache", "MISS, MISS") };
+        mock.When($"{BaseUrl}/items/coffee_beverages_explained")
+            .Respond(headers, "application/json", await File.ReadAllTextAsync(Path.Combine(Environment.CurrentDirectory, $"Fixtures{Path.DirectorySeparatorChar}DeliveryClient{Path.DirectorySeparatorChar}coffee_beverages_explained.json")));
+
+        var client = CreateClient(mock);
+        var result = await client.GetItem<IDynamicElements>("coffee_beverages_explained").ExecuteAsync();
+
+        Assert.True(result.IsSuccess);
+        Assert.Equal(ResponseSource.Origin, result.ResponseSource);
+    }
+
+    [Fact]
+    public async Task NoXCacheHeader_SetsResponseSourceToOrigin()
+    {
+        var mock = new MockHttpMessageHandler();
+        mock.When($"{BaseUrl}/items/coffee_beverages_explained")
+            .Respond("application/json", await File.ReadAllTextAsync(Path.Combine(Environment.CurrentDirectory, $"Fixtures{Path.DirectorySeparatorChar}DeliveryClient{Path.DirectorySeparatorChar}coffee_beverages_explained.json")));
+
+        var client = CreateClient(mock);
+        var result = await client.GetItem<IDynamicElements>("coffee_beverages_explained").ExecuteAsync();
+
+        Assert.True(result.IsSuccess);
+        Assert.Equal(ResponseSource.Origin, result.ResponseSource);
+    }
+
+    [Fact]
     public async Task StaleContentHeader_IsSurfaced()
     {
         var mock = new MockHttpMessageHandler();
@@ -350,5 +444,32 @@ public class DeliveryClientTests
 
         Assert.Contains("w=200&h=150&fit=clip&rect=7,23,300,200", withPresetUrl, StringComparison.Ordinal);
         Assert.DoesNotContain("?", withoutPresetUrl, StringComparison.Ordinal);
+    }
+
+    [Fact]
+    public async Task DefaultRenditionPreset_AssetWithoutRenditions_UrlRemainsUnchanged()
+    {
+        var mock = new MockHttpMessageHandler();
+        var responseJson = await File.ReadAllTextAsync(
+            Path.Combine(
+                Environment.CurrentDirectory,
+                $"Fixtures{Path.DirectorySeparatorChar}ContentLinkResolver{Path.DirectorySeparatorChar}coffee_processing_techniques.json"));
+
+        mock.When($"{BaseUrl}/items/coffee_processing_techniques")
+            .Respond("application/json", responseJson);
+
+        var client = CreateClient(mock, new DeliveryOptions
+        {
+            EnvironmentId = _guid.ToString(),
+            DefaultRenditionPreset = "default"
+        });
+
+        var result = await client.GetItem<Article>("coffee_processing_techniques").ExecuteAsync();
+
+        Assert.True(result.IsSuccess);
+        var asset = result.Value.Elements.TeaserImage!.First();
+        Assert.DoesNotContain("?", asset.Url, StringComparison.Ordinal);
+        Assert.NotNull(asset.Renditions);
+        Assert.Empty(asset.Renditions);
     }
 }

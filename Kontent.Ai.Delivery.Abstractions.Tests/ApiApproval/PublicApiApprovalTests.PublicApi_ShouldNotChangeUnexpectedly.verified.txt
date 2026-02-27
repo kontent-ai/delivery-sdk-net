@@ -56,13 +56,13 @@ public sealed class HtmlNodePredicate : MulticastDelegate
 // Kontent.Ai.Delivery.Abstractions
 public interface IAsset
     String Description { get; }
-    Int32 Height { get; }
+    Nullable`1 Height { get; }
     String Name { get; }
     IReadOnlyDictionary`2 Renditions { get; }
     Int32 Size { get; }
     String Type { get; }
     String Url { get; }
-    Int32 Width { get; }
+    Nullable`1 Width { get; }
 
 // Kontent.Ai.Delivery.Abstractions
 public interface IAssetRendition
@@ -236,6 +236,7 @@ public interface IDeliveryResult`1
     Boolean IsSuccess { get; }
     String RequestUrl { get; }
     HttpResponseHeaders ResponseHeaders { get; }
+    ResponseSource ResponseSource { get; }
     HttpStatusCode StatusCode { get; }
     T Value { get; }
 
@@ -593,4 +594,7 @@ public enum OrderingMode : Enum
 // Kontent.Ai.Delivery.Abstractions
 public sealed class RequiredIfAttribute : ValidationAttribute
     String FormatErrorMessage(String name)
+
+// Kontent.Ai.Delivery.Abstractions
+public enum ResponseSource : Enum
 

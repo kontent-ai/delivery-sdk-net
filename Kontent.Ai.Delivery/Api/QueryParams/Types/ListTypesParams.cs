@@ -8,7 +8,7 @@ internal sealed record ListTypesParams
     /// <summary>
     /// The content elements to include in the response. By default, all elements are returned.
     /// </summary>
-    public string[]? Elements { get; init; }
+    public string? Elements { get; init; }
 
     /// <summary>
     /// The number of items to skip.

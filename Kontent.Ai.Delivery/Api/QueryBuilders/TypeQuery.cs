@@ -21,7 +21,7 @@ internal sealed class TypeQuery(
 
     public ITypeQuery WithElements(params string[] elementCodenames)
     {
-        _params = _params with { Elements = elementCodenames };
+        _params = _params with { Elements = string.Join(",", elementCodenames) };
         return this;
     }
 
@@ -55,11 +55,13 @@ internal sealed class TypeQuery(
     {
         var cacheKey = CacheKeyBuilder.BuildTypeKey(codename, _params);
         IDeliveryResult<IContentType>? apiResult = null;
+        var factoryInvoked = false;
 
         var cached = await cacheManager.GetOrSetAsync(
             cacheKey,
             async ct =>
             {
+                factoryInvoked = true;
                 apiResult = await FetchFromApiAsync(waitForLoadingNewContent, ct).ConfigureAwait(false);
                 if (!apiResult.IsSuccess)
                     return null;
@@ -72,11 +74,16 @@ internal sealed class TypeQuery(
             CacheExpiration,
             cancellationToken).ConfigureAwait(false);
 
-        // Cache hit: apiResult is null because factory was never called
-        if (apiResult is null && cached is not null)
+        // Cache hit (factory never called) or fail-safe served stale data after HTTP error
+        if (cached is not null && (apiResult is null || !apiResult.IsSuccess))
         {
             LogQueryCompleted(stopwatch, HttpStatusCode.OK, cacheHit: true);
-            return DeliveryResult.CacheHit<IContentType>(cached);
+            var isFailSafe = factoryInvoked
+                || (cacheManager is IFailSafeStateProvider failSafeProvider && failSafeProvider.IsFailSafeActive(cacheKey));
+
+            return isFailSafe
+                ? DeliveryResult.FailSafeHit<IContentType>(cached)
+                : DeliveryResult.CacheHit<IContentType>(cached);
         }
 
         apiResult = QueryExecutionResultHelper.EnsureApiResult(apiResult, "Type", codename);

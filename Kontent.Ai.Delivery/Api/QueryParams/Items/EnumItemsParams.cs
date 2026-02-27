@@ -13,12 +13,12 @@ internal sealed record EnumItemsParams
     /// <summary>
     /// The content elements to include in the response. By default, all elements are returned.
     /// </summary>
-    public string[]? Elements { get; init; }
+    public string? Elements { get; init; }
 
     /// <summary>
     /// The content elements to exclude in the response. By default, all elements are returned.
     /// </summary>
-    public string[]? ExcludeElements { get; init; }
+    public string? ExcludeElements { get; init; }
 
     /// <summary>
     /// The depth of linked items to retrieve. If not specified, the default depth is 1.

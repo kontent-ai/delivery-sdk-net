@@ -196,6 +196,27 @@ public class DynamicQueryLoggingTests
     }
 
     [Fact]
+    public async Task GetLanguages_Failure_EmitsFailedLog()
+    {
+        var env = Guid.NewGuid().ToString();
+        var baseUrl = $"https://deliver.kontent.ai/{env}";
+        var mockHttp = new MockHttpMessageHandler();
+
+        mockHttp.When($"{baseUrl}/languages")
+            .Respond(HttpStatusCode.InternalServerError, "text/plain", "Server error");
+
+        var loggerProvider = new CollectingLoggerProvider();
+        var client = CreateClient(env, mockHttp, loggerProvider);
+
+        var result = await client.GetLanguages().ExecuteAsync();
+
+        Assert.False(result.IsSuccess);
+        AssertLog(loggerProvider.Entries, LogEventIds.QueryStarting, "Starting Languages query");
+        AssertLog(loggerProvider.Entries, LogEventIds.QueryFailed, "Query Languages failed");
+        AssertLog(loggerProvider.Entries, LogEventIds.QueryCompleted, "Completed Languages query");
+    }
+
+    [Fact]
     public async Task GetContentElement_Success_EmitsStartingAndCompletedLogs()
     {
         var env = Guid.NewGuid().ToString();
@@ -212,6 +233,27 @@ public class DynamicQueryLoggingTests
 
         Assert.True(result.IsSuccess);
         AssertLog(loggerProvider.Entries, LogEventIds.QueryStarting, "Starting TypeElement query");
+        AssertLog(loggerProvider.Entries, LogEventIds.QueryCompleted, "Completed TypeElement query");
+    }
+
+    [Fact]
+    public async Task GetContentElement_Failure_EmitsFailedLog()
+    {
+        var env = Guid.NewGuid().ToString();
+        var baseUrl = $"https://deliver.kontent.ai/{env}";
+        var mockHttp = new MockHttpMessageHandler();
+
+        mockHttp.When($"{baseUrl}/types/article/elements/title")
+            .Respond(HttpStatusCode.NotFound, "application/json", """{"message":"Not found","request_id":"req"}""");
+
+        var loggerProvider = new CollectingLoggerProvider();
+        var client = CreateClient(env, mockHttp, loggerProvider);
+
+        var result = await client.GetContentElement("article", "title").ExecuteAsync();
+
+        Assert.False(result.IsSuccess);
+        AssertLog(loggerProvider.Entries, LogEventIds.QueryStarting, "Starting TypeElement query");
+        AssertLog(loggerProvider.Entries, LogEventIds.QueryFailed, "Query TypeElement failed");
         AssertLog(loggerProvider.Entries, LogEventIds.QueryCompleted, "Completed TypeElement query");
     }
 
@@ -251,6 +293,48 @@ public class DynamicQueryLoggingTests
         var client = CreateClient(env, mockHttp, loggerProvider);
 
         var result = await client.GetTypes().ExecuteAsync();
+
+        Assert.True(result.IsSuccess);
+        Assert.True(result.HasStaleContent);
+        AssertLog(loggerProvider.Entries, LogEventIds.QueryStaleContent, "stale content");
+    }
+
+    [Fact]
+    public async Task GetLanguages_StaleContent_EmitsStaleContentLog()
+    {
+        var env = Guid.NewGuid().ToString();
+        var baseUrl = $"https://deliver.kontent.ai/{env}";
+        var headers = new[] { new KeyValuePair<string, string>("X-Stale-Content", "1") };
+        var mockHttp = new MockHttpMessageHandler();
+
+        mockHttp.When($"{baseUrl}/languages")
+            .Respond(headers, "application/json", await LoadFixtureAsync("languages.json"));
+
+        var loggerProvider = new CollectingLoggerProvider();
+        var client = CreateClient(env, mockHttp, loggerProvider);
+
+        var result = await client.GetLanguages().ExecuteAsync();
+
+        Assert.True(result.IsSuccess);
+        Assert.True(result.HasStaleContent);
+        AssertLog(loggerProvider.Entries, LogEventIds.QueryStaleContent, "stale content");
+    }
+
+    [Fact]
+    public async Task GetContentElement_StaleContent_EmitsStaleContentLog()
+    {
+        var env = Guid.NewGuid().ToString();
+        var baseUrl = $"https://deliver.kontent.ai/{env}";
+        var headers = new[] { new KeyValuePair<string, string>("X-Stale-Content", "1") };
+        var mockHttp = new MockHttpMessageHandler();
+
+        mockHttp.When($"{baseUrl}/types/article/elements/title")
+            .Respond(headers, "application/json", "{\"type\":\"text\",\"name\":\"Title\",\"codename\":\"title\"}");
+
+        var loggerProvider = new CollectingLoggerProvider();
+        var client = CreateClient(env, mockHttp, loggerProvider);
+
+        var result = await client.GetContentElement("article", "title").ExecuteAsync();
 
         Assert.True(result.IsSuccess);
         Assert.True(result.HasStaleContent);

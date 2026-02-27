@@ -191,25 +191,25 @@ internal static class CacheKeyBuilder
         }
     }
 
-    private static void AppendElementProjection(StringBuilder builder, string[]? elements, string[]? excludeElements)
+    private static void AppendElementProjection(StringBuilder builder, string? elements, string? excludeElements)
     {
-        if (elements is { Length: > 0 })
+        if (!string.IsNullOrEmpty(elements))
         {
             builder.Append("elements=");
-            AppendSortedArray(builder, elements);
+            AppendSortedCsv(builder, elements);
             builder.Append(Separator);
         }
-        else if (excludeElements is { Length: > 0 })
+        else if (!string.IsNullOrEmpty(excludeElements))
         {
             builder.Append("exclude=");
-            AppendSortedArray(builder, excludeElements);
+            AppendSortedCsv(builder, excludeElements);
             builder.Append(Separator);
         }
     }
 
-    private static void AppendSortedArray(StringBuilder builder, string[] items)
+    private static void AppendSortedCsv(StringBuilder builder, string csv)
     {
-        var sorted = items.OrderBy(x => x, StringComparer.OrdinalIgnoreCase);
+        var sorted = csv.Split(',').OrderBy(x => x, StringComparer.OrdinalIgnoreCase);
         builder.AppendJoin(ArraySeparator, sorted);
     }
 

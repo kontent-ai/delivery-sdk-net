@@ -1,4 +1,5 @@
 using System.Net;
+using Kontent.Ai.Delivery.Abstractions;
 using Kontent.Ai.Delivery.Api.QueryBuilders.Helpers;
 using Kontent.Ai.Delivery.SharedModels;
 using Xunit;
@@ -35,7 +36,8 @@ public class QueryExecutionResultHelperTests
             statusCode: HttpStatusCode.OK,
             hasStaleContent: false,
             continuationToken: null,
-            responseHeaders: null);
+            responseHeaders: null,
+            responseSource: ResponseSource.Origin);
 
         var result = QueryExecutionResultHelper.EnsureApiResult<string>(existing, "Items", "list");
 

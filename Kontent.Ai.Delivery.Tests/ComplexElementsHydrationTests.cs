@@ -71,6 +71,10 @@ public class ComplexElementsHydrationTests
         Assert.Equal(108409, teaserImage.Size);
         Assert.Equal("Dry process (also known as unwashed or natural coffee)", teaserImage.Description);
         Assert.Contains("coffee-processing-techniques-1080px.jpg", teaserImage.Url);
+        Assert.Null(teaserImage.Width);
+        Assert.Null(teaserImage.Height);
+        Assert.NotNull(teaserImage.Renditions);
+        Assert.Empty(teaserImage.Renditions);
     }
 
     [Fact]
@@ -259,7 +263,10 @@ public class ComplexElementsHydrationTests
         Assert.False(string.IsNullOrEmpty(asset.Url));
 
         // This fixture doesn't have renditions
-        Assert.True(asset.Renditions is null || !asset.Renditions.Any());
+        Assert.Null(asset.Width);
+        Assert.Null(asset.Height);
+        Assert.NotNull(asset.Renditions);
+        Assert.Empty(asset.Renditions);
     }
 
     [Fact]
