@@ -72,8 +72,8 @@ internal sealed class TypeQuery(
             CacheExpiration,
             cancellationToken).ConfigureAwait(false);
 
-        // Cache hit: apiResult is null because factory was never called
-        if (apiResult is null && cached is not null)
+        // Cache hit (factory never called) or fail-safe served stale data after HTTP error
+        if (cached is not null && (apiResult is null || !apiResult.IsSuccess))
         {
             LogQueryCompleted(stopwatch, HttpStatusCode.OK, cacheHit: true);
             return DeliveryResult.CacheHit<IContentType>(cached);

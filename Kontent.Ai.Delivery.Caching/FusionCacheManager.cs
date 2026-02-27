@@ -247,40 +247,44 @@ internal sealed class FusionCacheManager : IDeliveryCacheManager, IDeliveryCache
         }
 
         var formattedKey = _cacheKeyFormatter(cacheKey);
-        var factoryCalled = false;
-        var factoryReturnedNull = false;
 
-        var result = await _cache.GetOrSetAsync<T>(
-            formattedKey,
-            async (ctx, ct) =>
-            {
-                factoryCalled = true;
-                var factoryResult = await factory(ct).ConfigureAwait(false);
-                if (factoryResult is null)
+        try
+        {
+            return await _cache.GetOrSetAsync<T>(
+                formattedKey,
+                async (ctx, ct) =>
                 {
-                    factoryReturnedNull = true;
-                    ctx.Options.SkipMemoryCacheWrite = true;
-                    ctx.Options.SkipDistributedCacheWrite = true;
-                    return default!;
-                }
+                    var factoryResult = await factory(ct).ConfigureAwait(false) ?? throw new CacheFactoryFailedException();
 
-                var tags = factoryResult.Dependencies
-                    .Where(d => !string.IsNullOrWhiteSpace(d))
-                    .Select(_dependencyTagFormatter)
-                    .Distinct(StringComparer.OrdinalIgnoreCase)
-                    .ToArray();
-                ctx.Tags = tags;
-                ctx.Options.Duration = expiration ?? _defaultExpiration;
-                return factoryResult.Value;
-            },
-            _baseWriteOptions,
-            token: cancellationToken).ConfigureAwait(false);
-
-        // Cache hit (factory never called): return the cached result.
-        // Factory called and returned null: return null (don't cache).
-        // Factory called with value: return the result.
-        return factoryCalled && factoryReturnedNull ? null : result;
+                    var tags = factoryResult.Dependencies
+                        .Where(d => !string.IsNullOrWhiteSpace(d))
+                        .Select(_dependencyTagFormatter)
+                        .Distinct(StringComparer.OrdinalIgnoreCase)
+                        .ToArray();
+                    ctx.Tags = tags;
+                    ctx.Options.Duration = expiration ?? _defaultExpiration;
+                    return factoryResult.Value;
+                },
+                _baseWriteOptions,
+                token: cancellationToken).ConfigureAwait(false);
+        }
+        catch (CacheFactoryFailedException)
+        {
+            // Factory returned null and no stale entry was available for fail-safe.
+            return null;
+        }
     }
+
+    /// <summary>
+    /// Sentinel exception thrown inside the FusionCache factory when the upstream
+    /// factory returns <c>null</c>.  This allows FusionCache fail-safe to kick in
+    /// and serve a stale entry when one is available.  The exception never leaves
+    /// <see cref="GetOrSetAsync{T}"/> — it is caught immediately after the
+    /// <c>GetOrSetAsync</c> call.
+    /// </summary>
+#pragma warning disable S3871 // Intentionally private sentinel — never leaves this class
+    private sealed class CacheFactoryFailedException : Exception;
+#pragma warning restore S3871
 
     public async Task InvalidateAsync(CancellationToken cancellationToken = default, params string[] dependencyKeys)
     {

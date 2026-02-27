@@ -385,7 +385,7 @@ var result = await client.GetContentElement("article", "body_copy").ExecuteAsync
 
 if (result.IsSuccess)
 {
-    var element = result.Value.Element;
+    var element = result.Value;
     Console.WriteLine($"Element: {element.Name}");
     Console.WriteLine($"Type: {element.Type}");
 }

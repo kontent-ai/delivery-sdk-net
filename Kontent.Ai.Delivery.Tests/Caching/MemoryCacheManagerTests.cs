@@ -830,6 +830,103 @@ public class MemoryCacheManagerTests : IDisposable
     }
 
     [Fact]
+    public async Task FailSafe_Enabled_ServesStaleEntryWhenFactoryReturnsNull()
+    {
+        using var cache = new MemoryCache(new MemoryCacheOptions());
+        using var manager = new MemoryCacheManager(cache, new DeliveryCacheOptions
+        {
+            DefaultExpiration = TimeSpan.FromMilliseconds(100),
+            IsFailSafeEnabled = true,
+            FailSafeMaxDuration = TimeSpan.FromMinutes(5),
+            FailSafeThrottleDuration = TimeSpan.FromSeconds(1)
+        });
+
+        var value = new TestCacheValue { Id = 99, Name = "StaleFromNull" };
+        await PopulateCache(manager, "failsafe_null_key", value, ["dep1"]);
+
+        // Poll until TTL expires (factory is called) and factory returns null.
+        TestCacheValue? failSafeResult = null;
+        var expired = await WaitUntilAsync(
+            async () =>
+            {
+                var factoryCalled = false;
+                var r = await manager.GetOrSetAsync<TestCacheValue>("failsafe_null_key", _ =>
+                {
+                    factoryCalled = true;
+                    return Task.FromResult<CacheEntry<TestCacheValue>?>(null);
+                });
+                if (factoryCalled)
+                {
+                    failSafeResult = r;
+                }
+                return factoryCalled;
+            },
+            timeout: TimeSpan.FromSeconds(2),
+            pollInterval: TimeSpan.FromMilliseconds(20));
+
+        Assert.True(expired, "Cache entry did not expire within timeout");
+        Assert.NotNull(failSafeResult);
+        Assert.Equal(99, failSafeResult.Id);
+        Assert.Equal("StaleFromNull", failSafeResult.Name);
+    }
+
+    [Fact]
+    public async Task FailSafe_Disabled_ReturnsNullWhenFactoryReturnsNull()
+    {
+        using var cache = new MemoryCache(new MemoryCacheOptions());
+        using var manager = new MemoryCacheManager(cache, new DeliveryCacheOptions
+        {
+            DefaultExpiration = TimeSpan.FromMilliseconds(100),
+            IsFailSafeEnabled = false
+        });
+
+        var value = new TestCacheValue { Id = 50, Name = "NoFailSafe" };
+        await PopulateCache(manager, "no_failsafe_null_key", value, ["dep1"]);
+
+        // Poll until TTL expires, factory returns null, verify null is returned.
+        TestCacheValue? resultAfterExpiry = null;
+        var expired = await WaitUntilAsync(
+            async () =>
+            {
+                var factoryCalled = false;
+                var r = await manager.GetOrSetAsync<TestCacheValue>("no_failsafe_null_key", _ =>
+                {
+                    factoryCalled = true;
+                    return Task.FromResult<CacheEntry<TestCacheValue>?>(null);
+                });
+                if (factoryCalled)
+                {
+                    resultAfterExpiry = r;
+                }
+                return factoryCalled;
+            },
+            timeout: TimeSpan.FromSeconds(2),
+            pollInterval: TimeSpan.FromMilliseconds(20));
+
+        Assert.True(expired, "Cache entry did not expire within timeout");
+        Assert.Null(resultAfterExpiry);
+    }
+
+    [Fact]
+    public async Task FailSafe_Enabled_NoStaleEntry_ReturnsNullWhenFactoryReturnsNull()
+    {
+        using var cache = new MemoryCache(new MemoryCacheOptions());
+        using var manager = new MemoryCacheManager(cache, new DeliveryCacheOptions
+        {
+            DefaultExpiration = TimeSpan.FromMinutes(5),
+            IsFailSafeEnabled = true,
+            FailSafeMaxDuration = TimeSpan.FromMinutes(30),
+            FailSafeThrottleDuration = TimeSpan.FromSeconds(1)
+        });
+
+        // No prior cache entry — factory returns null on first call.
+        var result = await manager.GetOrSetAsync<TestCacheValue>("never_cached_key", _ =>
+            Task.FromResult<CacheEntry<TestCacheValue>?>(null));
+
+        Assert.Null(result);
+    }
+
+    [Fact]
     public async Task FailSafe_Disabled_ReturnsNullAfterExpiration()
     {
         using var cache = new MemoryCache(new MemoryCacheOptions());
