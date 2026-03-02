@@ -56,13 +56,13 @@ public sealed class HtmlNodePredicate : MulticastDelegate
 // Kontent.Ai.Delivery.Abstractions
 public interface IAsset
     String Description { get; }
-    Int32 Height { get; }
+    Nullable`1 Height { get; }
     String Name { get; }
     IReadOnlyDictionary`2 Renditions { get; }
     Int32 Size { get; }
     String Type { get; }
     String Url { get; }
-    Int32 Width { get; }
+    Nullable`1 Width { get; }
 
 // Kontent.Ai.Delivery.Abstractions
 public interface IAssetRendition

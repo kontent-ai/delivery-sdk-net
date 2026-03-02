@@ -50,13 +50,13 @@ public sealed class RefitSettingsProvider
 // Kontent.Ai.Delivery.ContentItems
 public sealed class Asset : IAsset, IEquatable`1
     String Description { get; set; init; }
-    Int32 Height { get; set; init; }
+    Nullable`1 Height { get; set; init; }
     String Name { get; set; init; }
     IReadOnlyDictionary`2 Renditions { get; set; init; }
     Int32 Size { get; set; init; }
     String Type { get; set; init; }
     String Url { get; set; init; }
-    Int32 Width { get; set; init; }
+    Nullable`1 Width { get; set; init; }
     Asset <Clone>$()
     Boolean Equals(Object obj)
     Boolean Equals(Asset other)

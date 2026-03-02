@@ -351,4 +351,31 @@ public class DeliveryClientTests
         Assert.Contains("w=200&h=150&fit=clip&rect=7,23,300,200", withPresetUrl, StringComparison.Ordinal);
         Assert.DoesNotContain("?", withoutPresetUrl, StringComparison.Ordinal);
     }
+
+    [Fact]
+    public async Task DefaultRenditionPreset_AssetWithoutRenditions_UrlRemainsUnchanged()
+    {
+        var mock = new MockHttpMessageHandler();
+        var responseJson = await File.ReadAllTextAsync(
+            Path.Combine(
+                Environment.CurrentDirectory,
+                $"Fixtures{Path.DirectorySeparatorChar}ContentLinkResolver{Path.DirectorySeparatorChar}coffee_processing_techniques.json"));
+
+        mock.When($"{BaseUrl}/items/coffee_processing_techniques")
+            .Respond("application/json", responseJson);
+
+        var client = CreateClient(mock, new DeliveryOptions
+        {
+            EnvironmentId = _guid.ToString(),
+            DefaultRenditionPreset = "default"
+        });
+
+        var result = await client.GetItem<Article>("coffee_processing_techniques").ExecuteAsync();
+
+        Assert.True(result.IsSuccess);
+        var asset = result.Value.Elements.TeaserImage!.First();
+        Assert.DoesNotContain("?", asset.Url, StringComparison.Ordinal);
+        Assert.NotNull(asset.Renditions);
+        Assert.Empty(asset.Renditions);
+    }
 }

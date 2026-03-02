@@ -29,11 +29,11 @@ public sealed record Asset : IAsset
 
     /// <inheritdoc/>
     [JsonPropertyName("width")]
-    public int Width { get; init; }
+    public int? Width { get; init; }
 
     /// <inheritdoc/>
     [JsonPropertyName("height")]
-    public int Height { get; init; }
+    public int? Height { get; init; }
 
     /// <inheritdoc/>
     [JsonPropertyName("renditions")]

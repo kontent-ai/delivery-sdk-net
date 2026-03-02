@@ -227,17 +227,21 @@ internal sealed class ElementValueMapper(
             Type = GetStringProperty(assetElement, "type"),
             Size = GetIntProperty(assetElement, "size"),
             Url = url,
-            Width = GetIntProperty(assetElement, "width"),
-            Height = GetIntProperty(assetElement, "height"),
+            Width = GetNullableIntProperty(assetElement, "width"),
+            Height = GetNullableIntProperty(assetElement, "height"),
             Renditions = new Dictionary<string, IAssetRendition>(renditions)
         };
     }
 
     private static Dictionary<string, IAssetRendition> ParseRenditions(JsonElement assetElement)
     {
-        return !assetElement.TryGetProperty("renditions", out var rendsEl) || rendsEl.ValueKind != JsonValueKind.Object
-            ? new Dictionary<string, IAssetRendition>(StringComparer.Ordinal)
-            : rendsEl.EnumerateObject()
+        if (!assetElement.TryGetProperty("renditions", out var rendsEl) ||
+            rendsEl.ValueKind is JsonValueKind.Null or not JsonValueKind.Object)
+        {
+            return new Dictionary<string, IAssetRendition>(StringComparer.Ordinal);
+        }
+
+        var renditions = rendsEl.EnumerateObject()
             .ToDictionary(
                 prop => prop.Name,
                 prop => (IAssetRendition)new AssetRendition
@@ -249,6 +253,8 @@ internal sealed class ElementValueMapper(
                     Query = GetStringProperty(prop.Value, "query")
                 },
                 StringComparer.Ordinal);
+
+        return renditions;
     }
 
     private static TaxonomyTerm CreateTaxonomyTerm(JsonElement termElement) =>
@@ -275,6 +281,9 @@ internal sealed class ElementValueMapper(
 
     private static int GetIntProperty(JsonElement element, string propertyName) =>
         element.TryGetProperty(propertyName, out var prop) && prop.TryGetInt32(out var value) ? value : 0;
+
+    private static int? GetNullableIntProperty(JsonElement element, string propertyName) =>
+        element.TryGetProperty(propertyName, out var prop) && prop.TryGetInt32(out var value) ? value : null;
 
     private static DateTime? GetDateTimeProperty(JsonElement element, string propertyName) =>
         element.TryGetProperty(propertyName, out var prop) &&

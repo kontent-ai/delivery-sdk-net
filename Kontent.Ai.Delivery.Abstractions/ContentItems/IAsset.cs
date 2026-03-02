@@ -16,14 +16,14 @@ public interface IAsset
     string Url { get; }
 
     /// <summary>
-    /// Gets the height of the image in pixels.
+    /// Gets the height of the image in pixels, if available.
     /// </summary>
-    int Height { get; }
+    int? Height { get; }
 
     /// <summary>
-    /// Gets the width of the image in pixels.
+    /// Gets the width of the image in pixels, if available.
     /// </summary>
-    int Width { get; }
+    int? Width { get; }
     /// <summary>
     /// Gets the name of the asset.
     /// </summary>
