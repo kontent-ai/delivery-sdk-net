@@ -236,6 +236,7 @@ public interface IDeliveryResult`1
     Boolean IsSuccess { get; }
     String RequestUrl { get; }
     HttpResponseHeaders ResponseHeaders { get; }
+    ResponseSource ResponseSource { get; }
     HttpStatusCode StatusCode { get; }
     T Value { get; }
 
@@ -593,4 +594,7 @@ public enum OrderingMode : Enum
 // Kontent.Ai.Delivery.Abstractions
 public sealed class RequiredIfAttribute : ValidationAttribute
     String FormatErrorMessage(String name)
+
+// Kontent.Ai.Delivery.Abstractions
+public enum ResponseSource : Enum
 

@@ -10,7 +10,7 @@ internal sealed class MemoryCacheManager(
     IMemoryCache memoryCache,
     DeliveryCacheOptions cacheOptions,
     ILogger<MemoryCacheManager>? logger = null)
-    : IDeliveryCacheManager, IDeliveryCachePurger, IDisposable
+    : IDeliveryCacheManager, IDeliveryCachePurger, IFailSafeStateProvider, IDisposable
 {
     private readonly FusionCacheManager _inner = FusionCacheManager.CreateMemory(
         memoryCache,
@@ -36,6 +36,9 @@ internal sealed class MemoryCacheManager(
     /// <inheritdoc />
     public Task PurgeAsync(bool allowFailSafe = false, CancellationToken cancellationToken = default)
         => _inner.PurgeAsync(allowFailSafe, cancellationToken);
+
+    bool IFailSafeStateProvider.IsFailSafeActive(string cacheKey)
+        => ((IFailSafeStateProvider)_inner).IsFailSafeActive(cacheKey);
 
     /// <inheritdoc />
     public void Dispose() => _inner.Dispose();

@@ -48,11 +48,13 @@ internal sealed class TaxonomyQuery(
     {
         var cacheKey = CacheKeyBuilder.BuildTaxonomyKey(codename);
         IDeliveryResult<ITaxonomyGroup>? apiResult = null;
+        var factoryInvoked = false;
 
         var cached = await cacheManager.GetOrSetAsync(
             cacheKey,
             async ct =>
             {
+                factoryInvoked = true;
                 apiResult = await FetchFromApiAsync(waitForLoadingNewContent, ct).ConfigureAwait(false);
                 if (!apiResult.IsSuccess)
                     return null;
@@ -69,7 +71,12 @@ internal sealed class TaxonomyQuery(
         if (cached is not null && (apiResult is null || !apiResult.IsSuccess))
         {
             LogQueryCompleted(stopwatch, HttpStatusCode.OK, cacheHit: true);
-            return DeliveryResult.CacheHit<ITaxonomyGroup>(cached);
+            var isFailSafe = factoryInvoked
+                || (cacheManager is IFailSafeStateProvider failSafeProvider && failSafeProvider.IsFailSafeActive(cacheKey));
+
+            return isFailSafe
+                ? DeliveryResult.FailSafeHit<ITaxonomyGroup>(cached)
+                : DeliveryResult.CacheHit<ITaxonomyGroup>(cached);
         }
 
         apiResult = QueryExecutionResultHelper.EnsureApiResult(apiResult, "Taxonomy", codename);

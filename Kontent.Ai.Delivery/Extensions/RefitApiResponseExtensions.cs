@@ -11,6 +11,7 @@ internal static class RefitApiResponseExtensions
 {
     private const string ContinuationHeaderName = "X-Continuation";
     private const string StaleContentHeaderName = "X-Stale-Content";
+    private const string CacheHeaderName = "X-Cache";
 
     /// <summary>
     /// Converts a Refit API response to a Delivery result.
@@ -30,7 +31,8 @@ internal static class RefitApiResponseExtensions
                 apiResponse.StatusCode,
                 ExtractHasStaleContent(apiResponse),
                 ExtractContinuationToken(apiResponse),
-                apiResponse.Headers
+                apiResponse.Headers,
+                ExtractResponseSource(apiResponse)
             ));
         }
 
@@ -50,6 +52,7 @@ internal static class RefitApiResponseExtensions
         var url = apiResponse.RequestMessage?.RequestUri?.ToString() ?? string.Empty;
         var status = apiResponse.StatusCode;
         var headers = apiResponse.Headers;
+        var responseSource = ExtractResponseSource(apiResponse);
 
         if (apiResponse.Error is not ApiException apiEx)
         {
@@ -59,16 +62,17 @@ internal static class RefitApiResponseExtensions
                 ErrorCode = (int)status,
                 Exception = apiResponse.Error
             };
-            return Task.FromResult(DeliveryResult.Failure<T>(url, status, fallback, headers));
+            return Task.FromResult(DeliveryResult.Failure<T>(url, status, fallback, headers, responseSource));
         }
 
-        return MapApiExceptionAsync(apiEx, url, status, headers, logger);
+        return MapApiExceptionAsync(apiEx, url, status, headers, responseSource, logger);
 
         static async Task<IDeliveryResult<T>> MapApiExceptionAsync(
             ApiException ex,
             string url,
             HttpStatusCode status,
             System.Net.Http.Headers.HttpResponseHeaders? headers,
+            ResponseSource responseSource,
             ILogger? logger)
         {
             Error error;
@@ -118,8 +122,34 @@ internal static class RefitApiResponseExtensions
                 error = new Error { Message = message, ErrorCode = (int)status, Exception = ex };
             }
 
-            return DeliveryResult.Failure<T>(url, status, error, headers);
+            return DeliveryResult.Failure<T>(url, status, error, headers, responseSource);
         }
+    }
+
+    /// <summary>
+    /// Extracts the response source from the <c>X-Cache</c> header.
+    /// </summary>
+    /// <typeparam name="T">The type of the response content.</typeparam>
+    /// <param name="apiResponse">The API response.</param>
+    /// <returns><see cref="ResponseSource.Cdn"/> when any <c>X-Cache</c> token starts with <c>HIT</c>; otherwise <see cref="ResponseSource.Origin"/>.</returns>
+    private static ResponseSource ExtractResponseSource<T>(IApiResponse<T> apiResponse)
+    {
+        if (apiResponse.Headers?.TryGetValues(CacheHeaderName, out var cacheValues) == true)
+        {
+            foreach (var cacheValue in cacheValues)
+            {
+                if (string.IsNullOrWhiteSpace(cacheValue))
+                    continue;
+
+                var tokens = cacheValue.Split(',', StringSplitOptions.RemoveEmptyEntries | StringSplitOptions.TrimEntries);
+                if (tokens.Any(token => token.StartsWith("HIT", StringComparison.OrdinalIgnoreCase)))
+                {
+                    return ResponseSource.Cdn;
+                }
+            }
+        }
+
+        return ResponseSource.Origin;
     }
 
     private static bool IsFatalException(Exception exception) =>

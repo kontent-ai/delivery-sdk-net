@@ -53,6 +53,10 @@ public partial class CachingIntegrationTests
         Assert.False(result1.IsCacheHit); // First call is API response
         Assert.True(result2.IsCacheHit);  // Second call is cache hit
 
+        // Verify ResponseSource property
+        Assert.Equal(ResponseSource.Origin, result1.ResponseSource);
+        Assert.Equal(ResponseSource.Cache, result2.ResponseSource);
+
         // Verify ResponseHeaders property
         Assert.NotNull(result1.ResponseHeaders); // API response has headers
         Assert.Null(result2.ResponseHeaders);    // Cache hit has no headers
@@ -70,7 +74,8 @@ public partial class CachingIntegrationTests
 
         var options = new DeliveryOptions
         {
-            EnvironmentId = _guid.ToString()
+            EnvironmentId = _guid.ToString(),
+            EnableResilience = false
         };
 
         var serviceProvider = BuildNamedMemoryCacheServiceProvider(
@@ -113,7 +118,8 @@ public partial class CachingIntegrationTests
 
         var options = new DeliveryOptions
         {
-            EnvironmentId = _guid.ToString()
+            EnvironmentId = _guid.ToString(),
+            EnableResilience = false
         };
 
         var serviceProvider = BuildNamedMemoryCacheServiceProvider(
@@ -413,6 +419,10 @@ public partial class CachingIntegrationTests
         Assert.False(result1.IsCacheHit); // First call is API response
         Assert.True(result2.IsCacheHit);  // Second call is cache hit
 
+        // Verify ResponseSource property
+        Assert.Equal(ResponseSource.Origin, result1.ResponseSource);
+        Assert.Equal(ResponseSource.Cache, result2.ResponseSource);
+
         // Verify ResponseHeaders property
         Assert.NotNull(result1.ResponseHeaders); // API response has headers
         Assert.Null(result2.ResponseHeaders);    // Cache hit has no headers
@@ -695,6 +705,10 @@ public partial class CachingIntegrationTests
         Assert.False(result1.IsCacheHit); // First call is API response
         Assert.True(result2.IsCacheHit);  // Second call is cache hit
 
+        // Verify ResponseSource property
+        Assert.Equal(ResponseSource.Origin, result1.ResponseSource);
+        Assert.Equal(ResponseSource.Cache, result2.ResponseSource);
+
         // Verify ResponseHeaders property
         Assert.NotNull(result1.ResponseHeaders); // API response has headers
         Assert.Null(result2.ResponseHeaders);    // Cache hit has no headers
@@ -725,6 +739,10 @@ public partial class CachingIntegrationTests
         // Verify IsCacheHit property
         Assert.False(result1.IsCacheHit); // First call is API response
         Assert.True(result2.IsCacheHit);  // Second call is cache hit
+
+        // Verify ResponseSource property
+        Assert.Equal(ResponseSource.Origin, result1.ResponseSource);
+        Assert.Equal(ResponseSource.Cache, result2.ResponseSource);
 
         // Verify ResponseHeaders property
         Assert.NotNull(result1.ResponseHeaders); // API response has headers
@@ -1221,6 +1239,10 @@ public partial class CachingIntegrationTests
         Assert.False(result1.IsCacheHit); // First call is API response
         Assert.True(result2.IsCacheHit);  // Second call is cache hit
 
+        // Verify ResponseSource property
+        Assert.Equal(ResponseSource.Origin, result1.ResponseSource);
+        Assert.Equal(ResponseSource.Cache, result2.ResponseSource);
+
         // Verify only one API call was made
         mock.VerifyNoOutstandingExpectation();
     }
@@ -1254,6 +1276,10 @@ public partial class CachingIntegrationTests
         // Verify IsCacheHit property
         Assert.False(result1.IsCacheHit); // First call is API response
         Assert.True(result2.IsCacheHit);  // Second call is cache hit
+
+        // Verify ResponseSource property
+        Assert.Equal(ResponseSource.Origin, result1.ResponseSource);
+        Assert.Equal(ResponseSource.Cache, result2.ResponseSource);
 
         // Verify only one API call was made
         mock.VerifyNoOutstandingExpectation();
@@ -1647,6 +1673,259 @@ public partial class CachingIntegrationTests
         var refreshed = await client.GetTypes().Skip(1).ExecuteAsync();
         Assert.True(refreshed.IsSuccess);
         Assert.False(refreshed.IsCacheHit);
+    }
+
+    [Fact]
+    public async Task MemoryCache_FailSafe_SetsResponseSourceToFailSafe()
+    {
+        var mock = new MockHttpMessageHandler();
+        var itemCodename = "coffee_beverages_explained";
+        var fixtureContent = await ReadFixtureAsync($"DeliveryClient{Path.DirectorySeparatorChar}{itemCodename}.json");
+
+        var options = new DeliveryOptions
+        {
+            EnvironmentId = _guid.ToString()
+        };
+
+        var services = new ServiceCollection();
+        AddNamedDeliveryClient(services, "test", options, mock);
+        services.AddDeliveryMemoryCache("test", opts =>
+        {
+            opts.DefaultExpiration = TimeSpan.FromMilliseconds(50);
+            opts.IsFailSafeEnabled = true;
+            opts.FailSafeMaxDuration = TimeSpan.FromMinutes(5);
+            opts.FailSafeThrottleDuration = TimeSpan.FromSeconds(1);
+        });
+        var serviceProvider = services.BuildServiceProvider();
+        var client = serviceProvider.GetRequiredKeyedService<IDeliveryClient>("test");
+
+        // First call populates the cache
+        mock.Expect($"{BaseUrl}/items/{itemCodename}")
+            .Respond("application/json", fixtureContent);
+
+        var result1 = await client.GetItem<Article>(itemCodename).ExecuteAsync();
+        Assert.True(result1.IsSuccess);
+        Assert.Equal(ResponseSource.Origin, result1.ResponseSource);
+
+        // Wait for the cache entry to expire
+        await Task.Delay(200);
+
+        // Second call: API returns 500, fail-safe should serve stale data
+        mock.Expect($"{BaseUrl}/items/{itemCodename}")
+            .Respond(HttpStatusCode.InternalServerError, "application/json", """{"message":"Server error","error_code":500}""");
+
+        var result2 = await client.GetItem<Article>(itemCodename).ExecuteAsync();
+
+        Assert.True(result2.IsSuccess);
+        Assert.True(result2.IsCacheHit);
+        Assert.Equal(ResponseSource.FailSafe, result2.ResponseSource);
+        Assert.NotNull(result2.Value);
+        Assert.Equal(result1.Value.Elements.Title, result2.Value.Elements.Title);
+
+        mock.VerifyNoOutstandingExpectation();
+    }
+
+    [Fact]
+    public async Task DistributedCache_FailSafe_SetsResponseSourceToFailSafe()
+    {
+        var mock = new MockHttpMessageHandler();
+        var itemCodename = "coffee_beverages_explained";
+        var fixtureContent = await ReadFixtureAsync($"DeliveryClient{Path.DirectorySeparatorChar}{itemCodename}.json");
+
+        var options = new DeliveryOptions
+        {
+            EnvironmentId = _guid.ToString()
+        };
+
+        var mockDistributedCache = new MockDistributedCache();
+        var services = new ServiceCollection();
+        services.AddSingleton<IDistributedCache>(mockDistributedCache);
+        AddNamedDeliveryClient(services, "test", options, mock);
+        services.AddDeliveryDistributedCache("test", opts =>
+        {
+            opts.DefaultExpiration = TimeSpan.FromMilliseconds(50);
+            opts.IsFailSafeEnabled = true;
+            opts.FailSafeMaxDuration = TimeSpan.FromMinutes(5);
+            opts.FailSafeThrottleDuration = TimeSpan.FromSeconds(1);
+        });
+        var serviceProvider = services.BuildServiceProvider();
+        var client = serviceProvider.GetRequiredKeyedService<IDeliveryClient>("test");
+
+        // First call populates the cache
+        mock.Expect($"{BaseUrl}/items/{itemCodename}")
+            .Respond("application/json", fixtureContent);
+
+        var result1 = await client.GetItem<Article>(itemCodename).ExecuteAsync();
+        Assert.True(result1.IsSuccess);
+        Assert.Equal(ResponseSource.Origin, result1.ResponseSource);
+
+        // Wait for the cache entry to expire
+        await Task.Delay(200);
+
+        // Second call: API returns 500, fail-safe should serve stale data
+        mock.Expect($"{BaseUrl}/items/{itemCodename}")
+            .Respond(HttpStatusCode.InternalServerError, "application/json", """{"message":"Server error","error_code":500}""");
+
+        var result2 = await client.GetItem<Article>(itemCodename).ExecuteAsync();
+
+        Assert.True(result2.IsSuccess);
+        Assert.True(result2.IsCacheHit);
+        Assert.Equal(ResponseSource.FailSafe, result2.ResponseSource);
+        Assert.NotNull(result2.Value);
+        Assert.Equal(result1.Value.Elements.Title, result2.Value.Elements.Title);
+
+        mock.VerifyNoOutstandingExpectation();
+    }
+
+    [Fact]
+    public async Task MemoryCache_FailSafe_ConcurrentRequests_ReportFailSafeForAllResponses()
+    {
+        var itemCodename = "coffee_beverages_explained";
+        var fixtureContent = await ReadFixtureAsync($"DeliveryClient{Path.DirectorySeparatorChar}{itemCodename}.json");
+        var handler = new PrimedSuccessThenErrorHandler(
+            fixtureContent,
+            """{"message":"Server error","error_code":500}""");
+
+        var options = new DeliveryOptions
+        {
+            EnvironmentId = _guid.ToString()
+        };
+
+        var services = new ServiceCollection();
+        AddNamedDeliveryClient(services, "test", options, handler);
+        services.AddDeliveryMemoryCache("test", opts =>
+        {
+            opts.DefaultExpiration = TimeSpan.FromMilliseconds(50);
+            opts.IsFailSafeEnabled = true;
+            opts.FailSafeMaxDuration = TimeSpan.FromMinutes(5);
+            opts.FailSafeThrottleDuration = TimeSpan.FromSeconds(1);
+        });
+        var serviceProvider = services.BuildServiceProvider();
+        var client = serviceProvider.GetRequiredKeyedService<IDeliveryClient>("test");
+
+        var result1 = await client.GetItem<Article>(itemCodename).ExecuteAsync();
+        Assert.True(result1.IsSuccess);
+        Assert.Equal(ResponseSource.Origin, result1.ResponseSource);
+
+        await Task.Delay(200);
+
+        var failSafeSeed = await client.GetItem<Article>(itemCodename).ExecuteAsync();
+        Assert.True(failSafeSeed.IsSuccess);
+        Assert.True(failSafeSeed.IsCacheHit);
+        Assert.Equal(ResponseSource.FailSafe, failSafeSeed.ResponseSource);
+        var requestCountAfterSeed = handler.RequestCount;
+        Assert.True(requestCountAfterSeed >= 2);
+
+        var concurrentResults = await Task.WhenAll(
+            Enumerable.Range(0, 12).Select(_ => client.GetItem<Article>(itemCodename).ExecuteAsync()));
+
+        Assert.All(concurrentResults, result =>
+        {
+            Assert.True(result.IsSuccess);
+            Assert.True(result.IsCacheHit);
+            Assert.Equal(ResponseSource.FailSafe, result.ResponseSource);
+        });
+        Assert.Equal(requestCountAfterSeed, handler.RequestCount);
+    }
+
+    [Fact]
+    public async Task DistributedCache_FailSafe_ConcurrentRequests_ReportFailSafeForAllResponses()
+    {
+        var itemCodename = "coffee_beverages_explained";
+        var fixtureContent = await ReadFixtureAsync($"DeliveryClient{Path.DirectorySeparatorChar}{itemCodename}.json");
+        var handler = new PrimedSuccessThenErrorHandler(
+            fixtureContent,
+            """{"message":"Server error","error_code":500}""");
+
+        var options = new DeliveryOptions
+        {
+            EnvironmentId = _guid.ToString(),
+            EnableResilience = false
+        };
+
+        var services = new ServiceCollection();
+        services.AddSingleton<IDistributedCache>(new MockDistributedCache());
+        AddNamedDeliveryClient(services, "test", options, handler);
+        services.AddDeliveryDistributedCache("test", opts =>
+        {
+            opts.DefaultExpiration = TimeSpan.FromMilliseconds(50);
+            opts.IsFailSafeEnabled = true;
+            opts.FailSafeMaxDuration = TimeSpan.FromMinutes(5);
+            opts.FailSafeThrottleDuration = TimeSpan.FromSeconds(1);
+        });
+        var serviceProvider = services.BuildServiceProvider();
+        var client = serviceProvider.GetRequiredKeyedService<IDeliveryClient>("test");
+
+        var result1 = await client.GetItem<Article>(itemCodename).ExecuteAsync();
+        Assert.True(result1.IsSuccess);
+        Assert.Equal(ResponseSource.Origin, result1.ResponseSource);
+
+        await Task.Delay(200);
+
+        var failSafeSeed = await client.GetItem<Article>(itemCodename).ExecuteAsync();
+        Assert.True(failSafeSeed.IsSuccess);
+        Assert.True(failSafeSeed.IsCacheHit);
+        Assert.Equal(ResponseSource.FailSafe, failSafeSeed.ResponseSource);
+        var requestCountAfterSeed = handler.RequestCount;
+        Assert.True(requestCountAfterSeed >= 2);
+
+        var concurrentResults = await Task.WhenAll(
+            Enumerable.Range(0, 12).Select(_ => client.GetItem<Article>(itemCodename).ExecuteAsync()));
+
+        Assert.All(concurrentResults, result =>
+        {
+            Assert.True(result.IsSuccess);
+            Assert.True(result.IsCacheHit);
+            Assert.Equal(ResponseSource.FailSafe, result.ResponseSource);
+        });
+        Assert.Equal(requestCountAfterSeed, handler.RequestCount);
+    }
+
+    [Fact]
+    public async Task MemoryCache_FailSafe_ThrottleWindow_KeepsResponseSourceFailSafe()
+    {
+        var itemCodename = "coffee_beverages_explained";
+        var fixtureContent = await ReadFixtureAsync($"DeliveryClient{Path.DirectorySeparatorChar}{itemCodename}.json");
+        var handler = new PrimedSuccessThenErrorHandler(
+            fixtureContent,
+            """{"message":"Server error","error_code":500}""");
+
+        var options = new DeliveryOptions
+        {
+            EnvironmentId = _guid.ToString(),
+            EnableResilience = false
+        };
+
+        var services = new ServiceCollection();
+        AddNamedDeliveryClient(services, "test", options, handler);
+        services.AddDeliveryMemoryCache("test", opts =>
+        {
+            opts.DefaultExpiration = TimeSpan.FromMilliseconds(50);
+            opts.IsFailSafeEnabled = true;
+            opts.FailSafeMaxDuration = TimeSpan.FromMinutes(5);
+            opts.FailSafeThrottleDuration = TimeSpan.FromSeconds(5);
+        });
+        var serviceProvider = services.BuildServiceProvider();
+        var client = serviceProvider.GetRequiredKeyedService<IDeliveryClient>("test");
+
+        var result1 = await client.GetItem<Article>(itemCodename).ExecuteAsync();
+        Assert.True(result1.IsSuccess);
+        Assert.Equal(ResponseSource.Origin, result1.ResponseSource);
+
+        await Task.Delay(200);
+
+        var failSafe1 = await client.GetItem<Article>(itemCodename).ExecuteAsync();
+        Assert.True(failSafe1.IsSuccess);
+        Assert.True(failSafe1.IsCacheHit);
+        Assert.Equal(ResponseSource.FailSafe, failSafe1.ResponseSource);
+        var requestCountAfterFirstFailSafe = handler.RequestCount;
+        Assert.True(requestCountAfterFirstFailSafe >= 2);
+
+        var failSafe2 = await client.GetItem<Article>(itemCodename).ExecuteAsync();
+        Assert.True(failSafe2.IsSuccess);
+        Assert.True(failSafe2.IsCacheHit);
+        Assert.Equal(ResponseSource.FailSafe, failSafe2.ResponseSource);
+        Assert.Equal(requestCountAfterFirstFailSafe, handler.RequestCount);
     }
 
     #endregion

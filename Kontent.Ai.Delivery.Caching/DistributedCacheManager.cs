@@ -12,7 +12,7 @@ internal sealed class DistributedCacheManager(
     DeliveryCacheOptions cacheOptions,
     JsonSerializerOptions? jsonSerializerOptions = null,
     ILogger<DistributedCacheManager>? logger = null)
-    : IDeliveryCacheManager, IDeliveryCachePurger, IDisposable
+    : IDeliveryCacheManager, IDeliveryCachePurger, IFailSafeStateProvider, IDisposable
 {
     private readonly FusionCacheManager _inner = FusionCacheManager.CreateDistributed(
         cache,
@@ -39,6 +39,9 @@ internal sealed class DistributedCacheManager(
     /// <inheritdoc />
     public Task PurgeAsync(bool allowFailSafe = false, CancellationToken cancellationToken = default)
         => _inner.PurgeAsync(allowFailSafe, cancellationToken);
+
+    bool IFailSafeStateProvider.IsFailSafeActive(string cacheKey)
+        => ((IFailSafeStateProvider)_inner).IsFailSafeActive(cacheKey);
 
     /// <inheritdoc />
     public void Dispose() => _inner.Dispose();

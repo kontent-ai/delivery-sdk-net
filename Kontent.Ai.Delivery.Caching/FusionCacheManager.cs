@@ -1,3 +1,4 @@
+using System.Collections.Concurrent;
 using System.Text.Json;
 using Kontent.Ai.Delivery.Logging;
 using Microsoft.Extensions.Caching.Distributed;
@@ -5,6 +6,7 @@ using Microsoft.Extensions.Caching.Memory;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
 using ZiggyCreatures.Caching.Fusion;
+using ZiggyCreatures.Caching.Fusion.Events;
 using ZiggyCreatures.Caching.Fusion.Serialization.SystemTextJson;
 
 namespace Kontent.Ai.Delivery.Caching;
@@ -12,7 +14,7 @@ namespace Kontent.Ai.Delivery.Caching;
 /// <summary>
 /// Shared FusionCache-backed implementation of SDK cache manager behavior.
 /// </summary>
-internal sealed class FusionCacheManager : IDeliveryCacheManager, IDeliveryCachePurger, IDisposable
+internal sealed class FusionCacheManager : IDeliveryCacheManager, IDeliveryCachePurger, IFailSafeStateProvider, IDisposable
 {
     private readonly IFusionCache _cache;
     private readonly CacheStorageMode _storageMode;
@@ -23,6 +25,10 @@ internal sealed class FusionCacheManager : IDeliveryCacheManager, IDeliveryCache
     private readonly FusionCacheEntryOptions _baseWriteOptions;
     private readonly FusionCacheEntryOptions _baseInvalidateOptions;
     private readonly bool _ownsFusionCache;
+    private readonly ConcurrentDictionary<string, byte> _failSafeActiveKeys = new(StringComparer.Ordinal);
+    private readonly EventHandler<FusionCacheEntryEventArgs> _failSafeActivateHandler;
+    private readonly EventHandler<FusionCacheEntryEventArgs> _factorySuccessHandler;
+    private readonly EventHandler<FusionCacheEntryHitEventArgs> _hitHandler;
     private int _disposeState;
 
     private FusionCacheManager(
@@ -45,6 +51,11 @@ internal sealed class FusionCacheManager : IDeliveryCacheManager, IDeliveryCache
         _baseWriteOptions = baseWriteOptions;
         _baseInvalidateOptions = baseInvalidateOptions;
         _ownsFusionCache = ownsFusionCache;
+
+        _failSafeActivateHandler = HandleFailSafeActivate;
+        _factorySuccessHandler = HandleFactorySuccess;
+        _hitHandler = HandleHit;
+        SubscribeFailSafeStateEvents();
     }
 
     public static FusionCacheManager CreateMemory(
@@ -83,6 +94,8 @@ internal sealed class FusionCacheManager : IDeliveryCacheManager, IDeliveryCache
             {
                 CacheName = $"KontentDelivery.Memory.{(string.IsNullOrWhiteSpace(keyPrefix) ? "Default" : keyPrefix)}",
                 DistributedCacheKeyModifierMode = CacheKeyModifierMode.None,
+                // Required for deterministic fail-safe source propagation in query builders.
+                EnableSyncEventHandlersExecution = true,
                 DefaultEntryOptions = defaultEntryOptions
             }),
             memoryCache,
@@ -174,6 +187,8 @@ internal sealed class FusionCacheManager : IDeliveryCacheManager, IDeliveryCache
             {
                 CacheName = $"KontentDelivery.Distributed.{(string.IsNullOrWhiteSpace(keyPrefix) ? "Default" : keyPrefix)}",
                 DistributedCacheKeyModifierMode = CacheKeyModifierMode.None,
+                // Required for deterministic fail-safe source propagation in query builders.
+                EnableSyncEventHandlersExecution = true,
                 DefaultEntryOptions = defaultEntryOptions
             }),
             memoryCache: null,
@@ -254,7 +269,20 @@ internal sealed class FusionCacheManager : IDeliveryCacheManager, IDeliveryCache
                 formattedKey,
                 async (ctx, ct) =>
                 {
-                    var factoryResult = await factory(ct).ConfigureAwait(false) ?? throw new CacheFactoryFailedException();
+                    CacheEntry<T>? factoryResult;
+                    try
+                    {
+                        factoryResult = await factory(ct).ConfigureAwait(false);
+                    }
+                    catch (Exception ex) when (ex is not OperationCanceledException)
+                    {
+                        throw;
+                    }
+
+                    if (factoryResult is null)
+                    {
+                        throw new CacheFactoryFailedException();
+                    }
 
                     var tags = factoryResult.Dependencies
                         .Where(d => !string.IsNullOrWhiteSpace(d))
@@ -263,6 +291,8 @@ internal sealed class FusionCacheManager : IDeliveryCacheManager, IDeliveryCache
                         .ToArray();
                     ctx.Tags = tags;
                     ctx.Options.Duration = expiration ?? _defaultExpiration;
+                    _failSafeActiveKeys.TryRemove(formattedKey, out var _);
+                    _failSafeActiveKeys.TryRemove(cacheKey, out var _);
                     return factoryResult.Value;
                 },
                 _baseWriteOptions,
@@ -271,7 +301,14 @@ internal sealed class FusionCacheManager : IDeliveryCacheManager, IDeliveryCache
         catch (CacheFactoryFailedException)
         {
             // Factory returned null and no stale entry was available for fail-safe.
+            _failSafeActiveKeys.TryRemove(formattedKey, out var _);
             return null;
+        }
+        catch
+        {
+            // Factory threw and no stale entry was available for fail-safe.
+            _failSafeActiveKeys.TryRemove(formattedKey, out var _);
+            throw;
         }
     }
 
@@ -337,12 +374,27 @@ internal sealed class FusionCacheManager : IDeliveryCacheManager, IDeliveryCache
                 _baseInvalidateOptions,
                 cancellationToken)
             .ConfigureAwait(false);
+
+        _failSafeActiveKeys.Clear();
+    }
+
+    bool IFailSafeStateProvider.IsFailSafeActive(string cacheKey)
+    {
+        if (string.IsNullOrWhiteSpace(cacheKey))
+        {
+            return false;
+        }
+
+        return _failSafeActiveKeys.ContainsKey(cacheKey)
+            || _failSafeActiveKeys.ContainsKey(_cacheKeyFormatter(cacheKey));
     }
 
     public void Dispose()
     {
         if (Interlocked.Exchange(ref _disposeState, 1) != 0)
             return;
+
+        UnsubscribeFailSafeStateEvents();
 
         if (_ownsFusionCache)
         {
@@ -352,4 +404,35 @@ internal sealed class FusionCacheManager : IDeliveryCacheManager, IDeliveryCache
 
     private void ThrowIfDisposed() =>
         ObjectDisposedException.ThrowIf(Volatile.Read(ref _disposeState) != 0, nameof(FusionCacheManager));
+
+    private void SubscribeFailSafeStateEvents()
+    {
+        _cache.Events.FailSafeActivate += _failSafeActivateHandler;
+        _cache.Events.FactorySuccess += _factorySuccessHandler;
+        _cache.Events.Hit += _hitHandler;
+    }
+
+    private void UnsubscribeFailSafeStateEvents()
+    {
+        _cache.Events.FailSafeActivate -= _failSafeActivateHandler;
+        _cache.Events.FactorySuccess -= _factorySuccessHandler;
+        _cache.Events.Hit -= _hitHandler;
+    }
+
+    private void HandleFailSafeActivate(object? sender, FusionCacheEntryEventArgs eventArgs)
+        => _failSafeActiveKeys[eventArgs.Key] = 1;
+
+    private void HandleFactorySuccess(object? sender, FusionCacheEntryEventArgs eventArgs)
+        => _failSafeActiveKeys.TryRemove(eventArgs.Key, out var _);
+
+    private void HandleHit(object? sender, FusionCacheEntryHitEventArgs eventArgs)
+    {
+        if (eventArgs.IsStale)
+        {
+            _failSafeActiveKeys[eventArgs.Key] = 1;
+            return;
+        }
+
+        _failSafeActiveKeys.TryRemove(eventArgs.Key, out var _);
+    }
 }

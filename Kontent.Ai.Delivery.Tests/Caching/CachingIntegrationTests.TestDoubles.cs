@@ -105,4 +105,40 @@ public partial class CachingIntegrationTests
             };
         }
     }
+
+    private sealed class PrimedSuccessThenErrorHandler(
+        string successJson,
+        string errorJson,
+        TimeSpan failureDelay = default) : HttpMessageHandler
+    {
+        private readonly string _successJson = successJson;
+        private readonly string _errorJson = errorJson;
+        private readonly TimeSpan _failureDelay = failureDelay;
+        private int _requestCount;
+
+        public int RequestCount => Volatile.Read(ref _requestCount);
+
+        protected override async Task<HttpResponseMessage> SendAsync(HttpRequestMessage request, CancellationToken cancellationToken)
+        {
+            var requestNumber = Interlocked.Increment(ref _requestCount);
+            if (requestNumber == 1)
+            {
+                return new HttpResponseMessage(HttpStatusCode.OK)
+                {
+                    Content = new StringContent(_successJson, Encoding.UTF8, "application/json")
+                };
+            }
+
+            if (_failureDelay > TimeSpan.Zero)
+            {
+                using var timer = new PeriodicTimer(_failureDelay);
+                await timer.WaitForNextTickAsync(cancellationToken).ConfigureAwait(false);
+            }
+
+            return new HttpResponseMessage(HttpStatusCode.InternalServerError)
+            {
+                Content = new StringContent(_errorJson, Encoding.UTF8, "application/json")
+            };
+        }
+    }
 }

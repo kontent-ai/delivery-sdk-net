@@ -52,15 +52,22 @@ public interface IDeliveryResult<out T>
     HttpResponseHeaders? ResponseHeaders { get; }
 
     /// <summary>
+    /// Gets the source of this result, indicating whether it came from the API origin, CDN cache,
+    /// SDK cache, or the SDK cache's fail-safe mechanism.
+    /// </summary>
+    ResponseSource ResponseSource { get; }
+
+    /// <summary>
     /// Gets a value indicating whether this result was served from the SDK's local cache
     /// (MemoryCacheManager or DistributedCacheManager).
+    /// Equivalent to <c><see cref="ResponseSource"/> is <see cref="ResponseSource.Cache"/> or <see cref="ResponseSource.FailSafe"/></c>.
     /// When <c>true</c>, <see cref="ResponseHeaders"/> will be <c>null</c> and properties like
     /// <see cref="StatusCode"/>, <see cref="HasStaleContent"/>, and <see cref="ContinuationToken"/>
     /// contain synthetic values.
     /// </summary>
     /// <remarks>
     /// This is distinct from CDN-level caching (e.g., Fastly). To check for CDN cache hits,
-    /// inspect the <see cref="ResponseHeaders"/> for headers like <c>X-Cache</c>.
+    /// inspect <see cref="ResponseSource"/> or the <see cref="ResponseHeaders"/> for headers like <c>X-Cache</c>.
     /// </remarks>
     bool IsCacheHit { get; }
 }

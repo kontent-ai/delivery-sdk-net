@@ -263,6 +263,100 @@ public class DeliveryClientTests
     }
 
     [Fact]
+    public async Task XCacheHitHeader_SetsResponseSourceToCdn()
+    {
+        var mock = new MockHttpMessageHandler();
+        var headers = new[] { new KeyValuePair<string, string>("X-Cache", "HIT") };
+        mock.When($"{BaseUrl}/items/coffee_beverages_explained")
+            .Respond(headers, "application/json", await File.ReadAllTextAsync(Path.Combine(Environment.CurrentDirectory, $"Fixtures{Path.DirectorySeparatorChar}DeliveryClient{Path.DirectorySeparatorChar}coffee_beverages_explained.json")));
+
+        var client = CreateClient(mock);
+        var result = await client.GetItem<IDynamicElements>("coffee_beverages_explained").ExecuteAsync();
+
+        Assert.True(result.IsSuccess);
+        Assert.Equal(ResponseSource.Cdn, result.ResponseSource);
+        Assert.False(result.IsCacheHit);
+    }
+
+    [Fact]
+    public async Task XCacheShieldedHeader_MissHit_SetsResponseSourceToCdn()
+    {
+        var mock = new MockHttpMessageHandler();
+        var headers = new[] { new KeyValuePair<string, string>("X-Cache", "MISS, HIT") };
+        mock.When($"{BaseUrl}/items/coffee_beverages_explained")
+            .Respond(headers, "application/json", await File.ReadAllTextAsync(Path.Combine(Environment.CurrentDirectory, $"Fixtures{Path.DirectorySeparatorChar}DeliveryClient{Path.DirectorySeparatorChar}coffee_beverages_explained.json")));
+
+        var client = CreateClient(mock);
+        var result = await client.GetItem<IDynamicElements>("coffee_beverages_explained").ExecuteAsync();
+
+        Assert.True(result.IsSuccess);
+        Assert.Equal(ResponseSource.Cdn, result.ResponseSource);
+    }
+
+    [Fact]
+    public async Task XCacheMultiValueHeader_WithHitToken_SetsResponseSourceToCdn()
+    {
+        var mock = new MockHttpMessageHandler();
+        var headers = new[]
+        {
+            new KeyValuePair<string, string>("X-Cache", "MISS"),
+            new KeyValuePair<string, string>("X-Cache", "BYPASS, HIT")
+        };
+        mock.When($"{BaseUrl}/items/coffee_beverages_explained")
+            .Respond(headers, "application/json", await File.ReadAllTextAsync(Path.Combine(Environment.CurrentDirectory, $"Fixtures{Path.DirectorySeparatorChar}DeliveryClient{Path.DirectorySeparatorChar}coffee_beverages_explained.json")));
+
+        var client = CreateClient(mock);
+        var result = await client.GetItem<IDynamicElements>("coffee_beverages_explained").ExecuteAsync();
+
+        Assert.True(result.IsSuccess);
+        Assert.Equal(ResponseSource.Cdn, result.ResponseSource);
+    }
+
+    [Fact]
+    public async Task XCacheMissHeader_SetsResponseSourceToOrigin()
+    {
+        var mock = new MockHttpMessageHandler();
+        var headers = new[] { new KeyValuePair<string, string>("X-Cache", "MISS") };
+        mock.When($"{BaseUrl}/items/coffee_beverages_explained")
+            .Respond(headers, "application/json", await File.ReadAllTextAsync(Path.Combine(Environment.CurrentDirectory, $"Fixtures{Path.DirectorySeparatorChar}DeliveryClient{Path.DirectorySeparatorChar}coffee_beverages_explained.json")));
+
+        var client = CreateClient(mock);
+        var result = await client.GetItem<IDynamicElements>("coffee_beverages_explained").ExecuteAsync();
+
+        Assert.True(result.IsSuccess);
+        Assert.Equal(ResponseSource.Origin, result.ResponseSource);
+    }
+
+    [Fact]
+    public async Task XCacheOnlyMissTokens_SetsResponseSourceToOrigin()
+    {
+        var mock = new MockHttpMessageHandler();
+        var headers = new[] { new KeyValuePair<string, string>("X-Cache", "MISS, MISS") };
+        mock.When($"{BaseUrl}/items/coffee_beverages_explained")
+            .Respond(headers, "application/json", await File.ReadAllTextAsync(Path.Combine(Environment.CurrentDirectory, $"Fixtures{Path.DirectorySeparatorChar}DeliveryClient{Path.DirectorySeparatorChar}coffee_beverages_explained.json")));
+
+        var client = CreateClient(mock);
+        var result = await client.GetItem<IDynamicElements>("coffee_beverages_explained").ExecuteAsync();
+
+        Assert.True(result.IsSuccess);
+        Assert.Equal(ResponseSource.Origin, result.ResponseSource);
+    }
+
+    [Fact]
+    public async Task NoXCacheHeader_SetsResponseSourceToOrigin()
+    {
+        var mock = new MockHttpMessageHandler();
+        mock.When($"{BaseUrl}/items/coffee_beverages_explained")
+            .Respond("application/json", await File.ReadAllTextAsync(Path.Combine(Environment.CurrentDirectory, $"Fixtures{Path.DirectorySeparatorChar}DeliveryClient{Path.DirectorySeparatorChar}coffee_beverages_explained.json")));
+
+        var client = CreateClient(mock);
+        var result = await client.GetItem<IDynamicElements>("coffee_beverages_explained").ExecuteAsync();
+
+        Assert.True(result.IsSuccess);
+        Assert.Equal(ResponseSource.Origin, result.ResponseSource);
+    }
+
+    [Fact]
     public async Task StaleContentHeader_IsSurfaced()
     {
         var mock = new MockHttpMessageHandler();

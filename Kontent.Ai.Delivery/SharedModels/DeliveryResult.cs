@@ -34,7 +34,10 @@ internal sealed class DeliveryResult<T> : IDeliveryResult<T>
     public HttpResponseHeaders? ResponseHeaders { get; }
 
     /// <inheritdoc/>
-    public bool IsCacheHit { get; }
+    public ResponseSource ResponseSource { get; }
+
+    /// <inheritdoc/>
+    public bool IsCacheHit => ResponseSource is ResponseSource.Cache or ResponseSource.FailSafe;
 
     /// <summary>
     /// Creates a successful result from an API response.
@@ -45,13 +48,15 @@ internal sealed class DeliveryResult<T> : IDeliveryResult<T>
     /// <param name="hasStaleContent">Whether the content is stale.</param>
     /// <param name="continuationToken">The continuation token for pagination.</param>
     /// <param name="responseHeaders">The HTTP response headers.</param>
+    /// <param name="responseSource">The source of the response.</param>
     internal DeliveryResult(
         T value,
         string requestUrl,
         HttpStatusCode statusCode,
         bool hasStaleContent,
         string? continuationToken,
-        HttpResponseHeaders? responseHeaders)
+        HttpResponseHeaders? responseHeaders,
+        ResponseSource responseSource)
     {
         Value = value;
         IsSuccess = true;
@@ -60,14 +65,15 @@ internal sealed class DeliveryResult<T> : IDeliveryResult<T>
         ContinuationToken = continuationToken;
         RequestUrl = requestUrl;
         ResponseHeaders = responseHeaders;
-        IsCacheHit = false;
+        ResponseSource = responseSource;
     }
 
     /// <summary>
     /// Creates a successful result from SDK cache.
     /// </summary>
     /// <param name="value">The cached value.</param>
-    internal DeliveryResult(T value)
+    /// <param name="responseSource">The cache response source (Cache or FailSafe).</param>
+    internal DeliveryResult(T value, ResponseSource responseSource)
     {
         Value = value;
         IsSuccess = true;
@@ -76,7 +82,7 @@ internal sealed class DeliveryResult<T> : IDeliveryResult<T>
         ContinuationToken = null;
         RequestUrl = null;
         ResponseHeaders = null;
-        IsCacheHit = true;
+        ResponseSource = responseSource;
     }
 
     /// <summary>
@@ -86,11 +92,13 @@ internal sealed class DeliveryResult<T> : IDeliveryResult<T>
     /// <param name="statusCode">The HTTP status code.</param>
     /// <param name="error">The error that occurred.</param>
     /// <param name="responseHeaders">The HTTP response headers.</param>
+    /// <param name="responseSource">The source of the response.</param>
     internal DeliveryResult(
         string requestUrl,
         HttpStatusCode statusCode,
         IError? error,
-        HttpResponseHeaders? responseHeaders)
+        HttpResponseHeaders? responseHeaders,
+        ResponseSource responseSource = ResponseSource.Origin)
     {
         Value = default!;
         IsSuccess = false;
@@ -100,7 +108,7 @@ internal sealed class DeliveryResult<T> : IDeliveryResult<T>
         ContinuationToken = null;
         RequestUrl = requestUrl;
         ResponseHeaders = responseHeaders;
-        IsCacheHit = false;
+        ResponseSource = responseSource;
     }
 }
 
@@ -119,6 +127,7 @@ internal static class DeliveryResult
     /// <param name="hasStaleContent">Whether the content is stale.</param>
     /// <param name="continuationToken">The continuation token for pagination.</param>
     /// <param name="responseHeaders">The HTTP response headers.</param>
+    /// <param name="responseSource">The source of the response.</param>
     /// <returns>A successful result.</returns>
     public static IDeliveryResult<T> Success<T>(
         T value,
@@ -126,8 +135,9 @@ internal static class DeliveryResult
         HttpStatusCode statusCode,
         bool hasStaleContent,
         string? continuationToken,
-        HttpResponseHeaders? responseHeaders)
-    => new DeliveryResult<T>(value, requestUrl, statusCode, hasStaleContent, continuationToken, responseHeaders);
+        HttpResponseHeaders? responseHeaders,
+        ResponseSource responseSource)
+    => new DeliveryResult<T>(value, requestUrl, statusCode, hasStaleContent, continuationToken, responseHeaders, responseSource);
 
     /// <summary>
     /// Creates a successful result by projecting metadata from another delivery result.
@@ -147,7 +157,8 @@ internal static class DeliveryResult
             source.StatusCode,
             source.HasStaleContent,
             source.ContinuationToken,
-            source.ResponseHeaders);
+            source.ResponseHeaders,
+            source.ResponseSource);
     }
 
     /// <summary>
@@ -157,7 +168,16 @@ internal static class DeliveryResult
     /// <param name="value">The cached value.</param>
     /// <returns>A successful cache hit result.</returns>
     public static IDeliveryResult<T> CacheHit<T>(T value)
-    => new DeliveryResult<T>(value);
+    => new DeliveryResult<T>(value, ResponseSource.Cache);
+
+    /// <summary>
+    /// Creates a successful result from SDK cache fail-safe (stale data served after factory failure).
+    /// </summary>
+    /// <typeparam name="T">The type of the result value.</typeparam>
+    /// <param name="value">The stale cached value.</param>
+    /// <returns>A successful fail-safe result.</returns>
+    public static IDeliveryResult<T> FailSafeHit<T>(T value)
+    => new DeliveryResult<T>(value, ResponseSource.FailSafe);
 
     /// <summary>
     /// Creates a failed result.
@@ -167,13 +187,15 @@ internal static class DeliveryResult
     /// <param name="statusCode">The HTTP status code.</param>
     /// <param name="error">The error that occurred.</param>
     /// <param name="responseHeaders">The HTTP response headers.</param>
+    /// <param name="responseSource">The source of the response.</param>
     /// <returns>A failed result.</returns>
     public static IDeliveryResult<T> Failure<T>(
         string requestUrl,
         HttpStatusCode statusCode,
         IError? error,
-        HttpResponseHeaders? responseHeaders = null)
-    => new DeliveryResult<T>(requestUrl, statusCode, error, responseHeaders);
+        HttpResponseHeaders? responseHeaders = null,
+        ResponseSource responseSource = ResponseSource.Origin)
+    => new DeliveryResult<T>(requestUrl, statusCode, error, responseHeaders, responseSource);
 
     /// <summary>
     /// Creates a failed result by projecting failure metadata from another delivery result.
@@ -190,6 +212,7 @@ internal static class DeliveryResult
             source.RequestUrl ?? string.Empty,
             source.StatusCode,
             source.Error,
-            source.ResponseHeaders);
+            source.ResponseHeaders,
+            source.ResponseSource);
     }
 }
