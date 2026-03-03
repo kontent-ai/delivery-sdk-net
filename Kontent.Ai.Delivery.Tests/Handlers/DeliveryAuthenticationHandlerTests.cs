@@ -1,5 +1,7 @@
 using Kontent.Ai.Delivery.Abstractions;
 using Kontent.Ai.Delivery.Handlers;
+using Kontent.Ai.Delivery.Logging;
+using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
 using Xunit;
 
@@ -331,6 +333,135 @@ public class DeliveryAuthenticationHandlerTests
         Assert.Equal($"/{TestEnvironmentId}/content-items", request.RequestUri.AbsolutePath);
     }
 
+    [Fact]
+    public async Task SendAsync_WithNullRequestUri_SetsBaseUri()
+    {
+        var options = new DeliveryOptions
+        {
+            EnvironmentId = TestEnvironmentId
+        };
+
+        var handler = CreateHandler(options);
+        var request = new HttpRequestMessage(HttpMethod.Get, (Uri?)null);
+
+        var response = await InvokeSendAsync(handler, request);
+
+        Assert.NotNull(request.RequestUri);
+        Assert.Contains("deliver.kontent.ai", request.RequestUri.Host);
+    }
+
+    [Fact]
+    public async Task SendAsync_WithLogger_ExternalUrl_LogsAuthCleared()
+    {
+        var options = new DeliveryOptions
+        {
+            EnvironmentId = TestEnvironmentId,
+            UsePreviewApi = true,
+            PreviewApiKey = TestPreviewApiKey
+        };
+
+        var logger = new TestLogger<DeliveryAuthenticationHandler>();
+        var handler = CreateHandlerWithLogger(options, logger);
+        var request = new HttpRequestMessage(HttpMethod.Get, "https://external-service.com/api");
+
+        await InvokeSendAsync(handler, request);
+
+        Assert.Null(request.Headers.Authorization);
+        Assert.Contains(logger.Entries, e => e.EventId == LogEventIds.HttpAuthCleared);
+    }
+
+    [Fact]
+    public async Task SendAsync_WithLogger_EndpointRewrite_LogsRewrite()
+    {
+        // Request targets deliver.kontent.ai but configured base is preview-deliver.kontent.ai
+        // This triggers ShouldRewriteUri=true AND host change logging
+        var options = new DeliveryOptions
+        {
+            EnvironmentId = TestEnvironmentId,
+            UsePreviewApi = true,
+            PreviewApiKey = TestPreviewApiKey
+        };
+
+        var logger = new TestLogger<DeliveryAuthenticationHandler>();
+        var handler = CreateHandlerWithLogger(options, logger);
+        var request = new HttpRequestMessage(HttpMethod.Get, "https://deliver.kontent.ai/items");
+
+        await InvokeSendAsync(handler, request);
+
+        Assert.NotNull(request.RequestUri);
+        Assert.Equal("preview-deliver.kontent.ai", request.RequestUri.Host);
+        Assert.Contains(logger.Entries, e => e.EventId == LogEventIds.HttpEndpointRewritten);
+    }
+
+    [Fact]
+    public async Task SendAsync_WithLogger_ApiKey_LogsAuthSet()
+    {
+        var options = new DeliveryOptions
+        {
+            EnvironmentId = TestEnvironmentId,
+            UsePreviewApi = true,
+            PreviewApiKey = TestPreviewApiKey
+        };
+
+        var logger = new TestLogger<DeliveryAuthenticationHandler>();
+        var handler = CreateHandlerWithLogger(options, logger);
+        var request = new HttpRequestMessage(HttpMethod.Get, "https://preview-deliver.kontent.ai/items");
+
+        await InvokeSendAsync(handler, request);
+
+        Assert.NotNull(request.Headers.Authorization);
+        Assert.Equal(TestPreviewApiKey, request.Headers.Authorization.Parameter);
+        Assert.Contains(logger.Entries, e => e.EventId == LogEventIds.HttpAuthSet);
+    }
+
+    [Fact]
+    public async Task SendAsync_WithLogger_NoApiKey_LogsAuthCleared()
+    {
+        var options = new DeliveryOptions
+        {
+            EnvironmentId = TestEnvironmentId
+        };
+
+        var logger = new TestLogger<DeliveryAuthenticationHandler>();
+        var handler = CreateHandlerWithLogger(options, logger);
+        var request = new HttpRequestMessage(HttpMethod.Get, "https://deliver.kontent.ai/items");
+
+        await InvokeSendAsync(handler, request);
+
+        Assert.Null(request.Headers.Authorization);
+        Assert.Contains(logger.Entries, e => e.EventId == LogEventIds.HttpAuthCleared);
+    }
+
+    [Fact]
+    public async Task SendAsync_WithLogger_EnvironmentIdInjection_LogsInjection()
+    {
+        var options = new DeliveryOptions
+        {
+            EnvironmentId = TestEnvironmentId
+        };
+
+        var logger = new TestLogger<DeliveryAuthenticationHandler>();
+        var handler = CreateHandlerWithLogger(options, logger);
+        var request = new HttpRequestMessage(HttpMethod.Get, "https://deliver.kontent.ai/items");
+
+        await InvokeSendAsync(handler, request);
+
+        Assert.NotNull(request.RequestUri);
+        Assert.Contains(TestEnvironmentId, request.RequestUri.AbsolutePath);
+        Assert.Contains(logger.Entries, e => e.EventId == LogEventIds.HttpEnvironmentIdInjected);
+    }
+
+    private static DeliveryAuthenticationHandler CreateHandlerWithLogger(
+        DeliveryOptions options,
+        ILogger<DeliveryAuthenticationHandler> logger)
+    {
+        var optionsMonitor = new TestOptionsMonitor<DeliveryOptions>(options);
+        return new DeliveryAuthenticationHandler(optionsMonitor, logger)
+        {
+            InnerHandler = new TestHandler()
+        };
+    }
+
     private static DeliveryAuthenticationHandler CreateHandler(DeliveryOptions options)
     {
         var optionsMonitor = new TestOptionsMonitor<DeliveryOptions>(options);
@@ -343,16 +474,11 @@ public class DeliveryAuthenticationHandlerTests
 
     private static async Task<HttpResponseMessage> InvokeSendAsync(
         DeliveryAuthenticationHandler handler,
-        HttpRequestMessage request)
+        HttpRequestMessage request,
+        CancellationToken cancellationToken = default)
     {
-        var sendAsyncMethod = typeof(DeliveryAuthenticationHandler)
-            .GetMethod("SendAsync", System.Reflection.BindingFlags.NonPublic | System.Reflection.BindingFlags.Instance) ?? throw new InvalidOperationException("SendAsync method not found");
-        var task = sendAsyncMethod.Invoke(
-            handler,
-            [request, CancellationToken.None]) as Task<HttpResponseMessage>
-            ?? throw new InvalidOperationException("SendAsync returned null");
-
-        return await task;
+        using var invoker = new HttpMessageInvoker(handler, disposeHandler: false);
+        return await invoker.SendAsync(request, cancellationToken);
     }
 
     private class TestHandler : HttpMessageHandler
@@ -391,6 +517,22 @@ public class DeliveryAuthenticationHandlerTests
         private class EmptyDisposable : IDisposable
         {
             public void Dispose() { }
+        }
+    }
+
+    private sealed record LogEntry(int EventId, string Message);
+
+    private class TestLogger<T> : ILogger<T>
+    {
+        private readonly List<LogEntry> _entries = [];
+
+        public IReadOnlyList<LogEntry> Entries => _entries;
+
+        public IDisposable? BeginScope<TState>(TState state) where TState : notnull => null;
+        public bool IsEnabled(LogLevel logLevel) => true;
+        public void Log<TState>(LogLevel logLevel, EventId eventId, TState state, Exception? exception, Func<TState, Exception?, string> formatter)
+        {
+            _entries.Add(new LogEntry(eventId.Id, formatter(state, exception)));
         }
     }
 }

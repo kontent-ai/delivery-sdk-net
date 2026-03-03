@@ -149,4 +149,86 @@ public class ItemsQueryFilteringTests
         Assert.True(result.IsSuccess);
         mockHttp.VerifyNoOutstandingExpectation();
     }
+
+    [Fact]
+    public async Task DynamicItemQuery_ChainedParameters_AreForwarded()
+    {
+        var env = Guid.NewGuid().ToString();
+        var baseUrl = $"https://deliver.kontent.ai/{env}";
+        var itemUrl = $"{baseUrl}/items/coffee_beverages_explained";
+        var mockHttp = new MockHttpMessageHandler();
+
+        mockHttp.Expect(itemUrl)
+            .WithQueryString("language", "es-ES")
+            .WithQueryString("excludeElements", "body_copy")
+            .WithQueryString("depth", "2")
+            .With(req => !req.Headers.Contains("X-KC-Wait-For-Loading-New-Content"))
+            .Respond("application/json",
+                await File.ReadAllTextAsync(Path.Combine(Environment.CurrentDirectory,
+                    $"Fixtures{Path.DirectorySeparatorChar}DeliveryClient{Path.DirectorySeparatorChar}coffee_beverages_explained.json")));
+
+        var services = new ServiceCollection();
+        services.AddDeliveryClient(new DeliveryOptions { EnvironmentId = env },
+            configureHttpClient: b => b.ConfigurePrimaryHttpMessageHandler(() => mockHttp));
+
+        var provider = services.BuildServiceProvider();
+        var client = provider.GetRequiredService<IDeliveryClient>();
+
+        var result = await client.GetItem("coffee_beverages_explained")
+            .WithLanguage("es-ES")
+            .WithElements("title", "body_copy")
+            .WithoutElements("body_copy")
+            .Depth(2)
+            .WaitForLoadingNewContent(false)
+            .ExecuteAsync();
+
+        Assert.True(result.IsSuccess);
+        mockHttp.VerifyNoOutstandingExpectation();
+    }
+
+    [Fact]
+    public async Task DynamicItemsQuery_ChainedParameters_AreForwarded()
+    {
+        var env = Guid.NewGuid().ToString();
+        var baseUrl = $"https://deliver.kontent.ai/{env}";
+        var itemsUrl = $"{baseUrl}/items";
+        var mockHttp = new MockHttpMessageHandler();
+
+        mockHttp.Expect(itemsUrl)
+            .WithQueryString("language", "es-ES")
+            .WithQueryString("excludeElements", "summary")
+            .WithQueryString("depth", "3")
+            .WithQueryString("skip", "1")
+            .WithQueryString("limit", "2")
+            .WithQueryString("order", "system.name[desc]")
+            .WithQueryString("includeTotalCount", bool.TrueString)
+            .WithQueryString("elements.title[eq]", "Coffee")
+            .With(req => !req.Headers.Contains("X-KC-Wait-For-Loading-New-Content"))
+            .Respond("application/json",
+                await File.ReadAllTextAsync(Path.Combine(Environment.CurrentDirectory,
+                    $"Fixtures{Path.DirectorySeparatorChar}DeliveryClient{Path.DirectorySeparatorChar}items.json")));
+
+        var services = new ServiceCollection();
+        services.AddDeliveryClient(new DeliveryOptions { EnvironmentId = env },
+            configureHttpClient: b => b.ConfigurePrimaryHttpMessageHandler(() => mockHttp));
+
+        var provider = services.BuildServiceProvider();
+        var client = provider.GetRequiredService<IDeliveryClient>();
+
+        var result = await client.GetItems()
+            .WithLanguage("es-ES")
+            .WithElements("title", "summary")
+            .WithoutElements("summary")
+            .Depth(3)
+            .Skip(1)
+            .Limit(2)
+            .OrderBy("system.name", OrderingMode.Descending)
+            .WithTotalCount()
+            .WaitForLoadingNewContent(false)
+            .Where(f => f.Element("title").IsEqualTo("Coffee"))
+            .ExecuteAsync();
+
+        Assert.True(result.IsSuccess);
+        mockHttp.VerifyNoOutstandingExpectation();
+    }
 }

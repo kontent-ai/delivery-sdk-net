@@ -38,4 +38,26 @@ public class SerializedFilterCollectionTests
         Assert.Equal(["article", "blog_post"], query["system.type[eq]"]);
         Assert.Equal(["coffee"], query["elements.category[contains]"]);
     }
+
+    [Fact]
+    public void FilterQueryParams_ToQueryDictionary_SerializedFilterCollection_DelegatesToInstance()
+    {
+        var filters = new SerializedFilterCollection
+        {
+            new KeyValuePair<string, string>("system.type[eq]", "article")
+        };
+
+        var result = FilterQueryParams.ToQueryDictionary(filters);
+
+        Assert.NotNull(result);
+        Assert.Equal(["article"], result["system.type[eq]"]);
+    }
+
+    [Fact]
+    public void FilterQueryParams_ToQueryDictionary_EmptyCollection_ReturnsNull()
+    {
+        var filters = new SerializedFilterCollection();
+
+        Assert.Null(FilterQueryParams.ToQueryDictionary(filters));
+    }
 }

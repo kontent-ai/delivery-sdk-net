@@ -210,4 +210,30 @@ public class DeliveryOptionsValidatorTests
         Assert.False(isValid);
         Assert.Contains(results, r => r.MemberNames.Contains(nameof(DeliveryOptions.PreviewEndpoint)));
     }
+
+    [Fact]
+    public void Validate_WithWhitespaceEnvironmentId_YieldsNoCustomGuidErrors()
+    {
+        var options = new DeliveryOptions
+        {
+            EnvironmentId = "   "
+        };
+
+        var results = options.Validate(new ValidationContext(options)).ToList();
+
+        Assert.Empty(results);
+    }
+
+    [Fact]
+    public void Validate_WithEmptyGuidEnvironmentId_YieldsEmptyGuidError()
+    {
+        var options = new DeliveryOptions
+        {
+            EnvironmentId = Guid.Empty.ToString()
+        };
+
+        var results = options.Validate(new ValidationContext(options)).ToList();
+
+        Assert.Contains(results, r => r.ErrorMessage == "EnvironmentId cannot be an empty GUID.");
+    }
 }

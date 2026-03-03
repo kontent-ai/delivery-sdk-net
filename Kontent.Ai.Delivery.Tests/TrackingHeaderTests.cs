@@ -17,6 +17,19 @@ public class TrackingHeaderTests
     }
 
     [Fact]
+    public void SourceTrackingHeaderGeneratedFromAssemblyWithCustomPackageName()
+    {
+        var assembly = GetType().Assembly;
+        var fileVersionInfo = FileVersionInfo.GetVersionInfo(assembly.Location);
+        var sourceVersion = fileVersionInfo.ProductVersion;
+        var attr = new DeliverySourceTrackingHeaderAttribute("Acme.CustomPlugin");
+
+        var value = HttpRequestHeadersExtensions.GenerateSourceTrackingHeaderValue(assembly, attr);
+
+        Assert.Equal($"Acme.CustomPlugin;{sourceVersion}", value);
+    }
+
+    [Fact]
     public void SourceTrackingHeaderGeneratedFromAssembly()
     {
         var assembly = GetType().Assembly;
@@ -41,5 +54,33 @@ public class TrackingHeaderTests
 
         // Assert
         Assert.Equal($"Kontent.Ai.Delivery.Tests;{sourceVersion}", source);
+    }
+
+    [Fact]
+    public void SourceTrackingHeaderWithPreReleaseLabel()
+    {
+        var attr = new DeliverySourceTrackingHeaderAttribute("CustomModule", 2, 0, 0, "beta.1");
+
+        var value = HttpRequestHeadersExtensions.GenerateSourceTrackingHeaderValue(GetType().Assembly, attr);
+
+        Assert.Equal("CustomModule;2.0.0-beta.1", value);
+    }
+
+    [Fact]
+    public void GetProductVersion_ReturnsNonEmptyVersion()
+    {
+        var assembly = GetType().Assembly;
+
+        var version = assembly.GetProductVersion();
+
+        Assert.False(string.IsNullOrEmpty(version));
+    }
+
+    [Fact]
+    public void GetSdkVersion_ReturnsNonEmptyString()
+    {
+        var version = HttpRequestHeadersExtensions.GetSdkVersion();
+
+        Assert.False(string.IsNullOrEmpty(version));
     }
 }

@@ -315,6 +315,24 @@ public sealed class QueryParameterTests
     }
 
     [Fact]
+    public async Task GetContentElement_WaitForLoadingNewContent_AddsHeader()
+    {
+        var mock = new MockHttpMessageHandler();
+
+        mock.When($"{BaseUrl}/types/article/elements/title")
+            .With(req => req.Headers.Contains("X-KC-Wait-For-Loading-New-Content"))
+            .Respond("application/json", "{\"type\":\"text\",\"name\":\"Title\",\"codename\":\"title\"}");
+
+        var client = CreateClient(mock);
+
+        var result = await client.GetContentElement("article", "title")
+            .WaitForLoadingNewContent()
+            .ExecuteAsync();
+
+        Assert.True(result.IsSuccess, $"Request failed: {result.Error?.Message}");
+    }
+
+    [Fact]
     public async Task GetItems_GenericExecuteTwice_DoesNotDuplicateAutoTypeFilter()
     {
         // Arrange - repeated execution on the same query should keep a stable system.type filter
@@ -412,6 +430,56 @@ public sealed class QueryParameterTests
         Assert.Equal(1, CountOccurrences(capturedQuery, "elements="));
     }
 
+    [Fact]
+    public async Task GetLanguages_OrderByDescending_SerializesOrderParameter()
+    {
+        var mock = new MockHttpMessageHandler();
+        string? capturedQuery = null;
+
+        mock.When($"{BaseUrl}/languages")
+            .With(req =>
+            {
+                capturedQuery = req.RequestUri!.Query;
+                return true;
+            })
+            .Respond("application/json", BuildMinimalLanguagesListingJson(["en-US"]));
+
+        var client = CreateClient(mock);
+
+        var result = await client.GetLanguages()
+            .OrderBy("system.name", OrderingMode.Descending)
+            .ExecuteAsync();
+
+        Assert.True(result.IsSuccess, $"Request failed: {result.Error?.Message}");
+        Assert.NotNull(capturedQuery);
+        Assert.Contains("order=system.name%5Bdesc%5D", capturedQuery);
+    }
+
+    [Fact]
+    public async Task GetLanguages_OrderByAscending_SerializesOrderParameter()
+    {
+        var mock = new MockHttpMessageHandler();
+        string? capturedQuery = null;
+
+        mock.When($"{BaseUrl}/languages")
+            .With(req =>
+            {
+                capturedQuery = req.RequestUri!.Query;
+                return true;
+            })
+            .Respond("application/json", BuildMinimalLanguagesListingJson(["en-US"]));
+
+        var client = CreateClient(mock);
+
+        var result = await client.GetLanguages()
+            .OrderBy("system.name", OrderingMode.Ascending)
+            .ExecuteAsync();
+
+        Assert.True(result.IsSuccess, $"Request failed: {result.Error?.Message}");
+        Assert.NotNull(capturedQuery);
+        Assert.Contains("order=system.name%5Basc%5D", capturedQuery);
+    }
+
     #endregion
 
     #region Helper Methods
@@ -464,6 +532,31 @@ public sealed class QueryParameterTests
                     "next_page": ""
                 },
                 "modular_content": {}
+            }
+            """;
+    }
+
+    private static string BuildMinimalLanguagesListingJson(IReadOnlyList<string> codenames)
+    {
+        var languagesJson = string.Join(",", codenames.Select(codename => $$"""
+            {
+                "system": {
+                    "id": "{{Guid.NewGuid()}}",
+                    "name": "{{codename}}",
+                    "codename": "{{codename}}"
+                }
+            }
+            """));
+
+        return $$"""
+            {
+                "languages": [{{languagesJson}}],
+                "pagination": {
+                    "skip": 0,
+                    "limit": 100,
+                    "count": {{codenames.Count}},
+                    "next_page": ""
+                }
             }
             """;
     }

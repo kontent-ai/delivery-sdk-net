@@ -2,6 +2,7 @@ using System.Reflection;
 using Kontent.Ai.Delivery.Abstractions;
 using Kontent.Ai.Delivery.Configuration;
 using Microsoft.Extensions.Caching.Distributed;
+using Microsoft.Extensions.Logging;
 using Xunit;
 
 namespace Kontent.Ai.Delivery.Tests.Builders.Configuration;
@@ -366,6 +367,149 @@ public class DeliveryClientBuilderTests
         // Assert
         Assert.NotNull(container);
         Assert.NotNull(container.Client);
+    }
+
+    [Fact]
+    public void Build_WithoutOptions_ThrowsInvalidOperationException()
+    {
+        // Use reflection to create a builder without calling WithOptions
+        var builder = (DeliveryClientBuilder)Activator.CreateInstance(
+            typeof(DeliveryClientBuilder),
+            BindingFlags.NonPublic | BindingFlags.Instance,
+            null, [], null)!;
+
+        Assert.Throws<InvalidOperationException>(() => builder.Build());
+    }
+
+    [Fact]
+    public void Build_WithLoggerFactory_CreatesClient()
+    {
+        using var loggerFactory = LoggerFactory.Create(b => { });
+
+        using var container = DeliveryClientBuilder
+            .WithOptions(builder => builder
+                .WithEnvironmentId(EnvironmentId)
+                .UseProductionApi()
+                .Build())
+            .WithLoggerFactory(loggerFactory)
+            .Build();
+
+        Assert.NotNull(container);
+        Assert.NotNull(container.Client);
+    }
+
+    [Fact]
+    public void WithLoggerFactory_WithNull_ThrowsArgumentNullException()
+    {
+        Assert.Throws<ArgumentNullException>(() =>
+            DeliveryClientBuilder
+                .WithOptions(builder => builder
+                    .WithEnvironmentId(EnvironmentId)
+                    .UseProductionApi()
+                    .Build())
+                .WithLoggerFactory(null!));
+    }
+
+    [Fact]
+    public void ConfigureServices_WithNull_ThrowsArgumentNullException()
+    {
+        Assert.Throws<ArgumentNullException>(() =>
+            DeliveryClientBuilder
+                .WithOptions(builder => builder
+                    .WithEnvironmentId(EnvironmentId)
+                    .UseProductionApi()
+                    .Build())
+                .ConfigureServices(null!));
+    }
+
+    [Fact]
+    public void Build_WithMemoryCacheAdvanced_CreatesClient()
+    {
+        // Act
+        using var container = DeliveryClientBuilder
+            .WithOptions(builder => builder
+                .WithEnvironmentId(EnvironmentId)
+                .UseProductionApi()
+                .Build())
+            .WithMemoryCache(opts =>
+            {
+                opts.DefaultExpiration = TimeSpan.FromMinutes(15);
+                opts.IsFailSafeEnabled = true;
+            })
+            .Build();
+
+        // Assert
+        Assert.NotNull(container);
+        Assert.IsAssignableFrom<IDeliveryClientContainer>(container);
+        Assert.NotNull(container.Client);
+        Assert.IsAssignableFrom<IDeliveryClient>(container.Client);
+    }
+
+    [Fact]
+    public void Build_WithDistributedCacheAdvanced_CreatesClient()
+    {
+        // Arrange
+        var distributedCache = new TestDistributedCache();
+
+        // Act
+        using var container = DeliveryClientBuilder
+            .WithOptions(builder => builder
+                .WithEnvironmentId(EnvironmentId)
+                .UseProductionApi()
+                .Build())
+            .WithDistributedCache(distributedCache, opts =>
+            {
+                opts.DefaultExpiration = TimeSpan.FromMinutes(30);
+            })
+            .Build();
+
+        // Assert
+        Assert.NotNull(container);
+        Assert.IsAssignableFrom<IDeliveryClientContainer>(container);
+        Assert.NotNull(container.Client);
+        Assert.IsAssignableFrom<IDeliveryClient>(container.Client);
+    }
+
+    [Fact]
+    public void WithMemoryCacheAdvanced_WithNullDelegate_ThrowsArgumentNullException()
+    {
+        // Act & Assert
+        Assert.Throws<ArgumentNullException>(() =>
+            DeliveryClientBuilder
+                .WithOptions(builder => builder
+                    .WithEnvironmentId(EnvironmentId)
+                    .UseProductionApi()
+                    .Build())
+                .WithMemoryCache((Action<DeliveryCacheOptions>)null!));
+    }
+
+    [Fact]
+    public void WithDistributedCacheAdvanced_WithNullDistributedCache_ThrowsArgumentNullException()
+    {
+        // Act & Assert
+        Assert.Throws<ArgumentNullException>(() =>
+            DeliveryClientBuilder
+                .WithOptions(builder => builder
+                    .WithEnvironmentId(EnvironmentId)
+                    .UseProductionApi()
+                    .Build())
+                .WithDistributedCache(null!, opts =>
+                {
+                    opts.DefaultExpiration = TimeSpan.FromMinutes(30);
+                }));
+    }
+
+    [Fact]
+    public void WithDistributedCacheAdvanced_WithNullDelegate_ThrowsArgumentNullException()
+    {
+        // Act & Assert
+        Assert.Throws<ArgumentNullException>(() =>
+            DeliveryClientBuilder
+                .WithOptions(builder => builder
+                    .WithEnvironmentId(EnvironmentId)
+                    .UseProductionApi()
+                    .Build())
+                .WithDistributedCache(new TestDistributedCache(), (Action<DeliveryCacheOptions>)null!));
     }
 
     // Simple test implementation of ITypeProvider
