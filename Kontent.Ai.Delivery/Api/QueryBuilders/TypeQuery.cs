@@ -21,7 +21,7 @@ internal sealed class TypeQuery(
 
     public ITypeQuery WithElements(params string[] elementCodenames)
     {
-        _params = _params with { Elements = elementCodenames };
+        _params = _params with { Elements = string.Join(",", elementCodenames) };
         return this;
     }
 

@@ -39,13 +39,13 @@ internal sealed class ItemsQuery<TModel>(
 
     public IItemsQuery<TModel> WithElements(params string[] elementCodenames)
     {
-        _params = _params with { Elements = elementCodenames };
+        _params = _params with { Elements = string.Join(",", elementCodenames) };
         return this;
     }
 
     public IItemsQuery<TModel> WithoutElements(params string[] elementCodenames)
     {
-        _params = _params with { ExcludeElements = elementCodenames };
+        _params = _params with { ExcludeElements = string.Join(",", elementCodenames) };
         return this;
     }
 
