@@ -80,4 +80,32 @@ public sealed class DeliveryCacheOptions
     /// </value>
     [Range(0d, 1d, ErrorMessage = "Eager refresh threshold must be between 0.0 and 1.0.")]
     public float EagerRefreshThreshold { get; set; }
+
+    /// <summary>
+    /// Gets or sets an optional callback to customize the underlying FusionCache options
+    /// after the SDK applies its defaults.
+    /// </summary>
+    /// <remarks>
+    /// <para>
+    /// The callback receives a <c>ZiggyCreatures.Caching.Fusion.FusionCacheOptions</c> instance.
+    /// Cast it to configure advanced FusionCache features such as backplane, background operations,
+    /// or other settings not directly exposed by the SDK.
+    /// </para>
+    /// <para>
+    /// The SDK applies its defaults first, then invokes this callback, allowing you to
+    /// override or extend any setting.
+    /// </para>
+    /// <para>
+    /// Example usage:
+    /// <code>
+    /// cacheOptions.ConfigureFusionCacheOptions = options =>
+    /// {
+    ///     var fcOptions = (ZiggyCreatures.Caching.Fusion.FusionCacheOptions)options;
+    ///     fcOptions.DefaultEntryOptions.AllowBackgroundBackplaneOperations = true;
+    /// };
+    /// </code>
+    /// </para>
+    /// </remarks>
+    /// <value>Defaults to <see langword="null"/> (no customization).</value>
+    public Action<object>? ConfigureFusionCacheOptions { get; set; }
 }

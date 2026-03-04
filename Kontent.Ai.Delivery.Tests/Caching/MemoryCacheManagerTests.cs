@@ -293,39 +293,40 @@ public class MemoryCacheManagerTests : IDisposable
     #region Invalidation Tests
 
     [Fact]
-    public async Task InvalidateAsync_RemovesCacheEntry()
+    public async Task InvalidateAsync_RemovesCacheEntry_ReturnsTrue()
     {
         var dependency = "dep1";
         await PopulateCache("test_key", new TestCacheValue { Id = 1, Name = "Test" }, [dependency]);
 
-        await _cacheManager.InvalidateAsync(default, dependency);
+        var result = await _cacheManager.InvalidateAsync(default, dependency);
 
+        Assert.True(result);
         Assert.True(await IsFactoryCalledAsync("test_key"));
     }
 
     [Fact]
-    public async Task InvalidateAsync_NonExistentDependency_DoesNotThrowAndPreservesExistingEntries()
+    public async Task InvalidateAsync_NonExistentDependency_ReturnsTrueAndPreservesExistingEntries()
     {
         await PopulateCache("existing_key", new TestCacheValue { Id = 10, Name = "Existing" }, ["existing_dep"]);
 
-        var exception = await Record.ExceptionAsync(() => _cacheManager.InvalidateAsync(default, "non_existent_dep"));
+        var result = await _cacheManager.InvalidateAsync(default, "non_existent_dep");
 
-        Assert.Null(exception);
+        Assert.True(result);
         Assert.False(await IsFactoryCalledAsync("existing_key"));
     }
 
     [Fact]
-    public async Task InvalidateAsync_NullDependencies_DoesNotThrow()
+    public async Task InvalidateAsync_NullDependencies_ReturnsTrue()
     {
-        var exception = await Record.ExceptionAsync(() => _cacheManager.InvalidateAsync(default, null!));
-        Assert.Null(exception);
+        var result = await _cacheManager.InvalidateAsync(default, null!);
+        Assert.True(result);
     }
 
     [Fact]
-    public async Task InvalidateAsync_EmptyDependencies_DoesNotThrow()
+    public async Task InvalidateAsync_EmptyDependencies_ReturnsTrue()
     {
-        var exception = await Record.ExceptionAsync(() => _cacheManager.InvalidateAsync(default, []));
-        Assert.Null(exception);
+        var result = await _cacheManager.InvalidateAsync(default, []);
+        Assert.True(result);
     }
 
     [Fact]
@@ -1013,6 +1014,52 @@ public class MemoryCacheManagerTests : IDisposable
         }
 
         return await condition().ConfigureAwait(false);
+    }
+
+    #endregion
+
+    #region ConfigureFusionCacheOptions Tests
+
+    [Fact]
+    public async Task ConfigureFusionCacheOptions_Callback_IsInvoked()
+    {
+        var callbackInvoked = false;
+        var options = new DeliveryCacheOptions
+        {
+            DefaultExpiration = TimeSpan.FromMinutes(5),
+            ConfigureFusionCacheOptions = _ => callbackInvoked = true
+        };
+
+        using var memoryCache = new MemoryCache(new MemoryCacheOptions());
+        using var manager = new MemoryCacheManager(memoryCache, options);
+
+        // The callback should have been invoked during construction
+        Assert.True(callbackInvoked);
+
+        // Verify the manager is functional
+        var value = await manager.GetOrSetAsync("test_key", _ =>
+            Task.FromResult<CacheEntry<TestCacheValue>?>(
+                new CacheEntry<TestCacheValue>(new TestCacheValue { Id = 1 }, [])));
+
+        Assert.NotNull(value);
+        Assert.Equal(1, value.Id);
+    }
+
+    [Fact]
+    public void ConfigureFusionCacheOptions_Callback_ReceivesFusionCacheOptions()
+    {
+        object? receivedOptions = null;
+        var options = new DeliveryCacheOptions
+        {
+            DefaultExpiration = TimeSpan.FromMinutes(5),
+            ConfigureFusionCacheOptions = opts => receivedOptions = opts
+        };
+
+        using var memoryCache = new MemoryCache(new MemoryCacheOptions());
+        using var manager = new MemoryCacheManager(memoryCache, options);
+
+        Assert.NotNull(receivedOptions);
+        Assert.Equal("ZiggyCreatures.Caching.Fusion.FusionCacheOptions", receivedOptions.GetType().FullName);
     }
 
     #endregion

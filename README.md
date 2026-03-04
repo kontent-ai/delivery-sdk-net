@@ -1239,7 +1239,7 @@ var result = await client.GetItem<Article>("my-article")
 
 **Cache payloads:** The in-memory cache stores hydrated objects for maximum performance. Distributed caches store raw JSON payloads (rehydrated on read) to avoid serialization issues with circular references.
 
-The built-in cache registrations (`AddDeliveryMemoryCache` / `AddDeliveryDistributedCache`) in the `Kontent.Ai.Delivery.Caching` package use [FusionCache](https://github.com/ZiggyCreatures/FusionCache) internally. Public registration APIs and `IDeliveryCacheManager` contracts remain unchanged.
+The built-in cache registrations (`AddDeliveryMemoryCache` / `AddDeliveryDistributedCache`) in the `Kontent.Ai.Delivery.Caching` package use [FusionCache](https://github.com/ZiggyCreatures/FusionCache) internally. `InvalidateAsync` now returns `Task<bool>` (`true` on success, `false` on failure) so callers can detect silent invalidation failures — existing fire-and-forget call sites continue to work without changes.
 
 > [!NOTE]
 > **FusionCache hybrid mode limitation:** When using distributed caching (`AddDeliveryDistributedCache`), FusionCache operates in hybrid (L1+L2) mode, but [currently stores the same serialized format in both layers](https://github.com/ZiggyCreatures/FusionCache/issues/321). This means the L1 memory layer also holds raw JSON rather than hydrated objects, so every cache hit goes through rehydration. For most workloads the rehydration cost is negligible. If your scenario demands maximum read throughput, consider using `AddDeliveryMemoryCache` (pure L1, hydrated objects, no rehydration overhead).

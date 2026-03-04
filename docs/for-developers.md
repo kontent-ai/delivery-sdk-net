@@ -321,7 +321,7 @@ public interface IDeliveryCacheManager
         CancellationToken cancellationToken = default)
         where T : class;
 
-    Task InvalidateAsync(CancellationToken cancellationToken, params string[] dependencyKeys);
+    Task<bool> InvalidateAsync(CancellationToken cancellationToken, params string[] dependencyKeys);
 }
 ```
 
@@ -1071,88 +1071,36 @@ The complete flow from query to cached result:
 Dynamic item/list queries follow the same API execution and logging path by delegating to typed inner queries, then adapt the success payload to runtime-typed outputs. They intentionally skip caching.
 
 ```csharp
-public async Task<IDeliveryResult<IReadOnlyList<IContentItem<TModel>>>> ExecuteAsync(
+public async Task<IDeliveryResult<IDeliveryItemListingResponse<TModel>>> ExecuteAsync(
     CancellationToken cancellationToken = default)
 {
-    // ========== 1. CACHE CHECK ==========
-    string? cacheKey = null;
-    if (_cacheManager != null)
-    {
-        cacheKey = CacheKeyBuilder.BuildItemsKey(_params, _serializedFilters);
-        var cached = await _cacheManager.GetAsync<IDeliveryResult<...>>(
-            cacheKey, cancellationToken);
+    // ========== 1. CACHE-AWARE EXECUTION ==========
+    // Uses factory-based GetOrSetAsync — FusionCache coalesces concurrent misses
+    var cacheKey = BuildCacheKey(cacheManager.StorageMode);
+    IDeliveryResult<DeliveryItemListingResponse<TModel>>? apiResult = null;
 
-        if (cached != null)
-            return cached;  // Cache hit - early return
-    }
+    var cached = await cacheManager.GetOrSetAsync(
+        cacheKey,
+        async ct =>
+        {
+            // ========== 2. API CALL (factory — only invoked on cache miss) ==========
+            var result = await FetchFromApiAsync(waitForLoadingNewContent, ct);
+            apiResult = result;
+            if (!result.IsSuccess)
+                return null;  // Don't cache failures
 
-    // ========== 2. API CALL ==========
-    var rawResponse = await _api.GetItemsInternalAsync<TModel>(
-        _params,
-        _serializedFilters,
-        waitForLoadingNewContent: _waitForLoadingNewContent);
+            // ========== 3. POST-PROCESSING + DEPENDENCY TRACKING ==========
+            var (response, deps) = await ProcessItemsAsync(result.Value, ct);
+            return new CacheEntry<DeliveryItemListingResponse<TModel>>(response, deps);
+        },
+        CacheExpiration,
+        cancellationToken);
 
-    var deliveryResult = await rawResponse.ToDeliveryResultAsync();
-
-    if (!deliveryResult.IsSuccess)
-        return DeliveryResult.Failure<...>(...);
-
-    var response = deliveryResult.Value;
-    var items = response.Items;
-
-    // ========== 3. DEPENDENCY TRACKING (if caching enabled) ==========
-    var dependencyContext = _cacheManager != null
-        ? new DependencyTrackingContext()
-        : null;
-
-    // Track all items in response
-    if (dependencyContext != null && items.Count > 0)
-    {
-        foreach (var item in items)
-            dependencyContext.TrackItem(item.System.Codename);
-    }
-
-    // Track modular content
-    if (dependencyContext != null && response.ModularContent != null)
-    {
-        foreach (var codename in response.ModularContent.Keys)
-            dependencyContext.TrackItem(codename);
-    }
-
-    // ========== 4. POST-PROCESSING ==========
-    // ContentItemMapper handles ALL element hydration (simple and complex types)
-    foreach (var item in items)
-    {
-        await _contentItemMapper.CompleteItemAsync(
-            item,
-            response.ModularContent,
-            dependencyContext,
-            cancellationToken);
-    }
-
-    // ========== 5. BUILD RESULT ==========
-    var result = DeliveryResult.Success<IReadOnlyList<IContentItem<TModel>>>(
-        items,
-        deliveryResult.RequestUrl,
-        deliveryResult.StatusCode,
-        deliveryResult.HasStaleContent,
-        deliveryResult.ContinuationToken);
-
-    // ========== 6. CACHE RESULT ==========
-    if (_cacheManager != null && dependencyContext != null && cacheKey != null)
-    {
-        var dependencies = dependencyContext.Dependencies
-            .Append(DeliveryCacheDependencies.ItemsListScope);
-
-        await _cacheManager.SetAsync(
-            cacheKey,
-            result,
-            dependencies,  // Entity dependencies + list scope dependency
-            expiration: null,
-            cancellationToken);
-    }
-
-    return result;
+    // ========== 4. RESULT CLASSIFICATION ==========
+    // Cache hit (factory never called) → CacheHit or FailSafeHit
+    // Factory called, API succeeded → Success with fresh data
+    // Factory called, API failed but stale data served → FailSafeHit
+    return BuildResult(cached, apiResult);
 }
 ```
 

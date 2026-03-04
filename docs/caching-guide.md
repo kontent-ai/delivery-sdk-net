@@ -281,10 +281,10 @@ public class CustomMemoryCacheManager : IDeliveryCacheManager
         return entry.Value;
     }
 
-    public Task InvalidateAsync(CancellationToken cancellationToken = default, params string[] dependencyKeys)
+    public Task<bool> InvalidateAsync(CancellationToken cancellationToken = default, params string[] dependencyKeys)
     {
         // Implement dependency tracking + invalidation for production use
-        return Task.CompletedTask;
+        return Task.FromResult(true);
     }
 }
 ```
@@ -330,8 +330,8 @@ public class CustomDistributedCacheManager : IDeliveryCacheManager
         return entry.Value;
     }
 
-    public Task InvalidateAsync(CancellationToken cancellationToken = default, params string[] dependencyKeys)
-        => Task.CompletedTask;
+    public Task<bool> InvalidateAsync(CancellationToken cancellationToken = default, params string[] dependencyKeys)
+        => Task.FromResult(true);
 }
 
 // Registration
@@ -501,23 +501,15 @@ services.AddDeliveryMemoryCache("production", defaultExpiration: TimeSpan.FromHo
 
 #### Sliding Expiration
 
-For custom cache managers, you can implement sliding expiration:
+For custom cache managers, you can implement sliding expiration inside your `GetOrSetAsync` factory by configuring the underlying `IDistributedCache` entry options:
 
 ```csharp
-public async Task SetAsync<T>(
-    string key,
-    T value,
-    IEnumerable<string> dependencies,
-    TimeSpan? expiration = null,
-    CancellationToken cancellationToken = default) where T : class
+// In a custom IDeliveryCacheManager.GetOrSetAsync implementation:
+var options = new DistributedCacheEntryOptions
 {
-    var options = new DistributedCacheEntryOptions
-    {
-        SlidingExpiration = expiration  // Renewed on each access
-    };
-
-    await _cache.SetAsync(key, serialized, options, cancellationToken);
-}
+    SlidingExpiration = expiration  // Renewed on each access
+};
+await _cache.SetStringAsync(cacheKey, serialized, options, cancellationToken);
 ```
 
 #### Per-query Expiration Override
@@ -1172,7 +1164,7 @@ public class LoggingCacheManager : IDeliveryCacheManager
         return result;
     }
 
-    public Task InvalidateAsync(CancellationToken cancellationToken = default, params string[] dependencyKeys)
+    public Task<bool> InvalidateAsync(CancellationToken cancellationToken = default, params string[] dependencyKeys)
         => _inner.InvalidateAsync(cancellationToken, dependencyKeys);
 }
 ```

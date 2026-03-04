@@ -36,8 +36,8 @@ public partial class CachingIntegrationTests
             return entry.Value;
         }
 
-        public Task InvalidateAsync(CancellationToken cancellationToken = default, params string[] dependencyKeys)
-            => Task.CompletedTask;
+        public Task<bool> InvalidateAsync(CancellationToken cancellationToken = default, params string[] dependencyKeys)
+            => Task.FromResult(true);
 
         public class CachedItem
         {
