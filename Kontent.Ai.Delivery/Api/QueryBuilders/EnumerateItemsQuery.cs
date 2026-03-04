@@ -38,6 +38,12 @@ internal sealed class EnumerateItemsQuery<TModel>(
         return this;
     }
 
+    public IEnumerateItemsQuery<TModel> WithoutElements(params string[] elementCodenames)
+    {
+        _params = _params with { ExcludeElements = string.Join(",", elementCodenames) };
+        return this;
+    }
+
     public IEnumerateItemsQuery<TModel> OrderBy(string elementOrAttributePath, OrderingMode orderingMode = OrderingMode.Ascending)
     {
         _params = _params with

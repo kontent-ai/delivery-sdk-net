@@ -18,6 +18,11 @@ public interface IEnumerateItemsQuery<TModel>
     /// <param name="elementCodenames">Element codenames to include.</param>
     IEnumerateItemsQuery<TModel> WithElements(params string[] elementCodenames);
     /// <summary>
+    /// Excludes specified element codenames from the response.
+    /// </summary>
+    /// <param name="elementCodenames">Element codenames to exclude.</param>
+    IEnumerateItemsQuery<TModel> WithoutElements(params string[] elementCodenames);
+    /// <summary>
     /// Orders the items by the given path in ascending or descending order.
     /// </summary>
     /// <param name="elementOrAttributePath">Element or attribute path.</param>
