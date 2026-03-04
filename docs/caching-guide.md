@@ -7,10 +7,10 @@ Caching is essential for production applications using the Kontent.ai Delivery A
 - [Why Caching Matters](#why-caching-matters)
 - [Cache Types](#cache-types)
   - [Memory Cache](#memory-cache)
-  - [Distributed Cache](#distributed-cache)
+  - [Hybrid Cache](#hybrid-cache)
 - [Configuration](#configuration)
   - [Memory Cache Setup](#memory-cache-setup)
-  - [Distributed Cache Setup](#distributed-cache-setup)
+  - [Hybrid Cache Setup](#hybrid-cache-setup)
   - [Custom Cache Manager](#custom-cache-manager)
 - [How Caching Works](#how-caching-works)
   - [Cache Keys](#cache-keys)
@@ -25,7 +25,7 @@ Caching is essential for production applications using the Kontent.ai Delivery A
 - [Per-Client Caching](#per-client-caching)
   - [Enabling Caching for Named Clients](#enabling-caching-for-named-clients)
   - [Cache Key Prefixing](#cache-key-prefixing)
-  - [Distributed Cache for Named Clients](#distributed-cache-for-named-clients)
+  - [Hybrid Cache for Named Clients](#hybrid-cache-for-named-clients)
 - [Multi-Tenant Caching](#multi-tenant-caching)
   - [Complete Multi-Tenant Example](#complete-multi-tenant-example)
   - [Per-Tenant Cache Invalidation](#per-tenant-cache-invalidation)
@@ -75,7 +75,7 @@ Kontent.ai enforces rate limits on API requests:
 - Development and testing
 - Low to moderate traffic applications
 
-### Distributed Cache
+### Hybrid Cache
 
 **Pros:**
 - Shared across multiple application instances
@@ -83,12 +83,12 @@ Kontent.ai enforces rate limits on API requests:
 - Scalable to large datasets
 - Can be managed independently
 
-**Note:** The SDK stores raw JSON payloads in distributed caches and rehydrates on read. This avoids circular reference serialization issues and keeps payloads portable across instances.
+**Note:** The SDK stores raw JSON payloads in hybrid caches and rehydrates on read. This avoids circular reference serialization issues and keeps payloads portable across instances.
 
-Built-in distributed invalidation uses dependency tags through [FusionCache](https://github.com/ZiggyCreatures/FusionCache). If a FusionCache backplane is configured, invalidations are propagated to other nodes to keep local caches coherent.
+Built-in hybrid cache invalidation uses dependency tags through [FusionCache](https://github.com/ZiggyCreatures/FusionCache). If a FusionCache backplane is configured, invalidations are propagated to other nodes to keep local caches coherent.
 
 > [!NOTE]
-> **FusionCache hybrid mode limitation:** When using distributed caching, FusionCache operates in hybrid (L1+L2) mode but [currently stores the same serialized format in both layers](https://github.com/ZiggyCreatures/FusionCache/issues/321). This means the L1 memory layer also holds raw JSON rather than hydrated objects, so every cache hit goes through rehydration. For most workloads the rehydration cost is negligible. If your scenario demands maximum read throughput, use `AddDeliveryMemoryCache` (pure L1, hydrated objects, no rehydration overhead).
+> **FusionCache hybrid mode limitation:** When using hybrid caching, FusionCache operates in hybrid (L1+L2) mode but [currently stores the same serialized format in both layers](https://github.com/ZiggyCreatures/FusionCache/issues/321). This means the L1 memory layer also holds raw JSON rather than hydrated objects, so every cache hit goes through rehydration. For most workloads the rehydration cost is negligible. If your scenario demands maximum read throughput, use `AddDeliveryMemoryCache` (pure L1, hydrated objects, no rehydration overhead).
 
 **Cons:**
 - Network latency (still faster than API calls)
@@ -109,7 +109,7 @@ Caching is provided by the standalone `Kontent.Ai.Delivery.Caching` package:
 dotnet add package Kontent.Ai.Delivery.Caching
 ```
 
-This package provides `AddDeliveryMemoryCache`, `AddDeliveryDistributedCache`, `AddDeliveryCacheManager` DI extension methods and `DeliveryClientBuilder.WithMemoryCache()` / `.WithDistributedCache()` extension methods. All are [FusionCache](https://github.com/ZiggyCreatures/FusionCache)-backed while keeping the same public `IDeliveryCacheManager` contract.
+This package provides `AddDeliveryMemoryCache`, `AddDeliveryHybridCache`, `AddDeliveryCacheManager` DI extension methods and `DeliveryClientBuilder.WithMemoryCache()` / `.WithHybridCache()` extension methods. All are [FusionCache](https://github.com/ZiggyCreatures/FusionCache)-backed while keeping the same public `IDeliveryCacheManager` contract.
 
 ### Memory Cache Setup
 
@@ -161,7 +161,7 @@ services.AddDeliveryClient("production", options =>
 services.AddDeliveryMemoryCache("production", defaultExpiration: TimeSpan.FromHours(1));
 ```
 
-### Distributed Cache Setup
+### Hybrid Cache Setup
 
 #### Redis Cache
 
@@ -180,11 +180,11 @@ services.AddDeliveryClient(options =>
 {
     options.EnvironmentId = "your-environment-id";
 });
-services.AddDeliveryDistributedCache(defaultExpiration: TimeSpan.FromHours(2));
+services.AddDeliveryHybridCache(defaultExpiration: TimeSpan.FromHours(2));
 
 // Or with named clients for multi-client scenarios:
 // services.AddDeliveryClient("production", options => { ... });
-// services.AddDeliveryDistributedCache("production", defaultExpiration: TimeSpan.FromHours(2));
+// services.AddDeliveryHybridCache("production", defaultExpiration: TimeSpan.FromHours(2));
 ```
 
 #### Redis with Connection Multiplexer
@@ -211,7 +211,7 @@ services.AddDeliveryClient("production", options =>
     options.EnvironmentId = "your-environment-id";
 });
 
-services.AddDeliveryDistributedCache("production", defaultExpiration: TimeSpan.FromHours(4));
+services.AddDeliveryHybridCache("production", defaultExpiration: TimeSpan.FromHours(4));
 ```
 
 #### SQL Server Distributed Cache
@@ -229,7 +229,7 @@ services.AddDeliveryClient("production", options =>
     options.EnvironmentId = "your-environment-id";
 });
 
-services.AddDeliveryDistributedCache("production", defaultExpiration: TimeSpan.FromHours(1));
+services.AddDeliveryHybridCache("production", defaultExpiration: TimeSpan.FromHours(1));
 ```
 
 #### Azure Cache for Redis
@@ -246,7 +246,7 @@ services.AddDeliveryClient("production", options =>
     options.EnvironmentId = "your-environment-id";
 });
 
-services.AddDeliveryDistributedCache("production", defaultExpiration: TimeSpan.FromHours(6));
+services.AddDeliveryHybridCache("production", defaultExpiration: TimeSpan.FromHours(6));
 ```
 
 ### Custom Cache Manager
@@ -289,18 +289,18 @@ public class CustomMemoryCacheManager : IDeliveryCacheManager
 }
 ```
 
-#### Raw JSON cache manager (distributed style)
+#### Raw JSON cache manager (hybrid style)
 
 ```csharp
 using System.Text.Json;
 using Kontent.Ai.Delivery.Abstractions;
 using Microsoft.Extensions.Caching.Distributed;
 
-public class CustomDistributedCacheManager : IDeliveryCacheManager
+public class CustomHybridCacheManager : IDeliveryCacheManager
 {
     private readonly IDistributedCache _cache;
 
-    public CustomDistributedCacheManager(IDistributedCache cache) => _cache = cache;
+    public CustomHybridCacheManager(IDistributedCache cache) => _cache = cache;
 
     // Tell the SDK to cache raw JSON payloads instead of hydrated objects
     public CacheStorageMode StorageMode => CacheStorageMode.RawJson;
@@ -340,7 +340,7 @@ services.AddDeliveryClient("production", options =>
     options.EnvironmentId = "your-environment-id";
 });
 services.AddDeliveryCacheManager("production",
-    sp => new CustomDistributedCacheManager(sp.GetRequiredService<IDistributedCache>()));
+    sp => new CustomHybridCacheManager(sp.GetRequiredService<IDistributedCache>()));
 ```
 
 ## How Caching Works
@@ -816,7 +816,7 @@ The SDK supports per-client cache configuration using keyed services, allowing d
 
 ### Enabling Caching for Named Clients
 
-Use `AddDeliveryMemoryCache`, `AddDeliveryDistributedCache`, or `AddDeliveryCacheManager` to enable caching for specific named clients:
+Use `AddDeliveryMemoryCache`, `AddDeliveryHybridCache`, or `AddDeliveryCacheManager` to enable caching for specific named clients:
 
 ```csharp
 // Register named clients
@@ -852,7 +852,7 @@ services.AddDeliveryMemoryCache("client2", keyPrefix: "brand-b");
 
 Key prefixes are automatically applied to all cache keys and dependency tracking.
 
-### Distributed Cache for Named Clients
+### Hybrid Cache for Named Clients
 
 ```csharp
 // Register distributed cache implementation
@@ -867,8 +867,8 @@ services.AddDeliveryClient("production", options =>
     options.EnvironmentId = "production-environment-id";
 });
 
-// Enable distributed caching for the client
-services.AddDeliveryDistributedCache("production",
+// Enable hybrid caching for the client
+services.AddDeliveryHybridCache("production",
     keyPrefix: "prod",
     defaultExpiration: TimeSpan.FromHours(2));
 ```
@@ -1215,7 +1215,7 @@ if (cacheManager == null)
 
 **Solutions**:
 
-1. **Use distributed cache** instead of memory cache
+1. **Use hybrid cache** instead of memory cache
 2. **Configure cache size limits**:
 ```csharp
 services.AddMemoryCache(options =>

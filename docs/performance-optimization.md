@@ -171,7 +171,7 @@ services.AddStackExchangeRedisCache(options =>
 });
 
 services.AddDeliveryClient("prod", options => { ... });
-services.AddDeliveryDistributedCache("prod", defaultExpiration: TimeSpan.FromHours(4));
+services.AddDeliveryHybridCache("prod", defaultExpiration: TimeSpan.FromHours(4));
 ```
 
 ### Cache Warming
@@ -653,7 +653,7 @@ services.AddDeliveryClient("production", options =>
     options.EnvironmentId = configuration["Kontent:EnvironmentId"];
     options.EnableResilience = true;
 });
-services.AddDeliveryDistributedCache("production", defaultExpiration: TimeSpan.FromHours(4));
+services.AddDeliveryHybridCache("production", defaultExpiration: TimeSpan.FromHours(4));
 ```
 
 ### 2. Configure Retry Policies
@@ -782,7 +782,7 @@ services.AddMemoryCache(options =>
 });
 ```
 
-2. **Use distributed cache** instead of memory cache
+2. **Use hybrid cache** instead of memory cache
 3. **Limit depth** and elements in queries
 4. **Monitor for memory leaks**
 

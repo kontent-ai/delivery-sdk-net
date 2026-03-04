@@ -54,7 +54,7 @@ Install-Package Kontent.Ai.Delivery
 
 | Package | Purpose |
 |---------|---------|
-| `Kontent.Ai.Delivery.Caching` | FusionCache-backed memory and distributed caching |
+| `Kontent.Ai.Delivery.Caching` | FusionCache-backed memory and hybrid caching |
 | `Kontent.Ai.Delivery.SourceGeneration` | Compile-time type provider via source generation |
 
 ```bash
@@ -218,7 +218,7 @@ The builder supports:
 - `.WithTypeProvider(ITypeProvider)` - Custom type provider for strongly-typed models
 - `.ConfigureServices(Action<IServiceCollection>)` - General-purpose extensibility point for registering additional services
 - `.WithMemoryCache(TimeSpan?)` - Enable in-memory caching (requires `Kontent.Ai.Delivery.Caching`)
-- `.WithDistributedCache(IDistributedCache, TimeSpan?)` - Enable distributed caching (requires `Kontent.Ai.Delivery.Caching`)
+- `.WithHybridCache(IDistributedCache, TimeSpan?)` - Enable hybrid caching (requires `Kontent.Ai.Delivery.Caching`)
 
 `IDeliveryOptionsBuilder.WithCustomEndpoint(...)` applies the same endpoint to both Production and Preview URLs. In most real deployments these endpoints differ, so if you need both modes with custom domains, register separate clients (for example named clients) and configure each with its corresponding endpoint.
 
@@ -1182,7 +1182,7 @@ if (result.IsSuccess)
 
 ### Caching
 
-The SDK supports both in-memory and distributed caching for improved performance. Caching is provided by the standalone `Kontent.Ai.Delivery.Caching` package:
+The SDK supports both in-memory and hybrid (L1+L2) caching for improved performance. Caching is provided by the standalone `Kontent.Ai.Delivery.Caching` package:
 
 ```bash
 dotnet add package Kontent.Ai.Delivery.Caching
@@ -1203,7 +1203,7 @@ services.AddDeliveryClient("production", options => { ... });
 services.AddDeliveryMemoryCache("production", defaultExpiration: TimeSpan.FromHours(1));
 ```
 
-#### Distributed Cache (Redis, SQL Server, etc.)
+#### Hybrid Cache (Redis, SQL Server, etc.)
 
 ```csharp
 // First, register your distributed cache implementation
@@ -1217,7 +1217,7 @@ services.AddDeliveryClient(options =>
 {
     options.EnvironmentId = "your-environment-id";
 });
-services.AddDeliveryDistributedCache(defaultExpiration: TimeSpan.FromHours(2));
+services.AddDeliveryHybridCache(defaultExpiration: TimeSpan.FromHours(2));
 ```
 
 Caching is transparent for cacheable query builders - once configured, cached query types are cached automatically and cache keys are built from query parameters for proper cache hits.
@@ -1237,12 +1237,26 @@ var result = await client.GetItem<Article>("my-article")
     .ExecuteAsync();
 ```
 
-**Cache payloads:** The in-memory cache stores hydrated objects for maximum performance. Distributed caches store raw JSON payloads (rehydrated on read) to avoid serialization issues with circular references.
+**Cache payloads:** The in-memory cache stores hydrated objects for maximum performance. Hybrid caches store raw JSON payloads (rehydrated on read) to avoid serialization issues with circular references.
 
-The built-in cache registrations (`AddDeliveryMemoryCache` / `AddDeliveryDistributedCache`) in the `Kontent.Ai.Delivery.Caching` package use [FusionCache](https://github.com/ZiggyCreatures/FusionCache) internally. `InvalidateAsync` now returns `Task<bool>` (`true` on success, `false` on failure) so callers can detect silent invalidation failures — existing fire-and-forget call sites continue to work without changes.
+The built-in cache registrations (`AddDeliveryMemoryCache` / `AddDeliveryHybridCache`) in the `Kontent.Ai.Delivery.Caching` package use [FusionCache](https://github.com/ZiggyCreatures/FusionCache) internally. `InvalidateAsync` now returns `Task<bool>` (`true` on success, `false` on failure) so callers can detect silent invalidation failures — existing fire-and-forget call sites continue to work without changes.
 
 > [!NOTE]
-> **FusionCache hybrid mode limitation:** When using distributed caching (`AddDeliveryDistributedCache`), FusionCache operates in hybrid (L1+L2) mode, but [currently stores the same serialized format in both layers](https://github.com/ZiggyCreatures/FusionCache/issues/321). This means the L1 memory layer also holds raw JSON rather than hydrated objects, so every cache hit goes through rehydration. For most workloads the rehydration cost is negligible. If your scenario demands maximum read throughput, consider using `AddDeliveryMemoryCache` (pure L1, hydrated objects, no rehydration overhead).
+> **FusionCache hybrid mode limitation:** When using hybrid caching (`AddDeliveryHybridCache`), FusionCache operates in hybrid (L1+L2) mode, but [currently stores the same serialized format in both layers](https://github.com/ZiggyCreatures/FusionCache/issues/321). This means the L1 memory layer also holds raw JSON rather than hydrated objects, so every cache hit goes through rehydration. For most workloads the rehydration cost is negligible. If your scenario demands maximum read throughput, consider using `AddDeliveryMemoryCache` (pure L1, hydrated objects, no rehydration overhead).
+
+To tune the underlying FusionCache instance, use `ConfigureFusionCacheOptions`:
+
+```csharp
+services.AddDeliveryMemoryCache("production", opts =>
+{
+    opts.DefaultExpiration = TimeSpan.FromMinutes(30);
+    opts.ConfigureFusionCacheOptions = fusionOpts =>
+    {
+        var fco = (ZiggyCreatures.Caching.Fusion.FusionCacheOptions)fusionOpts;
+        fco.DefaultEntryOptions.EagerRefreshThreshold = 0.8f;
+    };
+});
+```
 
 If you implement a custom cache manager that stores raw payloads (typical for distributed caches), override the `StorageMode` property to return `CacheStorageMode.RawJson` so the SDK uses the raw JSON caching path.
 
@@ -1250,7 +1264,7 @@ Register custom cache managers per client using keyed registration:
 
 ```csharp
 services.AddDeliveryClient("production", options => { ... });
-services.AddDeliveryCacheManager("production", sp => new CustomDistributedCacheManager(
+services.AddDeliveryCacheManager("production", sp => new CustomHybridCacheManager(
     sp.GetRequiredService<IDistributedCache>()));
 ```
 
@@ -1668,7 +1682,7 @@ var result = await client.GetItem("article")
 
 - **Cache identity** should be isolated per client/environment via named clients and key prefixes. Within a cache namespace, keys are based on query shape (for example query params, language, filters)
 - **Memory cache** can lead to memory pressure with large content - monitor your application's memory usage
-- **Distributed cache** is recommended for production scenarios with multiple application instances
+- **Hybrid cache** is recommended for production scenarios with multiple application instances
 - Always implement **cache invalidation** strategies, ideally using webhooks
 - **Cache hit semantics**: When `IsCacheHit` is `true`, properties like `ResponseHeaders`, `RequestUrl`, and `ContinuationToken` are not available (null). Use `IsCacheHit` to differentiate between API responses and cached results
 

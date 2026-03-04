@@ -24,7 +24,7 @@ public static class DeliveryClientBuilderExtensions
     /// For scenarios requiring shared cache instances across multiple clients, use DI registration instead.
     /// </para>
     /// <para>
-    /// Cannot be combined with distributed cache. Calling both will use the last one configured.
+    /// Cannot be combined with hybrid cache. Calling both will use the last one configured.
     /// </para>
     /// </remarks>
     public static DeliveryClientBuilder WithMemoryCache(this DeliveryClientBuilder builder, TimeSpan? defaultExpiration = null) => builder.ConfigureServices(services => services.AddDeliveryMemoryCache(defaultExpiration));
@@ -49,7 +49,7 @@ public static class DeliveryClientBuilderExtensions
     /// </code>
     /// </para>
     /// <para>
-    /// Cannot be combined with distributed cache. Calling both will use the last one configured.
+    /// Cannot be combined with hybrid cache. Calling both will use the last one configured.
     /// </para>
     /// </remarks>
     public static DeliveryClientBuilder WithMemoryCache(this DeliveryClientBuilder builder, Action<DeliveryCacheOptions> configureCacheOptions)
@@ -60,7 +60,7 @@ public static class DeliveryClientBuilderExtensions
     }
 
     /// <summary>
-    /// Enables distributed caching for API responses using a provided <see cref="IDistributedCache"/> instance.
+    /// Enables hybrid (L1 memory + L2 distributed) caching for API responses using a provided <see cref="IDistributedCache"/> instance.
     /// </summary>
     /// <param name="builder">The delivery client builder.</param>
     /// <param name="distributedCache">
@@ -81,19 +81,19 @@ public static class DeliveryClientBuilderExtensions
     /// Cannot be combined with memory cache. Calling both will use the last one configured.
     /// </para>
     /// </remarks>
-    public static DeliveryClientBuilder WithDistributedCache(this DeliveryClientBuilder builder, IDistributedCache distributedCache, TimeSpan? defaultExpiration = null)
+    public static DeliveryClientBuilder WithHybridCache(this DeliveryClientBuilder builder, IDistributedCache distributedCache, TimeSpan? defaultExpiration = null)
     {
         ArgumentNullException.ThrowIfNull(distributedCache);
 
         return builder.ConfigureServices(services =>
         {
             services.AddSingleton(distributedCache);
-            services.AddDeliveryDistributedCache(defaultExpiration);
+            services.AddDeliveryHybridCache(defaultExpiration);
         });
     }
 
     /// <summary>
-    /// Enables distributed caching for API responses with advanced configuration.
+    /// Enables hybrid (L1 memory + L2 distributed) caching for API responses with advanced configuration.
     /// </summary>
     /// <param name="builder">The delivery client builder.</param>
     /// <param name="distributedCache">
@@ -106,7 +106,7 @@ public static class DeliveryClientBuilderExtensions
     /// <para>
     /// Use this overload to enable advanced features like fail-safe and jitter:
     /// <code>
-    /// .WithDistributedCache(redisCache, opts =>
+    /// .WithHybridCache(redisCache, opts =>
     /// {
     ///     opts.DefaultExpiration = TimeSpan.FromMinutes(30);
     ///     opts.IsFailSafeEnabled = true;
@@ -118,7 +118,7 @@ public static class DeliveryClientBuilderExtensions
     /// Cannot be combined with memory cache. Calling both will use the last one configured.
     /// </para>
     /// </remarks>
-    public static DeliveryClientBuilder WithDistributedCache(this DeliveryClientBuilder builder, IDistributedCache distributedCache, Action<DeliveryCacheOptions> configureCacheOptions)
+    public static DeliveryClientBuilder WithHybridCache(this DeliveryClientBuilder builder, IDistributedCache distributedCache, Action<DeliveryCacheOptions> configureCacheOptions)
     {
         ArgumentNullException.ThrowIfNull(distributedCache);
         ArgumentNullException.ThrowIfNull(configureCacheOptions);
@@ -126,7 +126,7 @@ public static class DeliveryClientBuilderExtensions
         return builder.ConfigureServices(services =>
         {
             services.AddSingleton(distributedCache);
-            services.AddDeliveryDistributedCache(configureCacheOptions);
+            services.AddDeliveryHybridCache(configureCacheOptions);
         });
     }
 }

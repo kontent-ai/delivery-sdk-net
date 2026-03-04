@@ -653,13 +653,13 @@ public static class DeliveryClientRegistration
         }
         else // Production
         {
-            // Production: distributed cache, production API, resilience
+            // Production: hybrid cache, production API, resilience
             services.AddDeliveryClient("default", options =>
             {
                 options.EnvironmentId = configuration["Kontent:EnvironmentId"];
                 options.EnableResilience = true;
             });
-            services.AddDeliveryDistributedCache("default", defaultExpiration: TimeSpan.FromHours(4));
+            services.AddDeliveryHybridCache("default", defaultExpiration: TimeSpan.FromHours(4));
         }
     }
 }

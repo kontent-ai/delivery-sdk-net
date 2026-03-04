@@ -38,7 +38,7 @@ public interface IDeliveryCacheManager
     /// <para>
     /// <see cref="CacheStorageMode.HydratedObject"/> (default) stores fully hydrated C# objects,
     /// suitable for in-memory caches. <see cref="CacheStorageMode.RawJson"/> stores raw JSON
-    /// strings, suitable for distributed caches that require serialization.
+    /// strings, suitable for hybrid/distributed caches that require serialization.
     /// </para>
     /// </remarks>
     CacheStorageMode StorageMode => CacheStorageMode.HydratedObject;

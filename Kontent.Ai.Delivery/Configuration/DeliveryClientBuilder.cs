@@ -99,7 +99,7 @@ public sealed class DeliveryClientBuilder
     /// </para>
     /// <para>
     /// The <c>Kontent.Ai.Delivery.Caching</c> package provides <c>WithMemoryCache()</c> and
-    /// <c>WithDistributedCache()</c> extension methods that use this API internally.
+    /// <c>WithHybridCache()</c> extension methods that use this API internally.
     /// </para>
     /// </remarks>
     public DeliveryClientBuilder ConfigureServices(Action<IServiceCollection> configure)

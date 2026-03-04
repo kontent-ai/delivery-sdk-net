@@ -439,7 +439,7 @@ public class ServiceCollectionsExtensionsTests
     }
 
     [Fact]
-    public void AddDeliveryDistributedCache_RegistersKeyedCacheManager()
+    public void AddDeliveryHybridCache_RegistersKeyedCacheManager()
     {
         _serviceCollection.AddDeliveryClient("production", o =>
         {
@@ -447,13 +447,13 @@ public class ServiceCollectionsExtensionsTests
             o.EnableResilience = false;
         });
         _serviceCollection.AddDistributedMemoryCache(); // Register IDistributedCache
-        _serviceCollection.AddDeliveryDistributedCache("production");
+        _serviceCollection.AddDeliveryHybridCache("production");
 
         var provider = _serviceCollection.BuildServiceProvider();
         var cacheManager = provider.GetKeyedService<IDeliveryCacheManager>("production");
 
         Assert.NotNull(cacheManager);
-        Assert.IsType<DistributedCacheManager>(cacheManager);
+        Assert.IsType<HybridCacheManager>(cacheManager);
     }
 
     [Fact]
@@ -551,7 +551,7 @@ public class ServiceCollectionsExtensionsTests
     }
 
     [Fact]
-    public void AddDeliveryDistributedCache_ResolvedManager_ImplementsPurger()
+    public void AddDeliveryHybridCache_ResolvedManager_ImplementsPurger()
     {
         _serviceCollection.AddDeliveryClient("production", o =>
         {
@@ -559,7 +559,7 @@ public class ServiceCollectionsExtensionsTests
             o.EnableResilience = false;
         });
         _serviceCollection.AddDistributedMemoryCache();
-        _serviceCollection.AddDeliveryDistributedCache("production");
+        _serviceCollection.AddDeliveryHybridCache("production");
 
         var provider = _serviceCollection.BuildServiceProvider();
         var cacheManager = provider.GetRequiredKeyedService<IDeliveryCacheManager>("production");
@@ -706,20 +706,20 @@ public class ServiceCollectionsExtensionsTests
     }
 
     [Fact]
-    public void AddDeliveryDistributedCache_NegativeJitter_ThrowsValidationException()
+    public void AddDeliveryHybridCache_NegativeJitter_ThrowsValidationException()
     {
         _serviceCollection.AddDistributedMemoryCache();
 
         Assert.Throws<ValidationException>(() =>
-            _serviceCollection.AddDeliveryDistributedCache("production", opts => opts.JitterMaxDuration = TimeSpan.FromMilliseconds(-1)));
+            _serviceCollection.AddDeliveryHybridCache("production", opts => opts.JitterMaxDuration = TimeSpan.FromMilliseconds(-1)));
     }
 
     [Fact]
-    public void AddDeliveryDistributedCache_NullClientName_ThrowsArgumentNullException()
+    public void AddDeliveryHybridCache_NullClientName_ThrowsArgumentNullException()
     {
         // Use named parameter to ensure we call the string overload
         Assert.Throws<ArgumentNullException>(() =>
-            _serviceCollection.AddDeliveryDistributedCache(clientName: null!));
+            _serviceCollection.AddDeliveryHybridCache(clientName: null!));
     }
 
     [Fact]
@@ -761,11 +761,11 @@ public class ServiceCollectionsExtensionsTests
     }
 
     [Fact]
-    public void AddDeliveryDistributedCache_RegistersContentDependencyExtractor_CacheFirst()
+    public void AddDeliveryHybridCache_RegistersContentDependencyExtractor_CacheFirst()
     {
         // Cache registered before client
         _serviceCollection.AddDistributedMemoryCache();
-        _serviceCollection.AddDeliveryDistributedCache("production");
+        _serviceCollection.AddDeliveryHybridCache("production");
         _serviceCollection.AddDeliveryClient("production", o =>
         {
             o.EnvironmentId = EnvironmentId;
@@ -781,7 +781,7 @@ public class ServiceCollectionsExtensionsTests
     }
 
     [Fact]
-    public void AddDeliveryDistributedCache_RegistersContentDependencyExtractor_ClientFirst()
+    public void AddDeliveryHybridCache_RegistersContentDependencyExtractor_ClientFirst()
     {
         // Client registered before cache (order should not matter)
         _serviceCollection.AddDistributedMemoryCache();
@@ -790,7 +790,7 @@ public class ServiceCollectionsExtensionsTests
             o.EnvironmentId = EnvironmentId;
             o.EnableResilience = false;
         });
-        _serviceCollection.AddDeliveryDistributedCache("production");
+        _serviceCollection.AddDeliveryHybridCache("production");
 
         var provider = _serviceCollection.BuildServiceProvider();
         var extractor = provider.GetService<IContentDependencyExtractor>();
