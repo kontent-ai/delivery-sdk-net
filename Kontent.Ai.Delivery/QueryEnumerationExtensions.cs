@@ -1,5 +1,4 @@
 using System.Runtime.CompilerServices;
-using Kontent.Ai.Delivery.Api.QueryBuilders;
 
 namespace Kontent.Ai.Delivery;
 

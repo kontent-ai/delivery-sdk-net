@@ -1,13 +1,11 @@
 using System.Text.Json;
 using System.Text.Json.Serialization;
 using AngleSharp.Html.Parser;
-using Kontent.Ai.Delivery.Abstractions;
 using Kontent.Ai.Delivery.Configuration;
 using Kontent.Ai.Delivery.ContentItems.Mapping;
 using Kontent.Ai.Delivery.ContentItems.Processing;
 using Kontent.Ai.Delivery.Logging;
 using Microsoft.Extensions.Logging;
-using Xunit;
 
 namespace Kontent.Ai.Delivery.Tests.ContentItems.Mapping;
 

@@ -1,6 +1,5 @@
 using System.Diagnostics;
 using Kontent.Ai.Delivery.Extensions;
-using Xunit;
 
 namespace Kontent.Ai.Delivery.Tests;
 

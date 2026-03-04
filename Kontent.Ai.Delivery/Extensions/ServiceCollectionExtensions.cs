@@ -1,4 +1,3 @@
-using Kontent.Ai.Delivery.Caching;
 using Kontent.Ai.Delivery.Configuration;
 using Kontent.Ai.Delivery.ContentItems.Mapping;
 using Microsoft.Extensions.Configuration;

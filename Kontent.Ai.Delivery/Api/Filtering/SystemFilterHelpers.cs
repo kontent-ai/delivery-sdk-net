@@ -1,4 +1,3 @@
-using Kontent.Ai.Delivery.Abstractions;
 using Kontent.Ai.Delivery.ContentItems;
 using Kontent.Ai.Delivery.Logging;
 using Microsoft.Extensions.Logging;

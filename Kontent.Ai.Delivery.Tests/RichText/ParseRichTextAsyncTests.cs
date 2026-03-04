@@ -1,6 +1,5 @@
 using System.Text.Json;
 using Kontent.Ai.Delivery.Abstractions;
-using Xunit;
 
 namespace Kontent.Ai.Delivery.Tests.RichText;
 

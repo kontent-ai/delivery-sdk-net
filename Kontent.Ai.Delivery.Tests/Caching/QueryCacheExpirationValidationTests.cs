@@ -2,7 +2,6 @@ using Kontent.Ai.Delivery.Abstractions;
 using Kontent.Ai.Delivery.Tests.Models.ContentTypes;
 using Microsoft.Extensions.DependencyInjection;
 using RichardSzalay.MockHttp;
-using Xunit;
 
 namespace Kontent.Ai.Delivery.Tests.Caching;
 

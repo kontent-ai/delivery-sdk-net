@@ -3,7 +3,6 @@ using Kontent.Ai.Delivery.Abstractions;
 using Kontent.Ai.Delivery.Configuration;
 using Microsoft.Extensions.Caching.Distributed;
 using Microsoft.Extensions.Logging;
-using Xunit;
 
 namespace Kontent.Ai.Delivery.Tests.Builders.Configuration;
 

@@ -1,5 +1,4 @@
 using Kontent.Ai.Delivery.Api.QueryParams.Types;
-using Xunit;
 
 namespace Kontent.Ai.Delivery.Tests.QueryParameters;
 

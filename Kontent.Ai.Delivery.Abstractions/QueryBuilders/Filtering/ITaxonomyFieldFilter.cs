@@ -15,5 +15,3 @@ public interface ITaxonomyFieldFilter<out TBuilder>
     TBuilder IsNotEqualTo(string value);
     TBuilder IsNotEqualTo(DateTime value);
 }
-
-

@@ -1,7 +1,6 @@
 using System.Reflection;
 using System.Text;
 using Kontent.Ai.Urls.ImageTransformation;
-using Xunit;
 
 namespace Kontent.Ai.Urls.Tests.ApiApproval;
 

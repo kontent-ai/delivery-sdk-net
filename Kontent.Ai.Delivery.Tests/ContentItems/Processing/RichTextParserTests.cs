@@ -1,9 +1,7 @@
 using AngleSharp.Html.Parser;
 using Kontent.Ai.Delivery.Abstractions;
 using Kontent.Ai.Delivery.ContentItems.Processing;
-using Kontent.Ai.Delivery.Extensions;
 using Microsoft.Extensions.Logging.Abstractions;
-using Xunit;
 
 namespace Kontent.Ai.Delivery.Tests.ContentItems.Processing;
 

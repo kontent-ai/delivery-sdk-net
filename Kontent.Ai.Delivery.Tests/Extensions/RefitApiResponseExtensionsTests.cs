@@ -2,7 +2,6 @@ using System.Net;
 using Kontent.Ai.Delivery.Abstractions;
 using Kontent.Ai.Delivery.Extensions;
 using Refit;
-using Xunit;
 
 namespace Kontent.Ai.Delivery.Tests.Extensions;
 

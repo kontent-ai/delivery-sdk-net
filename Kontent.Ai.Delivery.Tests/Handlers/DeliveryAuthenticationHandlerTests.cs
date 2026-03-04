@@ -3,7 +3,6 @@ using Kontent.Ai.Delivery.Handlers;
 using Kontent.Ai.Delivery.Logging;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
-using Xunit;
 
 namespace Kontent.Ai.Delivery.Tests.Handlers;
 

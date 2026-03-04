@@ -2,7 +2,6 @@ using System.Net;
 using Kontent.Ai.Delivery.Abstractions;
 using Kontent.Ai.Delivery.ContentItems;
 using Kontent.Ai.Delivery.SharedModels;
-using Xunit;
 
 namespace Kontent.Ai.Delivery.Tests.ContentItems;
 

@@ -1,8 +1,6 @@
 using System.Text.Json;
-using Kontent.Ai.Delivery;
 using Kontent.Ai.Delivery.ContentItems.Elements;
 using Kontent.Ai.Delivery.ContentItems.RichText;
-using Xunit;
 
 namespace Kontent.Ai.Delivery.Tests.ContentItems.Mapping;
 

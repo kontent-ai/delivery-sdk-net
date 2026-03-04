@@ -5,7 +5,6 @@ using Kontent.Ai.Delivery.Caching;
 using Kontent.Ai.Delivery.Configuration;
 using Kontent.Ai.Delivery.ContentTypes;
 using Microsoft.Extensions.Caching.Distributed;
-using Xunit;
 
 namespace Kontent.Ai.Delivery.Tests.Caching;
 

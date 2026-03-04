@@ -1,6 +1,5 @@
 using Kontent.Ai.Delivery.Configuration;
 using Microsoft.Extensions.DependencyInjection;
-using Xunit;
 
 namespace Kontent.Ai.Delivery.Tests.Configuration;
 

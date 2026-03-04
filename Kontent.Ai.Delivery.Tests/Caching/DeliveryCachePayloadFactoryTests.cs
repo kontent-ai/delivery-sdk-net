@@ -3,7 +3,6 @@ using Kontent.Ai.Delivery.Caching;
 using Kontent.Ai.Delivery.ContentItems;
 using Kontent.Ai.Delivery.SharedModels;
 using Kontent.Ai.Delivery.Tests.Models.ContentTypes;
-using Xunit;
 
 namespace Kontent.Ai.Delivery.Tests.Caching;
 

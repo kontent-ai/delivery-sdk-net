@@ -1,6 +1,5 @@
 using System.Reflection;
 using System.Text;
-using Xunit;
 
 namespace Kontent.Ai.Delivery.Tests.ApiApproval;
 

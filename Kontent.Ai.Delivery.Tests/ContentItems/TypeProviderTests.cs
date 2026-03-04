@@ -2,7 +2,6 @@ using System.Reflection;
 using Kontent.Ai.Delivery.Abstractions;
 using Kontent.Ai.Delivery.ContentItems;
 using Kontent.Ai.Delivery.Generated;
-using Xunit;
 
 namespace Kontent.Ai.Delivery.Tests.ContentItems;
 

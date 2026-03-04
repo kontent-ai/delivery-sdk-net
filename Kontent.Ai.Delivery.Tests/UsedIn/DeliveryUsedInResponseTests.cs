@@ -1,6 +1,5 @@
 using Kontent.Ai.Delivery.Abstractions;
 using Kontent.Ai.Delivery.UsedIn;
-using Xunit;
 
 namespace Kontent.Ai.Delivery.Tests.UsedIn;
 

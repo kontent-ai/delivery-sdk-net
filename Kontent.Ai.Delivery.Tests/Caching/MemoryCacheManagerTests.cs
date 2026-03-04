@@ -2,7 +2,6 @@ using System.Diagnostics;
 using Kontent.Ai.Delivery.Abstractions;
 using Kontent.Ai.Delivery.Caching;
 using Microsoft.Extensions.Caching.Memory;
-using Xunit;
 
 namespace Kontent.Ai.Delivery.Tests.Caching;
 
