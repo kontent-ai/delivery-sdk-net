@@ -9,7 +9,6 @@ using Microsoft.Extensions.Caching.Memory;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Options;
-using Xunit;
 
 namespace Kontent.Ai.Delivery.Tests.Extensions;
 
@@ -883,7 +882,7 @@ public class ServiceCollectionsExtensionsTests
             return entry?.Value;
         }
 
-        public Task InvalidateAsync(CancellationToken cancellationToken = default, params string[] dependencyKeys)
-            => Task.CompletedTask;
+        public Task<bool> InvalidateAsync(CancellationToken cancellationToken = default, params string[] dependencyKeys)
+            => Task.FromResult(true);
     }
 }

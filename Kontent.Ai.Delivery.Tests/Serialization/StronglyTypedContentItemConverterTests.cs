@@ -3,7 +3,6 @@ using System.Text.Json.Serialization;
 using Kontent.Ai.Delivery.ContentItems;
 using Kontent.Ai.Delivery.Serialization.Converters;
 using Kontent.Ai.Delivery.Tests.Models.ContentTypes;
-using Xunit;
 
 namespace Kontent.Ai.Delivery.Tests.Serialization;
 

@@ -4,7 +4,6 @@ using Kontent.Ai.Delivery.Api;
 using Kontent.Ai.Delivery.Api.Filtering;
 using Kontent.Ai.Delivery.Configuration;
 using Refit;
-using Xunit;
 
 namespace Kontent.Ai.Delivery.Tests.Filtering;
 

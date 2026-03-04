@@ -1,5 +1,4 @@
 using System.ComponentModel.DataAnnotations;
-using Xunit;
 
 namespace Kontent.Ai.Delivery.Abstractions.Tests.Configuration;
 

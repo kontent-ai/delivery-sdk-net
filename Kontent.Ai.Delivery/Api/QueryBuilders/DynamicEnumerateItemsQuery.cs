@@ -33,6 +33,12 @@ internal sealed class DynamicEnumerateItemsQuery(
         return this;
     }
 
+    public IDynamicEnumerateItemsQuery WithoutElements(params string[] elementCodenames)
+    {
+        _inner.WithoutElements(elementCodenames);
+        return this;
+    }
+
     public IDynamicEnumerateItemsQuery OrderBy(string elementOrAttributePath, OrderingMode orderingMode = OrderingMode.Ascending)
     {
         _inner.OrderBy(elementOrAttributePath, orderingMode);

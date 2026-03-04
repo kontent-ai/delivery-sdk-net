@@ -1,5 +1,4 @@
 using Kontent.Ai.Delivery.Configuration;
-using Xunit;
 
 namespace Kontent.Ai.Delivery.Tests.Builders.Configuration;
 

@@ -54,5 +54,3 @@ public interface IItemFieldFilter<out TBuilder>
     TBuilder IsEmpty();
     TBuilder IsNotEmpty();
 }
-
-

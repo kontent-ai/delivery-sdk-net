@@ -1,5 +1,3 @@
-using Xunit;
-
 namespace Kontent.Ai.Delivery.Abstractions.Tests.ContentItems.Processing;
 
 public class DependencyTrackingContextComponentTests

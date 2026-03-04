@@ -26,5 +26,3 @@ public interface ITypeFieldFilter<out TBuilder>
     TBuilder IsGreaterThan(DateTime value);
     TBuilder IsGreaterThanOrEqualTo(DateTime value);
 }
-
-

@@ -30,7 +30,7 @@ internal sealed class MemoryCacheManager(
         => _inner.GetOrSetAsync(cacheKey, factory, expiration, cancellationToken);
 
     /// <inheritdoc />
-    public Task InvalidateAsync(CancellationToken cancellationToken = default, params string[] dependencyKeys)
+    public Task<bool> InvalidateAsync(CancellationToken cancellationToken = default, params string[] dependencyKeys)
         => _inner.InvalidateAsync(cancellationToken, dependencyKeys);
 
     /// <inheritdoc />

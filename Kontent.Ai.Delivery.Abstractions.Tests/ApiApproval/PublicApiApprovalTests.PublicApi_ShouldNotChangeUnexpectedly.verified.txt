@@ -23,6 +23,7 @@ public sealed class DeliveryCacheDependencies
 
 // Kontent.Ai.Delivery.Abstractions
 public sealed class DeliveryCacheOptions
+    Action`1 ConfigureFusionCacheOptions { get; set; }
     TimeSpan DefaultExpiration { get; set; }
     Single EagerRefreshThreshold { get; set; }
     TimeSpan FailSafeMaxDuration { get; set; }
@@ -148,7 +149,7 @@ public interface IDateTimeContent
 public interface IDeliveryCacheManager
     CacheStorageMode StorageMode { get; }
     Task`1 GetOrSetAsync(String cacheKey, Func`2 factory, Nullable`1 expiration, CancellationToken cancellationToken)
-    Task InvalidateAsync(CancellationToken cancellationToken, String[] dependencyKeys)
+    Task`1 InvalidateAsync(CancellationToken cancellationToken, String[] dependencyKeys)
 
 // Kontent.Ai.Delivery.Abstractions
 public interface IDeliveryCachePurger
@@ -264,6 +265,7 @@ public interface IDynamicEnumerateItemsQuery
     IDynamicEnumerateItemsQuery Where(Func`2 build)
     IDynamicEnumerateItemsQuery WithElements(String[] elementCodenames)
     IDynamicEnumerateItemsQuery WithLanguage(String languageCodename, LanguageFallbackMode languageFallbackMode)
+    IDynamicEnumerateItemsQuery WithoutElements(String[] elementCodenames)
 
 // Kontent.Ai.Delivery.Abstractions
 public interface IDynamicItemQuery
@@ -303,6 +305,7 @@ public interface IEnumerateItemsQuery`1
     IEnumerateItemsQuery`1 Where(Func`2 build)
     IEnumerateItemsQuery`1 WithElements(String[] elementCodenames)
     IEnumerateItemsQuery`1 WithLanguage(String languageCodename, LanguageFallbackMode languageFallbackMode)
+    IEnumerateItemsQuery`1 WithoutElements(String[] elementCodenames)
 
 // Kontent.Ai.Delivery.Abstractions
 public interface IError

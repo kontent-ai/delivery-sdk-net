@@ -3,7 +3,6 @@ using Kontent.Ai.Delivery.Api.QueryParams.TaxonomyGroups;
 using Kontent.Ai.Delivery.Api.QueryParams.Types;
 using Kontent.Ai.Delivery.Caching;
 using Kontent.Ai.Delivery.Tests.Models.ContentTypes;
-using Xunit;
 
 namespace Kontent.Ai.Delivery.Tests.Caching;
 

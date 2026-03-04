@@ -1,5 +1,4 @@
 using AngleSharp.Html.Parser;
-using Kontent.Ai.Delivery.Caching;
 using Kontent.Ai.Delivery.Configuration;
 using Kontent.Ai.Delivery.ContentItems;
 using Kontent.Ai.Delivery.ContentItems.Mapping;

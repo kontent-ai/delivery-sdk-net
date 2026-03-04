@@ -1,7 +1,6 @@
 using System.Text.Json.Serialization;
 using Kontent.Ai.Delivery.Abstractions;
 using Kontent.Ai.Delivery.ContentItems.Mapping;
-using Xunit;
 
 namespace Kontent.Ai.Delivery.Tests.ContentItems.Mapping;
 

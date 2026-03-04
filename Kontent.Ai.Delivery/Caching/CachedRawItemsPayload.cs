@@ -1,6 +1,5 @@
 using System.Text.Json;
 using Kontent.Ai.Delivery.ContentItems;
-using Kontent.Ai.Delivery.SharedModels;
 
 namespace Kontent.Ai.Delivery.Caching;
 

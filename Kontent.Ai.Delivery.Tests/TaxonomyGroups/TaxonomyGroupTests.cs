@@ -1,6 +1,5 @@
 using Kontent.Ai.Delivery.Abstractions;
 using Kontent.Ai.Delivery.TaxonomyGroups;
-using Xunit;
 
 namespace Kontent.Ai.Delivery.Tests.TaxonomyGroups;
 

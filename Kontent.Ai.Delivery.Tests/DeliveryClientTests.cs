@@ -4,7 +4,6 @@ using Kontent.Ai.Delivery.Tests.Models.ContentTypes;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Options;
 using RichardSzalay.MockHttp;
-using Xunit;
 
 namespace Kontent.Ai.Delivery.Tests;
 

@@ -7,7 +7,6 @@ using Kontent.Ai.Delivery.ContentItems.Mapping;
 using Kontent.Ai.Delivery.ContentItems.Processing;
 using Kontent.Ai.Delivery.Generated;
 using Kontent.Ai.Delivery.Tests.Models.ContentTypes;
-using Xunit;
 
 namespace Kontent.Ai.Delivery.Tests.ContentItems.Mapping;
 

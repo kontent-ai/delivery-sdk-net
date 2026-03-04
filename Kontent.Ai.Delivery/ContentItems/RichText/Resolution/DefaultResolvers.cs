@@ -65,14 +65,9 @@ public static class DefaultResolvers
 
             var attributesStr = string.IsNullOrEmpty(attributes) ? "" : $" {attributes}";
 
-            // Self-closing tags
-            var voidElements = new HashSet<string>(StringComparer.OrdinalIgnoreCase)
-            {
-                "area", "base", "br", "col", "embed", "hr", "img", "input",
-                "link", "meta", "param", "source", "track", "wbr"
-            };
-
-            return voidElements.Contains(block.TagName)
+            // Void elements allowed in Kontent.ai rich text have no closing tag.
+            // See https://kontent.ai/learn/docs/apis/delivery-api/content-elements#html-5-elements-allowed-in-rich-text
+            return IsVoidElement(block.TagName)
                 ? $"<{block.TagName}{attributesStr}>"
                 : $"<{block.TagName}{attributesStr}>{children}</{block.TagName}>";
         };
@@ -107,4 +102,8 @@ public static class DefaultResolvers
 
         return string.Join(" ", attributes);
     }
+
+    private static bool IsVoidElement(string tagName) =>
+        tagName.Equals("br", StringComparison.OrdinalIgnoreCase)
+        || tagName.Equals("img", StringComparison.OrdinalIgnoreCase);
 }

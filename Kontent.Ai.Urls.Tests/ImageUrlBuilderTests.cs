@@ -1,5 +1,4 @@
 using Kontent.Ai.Urls.ImageTransformation;
-using Xunit;
 
 namespace Kontent.Ai.Urls.Tests;
 

@@ -1,5 +1,4 @@
 using System.Net;
-using Kontent.Ai.Delivery.SharedModels;
 
 namespace Kontent.Ai.Delivery.Api.QueryBuilders.Helpers;
 

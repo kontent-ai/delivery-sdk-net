@@ -29,6 +29,8 @@ internal sealed class FusionCacheManager : IDeliveryCacheManager, IDeliveryCache
     private readonly EventHandler<FusionCacheEntryEventArgs> _failSafeActivateHandler;
     private readonly EventHandler<FusionCacheEntryEventArgs> _factorySuccessHandler;
     private readonly EventHandler<FusionCacheEntryHitEventArgs> _hitHandler;
+    private readonly EventHandler<FusionCacheEntryEventArgs> _removeHandler;
+    private readonly EventHandler<FusionCacheEntryEvictionEventArgs> _evictionHandler;
     private int _disposeState;
 
     private FusionCacheManager(
@@ -55,6 +57,8 @@ internal sealed class FusionCacheManager : IDeliveryCacheManager, IDeliveryCache
         _failSafeActivateHandler = HandleFailSafeActivate;
         _factorySuccessHandler = HandleFactorySuccess;
         _hitHandler = HandleHit;
+        _removeHandler = HandleRemove;
+        _evictionHandler = HandleEviction;
         SubscribeFailSafeStateEvents();
     }
 
@@ -89,15 +93,19 @@ internal sealed class FusionCacheManager : IDeliveryCacheManager, IDeliveryCache
             defaultEntryOptions.EagerRefreshThreshold = cacheOptions.EagerRefreshThreshold;
         }
 
+        var fusionCacheOptions = new FusionCacheOptions
+        {
+            CacheName = $"KontentDelivery.Memory.{(string.IsNullOrWhiteSpace(keyPrefix) ? "Default" : keyPrefix)}",
+            DistributedCacheKeyModifierMode = CacheKeyModifierMode.None,
+            // Required for deterministic fail-safe source propagation in query builders.
+            EnableSyncEventHandlersExecution = true,
+            DefaultEntryOptions = defaultEntryOptions
+        };
+
+        cacheOptions.ConfigureFusionCacheOptions?.Invoke(fusionCacheOptions);
+
         var fusion = new FusionCache(
-            Options.Create(new FusionCacheOptions
-            {
-                CacheName = $"KontentDelivery.Memory.{(string.IsNullOrWhiteSpace(keyPrefix) ? "Default" : keyPrefix)}",
-                DistributedCacheKeyModifierMode = CacheKeyModifierMode.None,
-                // Required for deterministic fail-safe source propagation in query builders.
-                EnableSyncEventHandlersExecution = true,
-                DefaultEntryOptions = defaultEntryOptions
-            }),
+            Options.Create(fusionCacheOptions),
             memoryCache,
             logger: null);
 
@@ -182,15 +190,19 @@ internal sealed class FusionCacheManager : IDeliveryCacheManager, IDeliveryCache
             defaultEntryOptions.EagerRefreshThreshold = cacheOptions.EagerRefreshThreshold;
         }
 
+        var fusionCacheOptions = new FusionCacheOptions
+        {
+            CacheName = $"KontentDelivery.Distributed.{(string.IsNullOrWhiteSpace(keyPrefix) ? "Default" : keyPrefix)}",
+            DistributedCacheKeyModifierMode = CacheKeyModifierMode.None,
+            // Required for deterministic fail-safe source propagation in query builders.
+            EnableSyncEventHandlersExecution = true,
+            DefaultEntryOptions = defaultEntryOptions
+        };
+
+        cacheOptions.ConfigureFusionCacheOptions?.Invoke(fusionCacheOptions);
+
         var fusion = new FusionCache(
-            Options.Create(new FusionCacheOptions
-            {
-                CacheName = $"KontentDelivery.Distributed.{(string.IsNullOrWhiteSpace(keyPrefix) ? "Default" : keyPrefix)}",
-                DistributedCacheKeyModifierMode = CacheKeyModifierMode.None,
-                // Required for deterministic fail-safe source propagation in query builders.
-                EnableSyncEventHandlersExecution = true,
-                DefaultEntryOptions = defaultEntryOptions
-            }),
+            Options.Create(fusionCacheOptions),
             memoryCache: null,
             logger: null);
 
@@ -269,15 +281,7 @@ internal sealed class FusionCacheManager : IDeliveryCacheManager, IDeliveryCache
                 formattedKey,
                 async (ctx, ct) =>
                 {
-                    CacheEntry<T>? factoryResult;
-                    try
-                    {
-                        factoryResult = await factory(ct).ConfigureAwait(false);
-                    }
-                    catch (Exception ex) when (ex is not OperationCanceledException)
-                    {
-                        throw;
-                    }
+                    var factoryResult = await factory(ct).ConfigureAwait(false);
 
                     if (factoryResult is null)
                     {
@@ -323,13 +327,13 @@ internal sealed class FusionCacheManager : IDeliveryCacheManager, IDeliveryCache
     private sealed class CacheFactoryFailedException : Exception;
 #pragma warning restore S3871
 
-    public async Task InvalidateAsync(CancellationToken cancellationToken = default, params string[] dependencyKeys)
+    public async Task<bool> InvalidateAsync(CancellationToken cancellationToken = default, params string[] dependencyKeys)
     {
         ThrowIfDisposed();
 
         if (dependencyKeys is null || dependencyKeys.Length == 0)
         {
-            return;
+            return true;
         }
 
         var validKeys = dependencyKeys.Where(k => !string.IsNullOrWhiteSpace(k)).ToArray();
@@ -352,6 +356,8 @@ internal sealed class FusionCacheManager : IDeliveryCacheManager, IDeliveryCache
                     LoggerMessages.CacheInvalidateCompleted(_logger, dependencyKey);
                 }
             }
+
+            return true;
         }
         catch (OperationCanceledException)
         {
@@ -361,6 +367,8 @@ internal sealed class FusionCacheManager : IDeliveryCacheManager, IDeliveryCache
         {
             if (_logger is not null)
                 LoggerMessages.CacheInvalidationFailed(_logger, ex);
+
+            return false;
         }
     }
 
@@ -375,7 +383,13 @@ internal sealed class FusionCacheManager : IDeliveryCacheManager, IDeliveryCache
                 cancellationToken)
             .ConfigureAwait(false);
 
-        _failSafeActiveKeys.Clear();
+        // Only clear fail-safe tracking when entries are permanently removed.
+        // When allowFailSafe is true, entries remain for fail-safe and should
+        // continue to be reported as ResponseSource.FailSafe.
+        if (!allowFailSafe)
+        {
+            _failSafeActiveKeys.Clear();
+        }
     }
 
     bool IFailSafeStateProvider.IsFailSafeActive(string cacheKey)
@@ -410,6 +424,8 @@ internal sealed class FusionCacheManager : IDeliveryCacheManager, IDeliveryCache
         _cache.Events.FailSafeActivate += _failSafeActivateHandler;
         _cache.Events.FactorySuccess += _factorySuccessHandler;
         _cache.Events.Hit += _hitHandler;
+        _cache.Events.Remove += _removeHandler;
+        _cache.Events.Memory.Eviction += _evictionHandler;
     }
 
     private void UnsubscribeFailSafeStateEvents()
@@ -417,6 +433,8 @@ internal sealed class FusionCacheManager : IDeliveryCacheManager, IDeliveryCache
         _cache.Events.FailSafeActivate -= _failSafeActivateHandler;
         _cache.Events.FactorySuccess -= _factorySuccessHandler;
         _cache.Events.Hit -= _hitHandler;
+        _cache.Events.Remove -= _removeHandler;
+        _cache.Events.Memory.Eviction -= _evictionHandler;
     }
 
     private void HandleFailSafeActivate(object? sender, FusionCacheEntryEventArgs eventArgs)
@@ -435,4 +453,10 @@ internal sealed class FusionCacheManager : IDeliveryCacheManager, IDeliveryCache
 
         _failSafeActiveKeys.TryRemove(eventArgs.Key, out var _);
     }
+
+    private void HandleRemove(object? sender, FusionCacheEntryEventArgs eventArgs)
+        => _failSafeActiveKeys.TryRemove(eventArgs.Key, out var _);
+
+    private void HandleEviction(object? sender, FusionCacheEntryEvictionEventArgs eventArgs)
+        => _failSafeActiveKeys.TryRemove(eventArgs.Key, out var _);
 }

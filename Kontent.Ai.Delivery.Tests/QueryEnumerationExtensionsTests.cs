@@ -1,7 +1,5 @@
 using System.Net;
 using Kontent.Ai.Delivery.Abstractions;
-using Kontent.Ai.Delivery.SharedModels;
-using Xunit;
 
 namespace Kontent.Ai.Delivery.Tests;
 
@@ -128,6 +126,7 @@ public class QueryEnumerationExtensionsTests
 
         public IEnumerateItemsQuery<TModel> WithLanguage(string languageCodename, LanguageFallbackMode languageFallbackMode = LanguageFallbackMode.Enabled) => this;
         public IEnumerateItemsQuery<TModel> WithElements(params string[] elementCodenames) => this;
+        public IEnumerateItemsQuery<TModel> WithoutElements(params string[] elementCodenames) => this;
         public IEnumerateItemsQuery<TModel> OrderBy(string elementOrAttributePath, OrderingMode orderingMode = OrderingMode.Ascending) => this;
         public IEnumerateItemsQuery<TModel> WaitForLoadingNewContent(bool enabled = true) => this;
         public IEnumerateItemsQuery<TModel> Where(Func<IItemsFilterBuilder, IItemsFilterBuilder> build) => this;
@@ -144,6 +143,7 @@ public class QueryEnumerationExtensionsTests
 
         public IDynamicEnumerateItemsQuery WithLanguage(string languageCodename, LanguageFallbackMode languageFallbackMode = LanguageFallbackMode.Enabled) => this;
         public IDynamicEnumerateItemsQuery WithElements(params string[] elementCodenames) => this;
+        public IDynamicEnumerateItemsQuery WithoutElements(params string[] elementCodenames) => this;
         public IDynamicEnumerateItemsQuery OrderBy(string elementOrAttributePath, OrderingMode orderingMode = OrderingMode.Ascending) => this;
         public IDynamicEnumerateItemsQuery WaitForLoadingNewContent(bool enabled = true) => this;
         public IDynamicEnumerateItemsQuery Where(Func<IItemsFilterBuilder, IItemsFilterBuilder> build) => this;

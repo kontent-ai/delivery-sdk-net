@@ -2,7 +2,6 @@ using System.Net;
 using Kontent.Ai.Delivery.Abstractions;
 using Kontent.Ai.Delivery.Api.QueryBuilders.Helpers;
 using Kontent.Ai.Delivery.SharedModels;
-using Xunit;
 
 namespace Kontent.Ai.Delivery.Tests.Caching;
 

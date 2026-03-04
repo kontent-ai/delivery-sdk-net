@@ -2,7 +2,6 @@ using System.Text.Json;
 using Kontent.Ai.Delivery.Configuration;
 using Kontent.Ai.Delivery.ContentItems;
 using Kontent.Ai.Delivery.ContentItems.Mapping;
-using Xunit;
 
 namespace Kontent.Ai.Delivery.Tests.ContentItems.Mapping;
 

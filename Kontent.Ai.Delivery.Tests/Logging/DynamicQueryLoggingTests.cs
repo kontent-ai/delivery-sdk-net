@@ -5,7 +5,6 @@ using Kontent.Ai.Delivery.Logging;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
 using RichardSzalay.MockHttp;
-using Xunit;
 
 namespace Kontent.Ai.Delivery.Tests.Logging;
 

@@ -1,10 +1,8 @@
 using System.Net;
 using System.Text.Json.Serialization;
-using Kontent.Ai.Delivery;
 using Kontent.Ai.Delivery.Abstractions;
 using Microsoft.Extensions.DependencyInjection;
 using RichardSzalay.MockHttp;
-using Xunit;
 
 namespace Kontent.Ai.Delivery.Tests.QueryBuilders;
 

@@ -1,7 +1,5 @@
-using Kontent.Ai.Delivery.Abstractions;
 using Kontent.Ai.Delivery.ContentItems.RichText;
 using Kontent.Ai.Delivery.ContentItems.RichText.Blocks;
-using Xunit;
 
 namespace Kontent.Ai.Delivery.Tests.RichText;
 

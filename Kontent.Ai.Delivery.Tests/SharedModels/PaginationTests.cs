@@ -1,6 +1,5 @@
 using System.Text.Json;
 using Kontent.Ai.Delivery.SharedModels;
-using Xunit;
 
 namespace Kontent.Ai.Delivery.Tests.SharedModels;
 

@@ -1,7 +1,6 @@
 using System.Text.Json;
 using Kontent.Ai.Delivery.ContentTypes.Element;
 using Kontent.Ai.Delivery.Serialization.Converters;
-using Xunit;
 
 namespace Kontent.Ai.Delivery.Tests.Serialization;
 

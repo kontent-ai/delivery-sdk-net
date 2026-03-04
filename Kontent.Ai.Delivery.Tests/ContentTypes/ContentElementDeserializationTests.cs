@@ -1,7 +1,6 @@
 using System.Text.Json;
 using Kontent.Ai.Delivery.Configuration;
 using Kontent.Ai.Delivery.ContentTypes.Element;
-using Xunit;
 
 namespace Kontent.Ai.Delivery.Tests.ContentTypes;
 

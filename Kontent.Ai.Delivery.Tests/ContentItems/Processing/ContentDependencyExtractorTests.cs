@@ -1,7 +1,6 @@
 using System.Text.Json;
 using Kontent.Ai.Delivery.Abstractions;
 using Kontent.Ai.Delivery.ContentItems.Processing;
-using Xunit;
 
 namespace Kontent.Ai.Delivery.Tests.ContentItems.Processing;
 

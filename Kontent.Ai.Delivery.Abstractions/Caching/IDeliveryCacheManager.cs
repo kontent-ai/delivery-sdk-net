@@ -84,7 +84,12 @@ public interface IDeliveryCacheManager
     /// One or more dependency keys to invalidate. All cache entries referencing any of these keys
     /// will be removed from the cache.
     /// </param>
-    /// <returns>A task representing the asynchronous invalidation operation.</returns>
+    /// <returns>
+    /// <c>true</c> if invalidation completed successfully; <c>false</c> if an error occurred
+    /// (the error is logged but not thrown, since invalidation is best-effort — TTL is the safety net).
+    /// Callers who don't check the return value get fire-and-forget behavior;
+    /// callers who care can check and retry.
+    /// </returns>
     /// <remarks>
     /// <para>
     /// This method performs cascade invalidation: if a cache entry depends on any of the specified keys,
@@ -99,5 +104,5 @@ public interface IDeliveryCacheManager
     /// even though "item_author" was not invalidated.
     /// </para>
     /// </remarks>
-    Task InvalidateAsync(CancellationToken cancellationToken = default, params string[] dependencyKeys);
+    Task<bool> InvalidateAsync(CancellationToken cancellationToken = default, params string[] dependencyKeys);
 }

@@ -11,7 +11,6 @@ using Microsoft.Extensions.Caching.Memory;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Options;
 using RichardSzalay.MockHttp;
-using Xunit;
 
 namespace Kontent.Ai.Delivery.Tests.Caching;
 
