@@ -289,7 +289,7 @@ public static partial class ServiceCollectionExtensions
         var typeProvider = sp.GetRequiredService<ITypeProvider>();
         var optionsMonitor = sp.GetRequiredService<IOptionsMonitor<DeliveryOptions>>();
 
-        // Resolve keyed cache manager for this client (registered via AddDeliveryMemoryCache/AddDeliveryDistributedCache/AddDeliveryCacheManager)
+        // Resolve keyed cache manager for this client (registered via AddDeliveryMemoryCache/AddDeliveryHybridCache/AddDeliveryCacheManager)
         var cacheManager = sp.GetKeyedService<IDeliveryCacheManager>(clientName);
 
         // Resolve logger (optional - will be null if no logging is configured)

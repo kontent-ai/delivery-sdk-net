@@ -33,8 +33,8 @@ internal sealed class ItemUsedInQuery(
         return this;
     }
 
-    public IAsyncEnumerable<IUsedInItem> EnumerateItemsAsync(CancellationToken cancellationToken = default)
-        => _core.EnumerateItemsAsync(_serializedFilters, cancellationToken);
+    public IAsyncEnumerable<IUsedInItem> EnumerateAsync(CancellationToken cancellationToken = default)
+        => _core.EnumerateAsync(_serializedFilters, cancellationToken);
 
     public IAsyncEnumerable<IDeliveryResult<IReadOnlyList<IUsedInItem>>> EnumerateItemsWithStatusAsync(CancellationToken cancellationToken = default)
         => _core.EnumerateItemsWithStatusAsync(_serializedFilters, cancellationToken);
@@ -67,8 +67,8 @@ internal sealed class AssetUsedInQuery(
         return this;
     }
 
-    public IAsyncEnumerable<IUsedInItem> EnumerateItemsAsync(CancellationToken cancellationToken = default)
-        => _core.EnumerateItemsAsync(_serializedFilters, cancellationToken);
+    public IAsyncEnumerable<IUsedInItem> EnumerateAsync(CancellationToken cancellationToken = default)
+        => _core.EnumerateAsync(_serializedFilters, cancellationToken);
 
     public IAsyncEnumerable<IDeliveryResult<IReadOnlyList<IUsedInItem>>> EnumerateItemsWithStatusAsync(CancellationToken cancellationToken = default)
         => _core.EnumerateItemsWithStatusAsync(_serializedFilters, cancellationToken);
@@ -89,7 +89,7 @@ internal sealed class UsedInQueryCore(
 
     public void WaitForLoadingNewContent(bool enabled = true) => _waitForLoadingNewContent = enabled;
 
-    public async IAsyncEnumerable<IUsedInItem> EnumerateItemsAsync(
+    public async IAsyncEnumerable<IUsedInItem> EnumerateAsync(
         SerializedFilterCollection filters,
         [EnumeratorCancellation] CancellationToken cancellationToken = default)
     {

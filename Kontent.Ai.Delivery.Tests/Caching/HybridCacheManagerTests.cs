@@ -9,18 +9,18 @@ using Microsoft.Extensions.Caching.Distributed;
 namespace Kontent.Ai.Delivery.Tests.Caching;
 
 /// <summary>
-/// Comprehensive tests for DistributedCacheManager implementation.
+/// Comprehensive tests for HybridCacheManager (hybrid L1+L2 cache) implementation.
 /// Tests cover: basic operations, dependency tracking, invalidation, serialization, concurrency, and error handling.
 /// </summary>
-public class DistributedCacheManagerTests
+public class HybridCacheManagerTests
 {
     private readonly MockDistributedCache _mockCache;
-    private readonly DistributedCacheManager _cacheManager;
+    private readonly HybridCacheManager _cacheManager;
 
-    public DistributedCacheManagerTests()
+    public HybridCacheManagerTests()
     {
         _mockCache = new MockDistributedCache();
-        _cacheManager = new DistributedCacheManager(_mockCache, new DeliveryCacheOptions { DefaultExpiration = TimeSpan.FromMinutes(5) });
+        _cacheManager = new HybridCacheManager(_mockCache, new DeliveryCacheOptions { DefaultExpiration = TimeSpan.FromMinutes(5) });
     }
 
     #region Basic Operations Tests
@@ -102,14 +102,14 @@ public class DistributedCacheManagerTests
     public void Constructor_WithDefaultExpiration_AcceptsValue()
     {
         var expiration = TimeSpan.FromMinutes(30);
-        var manager = new DistributedCacheManager(_mockCache, new DeliveryCacheOptions { DefaultExpiration = expiration });
+        var manager = new HybridCacheManager(_mockCache, new DeliveryCacheOptions { DefaultExpiration = expiration });
 
         Assert.NotNull(manager);
     }
 
     [Fact]
     public void Constructor_WithNullExpiration_UsesDefaultOneHour() =>
-        Assert.NotNull(new DistributedCacheManager(_mockCache, new DeliveryCacheOptions()));
+        Assert.NotNull(new HybridCacheManager(_mockCache, new DeliveryCacheOptions()));
 
     [Fact]
     public async Task GetOrSetAsync_WithCustomExpiration_DoesNotThrow()
@@ -127,7 +127,7 @@ public class DistributedCacheManagerTests
     [Fact]
     public async Task GetOrSetAsync_ExpirationPassedToCacheEntry()
     {
-        var manager = new DistributedCacheManager(_mockCache, new DeliveryCacheOptions { DefaultExpiration = TimeSpan.FromHours(2) });
+        var manager = new HybridCacheManager(_mockCache, new DeliveryCacheOptions { DefaultExpiration = TimeSpan.FromHours(2) });
         var value = new TestCacheValue { Id = 1, Name = "Test" };
 
         await manager.GetOrSetAsync("test_key", _ =>
@@ -147,7 +147,7 @@ public class DistributedCacheManagerTests
     public async Task GetOrSetAsync_WithoutCustomExpiration_UsesDefaultExpiration()
     {
         var defaultExpiration = TimeSpan.FromMilliseconds(80);
-        var manager = new DistributedCacheManager(_mockCache, new DeliveryCacheOptions { DefaultExpiration = defaultExpiration });
+        var manager = new HybridCacheManager(_mockCache, new DeliveryCacheOptions { DefaultExpiration = defaultExpiration });
         var value = new TestCacheValue { Id = 1, Name = "Test" };
 
         await manager.GetOrSetAsync("test_key", _ =>
@@ -297,7 +297,7 @@ public class DistributedCacheManagerTests
     [Fact]
     public async Task GetOrSetAsync_SameDependencyWithShorterTtl_StillInvalidatesAllEntries()
     {
-        var manager = new DistributedCacheManager(_mockCache, new DeliveryCacheOptions { DefaultExpiration = TimeSpan.FromMinutes(5) });
+        var manager = new HybridCacheManager(_mockCache, new DeliveryCacheOptions { DefaultExpiration = TimeSpan.FromMinutes(5) });
         var dependency = "dep_shared";
 
         await manager.GetOrSetAsync("long_ttl_key", _ =>
@@ -512,7 +512,7 @@ public class DistributedCacheManagerTests
     public async Task GetOrSetAsync_WithPrefixedManager_DoesNotLeakToDefaultNamespace()
     {
         var value = new TestCacheValue { Id = 1, Name = "Test" };
-        var prefixedManager = new DistributedCacheManager(_mockCache, new DeliveryCacheOptions { KeyPrefix = "prefixed" });
+        var prefixedManager = new HybridCacheManager(_mockCache, new DeliveryCacheOptions { KeyPrefix = "prefixed" });
 
         await PopulateCache("test_key", value, [], prefixedManager);
 
@@ -585,8 +585,8 @@ public class DistributedCacheManagerTests
     public async Task GetOrSetAsync_WithDifferentPrefixes_IsolatesCacheEntries()
     {
         var sharedCache = new MockDistributedCache();
-        var manager1 = new DistributedCacheManager(sharedCache, new DeliveryCacheOptions { KeyPrefix = "client1" });
-        var manager2 = new DistributedCacheManager(sharedCache, new DeliveryCacheOptions { KeyPrefix = "client2" });
+        var manager1 = new HybridCacheManager(sharedCache, new DeliveryCacheOptions { KeyPrefix = "client1" });
+        var manager2 = new HybridCacheManager(sharedCache, new DeliveryCacheOptions { KeyPrefix = "client2" });
 
         var value1 = new TestCacheValue { Id = 1, Name = "Client1Value" };
         var value2 = new TestCacheValue { Id = 2, Name = "Client2Value" };
@@ -609,8 +609,8 @@ public class DistributedCacheManagerTests
     public async Task InvalidateAsync_WithDifferentPrefixes_OnlyAffectsOwnEntries()
     {
         var sharedCache = new MockDistributedCache();
-        var manager1 = new DistributedCacheManager(sharedCache, new DeliveryCacheOptions { KeyPrefix = "client1" });
-        var manager2 = new DistributedCacheManager(sharedCache, new DeliveryCacheOptions { KeyPrefix = "client2" });
+        var manager1 = new HybridCacheManager(sharedCache, new DeliveryCacheOptions { KeyPrefix = "client1" });
+        var manager2 = new HybridCacheManager(sharedCache, new DeliveryCacheOptions { KeyPrefix = "client2" });
 
         var dependency = "same_dep";
         var value1 = new TestCacheValue { Id = 1, Name = "Client1Value" };
@@ -629,8 +629,8 @@ public class DistributedCacheManagerTests
     public async Task GetOrSetAsync_WithDifferentPrefixes_DoesNotCrossContaminate()
     {
         var sharedCache = new MockDistributedCache();
-        var manager1 = new DistributedCacheManager(sharedCache, new DeliveryCacheOptions { KeyPrefix = "client1" });
-        var manager2 = new DistributedCacheManager(sharedCache, new DeliveryCacheOptions { KeyPrefix = "client2" });
+        var manager1 = new HybridCacheManager(sharedCache, new DeliveryCacheOptions { KeyPrefix = "client1" });
+        var manager2 = new HybridCacheManager(sharedCache, new DeliveryCacheOptions { KeyPrefix = "client2" });
 
         var value = new TestCacheValue { Id = 1, Name = "OnlyInClient1" };
         await PopulateCache("unique_key", value, [], manager1);
@@ -643,8 +643,8 @@ public class DistributedCacheManagerTests
     public async Task GetOrSetAsync_WithNullPrefix_UsesUnprefixedKeys()
     {
         var sharedCache = new MockDistributedCache();
-        var managerNoPrefix = new DistributedCacheManager(sharedCache, new DeliveryCacheOptions { KeyPrefix = null });
-        var managerWithPrefix = new DistributedCacheManager(sharedCache, new DeliveryCacheOptions { KeyPrefix = "prefixed" });
+        var managerNoPrefix = new HybridCacheManager(sharedCache, new DeliveryCacheOptions { KeyPrefix = null });
+        var managerWithPrefix = new HybridCacheManager(sharedCache, new DeliveryCacheOptions { KeyPrefix = "prefixed" });
 
         var value1 = new TestCacheValue { Id = 1, Name = "NoPrefix" };
         var value2 = new TestCacheValue { Id = 2, Name = "WithPrefix" };
@@ -665,8 +665,8 @@ public class DistributedCacheManagerTests
     public async Task InvalidateAsync_WithSharedDependencyName_OnlyInvalidatesOwnPrefix()
     {
         var sharedCache = new MockDistributedCache();
-        var manager1 = new DistributedCacheManager(sharedCache, new DeliveryCacheOptions { KeyPrefix = "prod" });
-        var manager2 = new DistributedCacheManager(sharedCache, new DeliveryCacheOptions { KeyPrefix = "preview" });
+        var manager1 = new HybridCacheManager(sharedCache, new DeliveryCacheOptions { KeyPrefix = "prod" });
+        var manager2 = new HybridCacheManager(sharedCache, new DeliveryCacheOptions { KeyPrefix = "preview" });
 
         var dependency = "content_type_article";
 
@@ -687,8 +687,8 @@ public class DistributedCacheManagerTests
     public async Task ConcurrentOperations_WithDifferentPrefixes_MaintainsIsolation()
     {
         var sharedCache = new MockDistributedCache();
-        var manager1 = new DistributedCacheManager(sharedCache, new DeliveryCacheOptions { KeyPrefix = "client1" });
-        var manager2 = new DistributedCacheManager(sharedCache, new DeliveryCacheOptions { KeyPrefix = "client2" });
+        var manager1 = new HybridCacheManager(sharedCache, new DeliveryCacheOptions { KeyPrefix = "client1" });
+        var manager2 = new HybridCacheManager(sharedCache, new DeliveryCacheOptions { KeyPrefix = "client2" });
 
         var dependency = "shared_dep_name";
 
@@ -714,8 +714,8 @@ public class DistributedCacheManagerTests
     public async Task Constructor_WithKeyPrefix_IsolatesEntries()
     {
         var cache = new MockDistributedCache();
-        var manager = new DistributedCacheManager(cache, new DeliveryCacheOptions { KeyPrefix = "my-prefix" });
-        var defaultManager = new DistributedCacheManager(cache, new DeliveryCacheOptions());
+        var manager = new HybridCacheManager(cache, new DeliveryCacheOptions { KeyPrefix = "my-prefix" });
+        var defaultManager = new HybridCacheManager(cache, new DeliveryCacheOptions());
 
         await PopulateCache("test", new TestCacheValue { Id = 1 }, [], manager);
         Assert.False(await IsFactoryCalledAsync("test", manager));

@@ -5,16 +5,16 @@ using Microsoft.Extensions.Logging;
 namespace Kontent.Ai.Delivery.Caching;
 
 /// <summary>
-/// Distributed implementation of <see cref="IDeliveryCacheManager"/> backed by FusionCache.
+/// Hybrid (L1 memory + L2 distributed) implementation of <see cref="IDeliveryCacheManager"/> backed by FusionCache.
 /// </summary>
-internal sealed class DistributedCacheManager(
+internal sealed class HybridCacheManager(
     IDistributedCache cache,
     DeliveryCacheOptions cacheOptions,
     JsonSerializerOptions? jsonSerializerOptions = null,
-    ILogger<DistributedCacheManager>? logger = null)
+    ILogger<HybridCacheManager>? logger = null)
     : IDeliveryCacheManager, IDeliveryCachePurger, IFailSafeStateProvider, IDisposable
 {
-    private readonly FusionCacheManager _inner = FusionCacheManager.CreateDistributed(
+    private readonly FusionCacheManager _inner = FusionCacheManager.CreateHybrid(
         cache,
         cacheOptions,
         jsonSerializerOptions,

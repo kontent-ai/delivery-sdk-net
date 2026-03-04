@@ -1210,10 +1210,10 @@ public partial class CachingIntegrationTests
 
     #endregion
 
-    #region Distributed Cache Integration Tests
+    #region Hybrid Cache Integration Tests
 
     [Fact]
-    public async Task DistributedCache_GetItem_CacheHitOnSecondCall()
+    public async Task HybridCache_GetItem_CacheHitOnSecondCall()
     {
         var mock = new MockHttpMessageHandler();
         var itemCodename = "coffee_beverages_explained";
@@ -1223,7 +1223,7 @@ public partial class CachingIntegrationTests
         mock.Expect($"{BaseUrl}/items/{itemCodename}")
             .Respond("application/json", fixtureContent);
 
-        var client = CreateClientWithDistributedCache(mock);
+        var client = CreateClientWithHybridCache(mock);
 
         var result1 = await client.GetItem<Article>(itemCodename).ExecuteAsync();
         var result2 = await client.GetItem<Article>(itemCodename).ExecuteAsync();
@@ -1247,7 +1247,7 @@ public partial class CachingIntegrationTests
     }
 
     [Fact]
-    public async Task DistributedCache_GetItems_CacheHitOnSecondCall()
+    public async Task HybridCache_GetItems_CacheHitOnSecondCall()
     {
         var mock = new MockHttpMessageHandler();
         var fixtureContent = await ReadFixtureAsync($"DeliveryClient{Path.DirectorySeparatorChar}articles.json");
@@ -1256,7 +1256,7 @@ public partial class CachingIntegrationTests
         mock.Expect($"{BaseUrl}/items?system.type%5Beq%5D=article")
             .Respond("application/json", fixtureContent);
 
-        var client = CreateClientWithDistributedCache(mock);
+        var client = CreateClientWithHybridCache(mock);
 
         var result1 = await client.GetItems<Article>()
             .Where(f => f.System("type").IsEqualTo("article"))
@@ -1285,7 +1285,7 @@ public partial class CachingIntegrationTests
     }
 
     [Fact]
-    public async Task DistributedCache_CorruptedModularContentPayload_FallsBackToApiAndRecaches()
+    public async Task HybridCache_CorruptedModularContentPayload_FallsBackToApiAndRecaches()
     {
         var mock = new MockHttpMessageHandler();
         var itemCodename = "coffee_beverages_explained";
@@ -1301,7 +1301,7 @@ public partial class CachingIntegrationTests
 
         var mockDistributedCache = new MockDistributedCache();
         SeedCorruptedDistributedItemPayload(mockDistributedCache, "test", itemCodename, fixtureContent);
-        var serviceProvider = BuildNamedDistributedCacheServiceProvider(mock, options, mockDistributedCache);
+        var serviceProvider = BuildNamedHybridCacheServiceProvider(mock, options, mockDistributedCache);
         var client = serviceProvider.GetRequiredKeyedService<IDeliveryClient>("test");
 
         var result1 = await client.GetItem<Article>(itemCodename).ExecuteAsync();
@@ -1315,7 +1315,7 @@ public partial class CachingIntegrationTests
     }
 
     [Fact]
-    public async Task DistributedCache_Invalidation_RefreshesCache()
+    public async Task HybridCache_Invalidation_RefreshesCache()
     {
         var mock = new MockHttpMessageHandler();
         var itemCodename = "coffee_beverages_explained";
@@ -1334,7 +1334,7 @@ public partial class CachingIntegrationTests
         services.AddSingleton<IDistributedCache>(mockDistributedCache);
         services.AddDeliveryClient("test", o => DeliveryOptionsCopyHelper.Copy(options, o),
             configureHttpClient: b => b.ConfigurePrimaryHttpMessageHandler(() => mock));
-        services.AddDeliveryDistributedCache("test");
+        services.AddDeliveryHybridCache("test");
 
         var serviceProvider = services.BuildServiceProvider();
         var client = serviceProvider.GetRequiredKeyedService<IDeliveryClient>("test");
@@ -1353,7 +1353,7 @@ public partial class CachingIntegrationTests
     }
 
     [Fact]
-    public async Task DistributedCache_ItemsListScopeInvalidation_RefreshesAllCachedItemLists()
+    public async Task HybridCache_ItemsListScopeInvalidation_RefreshesAllCachedItemLists()
     {
         var mock = new MockHttpMessageHandler();
         var fixtureContent = await ReadFixtureAsync($"DeliveryClient{Path.DirectorySeparatorChar}articles.json");
@@ -1377,7 +1377,7 @@ public partial class CachingIntegrationTests
         services.AddSingleton<IDistributedCache>(mockDistributedCache);
         services.AddDeliveryClient("test", o => DeliveryOptionsCopyHelper.Copy(options, o),
             configureHttpClient: b => b.ConfigurePrimaryHttpMessageHandler(() => mock));
-        services.AddDeliveryDistributedCache("test");
+        services.AddDeliveryHybridCache("test");
 
         var serviceProvider = services.BuildServiceProvider();
         var client = serviceProvider.GetRequiredKeyedService<IDeliveryClient>("test");
@@ -1428,7 +1428,7 @@ public partial class CachingIntegrationTests
     }
 
     [Fact]
-    public async Task DistributedCache_TypesListScopeInvalidation_RefreshesAllCachedTypeLists()
+    public async Task HybridCache_TypesListScopeInvalidation_RefreshesAllCachedTypeLists()
     {
         var mock = new MockHttpMessageHandler();
         var fixtureContent = await ReadFixtureAsync($"DeliveryClient{Path.DirectorySeparatorChar}types_accessory.json");
@@ -1446,7 +1446,7 @@ public partial class CachingIntegrationTests
         services.AddSingleton<IDistributedCache>(mockDistributedCache);
         services.AddDeliveryClient("test", o => DeliveryOptionsCopyHelper.Copy(options, o),
             configureHttpClient: b => b.ConfigurePrimaryHttpMessageHandler(() => mock));
-        services.AddDeliveryDistributedCache("test");
+        services.AddDeliveryHybridCache("test");
 
         var serviceProvider = services.BuildServiceProvider();
         var client = serviceProvider.GetRequiredKeyedService<IDeliveryClient>("test");
@@ -1477,7 +1477,7 @@ public partial class CachingIntegrationTests
     }
 
     [Fact]
-    public async Task DistributedCache_InvalidatingTypeDependency_RefreshesSingleTypeAndTypeLists()
+    public async Task HybridCache_InvalidatingTypeDependency_RefreshesSingleTypeAndTypeLists()
     {
         var mock = new MockHttpMessageHandler();
         var typeFixture = await ReadFixtureAsync($"DeliveryClient{Path.DirectorySeparatorChar}article.json");
@@ -1502,7 +1502,7 @@ public partial class CachingIntegrationTests
         services.AddSingleton<IDistributedCache>(mockDistributedCache);
         services.AddDeliveryClient("test", o => DeliveryOptionsCopyHelper.Copy(options, o),
             configureHttpClient: b => b.ConfigurePrimaryHttpMessageHandler(() => mock));
-        services.AddDeliveryDistributedCache("test");
+        services.AddDeliveryHybridCache("test");
 
         var serviceProvider = services.BuildServiceProvider();
         var client = serviceProvider.GetRequiredKeyedService<IDeliveryClient>("test");
@@ -1536,7 +1536,7 @@ public partial class CachingIntegrationTests
     }
 
     [Fact]
-    public async Task DistributedCache_TaxonomiesListScopeInvalidation_RefreshesAllCachedTaxonomyLists()
+    public async Task HybridCache_TaxonomiesListScopeInvalidation_RefreshesAllCachedTaxonomyLists()
     {
         var mock = new MockHttpMessageHandler();
         var fixtureContent = await ReadFixtureAsync($"DeliveryClient{Path.DirectorySeparatorChar}taxonomies_multiple.json");
@@ -1560,7 +1560,7 @@ public partial class CachingIntegrationTests
         services.AddSingleton<IDistributedCache>(mockDistributedCache);
         services.AddDeliveryClient("test", o => DeliveryOptionsCopyHelper.Copy(options, o),
             configureHttpClient: b => b.ConfigurePrimaryHttpMessageHandler(() => mock));
-        services.AddDeliveryDistributedCache("test");
+        services.AddDeliveryHybridCache("test");
 
         var serviceProvider = services.BuildServiceProvider();
         var client = serviceProvider.GetRequiredKeyedService<IDeliveryClient>("test");
@@ -1595,13 +1595,13 @@ public partial class CachingIntegrationTests
     }
 
     [Fact]
-    public async Task DistributedCache_GetItem_ConcurrentMisses_AreCoalescedToSingleApiCall()
+    public async Task HybridCache_GetItem_ConcurrentMisses_AreCoalescedToSingleApiCall()
     {
         var itemCodename = "coffee_beverages_explained";
         var fixtureContent = await ReadFixtureAsync($"DeliveryClient{Path.DirectorySeparatorChar}{itemCodename}.json");
 
         var handler = new DelayedJsonResponseHandler(fixtureContent, TimeSpan.FromMilliseconds(100));
-        var client = CreateClientWithDistributedCache(handler);
+        var client = CreateClientWithHybridCache(handler);
 
         var results = await Task.WhenAll(
             Enumerable.Range(0, 12)
@@ -1618,12 +1618,12 @@ public partial class CachingIntegrationTests
     }
 
     [Fact]
-    public async Task DistributedCache_GetItems_ConcurrentMisses_AreCoalescedToSingleApiCall()
+    public async Task HybridCache_GetItems_ConcurrentMisses_AreCoalescedToSingleApiCall()
     {
         var fixtureContent = await ReadFixtureAsync($"DeliveryClient{Path.DirectorySeparatorChar}articles.json");
 
         var handler = new DelayedJsonResponseHandler(fixtureContent, TimeSpan.FromMilliseconds(100));
-        var client = CreateClientWithDistributedCache(handler);
+        var client = CreateClientWithHybridCache(handler);
 
         var results = await Task.WhenAll(
             Enumerable.Range(0, 12)
@@ -1637,7 +1637,7 @@ public partial class CachingIntegrationTests
     }
 
     [Fact]
-    public async Task DistributedCache_ConcurrentTypesMiss_WithScopeInvalidationRace_CompletesAndSupportsRefresh()
+    public async Task HybridCache_ConcurrentTypesMiss_WithScopeInvalidationRace_CompletesAndSupportsRefresh()
     {
         var fixtureContent = await ReadFixtureAsync($"DeliveryClient{Path.DirectorySeparatorChar}types_accessory.json");
         var handler = new DelayedJsonResponseHandler(fixtureContent, TimeSpan.FromMilliseconds(100));
@@ -1646,7 +1646,7 @@ public partial class CachingIntegrationTests
             EnvironmentId = _guid.ToString()
         };
 
-        var serviceProvider = BuildNamedDistributedCacheServiceProvider(handler, options, new MockDistributedCache(), defaultExpiration: TimeSpan.FromMinutes(5));
+        var serviceProvider = BuildNamedHybridCacheServiceProvider(handler, options, new MockDistributedCache(), defaultExpiration: TimeSpan.FromMinutes(5));
         var client = serviceProvider.GetRequiredKeyedService<IDeliveryClient>("test");
         var cacheManager = serviceProvider.GetRequiredKeyedService<IDeliveryCacheManager>("test");
 
@@ -1725,7 +1725,7 @@ public partial class CachingIntegrationTests
     }
 
     [Fact]
-    public async Task DistributedCache_FailSafe_SetsResponseSourceToFailSafe()
+    public async Task HybridCache_FailSafe_SetsResponseSourceToFailSafe()
     {
         var mock = new MockHttpMessageHandler();
         var itemCodename = "coffee_beverages_explained";
@@ -1740,7 +1740,7 @@ public partial class CachingIntegrationTests
         var services = new ServiceCollection();
         services.AddSingleton<IDistributedCache>(mockDistributedCache);
         AddNamedDeliveryClient(services, "test", options, mock);
-        services.AddDeliveryDistributedCache("test", opts =>
+        services.AddDeliveryHybridCache("test", opts =>
         {
             opts.DefaultExpiration = TimeSpan.FromMilliseconds(50);
             opts.IsFailSafeEnabled = true;
@@ -1828,7 +1828,7 @@ public partial class CachingIntegrationTests
     }
 
     [Fact]
-    public async Task DistributedCache_FailSafe_ConcurrentRequests_ReportFailSafeForAllResponses()
+    public async Task HybridCache_FailSafe_ConcurrentRequests_ReportFailSafeForAllResponses()
     {
         var itemCodename = "coffee_beverages_explained";
         var fixtureContent = await ReadFixtureAsync($"DeliveryClient{Path.DirectorySeparatorChar}{itemCodename}.json");
@@ -1845,7 +1845,7 @@ public partial class CachingIntegrationTests
         var services = new ServiceCollection();
         services.AddSingleton<IDistributedCache>(new MockDistributedCache());
         AddNamedDeliveryClient(services, "test", options, handler);
-        services.AddDeliveryDistributedCache("test", opts =>
+        services.AddDeliveryHybridCache("test", opts =>
         {
             opts.DefaultExpiration = TimeSpan.FromMilliseconds(50);
             opts.IsFailSafeEnabled = true;
@@ -2317,14 +2317,14 @@ public partial class CachingIntegrationTests
         return provider.GetRequiredKeyedService<IDeliveryClient>("test");
     }
 
-    private IDeliveryClient CreateClientWithDistributedCache(HttpMessageHandler httpHandler)
+    private IDeliveryClient CreateClientWithHybridCache(HttpMessageHandler httpHandler)
     {
         var options = new DeliveryOptions
         {
             EnvironmentId = _guid.ToString()
         };
 
-        var provider = BuildNamedDistributedCacheServiceProvider(httpHandler, options, new MockDistributedCache());
+        var provider = BuildNamedHybridCacheServiceProvider(httpHandler, options, new MockDistributedCache());
         return provider.GetRequiredKeyedService<IDeliveryClient>("test");
     }
 
@@ -2350,7 +2350,7 @@ public partial class CachingIntegrationTests
         return services.BuildServiceProvider();
     }
 
-    private static ServiceProvider BuildNamedDistributedCacheServiceProvider(
+    private static ServiceProvider BuildNamedHybridCacheServiceProvider(
         HttpMessageHandler httpHandler,
         DeliveryOptions options,
         IDistributedCache distributedCache,
@@ -2360,7 +2360,7 @@ public partial class CachingIntegrationTests
         var services = new ServiceCollection();
         services.AddSingleton(distributedCache);
         AddNamedDeliveryClient(services, clientName, options, httpHandler);
-        services.AddDeliveryDistributedCache(clientName, defaultExpiration: defaultExpiration);
+        services.AddDeliveryHybridCache(clientName, defaultExpiration: defaultExpiration);
         return services.BuildServiceProvider();
     }
 

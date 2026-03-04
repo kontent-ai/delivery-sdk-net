@@ -388,7 +388,7 @@ var provider = services.BuildServiceProvider();
 Both built-in cache managers are thin wrappers over a shared `FusionCacheManager` engine:
 
 - **`MemoryCacheManager`** — creates a FusionCache instance with L1 only (hydrated objects, `CacheStorageMode.HydratedObject`)
-- **`DistributedCacheManager`** — creates a FusionCache instance with L1+L2 (raw JSON via `FusionCacheSystemTextJsonSerializer`, `CacheStorageMode.RawJson`)
+- **`HybridCacheManager`** — creates a FusionCache instance with L1+L2 (raw JSON via `FusionCacheSystemTextJsonSerializer`, `CacheStorageMode.RawJson`)
 
 **Invalidation Model:**
 
@@ -841,7 +841,7 @@ public static IServiceCollection AddDeliveryClient(
 ```
 
 Cache manager resolution is keyed-only. Unkeyed `IDeliveryCacheManager` registrations are ignored by `DeliveryClient` creation.
-For built-in caching, use `AddDeliveryMemoryCache` / `AddDeliveryDistributedCache` from the `Kontent.Ai.Delivery.Caching` package. For custom cache implementations, use `AddDeliveryCacheManager(clientName, factory)` to register per client.
+For built-in caching, use `AddDeliveryMemoryCache` / `AddDeliveryHybridCache` from the `Kontent.Ai.Delivery.Caching` package. For custom cache implementations, use `AddDeliveryCacheManager(clientName, factory)` to register per client.
 Preview cache bypass is enforced by `DeliveryClient` itself (`UsePreviewApi = true` => no cache read/write for that client), not by a cache-manager decorator.
 
 ### Core Dependencies Registration

@@ -156,7 +156,7 @@ internal sealed class FusionCacheManager : IDeliveryCacheManager, IDeliveryCache
             ownsFusionCache: true);
     }
 
-    public static FusionCacheManager CreateDistributed(
+    public static FusionCacheManager CreateHybrid(
         IDistributedCache distributedCache,
         DeliveryCacheOptions cacheOptions,
         JsonSerializerOptions? serializerOptions = null,
@@ -192,7 +192,7 @@ internal sealed class FusionCacheManager : IDeliveryCacheManager, IDeliveryCache
 
         var fusionCacheOptions = new FusionCacheOptions
         {
-            CacheName = $"KontentDelivery.Distributed.{(string.IsNullOrWhiteSpace(keyPrefix) ? "Default" : keyPrefix)}",
+            CacheName = $"KontentDelivery.Hybrid.{(string.IsNullOrWhiteSpace(keyPrefix) ? "Default" : keyPrefix)}",
             DistributedCacheKeyModifierMode = CacheKeyModifierMode.None,
             // Required for deterministic fail-safe source propagation in query builders.
             EnableSyncEventHandlersExecution = true,

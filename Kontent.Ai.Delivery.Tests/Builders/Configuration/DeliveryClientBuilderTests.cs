@@ -172,7 +172,7 @@ public class DeliveryClientBuilderTests
     }
 
     [Fact]
-    public void Build_WithDistributedCache_CreatesClient()
+    public void Build_WithHybridCache_CreatesClient()
     {
         // Arrange
         var distributedCache = new TestDistributedCache();
@@ -183,7 +183,7 @@ public class DeliveryClientBuilderTests
                 .WithEnvironmentId(EnvironmentId)
                 .UseProductionApi()
                 .Build())
-            .WithDistributedCache(distributedCache, TimeSpan.FromHours(1))
+            .WithHybridCache(distributedCache, TimeSpan.FromHours(1))
             .Build();
 
         // Assert
@@ -235,7 +235,7 @@ public class DeliveryClientBuilderTests
     }
 
     [Fact]
-    public void WithDistributedCache_WithNull_ThrowsArgumentNullException()
+    public void WithHybridCache_WithNull_ThrowsArgumentNullException()
     {
         // Act & Assert
         Assert.Throws<ArgumentNullException>(() =>
@@ -244,11 +244,11 @@ public class DeliveryClientBuilderTests
                     .WithEnvironmentId(EnvironmentId)
                     .UseProductionApi()
                     .Build())
-                .WithDistributedCache(null!));
+                .WithHybridCache(null!));
     }
 
     [Fact]
-    public void Build_CallingMemoryCacheAfterDistributedCache_UsesLastConfigured()
+    public void Build_CallingMemoryCacheAfterHybridCache_UsesLastConfigured()
     {
         // Arrange
         var distributedCache = new TestDistributedCache();
@@ -259,7 +259,7 @@ public class DeliveryClientBuilderTests
                 .WithEnvironmentId(EnvironmentId)
                 .UseProductionApi()
                 .Build())
-            .WithDistributedCache(distributedCache)
+            .WithHybridCache(distributedCache)
             .WithMemoryCache(TimeSpan.FromMinutes(30))
             .Build();
 
@@ -269,7 +269,7 @@ public class DeliveryClientBuilderTests
     }
 
     [Fact]
-    public void Build_CallingDistributedCacheAfterMemoryCache_UsesLastConfigured()
+    public void Build_CallingHybridCacheAfterMemoryCache_UsesLastConfigured()
     {
         // Arrange
         var distributedCache = new TestDistributedCache();
@@ -281,7 +281,7 @@ public class DeliveryClientBuilderTests
                 .UseProductionApi()
                 .Build())
             .WithMemoryCache(TimeSpan.FromMinutes(30))
-            .WithDistributedCache(distributedCache, TimeSpan.FromHours(1))
+            .WithHybridCache(distributedCache, TimeSpan.FromHours(1))
             .Build();
 
         // Assert
@@ -445,7 +445,7 @@ public class DeliveryClientBuilderTests
     }
 
     [Fact]
-    public void Build_WithDistributedCacheAdvanced_CreatesClient()
+    public void Build_WithHybridCacheAdvanced_CreatesClient()
     {
         // Arrange
         var distributedCache = new TestDistributedCache();
@@ -456,7 +456,7 @@ public class DeliveryClientBuilderTests
                 .WithEnvironmentId(EnvironmentId)
                 .UseProductionApi()
                 .Build())
-            .WithDistributedCache(distributedCache, opts =>
+            .WithHybridCache(distributedCache, opts =>
             {
                 opts.DefaultExpiration = TimeSpan.FromMinutes(30);
             })
@@ -483,7 +483,7 @@ public class DeliveryClientBuilderTests
     }
 
     [Fact]
-    public void WithDistributedCacheAdvanced_WithNullDistributedCache_ThrowsArgumentNullException()
+    public void WithHybridCacheAdvanced_WithNullDistributedCache_ThrowsArgumentNullException()
     {
         // Act & Assert
         Assert.Throws<ArgumentNullException>(() =>
@@ -492,14 +492,14 @@ public class DeliveryClientBuilderTests
                     .WithEnvironmentId(EnvironmentId)
                     .UseProductionApi()
                     .Build())
-                .WithDistributedCache(null!, opts =>
+                .WithHybridCache(null!, opts =>
                 {
                     opts.DefaultExpiration = TimeSpan.FromMinutes(30);
                 }));
     }
 
     [Fact]
-    public void WithDistributedCacheAdvanced_WithNullDelegate_ThrowsArgumentNullException()
+    public void WithHybridCacheAdvanced_WithNullDelegate_ThrowsArgumentNullException()
     {
         // Act & Assert
         Assert.Throws<ArgumentNullException>(() =>
@@ -508,7 +508,7 @@ public class DeliveryClientBuilderTests
                     .WithEnvironmentId(EnvironmentId)
                     .UseProductionApi()
                     .Build())
-                .WithDistributedCache(new TestDistributedCache(), (Action<DeliveryCacheOptions>)null!));
+                .WithHybridCache(new TestDistributedCache(), (Action<DeliveryCacheOptions>)null!));
     }
 
     // Simple test implementation of ITypeProvider

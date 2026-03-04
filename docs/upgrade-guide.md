@@ -58,7 +58,7 @@ Use this checklist to ensure you've addressed all required changes:
 - [ ] Refactor all `GetItemAsync<T>()` calls to `GetItem<T>().ExecuteAsync()`
 - [ ] Refactor all `GetItemsAsync<T>()` calls to `GetItems<T>().ExecuteAsync()`
 - [ ] Migrate all filtering from parameter classes to fluent `Where()` syntax
-- [ ] Update caching registration from `AddDeliveryClientCache()` to `AddDeliveryMemoryCache()` or `AddDeliveryDistributedCache()`
+- [ ] Update caching registration from `AddDeliveryClientCache()` to `AddDeliveryMemoryCache()` or `AddDeliveryHybridCache()`
 - [ ] Replace `IContentLinkUrlResolver` implementations with `HtmlResolverBuilder`
 - [ ] Replace `IInlineContentItemsResolver<T>` implementations with `HtmlResolverBuilder`
 - [ ] Update response handling to use result pattern (`IsSuccess`, `Value`, `Error`)
@@ -209,7 +209,7 @@ do
 **New:**
 ```csharp
 // Option 1: Automatic async enumeration (recommended for streaming)
-await foreach (var item in client.GetItemsFeed<Article>().EnumerateItemsAsync())
+await foreach (var item in client.GetItemsFeed<Article>().EnumerateAsync())
 {
     ProcessItem(item);
 }
@@ -505,7 +505,7 @@ services.AddDeliveryClient(options =>
 services.AddDeliveryMemoryCache(defaultExpiration: TimeSpan.FromHours(1));
 ```
 
-### 3.3 Distributed Cache Registration (Redis)
+### 3.3 Hybrid Cache Registration (Redis)
 
 **Legacy:**
 ```csharp
@@ -530,16 +530,16 @@ services.AddStackExchangeRedisCache(options =>
     options.Configuration = "localhost:6379";
 });
 
-// Then register delivery client with distributed cache
+// Then register delivery client with hybrid cache
 services.AddDeliveryClient(options =>
 {
     options.EnvironmentId = "your-environment-id";
 });
-services.AddDeliveryDistributedCache(defaultExpiration: TimeSpan.FromHours(2));
+services.AddDeliveryHybridCache(defaultExpiration: TimeSpan.FromHours(2));
 ```
 
 > [!NOTE]
-> Built-in cache registrations (in the `Kontent.Ai.Delivery.Caching` package) are FusionCache-backed internally. Distributed caching stores raw JSON payloads to avoid serialization issues with hydrated object graphs. If you implement a custom distributed cache manager, override `StorageMode` to return `CacheStorageMode.RawJson` so the SDK uses the raw JSON caching path.
+> Built-in cache registrations (in the `Kontent.Ai.Delivery.Caching` package) are FusionCache-backed internally. Hybrid caching stores raw JSON payloads to avoid serialization issues with hydrated object graphs. If you implement a custom hybrid cache manager, override `StorageMode` to return `CacheStorageMode.RawJson` so the SDK uses the raw JSON caching path.
 
 ### 3.4 Named Client Caching
 
@@ -567,10 +567,10 @@ services.AddDeliveryMemoryCache("production", defaultExpiration: TimeSpan.FromHo
 | Legacy Option | New Equivalent |
 |--------------|----------------|
 | `CacheType = CacheTypeEnum.Memory` | Use `AddDeliveryMemoryCache()` |
-| `CacheType = CacheTypeEnum.Distributed` | Use `AddDeliveryDistributedCache()` |
+| `CacheType = CacheTypeEnum.Distributed` | Use `AddDeliveryHybridCache()` |
 | `DefaultExpiration` | Pass as parameter to cache registration method |
 | `StaleContentExpiration` | Handled automatically by result's `HasStaleContent` property |
-| `DistributedCacheResilientPolicy` | Removed (handled by Polly resilience pipeline) |
+| `DistributedCacheResilientPolicy` (legacy) | Removed (handled by Polly resilience pipeline) |
 
 ### 3.6 Cache Invalidation
 
@@ -612,7 +612,7 @@ await cacheManager.InvalidateAsync(default, $"taxonomy_{taxonomyCodename}", Deli
 **Custom cache manager migration (keyed):**
 ```csharp
 // Legacy (unkeyed, no longer used by SDK client resolution)
-services.AddSingleton<IDeliveryCacheManager, CustomDistributedCacheManager>();
+services.AddSingleton<IDeliveryCacheManager, CustomHybridCacheManager>();
 
 // New (keyed per client)
 services.AddDeliveryClient("production", options =>
@@ -620,7 +620,7 @@ services.AddDeliveryClient("production", options =>
     options.EnvironmentId = "production-environment-id";
 });
 services.AddDeliveryCacheManager("production",
-    sp => new CustomDistributedCacheManager(sp.GetRequiredService<IDistributedCache>()));
+    sp => new CustomHybridCacheManager(sp.GetRequiredService<IDistributedCache>()));
 ```
 
 **Dependency Key Format:**
@@ -719,6 +719,37 @@ This applies to:
 - `GetTypes()`
 - `GetTaxonomy()`
 - `GetTaxonomies()`
+
+### 3.7 DistributedCache to HybridCache Rename
+
+The SDK's distributed cache APIs have been renamed to "Hybrid Cache" to better reflect their FusionCache L1+L2 architecture and avoid confusion with Microsoft's `IDistributedCache` interface (which remains unchanged).
+
+| Old Name | New Name |
+|----------|----------|
+| `AddDeliveryDistributedCache()` | `AddDeliveryHybridCache()` |
+| `WithDistributedCache()` | `WithHybridCache()` |
+| `DistributedCacheManager` | `HybridCacheManager` |
+| `FusionCacheManager.CreateDistributed()` | `FusionCacheManager.CreateHybrid()` |
+
+**Migration:**
+```csharp
+// Before
+services.AddDeliveryDistributedCache("production", defaultExpiration: TimeSpan.FromHours(2));
+
+// After
+services.AddDeliveryHybridCache("production", defaultExpiration: TimeSpan.FromHours(2));
+```
+
+```csharp
+// Before (builder pattern)
+var client = DeliveryClientBuilder.WithDistributedCache(distributedCache, TimeSpan.FromHours(2));
+
+// After
+var client = DeliveryClientBuilder.WithHybridCache(distributedCache, TimeSpan.FromHours(2));
+```
+
+> [!NOTE]
+> Microsoft's `IDistributedCache`, `AddDistributedMemoryCache`, `AddStackExchangeRedisCache`, `AddDistributedSqlServerCache`, and FusionCache's own distributed cache options are **not** affected by this rename. Only the SDK's own wrapper types and DI extension methods have changed.
 
 ---
 
@@ -1632,9 +1663,9 @@ var client = container.Client;
 | Removed Class | Replacement |
 |--------------|-------------|
 | `DefaultRetryPolicyOptions` | `HttpRetryStrategyOptions` from Polly |
-| `DeliveryCacheOptions` | Parameters to `AddDeliveryMemoryCache()` / `AddDeliveryDistributedCache()` |
+| `DeliveryCacheOptions` | Parameters to `AddDeliveryMemoryCache()` / `AddDeliveryHybridCache()` |
 | `DeliveryClientCache` | Internal implementation (use `AddDelivery*Cache()` methods) |
-| `CacheManagerFactory` | Use `DeliveryClientBuilder.WithMemoryCache()` or `WithDistributedCache()` |
+| `CacheManagerFactory` | Use `DeliveryClientBuilder.WithMemoryCache()` or `WithHybridCache()` |
 | `EqualsFilter`, `ContainsFilter`, etc. | Fluent filter builder via `Where()` |
 | `LanguageParameter`, `LimitParameter`, etc. | Fluent query builder methods |
 
@@ -1688,7 +1719,7 @@ client.GetItemsObservable<Article>()
 **New:**
 ```csharp
 // Use native async enumeration
-await foreach (var article in client.GetItemsFeed<Article>().EnumerateItemsAsync())
+await foreach (var article in client.GetItemsFeed<Article>().EnumerateAsync())
 {
     Console.WriteLine(article.Elements.Title);
 }
@@ -1698,7 +1729,7 @@ await foreach (var article in client.GetItemsFeed<Article>().EnumerateItemsAsync
 using System.Reactive.Linq;
 
 var observable = client.GetItemsFeed<Article>()
-    .EnumerateItemsAsync()
+    .EnumerateAsync()
     .ToObservable();
 
 observable.Subscribe(
@@ -1718,7 +1749,7 @@ These features are optional to adopt but provide improved functionality.
 Efficiently iterate over large datasets without loading all items into memory:
 
 ```csharp
-await foreach (var item in client.GetItemsFeed<Article>().EnumerateItemsAsync())
+await foreach (var item in client.GetItemsFeed<Article>().EnumerateAsync())
 {
     await ProcessItemAsync(item);
 }
@@ -1810,19 +1841,19 @@ Find content that references specific items or assets:
 
 ```csharp
 // Find items referencing a content item
-await foreach (var usage in client.GetItemUsedIn("author_john").EnumerateItemsAsync())
+await foreach (var usage in client.GetItemUsedIn("author_john").EnumerateAsync())
 {
     Console.WriteLine($"Referenced by: {usage.System.Name}");
 }
 
 // Find items using a specific asset
-await foreach (var usage in client.GetAssetUsedIn("hero_image").EnumerateItemsAsync())
+await foreach (var usage in client.GetAssetUsedIn("hero_image").EnumerateAsync())
 {
     Console.WriteLine($"Asset used in: {usage.System.Name}");
 }
 ```
 
-`EnumerateItemsAsync()` stops when a subsequent page request fails and returns the items already received.
+`EnumerateAsync()` stops when a subsequent page request fails and returns the items already received.
 If you need explicit page-level failure handling, use `EnumerateItemsWithStatusAsync()`:
 
 ```csharp

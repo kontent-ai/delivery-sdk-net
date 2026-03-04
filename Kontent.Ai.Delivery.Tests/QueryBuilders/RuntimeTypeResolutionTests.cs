@@ -261,7 +261,7 @@ public class RuntimeTypeResolutionTests
 
         // Act
         var items = new List<IContentItem>();
-        await foreach (var item in client.GetItemsFeed().EnumerateItemsAsync())
+        await foreach (var item in client.GetItemsFeed().EnumerateAsync())
         {
             items.Add(item);
         }
@@ -494,7 +494,7 @@ public class RuntimeTypeResolutionTests
 
         // Act
         var items = new List<IContentItem>();
-        await foreach (var item in client.GetItemsFeed().EnumerateItemsAsync())
+        await foreach (var item in client.GetItemsFeed().EnumerateAsync())
         {
             items.Add(item);
         }

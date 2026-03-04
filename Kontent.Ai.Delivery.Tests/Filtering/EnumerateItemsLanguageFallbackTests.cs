@@ -31,7 +31,7 @@ public class EnumerateItemsLanguageFallbackTests
         var items = new List<IContentItem>();
         await foreach (var item in client.GetItemsFeed()
             .WithLanguage("es-ES", LanguageFallbackMode.Disabled)
-            .EnumerateItemsAsync())
+            .EnumerateAsync())
         {
             items.Add(item);
         }

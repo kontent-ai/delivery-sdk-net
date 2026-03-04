@@ -174,7 +174,7 @@ public class RedisCacheIntegrationTests
             options.EnvironmentId = _guid.ToString();
         }, configureHttpClient: builder => builder.ConfigurePrimaryHttpMessageHandler(() => mockHttp));
 
-        services.AddDeliveryDistributedCache(ClientName, keyPrefix: keyPrefix, defaultExpiration: TimeSpan.FromMinutes(5));
+        services.AddDeliveryHybridCache(ClientName, keyPrefix: keyPrefix, defaultExpiration: TimeSpan.FromMinutes(5));
         return services.BuildServiceProvider();
     }
 

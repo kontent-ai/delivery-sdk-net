@@ -201,7 +201,7 @@ public static class ServiceCollectionExtensions
     }
 
     /// <summary>
-    /// Registers a distributed cache manager for the default Delivery client.
+    /// Registers a hybrid cache manager for the default Delivery client.
     /// </summary>
     /// <param name="services">The service collection.</param>
     /// <param name="defaultExpiration">
@@ -226,15 +226,15 @@ public static class ServiceCollectionExtensions
     /// <code>
     /// services.AddStackExchangeRedisCache(options => options.Configuration = "localhost");
     /// services.AddDeliveryClient(o => o.EnvironmentId = envId);
-    /// services.AddDeliveryDistributedCache(defaultExpiration: TimeSpan.FromHours(2));
+    /// services.AddDeliveryHybridCache(defaultExpiration: TimeSpan.FromHours(2));
     /// </code>
     /// </para>
     /// </remarks>
-    public static IServiceCollection AddDeliveryDistributedCache(
+    public static IServiceCollection AddDeliveryHybridCache(
         this IServiceCollection services,
         TimeSpan? defaultExpiration = null)
     {
-        return services.AddDeliveryDistributedCache(
+        return services.AddDeliveryHybridCache(
             DeliveryClientNames.Default,
             options =>
             {
@@ -246,7 +246,7 @@ public static class ServiceCollectionExtensions
     }
 
     /// <summary>
-    /// Registers a distributed cache manager for the default Delivery client with advanced configuration.
+    /// Registers a hybrid cache manager for the default Delivery client with advanced configuration.
     /// </summary>
     /// <param name="services">The service collection.</param>
     /// <param name="configureCacheOptions">A delegate to configure the <see cref="DeliveryCacheOptions"/>.</param>
@@ -263,7 +263,7 @@ public static class ServiceCollectionExtensions
     /// <code>
     /// services.AddStackExchangeRedisCache(options => options.Configuration = "localhost");
     /// services.AddDeliveryClient(o => o.EnvironmentId = envId);
-    /// services.AddDeliveryDistributedCache(opts =>
+    /// services.AddDeliveryHybridCache(opts =>
     /// {
     ///     opts.DefaultExpiration = TimeSpan.FromHours(2);
     ///     opts.IsFailSafeEnabled = true;
@@ -272,17 +272,17 @@ public static class ServiceCollectionExtensions
     /// </code>
     /// </para>
     /// </remarks>
-    public static IServiceCollection AddDeliveryDistributedCache(
+    public static IServiceCollection AddDeliveryHybridCache(
         this IServiceCollection services,
         Action<DeliveryCacheOptions> configureCacheOptions)
     {
-        return services.AddDeliveryDistributedCache(
+        return services.AddDeliveryHybridCache(
             DeliveryClientNames.Default,
             configureCacheOptions);
     }
 
     /// <summary>
-    /// Registers a distributed cache manager for a specific named Delivery client.
+    /// Registers a hybrid cache manager for a specific named Delivery client.
     /// </summary>
     /// <param name="services">The service collection.</param>
     /// <param name="clientName">The name of the Delivery client to enable caching for.</param>
@@ -315,17 +315,17 @@ public static class ServiceCollectionExtensions
     /// <code>
     /// services.AddStackExchangeRedisCache(options => options.Configuration = "localhost");
     /// services.AddDeliveryClient("production", o => o.EnvironmentId = prodEnvId);
-    /// services.AddDeliveryDistributedCache("production", defaultExpiration: TimeSpan.FromHours(2));
+    /// services.AddDeliveryHybridCache("production", defaultExpiration: TimeSpan.FromHours(2));
     /// </code>
     /// </para>
     /// </remarks>
-    public static IServiceCollection AddDeliveryDistributedCache(
+    public static IServiceCollection AddDeliveryHybridCache(
         this IServiceCollection services,
         string clientName,
         string? keyPrefix = null,
         TimeSpan? defaultExpiration = null)
     {
-        return services.AddDeliveryDistributedCache(
+        return services.AddDeliveryHybridCache(
             clientName,
             options =>
             {
@@ -338,7 +338,7 @@ public static class ServiceCollectionExtensions
     }
 
     /// <summary>
-    /// Registers a distributed cache manager for a specific named Delivery client with advanced configuration.
+    /// Registers a hybrid cache manager for a specific named Delivery client with advanced configuration.
     /// </summary>
     /// <param name="services">The service collection.</param>
     /// <param name="clientName">The name of the Delivery client to enable caching for.</param>
@@ -358,7 +358,7 @@ public static class ServiceCollectionExtensions
     /// <code>
     /// services.AddStackExchangeRedisCache(options => options.Configuration = "localhost");
     /// services.AddDeliveryClient("production", o => o.EnvironmentId = prodEnvId);
-    /// services.AddDeliveryDistributedCache("production", opts =>
+    /// services.AddDeliveryHybridCache("production", opts =>
     /// {
     ///     opts.DefaultExpiration = TimeSpan.FromHours(2);
     ///     opts.IsFailSafeEnabled = true;
@@ -366,7 +366,7 @@ public static class ServiceCollectionExtensions
     /// </code>
     /// </para>
     /// </remarks>
-    public static IServiceCollection AddDeliveryDistributedCache(
+    public static IServiceCollection AddDeliveryHybridCache(
         this IServiceCollection services,
         string clientName,
         Action<DeliveryCacheOptions> configureCacheOptions)
@@ -377,7 +377,7 @@ public static class ServiceCollectionExtensions
 
         var cacheOptions = CreateCacheOptions(clientName, configureCacheOptions);
 
-        return AddDeliveryDistributedCacheCore(services, clientName, cacheOptions);
+        return AddDeliveryHybridCacheCore(services, clientName, cacheOptions);
     }
 
     private static IServiceCollection AddDeliveryMemoryCacheCore(
@@ -400,7 +400,7 @@ public static class ServiceCollectionExtensions
                 sp.GetService<ILogger<MemoryCacheManager>>()));
     }
 
-    private static IServiceCollection AddDeliveryDistributedCacheCore(
+    private static IServiceCollection AddDeliveryHybridCacheCore(
         IServiceCollection services,
         string clientName,
         DeliveryCacheOptions cacheOptions)
@@ -411,10 +411,10 @@ public static class ServiceCollectionExtensions
         return RegisterCacheManager(
             services,
             clientName,
-            sp => new DistributedCacheManager(
+            sp => new HybridCacheManager(
                 sp.GetRequiredService<IDistributedCache>(),
                 cacheOptions,
-                logger: sp.GetService<ILogger<DistributedCacheManager>>()));
+                logger: sp.GetService<ILogger<HybridCacheManager>>()));
     }
 
     private static IServiceCollection RegisterCacheManager(

@@ -59,7 +59,7 @@ public interface IDeliveryResult<out T>
 
     /// <summary>
     /// Gets a value indicating whether this result was served from the SDK's local cache
-    /// (MemoryCacheManager or DistributedCacheManager).
+    /// (MemoryCacheManager or HybridCacheManager).
     /// Equivalent to <c><see cref="ResponseSource"/> is <see cref="ResponseSource.Cache"/> or <see cref="ResponseSource.FailSafe"/></c>.
     /// When <c>true</c>, <see cref="ResponseHeaders"/> will be <c>null</c> and properties like
     /// <see cref="StatusCode"/>, <see cref="HasStaleContent"/>, and <see cref="ContinuationToken"/>

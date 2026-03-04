@@ -104,7 +104,7 @@ public class QueryEnumerationExtensionsTests
     {
         public IItemUsedInQuery WaitForLoadingNewContent(bool enabled = true) => this;
         public IItemUsedInQuery Where(Func<IItemsFilterBuilder, IItemsFilterBuilder> build) => this;
-        public IAsyncEnumerable<IUsedInItem> EnumerateItemsAsync(CancellationToken cancellationToken = default)
+        public IAsyncEnumerable<IUsedInItem> EnumerateAsync(CancellationToken cancellationToken = default)
             => throw new NotImplementedException();
     }
 
@@ -113,7 +113,7 @@ public class QueryEnumerationExtensionsTests
     {
         public IAssetUsedInQuery WaitForLoadingNewContent(bool enabled = true) => this;
         public IAssetUsedInQuery Where(Func<IItemsFilterBuilder, IItemsFilterBuilder> build) => this;
-        public IAsyncEnumerable<IUsedInItem> EnumerateItemsAsync(CancellationToken cancellationToken = default)
+        public IAsyncEnumerable<IUsedInItem> EnumerateAsync(CancellationToken cancellationToken = default)
             => throw new NotImplementedException();
     }
 
@@ -130,7 +130,7 @@ public class QueryEnumerationExtensionsTests
         public IEnumerateItemsQuery<TModel> OrderBy(string elementOrAttributePath, OrderingMode orderingMode = OrderingMode.Ascending) => this;
         public IEnumerateItemsQuery<TModel> WaitForLoadingNewContent(bool enabled = true) => this;
         public IEnumerateItemsQuery<TModel> Where(Func<IItemsFilterBuilder, IItemsFilterBuilder> build) => this;
-        public IAsyncEnumerable<IContentItem<TModel>> EnumerateItemsAsync(CancellationToken cancellationToken = default)
+        public IAsyncEnumerable<IContentItem<TModel>> EnumerateAsync(CancellationToken cancellationToken = default)
             => throw new NotImplementedException();
     }
 
@@ -147,7 +147,7 @@ public class QueryEnumerationExtensionsTests
         public IDynamicEnumerateItemsQuery OrderBy(string elementOrAttributePath, OrderingMode orderingMode = OrderingMode.Ascending) => this;
         public IDynamicEnumerateItemsQuery WaitForLoadingNewContent(bool enabled = true) => this;
         public IDynamicEnumerateItemsQuery Where(Func<IItemsFilterBuilder, IItemsFilterBuilder> build) => this;
-        public IAsyncEnumerable<IContentItem> EnumerateItemsAsync(CancellationToken cancellationToken = default)
+        public IAsyncEnumerable<IContentItem> EnumerateAsync(CancellationToken cancellationToken = default)
             => throw new NotImplementedException();
     }
 
