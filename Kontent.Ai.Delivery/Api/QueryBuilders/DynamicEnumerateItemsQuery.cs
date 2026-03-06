@@ -109,7 +109,7 @@ internal sealed class DynamicEnumerateItemsQuery(
         return DeliveryResult.SuccessFrom<IDeliveryItemsFeedResponse, IDeliveryItemsFeedResponse<IDynamicElements>>(response, nextPageResult);
     }
 
-    public async IAsyncEnumerable<IContentItem> EnumerateItemsAsync([EnumeratorCancellation] CancellationToken cancellationToken = default)
+    public async IAsyncEnumerable<IContentItem> EnumerateAsync([EnumeratorCancellation] CancellationToken cancellationToken = default)
     {
         if (logger is not null)
             LoggerMessages.PaginationStarted(logger, "ItemsFeed (dynamic)");

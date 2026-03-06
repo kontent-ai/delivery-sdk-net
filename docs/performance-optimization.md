@@ -142,7 +142,7 @@ var query = client.GetItemsFeed<Article>()
     .OrderBy("system.codename", OrderingMode.Ascending);
 
 // Process items one-by-one via IAsyncEnumerable (memory efficient)
-await foreach (var article in query.EnumerateItemsAsync())
+await foreach (var article in query.EnumerateAsync())
 {
     await ProcessArticleAsync(article);
 }

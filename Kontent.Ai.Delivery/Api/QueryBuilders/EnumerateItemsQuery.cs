@@ -99,7 +99,7 @@ internal sealed class EnumerateItemsQuery<TModel>(
 
     private Func<CancellationToken, Task<IDeliveryResult<IDeliveryItemsFeedResponse<TModel>>>>? CreateNextPageFetcher(string? continuationToken) => string.IsNullOrEmpty(continuationToken) ? null : (ct => CreateContinuationQuery(continuationToken).ExecuteAsync(ct));
 
-    public async IAsyncEnumerable<IContentItem<TModel>> EnumerateItemsAsync([EnumeratorCancellation] CancellationToken cancellationToken = default)
+    public async IAsyncEnumerable<IContentItem<TModel>> EnumerateAsync([EnumeratorCancellation] CancellationToken cancellationToken = default)
     {
         if (logger is not null)
             LoggerMessages.PaginationStarted(logger, "ItemsFeed");

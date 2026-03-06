@@ -8227,12 +8227,12 @@
         </Class>
         <Class>
           <Summary numSequencePoints="6" visitedSequencePoints="0" numBranchPoints="2" visitedBranchPoints="0" sequenceCoverage="0" branchCoverage="0" maxCyclomaticComplexity="2" minCyclomaticComplexity="2" visitedClasses="0" numClasses="1" visitedMethods="0" numMethods="1" />
-          <FullName>Kontent.Ai.Delivery.Examples.ReadmeExamples/&lt;ItemsFeedEnumerateItemsAsync&gt;d__6</FullName>
+          <FullName>Kontent.Ai.Delivery.Examples.ReadmeExamples/&lt;ItemsFeedEnumerateAsync&gt;d__6</FullName>
           <Methods>
             <Method cyclomaticComplexity="2" nPathComplexity="2" sequenceCoverage="0" branchCoverage="0" isConstructor="False" isGetter="False" isSetter="False" isStatic="True">
               <Summary numSequencePoints="6" visitedSequencePoints="0" numBranchPoints="2" visitedBranchPoints="0" sequenceCoverage="0" branchCoverage="0" maxCyclomaticComplexity="2" minCyclomaticComplexity="2" visitedClasses="0" numClasses="0" visitedMethods="0" numMethods="1" />
               <MetadataToken />
-              <Name>System.Void Kontent.Ai.Delivery.Examples.ReadmeExamples/&lt;ItemsFeedEnumerateItemsAsync&gt;d__6::MoveNext()</Name>
+              <Name>System.Void Kontent.Ai.Delivery.Examples.ReadmeExamples/&lt;ItemsFeedEnumerateAsync&gt;d__6::MoveNext()</Name>
               <FileRef uid="47" />
               <SequencePoints>
                 <SequencePoint vc="0" uspid="86" ordinal="0" sl="86" sc="1" el="86" ec="2" bec="0" bev="0" fileid="47" />
@@ -16528,12 +16528,12 @@
         </Class>
         <Class>
           <Summary numSequencePoints="31" visitedSequencePoints="21" numBranchPoints="20" visitedBranchPoints="9" sequenceCoverage="67.74" branchCoverage="45" maxCyclomaticComplexity="20" minCyclomaticComplexity="20" visitedClasses="1" numClasses="1" visitedMethods="1" numMethods="1" />
-          <FullName>Kontent.Ai.Delivery.Api.QueryBuilders.DynamicEnumerateItemsQuery/&lt;EnumerateItemsAsync&gt;d__14</FullName>
+          <FullName>Kontent.Ai.Delivery.Api.QueryBuilders.DynamicEnumerateItemsQuery/&lt;EnumerateAsync&gt;d__14</FullName>
           <Methods>
             <Method cyclomaticComplexity="20" nPathComplexity="20" sequenceCoverage="67.74" branchCoverage="45" isConstructor="False" isGetter="False" isSetter="False" isStatic="True">
               <Summary numSequencePoints="31" visitedSequencePoints="21" numBranchPoints="20" visitedBranchPoints="9" sequenceCoverage="67.74" branchCoverage="45" maxCyclomaticComplexity="20" minCyclomaticComplexity="20" visitedClasses="0" numClasses="0" visitedMethods="1" numMethods="1" />
               <MetadataToken />
-              <Name>System.Void Kontent.Ai.Delivery.Api.QueryBuilders.DynamicEnumerateItemsQuery/&lt;EnumerateItemsAsync&gt;d__14::MoveNext()</Name>
+              <Name>System.Void Kontent.Ai.Delivery.Api.QueryBuilders.DynamicEnumerateItemsQuery/&lt;EnumerateAsync&gt;d__14::MoveNext()</Name>
               <FileRef uid="104" />
               <SequencePoints>
                 <SequencePoint vc="2" uspid="110" ordinal="0" sl="110" sc="1" el="110" ec="2" bec="0" bev="0" fileid="104" />
@@ -17299,12 +17299,12 @@
         </Class>
         <Class>
           <Summary numSequencePoints="31" visitedSequencePoints="25" numBranchPoints="30" visitedBranchPoints="17" sequenceCoverage="80.64" branchCoverage="56.66" maxCyclomaticComplexity="30" minCyclomaticComplexity="30" visitedClasses="1" numClasses="1" visitedMethods="1" numMethods="1" />
-          <FullName>Kontent.Ai.Delivery.Api.QueryBuilders.EnumerateItemsQuery`1/&lt;EnumerateItemsAsync&gt;d__21</FullName>
+          <FullName>Kontent.Ai.Delivery.Api.QueryBuilders.EnumerateItemsQuery`1/&lt;EnumerateAsync&gt;d__21</FullName>
           <Methods>
             <Method cyclomaticComplexity="30" nPathComplexity="30" sequenceCoverage="80.64" branchCoverage="56.66" isConstructor="False" isGetter="False" isSetter="False" isStatic="True">
               <Summary numSequencePoints="31" visitedSequencePoints="25" numBranchPoints="30" visitedBranchPoints="17" sequenceCoverage="80.64" branchCoverage="56.66" maxCyclomaticComplexity="30" minCyclomaticComplexity="30" visitedClasses="0" numClasses="0" visitedMethods="1" numMethods="1" />
               <MetadataToken />
-              <Name>System.Void Kontent.Ai.Delivery.Api.QueryBuilders.EnumerateItemsQuery`1/&lt;EnumerateItemsAsync&gt;d__21::MoveNext()</Name>
+              <Name>System.Void Kontent.Ai.Delivery.Api.QueryBuilders.EnumerateItemsQuery`1/&lt;EnumerateAsync&gt;d__21::MoveNext()</Name>
               <FileRef uid="107" />
               <SequencePoints>
                 <SequencePoint vc="2" uspid="102" ordinal="0" sl="102" sc="1" el="102" ec="2" bec="2" bev="1" fileid="107" />
@@ -20948,7 +20948,7 @@
             <Method cyclomaticComplexity="1" nPathComplexity="1" sequenceCoverage="100" branchCoverage="100" isConstructor="False" isGetter="False" isSetter="False" isStatic="True">
               <Summary numSequencePoints="1" visitedSequencePoints="1" numBranchPoints="0" visitedBranchPoints="0" sequenceCoverage="100" branchCoverage="100" maxCyclomaticComplexity="1" minCyclomaticComplexity="1" visitedClasses="0" numClasses="0" visitedMethods="1" numMethods="1" />
               <MetadataToken />
-              <Name>System.Collections.Generic.IAsyncEnumerable`1&lt;Kontent.Ai.Delivery.Abstractions.IUsedInItem&gt; Kontent.Ai.Delivery.Api.QueryBuilders.ItemUsedInQuery::EnumerateItemsAsync(System.Threading.CancellationToken)</Name>
+              <Name>System.Collections.Generic.IAsyncEnumerable`1&lt;Kontent.Ai.Delivery.Abstractions.IUsedInItem&gt; Kontent.Ai.Delivery.Api.QueryBuilders.ItemUsedInQuery::EnumerateAsync(System.Threading.CancellationToken)</Name>
               <FileRef uid="116" />
               <SequencePoints>
                 <SequencePoint vc="4" uspid="27" ordinal="0" sl="27" sc="1" el="27" ec="2" bec="0" bev="0" fileid="116" />
@@ -21009,7 +21009,7 @@
             <Method cyclomaticComplexity="1" nPathComplexity="1" sequenceCoverage="100" branchCoverage="100" isConstructor="False" isGetter="False" isSetter="False" isStatic="True">
               <Summary numSequencePoints="1" visitedSequencePoints="1" numBranchPoints="0" visitedBranchPoints="0" sequenceCoverage="100" branchCoverage="100" maxCyclomaticComplexity="1" minCyclomaticComplexity="1" visitedClasses="0" numClasses="0" visitedMethods="1" numMethods="1" />
               <MetadataToken />
-              <Name>System.Collections.Generic.IAsyncEnumerable`1&lt;Kontent.Ai.Delivery.Abstractions.IUsedInItem&gt; Kontent.Ai.Delivery.Api.QueryBuilders.AssetUsedInQuery::EnumerateItemsAsync(System.Threading.CancellationToken)</Name>
+              <Name>System.Collections.Generic.IAsyncEnumerable`1&lt;Kontent.Ai.Delivery.Abstractions.IUsedInItem&gt; Kontent.Ai.Delivery.Api.QueryBuilders.AssetUsedInQuery::EnumerateAsync(System.Threading.CancellationToken)</Name>
               <FileRef uid="116" />
               <SequencePoints>
                 <SequencePoint vc="3" uspid="52" ordinal="0" sl="52" sc="1" el="52" ec="2" bec="0" bev="0" fileid="116" />
@@ -21087,12 +21087,12 @@
         </Class>
         <Class>
           <Summary numSequencePoints="12" visitedSequencePoints="12" numBranchPoints="6" visitedBranchPoints="6" sequenceCoverage="100" branchCoverage="100" maxCyclomaticComplexity="6" minCyclomaticComplexity="6" visitedClasses="1" numClasses="1" visitedMethods="1" numMethods="1" />
-          <FullName>Kontent.Ai.Delivery.Api.QueryBuilders.UsedInQueryCore/&lt;EnumerateItemsAsync&gt;d__7</FullName>
+          <FullName>Kontent.Ai.Delivery.Api.QueryBuilders.UsedInQueryCore/&lt;EnumerateAsync&gt;d__7</FullName>
           <Methods>
             <Method cyclomaticComplexity="6" nPathComplexity="6" sequenceCoverage="100" branchCoverage="100" isConstructor="False" isGetter="False" isSetter="False" isStatic="True">
               <Summary numSequencePoints="12" visitedSequencePoints="12" numBranchPoints="6" visitedBranchPoints="6" sequenceCoverage="100" branchCoverage="100" maxCyclomaticComplexity="6" minCyclomaticComplexity="6" visitedClasses="0" numClasses="0" visitedMethods="1" numMethods="1" />
               <MetadataToken />
-              <Name>System.Void Kontent.Ai.Delivery.Api.QueryBuilders.UsedInQueryCore/&lt;EnumerateItemsAsync&gt;d__7::MoveNext()</Name>
+              <Name>System.Void Kontent.Ai.Delivery.Api.QueryBuilders.UsedInQueryCore/&lt;EnumerateAsync&gt;d__7::MoveNext()</Name>
               <FileRef uid="116" />
               <SequencePoints>
                 <SequencePoint vc="7" uspid="78" ordinal="0" sl="78" sc="1" el="78" ec="2" bec="0" bev="0" fileid="116" />

@@ -260,7 +260,7 @@ For large datasets, use the items feed for paginated enumeration with continuati
 
 ```csharp
 // Option 1: Enumerate all items one-by-one using IAsyncEnumerable
-await foreach (var item in client.GetItemsFeed().EnumerateItemsAsync())
+await foreach (var item in client.GetItemsFeed().EnumerateAsync())
 {
     Console.WriteLine($"Item: {item.System.Name}");
 }
@@ -445,7 +445,7 @@ if (result.IsSuccess)
 
 Find which content items reference a specific item or asset. This is useful for impact analysis before making changes.
 
-`EnumerateItemsAsync()` follows continuation tokens automatically. If a subsequent page request fails, enumeration stops gracefully and returns items already received (no exception is thrown by default).
+`EnumerateAsync()` follows continuation tokens automatically. If a subsequent page request fails, enumeration stops gracefully and returns items already received (no exception is thrown by default).
 
 Use status-aware enumeration when you need explicit page failure handling:
 
@@ -469,7 +469,7 @@ await foreach (var page in client.GetItemUsedIn("john_doe").EnumerateItemsWithSt
 
 ```csharp
 // Find all items that reference the "john_doe" author
-await foreach (var usage in client.GetItemUsedIn("john_doe").EnumerateItemsAsync())
+await foreach (var usage in client.GetItemUsedIn("john_doe").EnumerateAsync())
 {
     Console.WriteLine($"Referenced by: {usage.System.Name} ({usage.System.Type})");
 }
@@ -481,7 +481,7 @@ await foreach (var usage in client.GetItemUsedIn("john_doe").EnumerateItemsAsync
 // Find all items that use a specific asset
 var assetCodename = "hero_image";
 var usages = new List<IUsedInItem>();
-await foreach (var usage in client.GetAssetUsedIn(assetCodename).EnumerateItemsAsync())
+await foreach (var usage in client.GetAssetUsedIn(assetCodename).EnumerateAsync())
 {
     usages.Add(usage);
     Console.WriteLine($"Asset used in: {usage.System.Name}");

@@ -30,7 +30,7 @@ public sealed class UsedInQueriesTests
         });
         var items = new List<IUsedInItem>();
 
-        await foreach (var item in client.GetItemUsedIn("coffee_beverages_explained").EnumerateItemsAsync())
+        await foreach (var item in client.GetItemUsedIn("coffee_beverages_explained").EnumerateAsync())
             items.Add(item);
 
         Assert.Equal(["parent_1", "parent_2", "parent_3"], items.Select(x => x.System.Codename).ToArray());
@@ -57,7 +57,7 @@ public sealed class UsedInQueriesTests
         });
         var items = new List<IUsedInItem>();
 
-        await foreach (var item in client.GetAssetUsedIn("asset_codename").EnumerateItemsAsync())
+        await foreach (var item in client.GetAssetUsedIn("asset_codename").EnumerateAsync())
             items.Add(item);
 
         Assert.Single(items);
@@ -112,7 +112,7 @@ public sealed class UsedInQueriesTests
 
         await foreach (var item in client.GetItemUsedIn("coffee_beverages_explained")
                            .WaitForLoadingNewContent()
-                           .EnumerateItemsAsync())
+                           .EnumerateAsync())
         {
             items.Add(item);
         }
@@ -138,7 +138,7 @@ public sealed class UsedInQueriesTests
         var items = new List<IUsedInItem>();
         await foreach (var item in client.GetItemUsedIn("coffee_beverages_explained")
                            .WaitForLoadingNewContent(false)
-                           .EnumerateItemsAsync())
+                           .EnumerateAsync())
         {
             items.Add(item);
         }
@@ -171,7 +171,7 @@ public sealed class UsedInQueriesTests
             EnableResilience = false
         }, loggerProvider);
 
-        await foreach (var _ in client.GetAssetUsedIn("asset_codename").EnumerateItemsAsync())
+        await foreach (var _ in client.GetAssetUsedIn("asset_codename").EnumerateAsync())
         {
             // Intentionally empty - verify log side effect.
         }
@@ -202,7 +202,7 @@ public sealed class UsedInQueriesTests
         var items = new List<IUsedInItem>();
         await foreach (var item in client.GetItemUsedIn("my_item")
                            .Where(f => f.System("type").IsEqualTo("article"))
-                           .EnumerateItemsAsync())
+                           .EnumerateAsync())
         {
             items.Add(item);
         }
@@ -232,7 +232,7 @@ public sealed class UsedInQueriesTests
         var items = new List<IUsedInItem>();
         await foreach (var item in client.GetAssetUsedIn("my_asset")
                            .Where(f => f.System("type").IsEqualTo("article"))
-                           .EnumerateItemsAsync())
+                           .EnumerateAsync())
         {
             items.Add(item);
         }
@@ -265,7 +265,7 @@ public sealed class UsedInQueriesTests
                            .Where(f => f
                                .System("type").IsEqualTo("article")
                                .System("language").IsEqualTo("en-US"))
-                           .EnumerateItemsAsync())
+                           .EnumerateAsync())
         {
             items.Add(item);
         }
@@ -299,7 +299,7 @@ public sealed class UsedInQueriesTests
         var items = new List<IUsedInItem>();
         await foreach (var item in client.GetItemUsedIn("my_item")
                            .Where(f => f.System("type").IsEqualTo("article"))
-                           .EnumerateItemsAsync())
+                           .EnumerateAsync())
         {
             items.Add(item);
         }

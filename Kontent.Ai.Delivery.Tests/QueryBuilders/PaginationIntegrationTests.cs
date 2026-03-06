@@ -318,7 +318,7 @@ public sealed class PaginationIntegrationTests
     #region ItemsFeed (GetItemsFeed) Tests
 
     [Fact]
-    public async Task ItemsFeed_EnumerateItemsAsync_Vs_FetchPageByPage_ProducesIdenticalResults()
+    public async Task ItemsFeed_EnumerateAsync_Vs_FetchPageByPage_ProducesIdenticalResults()
     {
         var allCodenames = new[] { "async_1", "async_2", "async_3" };
 
@@ -341,7 +341,7 @@ public sealed class PaginationIntegrationTests
         var clientManual = BuildClient(envManual, mockForManual);
 
         var asyncItems = new List<IContentItem<TestArticle>>();
-        await foreach (var item in clientAsync.GetItemsFeed<TestArticle>().EnumerateItemsAsync())
+        await foreach (var item in clientAsync.GetItemsFeed<TestArticle>().EnumerateAsync())
             asyncItems.Add(item);
 
         var manualItems = new List<IContentItem<TestArticle>>();

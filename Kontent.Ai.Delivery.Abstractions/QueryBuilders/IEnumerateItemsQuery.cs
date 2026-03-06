@@ -58,5 +58,5 @@ public interface IEnumerateItemsQuery<TModel>
     /// </summary>
     /// <param name="cancellationToken">Cancellation token to stop enumeration and cancel in-flight requests.</param>
     /// <returns>Async sequence of strongly typed content items.</returns>
-    IAsyncEnumerable<IContentItem<TModel>> EnumerateItemsAsync(CancellationToken cancellationToken = default);
+    IAsyncEnumerable<IContentItem<TModel>> EnumerateAsync(CancellationToken cancellationToken = default);
 }

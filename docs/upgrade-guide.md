@@ -209,7 +209,7 @@ do
 **New:**
 ```csharp
 // Option 1: Automatic async enumeration (recommended for streaming)
-await foreach (var item in client.GetItemsFeed<Article>().EnumerateItemsAsync())
+await foreach (var item in client.GetItemsFeed<Article>().EnumerateAsync())
 {
     ProcessItem(item);
 }
@@ -1719,7 +1719,7 @@ client.GetItemsObservable<Article>()
 **New:**
 ```csharp
 // Use native async enumeration
-await foreach (var article in client.GetItemsFeed<Article>().EnumerateItemsAsync())
+await foreach (var article in client.GetItemsFeed<Article>().EnumerateAsync())
 {
     Console.WriteLine(article.Elements.Title);
 }
@@ -1729,7 +1729,7 @@ await foreach (var article in client.GetItemsFeed<Article>().EnumerateItemsAsync
 using System.Reactive.Linq;
 
 var observable = client.GetItemsFeed<Article>()
-    .EnumerateItemsAsync()
+    .EnumerateAsync()
     .ToObservable();
 
 observable.Subscribe(
@@ -1749,7 +1749,7 @@ These features are optional to adopt but provide improved functionality.
 Efficiently iterate over large datasets without loading all items into memory:
 
 ```csharp
-await foreach (var item in client.GetItemsFeed<Article>().EnumerateItemsAsync())
+await foreach (var item in client.GetItemsFeed<Article>().EnumerateAsync())
 {
     await ProcessItemAsync(item);
 }
@@ -1841,19 +1841,19 @@ Find content that references specific items or assets:
 
 ```csharp
 // Find items referencing a content item
-await foreach (var usage in client.GetItemUsedIn("author_john").EnumerateItemsAsync())
+await foreach (var usage in client.GetItemUsedIn("author_john").EnumerateAsync())
 {
     Console.WriteLine($"Referenced by: {usage.System.Name}");
 }
 
 // Find items using a specific asset
-await foreach (var usage in client.GetAssetUsedIn("hero_image").EnumerateItemsAsync())
+await foreach (var usage in client.GetAssetUsedIn("hero_image").EnumerateAsync())
 {
     Console.WriteLine($"Asset used in: {usage.System.Name}");
 }
 ```
 
-`EnumerateItemsAsync()` stops when a subsequent page request fails and returns the items already received.
+`EnumerateAsync()` stops when a subsequent page request fails and returns the items already received.
 If you need explicit page-level failure handling, use `EnumerateItemsWithStatusAsync()`:
 
 ```csharp

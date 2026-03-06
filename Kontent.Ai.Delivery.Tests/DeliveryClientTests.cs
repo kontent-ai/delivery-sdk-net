@@ -164,7 +164,7 @@ public class DeliveryClientTests
     }
 
     [Fact]
-    public async Task ItemsFeed_EnumerateItemsAsync_Succeeds()
+    public async Task ItemsFeed_EnumerateAsync_Succeeds()
     {
         var mock = new MockHttpMessageHandler();
         mock.When($"{BaseUrl}/items-feed")
@@ -173,7 +173,7 @@ public class DeliveryClientTests
 
         var client = CreateClient(mock);
         var items = new List<IContentItem<Article>>();
-        await foreach (var item in client.GetItemsFeed<Article>().Where(f => f.System("type").IsEqualTo("article")).EnumerateItemsAsync())
+        await foreach (var item in client.GetItemsFeed<Article>().Where(f => f.System("type").IsEqualTo("article")).EnumerateAsync())
         {
             items.Add(item);
         }
@@ -182,7 +182,7 @@ public class DeliveryClientTests
     }
 
     [Fact]
-    public async Task ItemUsedIn_EnumerateItemsAsync_Succeeds()
+    public async Task ItemUsedIn_EnumerateAsync_Succeeds()
     {
         var mock = new MockHttpMessageHandler();
         mock.When($"{BaseUrl}/items/coffee_beverages_explained/used-in")
@@ -190,7 +190,7 @@ public class DeliveryClientTests
 
         var client = CreateClient(mock);
         var items = new List<IUsedInItem>();
-        await foreach (var item in client.GetItemUsedIn("coffee_beverages_explained").EnumerateItemsAsync())
+        await foreach (var item in client.GetItemUsedIn("coffee_beverages_explained").EnumerateAsync())
         {
             items.Add(item);
         }
@@ -199,7 +199,7 @@ public class DeliveryClientTests
     }
 
     [Fact]
-    public async Task AssetUsedIn_EnumerateItemsAsync_Succeeds()
+    public async Task AssetUsedIn_EnumerateAsync_Succeeds()
     {
         var mock = new MockHttpMessageHandler();
         mock.When($"{BaseUrl}/assets/asset_codename/used-in")
@@ -207,7 +207,7 @@ public class DeliveryClientTests
 
         var client = CreateClient(mock);
         var items = new List<IUsedInItem>();
-        await foreach (var item in client.GetAssetUsedIn("asset_codename").EnumerateItemsAsync())
+        await foreach (var item in client.GetAssetUsedIn("asset_codename").EnumerateAsync())
         {
             items.Add(item);
         }

@@ -75,7 +75,7 @@ public interface IAssetRendition
 
 // Kontent.Ai.Delivery.Abstractions
 public interface IAssetUsedInQuery
-    IAsyncEnumerable`1 EnumerateItemsAsync(CancellationToken cancellationToken)
+    IAsyncEnumerable`1 EnumerateAsync(CancellationToken cancellationToken)
     IAssetUsedInQuery WaitForLoadingNewContent(Boolean enabled)
     IAssetUsedInQuery Where(Func`2 build)
 
@@ -258,7 +258,7 @@ public interface IDynamicElements : IReadOnlyDictionary`2, IReadOnlyCollection`1
 
 // Kontent.Ai.Delivery.Abstractions
 public interface IDynamicEnumerateItemsQuery
-    IAsyncEnumerable`1 EnumerateItemsAsync(CancellationToken cancellationToken)
+    IAsyncEnumerable`1 EnumerateAsync(CancellationToken cancellationToken)
     Task`1 ExecuteAsync(CancellationToken cancellationToken)
     IDynamicEnumerateItemsQuery OrderBy(String elementOrAttributePath, OrderingMode orderingMode)
     IDynamicEnumerateItemsQuery WaitForLoadingNewContent(Boolean enabled)
@@ -298,7 +298,7 @@ public interface IEmbeddedContent`1 : IEmbeddedContent, IContentItem, IRichTextB
 
 // Kontent.Ai.Delivery.Abstractions
 public interface IEnumerateItemsQuery`1
-    IAsyncEnumerable`1 EnumerateItemsAsync(CancellationToken cancellationToken)
+    IAsyncEnumerable`1 EnumerateAsync(CancellationToken cancellationToken)
     Task`1 ExecuteAsync(CancellationToken cancellationToken)
     IEnumerateItemsQuery`1 OrderBy(String elementOrAttributePath, OrderingMode orderingMode)
     IEnumerateItemsQuery`1 WaitForLoadingNewContent(Boolean enabled)
@@ -424,7 +424,7 @@ public interface IItemTypingStrategy
 
 // Kontent.Ai.Delivery.Abstractions
 public interface IItemUsedInQuery
-    IAsyncEnumerable`1 EnumerateItemsAsync(CancellationToken cancellationToken)
+    IAsyncEnumerable`1 EnumerateAsync(CancellationToken cancellationToken)
     IItemUsedInQuery WaitForLoadingNewContent(Boolean enabled)
     IItemUsedInQuery Where(Func`2 build)
 

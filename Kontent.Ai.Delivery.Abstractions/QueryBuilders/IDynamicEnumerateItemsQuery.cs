@@ -7,7 +7,7 @@ namespace Kontent.Ai.Delivery.Abstractions;
 /// When a custom <see cref="ITypeProvider"/> is registered, items will be automatically
 /// resolved to their strongly-typed models at runtime. Use pattern matching to access typed items:
 /// <code>
-/// await foreach (var item in client.GetItemsFeed().EnumerateItemsAsync())
+/// await foreach (var item in client.GetItemsFeed().EnumerateAsync())
 /// {
 ///     if (item is IContentItem&lt;Article&gt; article)
 ///         Console.WriteLine(article.Elements.Title);
@@ -77,5 +77,5 @@ public interface IDynamicEnumerateItemsQuery
     /// Async sequence of content items. Each item will be runtime-typed if a custom
     /// <see cref="ITypeProvider"/> is registered and provides a mapping.
     /// </returns>
-    IAsyncEnumerable<IContentItem> EnumerateItemsAsync(CancellationToken cancellationToken = default);
+    IAsyncEnumerable<IContentItem> EnumerateAsync(CancellationToken cancellationToken = default);
 }

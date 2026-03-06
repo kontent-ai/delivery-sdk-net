@@ -30,7 +30,7 @@ public interface IItemUsedInQuery
     /// Enumeration stops when a page request fails and returns items already received.
     /// Use SDK extension methods for status-aware page enumeration.
     /// </returns>
-    IAsyncEnumerable<IUsedInItem> EnumerateItemsAsync(CancellationToken cancellationToken = default);
+    IAsyncEnumerable<IUsedInItem> EnumerateAsync(CancellationToken cancellationToken = default);
 }
 
 /// <summary>
@@ -63,5 +63,5 @@ public interface IAssetUsedInQuery
     /// Enumeration stops when a page request fails and returns items already received.
     /// Use SDK extension methods for status-aware page enumeration.
     /// </returns>
-    IAsyncEnumerable<IUsedInItem> EnumerateItemsAsync(CancellationToken cancellationToken = default);
+    IAsyncEnumerable<IUsedInItem> EnumerateAsync(CancellationToken cancellationToken = default);
 }
