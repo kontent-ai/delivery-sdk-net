@@ -2,6 +2,7 @@ using System.Text.Json;
 using AngleSharp.Html.Parser;
 using Kontent.Ai.Delivery.ContentItems.Elements;
 using Kontent.Ai.Delivery.ContentItems.Processing;
+using Kontent.Ai.Delivery.ContentItems.RichText.Blocks;
 using Kontent.Ai.Delivery.Logging;
 using Microsoft.Extensions.Logging;
 
@@ -31,10 +32,10 @@ internal sealed class ElementValueMapper(
         switch (prop.MapKind)
         {
             case ElementMappingKind.RichText:
-                return await MapRichTextAsync(prop.ElementCodename, envelope, getLinkedItem, context.DependencyContext)
+                return await MapRichTextAsync(prop.ElementCodename, envelope, getLinkedItem, context)
                     .ConfigureAwait(false);
             case ElementMappingKind.Assets:
-                return MapAssets(envelope, context.DefaultRenditionPreset, context.DependencyContext);
+                return MapAssets(envelope, context.DefaultRenditionPreset, context.CustomAssetDomain, context.DependencyContext);
             case ElementMappingKind.Taxonomy:
                 return MapTaxonomy(envelope, context.DependencyContext);
             case ElementMappingKind.DateTime:
@@ -98,7 +99,7 @@ internal sealed class ElementValueMapper(
         string elementCodename,
         JsonElement envelope,
         Func<string, Task<object?>> getLinkedItem,
-        DependencyTrackingContext? dependencyContext)
+        MappingContext context)
     {
         if (!envelope.TryGetProperty("value", out var valueEl) || valueEl.ValueKind != JsonValueKind.String)
         {
@@ -110,10 +111,22 @@ internal sealed class ElementValueMapper(
             elementCodename,
             preserveEmptyModularContentEntries: true);
 
-        return await _richTextParser.ConvertAsync(richTextData, getLinkedItem, dependencyContext).ConfigureAwait(false);
+        if (context.CustomAssetDomain is not null && richTextData.Images.Count > 0)
+        {
+            var rewritten = new Dictionary<Guid, IInlineImage>(richTextData.Images.Count);
+            foreach (var (id, image) in richTextData.Images)
+            {
+                rewritten[id] = image is InlineImage img
+                    ? img with { Url = AssetUrlRewriter.RewriteUrl(img.Url, context.CustomAssetDomain) }
+                    : image;
+            }
+            richTextData = richTextData with { Images = rewritten };
+        }
+
+        return await _richTextParser.ConvertAsync(richTextData, getLinkedItem, context.DependencyContext).ConfigureAwait(false);
     }
 
-    private List<Asset>? MapAssets(JsonElement envelope, string? defaultRenditionPreset, DependencyTrackingContext? dependencyContext)
+    private List<Asset>? MapAssets(JsonElement envelope, string? defaultRenditionPreset, Uri? customAssetDomain, DependencyTrackingContext? dependencyContext)
     {
         if (!TryGetArrayValue(envelope, out var arrayValue))
         {
@@ -130,7 +143,7 @@ internal sealed class ElementValueMapper(
             }
 
             TrackAssetDependencyFromUrl(assetEl, dependencyContext);
-            assets.Add(CreateAsset(assetEl, defaultRenditionPreset));
+            assets.Add(CreateAsset(assetEl, defaultRenditionPreset, customAssetDomain));
         }
 
         return assets;
@@ -207,10 +220,12 @@ internal sealed class ElementValueMapper(
         return items;
     }
 
-    private static Asset CreateAsset(JsonElement assetElement, string? defaultPreset)
+    private static Asset CreateAsset(JsonElement assetElement, string? defaultPreset, Uri? customAssetDomain)
     {
         var renditions = ParseRenditions(assetElement);
         var url = GetStringProperty(assetElement, "url");
+
+        url = AssetUrlRewriter.RewriteUrl(url, customAssetDomain);
 
         if (!string.IsNullOrEmpty(defaultPreset) &&
             renditions.TryGetValue(defaultPreset, out var presetRendition) &&

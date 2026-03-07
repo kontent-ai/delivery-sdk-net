@@ -13,6 +13,7 @@ internal sealed class EnumerateItemsQuery<TModel>(
     ContentItemMapper contentItemMapper,
     ITypeProvider typeProvider,
     string? defaultRenditionPreset = null,
+    Uri? customAssetDomain = null,
     ILogger? logger = null) : IEnumerateItemsQuery<TModel>
 {
     private EnumItemsParams _params = new();
@@ -173,6 +174,7 @@ internal sealed class EnumerateItemsQuery<TModel>(
                         content.ModularContent,
                         dependencyContext: null,
                         defaultRenditionPreset,
+                        customAssetDomain,
                         cancellationToken)
                     .ConfigureAwait(false);
             }
@@ -192,6 +194,7 @@ internal sealed class EnumerateItemsQuery<TModel>(
             contentItemMapper,
             typeProvider,
             defaultRenditionPreset,
+            customAssetDomain,
             logger)
         {
             _params = _params,

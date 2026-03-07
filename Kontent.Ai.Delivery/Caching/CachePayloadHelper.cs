@@ -84,6 +84,7 @@ internal static class CachePayloadHelper
         ContentItemMapper contentItemMapper,
         bool isDynamicModel,
         string? defaultRenditionPreset,
+        Uri? customAssetDomain,
         ILogger? logger,
         CancellationToken cancellationToken)
     {
@@ -105,6 +106,7 @@ internal static class CachePayloadHelper
                     modularContent,
                     dependencyContext: null,
                     defaultRenditionPreset,
+                    customAssetDomain,
                     cancellationToken)
                 .ConfigureAwait(false);
         }
@@ -121,6 +123,7 @@ internal static class CachePayloadHelper
         ContentItemMapper contentItemMapper,
         bool isDynamicModel,
         string? defaultRenditionPreset,
+        Uri? customAssetDomain,
         ILogger? logger,
         CancellationToken cancellationToken)
     {
@@ -145,6 +148,7 @@ internal static class CachePayloadHelper
                         modularContent,
                         dependencyContext: null,
                         defaultRenditionPreset,
+                        customAssetDomain,
                         cancellationToken)
                     .ConfigureAwait(false);
             }

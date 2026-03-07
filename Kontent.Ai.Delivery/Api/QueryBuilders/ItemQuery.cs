@@ -19,6 +19,7 @@ internal sealed class ItemQuery<TModel>(
     IContentDeserializer contentDeserializer,
     IDeliveryCacheManager? cacheManager,
     string? defaultRenditionPreset = null,
+    Uri? customAssetDomain = null,
     ILogger? logger = null) : IItemQuery<TModel>, ICacheExpirationConfigurable
 {
     private readonly SerializedFilterCollection _serializedFilters = [];
@@ -147,6 +148,7 @@ internal sealed class ItemQuery<TModel>(
             contentItemMapper,
             IsDynamicModel,
             defaultRenditionPreset,
+            customAssetDomain,
             logger,
             cancellationToken).ConfigureAwait(false);
     }
@@ -233,6 +235,7 @@ internal sealed class ItemQuery<TModel>(
                     resp.ModularContent,
                     dependencyContext,
                     defaultRenditionPreset,
+                    customAssetDomain,
                     cancellationToken)
                 .ConfigureAwait(false);
         }

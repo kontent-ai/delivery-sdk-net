@@ -20,6 +20,11 @@ internal sealed class MappingContext
     public string? DefaultRenditionPreset { get; init; }
 
     /// <summary>
+    /// Custom domain for asset URL rewriting. When set, asset URL hosts are replaced with this domain.
+    /// </summary>
+    public Uri? CustomAssetDomain { get; init; }
+
+    /// <summary>
     /// Dependency tracking for cache invalidation.
     /// </summary>
     public DependencyTrackingContext? DependencyContext { get; init; }

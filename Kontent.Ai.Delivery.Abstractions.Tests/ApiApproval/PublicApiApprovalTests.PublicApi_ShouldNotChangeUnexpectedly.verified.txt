@@ -34,6 +34,7 @@ public sealed class DeliveryCacheOptions
 
 // Kontent.Ai.Delivery.Abstractions
 public sealed class DeliveryOptions : IValidatableObject
+    String CustomAssetDomain { get; set; }
     String DefaultRenditionPreset { get; set; }
     Boolean EnableResilience { get; set; }
     String EnvironmentId { get; set; }
@@ -222,6 +223,8 @@ public interface IDeliveryOptionsBuilder
     IDeliveryOptionsBuilder UsePreviewApi(String previewApiKey)
     IDeliveryOptionsBuilder UseProductionApi()
     IDeliveryOptionsBuilder UseProductionApi(String secureAccessApiKey)
+    IDeliveryOptionsBuilder WithCustomAssetDomain(String customDomain)
+    IDeliveryOptionsBuilder WithCustomAssetDomain(Uri customDomain)
     IDeliveryOptionsBuilder WithCustomEndpoint(String endpoint)
     IDeliveryOptionsBuilder WithCustomEndpoint(Uri endpoint)
     IDeliveryOptionsBuilder WithDefaultRenditionPreset(String presetCodename)

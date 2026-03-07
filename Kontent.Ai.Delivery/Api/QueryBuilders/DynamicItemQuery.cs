@@ -16,6 +16,7 @@ internal sealed class DynamicItemQuery(
     ContentItemMapper contentItemMapper,
     IContentDeserializer contentDeserializer,
     string? defaultRenditionPreset = null,
+    Uri? customAssetDomain = null,
     ILogger? logger = null) : IDynamicItemQuery
 {
     private readonly ItemQuery<IDynamicElements> _inner = new(
@@ -25,6 +26,7 @@ internal sealed class DynamicItemQuery(
         contentDeserializer,
         cacheManager: null,
         defaultRenditionPreset,
+        customAssetDomain,
         logger);
 
     public IDynamicItemQuery WithLanguage(string languageCodename)
@@ -75,6 +77,7 @@ internal sealed class DynamicItemQuery(
                 _inner.LatestModularContent,
                 dependencyContext: null,
                 defaultRenditionPreset,
+                customAssetDomain,
                 cancellationToken).ConfigureAwait(false);
 
             if (runtimeItem is not null)
