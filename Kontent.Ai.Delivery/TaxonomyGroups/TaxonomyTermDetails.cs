@@ -4,7 +4,7 @@ using System.Text.Json.Serialization;
 namespace Kontent.Ai.Delivery.TaxonomyGroups;
 
 [DebuggerDisplay("Name = {" + nameof(Name) + "}")]
-internal sealed record TaxonomyTermDetails() : ITaxonomyTermDetails
+internal sealed record TaxonomyTermDetails : ITaxonomyTermDetails
 {
     /// <inheritdoc/>
     [JsonPropertyName("name")]

@@ -3,12 +3,9 @@ using System.Text.Json.Serialization;
 
 namespace Kontent.Ai.Delivery.ContentTypes.Element;
 
-/// <inheritdoc/>
-/// <summary>
-/// Constructor used for deserialization (e.g. for caching purposes), contains no logic.
-/// </summary>
+/// <inheritdoc cref="IContentElement"/>
 [DebuggerDisplay("Name = {" + nameof(Name) + "}")]
-internal record ContentElement() : IContentElement
+internal record ContentElement : IContentElement
 {
     /// <inheritdoc/>
     [JsonPropertyName("type")]

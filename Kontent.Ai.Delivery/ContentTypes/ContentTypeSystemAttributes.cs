@@ -3,12 +3,9 @@ using System.Text.Json.Serialization;
 
 namespace Kontent.Ai.Delivery.ContentTypes;
 
-/// <inheritdoc/>
-/// <summary>
-/// Initializes a new instance of the <see cref="ContentTypeSystemAttributes"/> class.
-/// </summary>
+/// <inheritdoc cref="IContentTypeSystemAttributes"/>
 [DebuggerDisplay("Id = {" + nameof(Id) + "}")]
-internal sealed record ContentTypeSystemAttributes() : IContentTypeSystemAttributes
+internal sealed record ContentTypeSystemAttributes : IContentTypeSystemAttributes
 {
     /// <inheritdoc/>
     [JsonPropertyName("id")]
