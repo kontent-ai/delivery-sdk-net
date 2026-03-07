@@ -18,6 +18,7 @@ internal sealed class ItemsQuery<TModel>(
     ITypeProvider typeProvider,
     IDeliveryCacheManager? cacheManager,
     string? defaultRenditionPreset = null,
+    Uri? customAssetDomain = null,
     ILogger? logger = null) : IItemsQuery<TModel>, ICacheExpirationConfigurable
 {
     private readonly SerializedFilterCollection _serializedFilters = [];
@@ -188,6 +189,7 @@ internal sealed class ItemsQuery<TModel>(
             contentItemMapper,
             IsDynamicModel,
             defaultRenditionPreset,
+            customAssetDomain,
             logger,
             cancellationToken).ConfigureAwait(false);
     }
@@ -290,6 +292,7 @@ internal sealed class ItemsQuery<TModel>(
                         resp.ModularContent,
                         dependencyContext,
                         defaultRenditionPreset,
+                        customAssetDomain,
                         cancellationToken)
                     .ConfigureAwait(false);
             }
@@ -318,7 +321,7 @@ internal sealed class ItemsQuery<TModel>(
 
         return async (ct) =>
         {
-            var nextQuery = new ItemsQuery<TModel>(api, contentItemMapper, contentDeserializer, typeProvider, cacheManager, defaultRenditionPreset, logger)
+            var nextQuery = new ItemsQuery<TModel>(api, contentItemMapper, contentDeserializer, typeProvider, cacheManager, defaultRenditionPreset, customAssetDomain, logger)
             {
                 _params = parametersSnapshot with { Skip = nextSkip },
                 _waitForLoadingNewContent = waitForLoadingSnapshot,

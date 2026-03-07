@@ -3,10 +3,7 @@ using System.Text.Json.Serialization;
 
 namespace Kontent.Ai.Delivery.SharedModels;
 
-/// <inheritdoc cref="IPagination" />
-/// <summary>
-/// Initializes a new instance of the <see cref="Pagination"/> class with information from a response.
-/// </summary>
+/// <inheritdoc cref="IPagination"/>
 [DebuggerDisplay("Count = {" + nameof(Count) + "}, Total = {" + nameof(TotalCount) + "}")]
 internal sealed record Pagination : IPagination
 {

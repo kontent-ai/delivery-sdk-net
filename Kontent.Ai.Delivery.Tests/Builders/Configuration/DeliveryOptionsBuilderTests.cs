@@ -114,4 +114,79 @@ public class DeliveryOptionsBuilderTests
         Assert.Equal(customEndpoint, deliveryOptions.ProductionEndpoint);
         Assert.Equal(customEndpoint, deliveryOptions.PreviewEndpoint);
     }
+
+    [Fact]
+    public void BuildWithCustomAssetDomain_String_SetsProperty()
+    {
+        const string customDomain = "https://assets.example.com";
+
+        var deliveryOptions = DeliveryOptionsBuilder
+            .CreateInstance()
+            .WithEnvironmentId(EnvironmentId)
+            .UseProductionApi()
+            .WithCustomAssetDomain(customDomain)
+            .Build();
+
+        Assert.Equal(customDomain, deliveryOptions.CustomAssetDomain);
+    }
+
+    [Fact]
+    public void BuildWithCustomAssetDomain_Uri_SetsProperty()
+    {
+        var customDomain = new Uri("https://assets.example.com/", UriKind.Absolute);
+
+        var deliveryOptions = DeliveryOptionsBuilder
+            .CreateInstance()
+            .WithEnvironmentId(EnvironmentId)
+            .UseProductionApi()
+            .WithCustomAssetDomain(customDomain)
+            .Build();
+
+        Assert.Equal(customDomain.AbsoluteUri, deliveryOptions.CustomAssetDomain);
+    }
+
+    [Fact]
+    public void BuildWithoutCustomAssetDomain_PropertyIsNull()
+    {
+        var deliveryOptions = DeliveryOptionsBuilder
+            .CreateInstance()
+            .WithEnvironmentId(EnvironmentId)
+            .UseProductionApi()
+            .Build();
+
+        Assert.Null(deliveryOptions.CustomAssetDomain);
+    }
+
+    [Fact]
+    public void WithCustomAssetDomain_String_WithPath_ThrowsArgumentException()
+    {
+        var ex = Assert.Throws<ArgumentException>(() =>
+            DeliveryOptionsBuilder
+                .CreateInstance()
+                .WithCustomAssetDomain("https://cdn.example.com/assets"));
+
+        Assert.Contains("path", ex.Message, StringComparison.OrdinalIgnoreCase);
+    }
+
+    [Fact]
+    public void WithCustomAssetDomain_Uri_WithPath_ThrowsArgumentException()
+    {
+        var ex = Assert.Throws<ArgumentException>(() =>
+            DeliveryOptionsBuilder
+                .CreateInstance()
+                .WithCustomAssetDomain(new Uri("https://cdn.example.com/assets")));
+
+        Assert.Contains("path", ex.Message, StringComparison.OrdinalIgnoreCase);
+    }
+
+    [Fact]
+    public void WithCustomAssetDomain_WithQueryString_ThrowsArgumentException()
+    {
+        var ex = Assert.Throws<ArgumentException>(() =>
+            DeliveryOptionsBuilder
+                .CreateInstance()
+                .WithCustomAssetDomain(new Uri("https://cdn.example.com?token=abc")));
+
+        Assert.Contains("query", ex.Message, StringComparison.OrdinalIgnoreCase);
+    }
 }

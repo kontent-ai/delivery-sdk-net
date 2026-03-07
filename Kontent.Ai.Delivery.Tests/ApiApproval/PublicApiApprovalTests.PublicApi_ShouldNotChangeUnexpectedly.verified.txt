@@ -38,6 +38,8 @@ public sealed class DeliveryOptionsBuilder : IDeliveryOptionsBuilder
     IDeliveryOptionsBuilder UsePreviewApi(String previewApiKey)
     IDeliveryOptionsBuilder UseProductionApi()
     IDeliveryOptionsBuilder UseProductionApi(String secureAccessApiKey)
+    IDeliveryOptionsBuilder WithCustomAssetDomain(String customDomain)
+    IDeliveryOptionsBuilder WithCustomAssetDomain(Uri customDomain)
     IDeliveryOptionsBuilder WithCustomEndpoint(String endpoint)
     IDeliveryOptionsBuilder WithCustomEndpoint(Uri endpoint)
     IDeliveryOptionsBuilder WithDefaultRenditionPreset(String presetCodename)

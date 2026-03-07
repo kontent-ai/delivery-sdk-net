@@ -3,12 +3,9 @@ using System.Text.Json.Serialization;
 
 namespace Kontent.Ai.Delivery.TaxonomyGroups;
 
-/// <inheritdoc/>
-/// <summary>
-/// Initializes a new instance of the <see cref="TaxonomyGroupSystemAttributes"/> class.
-/// </summary>
+/// <inheritdoc cref="ITaxonomyGroupSystemAttributes"/>
 [DebuggerDisplay("Id = {" + nameof(Id) + "}")]
-internal sealed record TaxonomyGroupSystemAttributes() : ITaxonomyGroupSystemAttributes
+internal sealed record TaxonomyGroupSystemAttributes : ITaxonomyGroupSystemAttributes
 {
     /// <inheritdoc/>
     [JsonPropertyName("id")]

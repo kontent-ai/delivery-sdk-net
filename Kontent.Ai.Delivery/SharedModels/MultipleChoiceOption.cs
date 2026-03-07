@@ -3,12 +3,9 @@ using System.Text.Json.Serialization;
 
 namespace Kontent.Ai.Delivery.SharedModels;
 
-/// <inheritdoc/>
-/// <summary>
-/// Initializes a new instance of the <see cref="MultipleChoiceOption"/> class with the specified JSON data.
-/// </summary>
+/// <inheritdoc cref="IMultipleChoiceOption"/>
 [DebuggerDisplay("Name = {" + nameof(Name) + "}")]
-public sealed record MultipleChoiceOption() : IMultipleChoiceOption
+public sealed record MultipleChoiceOption : IMultipleChoiceOption
 {
     /// <inheritdoc/>
     [JsonPropertyName("name")]

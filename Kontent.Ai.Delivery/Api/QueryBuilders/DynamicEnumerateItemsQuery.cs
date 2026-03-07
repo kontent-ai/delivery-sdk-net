@@ -12,6 +12,7 @@ internal sealed class DynamicEnumerateItemsQuery(
     ContentItemMapper contentItemMapper,
     ITypeProvider typeProvider,
     string? defaultRenditionPreset = null,
+    Uri? customAssetDomain = null,
     ILogger? logger = null) : IDynamicEnumerateItemsQuery
 {
     private readonly EnumerateItemsQuery<IDynamicElements> _inner = new(
@@ -19,6 +20,7 @@ internal sealed class DynamicEnumerateItemsQuery(
         contentItemMapper,
         typeProvider,
         defaultRenditionPreset,
+        customAssetDomain,
         logger);
 
     public IDynamicEnumerateItemsQuery WithLanguage(string languageCodename, LanguageFallbackMode languageFallbackMode = LanguageFallbackMode.Enabled)
@@ -80,6 +82,7 @@ internal sealed class DynamicEnumerateItemsQuery(
             response.Items,
             response.ModularContent,
             defaultRenditionPreset,
+            customAssetDomain,
             cancellationToken).ConfigureAwait(false);
 
         return new DynamicDeliveryItemsFeedResponse

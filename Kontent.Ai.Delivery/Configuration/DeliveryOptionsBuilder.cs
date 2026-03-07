@@ -106,6 +106,61 @@ public sealed class DeliveryOptionsBuilder : IDeliveryOptionsBuilder
         return this;
     }
 
+    /// <summary>
+    /// Use a custom domain for asset URLs.
+    /// </summary>
+    /// <param name="customDomain">A custom asset domain URL (e.g. "https://assets.example.com").</param>
+    /// <exception cref="ArgumentException">Thrown when the domain contains a non-root path, query string, or fragment.</exception>
+    public IDeliveryOptionsBuilder WithCustomAssetDomain(string customDomain)
+    {
+        if (!string.IsNullOrWhiteSpace(customDomain) &&
+            Uri.TryCreate(customDomain, UriKind.Absolute, out var parsed))
+        {
+            ValidateCustomAssetDomainUri(parsed);
+        }
+
+        _options.CustomAssetDomain = customDomain;
+        return this;
+    }
+
+    /// <summary>
+    /// Use a custom domain for asset URLs.
+    /// </summary>
+    /// <param name="customDomain">A custom asset domain URI.</param>
+    /// <exception cref="ArgumentException">Thrown when the domain contains a non-root path, query string, or fragment.</exception>
+    public IDeliveryOptionsBuilder WithCustomAssetDomain(Uri customDomain)
+    {
+        ArgumentNullException.ThrowIfNull(customDomain);
+        ValidateCustomAssetDomainUri(customDomain);
+        _options.CustomAssetDomain = customDomain.AbsoluteUri;
+        return this;
+    }
+
+    private static void ValidateCustomAssetDomainUri(Uri uri)
+    {
+        if (uri.AbsolutePath is not ("/" or ""))
+        {
+            throw new ArgumentException(
+                $"CustomAssetDomain must be a root domain without a path (e.g. 'https://assets.example.com'). " +
+                $"Got: '{uri.AbsoluteUri}'. The path '{uri.AbsolutePath}' would be silently ignored.",
+                nameof(uri));
+        }
+
+        if (!string.IsNullOrEmpty(uri.Query))
+        {
+            throw new ArgumentException(
+                $"CustomAssetDomain must not contain a query string. Got: '{uri.AbsoluteUri}'.",
+                nameof(uri));
+        }
+
+        if (!string.IsNullOrEmpty(uri.Fragment))
+        {
+            throw new ArgumentException(
+                $"CustomAssetDomain must not contain a fragment. Got: '{uri.AbsoluteUri}'.",
+                nameof(uri));
+        }
+    }
+
     private void SetCustomEndpoint(string endpoint)
     {
         // Apply to both endpoints so behavior is deterministic regardless of call order
@@ -127,6 +182,7 @@ public sealed class DeliveryOptionsBuilder : IDeliveryOptionsBuilder
         UsePreviewApi = _options.UsePreviewApi,
         UseSecureAccess = _options.UseSecureAccess,
         SecureAccessApiKey = _options.SecureAccessApiKey,
-        DefaultRenditionPreset = _options.DefaultRenditionPreset
+        DefaultRenditionPreset = _options.DefaultRenditionPreset,
+        CustomAssetDomain = _options.CustomAssetDomain
     };
 }

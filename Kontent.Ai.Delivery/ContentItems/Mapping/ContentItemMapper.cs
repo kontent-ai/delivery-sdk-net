@@ -24,12 +24,14 @@ internal sealed class ContentItemMapper(
     /// <param name="modularContent">Dictionary of linked items from API response.</param>
     /// <param name="dependencyContext">Optional context for cache dependency tracking.</param>
     /// <param name="defaultRenditionPreset">Optional default asset rendition preset codename used when mapping asset URLs.</param>
+    /// <param name="customAssetDomain">Optional custom domain for rewriting asset URLs.</param>
     /// <param name="cancellationToken">Cancellation token.</param>
     public Task CompleteItemAsync<TModel>(
         IContentItem<TModel> item,
         IReadOnlyDictionary<string, JsonElement>? modularContent,
         DependencyTrackingContext? dependencyContext = null,
         string? defaultRenditionPreset = null,
+        Uri? customAssetDomain = null,
         CancellationToken cancellationToken = default)
     {
         cancellationToken.ThrowIfCancellationRequested();
@@ -52,6 +54,7 @@ internal sealed class ContentItemMapper(
             ModularContent = modularContent,
             DependencyContext = dependencyContext,
             DefaultRenditionPreset = defaultRenditionPreset,
+            CustomAssetDomain = customAssetDomain,
             CancellationToken = cancellationToken
         };
 
@@ -71,6 +74,7 @@ internal sealed class ContentItemMapper(
     /// <param name="modularContent">Dictionary of linked items from API response.</param>
     /// <param name="dependencyContext">Optional context for cache dependency tracking.</param>
     /// <param name="defaultRenditionPreset">Optional default asset rendition preset codename used when mapping asset URLs.</param>
+    /// <param name="customAssetDomain">Optional custom domain for rewriting asset URLs.</param>
     /// <param name="cancellationToken">Cancellation token.</param>
     /// <returns>
     /// The runtime-typed item, or null if no type mapping exists (caller should keep dynamic version).
@@ -80,6 +84,7 @@ internal sealed class ContentItemMapper(
         IReadOnlyDictionary<string, JsonElement>? modularContent,
         DependencyTrackingContext? dependencyContext = null,
         string? defaultRenditionPreset = null,
+        Uri? customAssetDomain = null,
         CancellationToken cancellationToken = default)
     {
         cancellationToken.ThrowIfCancellationRequested();
@@ -102,6 +107,7 @@ internal sealed class ContentItemMapper(
             ModularContent = modularContent,
             DependencyContext = dependencyContext,
             DefaultRenditionPreset = defaultRenditionPreset,
+            CustomAssetDomain = customAssetDomain,
             CancellationToken = cancellationToken
         };
 
@@ -118,12 +124,14 @@ internal sealed class ContentItemMapper(
     /// <param name="dynamicItems">Collection of dynamic content items.</param>
     /// <param name="modularContent">Dictionary of linked items from API response.</param>
     /// <param name="defaultRenditionPreset">Optional default asset rendition preset codename used when mapping asset URLs.</param>
+    /// <param name="customAssetDomain">Optional custom domain for rewriting asset URLs.</param>
     /// <param name="cancellationToken">Cancellation token.</param>
     /// <returns>Collection of items with runtime typing applied where possible.</returns>
     internal async Task<IReadOnlyList<IContentItem>> RuntimeTypeItemsAsync(
         IReadOnlyList<IContentItem<IDynamicElements>> dynamicItems,
         IReadOnlyDictionary<string, JsonElement>? modularContent,
         string? defaultRenditionPreset = null,
+        Uri? customAssetDomain = null,
         CancellationToken cancellationToken = default)
     {
         var result = new List<IContentItem>(dynamicItems.Count);
@@ -139,6 +147,7 @@ internal sealed class ContentItemMapper(
                     modularContent,
                     dependencyContext: null,
                     defaultRenditionPreset,
+                    customAssetDomain,
                     cancellationToken).ConfigureAwait(false);
 
                 if (runtimeItem != null)

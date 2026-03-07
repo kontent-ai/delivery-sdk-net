@@ -235,4 +235,35 @@ public class DeliveryOptionsValidatorTests
 
         Assert.Contains(results, r => r.ErrorMessage == "EnvironmentId cannot be an empty GUID.");
     }
+
+    [Fact]
+    public void Validate_CustomAssetDomain_WithPath_Fails()
+    {
+        var options = new DeliveryOptions
+        {
+            EnvironmentId = Guid.NewGuid().ToString(),
+            CustomAssetDomain = "https://cdn.example.com/assets"
+        };
+
+        var isValid = TryValidate(options, out var results);
+
+        Assert.False(isValid);
+        Assert.Contains(results, r =>
+            r.MemberNames.Contains(nameof(DeliveryOptions.CustomAssetDomain)) &&
+            r.ErrorMessage!.Contains("path", StringComparison.OrdinalIgnoreCase));
+    }
+
+    [Fact]
+    public void Validate_CustomAssetDomain_RootDomain_Passes()
+    {
+        var options = new DeliveryOptions
+        {
+            EnvironmentId = Guid.NewGuid().ToString(),
+            CustomAssetDomain = "https://assets.example.com"
+        };
+
+        var isValid = TryValidate(options, out var results);
+
+        Assert.True(isValid);
+    }
 }

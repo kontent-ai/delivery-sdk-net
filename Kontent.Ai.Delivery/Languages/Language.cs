@@ -3,10 +3,7 @@ using System.Text.Json.Serialization;
 
 namespace Kontent.Ai.Delivery.Languages;
 
-/// <inheritdoc/>
-/// <summary>
-/// Constructor used for deserialization (e.g. for caching purposes), contains no logic.
-/// </summary>
+/// <inheritdoc cref="ILanguage"/>
 [DebuggerDisplay("Name = {" + nameof(System) + "." + nameof(ILanguageSystemAttributes.Name) + "}")]
 internal sealed record Language : ILanguage
 {

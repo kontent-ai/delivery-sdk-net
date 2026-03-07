@@ -64,6 +64,14 @@ public sealed class DeliveryOptions : IValidatableObject
     public string? DefaultRenditionPreset { get; set; }
 
     /// <summary>
+    /// Gets or sets a custom domain for asset URLs.
+    /// When set, the SDK replaces the host of all asset URLs with this domain,
+    /// preserving the original path and query string.
+    /// </summary>
+    [Url]
+    public string? CustomAssetDomain { get; set; }
+
+    /// <summary>
     /// Validates cross-field constraints for delivery options.
     /// Ensures mutual exclusivity of <see cref="UsePreviewApi"/> and <see cref="UseSecureAccess"/>.
     /// Validates that <see cref="EnvironmentId"/> is not an empty GUID.
@@ -94,6 +102,32 @@ public sealed class DeliveryOptions : IValidatableObject
             yield return new ValidationResult(
                 "EnvironmentId cannot be an empty GUID.",
                 [nameof(EnvironmentId)]);
+        }
+
+        if (!string.IsNullOrWhiteSpace(CustomAssetDomain) &&
+            Uri.TryCreate(CustomAssetDomain, UriKind.Absolute, out var customDomainUri))
+        {
+            if (customDomainUri.AbsolutePath is not ("/" or ""))
+            {
+                yield return new ValidationResult(
+                    $"CustomAssetDomain must be a root domain without a path (e.g. 'https://assets.example.com'). " +
+                    $"The path '{customDomainUri.AbsolutePath}' would be silently ignored.",
+                    [nameof(CustomAssetDomain)]);
+            }
+
+            if (!string.IsNullOrEmpty(customDomainUri.Query))
+            {
+                yield return new ValidationResult(
+                    "CustomAssetDomain must not contain a query string.",
+                    [nameof(CustomAssetDomain)]);
+            }
+
+            if (!string.IsNullOrEmpty(customDomainUri.Fragment))
+            {
+                yield return new ValidationResult(
+                    "CustomAssetDomain must not contain a fragment.",
+                    [nameof(CustomAssetDomain)]);
+            }
         }
     }
 }

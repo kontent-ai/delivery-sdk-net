@@ -1,5 +1,4 @@
 using System.Diagnostics;
-using System.Text.Json.Serialization;
 
 namespace Kontent.Ai.Delivery.ContentItems.RichText.Blocks;
 
@@ -10,13 +9,4 @@ internal record ContentItemLink(
     IContentLink? Metadata,
     IReadOnlyList<IRichTextBlock> Children,
     IReadOnlyDictionary<string, string> Attributes
-) : IContentItemLink
-{
-    /// <summary>
-    /// Default constructor for JSON deserialization.
-    /// </summary>
-    [JsonConstructor]
-    public ContentItemLink() : this(Guid.Empty, null, [], new Dictionary<string, string>())
-    {
-    }
-}
+) : IContentItemLink;

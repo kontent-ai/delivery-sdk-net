@@ -3,10 +3,7 @@ using System.Text.Json.Serialization;
 
 namespace Kontent.Ai.Delivery.SharedModels;
 
-/// <inheritdoc/>
-/// <summary>
-/// Initializes a new instance of the <see cref="TaxonomyTerm"/> class.
-/// </summary>
+/// <inheritdoc cref="ITaxonomyTerm"/>
 [DebuggerDisplay("Name = {" + nameof(Name) + "}")]
 public sealed record TaxonomyTerm : ITaxonomyTerm
 {

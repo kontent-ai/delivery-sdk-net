@@ -29,6 +29,7 @@ The official .NET SDK for the [Kontent.ai Delivery API](https://kontent.ai/learn
   - [Caching](#caching)
   - [Preview API](#preview-api)
   - [Asset Renditions](#asset-renditions)
+  - [Custom Asset Domain](#custom-asset-domain)
   - [Image Transformation](#image-transformation)
 - [Configuration Options](#-configuration-options)
 - [Important Considerations](#-important-considerations)
@@ -1465,6 +1466,40 @@ For named clients, `DefaultRenditionPreset` is resolved per client configuration
 
 When query caching is enabled, changing `DefaultRenditionPreset` on an existing client does not invalidate already-cached entries. Purge cache (or recreate the client) if you need the new default rendition to apply immediately.
 
+### Custom Asset Domain
+
+If you serve assets through a custom CDN or domain (e.g. for branding, geo-routing, or security), the SDK can rewrite all asset URLs — including inline images in rich text — to use your domain while preserving the original path and query string.
+
+#### Configuration
+
+```csharp
+services.AddDeliveryClient(options =>
+{
+    options.EnvironmentId = "your-environment-id";
+    options.CustomAssetDomain = "https://assets.example.com";
+});
+```
+
+Or with the builder:
+
+```csharp
+services.AddDeliveryClient(builder =>
+    builder.WithEnvironmentId("your-environment-id")
+           .WithCustomAssetDomain("https://assets.example.com")
+           .Build());
+```
+
+When set, all asset URLs returned by the SDK are rewritten from the default Kontent.ai host (e.g. `https://assets-eu-01.kc-usercontent.com/...`) to your custom domain (e.g. `https://assets.example.com/...`). This applies to:
+
+- Asset element URLs (`IAsset.Url`)
+- Inline image URLs in rich text content (`IInlineImage.Url`)
+- `<img>` tag `src` attributes in resolved rich text HTML
+
+The domain must be a root URL without a path, query string, or fragment. The SDK validates this at configuration time and throws `ArgumentException` for invalid values.
+
+> [!NOTE]
+> `CustomAssetDomain` and `DefaultRenditionPreset` work together — rendition query strings are appended after the domain rewrite.
+
 ### Image Transformation
 
 The SDK includes `ImageUrlBuilder` for dynamically transforming images served from Kontent.ai. This allows you to resize, crop, and optimize images on-the-fly without storing multiple versions.
@@ -1620,6 +1655,9 @@ services.AddDeliveryClient(options =>
 
     // Default image rendition preset
     options.DefaultRenditionPreset = "default";
+
+    // Custom asset domain (rewrites all asset URLs to use your CDN)
+    options.CustomAssetDomain = "https://assets.example.com";
 
     // Custom endpoints (for proxy scenarios, set independently)
     options.ProductionEndpoint = "https://deliver.kontent.ai";

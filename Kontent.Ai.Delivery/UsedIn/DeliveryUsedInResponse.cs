@@ -2,7 +2,7 @@ using System.Text.Json.Serialization;
 
 namespace Kontent.Ai.Delivery.UsedIn;
 
-internal sealed class DeliveryUsedInResponse : IDeliveryUsedInResponse
+internal sealed record DeliveryUsedInResponse : IDeliveryUsedInResponse
 {
     /// <inheritdoc/>
     [JsonPropertyName("items")]

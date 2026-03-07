@@ -42,6 +42,7 @@ internal sealed class DeliveryClient(
             contentDeserializer,
             GetEffectiveCacheManager(),
             GetDefaultRenditionPreset(),
+            GetCustomAssetDomain(),
             logger);
     }
 
@@ -54,6 +55,7 @@ internal sealed class DeliveryClient(
             contentItemMapper,
             contentDeserializer,
             GetDefaultRenditionPreset(),
+            GetCustomAssetDomain(),
             logger);
     }
 
@@ -64,6 +66,7 @@ internal sealed class DeliveryClient(
         typeProvider,
         GetEffectiveCacheManager(),
         GetDefaultRenditionPreset(),
+        GetCustomAssetDomain(),
         logger);
 
     public IDynamicItemsQuery GetItems()
@@ -74,6 +77,7 @@ internal sealed class DeliveryClient(
             contentDeserializer,
             typeProvider,
             GetDefaultRenditionPreset(),
+            GetCustomAssetDomain(),
             logger);
     }
 
@@ -82,6 +86,7 @@ internal sealed class DeliveryClient(
         contentItemMapper,
         typeProvider,
         GetDefaultRenditionPreset(),
+        GetCustomAssetDomain(),
         logger);
 
     public IDynamicEnumerateItemsQuery GetItemsFeed() => new DynamicEnumerateItemsQuery(
@@ -89,6 +94,7 @@ internal sealed class DeliveryClient(
         contentItemMapper,
         typeProvider,
         GetDefaultRenditionPreset(),
+        GetCustomAssetDomain(),
         logger);
 
     public ITypeQuery GetType(string codename)
@@ -141,6 +147,12 @@ internal sealed class DeliveryClient(
 
     private string? GetDefaultRenditionPreset()
         => optionsMonitor?.Get(_clientName).DefaultRenditionPreset;
+
+    private Uri? GetCustomAssetDomain()
+    {
+        var domain = optionsMonitor?.Get(_clientName).CustomAssetDomain;
+        return string.IsNullOrWhiteSpace(domain) ? null : new Uri(domain, UriKind.Absolute);
+    }
 
     private bool IsPreviewApiEnabled()
         => optionsMonitor?.Get(_clientName).UsePreviewApi ?? false;

@@ -46,6 +46,13 @@ public sealed class RichTextElementEnvelopeReaderTests
         Assert.Equal("<p>Hello world</p>", richText.Value);
 
         Assert.Single(richText.Images);
+        var image = richText.Images.Values.Single();
+        Assert.Equal("https://example.com/image.jpg", image.Url);
+        Assert.Equal("Hero", image.Description);
+        Assert.Equal(100, image.Height);
+        Assert.Equal(200, image.Width);
+        Assert.Equal(Guid.Parse("11111111-1111-1111-1111-111111111111"), image.ImageId);
+
         Assert.Single(richText.Links);
         Assert.Equal(3, richText.ModularContent.Count);
     }

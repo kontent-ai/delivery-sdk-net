@@ -8,7 +8,7 @@ public class RichTextContentTests
     [Fact]
     public void Count_ReturnsNumberOfBlocks()
     {
-        var block = new ContentItemLink();
+        var block = new TextNode("");
         var sut = new RichTextContent();
         sut.AddRange([block]);
 
@@ -18,7 +18,7 @@ public class RichTextContentTests
     [Fact]
     public void Indexer_ReturnsBlockAtPosition()
     {
-        var block = new ContentItemLink();
+        var block = new TextNode("");
         var sut = new RichTextContent();
         sut.AddRange([block]);
 

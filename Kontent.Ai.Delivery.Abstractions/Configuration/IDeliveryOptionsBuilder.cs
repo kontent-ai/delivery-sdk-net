@@ -56,6 +56,20 @@ public interface IDeliveryOptionsBuilder
     IDeliveryOptionsBuilder WithDefaultRenditionPreset(string presetCodename);
 
     /// <summary>
+    /// Use a custom domain for asset URLs. The SDK replaces the host of all asset URLs
+    /// with this domain, preserving the original path and query string.
+    /// </summary>
+    /// <param name="customDomain">A custom asset domain URL (e.g. "https://assets.example.com").</param>
+    IDeliveryOptionsBuilder WithCustomAssetDomain(string customDomain);
+
+    /// <summary>
+    /// Use a custom domain for asset URLs. The SDK replaces the host of all asset URLs
+    /// with this domain, preserving the original path and query string.
+    /// </summary>
+    /// <param name="customDomain">A custom asset domain URI.</param>
+    IDeliveryOptionsBuilder WithCustomAssetDomain(Uri customDomain);
+
+    /// <summary>
     /// Returns a new instance of the <see cref="DeliveryOptions"/> class.
     /// </summary>
     DeliveryOptions Build();

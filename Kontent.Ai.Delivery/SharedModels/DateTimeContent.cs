@@ -3,7 +3,7 @@ using System.Text.Json.Serialization;
 namespace Kontent.Ai.Delivery.SharedModels;
 
 /// <inheritdoc/>
-public sealed record DateTimeContent() : IDateTimeContent
+public sealed record DateTimeContent : IDateTimeContent
 {
     /// <inheritdoc/>
     [JsonPropertyName("value")]
