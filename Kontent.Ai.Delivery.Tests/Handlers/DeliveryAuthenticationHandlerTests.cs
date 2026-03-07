@@ -214,17 +214,26 @@ public class DeliveryAuthenticationHandlerTests
         Assert.Equal($"/{TestEnvironmentId}/items", request.RequestUri.AbsolutePath);
     }
 
-    [Fact]
-    public async Task SendAsync_WithCustomBaseUrl_UsesCustomBase()
+    [Theory]
+    [InlineData(false, "https://custom-delivery.example.com")]
+    [InlineData(false, "https://custom-delivery.example.com/")]
+    [InlineData(true, "https://custom-delivery.example.com")]
+    [InlineData(true, "https://custom-delivery.example.com/")]
+    public async Task SendAsync_WithCustomBaseUrl_UsesCustomBase(bool usePreviewApi, string customEndpoint)
     {
         var options = new DeliveryOptions
         {
             EnvironmentId = TestEnvironmentId,
-            ProductionEndpoint = "https://custom-delivery.example.com"
+            UsePreviewApi = usePreviewApi,
+            ProductionEndpoint = customEndpoint,
+            PreviewEndpoint = customEndpoint
         };
 
         var handler = CreateHandler(options);
-        var request = new HttpRequestMessage(HttpMethod.Get, "https://custom-delivery.example.com/items");
+        var requestUrl = usePreviewApi
+            ? "https://preview-deliver.kontent.ai/items"
+            : "https://deliver.kontent.ai/items";
+        var request = new HttpRequestMessage(HttpMethod.Get, requestUrl);
 
         var response = await InvokeSendAsync(handler, request);
 
@@ -232,6 +241,7 @@ public class DeliveryAuthenticationHandlerTests
         Assert.Equal("https", request.RequestUri.Scheme);
         Assert.Equal("custom-delivery.example.com", request.RequestUri.Host);
         Assert.Equal($"/{TestEnvironmentId}/items", request.RequestUri.AbsolutePath);
+        Assert.Equal($"https://custom-delivery.example.com/{TestEnvironmentId}/items", request.RequestUri.AbsoluteUri);
     }
 
     [Fact]
