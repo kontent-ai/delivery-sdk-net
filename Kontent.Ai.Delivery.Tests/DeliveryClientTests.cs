@@ -186,6 +186,22 @@ public class DeliveryClientTests
     }
 
     [Fact]
+    public async Task GetItem_WhenRequestFails_DoesNotExposeDependencyKeys()
+    {
+        var mock = new MockHttpMessageHandler();
+        mock.When($"{BaseUrl}/items/missing_article")
+            .Respond(HttpStatusCode.NotFound, "application/json", """{"message":"Item not found","error_code":"not_found"}""");
+
+        var client = CreateClient(mock);
+
+        var result = await client.GetItem<Article>("missing_article").ExecuteAsync();
+
+        Assert.False(result.IsSuccess);
+        Assert.Equal(HttpStatusCode.NotFound, result.StatusCode);
+        Assert.Null(result.DependencyKeys);
+    }
+
+    [Fact]
     public async Task GetType_Succeeds()
     {
         var mock = new MockHttpMessageHandler();

@@ -1,8 +1,6 @@
 using System.Diagnostics;
-using System.Net;
 using Kontent.Ai.Delivery.Api.QueryBuilders.Helpers;
 using Kontent.Ai.Delivery.Languages;
-using Kontent.Ai.Delivery.Logging;
 using Microsoft.Extensions.Logging;
 
 namespace Kontent.Ai.Delivery.Api.QueryBuilders;
@@ -12,6 +10,7 @@ internal sealed class LanguagesQuery(
     IDeliveryApi api,
     ILogger? logger = null) : ILanguagesQuery
 {
+    private readonly QueryLoggingHelper _log = new(logger, "Languages", "list");
     private LanguagesParams _params = new();
     private bool _waitForLoadingNewContent;
 
@@ -46,8 +45,8 @@ internal sealed class LanguagesQuery(
 
     public async Task<IDeliveryResult<IDeliveryLanguageListingResponse>> ExecuteAsync(CancellationToken cancellationToken = default)
     {
-        LogQueryStarting();
-        var stopwatch = StartTimingIfEnabled();
+        _log.LogQueryStarting();
+        var stopwatch = _log.StartTimingIfEnabled();
         return await ExecuteWithoutCacheAsync(stopwatch, cancellationToken).ConfigureAwait(false);
     }
 
@@ -58,12 +57,12 @@ internal sealed class LanguagesQuery(
         var deliveryResult = await FetchFromApiAsync(cancellationToken).ConfigureAwait(false);
         if (!deliveryResult.IsSuccess)
         {
-            LogQueryFailed(deliveryResult);
-            LogQueryCompleted(stopwatch, deliveryResult.StatusCode, cacheHit: false, deliveryResult.HasStaleContent);
+            _log.LogQueryFailed(deliveryResult.StatusCode, deliveryResult.Error?.Message);
+            _log.LogQueryCompleted(stopwatch, deliveryResult.StatusCode, cacheHit: false, deliveryResult.HasStaleContent);
             return CreateFailureResult(deliveryResult);
         }
 
-        LogQueryCompleted(stopwatch, deliveryResult.StatusCode, cacheHit: false, deliveryResult.HasStaleContent);
+        _log.LogQueryCompleted(stopwatch, deliveryResult.StatusCode, cacheHit: false, deliveryResult.HasStaleContent);
         return WrapSuccess(WithNextPageFetcher(deliveryResult.Value), deliveryResult);
     }
 
@@ -105,32 +104,4 @@ internal sealed class LanguagesQuery(
             _waitForLoadingNewContent = waitForLoadingSnapshot
         };
 
-    private void LogQueryStarting()
-    {
-        if (logger is not null)
-            LoggerMessages.QueryStarting(logger, "Languages", "list");
-    }
-
-    private Stopwatch? StartTimingIfEnabled() =>
-        logger?.IsEnabled(LogLevel.Information) == true ? Stopwatch.StartNew() : null;
-
-    private void LogQueryFailed(IDeliveryResult<DeliveryLanguageListingResponse> deliveryResult)
-    {
-        if (logger is not null)
-        {
-            LoggerMessages.QueryFailed(logger, "Languages", "list", deliveryResult.StatusCode,
-                deliveryResult.Error?.Message, exception: null);
-        }
-    }
-
-    private void LogQueryCompleted(Stopwatch? stopwatch, HttpStatusCode statusCode, bool cacheHit, bool hasStaleContent = false)
-    {
-        if (logger is null)
-            return;
-        stopwatch?.Stop();
-        if (hasStaleContent)
-            LoggerMessages.QueryStaleContent(logger, "list");
-        LoggerMessages.QueryCompleted(logger, "Languages", "list",
-            stopwatch?.ElapsedMilliseconds ?? 0, statusCode, cacheHit);
-    }
 }

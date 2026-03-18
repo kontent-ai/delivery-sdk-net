@@ -6,7 +6,6 @@ using Kontent.Ai.Delivery.Api.QueryBuilders.Helpers;
 using Kontent.Ai.Delivery.Caching;
 using Kontent.Ai.Delivery.ContentItems;
 using Kontent.Ai.Delivery.ContentItems.Mapping;
-using Kontent.Ai.Delivery.Logging;
 using Microsoft.Extensions.Logging;
 
 namespace Kontent.Ai.Delivery.Api.QueryBuilders;
@@ -22,6 +21,7 @@ internal sealed class ItemQuery<TModel>(
     Uri? customAssetDomain = null,
     ILogger? logger = null) : IItemQuery<TModel>, ICacheExpirationConfigurable
 {
+    private readonly QueryLoggingHelper _log = new(logger, "Item", codename);
     private readonly SerializedFilterCollection _serializedFilters = [];
     private SingleItemParams _params = new();
     private bool _waitForLoadingNewContent;
@@ -62,8 +62,8 @@ internal sealed class ItemQuery<TModel>(
     public async Task<IDeliveryResult<IContentItem<TModel>>> ExecuteAsync(CancellationToken cancellationToken = default)
     {
         LatestModularContent = null;
-        LogQueryStarting();
-        var stopwatch = StartTimingIfEnabled();
+        _log.LogQueryStarting();
+        var stopwatch = _log.StartTimingIfEnabled();
         bool? waitForLoadingNewContent = _waitForLoadingNewContent ? true : null;
         var shouldBypassCache = _waitForLoadingNewContent;
 
@@ -93,7 +93,7 @@ internal sealed class ItemQuery<TModel>(
         // Cache hit (factory never called) or fail-safe served stale data after HTTP error
         if (cached is not null && (apiResult is null || !apiResult.IsSuccess))
         {
-            LogQueryCompleted(stopwatch, HttpStatusCode.OK, cacheHit: true);
+            _log.LogQueryCompleted(stopwatch, HttpStatusCode.OK, cacheHit: true);
             var isFailSafe = factoryInvoked
                 || (cacheManager is IFailSafeStateProvider failSafeProvider && failSafeProvider.IsFailSafeActive(cacheKey));
 
@@ -105,12 +105,12 @@ internal sealed class ItemQuery<TModel>(
         apiResult = QueryExecutionResultHelper.EnsureApiResult(apiResult, "Item", codename);
         if (!apiResult.IsSuccess)
         {
-            LogQueryFailed(apiResult);
-            LogQueryCompleted(stopwatch, apiResult.StatusCode, cacheHit: false, apiResult.HasStaleContent);
+            _log.LogQueryFailed(apiResult.StatusCode, apiResult.Error?.Message);
+            _log.LogQueryCompleted(stopwatch, apiResult.StatusCode, cacheHit: false, apiResult.HasStaleContent);
             return CreateFailureResult(apiResult);
         }
 
-        LogQueryCompleted(stopwatch, apiResult.StatusCode, cacheHit: false, apiResult.HasStaleContent);
+        _log.LogQueryCompleted(stopwatch, apiResult.StatusCode, cacheHit: false, apiResult.HasStaleContent);
         return WrapSuccess(cached?.Value ?? apiResult.Value.Item, apiResult, cached?.DependencyKeys);
     }
 
@@ -188,13 +188,13 @@ internal sealed class ItemQuery<TModel>(
         var deliveryResult = await FetchFromApiAsync(waitForLoadingNewContent, cancellationToken).ConfigureAwait(false);
         if (!deliveryResult.IsSuccess)
         {
-            LogQueryFailed(deliveryResult);
-            LogQueryCompleted(stopwatch, deliveryResult.StatusCode, cacheHit: false, deliveryResult.HasStaleContent);
+            _log.LogQueryFailed(deliveryResult.StatusCode, deliveryResult.Error?.Message);
+            _log.LogQueryCompleted(stopwatch, deliveryResult.StatusCode, cacheHit: false, deliveryResult.HasStaleContent);
             return CreateFailureResult(deliveryResult);
         }
 
         var (item, dependencyKeys) = await ProcessItemAsync(deliveryResult.Value, cancellationToken).ConfigureAwait(false);
-        LogQueryCompleted(stopwatch, deliveryResult.StatusCode, cacheHit: false, deliveryResult.HasStaleContent);
+        _log.LogQueryCompleted(stopwatch, deliveryResult.StatusCode, cacheHit: false, deliveryResult.HasStaleContent);
         return WrapSuccess(item, deliveryResult, dependencyKeys);
     }
 
@@ -255,35 +255,6 @@ internal sealed class ItemQuery<TModel>(
     {
         var modelType = storageMode == CacheStorageMode.RawJson ? null : typeof(TModel);
         return CacheKeyBuilder.BuildItemKey(codename, _params, modelType);
-    }
-
-    private void LogQueryStarting()
-    {
-        if (logger is not null)
-            LoggerMessages.QueryStarting(logger, "Item", codename);
-    }
-
-    private Stopwatch? StartTimingIfEnabled() =>
-        logger?.IsEnabled(LogLevel.Information) == true ? Stopwatch.StartNew() : null;
-
-    private void LogQueryFailed(IDeliveryResult<DeliveryItemResponse<TModel>> deliveryResult)
-    {
-        if (logger is not null)
-        {
-            LoggerMessages.QueryFailed(logger, "Item", codename, deliveryResult.StatusCode,
-                deliveryResult.Error?.Message, exception: null);
-        }
-    }
-
-    private void LogQueryCompleted(Stopwatch? stopwatch, HttpStatusCode statusCode, bool cacheHit, bool hasStaleContent = false)
-    {
-        if (logger is null)
-            return;
-        stopwatch?.Stop();
-        if (hasStaleContent)
-            LoggerMessages.QueryStaleContent(logger, codename);
-        LoggerMessages.QueryCompleted(logger, "Item", codename,
-            stopwatch?.ElapsedMilliseconds ?? 0, statusCode, cacheHit);
     }
 
 }

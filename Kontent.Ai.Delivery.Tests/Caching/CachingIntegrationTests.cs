@@ -835,6 +835,33 @@ public partial class CachingIntegrationTests
     }
 
     [Fact]
+    public async Task MemoryCache_GetType_PreservesDependencyKeys_OnCacheHit()
+    {
+        var mock = new MockHttpMessageHandler();
+        var fixtureContent = await ReadFixtureAsync($"DeliveryClient{Path.DirectorySeparatorChar}article.json");
+
+        mock.Expect($"{BaseUrl}/types/article")
+            .Respond("application/json", fixtureContent);
+
+        var client = CreateClientWithMemoryCache(mock);
+
+        var result1 = await client.GetType("article").ExecuteAsync();
+        var result2 = await client.GetType("article").ExecuteAsync();
+
+        Assert.False(result1.IsCacheHit);
+        Assert.True(result2.IsCacheHit);
+
+        Assert.NotNull(result1.DependencyKeys);
+        Assert.NotNull(result2.DependencyKeys);
+        Assert.Equal(
+            result1.DependencyKeys.OrderBy(k => k, StringComparer.Ordinal).ToArray(),
+            result2.DependencyKeys.OrderBy(k => k, StringComparer.Ordinal).ToArray());
+        Assert.Contains("type_article", result2.DependencyKeys);
+
+        mock.VerifyNoOutstandingExpectation();
+    }
+
+    [Fact]
     public async Task MemoryCache_GetTaxonomy_CacheHitOnSecondCall()
     {
         var mock = new MockHttpMessageHandler();
@@ -866,6 +893,33 @@ public partial class CachingIntegrationTests
         Assert.Null(result2.ResponseHeaders);    // Cache hit has no headers
 
         // Verify only one API call was made
+        mock.VerifyNoOutstandingExpectation();
+    }
+
+    [Fact]
+    public async Task MemoryCache_GetTaxonomy_PreservesDependencyKeys_OnCacheHit()
+    {
+        var mock = new MockHttpMessageHandler();
+        var fixtureContent = await ReadFixtureAsync($"DeliveryClient{Path.DirectorySeparatorChar}taxonomies_personas.json");
+
+        mock.Expect($"{BaseUrl}/taxonomies/personas")
+            .Respond("application/json", fixtureContent);
+
+        var client = CreateClientWithMemoryCache(mock);
+
+        var result1 = await client.GetTaxonomy("personas").ExecuteAsync();
+        var result2 = await client.GetTaxonomy("personas").ExecuteAsync();
+
+        Assert.False(result1.IsCacheHit);
+        Assert.True(result2.IsCacheHit);
+
+        Assert.NotNull(result1.DependencyKeys);
+        Assert.NotNull(result2.DependencyKeys);
+        Assert.Equal(
+            result1.DependencyKeys.OrderBy(k => k, StringComparer.Ordinal).ToArray(),
+            result2.DependencyKeys.OrderBy(k => k, StringComparer.Ordinal).ToArray());
+        Assert.Contains("taxonomy_personas", result2.DependencyKeys);
+
         mock.VerifyNoOutstandingExpectation();
     }
 
@@ -927,6 +981,35 @@ public partial class CachingIntegrationTests
     }
 
     [Fact]
+    public async Task MemoryCache_GetTypes_PreservesListScopeAndDependencyKeys_OnCacheHit()
+    {
+        var mock = new MockHttpMessageHandler();
+        var fixtureContent = await ReadFixtureAsync($"DeliveryClient{Path.DirectorySeparatorChar}types_accessory.json");
+
+        mock.Expect($"{BaseUrl}/types?skip=1")
+            .Respond("application/json", fixtureContent);
+
+        var client = CreateClientWithMemoryCache(mock);
+
+        var result1 = await client.GetTypes().Skip(1).ExecuteAsync();
+        var result2 = await client.GetTypes().Skip(1).ExecuteAsync();
+
+        Assert.False(result1.IsCacheHit);
+        Assert.True(result2.IsCacheHit);
+
+        Assert.NotNull(result1.DependencyKeys);
+        Assert.NotNull(result2.DependencyKeys);
+        Assert.Contains(DeliveryCacheDependencies.TypesListScope, result2.DependencyKeys);
+        Assert.Contains("type_accessory", result2.DependencyKeys);
+        Assert.Contains("type_article", result2.DependencyKeys);
+        Assert.Equal(
+            result1.DependencyKeys.OrderBy(k => k, StringComparer.Ordinal).ToArray(),
+            result2.DependencyKeys.OrderBy(k => k, StringComparer.Ordinal).ToArray());
+
+        mock.VerifyNoOutstandingExpectation();
+    }
+
+    [Fact]
     public async Task MemoryCache_TaxonomiesListScopeInvalidation_RefreshesAllCachedTaxonomyLists()
     {
         var mock = new MockHttpMessageHandler();
@@ -979,6 +1062,35 @@ public partial class CachingIntegrationTests
         Assert.True(listResultB3.IsSuccess);
         Assert.False(listResultA3.IsCacheHit);
         Assert.False(listResultB3.IsCacheHit);
+
+        mock.VerifyNoOutstandingExpectation();
+    }
+
+    [Fact]
+    public async Task MemoryCache_GetTaxonomies_PreservesListScopeAndDependencyKeys_OnCacheHit()
+    {
+        var mock = new MockHttpMessageHandler();
+        var fixtureContent = await ReadFixtureAsync($"DeliveryClient{Path.DirectorySeparatorChar}taxonomies_multiple.json");
+
+        mock.Expect($"{BaseUrl}/taxonomies?skip=1")
+            .Respond("application/json", fixtureContent);
+
+        var client = CreateClientWithMemoryCache(mock);
+
+        var result1 = await client.GetTaxonomies().Skip(1).ExecuteAsync();
+        var result2 = await client.GetTaxonomies().Skip(1).ExecuteAsync();
+
+        Assert.False(result1.IsCacheHit);
+        Assert.True(result2.IsCacheHit);
+
+        Assert.NotNull(result1.DependencyKeys);
+        Assert.NotNull(result2.DependencyKeys);
+        Assert.Contains(DeliveryCacheDependencies.TaxonomiesListScope, result2.DependencyKeys);
+        Assert.Contains("taxonomy_personas", result2.DependencyKeys);
+        Assert.Contains("taxonomy_processing", result2.DependencyKeys);
+        Assert.Equal(
+            result1.DependencyKeys.OrderBy(k => k, StringComparer.Ordinal).ToArray(),
+            result2.DependencyKeys.OrderBy(k => k, StringComparer.Ordinal).ToArray());
 
         mock.VerifyNoOutstandingExpectation();
     }
