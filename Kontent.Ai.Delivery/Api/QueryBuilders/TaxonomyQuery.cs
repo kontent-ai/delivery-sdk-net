@@ -2,7 +2,6 @@ using System.Diagnostics;
 using System.Net;
 using Kontent.Ai.Delivery.Api.QueryBuilders.Helpers;
 using Kontent.Ai.Delivery.Caching;
-using Kontent.Ai.Delivery.Logging;
 using Kontent.Ai.Delivery.TaxonomyGroups;
 using Microsoft.Extensions.Logging;
 
@@ -15,6 +14,7 @@ internal sealed class TaxonomyQuery(
     IDeliveryCacheManager? cacheManager,
     ILogger? logger = null) : ITaxonomyQuery, ICacheExpirationConfigurable
 {
+    private readonly QueryLoggingHelper _log = new(logger, "Taxonomy", codename);
     private bool _waitForLoadingNewContent;
     public TimeSpan? CacheExpiration { get; set; }
 
@@ -26,8 +26,8 @@ internal sealed class TaxonomyQuery(
 
     public async Task<IDeliveryResult<ITaxonomyGroup>> ExecuteAsync(CancellationToken cancellationToken = default)
     {
-        LogQueryStarting();
-        var stopwatch = StartTimingIfEnabled();
+        _log.LogQueryStarting();
+        var stopwatch = _log.StartTimingIfEnabled();
         bool? waitForLoadingNewContent = _waitForLoadingNewContent ? true : null;
         var shouldBypassCache = _waitForLoadingNewContent;
 
@@ -59,9 +59,7 @@ internal sealed class TaxonomyQuery(
                 if (!apiResult.IsSuccess)
                     return null;
 
-                var dependency = CacheDependencyKeyBuilder.BuildTaxonomyDependencyKey(apiResult.Value.System.Codename);
-                var dependencies = dependency is null ? Array.Empty<string>() : new[] { dependency };
-
+                var dependencies = BuildDependencies(apiResult.Value);
                 return new CacheEntry<TaxonomyGroup>((TaxonomyGroup)apiResult.Value, dependencies);
             },
             CacheExpiration,
@@ -70,22 +68,25 @@ internal sealed class TaxonomyQuery(
         // Cache hit (factory never called) or fail-safe served stale data after HTTP error
         if (cached is not null && (apiResult is null || !apiResult.IsSuccess))
         {
-            LogQueryCompleted(stopwatch, HttpStatusCode.OK, cacheHit: true);
+            _log.LogQueryCompleted(stopwatch, HttpStatusCode.OK, cacheHit: true);
             var isFailSafe = factoryInvoked
                 || (cacheManager is IFailSafeStateProvider failSafeProvider && failSafeProvider.IsFailSafeActive(cacheKey));
 
             return isFailSafe
-                ? DeliveryResult.FailSafeHit<ITaxonomyGroup>(cached)
-                : DeliveryResult.CacheHit<ITaxonomyGroup>(cached);
+                ? DeliveryResult.FailSafeHit<ITaxonomyGroup>(cached.Value, cached.DependencyKeys)
+                : DeliveryResult.CacheHit<ITaxonomyGroup>(cached.Value, cached.DependencyKeys);
         }
 
         apiResult = QueryExecutionResultHelper.EnsureApiResult(apiResult, "Taxonomy", codename);
 
         if (!apiResult.IsSuccess)
-            LogQueryFailed(apiResult);
+            _log.LogQueryFailed(apiResult.StatusCode, apiResult.Error?.Message);
 
-        LogQueryCompleted(stopwatch, apiResult.StatusCode, cacheHit: false, apiResult.HasStaleContent);
-        return apiResult;
+        _log.LogQueryCompleted(stopwatch, apiResult.StatusCode, cacheHit: false, apiResult.HasStaleContent);
+        return WrapSuccess(
+            cached?.Value ?? apiResult.Value,
+            apiResult,
+            cached?.DependencyKeys ?? BuildDependencies(apiResult.Value));
     }
 
     private async Task<IDeliveryResult<ITaxonomyGroup>> ExecuteWithoutCacheAsync(
@@ -95,10 +96,12 @@ internal sealed class TaxonomyQuery(
     {
         var deliveryResult = await FetchFromApiAsync(waitForLoadingNewContent, cancellationToken).ConfigureAwait(false);
         if (!deliveryResult.IsSuccess)
-            LogQueryFailed(deliveryResult);
+            _log.LogQueryFailed(deliveryResult.StatusCode, deliveryResult.Error?.Message);
 
-        LogQueryCompleted(stopwatch, deliveryResult.StatusCode, cacheHit: false, deliveryResult.HasStaleContent);
-        return deliveryResult;
+        _log.LogQueryCompleted(stopwatch, deliveryResult.StatusCode, cacheHit: false, deliveryResult.HasStaleContent);
+        return deliveryResult.IsSuccess
+            ? WrapSuccess(deliveryResult.Value, deliveryResult, BuildDependencies(deliveryResult.Value))
+            : deliveryResult;
     }
 
     private async Task<IDeliveryResult<ITaxonomyGroup>> FetchFromApiAsync(
@@ -109,32 +112,16 @@ internal sealed class TaxonomyQuery(
         return await response.ToDeliveryResultAsync(logger).ConfigureAwait(false);
     }
 
-    private void LogQueryStarting()
+    private static string[] BuildDependencies(ITaxonomyGroup taxonomyGroup)
     {
-        if (logger is not null)
-            LoggerMessages.QueryStarting(logger, "Taxonomy", codename);
+        var dependency = CacheDependencyKeyBuilder.BuildTaxonomyDependencyKey(taxonomyGroup.System.Codename);
+        return dependency is null ? [] : [dependency];
     }
 
-    private Stopwatch? StartTimingIfEnabled() =>
-        logger?.IsEnabled(LogLevel.Information) == true ? Stopwatch.StartNew() : null;
+    private static IDeliveryResult<ITaxonomyGroup> WrapSuccess(
+        ITaxonomyGroup taxonomyGroup,
+        IDeliveryResult<ITaxonomyGroup> apiResult,
+        IReadOnlyList<string> dependencyKeys)
+        => DeliveryResult.SuccessFrom(taxonomyGroup, apiResult, dependencyKeys);
 
-    private void LogQueryFailed(IDeliveryResult<ITaxonomyGroup> deliveryResult)
-    {
-        if (logger is not null)
-        {
-            LoggerMessages.QueryFailed(logger, "Taxonomy", codename, deliveryResult.StatusCode,
-                deliveryResult.Error?.Message, exception: null);
-        }
-    }
-
-    private void LogQueryCompleted(Stopwatch? stopwatch, HttpStatusCode statusCode, bool cacheHit, bool hasStaleContent = false)
-    {
-        if (logger is null)
-            return;
-        stopwatch?.Stop();
-        if (hasStaleContent)
-            LoggerMessages.QueryStaleContent(logger, codename);
-        LoggerMessages.QueryCompleted(logger, "Taxonomy", codename,
-            stopwatch?.ElapsedMilliseconds ?? 0, statusCode, cacheHit);
-    }
 }

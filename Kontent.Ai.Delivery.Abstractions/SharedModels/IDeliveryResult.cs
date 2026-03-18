@@ -70,4 +70,18 @@ public interface IDeliveryResult<out T>
     /// inspect <see cref="ResponseSource"/> or the <see cref="ResponseHeaders"/> for headers like <c>X-Cache</c>.
     /// </remarks>
     bool IsCacheHit { get; }
+
+    /// <summary>
+    /// Gets the canonical dependency keys describing the content entities this result depends on,
+    /// or <see langword="null"/> when dependency keys were not collected.
+    /// Always <see langword="null"/> for failed results (<see cref="IsSuccess"/> is <see langword="false"/>).
+    /// </summary>
+    /// <remarks>
+    /// Dependency keys use canonical SDK formats such as <c>item_{codename}</c>, <c>asset_{guid}</c>,
+    /// <c>type_{codename}</c>, <c>taxonomy_{group}</c>, or scope sentinels like
+    /// <see cref="DeliveryCacheDependencies.ItemsListScope"/>.
+    /// These keys can be used for downstream cache invalidation scenarios
+    /// such as ASP.NET output-cache tagging.
+    /// </remarks>
+    IReadOnlyList<string>? DependencyKeys { get; }
 }

@@ -40,8 +40,8 @@ public class HybridCacheManagerTests
 
         Assert.True(factoryCalled);
         Assert.NotNull(result);
-        Assert.Equal(value.Id, result.Id);
-        Assert.Equal(value.Name, result.Name);
+        Assert.Equal(value.Id, result.Value.Id);
+        Assert.Equal(value.Name, result.Value.Name);
     }
 
     [Fact]
@@ -59,8 +59,8 @@ public class HybridCacheManagerTests
 
         Assert.False(factoryCalled);
         Assert.NotNull(result);
-        Assert.Equal(value.Id, result.Id);
-        Assert.Equal(value.Name, result.Name);
+        Assert.Equal(value.Id, result.Value.Id);
+        Assert.Equal(value.Name, result.Value.Name);
     }
 
     [Fact]
@@ -207,12 +207,12 @@ public class HybridCacheManagerTests
 
         Assert.False(factoryCalled);
         Assert.NotNull(result);
-        Assert.Equal(value.Id, result.Id);
-        Assert.Equal(value.Name, result.Name);
-        Assert.NotNull(result.Nested);
-        Assert.Equal(value.Nested.Description, result.Nested.Description);
-        Assert.Equal(value.Nested.Tags, result.Nested.Tags);
-        Assert.Equal(value.Items, result.Items);
+        Assert.Equal(value.Id, result.Value.Id);
+        Assert.Equal(value.Name, result.Value.Name);
+        Assert.NotNull(result.Value.Nested);
+        Assert.Equal(value.Nested.Description, result.Value.Nested.Description);
+        Assert.Equal(value.Nested.Tags, result.Value.Nested.Tags);
+        Assert.Equal(value.Items, result.Value.Items);
     }
 
     [Fact]
@@ -231,8 +231,8 @@ public class HybridCacheManagerTests
 
         Assert.False(factoryCalled);
         Assert.NotNull(result);
-        Assert.Equal(value.Id, result.Id);
-        Assert.Null(result.Name);
+        Assert.Equal(value.Id, result.Value.Id);
+        Assert.Null(result.Value.Name);
     }
 
     [Fact]
@@ -276,7 +276,7 @@ public class HybridCacheManagerTests
 
         Assert.False(factoryCalled);
         Assert.NotNull(cached);
-        Assert.Equal(contentType.System.Codename, cached.System.Codename);
+        Assert.Equal(contentType.System.Codename, cached.Value.System.Codename);
     }
 
     #endregion
@@ -437,7 +437,7 @@ public class HybridCacheManagerTests
         Assert.All(results, r =>
         {
             Assert.NotNull(r);
-            Assert.Equal(value.Id, r.Id);
+            Assert.Equal(value.Id, r.Value.Id);
         });
     }
 
@@ -744,8 +744,9 @@ public class HybridCacheManagerTests
 
     private async Task<T?> GetCachedValue<T>(string key, IDeliveryCacheManager? manager = null) where T : class
     {
-        return await (manager ?? _cacheManager).GetOrSetAsync<T>(key, _ =>
+        var cacheResult = await (manager ?? _cacheManager).GetOrSetAsync<T>(key, _ =>
             Task.FromResult<CacheEntry<T>?>(null));
+        return cacheResult?.Value;
     }
 
     private static async Task<bool> WaitUntilAsync(Func<Task<bool>> condition, TimeSpan timeout, TimeSpan pollInterval)

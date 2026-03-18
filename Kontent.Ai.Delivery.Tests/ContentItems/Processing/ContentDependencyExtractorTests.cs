@@ -5,7 +5,7 @@ using Kontent.Ai.Delivery.ContentItems.Processing;
 namespace Kontent.Ai.Delivery.Tests.ContentItems.Processing;
 
 /// <summary>
-/// Tests for <see cref="ContentDependencyExtractor"/> and <see cref="NullContentDependencyExtractor"/>.
+/// Tests for <see cref="ContentDependencyExtractor"/>.
 /// Verifies correct extraction of cache dependencies from content item elements.
 /// </summary>
 public class ContentDependencyExtractorTests
@@ -251,82 +251,6 @@ public class ContentDependencyExtractorTests
         _extractor.ExtractFromTaxonomyElement(element, context);
 
         Assert.Empty(context.Dependencies);
-    }
-
-    #endregion
-
-    #region NullContentDependencyExtractor Tests
-
-    [Fact]
-    public void NullExtractor_Instance_IsSingleton()
-    {
-        var instance1 = NullContentDependencyExtractor.Instance;
-        var instance2 = NullContentDependencyExtractor.Instance;
-
-        Assert.Same(instance1, instance2);
-    }
-
-    [Fact]
-    public void NullExtractor_ExtractFromRichTextElement_DoesNothing()
-    {
-        var extractor = NullContentDependencyExtractor.Instance;
-        var imageId = Guid.NewGuid();
-
-        var element = new MockRichTextElement();
-        element.ImagesBacking.Add(imageId, new MockInlineImage());
-        element.LinksBacking.Add(Guid.NewGuid(), new MockContentLink { Codename = "article" });
-        element.ModularContentBacking.Add("component");
-
-        var context = new DependencyTrackingContext();
-
-        extractor.ExtractFromRichTextElement(element, context);
-
-        Assert.Empty(context.Dependencies);
-    }
-
-    [Fact]
-    public void NullExtractor_ExtractFromTaxonomyElement_DoesNothing()
-    {
-        var extractor = NullContentDependencyExtractor.Instance;
-        var json = """
-        {
-            "taxonomy_group": "categories",
-            "value": []
-        }
-        """;
-        var element = JsonDocument.Parse(json).RootElement;
-        var context = new DependencyTrackingContext();
-
-        extractor.ExtractFromTaxonomyElement(element, context);
-
-        Assert.Empty(context.Dependencies);
-    }
-
-    [Fact]
-    public void NullExtractor_ExtractFromRichTextElement_WithNullContext_DoesNotThrow()
-    {
-        var extractor = NullContentDependencyExtractor.Instance;
-        var element = new MockRichTextElement();
-        element.ImagesBacking.Add(Guid.NewGuid(), new MockInlineImage());
-
-        var exception = Record.Exception(() => extractor.ExtractFromRichTextElement(element, null));
-        Assert.Null(exception);
-    }
-
-    [Fact]
-    public void NullExtractor_ExtractFromTaxonomyElement_WithNullContext_DoesNotThrow()
-    {
-        var extractor = NullContentDependencyExtractor.Instance;
-        var json = """
-        {
-            "taxonomy_group": "tags",
-            "value": []
-        }
-        """;
-        var element = JsonDocument.Parse(json).RootElement;
-
-        var exception = Record.Exception(() => extractor.ExtractFromTaxonomyElement(element, null));
-        Assert.Null(exception);
     }
 
     #endregion

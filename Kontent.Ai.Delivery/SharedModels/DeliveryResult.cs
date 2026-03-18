@@ -39,16 +39,12 @@ internal sealed class DeliveryResult<T> : IDeliveryResult<T>
     /// <inheritdoc/>
     public bool IsCacheHit => ResponseSource is ResponseSource.Cache or ResponseSource.FailSafe;
 
+    /// <inheritdoc/>
+    public IReadOnlyList<string>? DependencyKeys { get; }
+
     /// <summary>
     /// Creates a successful result from an API response.
     /// </summary>
-    /// <param name="value">The result value.</param>
-    /// <param name="requestUrl">The request URL.</param>
-    /// <param name="statusCode">The HTTP status code.</param>
-    /// <param name="hasStaleContent">Whether the content is stale.</param>
-    /// <param name="continuationToken">The continuation token for pagination.</param>
-    /// <param name="responseHeaders">The HTTP response headers.</param>
-    /// <param name="responseSource">The source of the response.</param>
     internal DeliveryResult(
         T value,
         string requestUrl,
@@ -56,7 +52,8 @@ internal sealed class DeliveryResult<T> : IDeliveryResult<T>
         bool hasStaleContent,
         string? continuationToken,
         HttpResponseHeaders? responseHeaders,
-        ResponseSource responseSource)
+        ResponseSource responseSource,
+        IReadOnlyList<string>? dependencyKeys = null)
     {
         Value = value;
         IsSuccess = true;
@@ -66,14 +63,16 @@ internal sealed class DeliveryResult<T> : IDeliveryResult<T>
         RequestUrl = requestUrl;
         ResponseHeaders = responseHeaders;
         ResponseSource = responseSource;
+        DependencyKeys = dependencyKeys;
     }
 
     /// <summary>
     /// Creates a successful result from SDK cache.
     /// </summary>
-    /// <param name="value">The cached value.</param>
-    /// <param name="responseSource">The cache response source (Cache or FailSafe).</param>
-    internal DeliveryResult(T value, ResponseSource responseSource)
+    internal DeliveryResult(
+        T value,
+        ResponseSource responseSource,
+        IReadOnlyList<string>? dependencyKeys = null)
     {
         Value = value;
         IsSuccess = true;
@@ -83,22 +82,19 @@ internal sealed class DeliveryResult<T> : IDeliveryResult<T>
         RequestUrl = null;
         ResponseHeaders = null;
         ResponseSource = responseSource;
+        DependencyKeys = dependencyKeys;
     }
 
     /// <summary>
     /// Creates a failed result.
     /// </summary>
-    /// <param name="requestUrl">The request URL.</param>
-    /// <param name="statusCode">The HTTP status code.</param>
-    /// <param name="error">The error that occurred.</param>
-    /// <param name="responseHeaders">The HTTP response headers.</param>
-    /// <param name="responseSource">The source of the response.</param>
     internal DeliveryResult(
         string requestUrl,
         HttpStatusCode statusCode,
         IError? error,
         HttpResponseHeaders? responseHeaders,
-        ResponseSource responseSource = ResponseSource.Origin)
+        ResponseSource responseSource = ResponseSource.Origin,
+        IReadOnlyList<string>? dependencyKeys = null)
     {
         Value = default!;
         IsSuccess = false;
@@ -109,6 +105,7 @@ internal sealed class DeliveryResult<T> : IDeliveryResult<T>
         RequestUrl = requestUrl;
         ResponseHeaders = responseHeaders;
         ResponseSource = responseSource;
+        DependencyKeys = dependencyKeys;
     }
 }
 
@@ -120,15 +117,6 @@ internal static class DeliveryResult
     /// <summary>
     /// Creates a successful result from an API response.
     /// </summary>
-    /// <typeparam name="T">The type of the result value.</typeparam>
-    /// <param name="value">The result value.</param>
-    /// <param name="requestUrl">The request URL.</param>
-    /// <param name="statusCode">The HTTP status code.</param>
-    /// <param name="hasStaleContent">Whether the content is stale.</param>
-    /// <param name="continuationToken">The continuation token for pagination.</param>
-    /// <param name="responseHeaders">The HTTP response headers.</param>
-    /// <param name="responseSource">The source of the response.</param>
-    /// <returns>A successful result.</returns>
     public static IDeliveryResult<T> Success<T>(
         T value,
         string requestUrl,
@@ -136,18 +124,25 @@ internal static class DeliveryResult
         bool hasStaleContent,
         string? continuationToken,
         HttpResponseHeaders? responseHeaders,
-        ResponseSource responseSource)
-    => new DeliveryResult<T>(value, requestUrl, statusCode, hasStaleContent, continuationToken, responseHeaders, responseSource);
+        ResponseSource responseSource,
+        IReadOnlyList<string>? dependencyKeys = null)
+    => new DeliveryResult<T>(
+        value,
+        requestUrl,
+        statusCode,
+        hasStaleContent,
+        continuationToken,
+        responseHeaders,
+        responseSource,
+        dependencyKeys);
 
     /// <summary>
     /// Creates a successful result by projecting metadata from another delivery result.
     /// </summary>
-    /// <typeparam name="TOut">The output result type.</typeparam>
-    /// <typeparam name="TIn">The source result type.</typeparam>
-    /// <param name="value">The output result value.</param>
-    /// <param name="source">The source result to copy metadata from.</param>
-    /// <returns>A successful result preserving source metadata.</returns>
-    public static IDeliveryResult<TOut> SuccessFrom<TOut, TIn>(TOut value, IDeliveryResult<TIn> source)
+    public static IDeliveryResult<TOut> SuccessFrom<TOut, TIn>(
+        TOut value,
+        IDeliveryResult<TIn> source,
+        IReadOnlyList<string>? dependencyKeys = null)
     {
         ArgumentNullException.ThrowIfNull(source);
 
@@ -158,37 +153,29 @@ internal static class DeliveryResult
             source.HasStaleContent,
             source.ContinuationToken,
             source.ResponseHeaders,
-            source.ResponseSource);
+            source.ResponseSource,
+            dependencyKeys);
     }
 
     /// <summary>
     /// Creates a successful result from SDK cache.
     /// </summary>
-    /// <typeparam name="T">The type of the result value.</typeparam>
-    /// <param name="value">The cached value.</param>
-    /// <returns>A successful cache hit result.</returns>
-    public static IDeliveryResult<T> CacheHit<T>(T value)
-    => new DeliveryResult<T>(value, ResponseSource.Cache);
+    public static IDeliveryResult<T> CacheHit<T>(
+        T value,
+        IReadOnlyList<string>? dependencyKeys = null)
+    => new DeliveryResult<T>(value, ResponseSource.Cache, dependencyKeys);
 
     /// <summary>
     /// Creates a successful result from SDK cache fail-safe (stale data served after factory failure).
     /// </summary>
-    /// <typeparam name="T">The type of the result value.</typeparam>
-    /// <param name="value">The stale cached value.</param>
-    /// <returns>A successful fail-safe result.</returns>
-    public static IDeliveryResult<T> FailSafeHit<T>(T value)
-    => new DeliveryResult<T>(value, ResponseSource.FailSafe);
+    public static IDeliveryResult<T> FailSafeHit<T>(
+        T value,
+        IReadOnlyList<string>? dependencyKeys = null)
+    => new DeliveryResult<T>(value, ResponseSource.FailSafe, dependencyKeys);
 
     /// <summary>
     /// Creates a failed result.
     /// </summary>
-    /// <typeparam name="T">The type of the result value.</typeparam>
-    /// <param name="requestUrl">The request URL.</param>
-    /// <param name="statusCode">The HTTP status code.</param>
-    /// <param name="error">The error that occurred.</param>
-    /// <param name="responseHeaders">The HTTP response headers.</param>
-    /// <param name="responseSource">The source of the response.</param>
-    /// <returns>A failed result.</returns>
     public static IDeliveryResult<T> Failure<T>(
         string requestUrl,
         HttpStatusCode statusCode,
@@ -200,10 +187,6 @@ internal static class DeliveryResult
     /// <summary>
     /// Creates a failed result by projecting failure metadata from another delivery result.
     /// </summary>
-    /// <typeparam name="TOut">The output result type.</typeparam>
-    /// <typeparam name="TIn">The source result type.</typeparam>
-    /// <param name="source">The source result to copy metadata from.</param>
-    /// <returns>A failed result preserving source metadata.</returns>
     public static IDeliveryResult<TOut> FailureFrom<TOut, TIn>(IDeliveryResult<TIn> source)
     {
         ArgumentNullException.ThrowIfNull(source);

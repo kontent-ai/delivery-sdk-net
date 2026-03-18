@@ -81,7 +81,7 @@ public sealed class ElementValueMapperTests
     {
         var jsonOptions = RefitSettingsProvider.CreateDefaultJsonSerializerOptions();
         return new ElementValueMapper(
-            NullContentDependencyExtractor.Instance,
+            new ContentDependencyExtractor(),
             jsonOptions,
             new HtmlParser(),
             logger);

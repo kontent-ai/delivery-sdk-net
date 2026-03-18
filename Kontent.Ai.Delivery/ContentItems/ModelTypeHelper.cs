@@ -9,8 +9,7 @@ internal static class ModelTypeHelper
     /// Returns true if <typeparamref name="TModel"/> is a dynamic content type
     /// (<see cref="IDynamicElements"/> or <see cref="DynamicElements"/>).
     /// </summary>
-    public static bool IsDynamic<TModel>() =>
-        typeof(TModel) == typeof(IDynamicElements) || typeof(TModel) == typeof(DynamicElements);
+    public static bool IsDynamic<TModel>() => IsDynamic(typeof(TModel));
 
     /// <summary>
     /// Returns true if <paramref name="modelType"/> is a dynamic content type

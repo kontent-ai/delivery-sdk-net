@@ -15,6 +15,7 @@ Caching is essential for production applications using the Kontent.ai Delivery A
 - [How Caching Works](#how-caching-works)
   - [Cache Keys](#cache-keys)
   - [Dependency Tracking](#dependency-tracking)
+  - [Using Dependency Keys for Output Caching](#using-dependency-keys-for-output-caching)
   - [Expiration Strategies](#expiration-strategies)
     - [Per-query Expiration Override](#per-query-expiration-override)
 - [Cache Invalidation](#cache-invalidation)
@@ -251,7 +252,7 @@ services.AddDeliveryHybridCache("production", defaultExpiration: TimeSpan.FromHo
 
 ### Custom Cache Manager
 
-For advanced scenarios, implement a custom cache manager. The `IDeliveryCacheManager` interface uses a factory-based `GetOrSetAsync` pattern — the factory is invoked on cache miss and returns a `CacheEntry<T>?` (null signals "don't cache").
+For advanced scenarios, implement a custom cache manager. The `IDeliveryCacheManager` interface uses a factory-based `GetOrSetAsync` pattern — the factory is invoked on cache miss and returns a `CacheEntry<T>?` (null signals "don't cache"). The method returns `CacheResult<T>?` (a record containing the `Value` and the collected `DependencyKeys`) so that downstream consumers can access dependency metadata.
 
 Use the default `StorageMode` (`CacheStorageMode.HydratedObject`) for hydrated-object caching (memory), or override `StorageMode` to `CacheStorageMode.RawJson` for raw JSON payload caching (distributed).
 
@@ -265,20 +266,20 @@ public class CustomMemoryCacheManager : IDeliveryCacheManager
 {
     private readonly ConcurrentDictionary<string, object> _cache = new();
 
-    public async Task<T?> GetOrSetAsync<T>(
+    public async Task<CacheResult<T>?> GetOrSetAsync<T>(
         string cacheKey,
         Func<CancellationToken, Task<CacheEntry<T>?>> factory,
         TimeSpan? expiration = null,
         CancellationToken cancellationToken = default) where T : class
     {
         if (_cache.TryGetValue(cacheKey, out var cached))
-            return (T)cached;
+            return new CacheResult<T>((T)cached, []);
 
         var entry = await factory(cancellationToken);
-        if (entry is null) return default;
+        if (entry is null) return null;
 
         _cache.TryAdd(cacheKey, entry.Value);
-        return entry.Value;
+        return new CacheResult<T>(entry.Value, entry.Dependencies.ToArray());
     }
 
     public Task<bool> InvalidateAsync(CancellationToken cancellationToken = default, params string[] dependencyKeys)
@@ -305,7 +306,7 @@ public class CustomHybridCacheManager : IDeliveryCacheManager
     // Tell the SDK to cache raw JSON payloads instead of hydrated objects
     public CacheStorageMode StorageMode => CacheStorageMode.RawJson;
 
-    public async Task<T?> GetOrSetAsync<T>(
+    public async Task<CacheResult<T>?> GetOrSetAsync<T>(
         string cacheKey,
         Func<CancellationToken, Task<CacheEntry<T>?>> factory,
         TimeSpan? expiration = null,
@@ -313,10 +314,10 @@ public class CustomHybridCacheManager : IDeliveryCacheManager
     {
         var json = await _cache.GetStringAsync(cacheKey, cancellationToken);
         if (json is not null)
-            return JsonSerializer.Deserialize<T>(json);
+            return new CacheResult<T>(JsonSerializer.Deserialize<T>(json)!, []);
 
         var entry = await factory(cancellationToken);
-        if (entry is null) return default;
+        if (entry is null) return null;
 
         var options = new DistributedCacheEntryOptions
         {
@@ -327,7 +328,7 @@ public class CustomHybridCacheManager : IDeliveryCacheManager
         await _cache.SetStringAsync(cacheKey, serialized, options, cancellationToken);
 
         // Implement dependency index + invalidation for production use
-        return entry.Value;
+        return new CacheResult<T>(entry.Value, entry.Dependencies.ToArray());
     }
 
     public Task<bool> InvalidateAsync(CancellationToken cancellationToken = default, params string[] dependencyKeys)
@@ -460,7 +461,7 @@ This prevents cache collisions when multiple clients share the same underlying c
 
 ### Dependency Tracking
 
-The SDK automatically tracks content dependencies:
+The SDK automatically tracks content dependencies for every query. These dependency keys serve two purposes: they drive internal cache tag-based invalidation, and they are surfaced on the delivery result itself (via `IDeliveryResult<T>.DependencyKeys`) so that your application can use them for downstream caching scenarios such as ASP.NET output-cache tagging.
 
 ```csharp
 // When you retrieve an article with linked authors
@@ -487,6 +488,25 @@ Cached `GetTypes()` and `GetTaxonomies()` queries use the same pattern:
 - `DeliveryCacheDependencies.TaxonomiesListScope` (`scope_taxonomies_list`) for taxonomy listings
 
 Single type queries use direct keys in the format `type_{codename}` (for example, `type_article`).
+
+### Using Dependency Keys for Output Caching
+
+The SDK exposes dependency keys on every delivery result via the `DependencyKeys` property on `IDeliveryResult<T>`. This enables downstream cache invalidation scenarios such as ASP.NET output-cache tagging — you can tag your controller-level or page-level cache entries with the same keys the SDK uses internally.
+
+```csharp
+var result = await client.GetItem<Article>("my-article").ExecuteAsync();
+
+if (result.IsSuccess && result.DependencyKeys is { } keys)
+{
+    // Tag your output cache entry with the SDK's dependency keys
+    foreach (var key in keys)
+    {
+        HttpContext.Response.Headers.Append("Cache-Tag", key);
+    }
+}
+```
+
+Dependency keys are always available — they are collected regardless of whether SDK caching is configured. The key formats are the same canonical formats used for SDK cache invalidation (see [Invalidation Matrix](#invalidation-matrix-rc-ready)).
 
 ### Expiration Strategies
 
@@ -980,7 +1000,7 @@ public class MonitoredCacheManager : IDeliveryCacheManager
     private readonly ILogger _logger;
     private readonly IMetrics _metrics;
 
-    public async Task<T?> GetOrSetAsync<T>(
+    public async Task<CacheResult<T>?> GetOrSetAsync<T>(
         string cacheKey,
         Func<CancellationToken, Task<CacheEntry<T>?>> factory,
         TimeSpan? expiration = null,
@@ -1004,7 +1024,7 @@ public class MonitoredCacheManager : IDeliveryCacheManager
 ### 4. Handle Cache Failures Gracefully
 
 ```csharp
-public async Task<T?> GetOrSetAsync<T>(
+public async Task<CacheResult<T>?> GetOrSetAsync<T>(
     string cacheKey,
     Func<CancellationToken, Task<CacheEntry<T>?>> factory,
     TimeSpan? expiration = null,
@@ -1019,7 +1039,7 @@ public async Task<T?> GetOrSetAsync<T>(
         _logger.LogWarning(ex, "Redis connection failed, bypassing cache");
         // Fall back to calling the factory directly (no caching)
         var entry = await factory(cancellationToken);
-        return entry?.Value;
+        return entry is null ? null : new CacheResult<T>(entry.Value, entry.Dependencies.ToArray());
     }
 }
 ```
@@ -1144,7 +1164,7 @@ public class LoggingCacheManager : IDeliveryCacheManager
     private readonly IDeliveryCacheManager _inner;
     private readonly ILogger _logger;
 
-    public async Task<T?> GetOrSetAsync<T>(
+    public async Task<CacheResult<T>?> GetOrSetAsync<T>(
         string cacheKey,
         Func<CancellationToken, Task<CacheEntry<T>?>> factory,
         TimeSpan? expiration = null,

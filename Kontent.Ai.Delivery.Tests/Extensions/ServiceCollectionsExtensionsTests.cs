@@ -606,7 +606,7 @@ public class ServiceCollectionsExtensionsTests
             });
 
         Assert.False(factoryCalled);
-        Assert.Equal("cached-value", cached);
+        Assert.Equal("cached-value", cached?.Value);
     }
 
     [Fact]
@@ -872,14 +872,16 @@ public class ServiceCollectionsExtensionsTests
 
     private sealed class TestCustomCacheManager : IDeliveryCacheManager
     {
-        public async Task<T?> GetOrSetAsync<T>(
+        public async Task<CacheResult<T>?> GetOrSetAsync<T>(
             string cacheKey,
             Func<CancellationToken, Task<CacheEntry<T>?>> factory,
             TimeSpan? expiration = null,
             CancellationToken cancellationToken = default) where T : class
         {
             var entry = await factory(cancellationToken);
-            return entry?.Value;
+            if (entry is null)
+                return null;
+            return new CacheResult<T>(entry.Value, entry.Dependencies.ToArray());
         }
 
         public Task<bool> InvalidateAsync(CancellationToken cancellationToken = default, params string[] dependencyKeys)

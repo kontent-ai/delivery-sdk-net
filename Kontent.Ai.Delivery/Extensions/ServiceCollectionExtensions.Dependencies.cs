@@ -24,7 +24,7 @@ public static partial class ServiceCollectionExtensions
         services.TryAddSingleton<ContentItemMapper>();
         services.TryAddSingleton<IHtmlParser, HtmlParser>();
 
-        // Dependency extraction - default to no-op when caching is disabled
-        services.TryAddSingleton<IContentDependencyExtractor>(NullContentDependencyExtractor.Instance);
+        // Dependency extraction is used for cache invalidation and for optional dependency metadata on results.
+        services.TryAddSingleton<IContentDependencyExtractor, ContentDependencyExtractor>();
     }
 }

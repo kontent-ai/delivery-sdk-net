@@ -19,18 +19,6 @@ internal sealed class RichTextParser(
     private const int MaxParsingDepth = 100;
 
     /// <summary>
-    /// Creates a default RichTextParser instance for standalone usage.
-    /// Uses a no-op dependency extractor since caching context is not available.
-    /// </summary>
-    /// <param name="logger">Optional logger for diagnostic output.</param>
-    /// <returns>A new RichTextParser configured for standalone operation.</returns>
-    internal static RichTextParser CreateDefault(ILogger? logger = null)
-    {
-        var htmlParser = new HtmlParser();
-        var dependencyExtractor = NullContentDependencyExtractor.Instance;
-        return new RichTextParser(htmlParser, dependencyExtractor, logger);
-    }
-    /// <summary>
     /// Converts a rich text element to structured content.
     /// </summary>
     internal async Task<IRichTextContent?> ConvertAsync<TElement>(

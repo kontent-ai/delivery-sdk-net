@@ -863,9 +863,8 @@ private static void RegisterDependencies(IServiceCollection services)
     services.TryAddSingleton<ContentItemMapper>();
     services.TryAddSingleton<IHtmlParser, HtmlParser>();
 
-    // Default to no-op extractor (overridden when caching enabled)
-    services.TryAddSingleton<IContentDependencyExtractor>(
-        NullContentDependencyExtractor.Instance);
+    // Dependency extraction for cache invalidation and result dependency metadata
+    services.TryAddSingleton<IContentDependencyExtractor, ContentDependencyExtractor>();
 }
 ```
 

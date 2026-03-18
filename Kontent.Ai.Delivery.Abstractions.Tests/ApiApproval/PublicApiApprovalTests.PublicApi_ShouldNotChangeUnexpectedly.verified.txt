@@ -16,6 +16,17 @@ public sealed class CacheEntry`1 : IEquatable`1
     String ToString()
 
 // Kontent.Ai.Delivery.Abstractions
+public sealed class CacheResult`1 : IEquatable`1
+    IReadOnlyList`1 DependencyKeys { get; set; init; }
+    T Value { get; set; init; }
+    CacheResult`1 <Clone>$()
+    Void Deconstruct(T& Value, IReadOnlyList`1& DependencyKeys)
+    Boolean Equals(Object obj)
+    Boolean Equals(CacheResult`1 other)
+    Int32 GetHashCode()
+    String ToString()
+
+// Kontent.Ai.Delivery.Abstractions
 public enum CacheStorageMode : Enum
 
 // Kontent.Ai.Delivery.Abstractions
@@ -234,6 +245,7 @@ public interface IDeliveryOptionsBuilder
 // Kontent.Ai.Delivery.Abstractions
 public interface IDeliveryResult`1
     String ContinuationToken { get; }
+    IReadOnlyList`1 DependencyKeys { get; }
     IError Error { get; }
     Boolean HasStaleContent { get; }
     Boolean IsCacheHit { get; }

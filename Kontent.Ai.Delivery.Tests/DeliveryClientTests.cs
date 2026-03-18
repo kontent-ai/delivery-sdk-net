@@ -80,6 +80,128 @@ public class DeliveryClientTests
     }
 
     [Fact]
+    public async Task GetItem_StronglyTyped_ExposesDependencyKeys()
+    {
+        var mock = new MockHttpMessageHandler();
+        mock.When($"{BaseUrl}/items/coffee_beverages_explained")
+            .Respond("application/json", await File.ReadAllTextAsync(Path.Combine(Environment.CurrentDirectory, $"Fixtures{Path.DirectorySeparatorChar}DeliveryClient{Path.DirectorySeparatorChar}coffee_beverages_explained.json")));
+
+        var client = CreateClient(mock);
+
+        var result = await client.GetItem<Article>("coffee_beverages_explained").ExecuteAsync();
+
+        Assert.NotNull(result.DependencyKeys);
+        var dependencyKeys = result.DependencyKeys;
+        Assert.Contains("item_coffee_beverages_explained", dependencyKeys);
+        Assert.Contains("item_americano", dependencyKeys);
+        Assert.Contains("item_how_to_make_a_cappuccino", dependencyKeys);
+        Assert.Contains("taxonomy_personas", dependencyKeys);
+        Assert.Contains(dependencyKeys, key => key.StartsWith("asset_", StringComparison.Ordinal));
+    }
+
+    [Fact]
+    public async Task GetItems_ExposesDependencyKeys_WithListScope()
+    {
+        var mock = new MockHttpMessageHandler();
+        mock.When($"{BaseUrl}/items")
+            .Respond("application/json", await File.ReadAllTextAsync(Path.Combine(Environment.CurrentDirectory, $"Fixtures{Path.DirectorySeparatorChar}DeliveryClient{Path.DirectorySeparatorChar}items.json")));
+
+        var client = CreateClient(mock);
+
+        var result = await client.GetItems<object>().ExecuteAsync();
+
+        Assert.NotNull(result.DependencyKeys);
+        var dependencyKeys = result.DependencyKeys;
+        Assert.Contains(DeliveryCacheDependencies.ItemsListScope, dependencyKeys);
+        Assert.Contains("item_article_1", dependencyKeys);
+        Assert.Contains("item_article_2", dependencyKeys);
+    }
+
+    [Fact]
+    public async Task GetType_ExposesDependencyKeys()
+    {
+        var mock = new MockHttpMessageHandler();
+        mock.When($"{BaseUrl}/types/article")
+            .Respond("application/json", await File.ReadAllTextAsync(Path.Combine(Environment.CurrentDirectory, $"Fixtures{Path.DirectorySeparatorChar}DeliveryClient{Path.DirectorySeparatorChar}article.json")));
+
+        var client = CreateClient(mock);
+
+        var result = await client.GetType("article").ExecuteAsync();
+
+        Assert.NotNull(result.DependencyKeys);
+        var dependencyKeys = result.DependencyKeys;
+        Assert.Contains("type_article", dependencyKeys);
+    }
+
+    [Fact]
+    public async Task GetTypes_ExposesDependencyKeys_WithListScope()
+    {
+        var mock = new MockHttpMessageHandler();
+        mock.When($"{BaseUrl}/types?skip=1")
+            .Respond("application/json", await File.ReadAllTextAsync(Path.Combine(Environment.CurrentDirectory, $"Fixtures{Path.DirectorySeparatorChar}DeliveryClient{Path.DirectorySeparatorChar}types_accessory.json")));
+
+        var client = CreateClient(mock);
+
+        var result = await client.GetTypes().Skip(1).ExecuteAsync();
+
+        Assert.NotNull(result.DependencyKeys);
+        var dependencyKeys = result.DependencyKeys;
+        Assert.Contains(DeliveryCacheDependencies.TypesListScope, dependencyKeys);
+        Assert.Contains("type_accessory", dependencyKeys);
+        Assert.Contains("type_article", dependencyKeys);
+    }
+
+    [Fact]
+    public async Task GetTaxonomy_ExposesDependencyKeys()
+    {
+        var mock = new MockHttpMessageHandler();
+        mock.When($"{BaseUrl}/taxonomies/personas")
+            .Respond("application/json", await File.ReadAllTextAsync(Path.Combine(Environment.CurrentDirectory, $"Fixtures{Path.DirectorySeparatorChar}DeliveryClient{Path.DirectorySeparatorChar}taxonomies_personas.json")));
+
+        var client = CreateClient(mock);
+
+        var result = await client.GetTaxonomy("personas").ExecuteAsync();
+
+        Assert.NotNull(result.DependencyKeys);
+        var dependencyKeys = result.DependencyKeys;
+        Assert.Contains("taxonomy_personas", dependencyKeys);
+    }
+
+    [Fact]
+    public async Task GetTaxonomies_ExposesDependencyKeys_WithListScope()
+    {
+        var mock = new MockHttpMessageHandler();
+        mock.When($"{BaseUrl}/taxonomies?skip=1")
+            .Respond("application/json", await File.ReadAllTextAsync(Path.Combine(Environment.CurrentDirectory, $"Fixtures{Path.DirectorySeparatorChar}DeliveryClient{Path.DirectorySeparatorChar}taxonomies_multiple.json")));
+
+        var client = CreateClient(mock);
+
+        var result = await client.GetTaxonomies().Skip(1).ExecuteAsync();
+
+        Assert.NotNull(result.DependencyKeys);
+        var dependencyKeys = result.DependencyKeys;
+        Assert.Contains(DeliveryCacheDependencies.TaxonomiesListScope, dependencyKeys);
+        Assert.Contains("taxonomy_personas", dependencyKeys);
+        Assert.Contains("taxonomy_processing", dependencyKeys);
+    }
+
+    [Fact]
+    public async Task GetItem_WhenRequestFails_DoesNotExposeDependencyKeys()
+    {
+        var mock = new MockHttpMessageHandler();
+        mock.When($"{BaseUrl}/items/missing_article")
+            .Respond(HttpStatusCode.NotFound, "application/json", """{"message":"Item not found","error_code":"not_found"}""");
+
+        var client = CreateClient(mock);
+
+        var result = await client.GetItem<Article>("missing_article").ExecuteAsync();
+
+        Assert.False(result.IsSuccess);
+        Assert.Equal(HttpStatusCode.NotFound, result.StatusCode);
+        Assert.Null(result.DependencyKeys);
+    }
+
+    [Fact]
     public async Task GetType_Succeeds()
     {
         var mock = new MockHttpMessageHandler();
