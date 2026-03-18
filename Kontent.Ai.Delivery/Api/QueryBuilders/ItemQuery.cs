@@ -98,8 +98,8 @@ internal sealed class ItemQuery<TModel>(
                 || (cacheManager is IFailSafeStateProvider failSafeProvider && failSafeProvider.IsFailSafeActive(cacheKey));
 
             return isFailSafe
-                ? DeliveryResult.FailSafeHit(cached)
-                : DeliveryResult.CacheHit(cached);
+                ? DeliveryResult.FailSafeHit(cached.Value, cached.DependencyKeys)
+                : DeliveryResult.CacheHit(cached.Value, cached.DependencyKeys);
         }
 
         apiResult = QueryExecutionResultHelper.EnsureApiResult(apiResult, "Item", codename);
@@ -111,10 +111,10 @@ internal sealed class ItemQuery<TModel>(
         }
 
         LogQueryCompleted(stopwatch, apiResult.StatusCode, cacheHit: false, apiResult.HasStaleContent);
-        return WrapSuccess(cached ?? apiResult.Value.Item, apiResult);
+        return WrapSuccess(cached?.Value ?? apiResult.Value.Item, apiResult, cached?.DependencyKeys);
     }
 
-    private async Task<IContentItem<TModel>?> ExecuteWithRawJsonCacheAsync(
+    private async Task<CacheResult<IContentItem<TModel>>?> ExecuteWithRawJsonCacheAsync(
         IDeliveryCacheManager cacheManager,
         string cacheKey,
         bool? waitForLoadingNewContent,
@@ -122,7 +122,7 @@ internal sealed class ItemQuery<TModel>(
         Action captureFactoryInvoked,
         CancellationToken cancellationToken)
     {
-        var payload = await cacheManager.GetOrSetAsync(
+        var cached = await cacheManager.GetOrSetAsync(
             cacheKey,
             async ct =>
             {
@@ -139,11 +139,11 @@ internal sealed class ItemQuery<TModel>(
             CacheExpiration,
             cancellationToken).ConfigureAwait(false);
 
-        if (payload is null)
+        if (cached is null)
             return null;
 
-        return await CachePayloadHelper.RehydrateItemAsync<TModel>(
-            payload,
+        var item = await CachePayloadHelper.RehydrateItemAsync<TModel>(
+            cached.Value,
             contentDeserializer,
             contentItemMapper,
             IsDynamicModel,
@@ -151,9 +151,11 @@ internal sealed class ItemQuery<TModel>(
             customAssetDomain,
             logger,
             cancellationToken).ConfigureAwait(false);
+
+        return new CacheResult<IContentItem<TModel>>(item, cached.DependencyKeys);
     }
 
-    private async Task<IContentItem<TModel>?> ExecuteWithHydratedCacheAsync(
+    private async Task<CacheResult<IContentItem<TModel>>?> ExecuteWithHydratedCacheAsync(
         IDeliveryCacheManager cacheManager,
         string cacheKey,
         bool? waitForLoadingNewContent,
@@ -191,14 +193,16 @@ internal sealed class ItemQuery<TModel>(
             return CreateFailureResult(deliveryResult);
         }
 
-        var (item, _) = await ProcessItemAsync(deliveryResult.Value, cancellationToken).ConfigureAwait(false);
+        var (item, dependencyKeys) = await ProcessItemAsync(deliveryResult.Value, cancellationToken).ConfigureAwait(false);
         LogQueryCompleted(stopwatch, deliveryResult.StatusCode, cacheHit: false, deliveryResult.HasStaleContent);
-        return WrapSuccess(item, deliveryResult);
+        return WrapSuccess(item, deliveryResult, dependencyKeys);
     }
 
     private static IDeliveryResult<IContentItem<TModel>> WrapSuccess(
-        IContentItem<TModel> item, IDeliveryResult<DeliveryItemResponse<TModel>> apiResult) =>
-        DeliveryResult.SuccessFrom(item, apiResult);
+        IContentItem<TModel> item,
+        IDeliveryResult<DeliveryItemResponse<TModel>> apiResult,
+        IReadOnlyList<string>? dependencyKeys) =>
+        DeliveryResult.SuccessFrom(item, apiResult, dependencyKeys);
 
     private async Task<IDeliveryResult<DeliveryItemResponse<TModel>>> FetchFromApiAsync(
         bool? waitForLoadingNewContent,
@@ -214,15 +218,15 @@ internal sealed class ItemQuery<TModel>(
         return await rawResponse.ToDeliveryResultAsync(logger).ConfigureAwait(false);
     }
 
-    private async Task<(IContentItem<TModel> Item, IEnumerable<string> Dependencies)> ProcessItemAsync(
+    private async Task<(IContentItem<TModel> Item, string[] Dependencies)> ProcessItemAsync(
         DeliveryItemResponse<TModel> resp, CancellationToken cancellationToken)
     {
         LatestModularContent = resp.ModularContent;
         var item = resp.Item;
-        var dependencyContext = cacheManager is not null ? new DependencyTrackingContext() : null;
+        var dependencyContext = new DependencyTrackingContext();
 
-        dependencyContext?.TrackItem(item.System.Codename);
-        if (dependencyContext is not null && resp.ModularContent is not null)
+        dependencyContext.TrackItem(item.System.Codename);
+        if (resp.ModularContent is not null)
         {
             foreach (var itemCodename in resp.ModularContent.Keys)
                 dependencyContext.TrackItem(itemCodename);
@@ -240,7 +244,7 @@ internal sealed class ItemQuery<TModel>(
                 .ConfigureAwait(false);
         }
 
-        return (item, dependencyContext?.Dependencies ?? []);
+        return (item, [.. dependencyContext.Dependencies]);
     }
 
     private static IDeliveryResult<IContentItem<TModel>> CreateFailureResult(

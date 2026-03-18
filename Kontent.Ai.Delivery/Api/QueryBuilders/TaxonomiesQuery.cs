@@ -80,7 +80,8 @@ internal sealed class TaxonomiesQuery(
                 if (!apiResult.IsSuccess)
                     return null;
 
-                return new CacheEntry<DeliveryTaxonomyListingResponse>(apiResult.Value, BuildDependencies(apiResult.Value.Taxonomies));
+                var dependencies = BuildDependencies(apiResult.Value.Taxonomies);
+                return new CacheEntry<DeliveryTaxonomyListingResponse>(apiResult.Value, dependencies);
             },
             CacheExpiration,
             cancellationToken).ConfigureAwait(false);
@@ -93,8 +94,10 @@ internal sealed class TaxonomiesQuery(
                 || (cacheManager is IFailSafeStateProvider failSafeProvider && failSafeProvider.IsFailSafeActive(cacheKey));
 
             return isFailSafe
-                ? DeliveryResult.FailSafeHit<IDeliveryTaxonomyListingResponse>(WithNextPageFetcher(cached))
-                : DeliveryResult.CacheHit<IDeliveryTaxonomyListingResponse>(WithNextPageFetcher(cached));
+                ? DeliveryResult.FailSafeHit<IDeliveryTaxonomyListingResponse>(
+                    WithNextPageFetcher(cached.Value), cached.DependencyKeys)
+                : DeliveryResult.CacheHit<IDeliveryTaxonomyListingResponse>(
+                    WithNextPageFetcher(cached.Value), cached.DependencyKeys);
         }
 
         apiResult = QueryExecutionResultHelper.EnsureApiResult(apiResult, "Taxonomies", "list");
@@ -107,8 +110,11 @@ internal sealed class TaxonomiesQuery(
         }
 
         LogQueryCompleted(stopwatch, apiResult.StatusCode, cacheHit: false, apiResult.HasStaleContent);
-        var response = cached ?? apiResult.Value;
-        return WrapSuccess(WithNextPageFetcher(response), apiResult);
+        var response = cached?.Value ?? apiResult.Value;
+        return WrapSuccess(
+            WithNextPageFetcher(response),
+            apiResult,
+            cached?.DependencyKeys ?? BuildDependencies(response.Taxonomies));
     }
 
     private async Task<IDeliveryResult<IDeliveryTaxonomyListingResponse>> ExecuteWithoutCacheAsync(
@@ -125,7 +131,10 @@ internal sealed class TaxonomiesQuery(
         }
 
         LogQueryCompleted(stopwatch, deliveryResult.StatusCode, cacheHit: false, deliveryResult.HasStaleContent);
-        return WrapSuccess(WithNextPageFetcher(deliveryResult.Value), deliveryResult);
+        return WrapSuccess(
+            WithNextPageFetcher(deliveryResult.Value),
+            deliveryResult,
+            BuildDependencies(deliveryResult.Value.Taxonomies));
     }
 
     private async Task<IDeliveryResult<DeliveryTaxonomyListingResponse>> FetchFromApiAsync(
@@ -161,8 +170,10 @@ internal sealed class TaxonomiesQuery(
 
     private static IDeliveryResult<IDeliveryTaxonomyListingResponse> WrapSuccess(
         DeliveryTaxonomyListingResponse response,
-        IDeliveryResult<DeliveryTaxonomyListingResponse> apiResult)
-        => DeliveryResult.SuccessFrom<IDeliveryTaxonomyListingResponse, DeliveryTaxonomyListingResponse>(response, apiResult);
+        IDeliveryResult<DeliveryTaxonomyListingResponse> apiResult,
+        IReadOnlyList<string> dependencyKeys)
+        => DeliveryResult.SuccessFrom<IDeliveryTaxonomyListingResponse, DeliveryTaxonomyListingResponse>(
+            response, apiResult, dependencyKeys);
 
     private static IDeliveryResult<IDeliveryTaxonomyListingResponse> CreateFailureResult(
         IDeliveryResult<DeliveryTaxonomyListingResponse> deliveryResult)

@@ -175,6 +175,7 @@ public class QueryEnumerationExtensionsTests
         public System.Net.Http.Headers.HttpResponseHeaders? ResponseHeaders => null;
         public ResponseSource ResponseSource => ResponseSource.Origin;
         public bool IsCacheHit => false;
+        public IReadOnlyList<string>? DependencyKeys => null;
     }
 
     #endregion

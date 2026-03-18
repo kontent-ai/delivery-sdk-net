@@ -66,9 +66,7 @@ internal sealed class TypeQuery(
                 if (!apiResult.IsSuccess)
                     return null;
 
-                var dependency = CacheDependencyKeyBuilder.BuildTypeDependencyKey(apiResult.Value.System.Codename);
-                var dependencies = dependency is null ? Array.Empty<string>() : new[] { dependency };
-
+                var dependencies = BuildDependencies(apiResult.Value);
                 return new CacheEntry<ContentType>((ContentType)apiResult.Value, dependencies);
             },
             CacheExpiration,
@@ -82,8 +80,8 @@ internal sealed class TypeQuery(
                 || (cacheManager is IFailSafeStateProvider failSafeProvider && failSafeProvider.IsFailSafeActive(cacheKey));
 
             return isFailSafe
-                ? DeliveryResult.FailSafeHit<IContentType>(cached)
-                : DeliveryResult.CacheHit<IContentType>(cached);
+                ? DeliveryResult.FailSafeHit<IContentType>(cached.Value, cached.DependencyKeys)
+                : DeliveryResult.CacheHit<IContentType>(cached.Value, cached.DependencyKeys);
         }
 
         apiResult = QueryExecutionResultHelper.EnsureApiResult(apiResult, "Type", codename);
@@ -92,7 +90,10 @@ internal sealed class TypeQuery(
             LogQueryFailed(apiResult);
 
         LogQueryCompleted(stopwatch, apiResult.StatusCode, cacheHit: false, apiResult.HasStaleContent);
-        return apiResult;
+        return WrapSuccess(
+            cached?.Value ?? apiResult.Value,
+            apiResult,
+            cached?.DependencyKeys ?? BuildDependencies(apiResult.Value));
     }
 
     private async Task<IDeliveryResult<IContentType>> ExecuteWithoutCacheAsync(
@@ -105,7 +106,9 @@ internal sealed class TypeQuery(
             LogQueryFailed(deliveryResult);
 
         LogQueryCompleted(stopwatch, deliveryResult.StatusCode, cacheHit: false, deliveryResult.HasStaleContent);
-        return deliveryResult;
+        return deliveryResult.IsSuccess
+            ? WrapSuccess(deliveryResult.Value, deliveryResult, BuildDependencies(deliveryResult.Value))
+            : deliveryResult;
     }
 
     private async Task<IDeliveryResult<IContentType>> FetchFromApiAsync(
@@ -115,6 +118,18 @@ internal sealed class TypeQuery(
         var response = await api.GetTypeInternalAsync(codename, _params, waitForLoadingNewContent, cancellationToken).ConfigureAwait(false);
         return await response.ToDeliveryResultAsync(logger).ConfigureAwait(false);
     }
+
+    private static string[] BuildDependencies(IContentType contentType)
+    {
+        var dependency = CacheDependencyKeyBuilder.BuildTypeDependencyKey(contentType.System.Codename);
+        return dependency is null ? [] : [dependency];
+    }
+
+    private static IDeliveryResult<IContentType> WrapSuccess(
+        IContentType contentType,
+        IDeliveryResult<IContentType> apiResult,
+        IReadOnlyList<string> dependencyKeys)
+        => DeliveryResult.SuccessFrom(contentType, apiResult, dependencyKeys);
 
     private void LogQueryStarting()
     {

@@ -258,7 +258,7 @@ internal sealed class FusionCacheManager : IDeliveryCacheManager, IDeliveryCache
 
     public CacheStorageMode StorageMode => _storageMode;
 
-    public async Task<T?> GetOrSetAsync<T>(
+    public async Task<CacheResult<T>?> GetOrSetAsync<T>(
         string cacheKey,
         Func<CancellationToken, Task<CacheEntry<T>?>> factory,
         TimeSpan? expiration = null,
@@ -270,14 +270,21 @@ internal sealed class FusionCacheManager : IDeliveryCacheManager, IDeliveryCache
         if (string.IsNullOrWhiteSpace(cacheKey))
         {
             var entry = await factory(cancellationToken).ConfigureAwait(false);
-            return entry?.Value;
+            if (entry is null)
+                return null;
+
+            var deps = entry.Dependencies
+                .Where(d => !string.IsNullOrWhiteSpace(d))
+                .Distinct(StringComparer.OrdinalIgnoreCase)
+                .ToArray();
+            return new CacheResult<T>(entry.Value, deps);
         }
 
         var formattedKey = _cacheKeyFormatter(cacheKey);
 
         try
         {
-            return await _cache.GetOrSetAsync<T>(
+            var envelope = await _cache.GetOrSetAsync<CacheEnvelope<T>>(
                 formattedKey,
                 async (ctx, ct) =>
                 {
@@ -288,19 +295,27 @@ internal sealed class FusionCacheManager : IDeliveryCacheManager, IDeliveryCache
                         throw new CacheFactoryFailedException();
                     }
 
-                    var tags = factoryResult.Dependencies
+                    // Dependency keys serve two purposes:
+                    // 1. FusionCache tags (formatted via _dependencyTagFormatter) — used for cache invalidation.
+                    // 2. Stored in CacheEnvelope alongside the value — surfaced to consumers via CacheResult<T>.
+                    var deps = factoryResult.Dependencies
                         .Where(d => !string.IsNullOrWhiteSpace(d))
-                        .Select(_dependencyTagFormatter)
                         .Distinct(StringComparer.OrdinalIgnoreCase)
                         .ToArray();
-                    ctx.Tags = tags;
+
+                    ctx.Tags = Array.ConvertAll(deps, _dependencyTagFormatter.Invoke);
                     ctx.Options.Duration = expiration ?? _defaultExpiration;
                     _failSafeActiveKeys.TryRemove(formattedKey, out var _);
                     _failSafeActiveKeys.TryRemove(cacheKey, out var _);
-                    return factoryResult.Value;
+                    return new CacheEnvelope<T>(factoryResult.Value, deps);
                 },
                 _baseWriteOptions,
                 token: cancellationToken).ConfigureAwait(false);
+
+            if (envelope is null)
+                return null;
+
+            return new CacheResult<T>(envelope.Value, envelope.DependencyKeys);
         }
         catch (CacheFactoryFailedException)
         {

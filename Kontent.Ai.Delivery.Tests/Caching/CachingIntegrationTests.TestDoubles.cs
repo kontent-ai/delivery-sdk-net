@@ -12,7 +12,7 @@ public partial class CachingIntegrationTests
     {
         public List<CachedItem> CachedItems { get; } = [];
 
-        public async Task<T?> GetOrSetAsync<T>(
+        public async Task<CacheResult<T>?> GetOrSetAsync<T>(
             string cacheKey,
             Func<CancellationToken, Task<CacheEntry<T>?>> factory,
             TimeSpan? expiration = null,
@@ -21,19 +21,20 @@ public partial class CachingIntegrationTests
         {
             var existing = CachedItems.FirstOrDefault(i => i.Key == cacheKey);
             if (existing?.Value is T cached)
-                return cached;
+                return new CacheResult<T>(cached, existing.Dependencies);
 
             var entry = await factory(cancellationToken);
             if (entry is null)
                 return null;
 
+            var deps = entry.Dependencies.ToList();
             CachedItems.Add(new CachedItem
             {
                 Key = cacheKey,
                 Value = entry.Value,
-                Dependencies = [.. entry.Dependencies]
+                Dependencies = deps
             });
-            return entry.Value;
+            return new CacheResult<T>(entry.Value, deps);
         }
 
         public Task<bool> InvalidateAsync(CancellationToken cancellationToken = default, params string[] dependencyKeys)

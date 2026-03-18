@@ -138,8 +138,10 @@ internal sealed class ItemsQuery<TModel>(
                 || (cacheManager is IFailSafeStateProvider failSafeProvider && failSafeProvider.IsFailSafeActive(cacheKey));
 
             return isFailSafe
-                ? DeliveryResult.FailSafeHit<IDeliveryItemListingResponse<TModel>>(WithNextPageFetcher(cached))
-                : DeliveryResult.CacheHit<IDeliveryItemListingResponse<TModel>>(WithNextPageFetcher(cached));
+                ? DeliveryResult.FailSafeHit<IDeliveryItemListingResponse<TModel>>(
+                    WithNextPageFetcher(cached.Value), cached.DependencyKeys)
+                : DeliveryResult.CacheHit<IDeliveryItemListingResponse<TModel>>(
+                    WithNextPageFetcher(cached.Value), cached.DependencyKeys);
         }
 
         apiResult = QueryExecutionResultHelper.EnsureApiResult(apiResult, "Items", "list");
@@ -151,11 +153,11 @@ internal sealed class ItemsQuery<TModel>(
         }
 
         LogQueryCompleted(stopwatch, apiResult.StatusCode, cacheHit: false, apiResult.HasStaleContent);
-        var response = cached ?? apiResult.Value;
-        return WrapSuccess(WithNextPageFetcher(response), apiResult);
+        var response = cached?.Value ?? apiResult.Value;
+        return WrapSuccess(WithNextPageFetcher(response), apiResult, cached?.DependencyKeys);
     }
 
-    private async Task<DeliveryItemListingResponse<TModel>?> ExecuteWithRawJsonCacheAsync(
+    private async Task<CacheResult<DeliveryItemListingResponse<TModel>>?> ExecuteWithRawJsonCacheAsync(
         IDeliveryCacheManager cacheManager,
         string cacheKey,
         bool? waitForLoadingNewContent,
@@ -163,7 +165,7 @@ internal sealed class ItemsQuery<TModel>(
         Action captureFactoryInvoked,
         CancellationToken cancellationToken)
     {
-        var payload = await cacheManager.GetOrSetAsync(
+        var cached = await cacheManager.GetOrSetAsync(
             cacheKey,
             async ct =>
             {
@@ -180,11 +182,11 @@ internal sealed class ItemsQuery<TModel>(
             CacheExpiration,
             cancellationToken).ConfigureAwait(false);
 
-        if (payload is null)
+        if (cached is null)
             return null;
 
-        return await CachePayloadHelper.RehydrateListingAsync<TModel>(
-            payload,
+        var response = await CachePayloadHelper.RehydrateListingAsync<TModel>(
+            cached.Value,
             contentDeserializer,
             contentItemMapper,
             IsDynamicModel,
@@ -192,9 +194,11 @@ internal sealed class ItemsQuery<TModel>(
             customAssetDomain,
             logger,
             cancellationToken).ConfigureAwait(false);
+
+        return new CacheResult<DeliveryItemListingResponse<TModel>>(response, cached.DependencyKeys);
     }
 
-    private async Task<DeliveryItemListingResponse<TModel>?> ExecuteWithHydratedCacheAsync(
+    private async Task<CacheResult<DeliveryItemListingResponse<TModel>>?> ExecuteWithHydratedCacheAsync(
         IDeliveryCacheManager cacheManager,
         string cacheKey,
         bool? waitForLoadingNewContent,
@@ -232,17 +236,20 @@ internal sealed class ItemsQuery<TModel>(
             return CreateFailureResult(deliveryResult);
         }
 
-        var (resp, _) = await ProcessItemsAsync(deliveryResult.Value, cancellationToken).ConfigureAwait(false);
+        var (resp, dependencyKeys) = await ProcessItemsAsync(deliveryResult.Value, cancellationToken).ConfigureAwait(false);
         LogQueryCompleted(stopwatch, deliveryResult.StatusCode, cacheHit: false, deliveryResult.HasStaleContent);
-        return WrapSuccess(WithNextPageFetcher(resp), deliveryResult);
+        return WrapSuccess(WithNextPageFetcher(resp), deliveryResult, dependencyKeys);
     }
 
     private DeliveryItemListingResponse<TModel> WithNextPageFetcher(DeliveryItemListingResponse<TModel> resp)
         => resp with { NextPageFetcher = CreateNextPageFetcher(resp.Pagination) };
 
     private static IDeliveryResult<IDeliveryItemListingResponse<TModel>> WrapSuccess(
-        DeliveryItemListingResponse<TModel> response, IDeliveryResult<DeliveryItemListingResponse<TModel>> apiResult) =>
-        DeliveryResult.SuccessFrom<IDeliveryItemListingResponse<TModel>, DeliveryItemListingResponse<TModel>>(response, apiResult);
+        DeliveryItemListingResponse<TModel> response,
+        IDeliveryResult<DeliveryItemListingResponse<TModel>> apiResult,
+        IReadOnlyList<string>? dependencyKeys) =>
+        DeliveryResult.SuccessFrom<IDeliveryItemListingResponse<TModel>, DeliveryItemListingResponse<TModel>>(
+            response, apiResult, dependencyKeys);
 
     private void ApplyGenericTypeFilter()
     {
@@ -265,19 +272,19 @@ internal sealed class ItemsQuery<TModel>(
         return await rawResponse.ToDeliveryResultAsync(logger).ConfigureAwait(false);
     }
 
-    private async Task<(DeliveryItemListingResponse<TModel> Response, IEnumerable<string> Dependencies)> ProcessItemsAsync(
+    private async Task<(DeliveryItemListingResponse<TModel> Response, string[] Dependencies)> ProcessItemsAsync(
         DeliveryItemListingResponse<TModel> resp, CancellationToken cancellationToken)
     {
         var items = resp.Items;
-        var dependencyContext = cacheManager is not null ? new DependencyTrackingContext() : null;
+        var dependencyContext = new DependencyTrackingContext();
 
-        if (dependencyContext is not null && items is { Count: > 0 })
+        if (items is { Count: > 0 })
         {
             foreach (var item in items)
                 dependencyContext.TrackItem(item.System.Codename);
         }
 
-        if (dependencyContext is not null && resp.ModularContent is not null)
+        if (resp.ModularContent is not null)
         {
             foreach (var codename in resp.ModularContent.Keys)
                 dependencyContext.TrackItem(codename);
@@ -298,9 +305,7 @@ internal sealed class ItemsQuery<TModel>(
             }
         }
 
-        return dependencyContext is null
-            ? (resp, [])
-            : (resp, [.. dependencyContext.Dependencies, DeliveryCacheDependencies.ItemsListScope]);
+        return (resp, [.. dependencyContext.Dependencies, DeliveryCacheDependencies.ItemsListScope]);
     }
 
     private static IDeliveryResult<IDeliveryItemListingResponse<TModel>> CreateFailureResult(

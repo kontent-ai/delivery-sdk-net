@@ -43,8 +43,8 @@ public class MemoryCacheManagerTests : IDisposable
 
         Assert.True(factoryCalled);
         Assert.NotNull(result);
-        Assert.Equal(1, result.Id);
-        Assert.Equal("Test", result.Name);
+        Assert.Equal(1, result.Value.Id);
+        Assert.Equal("Test", result.Value.Name);
     }
 
     [Fact]
@@ -67,7 +67,7 @@ public class MemoryCacheManagerTests : IDisposable
 
         Assert.False(factoryCalled);
         Assert.NotNull(result);
-        Assert.Equal(1, result.Id);
+        Assert.Equal(1, result.Value.Id);
     }
 
     [Fact]
@@ -148,7 +148,7 @@ public class MemoryCacheManagerTests : IDisposable
                 new CacheEntry<TestCacheValue>(value2, [])));
 
         Assert.NotNull(result);
-        Assert.Equal(value1.Id, result.Id);
+        Assert.Equal(value1.Id, result.Value.Id);
     }
 
     [Fact]
@@ -633,12 +633,12 @@ public class MemoryCacheManagerTests : IDisposable
 
         Assert.False(factoryCalled);
         Assert.NotNull(result);
-        Assert.Equal(value.Id, result.Id);
-        Assert.Equal(value.Name, result.Name);
-        Assert.NotNull(result.Nested);
-        Assert.Equal(value.Nested.Description, result.Nested.Description);
-        Assert.Equal(value.Nested.Tags, result.Nested.Tags);
-        Assert.Equal(value.Items, result.Items);
+        Assert.Equal(value.Id, result.Value.Id);
+        Assert.Equal(value.Name, result.Value.Name);
+        Assert.NotNull(result.Value.Nested);
+        Assert.Equal(value.Nested.Description, result.Value.Nested.Description);
+        Assert.Equal(value.Nested.Tags, result.Value.Nested.Tags);
+        Assert.Equal(value.Items, result.Value.Items);
     }
 
     #endregion
@@ -816,7 +816,7 @@ public class MemoryCacheManagerTests : IDisposable
                 });
                 if (factoryCalled)
                 {
-                    failSafeResult = r;
+                    failSafeResult = r?.Value;
                 }
                 return factoryCalled;
             },
@@ -857,7 +857,7 @@ public class MemoryCacheManagerTests : IDisposable
                 });
                 if (factoryCalled)
                 {
-                    failSafeResult = r;
+                    failSafeResult = r?.Value;
                 }
                 return factoryCalled;
             },
@@ -885,6 +885,7 @@ public class MemoryCacheManagerTests : IDisposable
 
         // Poll until TTL expires, factory returns null, verify null is returned.
         TestCacheValue? resultAfterExpiry = null;
+        var factoryCalledOnce = false;
         var expired = await WaitUntilAsync(
             async () =>
             {
@@ -896,7 +897,8 @@ public class MemoryCacheManagerTests : IDisposable
                 });
                 if (factoryCalled)
                 {
-                    resultAfterExpiry = r;
+                    resultAfterExpiry = r?.Value;
+                    factoryCalledOnce = true;
                 }
                 return factoryCalled;
             },
@@ -992,8 +994,9 @@ public class MemoryCacheManagerTests : IDisposable
 
     private static async Task<T?> GetCachedValue<T>(IDeliveryCacheManager manager, string key) where T : class
     {
-        return await manager.GetOrSetAsync<T>(key, _ =>
+        var result = await manager.GetOrSetAsync<T>(key, _ =>
             Task.FromResult<CacheEntry<T>?>(null));
+        return result?.Value;
     }
 
     private static async Task<bool> WaitUntilAsync(Func<Task<bool>> condition, TimeSpan timeout, TimeSpan pollInterval)
@@ -1041,7 +1044,7 @@ public class MemoryCacheManagerTests : IDisposable
                 new CacheEntry<TestCacheValue>(new TestCacheValue { Id = 1 }, [])));
 
         Assert.NotNull(value);
-        Assert.Equal(1, value.Id);
+        Assert.Equal(1, value.Value.Id);
     }
 
     [Fact]

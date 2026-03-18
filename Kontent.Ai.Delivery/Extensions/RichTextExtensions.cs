@@ -19,7 +19,7 @@ public static class RichTextExtensions
 
     // Cached parser and options for ParseRichTextAsync - safe to reuse as HtmlParser.ParseDocument returns new documents
     private static readonly Lazy<RichTextParser> DefaultRichTextParser = new(
-        () => RichTextParser.CreateDefault(),
+        () => new RichTextParser(new AngleSharp.Html.Parser.HtmlParser(), new ContentDependencyExtractor()),
         LazyThreadSafetyMode.ExecutionAndPublication);
 
     private static readonly Lazy<JsonSerializerOptions> ContentItemDeserializerOptions = new(

@@ -1301,6 +1301,22 @@ if (result.IsSuccess)
 > [!NOTE]
 > `IsCacheHit` indicates SDK-level caching only. For CDN-level cache information (Fastly), inspect the `ResponseHeaders` property for headers like `X-Cache`.
 
+#### Dependency Keys for Output Caching
+
+Every delivery result exposes `DependencyKeys` — the canonical dependency keys describing which content entities the response depends on. These keys enable downstream cache invalidation scenarios such as ASP.NET output-cache tagging:
+
+```csharp
+var result = await client.GetItem<Article>("my-article").ExecuteAsync();
+
+if (result.IsSuccess && result.DependencyKeys is { } keys)
+{
+    // keys contains: item_my-article, item_linked-author, asset_xxx, taxonomy_yyy, etc.
+    // Use them to tag your output cache, CDN surrogate keys, etc.
+}
+```
+
+Dependency keys are collected regardless of whether SDK caching is configured. The key formats match the SDK's internal cache invalidation keys (see [Webhook Invalidation Pattern](#webhook-invalidation-pattern-for-lists)).
+
 #### Webhook Invalidation Pattern for Lists
 
 Typed listing queries include synthetic scope dependencies:
@@ -1829,6 +1845,7 @@ if (result.IsSuccess)
 | `IsCacheHit` | Whether response was served from SDK cache |
 | `HasStaleContent` | Whether newer content may be available |
 | `ContinuationToken` | Pagination token (for feed responses) |
+| `DependencyKeys` | Canonical dependency keys for output-cache tagging (null when not collected) |
 
 ## Advanced Documentation
 

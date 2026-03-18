@@ -58,7 +58,8 @@ public interface IDeliveryCacheManager
     /// </param>
     /// <param name="cancellationToken">A token to cancel the asynchronous operation.</param>
     /// <returns>
-    /// The cached or freshly computed value, or <c>null</c> if the factory returned <c>null</c>.
+    /// A <see cref="CacheResult{T}"/> containing the cached or freshly computed value and its
+    /// dependency keys, or <c>null</c> if the factory returned <c>null</c>.
     /// </returns>
     /// <remarks>
     /// <para>
@@ -70,7 +71,7 @@ public interface IDeliveryCacheManager
     /// <c>null</c> should be returned to the caller.
     /// </para>
     /// </remarks>
-    Task<T?> GetOrSetAsync<T>(
+    Task<CacheResult<T>?> GetOrSetAsync<T>(
         string cacheKey,
         Func<CancellationToken, Task<CacheEntry<T>?>> factory,
         TimeSpan? expiration = null,

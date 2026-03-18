@@ -44,8 +44,8 @@ public class HybridCacheManagerRealImplementationTests
 
         Assert.True(factoryCalled);
         Assert.NotNull(result);
-        Assert.Equal(value.Id, result.Id);
-        Assert.Equal(value.Name, result.Name);
+        Assert.Equal(value.Id, result.Value.Id);
+        Assert.Equal(value.Name, result.Value.Name);
 
         // Second call: cache hit, factory is NOT called
         factoryCalled = false;
@@ -57,7 +57,30 @@ public class HybridCacheManagerRealImplementationTests
 
         Assert.False(factoryCalled);
         Assert.NotNull(cached);
-        Assert.Equal(value.Id, cached.Id);
+        Assert.Equal(value.Id, cached.Value.Id);
+
+        // Verify dependency keys survive serialization round-trip
+        Assert.Single(cached.DependencyKeys);
+        Assert.Equal("dep1", cached.DependencyKeys[0]);
+    }
+
+    [Fact]
+    public async Task GetOrSetAsync_DependencyKeys_SurviveSerializationRoundTrip()
+    {
+        var value = new TestValue { Id = 1, Name = "RoundTrip" };
+        var dependencies = new[] { "item_hero", "asset_abc", "taxonomy_personas", "type_article" };
+
+        await _cacheManager.GetOrSetAsync("deps_roundtrip_key", _ =>
+            Task.FromResult<CacheEntry<TestValue>?>(
+                new CacheEntry<TestValue>(value, dependencies)));
+
+        var cached = await _cacheManager.GetOrSetAsync("deps_roundtrip_key", _ =>
+            Task.FromResult<CacheEntry<TestValue>?>(null));
+
+        Assert.NotNull(cached);
+        Assert.Equal(dependencies.Length, cached.DependencyKeys.Count);
+        foreach (var dep in dependencies)
+            Assert.Contains(dep, cached.DependencyKeys);
     }
 
     [Fact]
@@ -149,12 +172,12 @@ public class HybridCacheManagerRealImplementationTests
 
         Assert.False(factoryCalled);
         Assert.NotNull(result);
-        Assert.Equal(value.Id, result.Id);
-        Assert.Equal(value.Name, result.Name);
-        Assert.NotNull(result.Nested);
-        Assert.Equal(value.Nested.Description, result.Nested.Description);
-        Assert.Equal(value.Nested.Tags, result.Nested.Tags);
-        Assert.Equal(value.Items, result.Items);
+        Assert.Equal(value.Id, result.Value.Id);
+        Assert.Equal(value.Name, result.Value.Name);
+        Assert.NotNull(result.Value.Nested);
+        Assert.Equal(value.Nested.Description, result.Value.Nested.Description);
+        Assert.Equal(value.Nested.Tags, result.Value.Nested.Tags);
+        Assert.Equal(value.Items, result.Value.Items);
     }
 
     [Fact]
@@ -173,8 +196,8 @@ public class HybridCacheManagerRealImplementationTests
 
         Assert.False(factoryCalled);
         Assert.NotNull(result);
-        Assert.Equal(value.Id, result.Id);
-        Assert.Null(result.Name);
+        Assert.Equal(value.Id, result.Value.Id);
+        Assert.Null(result.Value.Name);
     }
 
     [Fact]
@@ -232,7 +255,7 @@ public class HybridCacheManagerRealImplementationTests
         Assert.All(results, r =>
         {
             Assert.NotNull(r);
-            Assert.Equal(value.Id, r.Id);
+            Assert.Equal(value.Id, r.Value.Id);
         });
     }
 

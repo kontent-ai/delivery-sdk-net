@@ -59,9 +59,7 @@ internal sealed class TaxonomyQuery(
                 if (!apiResult.IsSuccess)
                     return null;
 
-                var dependency = CacheDependencyKeyBuilder.BuildTaxonomyDependencyKey(apiResult.Value.System.Codename);
-                var dependencies = dependency is null ? Array.Empty<string>() : new[] { dependency };
-
+                var dependencies = BuildDependencies(apiResult.Value);
                 return new CacheEntry<TaxonomyGroup>((TaxonomyGroup)apiResult.Value, dependencies);
             },
             CacheExpiration,
@@ -75,8 +73,8 @@ internal sealed class TaxonomyQuery(
                 || (cacheManager is IFailSafeStateProvider failSafeProvider && failSafeProvider.IsFailSafeActive(cacheKey));
 
             return isFailSafe
-                ? DeliveryResult.FailSafeHit<ITaxonomyGroup>(cached)
-                : DeliveryResult.CacheHit<ITaxonomyGroup>(cached);
+                ? DeliveryResult.FailSafeHit<ITaxonomyGroup>(cached.Value, cached.DependencyKeys)
+                : DeliveryResult.CacheHit<ITaxonomyGroup>(cached.Value, cached.DependencyKeys);
         }
 
         apiResult = QueryExecutionResultHelper.EnsureApiResult(apiResult, "Taxonomy", codename);
@@ -85,7 +83,10 @@ internal sealed class TaxonomyQuery(
             LogQueryFailed(apiResult);
 
         LogQueryCompleted(stopwatch, apiResult.StatusCode, cacheHit: false, apiResult.HasStaleContent);
-        return apiResult;
+        return WrapSuccess(
+            cached?.Value ?? apiResult.Value,
+            apiResult,
+            cached?.DependencyKeys ?? BuildDependencies(apiResult.Value));
     }
 
     private async Task<IDeliveryResult<ITaxonomyGroup>> ExecuteWithoutCacheAsync(
@@ -98,7 +99,9 @@ internal sealed class TaxonomyQuery(
             LogQueryFailed(deliveryResult);
 
         LogQueryCompleted(stopwatch, deliveryResult.StatusCode, cacheHit: false, deliveryResult.HasStaleContent);
-        return deliveryResult;
+        return deliveryResult.IsSuccess
+            ? WrapSuccess(deliveryResult.Value, deliveryResult, BuildDependencies(deliveryResult.Value))
+            : deliveryResult;
     }
 
     private async Task<IDeliveryResult<ITaxonomyGroup>> FetchFromApiAsync(
@@ -108,6 +111,18 @@ internal sealed class TaxonomyQuery(
         var response = await api.GetTaxonomyInternalAsync(codename, waitForLoadingNewContent, cancellationToken).ConfigureAwait(false);
         return await response.ToDeliveryResultAsync(logger).ConfigureAwait(false);
     }
+
+    private static string[] BuildDependencies(ITaxonomyGroup taxonomyGroup)
+    {
+        var dependency = CacheDependencyKeyBuilder.BuildTaxonomyDependencyKey(taxonomyGroup.System.Codename);
+        return dependency is null ? [] : [dependency];
+    }
+
+    private static IDeliveryResult<ITaxonomyGroup> WrapSuccess(
+        ITaxonomyGroup taxonomyGroup,
+        IDeliveryResult<ITaxonomyGroup> apiResult,
+        IReadOnlyList<string> dependencyKeys)
+        => DeliveryResult.SuccessFrom(taxonomyGroup, apiResult, dependencyKeys);
 
     private void LogQueryStarting()
     {

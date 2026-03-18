@@ -10,7 +10,7 @@ public class RichTextParserTests
     [Fact]
     public async Task ConvertAsync_NonRichTextElement_ReturnsNull()
     {
-        var parser = RichTextParser.CreateDefault();
+        var parser = new RichTextParser(new HtmlParser(), new ContentDependencyExtractor());
         var element = new PlainTextElement("plain text");
 
         var result = await parser.ConvertAsync(
@@ -24,7 +24,7 @@ public class RichTextParserTests
     [Fact]
     public async Task ConvertAsync_EmbeddedObjectWithoutCodename_ThrowsInvalidOperationException()
     {
-        var parser = RichTextParser.CreateDefault();
+        var parser = new RichTextParser(new HtmlParser(), new ContentDependencyExtractor());
         var element = new TestRichTextElement("<object type=\"application/kenticocloud\"></object>");
 
         var exception = await Assert.ThrowsAsync<InvalidOperationException>(() =>
@@ -39,7 +39,7 @@ public class RichTextParserTests
     [Fact]
     public async Task ConvertAsync_FigureWithoutImageElement_IsIgnored()
     {
-        var parser = RichTextParser.CreateDefault();
+        var parser = new RichTextParser(new HtmlParser(), new ContentDependencyExtractor());
         var element = new TestRichTextElement("<figure><span>No image tag</span></figure>");
 
         var result = await parser.ConvertAsync(
@@ -54,7 +54,7 @@ public class RichTextParserTests
     [Fact]
     public async Task ConvertAsync_FigureWithInvalidAssetId_IsIgnored()
     {
-        var parser = RichTextParser.CreateDefault();
+        var parser = new RichTextParser(new HtmlParser(), new ContentDependencyExtractor());
         var element = new TestRichTextElement("<figure><img data-asset-id=\"not-a-guid\" /></figure>");
 
         var result = await parser.ConvertAsync(
@@ -69,7 +69,7 @@ public class RichTextParserTests
     [Fact]
     public async Task ConvertAsync_FigureWithUnknownAssetId_IsIgnored()
     {
-        var parser = new RichTextParser(new HtmlParser(), NullContentDependencyExtractor.Instance, NullLogger.Instance);
+        var parser = new RichTextParser(new HtmlParser(), new ContentDependencyExtractor(), NullLogger.Instance);
         var missingAssetId = Guid.NewGuid();
         var element = new TestRichTextElement($"<figure><img data-asset-id=\"{missingAssetId}\" /></figure>");
 

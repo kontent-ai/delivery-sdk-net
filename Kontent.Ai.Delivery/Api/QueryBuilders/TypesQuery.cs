@@ -86,7 +86,8 @@ internal sealed class TypesQuery(
                 if (!apiResult.IsSuccess)
                     return null;
 
-                return new CacheEntry<DeliveryTypeListingResponse>(apiResult.Value, BuildDependencies(apiResult.Value.Types));
+                var dependencies = BuildDependencies(apiResult.Value.Types);
+                return new CacheEntry<DeliveryTypeListingResponse>(apiResult.Value, dependencies);
             },
             CacheExpiration,
             cancellationToken).ConfigureAwait(false);
@@ -99,8 +100,10 @@ internal sealed class TypesQuery(
                 || (cacheManager is IFailSafeStateProvider failSafeProvider && failSafeProvider.IsFailSafeActive(cacheKey));
 
             return isFailSafe
-                ? DeliveryResult.FailSafeHit<IDeliveryTypeListingResponse>(WithNextPageFetcher(cached))
-                : DeliveryResult.CacheHit<IDeliveryTypeListingResponse>(WithNextPageFetcher(cached));
+                ? DeliveryResult.FailSafeHit<IDeliveryTypeListingResponse>(
+                    WithNextPageFetcher(cached.Value), cached.DependencyKeys)
+                : DeliveryResult.CacheHit<IDeliveryTypeListingResponse>(
+                    WithNextPageFetcher(cached.Value), cached.DependencyKeys);
         }
 
         apiResult = QueryExecutionResultHelper.EnsureApiResult(apiResult, "Types", "list");
@@ -113,8 +116,11 @@ internal sealed class TypesQuery(
         }
 
         LogQueryCompleted(stopwatch, apiResult.StatusCode, cacheHit: false, apiResult.HasStaleContent);
-        var response = cached ?? apiResult.Value;
-        return WrapSuccess(WithNextPageFetcher(response), apiResult);
+        var response = cached?.Value ?? apiResult.Value;
+        return WrapSuccess(
+            WithNextPageFetcher(response),
+            apiResult,
+            cached?.DependencyKeys ?? BuildDependencies(response.Types));
     }
 
     private async Task<IDeliveryResult<IDeliveryTypeListingResponse>> ExecuteWithoutCacheAsync(
@@ -131,7 +137,10 @@ internal sealed class TypesQuery(
         }
 
         LogQueryCompleted(stopwatch, deliveryResult.StatusCode, cacheHit: false, deliveryResult.HasStaleContent);
-        return WrapSuccess(WithNextPageFetcher(deliveryResult.Value), deliveryResult);
+        return WrapSuccess(
+            WithNextPageFetcher(deliveryResult.Value),
+            deliveryResult,
+            BuildDependencies(deliveryResult.Value.Types));
     }
 
     private async Task<IDeliveryResult<DeliveryTypeListingResponse>> FetchFromApiAsync(
@@ -167,8 +176,10 @@ internal sealed class TypesQuery(
 
     private static IDeliveryResult<IDeliveryTypeListingResponse> WrapSuccess(
         DeliveryTypeListingResponse response,
-        IDeliveryResult<DeliveryTypeListingResponse> apiResult)
-        => DeliveryResult.SuccessFrom<IDeliveryTypeListingResponse, DeliveryTypeListingResponse>(response, apiResult);
+        IDeliveryResult<DeliveryTypeListingResponse> apiResult,
+        IReadOnlyList<string> dependencyKeys)
+        => DeliveryResult.SuccessFrom<IDeliveryTypeListingResponse, DeliveryTypeListingResponse>(
+            response, apiResult, dependencyKeys);
 
     private static IDeliveryResult<IDeliveryTypeListingResponse> CreateFailureResult(
         IDeliveryResult<DeliveryTypeListingResponse> deliveryResult)

@@ -21,7 +21,7 @@ internal sealed class MemoryCacheManager(
     public CacheStorageMode StorageMode => _inner.StorageMode;
 
     /// <inheritdoc />
-    public Task<T?> GetOrSetAsync<T>(
+    public Task<CacheResult<T>?> GetOrSetAsync<T>(
         string cacheKey,
         Func<CancellationToken, Task<CacheEntry<T>?>> factory,
         TimeSpan? expiration = null,

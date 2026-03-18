@@ -142,7 +142,7 @@ public class DeliveryClientBuilderTests
         });
 
         Assert.True(factoryCalled);
-        Assert.Equal("value", cached);
+        Assert.Equal("value", cached?.Value);
     }
 
     [Fact]
@@ -168,7 +168,7 @@ public class DeliveryClientBuilderTests
         });
 
         Assert.True(factoryCalled);
-        Assert.Equal("value", cached);
+        Assert.Equal("value", cached?.Value);
     }
 
     [Fact]
