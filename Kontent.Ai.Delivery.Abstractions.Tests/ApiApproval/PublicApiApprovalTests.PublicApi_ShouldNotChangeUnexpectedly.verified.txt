@@ -161,7 +161,7 @@ public interface IDateTimeContent
 public interface IDeliveryCacheManager
     CacheStorageMode StorageMode { get; }
     Task`1 GetOrSetAsync(String cacheKey, Func`2 factory, Nullable`1 expiration, CancellationToken cancellationToken)
-    Task`1 InvalidateAsync(CancellationToken cancellationToken, String[] dependencyKeys)
+    Task`1 InvalidateAsync(String[] dependencyKeys, CancellationToken cancellationToken)
 
 // Kontent.Ai.Delivery.Abstractions
 public interface IDeliveryCachePurger

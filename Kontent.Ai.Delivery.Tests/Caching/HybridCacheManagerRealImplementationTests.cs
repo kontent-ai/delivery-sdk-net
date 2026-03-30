@@ -102,7 +102,7 @@ public class HybridCacheManagerRealImplementationTests
         var dependency = "invalidate_dep";
         await PopulateCache("invalidate_test_key", new TestValue { Id = 100, Name = "To Be Invalidated" }, [dependency]);
 
-        await _cacheManager.InvalidateAsync(default, dependency);
+        await _cacheManager.InvalidateAsync([dependency]);
 
         Assert.True(await IsFactoryCalledAsync("invalidate_test_key"));
     }
@@ -117,7 +117,7 @@ public class HybridCacheManagerRealImplementationTests
         await PopulateCache("shared_key2", value, [sharedDependency]);
         await PopulateCache("other_key", value, ["other_dep_real"]);
 
-        await _cacheManager.InvalidateAsync(default, sharedDependency);
+        await _cacheManager.InvalidateAsync([sharedDependency]);
 
         Assert.True(await IsFactoryCalledAsync("shared_key1"));
         Assert.True(await IsFactoryCalledAsync("shared_key2"));
@@ -133,7 +133,7 @@ public class HybridCacheManagerRealImplementationTests
         await PopulateCache("multi_key2", value, ["multi_dep2"]);
         await PopulateCache("multi_key3", value, ["multi_dep3"]);
 
-        await _cacheManager.InvalidateAsync(default, "multi_dep1", "multi_dep2");
+        await _cacheManager.InvalidateAsync(["multi_dep1", "multi_dep2"]);
 
         Assert.True(await IsFactoryCalledAsync("multi_key1"));
         Assert.True(await IsFactoryCalledAsync("multi_key2"));
@@ -283,7 +283,7 @@ public class HybridCacheManagerRealImplementationTests
             Task.FromResult<CacheEntry<TestValue>?>(
                 new CacheEntry<TestValue>(value, dependencies)));
 
-        await _cacheManager.InvalidateAsync(default, "real_dep_25");
+        await _cacheManager.InvalidateAsync(["real_dep_25"]);
         Assert.True(await IsFactoryCalledAsync("many_deps_real_key"));
     }
 
@@ -293,7 +293,7 @@ public class HybridCacheManagerRealImplementationTests
         await PopulateCache("existing_real_key", new TestValue { Id = 77, Name = "Existing" }, ["existing_real_dep"]);
 
         var exception = await Record.ExceptionAsync(() =>
-            _cacheManager.InvalidateAsync(default, "non_existent_real_dep"));
+            _cacheManager.InvalidateAsync(["non_existent_real_dep"]));
 
         Assert.Null(exception);
         Assert.False(await IsFactoryCalledAsync("existing_real_key"));

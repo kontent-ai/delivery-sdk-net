@@ -246,7 +246,7 @@ public class MemoryCacheManagerTests : IDisposable
         await PopulateCache(manager, "next_key", new TestCacheValue { Id = 2, Name = "Next" }, [dependency]);
         Assert.False(await IsFactoryCalledAsync(manager, "next_key"));
 
-        await manager.InvalidateAsync(default, dependency);
+        await manager.InvalidateAsync([dependency]);
         Assert.True(await IsFactoryCalledAsync(manager, "next_key"));
     }
 
@@ -297,7 +297,7 @@ public class MemoryCacheManagerTests : IDisposable
         var dependency = "dep1";
         await PopulateCache("test_key", new TestCacheValue { Id = 1, Name = "Test" }, [dependency]);
 
-        var result = await _cacheManager.InvalidateAsync(default, dependency);
+        var result = await _cacheManager.InvalidateAsync([dependency]);
 
         Assert.True(result);
         Assert.True(await IsFactoryCalledAsync("test_key"));
@@ -308,7 +308,7 @@ public class MemoryCacheManagerTests : IDisposable
     {
         await PopulateCache("existing_key", new TestCacheValue { Id = 10, Name = "Existing" }, ["existing_dep"]);
 
-        var result = await _cacheManager.InvalidateAsync(default, "non_existent_dep");
+        var result = await _cacheManager.InvalidateAsync(["non_existent_dep"]);
 
         Assert.True(result);
         Assert.False(await IsFactoryCalledAsync("existing_key"));
@@ -317,14 +317,14 @@ public class MemoryCacheManagerTests : IDisposable
     [Fact]
     public async Task InvalidateAsync_NullDependencies_ReturnsTrue()
     {
-        var result = await _cacheManager.InvalidateAsync(default, null!);
+        var result = await _cacheManager.InvalidateAsync(null!);
         Assert.True(result);
     }
 
     [Fact]
     public async Task InvalidateAsync_EmptyDependencies_ReturnsTrue()
     {
-        var result = await _cacheManager.InvalidateAsync(default, []);
+        var result = await _cacheManager.InvalidateAsync([]);
         Assert.True(result);
     }
 
@@ -336,7 +336,7 @@ public class MemoryCacheManagerTests : IDisposable
         await PopulateCache("key2", value, ["dep2"]);
         await PopulateCache("key3", value, ["dep3"]);
 
-        await _cacheManager.InvalidateAsync(default, "dep1", "dep2");
+        await _cacheManager.InvalidateAsync(["dep1", "dep2"]);
 
         Assert.True(await IsFactoryCalledAsync("key1"));
         Assert.True(await IsFactoryCalledAsync("key2"));
@@ -353,7 +353,7 @@ public class MemoryCacheManagerTests : IDisposable
         await PopulateCache("key2", value, [sharedDependency]);
         await PopulateCache("key3", value, ["other_dep"]);
 
-        await _cacheManager.InvalidateAsync(default, sharedDependency);
+        await _cacheManager.InvalidateAsync([sharedDependency]);
 
         Assert.True(await IsFactoryCalledAsync("key1"));
         Assert.True(await IsFactoryCalledAsync("key2"));
@@ -366,9 +366,9 @@ public class MemoryCacheManagerTests : IDisposable
         var dependency = "dep1";
         await PopulateCache("test_key", new TestCacheValue { Id = 1, Name = "Test" }, [dependency]);
 
-        await _cacheManager.InvalidateAsync(default, dependency);
-        await _cacheManager.InvalidateAsync(default, dependency);
-        await _cacheManager.InvalidateAsync(default, dependency);
+        await _cacheManager.InvalidateAsync([dependency]);
+        await _cacheManager.InvalidateAsync([dependency]);
+        await _cacheManager.InvalidateAsync([dependency]);
 
         Assert.True(await IsFactoryCalledAsync("test_key"));
     }
@@ -383,7 +383,7 @@ public class MemoryCacheManagerTests : IDisposable
         Assert.False(await IsFactoryCalledAsync("Key"));
         Assert.False(await IsFactoryCalledAsync("key"));
 
-        await _cacheManager.InvalidateAsync(default, dependency);
+        await _cacheManager.InvalidateAsync([dependency]);
 
         Assert.True(await IsFactoryCalledAsync("Key"));
         Assert.True(await IsFactoryCalledAsync("key"));
@@ -420,7 +420,7 @@ public class MemoryCacheManagerTests : IDisposable
 
         await Task.WhenAll(tasks);
 
-        await _cacheManager.InvalidateAsync(default, sharedDependency);
+        await _cacheManager.InvalidateAsync([sharedDependency]);
 
         var verifyTasks = Enumerable.Range(0, 50)
             .Select(i => IsFactoryCalledAsync($"key_{i}"))
@@ -443,7 +443,7 @@ public class MemoryCacheManagerTests : IDisposable
             .Select(async _ =>
             {
                 await Task.Yield();
-                await _cacheManager.InvalidateAsync(default, dependency);
+                await _cacheManager.InvalidateAsync([dependency]);
             })
             .ToList();
 
@@ -458,7 +458,7 @@ public class MemoryCacheManagerTests : IDisposable
         await PopulateCache("test_key", new TestCacheValue { Id = 1, Name = "Test" }, [dependency]);
 
         var tasks = Enumerable.Range(0, 50)
-            .Select(_ => _cacheManager.InvalidateAsync(default, dependency))
+            .Select(_ => _cacheManager.InvalidateAsync([dependency]))
             .ToList();
 
         await Task.WhenAll(tasks);
@@ -502,7 +502,7 @@ public class MemoryCacheManagerTests : IDisposable
         await churnTask;
         Assert.True(expired);
 
-        await manager.InvalidateAsync(default, dependency);
+        await manager.InvalidateAsync([dependency]);
         Assert.True(await IsFactoryCalledAsync(manager, stableKey));
     }
 
@@ -573,7 +573,7 @@ public class MemoryCacheManagerTests : IDisposable
     {
         var dependency = new string('b', 1000);
         await PopulateCache("test_key", new TestCacheValue { Id = 1, Name = "Test" }, [dependency]);
-        await _cacheManager.InvalidateAsync(default, dependency);
+        await _cacheManager.InvalidateAsync([dependency]);
         Assert.True(await IsFactoryCalledAsync("test_key"));
     }
 
@@ -597,7 +597,7 @@ public class MemoryCacheManagerTests : IDisposable
         }
 
         var dependenciesToInvalidate = keys.Select(k => $"dep_{k}").ToArray();
-        await _cacheManager.InvalidateAsync(default, dependenciesToInvalidate);
+        await _cacheManager.InvalidateAsync(dependenciesToInvalidate);
 
         foreach (var key in keys)
         {
@@ -685,7 +685,7 @@ public class MemoryCacheManagerTests : IDisposable
         await PopulateCache(manager1, key, new TestCacheValue { Id = 1, Name = "Client1Value" }, [dependency]);
         await PopulateCache(manager2, key, new TestCacheValue { Id = 2, Name = "Client2Value" }, [dependency]);
 
-        await manager1.InvalidateAsync(default, dependency);
+        await manager1.InvalidateAsync([dependency]);
 
         Assert.True(await IsFactoryCalledAsync(manager1, key));
         Assert.False(await IsFactoryCalledAsync(manager2, key));
@@ -745,7 +745,7 @@ public class MemoryCacheManagerTests : IDisposable
         await PopulateCache(manager2, "item1", new TestCacheValue { Id = 10 }, [dependency]);
         await PopulateCache(manager2, "item2", new TestCacheValue { Id = 20 }, [dependency]);
 
-        await manager1.InvalidateAsync(default, dependency);
+        await manager1.InvalidateAsync([dependency]);
 
         Assert.True(await IsFactoryCalledAsync(manager1, "item1"));
         Assert.True(await IsFactoryCalledAsync(manager1, "item2"));
@@ -771,7 +771,7 @@ public class MemoryCacheManagerTests : IDisposable
 
         await Task.WhenAll(tasks1.Concat(tasks2));
 
-        await manager1.InvalidateAsync(default, dependency);
+        await manager1.InvalidateAsync([dependency]);
 
         var verify1 = await Task.WhenAll(Enumerable.Range(0, 25)
             .Select(i => IsFactoryCalledAsync(manager1, $"key_{i}")));

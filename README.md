@@ -1331,19 +1331,15 @@ var itemDependencyKeys = webhookPayload.Data.Items
     .Append(DeliveryCacheDependencies.ItemsListScope)
     .ToArray();
 
-await cacheManager.InvalidateAsync(default, itemDependencyKeys);
+await cacheManager.InvalidateAsync(itemDependencyKeys);
 
 // Type events
 await cacheManager.InvalidateAsync(
-    default,
-    $"type_{typeCodename}",
-    DeliveryCacheDependencies.TypesListScope);
+    [$"type_{typeCodename}", DeliveryCacheDependencies.TypesListScope]);
 
 // Taxonomy events
 await cacheManager.InvalidateAsync(
-    default,
-    $"taxonomy_{taxonomyCodename}",
-    DeliveryCacheDependencies.TaxonomiesListScope);
+    [$"taxonomy_{taxonomyCodename}", DeliveryCacheDependencies.TaxonomiesListScope]);
 ```
 
 #### Purging the SDK Cache

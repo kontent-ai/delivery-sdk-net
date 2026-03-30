@@ -652,7 +652,7 @@ public partial class CachingIntegrationTests
 
         var result1 = await client.GetItem<Article>(itemCodename).ExecuteAsync();
 
-        await cacheManager.InvalidateAsync(default, $"item_{itemCodename}");
+        await cacheManager.InvalidateAsync([$"item_{itemCodename}"]);
 
         var result2 = await client.GetItem<Article>(itemCodename).ExecuteAsync();
 
@@ -716,7 +716,7 @@ public partial class CachingIntegrationTests
         Assert.False(listResultB1.IsCacheHit);
         Assert.True(listResultB2.IsCacheHit);
 
-        await cacheManager.InvalidateAsync(default, DeliveryCacheDependencies.ItemsListScope);
+        await cacheManager.InvalidateAsync([DeliveryCacheDependencies.ItemsListScope]);
 
         var listResultA3 = await client.GetItems<Article>()
             .Where(f => f.System("type").IsEqualTo("article"))
@@ -775,7 +775,7 @@ public partial class CachingIntegrationTests
             .Where(f => f.System("type").IsEqualTo("article"))
             .ExecuteAsync();
 
-        await cacheManager.InvalidateAsync(default, DeliveryCacheDependencies.ItemsListScope);
+        await cacheManager.InvalidateAsync([DeliveryCacheDependencies.ItemsListScope]);
 
         var itemResult3 = await client.GetItem<Article>(itemCodename).ExecuteAsync();
         var listResult3 = await client.GetItems<Article>()
@@ -967,7 +967,7 @@ public partial class CachingIntegrationTests
         Assert.False(listResultB1.IsCacheHit);
         Assert.True(listResultB2.IsCacheHit);
 
-        await cacheManager.InvalidateAsync(default, DeliveryCacheDependencies.TypesListScope);
+        await cacheManager.InvalidateAsync([DeliveryCacheDependencies.TypesListScope]);
 
         var listResultA3 = await client.GetTypes().Skip(1).ExecuteAsync();
         var listResultB3 = await client.GetTypes().Skip(1).WithElements("title").ExecuteAsync();
@@ -1053,7 +1053,7 @@ public partial class CachingIntegrationTests
         Assert.False(listResultB1.IsCacheHit);
         Assert.True(listResultB2.IsCacheHit);
 
-        await cacheManager.InvalidateAsync(default, DeliveryCacheDependencies.TaxonomiesListScope);
+        await cacheManager.InvalidateAsync([DeliveryCacheDependencies.TaxonomiesListScope]);
 
         var listResultA3 = await client.GetTaxonomies().Skip(1).ExecuteAsync();
         var listResultB3 = await client.GetTaxonomies().Skip(1).Limit(2).ExecuteAsync();
@@ -1128,7 +1128,7 @@ public partial class CachingIntegrationTests
         var typeResult2 = await client.GetType("article").ExecuteAsync();
         var typesResult2 = await client.GetTypes().Skip(1).ExecuteAsync();
 
-        await cacheManager.InvalidateAsync(default, DeliveryCacheDependencies.TypesListScope);
+        await cacheManager.InvalidateAsync([DeliveryCacheDependencies.TypesListScope]);
 
         var typeResult3 = await client.GetType("article").ExecuteAsync();
         var typesResult3 = await client.GetTypes().Skip(1).ExecuteAsync();
@@ -1183,7 +1183,7 @@ public partial class CachingIntegrationTests
         var taxonomyResult2 = await client.GetTaxonomy("personas").ExecuteAsync();
         var taxonomiesResult2 = await client.GetTaxonomies().Skip(1).ExecuteAsync();
 
-        await cacheManager.InvalidateAsync(default, DeliveryCacheDependencies.TaxonomiesListScope);
+        await cacheManager.InvalidateAsync([DeliveryCacheDependencies.TaxonomiesListScope]);
 
         var taxonomyResult3 = await client.GetTaxonomy("personas").ExecuteAsync();
         var taxonomiesResult3 = await client.GetTaxonomies().Skip(1).ExecuteAsync();
@@ -1240,7 +1240,7 @@ public partial class CachingIntegrationTests
         var typeResult2 = await client.GetType("article").ExecuteAsync();
         var typesResult2 = await client.GetTypes().Skip(1).ExecuteAsync();
 
-        await cacheManager.InvalidateAsync(default, "type_article");
+        await cacheManager.InvalidateAsync(["type_article"]);
 
         var typeResult3 = await client.GetType("article").ExecuteAsync();
         var typesResult3 = await client.GetTypes().Skip(1).ExecuteAsync();
@@ -1297,7 +1297,7 @@ public partial class CachingIntegrationTests
         var taxonomyResult2 = await client.GetTaxonomy("personas").ExecuteAsync();
         var taxonomiesResult2 = await client.GetTaxonomies().Skip(1).ExecuteAsync();
 
-        await cacheManager.InvalidateAsync(default, "taxonomy_personas");
+        await cacheManager.InvalidateAsync(["taxonomy_personas"]);
 
         var taxonomyResult3 = await client.GetTaxonomy("personas").ExecuteAsync();
         var taxonomiesResult3 = await client.GetTaxonomies().Skip(1).ExecuteAsync();
@@ -1418,7 +1418,7 @@ public partial class CachingIntegrationTests
         var invalidateTask = Task.Run(async () =>
         {
             await handler.WaitForFirstRequestAsync();
-            await cacheManager.InvalidateAsync(default, DeliveryCacheDependencies.ItemsListScope);
+            await cacheManager.InvalidateAsync([DeliveryCacheDependencies.ItemsListScope]);
         });
 
         var allWork = Task.WhenAll(queryTask, invalidateTask);
@@ -1428,7 +1428,7 @@ public partial class CachingIntegrationTests
         Assert.All(queryResults, result => Assert.True(result.IsSuccess));
 
         // Deterministic final invalidation to verify refresh path remains healthy after the race.
-        await cacheManager.InvalidateAsync(default, DeliveryCacheDependencies.ItemsListScope);
+        await cacheManager.InvalidateAsync([DeliveryCacheDependencies.ItemsListScope]);
 
         var refreshed = await client.GetItems<Article>()
             .Where(f => f.System("type").IsEqualTo("article"))
@@ -1572,7 +1572,7 @@ public partial class CachingIntegrationTests
 
         var result1 = await client.GetItem<Article>(itemCodename).ExecuteAsync();
 
-        await cacheManager.InvalidateAsync(default, $"item_{itemCodename}");
+        await cacheManager.InvalidateAsync([$"item_{itemCodename}"]);
 
         var result2 = await client.GetItem<Article>(itemCodename).ExecuteAsync();
 
@@ -1638,7 +1638,7 @@ public partial class CachingIntegrationTests
         Assert.False(listResultB1.IsCacheHit);
         Assert.True(listResultB2.IsCacheHit);
 
-        await cacheManager.InvalidateAsync(default, DeliveryCacheDependencies.ItemsListScope);
+        await cacheManager.InvalidateAsync([DeliveryCacheDependencies.ItemsListScope]);
 
         var listResultA3 = await client.GetItems<Article>()
             .Where(f => f.System("type").IsEqualTo("article"))
@@ -1695,7 +1695,7 @@ public partial class CachingIntegrationTests
         Assert.False(listResultA1.IsCacheHit);
         Assert.False(listResultB1.IsCacheHit);
 
-        await cacheManager.InvalidateAsync(default, DeliveryCacheDependencies.TypesListScope);
+        await cacheManager.InvalidateAsync([DeliveryCacheDependencies.TypesListScope]);
 
         var listResultA3 = await client.GetTypes().Skip(1).ExecuteAsync();
         var listResultB3 = await client.GetTypes().Skip(1).WithElements("title").ExecuteAsync();
@@ -1743,7 +1743,7 @@ public partial class CachingIntegrationTests
         var typeResult2 = await client.GetType("article").ExecuteAsync();
         var typesResult2 = await client.GetTypes().Skip(1).ExecuteAsync();
 
-        await cacheManager.InvalidateAsync(default, "type_article");
+        await cacheManager.InvalidateAsync(["type_article"]);
 
         var typeResult3 = await client.GetType("article").ExecuteAsync();
         var typesResult3 = await client.GetTypes().Skip(1).ExecuteAsync();
@@ -1811,7 +1811,7 @@ public partial class CachingIntegrationTests
         Assert.False(listResultB1.IsCacheHit);
         Assert.True(listResultB2.IsCacheHit);
 
-        await cacheManager.InvalidateAsync(default, DeliveryCacheDependencies.TaxonomiesListScope);
+        await cacheManager.InvalidateAsync([DeliveryCacheDependencies.TaxonomiesListScope]);
 
         var listResultA3 = await client.GetTaxonomies().Skip(1).ExecuteAsync();
         var listResultB3 = await client.GetTaxonomies().Skip(1).Limit(2).ExecuteAsync();
@@ -1887,7 +1887,7 @@ public partial class CachingIntegrationTests
         var invalidateTask = Task.Run(async () =>
         {
             await handler.WaitForFirstRequestAsync();
-            await cacheManager.InvalidateAsync(default, DeliveryCacheDependencies.TypesListScope);
+            await cacheManager.InvalidateAsync([DeliveryCacheDependencies.TypesListScope]);
         });
 
         var allWork = Task.WhenAll(queryTask, invalidateTask);
@@ -1897,7 +1897,7 @@ public partial class CachingIntegrationTests
         Assert.All(queryResults, result => Assert.True(result.IsSuccess));
 
         // Deterministic final invalidation to verify refresh path remains healthy after the race.
-        await cacheManager.InvalidateAsync(default, DeliveryCacheDependencies.TypesListScope);
+        await cacheManager.InvalidateAsync([DeliveryCacheDependencies.TypesListScope]);
 
         var refreshed = await client.GetTypes().Skip(1).ExecuteAsync();
         Assert.True(refreshed.IsSuccess);

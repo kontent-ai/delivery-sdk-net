@@ -24,7 +24,6 @@ internal sealed class FusionCacheManager : IDeliveryCacheManager, IDeliveryCache
     private readonly ILogger? _logger;
     private readonly FusionCacheEntryOptions _baseWriteOptions;
     private readonly FusionCacheEntryOptions _baseInvalidateOptions;
-    private readonly bool _ownsFusionCache;
     private readonly ConcurrentDictionary<string, byte> _failSafeActiveKeys = new(StringComparer.Ordinal);
     private readonly EventHandler<FusionCacheEntryEventArgs> _failSafeActivateHandler;
     private readonly EventHandler<FusionCacheEntryEventArgs> _factorySuccessHandler;
@@ -41,8 +40,7 @@ internal sealed class FusionCacheManager : IDeliveryCacheManager, IDeliveryCache
         Func<string, string> dependencyTagFormatter,
         ILogger? logger,
         FusionCacheEntryOptions baseWriteOptions,
-        FusionCacheEntryOptions baseInvalidateOptions,
-        bool ownsFusionCache)
+        FusionCacheEntryOptions baseInvalidateOptions)
     {
         _cache = cache;
         _storageMode = storageMode;
@@ -52,7 +50,6 @@ internal sealed class FusionCacheManager : IDeliveryCacheManager, IDeliveryCache
         _logger = logger;
         _baseWriteOptions = baseWriteOptions;
         _baseInvalidateOptions = baseInvalidateOptions;
-        _ownsFusionCache = ownsFusionCache;
 
         _failSafeActivateHandler = HandleFailSafeActivate;
         _factorySuccessHandler = HandleFactorySuccess;
@@ -76,22 +73,13 @@ internal sealed class FusionCacheManager : IDeliveryCacheManager, IDeliveryCache
 
         var defaultEntryOptions = new FusionCacheEntryOptions
         {
-            Duration = effectiveExpiration,
-            IsFailSafeEnabled = cacheOptions.IsFailSafeEnabled,
-            FailSafeMaxDuration = cacheOptions.FailSafeMaxDuration,
-            FailSafeThrottleDuration = cacheOptions.FailSafeThrottleDuration,
-            JitterMaxDuration = cacheOptions.JitterMaxDuration,
             AllowBackgroundDistributedCacheOperations = false,
             AllowBackgroundBackplaneOperations = false,
             ReThrowDistributedCacheExceptions = false,
             ReThrowSerializationExceptions = true,
             ReThrowBackplaneExceptions = false
         };
-
-        if (cacheOptions.EagerRefreshThreshold > 0)
-        {
-            defaultEntryOptions.EagerRefreshThreshold = cacheOptions.EagerRefreshThreshold;
-        }
+        ApplyCachePolicy(defaultEntryOptions, cacheOptions, effectiveExpiration);
 
         var fusionCacheOptions = new FusionCacheOptions
         {
@@ -111,13 +99,6 @@ internal sealed class FusionCacheManager : IDeliveryCacheManager, IDeliveryCache
 
         var baseWriteOptions = new FusionCacheEntryOptions
         {
-            Duration = effectiveExpiration,
-            IsFailSafeEnabled = cacheOptions.IsFailSafeEnabled,
-            FailSafeMaxDuration = cacheOptions.FailSafeMaxDuration,
-            FailSafeThrottleDuration = cacheOptions.FailSafeThrottleDuration,
-            JitterMaxDuration = cacheOptions.JitterMaxDuration,
-            SkipMemoryCacheRead = false,
-            SkipMemoryCacheWrite = false,
             SkipDistributedCacheRead = true,
             SkipDistributedCacheWrite = true,
             ReThrowDistributedCacheExceptions = false,
@@ -126,11 +107,7 @@ internal sealed class FusionCacheManager : IDeliveryCacheManager, IDeliveryCache
             AllowBackgroundBackplaneOperations = false,
             AllowBackgroundDistributedCacheOperations = false
         };
-
-        if (cacheOptions.EagerRefreshThreshold > 0)
-        {
-            baseWriteOptions.EagerRefreshThreshold = cacheOptions.EagerRefreshThreshold;
-        }
+        ApplyCachePolicy(baseWriteOptions, cacheOptions, effectiveExpiration);
 
         return new FusionCacheManager(
             fusion,
@@ -143,8 +120,6 @@ internal sealed class FusionCacheManager : IDeliveryCacheManager, IDeliveryCache
             baseInvalidateOptions: new FusionCacheEntryOptions
             {
                 IsFailSafeEnabled = false,
-                SkipMemoryCacheRead = false,
-                SkipMemoryCacheWrite = false,
                 SkipDistributedCacheRead = true,
                 SkipDistributedCacheWrite = true,
                 ReThrowDistributedCacheExceptions = false,
@@ -152,8 +127,7 @@ internal sealed class FusionCacheManager : IDeliveryCacheManager, IDeliveryCache
                 ReThrowBackplaneExceptions = false,
                 AllowBackgroundBackplaneOperations = false,
                 AllowBackgroundDistributedCacheOperations = false
-            },
-            ownsFusionCache: true);
+            });
     }
 
     public static FusionCacheManager CreateHybrid(
@@ -171,11 +145,6 @@ internal sealed class FusionCacheManager : IDeliveryCacheManager, IDeliveryCache
 
         var defaultEntryOptions = new FusionCacheEntryOptions
         {
-            Duration = effectiveExpiration,
-            IsFailSafeEnabled = cacheOptions.IsFailSafeEnabled,
-            FailSafeMaxDuration = cacheOptions.FailSafeMaxDuration,
-            FailSafeThrottleDuration = cacheOptions.FailSafeThrottleDuration,
-            JitterMaxDuration = cacheOptions.JitterMaxDuration,
             AllowBackgroundDistributedCacheOperations = false,
             AllowBackgroundBackplaneOperations = false,
             ReThrowDistributedCacheExceptions = false,
@@ -184,11 +153,7 @@ internal sealed class FusionCacheManager : IDeliveryCacheManager, IDeliveryCache
             SkipMemoryCacheRead = true,
             SkipMemoryCacheWrite = true
         };
-
-        if (cacheOptions.EagerRefreshThreshold > 0)
-        {
-            defaultEntryOptions.EagerRefreshThreshold = cacheOptions.EagerRefreshThreshold;
-        }
+        ApplyCachePolicy(defaultEntryOptions, cacheOptions, effectiveExpiration);
 
         var fusionCacheOptions = new FusionCacheOptions
         {
@@ -211,26 +176,13 @@ internal sealed class FusionCacheManager : IDeliveryCacheManager, IDeliveryCache
 
         var baseWriteOptions = new FusionCacheEntryOptions
         {
-            Duration = effectiveExpiration,
-            IsFailSafeEnabled = cacheOptions.IsFailSafeEnabled,
-            FailSafeMaxDuration = cacheOptions.FailSafeMaxDuration,
-            FailSafeThrottleDuration = cacheOptions.FailSafeThrottleDuration,
-            JitterMaxDuration = cacheOptions.JitterMaxDuration,
-            SkipMemoryCacheRead = false,
-            SkipMemoryCacheWrite = false,
-            SkipDistributedCacheRead = false,
-            SkipDistributedCacheWrite = false,
             ReThrowDistributedCacheExceptions = true,
             ReThrowSerializationExceptions = true,
             ReThrowBackplaneExceptions = false,
             AllowBackgroundBackplaneOperations = false,
             AllowBackgroundDistributedCacheOperations = false
         };
-
-        if (cacheOptions.EagerRefreshThreshold > 0)
-        {
-            baseWriteOptions.EagerRefreshThreshold = cacheOptions.EagerRefreshThreshold;
-        }
+        ApplyCachePolicy(baseWriteOptions, cacheOptions, effectiveExpiration);
 
         return new FusionCacheManager(
             fusion,
@@ -243,17 +195,12 @@ internal sealed class FusionCacheManager : IDeliveryCacheManager, IDeliveryCache
             baseInvalidateOptions: new FusionCacheEntryOptions
             {
                 IsFailSafeEnabled = false,
-                SkipMemoryCacheRead = false,
-                SkipMemoryCacheWrite = false,
-                SkipDistributedCacheRead = false,
-                SkipDistributedCacheWrite = false,
                 ReThrowDistributedCacheExceptions = false,
                 ReThrowSerializationExceptions = false,
                 ReThrowBackplaneExceptions = false,
                 AllowBackgroundBackplaneOperations = false,
                 AllowBackgroundDistributedCacheOperations = false
-            },
-            ownsFusionCache: true);
+            });
     }
 
     public CacheStorageMode StorageMode => _storageMode;
@@ -342,7 +289,7 @@ internal sealed class FusionCacheManager : IDeliveryCacheManager, IDeliveryCache
     private sealed class CacheFactoryFailedException : Exception;
 #pragma warning restore S3871
 
-    public async Task<bool> InvalidateAsync(CancellationToken cancellationToken = default, params string[] dependencyKeys)
+    public async Task<bool> InvalidateAsync(string[] dependencyKeys, CancellationToken cancellationToken = default)
     {
         ThrowIfDisposed();
 
@@ -351,7 +298,9 @@ internal sealed class FusionCacheManager : IDeliveryCacheManager, IDeliveryCache
             return true;
         }
 
-        var validKeys = dependencyKeys.Where(k => !string.IsNullOrWhiteSpace(k)).ToArray();
+        var validKeys = Array.TrueForAll(dependencyKeys, k => !string.IsNullOrWhiteSpace(k))
+            ? dependencyKeys
+            : dependencyKeys.Where(k => !string.IsNullOrWhiteSpace(k)).ToArray();
 
         if (_logger is not null && validKeys.Length > 0)
             LoggerMessages.CacheInvalidateStarting(_logger, validKeys.Length);
@@ -424,15 +373,32 @@ internal sealed class FusionCacheManager : IDeliveryCacheManager, IDeliveryCache
             return;
 
         UnsubscribeFailSafeStateEvents();
-
-        if (_ownsFusionCache)
-        {
-            _cache.Dispose();
-        }
+        _cache.Dispose();
     }
 
     private void ThrowIfDisposed() =>
         ObjectDisposedException.ThrowIf(Volatile.Read(ref _disposeState) != 0, nameof(FusionCacheManager));
+
+    /// <summary>
+    /// Applies fail-safe, jitter, and eager-refresh policy from <see cref="DeliveryCacheOptions"/>
+    /// to a <see cref="FusionCacheEntryOptions"/> instance.
+    /// </summary>
+    private static void ApplyCachePolicy(
+        FusionCacheEntryOptions options,
+        DeliveryCacheOptions cacheOptions,
+        TimeSpan duration)
+    {
+        options.Duration = duration;
+        options.IsFailSafeEnabled = cacheOptions.IsFailSafeEnabled;
+        options.FailSafeMaxDuration = cacheOptions.FailSafeMaxDuration;
+        options.FailSafeThrottleDuration = cacheOptions.FailSafeThrottleDuration;
+        options.JitterMaxDuration = cacheOptions.JitterMaxDuration;
+
+        if (cacheOptions.EagerRefreshThreshold > 0)
+        {
+            options.EagerRefreshThreshold = cacheOptions.EagerRefreshThreshold;
+        }
+    }
 
     private void SubscribeFailSafeStateEvents()
     {

@@ -595,18 +595,18 @@ using Microsoft.Extensions.DependencyInjection;
 var cacheManager = serviceProvider.GetRequiredKeyedService<IDeliveryCacheManager>("production");
 
 // Invalidate by dependency keys (items, assets, taxonomies)
-await cacheManager.InvalidateAsync(default, "item_article_codename", "item_related_article");
+await cacheManager.InvalidateAsync(["item_article_codename", "item_related_article"]);
 
 // Webhook-based invalidation example
 var dependencyKeys = webhookPayload.Data.Items
     .Select(i => $"item_{i.Codename}")
     .Append(DeliveryCacheDependencies.ItemsListScope)
     .ToArray();
-await cacheManager.InvalidateAsync(default, dependencyKeys);
+await cacheManager.InvalidateAsync(dependencyKeys);
 
 // Type and taxonomy events
-await cacheManager.InvalidateAsync(default, $"type_{typeCodename}", DeliveryCacheDependencies.TypesListScope);
-await cacheManager.InvalidateAsync(default, $"taxonomy_{taxonomyCodename}", DeliveryCacheDependencies.TaxonomiesListScope);
+await cacheManager.InvalidateAsync([$"type_{typeCodename}", DeliveryCacheDependencies.TypesListScope]);
+await cacheManager.InvalidateAsync([$"taxonomy_{taxonomyCodename}", DeliveryCacheDependencies.TaxonomiesListScope]);
 ```
 
 **Custom cache manager migration (keyed):**

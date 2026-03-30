@@ -78,7 +78,7 @@ public class HybridCacheManagerTests
         var value1 = new TestCacheValue { Id = 1, Name = "First" };
         await PopulateCache("test_key", value1, []);
 
-        await _cacheManager.InvalidateAsync(default, "some_dep");
+        await _cacheManager.InvalidateAsync(["some_dep"]);
 
         // After invalidating a non-matching dep, original should still be cached
         Assert.False(await IsFactoryCalledAsync("test_key"));
@@ -289,7 +289,7 @@ public class HybridCacheManagerTests
         var value = new TestCacheValue { Id = 1, Name = "Test" };
         await PopulateCache("test_key", value, ["dep1", "dep2"]);
 
-        await _cacheManager.InvalidateAsync(default, "dep1");
+        await _cacheManager.InvalidateAsync(["dep1"]);
 
         Assert.True(await IsFactoryCalledAsync("test_key"));
     }
@@ -310,7 +310,7 @@ public class HybridCacheManagerTests
                 new CacheEntry<TestCacheValue>(new TestCacheValue { Id = 2, Name = "Short" }, [dependency])),
             expiration: TimeSpan.FromMinutes(1));
 
-        await manager.InvalidateAsync(default, dependency);
+        await manager.InvalidateAsync([dependency]);
 
         Assert.True(await IsFactoryCalledAsync("long_ttl_key", manager));
         Assert.True(await IsFactoryCalledAsync("short_ttl_key", manager));
@@ -341,7 +341,7 @@ public class HybridCacheManagerTests
         var dependency = "dep1";
         await PopulateCache("test_key", new TestCacheValue { Id = 1, Name = "Test" }, [dependency]);
 
-        var result = await _cacheManager.InvalidateAsync(default, dependency);
+        var result = await _cacheManager.InvalidateAsync([dependency]);
 
         Assert.True(result);
         Assert.True(await IsFactoryCalledAsync("test_key"));
@@ -352,7 +352,7 @@ public class HybridCacheManagerTests
     {
         await PopulateCache("existing_key", new TestCacheValue { Id = 10, Name = "Existing" }, ["existing_dep"]);
 
-        var result = await _cacheManager.InvalidateAsync(default, "non_existent_dep");
+        var result = await _cacheManager.InvalidateAsync(["non_existent_dep"]);
 
         Assert.True(result);
         Assert.False(await IsFactoryCalledAsync("existing_key"));
@@ -361,14 +361,14 @@ public class HybridCacheManagerTests
     [Fact]
     public async Task InvalidateAsync_NullDependencies_ReturnsTrue()
     {
-        var result = await _cacheManager.InvalidateAsync(default, null!);
+        var result = await _cacheManager.InvalidateAsync(null!);
         Assert.True(result);
     }
 
     [Fact]
     public async Task InvalidateAsync_EmptyDependencies_ReturnsTrue()
     {
-        var result = await _cacheManager.InvalidateAsync(default, []);
+        var result = await _cacheManager.InvalidateAsync([]);
         Assert.True(result);
     }
 
@@ -380,7 +380,7 @@ public class HybridCacheManagerTests
         await PopulateCache("key2", value, ["dep2"]);
         await PopulateCache("key3", value, ["dep3"]);
 
-        await _cacheManager.InvalidateAsync(default, "dep1", "dep2");
+        await _cacheManager.InvalidateAsync(["dep1", "dep2"]);
 
         Assert.True(await IsFactoryCalledAsync("key1"));
         Assert.True(await IsFactoryCalledAsync("key2"));
@@ -397,7 +397,7 @@ public class HybridCacheManagerTests
         await PopulateCache("key2", value, [sharedDependency]);
         await PopulateCache("key3", value, ["other_dep"]);
 
-        await _cacheManager.InvalidateAsync(default, sharedDependency);
+        await _cacheManager.InvalidateAsync([sharedDependency]);
 
         Assert.True(await IsFactoryCalledAsync("key1"));
         Assert.True(await IsFactoryCalledAsync("key2"));
@@ -410,9 +410,9 @@ public class HybridCacheManagerTests
         var dependency = "dep1";
         await PopulateCache("test_key", new TestCacheValue { Id = 1, Name = "Test" }, [dependency]);
 
-        await _cacheManager.InvalidateAsync(default, dependency);
-        await _cacheManager.InvalidateAsync(default, dependency);
-        await _cacheManager.InvalidateAsync(default, dependency);
+        await _cacheManager.InvalidateAsync([dependency]);
+        await _cacheManager.InvalidateAsync([dependency]);
+        await _cacheManager.InvalidateAsync([dependency]);
 
         Assert.True(await IsFactoryCalledAsync("test_key"));
     }
@@ -454,7 +454,7 @@ public class HybridCacheManagerTests
 
         await Task.WhenAll(tasks);
 
-        await _cacheManager.InvalidateAsync(default, sharedDependency);
+        await _cacheManager.InvalidateAsync([sharedDependency]);
 
         var verifyTasks = Enumerable.Range(0, 50)
             .Select(i => IsFactoryCalledAsync($"key_{i}"))
@@ -471,7 +471,7 @@ public class HybridCacheManagerTests
         await PopulateCache("test_key", new TestCacheValue { Id = 1, Name = "Test" }, [dependency]);
 
         var tasks = Enumerable.Range(0, 50)
-            .Select(_ => _cacheManager.InvalidateAsync(default, dependency))
+            .Select(_ => _cacheManager.InvalidateAsync([dependency]))
             .ToList();
 
         await Task.WhenAll(tasks);
@@ -501,7 +501,7 @@ public class HybridCacheManagerTests
         cts.Cancel();
 
         await Assert.ThrowsAsync<OperationCanceledException>(() =>
-            _cacheManager.InvalidateAsync(cts.Token, "dep1"));
+            _cacheManager.InvalidateAsync(["dep1"], cts.Token));
     }
 
     #endregion
@@ -541,7 +541,7 @@ public class HybridCacheManagerTests
         var value = new TestCacheValue { Id = 1, Name = "Test" };
 
         await PopulateCache("test_key", value, [dependency]);
-        await _cacheManager.InvalidateAsync(default, dependency);
+        await _cacheManager.InvalidateAsync([dependency]);
 
         Assert.True(await IsFactoryCalledAsync("test_key"));
     }
@@ -570,7 +570,7 @@ public class HybridCacheManagerTests
         }
 
         var dependenciesToInvalidate = Enumerable.Range(0, 50).Select(i => $"dep_key_{i}").ToArray();
-        await _cacheManager.InvalidateAsync(default, dependenciesToInvalidate);
+        await _cacheManager.InvalidateAsync(dependenciesToInvalidate);
 
         var results = await Task.WhenAll(
             Enumerable.Range(0, 50).Select(i => IsFactoryCalledAsync($"key_{i}")));
@@ -619,7 +619,7 @@ public class HybridCacheManagerTests
         await PopulateCache("same_key", value1, [dependency], manager1);
         await PopulateCache("same_key", value2, [dependency], manager2);
 
-        await manager1.InvalidateAsync(default, dependency);
+        await manager1.InvalidateAsync([dependency]);
 
         Assert.True(await IsFactoryCalledAsync("same_key", manager1));
         Assert.False(await IsFactoryCalledAsync("same_key", manager2));
@@ -675,7 +675,7 @@ public class HybridCacheManagerTests
         await PopulateCache("item1", new TestCacheValue { Id = 10 }, [dependency], manager2);
         await PopulateCache("item2", new TestCacheValue { Id = 20 }, [dependency], manager2);
 
-        await manager1.InvalidateAsync(default, dependency);
+        await manager1.InvalidateAsync([dependency]);
 
         Assert.True(await IsFactoryCalledAsync("item1", manager1));
         Assert.True(await IsFactoryCalledAsync("item2", manager1));
@@ -699,7 +699,7 @@ public class HybridCacheManagerTests
 
         await Task.WhenAll(tasks1.Concat(tasks2));
 
-        await manager1.InvalidateAsync(default, dependency);
+        await manager1.InvalidateAsync([dependency]);
 
         var verify1 = await Task.WhenAll(Enumerable.Range(0, 25)
             .Select(i => IsFactoryCalledAsync($"key_{i}", manager1)));
