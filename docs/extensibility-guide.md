@@ -230,14 +230,14 @@ The SDK uses `TryAddSingleton` internally, so your registration takes precedence
 
 ```csharp
 // Type provider is auto-discovered from source generation
-using var container = DeliveryClientBuilder
+await using var client = DeliveryClientBuilder
     .WithOptions(builder => builder
         .WithEnvironmentId("your-environment-id")
         .Build())
     .Build();
 
 // Or explicitly provide a type provider
-using var container = DeliveryClientBuilder
+await using var client = DeliveryClientBuilder
     .WithOptions(builder => builder
         .WithEnvironmentId("your-environment-id")
         .Build())

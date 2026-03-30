@@ -33,8 +33,8 @@ internal sealed class HybridCacheManager(
         => _inner.GetOrSetAsync(cacheKey, factory, expiration, cancellationToken);
 
     /// <inheritdoc />
-    public Task<bool> InvalidateAsync(CancellationToken cancellationToken = default, params string[] dependencyKeys)
-        => _inner.InvalidateAsync(cancellationToken, dependencyKeys);
+    public Task<bool> InvalidateAsync(string[] dependencyKeys, CancellationToken cancellationToken = default)
+        => _inner.InvalidateAsync(dependencyKeys, cancellationToken);
 
     /// <inheritdoc />
     public Task PurgeAsync(bool allowFailSafe = false, CancellationToken cancellationToken = default)

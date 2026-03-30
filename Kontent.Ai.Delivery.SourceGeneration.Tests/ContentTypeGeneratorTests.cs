@@ -237,6 +237,55 @@ public class ContentTypeGeneratorTests
         mangoIndex.Should().BeLessThan(zebraIndex);
     }
 
+    [Fact]
+    public void Generator_WithNestedClass_GeneratesFullyQualifiedName()
+    {
+        // Arrange
+        var source = """
+            using Kontent.Ai.Delivery.Attributes;
+
+            namespace TestApp.Models;
+
+            public class Outer
+            {
+                [ContentTypeCodename("nested_article")]
+                public class NestedArticle { }
+            }
+            """;
+
+        // Act
+        var (diagnostics, output) = RunGenerator(source);
+
+        // Assert
+        diagnostics.Should().BeEmpty();
+        output.Should().Contain("\"nested_article\"");
+        output.Should().Contain("typeof(global::TestApp.Models.Outer.NestedArticle)");
+    }
+
+    [Fact]
+    public void Generator_WithGenericClass_GeneratesRegistry()
+    {
+        // Arrange — closed generic usage is not possible via attribute syntax,
+        // but an open generic class can be decorated. The generator should
+        // include it with the fully qualified open-generic name.
+        var source = """
+            using Kontent.Ai.Delivery.Attributes;
+
+            namespace TestApp.Models;
+
+            [ContentTypeCodename("typed_content")]
+            public class TypedContent<T> { }
+            """;
+
+        // Act
+        var (diagnostics, output) = RunGenerator(source);
+
+        // Assert
+        diagnostics.Should().BeEmpty();
+        output.Should().Contain("\"typed_content\"");
+        output.Should().Contain("typeof(global::TestApp.Models.TypedContent<T>)");
+    }
+
     private static (ImmutableArray<Diagnostic> Diagnostics, string Output) RunGenerator(string source)
     {
         var syntaxTree = CSharpSyntaxTree.ParseText(source);

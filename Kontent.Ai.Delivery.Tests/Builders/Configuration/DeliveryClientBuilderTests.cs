@@ -14,10 +14,10 @@ public class DeliveryClientBuilderTests
     private static readonly Guid EnvironmentIdGuid = Guid.Parse(EnvironmentId);
 
     [Fact]
-    public void Build_WithOptions_CreatesClient()
+    public async Task Build_WithOptions_CreatesClient()
     {
         // Act
-        using var container = DeliveryClientBuilder
+        await using var client = DeliveryClientBuilder
             .WithOptions(builder => builder
                 .WithEnvironmentId(EnvironmentId)
                 .UseProductionApi()
@@ -25,17 +25,15 @@ public class DeliveryClientBuilderTests
             .Build();
 
         // Assert
-        Assert.NotNull(container);
-        Assert.IsAssignableFrom<IDeliveryClientContainer>(container);
-        Assert.NotNull(container.Client);
-        Assert.IsAssignableFrom<IDeliveryClient>(container.Client);
+        Assert.NotNull(client);
+        Assert.IsAssignableFrom<IDeliveryClient>(client);
     }
 
     [Fact]
-    public void Build_WithOptionsGuid_CreatesClient()
+    public async Task Build_WithOptionsGuid_CreatesClient()
     {
         // Act
-        using var container = DeliveryClientBuilder
+        await using var client = DeliveryClientBuilder
             .WithOptions(builder => builder
                 .WithEnvironmentId(EnvironmentIdGuid)
                 .UseProductionApi()
@@ -43,17 +41,15 @@ public class DeliveryClientBuilderTests
             .Build();
 
         // Assert
-        Assert.NotNull(container);
-        Assert.IsAssignableFrom<IDeliveryClientContainer>(container);
-        Assert.NotNull(container.Client);
-        Assert.IsAssignableFrom<IDeliveryClient>(container.Client);
+        Assert.NotNull(client);
+        Assert.IsAssignableFrom<IDeliveryClient>(client);
     }
 
     [Fact]
-    public void Build_WithPreviewApi_CreatesClient()
+    public async Task Build_WithPreviewApi_CreatesClient()
     {
         // Act
-        using var container = DeliveryClientBuilder
+        await using var client = DeliveryClientBuilder
             .WithOptions(builder => builder
                 .WithEnvironmentId(EnvironmentId)
                 .UsePreviewApi(TestPreviewApiKey)
@@ -61,18 +57,17 @@ public class DeliveryClientBuilderTests
             .Build();
 
         // Assert
-        Assert.NotNull(container);
-        Assert.NotNull(container.Client);
+        Assert.NotNull(client);
     }
 
     [Fact]
-    public void Build_WithTypeProvider_CreatesClient()
+    public async Task Build_WithTypeProvider_CreatesClient()
     {
         // Arrange
         var typeProvider = new TestTypeProvider();
 
         // Act
-        using var container = DeliveryClientBuilder
+        await using var client = DeliveryClientBuilder
             .WithOptions(builder => builder
                 .WithEnvironmentId(EnvironmentId)
                 .UseProductionApi()
@@ -81,15 +76,14 @@ public class DeliveryClientBuilderTests
             .Build();
 
         // Assert
-        Assert.NotNull(container);
-        Assert.NotNull(container.Client);
+        Assert.NotNull(client);
     }
 
     [Fact]
-    public void Build_WithMemoryCache_CreatesClient()
+    public async Task Build_WithMemoryCache_CreatesClient()
     {
         // Act
-        using var container = DeliveryClientBuilder
+        await using var client = DeliveryClientBuilder
             .WithOptions(builder => builder
                 .WithEnvironmentId(EnvironmentId)
                 .UseProductionApi()
@@ -98,15 +92,14 @@ public class DeliveryClientBuilderTests
             .Build();
 
         // Assert
-        Assert.NotNull(container);
-        Assert.NotNull(container.Client);
+        Assert.NotNull(client);
     }
 
     [Fact]
-    public void Build_WithMemoryCacheDefaultExpiration_CreatesClient()
+    public async Task Build_WithMemoryCacheDefaultExpiration_CreatesClient()
     {
         // Act
-        using var container = DeliveryClientBuilder
+        await using var client = DeliveryClientBuilder
             .WithOptions(builder => builder
                 .WithEnvironmentId(EnvironmentId)
                 .UseProductionApi()
@@ -115,14 +108,13 @@ public class DeliveryClientBuilderTests
             .Build();
 
         // Assert
-        Assert.NotNull(container);
-        Assert.NotNull(container.Client);
+        Assert.NotNull(client);
     }
 
     [Fact]
     public async Task Build_WithPreviewApiAndMemoryCache_CacheManagerStoresAndReads()
     {
-        using var container = DeliveryClientBuilder
+        await using var client = DeliveryClientBuilder
             .WithOptions(builder => builder
                 .WithEnvironmentId(EnvironmentId)
                 .UsePreviewApi(TestPreviewApiKey)
@@ -130,7 +122,7 @@ public class DeliveryClientBuilderTests
             .WithMemoryCache(TimeSpan.FromMinutes(30))
             .Build();
 
-        var cacheManager = GetCacheManager(container.Client);
+        var cacheManager = GetCacheManager(client);
         Assert.NotNull(cacheManager);
 
         var factoryCalled = false;
@@ -148,7 +140,7 @@ public class DeliveryClientBuilderTests
     [Fact]
     public async Task Build_WithProductionApiAndMemoryCache_CacheManagerStoresAndReads()
     {
-        using var container = DeliveryClientBuilder
+        await using var client = DeliveryClientBuilder
             .WithOptions(builder => builder
                 .WithEnvironmentId(EnvironmentId)
                 .UseProductionApi()
@@ -156,7 +148,7 @@ public class DeliveryClientBuilderTests
             .WithMemoryCache(TimeSpan.FromMinutes(30))
             .Build();
 
-        var cacheManager = GetCacheManager(container.Client);
+        var cacheManager = GetCacheManager(client);
         Assert.NotNull(cacheManager);
 
         var factoryCalled = false;
@@ -172,13 +164,13 @@ public class DeliveryClientBuilderTests
     }
 
     [Fact]
-    public void Build_WithHybridCache_CreatesClient()
+    public async Task Build_WithHybridCache_CreatesClient()
     {
         // Arrange
         var distributedCache = new TestDistributedCache();
 
         // Act
-        using var container = DeliveryClientBuilder
+        await using var client = DeliveryClientBuilder
             .WithOptions(builder => builder
                 .WithEnvironmentId(EnvironmentId)
                 .UseProductionApi()
@@ -187,18 +179,17 @@ public class DeliveryClientBuilderTests
             .Build();
 
         // Assert
-        Assert.NotNull(container);
-        Assert.NotNull(container.Client);
+        Assert.NotNull(client);
     }
 
     [Fact]
-    public void Build_WithAllOptions_CreatesClient()
+    public async Task Build_WithAllOptions_CreatesClient()
     {
         // Arrange
         var typeProvider = new TestTypeProvider();
 
         // Act
-        using var container = DeliveryClientBuilder
+        await using var client = DeliveryClientBuilder
             .WithOptions(builder => builder
                 .WithEnvironmentId(EnvironmentId)
                 .UseProductionApi()
@@ -209,8 +200,7 @@ public class DeliveryClientBuilderTests
             .Build();
 
         // Assert
-        Assert.NotNull(container);
-        Assert.NotNull(container.Client);
+        Assert.NotNull(client);
     }
 
     [Fact]
@@ -248,13 +238,13 @@ public class DeliveryClientBuilderTests
     }
 
     [Fact]
-    public void Build_CallingMemoryCacheAfterHybridCache_UsesLastConfigured()
+    public async Task Build_CallingMemoryCacheAfterHybridCache_UsesLastConfigured()
     {
         // Arrange
         var distributedCache = new TestDistributedCache();
 
         // Act - last cache type wins
-        using var container = DeliveryClientBuilder
+        await using var client = DeliveryClientBuilder
             .WithOptions(builder => builder
                 .WithEnvironmentId(EnvironmentId)
                 .UseProductionApi()
@@ -264,18 +254,17 @@ public class DeliveryClientBuilderTests
             .Build();
 
         // Assert
-        Assert.NotNull(container);
-        Assert.NotNull(container.Client);
+        Assert.NotNull(client);
     }
 
     [Fact]
-    public void Build_CallingHybridCacheAfterMemoryCache_UsesLastConfigured()
+    public async Task Build_CallingHybridCacheAfterMemoryCache_UsesLastConfigured()
     {
         // Arrange
         var distributedCache = new TestDistributedCache();
 
         // Act - last cache type wins
-        using var container = DeliveryClientBuilder
+        await using var client = DeliveryClientBuilder
             .WithOptions(builder => builder
                 .WithEnvironmentId(EnvironmentId)
                 .UseProductionApi()
@@ -285,8 +274,7 @@ public class DeliveryClientBuilderTests
             .Build();
 
         // Assert
-        Assert.NotNull(container);
-        Assert.NotNull(container.Client);
+        Assert.NotNull(client);
     }
 
     [Fact]
@@ -310,17 +298,17 @@ public class DeliveryClientBuilderTests
     }
 
     [Fact]
-    public void Build_MultipleClients_AreIndependent()
+    public async Task Build_MultipleClients_AreIndependent()
     {
         // Act
-        using var container1 = DeliveryClientBuilder
+        await using var client1 = DeliveryClientBuilder
             .WithOptions(builder => builder
                 .WithEnvironmentId(EnvironmentId)
                 .UseProductionApi()
                 .Build())
             .Build();
 
-        using var container2 = DeliveryClientBuilder
+        await using var client2 = DeliveryClientBuilder
             .WithOptions(builder => builder
                 .WithEnvironmentId(EnvironmentId)
                 .UseProductionApi()
@@ -329,17 +317,16 @@ public class DeliveryClientBuilderTests
             .Build();
 
         // Assert
-        Assert.NotNull(container1);
-        Assert.NotNull(container2);
-        Assert.NotSame(container1, container2);
-        Assert.NotSame(container1.Client, container2.Client);
+        Assert.NotNull(client1);
+        Assert.NotNull(client2);
+        Assert.NotSame(client1, client2);
     }
 
     [Fact]
-    public void Build_WithSecureAccess_CreatesClient()
+    public async Task Build_WithSecureAccess_CreatesClient()
     {
         // Act
-        using var container = DeliveryClientBuilder
+        await using var client = DeliveryClientBuilder
             .WithOptions(builder => builder
                 .WithEnvironmentId(EnvironmentId)
                 .UseProductionApi(TestSecureApiKey)
@@ -347,15 +334,14 @@ public class DeliveryClientBuilderTests
             .Build();
 
         // Assert
-        Assert.NotNull(container);
-        Assert.NotNull(container.Client);
+        Assert.NotNull(client);
     }
 
     [Fact]
-    public void Build_WithDisabledResilience_CreatesClient()
+    public async Task Build_WithDisabledResilience_CreatesClient()
     {
         // Act
-        using var container = DeliveryClientBuilder
+        await using var client = DeliveryClientBuilder
             .WithOptions(builder => builder
                 .WithEnvironmentId(EnvironmentId)
                 .UseProductionApi()
@@ -364,8 +350,7 @@ public class DeliveryClientBuilderTests
             .Build();
 
         // Assert
-        Assert.NotNull(container);
-        Assert.NotNull(container.Client);
+        Assert.NotNull(client);
     }
 
     [Fact]
@@ -381,11 +366,11 @@ public class DeliveryClientBuilderTests
     }
 
     [Fact]
-    public void Build_WithLoggerFactory_CreatesClient()
+    public async Task Build_WithLoggerFactory_CreatesClient()
     {
         using var loggerFactory = LoggerFactory.Create(b => { });
 
-        using var container = DeliveryClientBuilder
+        await using var client = DeliveryClientBuilder
             .WithOptions(builder => builder
                 .WithEnvironmentId(EnvironmentId)
                 .UseProductionApi()
@@ -393,8 +378,7 @@ public class DeliveryClientBuilderTests
             .WithLoggerFactory(loggerFactory)
             .Build();
 
-        Assert.NotNull(container);
-        Assert.NotNull(container.Client);
+        Assert.NotNull(client);
     }
 
     [Fact]
@@ -422,10 +406,10 @@ public class DeliveryClientBuilderTests
     }
 
     [Fact]
-    public void Build_WithMemoryCacheAdvanced_CreatesClient()
+    public async Task Build_WithMemoryCacheAdvanced_CreatesClient()
     {
         // Act
-        using var container = DeliveryClientBuilder
+        await using var client = DeliveryClientBuilder
             .WithOptions(builder => builder
                 .WithEnvironmentId(EnvironmentId)
                 .UseProductionApi()
@@ -438,20 +422,18 @@ public class DeliveryClientBuilderTests
             .Build();
 
         // Assert
-        Assert.NotNull(container);
-        Assert.IsAssignableFrom<IDeliveryClientContainer>(container);
-        Assert.NotNull(container.Client);
-        Assert.IsAssignableFrom<IDeliveryClient>(container.Client);
+        Assert.NotNull(client);
+        Assert.IsAssignableFrom<IDeliveryClient>(client);
     }
 
     [Fact]
-    public void Build_WithHybridCacheAdvanced_CreatesClient()
+    public async Task Build_WithHybridCacheAdvanced_CreatesClient()
     {
         // Arrange
         var distributedCache = new TestDistributedCache();
 
         // Act
-        using var container = DeliveryClientBuilder
+        await using var client = DeliveryClientBuilder
             .WithOptions(builder => builder
                 .WithEnvironmentId(EnvironmentId)
                 .UseProductionApi()
@@ -463,10 +445,8 @@ public class DeliveryClientBuilderTests
             .Build();
 
         // Assert
-        Assert.NotNull(container);
-        Assert.IsAssignableFrom<IDeliveryClientContainer>(container);
-        Assert.NotNull(container.Client);
-        Assert.IsAssignableFrom<IDeliveryClient>(container.Client);
+        Assert.NotNull(client);
+        Assert.IsAssignableFrom<IDeliveryClient>(client);
     }
 
     [Fact]
@@ -520,10 +500,18 @@ public class DeliveryClientBuilderTests
 
     private static IDeliveryCacheManager? GetCacheManager(IDeliveryClient client)
     {
-        var cacheManagerField = client.GetType()
+        // Unwrap OwnedDeliveryClient to get the inner DeliveryClient
+        var target = client;
+        var innerField = client.GetType()
+            .GetFields(BindingFlags.Instance | BindingFlags.NonPublic)
+            .FirstOrDefault(f => typeof(IDeliveryClient).IsAssignableFrom(f.FieldType));
+        if (innerField?.GetValue(client) is IDeliveryClient inner)
+            target = inner;
+
+        var cacheManagerField = target.GetType()
             .GetFields(BindingFlags.Instance | BindingFlags.NonPublic)
             .FirstOrDefault(f => typeof(IDeliveryCacheManager).IsAssignableFrom(f.FieldType));
-        return cacheManagerField?.GetValue(client) as IDeliveryCacheManager;
+        return cacheManagerField?.GetValue(target) as IDeliveryCacheManager;
     }
 
     // Simple test implementation of IDistributedCache

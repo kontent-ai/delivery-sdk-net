@@ -62,7 +62,7 @@ public class RedisCacheIntegrationTests
         Assert.True(itemB1.IsCacheHit);
         Assert.True(listB1.IsCacheHit);
 
-        await cacheManagerB.InvalidateAsync(default, $"item_{itemCodename}", DeliveryCacheDependencies.ItemsListScope);
+        await cacheManagerB.InvalidateAsync([$"item_{itemCodename}", DeliveryCacheDependencies.ItemsListScope]);
 
         var itemA2 = await clientA.GetItem<Article>(itemCodename).ExecuteAsync();
         var listA2 = await clientA.GetItems<Article>()
@@ -106,7 +106,7 @@ public class RedisCacheIntegrationTests
         Assert.True(type2.IsCacheHit);
         Assert.True(list2.IsCacheHit);
 
-        await cacheManager.InvalidateAsync(default, "type_article", DeliveryCacheDependencies.TypesListScope);
+        await cacheManager.InvalidateAsync(["type_article", DeliveryCacheDependencies.TypesListScope]);
 
         var type3 = await client.GetType("article").ExecuteAsync();
         var list3 = await client.GetTypes().Skip(1).ExecuteAsync();
@@ -148,7 +148,7 @@ public class RedisCacheIntegrationTests
         Assert.True(taxonomy2.IsCacheHit);
         Assert.True(list2.IsCacheHit);
 
-        await cacheManager.InvalidateAsync(default, "taxonomy_personas", DeliveryCacheDependencies.TaxonomiesListScope);
+        await cacheManager.InvalidateAsync(["taxonomy_personas", DeliveryCacheDependencies.TaxonomiesListScope]);
 
         var taxonomy3 = await client.GetTaxonomy("personas").ExecuteAsync();
         var list3 = await client.GetTaxonomies().Skip(1).ExecuteAsync();

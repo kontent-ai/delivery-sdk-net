@@ -134,6 +134,15 @@ internal sealed class DeliveryClient(
         return new AssetUsedInQuery(deliveryApi, codename, logger);
     }
 
+    /// <summary>
+    /// No-op when the client is managed by a DI container.
+    /// When created via <see cref="DeliveryClientBuilder"/>, disposal is handled by <see cref="OwnedDeliveryClient"/>.
+    /// </summary>
+    public void Dispose() { }
+
+    /// <inheritdoc/>
+    public ValueTask DisposeAsync() => default;
+
     private static void EnsureCodenameValid(string? codename, [CallerArgumentExpression(nameof(codename))] string? parameterName = null)
     {
         if (string.IsNullOrWhiteSpace(codename))

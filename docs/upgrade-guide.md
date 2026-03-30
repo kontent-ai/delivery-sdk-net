@@ -595,18 +595,18 @@ using Microsoft.Extensions.DependencyInjection;
 var cacheManager = serviceProvider.GetRequiredKeyedService<IDeliveryCacheManager>("production");
 
 // Invalidate by dependency keys (items, assets, taxonomies)
-await cacheManager.InvalidateAsync(default, "item_article_codename", "item_related_article");
+await cacheManager.InvalidateAsync(["item_article_codename", "item_related_article"]);
 
 // Webhook-based invalidation example
 var dependencyKeys = webhookPayload.Data.Items
     .Select(i => $"item_{i.Codename}")
     .Append(DeliveryCacheDependencies.ItemsListScope)
     .ToArray();
-await cacheManager.InvalidateAsync(default, dependencyKeys);
+await cacheManager.InvalidateAsync(dependencyKeys);
 
 // Type and taxonomy events
-await cacheManager.InvalidateAsync(default, $"type_{typeCodename}", DeliveryCacheDependencies.TypesListScope);
-await cacheManager.InvalidateAsync(default, $"taxonomy_{taxonomyCodename}", DeliveryCacheDependencies.TaxonomiesListScope);
+await cacheManager.InvalidateAsync([$"type_{typeCodename}", DeliveryCacheDependencies.TypesListScope]);
+await cacheManager.InvalidateAsync([$"taxonomy_{taxonomyCodename}", DeliveryCacheDependencies.TaxonomiesListScope]);
 ```
 
 **Custom cache manager migration (keyed):**
@@ -692,14 +692,12 @@ var cachedClient = new DeliveryClientCache(
 
 **New:**
 ```csharp
-using var container = DeliveryClientBuilder
+await using var client = DeliveryClientBuilder
     .WithOptions(builder => builder
         .WithEnvironmentId("your-environment-id")
         .Build())
     .WithMemoryCache(TimeSpan.FromHours(2))
     .Build();
-
-var client = container.Client;
 ```
 
 ### 3.10 Per-query Cache Expiration
@@ -1630,7 +1628,7 @@ var client = DeliveryClientBuilder
 
 **New:**
 ```csharp
-using var container = DeliveryClientBuilder
+await using var client = DeliveryClientBuilder
     .WithOptions(builder => builder
         .WithEnvironmentId("env-id")
         .UseProductionApi()
@@ -1638,8 +1636,6 @@ using var container = DeliveryClientBuilder
     .WithTypeProvider(new GeneratedTypeProvider())
     .WithMemoryCache(TimeSpan.FromHours(1))
     .Build();
-
-var client = container.Client;
 
 // Note: Content link resolution is now done at use site via HtmlResolverBuilder
 ```

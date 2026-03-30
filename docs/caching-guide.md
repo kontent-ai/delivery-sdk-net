@@ -282,7 +282,7 @@ public class CustomMemoryCacheManager : IDeliveryCacheManager
         return new CacheResult<T>(entry.Value, entry.Dependencies.ToArray());
     }
 
-    public Task<bool> InvalidateAsync(CancellationToken cancellationToken = default, params string[] dependencyKeys)
+    public Task<bool> InvalidateAsync(string[] dependencyKeys, CancellationToken cancellationToken = default)
     {
         // Implement dependency tracking + invalidation for production use
         return Task.FromResult(true);
@@ -331,7 +331,7 @@ public class CustomHybridCacheManager : IDeliveryCacheManager
         return new CacheResult<T>(entry.Value, entry.Dependencies.ToArray());
     }
 
-    public Task<bool> InvalidateAsync(CancellationToken cancellationToken = default, params string[] dependencyKeys)
+    public Task<bool> InvalidateAsync(string[] dependencyKeys, CancellationToken cancellationToken = default)
         => Task.FromResult(true);
 }
 
@@ -582,26 +582,26 @@ using Microsoft.Extensions.DependencyInjection;
 var cacheManager = serviceProvider.GetRequiredKeyedService<IDeliveryCacheManager>("production");
 
 // Invalidate a specific item
-await cacheManager.InvalidateAsync(default, "item_homepage");
+await cacheManager.InvalidateAsync(["item_homepage"]);
 
 // Invalidate multiple items
-await cacheManager.InvalidateAsync(default,
+await cacheManager.InvalidateAsync([
     "item_article1",
     "item_article2",
-    "taxonomy_categories");
+    "taxonomy_categories"]);
 
 // Invalidate by dependency
-await cacheManager.InvalidateAsync(default, $"item_{articleCodename}");
+await cacheManager.InvalidateAsync([$"item_{articleCodename}"]);
 
 // Invalidate a specific type query dependency
-await cacheManager.InvalidateAsync(default, "type_article");
+await cacheManager.InvalidateAsync(["type_article"]);
 
 // Invalidate all cached typed item-list queries
-await cacheManager.InvalidateAsync(default, DeliveryCacheDependencies.ItemsListScope);
+await cacheManager.InvalidateAsync([DeliveryCacheDependencies.ItemsListScope]);
 
 // Invalidate all cached type/taxonomy listing queries
-await cacheManager.InvalidateAsync(default, DeliveryCacheDependencies.TypesListScope);
-await cacheManager.InvalidateAsync(default, DeliveryCacheDependencies.TaxonomiesListScope);
+await cacheManager.InvalidateAsync([DeliveryCacheDependencies.TypesListScope]);
+await cacheManager.InvalidateAsync([DeliveryCacheDependencies.TaxonomiesListScope]);
 ```
 
 ### Purge All (SDK Cache)
@@ -705,7 +705,7 @@ public class WebhookController : ControllerBase
         }
 
         // Invalidate all affected cache entries
-        await cacheManager.InvalidateAsync(default, dependencies.ToArray());
+        await cacheManager.InvalidateAsync(dependencies.ToArray());
 
         _logger.LogInformation(
             "Invalidated {Count} cache entries from webhook",
@@ -813,7 +813,7 @@ public class CacheInvalidationService : BackgroundService
             try
             {
                 // Invalidate news cache every 5 minutes
-                await cacheManager.InvalidateAsync(stoppingToken, "items_news");
+                await cacheManager.InvalidateAsync(["items_news"], stoppingToken);
 
                 // Wait 5 minutes
                 await Task.Delay(TimeSpan.FromMinutes(5), stoppingToken);
@@ -935,7 +935,7 @@ public class TenantCacheService
 
         if (cacheManager != null)
         {
-            await cacheManager.InvalidateAsync(default, dependencies);
+            await cacheManager.InvalidateAsync(dependencies);
         }
     }
 }
@@ -1184,8 +1184,8 @@ public class LoggingCacheManager : IDeliveryCacheManager
         return result;
     }
 
-    public Task<bool> InvalidateAsync(CancellationToken cancellationToken = default, params string[] dependencyKeys)
-        => _inner.InvalidateAsync(cancellationToken, dependencyKeys);
+    public Task<bool> InvalidateAsync(string[] dependencyKeys, CancellationToken cancellationToken = default)
+        => _inner.InvalidateAsync(dependencyKeys, cancellationToken);
 }
 ```
 

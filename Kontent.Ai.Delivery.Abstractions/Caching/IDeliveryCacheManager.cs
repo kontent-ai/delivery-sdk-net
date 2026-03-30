@@ -80,11 +80,11 @@ public interface IDeliveryCacheManager
     /// <summary>
     /// Invalidates all cache entries that depend on the specified dependency keys.
     /// </summary>
-    /// <param name="cancellationToken">A token to cancel the asynchronous operation.</param>
     /// <param name="dependencyKeys">
     /// One or more dependency keys to invalidate. All cache entries referencing any of these keys
     /// will be removed from the cache.
     /// </param>
+    /// <param name="cancellationToken">A token to cancel the asynchronous operation.</param>
     /// <returns>
     /// <c>true</c> if invalidation completed successfully; <c>false</c> if an error occurred
     /// (the error is logged but not thrown, since invalidation is best-effort — TTL is the safety net).
@@ -101,9 +101,9 @@ public interface IDeliveryCacheManager
     /// </para>
     /// <para>
     /// Example: If a cached items list depends on "item_hero" and "item_author", calling
-    /// <c>InvalidateAsync(dependencyKeys: "item_hero")</c> will invalidate the entire list,
+    /// <c>InvalidateAsync(["item_hero"])</c> will invalidate the entire list,
     /// even though "item_author" was not invalidated.
     /// </para>
     /// </remarks>
-    Task<bool> InvalidateAsync(CancellationToken cancellationToken = default, params string[] dependencyKeys);
+    Task<bool> InvalidateAsync(string[] dependencyKeys, CancellationToken cancellationToken = default);
 }

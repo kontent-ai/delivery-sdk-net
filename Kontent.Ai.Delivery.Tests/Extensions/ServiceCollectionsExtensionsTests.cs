@@ -884,7 +884,7 @@ public class ServiceCollectionsExtensionsTests
             return new CacheResult<T>(entry.Value, entry.Dependencies.ToArray());
         }
 
-        public Task<bool> InvalidateAsync(CancellationToken cancellationToken = default, params string[] dependencyKeys)
+        public Task<bool> InvalidateAsync(string[] dependencyKeys, CancellationToken cancellationToken = default)
             => Task.FromResult(true);
     }
 }

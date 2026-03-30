@@ -26,7 +26,7 @@ public sealed class ServiceCollectionExtensions
 
 // Kontent.Ai.Delivery.Configuration
 public sealed class DeliveryClientBuilder
-    IDeliveryClientContainer Build()
+    IDeliveryClient Build()
     DeliveryClientBuilder ConfigureServices(Action`1 configure)
     DeliveryClientBuilder WithLoggerFactory(ILoggerFactory loggerFactory)
     DeliveryClientBuilder WithTypeProvider(ITypeProvider typeProvider)

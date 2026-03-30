@@ -321,7 +321,7 @@ public interface IDeliveryCacheManager
         CancellationToken cancellationToken = default)
         where T : class;
 
-    Task<bool> InvalidateAsync(CancellationToken cancellationToken, params string[] dependencyKeys);
+    Task<bool> InvalidateAsync(string[] dependencyKeys, CancellationToken cancellationToken = default);
 }
 ```
 

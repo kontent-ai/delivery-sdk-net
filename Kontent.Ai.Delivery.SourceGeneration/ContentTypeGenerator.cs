@@ -62,10 +62,9 @@ public sealed class ContentTypeGenerator : IIncrementalGenerator
         if (context.TargetSymbol is not INamedTypeSymbol typeSymbol)
             return null;
 
-        var attributeData = context.Attributes.FirstOrDefault(a =>
-            a.AttributeClass?.ToDisplayString() == ContentTypeCodenameAttributeFullName);
-        if (attributeData is null)
-            return null;
+        // context.Attributes is already filtered to ContentTypeCodenameAttribute
+        // by ForAttributeWithMetadataName — take the first (AllowMultiple = false).
+        var attributeData = context.Attributes[0];
 
         string? codename = null;
         if (attributeData.ConstructorArguments.Length > 0)
@@ -217,13 +216,18 @@ public sealed class ContentTypeGenerator : IIncrementalGenerator
             .Replace("\"", "\\\"");
     }
 
+    /// <summary>
+    /// Lightweight data carrier for the incremental pipeline.
+    /// Implements <see cref="IEquatable{T}"/> excluding <see cref="Location"/>
+    /// so the pipeline can skip regeneration when content types haven't changed.
+    /// </summary>
     private readonly struct ContentTypeInfo(
         string? codename,
         string fullyQualifiedTypeName,
         string typeName,
         Location location,
         bool isInterface,
-        bool isAbstract)
+        bool isAbstract) : IEquatable<ContentTypeInfo>
     {
         public string? Codename { get; } = codename;
         public string FullyQualifiedTypeName { get; } = fullyQualifiedTypeName;
@@ -231,5 +235,25 @@ public sealed class ContentTypeGenerator : IIncrementalGenerator
         public Location Location { get; } = location;
         public bool IsInterface { get; } = isInterface;
         public bool IsAbstract { get; } = isAbstract;
+
+        public bool Equals(ContentTypeInfo other) =>
+            Codename == other.Codename &&
+            FullyQualifiedTypeName == other.FullyQualifiedTypeName &&
+            TypeName == other.TypeName &&
+            IsInterface == other.IsInterface &&
+            IsAbstract == other.IsAbstract;
+
+        public override bool Equals(object? obj) => obj is ContentTypeInfo other && Equals(other);
+
+        public override int GetHashCode()
+        {
+            unchecked
+            {
+                var hash = 17;
+                hash = hash * 31 + (Codename?.GetHashCode() ?? 0);
+                hash = hash * 31 + (FullyQualifiedTypeName?.GetHashCode() ?? 0);
+                return hash;
+            }
+        }
     }
 }
