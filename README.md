@@ -177,17 +177,15 @@ For console applications, scripts, or scenarios where DI is not available, use `
 using Kontent.Ai.Delivery.Configuration;
 
 // Simple usage with Production API
-using var productionContainer = DeliveryClientBuilder
+await using var client = DeliveryClientBuilder
     .WithOptions(builder => builder
         .WithEnvironmentId("your-environment-id")
         .UseProductionApi()
         .Build())
     .Build();
 
-var productionClient = productionContainer.Client;
-
 // With Preview API (preview mode bypasses local cache reads/writes)
-using var previewContainer = DeliveryClientBuilder
+await using var previewClient = DeliveryClientBuilder
     .WithOptions(builder => builder
         .WithEnvironmentId("your-environment-id")
         .UsePreviewApi("your-preview-api-key")
@@ -195,7 +193,7 @@ using var previewContainer = DeliveryClientBuilder
     .Build();
 
 // With Production API and in-memory caching (requires Kontent.Ai.Delivery.Caching package)
-using var cachedContainer = DeliveryClientBuilder
+await using var cachedClient = DeliveryClientBuilder
     .WithOptions(builder => builder
         .WithEnvironmentId("your-environment-id")
         .UseProductionApi()
@@ -204,14 +202,12 @@ using var cachedContainer = DeliveryClientBuilder
     .Build();
 
 // Or explicitly provide a type provider if needed
-using var typedContainer = DeliveryClientBuilder
+await using var typedClient = DeliveryClientBuilder
     .WithOptions(builder => builder
         .WithEnvironmentId("your-environment-id")
         .Build())
     .WithTypeProvider(new GeneratedTypeProvider())
     .Build();
-
-var typedClient = typedContainer.Client;
 ```
 
 The builder supports:

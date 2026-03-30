@@ -692,14 +692,12 @@ var cachedClient = new DeliveryClientCache(
 
 **New:**
 ```csharp
-using var container = DeliveryClientBuilder
+await using var client = DeliveryClientBuilder
     .WithOptions(builder => builder
         .WithEnvironmentId("your-environment-id")
         .Build())
     .WithMemoryCache(TimeSpan.FromHours(2))
     .Build();
-
-var client = container.Client;
 ```
 
 ### 3.10 Per-query Cache Expiration
@@ -1630,7 +1628,7 @@ var client = DeliveryClientBuilder
 
 **New:**
 ```csharp
-using var container = DeliveryClientBuilder
+await using var client = DeliveryClientBuilder
     .WithOptions(builder => builder
         .WithEnvironmentId("env-id")
         .UseProductionApi()
@@ -1638,8 +1636,6 @@ using var container = DeliveryClientBuilder
     .WithTypeProvider(new GeneratedTypeProvider())
     .WithMemoryCache(TimeSpan.FromHours(1))
     .Build();
-
-var client = container.Client;
 
 // Note: Content link resolution is now done at use site via HtmlResolverBuilder
 ```

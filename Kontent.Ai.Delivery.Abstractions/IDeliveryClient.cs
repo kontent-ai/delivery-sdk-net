@@ -4,7 +4,12 @@ namespace Kontent.Ai.Delivery.Abstractions;
 /// Defines members necessary for retrieving content and its metadata from the Kontent.ai Delivery service.
 /// All methods return query builders that must be executed with ExecuteAsync() to retrieve the actual API response.
 /// </summary>
-public interface IDeliveryClient
+/// <remarks>
+/// Implements <see cref="IAsyncDisposable"/> to support proper resource cleanup when created
+/// via <c>DeliveryClientBuilder</c>. When resolved from a DI container, the container manages
+/// the client's lifetime and disposal.
+/// </remarks>
+public interface IDeliveryClient : IDisposable, IAsyncDisposable
 {
     /// <summary>
     /// Returns a query builder for retrieving a single strongly typed content item.

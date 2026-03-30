@@ -168,7 +168,7 @@ public interface IDeliveryCachePurger
     Task PurgeAsync(Boolean allowFailSafe, CancellationToken cancellationToken)
 
 // Kontent.Ai.Delivery.Abstractions
-public interface IDeliveryClient
+public interface IDeliveryClient : IDisposable, IAsyncDisposable
     IAssetUsedInQuery GetAssetUsedIn(String codename)
     ITypeElementQuery GetContentElement(String contentTypeCodename, String contentElementCodename)
     IItemQuery`1 GetItem(String codename)
@@ -183,10 +183,6 @@ public interface IDeliveryClient
     ITaxonomyQuery GetTaxonomy(String codename)
     ITypeQuery GetType(String codename)
     ITypesQuery GetTypes()
-
-// Kontent.Ai.Delivery.Abstractions
-public interface IDeliveryClientContainer : IDisposable, IAsyncDisposable
-    IDeliveryClient Client { get; }
 
 // Kontent.Ai.Delivery.Abstractions
 public interface IDeliveryClientFactory

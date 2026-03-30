@@ -22,7 +22,7 @@ namespace Kontent.Ai.Delivery.Configuration;
 /// Example usage:
 /// <code>
 /// // Simple usage with Production API
-/// using var container = DeliveryClientBuilder
+/// await using var client = DeliveryClientBuilder
 ///     .WithOptions(opts => opts
 ///         .WithEnvironmentId("your-environment-id")
 ///         .UseProductionApi()
@@ -30,7 +30,7 @@ namespace Kontent.Ai.Delivery.Configuration;
 ///     .Build();
 ///
 /// // With Preview API and type provider
-/// using var container2 = DeliveryClientBuilder
+/// await using var client2 = DeliveryClientBuilder
 ///     .WithOptions(opts => opts
 ///         .WithEnvironmentId("your-environment-id")
 ///         .UsePreviewApi("preview-api-key")
@@ -154,14 +154,14 @@ public sealed class DeliveryClientBuilder
     /// <summary>
     /// Builds and returns a configured <see cref="IDeliveryClient"/> instance.
     /// </summary>
-    /// <returns>A fully configured <see cref="IDeliveryClient"/> instance.</returns>
+    /// <returns>A fully configured <see cref="IDeliveryClient"/> that should be disposed when no longer needed.</returns>
     /// <exception cref="InvalidOperationException">
     /// Thrown when validation fails (e.g., missing environment ID or API key).
     /// </exception>
     /// <remarks>
     /// <para>
     /// This method validates the configuration and builds all required dependencies.
-    /// The returned container owns the client and its dependencies - dispose it when done.
+    /// The returned client owns its dependencies (HTTP client, cache, etc.) — dispose it when done.
     /// </para>
     /// <para>
     /// The builder can be used to create multiple client instances, but each call to <see cref="Build"/>
@@ -169,19 +169,18 @@ public sealed class DeliveryClientBuilder
     /// </para>
     /// <example>
     /// <code>
-    /// using var container = DeliveryClientBuilder
+    /// await using var client = DeliveryClientBuilder
     ///     .WithOptions(opts => opts
     ///         .WithEnvironmentId("your-env-id")
     ///         .UseProductionApi()
     ///         .Build())
     ///     .Build();
     ///
-    /// var client = container.Client;
-    /// var result = await client.Items&lt;Article&gt;().ExecuteAsync();
+    /// var result = await client.GetItems&lt;Article&gt;().ExecuteAsync();
     /// </code>
     /// </example>
     /// </remarks>
-    public IDeliveryClientContainer Build()
+    public IDeliveryClient Build()
     {
         if (_deliveryOptions is null)
         {
@@ -198,8 +197,7 @@ public sealed class DeliveryClientBuilder
 
         var client = serviceProvider.GetRequiredService<IDeliveryClient>();
 
-        // Return a container that owns the service provider lifetime
-        return new DeliveryClientContainer(serviceProvider, client);
+        return new OwnedDeliveryClient(serviceProvider, client);
     }
 
     private void BuildServices(IServiceCollection services)
