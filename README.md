@@ -12,9 +12,9 @@ The official .NET SDK for the [Kontent.ai Delivery API](https://kontent.ai/learn
 
 ## Table of Contents
 
-- [Installation](#-installation)
-- [Quick Start](#-quick-start)
-- [Basic Usage](#-basic-usage)
+- [Installation](#installation)
+- [Quick Start](#quick-start)
+- [Basic Usage](#basic-usage)
   - [Setting Up the Delivery Client](#setting-up-the-delivery-client)
   - [Retrieving Content](#retrieving-content)
   - [Content Types and Elements](#content-types-and-elements)
@@ -31,11 +31,11 @@ The official .NET SDK for the [Kontent.ai Delivery API](https://kontent.ai/learn
   - [Asset Renditions](#asset-renditions)
   - [Custom Asset Domain](#custom-asset-domain)
   - [Image Transformation](#image-transformation)
-- [Configuration Options](#-configuration-options)
-- [Important Considerations](#-important-considerations)
-- [Advanced Documentation](#-advanced-documentation)
-- [Contributing](#-contributing)
-- [License](#-license)
+- [Configuration Options](#configuration-options)
+- [Important Considerations](#important-considerations)
+- [Advanced Documentation](#advanced-documentation)
+- [Contributing](#contributing)
+- [License](#license)
 
 ## Installation
 
@@ -632,7 +632,7 @@ The [Kontent.ai Model Generator](https://github.com/kontent-ai/model-generator-n
 Add the source generation package to enable these features:
 
 ```xml
-<PackageReference Include="Kontent.Ai.Delivery.SourceGeneration" Version="19.0.0-rc1" />
+<PackageReference Include="Kontent.Ai.Delivery.SourceGeneration" Version="<latest>" />
 ```
 
 > [!IMPORTANT]
@@ -1856,7 +1856,7 @@ Contributions are welcome. Use [GitHub Issues](https://github.com/kontent-ai/del
 
 ## License
 
-This project is licensed under the MIT License - see the [LICENSE](LICENSE) file for details.
+This project is licensed under the MIT License - see the [LICENSE](LICENSE.md) file for details.
 
 ---
 
@@ -1869,10 +1869,9 @@ This project is licensed under the MIT License - see the [LICENSE](LICENSE) file
 [issues-shield]: https://img.shields.io/github/issues/kontent-ai/delivery-sdk-net.svg?style=for-the-badge
 [issues-url]: https://github.com/kontent-ai/delivery-sdk-net/issues
 [license-shield]: https://img.shields.io/github/license/kontent-ai/delivery-sdk-net?label=license&style=for-the-badge
-[license-url]: https://github.com/kontent-ai/delivery-sdk-net/blob/main/LICENSE
+[license-url]: https://github.com/kontent-ai/delivery-sdk-net/blob/master/LICENSE.md
 [stack-shield]: https://img.shields.io/badge/Stack%20Overflow-ASK%20NOW-FE7A16.svg?logo=stackoverflow&logoColor=white&style=for-the-badge
-[discord-shield]: https://img.shields.io/discord/821885171984891914?label=Discord&logo=Discord&logoColor=white&style=for-the-badge
-[codecov-shield]: https://img.shields.io/codecov/c/github/kontent-ai/delivery-sdk-net/main.svg?style=for-the-badge
+[codecov-shield]: https://img.shields.io/codecov/c/github/kontent-ai/delivery-sdk-net/vnext.svg?style=for-the-badge
 [codecov-url]: https://app.codecov.io/github/kontent-ai/delivery-sdk-net
 [nuget-url]: https://www.nuget.org/packages/Kontent.Ai.Delivery
 [nuget-shield]: https://img.shields.io/nuget/vpre/Kontent.Ai.Delivery.svg?style=for-the-badge
