@@ -87,7 +87,11 @@ internal sealed class TypeQuery(
         apiResult = QueryExecutionResultHelper.EnsureApiResult(apiResult, "Type", codename);
 
         if (!apiResult.IsSuccess)
+        {
             _log.LogQueryFailed(apiResult.StatusCode, apiResult.Error?.Message);
+            _log.LogQueryCompleted(stopwatch, apiResult.StatusCode, cacheHit: false, apiResult.HasStaleContent);
+            return apiResult;
+        }
 
         _log.LogQueryCompleted(stopwatch, apiResult.StatusCode, cacheHit: false, apiResult.HasStaleContent);
         return WrapSuccess(
