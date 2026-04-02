@@ -15,6 +15,8 @@ public sealed class DeliveryOptions : IValidatableObject
 
     /// <summary>
     /// Gets or sets a value that determines if the client uses resilience policies.
+    /// This setting is evaluated once when the HTTP pipeline is constructed at startup
+    /// and cannot be changed at runtime.
     /// </summary>
     public bool EnableResilience { get; set; } = true;
 
@@ -104,9 +106,16 @@ public sealed class DeliveryOptions : IValidatableObject
                 [nameof(EnvironmentId)]);
         }
 
-        if (!string.IsNullOrWhiteSpace(CustomAssetDomain) &&
-            Uri.TryCreate(CustomAssetDomain, UriKind.Absolute, out var customDomainUri))
+        if (!string.IsNullOrWhiteSpace(CustomAssetDomain))
         {
+            if (!Uri.TryCreate(CustomAssetDomain, UriKind.Absolute, out var customDomainUri))
+            {
+                yield return new ValidationResult(
+                    $"CustomAssetDomain '{CustomAssetDomain}' is not a valid absolute URI.",
+                    [nameof(CustomAssetDomain)]);
+                yield break;
+            }
+
             if (customDomainUri.AbsolutePath is not ("/" or ""))
             {
                 yield return new ValidationResult(

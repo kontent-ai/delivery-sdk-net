@@ -1,4 +1,4 @@
-using Kontent.Ai.Delivery.Configuration;
+using System.Text.Json;
 using Kontent.Ai.Delivery.Handlers;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Http.Resilience;
@@ -17,11 +17,12 @@ public static partial class ServiceCollectionExtensions
     private static void RegisterNamedHttpClient(
         IServiceCollection services,
         string name,
+        JsonSerializerOptions sharedJsonOptions,
         Action<IHttpClientBuilder>? configureHttpClient,
         Action<ResiliencePipelineBuilder<HttpResponseMessage>>? configureResilience,
         Action<RefitSettings>? configureRefit)
     {
-        var refitSettings = CreateRefitSettings(configureRefit);
+        var refitSettings = CreateRefitSettings(sharedJsonOptions, configureRefit);
 
         var httpClientName = GetHttpClientName(name);
         var httpClientBuilder = services
@@ -54,9 +55,14 @@ public static partial class ServiceCollectionExtensions
     /// <summary>
     /// Creates and configures Refit settings with optional customization.
     /// </summary>
-    private static RefitSettings CreateRefitSettings(Action<RefitSettings>? configureRefit)
+    private static RefitSettings CreateRefitSettings(JsonSerializerOptions sharedJsonOptions, Action<RefitSettings>? configureRefit)
     {
-        var refitSettings = RefitSettingsProvider.CreateDefaultSettings();
+        var refitSettings = new RefitSettings
+        {
+            ContentSerializer = new SystemTextJsonContentSerializer(sharedJsonOptions),
+            CollectionFormat = CollectionFormat.Multi,
+            UrlParameterKeyFormatter = new CamelCaseUrlParameterKeyFormatter()
+        };
         configureRefit?.Invoke(refitSettings);
         return refitSettings;
     }

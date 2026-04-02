@@ -1,5 +1,5 @@
+using System.Text.Json;
 using AngleSharp.Html.Parser;
-using Kontent.Ai.Delivery.Configuration;
 using Kontent.Ai.Delivery.ContentItems;
 using Kontent.Ai.Delivery.ContentItems.Mapping;
 using Kontent.Ai.Delivery.ContentItems.Processing;
@@ -10,10 +10,10 @@ namespace Kontent.Ai.Delivery;
 
 public static partial class ServiceCollectionExtensions
 {
-    private static void RegisterDependencies(IServiceCollection services)
+    private static void RegisterDependencies(IServiceCollection services, JsonSerializerOptions sharedJsonOptions)
     {
-        // JSON serialization
-        services.TryAddSingleton(RefitSettingsProvider.CreateDefaultJsonSerializerOptions());
+        // JSON serialization (shared instance — same one used by Refit)
+        services.TryAddSingleton(sharedJsonOptions);
 
         // Core services
         services.TryAddSingleton<ITypeProvider, TypeProvider>();

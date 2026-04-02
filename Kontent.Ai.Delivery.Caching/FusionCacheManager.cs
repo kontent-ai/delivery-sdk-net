@@ -25,6 +25,15 @@ internal sealed class FusionCacheManager : IDeliveryCacheManager, IDeliveryCache
     private readonly FusionCacheEntryOptions _baseWriteOptions;
     private readonly FusionCacheEntryOptions _baseInvalidateOptions;
     private readonly ConcurrentDictionary<string, byte> _failSafeActiveKeys = new(StringComparer.Ordinal);
+
+    /// <summary>
+    /// Hard cap for <see cref="_failSafeActiveKeys"/>. In hybrid mode (L2-only, no L1 memory cache),
+    /// memory eviction events never fire, so entries can accumulate if they enter fail-safe but are
+    /// never re-requested or invalidated. Clearing at this threshold is safe because
+    /// <see cref="IFailSafeStateProvider.IsFailSafeActive"/> is metadata-only (affects ResponseSource,
+    /// not correctness) and stale entries will be re-tracked on the next stale hit.
+    /// </summary>
+    private const int FailSafeTrackingCapacity = 10_000;
     private readonly EventHandler<FusionCacheEntryEventArgs> _failSafeActivateHandler;
     private readonly EventHandler<FusionCacheEntryEventArgs> _factorySuccessHandler;
     private readonly EventHandler<FusionCacheEntryHitEventArgs> _hitHandler;
@@ -419,7 +428,12 @@ internal sealed class FusionCacheManager : IDeliveryCacheManager, IDeliveryCache
     }
 
     private void HandleFailSafeActivate(object? sender, FusionCacheEntryEventArgs eventArgs)
-        => _failSafeActiveKeys[eventArgs.Key] = 1;
+    {
+        if (_failSafeActiveKeys.Count >= FailSafeTrackingCapacity)
+            _failSafeActiveKeys.Clear();
+
+        _failSafeActiveKeys[eventArgs.Key] = 1;
+    }
 
     private void HandleFactorySuccess(object? sender, FusionCacheEntryEventArgs eventArgs)
         => _failSafeActiveKeys.TryRemove(eventArgs.Key, out var _);

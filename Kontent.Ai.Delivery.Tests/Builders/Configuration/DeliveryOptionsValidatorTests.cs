@@ -254,6 +254,22 @@ public class DeliveryOptionsValidatorTests
     }
 
     [Fact]
+    public void Validate_CustomAssetDomain_InvalidUri_Fails()
+    {
+        var options = new DeliveryOptions
+        {
+            EnvironmentId = Guid.NewGuid().ToString(),
+            CustomAssetDomain = "not a valid uri"
+        };
+
+        var isValid = TryValidate(options, out var results);
+
+        Assert.False(isValid);
+        Assert.Contains(results, r =>
+            r.MemberNames.Contains(nameof(DeliveryOptions.CustomAssetDomain)));
+    }
+
+    [Fact]
     public void Validate_CustomAssetDomain_RootDomain_Passes()
     {
         var options = new DeliveryOptions
