@@ -170,7 +170,6 @@ public class QueryEnumerationExtensionsTests
         public IError? Error => null;
         public HttpStatusCode StatusCode => isSuccess ? HttpStatusCode.OK : HttpStatusCode.ServiceUnavailable;
         public bool HasStaleContent => false;
-        public string? ContinuationToken => null;
         public string? RequestUrl => null;
         public System.Net.Http.Headers.HttpResponseHeaders? ResponseHeaders => null;
         public ResponseSource ResponseSource => ResponseSource.Origin;

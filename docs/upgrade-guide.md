@@ -1296,7 +1296,6 @@ if (result.IsSuccess)
 | `ResponseHeaders` | HTTP response headers (null for cache hits) |
 | `IsCacheHit` | Whether response was served from SDK cache |
 | `HasStaleContent` | Whether newer content may be available |
-| `ContinuationToken` | Pagination token (for feed responses) |
 
 **Example:**
 ```csharp

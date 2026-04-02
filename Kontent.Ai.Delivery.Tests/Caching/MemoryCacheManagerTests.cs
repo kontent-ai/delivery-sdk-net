@@ -885,7 +885,6 @@ public class MemoryCacheManagerTests : IDisposable
 
         // Poll until TTL expires, factory returns null, verify null is returned.
         TestCacheValue? resultAfterExpiry = null;
-        var factoryCalledOnce = false;
         var expired = await WaitUntilAsync(
             async () =>
             {
@@ -898,7 +897,6 @@ public class MemoryCacheManagerTests : IDisposable
                 if (factoryCalled)
                 {
                     resultAfterExpiry = r?.Value;
-                    factoryCalledOnce = true;
                 }
                 return factoryCalled;
             },

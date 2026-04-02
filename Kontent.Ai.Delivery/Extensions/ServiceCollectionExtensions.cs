@@ -1,3 +1,4 @@
+using System.Text.Json;
 using Kontent.Ai.Delivery.Configuration;
 using Kontent.Ai.Delivery.ContentItems.Mapping;
 using Microsoft.Extensions.Configuration;
@@ -167,9 +168,10 @@ public static partial class ServiceCollectionExtensions
     /// Changes to API keys and other options will be picked up automatically at runtime.
     /// </para>
     /// <para>
-    /// Note: The HTTP client's BaseAddress is set once during initialization and will not update
-    /// with runtime configuration changes. However, the authentication handler monitors options
-    /// changes to support scenarios like API key rotation and endpoint switching.
+    /// Note: The HTTP client's BaseAddress and resilience pipeline (including <see cref="DeliveryOptions.EnableResilience"/>)
+    /// are set once during initialization and will not update with runtime configuration changes.
+    /// However, the authentication handler monitors options changes to support scenarios like
+    /// API key rotation and endpoint switching.
     /// </para>
     /// </remarks>
     /// <param name="services">The service collection.</param>
@@ -251,11 +253,14 @@ public static partial class ServiceCollectionExtensions
         Action<Polly.ResiliencePipelineBuilder<HttpResponseMessage>>? configureResilience = null,
         Action<RefitSettings>? configureRefit = null)
     {
+        // Create shared JSON options once and use for both DI and Refit (avoids two divergent instances)
+        var sharedJsonOptions = GetOrCreateSharedJsonOptions(services);
+
         // Register dependencies (only once)
-        RegisterDependencies(services);
+        RegisterDependencies(services, sharedJsonOptions);
 
         // Register named HTTP client and Refit API
-        RegisterNamedHttpClient(services, name, configureHttpClient, configureResilience, configureRefit);
+        RegisterNamedHttpClient(services, name, sharedJsonOptions, configureHttpClient, configureResilience, configureRefit);
 
         // Register keyed IDeliveryClient
         services.AddKeyedSingleton<IDeliveryClient>(name, CreateDeliveryClient);
@@ -304,6 +309,23 @@ public static partial class ServiceCollectionExtensions
             logger,
             optionsMonitor,
             clientName);
+    }
+
+    /// <summary>
+    /// Returns the shared <see cref="JsonSerializerOptions"/> instance already registered in
+    /// the service collection, or creates and registers a new one. This ensures Refit and
+    /// internal SDK mappers operate on the same options instance.
+    /// </summary>
+    private static JsonSerializerOptions GetOrCreateSharedJsonOptions(IServiceCollection services)
+    {
+        var existing = services.FirstOrDefault(d =>
+            d.ServiceType == typeof(JsonSerializerOptions) &&
+            d.Lifetime == ServiceLifetime.Singleton);
+
+        if (existing?.ImplementationInstance is JsonSerializerOptions opts)
+            return opts;
+
+        return RefitSettingsProvider.CreateDefaultJsonSerializerOptions();
     }
 
     private static string GetHttpClientName(string name) => $"{HttpClientNamePrefix}{name}";

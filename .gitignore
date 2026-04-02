@@ -35,6 +35,8 @@ bld/
 *.VisualState.xml
 TestResult.xml
 coverage.xml
+*.opencover.xml
+coverage-local/
 
 # Build Results of an ATL Project
 [Dd]ebugPS/

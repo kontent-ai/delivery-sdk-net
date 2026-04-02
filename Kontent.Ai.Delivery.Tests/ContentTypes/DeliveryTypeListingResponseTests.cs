@@ -64,7 +64,7 @@ public class DeliveryTypeListingResponseTests
         var pagination = new Pagination { Skip = 0, Limit = 10, Count = 10, TotalCount = null, NextPageUrl = "https://next" };
         var nextPage = CreateResponse(new Pagination { Skip = 10, Limit = 10, Count = 3, TotalCount = null, NextPageUrl = string.Empty });
         var expectedResult = DeliveryResult.Success<IDeliveryTypeListingResponse>(
-            nextPage, "https://deliver.kontent.ai/test", HttpStatusCode.OK, false, null, null, ResponseSource.Origin);
+            nextPage, "https://deliver.kontent.ai/test", HttpStatusCode.OK, false, null, ResponseSource.Origin);
 
         var sut = CreateResponse(pagination, nextPageFetcher: _ => Task.FromResult(expectedResult));
 

@@ -36,11 +36,6 @@ public interface IDeliveryResult<out T>
     bool HasStaleContent { get; }
 
     /// <summary>
-    /// Gets the continuation token for pagination, if applicable.
-    /// </summary>
-    string? ContinuationToken { get; }
-
-    /// <summary>
     /// Gets the URL used to retrieve this response for debugging purposes.
     /// </summary>
     string? RequestUrl { get; }
@@ -62,8 +57,7 @@ public interface IDeliveryResult<out T>
     /// (MemoryCacheManager or HybridCacheManager).
     /// Equivalent to <c><see cref="ResponseSource"/> is <see cref="ResponseSource.Cache"/> or <see cref="ResponseSource.FailSafe"/></c>.
     /// When <c>true</c>, <see cref="ResponseHeaders"/> will be <c>null</c> and properties like
-    /// <see cref="StatusCode"/>, <see cref="HasStaleContent"/>, and <see cref="ContinuationToken"/>
-    /// contain synthetic values.
+    /// <see cref="StatusCode"/> and <see cref="HasStaleContent"/> contain synthetic values.
     /// </summary>
     /// <remarks>
     /// This is distinct from CDN-level caching (e.g., Fastly). To check for CDN cache hits,

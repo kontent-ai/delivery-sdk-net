@@ -34,7 +34,6 @@ public class QueryExecutionResultHelperTests
             requestUrl: "/items",
             statusCode: HttpStatusCode.OK,
             hasStaleContent: false,
-            continuationToken: null,
             responseHeaders: null,
             responseSource: ResponseSource.Origin);
 

@@ -30,7 +30,6 @@ internal static class RefitApiResponseExtensions
                 apiResponse.RequestMessage?.RequestUri?.ToString() ?? string.Empty,
                 apiResponse.StatusCode,
                 ExtractHasStaleContent(apiResponse),
-                ExtractContinuationToken(apiResponse),
                 apiResponse.Headers,
                 ExtractResponseSource(apiResponse)
             ));
@@ -59,7 +58,6 @@ internal static class RefitApiResponseExtensions
             var fallback = new Error
             {
                 Message = "Unknown error",
-                ErrorCode = (int)status,
                 Exception = apiResponse.Error
             };
             return Task.FromResult(DeliveryResult.Failure<T>(url, status, fallback, headers, responseSource));
@@ -87,7 +85,7 @@ internal static class RefitApiResponseExtensions
                 }
                 else
                 {
-                    error = new Error { Message = ex.Message, ErrorCode = (int)status, Exception = ex };
+                    error = new Error { Message = ex.Message, Exception = ex };
                 }
             }
             catch (Exception parseEx) when (!IsFatalException(parseEx))
@@ -119,7 +117,7 @@ internal static class RefitApiResponseExtensions
                     message = ex.Message;
                 }
 
-                error = new Error { Message = message, ErrorCode = (int)status, Exception = ex };
+                error = new Error { Message = message, Exception = ex };
             }
 
             return DeliveryResult.Failure<T>(url, status, error, headers, responseSource);
@@ -160,18 +158,6 @@ internal static class RefitApiResponseExtensions
             or BadImageFormatException
             or CannotUnloadAppDomainException
             or InvalidProgramException;
-
-    /// <summary>
-    /// Extracts continuation token from response headers.
-    /// </summary>
-    /// <param name="apiResponse">The API response.</param>
-    /// <returns>The continuation token if present.</returns>
-    private static string? ExtractContinuationToken<T>(IApiResponse<T> apiResponse)
-    {
-        return apiResponse.Headers?.TryGetValues(ContinuationHeaderName, out var continuationValues) == true
-            ? continuationValues.FirstOrDefault()
-            : null;
-    }
 
     /// <summary>
     /// Extracts stale content indicator from response headers.
