@@ -38,6 +38,46 @@ public class DependencyTrackingContextComponentTests
         Assert.Empty(ctx.Dependencies);
     }
 
+    [Theory]
+    [InlineData("article")]
+    [InlineData("Article")]
+    [InlineData("blog_post")]
+    public void TrackItemType_ValidCodename_RecordsTypeDependency(string typeCodename)
+    {
+        var ctx = new DependencyTrackingContext();
+
+        ctx.TrackItemType(typeCodename);
+
+        Assert.Single(ctx.Dependencies);
+        Assert.Contains($"type_{typeCodename}", ctx.Dependencies);
+    }
+
+    [Theory]
+    [InlineData(null)]
+    [InlineData("")]
+    [InlineData("   ")]
+    [InlineData("\t")]
+    public void TrackItemType_NullOrWhitespace_DoesNotRecord(string? typeCodename)
+    {
+        var ctx = new DependencyTrackingContext();
+
+        ctx.TrackItemType(typeCodename);
+
+        Assert.Empty(ctx.Dependencies);
+    }
+
+    [Fact]
+    public void TrackItemType_DuplicateCalls_RecordsOnce()
+    {
+        var ctx = new DependencyTrackingContext();
+
+        ctx.TrackItemType("article");
+        ctx.TrackItemType("article");
+        ctx.TrackItemType("ARTICLE");
+
+        Assert.Single(ctx.Dependencies);
+    }
+
     [Fact]
     public void TrackAsset_RecordsAssetDependency()
     {
@@ -149,12 +189,14 @@ public class DependencyTrackingContextComponentTests
         var ctx = new DependencyTrackingContext();
 
         ctx.TrackItem("my_article");
+        ctx.TrackItemType("article");
         ctx.TrackAsset(assetId);
         ctx.TrackTaxonomy("personas");
 
         var deps = ctx.Dependencies.ToList();
-        Assert.Equal(3, deps.Count);
+        Assert.Equal(4, deps.Count);
         Assert.Contains("item_my_article", deps);
+        Assert.Contains("type_article", deps);
         Assert.Contains($"asset_{assetId}", deps);
         Assert.Contains("taxonomy_personas", deps);
     }

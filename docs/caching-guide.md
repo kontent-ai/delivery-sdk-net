@@ -473,6 +473,7 @@ var result = await client.GetItem<Article>("my-article")
 // - item_my-article
 // - item_author1 (if linked)
 // - item_author2 (if linked)
+// - type_article (+ type_{codename} for each linked item's content type)
 // - Any assets used in the content
 ```
 
@@ -487,7 +488,7 @@ Cached `GetTypes()` and `GetTaxonomies()` queries use the same pattern:
 - `DeliveryCacheDependencies.TypesListScope` (`scope_types_list`) for type listings
 - `DeliveryCacheDependencies.TaxonomiesListScope` (`scope_taxonomies_list`) for taxonomy listings
 
-Single type queries use direct keys in the format `type_{codename}` (for example, `type_article`).
+Single type queries use direct keys in the format `type_{codename}` (for example, `type_article`). The same `type_{codename}` key is **also** attached to every cached item / item-list query whose payload references at least one item of that type (including linked items, modular content, and rich-text inline items). Invalidating `type_article` therefore evicts both the cached type definition and any item caches referencing articles — the recommended signal for content-type-change webhooks.
 
 ### Using Dependency Keys for Output Caching
 
@@ -563,12 +564,12 @@ Use this matrix when mapping webhook events to SDK dependency invalidation keys:
 | Endpoint family | Detail dependency key | Listing scope dependency key |
 |---|---|---|
 | Items | `item_{codename}` | `DeliveryCacheDependencies.ItemsListScope` (`scope_items_list`) |
-| Types | `type_{codename}` | `DeliveryCacheDependencies.TypesListScope` (`scope_types_list`) |
+| Types | `type_{codename}` (also tags item/item-list caches containing items of that type) | `DeliveryCacheDependencies.TypesListScope` (`scope_types_list`) |
 | Taxonomies | `taxonomy_{codename}` | `DeliveryCacheDependencies.TaxonomiesListScope` (`scope_taxonomies_list`) |
 
 Recommended webhook pattern:
 - item event: invalidate `item_{codename}` + `scope_items_list`
-- type event: invalidate `type_{codename}` + `scope_types_list`
+- type event: invalidate `type_{codename}` + `scope_types_list` — the `type_{codename}` key now covers both the cached type definition and every item/item-list cache whose payload references items of that type, so content-type changes or deletions no longer require falling back to `scope_items_list`
 - taxonomy event: invalidate `taxonomy_{codename}` + `scope_taxonomies_list`
 
 ### Manual Invalidation

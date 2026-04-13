@@ -67,6 +67,30 @@ public class RichTextParserTests
     }
 
     [Fact]
+    public async Task ConvertAsync_AnchorWithInvalidDataItemId_IsRenderedAsRegularAnchor()
+    {
+        // An <a data-item-id="..."> where the value is not a valid GUID is not recognised
+        // as a content item link. It falls through to ParseHtmlElementAsync and becomes a
+        // plain HtmlNode, preserving all attributes including the malformed data-item-id.
+        var parser = new RichTextParser(new HtmlParser(), new ContentDependencyExtractor());
+        var element = new TestRichTextElement(
+            "<p><a data-item-id=\"not-a-guid\" href=\"/path\">click here</a></p>");
+
+        var result = await parser.ConvertAsync(
+            element,
+            _ => Task.FromResult<object?>(null),
+            dependencyContext: null);
+
+        Assert.NotNull(result);
+        Assert.Empty(result.GetContentItemLinks());
+
+        var html = await result.ToHtmlAsync();
+        Assert.Contains("click here", html);
+        Assert.Contains("href=\"/path\"", html);
+        Assert.Contains("data-item-id=\"not-a-guid\"", html);
+    }
+
+    [Fact]
     public async Task ConvertAsync_FigureWithUnknownAssetId_IsIgnored()
     {
         var parser = new RichTextParser(new HtmlParser(), new ContentDependencyExtractor(), NullLogger.Instance);

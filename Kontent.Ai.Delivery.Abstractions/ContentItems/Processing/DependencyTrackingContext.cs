@@ -20,6 +20,7 @@ namespace Kontent.Ai.Delivery.Abstractions;
 /// Dependency key formats:
 /// <list type="bullet">
 /// <item><description>Content items: <c>item_{codename}</c></description></item>
+/// <item><description>Content types: <c>type_{codename}</c></description></item>
 /// <item><description>Assets: <c>asset_{guid}</c></description></item>
 /// <item><description>Taxonomies: <c>taxonomy_{group_codename}</c></description></item>
 /// </list>
@@ -105,6 +106,32 @@ internal sealed class DependencyTrackingContext
 
         var thirdGroup = parts[2];
         return thirdGroup.Length == 4 && thirdGroup.StartsWith("01", StringComparison.OrdinalIgnoreCase);
+    }
+
+    /// <summary>
+    /// Tracks a dependency on a content type by its codename.
+    /// </summary>
+    /// <param name="typeCodename">
+    /// The codename of the content type. If <c>null</c> or empty, the call is ignored.
+    /// </param>
+    /// <remarks>
+    /// Call this method for the content type of every item that contributes to the response
+    /// (primary items plus every item in the modular-content graph). Invalidating the resulting
+    /// <c>type_{codename}</c> dependency key evicts any cached entry whose payload references
+    /// at least one item of that type — the key signal for content-type webhooks.
+    /// </remarks>
+    public void TrackItemType(string? typeCodename)
+    {
+        var dependencyKey = CacheDependencyKeyBuilder.BuildTypeDependencyKey(typeCodename);
+        if (dependencyKey is null)
+        {
+            return;
+        }
+
+        lock (_lock)
+        {
+            _dependencies.Add(dependencyKey);
+        }
     }
 
     /// <summary>

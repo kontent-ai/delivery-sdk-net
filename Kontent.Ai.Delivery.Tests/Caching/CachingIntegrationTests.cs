@@ -663,6 +663,249 @@ public partial class CachingIntegrationTests
     }
 
     [Fact]
+    public async Task MemoryCache_GetItem_TagsResponseWithContentTypeDependency()
+    {
+        var mock = new MockHttpMessageHandler();
+        var itemCodename = "coffee_beverages_explained";
+        var fixtureContent = await ReadFixtureAsync($"DeliveryClient{Path.DirectorySeparatorChar}{itemCodename}.json");
+
+        mock.Expect($"{BaseUrl}/items/{itemCodename}")
+            .Respond("application/json", fixtureContent);
+
+        var client = CreateClientWithMemoryCache(mock);
+
+        var result1 = await client.GetItem<Article>(itemCodename).ExecuteAsync();
+        var result2 = await client.GetItem<Article>(itemCodename).ExecuteAsync();
+
+        Assert.False(result1.IsCacheHit);
+        Assert.True(result2.IsCacheHit);
+
+        Assert.NotNull(result2.DependencyKeys);
+        Assert.Contains("type_article", result2.DependencyKeys);
+
+        mock.VerifyNoOutstandingExpectation();
+    }
+
+    [Fact]
+    public async Task MemoryCache_InvalidatingContentTypeDependency_RefreshesItemQueriesOfThatType()
+    {
+        var mock = new MockHttpMessageHandler();
+        var itemCodename = "coffee_beverages_explained";
+        var fixtureContent = await ReadFixtureAsync($"DeliveryClient{Path.DirectorySeparatorChar}{itemCodename}.json");
+
+        mock.When($"{BaseUrl}/items/{itemCodename}")
+            .Respond("application/json", fixtureContent);
+
+        var services = new ServiceCollection();
+        var options = new DeliveryOptions
+        {
+            EnvironmentId = _guid.ToString()
+        };
+
+        services.AddDeliveryClient("test", o => DeliveryOptionsCopyHelper.Copy(options, o),
+            configureHttpClient: b => b.ConfigurePrimaryHttpMessageHandler(() => mock));
+        services.AddDeliveryMemoryCache("test");
+
+        var serviceProvider = services.BuildServiceProvider();
+        var client = serviceProvider.GetRequiredKeyedService<IDeliveryClient>("test");
+        var cacheManager = serviceProvider.GetRequiredKeyedService<IDeliveryCacheManager>("test");
+
+        var result1 = await client.GetItem<Article>(itemCodename).ExecuteAsync();
+        var result2 = await client.GetItem<Article>(itemCodename).ExecuteAsync();
+
+        await cacheManager.InvalidateAsync(["type_article"]);
+
+        var result3 = await client.GetItem<Article>(itemCodename).ExecuteAsync();
+
+        Assert.False(result1.IsCacheHit);
+        Assert.True(result2.IsCacheHit);
+        Assert.False(result3.IsCacheHit);
+    }
+
+    [Fact]
+    public async Task MemoryCache_GetItem_TagsResponseWithLinkedItemContentTypes()
+    {
+        // coffee_beverages_explained.json: primary is type `article`, modular content has types `tweet` and `hosted_video`.
+        var mock = new MockHttpMessageHandler();
+        var itemCodename = "coffee_beverages_explained";
+        var fixtureContent = await ReadFixtureAsync($"DeliveryClient{Path.DirectorySeparatorChar}{itemCodename}.json");
+
+        mock.Expect($"{BaseUrl}/items/{itemCodename}")
+            .Respond("application/json", fixtureContent);
+
+        var client = CreateClientWithMemoryCache(mock);
+
+        var result1 = await client.GetItem<Article>(itemCodename).ExecuteAsync();
+        var result2 = await client.GetItem<Article>(itemCodename).ExecuteAsync();
+
+        Assert.False(result1.IsCacheHit);
+        Assert.True(result2.IsCacheHit);
+
+        Assert.NotNull(result2.DependencyKeys);
+        Assert.Contains("type_article", result2.DependencyKeys);
+        Assert.Contains("type_tweet", result2.DependencyKeys);
+        Assert.Contains("type_hosted_video", result2.DependencyKeys);
+
+        mock.VerifyNoOutstandingExpectation();
+    }
+
+    [Fact]
+    public async Task MemoryCache_InvalidatingLinkedItemContentType_EvictsItemCachesReferencingThatType()
+    {
+        // coffee_beverages_explained.json: primary is type `article`, modular content has types `tweet` and `hosted_video`.
+        // Invalidating the linked-item type (`type_tweet`) must still evict the cached primary response.
+        var mock = new MockHttpMessageHandler();
+        var itemCodename = "coffee_beverages_explained";
+        var fixtureContent = await ReadFixtureAsync($"DeliveryClient{Path.DirectorySeparatorChar}{itemCodename}.json");
+
+        mock.When($"{BaseUrl}/items/{itemCodename}")
+            .Respond("application/json", fixtureContent);
+
+        var services = new ServiceCollection();
+        var options = new DeliveryOptions
+        {
+            EnvironmentId = _guid.ToString()
+        };
+
+        services.AddDeliveryClient("test", o => DeliveryOptionsCopyHelper.Copy(options, o),
+            configureHttpClient: b => b.ConfigurePrimaryHttpMessageHandler(() => mock));
+        services.AddDeliveryMemoryCache("test");
+
+        var serviceProvider = services.BuildServiceProvider();
+        var client = serviceProvider.GetRequiredKeyedService<IDeliveryClient>("test");
+        var cacheManager = serviceProvider.GetRequiredKeyedService<IDeliveryCacheManager>("test");
+
+        var result1 = await client.GetItem<Article>(itemCodename).ExecuteAsync();
+        var result2 = await client.GetItem<Article>(itemCodename).ExecuteAsync();
+
+        await cacheManager.InvalidateAsync(["type_tweet"]);
+
+        var result3 = await client.GetItem<Article>(itemCodename).ExecuteAsync();
+
+        Assert.False(result1.IsCacheHit);
+        Assert.True(result2.IsCacheHit);
+        Assert.False(result3.IsCacheHit);
+    }
+
+    [Fact]
+    public async Task MemoryCache_GetItems_InvalidatingContentTypeDependency_RefreshesItemListsOfThatType()
+    {
+        // articles.json items: about_us (type=about_us), aeropress (type=brewer). Modular content: type=fact_about_us.
+        // Invalidating `type_brewer` (only one item is a brewer) must evict the whole list cache.
+        var mock = new MockHttpMessageHandler();
+        var fixtureContent = await ReadFixtureAsync($"DeliveryClient{Path.DirectorySeparatorChar}articles.json");
+
+        mock.When($"{BaseUrl}/items*")
+            .Respond("application/json", fixtureContent);
+
+        var services = new ServiceCollection();
+        var options = new DeliveryOptions
+        {
+            EnvironmentId = _guid.ToString()
+        };
+
+        services.AddDeliveryClient("test", o => DeliveryOptionsCopyHelper.Copy(options, o),
+            configureHttpClient: b => b.ConfigurePrimaryHttpMessageHandler(() => mock));
+        services.AddDeliveryMemoryCache("test");
+
+        var serviceProvider = services.BuildServiceProvider();
+        var client = serviceProvider.GetRequiredKeyedService<IDeliveryClient>("test");
+        var cacheManager = serviceProvider.GetRequiredKeyedService<IDeliveryCacheManager>("test");
+
+        var result1 = await client.GetItems<Article>().ExecuteAsync();
+        var result2 = await client.GetItems<Article>().ExecuteAsync();
+
+        Assert.NotNull(result2.DependencyKeys);
+        Assert.Contains("type_about_us", result2.DependencyKeys);
+        Assert.Contains("type_brewer", result2.DependencyKeys);
+        Assert.Contains("type_fact_about_us", result2.DependencyKeys);
+
+        await cacheManager.InvalidateAsync(["type_brewer"]);
+
+        var result3 = await client.GetItems<Article>().ExecuteAsync();
+
+        Assert.False(result1.IsCacheHit);
+        Assert.True(result2.IsCacheHit);
+        Assert.False(result3.IsCacheHit);
+    }
+
+    [Fact]
+    public async Task MemoryCache_GetItems_InvalidatingUnrelatedContentTypeDependency_PreservesItemListCache()
+    {
+        // Companion to the test above: invalidating a type that isn't present in the list must NOT evict the cache.
+        var mock = new MockHttpMessageHandler();
+        var fixtureContent = await ReadFixtureAsync($"DeliveryClient{Path.DirectorySeparatorChar}articles.json");
+
+        mock.Expect($"{BaseUrl}/items*")
+            .Respond("application/json", fixtureContent);
+
+        var services = new ServiceCollection();
+        var options = new DeliveryOptions
+        {
+            EnvironmentId = _guid.ToString()
+        };
+
+        services.AddDeliveryClient("test", o => DeliveryOptionsCopyHelper.Copy(options, o),
+            configureHttpClient: b => b.ConfigurePrimaryHttpMessageHandler(() => mock));
+        services.AddDeliveryMemoryCache("test");
+
+        var serviceProvider = services.BuildServiceProvider();
+        var client = serviceProvider.GetRequiredKeyedService<IDeliveryClient>("test");
+        var cacheManager = serviceProvider.GetRequiredKeyedService<IDeliveryCacheManager>("test");
+
+        var result1 = await client.GetItems<Article>().ExecuteAsync();
+        var result2 = await client.GetItems<Article>().ExecuteAsync();
+
+        await cacheManager.InvalidateAsync(["type_unrelated_type"]);
+
+        var result3 = await client.GetItems<Article>().ExecuteAsync();
+
+        Assert.False(result1.IsCacheHit);
+        Assert.True(result2.IsCacheHit);
+        Assert.True(result3.IsCacheHit);
+
+        mock.VerifyNoOutstandingExpectation();
+    }
+
+    [Fact]
+    public async Task MemoryCache_InvalidatingUnrelatedContentTypeDependency_DoesNotInvalidateItemQueries()
+    {
+        var mock = new MockHttpMessageHandler();
+        var itemCodename = "coffee_beverages_explained";
+        var fixtureContent = await ReadFixtureAsync($"DeliveryClient{Path.DirectorySeparatorChar}{itemCodename}.json");
+
+        mock.Expect($"{BaseUrl}/items/{itemCodename}")
+            .Respond("application/json", fixtureContent);
+
+        var services = new ServiceCollection();
+        var options = new DeliveryOptions
+        {
+            EnvironmentId = _guid.ToString()
+        };
+
+        services.AddDeliveryClient("test", o => DeliveryOptionsCopyHelper.Copy(options, o),
+            configureHttpClient: b => b.ConfigurePrimaryHttpMessageHandler(() => mock));
+        services.AddDeliveryMemoryCache("test");
+
+        var serviceProvider = services.BuildServiceProvider();
+        var client = serviceProvider.GetRequiredKeyedService<IDeliveryClient>("test");
+        var cacheManager = serviceProvider.GetRequiredKeyedService<IDeliveryCacheManager>("test");
+
+        var result1 = await client.GetItem<Article>(itemCodename).ExecuteAsync();
+        var result2 = await client.GetItem<Article>(itemCodename).ExecuteAsync();
+
+        await cacheManager.InvalidateAsync(["type_unrelated_type"]);
+
+        var result3 = await client.GetItem<Article>(itemCodename).ExecuteAsync();
+
+        Assert.False(result1.IsCacheHit);
+        Assert.True(result2.IsCacheHit);
+        Assert.True(result3.IsCacheHit);
+
+        mock.VerifyNoOutstandingExpectation();
+    }
+
+    [Fact]
     public async Task MemoryCache_ItemsListScopeInvalidation_RefreshesAllCachedItemLists()
     {
         var mock = new MockHttpMessageHandler();

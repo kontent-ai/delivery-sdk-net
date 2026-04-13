@@ -21,7 +21,16 @@ namespace Kontent.Ai.Delivery.Abstractions;
 /// <list type="bullet">
 /// <item><description>Content items: <c>item_{codename}</c> (e.g., "item_hero")</description></item>
 /// <item><description>Assets: <c>asset_{guid}</c> (e.g., "asset_a5e1c4b2-...")</description></item>
-/// <item><description>Content types: <c>type_{codename}</c> (e.g., "type_article")</description></item>
+/// <item>
+///   <description>
+///   Content types: <c>type_{codename}</c> (e.g., "type_article") — attached to cached type-definition
+///   responses (<c>GetType</c>/<c>GetTypes</c>) AND to every cached item/item-list response whose
+///   payload contains at least one item of that type (including transitive references via
+///   modular content, linked-items elements, and rich-text inline items). Invalidating this key
+///   evicts both the type definition and any item caches that reference the type — the recommended
+///   signal for content-type webhooks.
+///   </description>
+/// </item>
 /// <item><description>Taxonomies: <c>taxonomy_{group}</c> (e.g., "taxonomy_categories")</description></item>
 /// <item><description>Item-list scope: <see cref="DeliveryCacheDependencies.ItemsListScope"/> (synthetic dependency for broad item-list invalidation)</description></item>
 /// <item><description>Type-list scope: <see cref="DeliveryCacheDependencies.TypesListScope"/> (synthetic dependency for broad type-list invalidation)</description></item>

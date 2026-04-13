@@ -96,8 +96,8 @@ internal sealed class RichTextParser(
             IElement el
                 => await ParseHtmlElementAsync(el, element, getLinkedItem, currentDepth, cancellationToken),
 
-            // Text nodes become TextNode leaf blocks
-            IText text when !string.IsNullOrWhiteSpace(text.TextContent)
+            // Text nodes become TextNode leaf blocks.
+            IText text when !string.IsNullOrEmpty(text.TextContent)
                 => new TextNode(text.TextContent),
 
             _ => null

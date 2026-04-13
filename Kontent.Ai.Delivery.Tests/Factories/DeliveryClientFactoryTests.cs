@@ -181,4 +181,74 @@ public class DeliveryClientFactoryTests
 
         factory1.Should().BeSameAs(factory2);
     }
+
+    [Fact]
+    public void TryGetNamedClient_WithValidName_ReturnsClient()
+    {
+        var services = new ServiceCollection();
+        services.AddDeliveryClient("test", o => o.EnvironmentId = Guid.NewGuid().ToString());
+
+        using var sp = services.BuildServiceProvider();
+        var factory = sp.GetRequiredService<IDeliveryClientFactory>();
+
+        var client = factory.TryGet("test");
+
+        client.Should().NotBeNull();
+    }
+
+    [Fact]
+    public void TryGetNamedClient_WithNonExistentName_ReturnsNull()
+    {
+        var services = new ServiceCollection();
+        services.AddDeliveryClient("test", o => o.EnvironmentId = Guid.NewGuid().ToString());
+
+        using var sp = services.BuildServiceProvider();
+        var factory = sp.GetRequiredService<IDeliveryClientFactory>();
+
+        var client = factory.TryGet("nonexistent");
+
+        client.Should().BeNull();
+    }
+
+    [Fact]
+    public void TryGet_WithNullName_Throws()
+    {
+        var services = new ServiceCollection();
+        services.AddDeliveryClient(o => o.EnvironmentId = Guid.NewGuid().ToString());
+
+        using var sp = services.BuildServiceProvider();
+        var factory = sp.GetRequiredService<IDeliveryClientFactory>();
+
+        var act = () => factory.TryGet(null!);
+
+        act.Should().Throw<ArgumentException>();
+    }
+
+    [Fact]
+    public void TryGet_WithEmptyName_Throws()
+    {
+        var services = new ServiceCollection();
+        services.AddDeliveryClient(o => o.EnvironmentId = Guid.NewGuid().ToString());
+
+        using var sp = services.BuildServiceProvider();
+        var factory = sp.GetRequiredService<IDeliveryClientFactory>();
+
+        var act = () => factory.TryGet("");
+
+        act.Should().Throw<ArgumentException>();
+    }
+
+    [Fact]
+    public void TryGet_WithWhitespaceName_Throws()
+    {
+        var services = new ServiceCollection();
+        services.AddDeliveryClient(o => o.EnvironmentId = Guid.NewGuid().ToString());
+
+        using var sp = services.BuildServiceProvider();
+        var factory = sp.GetRequiredService<IDeliveryClientFactory>();
+
+        var act = () => factory.TryGet("   ");
+
+        act.Should().Throw<ArgumentException>();
+    }
 }

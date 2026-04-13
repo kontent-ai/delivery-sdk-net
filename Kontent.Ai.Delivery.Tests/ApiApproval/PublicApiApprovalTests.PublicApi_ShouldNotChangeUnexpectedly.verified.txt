@@ -2,6 +2,7 @@
 public sealed class DeliveryClientFactory : IDeliveryClientFactory
     IDeliveryClient Get()
     IDeliveryClient Get(String name)
+    IDeliveryClient TryGet(String name)
 
 // Kontent.Ai.Delivery
 public class DeliverySourceTrackingHeaderAttribute : Attribute

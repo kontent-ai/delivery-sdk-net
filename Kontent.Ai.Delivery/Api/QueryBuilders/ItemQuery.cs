@@ -226,10 +226,14 @@ internal sealed class ItemQuery<TModel>(
         var dependencyContext = new DependencyTrackingContext();
 
         dependencyContext.TrackItem(item.System.Codename);
+        dependencyContext.TrackItemType(item.System.Type);
         if (resp.ModularContent is not null)
         {
-            foreach (var itemCodename in resp.ModularContent.Keys)
+            foreach (var (itemCodename, linkedItem) in resp.ModularContent)
+            {
                 dependencyContext.TrackItem(itemCodename);
+                dependencyContext.TrackItemType(ContentItemJsonHelper.ExtractContentType(linkedItem));
+            }
         }
 
         if (!IsDynamicModel)

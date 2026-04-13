@@ -280,14 +280,20 @@ internal sealed class ItemsQuery<TModel>(
 
         if (items is { Count: > 0 })
         {
-            foreach (var item in items)
-                dependencyContext.TrackItem(item.System.Codename);
+            foreach (var system in items.Select(item => item.System))
+            {
+                dependencyContext.TrackItem(system.Codename);
+                dependencyContext.TrackItemType(system.Type);
+            }
         }
 
         if (resp.ModularContent is not null)
         {
-            foreach (var codename in resp.ModularContent.Keys)
+            foreach (var (codename, linkedItem) in resp.ModularContent)
+            {
                 dependencyContext.TrackItem(codename);
+                dependencyContext.TrackItemType(ContentItemJsonHelper.ExtractContentType(linkedItem));
+            }
         }
 
         if (!IsDynamicModel)
