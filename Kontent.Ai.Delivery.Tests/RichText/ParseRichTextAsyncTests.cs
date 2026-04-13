@@ -1,5 +1,6 @@
 using System.Text.Json;
 using Kontent.Ai.Delivery.Abstractions;
+using Kontent.Ai.Delivery.ContentItems.RichText.Resolution;
 
 namespace Kontent.Ai.Delivery.Tests.RichText;
 
@@ -193,6 +194,327 @@ public class ParseRichTextAsyncTests
         Assert.Equal("kenya_gakuyuni_aa", link.Metadata.Codename);
         Assert.Equal("coffee", link.Metadata.ContentTypeCodename);
         Assert.Equal("kenya-gakuyuni-aa", link.Metadata.UrlSlug);
+    }
+
+    [Fact]
+    public async Task ParseRichTextAsync_ContentItemLink_PreservesCustomAttributes()
+    {
+        // Extra attributes on the <a> tag (beyond data-item-id) are preserved in
+        // IContentItemLink.Attributes so custom resolvers can use them.
+        var json = """
+            {
+                "type": "rich_text",
+                "name": "Body",
+                "value": "<p><a data-item-id=\"80c7074b-3da1-4e1d-882b-c5716ebb4d25\" href=\"\" class=\"highlighted\" data-custom=\"foo\">link</a></p>",
+                "images": {},
+                "links": {
+                    "80c7074b-3da1-4e1d-882b-c5716ebb4d25": {
+                        "codename": "test_item",
+                        "type": "article",
+                        "url_slug": "test-item"
+                    }
+                },
+                "modular_content": []
+            }
+            """;
+        var element = JsonDocument.Parse(json).RootElement;
+
+        var result = await element.ParseRichTextAsync();
+
+        var links = result!.GetContentItemLinks().ToList();
+        Assert.Single(links);
+        var link = links[0];
+        // data-item-id is consumed as the link identifier and not forwarded to Attributes
+        Assert.False(link.Attributes.ContainsKey("data-item-id"));
+        // All other attributes are preserved for resolvers
+        Assert.Equal("highlighted", link.Attributes["class"]);
+        Assert.Equal("foo", link.Attributes["data-custom"]);
+    }
+
+    [Fact]
+    public async Task ParseRichTextAsync_ContentItemLink_UrlPatternResolver_NullMetadata_UsesFallbackPattern()
+    {
+        // When the link's GUID is not present in the links map, Metadata is null.
+        // UrlPatternResolver must handle this gracefully using the fallback pattern.
+        var json = """
+            {
+                "type": "rich_text",
+                "name": "Body",
+                "value": "<p><a data-item-id=\"80c7074b-3da1-4e1d-882b-c5716ebb4d25\" href=\"\">orphaned link</a></p>",
+                "images": {},
+                "links": {},
+                "modular_content": []
+            }
+            """;
+        var element = JsonDocument.Parse(json).RootElement;
+
+        var result = await element.ParseRichTextAsync();
+
+        var resolver = new HtmlResolverBuilder()
+            .WithContentItemLinkResolver(DefaultResolvers.UrlPatternResolver(
+                new Dictionary<string, string> { ["article"] = "/articles/{urlslug}" },
+                fallbackPattern: "/content/{id}"))
+            .Build();
+
+        var html = await result!.ToHtmlAsync(resolver);
+
+        // No metadata → fallback pattern with item ID substituted
+        Assert.Contains("href=\"/content/80c7074b-3da1-4e1d-882b-c5716ebb4d25\"", html);
+        Assert.Contains("orphaned link", html);
+    }
+
+    #endregion
+
+    #region Asset Link Parsing Tests
+
+    [Fact]
+    public async Task ParseRichTextAsync_AssetLink_RoundTrip_PreservesContent()
+    {
+        var json = """
+            {
+                "type": "rich_text",
+                "name": "Body",
+                "value": "<p>Download <a href=\"https://assets.kontent.ai/env/uuid/report.pdf\" data-asset-id=\"00000000-0000-0000-0000-000000000001\">the report</a> for more details.</p>",
+                "images": {},
+                "links": {},
+                "modular_content": []
+            }
+            """;
+        var element = JsonDocument.Parse(json).RootElement;
+
+        var result = await element.ParseRichTextAsync();
+
+        Assert.NotNull(result);
+        var html = await result.ToHtmlAsync();
+        Assert.Equal(
+            "<p>Download <a href=\"https://assets.kontent.ai/env/uuid/report.pdf\" data-asset-id=\"00000000-0000-0000-0000-000000000001\">the report</a> for more details.</p>",
+            html);
+    }
+
+    [Fact]
+    public async Task ParseRichTextAsync_AssetLinkFollowedByInlineElement_PreservesInterveningSpace()
+    {
+        // Regression test: a single space between an asset link and an adjacent inline element
+        // was silently dropped because whitespace-only text nodes were filtered out during parsing.
+        var json = """
+            {
+                "type": "rich_text",
+                "name": "Body",
+                "value": "<p>See <a href=\"https://assets.kontent.ai/env/uuid/file.pdf\" data-asset-id=\"00000000-0000-0000-0000-000000000001\">the file</a> <strong>here</strong>.</p>",
+                "images": {},
+                "links": {},
+                "modular_content": []
+            }
+            """;
+        var element = JsonDocument.Parse(json).RootElement;
+
+        var result = await element.ParseRichTextAsync();
+
+        Assert.NotNull(result);
+        var html = await result.ToHtmlAsync();
+        // The space between the asset link and <strong> is a whitespace-only text node — must not be dropped
+        Assert.Contains("</a> <strong>", html);
+    }
+
+    [Fact]
+    public async Task ParseRichTextAsync_BoldAssetLink_TrailingSpaceInsideAnchor_PreservesSpace()
+    {
+        var json = """
+            {
+                "type": "rich_text",
+                "name": "Body",
+                "value": "<p>Download <a href=\"https://assets.kontent.ai/env/uuid/file.txt\" data-asset-id=\"00000000-0000-0000-0000-000000000001\"><strong>.txt</strong> </a>or <a href=\"https://assets.kontent.ai/env/uuid/file.xlsx\" data-asset-id=\"00000000-0000-0000-0000-000000000002\"><strong>.xlsx</strong></a></p>",
+                "images": {},
+                "links": {},
+                "modular_content": []
+            }
+            """;
+        var element = JsonDocument.Parse(json).RootElement;
+
+        var result = await element.ParseRichTextAsync();
+
+        Assert.NotNull(result);
+        var html = await result.ToHtmlAsync();
+        Assert.Contains("<strong>.txt</strong> </a>or", html);
+    }
+
+    #endregion
+
+    #region HTML Structure Round-Trip Tests
+
+    [Fact]
+    public async Task ParseRichTextAsync_BrElement_InsideParagraph_RoundTrip()
+    {
+        // <br> is the only inline void element in Kontent.ai rich text — must render without a closing tag.
+        var json = """
+            {
+                "type": "rich_text",
+                "name": "Body",
+                "value": "<p>Line 1<br>Line 2</p>",
+                "images": {},
+                "links": {},
+                "modular_content": []
+            }
+            """;
+        var element = JsonDocument.Parse(json).RootElement;
+
+        var result = await element.ParseRichTextAsync();
+
+        Assert.NotNull(result);
+        Assert.Equal("<p>Line 1<br>Line 2</p>", await result.ToHtmlAsync());
+    }
+
+    [Fact]
+    public async Task ParseRichTextAsync_HeadingElements_RoundTrip()
+    {
+        var json = """
+            {
+                "type": "rich_text",
+                "name": "Body",
+                "value": "<h1>H1</h1><h2>H2</h2><h3>H3 with <strong>bold</strong></h3>",
+                "images": {},
+                "links": {},
+                "modular_content": []
+            }
+            """;
+        var element = JsonDocument.Parse(json).RootElement;
+
+        var result = await element.ParseRichTextAsync();
+
+        Assert.NotNull(result);
+        var html = await result.ToHtmlAsync();
+        Assert.Contains("<h1>H1</h1>", html);
+        Assert.Contains("<h2>H2</h2>", html);
+        Assert.Contains("<h3>H3 with <strong>bold</strong></h3>", html);
+    }
+
+    [Fact]
+    public async Task ParseRichTextAsync_Table_PreservesStructureAndAttributes()
+    {
+        // Kontent.ai supports <table><tbody><tr><td> — no thead/tfoot, no nested tables.
+        var json = """
+            {
+                "type": "rich_text",
+                "name": "Body",
+                "value": "<table><tbody><tr><td>Cell 1</td><td>Cell 2</td></tr><tr><td colspan=\"2\">Spanning cell</td></tr></tbody></table>",
+                "images": {},
+                "links": {},
+                "modular_content": []
+            }
+            """;
+        var element = JsonDocument.Parse(json).RootElement;
+
+        var result = await element.ParseRichTextAsync();
+
+        Assert.NotNull(result);
+        var html = await result.ToHtmlAsync();
+        Assert.Contains("<table>", html);
+        Assert.Contains("<tbody>", html);
+        Assert.Contains("<td>Cell 1</td>", html);
+        Assert.Contains("<td>Cell 2</td>", html);
+        Assert.Contains("colspan=\"2\"", html);
+        Assert.Contains("Spanning cell", html);
+    }
+
+    [Fact]
+    public async Task ParseRichTextAsync_EmptyParagraph_IsPreserved()
+    {
+        // <p></p> (empty paragraph) is valid in Kontent.ai rich text and must survive round-trip.
+        var json = """
+            {
+                "type": "rich_text",
+                "name": "Body",
+                "value": "<p>Before</p><p></p><p>After</p>",
+                "images": {},
+                "links": {},
+                "modular_content": []
+            }
+            """;
+        var element = JsonDocument.Parse(json).RootElement;
+
+        var result = await element.ParseRichTextAsync();
+
+        Assert.NotNull(result);
+        var html = await result.ToHtmlAsync();
+        Assert.Contains("<p>Before</p>", html);
+        Assert.Contains("<p></p>", html);
+        Assert.Contains("<p>After</p>", html);
+    }
+
+    [Fact]
+    public async Task ParseRichTextAsync_WhitespaceBetweenInlineElements_PreservedInVariousContexts()
+    {
+        // Extends the whitespace regression test: any single space between adjacent inline
+        // elements is a whitespace-only text node that must be kept (not dropped).
+        var json = """
+            {
+                "type": "rich_text",
+                "name": "Body",
+                "value": "<p><strong>Bold</strong> <em>italic</em> and <code>code</code></p>",
+                "images": {},
+                "links": {},
+                "modular_content": []
+            }
+            """;
+        var element = JsonDocument.Parse(json).RootElement;
+
+        var result = await element.ParseRichTextAsync();
+
+        Assert.NotNull(result);
+        var html = await result.ToHtmlAsync();
+        Assert.Contains("</strong> <em>", html);    // whitespace-only node between strong and em
+        Assert.Contains("</em> and <code>", html);  // " and " is not whitespace-only; also preserved
+    }
+
+    [Fact]
+    public async Task ParseRichTextAsync_NonBreakingSpace_IsEncodedAsHexEntity()
+    {
+        // AngleSharp decodes &nbsp; to U+00A0. HtmlEncoder.Create(UnicodeRanges.All) re-encodes
+        // U+00A0 as &#xA0; (numeric hex entity) — not the raw character and not &nbsp;.
+        // This is semantically equivalent in HTML and is the correct round-trip behaviour.
+        var json = """
+            {
+                "type": "rich_text",
+                "name": "Body",
+                "value": "<p>A&nbsp;non-breaking&nbsp;space</p>",
+                "images": {},
+                "links": {},
+                "modular_content": []
+            }
+            """;
+        var element = JsonDocument.Parse(json).RootElement;
+
+        var result = await element.ParseRichTextAsync();
+
+        Assert.NotNull(result);
+        var html = await result.ToHtmlAsync();
+        // &#xA0; is the numeric hex form of &nbsp; — correct output for the unicode encoder
+        Assert.Contains("A&#xA0;non-breaking&#xA0;space", html);
+    }
+
+    [Fact]
+    public async Task ParseRichTextAsync_AttributeValueWithAmpersand_IsHtmlEncoded()
+    {
+        // An attribute value with & is decoded by AngleSharp (&amp; → &) then
+        // re-encoded by BuildAttributes (& → &amp;) — the round-trip is lossless.
+        var json = """
+            {
+                "type": "rich_text",
+                "name": "Body",
+                "value": "<p data-label=\"A &amp; B\">content</p>",
+                "images": {},
+                "links": {},
+                "modular_content": []
+            }
+            """;
+        var element = JsonDocument.Parse(json).RootElement;
+
+        var result = await element.ParseRichTextAsync();
+
+        Assert.NotNull(result);
+        var html = await result.ToHtmlAsync();
+        Assert.Contains("data-label=\"A &amp; B\"", html);
+        Assert.Contains(">content<", html);
     }
 
     #endregion
