@@ -1730,7 +1730,7 @@ var result = await client.GetItem("article")
 - **Memory cache** can lead to memory pressure with large content - monitor your application's memory usage
 - **Hybrid cache** is recommended for production scenarios with multiple application instances
 - Always implement **cache invalidation** strategies, ideally using webhooks
-- **Cache hit semantics**: When `IsCacheHit` is `true`, properties like `ResponseHeaders`, `RequestUrl`, and `ContinuationToken` are not available (null). Use `IsCacheHit` to differentiate between API responses and cached results
+- **Cache hit semantics**: When `IsCacheHit` is `true`, properties like `ResponseHeaders` and `RequestUrl` are not available (null). Use `IsCacheHit` to differentiate between API responses and cached results
 
 ### Strong Typing Synchronization
 
@@ -1836,7 +1836,6 @@ if (result.IsSuccess)
 | `ResponseHeaders` | HTTP response headers (null for cache hits) |
 | `IsCacheHit` | Whether response was served from SDK cache |
 | `HasStaleContent` | Whether newer content may be available |
-| `ContinuationToken` | Pagination token (for feed responses) |
 | `DependencyKeys` | Canonical dependency keys for output-cache tagging (null when not collected) |
 
 ## Advanced Documentation

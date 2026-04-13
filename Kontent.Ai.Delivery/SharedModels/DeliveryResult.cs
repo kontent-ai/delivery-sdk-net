@@ -25,9 +25,6 @@ internal sealed class DeliveryResult<T> : IDeliveryResult<T>
     public bool HasStaleContent { get; }
 
     /// <inheritdoc/>
-    public string? ContinuationToken { get; }
-
-    /// <inheritdoc/>
     public string? RequestUrl { get; }
 
     /// <inheritdoc/>
@@ -50,7 +47,6 @@ internal sealed class DeliveryResult<T> : IDeliveryResult<T>
         string requestUrl,
         HttpStatusCode statusCode,
         bool hasStaleContent,
-        string? continuationToken,
         HttpResponseHeaders? responseHeaders,
         ResponseSource responseSource,
         IReadOnlyList<string>? dependencyKeys = null)
@@ -59,7 +55,6 @@ internal sealed class DeliveryResult<T> : IDeliveryResult<T>
         IsSuccess = true;
         StatusCode = statusCode;
         HasStaleContent = hasStaleContent;
-        ContinuationToken = continuationToken;
         RequestUrl = requestUrl;
         ResponseHeaders = responseHeaders;
         ResponseSource = responseSource;
@@ -78,7 +73,6 @@ internal sealed class DeliveryResult<T> : IDeliveryResult<T>
         IsSuccess = true;
         StatusCode = HttpStatusCode.OK;
         HasStaleContent = false;
-        ContinuationToken = null;
         RequestUrl = null;
         ResponseHeaders = null;
         ResponseSource = responseSource;
@@ -101,7 +95,6 @@ internal sealed class DeliveryResult<T> : IDeliveryResult<T>
         Error = error;
         StatusCode = statusCode;
         HasStaleContent = false;
-        ContinuationToken = null;
         RequestUrl = requestUrl;
         ResponseHeaders = responseHeaders;
         ResponseSource = responseSource;
@@ -122,7 +115,6 @@ internal static class DeliveryResult
         string requestUrl,
         HttpStatusCode statusCode,
         bool hasStaleContent,
-        string? continuationToken,
         HttpResponseHeaders? responseHeaders,
         ResponseSource responseSource,
         IReadOnlyList<string>? dependencyKeys = null)
@@ -131,7 +123,6 @@ internal static class DeliveryResult
         requestUrl,
         statusCode,
         hasStaleContent,
-        continuationToken,
         responseHeaders,
         responseSource,
         dependencyKeys);
@@ -151,7 +142,6 @@ internal static class DeliveryResult
             source.RequestUrl ?? string.Empty,
             source.StatusCode,
             source.HasStaleContent,
-            source.ContinuationToken,
             source.ResponseHeaders,
             source.ResponseSource,
             dependencyKeys);

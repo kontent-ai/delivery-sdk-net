@@ -60,18 +60,6 @@ public class RefitApiResponseExtensionsTests
     }
 
     [Fact]
-    public async Task ToDeliveryResultAsync_WithContinuationHeader_ExtractsContinuationToken()
-    {
-        using var httpResponse = CreateHttpResponse(HttpStatusCode.OK, "content");
-        httpResponse.Headers.TryAddWithoutValidation("X-Continuation", "token123");
-        using var apiResponse = new ApiResponse<string>(httpResponse, "content", new RefitSettings());
-
-        var result = await apiResponse.ToDeliveryResultAsync();
-
-        Assert.Equal("token123", result.ContinuationToken);
-    }
-
-    [Fact]
     public async Task ToDeliveryResultAsync_WithXCacheHit_ReturnsResponseSourceCdn()
     {
         using var httpResponse = CreateHttpResponse(HttpStatusCode.OK, "content");

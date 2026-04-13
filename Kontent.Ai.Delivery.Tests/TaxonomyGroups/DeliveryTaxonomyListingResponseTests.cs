@@ -118,5 +118,5 @@ public class DeliveryTaxonomyListingResponseTests
 
     private static IDeliveryResult<IDeliveryTaxonomyListingResponse> CreateSuccessResult(
         IDeliveryTaxonomyListingResponse value)
-        => DeliveryResult.Success(value, "https://test", HttpStatusCode.OK, false, null, null, ResponseSource.Origin);
+        => DeliveryResult.Success(value, "https://test", HttpStatusCode.OK, false, null, ResponseSource.Origin);
 }

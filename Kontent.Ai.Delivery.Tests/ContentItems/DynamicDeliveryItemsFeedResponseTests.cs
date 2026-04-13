@@ -53,7 +53,6 @@ public class DynamicDeliveryItemsFeedResponseTests
             HttpStatusCode.OK,
             false,
             null,
-            null,
             ResponseSource.Origin);
 
         var sut = CreateResponse(

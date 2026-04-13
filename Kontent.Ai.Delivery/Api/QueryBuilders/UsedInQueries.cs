@@ -139,7 +139,7 @@ internal sealed class UsedInQueryCore(
             IReadOnlyList<IUsedInItem> items = deliveryResult.Value.Items;
             yield return DeliveryResult.SuccessFrom(items, deliveryResult);
 
-            token = deliveryResult.ContinuationToken;
+            token = response.Continuation();
             if (string.IsNullOrEmpty(token))
             {
                 yield break;

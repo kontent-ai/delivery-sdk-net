@@ -240,7 +240,6 @@ public interface IDeliveryOptionsBuilder
 
 // Kontent.Ai.Delivery.Abstractions
 public interface IDeliveryResult`1
-    String ContinuationToken { get; }
     IReadOnlyList`1 DependencyKeys { get; }
     IError Error { get; }
     Boolean HasStaleContent { get; }

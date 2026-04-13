@@ -68,7 +68,8 @@ internal sealed class DynamicEnumerateItemsQuery(
             return DeliveryResult.FailureFrom<IDeliveryItemsFeedResponse, IDeliveryItemsFeedResponse<IDynamicElements>>(deliveryResult);
         }
 
-        var response = await ConvertResponseAsync(deliveryResult.Value, deliveryResult.ContinuationToken, cancellationToken).ConfigureAwait(false);
+        var continuationToken = (deliveryResult.Value as DeliveryItemsFeedResponse<IDynamicElements>)?.ContinuationToken;
+        var response = await ConvertResponseAsync(deliveryResult.Value, continuationToken, cancellationToken).ConfigureAwait(false);
 
         return DeliveryResult.SuccessFrom<IDeliveryItemsFeedResponse, IDeliveryItemsFeedResponse<IDynamicElements>>(response, deliveryResult);
     }
@@ -108,7 +109,8 @@ internal sealed class DynamicEnumerateItemsQuery(
             return DeliveryResult.FailureFrom<IDeliveryItemsFeedResponse, IDeliveryItemsFeedResponse<IDynamicElements>>(nextPageResult);
         }
 
-        var response = await ConvertResponseAsync(nextPageResult.Value, nextPageResult.ContinuationToken, cancellationToken).ConfigureAwait(false);
+        var continuationToken = (nextPageResult.Value as DeliveryItemsFeedResponse<IDynamicElements>)?.ContinuationToken;
+        var response = await ConvertResponseAsync(nextPageResult.Value, continuationToken, cancellationToken).ConfigureAwait(false);
         return DeliveryResult.SuccessFrom<IDeliveryItemsFeedResponse, IDeliveryItemsFeedResponse<IDynamicElements>>(response, nextPageResult);
     }
 
