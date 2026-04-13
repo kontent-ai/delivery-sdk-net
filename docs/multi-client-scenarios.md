@@ -178,7 +178,9 @@ public class BrandAController : ControllerBase
 ```csharp
 public interface IDeliveryClientFactory
 {
-    IDeliveryClient Get(string name);
+    IDeliveryClient Get(string name);   // throws if not registered
+    IDeliveryClient Get();              // returns the default client; throws if not registered
+    IDeliveryClient? TryGet(string name); // returns null if not registered
 }
 
 // Usage
@@ -188,6 +190,8 @@ var client = factory.Get("brand-a");
 
 ### Factory with Fallback
 
+Use `TryGet` to avoid exception-driven control flow:
+
 ```csharp
 public class SafeClientFactory
 {
@@ -196,16 +200,13 @@ public class SafeClientFactory
 
     public IDeliveryClient GetClient(string name, string fallbackName = "default")
     {
-        try
+        var client = _factory.TryGet(name);
+        if (client is null)
         {
-            return _factory.Get(name);
+            _logger.LogWarning("Client {Name} not found, using fallback {Fallback}", name, fallbackName);
+            client = _factory.Get(fallbackName);
         }
-        catch (InvalidOperationException ex)
-        {
-            _logger.LogWarning(ex, "Client {Name} not found, using fallback {Fallback}",
-                name, fallbackName);
-            return _factory.Get(fallbackName);
-        }
+        return client;
     }
 }
 ```
@@ -718,18 +719,18 @@ public static void RegisterDeliveryClients(IServiceCollection services)
 
 ### 4. Handle Missing Clients Gracefully
 
+Use `TryGet` instead of catching `InvalidOperationException`:
+
 ```csharp
 public IDeliveryClient GetClientSafely(string name)
 {
-    try
+    var client = _factory.TryGet(name);
+    if (client is null)
     {
-        return _factory.Get(name);
+        _logger.LogError("Client {Name} not found, falling back to default", name);
+        return _factory.Get("default");
     }
-    catch (InvalidOperationException ex)
-    {
-        _logger.LogError(ex, "Client {Name} not found", name);
-        return _factory.Get("default");  // Fallback to default
-    }
+    return client;
 }
 ```
 

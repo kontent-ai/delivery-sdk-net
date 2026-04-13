@@ -22,4 +22,11 @@ public sealed class DeliveryClientFactory(IServiceProvider serviceProvider) : ID
         ArgumentException.ThrowIfNullOrWhiteSpace(name);
         return serviceProvider.GetRequiredKeyedService<IDeliveryClient>(name);
     }
+
+    /// <inheritdoc />
+    public IDeliveryClient? TryGet(string name)
+    {
+        ArgumentException.ThrowIfNullOrWhiteSpace(name);
+        return serviceProvider.GetKeyedService<IDeliveryClient>(name);
+    }
 }

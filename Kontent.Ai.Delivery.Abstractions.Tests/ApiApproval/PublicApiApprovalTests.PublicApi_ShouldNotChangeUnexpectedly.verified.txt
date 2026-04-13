@@ -188,6 +188,7 @@ public interface IDeliveryClient : IDisposable, IAsyncDisposable
 public interface IDeliveryClientFactory
     IDeliveryClient Get(String name)
     IDeliveryClient Get()
+    IDeliveryClient TryGet(String name)
 
 // Kontent.Ai.Delivery.Abstractions
 public interface IDeliveryItemListingResponse : IPageable
