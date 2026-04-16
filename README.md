@@ -1862,7 +1862,7 @@ This project is licensed under the MIT License - see the [LICENSE](LICENSE.md) f
 **Questions or feedback?** Visit our [GitHub Issues](https://github.com/kontent-ai/delivery-sdk-net/issues) or check the [Kontent.ai Developer Hub](https://kontent.ai/learn/docs).
 
 
-[last-commit]: https://img.shields.io/github/last-commit/kontent-ai/delivery-sdk-net/vnext?style=for-the-badge
+[last-commit]: https://img.shields.io/github/last-commit/kontent-ai/delivery-sdk-net?style=for-the-badge
 [contributors-shield]: https://img.shields.io/github/contributors/kontent-ai/delivery-sdk-net?style=for-the-badge
 [contributors-url]: https://github.com/kontent-ai/delivery-sdk-net/graphs/contributors
 [issues-shield]: https://img.shields.io/github/issues/kontent-ai/delivery-sdk-net.svg?style=for-the-badge
@@ -1870,7 +1870,7 @@ This project is licensed under the MIT License - see the [LICENSE](LICENSE.md) f
 [license-shield]: https://img.shields.io/github/license/kontent-ai/delivery-sdk-net?label=license&style=for-the-badge
 [license-url]: https://github.com/kontent-ai/delivery-sdk-net/blob/master/LICENSE.md
 [stack-shield]: https://img.shields.io/badge/Stack%20Overflow-ASK%20NOW-FE7A16.svg?logo=stackoverflow&logoColor=white&style=for-the-badge
-[codecov-shield]: https://img.shields.io/codecov/c/github/kontent-ai/delivery-sdk-net/vnext.svg?style=for-the-badge
+[codecov-shield]: https://img.shields.io/codecov/c/github/kontent-ai/delivery-sdk-net?style=for-the-badge
 [codecov-url]: https://app.codecov.io/github/kontent-ai/delivery-sdk-net
 [nuget-url]: https://www.nuget.org/packages/Kontent.Ai.Delivery
 [nuget-shield]: https://img.shields.io/nuget/vpre/Kontent.Ai.Delivery.svg?style=for-the-badge
