@@ -32,29 +32,26 @@ internal static class HttpRequestHeadersExtensions
 
     internal static string GetProductVersion(this Assembly assembly)
     {
-        string? sdkVersion;
+        var informationalVersion = assembly
+            .GetCustomAttribute<AssemblyInformationalVersionAttribute>()?
+            .InformationalVersion;
 
-        if (string.IsNullOrEmpty(assembly.Location))
+        return StripBuildMetadata(informationalVersion) ?? "0.0.0";
+    }
+
+    /// <summary>
+    /// Removes the SemVer build-metadata suffix (everything from '+' onward) from a version string.
+    /// Preserves pre-release suffixes (for example <c>-rc.5</c>). Returns <c>null</c> if the input is null/empty/whitespace.
+    /// </summary>
+    internal static string? StripBuildMetadata(string? version)
+    {
+        if (string.IsNullOrWhiteSpace(version))
         {
-            // Assembly.Location can be empty when publishing to a single file
-            // https://docs.microsoft.com/en-us/dotnet/core/deploying/single-file
-            sdkVersion = assembly.GetCustomAttribute<AssemblyInformationalVersionAttribute>()?.InformationalVersion;
+            return null;
         }
-        else
-        {
-            try
-            {
-                var fileVersionInfo = FileVersionInfo.GetVersionInfo(assembly.Location);
-                sdkVersion = fileVersionInfo.ProductVersion;
-            }
-            catch (FileNotFoundException)
-            {
-                // Invalid Location path of assembly in Android's Xamarin release mode (unchecked "Use a shared runtime" flag)
-                // https://bugzilla.xamarin.com/show_bug.cgi?id=54678
-                sdkVersion = "0.0.0";
-            }
-        }
-        return sdkVersion ?? "0.0.0";
+
+        var plusIndex = version.IndexOf('+', StringComparison.Ordinal);
+        return plusIndex < 0 ? version : version[..plusIndex];
     }
 
     internal static string GetSdk()

@@ -1,4 +1,3 @@
-using System.Diagnostics;
 using Kontent.Ai.Delivery.Extensions;
 
 namespace Kontent.Ai.Delivery.Tests;
@@ -19,8 +18,7 @@ public class TrackingHeaderTests
     public void SourceTrackingHeaderGeneratedFromAssemblyWithCustomPackageName()
     {
         var assembly = GetType().Assembly;
-        var fileVersionInfo = FileVersionInfo.GetVersionInfo(assembly.Location);
-        var sourceVersion = fileVersionInfo.ProductVersion;
+        var sourceVersion = assembly.GetProductVersion();
         var attr = new DeliverySourceTrackingHeaderAttribute("Acme.CustomPlugin");
 
         var value = HttpRequestHeadersExtensions.GenerateSourceTrackingHeaderValue(assembly, attr);
@@ -32,8 +30,7 @@ public class TrackingHeaderTests
     public void SourceTrackingHeaderGeneratedFromAssembly()
     {
         var assembly = GetType().Assembly;
-        var fileVersionInfo = FileVersionInfo.GetVersionInfo(assembly.Location);
-        var sourceVersion = fileVersionInfo.ProductVersion;
+        var sourceVersion = assembly.GetProductVersion();
         var attr = new DeliverySourceTrackingHeaderAttribute();
 
         var value = HttpRequestHeadersExtensions.GenerateSourceTrackingHeaderValue(assembly, attr);
@@ -45,13 +42,10 @@ public class TrackingHeaderTests
     public void SourceGeneratedCorrectly()
     {
         var sourceAssembly = HttpRequestHeadersExtensions.GetOriginatingAssembly();
-        var sourceFileVersionInfo = FileVersionInfo.GetVersionInfo(sourceAssembly!.Location);
-        var sourceVersion = sourceFileVersionInfo.ProductVersion;
+        var sourceVersion = sourceAssembly!.GetProductVersion();
 
-        // Act
         var source = HttpRequestHeadersExtensions.GetSource();
 
-        // Assert
         Assert.Equal($"Kontent.Ai.Delivery.Tests;{sourceVersion}", source);
     }
 
@@ -81,5 +75,41 @@ public class TrackingHeaderTests
         var version = HttpRequestHeadersExtensions.GetSdkVersion();
 
         Assert.False(string.IsNullOrEmpty(version));
+    }
+
+    [Theory]
+    [InlineData("1.2.3", "1.2.3")]
+    [InlineData("1.2.3-rc.1", "1.2.3-rc.1")]
+    [InlineData("1.2.3+abc1234", "1.2.3")]
+    [InlineData("1.2.3-rc.1+abc1234", "1.2.3-rc.1")]
+    [InlineData("5.0.0-beta.2+sha.githash.20260416", "5.0.0-beta.2")]
+    public void StripBuildMetadata_RemovesPlusSuffixPreservesPrerelease(string input, string expected)
+    {
+        Assert.Equal(expected, HttpRequestHeadersExtensions.StripBuildMetadata(input));
+    }
+
+    [Theory]
+    [InlineData(null)]
+    [InlineData("")]
+    [InlineData("   ")]
+    public void StripBuildMetadata_NullOrWhitespace_ReturnsNull(string? input)
+    {
+        Assert.Null(HttpRequestHeadersExtensions.StripBuildMetadata(input));
+    }
+
+    [Fact]
+    public void GetProductVersion_DoesNotContainBuildMetadata()
+    {
+        var version = GetType().Assembly.GetProductVersion();
+
+        Assert.DoesNotContain('+', version);
+    }
+
+    [Fact]
+    public void GetSdkVersion_DoesNotContainBuildMetadata()
+    {
+        var header = HttpRequestHeadersExtensions.GetSdkVersion();
+
+        Assert.DoesNotContain('+', header);
     }
 }

@@ -64,8 +64,11 @@ Create a custom resolver for full control:
 
 ```csharp
 var resolver = new HtmlResolverBuilder()
-    .WithContentItemLinkResolver("article", (link, _) =>
-        ValueTask.FromResult($"<a href=\"/articles/{link.Metadata?.UrlSlug}\">{link.Text}</a>"))
+    .WithContentItemLinkResolver("article", async (link, resolveChildren) =>
+    {
+        var inner = await resolveChildren(link.Children);
+        return $"<a href=\"/articles/{link.Metadata?.UrlSlug}\">{inner}</a>";
+    })
     .Build();
 
 var html = await article.Elements.BodyCopy.ToHtmlAsync(resolver);
@@ -107,14 +110,15 @@ A global resolver handles all content item links regardless of type:
 
 ```csharp
 var resolver = new HtmlResolverBuilder()
-    .WithContentItemLinkResolver((link, resolveChildren) =>
+    .WithContentItemLinkResolver(async (link, resolveChildren) =>
     {
         // Fallback URL if metadata is not available
-        var url = link.Metadata?.UrlSlug != null
+        var url = link.Metadata?.UrlSlug is { Length: > 0 }
             ? $"/content/{link.Metadata.UrlSlug}"
             : $"/content/{link.ItemId}";
 
-        return ValueTask.FromResult($"<a href=\"{url}\">{link.Text}</a>");
+        var inner = await resolveChildren(link.Children);
+        return $"<a href=\"{url}\">{inner}</a>";
     })
     .Build();
 ```
@@ -122,13 +126,25 @@ var resolver = new HtmlResolverBuilder()
 **Link Properties:**
 
 ```csharp
-public interface IContentItemLink
+public interface IContentItemLink : IBlockWithChildren, IRichTextBlock
 {
-    string Text { get; }           // Link text as authored
-    Guid ItemId { get; }           // Referenced item's ID
-    IContentItem? Metadata { get; } // Full metadata if available
+    Guid ItemId { get; }                              // Referenced item's ID
+    IContentLink Metadata { get; }                    // Link metadata (see below)
+    IReadOnlyDictionary<string, string> Attributes { get; } // Anchor-tag attributes from rich text
+    IReadOnlyList<IRichTextBlock> Children { get; }   // Inherited - the link text and any inline children
+}
+
+public interface IContentLink
+{
+    string Codename { get; }
+    string ContentTypeCodename { get; }
+    Guid Id { get; }
+    string UrlSlug { get; }
 }
 ```
+
+> [!IMPORTANT]
+> There is no `link.Text` property. Use `resolveChildren(link.Children)` from inside an `async` resolver to obtain the rendered inner HTML (the link text as authored, plus any inline formatting).
 
 ### Type-Specific Link Resolvers
 
@@ -136,20 +152,23 @@ Different content types often need different URL patterns:
 
 ```csharp
 var resolver = new HtmlResolverBuilder()
-    .WithContentItemLinkResolver("article", (link, _) =>
+    .WithContentItemLinkResolver("article", async (link, resolveChildren) =>
     {
         var slug = link.Metadata?.UrlSlug ?? link.ItemId.ToString();
-        return ValueTask.FromResult($"<a href=\"/articles/{slug}\">{link.Text}</a>");
+        var inner = await resolveChildren(link.Children);
+        return $"<a href=\"/articles/{slug}\">{inner}</a>";
     })
-    .WithContentItemLinkResolver("product", (link, _) =>
+    .WithContentItemLinkResolver("product", async (link, resolveChildren) =>
     {
         var slug = link.Metadata?.UrlSlug ?? link.ItemId.ToString();
-        return ValueTask.FromResult($"<a href=\"/shop/products/{slug}\">{link.Text}</a>");
+        var inner = await resolveChildren(link.Children);
+        return $"<a href=\"/shop/products/{slug}\">{inner}</a>";
     })
-    .WithContentItemLinkResolver("author", (link, _) =>
+    .WithContentItemLinkResolver("author", async (link, resolveChildren) =>
     {
-        var codename = link.Metadata?.System.Codename ?? link.ItemId.ToString();
-        return ValueTask.FromResult($"<a href=\"/about/team/{codename}\">{link.Text}</a>");
+        var codename = link.Metadata?.Codename ?? link.ItemId.ToString();
+        var inner = await resolveChildren(link.Children);
+        return $"<a href=\"/about/team/{codename}\">{inner}</a>";
     })
     .Build();
 ```
@@ -175,11 +194,11 @@ var resolver = new HtmlResolverBuilder()
     .Build();
 ```
 
-**Pattern Placeholders:**
-- `{urlslug}`: Uses `UrlSlug` property
-- `{codename}`: Uses `System.Codename`
-- `{id}`: Uses item GUID
-- `{name}`: Uses `System.Name`
+**Pattern Placeholders** (substituted from `IContentItemLink.Metadata` / `ItemId`):
+- `{codename}` — `Metadata.Codename`
+- `{type}` — `Metadata.ContentTypeCodename`
+- `{urlslug}` — `Metadata.UrlSlug`
+- `{id}` — `ItemId.ToString()`
 
 ### Tuple-Based Link Resolvers
 
@@ -188,13 +207,21 @@ Pass multiple type-specific link resolvers using tuple overloads:
 ```csharp
 var resolver = new HtmlResolverBuilder()
     .WithContentItemLinkResolvers(
-        ("article", (link, _) =>
-            ValueTask.FromResult($"<a href=\"/articles/{link.Metadata?.UrlSlug}\">{link.Text}</a>")),
-        ("product", (link, _) =>
-            ValueTask.FromResult($"<a href=\"/shop/products/{link.Metadata?.UrlSlug}\">{link.Text}</a>")),
-        ("author", (link, _) =>
-            ValueTask.FromResult($"<a href=\"/about/team/{link.Metadata?.System.Codename}\">{link.Text}</a>"))
-    )
+        ("article", async (link, resolveChildren) =>
+        {
+            var inner = await resolveChildren(link.Children);
+            return $"<a href=\"/articles/{link.Metadata?.UrlSlug}\">{inner}</a>";
+        }),
+        ("product", async (link, resolveChildren) =>
+        {
+            var inner = await resolveChildren(link.Children);
+            return $"<a href=\"/shop/products/{link.Metadata?.UrlSlug}\">{inner}</a>";
+        }),
+        ("author", async (link, resolveChildren) =>
+        {
+            var inner = await resolveChildren(link.Children);
+            return $"<a href=\"/about/team/{link.Metadata?.Codename}\">{inner}</a>";
+        }))
     .Build();
 ```
 
@@ -204,15 +231,20 @@ Add custom attributes and classes:
 
 ```csharp
 var resolver = new HtmlResolverBuilder()
-    .WithContentItemLinkResolver("article", (link, _) =>
+    .WithContentItemLinkResolver("article", async (link, resolveChildren) =>
     {
         var url = $"/articles/{link.Metadata?.UrlSlug}";
-        var cssClass = link.Metadata?.Elements["featured"]?.ToString() == "true"
+        var inner = await resolveChildren(link.Children);
+
+        // Per-link styling can be driven from anchor-tag attributes (the rich-text editor's link options),
+        // since IContentLink only exposes Codename / ContentTypeCodename / Id / UrlSlug. To branch on
+        // element values of the linked item, look the item up in the response's ModularContent dictionary
+        // (or via a typed lookup service).
+        var cssClass = link.Attributes.TryGetValue("data-style", out var style) && style == "featured"
             ? "featured-link"
             : "standard-link";
 
-        return ValueTask.FromResult(
-            $"<a href=\"{url}\" class=\"{cssClass}\" data-item-id=\"{link.ItemId}\">{link.Text}</a>");
+        return $"<a href=\"{url}\" class=\"{cssClass}\" data-item-id=\"{link.ItemId}\">{inner}</a>";
     })
     .Build();
 ```
@@ -783,80 +815,73 @@ Customize rendering of specific HTML elements:
 
 ```csharp
 var resolver = new HtmlResolverBuilder()
-    .WithHtmlNodeResolver("h1", (node, resolveChildren) =>
+    .WithHtmlNodeResolver("h1", async (node, resolveChildren) =>
     {
-        var content = resolveChildren();
-        var id = content.ToString()
-            .ToLower()
-            .Replace(" ", "-")
-            .Replace("[^a-z0-9-]", "");
+        var content = await resolveChildren(node.Children);
+        var id = SlugifyHelper.ToSlug(content); // your own helper
 
-        return ValueTask.FromResult(
-            $"<h1 id=\"{id}\" class=\"page-heading\">{content}</h1>");
+        return $"<h1 id=\"{id}\" class=\"page-heading\">{content}</h1>";
     })
-    .WithHtmlNodeResolver("h2", (node, resolveChildren) =>
+    .WithHtmlNodeResolver("h2", async (node, resolveChildren) =>
     {
-        var content = resolveChildren();
-        return ValueTask.FromResult(
-            $"<h2 class=\"section-heading\">{content}</h2>");
+        var content = await resolveChildren(node.Children);
+        return $"<h2 class=\"section-heading\">{content}</h2>";
     })
     .Build();
 ```
 
 ### Attribute-Based Resolution
 
+`IHtmlNode.Attributes` is an `IReadOnlyDictionary<string, string>`. Use `TryGetValue` / `GetValueOrDefault` to read attribute values:
+
 ```csharp
 var resolver = new HtmlResolverBuilder()
-    .WithHtmlNodeResolverForAttribute("data-component", "code-snippet", (node, resolveChildren) =>
+    .WithHtmlNodeResolverForAttribute("data-component", "code-snippet", async (node, resolveChildren) =>
     {
-        var code = resolveChildren();
-        var language = node.GetAttribute("data-language") ?? "plaintext";
+        var code = await resolveChildren(node.Children);
+        var language = node.Attributes.GetValueOrDefault("data-language") ?? "plaintext";
 
-        return ValueTask.FromResult($@"
-            <pre><code class=""language-{language}"">{code}</code></pre>");
+        return $@"
+            <pre><code class=""language-{language}"">{code}</code></pre>";
     })
-    .WithHtmlNodeResolverForAttribute("data-component", "alert", (node, resolveChildren) =>
+    .WithHtmlNodeResolverForAttribute("data-component", "alert", async (node, resolveChildren) =>
     {
-        var content = resolveChildren();
-        var type = node.GetAttribute("data-type") ?? "info";
+        var content = await resolveChildren(node.Children);
+        var type = node.Attributes.GetValueOrDefault("data-type") ?? "info";
 
-        return ValueTask.FromResult($@"
+        return $@"
             <div class=""alert alert-{type}"" role=""alert"">
                 {content}
-            </div>");
+            </div>";
     })
     .Build();
 ```
 
 ## Resolution Context
 
-The `resolveChildren` delegate allows processing of child nodes:
+`resolveChildren` is a `Func<IReadOnlyList<IRichTextBlock>, ValueTask<string>>`. Pass the block's `Children` collection (or any subset of blocks you want to render) to obtain the rendered HTML for them. Resolvers should be `async` whenever they call `resolveChildren`:
 
 ```csharp
 var resolver = new HtmlResolverBuilder()
-    .WithContentItemLinkResolver((link, resolveChildren) =>
+    .WithContentItemLinkResolver(async (link, resolveChildren) =>
     {
-        // Get the rendered children (link text with any nested formatting)
-        var linkContent = resolveChildren();
+        // Render the link's authored text (and any inline formatting)
+        var linkContent = await resolveChildren(link.Children);
 
         var url = $"/content/{link.Metadata?.UrlSlug}";
 
-        return ValueTask.FromResult(
-            $"<a href=\"{url}\" class=\"content-link\">{linkContent}</a>");
+        return $"<a href=\"{url}\" class=\"content-link\">{linkContent}</a>";
     })
-    .WithHtmlNodeResolver("p", (node, resolveChildren) =>
+    .WithHtmlNodeResolver("p", async (node, resolveChildren) =>
     {
-        // Process child nodes
-        var content = resolveChildren();
-
-        // Add custom class if paragraph is first in section
-        var cssClass = node.PreviousSibling == null ? "first-paragraph" : "";
-
-        return ValueTask.FromResult(
-            $"<p class=\"{cssClass}\">{content}</p>");
+        var content = await resolveChildren(node.Children);
+        return $"<p>{content}</p>";
     })
     .Build();
 ```
+
+> [!NOTE]
+> `IHtmlNode` exposes only `TagName`, `Attributes`, and `Children` — there is no `PreviousSibling` / `NextSibling` / parent navigation. If you need positional context (e.g., "first paragraph in section"), apply CSS selectors like `:first-child` instead.
 
 ## Real-World Examples
 
@@ -867,16 +892,18 @@ public IHtmlResolver CreateBlogResolver(string baseUrl)
 {
     return new HtmlResolverBuilder()
         // Article links
-        .WithContentItemLinkResolver("article", (link, _) =>
+        .WithContentItemLinkResolver("article", async (link, resolveChildren) =>
         {
             var slug = link.Metadata?.UrlSlug ?? link.ItemId.ToString();
-            return ValueTask.FromResult($"<a href=\"{baseUrl}/articles/{slug}\">{link.Text}</a>");
+            var inner = await resolveChildren(link.Children);
+            return $"<a href=\"{baseUrl}/articles/{slug}\">{inner}</a>";
         })
         // Author links
-        .WithContentItemLinkResolver("author", (link, _) =>
+        .WithContentItemLinkResolver("author", async (link, resolveChildren) =>
         {
             var slug = link.Metadata?.UrlSlug ?? link.ItemId.ToString();
-            return ValueTask.FromResult($"<a href=\"{baseUrl}/authors/{slug}\">{link.Text}</a>");
+            var inner = await resolveChildren(link.Children);
+            return $"<a href=\"{baseUrl}/authors/{slug}\">{inner}</a>";
         })
         // Type-safe tweet embeds
         .WithContentResolver<Tweet>(tweet =>
@@ -934,14 +961,15 @@ public class ProductContentResolver
     {
         return new HtmlResolverBuilder()
             // Product links with real-time pricing
-            .WithContentItemLinkResolver("product", async (link, _) =>
+            .WithContentItemLinkResolver("product", async (link, resolveChildren) =>
             {
                 var productId = link.ItemId;
                 var product = await _productService.GetProductAsync(productId);
+                var inner = await resolveChildren(link.Children);
 
                 return $@"
                     <a href=""/products/{product.Slug}"" class=""product-link"">
-                        {link.Text}
+                        {inner}
                         <span class=""price"">${product.CurrentPrice:F2}</span>
                     </a>";
             })
@@ -982,18 +1010,20 @@ public IHtmlResolver CreateDocumentationResolver()
 {
     return new HtmlResolverBuilder()
         // Cross-reference links
-        .WithContentItemLinkResolver("documentation_page", (link, _) =>
+        .WithContentItemLinkResolver("documentation_page", async (link, resolveChildren) =>
         {
             var slug = link.Metadata?.UrlSlug ?? link.ItemId.ToString();
-            return ValueTask.FromResult(
-                $"<a href=\"/docs/{slug}\" class=\"doc-link\">{link.Text}</a>");
+            var inner = await resolveChildren(link.Children);
+            return $"<a href=\"/docs/{slug}\" class=\"doc-link\">{inner}</a>";
         })
-        // API reference links
-        .WithContentItemLinkResolver("api_reference", (link, _) =>
+        // API reference links — derive the URL from the link's UrlSlug or codename.
+        // (IContentLink does not expose linked-item element values; if you need element
+        // data, look the item up via the response's ModularContent dictionary.)
+        .WithContentItemLinkResolver("api_reference", async (link, resolveChildren) =>
         {
-            var apiPath = link.Metadata?.Elements["api_path"]?.ToString();
-            return ValueTask.FromResult(
-                $"<a href=\"/api/{apiPath}\" class=\"api-link\"><code>{link.Text}</code></a>");
+            var slug = link.Metadata?.UrlSlug ?? link.Metadata?.Codename ?? link.ItemId.ToString();
+            var inner = await resolveChildren(link.Children);
+            return $"<a href=\"/api/{slug}\" class=\"api-link\"><code>{inner}</code></a>";
         })
         // Type-safe code examples
         .WithContentResolver<CodeExample>(example =>
@@ -1027,16 +1057,16 @@ public IHtmlResolver CreateDocumentationResolver()
                 </div>";
         })
         // Heading anchors for table of contents
-        .WithHtmlNodeResolver("h2", (node, resolveChildren) =>
+        .WithHtmlNodeResolver("h2", async (node, resolveChildren) =>
         {
-            var content = resolveChildren();
-            var id = GenerateId(content.ToString());
+            var content = await resolveChildren(node.Children);
+            var id = GenerateId(content);
 
-            return ValueTask.FromResult($@"
+            return $@"
                 <h2 id=""{id}"">
                     <a href=""#{id}"" class=""heading-anchor"">#</a>
                     {content}
-                </h2>");
+                </h2>";
         })
         .Build();
 }
@@ -1229,9 +1259,10 @@ var resolver = new HtmlResolverBuilder()
 ```csharp
 // At minimum, provide a global link resolver
 var resolver = new HtmlResolverBuilder()
-    .WithContentItemLinkResolver((link, _) =>
+    .WithContentItemLinkResolver(async (link, resolveChildren) =>
     {
-        return ValueTask.FromResult($"<a href=\"/content/{link.ItemId}\">{link.Text}</a>");
+        var inner = await resolveChildren(link.Children);
+        return $"<a href=\"/content/{link.ItemId}\">{inner}</a>";
     })
     .Build();
 ```

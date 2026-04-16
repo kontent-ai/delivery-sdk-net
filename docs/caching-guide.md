@@ -813,8 +813,12 @@ public class CacheInvalidationService : BackgroundService
         {
             try
             {
-                // Invalidate news cache every 5 minutes
-                await cacheManager.InvalidateAsync(["items_news"], stoppingToken);
+                // Invalidate every cached items listing every 5 minutes.
+                // Use DeliveryCacheDependencies.ItemsListScope ("scope_items_list")
+                // to drop ALL items-list responses in one call. To target a single item,
+                // use $"item_{codename}" instead.
+                await cacheManager.InvalidateAsync(
+                    [DeliveryCacheDependencies.ItemsListScope], stoppingToken);
 
                 // Wait 5 minutes
                 await Task.Delay(TimeSpan.FromMinutes(5), stoppingToken);

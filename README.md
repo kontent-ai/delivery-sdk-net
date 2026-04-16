@@ -972,13 +972,13 @@ var resolver = new HtmlResolverBuilder()
     {
         var url = $"/articles/{link.Metadata?.UrlSlug}";
         var innerHtml = await resolveChildren(link.Children);
-        return ValueTask.FromResult($"<a href=\"{url}\">{innerHtml}</a>");
+        return $"<a href=\"{url}\">{innerHtml}</a>";
     })
     .WithContentItemLinkResolver("product", async (link, resolveChildren) =>
     {
         var url = $"/shop/{link.Metadata?.UrlSlug}";
         var innerHtml = await resolveChildren(link.Children);
-        return ValueTask.FromResult($"<a href=\"{url}\">{link.Text}</a>");
+        return $"<a href=\"{url}\">{innerHtml}</a>";
     })
     .Build();
 

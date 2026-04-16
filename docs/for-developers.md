@@ -314,7 +314,7 @@ public interface IDeliveryCacheManager
 {
     CacheStorageMode StorageMode => CacheStorageMode.HydratedObject;
 
-    Task<T?> GetOrSetAsync<T>(
+    Task<CacheResult<T>?> GetOrSetAsync<T>(
         string cacheKey,
         Func<CancellationToken, Task<CacheEntry<T>?>> factory,  // Invoked on cache miss
         TimeSpan? expiration = null,
@@ -325,7 +325,7 @@ public interface IDeliveryCacheManager
 }
 ```
 
-The factory-based `GetOrSetAsync` pattern enables FusionCache-native stampede protection (concurrent cache misses for the same key coalesce into a single factory invocation). The factory returns `CacheEntry<T>?` which bundles the value with its dependency tags; returning `null` signals "don't cache" (e.g., API failure).
+The factory-based `GetOrSetAsync` pattern enables FusionCache-native stampede protection (concurrent cache misses for the same key coalesce into a single factory invocation). The **factory** returns `CacheEntry<T>?` which bundles the value with its dependency tags; returning `null` signals "don't cache" (e.g., API failure). The **method itself** returns `CacheResult<T>?` — a record exposing the cached value (`Value`) and the dependency keys associated with it (`DependencyKeys`).
 
 ### Cache Storage Mode
 

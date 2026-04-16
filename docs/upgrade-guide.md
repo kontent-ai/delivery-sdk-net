@@ -6,7 +6,6 @@ This guide provides comprehensive instructions for migrating from the legacy Kon
 
 - [Overview](#overview)
 - [Quick Migration Checklist](#quick-migration-checklist)
-- [RC1 Readiness Checklist (beta-6)](#rc1-readiness-checklist-beta-6)
 - [1. Migrating Query Methods](#1-migrating-query-methods)
 - [2. Migrating Filtering](#2-migrating-filtering)
 - [3. Migrating Caching](#3-migrating-caching)
@@ -17,6 +16,7 @@ This guide provides comprehensive instructions for migrating from the legacy Kon
 - [8. Migrating DI Registration](#8-migrating-di-registration)
 - [9. Removed Features & Interfaces](#9-removed-features--interfaces)
 - [10. New Features](#10-new-features)
+- [11. Migrating the Sync API](#11-migrating-the-sync-api)
 - [Troubleshooting](#troubleshooting)
 
 ## Overview
@@ -64,19 +64,7 @@ Use this checklist to ensure you've addressed all required changes:
 - [ ] Update response handling to use result pattern (`IsSuccess`, `Value`, `Error`)
 - [ ] Update content access from `response.Item.Title` to `result.Value.Elements.Title`
 - [ ] Migrate custom retry policies from `IRetryPolicy` to Polly configuration
-
----
-
-## RC1 Readiness Checklist (beta-6)
-
-Use this focused checklist when validating beta-6 integrations before moving to RC1:
-
-- [ ] Ensure model projects reference `Kontent.Ai.Delivery.SourceGeneration`
-- [ ] Regenerate models so `[ContentTypeCodename]` attributes are present
-- [ ] If you implemented custom `ITypeProvider`, rename `TryGetModelType` to `GetType`
-- [ ] Use `IDeliveryClientFactory.Get()` (or `"Default"` keyed resolution) for default client access
-- [ ] Verify webhook invalidation includes both detail keys and list scope keys (`scope_items_list`, `scope_types_list`, `scope_taxonomies_list`)
-- [ ] Validate cache behavior in your target backend (memory and/or Redis)
+- [ ] If you used the Sync API (`PostSyncInitAsync`/`GetSyncAsync`/V2), migrate to the standalone [`Kontent.Ai.Sync`](https://github.com/kontent-ai/sync-sdk-net) package
 
 ---
 
@@ -564,13 +552,41 @@ services.AddDeliveryMemoryCache("production", defaultExpiration: TimeSpan.FromHo
 
 ### 3.5 DeliveryCacheOptions Migration
 
+The legacy `DeliveryCacheOptions` (with `CacheType`, `StaleContentExpiration`, `DistributedCacheResilientPolicy`) is gone. A new `DeliveryCacheOptions` shaped around FusionCache lives in `Kontent.Ai.Delivery.Abstractions` and is exposed via the `Action<DeliveryCacheOptions>` overloads of `AddDeliveryMemoryCache()` / `AddDeliveryHybridCache()`.
+
+**Mapping legacy → new:**
+
 | Legacy Option | New Equivalent |
 |--------------|----------------|
-| `CacheType = CacheTypeEnum.Memory` | Use `AddDeliveryMemoryCache()` |
-| `CacheType = CacheTypeEnum.Distributed` | Use `AddDeliveryHybridCache()` |
-| `DefaultExpiration` | Pass as parameter to cache registration method |
-| `StaleContentExpiration` | Handled automatically by result's `HasStaleContent` property |
-| `DistributedCacheResilientPolicy` (legacy) | Removed (handled by Polly resilience pipeline) |
+| `CacheType = CacheTypeEnum.Memory` | `AddDeliveryMemoryCache()` |
+| `CacheType = CacheTypeEnum.Distributed` | `AddDeliveryHybridCache()` |
+| `DefaultExpiration` | `DeliveryCacheOptions.DefaultExpiration` (default `1h`) — pass via parameter or configure action. |
+| `StaleContentExpiration` | Replaced by the per-result `HasStaleContent` flag and FusionCache's eager-refresh / fail-safe mechanisms. |
+| `DistributedCacheResilientPolicy` | Removed — handled by Polly resilience pipeline + FusionCache fail-safe. |
+
+**New options you can configure** (via `Action<DeliveryCacheOptions>`):
+
+| Property | Default | Purpose |
+|----------|---------|---------|
+| `DefaultExpiration` | `1h` | Manager-wide TTL for cached entries (per-query override available via `.WithCacheExpiration(...)`). |
+| `KeyPrefix` | `null` | Prefix added to every cache key. Use to isolate multiple clients sharing a cache store. |
+| `IsFailSafeEnabled` | `false` | When `true`, FusionCache may serve stale entries if the API call fails (resilience during outages). |
+| `FailSafeMaxDuration` | `1d` | Maximum age a stale entry may be served when fail-safe is active. |
+| `FailSafeThrottleDuration` | `30s` | Minimum delay between background refresh attempts while fail-safe is active. |
+| `JitterMaxDuration` | `0` | Random jitter added to expirations to spread load and prevent thundering-herd. |
+| `EagerRefreshThreshold` | `0` | Fraction of TTL (0–1). When set, FusionCache refreshes entries in the background once this fraction has elapsed. |
+| `ConfigureFusionCacheOptions` | `null` | Escape hatch — receives the underlying `FusionCacheOptions` for advanced FusionCache features (backplane, background ops, etc.). |
+
+```csharp
+services.AddDeliveryMemoryCache(opts =>
+{
+    opts.DefaultExpiration = TimeSpan.FromMinutes(10);
+    opts.JitterMaxDuration = TimeSpan.FromSeconds(30);
+    opts.IsFailSafeEnabled = true;
+    opts.FailSafeMaxDuration = TimeSpan.FromHours(6);
+    opts.EagerRefreshThreshold = 0.8f;
+});
+```
 
 ### 3.6 Cache Invalidation
 
@@ -659,24 +675,32 @@ if (cacheManager is IDeliveryCachePurger purger)
 
 ### 3.8 Detecting Cache Hits
 
-**New feature:** The SDK now provides cache hit detection:
+**New feature:** The SDK exposes both a coarse `IsCacheHit` flag and a finer-grained `ResponseSource` enum (`Origin`, `Cdn`, `Cache`, `FailSafe`):
 
 ```csharp
 var result = await client.GetItem<Article>("homepage").ExecuteAsync();
 
 if (result.IsSuccess)
 {
-    if (result.IsCacheHit)
+    switch (result.ResponseSource)
     {
-        Console.WriteLine("Served from SDK cache");
-        // Note: ResponseHeaders and RequestUrl are null for cache hits
-    }
-    else
-    {
-        Console.WriteLine($"Fetched from API: {result.RequestUrl}");
+        case ResponseSource.Cache:
+            Console.WriteLine("Served from SDK cache");
+            break;
+        case ResponseSource.FailSafe:
+            Console.WriteLine("Served stale data (API call failed; fail-safe served the previous value)");
+            break;
+        case ResponseSource.Cdn:
+            Console.WriteLine("Served from CDN edge cache (X-Cache: HIT)");
+            break;
+        case ResponseSource.Origin:
+            Console.WriteLine($"Fetched from origin: {result.RequestUrl}");
+            break;
     }
 }
 ```
+
+`IsCacheHit` returns `true` for both `Cache` and `FailSafe`. `ResponseHeaders` and `RequestUrl` are `null` whenever the response was served from the SDK cache (i.e., the API was not actually called).
 
 ### 3.9 Using DeliveryClientBuilder with Caching (Non-DI)
 
@@ -702,7 +726,7 @@ await using var client = DeliveryClientBuilder
 
 ### 3.10 Per-query Cache Expiration
 
-You can override cache expiration for a specific cacheable query:
+`WithCacheExpiration(TimeSpan?)` is an extension method shipped in `Kontent.Ai.Delivery` that overrides the cache TTL for a single cacheable query without affecting the manager-level default:
 
 ```csharp
 var result = await client.GetItem<Article>("homepage")
@@ -710,7 +734,7 @@ var result = await client.GetItem<Article>("homepage")
     .ExecuteAsync();
 ```
 
-This applies to:
+It is available on:
 - `GetItem<T>()`
 - `GetItems<T>()`
 - `GetType()`
@@ -718,36 +742,7 @@ This applies to:
 - `GetTaxonomy()`
 - `GetTaxonomies()`
 
-### 3.7 DistributedCache to HybridCache Rename
-
-The SDK's distributed cache APIs have been renamed to "Hybrid Cache" to better reflect their FusionCache L1+L2 architecture and avoid confusion with Microsoft's `IDistributedCache` interface (which remains unchanged).
-
-| Old Name | New Name |
-|----------|----------|
-| `AddDeliveryDistributedCache()` | `AddDeliveryHybridCache()` |
-| `WithDistributedCache()` | `WithHybridCache()` |
-| `DistributedCacheManager` | `HybridCacheManager` |
-| `FusionCacheManager.CreateDistributed()` | `FusionCacheManager.CreateHybrid()` |
-
-**Migration:**
-```csharp
-// Before
-services.AddDeliveryDistributedCache("production", defaultExpiration: TimeSpan.FromHours(2));
-
-// After
-services.AddDeliveryHybridCache("production", defaultExpiration: TimeSpan.FromHours(2));
-```
-
-```csharp
-// Before (builder pattern)
-var client = DeliveryClientBuilder.WithDistributedCache(distributedCache, TimeSpan.FromHours(2));
-
-// After
-var client = DeliveryClientBuilder.WithHybridCache(distributedCache, TimeSpan.FromHours(2));
-```
-
-> [!NOTE]
-> Microsoft's `IDistributedCache`, `AddDistributedMemoryCache`, `AddStackExchangeRedisCache`, `AddDistributedSqlServerCache`, and FusionCache's own distributed cache options are **not** affected by this rename. Only the SDK's own wrapper types and DI extension methods have changed.
+Pass `null` to fall back to the manager's `DeliveryCacheOptions.DefaultExpiration`.
 
 ---
 
@@ -774,15 +769,16 @@ The SDK includes a default retry policy that handles:
 
 ### 4.3 Disabling Retry Policy
 
-**Legacy:**
+**Legacy:** Set `EnableRetryPolicy = false` on `DeliveryOptions`.
 ```csharp
-services.AddDeliveryClient(builder => builder
-    .WithEnvironmentId("env-id")
-    .DisableResilienceLogic()
-    .Build());
+services.AddDeliveryClient(new DeliveryOptions
+{
+    EnvironmentId = "env-id",
+    EnableRetryPolicy = false
+});
 ```
 
-**New:**
+**New:** Use `DisableRetryPolicy()` on the options builder (it sets `EnableResilience = false` internally).
 ```csharp
 services.AddDeliveryClient(builder => builder
     .WithEnvironmentId("env-id")
@@ -1167,6 +1163,17 @@ Views/
 
 **Migration:** Use `HtmlResolverBuilder.WithContentResolver<T>()` instead. Display templates are no longer automatically discovered or used.
 
+### 5.10 Other `HtmlResolverBuilder` extension points
+
+For completeness, the builder also exposes these less commonly used hooks:
+
+- `WithTextNodeResolver(BlockResolver<ITextNode>)` — override how plain text nodes are emitted (default HTML-encodes).
+- `WithHtmlElementResolver(BlockResolver<IHtmlNode>)` — override the *default* HTML node resolver (used when no specific tag/attribute predicate matches).
+- `WithHtmlNodeResolver(HtmlNodePredicate, BlockResolver<IHtmlNode>, string description = null)` — predicate-based HTML node resolver with an optional diagnostic description.
+- `WithHtmlNodeResolverForAttribute(string attributeName, string? attributeValue, BlockResolver<IHtmlNode>)` — match HTML nodes by attribute name/value.
+- `WithContentItemLinkResolvers(...)` and `WithContentResolvers(...)` batch overloads — register many resolvers in one call (dictionary or `params (codename, resolver)[]`).
+- `ThrowOnMissingResolver(bool enabled = true)` — fail fast when a `WithContentResolver` / `WithContentItemLinkResolver` is missing for an embedded item or content link encountered during rendering.
+
 ---
 
 ## 6. Migrating Response Handling
@@ -1284,18 +1291,20 @@ if (result.IsSuccess)
 
 ### 6.5 Response Metadata
 
-**New properties on IDeliveryResult:**
+**Properties on `IDeliveryResult<T>`:**
 
 | Property | Description |
 |----------|-------------|
-| `IsSuccess` | Whether the request succeeded |
-| `Value` | The response content (when successful) |
-| `Error` | Error details (when failed) |
-| `StatusCode` | HTTP status code |
-| `RequestUrl` | Full request URL for debugging |
-| `ResponseHeaders` | HTTP response headers (null for cache hits) |
-| `IsCacheHit` | Whether response was served from SDK cache |
-| `HasStaleContent` | Whether newer content may be available |
+| `IsSuccess` | Whether the request succeeded (HTTP 2xx). |
+| `Value` | The response content. Populated when `IsSuccess` is `true`. |
+| `Error` | `IError` with diagnostic details. Populated when `IsSuccess` is `false`. |
+| `StatusCode` | HTTP status code. |
+| `RequestUrl` | Full request URL for debugging. `null` when served from the SDK cache. |
+| `ResponseHeaders` | HTTP response headers. `null` when served from the SDK cache. |
+| `ResponseSource` | `Origin`, `Cdn`, `Cache`, or `FailSafe` — explains *where* the response came from. |
+| `IsCacheHit` | `true` when `ResponseSource` is `Cache` or `FailSafe` (i.e., the SDK served it without calling the API). |
+| `HasStaleContent` | `true` when Kontent.ai signalled that newer content may be available shortly (rolling cache window). |
+| `DependencyKeys` | List of cache dependency keys (e.g., `item_<codename>`, `type_<codename>`, list scopes) associated with this response. Use these to drive webhook-based invalidation via `IDeliveryCacheManager.InvalidateAsync(...)`. |
 
 **Example:**
 ```csharp
@@ -1303,15 +1312,21 @@ var result = await client.GetItem<Article>("article_codename").ExecuteAsync();
 
 Console.WriteLine($"Success: {result.IsSuccess}");
 Console.WriteLine($"Status: {result.StatusCode}");
-Console.WriteLine($"Cache Hit: {result.IsCacheHit}");
+Console.WriteLine($"Source: {result.ResponseSource}");      // Origin | Cdn | Cache | FailSafe
 Console.WriteLine($"Request URL: {result.RequestUrl}");
 
-if (!result.IsCacheHit && result.ResponseHeaders != null)
+if (!result.IsCacheHit && result.ResponseHeaders is not null)
 {
     if (result.ResponseHeaders.TryGetValues("X-Cache", out var cacheValues))
     {
         Console.WriteLine($"CDN Cache: {string.Join(", ", cacheValues)}");
     }
+}
+
+// DependencyKeys feed straight into webhook invalidation
+if (result.DependencyKeys is { Count: > 0 } keys)
+{
+    Console.WriteLine($"Tracked dependency keys: {string.Join(", ", keys)}");
 }
 ```
 
@@ -1524,9 +1539,11 @@ services.AddDeliveryClient(Configuration);
 
 **New:**
 ```csharp
-// ITypeProvider must be registered BEFORE AddDeliveryClient()
-// The SDK uses TryAddSingleton internally, so your registration takes precedence
-services.AddSingleton<ITypeProvider, GeneratedTypeProvider>();
+// Optional: register a CUSTOM ITypeProvider BEFORE AddDeliveryClient().
+// AddDeliveryClient uses TryAddSingleton, so your registration wins only if it's already in the container.
+// You do NOT need to register the source-generated provider manually — the SDK auto-discovers it
+// from loaded assemblies via the [ContentTypeCodename] attribute.
+services.AddSingleton<ITypeProvider, MyCustomTypeProvider>();
 
 // Then register the delivery client
 services.AddDeliveryClient(options =>
@@ -1547,7 +1564,7 @@ services.AddDeliveryClient(
 ```
 
 > [!IMPORTANT]
-> The order matters for `ITypeProvider`. Register it before `AddDeliveryClient()` to ensure your custom type provider is used instead of the default.
+> Order matters only when **overriding** `ITypeProvider`. The SDK registers the default `TypeProvider` (which auto-discovers source-generated providers) via `TryAddSingleton`, so a manual `AddSingleton` registered *before* `AddDeliveryClient` will replace it.
 
 ### 8.3 Named Clients
 
@@ -1588,17 +1605,9 @@ public class MyController(
 
 ### 8.4 HttpClient Configuration
 
-**Legacy:**
-```csharp
-services.AddHttpClient<IDeliveryHttpClient, DeliveryHttpClient>()
-    .ConfigureHttpClient(client =>
-    {
-        client.Timeout = TimeSpan.FromSeconds(60);
-    });
-services.AddDeliveryClient(Configuration);
-```
+**Legacy:** v18 didn't expose a public hook for configuring the underlying `HttpClient` — `IDeliveryHttpClient` was registered as a singleton internally and not surfaced as a typed `HttpClient`. Customizing the timeout typically required replacing `IDeliveryHttpClient` wholesale.
 
-**New:**
+**New:** Pass a `configureHttpClient` callback to `AddDeliveryClient`.
 ```csharp
 services.AddDeliveryClient(
     buildDeliveryOptions: builder => builder.WithEnvironmentId("env-id").Build(),
@@ -1610,6 +1619,8 @@ services.AddDeliveryClient(
         });
     });
 ```
+
+The callback receives the `IHttpClientBuilder` for the SDK's named `HttpClient`, so you can also chain `.AddHttpMessageHandler(...)`, attach Polly handlers, etc.
 
 ### 8.5 DeliveryClientBuilder (Non-DI)
 
@@ -1633,11 +1644,29 @@ await using var client = DeliveryClientBuilder
         .UseProductionApi()
         .Build())
     .WithTypeProvider(new GeneratedTypeProvider())
-    .WithMemoryCache(TimeSpan.FromHours(1))
+    .WithLoggerFactory(loggerFactory)            // optional: enable diagnostic logging
+    .WithMemoryCache(TimeSpan.FromHours(1))      // from Kontent.Ai.Delivery.Caching
+    .ConfigureServices(services =>               // general-purpose extensibility hook
+    {
+        services.AddSingleton<IMyCustomDependency, MyImpl>();
+    })
     .Build();
 
 // Note: Content link resolution is now done at use site via HtmlResolverBuilder
 ```
+
+The new builder surface is intentionally minimal:
+
+| Method | Purpose |
+|--------|---------|
+| `WithOptions(Func<IDeliveryOptionsBuilder, DeliveryOptions>)` | Required. Configures `DeliveryOptions`. |
+| `WithTypeProvider(ITypeProvider)` | Override the default type provider. |
+| `WithLoggerFactory(ILoggerFactory)` | Enable logging (no-op if omitted). |
+| `WithMemoryCache(...)` / `WithHybridCache(...)` | From `Kontent.Ai.Delivery.Caching`. |
+| `ConfigureServices(Action<IServiceCollection>)` | Escape hatch — register anything else into the builder's internal service collection. |
+| `Build()` | Returns an `IDeliveryClient` that owns its services; dispose via `await using`. |
+
+Anything not listed above (e.g., legacy `WithContentLinkUrlResolver`, `WithRetryPolicyProvider`, `WithInlineContentItemsResolver<T>`, `WithDeliveryHttpClient`, `WithModelProvider`, `WithInlineContentItemsProcessor`, `WithPropertyMapper`) was removed — see [§9](#9-removed-features--interfaces) for replacements.
 
 ---
 
@@ -1649,20 +1678,23 @@ await using var client = DeliveryClientBuilder
 |------------------|-------------|
 | `IContentLinkUrlResolver` | `HtmlResolverBuilder.WithContentItemLinkResolver()` |
 | `IInlineContentItemsResolver<T>` | `HtmlResolverBuilder.WithContentResolver<T>()` |
+| `IInlineContentItemsProcessor` | `HtmlResolverBuilder` + `IRichTextContent.ToHtmlAsync(resolver)` |
 | `IRetryPolicy` | Polly `ResiliencePipelineBuilder<HttpResponseMessage>` via `configureResilience` |
 | `IRetryPolicyProvider` | Polly `ResiliencePipelineBuilder<HttpResponseMessage>` via `configureResilience` |
-| `IDeliveryHttpClient` | Internal implementation (not extensible) |
+| `IDeliveryHttpClient` | Configure the underlying `HttpClient` via the `configureHttpClient` callback on `AddDeliveryClient` (see [§8.4](#84-httpclient-configuration)). |
+| `IDeliverySyncInitResponse`, `IDeliverySyncResponse`, `IDeliverySyncV2Response` | Sync was extracted to the standalone [`Kontent.Ai.Sync`](https://github.com/kontent-ai/sync-sdk-net) package — see [§11](#11-migrating-the-sync-api). |
 
 ### 9.2 Removed Classes
 
 | Removed Class | Replacement |
 |--------------|-------------|
 | `DefaultRetryPolicyOptions` | `HttpRetryStrategyOptions` from Polly |
-| `DeliveryCacheOptions` | Parameters to `AddDeliveryMemoryCache()` / `AddDeliveryHybridCache()` |
+| `DeliveryCacheOptions` (legacy shape with `CacheType`/`StaleContentExpiration`) | Replaced by a new, FusionCache-shaped `DeliveryCacheOptions` exposed via `Action<DeliveryCacheOptions>` overloads of `AddDeliveryMemoryCache()` / `AddDeliveryHybridCache()` (see [§3.2](#32-memory-cache-registration) / [§3.3](#33-hybrid-cache-registration-redis)). |
 | `DeliveryClientCache` | Internal implementation (use `AddDelivery*Cache()` methods) |
 | `CacheManagerFactory` | Use `DeliveryClientBuilder.WithMemoryCache()` or `WithHybridCache()` |
-| `EqualsFilter`, `ContainsFilter`, etc. | Fluent filter builder via `Where()` |
-| `LanguageParameter`, `LimitParameter`, etc. | Fluent query builder methods |
+| `EqualsFilter`, `NotEqualsFilter`, `LessThanFilter`, `LessThanOrEqualFilter`, `GreaterThanFilter`, `GreaterThanOrEqualFilter`, `RangeFilter`, `InFilter`, `NotInFilter`, `ContainsFilter`, `AnyFilter`, `AllFilter`, `EmptyFilter`, `NotEmptyFilter`, `SystemTypeEqualsFilter` | Fluent filter builder via `.Where(f => f.System(...).Is...() / f.Element(...).Is...())` |
+| `LanguageParameter`, `LimitParameter`, `SkipParameter`, `OrderParameter`, `DepthParameter`, `ElementsParameter`, `ExcludeElementsParameter`, `IncludeTotalCountParameter`, `ContinuationTokenParameter` | Fluent query builder methods (`.WithLanguage`, `.Limit`, `.Skip`, `.OrderBy`, `.Depth`, `.WithElements`, `.WithoutElements`, `.WithTotalCount`, automatic feed pagination) |
+| `SortOrder` enum | Replaced by `OrderingMode` (`Ascending` / `Descending`) used with `.OrderBy(...)`. |
 
 ### 9.3 Removed Methods
 
@@ -1670,23 +1702,31 @@ await using var client = DeliveryClientBuilder
 |---------------|-------------|
 | `GetItemAsync<T>(codename, params)` | `GetItem<T>(codename).[options].ExecuteAsync()` |
 | `GetItemsAsync<T>(params)` | `GetItems<T>().[options].ExecuteAsync()` |
+| `GetItemsFeed<T>(params)` (legacy returned `IDeliveryItemsFeed<T>` immediately) | `GetItemsFeed<T>().[options].EnumerateAsync()` (or `.ExecuteAsync()` for first page) |
 | `GetTypeAsync(codename)` | `GetType(codename).ExecuteAsync()` |
 | `GetTypesAsync(params)` | `GetTypes().[options].ExecuteAsync()` |
 | `GetTaxonomyAsync(codename)` | `GetTaxonomy(codename).ExecuteAsync()` |
 | `GetTaxonomiesAsync(params)` | `GetTaxonomies().[options].ExecuteAsync()` |
 | `GetLanguagesAsync()` | `GetLanguages().ExecuteAsync()` |
 | `GetContentElementAsync(type, element)` | `GetContentElement(type, element).ExecuteAsync()` |
+| `PostSyncInitAsync(params)`, `GetSyncAsync(token)`, `PostSyncV2InitAsync()`, `GetSyncV2Async(token)` | Sync API moved to the standalone [`Kontent.Ai.Sync`](https://github.com/kontent-ai/sync-sdk-net) package — see [§11](#11-migrating-the-sync-api). |
+| `services.AddDeliveryInlineContentItemsResolver<T>(...)` (and the two-generic-type overload) | Use `HtmlResolverBuilder.WithContentResolver<T>(...)` at use site. |
 | `DeliveryClientBuilder.WithContentLinkUrlResolver()` | Use `HtmlResolverBuilder` at use site |
 | `DeliveryClientBuilder.WithRetryPolicyProvider()` | Use `configureResilience` callback |
 | `DeliveryClientBuilder.WithInlineContentItemsResolver<T>()` | Use `HtmlResolverBuilder` at use site |
+| `DeliveryClientBuilder.WithInlineContentItemsProcessor()` | Use `HtmlResolverBuilder` at use site |
+| `DeliveryClientBuilder.WithDeliveryHttpClient()` | Use `configureHttpClient` callback on `AddDeliveryClient` (DI) — there is no equivalent on the non-DI builder. |
+| `DeliveryClientBuilder.WithModelProvider()` | Removed — model materialization is internal in 19.0. |
+| `DeliveryClientBuilder.WithPropertyMapper()` | Removed — element-to-property mapping is internal in 19.0. |
 
 ### 9.4 Removed DeliveryOptions Properties
 
 | Removed Property | Replacement |
 |-----------------|-------------|
-| `EnableRetryPolicy` | Use `DisableRetryPolicy()` in builder |
-| `DefaultRetryPolicyOptions` | Use `configureResilience` callback with Polly |
-| `MaxRetryAttempts` | Configure via `HttpRetryStrategyOptions.MaxRetryAttempts` |
+| `EnableRetryPolicy` | `DisableRetryPolicy()` on the options builder (sets the new `EnableResilience = false` internally). |
+| `DefaultRetryPolicyOptions` | `configureResilience` callback on `AddDeliveryClient` with Polly's `HttpRetryStrategyOptions`. |
+| `IncludeTotalCount` | Per-query `.WithTotalCount()` on items / dynamic items queries (no global default any more). |
+| `WaitForLoadingNewContent` | Per-query `.WaitForLoadingNewContent(true)` on every query builder (also bypasses the SDK cache for that single call). |
 
 ### 9.5 Removed Packages
 
@@ -1900,6 +1940,91 @@ var result = await client.GetItems<Article>()
     .WithoutElements("body_copy", "metadata")
     .ExecuteAsync();
 ```
+
+### 10.8 ResponseSource & DependencyKeys
+
+Every result now carries a `ResponseSource` enum (`Origin`, `Cdn`, `Cache`, `FailSafe`) and a list of `DependencyKeys`. The enum lets you distinguish a normal cache hit from a fail-safe stale serve, and the dependency keys plug straight into webhook-driven invalidation:
+
+```csharp
+var result = await client.GetItems<Article>().ExecuteAsync();
+
+// Persist these alongside your CDN entry, then call InvalidateAsync(...) when a webhook fires.
+var keysForInvalidation = result.DependencyKeys;
+```
+
+See [§3.6](#36-cache-invalidation) for the full webhook flow and [§6.5](#65-response-metadata) for the complete `IDeliveryResult` surface.
+
+### 10.9 Configurable Fail-Safe and Eager Refresh
+
+The new `DeliveryCacheOptions` exposes FusionCache's fail-safe (serve stale on API failure) and eager-refresh (refresh in the background before TTL expires) features. See [§3.5](#35-deliverycacheoptions-migration) for the full set of knobs.
+
+---
+
+## 11. Migrating the Sync API
+
+The Delivery Sync API methods (`PostSyncInitAsync`, `GetSyncAsync`, `PostSyncV2InitAsync`, `GetSyncV2Async`) have been **removed** from `IDeliveryClient` and moved to a dedicated package: [`Kontent.Ai.Sync`](https://github.com/kontent-ai/sync-sdk-net). This isolates sync-specific concerns (continuation token lifecycle, delta payloads, v2 multi-resource sync) from the general delivery client.
+
+### 11.1 Package Change
+
+```xml
+<!-- Before (everything bundled in the delivery client) -->
+<PackageReference Include="Kontent.Ai.Delivery" Version="18.x.x" />
+
+<!-- After: add the standalone sync package alongside the delivery client -->
+<PackageReference Include="Kontent.Ai.Delivery" Version="19.0.0" />
+<PackageReference Include="Kontent.Ai.Sync" Version="*" />
+```
+
+### 11.2 Side-by-side example
+
+**Legacy (init + page through deltas with the same `IDeliveryClient`):**
+```csharp
+var initResponse = await deliveryClient.PostSyncInitAsync();
+var continuationToken = initResponse.ContinuationToken;
+
+while (!string.IsNullOrEmpty(continuationToken))
+{
+    var sync = await deliveryClient.GetSyncAsync(continuationToken);
+
+    foreach (var change in sync.SyncItems)
+    {
+        ProcessChange(change);
+    }
+
+    continuationToken = sync.ContinuationToken;
+}
+```
+
+**New (use the standalone Sync SDK):**
+```csharp
+// Registration
+services.AddSyncClient(options =>
+{
+    options.EnvironmentId = "your-environment-id";
+});
+
+// Usage
+var syncClient = serviceProvider.GetRequiredService<ISyncClient>();
+
+// Initialize and get the starting sync token
+var init = await syncClient.InitializeSyncAsync();
+var syncToken = init.Value;
+
+// Pull a single delta page
+var page = await syncClient.GetDeltaAsync(syncToken);
+
+// Or stream all available delta pages (capped by maxPages to bound work per call)
+await foreach (var delta in syncClient.GetAllDeltaAsync(syncToken, maxPages: 10))
+{
+    foreach (var change in delta.Items)
+    {
+        ProcessChange(change);
+    }
+}
+```
+
+> [!NOTE]
+> The Sync SDK is a separate project with its own release cadence. See [`kontent-ai/sync-sdk-net`](https://github.com/kontent-ai/sync-sdk-net) for the authoritative API reference, supported features (item / type / taxonomy / language deltas), and full DI registration patterns.
 
 ---
 
