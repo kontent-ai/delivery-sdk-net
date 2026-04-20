@@ -60,6 +60,29 @@ public static class DeliveryClientBuilderExtensions
     }
 
     /// <summary>
+    /// Enables in-memory caching for API responses with a configuration action that can resolve services from the container.
+    /// </summary>
+    /// <param name="builder">The delivery client builder.</param>
+    /// <param name="configureCacheOptions">A delegate to configure the <see cref="DeliveryCacheOptions"/> with access to the <see cref="IServiceProvider"/>.</param>
+    /// <returns>The builder instance for method chaining.</returns>
+    /// <exception cref="ArgumentNullException">Thrown when <paramref name="configureCacheOptions"/> is null.</exception>
+    /// <remarks>
+    /// <para>
+    /// Use this overload when the cache options need to read values from other services registered in the container.
+    /// The callback is invoked on first cache-manager resolution.
+    /// </para>
+    /// <para>
+    /// Cannot be combined with hybrid cache. Calling both will use the last one configured.
+    /// </para>
+    /// </remarks>
+    public static DeliveryClientBuilder WithMemoryCache(this DeliveryClientBuilder builder, Action<IServiceProvider, DeliveryCacheOptions> configureCacheOptions)
+    {
+        ArgumentNullException.ThrowIfNull(configureCacheOptions);
+
+        return builder.ConfigureServices(services => services.AddDeliveryMemoryCache(configureCacheOptions));
+    }
+
+    /// <summary>
     /// Enables hybrid (L1 memory + L2 distributed) caching for API responses using a provided <see cref="IDistributedCache"/> instance.
     /// </summary>
     /// <param name="builder">The delivery client builder.</param>
@@ -119,6 +142,35 @@ public static class DeliveryClientBuilderExtensions
     /// </para>
     /// </remarks>
     public static DeliveryClientBuilder WithHybridCache(this DeliveryClientBuilder builder, IDistributedCache distributedCache, Action<DeliveryCacheOptions> configureCacheOptions)
+    {
+        ArgumentNullException.ThrowIfNull(distributedCache);
+        ArgumentNullException.ThrowIfNull(configureCacheOptions);
+
+        return builder.ConfigureServices(services =>
+        {
+            services.AddSingleton(distributedCache);
+            services.AddDeliveryHybridCache(configureCacheOptions);
+        });
+    }
+
+    /// <summary>
+    /// Enables hybrid (L1 memory + L2 distributed) caching with a configuration action that can resolve services from the container.
+    /// </summary>
+    /// <param name="builder">The delivery client builder.</param>
+    /// <param name="distributedCache">The distributed cache instance (e.g., Redis, SQL Server, NCache).</param>
+    /// <param name="configureCacheOptions">A delegate to configure the <see cref="DeliveryCacheOptions"/> with access to the <see cref="IServiceProvider"/>.</param>
+    /// <returns>The builder instance for method chaining.</returns>
+    /// <exception cref="ArgumentNullException">Thrown when <paramref name="distributedCache"/> or <paramref name="configureCacheOptions"/> is null.</exception>
+    /// <remarks>
+    /// <para>
+    /// Use this overload when the cache options need to read values from other services registered in the container.
+    /// The callback is invoked on first cache-manager resolution.
+    /// </para>
+    /// <para>
+    /// Cannot be combined with memory cache. Calling both will use the last one configured.
+    /// </para>
+    /// </remarks>
+    public static DeliveryClientBuilder WithHybridCache(this DeliveryClientBuilder builder, IDistributedCache distributedCache, Action<IServiceProvider, DeliveryCacheOptions> configureCacheOptions)
     {
         ArgumentNullException.ThrowIfNull(distributedCache);
         ArgumentNullException.ThrowIfNull(configureCacheOptions);

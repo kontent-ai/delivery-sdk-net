@@ -844,6 +844,29 @@ Cache manager resolution is keyed-only. Unkeyed `IDeliveryCacheManager` registra
 For built-in caching, use `AddDeliveryMemoryCache` / `AddDeliveryHybridCache` from the `Kontent.Ai.Delivery.Caching` package. For custom cache implementations, use `AddDeliveryCacheManager(clientName, factory)` to register per client.
 Preview cache bypass is enforced by `DeliveryClient` itself (`UsePreviewApi = true` => no cache read/write for that client), not by a cache-manager decorator.
 
+### Composing Options with `IServiceProvider`
+
+All configure-callback overloads — `AddDeliveryClient`, `AddDeliveryMemoryCache`, `AddDeliveryHybridCache`, and the fluent `WithMemoryCache` / `WithHybridCache` — have a paired overload whose callback takes `IServiceProvider` alongside the options instance. Use this shape when an option value must be read from another service registered in the container, e.g. sibling options bound via `IOptions<T>`.
+
+```csharp
+services.Configure<SiteOptions>(configuration.GetSection("Site"));
+
+services.AddDeliveryClient("production", (sp, opts) =>
+{
+    var site = sp.GetRequiredService<IOptions<SiteOptions>>().Value;
+    opts.EnvironmentId = site.EnvironmentId;
+});
+
+services.AddDeliveryMemoryCache("production", (sp, opts) =>
+{
+    var site = sp.GetRequiredService<IOptions<SiteOptions>>().Value;
+    opts.DefaultExpiration = TimeSpan.FromSeconds(site.CacheExpirationSeconds);
+    opts.IsFailSafeEnabled = true;
+});
+```
+
+Timing: for `AddDeliveryClient`, the callback runs when `IOptions<DeliveryOptions>` is first resolved (via `OptionsBuilder.Configure<IServiceProvider>`). For the cache overloads, the callback runs the first time the keyed `IDeliveryCacheManager` is resolved. This means validation of `DeliveryCacheOptions` is deferred to resolution time for the `(sp, opts)` cache overloads, whereas the plain `Action<DeliveryCacheOptions>` cache overloads validate eagerly at registration — use the plain overload if you need registration-time failure.
+
 ### Core Dependencies Registration
 
 ```csharp
