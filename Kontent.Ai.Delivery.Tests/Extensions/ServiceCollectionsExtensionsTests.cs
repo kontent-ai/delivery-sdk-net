@@ -44,7 +44,7 @@ public class ServiceCollectionsExtensionsTests
     public void AddDeliveryClientWithNullDeliveryOptions_ThrowsArgumentNullException() => Assert.Throws<ArgumentNullException>(() => _serviceCollection.AddDeliveryClient(deliveryOptions: null!));
 
     [Fact]
-    public void AddDeliveryClientWithNullBuildDeliveryOptions_ThrowsArgumentNullException() => Assert.Throws<ArgumentNullException>(() => _serviceCollection.AddDeliveryClient(configureOptions: null!));
+    public void AddDeliveryClientWithNullBuildDeliveryOptions_ThrowsArgumentNullException() => Assert.Throws<ArgumentNullException>(() => _serviceCollection.AddDeliveryClient(configureOptions: (Action<DeliveryOptions>)null!));
 
     [Fact]
     public void AddDeliveryClientWithOptions_AllServicesAreRegistered()
@@ -866,6 +866,202 @@ public class ServiceCollectionsExtensionsTests
         Assert.NotNull(cache2);
         Assert.NotSame(cache1, cache2);
         Assert.NotNull(memoryCache);
+    }
+
+    #endregion
+
+    #region (IServiceProvider, TOptions) Overloads
+
+    private sealed class SiblingOptions
+    {
+        public string EnvironmentIdValue { get; set; } = string.Empty;
+        public TimeSpan CacheExpiration { get; set; } = TimeSpan.FromMinutes(5);
+    }
+
+    [Fact]
+    public void AddDeliveryClient_WithServiceProviderCallback_ResolvesFromContainer()
+    {
+        _serviceCollection.Configure<SiblingOptions>(o => o.EnvironmentIdValue = EnvironmentId);
+        _serviceCollection.AddDeliveryClient((sp, opts) =>
+        {
+            opts.EnvironmentId = sp.GetRequiredService<IOptions<SiblingOptions>>().Value.EnvironmentIdValue;
+            opts.EnableResilience = false;
+        });
+
+        var provider = _serviceCollection.BuildServiceProvider();
+        var monitor = provider.GetRequiredService<IOptionsMonitor<DeliveryOptions>>();
+        Assert.Equal(EnvironmentId, monitor.CurrentValue.EnvironmentId);
+    }
+
+    [Fact]
+    public void AddDeliveryClient_NamedWithServiceProviderCallback_ResolvesFromContainer()
+    {
+        _serviceCollection.Configure<SiblingOptions>(o => o.EnvironmentIdValue = EnvironmentId);
+        _serviceCollection.AddDeliveryClient("production", (sp, opts) =>
+        {
+            opts.EnvironmentId = sp.GetRequiredService<IOptions<SiblingOptions>>().Value.EnvironmentIdValue;
+            opts.EnableResilience = false;
+        });
+
+        var provider = _serviceCollection.BuildServiceProvider();
+        var monitor = provider.GetRequiredService<IOptionsMonitor<DeliveryOptions>>();
+        Assert.Equal(EnvironmentId, monitor.Get("production").EnvironmentId);
+    }
+
+    [Fact]
+    public void AddDeliveryClient_NullServiceProviderCallback_ThrowsArgumentNullException()
+    {
+        Assert.Throws<ArgumentNullException>(() =>
+            _serviceCollection.AddDeliveryClient(configureOptions: (Action<IServiceProvider, DeliveryOptions>)null!));
+        Assert.Throws<ArgumentNullException>(() =>
+            _serviceCollection.AddDeliveryClient("production", configureOptions: (Action<IServiceProvider, DeliveryOptions>)null!));
+    }
+
+    [Fact]
+    public void AddDeliveryMemoryCache_WithServiceProviderCallback_InvokesCallbackOnResolution()
+    {
+        _serviceCollection.Configure<SiblingOptions>(o => o.CacheExpiration = TimeSpan.FromHours(3));
+        _serviceCollection.AddDeliveryClient(o =>
+        {
+            o.EnvironmentId = EnvironmentId;
+            o.EnableResilience = false;
+        });
+
+        var invokedWithExpiration = TimeSpan.Zero;
+        _serviceCollection.AddDeliveryMemoryCache((sp, opts) =>
+        {
+            opts.DefaultExpiration = sp.GetRequiredService<IOptions<SiblingOptions>>().Value.CacheExpiration;
+            invokedWithExpiration = opts.DefaultExpiration;
+        });
+
+        var provider = _serviceCollection.BuildServiceProvider();
+        var cacheManager = provider.GetKeyedService<IDeliveryCacheManager>("Default");
+
+        Assert.NotNull(cacheManager);
+        Assert.IsType<MemoryCacheManager>(cacheManager);
+        Assert.Equal(TimeSpan.FromHours(3), invokedWithExpiration);
+    }
+
+    [Fact]
+    public void AddDeliveryMemoryCache_NamedWithServiceProviderCallback_InvokesCallbackOnResolution()
+    {
+        _serviceCollection.Configure<SiblingOptions>(o => o.CacheExpiration = TimeSpan.FromHours(2));
+        _serviceCollection.AddDeliveryClient("production", o =>
+        {
+            o.EnvironmentId = EnvironmentId;
+            o.EnableResilience = false;
+        });
+
+        var invokedWithExpiration = TimeSpan.Zero;
+        _serviceCollection.AddDeliveryMemoryCache("production", (sp, opts) =>
+        {
+            opts.DefaultExpiration = sp.GetRequiredService<IOptions<SiblingOptions>>().Value.CacheExpiration;
+            invokedWithExpiration = opts.DefaultExpiration;
+        });
+
+        var provider = _serviceCollection.BuildServiceProvider();
+        var cacheManager = provider.GetKeyedService<IDeliveryCacheManager>("production");
+
+        Assert.NotNull(cacheManager);
+        Assert.Equal(TimeSpan.FromHours(2), invokedWithExpiration);
+    }
+
+    [Fact]
+    public void AddDeliveryMemoryCache_WithServiceProviderCallback_DefersInvocationUntilResolution()
+    {
+        var invoked = false;
+        _serviceCollection.AddDeliveryClient(o =>
+        {
+            o.EnvironmentId = EnvironmentId;
+            o.EnableResilience = false;
+        });
+        _serviceCollection.AddDeliveryMemoryCache((_, opts) =>
+        {
+            invoked = true;
+            opts.DefaultExpiration = TimeSpan.FromMinutes(10);
+        });
+
+        // Not invoked at registration time
+        Assert.False(invoked);
+
+        var provider = _serviceCollection.BuildServiceProvider();
+
+        // Not invoked just from building the provider
+        Assert.False(invoked);
+
+        _ = provider.GetRequiredKeyedService<IDeliveryCacheManager>("Default");
+
+        // Invoked on first resolution
+        Assert.True(invoked);
+    }
+
+    [Fact]
+    public void AddDeliveryMemoryCache_NullServiceProviderCallback_ThrowsArgumentNullException()
+    {
+        Assert.Throws<ArgumentNullException>(() =>
+            _serviceCollection.AddDeliveryMemoryCache(configureCacheOptions: (Action<IServiceProvider, DeliveryCacheOptions>)null!));
+        Assert.Throws<ArgumentNullException>(() =>
+            _serviceCollection.AddDeliveryMemoryCache("production", configureCacheOptions: (Action<IServiceProvider, DeliveryCacheOptions>)null!));
+    }
+
+    [Fact]
+    public void AddDeliveryHybridCache_WithServiceProviderCallback_InvokesCallbackOnResolution()
+    {
+        _serviceCollection.Configure<SiblingOptions>(o => o.CacheExpiration = TimeSpan.FromHours(4));
+        _serviceCollection.AddDeliveryClient(o =>
+        {
+            o.EnvironmentId = EnvironmentId;
+            o.EnableResilience = false;
+        });
+        _serviceCollection.AddDistributedMemoryCache();
+
+        var invokedWithExpiration = TimeSpan.Zero;
+        _serviceCollection.AddDeliveryHybridCache((sp, opts) =>
+        {
+            opts.DefaultExpiration = sp.GetRequiredService<IOptions<SiblingOptions>>().Value.CacheExpiration;
+            invokedWithExpiration = opts.DefaultExpiration;
+        });
+
+        var provider = _serviceCollection.BuildServiceProvider();
+        var cacheManager = provider.GetKeyedService<IDeliveryCacheManager>("Default");
+
+        Assert.NotNull(cacheManager);
+        Assert.IsType<HybridCacheManager>(cacheManager);
+        Assert.Equal(TimeSpan.FromHours(4), invokedWithExpiration);
+    }
+
+    [Fact]
+    public void AddDeliveryHybridCache_NamedWithServiceProviderCallback_InvokesCallbackOnResolution()
+    {
+        _serviceCollection.Configure<SiblingOptions>(o => o.CacheExpiration = TimeSpan.FromHours(6));
+        _serviceCollection.AddDeliveryClient("production", o =>
+        {
+            o.EnvironmentId = EnvironmentId;
+            o.EnableResilience = false;
+        });
+        _serviceCollection.AddDistributedMemoryCache();
+
+        var invokedWithExpiration = TimeSpan.Zero;
+        _serviceCollection.AddDeliveryHybridCache("production", (sp, opts) =>
+        {
+            opts.DefaultExpiration = sp.GetRequiredService<IOptions<SiblingOptions>>().Value.CacheExpiration;
+            invokedWithExpiration = opts.DefaultExpiration;
+        });
+
+        var provider = _serviceCollection.BuildServiceProvider();
+        var cacheManager = provider.GetKeyedService<IDeliveryCacheManager>("production");
+
+        Assert.NotNull(cacheManager);
+        Assert.Equal(TimeSpan.FromHours(6), invokedWithExpiration);
+    }
+
+    [Fact]
+    public void AddDeliveryHybridCache_NullServiceProviderCallback_ThrowsArgumentNullException()
+    {
+        Assert.Throws<ArgumentNullException>(() =>
+            _serviceCollection.AddDeliveryHybridCache(configureCacheOptions: (Action<IServiceProvider, DeliveryCacheOptions>)null!));
+        Assert.Throws<ArgumentNullException>(() =>
+            _serviceCollection.AddDeliveryHybridCache("production", configureCacheOptions: (Action<IServiceProvider, DeliveryCacheOptions>)null!));
     }
 
     #endregion

@@ -132,6 +132,33 @@ public static partial class ServiceCollectionExtensions
     }
 
     /// <summary>
+    /// Registers the Kontent.ai Delivery client with a configuration action that can resolve services from the container.
+    /// </summary>
+    /// <param name="services">The service collection.</param>
+    /// <param name="configureOptions">Action to configure the delivery options with access to the <see cref="IServiceProvider"/>.</param>
+    /// <returns>The service collection for chaining.</returns>
+    /// <remarks>
+    /// <para>
+    /// Use this overload when the options need to read values from other services registered in the container,
+    /// e.g. <c>sp.GetRequiredService&lt;IOptions&lt;SiteOptions&gt;&gt;().Value</c>.
+    /// </para>
+    /// <para>
+    /// <b>Avoid circular dependencies:</b> the callback must not resolve <c>IDeliveryClient</c>, <c>IDeliveryApi</c>, or any
+    /// service that transitively depends on them — doing so will recurse through options resolution when the client is built.
+    /// </para>
+    /// </remarks>
+    public static IServiceCollection AddDeliveryClient(
+        this IServiceCollection services,
+        Action<IServiceProvider, DeliveryOptions> configureOptions)
+    {
+        ArgumentNullException.ThrowIfNull(configureOptions);
+
+        return services.AddDeliveryClient(
+            DeliveryClientNames.Default,
+            configureOptions);
+    }
+
+    /// <summary>
     /// Registers the Kontent.ai Delivery client with advanced configuration options.
     /// </summary>
     /// <param name="services">The service collection.</param>
@@ -142,6 +169,27 @@ public static partial class ServiceCollectionExtensions
     public static IServiceCollection AddDeliveryClient(
         this IServiceCollection services,
         Action<DeliveryOptions> configureOptions,
+        Action<IHttpClientBuilder>? configureHttpClient,
+        Action<Polly.ResiliencePipelineBuilder<HttpResponseMessage>>? configureResilience = null)
+    {
+        return services.AddDeliveryClient(
+            DeliveryClientNames.Default,
+            configureOptions,
+            configureHttpClient,
+            configureResilience);
+    }
+
+    /// <summary>
+    /// Registers the Kontent.ai Delivery client with advanced configuration options and access to the <see cref="IServiceProvider"/>.
+    /// </summary>
+    /// <param name="services">The service collection.</param>
+    /// <param name="configureOptions">Action to configure the delivery options with access to the <see cref="IServiceProvider"/>.</param>
+    /// <param name="configureHttpClient">Optional action to configure the HTTP client.</param>
+    /// <param name="configureResilience">Optional action to configure resilience policies.</param>
+    /// <returns>The service collection for chaining.</returns>
+    public static IServiceCollection AddDeliveryClient(
+        this IServiceCollection services,
+        Action<IServiceProvider, DeliveryOptions> configureOptions,
         Action<IHttpClientBuilder>? configureHttpClient,
         Action<Polly.ResiliencePipelineBuilder<HttpResponseMessage>>? configureResilience = null)
     {
@@ -190,23 +238,66 @@ public static partial class ServiceCollectionExtensions
         Action<Polly.ResiliencePipelineBuilder<HttpResponseMessage>>? configureResilience = null,
         Action<RefitSettings>? configureRefit = null)
     {
+        ArgumentNullException.ThrowIfNull(configureOptions);
+
+        return services.AddDeliveryClient(
+            name,
+            (_, opts) => configureOptions(opts),
+            configureHttpClient,
+            configureResilience,
+            configureRefit);
+    }
+
+    /// <summary>
+    /// Registers a named Kontent.ai Delivery client with a configuration action that can resolve services from the container.
+    /// </summary>
+    /// <remarks>
+    /// <para>
+    /// Use this overload when the options need to read values from other services registered in the container.
+    /// The callback is invoked when <see cref="Microsoft.Extensions.Options.IOptions{TOptions}"/> is first resolved,
+    /// allowing composition with sibling options such as <c>IOptions&lt;SiteOptions&gt;</c>.
+    /// </para>
+    /// <para>
+    /// See the <see cref="AddDeliveryClient(IServiceCollection, string, Action{DeliveryOptions}, Action{IHttpClientBuilder}?, Action{Polly.ResiliencePipelineBuilder{HttpResponseMessage}}?, Action{RefitSettings}?)"/>
+    /// overload for registration semantics (keyed services, factory access, options monitoring).
+    /// </para>
+    /// <para>
+    /// <b>Avoid circular dependencies:</b> the callback must not resolve <c>IDeliveryClient</c>, <c>IDeliveryApi</c>, or any
+    /// service that transitively depends on them — doing so will recurse through options resolution when the client is built.
+    /// </para>
+    /// </remarks>
+    /// <param name="services">The service collection.</param>
+    /// <param name="name">The name of the client. Must be unique across all registrations.</param>
+    /// <param name="configureOptions">Action to configure the delivery options with access to the <see cref="IServiceProvider"/>.</param>
+    /// <param name="configureHttpClient">Optional action to configure the HTTP client.</param>
+    /// <param name="configureResilience">Optional action to configure resilience policies.</param>
+    /// <param name="configureRefit">Optional action to configure Refit settings.</param>
+    /// <returns>The service collection for chaining.</returns>
+    /// <exception cref="InvalidOperationException">Thrown when a client with the same name is already registered.</exception>
+    public static IServiceCollection AddDeliveryClient(
+        this IServiceCollection services,
+        string name,
+        Action<IServiceProvider, DeliveryOptions> configureOptions,
+        Action<IHttpClientBuilder>? configureHttpClient = null,
+        Action<Polly.ResiliencePipelineBuilder<HttpResponseMessage>>? configureResilience = null,
+        Action<RefitSettings>? configureRefit = null)
+    {
         ArgumentNullException.ThrowIfNull(services);
         ValidateClientName(name);
         ArgumentNullException.ThrowIfNull(configureOptions);
 
         EnsureClientNameNotAlreadyRegistered(services, name);
 
-        // Register named options
-        services.Configure(name, configureOptions);
         services.AddOptions<DeliveryOptions>(name)
+            .Configure<IServiceProvider>((opts, sp) => configureOptions(sp, opts))
             .ValidateDataAnnotations()
             .ValidateOnStart();
 
         // Also configure unnamed options for backward compatibility if this is the default name
         if (name == DeliveryClientNames.Default)
         {
-            services.Configure(configureOptions);
             services.AddOptions<DeliveryOptions>()
+                .Configure<IServiceProvider>((opts, sp) => configureOptions(sp, opts))
                 .ValidateDataAnnotations()
                 .ValidateOnStart();
         }

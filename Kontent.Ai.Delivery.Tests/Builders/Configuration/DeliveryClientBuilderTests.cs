@@ -2,7 +2,9 @@ using System.Reflection;
 using Kontent.Ai.Delivery.Abstractions;
 using Kontent.Ai.Delivery.Configuration;
 using Microsoft.Extensions.Caching.Distributed;
+using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
+using Microsoft.Extensions.Options;
 
 namespace Kontent.Ai.Delivery.Tests.Builders.Configuration;
 
@@ -489,6 +491,94 @@ public class DeliveryClientBuilderTests
                     .UseProductionApi()
                     .Build())
                 .WithHybridCache(new TestDistributedCache(), (Action<DeliveryCacheOptions>)null!));
+    }
+
+    private sealed class BuilderSiblingOptions
+    {
+        public TimeSpan CacheExpiration { get; set; } = TimeSpan.FromMinutes(5);
+    }
+
+    [Fact]
+    public async Task Build_WithMemoryCache_ServiceProviderCallback_InvokesCallbackOnResolution()
+    {
+        var invokedWithExpiration = TimeSpan.Zero;
+
+        await using var client = DeliveryClientBuilder
+            .WithOptions(builder => builder
+                .WithEnvironmentId(EnvironmentId)
+                .UseProductionApi()
+                .Build())
+            .ConfigureServices(services => services.Configure<BuilderSiblingOptions>(o => o.CacheExpiration = TimeSpan.FromHours(3)))
+            .WithMemoryCache((sp, opts) =>
+            {
+                opts.DefaultExpiration = sp.GetRequiredService<IOptions<BuilderSiblingOptions>>().Value.CacheExpiration;
+                invokedWithExpiration = opts.DefaultExpiration;
+            })
+            .Build();
+
+        Assert.NotNull(client);
+        Assert.NotNull(GetCacheManager(client));
+        Assert.Equal(TimeSpan.FromHours(3), invokedWithExpiration);
+    }
+
+    [Fact]
+    public async Task Build_WithHybridCache_ServiceProviderCallback_InvokesCallbackOnResolution()
+    {
+        var distributedCache = new TestDistributedCache();
+        var invokedWithExpiration = TimeSpan.Zero;
+
+        await using var client = DeliveryClientBuilder
+            .WithOptions(builder => builder
+                .WithEnvironmentId(EnvironmentId)
+                .UseProductionApi()
+                .Build())
+            .ConfigureServices(services => services.Configure<BuilderSiblingOptions>(o => o.CacheExpiration = TimeSpan.FromHours(2)))
+            .WithHybridCache(distributedCache, (sp, opts) =>
+            {
+                opts.DefaultExpiration = sp.GetRequiredService<IOptions<BuilderSiblingOptions>>().Value.CacheExpiration;
+                invokedWithExpiration = opts.DefaultExpiration;
+            })
+            .Build();
+
+        Assert.NotNull(client);
+        Assert.NotNull(GetCacheManager(client));
+        Assert.Equal(TimeSpan.FromHours(2), invokedWithExpiration);
+    }
+
+    [Fact]
+    public void WithMemoryCache_ServiceProviderCallback_Null_ThrowsArgumentNullException()
+    {
+        Assert.Throws<ArgumentNullException>(() =>
+            DeliveryClientBuilder
+                .WithOptions(builder => builder
+                    .WithEnvironmentId(EnvironmentId)
+                    .UseProductionApi()
+                    .Build())
+                .WithMemoryCache((Action<IServiceProvider, DeliveryCacheOptions>)null!));
+    }
+
+    [Fact]
+    public void WithHybridCache_ServiceProviderCallback_NullDistributedCache_ThrowsArgumentNullException()
+    {
+        Assert.Throws<ArgumentNullException>(() =>
+            DeliveryClientBuilder
+                .WithOptions(builder => builder
+                    .WithEnvironmentId(EnvironmentId)
+                    .UseProductionApi()
+                    .Build())
+                .WithHybridCache(null!, (Action<IServiceProvider, DeliveryCacheOptions>)((_, o) => o.DefaultExpiration = TimeSpan.FromMinutes(30))));
+    }
+
+    [Fact]
+    public void WithHybridCache_ServiceProviderCallback_NullDelegate_ThrowsArgumentNullException()
+    {
+        Assert.Throws<ArgumentNullException>(() =>
+            DeliveryClientBuilder
+                .WithOptions(builder => builder
+                    .WithEnvironmentId(EnvironmentId)
+                    .UseProductionApi()
+                    .Build())
+                .WithHybridCache(new TestDistributedCache(), (Action<IServiceProvider, DeliveryCacheOptions>)null!));
     }
 
     // Simple test implementation of ITypeProvider

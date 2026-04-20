@@ -113,6 +113,28 @@ public static class ServiceCollectionExtensions
     }
 
     /// <summary>
+    /// Registers a memory cache manager for the default Delivery client with a configuration action that can resolve services from the container.
+    /// </summary>
+    /// <param name="services">The service collection.</param>
+    /// <param name="configureCacheOptions">A delegate to configure the <see cref="DeliveryCacheOptions"/> with access to the <see cref="IServiceProvider"/>.</param>
+    /// <returns>The service collection for chaining.</returns>
+    /// <remarks>
+    /// <para>
+    /// Use this overload when the cache options need to read values from other services registered in the container,
+    /// e.g. <c>sp.GetRequiredService&lt;IOptions&lt;SiteOptions&gt;&gt;().Value</c>. The callback is invoked on first
+    /// cache-manager resolution, not at registration time.
+    /// </para>
+    /// </remarks>
+    public static IServiceCollection AddDeliveryMemoryCache(
+        this IServiceCollection services,
+        Action<IServiceProvider, DeliveryCacheOptions> configureCacheOptions)
+    {
+        return services.AddDeliveryMemoryCache(
+            DeliveryClientNames.Default,
+            configureCacheOptions);
+    }
+
+    /// <summary>
     /// Registers a memory cache manager for a specific named Delivery client.
     /// </summary>
     /// <param name="services">The service collection.</param>
@@ -197,7 +219,44 @@ public static class ServiceCollectionExtensions
 
         var cacheOptions = CreateCacheOptions(clientName, configureCacheOptions);
 
-        return AddDeliveryMemoryCacheCore(services, clientName, cacheOptions);
+        return AddDeliveryMemoryCacheCore(services, clientName, _ => cacheOptions);
+    }
+
+    /// <summary>
+    /// Registers a memory cache manager for a specific named Delivery client with a configuration action that can resolve services from the container.
+    /// </summary>
+    /// <param name="services">The service collection.</param>
+    /// <param name="clientName">The name of the Delivery client to enable caching for.</param>
+    /// <param name="configureCacheOptions">A delegate to configure the <see cref="DeliveryCacheOptions"/> with access to the <see cref="IServiceProvider"/>.</param>
+    /// <returns>The service collection for chaining.</returns>
+    /// <remarks>
+    /// <para>
+    /// Use this overload when the cache options need to read values from other services registered in the container,
+    /// e.g. <c>sp.GetRequiredService&lt;IOptions&lt;SiteOptions&gt;&gt;().Value</c>. The callback is invoked the first
+    /// time the cache manager is resolved rather than at registration time; validation is deferred accordingly.
+    /// </para>
+    /// <para>
+    /// If <see cref="DeliveryCacheOptions.KeyPrefix"/> is not set, it defaults to the client name
+    /// (or empty string for the default client).
+    /// </para>
+    /// <para>
+    /// <b>Avoid circular dependencies:</b> the callback must not resolve <c>IDeliveryClient</c>, <c>IDeliveryApi</c>, or any
+    /// service that transitively depends on them — doing so will cause recursion when the cache manager is resolved.
+    /// </para>
+    /// </remarks>
+    public static IServiceCollection AddDeliveryMemoryCache(
+        this IServiceCollection services,
+        string clientName,
+        Action<IServiceProvider, DeliveryCacheOptions> configureCacheOptions)
+    {
+        ArgumentNullException.ThrowIfNull(services);
+        ValidateClientName(clientName);
+        ArgumentNullException.ThrowIfNull(configureCacheOptions);
+
+        return AddDeliveryMemoryCacheCore(
+            services,
+            clientName,
+            sp => CreateCacheOptions(clientName, opts => configureCacheOptions(sp, opts)));
     }
 
     /// <summary>
@@ -275,6 +334,30 @@ public static class ServiceCollectionExtensions
     public static IServiceCollection AddDeliveryHybridCache(
         this IServiceCollection services,
         Action<DeliveryCacheOptions> configureCacheOptions)
+    {
+        return services.AddDeliveryHybridCache(
+            DeliveryClientNames.Default,
+            configureCacheOptions);
+    }
+
+    /// <summary>
+    /// Registers a hybrid cache manager for the default Delivery client with a configuration action that can resolve services from the container.
+    /// </summary>
+    /// <param name="services">The service collection.</param>
+    /// <param name="configureCacheOptions">A delegate to configure the <see cref="DeliveryCacheOptions"/> with access to the <see cref="IServiceProvider"/>.</param>
+    /// <returns>The service collection for chaining.</returns>
+    /// <remarks>
+    /// <para>
+    /// Use this overload when the cache options need to read values from other services registered in the container.
+    /// The callback is invoked on first cache-manager resolution, not at registration time.
+    /// </para>
+    /// <para>
+    /// <b>Prerequisites:</b> You must register an <see cref="IDistributedCache"/> implementation before calling this method.
+    /// </para>
+    /// </remarks>
+    public static IServiceCollection AddDeliveryHybridCache(
+        this IServiceCollection services,
+        Action<IServiceProvider, DeliveryCacheOptions> configureCacheOptions)
     {
         return services.AddDeliveryHybridCache(
             DeliveryClientNames.Default,
@@ -377,17 +460,53 @@ public static class ServiceCollectionExtensions
 
         var cacheOptions = CreateCacheOptions(clientName, configureCacheOptions);
 
-        return AddDeliveryHybridCacheCore(services, clientName, cacheOptions);
+        return AddDeliveryHybridCacheCore(services, clientName, _ => cacheOptions);
+    }
+
+    /// <summary>
+    /// Registers a hybrid cache manager for a specific named Delivery client with a configuration action that can resolve services from the container.
+    /// </summary>
+    /// <param name="services">The service collection.</param>
+    /// <param name="clientName">The name of the Delivery client to enable caching for.</param>
+    /// <param name="configureCacheOptions">A delegate to configure the <see cref="DeliveryCacheOptions"/> with access to the <see cref="IServiceProvider"/>.</param>
+    /// <returns>The service collection for chaining.</returns>
+    /// <remarks>
+    /// <para>
+    /// Use this overload when the cache options need to read values from other services registered in the container.
+    /// The callback is invoked the first time the cache manager is resolved rather than at registration time; validation is deferred accordingly.
+    /// </para>
+    /// <para>
+    /// <b>Prerequisites:</b> You must register an <see cref="IDistributedCache"/> implementation before calling this method.
+    /// </para>
+    /// <para>
+    /// If <see cref="DeliveryCacheOptions.KeyPrefix"/> is not set, it defaults to the client name
+    /// (or empty string for the default client).
+    /// </para>
+    /// <para>
+    /// <b>Avoid circular dependencies:</b> the callback must not resolve <c>IDeliveryClient</c>, <c>IDeliveryApi</c>, or any
+    /// service that transitively depends on them — doing so will cause recursion when the cache manager is resolved.
+    /// </para>
+    /// </remarks>
+    public static IServiceCollection AddDeliveryHybridCache(
+        this IServiceCollection services,
+        string clientName,
+        Action<IServiceProvider, DeliveryCacheOptions> configureCacheOptions)
+    {
+        ArgumentNullException.ThrowIfNull(services);
+        ValidateClientName(clientName);
+        ArgumentNullException.ThrowIfNull(configureCacheOptions);
+
+        return AddDeliveryHybridCacheCore(
+            services,
+            clientName,
+            sp => CreateCacheOptions(clientName, opts => configureCacheOptions(sp, opts)));
     }
 
     private static IServiceCollection AddDeliveryMemoryCacheCore(
         IServiceCollection services,
         string clientName,
-        DeliveryCacheOptions cacheOptions)
+        Func<IServiceProvider, DeliveryCacheOptions> cacheOptionsFactory)
     {
-        ArgumentNullException.ThrowIfNull(services);
-        ValidateClientName(clientName);
-
         // Register IMemoryCache if not already registered (shared across all clients)
         services.AddMemoryCache();
 
@@ -396,24 +515,21 @@ public static class ServiceCollectionExtensions
             clientName,
             sp => new MemoryCacheManager(
                 sp.GetRequiredService<IMemoryCache>(),
-                cacheOptions,
+                cacheOptionsFactory(sp),
                 sp.GetService<ILogger<MemoryCacheManager>>()));
     }
 
     private static IServiceCollection AddDeliveryHybridCacheCore(
         IServiceCollection services,
         string clientName,
-        DeliveryCacheOptions cacheOptions)
+        Func<IServiceProvider, DeliveryCacheOptions> cacheOptionsFactory)
     {
-        ArgumentNullException.ThrowIfNull(services);
-        ValidateClientName(clientName);
-
         return RegisterCacheManager(
             services,
             clientName,
             sp => new HybridCacheManager(
                 sp.GetRequiredService<IDistributedCache>(),
-                cacheOptions,
+                cacheOptionsFactory(sp),
                 logger: sp.GetService<ILogger<HybridCacheManager>>()));
     }
 
