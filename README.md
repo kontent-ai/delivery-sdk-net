@@ -10,6 +10,9 @@
 
 The official .NET SDK for the [Kontent.ai Delivery API](https://kontent.ai/learn/docs/apis/openapi/delivery-api/), enabling you to retrieve content from your Kontent.ai projects with a modern, type-safe, and highly extensible client library.
 
+> [!TIP]
+> **Building an ASP.NET Core app?** Check out [**Kontent.ai ASP.NET Core Extensions**](https://github.com/kontent-ai/aspnetcore-extensions) — a companion package that adds a `<rich-text>` tag helper for rendering Kontent.ai rich text in Razor views (with full `IHtmlResolver` integration), an `<img-asset>` tag helper for responsive images with automatic `srcset`/`sizes`, and webhook signature validation middleware.
+
 ## Table of Contents
 
 - [Installation](#installation)
