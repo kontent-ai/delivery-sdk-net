@@ -1,0 +1,26 @@
+﻿// Kontent.Ai.Delivery
+public sealed class DeliveryClientBuilderExtensions
+    DeliveryClientBuilder WithHybridCache(DeliveryClientBuilder builder, IDistributedCache distributedCache, Nullable`1 defaultExpiration)
+    DeliveryClientBuilder WithHybridCache(DeliveryClientBuilder builder, IDistributedCache distributedCache, Action`1 configureCacheOptions)
+    DeliveryClientBuilder WithHybridCache(DeliveryClientBuilder builder, IDistributedCache distributedCache, Action`2 configureCacheOptions)
+    DeliveryClientBuilder WithMemoryCache(DeliveryClientBuilder builder, Nullable`1 defaultExpiration)
+    DeliveryClientBuilder WithMemoryCache(DeliveryClientBuilder builder, Action`1 configureCacheOptions)
+    DeliveryClientBuilder WithMemoryCache(DeliveryClientBuilder builder, Action`2 configureCacheOptions)
+
+// Kontent.Ai.Delivery
+public sealed class ServiceCollectionExtensions
+    IServiceCollection AddDeliveryCacheManager(IServiceCollection services, Func`2 createCacheManager)
+    IServiceCollection AddDeliveryCacheManager(IServiceCollection services, String clientName, Func`2 createCacheManager)
+    IServiceCollection AddDeliveryHybridCache(IServiceCollection services, Nullable`1 defaultExpiration)
+    IServiceCollection AddDeliveryHybridCache(IServiceCollection services, Action`1 configureCacheOptions)
+    IServiceCollection AddDeliveryHybridCache(IServiceCollection services, Action`2 configureCacheOptions)
+    IServiceCollection AddDeliveryHybridCache(IServiceCollection services, String clientName, String keyPrefix, Nullable`1 defaultExpiration)
+    IServiceCollection AddDeliveryHybridCache(IServiceCollection services, String clientName, Action`1 configureCacheOptions)
+    IServiceCollection AddDeliveryHybridCache(IServiceCollection services, String clientName, Action`2 configureCacheOptions)
+    IServiceCollection AddDeliveryMemoryCache(IServiceCollection services, Nullable`1 defaultExpiration)
+    IServiceCollection AddDeliveryMemoryCache(IServiceCollection services, Action`1 configureCacheOptions)
+    IServiceCollection AddDeliveryMemoryCache(IServiceCollection services, Action`2 configureCacheOptions)
+    IServiceCollection AddDeliveryMemoryCache(IServiceCollection services, String clientName, String keyPrefix, Nullable`1 defaultExpiration)
+    IServiceCollection AddDeliveryMemoryCache(IServiceCollection services, String clientName, Action`1 configureCacheOptions)
+    IServiceCollection AddDeliveryMemoryCache(IServiceCollection services, String clientName, Action`2 configureCacheOptions)
+

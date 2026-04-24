@@ -568,6 +568,88 @@ public class ServiceCollectionsExtensionsTests
     }
 
     [Fact]
+    public void AddDeliveryMemoryCache_AfterHybridCache_ReplacesPreviousCacheManagerRegistration()
+    {
+        _serviceCollection.AddDeliveryClient("production", o =>
+        {
+            o.EnvironmentId = EnvironmentId;
+            o.EnableResilience = false;
+        });
+        _serviceCollection.AddDistributedMemoryCache();
+
+        _serviceCollection.AddDeliveryHybridCache("production");
+        _serviceCollection.AddDeliveryMemoryCache("production");
+
+        Assert.Equal(1, CountCacheManagerRegistrations("production"));
+
+        var provider = _serviceCollection.BuildServiceProvider();
+        var cacheManager = provider.GetRequiredKeyedService<IDeliveryCacheManager>("production");
+
+        Assert.IsType<MemoryCacheManager>(cacheManager);
+    }
+
+    [Fact]
+    public void AddDeliveryHybridCache_AfterMemoryCache_ReplacesPreviousCacheManagerRegistration()
+    {
+        _serviceCollection.AddDeliveryClient("production", o =>
+        {
+            o.EnvironmentId = EnvironmentId;
+            o.EnableResilience = false;
+        });
+        _serviceCollection.AddDistributedMemoryCache();
+
+        _serviceCollection.AddDeliveryMemoryCache("production");
+        _serviceCollection.AddDeliveryHybridCache("production");
+
+        Assert.Equal(1, CountCacheManagerRegistrations("production"));
+
+        var provider = _serviceCollection.BuildServiceProvider();
+        var cacheManager = provider.GetRequiredKeyedService<IDeliveryCacheManager>("production");
+
+        Assert.IsType<HybridCacheManager>(cacheManager);
+    }
+
+    [Fact]
+    public void AddDeliveryCacheManager_AfterBuiltInCache_ReplacesPreviousCacheManagerRegistration()
+    {
+        _serviceCollection.AddDeliveryClient("production", o =>
+        {
+            o.EnvironmentId = EnvironmentId;
+            o.EnableResilience = false;
+        });
+
+        _serviceCollection.AddDeliveryMemoryCache("production");
+        _serviceCollection.AddDeliveryCacheManager("production", _ => new TestCustomCacheManager());
+
+        Assert.Equal(1, CountCacheManagerRegistrations("production"));
+
+        var provider = _serviceCollection.BuildServiceProvider();
+        var cacheManager = provider.GetRequiredKeyedService<IDeliveryCacheManager>("production");
+
+        Assert.IsType<TestCustomCacheManager>(cacheManager);
+    }
+
+    [Fact]
+    public void AddDeliveryMemoryCache_AfterCustomCacheManager_ReplacesPreviousCacheManagerRegistration()
+    {
+        _serviceCollection.AddDeliveryClient("production", o =>
+        {
+            o.EnvironmentId = EnvironmentId;
+            o.EnableResilience = false;
+        });
+
+        _serviceCollection.AddDeliveryCacheManager("production", _ => new TestCustomCacheManager());
+        _serviceCollection.AddDeliveryMemoryCache("production");
+
+        Assert.Equal(1, CountCacheManagerRegistrations("production"));
+
+        var provider = _serviceCollection.BuildServiceProvider();
+        var cacheManager = provider.GetRequiredKeyedService<IDeliveryCacheManager>("production");
+
+        Assert.IsType<MemoryCacheManager>(cacheManager);
+    }
+
+    [Fact]
     public async Task AddDeliveryMemoryCache_DefaultClient_AdvancedOverload_UsesUnprefixedNamespace()
     {
         _serviceCollection.AddDeliveryClient(o =>
@@ -1064,6 +1146,94 @@ public class ServiceCollectionsExtensionsTests
             _serviceCollection.AddDeliveryHybridCache("production", configureCacheOptions: (Action<IServiceProvider, DeliveryCacheOptions>)null!));
     }
 
+    [Fact]
+    public void AddDeliveryMemoryCache_WithServiceProviderCallback_DefersValidationUntilResolution()
+    {
+        _serviceCollection.AddDeliveryClient(o =>
+        {
+            o.EnvironmentId = EnvironmentId;
+            o.EnableResilience = false;
+        });
+
+        // Zero expiration fails [PositiveTimeSpan] validation.
+        _serviceCollection.AddDeliveryMemoryCache((_, opts) => opts.DefaultExpiration = TimeSpan.Zero);
+
+        // Registration and provider construction must not throw — validation is deferred.
+        var provider = _serviceCollection.BuildServiceProvider();
+
+        Assert.Throws<ValidationException>(() =>
+            provider.GetRequiredKeyedService<IDeliveryCacheManager>("Default"));
+    }
+
+    [Fact]
+    public void AddDeliveryMemoryCache_WithInlineCallback_ValidatesEagerlyAtRegistration()
+    {
+        _serviceCollection.AddDeliveryClient(o =>
+        {
+            o.EnvironmentId = EnvironmentId;
+            o.EnableResilience = false;
+        });
+
+        // Contrast with the (sp, opts) overload: the plain Action<DeliveryCacheOptions>
+        // overload validates at registration time, not at resolution.
+        Assert.Throws<ValidationException>(() =>
+            _serviceCollection.AddDeliveryMemoryCache(opts => opts.DefaultExpiration = TimeSpan.Zero));
+    }
+
+    [Fact]
+    public void AddDeliveryHybridCache_WithServiceProviderCallback_DefersValidationUntilResolution()
+    {
+        _serviceCollection.AddDeliveryClient(o =>
+        {
+            o.EnvironmentId = EnvironmentId;
+            o.EnableResilience = false;
+        });
+        _serviceCollection.AddDistributedMemoryCache();
+
+        _serviceCollection.AddDeliveryHybridCache((_, opts) => opts.DefaultExpiration = TimeSpan.Zero);
+
+        var provider = _serviceCollection.BuildServiceProvider();
+
+        Assert.Throws<ValidationException>(() =>
+            provider.GetRequiredKeyedService<IDeliveryCacheManager>("Default"));
+    }
+
+    [Fact]
+    public void AddDeliveryClient_ServiceProviderCallback_ResolvingOptionsInDelegate_ReEntersConfigureDelegate()
+    {
+        // Documents the circular-dependency guard from the XML docs: the (sp, opts) callback
+        // must not resolve IOptions<DeliveryOptions>, IDeliveryClient, or IDeliveryApi — doing
+        // so re-enters this very delegate through the options factory. Left unguarded, the MS
+        // DI runtime recurses unboundedly and stack-overflows (uncatchable by design). We use
+        // a reentrancy counter to prove the re-entry and surface a catchable exception.
+        var depth = 0;
+        _serviceCollection.AddDeliveryClient((sp, opts) =>
+        {
+            if (Interlocked.Increment(ref depth) > 1)
+            {
+                throw new InvalidOperationException("configure delegate re-entered — circular dependency via options resolution");
+            }
+
+            try
+            {
+                // Triggers the same configure delegate again via the options factory.
+                _ = sp.GetRequiredService<IOptions<DeliveryOptions>>().Value;
+            }
+            finally
+            {
+                Interlocked.Decrement(ref depth);
+            }
+
+            opts.EnvironmentId = EnvironmentId;
+        });
+
+        var provider = _serviceCollection.BuildServiceProvider();
+
+        var ex = Assert.ThrowsAny<InvalidOperationException>(() =>
+            provider.GetRequiredService<IOptions<DeliveryOptions>>().Value);
+        Assert.Contains("re-entered", ex.Message);
+    }
+
     #endregion
 
     private sealed class TestCustomCacheManager : IDeliveryCacheManager
@@ -1082,5 +1252,12 @@ public class ServiceCollectionsExtensionsTests
 
         public Task<bool> InvalidateAsync(string[] dependencyKeys, CancellationToken cancellationToken = default)
             => Task.FromResult(true);
+    }
+
+    private int CountCacheManagerRegistrations(string clientName)
+    {
+        return _serviceCollection.Count(d =>
+            d.ServiceType == typeof(IDeliveryCacheManager) &&
+            Equals(d.ServiceKey, clientName));
     }
 }

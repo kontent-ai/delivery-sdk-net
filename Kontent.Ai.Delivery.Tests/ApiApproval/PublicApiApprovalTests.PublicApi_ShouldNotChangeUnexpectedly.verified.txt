@@ -15,26 +15,57 @@ public class DeliverySourceTrackingHeaderAttribute : Attribute
 
 // Kontent.Ai.Delivery
 public sealed class QueryCacheExtensions
+    IItemQuery`1 WithCacheExpiration(IItemQuery`1 query, Nullable`1 expiration)
+    IItemsQuery`1 WithCacheExpiration(IItemsQuery`1 query, Nullable`1 expiration)
+    ITypeQuery WithCacheExpiration(ITypeQuery query, Nullable`1 expiration)
+    ITypesQuery WithCacheExpiration(ITypesQuery query, Nullable`1 expiration)
+    ITaxonomyQuery WithCacheExpiration(ITaxonomyQuery query, Nullable`1 expiration)
+    ITaxonomiesQuery WithCacheExpiration(ITaxonomiesQuery query, Nullable`1 expiration)
 
 // Kontent.Ai.Delivery
 public sealed class QueryEnumerationExtensions
+    IAsyncEnumerable`1 EnumerateItemsWithStatusAsync(IItemUsedInQuery query, CancellationToken cancellationToken)
+    IAsyncEnumerable`1 EnumerateItemsWithStatusAsync(IAssetUsedInQuery query, CancellationToken cancellationToken)
+    IAsyncEnumerable`1 EnumerateItemsWithStatusAsync(IEnumerateItemsQuery`1 query, CancellationToken cancellationToken)
+    IAsyncEnumerable`1 EnumerateItemsWithStatusAsync(IDynamicEnumerateItemsQuery query, CancellationToken cancellationToken)
 
 // Kontent.Ai.Delivery
 public sealed class RichTextExtensions
+    IEnumerable`1 GetBlocks(IRichTextContent richText)
+    IEnumerable`1 GetContentItemLinks(IRichTextContent richText)
+    IEnumerable`1 GetEmbeddedContent(IRichTextContent richText)
+    IEnumerable`1 GetEmbeddedContent(IRichTextContent richText)
+    IEnumerable`1 GetEmbeddedContentOfType(IEnumerable`1 blocks)
+    IEnumerable`1 GetEmbeddedElements(IRichTextContent richText)
+    IEnumerable`1 GetInlineImages(IRichTextContent richText)
+    ValueTask`1 ParseRichTextAsync(JsonElement richTextElement, IReadOnlyDictionary`2 modularContent, CancellationToken cancellationToken)
+    ValueTask`1 ToHtmlAsync(IRichTextContent richText, IHtmlResolver resolver, CancellationToken cancellationToken)
 
 // Kontent.Ai.Delivery
 public sealed class ServiceCollectionExtensions
+    IServiceCollection AddDeliveryClient(IServiceCollection services, DeliveryOptions deliveryOptions, Action`1 configureHttpClient, Action`1 configureResilience, Action`1 configureRefit)
+    IServiceCollection AddDeliveryClient(IServiceCollection services, Func`2 buildDeliveryOptions, Action`1 configureHttpClient, Action`1 configureResilience, Action`1 configureRefit)
+    IServiceCollection AddDeliveryClient(IServiceCollection services, IConfiguration configuration, String configurationSectionName)
+    IServiceCollection AddDeliveryClient(IServiceCollection services, IConfigurationSection configurationSection)
+    IServiceCollection AddDeliveryClient(IServiceCollection services, Action`1 configureOptions)
+    IServiceCollection AddDeliveryClient(IServiceCollection services, Action`2 configureOptions)
+    IServiceCollection AddDeliveryClient(IServiceCollection services, Action`1 configureOptions, Action`1 configureHttpClient, Action`1 configureResilience, Action`1 configureRefit)
+    IServiceCollection AddDeliveryClient(IServiceCollection services, Action`2 configureOptions, Action`1 configureHttpClient, Action`1 configureResilience, Action`1 configureRefit)
+    IServiceCollection AddDeliveryClient(IServiceCollection services, String name, Action`1 configureOptions, Action`1 configureHttpClient, Action`1 configureResilience, Action`1 configureRefit)
+    IServiceCollection AddDeliveryClient(IServiceCollection services, String name, Action`2 configureOptions, Action`1 configureHttpClient, Action`1 configureResilience, Action`1 configureRefit)
 
 // Kontent.Ai.Delivery.Configuration
 public sealed class DeliveryClientBuilder
     IDeliveryClient Build()
     DeliveryClientBuilder ConfigureServices(Action`1 configure)
     DeliveryClientBuilder WithLoggerFactory(ILoggerFactory loggerFactory)
+    DeliveryClientBuilder WithOptions(Func`2 buildDeliveryOptions)
     DeliveryClientBuilder WithTypeProvider(ITypeProvider typeProvider)
 
 // Kontent.Ai.Delivery.Configuration
 public sealed class DeliveryOptionsBuilder : IDeliveryOptionsBuilder
     DeliveryOptions Build()
+    IDeliveryOptionsBuilder CreateInstance()
     IDeliveryOptionsBuilder DisableRetryPolicy()
     IDeliveryOptionsBuilder UsePreviewApi(String previewApiKey)
     IDeliveryOptionsBuilder UseProductionApi()
@@ -49,6 +80,8 @@ public sealed class DeliveryOptionsBuilder : IDeliveryOptionsBuilder
 
 // Kontent.Ai.Delivery.Configuration
 public sealed class RefitSettingsProvider
+    JsonSerializerOptions CreateDefaultJsonSerializerOptions()
+    RefitSettings CreateDefaultSettings()
 
 // Kontent.Ai.Delivery.ContentItems
 public sealed class Asset : IAsset, IEquatable`1
@@ -90,6 +123,8 @@ public sealed class RichTextContent : IRichTextContent, IReadOnlyList`1, IReadOn
 
 // Kontent.Ai.Delivery.ContentItems.RichText.Resolution
 public sealed class DefaultResolvers
+    BlockResolver`1 HtmlElementResolver()
+    BlockResolver`1 UrlPatternResolver(IReadOnlyDictionary`2 typePatterns, String fallbackPattern)
 
 // Kontent.Ai.Delivery.ContentItems.RichText.Resolution
 public sealed class HtmlResolverBuilder : IHtmlResolverBuilder

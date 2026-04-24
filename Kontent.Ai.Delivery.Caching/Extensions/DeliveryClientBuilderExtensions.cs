@@ -68,8 +68,9 @@ public static class DeliveryClientBuilderExtensions
     /// <exception cref="ArgumentNullException">Thrown when <paramref name="configureCacheOptions"/> is null.</exception>
     /// <remarks>
     /// <para>
-    /// Use this overload when the cache options need to read values from other services registered in the container.
-    /// The callback is invoked on first cache-manager resolution.
+    /// The callback receives the builder's <b>internal</b> <see cref="IServiceProvider"/> — not your application's DI container.
+    /// To make sibling services available to the callback, register them via <see cref="DeliveryClientBuilder.ConfigureServices"/>.
+    /// The callback is invoked on first cache-manager resolution from the builder's root provider.
     /// </para>
     /// <para>
     /// Cannot be combined with hybrid cache. Calling both will use the last one configured.
@@ -163,8 +164,9 @@ public static class DeliveryClientBuilderExtensions
     /// <exception cref="ArgumentNullException">Thrown when <paramref name="distributedCache"/> or <paramref name="configureCacheOptions"/> is null.</exception>
     /// <remarks>
     /// <para>
-    /// Use this overload when the cache options need to read values from other services registered in the container.
-    /// The callback is invoked on first cache-manager resolution.
+    /// The callback receives the builder's <b>internal</b> <see cref="IServiceProvider"/> — not your application's DI container.
+    /// To make sibling services available to the callback, register them via <see cref="DeliveryClientBuilder.ConfigureServices"/>.
+    /// The callback is invoked on first cache-manager resolution from the builder's root provider.
     /// </para>
     /// <para>
     /// Cannot be combined with memory cache. Calling both will use the last one configured.

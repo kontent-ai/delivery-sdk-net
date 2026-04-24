@@ -13,6 +13,14 @@ public class PublicApiApprovalTests
         return Verify(publicApi);
     }
 
+    [Fact]
+    public Task CachingPublicApi_ShouldNotChangeUnexpectedly()
+    {
+        var assembly = typeof(Kontent.Ai.Delivery.Caching.MemoryCacheManager).Assembly;
+        var publicApi = GetPublicApiSurface(assembly);
+        return Verify(publicApi);
+    }
+
     private static string GetPublicApiSurface(Assembly assembly)
     {
         var sb = new StringBuilder();
@@ -89,6 +97,7 @@ public class PublicApiApprovalTests
         }
 
         foreach (var method in type.GetMethods(BindingFlags.Public | BindingFlags.Instance | BindingFlags.DeclaredOnly)
+            .Concat(type.GetMethods(BindingFlags.Public | BindingFlags.Static | BindingFlags.DeclaredOnly))
             .Where(m => !m.IsSpecialName)
             .OrderBy(m => m.Name))
         {
