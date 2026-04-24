@@ -865,7 +865,7 @@ services.AddDeliveryMemoryCache("production", (sp, opts) =>
 });
 ```
 
-Timing: for `AddDeliveryClient`, the callback runs when `IOptions<DeliveryOptions>` is first resolved (via `OptionsBuilder.Configure<IServiceProvider>`). For the cache overloads, the callback runs the first time the keyed `IDeliveryCacheManager` is resolved. This means validation of `DeliveryCacheOptions` is deferred to resolution time for the `(sp, opts)` cache overloads, whereas the plain `Action<DeliveryCacheOptions>` cache overloads validate eagerly at registration — use the plain overload if you need registration-time failure.
+Timing: for `AddDeliveryClient`, the callback runs when `IOptions<DeliveryOptions>` is first resolved (via `OptionsBuilder.Configure<IServiceProvider>`). For the cache overloads, the callback runs the first time the keyed singleton `IDeliveryCacheManager` is resolved from the root provider. Resolve only singleton-safe dependencies from cache callbacks, such as `IOptions<T>` or `IOptionsMonitor<T>`; do not depend on scoped/request services such as `IOptionsSnapshot<T>`. Validation of `DeliveryCacheOptions` is deferred to resolution time for the `(sp, opts)` cache overloads, whereas the plain `Action<DeliveryCacheOptions>` cache overloads validate eagerly at registration — use the plain overload if you need registration-time failure.
 
 ### Core Dependencies Registration
 

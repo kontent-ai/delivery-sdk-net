@@ -165,18 +165,21 @@ public static partial class ServiceCollectionExtensions
     /// <param name="configureOptions">Action to configure the delivery options.</param>
     /// <param name="configureHttpClient">Optional action to configure the HTTP client.</param>
     /// <param name="configureResilience">Optional action to configure resilience policies.</param>
+    /// <param name="configureRefit">Optional action to configure Refit settings.</param>
     /// <returns>The service collection for chaining.</returns>
     public static IServiceCollection AddDeliveryClient(
         this IServiceCollection services,
         Action<DeliveryOptions> configureOptions,
         Action<IHttpClientBuilder>? configureHttpClient,
-        Action<Polly.ResiliencePipelineBuilder<HttpResponseMessage>>? configureResilience = null)
+        Action<Polly.ResiliencePipelineBuilder<HttpResponseMessage>>? configureResilience = null,
+        Action<RefitSettings>? configureRefit = null)
     {
         return services.AddDeliveryClient(
             DeliveryClientNames.Default,
             configureOptions,
             configureHttpClient,
-            configureResilience);
+            configureResilience,
+            configureRefit);
     }
 
     /// <summary>
@@ -186,18 +189,21 @@ public static partial class ServiceCollectionExtensions
     /// <param name="configureOptions">Action to configure the delivery options with access to the <see cref="IServiceProvider"/>.</param>
     /// <param name="configureHttpClient">Optional action to configure the HTTP client.</param>
     /// <param name="configureResilience">Optional action to configure resilience policies.</param>
+    /// <param name="configureRefit">Optional action to configure Refit settings.</param>
     /// <returns>The service collection for chaining.</returns>
     public static IServiceCollection AddDeliveryClient(
         this IServiceCollection services,
         Action<IServiceProvider, DeliveryOptions> configureOptions,
         Action<IHttpClientBuilder>? configureHttpClient,
-        Action<Polly.ResiliencePipelineBuilder<HttpResponseMessage>>? configureResilience = null)
+        Action<Polly.ResiliencePipelineBuilder<HttpResponseMessage>>? configureResilience = null,
+        Action<RefitSettings>? configureRefit = null)
     {
         return services.AddDeliveryClient(
             DeliveryClientNames.Default,
             configureOptions,
             configureHttpClient,
-            configureResilience);
+            configureResilience,
+            configureRefit);
     }
 
     /// <summary>

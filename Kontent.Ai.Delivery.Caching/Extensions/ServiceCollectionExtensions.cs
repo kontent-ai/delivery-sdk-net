@@ -120,9 +120,9 @@ public static class ServiceCollectionExtensions
     /// <returns>The service collection for chaining.</returns>
     /// <remarks>
     /// <para>
-    /// Use this overload when the cache options need to read values from other services registered in the container,
-    /// e.g. <c>sp.GetRequiredService&lt;IOptions&lt;SiteOptions&gt;&gt;().Value</c>. The callback is invoked on first
-    /// cache-manager resolution, not at registration time.
+    /// Use this overload when the cache options need to read values from singleton-safe services registered in the
+    /// container, e.g. <c>sp.GetRequiredService&lt;IOptions&lt;SiteOptions&gt;&gt;().Value</c>. The callback is invoked on first
+    /// cache-manager resolution from the root provider, not at registration time.
     /// </para>
     /// </remarks>
     public static IServiceCollection AddDeliveryMemoryCache(
@@ -231,9 +231,9 @@ public static class ServiceCollectionExtensions
     /// <returns>The service collection for chaining.</returns>
     /// <remarks>
     /// <para>
-    /// Use this overload when the cache options need to read values from other services registered in the container,
+    /// Use this overload when the cache options need to read values from singleton-safe services registered in the container,
     /// e.g. <c>sp.GetRequiredService&lt;IOptions&lt;SiteOptions&gt;&gt;().Value</c>. The callback is invoked the first
-    /// time the cache manager is resolved rather than at registration time; validation is deferred accordingly.
+    /// time the cache manager is resolved from the root provider rather than at registration time; validation is deferred accordingly.
     /// </para>
     /// <para>
     /// If <see cref="DeliveryCacheOptions.KeyPrefix"/> is not set, it defaults to the client name
@@ -242,6 +242,7 @@ public static class ServiceCollectionExtensions
     /// <para>
     /// <b>Avoid circular dependencies:</b> the callback must not resolve <c>IDeliveryClient</c>, <c>IDeliveryApi</c>, or any
     /// service that transitively depends on them — doing so will cause recursion when the cache manager is resolved.
+    /// The callback also must not depend on scoped/request services such as <c>IOptionsSnapshot&lt;T&gt;</c>.
     /// </para>
     /// </remarks>
     public static IServiceCollection AddDeliveryMemoryCache(
@@ -348,8 +349,8 @@ public static class ServiceCollectionExtensions
     /// <returns>The service collection for chaining.</returns>
     /// <remarks>
     /// <para>
-    /// Use this overload when the cache options need to read values from other services registered in the container.
-    /// The callback is invoked on first cache-manager resolution, not at registration time.
+    /// Use this overload when the cache options need to read values from singleton-safe services registered in the container.
+    /// The callback is invoked on first cache-manager resolution from the root provider, not at registration time.
     /// </para>
     /// <para>
     /// <b>Prerequisites:</b> You must register an <see cref="IDistributedCache"/> implementation before calling this method.
@@ -472,8 +473,8 @@ public static class ServiceCollectionExtensions
     /// <returns>The service collection for chaining.</returns>
     /// <remarks>
     /// <para>
-    /// Use this overload when the cache options need to read values from other services registered in the container.
-    /// The callback is invoked the first time the cache manager is resolved rather than at registration time; validation is deferred accordingly.
+    /// Use this overload when the cache options need to read values from singleton-safe services registered in the container.
+    /// The callback is invoked the first time the cache manager is resolved from the root provider rather than at registration time; validation is deferred accordingly.
     /// </para>
     /// <para>
     /// <b>Prerequisites:</b> You must register an <see cref="IDistributedCache"/> implementation before calling this method.
@@ -485,6 +486,7 @@ public static class ServiceCollectionExtensions
     /// <para>
     /// <b>Avoid circular dependencies:</b> the callback must not resolve <c>IDeliveryClient</c>, <c>IDeliveryApi</c>, or any
     /// service that transitively depends on them — doing so will cause recursion when the cache manager is resolved.
+    /// The callback also must not depend on scoped/request services such as <c>IOptionsSnapshot&lt;T&gt;</c>.
     /// </para>
     /// </remarks>
     public static IServiceCollection AddDeliveryHybridCache(
@@ -538,9 +540,23 @@ public static class ServiceCollectionExtensions
         string clientName,
         Func<IServiceProvider, IDeliveryCacheManager> createCacheManager)
     {
+        RemoveExistingCacheManagerRegistration(services, clientName);
         services.AddKeyedSingleton<IDeliveryCacheManager>(clientName, (sp, _) => createCacheManager(sp));
         services.Replace(ServiceDescriptor.Singleton<IContentDependencyExtractor, ContentDependencyExtractor>());
         return services;
+    }
+
+    private static void RemoveExistingCacheManagerRegistration(IServiceCollection services, string clientName)
+    {
+        for (var i = services.Count - 1; i >= 0; i--)
+        {
+            var descriptor = services[i];
+            if (descriptor.ServiceType == typeof(IDeliveryCacheManager) &&
+                Equals(descriptor.ServiceKey, clientName))
+            {
+                services.RemoveAt(i);
+            }
+        }
     }
 
     private static void ValidateClientName(string name)
