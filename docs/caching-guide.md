@@ -11,6 +11,7 @@ Caching is essential for production applications using the Kontent.ai Delivery A
 - [Configuration](#configuration)
   - [Memory Cache Setup](#memory-cache-setup)
   - [Hybrid Cache Setup](#hybrid-cache-setup)
+  - [Configuring Cache Options from DI Services](#configuring-cache-options-from-di-services)
   - [Custom Cache Manager](#custom-cache-manager)
 - [How Caching Works](#how-caching-works)
   - [Cache Keys](#cache-keys)
@@ -249,6 +250,31 @@ services.AddDeliveryClient("production", options =>
 
 services.AddDeliveryHybridCache("production", defaultExpiration: TimeSpan.FromHours(6));
 ```
+
+### Configuring Cache Options from DI Services
+
+Use the `IServiceProvider` cache overloads when cache settings need to be composed from other registered services, such as application options bound from configuration:
+
+```csharp
+services.Configure<SiteOptions>(configuration.GetSection("Site"));
+
+services.AddDeliveryClient("production", (sp, options) =>
+{
+    var site = sp.GetRequiredService<IOptions<SiteOptions>>().Value;
+    options.EnvironmentId = site.EnvironmentId;
+});
+
+services.AddDeliveryMemoryCache("production", (sp, options) =>
+{
+    var site = sp.GetRequiredService<IOptions<SiteOptions>>().Value;
+    options.DefaultExpiration = site.CacheExpiration;
+    options.IsFailSafeEnabled = true;
+});
+```
+
+Timing matters: the plain `Action<DeliveryCacheOptions>` overloads run immediately during service registration and validate cache options immediately. The `(IServiceProvider, DeliveryCacheOptions)` overloads run later, when the keyed singleton `IDeliveryCacheManager` is first resolved from the root provider, so validation is deferred to that first resolution.
+
+Because the cache manager is a singleton, resolve only singleton-safe dependencies from cache callbacks, such as `IOptions<T>`, `IOptionsMonitor<T>`, configuration, or loggers. Do not depend on scoped/request services such as `IOptionsSnapshot<T>`, `DbContext`, tenant request context, or per-request `HttpContext` state.
 
 ### Custom Cache Manager
 

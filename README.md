@@ -125,6 +125,20 @@ services.AddDeliveryClient(options =>
 services.AddDeliveryClient(configuration, "DeliveryOptions");
 ```
 
+#### Registration from Other DI Services
+
+Use the `IServiceProvider` overload when Delivery options need values from other registered services:
+
+```csharp
+services.Configure<SiteOptions>(configuration.GetSection("Site"));
+
+services.AddDeliveryClient((sp, options) =>
+{
+    var site = sp.GetRequiredService<IOptions<SiteOptions>>().Value;
+    options.EnvironmentId = site.EnvironmentId;
+});
+```
+
 #### Using the Builder Pattern
 
 ```csharp
@@ -1220,6 +1234,29 @@ services.AddDeliveryClient(options =>
 services.AddDeliveryHybridCache(defaultExpiration: TimeSpan.FromHours(2));
 ```
 
+#### Cache Options from Other DI Services
+
+Use the `IServiceProvider` cache overloads when cache settings need to come from other registered services:
+
+```csharp
+services.Configure<SiteOptions>(configuration.GetSection("Site"));
+
+services.AddDeliveryClient("production", (sp, options) =>
+{
+    var site = sp.GetRequiredService<IOptions<SiteOptions>>().Value;
+    options.EnvironmentId = site.EnvironmentId;
+});
+
+services.AddDeliveryMemoryCache("production", (sp, options) =>
+{
+    var site = sp.GetRequiredService<IOptions<SiteOptions>>().Value;
+    options.DefaultExpiration = site.CacheExpiration;
+    options.IsFailSafeEnabled = true;
+});
+```
+
+For callback timing and lifetime guidance, see [Configuring Cache Options from DI Services](docs/caching-guide.md#configuring-cache-options-from-di-services).
+
 Caching is transparent for cacheable query builders - once configured, cached query types are cached automatically and cache keys are built from query parameters for proper cache hits.
 
 `GetItem()` and `GetItems()` dynamic queries are intentionally excluded from SDK caching (runtime-typed results), so they always return `IsCacheHit == false`.
@@ -1267,6 +1304,8 @@ services.AddDeliveryClient("production", options => { ... });
 services.AddDeliveryCacheManager("production", sp => new CustomHybridCacheManager(
     sp.GetRequiredService<IDistributedCache>()));
 ```
+
+If you register multiple cache managers for the same client, the last registration wins.
 
 #### Detecting Cache Hits
 
