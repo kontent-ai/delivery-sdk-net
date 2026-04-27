@@ -101,6 +101,34 @@ public class ServiceCollectionsExtensionsTests
     }
 
     [Fact]
+    public void AddDeliveryClient_AdvancedConfigureAction_InvokesConfigureRefit()
+    {
+        var invoked = false;
+        _serviceCollection.AddDeliveryClient(
+            options => options.EnvironmentId = EnvironmentId,
+            configureHttpClient: null,
+            configureResilience: null,
+            configureRefit: _ => invoked = true);
+
+        _serviceCollection.BuildServiceProvider();
+        Assert.True(invoked);
+    }
+
+    [Fact]
+    public void AddDeliveryClient_AdvancedServiceProviderConfigureAction_InvokesConfigureRefit()
+    {
+        var invoked = false;
+        _serviceCollection.AddDeliveryClient(
+            (_, options) => options.EnvironmentId = EnvironmentId,
+            configureHttpClient: null,
+            configureResilience: null,
+            configureRefit: _ => invoked = true);
+
+        _serviceCollection.BuildServiceProvider();
+        Assert.True(invoked);
+    }
+
+    [Fact]
     public void AddDeliveryClient_ResilienceEnabled_InvokesConfigureResilience()
     {
         var invoked = false;
