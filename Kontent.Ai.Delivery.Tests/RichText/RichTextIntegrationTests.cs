@@ -985,8 +985,7 @@ public class RichTextIntegrationTests
     [Fact]
     public async Task IntegrationTest_TypeBasedResolver_DispatchesForNonContentItemNamedEmbeddedBlock()
     {
-        var richText = new RichTextContent();
-        richText.AddRange([new EmbeddedArticleBlock("Typed title")]);
+        var richText = new RichTextContent([new EmbeddedArticleBlock("Typed title")]);
 
         var resolver = new HtmlResolverBuilder()
             .WithContentResolver<Article>(content =>

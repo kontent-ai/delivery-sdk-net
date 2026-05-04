@@ -31,7 +31,6 @@ public class RichTextExtensionsTests
 
     private static RichTextContent CreateNestedRichTextWithEmbedded(RichTextTestModel model)
     {
-        var richText = new RichTextContent();
         var embedded = new ContentItem<RichTextTestModel>
         {
             System = new ContentItemSystemAttributes
@@ -52,8 +51,7 @@ public class RichTextExtensionsTests
             Attributes: new Dictionary<string, string>(),
             Children: [embedded]);
 
-        richText.AddRange([rootBlock]);
-        return richText;
+        return new RichTextContent([rootBlock]);
     }
 
     private sealed class RichTextTestModel
