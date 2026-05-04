@@ -11,7 +11,7 @@ namespace Kontent.Ai.Delivery.Tests.Models.ContentTypes;
 public record Article
 {
     [JsonPropertyName("body_copy")]
-    public RichTextContent BodyCopy { get; init; } = default!;
+    public RichTextContent BodyCopy { get; init; } = RichTextContent.Empty;
 
     [JsonPropertyName("metadata__meta_description")]
     public string? MetadataMetaDescription { get; init; }
