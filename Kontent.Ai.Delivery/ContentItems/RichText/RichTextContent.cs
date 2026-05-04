@@ -7,55 +7,53 @@ namespace Kontent.Ai.Delivery.ContentItems.RichText;
 /// <inheritdoc cref="IRichTextContent" />
 public sealed class RichTextContent : IRichTextContent
 {
-    private readonly List<IRichTextBlock> _blocks = [];
+    private readonly IReadOnlyList<IRichTextBlock> _blocks;
+
+    internal RichTextContent(
+        IReadOnlyList<IRichTextBlock> blocks,
+        IReadOnlyDictionary<Guid, IContentLink>? links = null,
+        IReadOnlyDictionary<Guid, IInlineImage>? images = null,
+        IReadOnlyList<string>? modularContentCodenames = null)
+    {
+        _blocks = blocks;
+        Links = links;
+        Images = images;
+        ModularContentCodenames = modularContentCodenames;
+    }
 
     /// <summary>
     /// The default Kontent.ai empty rich text value, equivalent to <c>&lt;p&gt;&lt;br&gt;&lt;/p&gt;</c>.
     /// </summary>
-    public static RichTextContent Empty { get; } = CreateEmpty();
-
-    private static RichTextContent CreateEmpty()
-    {
-        var content = new RichTextContent();
-        content.AddRange(
-        [
-            new HtmlNode(
-                "p",
-                FrozenDictionary<string, string>.Empty,
-                [
-                    new HtmlNode(
-                        "br",
-                        FrozenDictionary<string, string>.Empty,
-                        [])
-                ])
-        ]);
-
-        return content;
-    }
+    public static RichTextContent Empty { get; } = new(
+    [
+        new HtmlNode(
+            "p",
+            FrozenDictionary<string, string>.Empty,
+            [
+                new HtmlNode(
+                    "br",
+                    FrozenDictionary<string, string>.Empty,
+                    [])
+            ])
+    ]);
 
     /// <summary>
     /// Link metadata for resolving content item links.
     /// Internal property used during HTML resolution.
     /// </summary>
-    internal IReadOnlyDictionary<Guid, IContentLink>? Links { get; set; }
+    internal IReadOnlyDictionary<Guid, IContentLink>? Links { get; }
 
     /// <summary>
     /// Image metadata for resolving inline images.
     /// Internal property used during HTML resolution.
     /// </summary>
-    internal IReadOnlyDictionary<Guid, IInlineImage>? Images { get; set; }
+    internal IReadOnlyDictionary<Guid, IInlineImage>? Images { get; }
 
     /// <summary>
     /// Modular content codenames for resolving inline content items.
     /// Internal property used during HTML resolution.
     /// </summary>
-    internal IReadOnlyList<string>? ModularContentCodenames { get; set; }
-
-    /// <summary>
-    /// Adds multiple blocks to the rich text content.
-    /// </summary>
-    /// <param name="blocks">The blocks to add.</param>
-    internal void AddRange(IEnumerable<IRichTextBlock> blocks) => _blocks.AddRange(blocks);
+    internal IReadOnlyList<string>? ModularContentCodenames { get; }
 
     /// <inheritdoc />
     public int Count => _blocks.Count;

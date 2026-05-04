@@ -53,14 +53,7 @@ internal sealed class RichTextParser(
                 blocks.Add(block);
         }
 
-        var content = new RichTextContent
-        {
-            Links = element.Links,
-            Images = element.Images,
-            ModularContentCodenames = element.ModularContent
-        };
-        content.AddRange(blocks);
-        return content;
+        return new RichTextContent(blocks, element.Links, element.Images, element.ModularContent);
     }
 
     private async Task<IRichTextBlock?> ParseNodeAsync(

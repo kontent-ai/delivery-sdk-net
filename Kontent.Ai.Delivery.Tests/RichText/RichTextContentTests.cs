@@ -24,8 +24,7 @@ public class RichTextContentTests
     public void Count_ReturnsNumberOfBlocks()
     {
         var block = new TextNode("");
-        var sut = new RichTextContent();
-        sut.AddRange([block]);
+        var sut = new RichTextContent([block]);
 
         Assert.Single(sut);
     }
@@ -34,8 +33,7 @@ public class RichTextContentTests
     public void Indexer_ReturnsBlockAtPosition()
     {
         var block = new TextNode("");
-        var sut = new RichTextContent();
-        sut.AddRange([block]);
+        var sut = new RichTextContent([block]);
 
         Assert.Same(block, sut[0]);
     }
