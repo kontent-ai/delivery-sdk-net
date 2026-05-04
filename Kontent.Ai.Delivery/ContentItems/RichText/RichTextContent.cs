@@ -1,4 +1,6 @@
 using System.Collections;
+using System.Collections.Frozen;
+using Kontent.Ai.Delivery.ContentItems.RichText.Blocks;
 
 namespace Kontent.Ai.Delivery.ContentItems.RichText;
 
@@ -6,6 +8,30 @@ namespace Kontent.Ai.Delivery.ContentItems.RichText;
 public sealed class RichTextContent : IRichTextContent
 {
     private readonly List<IRichTextBlock> _blocks = [];
+
+    /// <summary>
+    /// The default Kontent.ai empty rich text value, equivalent to <c>&lt;p&gt;&lt;br&gt;&lt;/p&gt;</c>.
+    /// </summary>
+    public static RichTextContent Empty { get; } = CreateEmpty();
+
+    private static RichTextContent CreateEmpty()
+    {
+        var content = new RichTextContent();
+        content.AddRange(
+        [
+            new HtmlNode(
+                "p",
+                FrozenDictionary<string, string>.Empty,
+                [
+                    new HtmlNode(
+                        "br",
+                        FrozenDictionary<string, string>.Empty,
+                        [])
+                ])
+        ]);
+
+        return content;
+    }
 
     /// <summary>
     /// Link metadata for resolving content item links.
