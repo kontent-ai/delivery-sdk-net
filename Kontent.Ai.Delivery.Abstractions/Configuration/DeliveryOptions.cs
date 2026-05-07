@@ -74,6 +74,28 @@ public sealed class DeliveryOptions : IValidatableObject
     public string? CustomAssetDomain { get; set; }
 
     /// <summary>
+    /// Copies all configurable values from this instance onto <paramref name="destination"/>.
+    /// Used by DI registration paths that bridge a prebuilt <see cref="DeliveryOptions"/>
+    /// instance into the <c>Action&lt;DeliveryOptions&gt;</c> configurator expected by the
+    /// Options pattern.
+    /// </summary>
+    internal void CopyTo(DeliveryOptions destination)
+    {
+        ArgumentNullException.ThrowIfNull(destination);
+
+        destination.EnvironmentId = EnvironmentId;
+        destination.EnableResilience = EnableResilience;
+        destination.ProductionEndpoint = ProductionEndpoint;
+        destination.PreviewEndpoint = PreviewEndpoint;
+        destination.PreviewApiKey = PreviewApiKey;
+        destination.UsePreviewApi = UsePreviewApi;
+        destination.UseSecureAccess = UseSecureAccess;
+        destination.SecureAccessApiKey = SecureAccessApiKey;
+        destination.DefaultRenditionPreset = DefaultRenditionPreset;
+        destination.CustomAssetDomain = CustomAssetDomain;
+    }
+
+    /// <summary>
     /// Validates cross-field constraints for delivery options.
     /// Ensures mutual exclusivity of <see cref="UsePreviewApi"/> and <see cref="UseSecureAccess"/>.
     /// Validates that <see cref="EnvironmentId"/> is not an empty GUID.
