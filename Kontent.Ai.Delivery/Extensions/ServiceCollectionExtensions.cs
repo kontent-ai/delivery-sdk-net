@@ -356,6 +356,10 @@ public static partial class ServiceCollectionExtensions
         // Register dependencies (only once)
         RegisterDependencies(services, sharedJsonOptions);
 
+        // Per-client options accessor — bridges named IOptionsMonitor reads to the rest of the SDK.
+        services.AddKeyedSingleton<IDeliveryOptionsAccessor>(name, (sp, _) =>
+            new MonitorOptionsAccessor(sp.GetRequiredService<IOptionsMonitor<DeliveryOptions>>(), name));
+
         // Register named HTTP client and Refit API
         RegisterNamedHttpClient(services, name, sharedJsonOptions, configureHttpClient, configureResilience, configureRefit);
 
@@ -389,7 +393,7 @@ public static partial class ServiceCollectionExtensions
         var contentItemMapper = sp.GetRequiredService<ContentItemMapper>();
         var contentDeserializer = sp.GetRequiredService<IContentDeserializer>();
         var typeProvider = sp.GetRequiredService<ITypeProvider>();
-        var optionsMonitor = sp.GetRequiredService<IOptionsMonitor<DeliveryOptions>>();
+        var optionsAccessor = sp.GetRequiredKeyedService<IDeliveryOptionsAccessor>(clientName);
 
         // Resolve keyed cache manager for this client (registered via AddDeliveryMemoryCache/AddDeliveryHybridCache/AddDeliveryCacheManager)
         var cacheManager = sp.GetKeyedService<IDeliveryCacheManager>(clientName);
@@ -404,8 +408,7 @@ public static partial class ServiceCollectionExtensions
             typeProvider,
             cacheManager,
             logger,
-            optionsMonitor,
-            clientName);
+            optionsAccessor);
     }
 
     /// <summary>

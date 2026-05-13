@@ -1,7 +1,7 @@
 using System.Net.Http.Headers;
+using Kontent.Ai.Delivery.Configuration;
 using Kontent.Ai.Delivery.Logging;
 using Microsoft.Extensions.Logging;
-using Microsoft.Extensions.Options;
 
 namespace Kontent.Ai.Delivery.Handlers;
 
@@ -10,39 +10,20 @@ namespace Kontent.Ai.Delivery.Handlers;
 /// </summary>
 internal sealed class DeliveryAuthenticationHandler : DelegatingHandler
 {
-    private readonly IOptionsMonitor<DeliveryOptions> _monitor;
-    private readonly string? _name;
+    private readonly IDeliveryOptionsAccessor _options;
     private readonly ILogger<DeliveryAuthenticationHandler>? _logger;
 
     /// <summary>
     /// Initializes a new instance of the <see cref="DeliveryAuthenticationHandler"/> class.
     /// </summary>
-    /// <param name="monitor">Instance of <see cref="IOptionsMonitor{DeliveryOptions}"/>.</param>
+    /// <param name="options">Accessor providing the effective <see cref="DeliveryOptions"/> at request time.</param>
     /// <param name="logger">Optional logger instance.</param>
-    /// <exception cref="ArgumentNullException"></exception>
+    /// <exception cref="ArgumentNullException">Thrown when <paramref name="options"/> is null.</exception>
     public DeliveryAuthenticationHandler(
-        IOptionsMonitor<DeliveryOptions> monitor,
+        IDeliveryOptionsAccessor options,
         ILogger<DeliveryAuthenticationHandler>? logger = null)
     {
-        _monitor = monitor ?? throw new ArgumentNullException(nameof(monitor));
-        _logger = logger;
-    }
-
-    /// <summary>
-    /// Initializes a new instance of the <see cref="DeliveryAuthenticationHandler"/> class with named options.
-    /// </summary>
-    /// <param name="monitor">Instance of <see cref="IOptionsMonitor{DeliveryOptions}"/>.</param>
-    /// <param name="optionsName">The name of the options.</param>
-    /// <param name="logger">Optional logger instance.</param>
-    /// <exception cref="ArgumentNullException"></exception>
-    public DeliveryAuthenticationHandler(
-        IOptionsMonitor<DeliveryOptions> monitor,
-        string optionsName,
-        ILogger<DeliveryAuthenticationHandler>? logger = null)
-    {
-        _monitor = monitor ?? throw new ArgumentNullException(nameof(monitor));
-        ArgumentException.ThrowIfNullOrWhiteSpace(optionsName);
-        _name = optionsName;
+        _options = options ?? throw new ArgumentNullException(nameof(options));
         _logger = logger;
     }
 
@@ -84,7 +65,7 @@ internal sealed class DeliveryAuthenticationHandler : DelegatingHandler
     {
         ArgumentNullException.ThrowIfNull(request);
 
-        var opts = _name is null ? _monitor.CurrentValue : _monitor.Get(_name);
+        var opts = _options.Current;
         var baseUri = new Uri(opts.GetBaseUrl().TrimEnd('/'), UriKind.Absolute);
         var isTrustedDeliveryRequest = request.RequestUri is null ||
                                        !request.RequestUri.IsAbsoluteUri ||

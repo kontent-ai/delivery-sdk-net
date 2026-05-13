@@ -2,7 +2,6 @@ using System.Runtime.CompilerServices;
 using Kontent.Ai.Delivery.Configuration;
 using Kontent.Ai.Delivery.ContentItems.Mapping;
 using Microsoft.Extensions.Logging;
-using Microsoft.Extensions.Options;
 
 namespace Kontent.Ai.Delivery;
 
@@ -18,8 +17,7 @@ namespace Kontent.Ai.Delivery;
 /// <param name="typeProvider">The type provider for content type to CLR type mapping.</param>
 /// <param name="cacheManager">Optional cache manager for caching API responses (injected when EnableCaching is true).</param>
 /// <param name="logger">Optional logger for diagnostic output.</param>
-/// <param name="optionsMonitor">Options monitor used to determine runtime preview/production mode.</param>
-/// <param name="clientName">Client name used for resolving named options from <paramref name="optionsMonitor"/>.</param>
+/// <param name="optionsAccessor">Provides the effective <see cref="DeliveryOptions"/> at runtime (monitor- or snapshot-backed).</param>
 internal sealed class DeliveryClient(
     IDeliveryApi deliveryApi,
     ContentItemMapper contentItemMapper,
@@ -27,10 +25,8 @@ internal sealed class DeliveryClient(
     ITypeProvider typeProvider,
     IDeliveryCacheManager? cacheManager = null,
     ILogger<DeliveryClient>? logger = null,
-    IOptionsMonitor<DeliveryOptions>? optionsMonitor = null,
-    string? clientName = null) : IDeliveryClient
+    IDeliveryOptionsAccessor? optionsAccessor = null) : IDeliveryClient
 {
-    private readonly string _clientName = string.IsNullOrWhiteSpace(clientName) ? DeliveryClientNames.Default : clientName;
 
     public IItemQuery<T> GetItem<T>(string codename)
     {
@@ -155,14 +151,14 @@ internal sealed class DeliveryClient(
         => IsPreviewApiEnabled() ? null : cacheManager;
 
     private string? GetDefaultRenditionPreset()
-        => optionsMonitor?.Get(_clientName).DefaultRenditionPreset;
+        => optionsAccessor?.Current.DefaultRenditionPreset;
 
     private Uri? GetCustomAssetDomain()
     {
-        var domain = optionsMonitor?.Get(_clientName).CustomAssetDomain;
+        var domain = optionsAccessor?.Current.CustomAssetDomain;
         return string.IsNullOrWhiteSpace(domain) ? null : new Uri(domain, UriKind.Absolute);
     }
 
     private bool IsPreviewApiEnabled()
-        => optionsMonitor?.Get(_clientName).UsePreviewApi ?? false;
+        => optionsAccessor?.Current.UsePreviewApi ?? false;
 }

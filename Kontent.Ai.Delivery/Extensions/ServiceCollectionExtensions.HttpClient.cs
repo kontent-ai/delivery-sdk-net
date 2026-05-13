@@ -1,4 +1,5 @@
 using System.Text.Json;
+using Kontent.Ai.Delivery.Configuration;
 using Kontent.Ai.Delivery.Handlers;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Http.Resilience;
@@ -110,8 +111,7 @@ public static partial class ServiceCollectionExtensions
             sp.GetService<ILogger<TrackingHandler>>()));
 
         httpClientBuilder.AddHttpMessageHandler(sp => new DeliveryAuthenticationHandler(
-            sp.GetRequiredService<IOptionsMonitor<DeliveryOptions>>(),
-            clientName,
+            sp.GetRequiredKeyedService<IDeliveryOptionsAccessor>(clientName),
             sp.GetService<ILogger<DeliveryAuthenticationHandler>>()));
     }
 
