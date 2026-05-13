@@ -1,4 +1,5 @@
 using Kontent.Ai.Delivery.Abstractions;
+using Kontent.Ai.Delivery.Configuration;
 using Kontent.Ai.Delivery.Handlers;
 using Kontent.Ai.Delivery.Logging;
 using Microsoft.Extensions.Logging;
@@ -87,7 +88,8 @@ public class DeliveryAuthenticationHandlerTests
         };
 
         var optionsMonitor = new TestOptionsMonitor<DeliveryOptions>(optionsWithKey);
-        var handler = new DeliveryAuthenticationHandler(optionsMonitor)
+        optionsMonitor.AddNamedOptions(TestClientName, optionsWithKey);
+        var handler = new DeliveryAuthenticationHandler(new MonitorOptionsAccessor(optionsMonitor, TestClientName))
         {
             InnerHandler = new TestHandler()
         };
@@ -98,7 +100,7 @@ public class DeliveryAuthenticationHandlerTests
         Assert.NotNull(request1.Headers.Authorization);
         Assert.Equal(TestPreviewApiKey, request1.Headers.Authorization.Parameter);
 
-        optionsMonitor.ChangeCurrentValue(optionsWithoutKey);
+        optionsMonitor.AddNamedOptions(TestClientName, optionsWithoutKey);
 
         var request2 = new HttpRequestMessage(HttpMethod.Get, "https://deliver.kontent.ai/items");
         // Pre-populate with old auth header to simulate request reuse or stale state
@@ -163,7 +165,7 @@ public class DeliveryAuthenticationHandlerTests
         var optionsMonitor = new TestOptionsMonitor<DeliveryOptions>(defaultOptions);
         optionsMonitor.AddNamedOptions("named", namedOptions);
 
-        var handler = new DeliveryAuthenticationHandler(optionsMonitor, "named")
+        var handler = new DeliveryAuthenticationHandler(new MonitorOptionsAccessor(optionsMonitor, "named"))
         {
             InnerHandler = new TestHandler()
         };
@@ -460,26 +462,28 @@ public class DeliveryAuthenticationHandlerTests
         Assert.Contains(logger.Entries, e => e.EventId == LogEventIds.HttpEnvironmentIdInjected);
     }
 
-    private static DeliveryAuthenticationHandler CreateHandlerWithLogger(
-        DeliveryOptions options,
-        ILogger<DeliveryAuthenticationHandler> logger)
+    private const string TestClientName = "test";
+
+    private static IDeliveryOptionsAccessor AccessorFor(DeliveryOptions options)
     {
-        var optionsMonitor = new TestOptionsMonitor<DeliveryOptions>(options);
-        return new DeliveryAuthenticationHandler(optionsMonitor, logger)
-        {
-            InnerHandler = new TestHandler()
-        };
+        var monitor = new TestOptionsMonitor<DeliveryOptions>(options);
+        monitor.AddNamedOptions(TestClientName, options);
+        return new MonitorOptionsAccessor(monitor, TestClientName);
     }
 
-    private static DeliveryAuthenticationHandler CreateHandler(DeliveryOptions options)
-    {
-        var optionsMonitor = new TestOptionsMonitor<DeliveryOptions>(options);
-        var handler = new DeliveryAuthenticationHandler(optionsMonitor)
+    private static DeliveryAuthenticationHandler CreateHandlerWithLogger(
+        DeliveryOptions options,
+        ILogger<DeliveryAuthenticationHandler> logger) =>
+        new(AccessorFor(options), logger)
         {
             InnerHandler = new TestHandler()
         };
-        return handler;
-    }
+
+    private static DeliveryAuthenticationHandler CreateHandler(DeliveryOptions options) =>
+        new(AccessorFor(options))
+        {
+            InnerHandler = new TestHandler()
+        };
 
     private static async Task<HttpResponseMessage> InvokeSendAsync(
         DeliveryAuthenticationHandler handler,
@@ -500,7 +504,7 @@ public class DeliveryAuthenticationHandlerTests
     private class TestOptionsMonitor<TOptions>(TOptions currentValue) : IOptionsMonitor<TOptions>
         where TOptions : class
     {
-        private TOptions _currentValue = currentValue;
+        private readonly TOptions _currentValue = currentValue;
         private readonly Dictionary<string, TOptions> _namedOptions = [];
 
         public TOptions CurrentValue => _currentValue;
@@ -520,8 +524,6 @@ public class DeliveryAuthenticationHandlerTests
         public IDisposable OnChange(Action<TOptions, string> listener) => new EmptyDisposable();
 
         public void AddNamedOptions(string name, TOptions options) => _namedOptions[name] = options;
-
-        public void ChangeCurrentValue(TOptions newValue) => _currentValue = newValue;
 
         private class EmptyDisposable : IDisposable
         {

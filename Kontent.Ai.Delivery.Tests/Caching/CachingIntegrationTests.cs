@@ -4,7 +4,6 @@ using System.Text.Json;
 using Kontent.Ai.Delivery.Abstractions;
 using Kontent.Ai.Delivery.Api.QueryParams.Items;
 using Kontent.Ai.Delivery.Caching;
-using Kontent.Ai.Delivery.Extensions;
 using Kontent.Ai.Delivery.Tests.Models.ContentTypes;
 using Microsoft.Extensions.Caching.Distributed;
 using Microsoft.Extensions.Caching.Memory;
@@ -642,7 +641,7 @@ public partial class CachingIntegrationTests
             EnvironmentId = _guid.ToString()
         };
 
-        services.AddDeliveryClient("test", o => DeliveryOptionsCopyHelper.Copy(options, o),
+        services.AddDeliveryClient("test", options.CopyTo,
             configureHttpClient: b => b.ConfigurePrimaryHttpMessageHandler(() => mock));
         services.AddDeliveryMemoryCache("test");
 
@@ -702,7 +701,7 @@ public partial class CachingIntegrationTests
             EnvironmentId = _guid.ToString()
         };
 
-        services.AddDeliveryClient("test", o => DeliveryOptionsCopyHelper.Copy(options, o),
+        services.AddDeliveryClient("test", options.CopyTo,
             configureHttpClient: b => b.ConfigurePrimaryHttpMessageHandler(() => mock));
         services.AddDeliveryMemoryCache("test");
 
@@ -767,7 +766,7 @@ public partial class CachingIntegrationTests
             EnvironmentId = _guid.ToString()
         };
 
-        services.AddDeliveryClient("test", o => DeliveryOptionsCopyHelper.Copy(options, o),
+        services.AddDeliveryClient("test", options.CopyTo,
             configureHttpClient: b => b.ConfigurePrimaryHttpMessageHandler(() => mock));
         services.AddDeliveryMemoryCache("test");
 
@@ -804,7 +803,7 @@ public partial class CachingIntegrationTests
             EnvironmentId = _guid.ToString()
         };
 
-        services.AddDeliveryClient("test", o => DeliveryOptionsCopyHelper.Copy(options, o),
+        services.AddDeliveryClient("test", options.CopyTo,
             configureHttpClient: b => b.ConfigurePrimaryHttpMessageHandler(() => mock));
         services.AddDeliveryMemoryCache("test");
 
@@ -845,7 +844,7 @@ public partial class CachingIntegrationTests
             EnvironmentId = _guid.ToString()
         };
 
-        services.AddDeliveryClient("test", o => DeliveryOptionsCopyHelper.Copy(options, o),
+        services.AddDeliveryClient("test", options.CopyTo,
             configureHttpClient: b => b.ConfigurePrimaryHttpMessageHandler(() => mock));
         services.AddDeliveryMemoryCache("test");
 
@@ -883,7 +882,7 @@ public partial class CachingIntegrationTests
             EnvironmentId = _guid.ToString()
         };
 
-        services.AddDeliveryClient("test", o => DeliveryOptionsCopyHelper.Copy(options, o),
+        services.AddDeliveryClient("test", options.CopyTo,
             configureHttpClient: b => b.ConfigurePrimaryHttpMessageHandler(() => mock));
         services.AddDeliveryMemoryCache("test");
 
@@ -926,7 +925,7 @@ public partial class CachingIntegrationTests
             EnvironmentId = _guid.ToString()
         };
 
-        services.AddDeliveryClient("test", o => DeliveryOptionsCopyHelper.Copy(options, o),
+        services.AddDeliveryClient("test", options.CopyTo,
             configureHttpClient: b => b.ConfigurePrimaryHttpMessageHandler(() => mock));
         services.AddDeliveryMemoryCache("test");
 
@@ -1001,7 +1000,7 @@ public partial class CachingIntegrationTests
             EnvironmentId = _guid.ToString()
         };
 
-        services.AddDeliveryClient("test", o => DeliveryOptionsCopyHelper.Copy(options, o),
+        services.AddDeliveryClient("test", options.CopyTo,
             configureHttpClient: b => b.ConfigurePrimaryHttpMessageHandler(() => mock));
         services.AddDeliveryMemoryCache("test");
 
@@ -1187,7 +1186,7 @@ public partial class CachingIntegrationTests
             EnvironmentId = _guid.ToString()
         };
 
-        services.AddDeliveryClient("test", o => DeliveryOptionsCopyHelper.Copy(options, o),
+        services.AddDeliveryClient("test", options.CopyTo,
             configureHttpClient: b => b.ConfigurePrimaryHttpMessageHandler(() => mock));
         services.AddDeliveryMemoryCache("test");
 
@@ -1273,7 +1272,7 @@ public partial class CachingIntegrationTests
             EnvironmentId = _guid.ToString()
         };
 
-        services.AddDeliveryClient("test", o => DeliveryOptionsCopyHelper.Copy(options, o),
+        services.AddDeliveryClient("test", options.CopyTo,
             configureHttpClient: b => b.ConfigurePrimaryHttpMessageHandler(() => mock));
         services.AddDeliveryMemoryCache("test");
 
@@ -1358,7 +1357,7 @@ public partial class CachingIntegrationTests
             EnvironmentId = _guid.ToString()
         };
 
-        services.AddDeliveryClient("test", o => DeliveryOptionsCopyHelper.Copy(options, o),
+        services.AddDeliveryClient("test", options.CopyTo,
             configureHttpClient: b => b.ConfigurePrimaryHttpMessageHandler(() => mock));
         services.AddDeliveryMemoryCache("test");
 
@@ -1413,7 +1412,7 @@ public partial class CachingIntegrationTests
             EnvironmentId = _guid.ToString()
         };
 
-        services.AddDeliveryClient("test", o => DeliveryOptionsCopyHelper.Copy(options, o),
+        services.AddDeliveryClient("test", options.CopyTo,
             configureHttpClient: b => b.ConfigurePrimaryHttpMessageHandler(() => mock));
         services.AddDeliveryMemoryCache("test");
 
@@ -1470,7 +1469,7 @@ public partial class CachingIntegrationTests
             EnvironmentId = _guid.ToString()
         };
 
-        services.AddDeliveryClient("test", o => DeliveryOptionsCopyHelper.Copy(options, o),
+        services.AddDeliveryClient("test", options.CopyTo,
             configureHttpClient: b => b.ConfigurePrimaryHttpMessageHandler(() => mock));
         services.AddDeliveryMemoryCache("test");
 
@@ -1527,7 +1526,7 @@ public partial class CachingIntegrationTests
             EnvironmentId = _guid.ToString()
         };
 
-        services.AddDeliveryClient("test", o => DeliveryOptionsCopyHelper.Copy(options, o),
+        services.AddDeliveryClient("test", options.CopyTo,
             configureHttpClient: b => b.ConfigurePrimaryHttpMessageHandler(() => mock));
         services.AddDeliveryMemoryCache("test");
 
@@ -1805,7 +1804,7 @@ public partial class CachingIntegrationTests
 
         var mockDistributedCache = new MockDistributedCache();
         services.AddSingleton<IDistributedCache>(mockDistributedCache);
-        services.AddDeliveryClient("test", o => DeliveryOptionsCopyHelper.Copy(options, o),
+        services.AddDeliveryClient("test", options.CopyTo,
             configureHttpClient: b => b.ConfigurePrimaryHttpMessageHandler(() => mock));
         services.AddDeliveryHybridCache("test");
 
@@ -1848,7 +1847,7 @@ public partial class CachingIntegrationTests
 
         var mockDistributedCache = new MockDistributedCache();
         services.AddSingleton<IDistributedCache>(mockDistributedCache);
-        services.AddDeliveryClient("test", o => DeliveryOptionsCopyHelper.Copy(options, o),
+        services.AddDeliveryClient("test", options.CopyTo,
             configureHttpClient: b => b.ConfigurePrimaryHttpMessageHandler(() => mock));
         services.AddDeliveryHybridCache("test");
 
@@ -1917,7 +1916,7 @@ public partial class CachingIntegrationTests
 
         var mockDistributedCache = new MockDistributedCache();
         services.AddSingleton<IDistributedCache>(mockDistributedCache);
-        services.AddDeliveryClient("test", o => DeliveryOptionsCopyHelper.Copy(options, o),
+        services.AddDeliveryClient("test", options.CopyTo,
             configureHttpClient: b => b.ConfigurePrimaryHttpMessageHandler(() => mock));
         services.AddDeliveryHybridCache("test");
 
@@ -1973,7 +1972,7 @@ public partial class CachingIntegrationTests
 
         var mockDistributedCache = new MockDistributedCache();
         services.AddSingleton<IDistributedCache>(mockDistributedCache);
-        services.AddDeliveryClient("test", o => DeliveryOptionsCopyHelper.Copy(options, o),
+        services.AddDeliveryClient("test", options.CopyTo,
             configureHttpClient: b => b.ConfigurePrimaryHttpMessageHandler(() => mock));
         services.AddDeliveryHybridCache("test");
 
@@ -2031,7 +2030,7 @@ public partial class CachingIntegrationTests
 
         var mockDistributedCache = new MockDistributedCache();
         services.AddSingleton<IDistributedCache>(mockDistributedCache);
-        services.AddDeliveryClient("test", o => DeliveryOptionsCopyHelper.Copy(options, o),
+        services.AddDeliveryClient("test", options.CopyTo,
             configureHttpClient: b => b.ConfigurePrimaryHttpMessageHandler(() => mock));
         services.AddDeliveryHybridCache("test");
 
@@ -2422,7 +2421,7 @@ public partial class CachingIntegrationTests
 
         // Use per-client caching with custom mock cache manager
         var mockCacheManager = new TestCacheManager();
-        services.AddDeliveryClient("test", o => DeliveryOptionsCopyHelper.Copy(options, o),
+        services.AddDeliveryClient("test", options.CopyTo,
             configureHttpClient: b => b.ConfigurePrimaryHttpMessageHandler(() => mock));
         services.AddKeyedSingleton<IDeliveryCacheManager>("test", mockCacheManager);
 
@@ -2465,7 +2464,7 @@ public partial class CachingIntegrationTests
 
         // Use per-client caching with custom mock cache manager
         var mockCacheManager = new TestCacheManager();
-        services.AddDeliveryClient("test", o => DeliveryOptionsCopyHelper.Copy(options, o),
+        services.AddDeliveryClient("test", options.CopyTo,
             configureHttpClient: b => b.ConfigurePrimaryHttpMessageHandler(() => mock));
         services.AddKeyedSingleton<IDeliveryCacheManager>("test", mockCacheManager);
 
@@ -2501,7 +2500,7 @@ public partial class CachingIntegrationTests
         };
 
         var mockCacheManager = new TestCacheManager();
-        services.AddDeliveryClient("test", o => DeliveryOptionsCopyHelper.Copy(options, o),
+        services.AddDeliveryClient("test", options.CopyTo,
             configureHttpClient: b => b.ConfigurePrimaryHttpMessageHandler(() => mock));
         services.AddKeyedSingleton<IDeliveryCacheManager>("test", mockCacheManager);
 
@@ -2535,7 +2534,7 @@ public partial class CachingIntegrationTests
         };
 
         var mockCacheManager = new TestCacheManager();
-        services.AddDeliveryClient("test", o => DeliveryOptionsCopyHelper.Copy(options, o),
+        services.AddDeliveryClient("test", options.CopyTo,
             configureHttpClient: b => b.ConfigurePrimaryHttpMessageHandler(() => mock));
         services.AddKeyedSingleton<IDeliveryCacheManager>("test", mockCacheManager);
 
@@ -2566,7 +2565,7 @@ public partial class CachingIntegrationTests
         };
 
         var mockCacheManager = new TestCacheManager();
-        services.AddDeliveryClient("test", o => DeliveryOptionsCopyHelper.Copy(options, o),
+        services.AddDeliveryClient("test", options.CopyTo,
             configureHttpClient: b => b.ConfigurePrimaryHttpMessageHandler(() => mock));
         services.AddKeyedSingleton<IDeliveryCacheManager>("test", mockCacheManager);
 
@@ -2598,7 +2597,7 @@ public partial class CachingIntegrationTests
         };
 
         var mockCacheManager = new TestCacheManager();
-        services.AddDeliveryClient("test", o => DeliveryOptionsCopyHelper.Copy(options, o),
+        services.AddDeliveryClient("test", options.CopyTo,
             configureHttpClient: b => b.ConfigurePrimaryHttpMessageHandler(() => mock));
         services.AddKeyedSingleton<IDeliveryCacheManager>("test", mockCacheManager);
 
@@ -2629,7 +2628,7 @@ public partial class CachingIntegrationTests
         };
 
         var mockCacheManager = new TestCacheManager();
-        services.AddDeliveryClient("test", o => DeliveryOptionsCopyHelper.Copy(options, o),
+        services.AddDeliveryClient("test", options.CopyTo,
             configureHttpClient: b => b.ConfigurePrimaryHttpMessageHandler(() => mock));
         services.AddKeyedSingleton<IDeliveryCacheManager>("test", mockCacheManager);
 
@@ -2807,7 +2806,7 @@ public partial class CachingIntegrationTests
         DeliveryOptions options,
         HttpMessageHandler httpHandler)
     {
-        services.AddDeliveryClient(clientName, o => DeliveryOptionsCopyHelper.Copy(options, o),
+        services.AddDeliveryClient(clientName, options.CopyTo,
             configureHttpClient: b => b.ConfigurePrimaryHttpMessageHandler(() => httpHandler));
     }
 
