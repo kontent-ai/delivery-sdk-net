@@ -10,6 +10,10 @@ jobs:
     runs-on: ubuntu-latest
     env:
       PACK_OUTPUT: ./artifacts/release-pack
+      # Refit 10.x is author-signed with a certificate that currently reports as revoked,
+      # which fails NuGet signature verification on the Linux runner (NU3012) during restore.
+      # Disable NuGet signature verification until a re-signed Refit package is available.
+      DOTNET_NUGET_SIGNATURE_VERIFICATION: false
     permissions:
       id-token: write   # Required for OIDC token issuance
       contents: write   # Required for uploading release assets
