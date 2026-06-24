@@ -3,9 +3,9 @@ using Microsoft.Extensions.Options;
 namespace Kontent.Ai.Delivery.Configuration;
 
 /// <summary>
-/// Provides the currently effective <see cref="DeliveryOptions"/> for a client.
-/// Hides the question of whether values come from <see cref="IOptionsMonitor{TOptions}"/>
-/// (DI-driven, reactive) or a captured snapshot (standalone construction).
+/// Provides the currently effective <see cref="DeliveryOptions"/> for a client,
+/// decoupling consumers from how options are sourced (currently a named
+/// <see cref="IOptionsMonitor{TOptions}"/> registration).
 /// </summary>
 internal interface IDeliveryOptionsAccessor
 {
@@ -30,16 +30,4 @@ internal sealed class MonitorOptionsAccessor : IDeliveryOptionsAccessor
     }
 
     public DeliveryOptions Current => _monitor.Get(_name);
-}
-
-/// <summary>
-/// Returns a fixed <see cref="DeliveryOptions"/> snapshot. Used by clients constructed
-/// outside DI, where the caller has handed the SDK a pre-built options instance and does
-/// not expect runtime reactivity.
-/// </summary>
-internal sealed class SnapshotOptionsAccessor(DeliveryOptions snapshot) : IDeliveryOptionsAccessor
-{
-    private readonly DeliveryOptions _snapshot = snapshot ?? throw new ArgumentNullException(nameof(snapshot));
-
-    public DeliveryOptions Current => _snapshot;
 }
