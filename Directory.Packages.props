@@ -24,9 +24,10 @@
     <!-- Test dependencies -->
     <PackageVersion Include="coverlet.collector" Version="3.2.0" />
     <PackageVersion Include="coverlet.msbuild" Version="3.2.0" />
-    <!-- Capped below 8.0.0: FluentAssertions changed to a commercial license in 8.x.
-         The 7.x line remains Apache 2.0. Matches the range used in model-generator-net. -->
-    <PackageVersion Include="FluentAssertions" Version="[7.2.2,8.0.0)" />
+    <!-- AwesomeAssertions is the community Apache-2.0 successor to FluentAssertions (which went
+         commercial at v8). v9 uses its own `AwesomeAssertions` namespace (not a `FluentAssertions`-namespace
+         drop-in), so test code imports `AwesomeAssertions`. -->
+    <PackageVersion Include="AwesomeAssertions" Version="9.4.0" />
     <PackageVersion Include="SonarAnalyzer.CSharp" Version="10.19.0.132793">
       <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
       <PrivateAssets>all</PrivateAssets>

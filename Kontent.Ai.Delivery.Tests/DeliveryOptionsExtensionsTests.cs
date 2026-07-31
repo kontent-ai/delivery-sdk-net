@@ -1,4 +1,4 @@
-using FluentAssertions;
+using AwesomeAssertions;
 using Kontent.Ai.Delivery.Abstractions;
 
 namespace Kontent.Ai.Delivery.Tests;
