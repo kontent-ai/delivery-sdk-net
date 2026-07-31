@@ -1269,7 +1269,7 @@ public async Task GetItem_WithValidCodename_ReturnsItem()
 - **RichardSzalay.MockHttp**: Mock HTTP responses
 - **Fixture files**: Reusable JSON responses from Kontent.ai
 - **xUnit**: Test framework
-- **FluentAssertions** (optional): Readable assertions
+- **AwesomeAssertions** (optional): Readable assertions
 
 ## Performance Optimizations
 
