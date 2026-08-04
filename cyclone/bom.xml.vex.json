@@ -1,0 +1,46 @@
+{
+  "@context": "https://openvex.dev/ns/v0.2.0",
+  "@id": "https://openvex.dev/docs/public/vex-31af32762e81a1277c6a2f10daf368f88f4e4d7a846cb026c6a6b61277af6124",
+  "author": "Unknown Author",
+  "timestamp": "2024-10-04T13:54:19.545772+02:00",
+  "last_updated": "2024-10-04T13:54:19.609503+02:00",
+  "version": 3,
+  "statements": [
+    {
+      "vulnerability": {
+        "name": "CVE-2018-8292"
+      },
+      "timestamp": "2024-10-04T13:54:19.545773+02:00",
+      "products": [
+        {
+          "@id": "pkg:nuget/System.Net.Http@4.3.0"
+        }
+      ],
+      "status": "under_investigation"
+    },
+    {
+      "vulnerability": {
+        "name": "CVE-2019-0820"
+      },
+      "timestamp": "2024-10-04T13:54:19.579847+02:00",
+      "products": [
+        {
+          "@id": "pkg:nuget/System.Text.RegularExpressions@4.3.0"
+        }
+      ],
+      "status": "under_investigation"
+    },
+    {
+      "vulnerability": {
+        "name": "CVE-2024-21907"
+      },
+      "timestamp": "2024-10-04T13:54:19.609504+02:00",
+      "products": [
+        {
+          "@id": "pkg:nuget/Newtonsoft.Json@9.0.1"
+        }
+      ],
+      "status": "under_investigation"
+    }
+  ]
+}
