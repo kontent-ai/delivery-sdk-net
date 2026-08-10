@@ -1,5 +1,14 @@
 # Kontent.ai Delivery SDK for .NET
 
+
+> [!WARNING]
+> **This repository is deprecated and has moved to the [`kontent-ai/dotnet`](https://github.com/kontent-ai/dotnet) monorepo.**
+>
+> This repository will be archived once **Delivery SDK 20 reaches General Availability (GA)**.
+>
+> Please submit **all new pull requests, issues, and contributions** to the [`kontent-ai/dotnet`](https://github.com/kontent-ai/dotnet) repository. No new development should be started in this repository.
+
+
 ![Last modified][last-commit]
 [![Issues][issues-shield]][issues-url]
 [![Contributors][contributors-shield]][contributors-url]
